@@ -50,6 +50,8 @@ struct RendererContentMatchData {
 // ContentConditionSet::GetURLMatcherConditionSets.
 class ContentCondition {
  public:
+  // Type trait for the use of
+  // DeclarativeConditionSet<ContentCondition>::IsFulfilled.
   typedef RendererContentMatchData MatchData;
 
   ContentCondition(

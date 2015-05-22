@@ -617,6 +617,9 @@ void ExtensionBrowserTest::OpenWindow(content::WebContents* contents,
 
 void ExtensionBrowserTest::NavigateInRenderer(content::WebContents* contents,
                                               const GURL& url) {
+  // Ensure any existing navigations complete before trying to navigate anew, to
+  // avoid triggering of the unload event for the wrong navigation.
+  content::WaitForLoadStop(contents);
   bool result = false;
   content::WindowedNotificationObserver windowed_observer(
       content::NOTIFICATION_LOAD_STOP,

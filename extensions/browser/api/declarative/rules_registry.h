@@ -124,7 +124,7 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   }
 
   // Returns the context where the rules registry lives.
-  content::BrowserContext* browser_context() { return browser_context_; }
+  content::BrowserContext* browser_context() const { return browser_context_; }
 
   // Returns the ID of the thread on which the rules registry lives.
   // It is safe to call this function from any thread.

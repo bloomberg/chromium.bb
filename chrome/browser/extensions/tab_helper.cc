@@ -203,10 +203,26 @@ void TabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
 void TabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (ExtensionSystem::Get(profile_)->extension_service() &&
-      RulesRegistryService::Get(profile_)) {
-    RulesRegistryService::Get(profile_)->content_rules_registry()->
+  RulesRegistryService* rules_registry_service =
+      RulesRegistryService::Get(profile_);
+  if (rules_registry_service) {
+    rules_registry_service->content_rules_registry()->
         DidNavigateMainFrame(web_contents(), details, params);
+    // The original profile's content rules registry handles rules for spanning
+    // extensions in incognito profiles, so let it know about the navigation
+    // also.
+    if (profile_->IsOffTheRecord()) {
+      RulesRegistryService* incognito_rules_registry_service =
+          RulesRegistryService::Get(profile_->GetOriginalProfile());
+      // The content and web request rules registries depend on separate
+      // instances for original/incognito profiles. See the comment on
+      // ChromeContentRulesRegistry.
+      DCHECK_NE(rules_registry_service, incognito_rules_registry_service);
+      if (incognito_rules_registry_service) {
+        incognito_rules_registry_service->content_rules_registry()->
+            DidNavigateMainFrame(web_contents(), details, params);
+      }
+    }
   }
 
   content::BrowserContext* context = web_contents()->GetBrowserContext();

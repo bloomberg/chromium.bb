@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -31,8 +32,30 @@ const char kDeclarativeContentManifest[] =
     "  \"page_action\": {},\n"
     "  \"permissions\": [\n"
     "    \"declarativeContent\"\n"
-    "  ]\n"
+    "  ],\n"
+    "  \"incognito\": \"spanning\"\n"
     "}\n";
+
+const char kIncognitoSpecificBackground[] =
+    "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
+    "var ShowPageAction = chrome.declarativeContent.ShowPageAction;\n"
+    "var inIncognitoContext = chrome.extension.inIncognitoContext;\n"
+    "\n"
+    "var hostPrefix = chrome.extension.inIncognitoContext ?\n"
+    "    'test_split' : 'test_normal';\n"
+    "var rule = {\n"
+    "  conditions: [new PageStateMatcher({\n"
+    "      pageUrl: {hostPrefix: hostPrefix}})],\n"
+    "  actions: [new ShowPageAction()]\n"
+    "}\n"
+    "\n"
+    "var onPageChanged = chrome.declarativeContent.onPageChanged;\n"
+    "onPageChanged.removeRules(undefined, function() {\n"
+    "  onPageChanged.addRules([rule], function() {\n"
+    "    chrome.test.sendMessage(\n"
+    "        !inIncognitoContext ? \"ready\" : \"ready (split)\");\n"
+    "  });\n"
+    "});\n";
 
 const char kBackgroundHelpers[] =
     "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
@@ -58,11 +81,87 @@ class DeclarativeContentApiTest : public ExtensionApiTest {
   DeclarativeContentApiTest() {}
 
  protected:
+  enum IncognitoMode { SPANNING, SPLIT };
+
+  // Checks that the rules are correctly evaluated for an extension in incognito
+  // mode |mode| when the extension's incognito enable state is
+  // |is_enabled_in_incognito|.
+  void CheckIncognito(IncognitoMode mode, bool is_enabled_in_incognito);
+
   TestExtensionDir ext_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentApiTest);
 };
+
+void DeclarativeContentApiTest::CheckIncognito(IncognitoMode mode,
+                                               bool is_enabled_in_incognito) {
+  std::string manifest = kDeclarativeContentManifest;
+  if (mode == SPLIT) {
+    ReplaceSubstringsAfterOffset(&manifest, 0, "\"incognito\": \"spanning\"",
+                                 "\"incognito\": \"split\"");
+    ASSERT_NE(kDeclarativeContentManifest, manifest);
+  }
+  ext_dir_.WriteManifest(manifest);
+  ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"),
+                     kIncognitoSpecificBackground);
+
+  ExtensionTestMessageListener ready("ready", false);
+  ExtensionTestMessageListener ready_incognito("ready (split)", false);
+
+  const Extension* extension = is_enabled_in_incognito ?
+      LoadExtensionIncognito(ext_dir_.unpacked_path()) :
+      LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  const ExtensionAction* incognito_page_action =
+      ExtensionActionManager::Get(incognito_browser->profile())->
+      GetPageAction(*extension);
+  ASSERT_TRUE(incognito_page_action);
+
+  ASSERT_TRUE(ready.WaitUntilSatisfied());
+  if (is_enabled_in_incognito && mode == SPLIT)
+    ASSERT_TRUE(ready_incognito.WaitUntilSatisfied());
+
+  content::WebContents* const incognito_tab =
+      incognito_browser->tab_strip_model()->GetWebContentsAt(0);
+  const int incognito_tab_id = ExtensionTabUtil::GetTabId(incognito_tab);
+
+  EXPECT_FALSE(incognito_page_action->GetIsVisible(incognito_tab_id));
+
+  NavigateInRenderer(incognito_tab, GURL("http://test_split/"));
+  if (mode == SPLIT) {
+    EXPECT_EQ(is_enabled_in_incognito,
+              incognito_page_action->GetIsVisible(incognito_tab_id));
+  } else {
+    EXPECT_FALSE(incognito_page_action->GetIsVisible(incognito_tab_id));
+  }
+
+  NavigateInRenderer(incognito_tab, GURL("http://test_normal/"));
+  if (mode != SPLIT) {
+    EXPECT_EQ(is_enabled_in_incognito,
+              incognito_page_action->GetIsVisible(incognito_tab_id));
+  } else {
+    EXPECT_FALSE(incognito_page_action->GetIsVisible(incognito_tab_id));
+  }
+
+  // Verify that everything works as expected in the non-incognito browser.
+  const ExtensionAction* page_action =
+      ExtensionActionManager::Get(browser()->profile())->
+      GetPageAction(*extension);
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  const int tab_id = ExtensionTabUtil::GetTabId(tab);
+
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+
+  NavigateInRenderer(tab, GURL("http://test_normal/"));
+  EXPECT_TRUE(page_action->GetIsVisible(tab_id));
+
+  NavigateInRenderer(tab, GURL("http://test_split/"));
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+}
 
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
@@ -73,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
       "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
       "var ShowPageAction = chrome.declarativeContent.ShowPageAction;\n"
       "\n"
-      "var rule0 = {\n"
+      "var rule = {\n"
       "  conditions: [new PageStateMatcher({\n"
       "                   pageUrl: {hostPrefix: \"test1\"}}),\n"
       "               new PageStateMatcher({\n"
@@ -84,12 +183,11 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
       "var testEvent = chrome.declarativeContent.onPageChanged;\n"
       "\n"
       "testEvent.removeRules(undefined, function() {\n"
-      "  testEvent.addRules([rule0], function() {\n"
-      "    chrome.test.sendMessage(\"ready\", function(reply) {\n"
-      "    })\n"
+      "  testEvent.addRules([rule], function() {\n"
+      "    chrome.test.sendMessage(\"ready\")\n"
       "  });\n"
       "});\n");
-  ExtensionTestMessageListener ready("ready", true);
+  ExtensionTestMessageListener ready("ready", false);
   const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
   ASSERT_TRUE(extension);
   const ExtensionAction* page_action =
@@ -216,6 +314,124 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RulesEvaluatedOnAddRemove) {
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
 }
 
+// Tests that rules are not evaluated in incognito browser windows when the
+// extension specifies spanning incognito mode but is not enabled for incognito.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+                       DisabledForSpanningIncognito) {
+  CheckIncognito(SPANNING, false);
+}
+
+// Tests that rules are evaluated in incognito browser windows when the
+// extension specifies spanning incognito mode and is enabled for incognito.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, EnabledForSpanningIncognito) {
+  CheckIncognito(SPANNING, true);
+}
+
+// Tests that rules are not evaluated in incognito browser windows when the
+// extension specifies split incognito mode but is not enabled for incognito.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, DisabledForSplitIncognito) {
+  CheckIncognito(SPLIT, false);
+}
+
+// Tests that rules are evaluated in incognito browser windows when the
+// extension specifies split incognito mode and is enabled for incognito.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, EnabledForSplitIncognito) {
+  CheckIncognito(SPLIT, true);
+}
+
+// Tests that rules are evaluated for an incognito tab that exists at the time
+// the rules are added.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+                       RulesEvaluatedForExistingIncognitoTab) {
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  content::WebContents* const incognito_tab =
+      incognito_browser->tab_strip_model()->GetWebContentsAt(0);
+  const int incognito_tab_id = ExtensionTabUtil::GetTabId(incognito_tab);
+
+  NavigateInRenderer(incognito_tab, GURL("http://test_normal/"));
+
+  ext_dir_.WriteManifest(kDeclarativeContentManifest);
+  ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"),
+                     kIncognitoSpecificBackground);
+  ExtensionTestMessageListener ready("ready", false);
+  const Extension* extension = LoadExtensionIncognito(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(ready.WaitUntilSatisfied());
+
+  const ExtensionAction* incognito_page_action =
+      ExtensionActionManager::Get(incognito_browser->profile())->
+      GetPageAction(*extension);
+  ASSERT_TRUE(incognito_page_action);
+
+  // The page action should be shown.
+  EXPECT_TRUE(incognito_page_action->GetIsVisible(incognito_tab_id));
+}
+
+// Sets up rules matching http://test1/ in a normal and incognito browser.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, PRE_RulesPersistence) {
+  ExtensionTestMessageListener ready("ready", false);
+  ExtensionTestMessageListener ready_split("ready (split)", false);
+  // An on-disk extension is required so that it can be reloaded later in the
+  // RulesPersistence test.
+  const Extension* extension =
+      LoadExtensionIncognito(test_data_dir_.AppendASCII("declarative_content")
+                             .AppendASCII("persistence"));
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(ready.WaitUntilSatisfied());
+
+  CreateIncognitoBrowser();
+  ASSERT_TRUE(ready_split.WaitUntilSatisfied());
+}
+
+// Reloads the extension from PRE_RulesPersistence and checks that the rules
+// continue to work as expected after being persisted and reloaded.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RulesPersistence) {
+  ExtensionTestMessageListener ready("second run ready", false);
+  ExtensionTestMessageListener ready_split("second run ready (split)", false);
+  ASSERT_TRUE(ready.WaitUntilSatisfied());
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  const Extension* extension =
+      GetExtensionByPath(registry->enabled_extensions(),
+                         test_data_dir_.AppendASCII("declarative_content")
+                         .AppendASCII("persistence"));
+
+  // Check non-incognito browser.
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  const int tab_id = ExtensionTabUtil::GetTabId(tab);
+
+  const ExtensionAction* page_action =
+      ExtensionActionManager::Get(browser()->profile())->
+      GetPageAction(*extension);
+  ASSERT_TRUE(page_action);
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+
+  NavigateInRenderer(tab, GURL("http://test_normal/"));
+  EXPECT_TRUE(page_action->GetIsVisible(tab_id));
+
+  NavigateInRenderer(tab, GURL("http://test_split/"));
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+
+  // Check incognito browser.
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  ASSERT_TRUE(ready_split.WaitUntilSatisfied());
+  content::WebContents* const incognito_tab =
+      incognito_browser->tab_strip_model()->GetWebContentsAt(0);
+  const int incognito_tab_id = ExtensionTabUtil::GetTabId(incognito_tab);
+
+  const ExtensionAction* incognito_page_action =
+      ExtensionActionManager::Get(incognito_browser->profile())->
+      GetPageAction(*extension);
+  ASSERT_TRUE(incognito_page_action);
+
+  NavigateInRenderer(incognito_tab, GURL("http://test_split/"));
+  EXPECT_TRUE(incognito_page_action->GetIsVisible(incognito_tab_id));
+
+  NavigateInRenderer(incognito_tab, GURL("http://test_normal/"));
+  EXPECT_FALSE(incognito_page_action->GetIsVisible(incognito_tab_id));
+}
+
 // http://crbug.com/304373
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                        UninstallWhileActivePageAction) {
@@ -321,6 +537,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   std::string manifest_without_page_action = kDeclarativeContentManifest;
   ReplaceSubstringsAfterOffset(
       &manifest_without_page_action, 0, "\"page_action\": {},", "");
+  ASSERT_NE(kDeclarativeContentManifest, manifest_without_page_action);
   ext_dir_.WriteManifest(manifest_without_page_action);
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
   const Extension* extension = LoadExtension(ext_dir_.unpacked_path());

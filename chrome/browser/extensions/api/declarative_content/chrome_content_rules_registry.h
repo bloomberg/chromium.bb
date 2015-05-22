@@ -59,6 +59,13 @@ typedef DeclarativeRule<ContentCondition, ContentAction> ContentRule;
 // The evaluation of URL related condition attributes (host_suffix, path_prefix)
 // is delegated to a URLMatcher, because this is capable of evaluating many
 // of such URL related condition attributes in parallel.
+//
+// A note on incognito support: separate instances of ChromeContentRulesRegistry
+// are created for incognito and non-incognito contexts. The incognito instance,
+// however, is only responsible for applying rules registered by the incognito
+// side of split-mode extensions to incognito tabs. The non-incognito instance
+// handles incognito tabs for spanning-mode extensions, plus all non-incognito
+// tabs.
 class ChromeContentRulesRegistry : public ContentRulesRegistry,
                                    public content::NotificationObserver {
  public:
@@ -75,6 +82,14 @@ class ChromeContentRulesRegistry : public ContentRulesRegistry,
 
   // Applies all content rules given that a tab was just navigated.
   void DidNavigateMainFrame(
+      content::WebContents* tab,
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
+
+  // Applies all content rules given that a tab was just navigated on the
+  // original context. Only invoked on the OffTheRecord registry instance. |tab|
+  // is owned by the original context, not this one.
+  void DidNavigateMainFrameOfOriginalContext(
       content::WebContents* tab,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
@@ -106,17 +121,25 @@ class ChromeContentRulesRegistry : public ContentRulesRegistry,
  private:
   friend class DeclarativeChromeContentRulesRegistryTest;
 
+  // True if this object is managing the rules for |context|.
+  bool ManagingRulesForBrowserContext(content::BrowserContext* context);
+
+  // Applies all content rules given that a tab was just navigated.
+  void OnTabNavigation(content::WebContents* tab, bool is_in_page_navigation);
+
   std::set<ContentRule*> GetMatches(
-      const RendererContentMatchData& renderer_data) const;
+      const RendererContentMatchData& renderer_data,
+      bool is_incognito_renderer) const;
 
   // Scans the rules for the set of conditions they're watching.  If the set has
   // changed, calls InstructRenderProcess() for each RenderProcessHost in the
   // current browser_context.
   void UpdateConditionCache();
 
-  // Tells a renderer what page attributes to watch for using an
-  // ExtensionMsg_WatchPages.
-  void InstructRenderProcess(content::RenderProcessHost* process);
+  // If the renderer process is associated with our browser context, tells it
+  // what page attributes to watch for using an ExtensionMsg_WatchPages.
+  void InstructRenderProcessIfSameBrowserContext(
+      content::RenderProcessHost* process);
 
   // Evaluates the conditions for |tab| based on the tab state and matching CSS
   // selectors.

@@ -48,6 +48,13 @@ class ContentRulesRegistry : public RulesRegistry {
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) = 0;
 
+  // Applies all content rules given that a tab was just navigated on the
+  // original context. Only invoked on the OffTheRecord registry instance.
+  virtual void DidNavigateMainFrameOfOriginalContext(
+      content::WebContents* tab,
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) = 0;
+
  protected:
   ~ContentRulesRegistry() override {}
 

@@ -8,6 +8,8 @@
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -52,8 +54,7 @@ void ChromeContentRulesRegistry::Observe(
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       content::RenderProcessHost* process =
           content::Source<content::RenderProcessHost>(source).ptr();
-      if (process->GetBrowserContext() == browser_context())
-        InstructRenderProcess(process);
+      InstructRenderProcessIfSameBrowserContext(process);
       break;
     }
     case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
@@ -80,7 +81,20 @@ void ChromeContentRulesRegistry::DidNavigateMainFrame(
     content::WebContents* contents,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (details.is_in_page) {
+  OnTabNavigation(contents, details.is_in_page);
+}
+
+void ChromeContentRulesRegistry::DidNavigateMainFrameOfOriginalContext(
+    content::WebContents* contents,
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  DCHECK(browser_context()->IsOffTheRecord());
+  OnTabNavigation(contents, details.is_in_page);
+}
+
+void ChromeContentRulesRegistry::OnTabNavigation(content::WebContents* tab,
+                                                 bool is_in_page_navigation) {
+  if (is_in_page_navigation) {
     // Within-page navigations don't change the set of elements that
     // exist, and we only support filtering on the top-level URL, so
     // this can't change which rules match.
@@ -91,12 +105,20 @@ void ChromeContentRulesRegistry::DidNavigateMainFrame(
   // document's empty, so no CSS rules match.  The renderer will send
   // an ExtensionHostMsg_OnWatchedPageChange later if any CSS rules
   // match.
-  matching_css_selectors_[contents].clear();
-  EvaluateConditionsForTab(contents);
+  matching_css_selectors_[tab].clear();
+  EvaluateConditionsForTab(tab);
+}
+
+bool ChromeContentRulesRegistry::ManagingRulesForBrowserContext(
+    content::BrowserContext* context) {
+  // Manage both the normal context and incognito contexts associated with it.
+  return Profile::FromBrowserContext(context)->GetOriginalProfile() ==
+      Profile::FromBrowserContext(browser_context());
 }
 
 std::set<ContentRule*> ChromeContentRulesRegistry::GetMatches(
-    const RendererContentMatchData& renderer_data) const {
+    const RendererContentMatchData& renderer_data,
+    bool is_incognito_renderer) const {
   std::set<ContentRule*> result;
 
   // Then we need to check for each of these, whether the other
@@ -110,6 +132,31 @@ std::set<ContentRule*> ChromeContentRulesRegistry::GetMatches(
     CHECK(rule_iter != match_id_to_rule_.end());
 
     ContentRule* rule = rule_iter->second;
+    if (is_incognito_renderer) {
+      if (!util::IsIncognitoEnabled(rule->extension_id(), browser_context()))
+        continue;
+
+      // Split-mode incognito extensions register their rules with separate
+      // RulesRegistries per Original/OffTheRecord browser contexts, whereas
+      // spanning-mode extensions share the Original browser context.
+      const Extension* extension = ExtensionRegistry::Get(browser_context())
+          ->GetExtensionById(rule->extension_id(),
+                             ExtensionRegistry::EVERYTHING);
+      if (util::CanCrossIncognito(extension, browser_context())) {
+        // The extension uses spanning mode incognito. No rules should have been
+        // registered for the extension in the OffTheRecord registry so
+        // execution for that registry should never reach this point.
+        CHECK(!browser_context()->IsOffTheRecord());
+      } else {
+        // The extension uses split mode incognito. Both the Original and
+        // OffTheRecord registries may have (separate) rules for this extension.
+        // We've established above that we are looking at an incognito renderer,
+        // so only the OffTheRecord registry should process its rules.
+        if (!browser_context()->IsOffTheRecord())
+          continue;
+      }
+    }
+
     if (rule->conditions().IsFulfilled(*url_match, renderer_data))
       result.insert(rule);
   }
@@ -275,15 +322,15 @@ void ChromeContentRulesRegistry::UpdateConditionCache() {
          !it.IsAtEnd();
          it.Advance()) {
       content::RenderProcessHost* process = it.GetCurrentValue();
-      if (process->GetBrowserContext() == browser_context())
-        InstructRenderProcess(process);
+      InstructRenderProcessIfSameBrowserContext(process);
     }
   }
 }
 
-void ChromeContentRulesRegistry::InstructRenderProcess(
+void ChromeContentRulesRegistry::InstructRenderProcessIfSameBrowserContext(
     content::RenderProcessHost* process) {
-  process->Send(new ExtensionMsg_WatchPages(watched_css_selectors_));
+  if (ManagingRulesForBrowserContext(process->GetBrowserContext()))
+    process->Send(new ExtensionMsg_WatchPages(watched_css_selectors_));
 }
 
 void ChromeContentRulesRegistry::EvaluateConditionsForTab(
@@ -292,7 +339,8 @@ void ChromeContentRulesRegistry::EvaluateConditionsForTab(
   renderer_data.page_url_matches = url_matcher_.MatchURL(tab->GetURL());
   renderer_data.css_selectors.insert(matching_css_selectors_[tab].begin(),
                                      matching_css_selectors_[tab].end());
-  std::set<ContentRule*> matching_rules = GetMatches(renderer_data);
+  std::set<ContentRule*> matching_rules =
+      GetMatches(renderer_data, tab->GetBrowserContext()->IsOffTheRecord());
   if (matching_rules.empty() && !ContainsKey(active_rules_, tab))
     return;
 
@@ -327,7 +375,7 @@ void ChromeContentRulesRegistry::EvaluateConditionsForTab(
 void ChromeContentRulesRegistry::EvaluateConditionsForAllTabs() {
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     Browser* browser = *it;
-    if (browser->profile() != Profile::FromBrowserContext(browser_context()))
+    if (!ManagingRulesForBrowserContext(browser->profile()))
       continue;
 
     for (int i = 0, tab_count = browser->tab_strip_model()->count();
