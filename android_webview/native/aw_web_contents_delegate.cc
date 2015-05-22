@@ -23,6 +23,7 @@
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/media_stream_request.h"
 #include "jni/AwWebContentsDelegate_jni.h"
+#include "net/base/escape.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
@@ -273,7 +274,10 @@ static void FilesSelectedInChooser(
     GURL url(file_path_str[i]);
     if (!url.is_valid())
       continue;
-    base::FilePath path(url.SchemeIsFile() ? url.path() : file_path_str[i]);
+    base::FilePath path(url.SchemeIsFile() ?
+      net::UnescapeURLComponent(url.path(),
+        net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS) :
+        file_path_str[i]);
     content::FileChooserFileInfo file_info;
     file_info.file_path = path;
     if (!display_name_str[i].empty())
