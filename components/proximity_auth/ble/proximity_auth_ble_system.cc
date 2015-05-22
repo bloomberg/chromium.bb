@@ -70,7 +70,9 @@ void ProximityAuthBleSystem::OnScreenDidLock(
 void ProximityAuthBleSystem::OnScreenDidUnlock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
   VLOG(1) << "OnScreenDidUnlock: " << screen_type;
-  connection_->Disconnect();
+  if (connection_)
+    connection_->Disconnect();
+
   connection_.reset();
   connection_finder_.reset();
 };
