@@ -192,7 +192,8 @@ class ChromeCommitter(object):
 
   def UpdateLatestFiles(self):
     """Update the LATEST files since LKGM, in Google Storage."""
-    ext_cfgs, int_cfgs = cbuildbot_config.FindFullConfigsForBoard(board=None)
+    config = cbuildbot_config.GetConfig()
+    ext_cfgs, int_cfgs = config.FindFullConfigsForBoard(board=None)
     versions = self._GetLatestCanaryVersions() + [self._old_lkgm]
     tasks = [[cfg, versions] for cfg in ext_cfgs + int_cfgs]
     parallel.RunTasksInProcessPool(self.UpdateLatestFilesForBot, tasks,

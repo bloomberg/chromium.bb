@@ -368,7 +368,8 @@ class _PaygenBuild(object):
       ArchiveError: if we could not compute the mapping.
     """
     # Map chromeos-releases board name to its chromeos-image-archive equivalent.
-    cfg_iter = itertools.chain(*cbuildbot_config.FindFullConfigsForBoard())
+    all_configs = cbuildbot_config.GetConfig()
+    cfg_iter = itertools.chain(*all_configs.FindFullConfigsForBoard())
     archive_board_candidates = set([
         archive_board for cfg in cfg_iter for archive_board in cfg['boards']
         if archive_board.replace('_', '-') == board])

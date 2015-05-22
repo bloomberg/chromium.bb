@@ -9,6 +9,7 @@ from __future__ import print_function
 import copy
 import cPickle
 
+from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import config_lib
 from chromite.lib import cros_test_lib
 
@@ -222,3 +223,91 @@ class ConfigClassTest(cros_test_lib.TestCase):
 
     self.assertEqual(config, loaded)
     self.assertEqual(config_str, loaded_str)
+
+
+class FindConfigsForBoardTest(cros_test_lib.TestCase):
+  """Test locating of official build for a board."""
+
+  def setUp(self):
+    self.config = cbuildbot_config.GetConfig()
+
+  def _CheckFullConfig(
+      self, board, external_expected=None, internal_expected=None):
+    """Check FindFullConfigsForBoard has expected results.
+
+    Args:
+      board: Argument to pass to FindFullConfigsForBoard.
+      external_expected: Expected config name (singular) to be found.
+      internal_expected: Expected config name (singular) to be found.
+    """
+
+    def check_expected(l, expected):
+      if expected is not None:
+        self.assertTrue(expected in [v['name'] for v in l])
+
+    external, internal = self.config.FindFullConfigsForBoard(board)
+    self.assertFalse(external_expected is None and internal_expected is None)
+    check_expected(external, external_expected)
+    check_expected(internal, internal_expected)
+
+  def _CheckCanonicalConfig(self, board, ending):
+    self.assertEquals(
+        '-'.join((board, ending)),
+        self.config.FindCanonicalConfigForBoard(board)['name'])
+
+  def testExternal(self):
+    """Test finding of a full builder."""
+    self._CheckFullConfig(
+        'amd64-generic', external_expected='amd64-generic-full')
+
+  def testInternal(self):
+    """Test finding of a release builder."""
+    self._CheckFullConfig('lumpy', internal_expected='lumpy-release')
+
+  def testBoth(self):
+    """Both an external and internal config exist for board."""
+    self._CheckFullConfig(
+        'daisy', external_expected='daisy-full',
+        internal_expected='daisy-release')
+
+  def testExternalCanonicalResolution(self):
+    """Test an external canonical config."""
+    self._CheckCanonicalConfig('x86-generic', 'full')
+
+  def testInternalCanonicalResolution(self):
+    """Test prefer internal over external when both exist."""
+    self._CheckCanonicalConfig('daisy', 'release')
+
+  def testAFDOCanonicalResolution(self):
+    """Test prefer non-AFDO over AFDO builder."""
+    self._CheckCanonicalConfig('lumpy', 'release')
+
+  def testOneFullConfigPerBoard(self):
+    """There is at most one 'full' config for a board."""
+    # Verifies that there is one external 'full' and one internal 'release'
+    # build per board.  This is to ensure that we fail any new configs that
+    # wrongly have names like *-bla-release or *-bla-full. This case can also
+    # be caught if the new suffix was added to
+    # config_lib.CONFIG_TYPE_DUMP_ORDER
+    # (see testNonOverlappingConfigTypes), but that's not guaranteed to happen.
+    def AtMostOneConfig(board, label, configs):
+      if len(configs) > 1:
+        self.fail(
+            'Found more than one %s config for %s: %r'
+            % (label, board, [c['name'] for c in configs]))
+
+    boards = set()
+    for build_config in self.config.itervalues():
+      boards.update(build_config['boards'])
+
+    # Sanity check of the boards.
+    self.assertTrue(boards)
+
+    for b in boards:
+      # TODO(akeshet): Figure out why we have both panther_embedded-minimal
+      # release and panther_embedded-release, and eliminate one of them.
+      if b == 'panther_embedded':
+        continue
+      external, internal = self.config.FindFullConfigsForBoard(b)
+      AtMostOneConfig(b, 'external', external)
+      AtMostOneConfig(b, 'internal', internal)

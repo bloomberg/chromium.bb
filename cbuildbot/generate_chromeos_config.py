@@ -540,42 +540,6 @@ def GetCanariesForChromeLKGM(configs=GetConfig()):
   return builders
 
 
-def FindFullConfigsForBoard(board=None):
-  """Returns full builder configs for a board.
-
-  Args:
-    board: The board to match. By default, match all boards.
-
-  Returns:
-    A tuple containing a list of matching external configs and a list of
-    matching internal release configs for a board.
-  """
-  ext_cfgs = []
-  int_cfgs = []
-
-  for name, c in GetConfig().iteritems():
-    if c['boards'] and (board is None or board in c['boards']):
-      if (name.endswith('-%s' % config_lib.CONFIG_TYPE_RELEASE) and
-          c['internal']):
-        int_cfgs.append(c.deepcopy())
-      elif (name.endswith('-%s' % config_lib.CONFIG_TYPE_FULL) and
-            not c['internal']):
-        ext_cfgs.append(c.deepcopy())
-
-  return ext_cfgs, int_cfgs
-
-
-def FindCanonicalConfigForBoard(board, allow_internal=True):
-  """Get the canonical cbuildbot builder config for a board."""
-  ext_cfgs, int_cfgs = FindFullConfigsForBoard(board)
-  # If both external and internal builds exist for this board, prefer the
-  # internal one unless instructed otherwise.
-  both = (int_cfgs if allow_internal else []) + ext_cfgs
-  if not both:
-    raise ValueError('Invalid board specified: %s.' % board)
-  return both[0]
-
-
 def GetSlavesForMaster(master_config, options=None):
   """Gets the important slave builds corresponding to this master.
 

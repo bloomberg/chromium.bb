@@ -92,6 +92,8 @@ class SDKFetcher(object):
     """
     # Delay this import because it is super slow.  http://crbug.com/404575
     from chromite.cbuildbot import cbuildbot_config
+    all_configs = cbuildbot_config.GetConfig()
+
 
     self.cache_base = os.path.join(cache_dir, COMMAND_NAME)
     if clear_cache:
@@ -102,7 +104,7 @@ class SDKFetcher(object):
     self.misc_cache = cache.DiskCache(
         os.path.join(self.cache_base, self.MISC_CACHE))
     self.board = board
-    self.config = cbuildbot_config.FindCanonicalConfigForBoard(
+    self.config = all_configs.FindCanonicalConfigForBoard(
         board, allow_internal=not use_external_config)
     self.gs_base = '%s/%s' % (constants.DEFAULT_ARCHIVE_BUCKET,
                               self.config['name'])
@@ -489,10 +491,6 @@ class ChromeSDKCommand(command.CliCommand):
         help='Sets up SDK for building official (internal) Chrome '
              'Chrome, rather than Chromium.')
     parser.add_argument(
-        '--use-external-config', action='store_true', default=False,
-        help='Use the external configuration for the specified board, even if '
-             'an internal configuration is avalable.')
-    parser.add_argument(
         '--sdk-path', type='local_or_gs_path',
         help='Provides a path, whether a local directory or a gs:// path, to '
              'pull SDK components from.')
@@ -832,8 +830,7 @@ class ChromeSDKCommand(command.CliCommand):
                           chrome_src=self.options.chrome_src,
                           sdk_path=self.options.sdk_path,
                           toolchain_path=self.options.toolchain_path,
-                          silent=self.silent,
-                          use_external_config=self.options.use_external_config)
+                          silent=self.silent)
 
     prepare_version = self.options.version
     if not prepare_version and not self.options.sdk_path:

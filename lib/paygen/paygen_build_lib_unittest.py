@@ -1215,8 +1215,10 @@ DOC = "Faux doc"
 
 """)
 
-    self.mox.StubOutWithMock(cbuildbot_config, 'FindFullConfigsForBoard')
-    cbuildbot_config.FindFullConfigsForBoard().AndReturn(
+    config = cbuildbot_config.GetConfig()
+
+    self.mox.StubOutWithMock(config, 'FindFullConfigsForBoard')
+    config.FindFullConfigsForBoard().AndReturn(
         ([{'boards': ['foo_board']}], []))
 
     self.mox.StubOutWithMock(urilib, 'ListFiles')
@@ -1412,8 +1414,10 @@ The suite job has another 2:39:39.789250 till timeout.
 
   def testMapToArchive(self):
     """Test that mapping to images archive names/locations works."""
-    self.mox.StubOutWithMock(cbuildbot_config, 'FindFullConfigsForBoard')
-    cbuildbot_config.FindFullConfigsForBoard().MultipleTimes().AndReturn(
+    config = cbuildbot_config.GetConfig()
+
+    self.mox.StubOutWithMock(config, 'FindFullConfigsForBoard')
+    config.FindFullConfigsForBoard().MultipleTimes().AndReturn(
         ([{'boards': ['foo_board', 'bar_board', 'bar-board']}], []))
 
     self.mox.StubOutWithMock(urilib, 'ListFiles')

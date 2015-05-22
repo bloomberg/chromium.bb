@@ -25,8 +25,6 @@ from chromite.lib import factory
 
 from chromite.cbuildbot.generate_chromeos_config import (
     # Exported method for searching/modifying config information.
-    FindCanonicalConfigForBoard,
-    FindFullConfigsForBoard,
     GetCanariesForChromeLKGM,
     GetDisplayPosition,
     GetSlavesForMaster,
