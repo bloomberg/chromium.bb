@@ -99,6 +99,7 @@ void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
                 sourceGraphic->setImageFilter(ColorSpaceLinearRGB, true, linearFilter.get());
 
                 currentColorSpace = filterEffect->operatingColorSpace();
+                filterEffect->determineFilterPrimitiveSubregion(MapRectForward);
                 filter = SkiaImageFilterBuilder::build(filterEffect, currentColorSpace);
                 filters->appendReferenceFilter(filter.get());
             }
