@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,18 +92,22 @@ class SearchHistoryTest : public testing::Test {
 
   // testing::Test overrides:
   void SetUp() override {
-    worker_pool_ = new base::SequencedWorkerPool(1, "AppLauncherTest");
+    worker_pool_owner_.reset(
+        new base::SequencedWorkerPoolOwner(1, "AppLauncherTest"));
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     CreateHistory();
   }
-  void TearDown() override { Flush(); }
+  void TearDown() override {
+    Flush();
+    worker_pool_owner_->pool()->Shutdown();
+  }
 
   void CreateHistory() {
     const char kStoreDataFileName[] = "app-launcher-test";
     const base::FilePath data_file =
         temp_dir_.path().AppendASCII(kStoreDataFileName);
     scoped_refptr<DictionaryDataStore> dictionary_data_store(
-        new DictionaryDataStore(data_file, worker_pool_.get()));
+        new DictionaryDataStore(data_file, worker_pool_owner_->pool().get()));
     history_.reset(new History(scoped_refptr<HistoryDataStore>(
         new HistoryDataStore(dictionary_data_store))));
 
@@ -139,7 +144,7 @@ class SearchHistoryTest : public testing::Test {
  private:
   base::MessageLoopForUI message_loop_;
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+  scoped_ptr<base::SequencedWorkerPoolOwner> worker_pool_owner_;
 
   scoped_ptr<History> history_;
   scoped_ptr<KnownResults> known_results_;

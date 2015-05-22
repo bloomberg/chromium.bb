@@ -3536,13 +3536,6 @@
    fun:_ZN4mojo6common15MessagePumpMojo6CreateEv
 }
 {
-   bug_449551
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN8app_list4test17SearchHistoryTest5SetUpEv
-}
-{
    bug_450228
    Memcheck:Leak
    fun:_Znw*
