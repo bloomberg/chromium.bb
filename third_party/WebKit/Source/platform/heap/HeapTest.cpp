@@ -1872,6 +1872,8 @@ class SimpleFinalizedEagerObjectBase : public GarbageCollectedFinalized<SimpleFi
 public:
     virtual ~SimpleFinalizedEagerObjectBase() { }
     DEFINE_INLINE_TRACE() { }
+
+    EAGERLY_SWEEP();
 protected:
     SimpleFinalizedEagerObjectBase() { }
 };
@@ -1893,9 +1895,32 @@ private:
     SimpleFinalizedEagerObject() { }
 };
 
-int SimpleFinalizedEagerObject::s_destructorCalls = 0;
+template<typename T>
+class ParameterizedButEmpty {
+public:
+    EAGERLY_SWEEP();
+};
 
-EAGERLY_SWEEP(SimpleFinalizedEagerObjectBase);
+class SimpleFinalizedObjectInstanceOfTemplate final : public GarbageCollectedFinalized<SimpleFinalizedObjectInstanceOfTemplate>, public ParameterizedButEmpty<SimpleFinalizedObjectInstanceOfTemplate> {
+public:
+    static SimpleFinalizedObjectInstanceOfTemplate* create()
+    {
+        return new SimpleFinalizedObjectInstanceOfTemplate();
+    }
+    ~SimpleFinalizedObjectInstanceOfTemplate()
+    {
+        ++s_destructorCalls;
+    }
+
+    DEFINE_INLINE_TRACE() { }
+
+    static int s_destructorCalls;
+private:
+    SimpleFinalizedObjectInstanceOfTemplate() { }
+};
+
+int SimpleFinalizedEagerObject::s_destructorCalls = 0;
+int SimpleFinalizedObjectInstanceOfTemplate::s_destructorCalls = 0;
 
 TEST(HeapTest, EagerlySweepingPages)
 {
@@ -1903,15 +1928,19 @@ TEST(HeapTest, EagerlySweepingPages)
 
     SimpleFinalizedObject::s_destructorCalls = 0;
     SimpleFinalizedEagerObject::s_destructorCalls = 0;
+    SimpleFinalizedObjectInstanceOfTemplate::s_destructorCalls = 0;
     EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
     EXPECT_EQ(0, SimpleFinalizedEagerObject::s_destructorCalls);
     for (int i = 0; i < 1000; i++)
         SimpleFinalizedObject::create();
     for (int i = 0; i < 100; i++)
         SimpleFinalizedEagerObject::create();
+    for (int i = 0; i < 100; i++)
+        SimpleFinalizedObjectInstanceOfTemplate::create();
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithoutSweep, Heap::ForcedGC);
     EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
     EXPECT_EQ(100, SimpleFinalizedEagerObject::s_destructorCalls);
+    EXPECT_EQ(100, SimpleFinalizedObjectInstanceOfTemplate::s_destructorCalls);
 }
 #endif
 

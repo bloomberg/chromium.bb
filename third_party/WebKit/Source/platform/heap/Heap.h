@@ -1119,15 +1119,36 @@ public:
     }
 };
 
-#define EAGERLY_SWEEP(TYPE)                 \
-template<typename T>                        \
-class HeapIndexTrait<T, typename WTF::EnableIf<WTF::IsSubclass<T, TYPE>::value>::Type> { \
-public:                                     \
-    static int heapIndexForObject(size_t)   \
-    {                                       \
-        return EagerSweepHeapIndex;         \
-    }                                       \
-}
+// TODO(Oilpan): enable this macro when enabling lazy sweeping, non-Oilpan.
+#if ENABLE(OILPAN)
+#define EAGERLY_SWEEP() typedef int IsEagerlySweptMarker
+#else
+#define EAGERLY_SWEEP()
+#endif
+
+template<typename T>
+struct IsEagerlySweptType {
+private:
+    typedef char YesType;
+    struct NoType {
+        char padding[8];
+    };
+
+    template <typename U> static YesType checkMarker(typename U::IsEagerlySweptMarker*);
+    template <typename U> static NoType checkMarker(...);
+
+public:
+    static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
+};
+
+template<typename T>
+class HeapIndexTrait<T, typename WTF::EnableIf<IsEagerlySweptType<T>::value>::Type> {
+public:
+    static int heapIndexForObject(size_t)
+    {
+        return EagerSweepHeapIndex;
+    }
+};
 
 NO_SANITIZE_ADDRESS inline
 size_t HeapObjectHeader::size() const

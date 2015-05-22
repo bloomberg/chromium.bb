@@ -43,6 +43,9 @@ public:
 
     LocalFrame* frame() const { return m_frame; }
 
+    // TODO(Oilpan): remove eager sweeping once DOMWindowProperty is
+    // always on the heap.
+    EAGERLY_SWEEP();
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -62,4 +65,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // DOMWindowProperty_h
