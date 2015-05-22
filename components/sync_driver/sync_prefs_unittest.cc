@@ -141,6 +141,7 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
     if (it.Get() == syncer::AUTOFILL) {
       expected_preferred_types.Put(syncer::AUTOFILL_PROFILE);
       expected_preferred_types.Put(syncer::AUTOFILL_WALLET_DATA);
+      expected_preferred_types.Put(syncer::AUTOFILL_WALLET_METADATA);
     }
     if (it.Get() == syncer::PREFERENCES) {
       expected_preferred_types.Put(syncer::DICTIONARY);

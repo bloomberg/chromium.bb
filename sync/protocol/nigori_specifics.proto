@@ -128,5 +128,9 @@ message NigoriSpecifics {
 
   // Boolean corresponding to whether app list items should be encrypted.
   optional bool encrypt_app_list = 38;
+
+  // Boolean corresponding to whether usage count and last use date of Wallet
+  // data should be encrypted.
+  optional bool encrypt_autofill_wallet_metadata = 39;
 }
 

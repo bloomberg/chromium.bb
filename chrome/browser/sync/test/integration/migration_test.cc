@@ -103,6 +103,7 @@ class MigrationTest : public SyncTest  {
     // Autofill wallet will be unready during this test, so we should not
     // request that it be migrated.
     preferred_data_types.Remove(syncer::AUTOFILL_WALLET_DATA);
+    preferred_data_types.Remove(syncer::AUTOFILL_WALLET_METADATA);
 
     // Make sure all clients have the same preferred data types.
     for (int i = 1; i < num_clients(); ++i) {

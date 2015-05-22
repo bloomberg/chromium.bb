@@ -66,6 +66,7 @@ enum ModelTypeSelection {
   SUPERVISED_USER_SETTING = 1 << 13,
   SUPERVISED_USER_WHITELIST = 1 << 14,
   AUTOFILL_WALLET = 1 << 15,
+  AUTOFILL_WALLET_METADATA = 1 << 16,
 };
 
 // Native callback for the JNI GetAllNodes method. When
@@ -511,6 +512,9 @@ jlong ProfileSyncServiceAndroid::ModelTypeSetToSelection(
   }
   if (types.Has(syncer::AUTOFILL_WALLET_DATA)) {
     model_type_selection |= AUTOFILL_WALLET;
+  }
+  if (types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
+    model_type_selection |= AUTOFILL_WALLET_METADATA;
   }
   if (types.Has(syncer::PASSWORDS)) {
     model_type_selection |= PASSWORD;

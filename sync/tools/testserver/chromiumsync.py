@@ -69,6 +69,7 @@ ALL_TYPES = (
     ARTICLE,
     AUTOFILL,
     AUTOFILL_PROFILE,
+    AUTOFILL_WALLET_METADATA,
     BOOKMARK,
     DEVICE_INFO,
     DICTIONARY,
@@ -92,7 +93,7 @@ ALL_TYPES = (
     EXTENSION_SETTINGS,
     FAVICON_IMAGES,
     FAVICON_TRACKING,
-    WIFI_CREDENTIAL) = range(32)
+    WIFI_CREDENTIAL) = range(33)
 
 # An enumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -116,6 +117,7 @@ SYNC_TYPE_TO_DESCRIPTOR = {
     ARTICLE: SYNC_TYPE_FIELDS['article'],
     AUTOFILL: SYNC_TYPE_FIELDS['autofill'],
     AUTOFILL_PROFILE: SYNC_TYPE_FIELDS['autofill_profile'],
+    AUTOFILL_WALLET_METADATA: SYNC_TYPE_FIELDS['wallet_metadata'],
     BOOKMARK: SYNC_TYPE_FIELDS['bookmark'],
     DEVICE_INFO: SYNC_TYPE_FIELDS['device_info'],
     DICTIONARY: SYNC_TYPE_FIELDS['dictionary'],
@@ -511,6 +513,9 @@ class SyncDataModel(object):
                     parent_tag=ROOT_ID, sync_type=AUTOFILL),
       PermanentItem('google_chrome_autofill_profiles', name='Autofill Profiles',
                     parent_tag=ROOT_ID, sync_type=AUTOFILL_PROFILE),
+      PermanentItem('google_chrome_autofill_wallet_metadata',
+                    name='Autofill Wallet Metadata', parent_tag=ROOT_ID,
+                    sync_type=AUTOFILL_WALLET_METADATA),
       PermanentItem('google_chrome_device_info', name='Device Info',
                     parent_tag=ROOT_ID, sync_type=DEVICE_INFO),
       PermanentItem('google_chrome_experiments', name='Experiments',

@@ -67,6 +67,9 @@ enum ModelType {
   // Credit cards and addresses synced from the user's account. These are
   // read-only on the client.
   AUTOFILL_WALLET_DATA,
+  // Usage counts and last use dates for Wallet cards and addresses. This data
+  // is both readable and writable.
+  AUTOFILL_WALLET_METADATA,
   // A themes object.
   THEMES,
   // A typed_url object.

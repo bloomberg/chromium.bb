@@ -494,7 +494,8 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
           syncer::PRIORITY_PREFERENCES)->AsWeakPtr();
     case syncer::AUTOFILL:
     case syncer::AUTOFILL_PROFILE:
-    case syncer::AUTOFILL_WALLET_DATA: {
+    case syncer::AUTOFILL_WALLET_DATA:
+    case syncer::AUTOFILL_WALLET_METADATA: {
       if (!web_data_service_.get())
         return base::WeakPtr<syncer::SyncableService>();
       if (type == syncer::AUTOFILL) {
@@ -503,6 +504,8 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       } else if (type == syncer::AUTOFILL_PROFILE) {
         return autofill::AutofillProfileSyncableService::FromWebDataService(
             web_data_service_.get())->AsWeakPtr();
+      } else if (type == syncer::AUTOFILL_WALLET_METADATA) {
+        return base::WeakPtr<syncer::SyncableService>();
       }
       return autofill::AutofillWalletSyncableService::FromWebDataService(
           web_data_service_.get())->AsWeakPtr();

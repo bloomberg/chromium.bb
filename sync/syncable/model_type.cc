@@ -44,7 +44,7 @@ const char* kUserSelectableDataTypeNames[] = {
 };
 
 static_assert(
-    35 == MODEL_TYPE_COUNT,
+    36 == MODEL_TYPE_COUNT,
     "update kUserSelectableDataTypeName to match UserSelectableTypes");
 
 void AddDefaultFieldValue(ModelType datatype,
@@ -71,6 +71,9 @@ void AddDefaultFieldValue(ModelType datatype,
       break;
     case AUTOFILL_WALLET_DATA:
       specifics->mutable_autofill_wallet();
+      break;
+    case AUTOFILL_WALLET_METADATA:
+      specifics->mutable_wallet_metadata();
       break;
     case THEMES:
       specifics->mutable_theme();
@@ -181,6 +184,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       return sync_pb::EntitySpecifics::kAutofillProfileFieldNumber;
     case AUTOFILL_WALLET_DATA:
       return sync_pb::EntitySpecifics::kAutofillWalletFieldNumber;
+    case AUTOFILL_WALLET_METADATA:
+      return sync_pb::EntitySpecifics::kWalletMetadataFieldNumber;
     case THEMES:
       return sync_pb::EntitySpecifics::kThemeFieldNumber;
     case TYPED_URLS:
@@ -291,6 +296,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 
   if (specifics.has_autofill_wallet())
     return AUTOFILL_WALLET_DATA;
+
+  if (specifics.has_wallet_metadata())
+    return AUTOFILL_WALLET_METADATA;
 
   if (specifics.has_theme())
     return THEMES;
@@ -597,6 +605,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Tabs";
     case AUTOFILL_WALLET_DATA:
       return "Autofill Wallet";
+    case AUTOFILL_WALLET_METADATA:
+      return "Autofill Wallet Metadata";
     default:
       break;
   }
@@ -682,6 +692,8 @@ int ModelTypeToHistogramInt(ModelType model_type) {
       return 33;
     case AUTOFILL_WALLET_DATA:
       return 34;
+    case AUTOFILL_WALLET_METADATA:
+      return 35;
     // Silence a compiler warning.
     case MODEL_TYPE_COUNT:
       return 0;
@@ -729,6 +741,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return AUTOFILL_PROFILE;
   else if (model_type_string == "Autofill Wallet")
     return AUTOFILL_WALLET_DATA;
+  else if (model_type_string == "Autofill Wallet Metadata")
+    return AUTOFILL_WALLET_METADATA;
   else if (model_type_string == "Themes")
     return THEMES;
   else if (model_type_string == "Typed URLs")
@@ -875,6 +889,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_autofill_profiles";
     case AUTOFILL_WALLET_DATA:
       return "google_chrome_autofill_wallet";
+    case AUTOFILL_WALLET_METADATA:
+      return "google_chrome_autofill_wallet_metadata";
     case APP_SETTINGS:
       return "google_chrome_app_settings";
     case EXTENSION_SETTINGS:
@@ -939,6 +955,8 @@ const char kAppListNotificationType[] = "APP_LIST";
 const char kSearchEngineNotificationType[] = "SEARCH_ENGINE";
 const char kSessionNotificationType[] = "SESSION";
 const char kAutofillProfileNotificationType[] = "AUTOFILL_PROFILE";
+const char kAutofillWalletMetadataNotificationType[] =
+    "AUTOFILL_WALLET_METADATA";
 const char kAutofillWalletNotificationType[] = "AUTOFILL_WALLET";
 const char kAppNotificationNotificationType[] = "APP_NOTIFICATION";
 const char kHistoryDeleteDirectiveNotificationType[] =
@@ -1008,6 +1026,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case AUTOFILL_WALLET_DATA:
       *notification_type = kAutofillWalletNotificationType;
+      return true;
+    case AUTOFILL_WALLET_METADATA:
+      *notification_type = kAutofillWalletMetadataNotificationType;
       return true;
     case EXTENSION_SETTINGS:
       *notification_type = kExtensionSettingNotificationType;
@@ -1110,6 +1131,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kAutofillWalletNotificationType) {
     *model_type = AUTOFILL_WALLET_DATA;
+    return true;
+  } else if (notification_type == kAutofillWalletMetadataNotificationType) {
+    *model_type = AUTOFILL_WALLET_METADATA;
     return true;
   } else if (notification_type == kAppSettingNotificationType) {
     *model_type = APP_SETTINGS;

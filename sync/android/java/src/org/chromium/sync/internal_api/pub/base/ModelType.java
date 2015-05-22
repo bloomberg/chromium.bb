@@ -86,7 +86,11 @@ public enum ModelType {
     /**
      * An autofill wallet data object.
      */
-    AUTOFILL_WALLET("AUTOFILL_WALLET");
+    AUTOFILL_WALLET("AUTOFILL_WALLET"),
+    /**
+     * Usage counts and last use dates for autofill wallet data objects.
+     */
+    AUTOFILL_WALLET_METADATA("AUTOFILL_WALLET_METADATA");
 
     /** Special type representing all possible types. */
     public static final String ALL_TYPES_TYPE = "ALL_TYPES";

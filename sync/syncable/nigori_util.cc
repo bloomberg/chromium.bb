@@ -242,7 +242,7 @@ void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
                                     bool encrypt_everything,
                                     sync_pb::NigoriSpecifics* nigori) {
   nigori->set_encrypt_everything(encrypt_everything);
-  static_assert(35 == MODEL_TYPE_COUNT, "update encrypted types");
+  static_assert(36 == MODEL_TYPE_COUNT, "update encrypted types");
   nigori->set_encrypt_bookmarks(
       encrypted_types.Has(BOOKMARKS));
   nigori->set_encrypt_preferences(
@@ -250,6 +250,8 @@ void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
   nigori->set_encrypt_autofill_profile(
       encrypted_types.Has(AUTOFILL_PROFILE));
   nigori->set_encrypt_autofill(encrypted_types.Has(AUTOFILL));
+  nigori->set_encrypt_autofill_wallet_metadata(
+      encrypted_types.Has(AUTOFILL_WALLET_METADATA));
   nigori->set_encrypt_themes(encrypted_types.Has(THEMES));
   nigori->set_encrypt_typed_urls(
       encrypted_types.Has(TYPED_URLS));
@@ -278,7 +280,7 @@ ModelTypeSet GetEncryptedTypesFromNigori(
     return ModelTypeSet::All();
 
   ModelTypeSet encrypted_types;
-  static_assert(35 == MODEL_TYPE_COUNT, "update encrypted types");
+  static_assert(36 == MODEL_TYPE_COUNT, "update encrypted types");
   if (nigori.encrypt_bookmarks())
     encrypted_types.Put(BOOKMARKS);
   if (nigori.encrypt_preferences())
@@ -287,6 +289,8 @@ ModelTypeSet GetEncryptedTypesFromNigori(
     encrypted_types.Put(AUTOFILL_PROFILE);
   if (nigori.encrypt_autofill())
     encrypted_types.Put(AUTOFILL);
+  if (nigori.encrypt_autofill_wallet_metadata())
+    encrypted_types.Put(AUTOFILL_WALLET_METADATA);
   if (nigori.encrypt_themes())
     encrypted_types.Put(THEMES);
   if (nigori.encrypt_typed_urls())

@@ -255,6 +255,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncAutofillProfile;
     case syncer::AUTOFILL_WALLET_DATA:
       return prefs::kSyncAutofillWallet;
+    case syncer::AUTOFILL_WALLET_METADATA:
+      return prefs::kSyncAutofillWalletMetadata;
     case syncer::THEMES:
       return prefs::kSyncThemes;
     case syncer::TYPED_URLS:
@@ -351,6 +353,7 @@ void SyncPrefs::RegisterPrefGroups() {
 
   pref_groups_[syncer::AUTOFILL].Put(syncer::AUTOFILL_PROFILE);
   pref_groups_[syncer::AUTOFILL].Put(syncer::AUTOFILL_WALLET_DATA);
+  pref_groups_[syncer::AUTOFILL].Put(syncer::AUTOFILL_WALLET_METADATA);
 
   pref_groups_[syncer::EXTENSIONS].Put(syncer::EXTENSION_SETTINGS);
 
