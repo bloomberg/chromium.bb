@@ -9,7 +9,7 @@ InspectorTest.inlineStyleSection = function()
 
 InspectorTest.computedStyleSidebarPane = function()
 {
-    return WebInspector.panels.elements.sidebarPanes.styles._computedStylePane;
+    return WebInspector.panels.elements.sidebarPanes.computedStyle;
 }
 
 InspectorTest.dumpComputedStyle = function()
