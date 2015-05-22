@@ -42,8 +42,6 @@ class MirrorWindowTestApi {
   const aura::Window* GetCursorWindow() const;
   gfx::Point GetCursorLocation() const;
 
-  scoped_ptr<RootWindowTransformer> CreateCurrentRootWindowTransformer() const;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MirrorWindowTestApi);
 };

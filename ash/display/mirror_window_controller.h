@@ -90,10 +90,6 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
   void CloseAndDeleteHost(MirroringHostInfo* host_info,
                           bool delay_host_deletion);
 
-  // Creates a RootWindowTransformer for current display
-  // configuration.
-  scoped_ptr<RootWindowTransformer> CreateRootWindowTransformer() const;
-
   typedef std::map<int64_t, MirroringHostInfo*> MirroringHostInfoMap;
   MirroringHostInfoMap mirroring_host_info_map_;
 

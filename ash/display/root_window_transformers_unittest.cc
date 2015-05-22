@@ -112,6 +112,19 @@ float GetStoredUIScale(int64 id) {
       GetEffectiveUIScale();
 }
 
+scoped_ptr<RootWindowTransformer>
+CreateCurrentRootWindowTransformerForMirroring() {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  DCHECK(display_manager->IsInMirrorMode());
+  const DisplayInfo& mirror_display_info =
+      display_manager->GetDisplayInfo(display_manager->mirroring_display_id());
+  const DisplayInfo& source_display_info = display_manager->GetDisplayInfo(
+      Shell::GetScreen()->GetPrimaryDisplay().id());
+  return scoped_ptr<RootWindowTransformer>(
+      CreateRootWindowTransformerForMirroredDisplay(source_display_info,
+                                                    mirror_display_info));
+}
+
 }  // namespace
 
 typedef test::AshTestBase RootWindowTransformersTest;
@@ -396,13 +409,13 @@ TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {
   display_manager->SetMultiDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x200,500x500");
   scoped_ptr<RootWindowTransformer> transformer(
-      test_api.CreateCurrentRootWindowTransformer());
+      CreateCurrentRootWindowTransformerForMirroring());
   // Y margin must be margin is (500 - 500/400 * 200) / 2 = 125.
   EXPECT_EQ("0,125,0,125", transformer->GetHostInsets().ToString());
 
   UpdateDisplay("200x400,500x500");
   // The aspect ratio is flipped, so X margin is now 125.
-  transformer = test_api.CreateCurrentRootWindowTransformer();
+  transformer = CreateCurrentRootWindowTransformerForMirroring();
   EXPECT_EQ("125,0,125,0", transformer->GetHostInsets().ToString());
 }
 

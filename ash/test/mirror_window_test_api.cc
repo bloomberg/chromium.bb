@@ -7,6 +7,7 @@
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/mirror_window_controller.h"
+#include "ash/display/root_window_transformers.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/shell.h"
 #include "ui/gfx/geometry/point.h"
@@ -47,12 +48,6 @@ gfx::Point MirrorWindowTestApi::GetCursorLocation() const {
   const gfx::Point hot_point = GetCursorHotPoint();
   point.Offset(hot_point.x(), hot_point.y());
   return point;
-}
-
-scoped_ptr<RootWindowTransformer>
-MirrorWindowTestApi::CreateCurrentRootWindowTransformer() const {
-  return Shell::GetInstance()->display_controller()->
-      mirror_window_controller()->CreateRootWindowTransformer();
 }
 
 }  // namespace test

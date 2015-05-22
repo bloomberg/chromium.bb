@@ -1497,6 +1497,23 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   EXPECT_EQ("400x500", ScreenUtil::GetSecondaryDisplay().size().ToString());
 }
 
+// Updating displays again in unified desktop mode should not crash.
+// crbug.com/491094.
+TEST_F(DisplayManagerTest, ConfigureUnifiedTwice) {
+  if (!SupportsMultipleDisplays())
+    return;
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+
+  display_manager()->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  UpdateDisplay("300x200,400x500");
+  // Mirror windows are created in a posted task.
+  RunAllPendingInMessageLoop();
+
+  UpdateDisplay("300x250,400x550");
+  RunAllPendingInMessageLoop();
+}
+
 TEST_F(DisplayManagerTest, RotateUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
