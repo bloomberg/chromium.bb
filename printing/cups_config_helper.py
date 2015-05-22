@@ -17,6 +17,7 @@ requirements) when this is fixed:
 is fixed.
 """
 
+import os
 import subprocess
 import sys
 
@@ -25,11 +26,11 @@ def usage():
       sys.argv[0]
 
 
-def run_cups_config(mode):
+def run_cups_config(cups_config, mode):
   """Run cups-config with all --cflags etc modes, parse out the mode we want,
   and return those flags as a list."""
 
-  cups = subprocess.Popen(['cups-config', '--cflags', '--ldflags', '--libs'],
+  cups = subprocess.Popen([cups_config, '--cflags', '--ldflags', '--libs'],
                           stdout=subprocess.PIPE)
   flags = cups.communicate()[0].strip()
 
@@ -57,13 +58,22 @@ def run_cups_config(mode):
 
 
 def main():
-  if len(sys.argv) != 2:
+  if len(sys.argv) < 2:
     usage()
     return 1
 
   mode = sys.argv[1]
+  if len(sys.argv) > 2:
+    sysroot = sys.argv[2]
+    cups_config = os.path.join(sysroot, 'usr', 'bin', 'cups-config')
+    if not os.path.exists(cups_config):
+      print 'cups-config not found: %s' % cups_config
+      return 1
+  else:
+    cups_config = 'cups-config'
+
   if mode == '--api-version':
-    subprocess.call(['cups-config', '--api-version'])
+    subprocess.call([cups_config, '--api-version'])
     return 0
 
   # All other modes get the flags.
@@ -77,7 +87,7 @@ def main():
   else:
     gn_libs_output = False
 
-  flags = run_cups_config(mode)
+  flags = run_cups_config(cups_config, mode)
 
   if gn_libs_output:
     # Strip "-l" from beginning of libs, quote, and surround in [ ].

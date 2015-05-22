@@ -273,13 +273,13 @@
               }, {
                 'link_settings': {
                   'libraries': [
-                    '<!@(python cups_config_helper.py --libs)',
+                    '<!@(python cups_config_helper.py --libs <(sysroot))',
                   ],
                 },
               }],
               ['os_bsd==1', {
                 'cflags': [
-                  '<!@(python cups_config_helper.py --cflags)',
+                  '<!@(python cups_config_helper.py --cflags <(sysroot))',
                 ],
               }],
             ],
