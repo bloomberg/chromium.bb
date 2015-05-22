@@ -207,6 +207,21 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_VIEWPORT:
       return 4;
+
+    // ES3
+    case GL_COPY_READ_BUFFER_BINDING:
+      return 1;
+    case GL_COPY_WRITE_BUFFER_BINDING:
+      return 1;
+    case GL_PIXEL_PACK_BUFFER_BINDING:
+      return 1;
+    case GL_PIXEL_UNPACK_BUFFER_BINDING:
+      return 1;
+    case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
+      return 1;
+    case GL_UNIFORM_BUFFER_BINDING:
+      return 1;
+
     // -- glGetBooleanv, glGetFloatv, glGetIntergerv with
     //    GL_CHROMIUM_framebuffer_multisample
     case GL_MAX_SAMPLES_EXT:
@@ -257,7 +272,6 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_ACTIVE_UNIFORM_MAX_LENGTH:
       return 1;
-
 
     // -- glGetRenderbufferAttachmentParameteriv
     case GL_RENDERBUFFER_WIDTH:

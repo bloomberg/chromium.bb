@@ -723,26 +723,24 @@ void TestHelper::SetupShader(
 
 void TestHelper::DoBufferData(
     ::gfx::MockGLInterface* gl, MockErrorState* error_state,
-    BufferManager* manager, Buffer* buffer, GLsizeiptr size, GLenum usage,
-    const GLvoid* data, GLenum error) {
+    BufferManager* manager, Buffer* buffer, GLenum target, GLsizeiptr size,
+    GLenum usage, const GLvoid* data, GLenum error) {
   EXPECT_CALL(*error_state, CopyRealGLErrorsToWrapper(_, _, _))
       .Times(1)
       .RetiresOnSaturation();
   if (manager->IsUsageClientSideArray(usage)) {
-    EXPECT_CALL(*gl, BufferData(
-        buffer->target(), 0, _, usage))
+    EXPECT_CALL(*gl, BufferData(target, 0, _, usage))
         .Times(1)
         .RetiresOnSaturation();
   } else {
-    EXPECT_CALL(*gl, BufferData(
-        buffer->target(), size, _, usage))
+    EXPECT_CALL(*gl, BufferData(target, size, _, usage))
         .Times(1)
         .RetiresOnSaturation();
   }
   EXPECT_CALL(*error_state, PeekGLError(_, _, _))
       .WillOnce(Return(error))
       .RetiresOnSaturation();
-  manager->DoBufferData(error_state, buffer, size, usage, data);
+  manager->DoBufferData(error_state, buffer, target, size, usage, data);
 }
 
 void TestHelper::SetTexParameteriWithExpectations(

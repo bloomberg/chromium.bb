@@ -231,6 +231,9 @@ struct GPU_EXPORT ContextState {
 
   ErrorState* GetErrorState();
 
+  void SetBoundBuffer(GLenum target, Buffer* buffer);
+  void RemoveBoundBuffer(Buffer* buffer);
+
   #include "gpu/command_buffer/service/context_state_autogen.h"
 
   EnableFlags enable_flags;
@@ -243,6 +246,13 @@ struct GPU_EXPORT ContextState {
   // The currently bound array buffer. If this is 0 it is illegal to call
   // glVertexAttribPointer.
   scoped_refptr<Buffer> bound_array_buffer;
+
+  scoped_refptr<Buffer> bound_copy_read_buffer;
+  scoped_refptr<Buffer> bound_copy_write_buffer;
+  scoped_refptr<Buffer> bound_pixel_pack_buffer;
+  scoped_refptr<Buffer> bound_pixel_unpack_buffer;
+  scoped_refptr<Buffer> bound_transform_feedback_buffer;
+  scoped_refptr<Buffer> bound_uniform_buffer;
 
   // Which textures are bound to texture units through glActiveTexture.
   std::vector<TextureUnit> texture_units;

@@ -106,8 +106,8 @@ class TestHelper {
 
   static void DoBufferData(
       ::gfx::MockGLInterface* gl, MockErrorState* error_state,
-      BufferManager* manager, Buffer* buffer, GLsizeiptr size, GLenum usage,
-      const GLvoid* data, GLenum error);
+      BufferManager* manager, Buffer* buffer, GLenum target, GLsizeiptr size,
+      GLenum usage, const GLvoid* data, GLenum error);
 
   static void SetTexParameteriWithExpectations(
       ::gfx::MockGLInterface* gl, MockErrorState* error_state,

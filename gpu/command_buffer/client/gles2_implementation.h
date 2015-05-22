@@ -728,8 +728,13 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // The program in use by glUseProgram
   GLuint current_program_;
 
-  // The currently bound array buffer.
-  GLuint bound_array_buffer_id_;
+  GLuint bound_array_buffer_;
+  GLuint bound_copy_read_buffer_;
+  GLuint bound_copy_write_buffer_;
+  GLuint bound_pixel_pack_buffer_;
+  GLuint bound_pixel_unpack_buffer_;
+  GLuint bound_transform_feedback_buffer_;
+  GLuint bound_uniform_buffer_;
 
   // The currently bound pixel transfer buffers.
   GLuint bound_pixel_pack_transfer_buffer_id_;

@@ -201,8 +201,10 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine& command_line) {
   feature_flags_.enable_subscribe_uniform =
       command_line.HasSwitch(switches::kEnableSubscribeUniformExtension);
 
-  unsafe_es3_apis_enabled_ =
+  enable_unsafe_es3_apis_switch_ =
       command_line.HasSwitch(switches::kEnableUnsafeES3APIs);
+
+  unsafe_es3_apis_enabled_ = false;
 }
 
 bool FeatureInfo::Initialize() {
@@ -1054,7 +1056,7 @@ void FeatureInfo::InitializeFeatures() {
 }
 
 bool FeatureInfo::IsES3Capable() const {
-  if (!unsafe_es3_apis_enabled_)
+  if (!enable_unsafe_es3_apis_switch_)
     return false;
   if (gl_version_info_)
     return gl_version_info_->IsES3Capable();
@@ -1118,6 +1120,8 @@ void FeatureInfo::EnableES3Validators() {
         kDrawBuffers + max_draw_buffers,
         kTotalDrawBufferEnums - max_draw_buffers);
   }
+
+  unsafe_es3_apis_enabled_ = true;
 }
 
 void FeatureInfo::AddExtensionString(const char* s) {

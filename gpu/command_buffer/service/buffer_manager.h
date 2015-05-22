@@ -47,8 +47,8 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
     return service_id_;
   }
 
-  GLenum target() const {
-    return target_;
+  GLenum type() const {
+    return type_;
   }
 
   GLsizeiptr size() const {
@@ -74,7 +74,7 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   }
 
   bool IsValid() const {
-    return target() && !IsDeleted();
+    return type() && !IsDeleted();
   }
 
   bool IsClientSideArray() const {
@@ -129,9 +129,8 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 
   ~Buffer();
 
-  void set_target(GLenum target) {
-    DCHECK_EQ(target_, 0u);  // you can only set this once.
-    target_ = target;
+  void set_type(GLenum type) {
+    type_ = type;
   }
 
   bool shadowed() const {
@@ -182,10 +181,9 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // Service side buffer id.
   GLuint service_id_;
 
-  // The type of buffer. 0 = unset, GL_BUFFER_ARRAY = vertex data,
-  // GL_ELEMENT_BUFFER_ARRAY = index data.
-  // Once set a buffer can not be used for something else.
-  GLenum target_;
+  // The type of buffer. 0 = unset.
+  // It is set the first time bindBuffer() is called and cannot be changed.
+  GLenum type_;
 
   // Usage of buffer.
   GLenum usage_;
@@ -277,6 +275,7 @@ class GPU_EXPORT BufferManager {
   void DoBufferSubData(
       ErrorState* error_state,
       Buffer* buffer,
+      GLenum target,
       GLintptr offset,
       GLsizeiptr size,
       const GLvoid* data);
@@ -286,6 +285,7 @@ class GPU_EXPORT BufferManager {
   void DoBufferData(
       ErrorState* error_state,
       Buffer* buffer,
+      GLenum target,
       GLsizeiptr size,
       GLenum usage,
       const GLvoid* data);

@@ -92,13 +92,13 @@ const GLfloat kIdentityMatrix[16] = {1.0f, 0.0f, 0.0f, 0.0f,
                                      0.0f, 0.0f, 1.0f, 0.0f,
                                      0.0f, 0.0f, 0.0f, 1.0f};
 
-static bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
+bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
                                             GLint rangeMax,
                                             GLint precision) {
   return (rangeMin >= 62) && (rangeMax >= 62) && (precision >= 16);
 }
 
-static void GetShaderPrecisionFormatImpl(GLenum shader_type,
+void GetShaderPrecisionFormatImpl(GLenum shader_type,
                                          GLenum precision_type,
                                          GLint* range, GLint* precision) {
   switch (precision_type) {
@@ -154,7 +154,7 @@ static void GetShaderPrecisionFormatImpl(GLenum shader_type,
   }
 }
 
-static gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform) {
+gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform) {
   switch (plane_transform) {
     case GL_OVERLAY_TRANSFORM_NONE_CHROMIUM:
       return gfx::OVERLAY_TRANSFORM_NONE;
@@ -171,6 +171,16 @@ static gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform) {
     default:
       return gfx::OVERLAY_TRANSFORM_INVALID;
   }
+}
+
+template <typename MANAGER_TYPE, typename OBJECT_TYPE>
+GLuint GetClientId(const MANAGER_TYPE* manager, const OBJECT_TYPE* object) {
+  DCHECK(manager);
+  GLuint client_id = 0;
+  if (object) {
+    manager->GetClientId(object->service_id(), &client_id);
+  }
+  return client_id;
 }
 
 struct Vec4f {
@@ -3276,10 +3286,7 @@ void GLES2DecoderImpl::DeleteBuffersHelper(
     Buffer* buffer = GetBuffer(client_ids[ii]);
     if (buffer && !buffer->IsDeleted()) {
       buffer->RemoveMappedRange();
-      state_.vertex_attrib_manager->Unbind(buffer);
-      if (state_.bound_array_buffer.get() == buffer) {
-        state_.bound_array_buffer = NULL;
-      }
+      state_.RemoveBoundBuffer(buffer);
       RemoveBuffer(client_ids[ii]);
     }
   }
@@ -3801,6 +3808,12 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   state_.default_vertex_attrib_manager = NULL;
   state_.texture_units.clear();
   state_.bound_array_buffer = NULL;
+  state_.bound_copy_read_buffer = NULL;
+  state_.bound_copy_write_buffer = NULL;
+  state_.bound_pixel_pack_buffer = NULL;
+  state_.bound_pixel_unpack_buffer = NULL;
+  state_.bound_transform_feedback_buffer = NULL;
+  state_.bound_uniform_buffer = NULL;
   state_.current_queries.clear();
   framebuffer_state_.bound_read_framebuffer = NULL;
   framebuffer_state_.bound_draw_framebuffer = NULL;
@@ -4334,17 +4347,7 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
     }
     service_id = buffer->service_id();
   }
-  switch (target) {
-    case GL_ARRAY_BUFFER:
-      state_.bound_array_buffer = buffer;
-      break;
-    case GL_ELEMENT_ARRAY_BUFFER:
-      state_.vertex_attrib_manager->SetElementArrayBuffer(buffer);
-      break;
-    default:
-      NOTREACHED();  // Validation should prevent us getting here.
-      break;
-  }
+  state_.SetBoundBuffer(target, buffer);
   glBindBuffer(target, service_id);
 }
 
@@ -5072,59 +5075,75 @@ bool GLES2DecoderImpl::GetHelper(
     case GL_ARRAY_BUFFER_BINDING:
       *num_written = 1;
       if (params) {
-        if (state_.bound_array_buffer.get()) {
-          GLuint client_id = 0;
-          buffer_manager()->GetClientId(state_.bound_array_buffer->service_id(),
-                                        &client_id);
-          *params = client_id;
-        } else {
-          *params = 0;
-        }
+        *params = GetClientId(
+            buffer_manager(), state_.bound_array_buffer.get());
       }
       return true;
     case GL_ELEMENT_ARRAY_BUFFER_BINDING:
       *num_written = 1;
       if (params) {
-        if (state_.vertex_attrib_manager->element_array_buffer()) {
-          GLuint client_id = 0;
-          buffer_manager()->GetClientId(
-              state_.vertex_attrib_manager->element_array_buffer()->
-                  service_id(), &client_id);
-          *params = client_id;
-        } else {
-          *params = 0;
-        }
+        *params = GetClientId(
+            buffer_manager(),
+            state_.vertex_attrib_manager->element_array_buffer());
+      }
+      return true;
+    case GL_COPY_READ_BUFFER_BINDING:
+      *num_written = 1;
+      if (params) {
+        *params = GetClientId(
+            buffer_manager(), state_.bound_copy_read_buffer.get());
+      }
+      return true;
+    case GL_COPY_WRITE_BUFFER_BINDING:
+      *num_written = 1;
+      if (params) {
+        *params = GetClientId(
+            buffer_manager(), state_.bound_copy_write_buffer.get());
+      }
+      return true;
+    case GL_PIXEL_PACK_BUFFER_BINDING:
+      *num_written = 1;
+      if (params) {
+        *params = GetClientId(
+            buffer_manager(), state_.bound_pixel_pack_buffer.get());
+      }
+      return true;
+    case GL_PIXEL_UNPACK_BUFFER_BINDING:
+      *num_written = 1;
+      if (params) {
+        *params = GetClientId(
+            buffer_manager(), state_.bound_pixel_unpack_buffer.get());
+      }
+      return true;
+    case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
+      *num_written = 1;
+      if (params) {
+        *params = GetClientId(
+            buffer_manager(), state_.bound_transform_feedback_buffer.get());
+      }
+      return true;
+    case GL_UNIFORM_BUFFER_BINDING:
+      *num_written = 1;
+      if (params) {
+        *params = GetClientId(
+            buffer_manager(), state_.bound_uniform_buffer.get());
       }
       return true;
     case GL_FRAMEBUFFER_BINDING:
     // case GL_DRAW_FRAMEBUFFER_BINDING_EXT: (same as GL_FRAMEBUFFER_BINDING)
       *num_written = 1;
       if (params) {
-        Framebuffer* framebuffer =
-            GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
-        if (framebuffer) {
-          GLuint client_id = 0;
-          framebuffer_manager()->GetClientId(
-              framebuffer->service_id(), &client_id);
-          *params = client_id;
-        } else {
-          *params = 0;
-        }
+        *params = GetClientId(
+            framebuffer_manager(),
+            GetFramebufferInfoForTarget(GL_FRAMEBUFFER));
       }
       return true;
     case GL_READ_FRAMEBUFFER_BINDING_EXT:
       *num_written = 1;
       if (params) {
-        Framebuffer* framebuffer =
-            GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT);
-        if (framebuffer) {
-          GLuint client_id = 0;
-          framebuffer_manager()->GetClientId(
-              framebuffer->service_id(), &client_id);
-          *params = client_id;
-        } else {
-          *params = 0;
-        }
+        *params = GetClientId(
+            framebuffer_manager(),
+            GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT));
       }
       return true;
     case GL_RENDERBUFFER_BINDING:
@@ -5142,14 +5161,7 @@ bool GLES2DecoderImpl::GetHelper(
     case GL_CURRENT_PROGRAM:
       *num_written = 1;
       if (params) {
-        if (state_.current_program.get()) {
-          GLuint client_id = 0;
-          program_manager()->GetClientId(
-              state_.current_program->service_id(), &client_id);
-          *params = client_id;
-        } else {
-          *params = 0;
-        }
+        *params = GetClientId(program_manager(), state_.current_program.get());
       }
       return true;
     case GL_VERTEX_ARRAY_BINDING_OES:

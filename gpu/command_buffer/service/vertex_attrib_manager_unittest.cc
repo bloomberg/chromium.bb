@@ -134,6 +134,7 @@ TEST_F(VertexAttribManagerTest, HaveFixedAttribs) {
 }
 
 TEST_F(VertexAttribManagerTest, CanAccess) {
+  const GLenum kTarget = GL_ARRAY_BUFFER;
   MockErrorState error_state;
   BufferManager buffer_manager(NULL, NULL);
   buffer_manager.CreateBuffer(1, 2);
@@ -149,15 +150,15 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
   manager_->SetAttribInfo(1, buffer, 4, GL_FLOAT, GL_FALSE, 0, 16, 0, GL_FALSE);
   EXPECT_FALSE(attrib->CanAccess(0));
 
-  EXPECT_TRUE(buffer_manager.SetTarget(buffer, GL_ARRAY_BUFFER));
+  EXPECT_TRUE(buffer_manager.SetTarget(buffer, kTarget));
   TestHelper::DoBufferData(
-      gl_.get(), &error_state, &buffer_manager, buffer, 15, GL_STATIC_DRAW,
-      NULL, GL_NO_ERROR);
+      gl_.get(), &error_state, &buffer_manager, buffer,
+      kTarget, 15, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
 
   EXPECT_FALSE(attrib->CanAccess(0));
   TestHelper::DoBufferData(
-      gl_.get(), &error_state, &buffer_manager, buffer, 16, GL_STATIC_DRAW,
-      NULL, GL_NO_ERROR);
+      gl_.get(), &error_state, &buffer_manager, buffer,
+      kTarget, 16, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
   EXPECT_TRUE(attrib->CanAccess(0));
   EXPECT_FALSE(attrib->CanAccess(1));
 
@@ -165,8 +166,8 @@ TEST_F(VertexAttribManagerTest, CanAccess) {
   EXPECT_FALSE(attrib->CanAccess(0));
 
   TestHelper::DoBufferData(
-      gl_.get(), &error_state, &buffer_manager, buffer, 32, GL_STATIC_DRAW,
-      NULL, GL_NO_ERROR);
+      gl_.get(), &error_state, &buffer_manager, buffer,
+      kTarget, 32, GL_STATIC_DRAW, NULL, GL_NO_ERROR);
   EXPECT_TRUE(attrib->CanAccess(0));
   EXPECT_FALSE(attrib->CanAccess(1));
   manager_->SetAttribInfo(1, buffer, 4, GL_FLOAT, GL_FALSE, 0, 16, 0, GL_FALSE);

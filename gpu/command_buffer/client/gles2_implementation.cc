@@ -91,7 +91,13 @@ GLES2Implementation::GLES2Implementation(
       bound_renderbuffer_(0),
       bound_valuebuffer_(0),
       current_program_(0),
-      bound_array_buffer_id_(0),
+      bound_array_buffer_(0),
+      bound_copy_read_buffer_(0),
+      bound_copy_write_buffer_(0),
+      bound_pixel_pack_buffer_(0),
+      bound_pixel_unpack_buffer_(0),
+      bound_transform_feedback_buffer_(0),
+      bound_uniform_buffer_(0),
       bound_pixel_pack_transfer_buffer_id_(0),
       bound_pixel_unpack_transfer_buffer_id_(0),
       async_upload_token_(0),
@@ -621,7 +627,7 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       *params = active_texture_unit_ + GL_TEXTURE0;
       return true;
     case GL_ARRAY_BUFFER_BINDING:
-      *params = bound_array_buffer_id_;
+      *params = bound_array_buffer_;
       return true;
     case GL_ELEMENT_ARRAY_BUFFER_BINDING:
       *params =
@@ -773,6 +779,12 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
 
   // ES3 parameters.
   switch (pname) {
+    case GL_COPY_READ_BUFFER_BINDING:
+      *params = bound_copy_read_buffer_;
+      return true;
+    case GL_COPY_WRITE_BUFFER_BINDING:
+      *params = bound_copy_write_buffer_;
+      return true;
     case GL_MAJOR_VERSION:
       *params = capabilities_.major_version;
       return true;
@@ -868,13 +880,23 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_NUM_PROGRAM_BINARY_FORMATS:
       *params = capabilities_.num_program_binary_formats;
       return true;
+    case GL_PIXEL_PACK_BUFFER_BINDING:
+      *params = bound_pixel_pack_buffer_;
+      return true;
+    case GL_PIXEL_UNPACK_BUFFER_BINDING:
+      *params = bound_pixel_unpack_buffer_;
+      return true;
+    case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
+      *params = bound_transform_feedback_buffer_;
+      return true;
+    case GL_UNIFORM_BUFFER_BINDING:
+      *params = bound_uniform_buffer_;
+      return true;
     case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT:
       *params = capabilities_.uniform_buffer_offset_alignment;
       return true;
 
     // Non-cached ES3 parameters.
-    case GL_COPY_READ_BUFFER_BINDING:
-    case GL_COPY_WRITE_BUFFER_BINDING:
     case GL_DRAW_BUFFER0:
     case GL_DRAW_BUFFER1:
     case GL_DRAW_BUFFER2:
@@ -896,8 +918,6 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_PACK_ROW_LENGTH:
     case GL_PACK_SKIP_PIXELS:
     case GL_PACK_SKIP_ROWS:
-    case GL_PIXEL_PACK_BUFFER_BINDING:
-    case GL_PIXEL_UNPACK_BUFFER_BINDING:
     case GL_PRIMITIVE_RESTART_FIXED_INDEX:
     case GL_PROGRAM_BINARY_FORMATS:
     case GL_RASTERIZER_DISCARD:
@@ -908,11 +928,9 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_TEXTURE_BINDING_3D:
     case GL_TRANSFORM_FEEDBACK_BINDING:
     case GL_TRANSFORM_FEEDBACK_ACTIVE:
-    case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
     case GL_TRANSFORM_FEEDBACK_PAUSED:
     case GL_TRANSFORM_FEEDBACK_BUFFER_SIZE:
     case GL_TRANSFORM_FEEDBACK_BUFFER_START:
-    case GL_UNIFORM_BUFFER_BINDING:
     case GL_UNIFORM_BUFFER_SIZE:
     case GL_UNIFORM_BUFFER_START:
     case GL_UNPACK_IMAGE_HEIGHT:
@@ -1074,7 +1092,7 @@ void GLES2Implementation::RestoreElementAndArrayBuffers(bool restore) {
 void GLES2Implementation::RestoreArrayBuffer(bool restore) {
   if (restore) {
     // Restore the user's current binding.
-    helper_->BindBuffer(GL_ARRAY_BUFFER, bound_array_buffer_id_);
+    helper_->BindBuffer(GL_ARRAY_BUFFER, bound_array_buffer_);
   }
 }
 
@@ -1587,7 +1605,7 @@ void GLES2Implementation::VertexAttribIPointer(
       << stride << ", "
       << ptr << ")");
   // Record the info on the client side.
-  if (!vertex_array_object_manager_->SetAttribPointer(bound_array_buffer_id_,
+  if (!vertex_array_object_manager_->SetAttribPointer(bound_array_buffer_,
                                                       index,
                                                       size,
                                                       type,
@@ -1599,7 +1617,7 @@ void GLES2Implementation::VertexAttribIPointer(
                "client side arrays are not allowed in vertex array objects.");
     return;
   }
-  if (!support_client_side_arrays_ || bound_array_buffer_id_ != 0) {
+  if (!support_client_side_arrays_ || bound_array_buffer_ != 0) {
     // Only report NON client side buffers to the service.
     if (!ValidateOffset("glVertexAttribIPointer",
                         reinterpret_cast<GLintptr>(ptr))) {
@@ -1622,7 +1640,7 @@ void GLES2Implementation::VertexAttribPointer(
       << stride << ", "
       << ptr << ")");
   // Record the info on the client side.
-  if (!vertex_array_object_manager_->SetAttribPointer(bound_array_buffer_id_,
+  if (!vertex_array_object_manager_->SetAttribPointer(bound_array_buffer_,
                                                       index,
                                                       size,
                                                       type,
@@ -1634,7 +1652,7 @@ void GLES2Implementation::VertexAttribPointer(
                "client side arrays are not allowed in vertex array objects.");
     return;
   }
-  if (!support_client_side_arrays_ || bound_array_buffer_id_ != 0) {
+  if (!support_client_side_arrays_ || bound_array_buffer_ != 0) {
     // Only report NON client side buffers to the service.
     if (!ValidateOffset("glVertexAttribPointer",
                         reinterpret_cast<GLintptr>(ptr))) {
@@ -3434,19 +3452,55 @@ void GLES2Implementation::BindBufferHelper(
   bool changed = false;
   switch (target) {
     case GL_ARRAY_BUFFER:
-      if (bound_array_buffer_id_ != buffer_id) {
-        bound_array_buffer_id_ = buffer_id;
+      if (bound_array_buffer_ != buffer_id) {
+        bound_array_buffer_ = buffer_id;
+        changed = true;
+      }
+      break;
+    case GL_COPY_READ_BUFFER:
+      if (bound_copy_read_buffer_ != buffer_id) {
+        bound_copy_read_buffer_ = buffer_id;
+        changed = true;
+      }
+      break;
+    case GL_COPY_WRITE_BUFFER:
+      if (bound_copy_write_buffer_ != buffer_id) {
+        bound_copy_write_buffer_ = buffer_id;
         changed = true;
       }
       break;
     case GL_ELEMENT_ARRAY_BUFFER:
       changed = vertex_array_object_manager_->BindElementArray(buffer_id);
       break;
+    case GL_PIXEL_PACK_BUFFER:
+      if (bound_pixel_pack_buffer_ != buffer_id) {
+        bound_pixel_pack_buffer_ = buffer_id;
+        changed = true;
+      }
+      break;
     case GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM:
       bound_pixel_pack_transfer_buffer_id_ = buffer_id;
       break;
+    case GL_PIXEL_UNPACK_BUFFER:
+      if (bound_pixel_unpack_buffer_ != buffer_id) {
+        bound_pixel_unpack_buffer_ = buffer_id;
+        changed = true;
+      }
+      break;
     case GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM:
       bound_pixel_unpack_transfer_buffer_id_ = buffer_id;
+      break;
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+      if (bound_transform_feedback_buffer_ != buffer_id) {
+        bound_transform_feedback_buffer_ = buffer_id;
+        changed = true;
+      }
+      break;
+    case GL_UNIFORM_BUFFER:
+      if (bound_uniform_buffer_ != buffer_id) {
+        bound_uniform_buffer_ = buffer_id;
+        changed = true;
+      }
       break;
     default:
       changed = true;
@@ -3698,8 +3752,26 @@ void GLES2Implementation::DeleteBuffersHelper(
     return;
   }
   for (GLsizei ii = 0; ii < n; ++ii) {
-    if (buffers[ii] == bound_array_buffer_id_) {
-      bound_array_buffer_id_ = 0;
+    if (buffers[ii] == bound_array_buffer_) {
+      bound_array_buffer_ = 0;
+    }
+    if (buffers[ii] == bound_copy_read_buffer_) {
+      bound_copy_read_buffer_ = 0;
+    }
+    if (buffers[ii] == bound_copy_write_buffer_) {
+      bound_copy_write_buffer_ = 0;
+    }
+    if (buffers[ii] == bound_pixel_pack_buffer_) {
+      bound_pixel_pack_buffer_ = 0;
+    }
+    if (buffers[ii] == bound_pixel_unpack_buffer_) {
+      bound_pixel_unpack_buffer_ = 0;
+    }
+    if (buffers[ii] == bound_transform_feedback_buffer_) {
+      bound_transform_feedback_buffer_ = 0;
+    }
+    if (buffers[ii] == bound_uniform_buffer_) {
+      bound_uniform_buffer_ = 0;
     }
     vertex_array_object_manager_->UnbindBuffer(buffers[ii]);
 
