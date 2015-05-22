@@ -2950,34 +2950,21 @@ int Segment::WriteFramesAll() {
 
   for (int32 i = 0; i < frames_size_; ++i) {
     Frame*& frame = frames_[i];
-    const uint64 frame_timestamp = frame->timestamp();  // ns
-    const uint64 frame_timecode = frame_timestamp / timecode_scale;
-
-    if (frame->discard_padding() != 0) {
-      // TODO(jzern): using the Segment:: variants here would limit the places
-      // where doc_type_version_ needs to be updated.
+    // TODO(jzern/vigneshv): using Segment::AddGenericFrame here would limit the
+    // places where |doc_type_version_| needs to be updated.
+    if (frame->discard_padding() != 0)
       doc_type_version_ = 4;
-      if (!cluster->AddFrameWithDiscardPadding(
-              frame->frame(), frame->length(), frame->discard_padding(),
-              frame->track_number(), frame_timecode, frame->is_key())) {
-        return -1;
-      }
-    } else {
-      if (!cluster->AddFrame(frame->frame(), frame->length(),
-                             frame->track_number(), frame_timecode,
-                             frame->is_key())) {
-        return -1;
-      }
-    }
+    if (!cluster->AddFrame(frame))
+      return -1;
 
     if (new_cuepoint_ && cues_track_ == frame->track_number()) {
-      if (!AddCuePoint(frame_timestamp, cues_track_))
+      if (!AddCuePoint(frame->timestamp(), cues_track_))
         return -1;
     }
 
-    if (frame_timestamp > last_timestamp_) {
-      last_timestamp_ = frame_timestamp;
-      last_track_timestamp_[frame->track_number() - 1] = frame_timestamp;
+    if (frame->timestamp() > last_timestamp_) {
+      last_timestamp_ = frame->timestamp();
+      last_track_timestamp_[frame->track_number() - 1] = frame->timestamp();
     }
 
     delete frame;
@@ -3014,35 +3001,21 @@ bool Segment::WriteFramesLessThan(uint64 timestamp) {
         break;
 
       const Frame* const frame_prev = frames_[i - 1];
-      const uint64 frame_timestamp = frame_prev->timestamp();
-      const uint64 frame_timecode = frame_timestamp / timecode_scale;
-      const int64 discard_padding = frame_prev->discard_padding();
-
-      if (discard_padding != 0) {
+      if (frame_prev->discard_padding() != 0)
         doc_type_version_ = 4;
-        if (!cluster->AddFrameWithDiscardPadding(
-                frame_prev->frame(), frame_prev->length(), discard_padding,
-                frame_prev->track_number(), frame_timecode,
-                frame_prev->is_key())) {
-          return false;
-        }
-      } else {
-        if (!cluster->AddFrame(frame_prev->frame(), frame_prev->length(),
-                               frame_prev->track_number(), frame_timecode,
-                               frame_prev->is_key())) {
-          return false;
-        }
-      }
+      if (!cluster->AddFrame(frame_prev))
+        return false;
 
       if (new_cuepoint_ && cues_track_ == frame_prev->track_number()) {
-        if (!AddCuePoint(frame_timestamp, cues_track_))
+        if (!AddCuePoint(frame_prev->timestamp(), cues_track_))
           return false;
       }
 
       ++shift_left;
-      if (frame_timestamp > last_timestamp_) {
-        last_timestamp_ = frame_timestamp;
-        last_track_timestamp_[frame_prev->track_number() - 1] = frame_timestamp;
+      if (frame_prev->timestamp() > last_timestamp_) {
+        last_timestamp_ = frame_prev->timestamp();
+        last_track_timestamp_[frame_prev->track_number() - 1] =
+            frame_prev->timestamp();
       }
 
       delete frame_prev;
