@@ -78,7 +78,7 @@ class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
       return expected[(canary, version)]
     self.PatchObject(self.committer, '_GetLatestCanaryVersions',
                      return_value=self.versions)
-    self.PatchObject(cbuildbot_config, 'GetCanariesForChromeLKGM',
+    self.PatchObject(self.committer, 'GetCanariesForChromeLKGM',
                      return_value=self.canaries)
     self.PatchObject(manifest_version.BuildSpecsManager, 'GetBuildStatus',
                      side_effect=_GetBuildStatus)

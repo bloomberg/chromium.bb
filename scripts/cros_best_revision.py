@@ -49,6 +49,7 @@ class ChromeCommitter(object):
     self._dryrun = dryrun
     self._lkgm = None
     self._old_lkgm = None
+    self.build_configs = cbuildbot_config.GetConfig()
 
   def CheckoutChromeLKGM(self):
     """Checkout chromeos LKGM file for chrome into tmp checkout dir."""
@@ -89,13 +90,23 @@ class ChromeCommitter(object):
     return sorted(new_canary_versions, key=lv,
                   reverse=True)[0:self._CANDIDATES_TO_CONSIDER]
 
+  def GetCanariesForChromeLKGM(self):
+    """Grabs a list of builders that are important for the Chrome LKGM."""
+    builders = []
+    for build_name, conf in self.build_configs.iteritems():
+      if (conf['build_type'] == constants.CANARY_TYPE and
+          conf['critical_for_chrome'] and not conf['child_configs']):
+        builders.append(build_name)
+
+    return builders
+
   def FindNewLKGM(self):
     """Finds a new LKGM for chrome from previous chromeos releases."""
     versions = self._GetLatestCanaryVersions()
     if not versions:
       raise LKGMNotFound('No valid LKGM found newer than the old LKGM.')
 
-    canaries = cbuildbot_config.GetCanariesForChromeLKGM()
+    canaries = self.GetCanariesForChromeLKGM()
     logging.info('Considering the following versions: %s', ' '.join(versions))
     logging.info('Using scores from the following canaries: %s',
                  ' '.join(canaries))
@@ -192,8 +203,7 @@ class ChromeCommitter(object):
 
   def UpdateLatestFiles(self):
     """Update the LATEST files since LKGM, in Google Storage."""
-    config = cbuildbot_config.GetConfig()
-    ext_cfgs, int_cfgs = config.FindFullConfigsForBoard(board=None)
+    ext_cfgs, int_cfgs = self.build_configs.FindFullConfigsForBoard(board=None)
     versions = self._GetLatestCanaryVersions() + [self._old_lkgm]
     tasks = [[cfg, versions] for cfg in ext_cfgs + int_cfgs]
     parallel.RunTasksInProcessPool(self.UpdateLatestFilesForBot, tasks,

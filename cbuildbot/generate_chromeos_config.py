@@ -529,17 +529,6 @@ def GetDefaultWaterfall(build_config):
     return None
 
 
-def GetCanariesForChromeLKGM(configs=GetConfig()):
-  """Grabs a list of builders that are important for the Chrome LKGM."""
-  builders = []
-  for build_name, conf in configs.iteritems():
-    if (conf['build_type'] == constants.CANARY_TYPE and
-        conf['critical_for_chrome'] and not conf['child_configs']):
-      builders.append(build_name)
-
-  return builders
-
-
 def GetSlavesForMaster(master_config, options=None):
   """Gets the important slave builds corresponding to this master.
 
