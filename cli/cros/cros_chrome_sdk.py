@@ -71,7 +71,8 @@ class SDKFetcher(object):
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
 
   def __init__(self, cache_dir, board, clear_cache=False, chrome_src=None,
-               sdk_path=None, toolchain_path=None, silent=False):
+               sdk_path=None, toolchain_path=None, silent=False,
+               use_external_config=None):
     """Initialize the class.
 
     Args:
@@ -85,6 +86,9 @@ class SDKFetcher(object):
       toolchain_path: The path (whether a local directory or a gs:// path) to
         fetch toolchain components from.
       silent: If set, the fetcher prints less output.
+      use_external_config: When identifying the configuration for a board,
+        force usage of the external configuration if both external and internal
+        are available.
     """
     # Delay this import because it is super slow.  http://crbug.com/404575
     from chromite.cbuildbot import cbuildbot_config
@@ -98,7 +102,8 @@ class SDKFetcher(object):
     self.misc_cache = cache.DiskCache(
         os.path.join(self.cache_base, self.MISC_CACHE))
     self.board = board
-    self.config = cbuildbot_config.FindCanonicalConfigForBoard(board)
+    self.config = cbuildbot_config.FindCanonicalConfigForBoard(
+        board, allow_internal=not use_external_config)
     self.gs_base = '%s/%s' % (constants.DEFAULT_ARCHIVE_BUCKET,
                               self.config['name'])
     self.clear_cache = clear_cache
@@ -484,6 +489,10 @@ class ChromeSDKCommand(command.CliCommand):
         help='Sets up SDK for building official (internal) Chrome '
              'Chrome, rather than Chromium.')
     parser.add_argument(
+        '--use-external-config', action='store_true', default=False,
+        help='Use the external configuration for the specified board, even if '
+             'an internal configuration is avalable.')
+    parser.add_argument(
         '--sdk-path', type='local_or_gs_path',
         help='Provides a path, whether a local directory or a gs:// path, to '
              'pull SDK components from.')
@@ -823,7 +832,8 @@ class ChromeSDKCommand(command.CliCommand):
                           chrome_src=self.options.chrome_src,
                           sdk_path=self.options.sdk_path,
                           toolchain_path=self.options.toolchain_path,
-                          silent=self.silent)
+                          silent=self.silent,
+                          use_external_config=self.options.use_external_config)
 
     prepare_version = self.options.version
     if not prepare_version and not self.options.sdk_path:

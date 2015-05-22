@@ -565,12 +565,12 @@ def FindFullConfigsForBoard(board=None):
   return ext_cfgs, int_cfgs
 
 
-def FindCanonicalConfigForBoard(board):
+def FindCanonicalConfigForBoard(board, allow_internal=True):
   """Get the canonical cbuildbot builder config for a board."""
   ext_cfgs, int_cfgs = FindFullConfigsForBoard(board)
   # If both external and internal builds exist for this board, prefer the
-  # internal one.
-  both = int_cfgs + ext_cfgs
+  # internal one unless instructed otherwise.
+  both = (int_cfgs if allow_internal else []) + ext_cfgs
   if not both:
     raise ValueError('Invalid board specified: %s.' % board)
   return both[0]

@@ -681,10 +681,10 @@ class FindFullTest(cros_test_lib.TestCase):
     check_expected(external, external_expected)
     check_expected(internal, internal_expected)
 
-  def _CheckCanonicalConfig(self, board, ending):
-    self.assertEquals(
-        '-'.join((board, ending)),
-        generate_chromeos_config.FindCanonicalConfigForBoard(board)['name'])
+  def _CheckCanonicalConfig(self, board, ending, **kwargs):
+    config = generate_chromeos_config.FindCanonicalConfigForBoard(board,
+                                                                  **kwargs)
+    self.assertEquals('-'.join((board, ending)), config['name'])
 
   def testExternal(self):
     """Test finding of a full builder."""
@@ -706,6 +706,9 @@ class FindFullTest(cros_test_lib.TestCase):
   def testInternalCanonicalResolution(self):
     """Test prefer internal over external when both exist."""
     self._CheckCanonicalConfig('daisy', 'release')
+
+    # When internal is explicitly disallowed, prefer the external build.
+    self._CheckCanonicalConfig('daisy', 'full', allow_internal=False)
 
   def testAFDOCanonicalResolution(self):
     """Test prefer non-AFDO over AFDO builder."""
