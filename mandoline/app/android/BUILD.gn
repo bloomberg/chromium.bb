@@ -51,7 +51,7 @@ copy_ex("copy_mandoline_assets") {
   dest = mandoline_assets_dir
   deps = [
     "//components/html_viewer",
-    "//components/surfaces",
+    "//components/view_manager",
     "//mandoline/services/core_services",
   ]
   sources = [

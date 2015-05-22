@@ -155,7 +155,7 @@ source_set("lib") {
     deps += [
       ":jni_headers",
       ":run_android_application_function",
-      "//components/gles2",
+      "//components/view_manager/gles2",
       "//components/view_manager/native_viewport",
       "//mojo/application/public/cpp:content_handler",
     ]

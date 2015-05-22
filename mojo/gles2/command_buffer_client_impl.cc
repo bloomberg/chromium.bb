@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/process/process_handle.h"
-#include "components/gles2/command_buffer_type_conversions.h"
-#include "components/gles2/mojo_buffer_backing.h"
+#include "components/view_manager/gles2/command_buffer_type_conversions.h"
+#include "components/view_manager/gles2/mojo_buffer_backing.h"
 
 namespace gles2 {
 

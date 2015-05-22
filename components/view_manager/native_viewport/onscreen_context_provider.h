@@ -8,9 +8,9 @@
 #include <set>
 
 #include "base/memory/ref_counted.h"
-#include "components/gles2/command_buffer_impl_observer.h"
-#include "components/gpu/public/interfaces/context_provider.mojom.h"
-#include "components/gpu/public/interfaces/viewport_parameter_listener.mojom.h"
+#include "components/view_manager/gles2/command_buffer_impl_observer.h"
+#include "components/view_manager/public/interfaces/context_provider.mojom.h"
+#include "components/view_manager/public/interfaces/viewport_parameter_listener.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gles2 {

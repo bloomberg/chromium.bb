@@ -8,7 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/clipboard/clipboard_application_delegate.h"
 #include "components/resource_provider/resource_provider_app.h"
-#include "components/surfaces/surfaces_service_application.h"
+#include "components/view_manager/surfaces/surfaces_service_application.h"
 #include "components/view_manager/view_manager_app.h"
 #include "mandoline/ui/browser/browser.h"
 #include "mojo/application/public/cpp/application_connection.h"

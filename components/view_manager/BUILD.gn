@@ -13,8 +13,8 @@ if (is_android) {
   group("view_manager") {
     deps = [
       ":jni_headers",
+      ":lib",
       ":loader",
-      ":view_manager_lib",
       ":view_manager_java",
       "native_viewport",
     ]
@@ -54,7 +54,7 @@ if (is_android) {
     ]
 
     deps = [
-      ":view_manager_lib",
+      ":lib",
       "//base",
       "//components/view_manager/public/interfaces",
       "//components/view_manager/native_viewport",
@@ -69,7 +69,7 @@ if (is_android) {
   }
 }
 
-source_set("view_manager_lib") {
+source_set("lib") {
   sources = [
     "access_policy.h",
     "access_policy_delegate.h",
@@ -122,7 +122,6 @@ source_set("view_manager_lib") {
     "//base",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
-    "//components/surfaces/public/interfaces",
     "//components/view_manager/public/cpp:common",
     "//components/view_manager/public/interfaces",
     "//components/view_manager/native_viewport",
@@ -137,8 +136,6 @@ source_set("view_manager_lib") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
-
-  data_deps = [ "//components/surfaces" ]
 }
 
 source_set("test_support") {
@@ -184,7 +181,7 @@ test("view_manager_unittests") {
 
   deps = [
     ":test_support",
-    ":view_manager_lib",
+    ":lib",
     "//base",
     "//base/test:test_config",
     "//components/view_manager/public/cpp:common",

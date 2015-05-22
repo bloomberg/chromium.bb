@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "components/surfaces/public/interfaces/surface_id.mojom.h"
 #include "components/view_manager/public/cpp/types.h"
+#include "components/view_manager/public/interfaces/surface_id.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_constants.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"

@@ -6,7 +6,7 @@
 #define COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_NATIVE_VIEWPORT_APPLICATION_DELEGATE_H_
 
 #include "base/macros.h"
-#include "components/gles2/gpu_impl.h"
+#include "components/view_manager/gles2/gpu_impl.h"
 #include "components/view_manager/public/interfaces/native_viewport.mojom.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/application_delegate.h"

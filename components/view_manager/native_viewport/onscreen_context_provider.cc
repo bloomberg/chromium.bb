@@ -5,9 +5,9 @@
 #include "components/view_manager/native_viewport/onscreen_context_provider.h"
 
 #include "base/bind.h"
-#include "components/gles2/command_buffer_driver.h"
-#include "components/gles2/command_buffer_impl.h"
-#include "components/gles2/gpu_state.h"
+#include "components/view_manager/gles2/command_buffer_driver.h"
+#include "components/view_manager/gles2/command_buffer_impl.h"
+#include "components/view_manager/gles2/gpu_state.h"
 
 namespace native_viewport {
 

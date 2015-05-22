@@ -4,7 +4,7 @@
 
 module mojo;
 
-import "components/surfaces/public/interfaces/surface_id.mojom";
+import "components/view_manager/public/interfaces/surface_id.mojom";
 import "components/view_manager/public/interfaces/native_viewport.mojom";
 import "components/view_manager/public/interfaces/view_manager_constants.mojom";
 import "mojo/application/public/interfaces/service_provider.mojom";

@@ -36,8 +36,8 @@ source_set("gles2") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//components/gles2:lib",
-    "//components/gpu/public/interfaces",
+    "//components/view_manager/gles2:lib",
+    "//components/view_manager/public/interfaces",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",

@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "components/surfaces/public/interfaces/display.mojom.h"
+#include "components/view_manager/public/interfaces/display.mojom.h"
 #include "components/view_manager/public/interfaces/native_viewport.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"

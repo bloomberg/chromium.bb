@@ -6,8 +6,8 @@
 #define COMPONENTS_VIEW_MANAGER_VIEW_MANAGER_APP_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/gles2/gpu_impl.h"
 #include "components/view_manager/connection_manager_delegate.h"
+#include "components/view_manager/gles2/gpu_impl.h"
 #include "components/view_manager/public/interfaces/native_viewport.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"

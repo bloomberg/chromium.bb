@@ -27,7 +27,7 @@ source_set("native_viewport") {
 
   deps = [
     "//base",
-    "//components/gles2",
+    "//components/view_manager/gles2",
     "//components/view_manager/public/interfaces",
     "//gpu/command_buffer/service",
     "//mojo/application/public/cpp",

@@ -8,10 +8,19 @@ import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "animations.mojom",
+    "command_buffer.mojom",
+    "context_provider.mojom",
+    "display.mojom",
+    "gpu.mojom",
+    "gpu_capabilities.mojom",
     "native_viewport.mojom",
+    "quads.mojom",
+    "surface_id.mojom",
+    "surfaces.mojom",
     "view_manager.mojom",
     "view_manager_constants.mojom",
     "view_manager_root.mojom",
+    "viewport_parameter_listener.mojom",
   ]
 
   import_dirs = [
@@ -20,8 +29,6 @@ mojom("interfaces") {
   ]
 
   deps = [
-    "//components/gpu/public/interfaces",
-    "//components/surfaces/public/interfaces:surface_id",
     "//mojo/application/public/interfaces",
     "//mojo/services/network/public/interfaces",
     "//ui/mojo/events:interfaces",

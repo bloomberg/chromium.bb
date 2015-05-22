@@ -9,7 +9,7 @@ source_set("cc") {
     "//cc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
-    "//components/surfaces/public/interfaces",
+    "//components/view_manager/public/interfaces",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//mojo/converters/surfaces",

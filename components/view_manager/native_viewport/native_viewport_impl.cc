@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "components/gles2/gpu_state.h"
+#include "components/view_manager/gles2/gpu_state.h"
 #include "components/view_manager/native_viewport/platform_viewport_headless.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"

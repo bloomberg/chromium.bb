@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/gpu/public/interfaces/command_buffer.mojom.h"
+#include "components/view_manager/public/interfaces/command_buffer.mojom.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"

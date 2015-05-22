@@ -60,9 +60,9 @@ source_set("sources") {
   deps = [
     "//base",
     "//components/clipboard:lib",
-    "//components/surfaces:lib",
     "//components/resource_provider:lib",
-    "//components/view_manager:view_manager_lib",
+    "//components/view_manager:lib",
+    "//components/view_manager/surfaces:lib",
     "//mandoline/ui/browser:kiosk_wm_lib",
     "//mojo/application/public/cpp",
     "//mojo/common:tracing_impl",

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "cc/output/output_surface.h"
 #include "cc/surfaces/surface_id.h"
-#include "components/surfaces/public/interfaces/surfaces.mojom.h"
+#include "components/view_manager/public/interfaces/surfaces.mojom.h"
 
 namespace mojo {
 

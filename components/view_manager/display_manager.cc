@@ -5,10 +5,10 @@
 #include "components/view_manager/display_manager.h"
 
 #include "base/numerics/safe_conversions.h"
-#include "components/gpu/public/interfaces/gpu.mojom.h"
-#include "components/surfaces/public/interfaces/quads.mojom.h"
-#include "components/surfaces/public/interfaces/surfaces.mojom.h"
 #include "components/view_manager/connection_manager.h"
+#include "components/view_manager/public/interfaces/gpu.mojom.h"
+#include "components/view_manager/public/interfaces/quads.mojom.h"
+#include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/view_coordinate_conversions.h"
 #include "mojo/application/public/cpp/application_connection.h"

@@ -5,7 +5,7 @@
 #ifndef MOJO_CONVERTERS_SURFACES_SURFACES_UTILS_H_
 #define MOJO_CONVERTERS_SURFACES_SURFACES_UTILS_H_
 
-#include "components/surfaces/public/interfaces/quads.mojom.h"
+#include "components/view_manager/public/interfaces/quads.mojom.h"
 #include "mojo/converters/surfaces/mojo_surfaces_export.h"
 
 namespace gfx {
