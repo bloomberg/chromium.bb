@@ -50,6 +50,10 @@ void PagePopupClient::addJavaScriptString(const String& str, SharedBuffer* data)
         } else if (str[i] == '\\' || str[i] == '"') {
             builder.append('\\');
             builder.append(str[i]);
+        } else if (str[i] == '<') {
+            // Need to avoid to add "</script>" because the resultant string is
+            // typically embedded in <script>.
+            builder.append("\\x3C");
         } else {
             builder.append(str[i]);
         }

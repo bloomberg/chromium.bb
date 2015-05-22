@@ -3898,6 +3898,7 @@
             'loader/MixedContentCheckerTest.cpp',
             'page/ContextMenuControllerTest.cpp',
             'page/NetworkStateNotifierTest.cpp',
+            'page/PagePopupClientTest.cpp',
             'page/PrintContextTest.cpp',
             'page/scrolling/ScrollStateTest.cpp',
             'paint/DisplayItemListPaintTest.cpp',
