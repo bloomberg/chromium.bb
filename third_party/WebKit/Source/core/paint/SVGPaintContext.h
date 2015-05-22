@@ -91,8 +91,8 @@ private:
     RawPtrWillBeMember<LayoutSVGResourceClipper> m_clipper;
     SVGClipPainter::ClipperState m_clipperState;
     RawPtrWillBeMember<LayoutSVGResourceMasker> m_masker;
-    OwnPtr<CompositingRecorder> m_compositingRecorder;
     OwnPtr<FloatClipRecorder> m_clipRecorder;
+    OwnPtr<CompositingRecorder> m_compositingRecorder;
     OwnPtr<ClipPathRecorder> m_clipPathRecorder;
 #if ENABLE(ASSERT)
     bool m_applyClipMaskAndFilterIfNecessaryCalled;
