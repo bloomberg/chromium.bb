@@ -216,5 +216,20 @@ TEST(CredentialUtilTest, SerializeLocalCredential) {
   EXPECT_TRUE(GetTestLocalCredentialDictionaryValue()->Equals(&value));
 }
 
+TEST(CredentialUtilTest, SerializeEmptyCredential) {
+  base::DictionaryValue value;
+  Credential credential;
+  CredentialToDictionaryValue(credential, &value);
+  EXPECT_TRUE(make_scoped_ptr(new base::DictionaryValue)->Equals(&value));
+}
+
+TEST(CredentialUtilTest, SerializeEmptyCredentialIntoNonEmptyDictionary) {
+  base::DictionaryValue value;
+  value.SetString("foo", "bar");
+  Credential credential;
+  CredentialToDictionaryValue(credential, &value);
+  EXPECT_TRUE(make_scoped_ptr(new base::DictionaryValue)->Equals(&value));
+}
+
 }  // namespace
 }  // namespace web

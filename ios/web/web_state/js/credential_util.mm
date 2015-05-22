@@ -80,7 +80,13 @@ bool DictionaryValueToCredential(const base::DictionaryValue& value,
 
 void CredentialToDictionaryValue(const Credential& credential,
                                  base::DictionaryValue* value) {
+  DCHECK(value);
   switch (credential.type) {
+    case CredentialType::CREDENTIAL_TYPE_EMPTY:
+      // Return an empty dictionary. This will cause "null" to be returned to
+      // the JavaScript Promise resolver.
+      value->Clear();
+      return;
     case CredentialType::CREDENTIAL_TYPE_LOCAL:
       value->SetString("type", kLocalCredentialType);
       value->SetString("password", credential.password);
