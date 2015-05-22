@@ -305,6 +305,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
             };
             manager.addTouchExplorationStateChangeListener(mTouchExplorationStateChangeListener);
         }
+
+        // Make the activity listen to policy change events
+        getChromeApplication().addPolicyChangeListener(this);
     }
 
     @Override
@@ -332,10 +335,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
                         checkOrientation();
                     }
                 });
-
-        // Make the activity listen to policy change events
-        getChromeApplication().addPolicyChangeListener(this);
-
         super.finishNativeInitialization();
     }
 

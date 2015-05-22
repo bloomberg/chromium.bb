@@ -23,7 +23,7 @@ public class PolicyManager {
     private final List<Bundle> mCachedPolicies = new ArrayList<>();
     private final List<PolicyChangeListener> mPolicyChangeListeners = new ArrayList<>();
 
-    public PolicyManager() {
+    public void initializeNative() {
         ThreadUtils.assertOnUiThread();
         mNativePolicyManager = nativeInit();
     }
@@ -95,6 +95,7 @@ public class PolicyManager {
     }
 
     public void removePolicyChangeListener(PolicyChangeListener listener) {
+        assert mPolicyChangeListeners.contains(listener);
         mPolicyChangeListeners.remove(listener);
     }
 
