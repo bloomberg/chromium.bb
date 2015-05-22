@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.externalauth;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
+
+import org.chromium.base.ThreadUtils;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,106 +33,180 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * for a feature that the user is actively trying to access interactively where
  * the feature cannot function (or would be severely impaired) unless the
  * dependency is satisfied. The dialog will be presented as many times as the
- * user tries to access the feature.
+ * user tries to access the feature. A subclass can (and usually should) be
+ * created to provide custom handling of the user response to the dialog by
+ * overriding {@link ModalDialog#prepareToHandle(Activity, Context, int)},
+ * {@link ModalDialog#getRequestCode()} and
+ * {@link ModalDialog#getOnCancelListener()} as appropriate. This will allow the
+ * code encountering the error to respond to the user's corrective actions (or
+ * lack thereof) immediately.
+ * <br>
+ * If none of these behaviors is suitable, a new behavior can be defined by
+ * subclassing this class.
  */
-public abstract class UserRecoverableErrorHandler implements Runnable {
+public abstract class UserRecoverableErrorHandler {
+    /**
+     * Handles the specified error code from Google Play Services.
+     * This method must only be called on the UI thread.
+     * This method asserts that it is being called on the UI thread, then calls
+     * {@link #handle(Context, int)}.
+     * @param context the context in which the error was encountered
+     * @param errorCode the error code from Google Play Services
+     */
+    public final void handleError(final Context context, final int errorCode) {
+        ThreadUtils.assertOnUiThread();
+        handle(context, errorCode);
+    }
+
+    /**
+     * This method is invoked by {@link #handleError(Context, int)} to do the
+     * work appropriate for the subclass on the UI thread.
+     * The default implementation does nothing.
+     * @param context the context in which the error was encountered
+     * @param errorCode the error code from Google Play Services
+     */
+    protected void handle(final Context context, final int errorCode) {
+        // Nothing.
+    }
+
     /**
      * A handler that does nothing.
      */
     public static final class Silent extends UserRecoverableErrorHandler {
-        @Override
-        public void run() {
-            // Do nothing.
-        }
+        // No special behavior.
     }
 
     /**
-     * A handler that displays a System Notification. To avoid repeatedly nagging the user, this
-     * is done at most one time per process.
+     * A handler that displays a System Notification. To avoid repeatedly
+     * nagging the user, this is done at most one time per application
+     * lifecycle.
      * @see GooglePlayServicesUtil#showErrorNotification(int, Context)
      */
     public static final class SystemNotification extends UserRecoverableErrorHandler {
         /**
-         * The error code returned from Google Play Services.
-         */
-        private final int mErrorCode;
-
-        /**
-         * The context in which the error was encountered.
-         */
-        private final Context mContext;
-
-        /**
-         * Tracks whether the notification has yet been shown.
+         * Tracks whether the notification has yet been shown, used to ensure
+         * that the notification is shown at most one time per application
+         * lifecycle.
          */
         private static final AtomicBoolean sNotificationShown = new AtomicBoolean(false);
 
-        /**
-         * Create a new System Notification handler for the specified context and error code.
-         * @param context the context in which the error was encountered.
-         * @param errorCode the error code from Google Play Services.
-         */
-        public SystemNotification(Context context, int errorCode) {
-            mContext = context;
-            mErrorCode = errorCode;
-        }
-
         @Override
-        public void run() {
+        protected void handle(final Context context, final int errorCode) {
             if (!sNotificationShown.getAndSet(true)) {
                 return;
             }
-            GooglePlayServicesUtil.showErrorNotification(mErrorCode, mContext);
+            GooglePlayServicesUtil.showErrorNotification(errorCode, context);
         }
     }
 
     /**
-     * A handler that displays a modal dialog. Unlike {@link SystemNotification}, this handler
-     * will take action every time it is invoked.
+     * A handler that displays a modal dialog. Unlike
+     * {@link SystemNotification}, this handler will take action every time it
+     * is invoked. Subclasses should override the methods
+     * {@link ModalDialog#prepareToHandle(Activity, Context, int)},
+     * {@link ModalDialog#getRequestCode()} and
+     * {@link ModalDialog#getOnCancelListener()} to provide custom handling of
+     * the user response.
      * @see GooglePlayServicesUtil#getErrorDialog(int, Activity, int,
      * android.content.DialogInterface.OnCancelListener)
      */
-    public static final class ModalDialog extends UserRecoverableErrorHandler {
+    public static class ModalDialog extends UserRecoverableErrorHandler {
         /**
-         * The error code returned from Google Play Services.
+         * Value to be returned from {@link #getRequestCode()} to indicate that
+         * no response information is needed from the dialog.
          */
-        private final int mErrorCode;
+        public static final int NO_RESPONSE_REQUIRED = -1;
 
         /**
-         * The activity in which the error was encountered.
+         * The activity from which to start the dialog and any subsequent
+         * actions, and the activity which will receive the response from those
+         * actions.
          */
         private final Activity mActivity;
 
         /**
-         * The request code given when calling startActivityForResult.
+         * Create a new Modal Dialog handler for the specified activity and
+         * error code. The specified activity may be used to launch the dialog
+         * via
+         * {@link Activity#startActivityForResult(android.content.Intent, int)}
+         * and also to receive the result via Activity's protected
+         * onActivityResult method.
+         * @param activity the activity to use
          */
-        private final int mRequestCode;
-
-        /**
-         * The DialogInterface.OnCancelListener to invoke if the dialog is canceled.
-         */
-        private final DialogInterface.OnCancelListener mOnCancelListener;
-
-        /**
-         * Create a new Modal Dialog handler for the specified activity and error code.
-         * @param activity the activity in which the dialog is to be displayed.
-         * @param errorCode the error code from Google Play Services.
-         * @param requestCode the request code given when calling startActivityForResult.
-         * @param onCancelListener the DialogInterface.OnCancelListener to invoke if the dialog
-         * is canceled.
-         */
-        public ModalDialog(Activity activity, int errorCode, int requestCode,
-                DialogInterface.OnCancelListener onCancelListener) {
+        public ModalDialog(Activity activity) {
             mActivity = activity;
-            mErrorCode = errorCode;
-            mRequestCode = requestCode;
-            mOnCancelListener = onCancelListener;
         }
 
+        /**
+         * Returns the activity that was passed to the constructor.
+         * @return the activity
+         */
+        protected final Activity getActivity() {
+            return mActivity;
+        }
+
+        /**
+         * Convenience method for subclasses that is guaranteed to be called
+         * immediately prior to {@link #handle(Context, int)} on the UI thread.
+         * The default implementation does nothing. Subclasses can override
+         * this method to prepare a request code for {@link #getRequestCode()}
+         * and an {@link OnCancelListener} for {@link #getOnCancelListener()}
+         * on-demand (i.e., when it is known that an error has occurred and the
+         * error code is available).
+         * @param activity the activity that was passed to the constructor
+         * @param context the context in which the error was encountered
+         * @param errorCode the error code from Google Play Services
+         */
+        protected void prepareToHandle(
+                final Activity activity, final Context context, final int errorCode) {
+            // Nothing.
+        }
+
+        /**
+         * Returns an integer request code to pass to
+         * {@link Activity#startActivityForResult(android.content.Intent, int)}.
+         * If this method returns a positive value, then the dialog will be
+         * launched by calling
+         * {@link Activity#startActivityForResult(android.content.Intent, int)}
+         * on the Activity that was passed to the constructor and upon
+         * completion the Activity's protected onActivityResult method will
+         * receive the results. The default implementation returns
+         * {@link #NO_RESPONSE_REQUIRED} (a negative value), indicating that
+         * the dialog can be launched independent of the Activity passed to the
+         * constructor and that no response needs to be processed by the
+         * Activity. This method is guaranteed to be called only after a call to
+         * {@link #prepareToHandle(Activity, Context, int)}.
+         * @return the request code
+         */
+        protected int getRequestCode() {
+            return NO_RESPONSE_REQUIRED;
+        }
+
+        /**
+         * Optionally, returns a {@link OnCancelListener} that should be invoked
+         * if the dialog is canceled or null if the activity doesn't care about
+         * this event. The default implementation returns null.
+         * This method is guaranteed to be called only after a call to
+         * {@link #prepareToHandle(Activity, Context, int)}.
+         * @return the listener, or null
+         */
+        protected OnCancelListener getOnCancelListener() {
+            return null;
+        }
+
+        /**
+         * Invokes {@link #prepareToHandle(Activity, Context, int)}, gathers
+         * the request code and cancel listener from {@link #getRequestCode()}
+         * and {@link #getOnCancelListener()} respectively, and displays the
+         * dialog in a modal manner.
+         * @param context the context in which the error was encountered
+         * @param errorCode the error code from Google Play Services
+         */
         @Override
-        public void run() {
+        protected final void handle(final Context context, final int errorCode) {
+            prepareToHandle(getActivity(), context, errorCode);
             Dialog dialog = GooglePlayServicesUtil.getErrorDialog(
-                    mErrorCode, mActivity, mRequestCode, mOnCancelListener);
+                    errorCode, getActivity(), getRequestCode(), getOnCancelListener());
             dialog.show();
         }
     }

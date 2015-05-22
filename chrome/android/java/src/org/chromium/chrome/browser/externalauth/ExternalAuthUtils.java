@@ -156,11 +156,8 @@ public class ExternalAuthUtils {
 
     /**
      * Checks whether Google Play Services can be used, applying the specified error-handling
-     * policy if a user-recoverable error occurs. To avoid undue burden on the user, the error
-     * handling policy will be applied at most one time per browser startup (i.e., a dialog or
-     * a system notification).
-     * This method is threadsafe. If the specified error-handling policy requires UI interaction,
-     * an asynchronous task will be posted to the main thread to perform such interaction.
+     * policy if a user-recoverable error occurs. This method is threadsafe. If the specified
+     * error-handling policy requires UI interaction, it will be run on the UI thread.
      * @param context The current context.
      * @param errorHandler How to handle user-recoverable errors; must be non-null.
      * @return true if and only if Google Play Services can be used
@@ -171,11 +168,16 @@ public class ExternalAuthUtils {
         if (errorCode == ConnectionResult.SUCCESS) {
             return true; // Hooray!
         }
-        // The rest of the method is error-handling bits.
         Log.v(TAG, "Unable to use Google Play Services: %s",
                 GooglePlayServicesUtil.getErrorString(errorCode));
         if (GooglePlayServicesUtil.isUserRecoverableError(errorCode)) {
-            ThreadUtils.runOnUiThread(errorHandler);
+            Runnable errorHandlerTask = new Runnable() {
+                @Override
+                public void run() {
+                    errorHandler.handleError(context, errorCode);
+                }
+            };
+            ThreadUtils.runOnUiThread(errorHandlerTask);
         }
         return false;
     }
