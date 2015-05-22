@@ -49,6 +49,11 @@ bool IsRotationLocked() {
       ->rotation_locked();
 }
 
+std::string ToPairString(const ash::DisplayIdPair& pair) {
+  return base::Int64ToString(pair.first) + "," +
+         base::Int64ToString(pair.second);
+}
+
 class DisplayPreferencesTest : public ash::test::AshTestBase {
  protected:
   DisplayPreferencesTest()
@@ -92,10 +97,11 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
 
   // Do not use the implementation of display_preferences.cc directly to avoid
   // notifying the update to the system.
-  void StoreDisplayLayoutPrefForName(const std::string& name,
+  void StoreDisplayLayoutPrefForPair(const ash::DisplayIdPair& pair,
                                      ash::DisplayLayout::Position layout,
                                      int offset,
                                      int64 primary_id) {
+    std::string name = ToPairString(pair);
     DictionaryPrefUpdate update(&local_state_, prefs::kSecondaryDisplays);
     ash::DisplayLayout display_layout(layout, offset);
     display_layout.primary_id = primary_id;
@@ -113,21 +119,39 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
       pref_data->Set(name, layout_value.release());
   }
 
-  void StoreDisplayLayoutPrefForPair(int64 id1,
-                                     int64 id2,
-                                     ash::DisplayLayout::Position layout,
-                                     int offset) {
-    StoreDisplayLayoutPrefForName(
-        base::Int64ToString(id1) + "," + base::Int64ToString(id2),
-        layout, offset, id1);
+  void StoreDisplayPropertyForPair(const ash::DisplayIdPair& pair,
+                                   std::string key,
+                                   scoped_ptr<base::Value> value) {
+    std::string name = ToPairString(pair);
+
+    DictionaryPrefUpdate update(&local_state_, prefs::kSecondaryDisplays);
+    base::DictionaryValue* pref_data = update.Get();
+
+    if (pref_data->HasKey(name)) {
+      base::Value* layout_value = NULL;
+      pref_data->Get(name, &layout_value);
+      if (layout_value)
+        static_cast<base::DictionaryValue*>(layout_value)
+            ->Set(key, value.Pass());
+    } else {
+      scoped_ptr<base::DictionaryValue> layout_value(
+          new base::DictionaryValue());
+      layout_value->SetBoolean(key, value);
+      pref_data->Set(name, layout_value.release());
+    }
   }
 
-  void StoreDisplayLayoutPrefForSecondary(int64 id,
-                                          ash::DisplayLayout::Position layout,
-                                          int offset,
-                                          int64 primary_id) {
-    StoreDisplayLayoutPrefForName(
-        base::Int64ToString(id), layout, offset, primary_id);
+  void StoreDisplayBoolPropertyForPair(const ash::DisplayIdPair& pair,
+                                       const std::string& key,
+                                       bool value) {
+    StoreDisplayPropertyForPair(
+        pair, key, make_scoped_ptr(new base::FundamentalValue(value)));
+  }
+
+  void StoreDisplayLayoutPrefForPair(const ash::DisplayIdPair& pair,
+                                     ash::DisplayLayout::Position layout,
+                                     int offset) {
+    StoreDisplayLayoutPrefForPair(pair, layout, offset, pair.first);
   }
 
   void StoreDisplayOverscan(int64 id, const gfx::Insets& insets) {
@@ -161,10 +185,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     pref_data->SetInteger("orientation", static_cast<int>(rotation));
   }
 
-  std::string GetRegisteredDisplayLayoutStr(int64 id1, int64 id2) {
-    ash::DisplayIdPair pair;
-    pair.first = id1;
-    pair.second = id2;
+  std::string GetRegisteredDisplayLayoutStr(const ash::DisplayIdPair& pair) {
     return ash::Shell::GetInstance()->display_manager()->layout_store()->
         GetRegisteredDisplayLayout(pair).ToString();
   }
@@ -184,13 +205,15 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
 
 TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
   UpdateDisplay("100x100,200x200");
-  int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
-  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
-  int64 dummy_id = id2 + 1;
-  ASSERT_NE(id1, dummy_id);
+  ash::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
 
-  StoreDisplayLayoutPrefForPair(id1, id2, ash::DisplayLayout::TOP, 20);
-  StoreDisplayLayoutPrefForPair(id1, dummy_id, ash::DisplayLayout::LEFT, 30);
+  ash::DisplayIdPair pair = display_manager->GetCurrentDisplayIdPair();
+  ash::DisplayIdPair dummy_pair = std::make_pair(pair.first, pair.second + 1);
+  ASSERT_NE(pair.first, dummy_pair.second);
+
+  StoreDisplayLayoutPrefForPair(pair, ash::DisplayLayout::TOP, 20);
+  StoreDisplayLayoutPrefForPair(dummy_pair, ash::DisplayLayout::LEFT, 30);
   StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
 
@@ -208,8 +231,8 @@ TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
   // (id1, dummy_id) since dummy_id is not connected right now.
   EXPECT_EQ("top, 20",
             shell->display_manager()->GetCurrentDisplayLayout().ToString());
-  EXPECT_EQ("top, 20", GetRegisteredDisplayLayoutStr(id1, id2));
-  EXPECT_EQ("left, 30", GetRegisteredDisplayLayoutStr(id1, dummy_id));
+  EXPECT_EQ("top, 20", GetRegisteredDisplayLayoutStr(pair));
+  EXPECT_EQ("left, 30", GetRegisteredDisplayLayoutStr(dummy_pair));
 }
 
 TEST_F(DisplayPreferencesTest, BasicStores) {
@@ -852,6 +875,91 @@ TEST_F(DisplayPreferencesTest, RotationLockTriggersStore) {
       local_state()->GetDictionary(prefs::kDisplayRotationLock);
   bool rotation_lock;
   EXPECT_TRUE(properties->GetBoolean("lock", &rotation_lock));
+}
+
+TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
+  UpdateDisplay("100x100,200x200");
+  LoggedInAsUser();
+  ash::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
+  ash::DisplayIdPair pair = display_manager->GetCurrentDisplayIdPair();
+  std::string pair_key = ToPairString(pair);
+
+  // Unified mode should be recorded.
+  display_manager->SetDefaultMultiDisplayMode(ash::DisplayManager::UNIFIED);
+  display_manager->ReconfigureDisplays();
+
+  const base::DictionaryValue* displays =
+      local_state()->GetDictionary(prefs::kSecondaryDisplays);
+  const base::DictionaryValue* new_value = NULL;
+  EXPECT_TRUE(displays->GetDictionary(ToPairString(pair), &new_value));
+
+  ash::DisplayLayout stored_layout;
+  EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
+  EXPECT_TRUE(stored_layout.default_unified);
+  EXPECT_FALSE(stored_layout.mirrored);
+
+  // Mirror mode should remember if the default mode was unified.
+  display_manager->SetMirrorMode(true);
+  EXPECT_TRUE(displays->GetDictionary(ToPairString(pair), &new_value));
+  EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
+  EXPECT_TRUE(stored_layout.default_unified);
+  EXPECT_TRUE(stored_layout.mirrored);
+
+  display_manager->SetMirrorMode(false);
+  EXPECT_TRUE(displays->GetDictionary(ToPairString(pair), &new_value));
+  EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
+  EXPECT_TRUE(stored_layout.default_unified);
+  EXPECT_FALSE(stored_layout.mirrored);
+
+  // Exit unified mode.
+  display_manager->SetDefaultMultiDisplayMode(ash::DisplayManager::EXTENDED);
+  display_manager->ReconfigureDisplays();
+  EXPECT_TRUE(displays->GetDictionary(ToPairString(pair), &new_value));
+  EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
+  EXPECT_FALSE(stored_layout.default_unified);
+  EXPECT_FALSE(stored_layout.mirrored);
+}
+
+TEST_F(DisplayPreferencesTest, RestoreUnifiedMode) {
+  int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
+  ash::DisplayIdPair pair = std::make_pair(id1, id1 + 1);
+  StoreDisplayBoolPropertyForPair(pair, "default_unified", true);
+  StoreDisplayPropertyForPair(
+      pair, "primary-id",
+      make_scoped_ptr(new base::StringValue(base::Int64ToString(id1))));
+  LoadDisplayPreferences(false);
+
+  // Should not restore to unified unless unified desktop is enabled.
+  UpdateDisplay("100x100,200x200");
+  ash::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
+  EXPECT_FALSE(display_manager->IsInUnifiedMode());
+
+  // Restored to unified.
+  ash::test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+  StoreDisplayBoolPropertyForPair(pair, "default_unified", true);
+  LoadDisplayPreferences(false);
+  UpdateDisplay("100x100,200x200");
+  EXPECT_TRUE(display_manager->IsInUnifiedMode());
+
+  // Restored to mirror, then unified.
+  StoreDisplayBoolPropertyForPair(pair, "mirrored", true);
+  StoreDisplayBoolPropertyForPair(pair, "default_unified", true);
+  LoadDisplayPreferences(false);
+  UpdateDisplay("100x100,200x200");
+  EXPECT_TRUE(display_manager->IsInMirrorMode());
+
+  display_manager->SetMirrorMode(false);
+  EXPECT_TRUE(display_manager->IsInUnifiedMode());
+
+  // Sanity check. Restore to extended.
+  StoreDisplayBoolPropertyForPair(pair, "default_unified", false);
+  StoreDisplayBoolPropertyForPair(pair, "mirrored", false);
+  LoadDisplayPreferences(false);
+  UpdateDisplay("100x100,200x200");
+  EXPECT_FALSE(display_manager->IsInMirrorMode());
+  EXPECT_FALSE(display_manager->IsInUnifiedMode());
 }
 
 }  // namespace chromeos

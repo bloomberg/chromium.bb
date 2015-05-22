@@ -7,6 +7,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -587,6 +588,7 @@ TEST_F(MagnificationControllerTest, FollowTextInputFieldKeyPress) {
 TEST_F(MagnificationControllerTest, EnableMagnifierInUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
+  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);

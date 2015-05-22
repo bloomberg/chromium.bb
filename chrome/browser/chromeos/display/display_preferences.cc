@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
@@ -227,8 +228,7 @@ void StoreDisplayLayoutPref(const ash::DisplayIdPair& pair,
 void StoreCurrentDisplayLayoutPrefs() {
   ash::DisplayManager* display_manager = GetDisplayManager();
   if (!UserCanSaveDisplayPreference() ||
-      display_manager->num_connected_displays() < 2 ||
-      display_manager->IsInUnifiedMode()) {
+      display_manager->num_connected_displays() < 2) {
     return;
   }
 

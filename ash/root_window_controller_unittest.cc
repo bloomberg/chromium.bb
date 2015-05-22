@@ -11,6 +11,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
@@ -294,6 +295,8 @@ TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
 TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   if (!SupportsMultipleDisplays())
     return;
+  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
   display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);

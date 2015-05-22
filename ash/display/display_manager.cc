@@ -140,9 +140,6 @@ DisplayManager::DisplayManager()
   if (base::SysInfo::IsRunningOnChromeOS())
     DisplayInfo::SetUse125DSFForUIScaling(true);
 
-  if (switches::UnifiedDesktopEnabled())
-    default_multi_display_mode_ = UNIFIED;
-
   change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
 #endif
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_.get());
@@ -641,6 +638,8 @@ void DisplayManager::OnNativeDisplaysChanged(
   if (gfx::Display::HasInternalDisplay() && !internal_display_connected &&
       display_info_.find(gfx::Display::InternalDisplayId()) ==
           display_info_.end()) {
+    // Create a dummy internal display if the chrome restarted
+    // in docked mode.
     DisplayInfo internal_display_info(
         gfx::Display::InternalDisplayId(),
         l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME),
@@ -648,6 +647,25 @@ void DisplayManager::OnNativeDisplaysChanged(
     internal_display_info.SetBounds(gfx::Rect(0, 0, 800, 600));
     display_info_[gfx::Display::InternalDisplayId()] = internal_display_info;
   }
+
+#if defined(OS_CHROMEOS)
+  if (new_display_info_list.size() > 1) {
+    std::sort(new_display_info_list.begin(), new_display_info_list.end(),
+              DisplayInfoSortFunctor());
+    DisplayIdPair pair = std::make_pair(new_display_info_list[0].id(),
+                                        new_display_info_list[1].id());
+    DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(pair);
+    default_multi_display_mode_ =
+        (layout.default_unified && switches::UnifiedDesktopEnabled())
+            ? UNIFIED
+            : EXTENDED;
+    // Mirror mode is set by DisplayConfigurator on the device.
+    // Emulate it when running on linux desktop.
+    if (!base::SysInfo::IsRunningOnChromeOS() && layout.mirrored)
+      SetMultiDisplayMode(MIRRORING);
+  }
+#endif
+
   UpdateDisplays(new_display_info_list);
 }
 
