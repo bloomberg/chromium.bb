@@ -21,8 +21,6 @@ namespace {
 BOOL g_animations_enabled = false;
 }
 
-@class ExtensionMessageBubbleButton;
-
 @interface ToolbarActionsBarBubbleMac ()
 
 // Handles the notification that the window will close.
@@ -42,26 +40,13 @@ BOOL g_animations_enabled = false;
 
 // Creates an ExtensionMessagebubbleButton the given string id, and adds it to
 // the window.
-- (ExtensionMessageBubbleButton*) addButtonWithString:
-    (const base::string16&)string
-    isPrimary:(BOOL)isPrimary;
+- (NSButton*)addButtonWithString:(const base::string16&)string;
 
 // Initializes the bubble's content.
 - (void)layout;
 
 // Handles a button being clicked.
 - (void)onButtonClicked:(id)sender;
-
-@end
-
-@interface ExtensionMessageBubbleButton : HoverButton {
-  BOOL isPrimary_;
-}
-
-// Draws with a blue background and white text.
-- (void)drawRect:(NSRect)rect;
-
-@property(nonatomic) BOOL isPrimary;
 
 @end
 
@@ -90,8 +75,8 @@ BOOL g_animations_enabled = false;
     delegate_ = delegate.Pass();
 
     ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();
-    [[self bubble] setAlignment:info_bubble::kAlignRightEdgeToAnchorEdge];
-    [[self bubble] setArrowLocation:info_bubble::kNoArrow];
+    [[self bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
+    [[self bubble] setArrowLocation:info_bubble::kTopRight];
     [[self bubble] setBackgroundColor:
         gfx::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(
             ui::NativeTheme::kColorId_DialogBackground))];
@@ -160,18 +145,14 @@ BOOL g_animations_enabled = false;
   return textField.autorelease();
 }
 
-- (ExtensionMessageBubbleButton*)addButtonWithString:
-    (const base::string16&)string
-    isPrimary:(BOOL)isPrimary {
-  ExtensionMessageBubbleButton* button =
-      [[ExtensionMessageBubbleButton alloc] initWithFrame:NSZeroRect];
+- (NSButton*)addButtonWithString:(const base::string16&)string {
+  NSButton* button = [[NSButton alloc] initWithFrame:NSZeroRect];
   NSAttributedString* buttonString =
       [self attributedStringWithString:string
                               fontSize:13.0
                              alignment:NSCenterTextAlignment];
   [button setAttributedTitle:buttonString];
-  [button setIsPrimary:isPrimary];
-  [[button cell] setBordered:NO];
+  [button setBezelStyle:NSRoundedBezelStyle];
   [button setTarget:self];
   [button setAction:@selector(onButtonClicked:)];
   [[[self window] contentView] addSubview:button];
@@ -180,40 +161,14 @@ BOOL g_animations_enabled = false;
 }
 
 - (void)layout {
-  // We first construct the different pieces of the bubble (the heading, the
-  // content, and the button), and size them appropriately.
+  // First, construct the pieces of the bubble that have a fixed width: the
+  // heading, and the button strip (the learn more link, the action button, and
+  // the dismiss button).
   NSTextField* heading =
       [self addTextFieldWithString:delegate_->GetHeadingText()
                           fontSize:13.0
                          alignment:NSLeftTextAlignment];
   NSSize headingSize = [heading frame].size;
-
-  NSTextField* content =
-      [self addTextFieldWithString:delegate_->GetBodyText()
-                          fontSize:12.0
-                         alignment:NSLeftTextAlignment];
-  CGFloat newWidth = headingSize.width + 50;
-  [content setFrame:NSMakeRect(0, 0, newWidth, 0)];
-  // The content should have the same (max) width as the heading, which means
-  // the text will most likely wrap.
-  NSSize contentSize = NSMakeSize(newWidth,
-                                  [GTMUILocalizerAndLayoutTweaker
-                                       sizeToFitFixedWidthTextField:content]);
-
-  const CGFloat kItemListIndentation = 10.0;
-  base::string16 itemListStr = delegate_->GetItemListText();
-  NSSize itemListSize;
-  if (!itemListStr.empty()) {
-    itemList_ =
-        [self addTextFieldWithString:itemListStr
-                            fontSize:12.0
-                           alignment:NSLeftTextAlignment];
-    CGFloat listWidth = newWidth - kItemListIndentation;
-    [itemList_ setFrame:NSMakeRect(0, 0, listWidth, 0)];
-    itemListSize = NSMakeSize(listWidth,
-                              [GTMUILocalizerAndLayoutTweaker
-                                   sizeToFitFixedWidthTextField:itemList_]);
-  }
 
   base::string16 learnMore = delegate_->GetLearnMoreButtonText();
   NSSize learnMoreSize = NSZeroSize;
@@ -232,31 +187,65 @@ BOOL g_animations_enabled = false;
                                NSHeight([learnMoreButton_ frame]));
   }
 
-  // The buttons' sizes will only account for the text by default, so pad them a
-  // bit to make it look good.
-  const CGFloat kButtonHorizontalPadding = 40.0;
-  const CGFloat kButtonVerticalPadding = 20.0;
-
-  base::string16 actionStr = delegate_->GetActionButtonText();
-  bool hasAction = !actionStr.empty();
-
   base::string16 cancelStr = delegate_->GetDismissButtonText();
   NSSize dismissButtonSize = NSZeroSize;
   if (!cancelStr.empty()) {  // A cancel/dismiss button is optional.
-    dismissButton_ = [self addButtonWithString:cancelStr
-                                     isPrimary:!hasAction];
+    dismissButton_ = [self addButtonWithString:cancelStr];
     dismissButtonSize =
-        NSMakeSize(NSWidth([dismissButton_ frame]) + kButtonHorizontalPadding,
-                   NSHeight([dismissButton_ frame]) + kButtonVerticalPadding);
+        NSMakeSize(NSWidth([dismissButton_ frame]),
+                   NSHeight([dismissButton_ frame]));
   }
 
+  base::string16 actionStr = delegate_->GetActionButtonText();
   NSSize actionButtonSize = NSZeroSize;
-  if (hasAction) {  // A cancel/dismiss button is optional.
-    actionButton_ = [self addButtonWithString:actionStr
-                                     isPrimary:YES];
+  if (!actionStr.empty()) {  // The action button is optional.
+    actionButton_ = [self addButtonWithString:actionStr];
     actionButtonSize =
-        NSMakeSize(NSWidth([actionButton_ frame]) + kButtonHorizontalPadding,
-                   NSHeight([actionButton_ frame]) + kButtonVerticalPadding);
+        NSMakeSize(NSWidth([actionButton_ frame]),
+                   NSHeight([actionButton_ frame]));
+  }
+
+  DCHECK(actionButton_ || dismissButton_);
+  CGFloat buttonStripHeight =
+      std::max(actionButtonSize.height, dismissButtonSize.height);
+
+  const CGFloat kButtonPadding = 5.0;
+  CGFloat buttonStripWidth = 0;
+  if (actionButton_)
+    buttonStripWidth += actionButtonSize.width + kButtonPadding;
+  if (dismissButton_)
+    buttonStripWidth += dismissButtonSize.width + kButtonPadding;
+  if (learnMoreButton_)
+    buttonStripWidth += learnMoreSize.width + kButtonPadding;
+
+  CGFloat headingWidth = headingSize.width + 50.0;
+
+  CGFloat windowWidth = std::max(buttonStripWidth, headingWidth);
+
+  NSTextField* content =
+      [self addTextFieldWithString:delegate_->GetBodyText()
+                          fontSize:12.0
+                         alignment:NSLeftTextAlignment];
+  [content setFrame:NSMakeRect(0, 0, windowWidth, 0)];
+  // The content should have the same (max) width as the heading, which means
+  // the text will most likely wrap.
+  NSSize contentSize = NSMakeSize(windowWidth,
+                                  [GTMUILocalizerAndLayoutTweaker
+                                       sizeToFitFixedWidthTextField:content]);
+
+  const CGFloat kItemListIndentation = 10.0;
+  base::string16 itemListStr = delegate_->GetItemListText();
+  NSSize itemListSize;
+  if (!itemListStr.empty()) {
+    itemList_ =
+        [self addTextFieldWithString:itemListStr
+                            fontSize:12.0
+                           alignment:NSLeftTextAlignment];
+    CGFloat listWidth = windowWidth - kItemListIndentation;
+    [itemList_ setFrame:NSMakeRect(0, 0, listWidth, 0)];
+    itemListSize = NSMakeSize(listWidth,
+                              [GTMUILocalizerAndLayoutTweaker
+                                   sizeToFitFixedWidthTextField:itemList_]);
   }
 
   const CGFloat kHorizontalPadding = 15.0;
@@ -264,16 +253,16 @@ BOOL g_animations_enabled = false;
 
   // Next, we set frame for all the different pieces of the bubble, from bottom
   // to top.
-  CGFloat windowWidth = newWidth + kHorizontalPadding * 2;
-
-  CGFloat currentHeight = 0;
-  CGFloat currentMaxWidth = windowWidth;
+  windowWidth += kHorizontalPadding * 2;
+  CGFloat currentHeight = kVerticalPadding;
+  CGFloat currentMaxWidth = windowWidth - kHorizontalPadding;
   if (actionButton_) {
-    [actionButton_ setFrame:NSMakeRect(currentMaxWidth - actionButtonSize.width,
-                                       currentHeight,
-                                       actionButtonSize.width,
-                                       actionButtonSize.height)];
-    currentMaxWidth -= actionButtonSize.width;
+    [actionButton_ setFrame:NSMakeRect(
+        currentMaxWidth - actionButtonSize.width,
+        currentHeight,
+        actionButtonSize.width,
+        actionButtonSize.height)];
+    currentMaxWidth -= (actionButtonSize.width + kButtonPadding);
   }
   if (dismissButton_) {
     [dismissButton_ setFrame:NSMakeRect(
@@ -281,17 +270,19 @@ BOOL g_animations_enabled = false;
         currentHeight,
         dismissButtonSize.width,
         dismissButtonSize.height)];
-    currentMaxWidth -= dismissButtonSize.width;
+    currentMaxWidth -= (dismissButtonSize.width + kButtonPadding);
   }
-  currentHeight += actionButtonSize.height + kVerticalPadding;
-
   if (learnMoreButton_) {
+    CGFloat learnMoreHeight =
+        currentHeight + (buttonStripHeight - learnMoreSize.height) / 2.0;
     [learnMoreButton_ setFrame:NSMakeRect(kHorizontalPadding,
-                                          currentHeight,
+                                          learnMoreHeight,
                                           learnMoreSize.width,
                                           learnMoreSize.height)];
-    currentHeight += learnMoreSize.height + kVerticalPadding;
   }
+  // Buttons have some inherit padding of their own, so we don't need quite as
+  // much space here.
+  currentHeight += buttonStripHeight + kVerticalPadding / 2;
 
   if (itemList_) {
     [itemList_ setFrame:NSMakeRect(kHorizontalPadding + kItemListIndentation,
@@ -315,7 +306,7 @@ BOOL g_animations_enabled = false;
   NSRect windowFrame = [[self window] frame];
   NSSize windowSize =
       NSMakeSize(windowWidth,
-                 currentHeight + headingSize.height + kVerticalPadding);
+                 currentHeight + headingSize.height + kVerticalPadding * 2);
   // We need to convert the size to be in the window's coordinate system. Since
   // all we're doing is converting a size, and all views within a window share
   // the same size metrics, it's okay that the size calculation came from
@@ -341,47 +332,6 @@ BOOL g_animations_enabled = false;
   acknowledged_ = YES;
   delegate_->OnBubbleClosed(action);
   [self close];
-}
-
-@end
-
-@implementation ExtensionMessageBubbleButton
-
-@synthesize isPrimary = isPrimary_;
-
-- (void)drawRect:(NSRect)rect {
-  SkColor buttonColor;
-  SkColor textColor;
-  if (isPrimary_) {
-    buttonColor = SkColorSetRGB(66, 133, 244);
-    textColor = [self hoverState] == kHoverStateNone ?
-        SkColorSetARGB(220, 255, 255, 255) : SK_ColorWHITE;
-  } else {
-    buttonColor = SK_ColorTRANSPARENT;
-    textColor = [self hoverState] == kHoverStateNone ?
-        SkColorSetARGB(220, 0, 0, 0) : SK_ColorBLACK;
-  }
-  NSRect bounds = [self bounds];
-  NSAttributedString* title = [self attributedTitle];
-
-  [gfx::SkColorToCalibratedNSColor(buttonColor) set];
-  NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
-
-  base::scoped_nsobject<NSMutableAttributedString> selectedTitle(
-      [[NSMutableAttributedString alloc] initWithAttributedString:title]);
-  NSColor* selectedTitleColor =
-      gfx::SkColorToCalibratedNSColor(textColor);
-  [selectedTitle addAttribute:NSForegroundColorAttributeName
-                        value:selectedTitleColor
-                        range:NSMakeRange(0, [title length])];
-
-  if (!isPrimary_) {
-    [[NSColor darkGrayColor] setStroke];
-    [NSBezierPath strokeRect:bounds];
-  }
-  [[self cell] drawTitle:selectedTitle.get()
-               withFrame:bounds
-                  inView:self];
 }
 
 @end
