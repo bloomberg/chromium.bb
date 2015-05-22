@@ -1897,8 +1897,7 @@ TEST_F(AutofillTableTest, SetServerProfileUpdateUsageStats) {
 
 // Tests that deleting time ranges re-masks server credit cards that were
 // unmasked in that time.
-// TODO(brettw) fix flakiness and re-enable: crbug.com/465882
-TEST_F(AutofillTableTest, DISABLED_DeleteUnmaskedCard) {
+TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
   // This isn't the exact unmasked time, since the database will use the
   // current time that it is called. The code below has to be approximate.
   base::Time unmasked_time = base::Time::Now();
@@ -1937,7 +1936,9 @@ TEST_F(AutofillTableTest, DISABLED_DeleteUnmaskedCard) {
   outputs.clear();
 
   // Delete data in the range of the last 24 hours.
-  base::Time now = base::Time::Now();
+  // Fudge |now| to make sure it's strictly greater than the |now| that
+  // the database uses.
+  base::Time now = base::Time::Now() + base::TimeDelta::FromSeconds(1);
   ASSERT_TRUE(table_->RemoveAutofillDataModifiedBetween(
       now - base::TimeDelta::FromDays(1), now,
       &profile_guids, &credit_card_guids));
