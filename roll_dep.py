@@ -28,7 +28,7 @@ def roll(root, deps_dir, key, reviewers, bug):
   try:
     with open(deps, 'rb') as f:
       deps_content = f.read()
-  except OSError:
+  except (IOError, OSError):
     print >> sys.stderr, (
         'Ensure the script is run in the directory containing DEPS file.')
     return 1
