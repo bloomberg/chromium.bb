@@ -59,13 +59,6 @@ html:not(.focus-outline-visible)
   flex: 1;
 }
 
-#dev-toggle {
-  /* Alignment should match the enable checkbox text. This is calculated as
-   * 30px to match the trash icon + 12px to match .extension-list-item-wrapper
-   * padding - 1px of magic. */
-  -webkit-margin-end: 41px;
-}
-
 .extension-code {
   border: 1px solid #ccc;
   display: flex;
@@ -110,11 +103,13 @@ html:not(.focus-outline-visible)
 }
 
 #header-controls {
-  right: 13px;
+  /* Reserve enough space to match .location-text + .trash */
+  min-width: 130px;
+  right: 16px;
 }
 
 html[dir='rtl'] #header-controls {
-  left: 13px;
+  left: 16px;
   right: auto;
 }
 
@@ -124,7 +119,7 @@ html[dir='rtl'] #header-controls {
 
 #extension-settings #page-header {
   /* These values match the .page values. */
-  -webkit-margin-end: 0;
+  -webkit-margin-end: 24px;
   min-width: 576px;
 }
 
@@ -369,6 +364,11 @@ html[dir=rtl] .extension-commands-config {
 .blacklist-text {
   display: block;
   width: 100px;
+}
+
+.enable-checkbox {
+  /* Reserve enough space to match .location-text */
+  min-width: 100px;
 }
 
 /* Trash */
