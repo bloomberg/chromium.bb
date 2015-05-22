@@ -39,8 +39,6 @@ class GbmSurfaceFactory : public DrmSurfaceFactory {
       gfx::Size size,
       BufferFormat format,
       BufferUsage usage) override;
-  OverlayCandidatesOzone* GetOverlayCandidates(
-      gfx::AcceleratedWidget w) override;
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int plane_z_order,
                             gfx::OverlayTransform plane_transform,

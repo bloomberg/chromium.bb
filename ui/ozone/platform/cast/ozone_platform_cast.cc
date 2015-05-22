@@ -9,6 +9,7 @@
 #include "chromecast/public/cast_egl_platform_shlib.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/platform/cast/gpu_platform_support_cast.h"
+#include "ui/ozone/platform/cast/overlay_manager_cast.h"
 #include "ui/ozone/platform/cast/platform_window_cast.h"
 #include "ui/ozone/platform/cast/surface_factory_cast.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -39,6 +40,9 @@ class OzonePlatformCast : public OzonePlatform {
   SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
     return surface_factory_.get();
   }
+  OverlayManagerOzone* GetOverlayManager() override {
+    return overlay_manager_.get();
+  }
   CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_.get();
   }
@@ -65,17 +69,13 @@ class OzonePlatformCast : public OzonePlatform {
   }
 
   void InitializeUI() override {
-    if (!surface_factory_) {
-      surface_factory_.reset(new SurfaceFactoryCast(egl_platform_.Pass()));
-    }
+    overlay_manager_.reset(new OverlayManagerCast());
     cursor_factory_.reset(new CursorFactoryOzone());
     input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
   void InitializeGPU() override {
-    if (!surface_factory_) {
-      surface_factory_.reset(new SurfaceFactoryCast(egl_platform_.Pass()));
-    }
+    surface_factory_.reset(new SurfaceFactoryCast(egl_platform_.Pass()));
     gpu_platform_support_.reset(
         new GpuPlatformSupportCast(surface_factory_.get()));
   }
@@ -87,6 +87,7 @@ class OzonePlatformCast : public OzonePlatform {
   scoped_ptr<InputController> input_controller_;
   scoped_ptr<GpuPlatformSupportCast> gpu_platform_support_;
   scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+  scoped_ptr<OverlayManagerOzone> overlay_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformCast);
 };

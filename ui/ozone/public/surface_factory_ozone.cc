@@ -59,11 +59,6 @@ const int32* SurfaceFactoryOzone::GetEGLSurfaceProperties(
   return desired_attributes;
 }
 
-ui::OverlayCandidatesOzone* SurfaceFactoryOzone::GetOverlayCandidates(
-    gfx::AcceleratedWidget w) {
-  return NULL;
-}
-
 scoped_refptr<ui::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
     gfx::AcceleratedWidget widget,
     gfx::Size size,

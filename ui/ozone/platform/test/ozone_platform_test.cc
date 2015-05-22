@@ -11,6 +11,7 @@
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
+#include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/test/test_window.h"
 #include "ui/ozone/platform/test/test_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -48,6 +49,9 @@ class OzonePlatformTest : public OzonePlatform {
   ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
     return window_manager_.get();
   }
+  OverlayManagerOzone* GetOverlayManager() override {
+    return overlay_manager_.get();
+  }
   CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_ozone_.get();
   }
@@ -82,6 +86,7 @@ class OzonePlatformTest : public OzonePlatform {
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         make_scoped_ptr(new StubKeyboardLayoutEngine()));
 
+    overlay_manager_.reset(new StubOverlayManager());
     input_controller_ = CreateStubInputController();
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
@@ -98,6 +103,7 @@ class OzonePlatformTest : public OzonePlatform {
   scoped_ptr<InputController> input_controller_;
   scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
   scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+  scoped_ptr<OverlayManagerOzone> overlay_manager_;
   base::FilePath file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformTest);

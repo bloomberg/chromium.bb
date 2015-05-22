@@ -21,7 +21,6 @@ class SkCanvas;
 namespace ui {
 
 class NativePixmap;
-class OverlayCandidatesOzone;
 class SurfaceOzoneCanvas;
 class SurfaceOzoneEGL;
 
@@ -121,10 +120,6 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // terminated with EGL_NONE. Ownership of the array is not transferred to
   // caller. desired_list contains list of desired EGL properties and values.
   virtual const int32* GetEGLSurfaceProperties(const int32* desired_list);
-
-  // Get the hal struct to check for overlay support.
-  virtual OverlayCandidatesOzone* GetOverlayCandidates(
-      gfx::AcceleratedWidget w);
 
   // Create a single native buffer to be used for overlay planes or zero copy
   // for |widget| representing a particular display controller or default

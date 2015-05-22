@@ -7,6 +7,7 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/no/no_keyboard_layout_engine.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
+#include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/caca/caca_event_source.h"
 #include "ui/ozone/platform/caca/caca_window.h"
 #include "ui/ozone/platform/caca/caca_window_manager.h"
@@ -29,6 +30,9 @@ class OzonePlatformCaca : public OzonePlatform {
   // OzonePlatform:
   ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
     return window_manager_.get();
+  }
+  OverlayManagerOzone* GetOverlayManager() override {
+    return overlay_manager_.get();
   }
   CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_ozone_.get();
@@ -60,6 +64,7 @@ class OzonePlatformCaca : public OzonePlatform {
 
   void InitializeUI() override {
     window_manager_.reset(new CacaWindowManager);
+    overlay_manager_.reset(new StubOverlayManager());
     event_source_.reset(new CacaEventSource());
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
@@ -79,6 +84,7 @@ class OzonePlatformCaca : public OzonePlatform {
   scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
   scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   scoped_ptr<InputController> input_controller_;
+  scoped_ptr<OverlayManagerOzone> overlay_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformCaca);
 };

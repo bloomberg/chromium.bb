@@ -25,6 +25,7 @@
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 #include "ui/ozone/platform/drm/host/drm_native_display_delegate.h"
+#include "ui/ozone/platform/drm/host/drm_overlay_manager.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
@@ -56,6 +57,9 @@ class OzonePlatformDrm : public OzonePlatform {
   // OzonePlatform:
   ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
     return surface_factory_ozone_.get();
+  }
+  OverlayManagerOzone* GetOverlayManager() override {
+    return overlay_manager_.get();
   }
   CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_ozone_.get();
@@ -91,6 +95,7 @@ class OzonePlatformDrm : public OzonePlatform {
         scoped_ptr<DrmDeviceGenerator>(new DrmDeviceGenerator())));
     window_manager_.reset(new DrmWindowHostManager());
     cursor_.reset(new DrmCursor(window_manager_.get()));
+    overlay_manager_.reset(new DrmOverlayManager(false));
     surface_factory_ozone_.reset(new DrmSurfaceFactory(screen_manager_.get()));
     scoped_ptr<DrmGpuDisplayManager> ndd(new DrmGpuDisplayManager(
         screen_manager_.get(), drm_device_manager_.get()));
@@ -127,6 +132,7 @@ class OzonePlatformDrm : public OzonePlatform {
   scoped_ptr<DrmGpuPlatformSupport> gpu_platform_support_;
 
   // Objects in the "Browser" process.
+  scoped_ptr<OverlayManagerOzone> overlay_manager_;
   scoped_ptr<DeviceManager> device_manager_;
   scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
   scoped_ptr<DrmWindowHostManager> window_manager_;

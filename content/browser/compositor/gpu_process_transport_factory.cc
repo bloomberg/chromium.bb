@@ -55,8 +55,9 @@
 #elif defined(USE_OZONE)
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
+#include "ui/ozone/public/overlay_manager_ozone.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
 #elif defined(USE_X11)
 #include "content/browser/compositor/software_output_device_x11.h"
 #elif defined(OS_MACOSX)
@@ -158,7 +159,9 @@ scoped_ptr<BrowserCompositorOverlayCandidateValidator>
 CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
 #if defined(USE_OZONE)
   ui::OverlayCandidatesOzone* overlay_candidates =
-      ui::SurfaceFactoryOzone::GetInstance()->GetOverlayCandidates(widget);
+      ui::OzonePlatform::GetInstance()
+          ->GetOverlayManager()
+          ->GetOverlayCandidates(widget);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (overlay_candidates &&
       (command_line->HasSwitch(switches::kEnableHardwareOverlays) ||
@@ -294,8 +297,9 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           scoped_ptr<BrowserCompositorOverlayCandidateValidator>()));
     } else
 #if defined(USE_OZONE)
-    if (ui::SurfaceFactoryOzone::GetInstance()
-            ->CanShowPrimaryPlaneAsOverlay()) {
+        if (ui::OzonePlatform::GetInstance()
+                ->GetOverlayManager()
+                ->CanShowPrimaryPlaneAsOverlay()) {
       surface =
           make_scoped_ptr(new GpuSurfacelessBrowserCompositorOutputSurface(
               context_provider, data->surface_id, compositor->vsync_manager(),

@@ -33,6 +33,8 @@
       'sources': [
         'gpu_platform_support_cast.cc',
         'gpu_platform_support_cast.h',
+        'overlay_manager_cast.cc',
+        'overlay_manager_cast.h',
         'ozone_platform_cast.cc',
         'ozone_platform_cast.h',
         'platform_window_cast.cc',

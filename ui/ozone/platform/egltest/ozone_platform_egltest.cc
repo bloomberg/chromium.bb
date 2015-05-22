@@ -23,6 +23,7 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
+#include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -340,6 +341,9 @@ class OzonePlatformEgltest : public OzonePlatform {
   ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
     return surface_factory_ozone_.get();
   }
+  OverlayManagerOzone* GetOverlayManager() override {
+    return overlay_manager_.get();
+  }
   CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_ozone_.get();
   }
@@ -367,9 +371,7 @@ class OzonePlatformEgltest : public OzonePlatform {
 
   void InitializeUI() override {
     device_manager_ = CreateDeviceManager();
-    if (!surface_factory_ozone_)
-      surface_factory_ozone_.reset(
-          new SurfaceFactoryEgltest(&eglplatform_shim_));
+    overlay_manager_.reset(new StubOverlayManager());
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         make_scoped_ptr(new StubKeyboardLayoutEngine()));
     event_factory_ozone_.reset(new EventFactoryEvdev(
@@ -380,9 +382,7 @@ class OzonePlatformEgltest : public OzonePlatform {
   }
 
   void InitializeGPU() override {
-    if (!surface_factory_ozone_)
-      surface_factory_ozone_.reset(
-          new SurfaceFactoryEgltest(&eglplatform_shim_));
+    surface_factory_ozone_.reset(new SurfaceFactoryEgltest(&eglplatform_shim_));
     gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
   }
 
@@ -394,6 +394,7 @@ class OzonePlatformEgltest : public OzonePlatform {
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
   scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+  scoped_ptr<OverlayManagerOzone> overlay_manager_;
 
   bool shim_initialized_;
 

@@ -28,8 +28,6 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) override;
   const int32* GetEGLSurfaceProperties(const int32* desired_list) override;
-  OverlayCandidatesOzone* GetOverlayCandidates(
-      gfx::AcceleratedWidget w) override;
   scoped_refptr<NativePixmap> CreateNativePixmap(gfx::AcceleratedWidget w,
                                                  gfx::Size size,
                                                  BufferFormat format,

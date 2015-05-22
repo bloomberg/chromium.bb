@@ -6,10 +6,8 @@
 
 #include <gbm.h>
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "third_party/khronos/EGL/egl.h"
-#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
@@ -20,58 +18,10 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/public/native_pixmap.h"
-#include "ui/ozone/public/overlay_candidates_ozone.h"
-#include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace ui {
-namespace {
-
-class SingleOverlay : public OverlayCandidatesOzone {
- public:
-  SingleOverlay() {}
-  ~SingleOverlay() override {}
-
-  void CheckOverlaySupport(OverlaySurfaceCandidateList* candidates) override {
-    if (candidates->size() == 2) {
-      OverlayCandidatesOzone::OverlaySurfaceCandidate* first =
-          &(*candidates)[0];
-      OverlayCandidatesOzone::OverlaySurfaceCandidate* second =
-          &(*candidates)[1];
-      OverlayCandidatesOzone::OverlaySurfaceCandidate* overlay;
-      if (first->plane_z_order == 0) {
-        overlay = second;
-      } else if (second->plane_z_order == 0) {
-        overlay = first;
-      } else {
-        NOTREACHED();
-        return;
-      }
-      // 0.01 constant chosen to match DCHECKs in gfx::ToNearestRect and avoid
-      // that code asserting on quads that we accept.
-      if (overlay->plane_z_order > 0 &&
-          IsTransformSupported(overlay->transform) &&
-          gfx::IsNearestRectWithinDistance(overlay->display_rect, 0.01f)) {
-        overlay->overlay_handled = true;
-      }
-    }
-  }
-
- private:
-  bool IsTransformSupported(gfx::OverlayTransform transform) {
-    switch (transform) {
-      case gfx::OVERLAY_TRANSFORM_NONE:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(SingleOverlay);
-};
-
-}  // namespace
 
 GbmSurfaceFactory::GbmSurfaceFactory(bool allow_surfaceless)
     : DrmSurfaceFactory(NULL), allow_surfaceless_(allow_surfaceless) {
@@ -174,15 +124,6 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     return nullptr;
 
   return pixmap;
-}
-
-OverlayCandidatesOzone* GbmSurfaceFactory::GetOverlayCandidates(
-    gfx::AcceleratedWidget w) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kOzoneTestSingleOverlaySupport))
-    return new SingleOverlay();
-  return NULL;
 }
 
 bool GbmSurfaceFactory::ScheduleOverlayPlane(
