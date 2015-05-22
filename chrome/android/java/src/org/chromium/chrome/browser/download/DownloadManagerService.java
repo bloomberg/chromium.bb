@@ -657,6 +657,11 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 Log.e(TAG, "Download failed: " + e);
                 mErrorId = R.string.cannot_download_generic;
                 return false;
+            } catch (RuntimeException e) {
+                // See crbug.com/490442 for more details.
+                Log.e(TAG, "Failed to create target file on the external storage: " + e);
+                mErrorId = R.string.cannot_download_generic;
+                return false;
             }
             return true;
         }
