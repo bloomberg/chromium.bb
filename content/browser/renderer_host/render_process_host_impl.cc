@@ -38,6 +38,7 @@
 #include "components/scheduler/common/scheduler_switches.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/background_sync/background_sync_service_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 #include "content/browser/browser_child_process_host_impl.h"
@@ -948,6 +949,10 @@ void RenderProcessHostImpl::RegisterMojoServices() {
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
+
+  mojo_application_host_->service_registry()->AddService(base::Bind(
+      &content::BackgroundSyncServiceImpl::Create,
+      base::Unretained(storage_partition_impl_->GetBackgroundSyncContext())));
 
 #if defined(OS_ANDROID)
   ServiceRegistrarAndroid::RegisterProcessHostServices(
