@@ -27,7 +27,6 @@ BackgroundSyncV2 status=experimental
 // ** DO NOT use this flag unless you know what you are doing. **
 BleedingEdgeFastPaths
 BlinkScheduler
-Bluetooth status=experimental
 ClientHints status=experimental
 CompositedSelectionUpdate
 CompositorWorker status=experimental
@@ -157,6 +156,7 @@ UserSelectAll status=experimental
 WebAnimationsAPI status=experimental
 WebAnimationsSVG status=experimental
 WebAudio condition=WEB_AUDIO, status=stable
+WebBluetooth status=test
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
 WebMIDI status=stable

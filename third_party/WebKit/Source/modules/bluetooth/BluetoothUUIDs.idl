@@ -9,7 +9,7 @@
 [
     GarbageCollected,
     NoInterfaceObject,
-    RuntimeEnabled=Bluetooth,
+    RuntimeEnabled=WebBluetooth,
 ] interface BluetoothUUIDs {
     // readonly attribute BluetoothUUIDsService        service;
     // readonly attribute BluetoothUUIDsCharacteristic characteristic;

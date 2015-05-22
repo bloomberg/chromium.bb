@@ -9,7 +9,7 @@
 [
     GarbageCollected,
     NoInterfaceObject,
-    RuntimeEnabled=Bluetooth,
+    RuntimeEnabled=WebBluetooth,
 ] interface BluetoothInteraction {
     readonly    attribute BluetoothUUIDs uuids;
     // Promise<BluetoothGATTService>        getService(DOMString serviceInstanceID);

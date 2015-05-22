@@ -10,7 +10,7 @@ typedef DOMString UUID;
 
 [
     GarbageCollected,
-    RuntimeEnabled=Bluetooth,
+    RuntimeEnabled=WebBluetooth,
 ] interface BluetoothGATTService { // : ServiceEventHandlers {
     // readonly    attribute UUID            uuid;
     // readonly    attribute boolean         isPrimary;

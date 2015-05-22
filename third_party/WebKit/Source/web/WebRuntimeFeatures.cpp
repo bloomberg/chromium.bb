@@ -41,6 +41,11 @@ void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
     RuntimeEnabledFeatures::setExperimentalFeaturesEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableWebBluetooth(bool enable)
+{
+    RuntimeEnabledFeatures::setWebBluetoothEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableFeatureFromString(const WebString& name, bool enable)
 {
     RuntimeEnabledFeatures::setFeatureEnabledFromString(name, enable);

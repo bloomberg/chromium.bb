@@ -15,7 +15,7 @@ typedef DOMString UUID;
 
 [
     GarbageCollected,
-    RuntimeEnabled=Bluetooth,
+    RuntimeEnabled=WebBluetooth,
 ] interface BluetoothDevice
 // Implement ServiceEventHandlers interface: http://crbug.com/421670
 // : ServiceEventHandlers 

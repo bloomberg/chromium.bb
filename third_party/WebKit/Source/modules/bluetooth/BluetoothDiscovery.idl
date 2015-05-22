@@ -7,7 +7,7 @@
 [
     GarbageCollected,
     NoInterfaceObject,
-    RuntimeEnabled=Bluetooth,
+    RuntimeEnabled=WebBluetooth,
 ] interface BluetoothDiscovery {
     [CallWith=ScriptState] Promise<BluetoothDevice> requestDevice (
         // Implement requestDevice: http://crbug.com/420284

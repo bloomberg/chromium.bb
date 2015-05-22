@@ -7,7 +7,7 @@
 [
     GarbageCollected,
     NoInterfaceObject,
-    RuntimeEnabled=Bluetooth,
+    RuntimeEnabled=WebBluetooth,
 ] interface Bluetooth {
 };
 

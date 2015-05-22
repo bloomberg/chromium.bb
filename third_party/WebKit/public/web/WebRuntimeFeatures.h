@@ -41,6 +41,9 @@ namespace blink {
 class WebRuntimeFeatures {
 public:
     BLINK_EXPORT static void enableExperimentalFeatures(bool);
+
+    BLINK_EXPORT static void enableWebBluetooth(bool);
+
     BLINK_EXPORT static void enableTestOnlyFeatures(bool);
 
     // Enables a feature by its string identifier from
