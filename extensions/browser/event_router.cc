@@ -178,17 +178,16 @@ EventRouter::EventRouter(BrowserContext* browser_context,
       extension_prefs_(extension_prefs),
       extension_registry_observer_(this),
       listeners_(this) {
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 content::NotificationService::AllSources());
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_ENABLED,
                  content::Source<BrowserContext>(browser_context_));
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
-EventRouter::~EventRouter() {}
+EventRouter::~EventRouter() {
+  for (auto process : observed_process_set_)
+    process->RemoveObserver(this);
+}
 
 void EventRouter::AddEventListener(const std::string& event_name,
                                    content::RenderProcessHost* process,
@@ -247,6 +246,13 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
   ObserverMap::iterator observer = observers_.find(base_event_name);
   if (observer != observers_.end())
     observer->second->OnListenerAdded(details);
+
+  content::RenderProcessHost* process = listener->process();
+  if (process) {
+    bool inserted = observed_process_set_.insert(process).second;
+    if (inserted)
+      process->AddObserver(this);
+  }
 }
 
 void EventRouter::OnListenerRemoved(const EventListener* listener) {
@@ -258,6 +264,20 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
   ObserverMap::iterator observer = observers_.find(base_event_name);
   if (observer != observers_.end())
     observer->second->OnListenerRemoved(details);
+}
+
+void EventRouter::RenderProcessExited(content::RenderProcessHost* host,
+                                      base::TerminationStatus status,
+                                      int exit_code) {
+  listeners_.RemoveListenersForProcess(host);
+  observed_process_set_.erase(host);
+  host->RemoveObserver(this);
+}
+
+void EventRouter::RenderProcessHostDestroyed(content::RenderProcessHost* host) {
+  listeners_.RemoveListenersForProcess(host);
+  observed_process_set_.erase(host);
+  host->RemoveObserver(this);
 }
 
 void EventRouter::AddLazyEventListener(const std::string& event_name,
@@ -737,14 +757,6 @@ void EventRouter::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      content::RenderProcessHost* renderer =
-          content::Source<content::RenderProcessHost>(source).ptr();
-      // Remove all event listeners associated with this renderer.
-      listeners_.RemoveListenersForProcess(renderer);
-      break;
-    }
     case extensions::NOTIFICATION_EXTENSION_ENABLED: {
       // If the extension has a lazy background page, make sure it gets loaded
       // to register the events the extension is interested in.

@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "extensions/browser/event_listener_map.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/event_filtering_info.h"
@@ -45,7 +46,8 @@ struct EventListenerInfo;
 
 class EventRouter : public content::NotificationObserver,
                     public ExtensionRegistryObserver,
-                    public EventListenerMap::Delegate {
+                    public EventListenerMap::Delegate,
+                    public content::RenderProcessHostObserver {
  public:
   // These constants convey the state of our knowledge of whether we're in
   // a user-caused gesture as part of DispatchEvent.
@@ -298,6 +300,12 @@ class EventRouter : public content::NotificationObserver,
   void OnListenerAdded(const EventListener* listener) override;
   void OnListenerRemoved(const EventListener* listener) override;
 
+  // RenderProcessHostObserver implementation.
+  void RenderProcessExited(content::RenderProcessHost* host,
+                           base::TerminationStatus status,
+                           int exit_code) override;
+  void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
+
   content::BrowserContext* browser_context_;
 
   // The ExtensionPrefs associated with |browser_context_|. May be NULL in
@@ -314,6 +322,8 @@ class EventRouter : public content::NotificationObserver,
   // Map from base event name to observer.
   typedef base::hash_map<std::string, Observer*> ObserverMap;
   ObserverMap observers_;
+
+  std::set<content::RenderProcessHost*> observed_process_set_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRouter);
 };
