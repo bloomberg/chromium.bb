@@ -1731,6 +1731,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   EXPECT_EQ(bar_url, root->child_at(0)->current_url());
   ASSERT_EQ(1U, root->child_at(0)->child_count());
 
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   |--Site B ------- proxies for A C\n"
+      "   |    +--Site B -- proxies for A C\n"
+      "   +--Site C ------- proxies for A B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://bar.com/\n"
+      "      C = http://baz.com/",
+      DepictFrameTree(root));
+
   // Confirm that the browser process has updated the frame's current sandbox
   // flags.
   EXPECT_EQ(expected_flags,
@@ -1756,6 +1766,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   NavigateFrameToURL(root->child_at(0)->child_at(0), baz_child_url);
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(baz_child_url, observer.last_navigation_url());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   |--Site B ------- proxies for A C\n"
+      "   |    +--Site C -- proxies for A B\n"
+      "   +--Site C ------- proxies for A B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://bar.com/\n"
+      "      C = http://baz.com/",
+      DepictFrameTree(root));
 
   // Opening a popup in the child of a sandboxed frame should fail.
   success = false;
