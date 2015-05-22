@@ -184,7 +184,11 @@ jboolean CronetURLRequestAdapter::ReadData(
 }
 
 void CronetURLRequestAdapter::Destroy(JNIEnv* env, jobject jcaller) {
-  DCHECK(!context_->IsOnNetworkThread());
+  // Destroy could be called from any thread, including network thread (if
+  // posting task to executor throws an exception), but is posted, so |this|
+  // is valid until calling task is complete. Destroy() is always called from
+  // within a synchronized java block that guarantees no future posts to the
+  // network thread with the adapter pointer.
   context_->PostTaskToNetworkThread(
       FROM_HERE, base::Bind(&CronetURLRequestAdapter::DestroyOnNetworkThread,
                             base::Unretained(this)));

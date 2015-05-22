@@ -10,6 +10,7 @@ import org.chromium.base.NativeClassQualifiedName;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Pass an upload body to a UrlRequest using an UploadDataProvider.
@@ -81,7 +82,7 @@ final class CronetUploadDataStream implements UploadDataSink {
     @CalledByNative
     void readData(ByteBuffer byteBuffer) {
         mByteBuffer = byteBuffer;
-        mExecutor.execute(mReadTask);
+        postTaskToExecutor(mReadTask);
     }
 
     // TODO(mmenke): Consider implementing a cancel method.
@@ -111,7 +112,7 @@ final class CronetUploadDataStream implements UploadDataSink {
                 }
             }
         };
-        mExecutor.execute(task);
+        postTaskToExecutor(task);
     }
 
     /**
@@ -129,7 +130,7 @@ final class CronetUploadDataStream implements UploadDataSink {
             }
         };
 
-        mExecutor.execute(task);
+        postTaskToExecutor(task);
     }
 
     /**
@@ -213,6 +214,19 @@ final class CronetUploadDataStream implements UploadDataSink {
                 throw new IllegalStateException("Non-existent rewind failed.");
             }
             onError(exception);
+        }
+    }
+
+    /**
+     * Post task to application Executor.
+     */
+    private void postTaskToExecutor(Runnable task) {
+        try {
+            mExecutor.execute(task);
+        } catch (RejectedExecutionException e) {
+            // Just fail the request. The request is smart enough to handle the
+            // case where it was already cancelled by the embedder.
+            mRequest.onUploadException(e);
         }
     }
 

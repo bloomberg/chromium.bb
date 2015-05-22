@@ -10,6 +10,7 @@ import android.util.Pair;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.NativeClassQualifiedName;
+import org.chromium.base.VisibleForTesting;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * UrlRequest using Chromium HTTP stack implementation. Could be accessed from
@@ -68,6 +70,8 @@ final class CronetUrlRequest implements UrlRequest {
      * is cached as member variable.
      */
     private OnReadCompletedRunnable mOnReadCompletedTask;
+
+    private Runnable mOnDestroyedCallbackForTests;
 
     static final class HeadersList extends ArrayList<Pair<String, String>> {
     }
@@ -385,12 +389,25 @@ final class CronetUrlRequest implements UrlRequest {
         mDisableCache = true;
     }
 
+    @VisibleForTesting
+    public void setOnDestroyedCallbackForTests(Runnable onDestroyedCallbackForTests) {
+        mOnDestroyedCallbackForTests = onDestroyedCallbackForTests;
+    }
+
     /**
      * Post task to application Executor. Used for Listener callbacks
      * and other tasks that should not be executed on network thread.
      */
     private void postTaskToExecutor(Runnable task) {
-        mExecutor.execute(task);
+        try {
+            mExecutor.execute(task);
+        } catch (RejectedExecutionException failException) {
+            Log.e(CronetUrlRequestContext.LOG_TAG,
+                    "Exception posting task to executor", failException);
+            // If posting a task throws an exception, then there is no choice
+            // but to cancel the request.
+            cancel();
+        }
     }
 
     private static int convertRequestPriority(int priority) {
@@ -451,6 +468,9 @@ final class CronetUrlRequest implements UrlRequest {
             nativeDestroy(mUrlRequestAdapter);
             mRequestContext.onRequestDestroyed(this);
             mUrlRequestAdapter = 0;
+            if (mOnDestroyedCallbackForTests != null) {
+                mOnDestroyedCallbackForTests.run();
+            }
         }
     }
 
