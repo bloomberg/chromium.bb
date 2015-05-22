@@ -10,6 +10,7 @@
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -67,15 +68,11 @@ PP_Resource PrintPages(PP_Instance instance,
       new PpapiMsg_PPPPrinting_PrintPages(API_ID_PPP_PRINTING,
                                           instance, pages, &result));
 
-  // How refcounting works when returning a resource:
-  //
-  // The plugin in the plugin process makes a resource that it returns to the
-  // browser. The plugin proxy code returns that ref to us and asynchronously
-  // releases it. Before any release message associated with that operation
-  // comes, we'll get this reply. We need to add one ref since our caller
-  // expects us to add one ref for it to consume.
-  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(
-      result.host_resource());
+  // Explicilty don't add a reference to the received resource here. The plugin
+  // adds a ref during creation of the resource and it will "abandon" the
+  // resource to release it, which ensures that the initial ref won't be
+  // decremented. See the comment below in OnPluginMsgPrintPages.
+
   return result.host_resource();
 }
 
@@ -189,8 +186,17 @@ void PPP_Printing_Proxy::OnPluginMsgPrintPages(
 
   *result = resource_object->host_resource();
 
-  // See PrintPages above for how refcounting works.
-  resource_tracker->ReleaseResourceSoon(plugin_resource);
+  // Abandon the resource on the plugin side. This releases a reference to the
+  // resource and allows the plugin side of the resource (the proxy resource) to
+  // be destroyed without sending a message to the renderer notifing it that the
+  // plugin has released the resource. This used to call
+  // ResourceTracker::ReleaseResource directly which would trigger an IPC to be
+  // sent to the renderer to remove a ref to the resource. However due to
+  // arbitrary ordering of received sync/async IPCs in the renderer, this
+  // sometimes resulted in the resource being destroyed in the renderer before
+  // the renderer had a chance to add a reference to it. See crbug.com/490611.
+  static_cast<PluginResourceTracker*>(resource_tracker)
+      ->AbandonResource(plugin_resource);
 }
 
 void PPP_Printing_Proxy::OnPluginMsgEnd(PP_Instance instance) {

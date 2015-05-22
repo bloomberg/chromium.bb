@@ -32,6 +32,14 @@ PP_Resource PluginResourceTracker::PluginResourceForHostResource(
   return found->second;
 }
 
+void PluginResourceTracker::AbandonResource(PP_Resource res) {
+  DCHECK(GetResource(res));
+  bool inserted = abandoned_resources_.insert(res).second;
+  DCHECK(inserted);
+
+  ReleaseResource(res);
+}
+
 PP_Resource PluginResourceTracker::AddResource(Resource* object) {
   // If there's a HostResource, it must not be added twice.
   DCHECK(!object->host_resource().host_resource() ||
@@ -56,9 +64,16 @@ void PluginResourceTracker::RemoveResource(Resource* object) {
            host_resource_map_.end());
     host_resource_map_.erase(object->host_resource());
 
+    bool abandoned = false;
+    auto it = abandoned_resources_.find(object->pp_resource());
+    if (it != abandoned_resources_.end()) {
+      abandoned = true;
+      abandoned_resources_.erase(it);
+    }
+
     PluginDispatcher* dispatcher =
         PluginDispatcher::GetForInstance(object->pp_instance());
-    if (dispatcher) {
+    if (dispatcher && !abandoned) {
       // The dispatcher can be NULL if the plugin held on to a resource after
       // the instance was destroyed. In that case the browser-side resource has
       // already been freed correctly on the browser side.

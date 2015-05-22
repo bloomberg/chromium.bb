@@ -46,9 +46,6 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
   // ResourceHost.
   void ReleaseResource(PP_Resource res);
 
-  // Releases a reference on the given resource once the message loop returns.
-  void ReleaseResourceSoon(PP_Resource res);
-
   // Notifies the tracker that a new instance has been created. This must be
   // called before creating any resources associated with the instance.
   void DidCreateInstance(PP_Instance instance);
