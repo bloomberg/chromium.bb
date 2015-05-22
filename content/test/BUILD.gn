@@ -350,7 +350,7 @@ if (!is_mac) {
       deps += [
         "//content/shell/android:content_shell_jni_headers",
         "//content/shell:content_shell_lib",
-        "//testing/android/native_test:native_test_util",
+        "//testing/android/native_test:native_test_support",
       ]
 
       use_launcher = false

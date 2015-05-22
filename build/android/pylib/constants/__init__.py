@@ -102,7 +102,7 @@ PACKAGE_INFO = {
         'org.chromium.android_webview.test'),
     'gtest': PackageInfo(
         'org.chromium.native_test',
-        'org.chromium.native_test.NativeTestActivity',
+        'org.chromium.native_test.NativeUnitTestActivity',
         '/data/local/tmp/chrome-native-tests-command-line',
         None,
         None),
@@ -110,13 +110,13 @@ PACKAGE_INFO = {
         'org.chromium.components_browsertests_apk',
         ('org.chromium.components_browsertests_apk' +
          '.ComponentsBrowserTestsActivity'),
-        '/data/local/tmp/components-browser-tests-command-line',
+        '/data/local/tmp/chrome-native-tests-command-line',
         None,
         None),
     'content_browsertests': PackageInfo(
         'org.chromium.content_browsertests_apk',
         'org.chromium.content_browsertests_apk.ContentBrowserTestsActivity',
-        '/data/local/tmp/content-browser-tests-command-line',
+        '/data/local/tmp/chrome-native-tests-command-line',
         None,
         None),
     'chromedriver_webview_shell': PackageInfo(

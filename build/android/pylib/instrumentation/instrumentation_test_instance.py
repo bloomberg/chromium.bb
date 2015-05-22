@@ -201,8 +201,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if not os.path.exists(self._test_jar):
       error_func('Unable to find test JAR: %s' % self._test_jar)
 
-    self._test_package = apk_helper.GetPackageName(self.test_apk)
-    self._test_runner = apk_helper.GetInstrumentationName(self.test_apk)
+    apk = apk_helper.ApkHelper(self.test_apk)
+    self._test_package = apk.GetPackageName()
+    self._test_runner = apk.GetInstrumentationName()
 
     self._package_info = None
     for package_info in constants.PACKAGE_INFO.itervalues():
@@ -274,10 +275,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
         constants.GetOutDirectory(), constants.SDK_BUILD_APKS_DIR,
         'OnDeviceInstrumentationDriver.apk')
     if os.path.exists(self._driver_apk):
-      self._driver_package = apk_helper.GetPackageName(
-          self._driver_apk)
-      self._driver_name = apk_helper.GetInstrumentationName(
-          self._driver_apk)
+      driver_apk = apk_helper.ApkHelper(self._driver_apk)
+      self._driver_package = driver_apk.GetPackageName()
+      self._driver_name = driver_apk.GetInstrumentationName()
     else:
       self._driver_apk = None
 

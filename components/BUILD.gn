@@ -342,17 +342,6 @@ repack("components_tests_pak") {
   ]
 }
 
-if (is_android) {
-  import("//build/config/android/rules.gni")
-
-  generate_jni("components_browsertests_jni_headers") {
-    jni_package = "components_browsertests/shell"
-    sources = [
-      "test/android/browsertests_apk/src/org/chromium/components_browsertests_apk/ComponentsBrowserTestsActivity.java",
-    ]
-  }
-}
-
 test("components_browsertests") {
   sources = [
     "autofill/content/browser/risk/fingerprint_browsertest.cc",
@@ -394,10 +383,7 @@ test("components_browsertests") {
       "test/android/browsertests_apk/components_browser_tests_jni_onload.cc",
     ]
     sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
-    deps += [
-      ":components_browsertests_jni_headers",
-      "//testing/android/native_test:native_test_util",
-    ]
+    deps += [ "//testing/android/native_test:native_test_support" ]
 
     use_launcher = false
   }

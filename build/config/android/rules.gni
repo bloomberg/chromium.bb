@@ -1608,7 +1608,9 @@ template("unittest_apk") {
   android_apk(target_name) {
     final_apk_path = "$root_build_dir/${apk_name}_apk/${apk_name}-debug.apk"
     java_files = [
+      "//testing/android/native_test/java/src/org/chromium/native_test/NativeBrowserTestActivity.java",
       "//testing/android/native_test/java/src/org/chromium/native_test/NativeTestActivity.java",
+      "//testing/android/native_test/java/src/org/chromium/native_test/NativeUnitTestActivity.java",
       "//testing/android/native_test/java/src/org/chromium/native_test/NativeTestInstrumentationTestRunner.java",
     ]
     android_manifest = "//testing/android/native_test/java/AndroidManifest.xml"

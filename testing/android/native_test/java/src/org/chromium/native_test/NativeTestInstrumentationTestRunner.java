@@ -32,21 +32,31 @@ import java.util.regex.Pattern;
  */
 public class NativeTestInstrumentationTestRunner extends Instrumentation {
 
+    public static final String EXTRA_NATIVE_TEST_ACTIVITY =
+            "org.chromium.native_test.NativeTestInstrumentationTestRunner."
+                    + "NativeTestActivity";
+
     private static final String TAG = Log.makeTag("native_test");
 
     private static final int ACCEPT_TIMEOUT_MS = 5000;
+    private static final String DEFAULT_NATIVE_TEST_ACTIVITY =
+            "org.chromium.native_test.NativeUnitTestActivity";
     private static final Pattern RE_TEST_OUTPUT = Pattern.compile("\\[ *([^ ]*) *\\] ?([^ ]+) .*");
 
+    private ResultsBundleGenerator mBundleGenerator = new RobotiumBundleGenerator();
     private String mCommandLineFile;
     private String mCommandLineFlags;
+    private String mNativeTestActivity;
+    private Bundle mLogBundle = new Bundle();
     private File mStdoutFile;
-    private Bundle mLogBundle;
-    private ResultsBundleGenerator mBundleGenerator;
 
     @Override
     public void onCreate(Bundle arguments) {
         mCommandLineFile = arguments.getString(NativeTestActivity.EXTRA_COMMAND_LINE_FILE);
         mCommandLineFlags = arguments.getString(NativeTestActivity.EXTRA_COMMAND_LINE_FLAGS);
+        mNativeTestActivity = arguments.getString(EXTRA_NATIVE_TEST_ACTIVITY);
+        if (mNativeTestActivity == null) mNativeTestActivity = DEFAULT_NATIVE_TEST_ACTIVITY;
+
         try {
             mStdoutFile = File.createTempFile(
                     ".temp_stdout_", ".txt", Environment.getExternalStorageDirectory());
@@ -56,8 +66,6 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
             finish(Activity.RESULT_CANCELED, new Bundle());
             return;
         }
-        mLogBundle = new Bundle();
-        mBundleGenerator = new RobotiumBundleGenerator();
         start();
     }
 
@@ -94,9 +102,7 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
      */
     private Activity startNativeTestActivity() {
         Intent i = new Intent(Intent.ACTION_MAIN);
-        i.setComponent(new ComponentName(
-                "org.chromium.native_test",
-                "org.chromium.native_test.NativeTestActivity"));
+        i.setComponent(new ComponentName(getContext().getPackageName(), mNativeTestActivity));
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (mCommandLineFile != null) {
             Log.i(TAG, "Passing command line file extra: %s", mCommandLineFile);

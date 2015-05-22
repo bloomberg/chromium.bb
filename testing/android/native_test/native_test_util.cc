@@ -10,7 +10,7 @@
 #include "base/strings/string_util.h"
 
 namespace testing {
-namespace native_test_util {
+namespace android {
 
 void ParseArgsFromString(const std::string& command_line,
                          std::vector<std::string>* args) {
@@ -46,5 +46,5 @@ int ArgsToArgv(const std::vector<std::string>& args,
   return argc;
 }
 
-}  // namespace native_test_util
+}  // namespace android
 }  // namespace testing
