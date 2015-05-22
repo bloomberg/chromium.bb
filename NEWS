@@ -16,6 +16,17 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Improvements to Bengali, Devanagari, Kannada, Gujarati, Malayalam,
   Telugu and Oriya, thanks to Sreeja Param
 - Fixes to en-GB-g2.ctb, thanks to Paul Wood
+- Vast restructuring to Korean tables. In 2006 the Institue for Korean
+  Braille modified some dots in Korean braille. Specifically, some
+  punctuation dots are now based on English. To accomodate this change
+  and to retain the old tables, the Korean table set was revised as
+  follows:
+  - Added three files: ko-chars, the Korean characters dictionary, and
+    rules for g1 and g2.
+  - ko-g1 and ko-g2 are now interface files that includes needed
+    files.
+  - Added three files for Korean braille 2006 revision along with a
+    test harness.
 
 * Noteworthy changes in release 2.6.2 (2015-03-02)
 This release, which was mostly pushed out the door by Bert and Mesar,
