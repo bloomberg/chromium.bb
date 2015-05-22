@@ -19,6 +19,7 @@
 #import "ios/net/nsurlrequest_util.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
+#include "ios/web/net/clients/crw_redirect_network_client_factory.h"
 #import "ios/web/net/crw_url_verifying_protocol_handler.h"
 #include "ios/web/net/request_group_util.h"
 #include "ios/web/public/url_scheme_util.h"
@@ -54,7 +55,8 @@ const int64 kContinuousCheckIntervalMSLow = 3000;
 
 }  // namespace web
 
-@interface CRWUIWebViewWebController ()<UIWebViewDelegate> {
+@interface CRWUIWebViewWebController () <CRWRedirectClientDelegate,
+                                         UIWebViewDelegate> {
   // The UIWebView managed by this instance.
   base::scoped_nsobject<UIWebView> _uiWebView;
 
@@ -123,6 +125,10 @@ const int64 kContinuousCheckIntervalMSLow = 3000;
 
   // Backs the property of the same name.
   id<CRWRecurringTaskDelegate>_recurringTaskDelegate;
+
+  // Redirect client factory.
+  base::scoped_nsobject<CRWRedirectNetworkClientFactory>
+      redirect_client_factory_;
 }
 
 // Whether or not URL caching is enabled. Between enabling and disabling
@@ -326,6 +332,30 @@ const size_t kMaxMessageQueueSize = 262144;
         @"UIMoviePlayerControllerDidExitFullscreenNotification"
                         object:nil];
     _recurringTaskDelegate = self;
+
+    // UIWebViews require a redirect network client in order to accurately
+    // detect server redirects.
+    redirect_client_factory_.reset(
+        [[CRWRedirectNetworkClientFactory alloc] initWithDelegate:self]);
+    // WeakNSObjects cannot be dereferenced outside of the main thread, and
+    // CRWWebController must be deallocated from the main thread.  Keep a
+    // reference to self on the main thread and release it after successfully
+    // adding the redirect client factory to the RequestTracker on the IO
+    // thread.
+    __block base::scoped_nsobject<CRWUIWebViewWebController> scopedSelf(
+        [self retain]);
+    web::WebThread::PostTaskAndReply(
+        web::WebThread::IO, FROM_HERE, base::BindBlock(^{
+          // Only add the factory if there is a valid request tracker.
+          web::WebStateImpl* webState = [scopedSelf webStateImpl];
+          if (webState && webState->GetRequestTracker()) {
+            webState->GetRequestTracker()->AddNetworkClientFactory(
+                redirect_client_factory_);
+          }
+        }),
+        base::BindBlock(^{
+          scopedSelf.reset();
+        }));
   }
   return self;
 }
@@ -1315,6 +1345,21 @@ const size_t kMaxMessageQueueSize = 262144;
 
   [self injectEarlyInjectionScripts];
   [self checkForUnexpectedURLChange];
+}
+
+#pragma mark -
+#pragma mark CRWRedirectClientDelegate
+
+- (void)wasRedirectedToRequest:(NSURLRequest*)request
+              redirectResponse:(NSURLResponse*)response {
+  // Register the redirected load request if it originated from the main page
+  // load.
+  GURL redirectedURL = net::GURLWithNSURL(response.URL);
+  if ([self currentNavigationURL] == redirectedURL) {
+    [self registerLoadRequest:net::GURLWithNSURL(request.URL)
+                     referrer:[self currentReferrer]
+                   transition:ui::PAGE_TRANSITION_SERVER_REDIRECT];
+  }
 }
 
 #pragma mark -

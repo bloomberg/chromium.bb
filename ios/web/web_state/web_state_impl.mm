@@ -341,6 +341,7 @@ void WebStateImpl::ClearWebInterstitialForNavigation() {
       // interstitial, have the session controller go back one page.
       [sessionController goBack];
     }
+    [sessionController discardNonCommittedEntries];
     interstitial->DontProceed();
   }
 }

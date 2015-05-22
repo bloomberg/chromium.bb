@@ -434,8 +434,6 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   if (url != item->GetURL()) {
     item->SetURL(url);
     item->SetVirtualURL(url);
-    // Since updates are caused by page redirects, they are renderer-initiated.
-    item->set_is_renderer_initiated(true);
     // Redirects (3xx response code), or client side navigation must change
     // POST requests to GETs.
     item->SetPostData(nil);
