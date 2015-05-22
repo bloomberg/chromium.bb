@@ -66,19 +66,25 @@ void inner() {
     int32_t kExpected = (1 << 20) - 1;
     struct Var v = return_a_struct(kExpected);
     if (v.type != kExpected
-        && v.value.as_double != (double)(kExpected)) {
+        || v.value.as_double != (double)(kExpected)) {
       printf("ERROR: return_a_struct mismatch: %d vs %d and %f vs %f\n",
              v.type, kExpected, v.value.as_double, (double)kExpected);
       abort();
     }
     next_step(6);
     v = call_and_return(v);
+    if (v.type != kExpected
+        || v.value.as_double != (double)(kExpected)) {
+      printf("ERROR: call_and_return mismatch: %d vs %d and %f vs %f\n",
+             v.type, kExpected, v.value.as_double, (double)kExpected);
+      abort();
+    }
     next_step(7);
     call_with_struct(kExpected, v);
     // Also test callbacks.
     call_with_callback(&my_callback, v);
     if (global_v.type != kExpected
-        && global_v.value.as_double != (double)(kExpected)) {
+        || global_v.value.as_double != (double)(kExpected)) {
       printf("ERROR: callback mismatch: %d vs %d and %f vs %f\n",
              global_v.type, kExpected,
              global_v.value.as_double, (double)kExpected);

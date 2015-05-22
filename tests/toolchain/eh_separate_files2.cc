@@ -42,9 +42,9 @@ namespace {
 // Throw an exception, just to test exceptional control flow a little more.
 void check_and_throw(const char* label, int expected_values, struct Var v) {
   if (v.type != expected_values
-      && v.value.as_double != (double)(expected_values)) {
-    printf("ERROR: return_a_struct mismatch: %d vs %d and %f vs %f\n",
-           v.type, expected_values,
+      || v.value.as_double != (double)(expected_values)) {
+    printf("ERROR: check %s mismatch: %d vs %d and %f vs %f\n",
+           label, v.type, expected_values,
            v.value.as_double, (double)expected_values);
     abort();
   }
