@@ -23,6 +23,11 @@ chromecast::Size FromGfxSize(const gfx::Size& size) {
   return chromecast::Size(size.width(), size.height());
 }
 
+// Initial display size to create, needed before first window is created.
+gfx::Size GetInitialDisplaySize() {
+  return gfx::Size(1280, 720);
+}
+
 // Hard lower bound on display resolution
 gfx::Size GetMinDisplaySize() {
   return gfx::Size(1280, 720);
@@ -86,8 +91,8 @@ SurfaceFactoryCast::SurfaceFactoryCast(scoped_ptr<CastEglPlatform> egl_platform)
       display_type_(0),
       have_display_type_(false),
       window_(0),
-      display_size_(0, 0),
-      new_display_size_(0, 0),
+      display_size_(GetInitialDisplaySize()),
+      new_display_size_(GetInitialDisplaySize()),
       egl_platform_(egl_platform.Pass()) {
 }
 
