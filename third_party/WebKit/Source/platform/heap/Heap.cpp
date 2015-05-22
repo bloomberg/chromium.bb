@@ -544,6 +544,7 @@ void NormalPageHeap::freePage(NormalPage* page)
     Heap::decreaseAllocatedSpace(page->size());
 
     if (page->terminating()) {
+        ASSERT(ThreadState::current()->isTerminating());
         // The thread is shutting down and this page is being removed as a part
         // of the thread local GC.  In that case the object could be traced in
         // the next global GC if there is a dangling pointer from a live thread
@@ -553,7 +554,9 @@ void NormalPageHeap::freePage(NormalPage* page)
         // crashes instead of causing use-after-frees.  After the next global
         // GC, the orphaned pages are removed.
         Heap::orphanedPagePool()->addOrphanedPage(heapIndex(), page);
+        ASSERT(!page->terminating());
     } else {
+        ASSERT(!ThreadState::current()->isTerminating());
         PageMemory* memory = page->storage();
         page->~NormalPage();
         Heap::freePagePool()->addFreePage(heapIndex(), memory);
@@ -926,6 +929,7 @@ void LargeObjectHeap::freeLargeObjectPage(LargeObjectPage* object)
         // crashes instead of causing use-after-frees.  After the next global
         // GC, the orphaned pages are removed.
         Heap::orphanedPagePool()->addOrphanedPage(heapIndex(), object);
+        ASSERT(!object->terminating());
     } else {
         ASSERT(!ThreadState::current()->isTerminating());
         PageMemory* memory = object->storage();
@@ -1312,16 +1316,24 @@ void NormalPage::checkAndMarkPointer(Visitor* visitor, Address address)
     markPointer(visitor, header);
 }
 
-void NormalPage::markOrphaned()
+static void zapOrphanedPage(void* payload, size_t payloadSize)
 {
-    // Zap the payload with a recognizable value to detect any incorrect
-    // cross thread pointer usage.
 #if defined(ADDRESS_SANITIZER)
-    // This needs to zap poisoned memory as well.
-    // Force unpoison memory before memset.
+    // Unpoison memory before memset.
     ASAN_UNPOISON_MEMORY_REGION(payload(), payloadSize());
 #endif
-    memset(payload(), orphanedZapValue, payloadSize());
+    // Zap the payload with a recognizable value to detect any incorrect
+    // cross thread pointer usage.
+    memset(payload, orphanedZapValue, payloadSize);
+#if defined(ADDRESS_SANITIZER)
+    // Poison the memory again.
+    ASAN_UNPOISON_MEMORY_REGION(payload(), payloadSize());
+#endif
+}
+
+void NormalPage::markOrphaned()
+{
+    zapOrphanedPage(payload(), payloadSize());
     BasePage::markOrphaned();
 }
 
@@ -1485,9 +1497,7 @@ void LargeObjectPage::checkAndMarkPointer(Visitor* visitor, Address address)
 
 void LargeObjectPage::markOrphaned()
 {
-    // Zap the payload with a recognizable value to detect any incorrect
-    // cross thread pointer usage.
-    memset(payload(), orphanedZapValue, payloadSize());
+    zapOrphanedPage(payload(), payloadSize());
     BasePage::markOrphaned();
 }
 
