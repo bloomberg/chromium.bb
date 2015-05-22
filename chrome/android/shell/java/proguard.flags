@@ -62,6 +62,9 @@
 # Google Play Services warnings are about its resources.
 -dontwarn com.google.android.gms.R**
 
+# TODO(yfriedman): Remove when crbug.com/488192 is fixed.
+-dontwarn org.apache.http.**
+
 # The support library contains references to newer platform versions.
 # Don't warn about those in case this app is linking against an older
 # platform version.  We know about them, and they are safe.
