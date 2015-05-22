@@ -86,7 +86,20 @@ imported/web-platform-tests/fetch [ Skip ]
 imported/web-platform-tests/fonts [ Skip ]
 imported/web-platform-tests/geolocation-API [ Skip ]
 imported/web-platform-tests/hr-time [ Skip ]
-imported/web-platform-tests/html [ Skip ]
+# imported/web-platform-tests/html/dom [ Pass ]
+## Owners: tkent
+imported/web-platform-tests/html/browsers [ Skip ]
+imported/web-platform-tests/html/editing [ Skip ]
+imported/web-platform-tests/html/iana [ Skip ]
+imported/web-platform-tests/html/infrastructure [ Skip ]
+imported/web-platform-tests/html/introduction [ Skip ]
+imported/web-platform-tests/html/obsolete [ Skip ]
+imported/web-platform-tests/html/rendering [ Skip ]
+imported/web-platform-tests/html/semantics [ Skip ]
+imported/web-platform-tests/html/syntax [ Skip ]
+imported/web-platform-tests/html/the-xhtml-syntax [ Skip ]
+imported/web-platform-tests/html/tools [ Skip ]
+imported/web-platform-tests/html/webappapis [ Skip ]
 # imported/web-platform-tests/html-imports [ Pass ]
 imported/web-platform-tests/html-longdesc [ Skip ]
 imported/web-platform-tests/html-media-capture [ Skip ]
@@ -138,6 +151,33 @@ imported/web-platform-tests/workers [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the upstream tests
 # that we shouldn't bother importing until they are fixed.
+
+# crbug.com/490694: Needs to support *.headers.
+imported/web-platform-tests/html/dom/documents/resource-metadata-management/document-lastModified.html [ Skip ]
+
+# crbug.com/490939: Reflection tests are too large.  They cause time out frequently.
+imported/web-platform-tests/html/dom/reflection-embedded.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-forms.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-grouping.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-metadata.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-misc.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-obsolete.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-sections.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-tabular.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-text.html [ Skip ]
+
+# Depends on web-platform-tests/dom/nodes/.
+imported/web-platform-tests/html/dom/documents/dom-tree-accessors/document.title-07.html [ Skip ]
+
+# crbug.com/490940: Needs to load extra resources.
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/009.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/011.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/012.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/013.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/014.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/015.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/016.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-03.html [ Skip ]
 
 # these contain an extraneous debug log div ..
 imported/web-platform-tests/html-imports/link-import-null.html [ Skip ]

@@ -1,0 +1,7 @@
+Dataset - element.dataset is an instance of DOMStringMap
+
+This is a testharness.js-based test.
+PASS An elements dataset property is an instance of a DOMStringMap 
+PASS Properties on Object.prototype should shine through. 
+Harness: the test ran to completion.
+

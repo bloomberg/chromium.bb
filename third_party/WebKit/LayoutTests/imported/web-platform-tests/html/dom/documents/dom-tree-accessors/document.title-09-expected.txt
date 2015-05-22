@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL No title element in SVG document assert_equals: expected "title" but got "x-child"
+FAIL Title element in SVG document assert_equals: expected "foobar" but got "foo"
+FAIL Title element not child of SVG root assert_equals: expected "" but got "foo"
+PASS Title element not in SVG namespace 
+Harness: the test ran to completion.
+

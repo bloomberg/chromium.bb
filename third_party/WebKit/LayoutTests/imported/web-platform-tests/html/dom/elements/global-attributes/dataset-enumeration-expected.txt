@@ -1,0 +1,7 @@
+Dataset - Enumeration
+
+This is a testharness.js-based test.
+PASS A dataset should be enumeratable. 
+PASS Only attributes who qualify as dataset properties should be enumeratable in the dataset. 
+Harness: the test ran to completion.
+
