@@ -50,12 +50,10 @@ bool BelongsToContainerWithEqualOrGreaterId(const aura::Window* window,
 ////////////////////////////////////////////////////////////////////////////////
 // AshFocusRules, public:
 
-AshFocusRules::AshFocusRules() : is_shutting_down_(false) {
-  ash::Shell::GetInstance()->AddShellObserver(this);
+AshFocusRules::AshFocusRules() {
 }
 
 AshFocusRules::~AshFocusRules() {
-  ash::Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 bool AshFocusRules::IsWindowConsideredActivatable(aura::Window* window) const {
@@ -136,9 +134,6 @@ bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
 
 aura::Window* AshFocusRules::GetNextActivatableWindow(
     aura::Window* ignore) const {
-  if (is_shutting_down_)
-    return nullptr;
-
   DCHECK(ignore);
 
   // Start from the container of the most-recently-used window. If the list of
@@ -205,10 +200,6 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateInContainer(
       return *i;
   }
   return NULL;
-}
-
-void AshFocusRules::OnAppTerminating() {
-  is_shutting_down_ = true;
 }
 
 }  // namespace wm
