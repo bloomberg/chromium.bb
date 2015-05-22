@@ -490,8 +490,6 @@ void V8Debugger::interruptAndRun(PassOwnPtr<Task> task)
 
 void V8Debugger::runPendingTasks()
 {
-    if (!enabled())
-        return;
     while (true) {
         OwnPtr<Task> task = m_taskQueue->tryTake();
         if (!task)
@@ -562,7 +560,8 @@ void V8Debugger::handleProgramBreak(ScriptState* pausedScriptState, v8::Local<v8
 void V8Debugger::v8InterruptCallback(v8::Isolate*, void* data)
 {
     V8Debugger* server = static_cast<V8Debugger*>(data);
-    server->runPendingTasks();
+    if (server->enabled())
+        server->runPendingTasks();
 }
 
 void V8Debugger::v8DebugEventCallback(const v8::Debug::EventDetails& eventDetails)

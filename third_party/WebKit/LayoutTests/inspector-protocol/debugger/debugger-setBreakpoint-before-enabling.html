@@ -1,0 +1,26 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.sendCommand("Debugger.setBreakpointByUrl", { url: "http://example.com", lineNumber: 10  }, didSetBreakpointByUrlBeforeEnable);
+
+    function didSetBreakpointByUrlBeforeEnable(message)
+    {
+        InspectorTest.log("setBreakpointByUrl error: " + JSON.stringify(message.error, null, 2));
+        InspectorTest.sendCommand("Debugger.setBreakpoint", {}, didSetBreakpointBeforeEnable);
+    }
+
+    function didSetBreakpointBeforeEnable(message)
+    {
+        InspectorTest.log("setBreakpoint error: " + JSON.stringify(message.error, null, 2));
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+</body>
+</html>

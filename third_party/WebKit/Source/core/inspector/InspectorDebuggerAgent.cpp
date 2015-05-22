@@ -194,12 +194,12 @@ bool InspectorDebuggerAgent::checkEnabled(ErrorString* errorString)
 void InspectorDebuggerAgent::enable()
 {
     m_instrumentingAgents->setInspectorDebuggerAgent(this);
-
+    // startListeningV8Debugger may result in reporting all parsed scripts to
+    // the agent so it should already be in enabled state by then.
+    m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
     startListeningV8Debugger();
     // FIXME(WK44513): breakpoints activated flag should be synchronized between all front-ends
     debugger().setBreakpointsActivated(true);
-
-    m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
     if (m_listener)
         m_listener->debuggerWasEnabled();
 }

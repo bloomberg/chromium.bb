@@ -5,7 +5,6 @@
 
 function test()
 {
-    InspectorTest.startDumpingProtocolMessages();
     InspectorTest.sendCommand("Debugger.enable", {}, setEventListenerBreakpointWhenDOMDisabled);
 
     function finishIfError(message)
