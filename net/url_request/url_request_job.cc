@@ -18,8 +18,10 @@
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
+#include "net/base/network_quality_estimator.h"
 #include "net/filter/filter.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request_context.h"
 
 namespace net {
 
@@ -808,7 +810,17 @@ void URLRequestJob::OnRawReadComplete(int bytes_read) {
 }
 
 void URLRequestJob::RecordBytesRead(int bytes_read) {
+  DCHECK_GT(bytes_read, 0);
   prefilter_bytes_read_ += bytes_read;
+
+  // Notify NetworkQualityEstimator.
+  // TODO(tbansal): Move this to url_request_http_job.cc. This may catch
+  // Service Worker jobs twice.
+  if (request_ && request_->context()->network_quality_estimator()) {
+    request_->context()->network_quality_estimator()->NotifyDataReceived(
+        *request_, prefilter_bytes_read_);
+  }
+
   if (!filter_.get())
     postfilter_bytes_read_ += bytes_read;
   DVLOG(2) << __FUNCTION__ << "() "

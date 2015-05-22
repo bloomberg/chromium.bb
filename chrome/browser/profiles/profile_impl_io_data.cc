@@ -571,6 +571,8 @@ void ProfileImplIOData::InitializeInternal(
       main_context->network_delegate(),
       ftp_factory_.get());
   main_context->set_job_factory(main_job_factory_.get());
+  main_context->set_network_quality_estimator(
+      io_thread_globals->network_quality_estimator.get());
 
 #if defined(ENABLE_EXTENSIONS)
   InitializeExtensionsRequestContext(profile_params);

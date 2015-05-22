@@ -48,6 +48,7 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_util.h"
+#include "net/base/network_quality_estimator.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_policy_enforcer.h"
 #include "net/cert/cert_verifier.h"
@@ -275,6 +276,8 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   context->set_network_delegate(globals->system_network_delegate.get());
   context->set_http_user_agent_settings(
       globals->http_user_agent_settings.get());
+  context->set_network_quality_estimator(
+      globals->network_quality_estimator.get());
   return context;
 }
 
@@ -670,6 +673,9 @@ void IOThread::InitAsync() {
           "466432 IOThread::InitAsync::CreateGlobalHostResolver"));
   globals_->system_network_delegate = chrome_network_delegate.Pass();
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
+
+  globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator());
+
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile5(

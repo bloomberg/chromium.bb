@@ -25571,6 +25571,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="NQE.FastestRTT" units="milliseconds">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Rough estimate of the fastest round-trip-time, before a connectivity change
+    is detected.
+
+    This metric is recorded when a connectivity change is detected. This will
+    miss data from users whose connection type never changes and will be biased
+    to users whose connection type changes frequently.
+  </summary>
+</histogram>
+
+<histogram name="NQE.PeakKbps" units="Kbps">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Rough estimate of peak throughput, before a connectivity change is detected.
+
+    This metric is recorded when a connectivity change is detected. This will
+    miss data from users whose connection type never changes and will be biased
+    to users whose connection type changes frequently.
+  </summary>
+</histogram>
+
 <histogram name="ntp.searchurls.total">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>TBD</summary>
@@ -69530,6 +69553,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="server11" label="Suggestions coming from server source 11."/>
   <affected-histogram name="NewTabPage.MostVisited"/>
   <affected-histogram name="NewTabPage.SuggestionsImpression"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NQE.NetworkTypes" separator=".">
+  <suffix name="Unknown" label="On Unknown network"/>
+  <suffix name="Ethernet" label="On Ethernet network"/>
+  <suffix name="Wifi" label="On WiFi network"/>
+  <suffix name="2G" label="On 2G network"/>
+  <suffix name="3G" label="On 3G Network"/>
+  <suffix name="4G" label="On 4G network"/>
+  <suffix name="None" label="With no detected network"/>
+  <suffix name="Bluetooth" label="On Bluetooth network"/>
+  <affected-histogram name="NQE.FastestRTT"/>
+  <affected-histogram name="NQE.PeakKbps"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OffDomainInclusionAbortReason" separator=".">

@@ -9,6 +9,8 @@
 #include <shlobj.h>
 #endif
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/basictypes.h"
@@ -29,6 +31,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
@@ -37,6 +40,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
 #include "net/base/net_util.h"
+#include "net/base/network_quality.h"
+#include "net/base/network_quality_estimator.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -4066,6 +4071,55 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
       }
     }
   }
+}
+
+TEST_F(URLRequestTestHTTP, NetworkQualityEstimator) {
+  ASSERT_TRUE(test_server_.Start());
+  // Enable requests to local host to be used for network quality estimation.
+  NetworkQualityEstimator estimator(true);
+
+  TestDelegate d;
+  TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
+  TestURLRequestContext context(true);
+  context.set_network_quality_estimator(&estimator);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  uint64_t min_transfer_size_in_bytes =
+      NetworkQualityEstimator::kMinTransferSizeInBytes;
+  // Create a long enough URL such that response size exceeds network quality
+  // estimator's minimum transfer size.
+  std::string url = "echo.html?";
+  url.append(min_transfer_size_in_bytes, 'x');
+
+  scoped_ptr<URLRequest> r(
+      context.CreateRequest(test_server_.GetURL(url), DEFAULT_PRIORITY, &d));
+  int sleep_duration_milliseconds = 1;
+  base::PlatformThread::Sleep(
+      base::TimeDelta::FromMilliseconds(sleep_duration_milliseconds));
+  r->Start();
+
+  base::RunLoop().Run();
+
+  NetworkQuality network_quality =
+      context.network_quality_estimator()->GetEstimate();
+  EXPECT_GE(network_quality.fastest_rtt,
+            base::TimeDelta::FromMilliseconds(sleep_duration_milliseconds));
+  EXPECT_GT(network_quality.fastest_rtt_confidence, 0);
+  EXPECT_GT(network_quality.peak_throughput_kbps, uint64_t(0));
+  EXPECT_GT(network_quality.peak_throughput_kbps_confidence, 0);
+
+  // Verify that histograms are not populated. They should populate only when
+  // there is a change in ConnectionType.
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 0);
+  histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 0);
+
+  NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
+  base::MessageLoop::current()->RunUntilIdle();
+  histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 1);
+  histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 1);
 }
 
 TEST_F(URLRequestTestHTTP, RedirectLoadTiming) {
