@@ -51,7 +51,7 @@ static void check_addr_is_unreadable(volatile char *addr) {
     char value = *addr;
     /* If we reach here, the assertion failed. */
     fprintf(stderr, "Address %p was readable, and contained %i\n",
-            addr, value);
+            (void *) addr, value);
     exit(1);
   }
   /*
@@ -80,7 +80,7 @@ static void check_addr_is_unwritable(volatile char *addr, char value) {
     *addr = value;
     /* If we reach here, the assertion failed. */
     fprintf(stderr, "Address %p was writable, %i was written\n",
-            addr, value);
+            (void *) addr, value);
     exit(1);
   }
   /*
@@ -149,7 +149,7 @@ struct prot_access_specs {
 int test_prot_access(int fd, size_t map_size, void *test_spec) {
   struct prot_access_specs *spec = (struct prot_access_specs *) test_spec;
   char *addr;
-  
+
   addr = (char *) mmap(NULL,
                        map_size,
                        spec->map_prot,

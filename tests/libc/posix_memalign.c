@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
       }
       if ((size_t)outp % align_to_test[i] != 0) {
         fprintf(stderr, "posix_memalign failed to align to %zu: ptr=%p\n",
-                align_to_test[i], outp);
+                align_to_test[i], (void *) outp);
         return 1;
       }
       free(outp);

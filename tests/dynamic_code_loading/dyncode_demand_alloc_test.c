@@ -38,7 +38,7 @@ void load_into_page(uint8_t *dest) {
   /* Check that the whole page is correctly filled with halts. */
   for (ptr = dest; ptr < dest + DYNAMIC_CODE_PAGE_SIZE; ptr += sizeof(halts)) {
     if (memcmp(ptr, &halts, sizeof(halts)) != 0) {
-      fprintf(stderr, "Mismatch at %p\n", ptr);
+      fprintf(stderr, "Mismatch at %p\n", (void *) ptr);
       exit(1);
     }
   }

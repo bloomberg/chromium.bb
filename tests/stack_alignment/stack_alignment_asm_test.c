@@ -99,7 +99,7 @@ int main(void) {
   int offset;
   for (offset = 0; offset <= 32; offset++) {
     char *stack_top = stack + sizeof(stack) - offset;
-    printf("Checking offset %i: stack_top=%p...\n", offset, stack_top);
+    printf("Checking offset %i: stack_top=%p...\n", offset, (void *) stack_top);
     g_stack_ptr = NULL;
     g_stack_in_use = 1;
     void *dummy_tls = &dummy_tls;
@@ -110,7 +110,7 @@ int main(void) {
     while (g_stack_in_use) {
       sched_yield();
     }
-    printf("got g_stack_ptr=%p\n", g_stack_ptr);
+    printf("got g_stack_ptr=%p\n", (void *) g_stack_ptr);
     assert(g_stack_ptr <= stack_top);
     assert(((uintptr_t) g_stack_ptr + kStackPadBelowAlign) % kStackAlignment
            == 0);

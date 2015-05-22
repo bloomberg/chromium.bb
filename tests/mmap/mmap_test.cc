@@ -81,7 +81,8 @@ static void assert_addr_is_unreadable(volatile char *addr) {
     char value = *addr;
     /* If we reach here, the assertion failed. */
     fprintf(stderr, "Address %p was readable, and contained %i\n",
-            addr, value);
+            /* C-style cast, because C++ casts can't cast away volatile */
+            (void *) addr, value);
     exit(1);
   }
   /*
@@ -121,7 +122,8 @@ static void assert_addr_is_unwritable(volatile char *addr, char value) {
     *addr = value;
     /* If we reach here, the assertion failed. */
     fprintf(stderr, "Address %p was writable, %i was written\n",
-            addr, value);
+            /* C-style cast, because C++ casts can't cast away volatile */
+            (void *) addr, value);
     exit(1);
   }
   /*

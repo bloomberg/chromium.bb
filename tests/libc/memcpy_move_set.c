@@ -44,7 +44,7 @@ void reset_buf(void) {
 void dump_buf(void) {
   unsigned char *bufptr = (unsigned char *) buf;
   for (int i = 0; i < total_buf_len; ++i)
-    printf("buf[%u] (%p) = %u\n", i, &bufptr[i], bufptr[0]);
+    printf("buf[%u] (%p) = %u\n", i, (void *) &bufptr[i], bufptr[0]);
 }
 
 /*
@@ -85,7 +85,8 @@ void checked_memset(void *s, int c, unsigned n) {
   char *dst_char = s_char;
   for (unsigned i = 0; i < n; ++i, ++dst_char) {
     if (*dst_char != c) {
-      printf("memset failure: index %d (%p) = %u\n", i, dst_char, *dst_char);
+      printf("memset failure: index %d (%p) = %u\n",
+             i, (void *) dst_char, *dst_char);
       dump_buf();
       exit(1);
     }

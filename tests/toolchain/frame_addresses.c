@@ -20,7 +20,7 @@ int inner(const char *outer_local, const char *middle_frame) {
   fprintf(stderr,
           "inner: outer_local = %p, &local = %p, "
           "middle_frame = %p\n",
-          outer_local, &local, middle_frame);
+          (void *) outer_local, (void *) &local, (void *) middle_frame);
   if (outer_local >= &local) {
     int inner_below_middle = middle_frame >= &local;
     int middle_below_outer = outer_local >= middle_frame;
@@ -43,7 +43,8 @@ int middle(const char *outer_local) {
   const char *frame = __builtin_frame_address (0);
   int retval;
 
-  fprintf(stderr, "middle: outer_local = %p, frame = %p\n", outer_local, frame);
+  fprintf(stderr, "middle: outer_local = %p, frame = %p\n",
+          (void *) outer_local, (void *) frame);
   retval = inner(outer_local, frame);
   /* fprintf also disables tail call optimization. */
   fprintf(stderr, "middle: inner returned %d\n", retval);
@@ -54,7 +55,7 @@ int outer(char *dummy) {
   const char local = 0;
   int retval;
 
-  fprintf(stderr, "outer: &local = %p\n", &local);
+  fprintf(stderr, "outer: &local = %p\n", (void *) &local);
   retval = middle(&local);
   /* fprintf also disables tail call optimization. */
   fprintf(stderr, "outer: middle returned %d\n", retval);
@@ -69,7 +70,7 @@ int main (void) {
   char *dummy = __builtin_alloca(alloca_size());
   int retval;
 
-  fprintf(stderr, "main: dummy = %p\n", dummy);
+  fprintf(stderr, "main: dummy = %p\n", (void *) dummy);
   retval = outer(dummy);
   fprintf(stderr, "main: outer returned %d\n", retval);
   if (retval == 0)
