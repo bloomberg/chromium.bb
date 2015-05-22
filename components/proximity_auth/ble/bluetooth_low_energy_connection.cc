@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/proximity_auth/ble/bluetooth_low_energy_characteristics_finder.h"
 #include "components/proximity_auth/ble/fake_wire_message.h"
 #include "components/proximity_auth/connection_finder.h"
 #include "components/proximity_auth/wire_message.h"
@@ -40,23 +41,17 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
       remote_service_({remote_service_uuid, ""}),
       to_peripheral_char_({to_peripheral_char_uuid, ""}),
       from_peripheral_char_({from_peripheral_char_uuid, ""}),
-      connection_(gatt_connection.Pass()),
-      notify_session_pending_(false),
-      connect_signal_response_pending_(false),
+      sub_status_(SubStatus::DISCONNECTED),
+      receiving_bytes_(false),
       weak_ptr_factory_(this) {
-  DCHECK(connection_);
   DCHECK(adapter_);
   DCHECK(adapter_->IsInitialized());
 
   start_time_ = base::TimeTicks::Now();
-  SetStatus(IN_PROGRESS);
-
-  // We should set the status to IN_PROGRESS before calling this function, as we
-  // can set the status to CONNECTED by an inner call of
-  // HandleCharacteristicUpdate().
-  ScanRemoteCharacteristics(GetRemoteService());
-
   adapter_->AddObserver(this);
+
+  if (gatt_connection && gatt_connection->IsConnected())
+    OnGattConnectionCreated(gatt_connection.Pass());
 }
 
 BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {
@@ -68,15 +63,23 @@ BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {
 }
 
 void BluetoothLowEnergyConnection::Connect() {
-  NOTREACHED();
+  BluetoothDevice* remote_device = GetRemoteDevice();
+  if (remote_device) {
+    SetSubStatus(SubStatus::WAITING_GATT_CONNECTION);
+    remote_device->CreateGattConnection(
+        base::Bind(&BluetoothLowEnergyConnection::OnGattConnectionCreated,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothLowEnergyConnection::OnCreateGattConnectionError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 // This actually forgets the remote BLE device. This is safe as long as we only
 // connect to BLE devices advertising the SmartLock service (assuming this
-// device has no other being used).
+// device has no other connection).
 void BluetoothLowEnergyConnection::Disconnect() {
   StopNotifySession();
-  SetStatus(DISCONNECTED);
+  SetSubStatus(SubStatus::DISCONNECTED);
   if (connection_) {
     connection_.reset();
     BluetoothDevice* device = GetRemoteDevice();
@@ -84,6 +87,19 @@ void BluetoothLowEnergyConnection::Disconnect() {
       VLOG(1) << "Forget device " << device->GetAddress();
       device->Forget(base::Bind(&base::DoNothing));
     }
+  }
+}
+
+void BluetoothLowEnergyConnection::SetSubStatus(SubStatus new_sub_status) {
+  sub_status_ = new_sub_status;
+
+  // Sets the status of parent class proximity_auth::Connection accordingly.
+  if (new_sub_status == SubStatus::CONNECTED) {
+    SetStatus(CONNECTED);
+  } else if (new_sub_status == SubStatus::DISCONNECTED) {
+    SetStatus(DISCONNECTED);
+  } else {
+    SetStatus(IN_PROGRESS);
   }
 }
 
@@ -115,37 +131,8 @@ void BluetoothLowEnergyConnection::DeviceRemoved(BluetoothAdapter* adapter,
   }
 }
 
-void BluetoothLowEnergyConnection::GattDiscoveryCompleteForService(
-    BluetoothAdapter* adapter,
-    BluetoothGattService* service) {
-  if (service && service->GetUUID() == remote_service_.uuid) {
-    VLOG(1) << "All characteristics discovered for "
-            << remote_service_.uuid.canonical_value();
-
-    if (to_peripheral_char_.id.empty() || from_peripheral_char_.id.empty()) {
-      VLOG(1) << "Connection error, missing characteristics for SmartLock "
-                 "service.\n"
-              << (to_peripheral_char_.id.empty()
-                      ? to_peripheral_char_.uuid.canonical_value()
-                      : "")
-              << (from_peripheral_char_.id.empty()
-                      ? ", " + from_peripheral_char_.uuid.canonical_value()
-                      : "") << " not found.";
-      Disconnect();
-    }
-  }
-}
-
-void BluetoothLowEnergyConnection::GattCharacteristicAdded(
-    BluetoothAdapter* adapter,
-    BluetoothGattCharacteristic* characteristic) {
-  VLOG(1) << "New char found: " << characteristic->GetUUID().canonical_value();
-  HandleCharacteristicUpdate(characteristic);
-}
-
-// TODO(sacomoto): Parse the SmartLock BLE socket incoming signal. Implement a
-// receiver with full suport for messages larger than a single characteristic
-// value.
+// TODO(sacomoto): Implement a receiver with full support for messages larger
+// than a single characteristic value.
 void BluetoothLowEnergyConnection::GattCharacteristicValueChanged(
     BluetoothAdapter* adapter,
     BluetoothGattCharacteristic* characteristic,
@@ -156,17 +143,30 @@ void BluetoothLowEnergyConnection::GattCharacteristicValueChanged(
           << characteristic->GetUUID().canonical_value();
 
   if (characteristic->GetIdentifier() == from_peripheral_char_.id) {
-    const ControlSignal signal = static_cast<ControlSignal>(ToUint32(value));
+    if (value.size() < 4) {
+      VLOG(1) << "Incoming data corrupted, no signal found.";
+      return;
+    }
 
+    if (receiving_bytes_) {
+      // TODO(sacomoto): properly handle the sendStatus signal (first 4 bytes).
+      // Ignoring it for now.
+      const std::string bytes(value.begin() + 4, value.end());
+      OnBytesReceived(bytes);
+      return;
+    }
+
+    const ControlSignal signal = static_cast<ControlSignal>(ToUint32(value));
     switch (signal) {
       case ControlSignal::kInvitationResponseSignal:
-        connect_signal_response_pending_ = false;
-        CompleteConnection();
+        if (sub_status() == SubStatus::WAITING_RESPONSE_SIGNAL)
+          CompleteConnection();
         break;
       case ControlSignal::kInviteToConnectSignal:
+        break;
       case ControlSignal::kSendSignal:
-      // TODO(sacomoto): Actually handle the message and call OnBytesReceived
-      // when complete.
+        receiving_bytes_ = true;
+        break;
       case ControlSignal::kDisconnectSignal:
         Disconnect();
         break;
@@ -179,76 +179,89 @@ scoped_ptr<WireMessage> BluetoothLowEnergyConnection::DeserializeWireMessage(
   return FakeWireMessage::Deserialize(received_bytes(), is_incomplete_message);
 }
 
-void BluetoothLowEnergyConnection::ScanRemoteCharacteristics(
-    BluetoothGattService* service) {
-  if (service) {
-    std::vector<device::BluetoothGattCharacteristic*> characteristics =
-        service->GetCharacteristics();
-    for (auto iter = characteristics.begin(); iter != characteristics.end();
-         iter++) {
-      HandleCharacteristicUpdate(*iter);
-    }
-  }
-}
-
-void BluetoothLowEnergyConnection::HandleCharacteristicUpdate(
-    BluetoothGattCharacteristic* characteristic) {
-  // Checks if |characteristic| is equal to |from_peripheral_char_| or
-  // |to_peripheral_char_|.
-  UpdateCharacteristicsStatus(characteristic);
-
-  // Starts a notify session for |from_peripheral_char_|.
-  if (characteristic->GetIdentifier() == from_peripheral_char_.id)
-    StartNotifySession();
-
-  // Sends a invite to connect signal if ready.
-  SendInviteToConnectSignal();
-}
-
 void BluetoothLowEnergyConnection::CompleteConnection() {
-  if (status() == IN_PROGRESS && !connect_signal_response_pending_ &&
-      !to_peripheral_char_.id.empty() && !from_peripheral_char_.id.empty() &&
-      notify_session_) {
-    VLOG(1) << "Connection completed";
-    VLOG(1) << "Time elapsed: " << base::TimeTicks::Now() - start_time_;
-    SetStatus(CONNECTED);
-  }
+  VLOG(1) << "Connection completed\n"
+          << "Time elapsed: " << base::TimeTicks::Now() - start_time_;
+  SetSubStatus(SubStatus::CONNECTED);
+}
+
+void BluetoothLowEnergyConnection::OnCreateGattConnectionError(
+    device::BluetoothDevice::ConnectErrorCode error_code) {
+  VLOG(1) << "Error creating GATT connection to "
+          << remote_device().bluetooth_address << "error code: " << error_code;
+  Disconnect();
+}
+
+void BluetoothLowEnergyConnection::OnGattConnectionCreated(
+    scoped_ptr<device::BluetoothGattConnection> gatt_connection) {
+  connection_ = gatt_connection.Pass();
+  SetSubStatus(SubStatus::WAITING_CHARACTERISTICS);
+
+  characteristic_finder_ =
+      make_scoped_ptr(new BluetoothLowEnergyCharacteristicsFinder(
+          adapter_, GetRemoteDevice(), remote_service_, to_peripheral_char_,
+          from_peripheral_char_,
+          base::Bind(&BluetoothLowEnergyConnection::OnCharacteristicsFound,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(
+              &BluetoothLowEnergyConnection::OnCharacteristicsFinderError,
+              weak_ptr_factory_.GetWeakPtr())));
+}
+
+void BluetoothLowEnergyConnection::OnCharacteristicsFound(
+    const RemoteAttribute& service,
+    const RemoteAttribute& to_peripheral_char,
+    const RemoteAttribute& from_peripheral_char) {
+  remote_service_ = service;
+  to_peripheral_char_ = to_peripheral_char;
+  from_peripheral_char_ = from_peripheral_char;
+
+  SetSubStatus(SubStatus::CHARACTERISTICS_FOUND);
+  StartNotifySession();
+}
+
+void BluetoothLowEnergyConnection::OnCharacteristicsFinderError(
+    const RemoteAttribute& to_peripheral_char,
+    const RemoteAttribute& from_peripheral_char) {
+  VLOG(1) << "Connection error, missing characteristics for SmartLock "
+             "service.\n" << (to_peripheral_char.id.empty()
+                                  ? to_peripheral_char.uuid.canonical_value()
+                                  : "")
+          << (from_peripheral_char.id.empty()
+                  ? ", " + from_peripheral_char.uuid.canonical_value()
+                  : "") << " not found.";
+
+  Disconnect();
 }
 
 void BluetoothLowEnergyConnection::StartNotifySession() {
-  BluetoothGattCharacteristic* characteristic =
-      GetGattCharacteristic(from_peripheral_char_.id);
-  if (!characteristic) {
-    VLOG(1) << "Characteristic " << from_peripheral_char_.uuid.canonical_value()
-            << " not found.";
-    return;
-  }
+  if (sub_status() == SubStatus::CHARACTERISTICS_FOUND) {
+    BluetoothGattCharacteristic* characteristic =
+        GetGattCharacteristic(from_peripheral_char_.id);
+    DCHECK(characteristic);
 
-  if (notify_session_ || notify_session_pending_) {
-    VLOG(1) << "Notify session already started.";
-    return;
+    SetSubStatus(SubStatus::WAITING_NOTIFY_SESSION);
+    characteristic->StartNotifySession(
+        base::Bind(&BluetoothLowEnergyConnection::OnNotifySessionStarted,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothLowEnergyConnection::OnNotifySessionError,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
-
-  notify_session_pending_ = true;
-  characteristic->StartNotifySession(
-      base::Bind(&BluetoothLowEnergyConnection::OnNotifySessionStarted,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&BluetoothLowEnergyConnection::OnNotifySessionError,
-                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothLowEnergyConnection::OnNotifySessionError(
     BluetoothGattService::GattErrorCode error) {
   VLOG(1) << "Error starting notification session: " << error;
-  notify_session_pending_ = false;
+  Disconnect();
 }
 
 void BluetoothLowEnergyConnection::OnNotifySessionStarted(
     scoped_ptr<BluetoothGattNotifySession> notify_session) {
   VLOG(1) << "Notification session started "
           << notify_session->GetCharacteristicIdentifier();
+
+  SetSubStatus(SubStatus::NOTIFY_SESSION_READY);
   notify_session_ = notify_session.Pass();
-  notify_session_pending_ = false;
 
   // Sends an invite to connect signal if ready.
   SendInviteToConnectSignal();
@@ -261,18 +274,10 @@ void BluetoothLowEnergyConnection::StopNotifySession() {
   }
 }
 
-void BluetoothLowEnergyConnection::OnWriteRemoteCharacteristicError(
-    BluetoothGattService::GattErrorCode error) {
-  VLOG(1) << "Error writing characteristic"
-          << to_peripheral_char_.uuid.canonical_value();
-}
-
 void BluetoothLowEnergyConnection::SendInviteToConnectSignal() {
-  if (status() == IN_PROGRESS && !connect_signal_response_pending_ &&
-      !to_peripheral_char_.id.empty() && !from_peripheral_char_.id.empty() &&
-      notify_session_) {
+  if (sub_status() == SubStatus::NOTIFY_SESSION_READY) {
     VLOG(1) << "Sending invite to connect signal";
-    connect_signal_response_pending_ = true;
+    SetSubStatus(SubStatus::WAITING_RESPONSE_SIGNAL);
 
     // The connection status is not CONNECTED yet, so in order to bypass the
     // check in SendMessage implementation we need to send the message using the
@@ -282,19 +287,10 @@ void BluetoothLowEnergyConnection::SendInviteToConnectSignal() {
   }
 }
 
-void BluetoothLowEnergyConnection::UpdateCharacteristicsStatus(
-    BluetoothGattCharacteristic* characteristic) {
-  if (characteristic) {
-    BluetoothUUID uuid = characteristic->GetUUID();
-    if (to_peripheral_char_.uuid == uuid)
-      to_peripheral_char_.id = characteristic->GetIdentifier();
-    if (from_peripheral_char_.uuid == uuid)
-      from_peripheral_char_.id = characteristic->GetIdentifier();
-
-    BluetoothGattService* service = characteristic->GetService();
-    if (service && service->GetUUID() == remote_service_.uuid)
-      remote_service_.id = service->GetIdentifier();
-  }
+void BluetoothLowEnergyConnection::OnWriteRemoteCharacteristicError(
+    BluetoothGattService::GattErrorCode error) {
+  VLOG(1) << "Error writing characteristic"
+          << to_peripheral_char_.uuid.canonical_value();
 }
 
 const std::string& BluetoothLowEnergyConnection::GetRemoteDeviceAddress() {
@@ -318,9 +314,9 @@ BluetoothGattService* BluetoothLowEnergyConnection::GetRemoteService() {
   if (remote_service_.id.empty()) {
     std::vector<BluetoothGattService*> services =
         remote_device->GetGattServices();
-    for (auto iter = services.begin(); iter != services.end(); ++iter)
-      if ((*iter)->GetUUID() == remote_service_.uuid) {
-        remote_service_.id = (*iter)->GetIdentifier();
+    for (const auto& service : services)
+      if (service->GetUUID() == remote_service_.uuid) {
+        remote_service_.id = service->GetIdentifier();
         break;
       }
   }

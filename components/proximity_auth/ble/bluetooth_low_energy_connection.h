@@ -10,7 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/proximity_auth/ble/bluetooth_low_energy_characteristics_finder.h"
 #include "components/proximity_auth/ble/fake_wire_message.h"
+#include "components/proximity_auth/ble/remote_attribute.h"
 #include "components/proximity_auth/connection.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -24,6 +26,26 @@ namespace proximity_auth {
 // connection is a persistent bidirectional channel for sending and receiving
 // wire messages. The remote device is the peripheral mode and the service
 // contains two characteristics: one to send data and another to receive it.
+//
+// The connection flow is described below.
+//
+//          Discover Reader and Writer Characteristics
+//                              |
+//                              |
+//                              |
+//                    Start Notify Session
+//                              |
+//                              |
+//                              |
+//     Write kInviteToConnectSignal to Writer Characteristic
+//                              |
+//                              |
+//                              |
+//    Read kInvitationResponseSignal from Reader Characteristic
+//                              |
+//                              |
+//                              |
+//           Proximity Auth Connection Established
 class BluetoothLowEnergyConnection : public Connection,
                                      public device::BluetoothAdapter::Observer {
  public:
@@ -35,29 +57,10 @@ class BluetoothLowEnergyConnection : public Connection,
   };
 
   // Constructs a Bluetooth low energy connection to the service with
-  // |remote_service_| on the |remote_device|. The GATT connection with
-  // |remote_device| must be already established and |adapter| already
-  // initialized.
-  //
-  // The connection flow is described below.
-  //
-  // Discover Reader Characteristic         Discover Writer Characteristic
-  //           |                                         |
-  //   Start Notify Session                              |
-  //           |                                         |
-  //            ---------------- && ---------------------
-  //                              |
-  //                              |
-  //                              |
-  //     Write kInviteToConnectSignal to Writer Characteristic
-  //                              |
-  //                              |
-  //                              |
-  //    Read kInvitationResponseSignal from Reader Characteristic
-  //                              |
-  //                              |
-  //                              |
-  //           Proximity Auth Connection Established
+  // |remote_service_| on the |remote_device|. The |adapter| must be already
+  // initaalized and ready. The GATT connection may alreaady be established and
+  // pass through |gatt_connection|. If |gatt_connection| is NULL, a subsequent
+  // call to Connect() must be made.
   BluetoothLowEnergyConnection(
       const RemoteDevice& remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
@@ -73,6 +76,23 @@ class BluetoothLowEnergyConnection : public Connection,
   void Disconnect() override;
 
  protected:
+  // The sub-state of a proximity_auth::BluetoothLowEnergyConnection class
+  // extends the IN_PROGRESS state of proximity_auth::Connection::Status.
+  enum class SubStatus {
+    DISCONNECTED,
+    WAITING_GATT_CONNECTION,
+    GATT_CONNECTION_ESTABLISHED,
+    WAITING_CHARACTERISTICS,
+    CHARACTERISTICS_FOUND,
+    WAITING_NOTIFY_SESSION,
+    NOTIFY_SESSION_READY,
+    WAITING_RESPONSE_SIGNAL,
+    CONNECTED,
+  };
+
+  void SetSubStatus(SubStatus status);
+  SubStatus sub_status() { return sub_status_; }
+
   // proximity_auth::Connection
   void SendMessageImpl(scoped_ptr<WireMessage> message) override;
   scoped_ptr<WireMessage> DeserializeWireMessage(
@@ -81,74 +101,58 @@ class BluetoothLowEnergyConnection : public Connection,
   // device::BluetoothAdapter::Observer
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
-  void GattDiscoveryCompleteForService(
-      device::BluetoothAdapter* adapter,
-      device::BluetoothGattService* service) override;
-  void GattCharacteristicAdded(
-      device::BluetoothAdapter* adapter,
-      device::BluetoothGattCharacteristic* characteristic) override;
   void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic,
       const std::vector<uint8>& value) override;
 
  private:
-  // Represents a remote characteristic or service.
-  struct RemoteBleObject {
-    device::BluetoothUUID uuid;
-    std::string id;
-  };
+  // Called when a GATT connection is created or received by the constructor.
+  void OnGattConnectionCreated(
+      scoped_ptr<device::BluetoothGattConnection> gatt_connection);
 
-  // Sends an invite to connect signal to the peripheral if the connection
-  // is ready. That is, satisfying the conditions:
-  // (i) |to_peripheral_char_| and |from_peripheral_char_| were found;
-  // (ii) |notify_session_| was set for |from_peripheral_char_|.
-  //
-  // The asynchronous events that can casue these conditions to be
-  // satisfied are:
-  // (i) a new characteristic is discovered (HandleCharacteristicUpdate);
-  // (ii) a new notify session is started (OnNotifySessionStarted).
-  void SendInviteToConnectSignal();
+  // Callback called when there is an error creating the connection.
+  void OnCreateGattConnectionError(
+      device::BluetoothDevice::ConnectErrorCode error_code);
 
-  // Called when there is an error writing to the remote characteristic
-  // |to_peripheral_char_|.
-  void OnWriteRemoteCharacteristicError(
-      device::BluetoothGattService::GattErrorCode error);
+  // Callback called when |to_peripheral_char_| and |from_peripheral_char_| were
+  // found.
+  void OnCharacteristicsFound(const RemoteAttribute& service,
+                              const RemoteAttribute& to_peripheral_char,
+                              const RemoteAttribute& from_peripheral_char);
 
-  // Handles the discovery of a new characteristic.
-  void HandleCharacteristicUpdate(
-      device::BluetoothGattCharacteristic* characteristic);
+  // Callback called there was an error finding the characteristics.
+  void OnCharacteristicsFinderError(
+      const RemoteAttribute& to_peripheral_char,
+      const RemoteAttribute& from_peripheral_char);
 
-  // Scans the remote chracteristics of |service| calling
-  // HandleCharacteristicUpdate() for each of them.
-  void ScanRemoteCharacteristics(device::BluetoothGattService* service);
-
-  // This function verifies if the connection is complete and updates
-  // the status accordingly. The only asynchronous event
-  // that can cause the connection to be completed is receiving a
-  // kInvitationResponseSignal (GattCharateristcValueChanged).
-  void CompleteConnection();
-
-  // Starts a notify session for |from_peripheral_char_|.
+  // Starts a notify session for |from_peripheral_char_| when ready
+  // (SubStatus::CHARACTERISTICS_FOUND).
   void StartNotifySession();
-
-  // Called when there is an error starting a notification session for
-  // |from_peripheral_char_| characteristic.
-  void OnNotifySessionError(device::BluetoothGattService::GattErrorCode);
 
   // Called when a notification session is successfully started for
   // |from_peripheral_char_| characteristic.
   void OnNotifySessionStarted(
       scoped_ptr<device::BluetoothGattNotifySession> notify_session);
 
+  // Called when there is an error starting a notification session for
+  // |from_peripheral_char_| characteristic.
+  void OnNotifySessionError(device::BluetoothGattService::GattErrorCode);
+
   // Stops |notify_session_|.
   void StopNotifySession();
 
-  // Updates the value of |to_peripheral_char_| and
-  // |from_peripheral_char_|
-  // when |characteristic| was found.
-  void UpdateCharacteristicsStatus(
-      device::BluetoothGattCharacteristic* characteristic);
+  // Sends an invite to connect signal to the peripheral if when ready
+  // (SubStatus::NOTIFY_SESSION_READY).
+  void SendInviteToConnectSignal();
+
+  // Completes and updates the status accordingly.
+  void CompleteConnection();
+
+  // Called when there is an error writing to the remote characteristic
+  // |to_peripheral_char_|.
+  void OnWriteRemoteCharacteristicError(
+      device::BluetoothGattService::GattErrorCode error);
 
   // Returns the Bluetooth address of the remote device.
   const std::string& GetRemoteDeviceAddress();
@@ -175,26 +179,29 @@ class BluetoothLowEnergyConnection : public Connection,
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // Remote service the |connection_| was established with.
-  RemoteBleObject remote_service_;
+  RemoteAttribute remote_service_;
 
   // Characteristic used to send data to the remote device.
-  RemoteBleObject to_peripheral_char_;
+  RemoteAttribute to_peripheral_char_;
 
   // Characteristic used to receive data from the remote device.
-  RemoteBleObject from_peripheral_char_;
+  RemoteAttribute from_peripheral_char_;
 
   // The GATT connection with the remote device.
   scoped_ptr<device::BluetoothGattConnection> connection_;
 
-  // Indicates if there is a pending notification session. Used to ensure there
-  // is only one pending notify session.
-  bool notify_session_pending_;
+  // The characteristics finder for remote device.
+  scoped_ptr<BluetoothLowEnergyCharacteristicsFinder> characteristic_finder_;
 
   // The notify session for |from_peripheral_char|.
   scoped_ptr<device::BluetoothGattNotifySession> notify_session_;
 
-  // Indicates if there pending response to a invite to connect signal.
-  bool connect_signal_response_pending_;
+  // Internal connection status
+  SubStatus sub_status_;
+
+  // True if it's receiving bytes from |from_peripheral_char_|. This is set
+  // after a ControlSignal::kSendSignal is received.
+  bool receiving_bytes_;
 
   // Stores when the instace was created.
   base::TimeTicks start_time_;
