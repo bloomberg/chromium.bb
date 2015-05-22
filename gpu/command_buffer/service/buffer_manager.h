@@ -47,10 +47,6 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
     return service_id_;
   }
 
-  GLenum type() const {
-    return type_;
-  }
-
   GLsizeiptr size() const {
     return size_;
   }
@@ -74,7 +70,7 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   }
 
   bool IsValid() const {
-    return type() && !IsDeleted();
+    return initial_target() && !IsDeleted();
   }
 
   bool IsClientSideArray() const {
@@ -129,8 +125,13 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 
   ~Buffer();
 
-  void set_type(GLenum type) {
-    type_ = type;
+  GLenum initial_target() const {
+    return initial_target_;
+  }
+
+  void set_initial_target(GLenum target) {
+    DCHECK_EQ(0u, initial_target_);
+    initial_target_ = target;
   }
 
   bool shadowed() const {
@@ -181,9 +182,9 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // Service side buffer id.
   GLuint service_id_;
 
-  // The type of buffer. 0 = unset.
+  // The first target of buffer. 0 = unset.
   // It is set the first time bindBuffer() is called and cannot be changed.
-  GLenum type_;
+  GLenum initial_target_;
 
   // Usage of buffer.
   GLenum usage_;
@@ -292,8 +293,8 @@ class GPU_EXPORT BufferManager {
 
   // Sets the size, usage and initial data of a buffer.
   // If data is NULL buffer will be initialized to 0 if shadowed.
-  void SetInfo(
-      Buffer* buffer, GLsizeiptr size, GLenum usage, const GLvoid* data);
+  void SetInfo(Buffer* buffer, GLenum target, GLsizeiptr size, GLenum usage,
+               const GLvoid* data);
 
   scoped_ptr<MemoryTypeTracker> memory_tracker_;
   scoped_refptr<FeatureInfo> feature_info_;

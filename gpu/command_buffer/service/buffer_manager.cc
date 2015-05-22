@@ -102,7 +102,7 @@ Buffer::Buffer(BufferManager* manager, GLuint service_id)
       shadowed_(false),
       is_client_side_array_(false),
       service_id_(service_id),
-      type_(0),
+      initial_target_(0),
       usage_(GL_STATIC_DRAW) {
   manager_->StartTracking(this);
 }
@@ -271,14 +271,15 @@ bool BufferManager::UseNonZeroSizeForClientSideArrayBuffer() {
              .use_non_zero_size_for_client_side_stream_buffers;
 }
 
-void BufferManager::SetInfo(
-    Buffer* buffer, GLsizeiptr size, GLenum usage, const GLvoid* data) {
+void BufferManager::SetInfo(Buffer* buffer, GLenum target, GLsizeiptr size,
+                            GLenum usage, const GLvoid* data) {
   DCHECK(buffer);
   memory_tracker_->TrackMemFree(buffer->size());
   const bool is_client_side_array = IsUsageClientSideArray(usage);
   const bool support_fixed_attribs =
     gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
-  const bool shadow = buffer->type() == GL_ELEMENT_ARRAY_BUFFER ||
+  // TODO(zmo): Don't shadow buffer data on ES3. crbug.com/491002.
+  const bool shadow = target == GL_ELEMENT_ARRAY_BUFFER ||
                       allow_buffers_on_multiple_targets_ ||
                       (allow_fixed_attribs_ && !support_fixed_attribs) ||
                       is_client_side_array;
@@ -347,9 +348,9 @@ void BufferManager::DoBufferData(
   }
   GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, "glBufferData");
   if (error == GL_NO_ERROR) {
-    SetInfo(buffer, size, usage, data);
+    SetInfo(buffer, target, size, usage, data);
   } else {
-    SetInfo(buffer, 0, usage, NULL);
+    SetInfo(buffer, target, 0, usage, NULL);
   }
 }
 
@@ -407,13 +408,17 @@ void BufferManager::ValidateAndDoGetBufferParameteriv(
 }
 
 bool BufferManager::SetTarget(Buffer* buffer, GLenum target) {
-  // Check that we are not trying to bind it to a different target.
-  // Note that we don't force the WebGL 2 rule that a buffer bound to
-  // TRANSFORM_FEEDBACK_BUFFER target should not be bound to any other
-  // targets, because that is not a security threat, so we only enforce it
-  // in the WebGL2RenderingContextBase.
   if (!allow_buffers_on_multiple_targets_) {
-    switch (buffer->type()) {
+    // After being bound to ELEMENT_ARRAY_BUFFER target, a buffer cannot be
+    // bound to any other targets except for COPY_READ/WRITE_BUFFER target;
+    // After being bound to non ELEMENT_ARRAY_BUFFER target, a buffer cannot
+    // be bound to ELEMENT_ARRAY_BUFFER target.
+
+    // Note that we don't force the WebGL 2 rule that a buffer bound to
+    // TRANSFORM_FEEDBACK_BUFFER target should not be bound to any other
+    // targets, because that is not a security threat, so we only enforce it
+    // in the WebGL2RenderingContextBase.
+    switch (buffer->initial_target()) {
       case GL_ELEMENT_ARRAY_BUFFER:
         switch (target) {
           case GL_ARRAY_BUFFER:
@@ -427,6 +432,8 @@ bool BufferManager::SetTarget(Buffer* buffer, GLenum target) {
         }
         break;
       case GL_ARRAY_BUFFER:
+      case GL_COPY_READ_BUFFER:
+      case GL_COPY_WRITE_BUFFER:
       case GL_PIXEL_PACK_BUFFER:
       case GL_PIXEL_UNPACK_BUFFER:
       case GL_TRANSFORM_FEEDBACK_BUFFER:
@@ -439,7 +446,8 @@ bool BufferManager::SetTarget(Buffer* buffer, GLenum target) {
         break;
     }
   }
-  buffer->set_type(target);
+  if (buffer->initial_target() == 0)
+    buffer->set_initial_target(target);
   return true;
 }
 

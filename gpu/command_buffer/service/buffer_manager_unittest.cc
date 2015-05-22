@@ -40,8 +40,8 @@ class BufferManagerTestBase : public GpuServiceTest {
     GpuServiceTest::TearDown();
   }
 
-  GLenum GetTarget(const Buffer* buffer) const {
-    return buffer->type();
+  GLenum GetInitialTarget(const Buffer* buffer) const {
+    return buffer->initial_target();
   }
 
   void DoBufferData(
@@ -118,7 +118,7 @@ TEST_F(BufferManagerTest, Basic) {
   // Check buffer got created.
   Buffer* buffer1 = manager_->GetBuffer(kClientBuffer1Id);
   ASSERT_TRUE(buffer1 != NULL);
-  EXPECT_EQ(0u, GetTarget(buffer1));
+  EXPECT_EQ(0u, GetInitialTarget(buffer1));
   EXPECT_EQ(0, buffer1->size());
   EXPECT_EQ(static_cast<GLenum>(GL_STATIC_DRAW), buffer1->usage());
   EXPECT_FALSE(buffer1->IsDeleted());
@@ -128,7 +128,7 @@ TEST_F(BufferManagerTest, Basic) {
   EXPECT_TRUE(manager_->GetClientId(buffer1->service_id(), &client_id));
   EXPECT_EQ(kClientBuffer1Id, client_id);
   manager_->SetTarget(buffer1, kTarget);
-  EXPECT_EQ(kTarget, GetTarget(buffer1));
+  EXPECT_EQ(kTarget, GetInitialTarget(buffer1));
   // Check we and set its size.
   DoBufferData(
       buffer1, kTarget, kBuffer1Size, GL_DYNAMIC_DRAW, NULL, GL_NO_ERROR);
@@ -435,6 +435,80 @@ TEST_F(BufferManagerTest, MaxValueCacheClearedCorrectly) {
   EXPECT_TRUE(
       buffer->GetMaxValueForRange(0, 3, GL_UNSIGNED_INT, &max_value));
   EXPECT_EQ(30u, max_value);
+}
+
+TEST_F(BufferManagerTest, BindBufferConflicts) {
+  manager_->set_allow_buffers_on_multiple_targets(false);
+  GLuint client_id = 1;
+  GLuint service_id = 101;
+
+  {
+    // Once a buffer is bound to ELEMENT_ARRAY_BUFFER, it can't be bound to
+    // any other targets except for GL_COPY_READ/WRITE_BUFFER.
+    manager_->CreateBuffer(client_id, service_id);
+    Buffer* buffer = manager_->GetBuffer(client_id);
+    ASSERT_TRUE(buffer != NULL);
+    EXPECT_TRUE(manager_->SetTarget(buffer, GL_ELEMENT_ARRAY_BUFFER));
+    EXPECT_TRUE(manager_->SetTarget(buffer, GL_COPY_READ_BUFFER));
+    EXPECT_TRUE(manager_->SetTarget(buffer, GL_COPY_WRITE_BUFFER));
+    EXPECT_FALSE(manager_->SetTarget(buffer, GL_ARRAY_BUFFER));
+    EXPECT_FALSE(manager_->SetTarget(buffer, GL_PIXEL_PACK_BUFFER));
+    EXPECT_FALSE(manager_->SetTarget(buffer, GL_PIXEL_UNPACK_BUFFER));
+    EXPECT_FALSE(manager_->SetTarget(buffer, GL_TRANSFORM_FEEDBACK_BUFFER));
+    EXPECT_FALSE(manager_->SetTarget(buffer, GL_UNIFORM_BUFFER));
+  }
+
+  {
+    // Except for ELEMENT_ARRAY_BUFFER, a buffer can switch to any targets.
+    const GLenum kTargets[] = {
+      GL_ARRAY_BUFFER,
+      GL_COPY_READ_BUFFER,
+      GL_COPY_WRITE_BUFFER,
+      GL_PIXEL_PACK_BUFFER,
+      GL_PIXEL_UNPACK_BUFFER,
+      GL_TRANSFORM_FEEDBACK_BUFFER,
+      GL_UNIFORM_BUFFER
+    };
+    for (size_t ii = 0; ii < arraysize(kTargets); ++ii) {
+      client_id++;
+      service_id++;
+      manager_->CreateBuffer(client_id, service_id);
+      Buffer* buffer = manager_->GetBuffer(client_id);
+      ASSERT_TRUE(buffer != NULL);
+
+      EXPECT_TRUE(manager_->SetTarget(buffer, kTargets[ii]));
+      for (size_t jj = 0; jj < arraysize(kTargets); ++jj) {
+        EXPECT_TRUE(manager_->SetTarget(buffer, kTargets[jj]));
+      }
+      EXPECT_EQ(kTargets[ii], GetInitialTarget(buffer));
+    }
+  }
+
+  {
+    // Once a buffer is bound to non ELEMENT_ARRAY_BUFFER target, it can't be
+    // bound to ELEMENT_ARRAY_BUFFER target.
+    const GLenum kTargets[] = {
+      GL_ARRAY_BUFFER,
+      GL_COPY_READ_BUFFER,
+      GL_COPY_WRITE_BUFFER,
+      GL_PIXEL_PACK_BUFFER,
+      GL_PIXEL_UNPACK_BUFFER,
+      GL_TRANSFORM_FEEDBACK_BUFFER,
+      GL_UNIFORM_BUFFER
+    };
+    for (size_t ii = 0; ii < arraysize(kTargets); ++ii) {
+      client_id++;
+      service_id++;
+      manager_->CreateBuffer(client_id, service_id);
+      Buffer* buffer = manager_->GetBuffer(client_id);
+      ASSERT_TRUE(buffer != NULL);
+
+      EXPECT_TRUE(manager_->SetTarget(buffer, kTargets[ii]));
+      for (size_t jj = 0; jj < arraysize(kTargets); ++jj) {
+        EXPECT_TRUE(manager_->SetTarget(buffer, kTargets[jj]));
+      }
+    }
+  }
 }
 
 }  // namespace gles2
