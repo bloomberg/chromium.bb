@@ -40,6 +40,7 @@ group("all_components") {
     "//components/device_event_log",
     "//components/devtools_discovery",
     "//components/devtools_http_handler",
+    "//components/devtools_service",
     "//components/dom_distiller/core",
     "//components/domain_reliability",
     "//components/enhanced_bookmarks",
