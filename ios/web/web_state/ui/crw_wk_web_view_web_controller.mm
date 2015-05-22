@@ -480,6 +480,7 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
   return [web::CreateWKWebView(
               CGRectZero,
               config,
+              self.webStateImpl->GetBrowserState(),
               self.webStateImpl->GetRequestGroupID(),
               [self useDesktopUserAgent]) autorelease];
 }

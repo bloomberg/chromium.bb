@@ -126,8 +126,14 @@ UIWebView* CreateWebView(CGRect frame) {
 
 WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
+                           BrowserState* browser_state,
                            NSString* request_group_id,
                            BOOL use_desktop_user_agent) {
+  DCHECK(browser_state);
+  WKWebViewConfigurationProvider& config_provider =
+      WKWebViewConfigurationProvider::FromBrowserState(browser_state);
+  DCHECK_EQ([config_provider.GetWebViewConfiguration() processPool],
+            [configuration processPool]);
   web::BuildAndRegisterUserAgentForUIWebView(request_group_id,
                                              use_desktop_user_agent);
   return CreateWKWebViewWithConfiguration(frame, configuration);

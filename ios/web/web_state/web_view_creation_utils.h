@@ -33,9 +33,12 @@ UIWebView* CreateWebView(CGRect frame);
 
 // Creates and returns a WKWebView. The returned WKWebView will have a
 // user agent string that includes the |request_group_id|.
+// |browser_state| cannot be null. The |configuration| should have the same
+// WKProcessPool as the WKWebViewConfiguration associated with |browser_state|.
 // Note: Callers are responsible for releasing the returned WKWebView.
 WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
+                           BrowserState* browser_state,
                            NSString* request_group_id,
                            BOOL use_desktop_user_agent);
 
