@@ -1585,6 +1585,11 @@ WebString WebLocalFrameImpl::layerTreeAsText(bool showDebugInfo) const
 
 // WebLocalFrameImpl public ---------------------------------------------------------
 
+WebLocalFrame* WebLocalFrame::create(WebFrameClient* client)
+{
+    return WebLocalFrame::create(WebTreeScopeType::Document, client);
+}
+
 WebLocalFrame* WebLocalFrame::create(WebTreeScopeType scope, WebFrameClient* client)
 {
     return WebLocalFrameImpl::create(scope, client);
@@ -1686,10 +1691,7 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
     const AtomicString& name, HTMLFrameOwnerElement* ownerElement)
 {
     ASSERT(m_client);
-    WebTreeScopeType scope = frame()->document() == ownerElement->treeScope()
-        ? WebTreeScopeType::Document
-        : WebTreeScopeType::Shadow;
-    WebLocalFrameImpl* webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, scope, name, static_cast<WebSandboxFlags>(ownerElement->sandboxFlags())));
+    WebLocalFrameImpl* webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, name, static_cast<WebSandboxFlags>(ownerElement->sandboxFlags())));
     if (!webframeChild)
         return nullptr;
 

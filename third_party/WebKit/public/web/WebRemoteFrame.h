@@ -16,6 +16,7 @@ class WebRemoteFrameClient;
 
 class WebRemoteFrame : public WebFrame {
 public:
+    BLINK_EXPORT static WebRemoteFrame* create(WebRemoteFrameClient*);
     BLINK_EXPORT static WebRemoteFrame* create(WebTreeScopeType, WebRemoteFrameClient*);
 
     // Functions for the embedder replicate the frame tree between processes.
@@ -24,8 +25,10 @@ public:
     // ensure that it is inserted into the correct location in the list of
     // children.
     virtual WebLocalFrame* createLocalChild(WebTreeScopeType, const WebString& name, WebSandboxFlags, WebFrameClient*, WebFrame* previousSibling) = 0;
+    virtual WebLocalFrame* createLocalChild(const WebString& name, WebSandboxFlags, WebFrameClient*, WebFrame* previousSibling) = 0;
 
     virtual WebRemoteFrame* createRemoteChild(WebTreeScopeType, const WebString& name, WebSandboxFlags, WebRemoteFrameClient*) = 0;
+    virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebSandboxFlags, WebRemoteFrameClient*) = 0;
 
     // Transfer initial drawing parameters from a local frame.
     virtual void initializeFromFrame(WebLocalFrame*) const = 0;

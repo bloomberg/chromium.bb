@@ -282,9 +282,9 @@ TestWebFrameClient::TestWebFrameClient() : m_loadsInProgress(0)
 {
 }
 
-WebFrame* TestWebFrameClient::createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& frameName, WebSandboxFlags sandboxFlags)
+WebFrame* TestWebFrameClient::createChildFrame(WebLocalFrame* parent, const WebString& frameName, WebSandboxFlags sandboxFlags)
 {
-    WebFrame* frame = WebLocalFrame::create(scope, this);
+    WebFrame* frame = WebLocalFrame::create(this);
     parent->appendChild(frame);
     return frame;
 }
@@ -323,7 +323,7 @@ void TestWebFrameClient::waitForLoadToComplete()
 }
 
 TestWebRemoteFrameClient::TestWebRemoteFrameClient()
-    : m_frame(WebRemoteFrame::create(WebTreeScopeType::Document, this))
+    : m_frame(WebRemoteFrame::create(this))
 {
 }
 

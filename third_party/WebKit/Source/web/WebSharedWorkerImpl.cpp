@@ -213,7 +213,7 @@ void WebSharedWorkerImpl::initializeLoader()
     m_webView->settings()->setAcceleratedCompositingEnabled(false);
     // FIXME: Settings information should be passed to the Worker process from Browser process when the worker
     // is created (similar to RenderThread::OnCreateNewView).
-    m_mainFrame = toWebLocalFrameImpl(WebLocalFrame::create(WebTreeScopeType::Document, this));
+    m_mainFrame = toWebLocalFrameImpl(WebLocalFrame::create(this));
     m_webView->setMainFrame(m_mainFrame);
     m_mainFrame->setDevToolsAgentClient(this);
 

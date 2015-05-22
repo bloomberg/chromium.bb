@@ -85,7 +85,7 @@ protected:
     virtual void SetUp()
     {
         m_webView = toWebViewImpl(WebView::create(&m_webViewClient));
-        m_mainFrame = WebLocalFrame::create(WebTreeScopeType::Document, &m_webFrameClient);
+        m_mainFrame = WebLocalFrame::create(&m_webFrameClient);
         m_webView->setMainFrame(m_mainFrame);
         m_chromeClientImpl = toChromeClientImpl(&m_webView->page()->chrome().client());
         m_result = WebNavigationPolicyIgnore;

@@ -30,6 +30,8 @@ public:
     // Creates a WebFrame. Delete this WebFrame by calling WebFrame::close().
     // It is valid to pass a null client pointer.
     BLINK_EXPORT static WebLocalFrame* create(WebTreeScopeType, WebFrameClient*);
+    // TODO(dcheng): Remove this deprecated overload.
+    BLINK_EXPORT static WebLocalFrame* create(WebFrameClient*);
 
     // Returns the WebFrame associated with the current V8 context. This
     // function can return 0 if the context is associated with a Document that
