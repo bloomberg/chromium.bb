@@ -42,8 +42,6 @@ enum PageDialogOpenPolicy {
   DIALOG_POLICY_SUPPRESS
 };
 
-extern NSString* const kPageChangedNotification;
-
 // The accessibility identifier of the top-level container view.
 extern NSString* const kContainerViewID;
 

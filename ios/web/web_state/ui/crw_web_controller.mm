@@ -88,7 +88,6 @@ using web::WebStateImpl;
 
 namespace web {
 
-NSString* const kPageChangedNotification = @"kPageChangedNotification";
 NSString* const kContainerViewID = @"Container View";
 const char* kWindowNameSeparator = "#";
 NSString* const kUserIsInteractingKey = @"userIsInteracting";
@@ -2557,12 +2556,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self resetDocumentSpecificState];
 
   [self didStartLoadingURL:currentURL updateHistory:YES];
-
-  // TODO(stuartmorgan): Eliminate this; interested parties should be direct
-  // delegates/observers.
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:web::kPageChangedNotification
-                    object:self];
 }
 
 - (void)resetDocumentSpecificState {
