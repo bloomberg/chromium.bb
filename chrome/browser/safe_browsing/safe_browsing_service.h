@@ -101,7 +101,11 @@ class SafeBrowsingService
   // Create a protocol config struct.
   virtual SafeBrowsingProtocolConfig GetProtocolConfig() const;
 
-  bool enabled() const { return enabled_; }
+  // Get current enabled status. Must be called on IO thread.
+  bool enabled() const {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    return enabled_;
+  }
 
   safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service() const {

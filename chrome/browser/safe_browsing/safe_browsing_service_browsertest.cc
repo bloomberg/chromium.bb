@@ -386,6 +386,27 @@ MATCHER_P(IsUnsafeResourceFor, url, "") {
           arg.threat_type != SB_THREAT_TYPE_SAFE);
 }
 
+class ServiceEnabledHelper : public base::ThreadTestHelper {
+ public:
+  ServiceEnabledHelper(
+      SafeBrowsingService* service,
+      bool enabled,
+      scoped_refptr<base::SingleThreadTaskRunner> target_thread)
+      : base::ThreadTestHelper(target_thread),
+        service_(service),
+        expected_enabled_(enabled) {}
+
+  void RunTest() override {
+    set_test_result(service_->enabled() == expected_enabled_);
+  }
+
+ private:
+  ~ServiceEnabledHelper() override {}
+
+  scoped_refptr<SafeBrowsingService> service_;
+  const bool expected_enabled_;
+};
+
 }  // namespace
 
 // Tests the safe browsing blocking page in a browser.
@@ -536,6 +557,15 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
     ASSERT_TRUE(io_helper->Run());
+  }
+
+  // Waits for pending tasks on the IO thread to complete and check if the
+  // SafeBrowsingService enabled state matches |enabled|.
+  void WaitForIOAndCheckEnabled(SafeBrowsingService* service, bool enabled) {
+    scoped_refptr<ServiceEnabledHelper> enabled_helper(new ServiceEnabledHelper(
+        service, enabled,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
+    ASSERT_TRUE(enabled_helper->Run());
   }
 
  private:
@@ -1029,8 +1059,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   EXPECT_TRUE(pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
 
   // SBS might still be starting, make sure this doesn't flake.
-  WaitForIOThread();
-  EXPECT_TRUE(sb_service->enabled());
+  WaitForIOAndCheckEnabled(sb_service, true);
   EXPECT_TRUE(csd_service->enabled());
 
   // Add a new Profile. SBS should keep running.
@@ -1043,24 +1072,21 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   PrefService* pref_service2 = profile2->GetPrefs();
   EXPECT_TRUE(pref_service2->GetBoolean(prefs::kSafeBrowsingEnabled));
   // We don't expect the state to have changed, but if it did, wait for it.
-  WaitForIOThread();
-  EXPECT_TRUE(sb_service->enabled());
+  WaitForIOAndCheckEnabled(sb_service, true);
   EXPECT_TRUE(csd_service->enabled());
 
   // Change one of the prefs. SBS should keep running.
   pref_service->SetBoolean(prefs::kSafeBrowsingEnabled, false);
-  WaitForIOThread();
-  EXPECT_TRUE(sb_service->enabled());
+  WaitForIOAndCheckEnabled(sb_service, true);
   EXPECT_TRUE(csd_service->enabled());
 
   // Change the other pref. SBS should stop now.
   pref_service2->SetBoolean(prefs::kSafeBrowsingEnabled, false);
-  WaitForIOThread();
 
 // TODO(mattm): Remove this when crbug.com/461493 is fixed.
 #if defined(OS_CHROMEOS)
   // On Chrome OS we should disable safe browsing for signin profile.
-  EXPECT_TRUE(sb_service->enabled());
+  WaitForIOAndCheckEnabled(sb_service, true);
   EXPECT_TRUE(csd_service->enabled());
   chromeos::ProfileHelper::GetSigninProfile()
       ->GetOriginalProfile()
@@ -1068,20 +1094,18 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
       ->SetBoolean(prefs::kSafeBrowsingEnabled, false);
   WaitForIOThread();
 #endif
-  EXPECT_FALSE(sb_service->enabled());
+  WaitForIOAndCheckEnabled(sb_service, false);
   EXPECT_FALSE(csd_service->enabled());
 
   // Turn it back on. SBS comes back.
   pref_service2->SetBoolean(prefs::kSafeBrowsingEnabled, true);
-  WaitForIOThread();
-  EXPECT_TRUE(sb_service->enabled());
+  WaitForIOAndCheckEnabled(sb_service, true);
   EXPECT_TRUE(csd_service->enabled());
 
   // Delete the Profile. SBS stops again.
   pref_service2 = NULL;
   profile2.reset();
-  WaitForIOThread();
-  EXPECT_FALSE(sb_service->enabled());
+  WaitForIOAndCheckEnabled(sb_service, false);
   EXPECT_FALSE(csd_service->enabled());
 }
 

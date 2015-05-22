@@ -28,6 +28,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/net_util.h"
@@ -84,6 +85,7 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   void SetEnabledAndRefreshState(bool enabled);
 
   bool enabled() const {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return enabled_;
   }
 
