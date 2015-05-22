@@ -9,7 +9,6 @@
 # WontFix outside of this file.
 
 # Perf tests are really slow in debug builds and there are few benefits in running them.
-[ Debug ] perf [ WontFix ]
 [ Debug ] http/tests/perf [ WontFix ]
 
 # This test verifies that a mismatch reftest will fail if both results are the

@@ -91,7 +91,6 @@ crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip 
 
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 
-crbug.com/339118 perf/compositor-touch-hit-rects.html [ Failure Pass ]
 crbug.com/339118 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
 crbug.com/339118 virtual/pointerevent/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
 crbug.com/339118 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
@@ -754,7 +753,6 @@ crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fie
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-tabindex.html [ Failure Pass ]
 crbug.com/393098 [ Win7 ] fast/forms/week-multiple-fields/week-multiple-fields-mouse-events.html [ Failure Pass ]
 crbug.com/337774 [ Debug ] svg/animations/use-while-animating-crash.html [ Crash Pass ]
-crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.html [ Failure Pass ]
 
 crbug.com/460885 fast/forms/month-multiple-fields/month-multiple-fields-preserve-value-after-history-back.html [ Failure Pass ]
