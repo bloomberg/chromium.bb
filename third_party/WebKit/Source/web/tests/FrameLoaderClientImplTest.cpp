@@ -73,7 +73,7 @@ protected:
         // FIXME: http://crbug.com/363843. This needs to find a better way to
         // not create graphics layers.
         m_webView->settings()->setAcceleratedCompositingEnabled(false);
-        m_mainFrame = WebLocalFrame::create(&m_webFrameClient);
+        m_mainFrame = WebLocalFrame::create(WebTreeScopeType::Document, &m_webFrameClient);
         m_webView->setMainFrame(m_mainFrame);
         m_frameLoaderClientImpl = toFrameLoaderClientImpl(toWebLocalFrameImpl(m_webView->mainFrame())->frame()->loader().client());
     }

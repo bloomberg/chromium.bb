@@ -22,11 +22,6 @@
 
 namespace blink {
 
-WebRemoteFrame* WebRemoteFrame::create(WebRemoteFrameClient* client)
-{
-    return WebRemoteFrame::create(WebTreeScopeType::Document, client);
-}
-
 WebRemoteFrame* WebRemoteFrame::create(WebTreeScopeType scope, WebRemoteFrameClient* client)
 {
     return WebRemoteFrameImpl::create(scope, client);
@@ -718,11 +713,6 @@ WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const
     return WebString();
 }
 
-WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client, WebFrame* previousSibling)
-{
-    return createLocalChild(WebTreeScopeType::Document, name, sandboxFlags, client, previousSibling);
-}
-
 WebLocalFrame* WebRemoteFrameImpl::createLocalChild(WebTreeScopeType scope, const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client, WebFrame* previousSibling)
 {
     WebLocalFrameImpl* child = toWebLocalFrameImpl(WebLocalFrame::create(scope, client));
@@ -746,11 +736,6 @@ void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner,
     setCoreFrame(RemoteFrame::create(&m_frameClient, host, owner));
     frame()->createView();
     m_frame->tree().setName(name, nullAtom);
-}
-
-WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, WebSandboxFlags sandboxFlags, WebRemoteFrameClient* client)
-{
-    return createRemoteChild(WebTreeScopeType::Document, name, sandboxFlags, client);
 }
 
 WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(WebTreeScopeType scope, const WebString& name, WebSandboxFlags sandboxFlags, WebRemoteFrameClient* client)

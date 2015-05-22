@@ -126,8 +126,6 @@ namespace blink {
 
     // ======== All public functions below this point are candidates to move out of LocalFrame into another class. ========
 
-        bool inScope(TreeScope*) const;
-
         // See GraphicsLayerClient.h for accepted flags.
         String layerTreeAsText(unsigned flags = 0) const;
 
