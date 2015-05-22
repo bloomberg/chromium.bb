@@ -36,6 +36,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   - Degree sign
   - Dash signs
   - Math signs
+  - Accent modifiers
 
 * Noteworthy changes in release 2.6.2 (2015-03-02)
 This release, which was mostly pushed out the door by Bert and Mesar,
