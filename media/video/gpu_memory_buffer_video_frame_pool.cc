@@ -334,8 +334,6 @@ GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame(
     // Unsupported cases.
     case media::VideoFrame::YV12A:
     case media::VideoFrame::YV16:
-    case media::VideoFrame::YV12J:
-    case media::VideoFrame::YV12HD:
     case media::VideoFrame::YV24:
 #if defined(VIDEO_HOLE)
     case media::VideoFrame::HOLE:

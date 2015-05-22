@@ -111,6 +111,7 @@ class PipelineIntegrationTestBase {
   PipelineStatus pipeline_status_;
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   VideoFrame::Format last_video_frame_format_;
+  VideoFrame::ColorSpace last_video_frame_color_space_;
   DummyTickClock dummy_clock_;
   AudioHardwareConfig hardware_config_;
   PipelineMetadata metadata_;

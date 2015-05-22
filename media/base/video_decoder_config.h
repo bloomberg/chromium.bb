@@ -90,6 +90,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   void Initialize(VideoCodec codec,
                   VideoCodecProfile profile,
                   VideoFrame::Format format,
+                  VideoFrame::ColorSpace color_space,
                   const gfx::Size& coded_size,
                   const gfx::Rect& visible_rect,
                   const gfx::Size& natural_size,

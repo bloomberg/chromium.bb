@@ -84,17 +84,13 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
   // whereas |codec_context| contains the current threads's
   // updated width/height/pix_fmt, which can change for adaptive
   // content.
-  VideoFrame::Format format = PixelFormatToVideoFormat(codec_context->pix_fmt);
-  if (format == VideoFrame::YV12 &&
-      codec_context->colorspace == AVCOL_SPC_BT709) {
-    format = VideoFrame::YV12HD;
-  }
+  const VideoFrame::Format format =
+      PixelFormatToVideoFormat(codec_context->pix_fmt);
 
   if (format == VideoFrame::UNKNOWN)
     return AVERROR(EINVAL);
   DCHECK(format == VideoFrame::YV12 || format == VideoFrame::YV16 ||
-         format == VideoFrame::YV12J || format == VideoFrame::YV24 ||
-         format == VideoFrame::YV12HD);
+         format == VideoFrame::YV24);
 
   gfx::Size size(codec_context->width, codec_context->height);
   const int ret = av_image_check_size(size.width(), size.height(), 0, NULL);
@@ -130,6 +126,11 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
 
   scoped_refptr<VideoFrame> video_frame = frame_pool_.CreateFrame(
       format, coded_size, gfx::Rect(size), natural_size, kNoTimestamp());
+  if (format == VideoFrame::YV12 &&
+      codec_context->colorspace == AVCOL_SPC_BT709) {
+    video_frame->metadata()->SetInteger(VideoFrameMetadata::COLOR_SPACE,
+                                        VideoFrame::COLOR_SPACE_HD_REC709);
+  }
 
   for (int i = 0; i < 3; i++) {
     frame->data[i] = video_frame->data(i);

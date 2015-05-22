@@ -403,22 +403,20 @@ void VideoDecoderShim::YUVConverter::Convert(
       case media::VideoFrame::YV12A:
       case media::VideoFrame::I420:
         uv_height_divisor_ = 2;
-        yuv_matrix = yuv_to_rgb_rec601;
         yuv_adjust = yuv_adjust_constrained;
+        int result;
+        if (frame->metadata()->GetInteger(
+                media::VideoFrameMetadata::COLOR_SPACE, &result)) {
+          if (result == media::VideoFrame::COLOR_SPACE_JPEG) {
+            yuv_matrix = yuv_to_rgb_jpeg;
+            yuv_adjust = yuv_adjust_full;
+          } else {
+            yuv_matrix = yuv_to_rgb_rec709;
+          }
+        } else {
+          yuv_matrix = yuv_to_rgb_rec601;
+        }
         break;
-
-      case media::VideoFrame::YV12HD:  // 420
-        uv_height_divisor_ = 2;
-        yuv_matrix = yuv_to_rgb_rec709;
-        yuv_adjust = yuv_adjust_constrained;
-        break;
-
-      case media::VideoFrame::YV12J:  // 420
-        uv_height_divisor_ = 2;
-        yuv_matrix = yuv_to_rgb_jpeg;
-        yuv_adjust = yuv_adjust_full;
-        break;
-
       case media::VideoFrame::YV16:  // 422
       case media::VideoFrame::YV24:  // 444
         uv_height_divisor_ = 1;

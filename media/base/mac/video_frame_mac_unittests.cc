@@ -67,7 +67,6 @@ TEST(VideoFrameMac, CheckFormats) {
       {VideoFrame::YV12, 0},
       {VideoFrame::YV16, 0},
       {VideoFrame::YV12A, 0},
-      {VideoFrame::YV12J, 0},
       {VideoFrame::YV24, 0},
   };
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,8 +48,6 @@ bool IsYUV(media::VideoFrame::Format format) {
     case VideoFrame::YV16:
     case VideoFrame::I420:
     case VideoFrame::YV12A:
-    case VideoFrame::YV12J:
-    case VideoFrame::YV12HD:
     case VideoFrame::YV24:
     case VideoFrame::NV12:
       return true;
@@ -65,27 +63,12 @@ bool IsYUV(media::VideoFrame::Format format) {
   return false;
 }
 
-bool IsJPEGColorSpace(media::VideoFrame::Format format) {
-  switch (format) {
-    case VideoFrame::YV12J:
-      return true;
-    case VideoFrame::YV12:
-    case VideoFrame::YV12HD:
-    case VideoFrame::YV16:
-    case VideoFrame::I420:
-    case VideoFrame::YV12A:
-    case VideoFrame::YV24:
-    case VideoFrame::NV12:
-    case VideoFrame::UNKNOWN:
-    case VideoFrame::NATIVE_TEXTURE:
-#if defined(VIDEO_HOLE)
-    case VideoFrame::HOLE:
-#endif  // defined(VIDEO_HOLE)
-    case VideoFrame::ARGB:
-      return false;
-  }
-  NOTREACHED() << "Invalid videoframe format provided: " << format;
-  return false;
+bool CheckColorSpace(const scoped_refptr<VideoFrame>& video_frame,
+                     VideoFrame::ColorSpace color_space) {
+  int result;
+  return video_frame->metadata()->GetInteger(
+             media::VideoFrameMetadata::COLOR_SPACE, &result) &&
+         result == color_space;
 }
 
 bool IsYUVOrNative(media::VideoFrame::Format format) {
@@ -205,13 +188,13 @@ class VideoImageGenerator : public SkImageGenerator {
         // TODO(rileya): Skia currently doesn't support Rec709 YUV conversion,
         // or YUVA conversion. Remove this case once it does. As-is we will
         // fall back on the pure-software path in this case.
-        frame_->format() == VideoFrame::YV12HD ||
+        CheckColorSpace(frame_, VideoFrame::COLOR_SPACE_HD_REC709) ||
         frame_->format() == VideoFrame::YV12A) {
       return false;
     }
 
     if (color_space) {
-      if (IsJPEGColorSpace(frame_->format()))
+      if (CheckColorSpace(frame_, VideoFrame::COLOR_SPACE_JPEG))
         *color_space = kJPEG_SkYUVColorSpace;
       else
         *color_space = kRec601_SkYUVColorSpace;
@@ -485,21 +468,8 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
   switch (video_frame->format()) {
     case VideoFrame::YV12:
     case VideoFrame::I420:
-      LIBYUV_I420_TO_ARGB(
-          video_frame->data(VideoFrame::kYPlane) + y_offset,
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->data(VideoFrame::kUPlane) + uv_offset,
-          video_frame->stride(VideoFrame::kUPlane),
-          video_frame->data(VideoFrame::kVPlane) + uv_offset,
-          video_frame->stride(VideoFrame::kVPlane),
-          static_cast<uint8*>(rgb_pixels),
-          row_bytes,
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height());
-      break;
-
-    case VideoFrame::YV12J:
-      ConvertYUVToRGB32(
+      if (CheckColorSpace(video_frame, VideoFrame::COLOR_SPACE_JPEG)) {
+        ConvertYUVToRGB32(
           video_frame->data(VideoFrame::kYPlane) + y_offset,
           video_frame->data(VideoFrame::kUPlane) + uv_offset,
           video_frame->data(VideoFrame::kVPlane) + uv_offset,
@@ -510,22 +480,31 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
           video_frame->stride(VideoFrame::kUPlane),
           row_bytes,
           YV12J);
+      } else if (CheckColorSpace(video_frame,
+                                 VideoFrame::COLOR_SPACE_HD_REC709)) {
+        ConvertYUVToRGB32(video_frame->data(VideoFrame::kYPlane) + y_offset,
+                          video_frame->data(VideoFrame::kUPlane) + uv_offset,
+                          video_frame->data(VideoFrame::kVPlane) + uv_offset,
+                          static_cast<uint8*>(rgb_pixels),
+                          video_frame->visible_rect().width(),
+                          video_frame->visible_rect().height(),
+                          video_frame->stride(VideoFrame::kYPlane),
+                          video_frame->stride(VideoFrame::kUPlane), row_bytes,
+                          YV12HD);
+      } else {
+        LIBYUV_I420_TO_ARGB(
+            video_frame->data(VideoFrame::kYPlane) + y_offset,
+            video_frame->stride(VideoFrame::kYPlane),
+            video_frame->data(VideoFrame::kUPlane) + uv_offset,
+            video_frame->stride(VideoFrame::kUPlane),
+            video_frame->data(VideoFrame::kVPlane) + uv_offset,
+            video_frame->stride(VideoFrame::kVPlane),
+            static_cast<uint8*>(rgb_pixels),
+            row_bytes,
+            video_frame->visible_rect().width(),
+            video_frame->visible_rect().height());
+      }
       break;
-
-    case VideoFrame::YV12HD:
-      ConvertYUVToRGB32(
-          video_frame->data(VideoFrame::kYPlane) + y_offset,
-          video_frame->data(VideoFrame::kUPlane) + uv_offset,
-          video_frame->data(VideoFrame::kVPlane) + uv_offset,
-          static_cast<uint8*>(rgb_pixels),
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->stride(VideoFrame::kUPlane),
-          row_bytes,
-          YV12HD);
-      break;
-
     case VideoFrame::YV16:
       LIBYUV_I422_TO_ARGB(
           video_frame->data(VideoFrame::kYPlane) + y_offset,

@@ -290,8 +290,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
                                               entry.pixel_aspect.v_spacing);
       is_video_track_encrypted_ = entry.sinf.info.track_encryption.is_encrypted;
       DVLOG(1) << "is_video_track_encrypted_: " << is_video_track_encrypted_;
-      video_config.Initialize(kCodecH264, H264PROFILE_MAIN,  VideoFrame::YV12,
-                              coded_size, visible_rect, natural_size,
+      video_config.Initialize(kCodecH264, H264PROFILE_MAIN, VideoFrame::YV12,
+                              VideoFrame::COLOR_SPACE_UNSPECIFIED, coded_size,
+                              visible_rect, natural_size,
                               // No decoder-specific buffer needed for AVC;
                               // SPS/PPS are embedded in the video stream
                               NULL, 0, is_video_track_encrypted_, false);

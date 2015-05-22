@@ -94,17 +94,15 @@ enum SampleFormat {
 enum VideoFormat {
   UNKNOWN = 0,
   YV12,
-  YV16,
   I420,
+  YV16,
   YV12A,
+  YV24,
+  NV12,
+  ARGB,
   HOLE,
   NATIVE_TEXTURE,
-  YV12J,
-  NV12,
-  YV24,
-  ARGB,
-  YV12HD,
-  FORMAT_MAX = YV12HD,
+  FORMAT_MAX = NATIVE_TEXTURE,
 };
 
 // See media/base/video_decoder_config.h for descriptions.

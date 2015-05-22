@@ -15655,7 +15655,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoFormat" enum="VideoFormat">
+  <owner>mcasas@chromium.org</owner>
+  <summary>Pixel format used in HTML5 video. Emitted on video load.</summary>
+</histogram>
+
+<histogram name="Media.VideoFrameColorSpace" enum="VideoFrameColorSpace">
+  <owner>mcasas@chromium.org</owner>
+  <summary>
+    Color space or range used in HTML5 video. Emitted on video load.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoPixelFormat" enum="VideoPixelFormat">
+  <obsolete>
+    Replaced by Media.VideoFormat 05/2015.
+  </obsolete>
   <owner>scherkus@chromium.org</owner>
   <summary>Pixel format used in HTML5 video. Emitted on video load.</summary>
 </histogram>
@@ -66001,7 +66016,29 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="12" label="VP9"/>
 </enum>
 
+<enum name="VideoFormat" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="YV12"/>
+  <int value="2" label="I420"/>
+  <int value="3" label="YV16"/>
+  <int value="4" label="YV12A"/>
+  <int value="5" label="YV24"/>
+  <int value="6" label="NV12"/>
+  <int value="7" label="ARGB"/>
+  <int value="8" label="HOLE"/>
+  <int value="9" label="NATIVE_TEXTURE"/>
+</enum>
+
+<enum name="VideoFrameColorSpace" type="int">
+  <int value="0" label="Unspecified, usually Rec 601"/>
+  <int value="1" label="Jpeg"/>
+  <int value="2" label="HD Rec 709"/>
+</enum>
+
 <enum name="VideoPixelFormat" type="int">
+  <obsolete>
+    Deprecated as of 05/2015. Substituted by VideoFormat.
+  </obsolete>
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="YV12"/>
   <int value="2" label="YV16"/>

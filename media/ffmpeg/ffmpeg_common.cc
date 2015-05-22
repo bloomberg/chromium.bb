@@ -412,12 +412,6 @@ void AVStreamToVideoDecoderConfig(
     coded_size = visible_rect.size();
   }
 
-  // YV12 frames may be in HD color space.
-  if (format == VideoFrame::YV12 &&
-      stream->codec->colorspace == AVCOL_SPC_BT709) {
-    format = VideoFrame::YV12HD;
-  }
-
   // Pad out |coded_size| for subsampled YUV formats.
   if (format != VideoFrame::YV24) {
     coded_size.set_width((coded_size.width() + 1) / 2 * 2);
@@ -439,6 +433,9 @@ void AVStreamToVideoDecoderConfig(
   config->Initialize(codec,
                      profile,
                      format,
+                     (stream->codec->colorspace == AVCOL_SPC_BT709)
+                         ? VideoFrame::COLOR_SPACE_HD_REC709
+                         : VideoFrame::COLOR_SPACE_UNSPECIFIED,
                      coded_size, visible_rect, natural_size,
                      stream->codec->extradata, stream->codec->extradata_size,
                      is_encrypted,
@@ -542,8 +539,6 @@ VideoFrame::Format PixelFormatToVideoFormat(PixelFormat pixel_format) {
       return VideoFrame::YV24;
     case PIX_FMT_YUV420P:
       return VideoFrame::YV12;
-    case PIX_FMT_YUVJ420P:
-      return VideoFrame::YV12J;
     case PIX_FMT_YUVA420P:
       return VideoFrame::YV12A;
     default:
@@ -557,10 +552,7 @@ PixelFormat VideoFormatToPixelFormat(VideoFrame::Format video_format) {
     case VideoFrame::YV16:
       return PIX_FMT_YUV422P;
     case VideoFrame::YV12:
-    case VideoFrame::YV12HD:
       return PIX_FMT_YUV420P;
-    case VideoFrame::YV12J:
-      return PIX_FMT_YUVJ420P;
     case VideoFrame::YV12A:
       return PIX_FMT_YUVA420P;
     case VideoFrame::YV24:

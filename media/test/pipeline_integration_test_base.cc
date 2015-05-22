@@ -43,6 +43,7 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       ended_(false),
       pipeline_status_(PIPELINE_OK),
       last_video_frame_format_(VideoFrame::UNKNOWN),
+      last_video_frame_color_space_(VideoFrame::COLOR_SPACE_UNSPECIFIED),
       hardware_config_(AudioParameters(), AudioParameters()) {
   base::MD5Init(&md5_context_);
 }
@@ -299,6 +300,11 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
 void PipelineIntegrationTestBase::OnVideoFramePaint(
     const scoped_refptr<VideoFrame>& frame) {
   last_video_frame_format_ = frame->format();
+  int result;
+  if (frame->metadata()->GetInteger(media::VideoFrameMetadata::COLOR_SPACE,
+                                    &result)) {
+    last_video_frame_color_space_ = static_cast<VideoFrame::ColorSpace>(result);
+  }
   if (!hashing_enabled_)
     return;
   frame->HashFrameForTesting(&md5_context_);

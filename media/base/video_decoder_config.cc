@@ -25,8 +25,9 @@ VideoDecoderConfig::VideoDecoderConfig(VideoCodec codec,
                                        const uint8* extra_data,
                                        size_t extra_data_size,
                                        bool is_encrypted) {
-  Initialize(codec, profile, format, coded_size, visible_rect, natural_size,
-             extra_data, extra_data_size, is_encrypted, true);
+  Initialize(codec, profile, format, VideoFrame::COLOR_SPACE_UNSPECIFIED,
+             coded_size, visible_rect, natural_size, extra_data,
+             extra_data_size, is_encrypted, true);
 }
 
 VideoDecoderConfig::~VideoDecoderConfig() {}
@@ -56,6 +57,7 @@ static void UmaHistogramAspectRatio(const char* name, const T& size) {
 void VideoDecoderConfig::Initialize(VideoCodec codec,
                                     VideoCodecProfile profile,
                                     VideoFrame::Format format,
+                                    VideoFrame::ColorSpace color_space,
                                     const gfx::Size& coded_size,
                                     const gfx::Rect& visible_rect,
                                     const gfx::Size& natural_size,
@@ -76,8 +78,10 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
     UmaHistogramAspectRatio("Media.VideoCodedAspectRatio", coded_size);
     UMA_HISTOGRAM_COUNTS_10000("Media.VideoVisibleWidth", visible_rect.width());
     UmaHistogramAspectRatio("Media.VideoVisibleAspectRatio", visible_rect);
-    UMA_HISTOGRAM_ENUMERATION(
-        "Media.VideoPixelFormat", format, VideoFrame::FORMAT_MAX + 1);
+    UMA_HISTOGRAM_ENUMERATION("Media.VideoFormat", format,
+                              VideoFrame::FORMAT_MAX + 1);
+    UMA_HISTOGRAM_ENUMERATION("Media.VideoFrameColorSpace", color_space,
+                              VideoFrame::COLOR_SPACE_MAX + 1);
   }
 
   codec_ = codec;

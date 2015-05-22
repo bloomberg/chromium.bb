@@ -43,35 +43,43 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     kAPlane = 3,
   };
 
-  // Surface formats roughly based on FOURCC labels, see:
+  // Pixel formats roughly based on FOURCC labels, see:
   // http://www.fourcc.org/rgb.php
   // http://www.fourcc.org/yuv.php
-  // Logged to UMA, so never reuse values.
+  // Logged to UMA, so never reuse values. Leave gaps if necessary.
   enum Format {
     UNKNOWN = 0,  // Unknown format value.
-    YV12 = 1,     // 12bpp YVU planar 1x1 Y, 2x2 VU samples
-    YV16 = 2,     // 16bpp YVU planar 1x1 Y, 2x1 VU samples
-    I420 = 3,     // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
-    YV12A = 4,    // 20bpp YUVA planar 1x1 Y, 2x2 VU, 1x1 A samples.
+    YV12 = 1,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
+    I420 = 2,  // 12bpp YVU planar 1x1 Y, 2x2 UV samples, a.k.a. YU12.
+    YV16 = 3,  // 16bpp YVU planar 1x1 Y, 2x1 VU samples.
+    YV12A = 4,   // 20bpp YUVA planar 1x1 Y, 2x2 VU, 1x1 A samples.
+    YV24 = 5,  // 24bpp YUV planar, no subsampling.
+    NV12 = 6,  // 12bpp 1x1 Y plane followed by an interleaved 2x2 UV plane.
+    ARGB = 7,  // 32bpp ARGB, 1 plane.
 #if defined(VIDEO_HOLE)
-    HOLE = 5,            // Hole frame.
-#endif  // defined(VIDEO_HOLE)
-    NATIVE_TEXTURE = 6,  // Native texture.  Pixel-format agnostic.
-    YV12J = 7,  // JPEG color range version of YV12
-    NV12 = 8,  // 12bpp 1x1 Y plane followed by an interleaved 2x2 UV plane.
-    YV24 = 9,  // 24bpp YUV planar, no subsampling.
-    ARGB = 10,  // 32bpp ARGB, 1 plane.
-    YV12HD = 11,  // Rec709 "HD" color space version of YV12
+    HOLE = 8,  // Hole frame.
+#endif
+    NATIVE_TEXTURE = 9,  // Native texture.  Pixel-format agnostic.
     // Please update UMA histogram enumeration when adding new formats here.
-    FORMAT_MAX = YV12HD,  // Must always be equal to largest entry logged.
+    // Must always be equal to largest entry logged.
+    FORMAT_MAX = NATIVE_TEXTURE,
   };
 
   // Defines the internal format and the number of the textures in the mailbox
   // holders.
   enum TextureFormat {
-    TEXTURE_RGBA,     // One RGBA texture.
-    TEXTURE_RGB,      // One RGB texture.
+    TEXTURE_RGBA,  // One RGBA texture.
+    TEXTURE_RGB,  // One RGB texture.
     TEXTURE_YUV_420,  // 3 RED textures one per channel. UV are 2x2 subsampled.
+  };
+
+  // Color space or color range used for the pixels, in general this is left
+  // unspecified, meaning SD is assumed.
+  enum ColorSpace {
+    COLOR_SPACE_UNSPECIFIED = 0,  // In general this is Rec601.
+    COLOR_SPACE_JPEG = 1,  // JPEG color range.
+    COLOR_SPACE_HD_REC709 = 2,  // Rec709 "HD" color space.
+    COLOR_SPACE_MAX = COLOR_SPACE_HD_REC709,
   };
 
   // Returns the name of a Format as a string.

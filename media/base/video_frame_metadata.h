@@ -36,6 +36,10 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // key.
     FRAME_RATE,
 
+    // Some VideoFrames have an indication of the color space used.  Use
+    // GetInteger()/SetInteger() and VideoFrame::ColorSpace enumeration.
+    COLOR_SPACE,
+
     NUM_KEYS
   };
 
@@ -55,7 +59,7 @@ class MEDIA_EXPORT VideoFrameMetadata {
   void SetTimeTicks(Key key, const base::TimeTicks& value);
   void SetValue(Key key, scoped_ptr<base::Value> value);
 
-  // Getters.  Returns true if |key| was present and has the value has been set.
+  // Getters.  Returns true if |key| is present, and its value has been set.
   bool GetBoolean(Key key, bool* value) const WARN_UNUSED_RESULT;
   bool GetInteger(Key key, int* value) const WARN_UNUSED_RESULT;
   bool GetDouble(Key key, double* value) const WARN_UNUSED_RESULT;

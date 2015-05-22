@@ -219,10 +219,15 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       DCHECK_GE(frame_resources_.size(), 3u);
 
       YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601;
-      if (frame_->format() == media::VideoFrame::YV12J) {
-        color_space = YUVVideoDrawQuad::JPEG;
-      } else if (frame_->format() == media::VideoFrame::YV12HD) {
-        color_space = YUVVideoDrawQuad::REC_709;
+      int videoframe_color_space;
+      if (frame_->metadata()->GetInteger(media::VideoFrameMetadata::COLOR_SPACE,
+                                         &videoframe_color_space)) {
+        if (videoframe_color_space == media::VideoFrame::COLOR_SPACE_JPEG) {
+          color_space = YUVVideoDrawQuad::JPEG;
+        } else if (videoframe_color_space ==
+                   media::VideoFrame::COLOR_SPACE_HD_REC709) {
+          color_space = YUVVideoDrawQuad::REC_709;
+        }
       }
 
       const gfx::Size ya_tex_size = coded_size;

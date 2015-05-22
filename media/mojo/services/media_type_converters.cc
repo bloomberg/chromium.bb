@@ -130,20 +130,18 @@ ASSERT_ENUM_EQ_RAW(VideoFrame::Format,
                    VideoFrame::UNKNOWN,
                    VIDEO_FORMAT_UNKNOWN);
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV12, VIDEO_FORMAT_YV12);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV16, VIDEO_FORMAT_YV16);
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::I420, VIDEO_FORMAT_I420);
+ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV16, VIDEO_FORMAT_YV16);
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV12A, VIDEO_FORMAT_YV12A);
+ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV24, VIDEO_FORMAT_YV24);
+ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::NV12, VIDEO_FORMAT_NV12);
+ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::ARGB, VIDEO_FORMAT_ARGB);
 #if defined(VIDEO_HOLE)
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::HOLE, VIDEO_FORMAT_HOLE);
 #endif
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format,
                    VideoFrame::NATIVE_TEXTURE,
                    VIDEO_FORMAT_NATIVE_TEXTURE);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV12J, VIDEO_FORMAT_YV12J);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::NV12, VIDEO_FORMAT_NV12);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV24, VIDEO_FORMAT_YV24);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::ARGB, VIDEO_FORMAT_ARGB);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV12HD, VIDEO_FORMAT_YV12HD);
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format,
                    VideoFrame::FORMAT_MAX,
                    VIDEO_FORMAT_FORMAT_MAX);
@@ -452,6 +450,7 @@ TypeConverter<media::VideoDecoderConfig, VideoDecoderConfigPtr>::Convert(
       static_cast<media::VideoCodec>(input->codec),
       static_cast<media::VideoCodecProfile>(input->profile),
       static_cast<media::VideoFrame::Format>(input->format),
+      media::VideoFrame::COLOR_SPACE_UNSPECIFIED,
       input->coded_size.To<gfx::Size>(),
       input->visible_rect.To<gfx::Rect>(),
       input->natural_size.To<gfx::Size>(),
