@@ -60,7 +60,7 @@ class STORAGE_EXPORT BlobURLRequestJob
   // For preparing for read: get the size, apply the range and perform seek.
   void DidStart();
   bool AddItemLength(size_t index, int64 item_length);
-  void CountSize();
+  bool CountSize();
   void DidCountSize(int error);
   void DidGetFileItemLength(size_t index, int64 result);
   void Seek(int64 offset);
@@ -90,7 +90,8 @@ class STORAGE_EXPORT BlobURLRequestJob
   FileStreamReader* GetFileStreamReader(size_t index);
 
   // Creates a FileStreamReader for the item at |index| with additional_offset.
-  void CreateFileStreamReader(size_t index, int64 additional_offset);
+  // If failed, then returns false.
+  bool CreateFileStreamReader(size_t index, int64 additional_offset);
 
   scoped_ptr<BlobDataSnapshot> blob_data_;
 

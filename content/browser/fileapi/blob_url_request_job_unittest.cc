@@ -346,6 +346,13 @@ TEST_F(BlobURLRequestJobTest, TestGetNonExistentFileSystemFileRequest) {
   TestErrorRequest(404);
 }
 
+TEST_F(BlobURLRequestJobTest, TestGetInvalidFileSystemFileRequest) {
+  SetUpFileSystem();
+  GURL invalid_file;
+  blob_data_->AppendFileSystemFile(invalid_file, 0, kuint64max, base::Time());
+  TestErrorRequest(500);
+}
+
 TEST_F(BlobURLRequestJobTest, TestGetChangedFileSystemFileRequest) {
   SetUpFileSystem();
   base::Time old_time =

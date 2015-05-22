@@ -197,7 +197,7 @@ bool BlobURLRequestJob::AddItemLength(size_t index, int64 item_length) {
   return true;
 }
 
-void BlobURLRequestJob::CountSize() {
+bool BlobURLRequestJob::CountSize() {
   TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::CountSize", this, "uuid",
                            blob_data_->uuid());
   pending_get_file_info_count_ = 0;
@@ -209,18 +209,28 @@ void BlobURLRequestJob::CountSize() {
     const BlobDataItem& item = *items.at(i);
     if (IsFileType(item.type())) {
       ++pending_get_file_info_count_;
-      GetFileStreamReader(i)->GetLength(
-          base::Bind(&BlobURLRequestJob::DidGetFileItemLength,
-                     weak_factory_.GetWeakPtr(), i));
+      storage::FileStreamReader* const reader = GetFileStreamReader(i);
+      if (!reader) {
+        NotifyFailure(net::ERR_FAILED);
+        return false;
+      }
+      if (!reader->GetLength(
+              base::Bind(&BlobURLRequestJob::DidGetFileItemLength,
+                         weak_factory_.GetWeakPtr(), i))) {
+        NotifyFailure(net::ERR_FILE_NOT_FOUND);
+        return false;
+      }
       continue;
     }
 
     if (!AddItemLength(i, item.length()))
-      return;
+      return false;
   }
 
   if (pending_get_file_info_count_ == 0)
     DidCountSize(net::OK);
+
+  return true;
 }
 
 void BlobURLRequestJob::DidCountSize(int error) {
@@ -346,12 +356,18 @@ bool BlobURLRequestJob::ReadItem() {
   const BlobDataItem& item = *items.at(current_item_index_);
   if (item.type() == DataElement::TYPE_BYTES)
     return ReadBytesItem(item, bytes_to_read);
-  if (IsFileType(item.type())) {
-    return ReadFileItem(GetFileStreamReader(current_item_index_),
-                        bytes_to_read);
+  if (!IsFileType(item.type())) {
+    NOTREACHED();
+    return false;
   }
-  NOTREACHED();
-  return false;
+  storage::FileStreamReader* const reader =
+      GetFileStreamReader(current_item_index_);
+  if (!reader) {
+    NotifyFailure(net::ERR_FAILED);
+    return false;
+  }
+
+  return ReadFileItem(reader, bytes_to_read);
 }
 
 void BlobURLRequestJob::AdvanceItem() {
@@ -576,14 +592,16 @@ FileStreamReader* BlobURLRequestJob::GetFileStreamReader(size_t index) {
   DCHECK_LT(index, items.size());
   const BlobDataItem& item = *items.at(index);
   if (!IsFileType(item.type()))
-    return NULL;
-  if (index_to_reader_.find(index) == index_to_reader_.end())
-    CreateFileStreamReader(index, 0);
+    return nullptr;
+  if (index_to_reader_.find(index) == index_to_reader_.end()) {
+    if (!CreateFileStreamReader(index, 0))
+      return nullptr;
+  }
   DCHECK(index_to_reader_[index]);
   return index_to_reader_[index];
 }
 
-void BlobURLRequestJob::CreateFileStreamReader(size_t index,
+bool BlobURLRequestJob::CreateFileStreamReader(size_t index,
                                                int64 additional_offset) {
   const auto& items = blob_data_->items();
   DCHECK_LT(index, items.size());
@@ -591,15 +609,16 @@ void BlobURLRequestJob::CreateFileStreamReader(size_t index,
   DCHECK(IsFileType(item.type()));
   DCHECK_EQ(0U, index_to_reader_.count(index));
 
-  FileStreamReader* reader = NULL;
+  FileStreamReader* reader = nullptr;
   switch (item.type()) {
     case DataElement::TYPE_FILE:
       reader = FileStreamReader::CreateForLocalFile(
-          file_task_runner_.get(),
-          item.path(),
-          item.offset() + additional_offset,
-          item.expected_modification_time());
-      break;
+          file_task_runner_.get(), item.path(),
+          item.offset() + additional_offset, item.expected_modification_time());
+      DCHECK(reader);
+      index_to_reader_[index] = reader;
+      return true;
+
     case DataElement::TYPE_FILE_FILESYSTEM:
       reader = file_system_context_
                    ->CreateFileStreamReader(
@@ -611,12 +630,21 @@ void BlobURLRequestJob::CreateFileStreamReader(size_t index,
                              : item.length() - additional_offset,
                          item.expected_modification_time())
                    .release();
-      break;
+      if (reader) {
+        index_to_reader_[index] = reader;
+        return true;
+      }
+
+      // The file stream reader may not be obtainable if the file is on an
+      // isolated file system, which has been unmounted.
+      return false;
+
     default:
-      NOTREACHED();
+      break;
   }
-  DCHECK(reader);
-  index_to_reader_[index] = reader;
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace storage
