@@ -1172,25 +1172,6 @@
    fun:_ZN5quota17QuotaManagerProxy14RegisterClientEPNS_11QuotaClientE
 }
 {
-   bug_93250a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:*SHA1Fingerprint*
-   fun:_ZN3net16CertVerifyResultaSERKS0_
-   fun:_ZN3net12CertVerifier12HandleResultEPNS_15X509CertificateERKSsiiRKNS_16CertVerifyResultE
-   fun:_ZN3net18CertVerifierWorker7DoReplyEv
-}
-{
-   bug_93250b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base4BindIMNS_6subtle18TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
-   fun:_ZN4base11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
-   fun:_ZN3net18CertVerifierWorker6FinishEv
-   fun:_ZN3net18CertVerifierWorker3RunEv
-}
-{
    bug_93730_a
    Memcheck:Leak
    fun:_Znw*
