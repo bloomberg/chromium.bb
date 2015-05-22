@@ -5,7 +5,7 @@
 {
   'variables': {
     'cast_graphics_gyp%': '../../chromecast/chromecast.gyp',
-    'cast_media_gyp%': '../../chromecast/media/media.gyp',
+    'libcast_media_gyp%': '../../chromecast/media/media.gyp',
     'internal_ozone_platform_deps': [
       'ozone_platform_cast',
     ],
@@ -20,7 +20,7 @@
       'type': 'static_library',
       'dependencies': [
         '<(cast_graphics_gyp):libcast_graphics_1.0',
-        '<(cast_media_gyp):libcast_media_1.0',
+        '<(libcast_media_gyp):libcast_media_1.0',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
