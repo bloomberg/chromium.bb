@@ -410,6 +410,8 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
   SurfaceId id2(5);
   factory_.Create(id2);
 
+  manager_.RegisterSurfaceIdNamespace(0);
+
   // Check that waiting before the sequence is satisfied works.
   manager_.GetSurfaceForId(id2)
       ->AddDestructionDependency(SurfaceSequence(0, 4));
@@ -432,6 +434,28 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
       ->AddDestructionDependency(SurfaceSequence(0, 6));
   factory_.Destroy(id2);
   DCHECK(!manager_.GetSurfaceForId(id2));
+}
+
+// Tests that Surface ID namespace invalidation correctly allows
+// Sequences to be ignored.
+TEST_F(SurfaceFactoryTest, InvalidIdNamespace) {
+  uint32_t id_namespace = 9u;
+  SurfaceId id(5);
+  factory_.Create(id);
+
+  manager_.RegisterSurfaceIdNamespace(id_namespace);
+  manager_.GetSurfaceForId(id)
+      ->AddDestructionDependency(SurfaceSequence(id_namespace, 4));
+  factory_.Destroy(id);
+
+  // Verify the dependency has prevented the surface from getting destroyed.
+  EXPECT_TRUE(manager_.GetSurfaceForId(id));
+
+  manager_.InvalidateSurfaceIdNamespace(id_namespace);
+
+  // Verify that the invalidated namespace caused the unsatisfied sequence
+  // to be ignored.
+  EXPECT_FALSE(manager_.GetSurfaceForId(id));
 }
 
 }  // namespace

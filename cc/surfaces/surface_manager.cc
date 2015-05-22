@@ -56,10 +56,21 @@ void SurfaceManager::DidSatisfySequences(uint32_t id_namespace,
   SearchForSatisfaction();
 }
 
+void SurfaceManager::RegisterSurfaceIdNamespace(uint32_t id_namespace) {
+  bool inserted = valid_surface_id_namespaces_.insert(id_namespace).second;
+  DCHECK(inserted);
+}
+
+void SurfaceManager::InvalidateSurfaceIdNamespace(uint32_t id_namespace) {
+  valid_surface_id_namespaces_.erase(id_namespace);
+  SearchForSatisfaction();
+}
+
 void SurfaceManager::SearchForSatisfaction() {
   for (SurfaceDestroyList::iterator dest_it = surfaces_to_destroy_.begin();
        dest_it != surfaces_to_destroy_.end();) {
-    (*dest_it)->SatisfyDestructionDependencies(&satisfied_sequences_);
+    (*dest_it)->SatisfyDestructionDependencies(&satisfied_sequences_,
+                                               &valid_surface_id_namespaces_);
     if (!(*dest_it)->GetDestructionDependencyCount()) {
       scoped_ptr<Surface> surf(*dest_it);
       DeregisterSurface(surf->surface_id());

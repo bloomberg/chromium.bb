@@ -67,7 +67,8 @@ class CC_SURFACES_EXPORT Surface {
   // Satisfy all destruction dependencies that are contained in sequences, and
   // remove them from sequences.
   void SatisfyDestructionDependencies(
-      base::hash_set<SurfaceSequence>* sequences);
+      base::hash_set<SurfaceSequence>* sequences,
+      base::hash_set<uint32_t>* valid_id_namespaces);
   size_t GetDestructionDependencyCount() const {
     return destruction_dependencies_.size();
   }

@@ -444,8 +444,10 @@ gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
 
 scoped_ptr<cc::SurfaceIdAllocator>
 GpuProcessTransportFactory::CreateSurfaceIdAllocator() {
-  return make_scoped_ptr(
-      new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
+  scoped_ptr<cc::SurfaceIdAllocator> allocator =
+      make_scoped_ptr(new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
+  allocator->RegisterSurfaceIdNamespace(GetSurfaceManager());
+  return allocator;
 }
 
 void GpuProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
