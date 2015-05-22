@@ -1873,8 +1873,8 @@ def real_main(argv):
   portage_upgrade = False
   root = emerge.settings["ROOT"]
   # pylint: disable=W0212
-  final_db = emerge.depgraph._dynamic_config._filtered_trees[root]['graph_db']
   if root == "/":
+    final_db = emerge.depgraph._dynamic_config._filtered_trees[root]['graph_db']
     for db_pkg in final_db.match_pkgs("sys-apps/portage"):
       portage_pkg = deps_graph.get(db_pkg.cpv)
       if portage_pkg:
