@@ -6,16 +6,15 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [90, 30, 11, 19],
+        [10, 10, 56, 50],
+        [8, 58, 60, 53],
         [8, 8, 60, 54]
       ],
       "paintInvalidationClients": [
-        "InlineTextBox 'A'",
-        "LayoutText #text",
-        "RootInlineBox",
-        "LayoutTableCell TD id='foo'",
         "LayoutTableCell TD",
-        "LayoutTableCell TD id='foo'"
+        "LayoutTableRow TR id='row'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD"
       ]
     }
   ]
