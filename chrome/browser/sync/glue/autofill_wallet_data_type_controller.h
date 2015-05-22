@@ -14,12 +14,15 @@ class ProfileSyncComponentsFactory;
 
 namespace browser_sync {
 
+// Controls syncing of either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
 class AutofillWalletDataTypeController
     : public sync_driver::NonUIDataTypeController {
  public:
+  // |model_type| should be either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
   AutofillWalletDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile);
+      Profile* profile,
+      syncer::ModelType model_type);
 
   // NonUIDataTypeController implementation.
   syncer::ModelType type() const override;
@@ -36,8 +39,6 @@ class AutofillWalletDataTypeController
   void StopModels() override;
   bool ReadyForStart() const override;
 
-  void WebDatabaseLoaded();
-
   // Callback for changes to the autofill prefs.
   void OnSyncPrefChanged();
 
@@ -46,6 +47,7 @@ class AutofillWalletDataTypeController
 
   Profile* const profile_;
   bool callback_registered_;
+  syncer::ModelType model_type_;
 
   // Stores whether we're currently syncing wallet data. This is the last
   // value computed by IsEnabled.

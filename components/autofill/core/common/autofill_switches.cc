@@ -61,6 +61,10 @@ const char kEnablePasswordSaveOnInPageNavigation[] =
 // Enables/disables suggestions without typing anything (on first click).
 const char kEnableSingleClickAutofill[]     = "enable-single-click-autofill";
 
+// Enables syncing usage counts and last use dates of Wallet addresses and
+// cards.
+const char kEnableWalletMetadataSync[]      = "enable-wallet-metadata-sync";
+
 // Ignores autocomplete="off" for Autofill data (profiles + credit cards).
 const char kIgnoreAutocompleteOffForAutofill[] =
     "ignore-autocomplete-off-autofill";
