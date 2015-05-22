@@ -127,6 +127,7 @@
         }],
         ['OS == "android"', {
           'dependencies': [
+            'device_bluetooth_java',
             'device_bluetooth_jni_headers',
           ],
           'sources': [

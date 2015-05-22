@@ -89,6 +89,11 @@
             'battery_status_manager_linux.cc',
           ],
         }],
+        ['OS == "android"', {
+          'dependencies': [
+            'device_battery_java',
+          ],
+        }],
         ['OS == "linux" and use_dbus==1', {
           'sources!': [
             'battery_status_manager_default.cc',

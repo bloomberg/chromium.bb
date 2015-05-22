@@ -44,6 +44,7 @@
       'conditions': [
         ['OS == "android"', {
           'dependencies': [
+            'device_vibration_java',
             'device_vibration_jni_headers',
           ],
           'sources!': [
