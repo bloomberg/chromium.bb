@@ -253,6 +253,9 @@ v8.log
 /testing/gtest
 /testing/iossim/third_party/
 /testserver.log
+/tools/luci-go/linux64/isolate
+/tools/luci-go/mac64/isolate
+/tools/luci-go/win64/isolate.exe
 /third_party/accessibility-developer-tools/
 /third_party/adobe/flash/binaries
 /third_party/adobe/flash/symbols
