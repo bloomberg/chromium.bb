@@ -1,8 +1,7 @@
 /* This file contains code common to the translator and back-translator. 
 * It is included immediately after the headr files. */
 
-/* liblouis Braille Translation and Back-Translation 
-Library
+/* liblouis Braille Translation and Back-Translation Library
 
    Based on the Linux screenreader BRLTTY, copyright (C) 1999-2006 by
    The BRLTTY Team
