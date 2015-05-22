@@ -446,6 +446,7 @@
       # See http://clang.llvm.org/docs/UsersManual.html
       'ubsan%': 0,
       'ubsan_blacklist%': '<(PRODUCT_DIR)/../../tools/ubsan/blacklist.txt',
+      'ubsan_vptr_blacklist%': '<(PRODUCT_DIR)/../../tools/ubsan/vptr_blacklist.txt',
 
       # Enable building with UBsan's vptr (Clang's -fsanitize=vptr option).
       # -fsanitize=vptr only works with clang, but ubsan_vptr=1 implies clang=1
@@ -1154,6 +1155,7 @@
     'tsan_blacklist%': '<(tsan_blacklist)',
     'ubsan%': '<(ubsan)',
     'ubsan_blacklist%': '<(ubsan_blacklist)',
+    'ubsan_vptr_blacklist%': '<(ubsan_vptr_blacklist)',
     'ubsan_vptr%': '<(ubsan_vptr)',
     'use_instrumented_libraries%': '<(use_instrumented_libraries)',
     'use_prebuilt_instrumented_libraries%': '<(use_prebuilt_instrumented_libraries)',
@@ -4347,7 +4349,19 @@
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
-                  '-fsanitize=undefined',
+                  # FIXME: work on enabling more flags and getting rid of false
+                  # positives. http://crbug.com/174801.
+                  '-fsanitize=bounds',
+                  '-fsanitize=float-divide-by-zero',
+                  '-fsanitize=integer-divide-by-zero',
+                  '-fsanitize=null',
+                  '-fsanitize=object-size',
+                  '-fsanitize=return',
+                  '-fsanitize=returns-nonnull-attribute',
+                  '-fsanitize=shift-exponent',
+                  '-fsanitize=signed-integer-overflow',
+                  '-fsanitize=unreachable',
+                  '-fsanitize=vla-bound',
                   '-fsanitize-blacklist=<(ubsan_blacklist)',
                   # Employ the experimental PBQP register allocator to avoid
                   # slow compilation on files with too many basic blocks.
@@ -4377,7 +4391,7 @@
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize=vptr',
-                  '-fsanitize-blacklist=<(ubsan_blacklist)',
+                  '-fsanitize-blacklist=<(ubsan_vptr_blacklist)',
                 ],
                 'cflags_cc!': [
                   '-fno-rtti',

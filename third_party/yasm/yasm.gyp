@@ -59,6 +59,8 @@
   'target_defaults': {
     # Silence warnings in libc++ builds (C code doesn't need this flag).
     'ldflags!': [ '-stdlib=libc++', ],
+    # https://crbug.com/489901
+    'cflags!': [ '-fsanitize=bounds' ],
   },
   'targets': [
     {
