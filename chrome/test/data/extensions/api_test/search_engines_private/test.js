@@ -18,11 +18,22 @@ var availableTests = [
     chrome.searchEnginesPrivate.addOtherSearchEngine(
         'name1', 'search1.com', 'http://search1.com');
     chrome.searchEnginesPrivate.getSearchEngines(function(engines) {
-      chrome.searchEnginesPrivate.setSelectedSearchEngine(
-          engines[engines.length - 1].guid);
+      for (var i = 0; i < engines.length; i++) {
+        if (engines[i].name == 'name1') {
+          chrome.test.assertTrue(!engines[i].isSelected);
+          chrome.searchEnginesPrivate.setSelectedSearchEngine(engines[i].guid);
+        }
+      }
+
       chrome.searchEnginesPrivate.getSearchEngines(function(newEngines) {
-        chrome.test.assertTrue(newEngines[newEngines.length - 1].isSelected);
-        chrome.test.succeed();
+        for (var i = 0; i < newEngines.length; i++) {
+          if (newEngines[i].name == 'name1') {
+            chrome.test.assertTrue(newEngines[i].isSelected);
+            chrome.test.succeed();
+            return;
+          }
+        }
+        chrome.test.fail();
       });
     });
   },

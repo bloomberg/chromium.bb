@@ -41,8 +41,7 @@ class SearchEnginesPrivateApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SearchEnginesPrivateApiTest,
-                       DISABLED_SetSelectedSearchEngine) {
+IN_PROC_BROWSER_TEST_F(SearchEnginesPrivateApiTest, SetSelectedSearchEngine) {
   EXPECT_TRUE(RunSearchEnginesSubtest("setSelectedSearchEngine")) << message_;
 }
 
