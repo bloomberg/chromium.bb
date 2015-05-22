@@ -2864,6 +2864,7 @@ crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass 
 crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]
 
 crbug.com/476913 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
+crbug.com/476913 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/unicode-fallback-font.html [ Crash ]
 crbug.com/476913 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
 
 crbug.com/479164 inspector/geolocation-emulation-tests.html [ Pass Failure ]
@@ -2891,7 +2892,7 @@ crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-46-t.svg [ Ima
 
 crbug.com/321237 crbug.com/478014 [ SnowLeopard ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 crbug.com/478014 [ Win SnowLeopard ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
-
+crbug.com/490995 webmidi/permission.html [ Failure Pass ]
 crbug.com/487671 http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Pass Timeout ]
 
 # Disabled briefly until test runner support lands.
