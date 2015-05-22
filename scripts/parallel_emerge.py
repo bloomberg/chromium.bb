@@ -335,6 +335,7 @@ class DepGraphGenerator(object):
 
     # Now that we've setup the necessary environment variables, we can load the
     # emerge config from disk.
+    # pylint: disable=unpacking-non-sequence
     settings, trees, mtimedb = load_emerge_config()
 
     # Add in EMERGE_DEFAULT_OPTS, if specified.
@@ -359,6 +360,7 @@ class DepGraphGenerator(object):
     # use that function here.
     if _global_updates(trees, mtimedb["updates"]):
       mtimedb.commit()
+      # pylint: disable=unpacking-non-sequence
       settings, trees, mtimedb = load_emerge_config(trees=trees)
 
     # Setup implied options. Portage normally handles this logic in
