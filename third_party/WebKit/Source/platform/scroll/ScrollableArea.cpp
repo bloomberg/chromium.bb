@@ -440,14 +440,20 @@ void ScrollableArea::invalidateScrollbar(Scrollbar* scrollbar, const IntRect& re
             graphicsLayer->setContentsNeedsDisplay();
             return;
         }
-    } else if (scrollbar == verticalScrollbar()) {
+        invalidateScrollbarRect(scrollbar, rect);
+        return;
+    }
+    if (scrollbar == verticalScrollbar()) {
         if (GraphicsLayer* graphicsLayer = layerForVerticalScrollbar()) {
             graphicsLayer->setNeedsDisplay();
             graphicsLayer->setContentsNeedsDisplay();
             return;
         }
+        invalidateScrollbarRect(scrollbar, rect);
+        return;
     }
-    invalidateScrollbarRect(scrollbar, rect);
+    // Otherwise the scrollbar is just created and has not been set as either
+    // horizontalScrollbar() or verticalScrollbar().
 }
 
 void ScrollableArea::invalidateScrollCorner(const IntRect& rect)

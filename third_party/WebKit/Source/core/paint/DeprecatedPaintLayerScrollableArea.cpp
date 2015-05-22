@@ -187,6 +187,7 @@ void DeprecatedPaintLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scro
     // See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
 
+    ASSERT(scrollbar == m_hBar.get() || scrollbar == m_vBar.get());
     ASSERT(scrollbar == m_hBar.get() ? !layerForHorizontalScrollbar() : !layerForVerticalScrollbar());
 
     IntRect scrollRect = rect;
