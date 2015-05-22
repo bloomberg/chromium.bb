@@ -450,7 +450,8 @@ class MultiprocessMessagePipeTestWithPipeCount
 
 #if defined(OS_MACOSX)
 // http://crbug.com/488260
-TEST_P(MultiprocessMessagePipeTestWithPipeCount, DISABLED_PlatformHandlePassing) {
+TEST_P(MultiprocessMessagePipeTestWithPipeCount,
+       DISABLED_PlatformHandlePassing) {
 #else
 TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
 #endif

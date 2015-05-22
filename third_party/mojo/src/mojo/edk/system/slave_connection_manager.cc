@@ -147,7 +147,8 @@ void SlaveConnectionManager::AllowConnectOnPrivateThread(
   DCHECK(!lock_.Try());
   DCHECK_EQ(awaiting_ack_type_, NOT_AWAITING_ACK);
 
-  DVLOG(1) << "Sending AllowConnect: connection ID " << connection_id;
+  DVLOG(1) << "Sending AllowConnect: connection ID "
+           << connection_id.ToString();
   if (!raw_channel_->WriteMessage(make_scoped_ptr(new MessageInTransit(
           MessageInTransit::kTypeConnectionManager,
           MessageInTransit::kSubtypeConnectionManagerAllowConnect,
@@ -171,7 +172,8 @@ void SlaveConnectionManager::CancelConnectOnPrivateThread(
   DCHECK(!lock_.Try());
   DCHECK_EQ(awaiting_ack_type_, NOT_AWAITING_ACK);
 
-  DVLOG(1) << "Sending CancelConnect: connection ID " << connection_id;
+  DVLOG(1) << "Sending CancelConnect: connection ID "
+           << connection_id.ToString();
   if (!raw_channel_->WriteMessage(make_scoped_ptr(new MessageInTransit(
           MessageInTransit::kTypeConnectionManager,
           MessageInTransit::kSubtypeConnectionManagerCancelConnect,
@@ -199,7 +201,7 @@ void SlaveConnectionManager::ConnectOnPrivateThread(
   DCHECK(!lock_.Try());
   DCHECK_EQ(awaiting_ack_type_, NOT_AWAITING_ACK);
 
-  DVLOG(1) << "Sending Connect: connection ID " << connection_id;
+  DVLOG(1) << "Sending Connect: connection ID " << connection_id.ToString();
   if (!raw_channel_->WriteMessage(make_scoped_ptr(new MessageInTransit(
           MessageInTransit::kTypeConnectionManager,
           MessageInTransit::kSubtypeConnectionManagerConnect,

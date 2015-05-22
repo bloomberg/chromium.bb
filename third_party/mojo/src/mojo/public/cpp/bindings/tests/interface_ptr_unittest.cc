@@ -87,8 +87,8 @@ class MathCalculatorUI {
         output_(0.0),
         callback_(MakeRunnable(&MathCalculatorUI::Output, this)) {}
 
-  bool WaitForIncomingMethodCall() {
-    return calculator_.WaitForIncomingMethodCall();
+  bool WaitForIncomingResponse() {
+    return calculator_.WaitForIncomingResponse();
   }
 
   bool encountered_error() const { return calculator_.encountered_error(); }
@@ -232,13 +232,13 @@ TEST_F(InterfacePtrTest, EndToEnd_Synchronous) {
   calculator_ui.Add(2.0);
   EXPECT_EQ(0.0, calculator_ui.GetOutput());
   calc_impl.WaitForIncomingMethodCall();
-  calculator_ui.WaitForIncomingMethodCall();
+  calculator_ui.WaitForIncomingResponse();
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
 
   calculator_ui.Multiply(5.0);
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
   calc_impl.WaitForIncomingMethodCall();
-  calculator_ui.WaitForIncomingMethodCall();
+  calculator_ui.WaitForIncomingResponse();
   EXPECT_EQ(10.0, calculator_ui.GetOutput());
 }
 

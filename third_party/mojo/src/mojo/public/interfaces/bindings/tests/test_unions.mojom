@@ -40,6 +40,11 @@ union HandleUnion {
   handle<data_pipe_consumer> f_data_pipe_consumer;
   handle<data_pipe_producer> f_data_pipe_producer;
   handle<shared_buffer> f_shared_buffer;
+  SmallCache f_small_cache;
+};
+
+struct HandleStruct {
+  SmallCache f_small_cache;
 };
 
 struct DummyStruct {
@@ -50,8 +55,10 @@ struct SmallStruct {
   DummyStruct? dummy_struct;
   PodUnion? pod_union;
   array<PodUnion>? pod_union_array;
+  array<PodUnion?>? nullable_pod_union_array;
   array<DummyStruct>? s_array;
   map<string, PodUnion>? pod_union_map;
+  map<string, PodUnion?>? nullable_pod_union_map;
 };
 
 struct SmallStructNonNullableUnion {
@@ -60,4 +67,13 @@ struct SmallStructNonNullableUnion {
 
 struct SmallObjStruct {
   ObjectUnion obj_union;
+};
+
+interface SmallCache {
+  SetIntValue(int64 int_value);
+  GetIntValue() => (int64 int_value);
+};
+
+interface UnionInterface {
+  Echo(PodUnion in) => (PodUnion out);
 };

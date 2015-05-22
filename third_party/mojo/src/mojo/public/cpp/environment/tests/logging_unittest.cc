@@ -12,12 +12,11 @@
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// A macro, so it can be automatically joined with other string literals. (Not
-// simply __FILE__, since that may contain a path.)
-#define OUR_FILENAME "logging_unittest.cc"
-
 namespace mojo {
 namespace {
+
+// The current logging system strips the path, so we need our filename.
+const char kOurFilename[] = "logging_unittest.cc";
 
 class PtrToMemberHelper {
  public:
@@ -42,6 +41,8 @@ class LoggingTest : public testing::Test {
   static void ResetMockLogger() {
     log_message_was_called_ = false;
     last_log_level_ = MOJO_LOG_LEVEL_INFO;
+    last_source_file_.clear();
+    last_source_line_ = 0;
     last_message_.clear();
   }
 
@@ -53,6 +54,8 @@ class LoggingTest : public testing::Test {
 
   static bool log_message_was_called() { return log_message_was_called_; }
   static MojoLogLevel last_log_level() { return last_log_level_; }
+  static const std::string& last_source_file() { return last_source_file_; }
+  static uint32_t last_source_line() { return last_source_line_; }
   static const std::string& last_message() { return last_message_; }
   static bool not_called_condition_was_called() {
     return not_called_condition_was_called_;
@@ -62,9 +65,14 @@ class LoggingTest : public testing::Test {
   // Note: We record calls even if |log_level| is below |minimum_log_level_|
   // (since the macros should mostly avoid this, and we want to be able to check
   // that they do).
-  static void MockLogMessage(MojoLogLevel log_level, const char* message) {
+  static void MockLogMessage(MojoLogLevel log_level,
+                             const char* source_file,
+                             uint32_t source_line,
+                             const char* message) {
     log_message_was_called_ = true;
     last_log_level_ = log_level;
+    last_source_file_ = source_file;
+    last_source_line_ = source_line;
     last_message_ = message;
   }
 
@@ -80,6 +88,8 @@ class LoggingTest : public testing::Test {
   static MojoLogLevel minimum_log_level_;
   static bool log_message_was_called_;
   static MojoLogLevel last_log_level_;
+  static std::string last_source_file_;
+  static uint32_t last_source_line_;
   static std::string last_message_;
   static bool not_called_condition_was_called_;
 
@@ -102,114 +112,138 @@ bool LoggingTest::log_message_was_called_ = MOJO_LOG_LEVEL_INFO;
 MojoLogLevel LoggingTest::last_log_level_ = MOJO_LOG_LEVEL_INFO;
 
 // static
+std::string LoggingTest::last_source_file_;
+
+// static
+uint32_t LoggingTest::last_source_line_ = 0;
+
+// static
 std::string LoggingTest::last_message_;
 
 // static
 bool LoggingTest::not_called_condition_was_called_ = false;
 
-std::string ExpectedLogMessage(int line, const char* message) {
-  std::ostringstream s;
-  s << OUR_FILENAME "(" << line << "): " << message;
-  return s.str();
-}
-
 TEST_F(LoggingTest, InternalLogMessage) {
-  internal::LogMessage("foo.cc", 123, MOJO_LOG_LEVEL_INFO).stream() << "hello "
+  internal::LogMessage(MOJO_LOG_LEVEL_INFO, "foo.cc", 123).stream() << "hello "
                                                                     << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ("foo.cc(123): hello world", last_message());
+  EXPECT_EQ("foo.cc", last_source_file());
+  EXPECT_EQ(123u, last_source_line());
+  EXPECT_EQ("hello world", last_message());
 
   ResetMockLogger();
 
-  internal::LogMessage("./path/to/foo.cc", 123, MOJO_LOG_LEVEL_WARNING).stream()
+  internal::LogMessage(MOJO_LOG_LEVEL_WARNING, "./path/to/foo.cc", 123).stream()
       << "hello "
       << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_WARNING, last_log_level());
-  EXPECT_EQ("foo.cc(123): hello world", last_message());
+  EXPECT_EQ("foo.cc", last_source_file());
+  EXPECT_EQ(123u, last_source_line());
+  EXPECT_EQ("hello world", last_message());
 
   ResetMockLogger();
 
-  internal::LogMessage("/path/to/foo.cc", 123, MOJO_LOG_LEVEL_ERROR).stream()
+  internal::LogMessage(MOJO_LOG_LEVEL_ERROR, "/path/to/foo.cc", 123).stream()
       << "hello "
       << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
-  EXPECT_EQ("foo.cc(123): hello world", last_message());
+  EXPECT_EQ("foo.cc", last_source_file());
+  EXPECT_EQ(123u, last_source_line());
+  EXPECT_EQ("hello world", last_message());
 
   ResetMockLogger();
 
-  internal::LogMessage("path/to/foo.cc", 123, MOJO_LOG_LEVEL_FATAL).stream()
+  internal::LogMessage(MOJO_LOG_LEVEL_FATAL, "path/to/foo.cc", 123).stream()
       << "hello "
       << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_FATAL, last_log_level());
-  EXPECT_EQ("foo.cc(123): hello world", last_message());
+  EXPECT_EQ("foo.cc", last_source_file());
+  EXPECT_EQ(123u, last_source_line());
+  EXPECT_EQ("hello world", last_message());
 
   ResetMockLogger();
 
-  internal::LogMessage(".\\xy\\foo.cc", 123, MOJO_LOG_LEVEL_VERBOSE).stream()
+  internal::LogMessage(MOJO_LOG_LEVEL_VERBOSE, ".\\xy\\foo.cc", 123).stream()
       << "hello "
       << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_VERBOSE, last_log_level());
-  EXPECT_EQ("foo.cc(123): hello world", last_message());
+  EXPECT_EQ("foo.cc", last_source_file());
+  EXPECT_EQ(123u, last_source_line());
+  EXPECT_EQ("hello world", last_message());
 
   ResetMockLogger();
 
-  internal::LogMessage("xy\\foo.cc", 123, MOJO_LOG_LEVEL_VERBOSE - 1).stream()
+  internal::LogMessage(MOJO_LOG_LEVEL_VERBOSE - 1, "xy\\foo.cc", 123).stream()
       << "hello "
       << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_VERBOSE - 1, last_log_level());
-  EXPECT_EQ("foo.cc(123): hello world", last_message());
+  EXPECT_EQ("foo.cc", last_source_file());
+  EXPECT_EQ(123u, last_source_line());
+  EXPECT_EQ("hello world", last_message());
 
   ResetMockLogger();
 
-  internal::LogMessage("C:\\xy\\foo.cc", 123, MOJO_LOG_LEVEL_VERBOSE - 9)
+  internal::LogMessage(MOJO_LOG_LEVEL_VERBOSE - 9, "C:\\xy\\foo.cc", 123)
           .stream()
       << "hello "
       << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_VERBOSE - 9, last_log_level());
-  EXPECT_EQ("foo.cc(123): hello world", last_message());
+  EXPECT_EQ("foo.cc", last_source_file());
+  EXPECT_EQ(123u, last_source_line());
+  EXPECT_EQ("hello world", last_message());
 
   ResetMockLogger();
 
-  internal::LogMessage(__FILE__, 123, MOJO_LOG_LEVEL_INFO).stream() << "hello "
+  internal::LogMessage(MOJO_LOG_LEVEL_INFO, __FILE__, 123).stream() << "hello "
                                                                     << "world";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(OUR_FILENAME "(123): hello world", last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(123u, last_source_line());
+  EXPECT_EQ("hello world", last_message());
 }
 
 TEST_F(LoggingTest, LogStream) {
   MOJO_LOG_STREAM(INFO) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 4), last_source_line());
+  EXPECT_EQ("hello", last_message());
 
   ResetMockLogger();
 
   MOJO_LOG_STREAM(ERROR) << "hi " << 123;
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hi 123"), last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 4), last_source_line());
+  EXPECT_EQ("hi 123", last_message());
 }
 
 TEST_F(LoggingTest, LazyLogStream) {
   MOJO_LAZY_LOG_STREAM(INFO, true) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 4), last_source_line());
+  EXPECT_EQ("hello", last_message());
 
   ResetMockLogger();
 
   MOJO_LAZY_LOG_STREAM(ERROR, true) << "hi " << 123;
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hi 123"), last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 4), last_source_line());
+  EXPECT_EQ("hi 123", last_message());
 
   ResetMockLogger();
 
@@ -273,14 +307,18 @@ TEST_F(LoggingTest, Log) {
   MOJO_LOG(INFO) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 4), last_source_line());
+  EXPECT_EQ("hello", last_message());
 
   ResetMockLogger();
 
   MOJO_LOG(ERROR) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 4), last_source_line());
+  EXPECT_EQ("hello", last_message());
 
   ResetMockLogger();
 
@@ -299,7 +337,9 @@ TEST_F(LoggingTest, Log) {
   MOJO_LOG(ERROR) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 4), last_source_line());
+  EXPECT_EQ("hello", last_message());
 }
 
 TEST_F(LoggingTest, LogIf) {
@@ -335,7 +375,9 @@ TEST_F(LoggingTest, LogIf) {
   MOJO_LOG_IF(ERROR, 1 * 2 == 2) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_ERROR, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 3, "hello"), last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 4), last_source_line());
+  EXPECT_EQ("hello", last_message());
 
   ResetMockLogger();
 
@@ -365,12 +407,9 @@ TEST_F(LoggingTest, Check) {
   MOJO_CHECK(helper.*member_ptr == 1) << "hello";
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_FATAL, last_log_level());
-  // Different compilers have different ideas about the line number of a split
-  // line.
-  int line = __LINE__;
-  EXPECT_EQ(ExpectedLogMessage(line - 5,
-                               "Check failed: helper.*member_ptr == 1. hello"),
-            last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 4), last_source_line());
+  EXPECT_EQ("Check failed: helper.*member_ptr == 1. hello", last_message());
 
   ResetMockLogger();
 
@@ -392,7 +431,9 @@ TEST_F(LoggingTest, Dlog) {
 #else
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 6, "hello"), last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 7), last_source_line());
+  EXPECT_EQ("hello", last_message());
 #endif
 }
 
@@ -416,7 +457,9 @@ TEST_F(LoggingTest, DlogIf) {
 #else
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_INFO, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 6, "hello"), last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 7), last_source_line());
+  EXPECT_EQ("hello", last_message());
 #endif
 
   ResetMockLogger();
@@ -431,7 +474,9 @@ TEST_F(LoggingTest, DlogIf) {
 #else
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_WARNING, last_log_level());
-  EXPECT_EQ(ExpectedLogMessage(__LINE__ - 6, "hello"), last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 7), last_source_line());
+  EXPECT_EQ("hello", last_message());
 #endif
 }
 
@@ -458,13 +503,10 @@ TEST_F(LoggingTest, Dcheck) {
   EXPECT_TRUE(was_called);
   EXPECT_TRUE(log_message_was_called());
   EXPECT_EQ(MOJO_LOG_LEVEL_FATAL, last_log_level());
-  // Different compilers have different ideas about the line number of a split
-  // line.
-  int line = __LINE__;
-  EXPECT_EQ(
-      ExpectedLogMessage(line - 10,
-                         "Check failed: DcheckTestHelper(&was_called). hello"),
-      last_message());
+  EXPECT_EQ(kOurFilename, last_source_file());
+  EXPECT_EQ(static_cast<uint32_t>(__LINE__ - 9), last_source_line());
+  EXPECT_EQ("Check failed: DcheckTestHelper(&was_called). hello",
+            last_message());
 #endif
 
   ResetMockLogger();

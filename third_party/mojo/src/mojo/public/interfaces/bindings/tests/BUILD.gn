@@ -23,15 +23,24 @@ mojom("test_interfaces") {
   ]
 }
 
-mojom("versioning_test_service_interfaces") {
+mojom("test_interfaces_experimental") {
   testonly = true
+  sources = [
+    "test_unions.mojom",
+  ]
+}
+
+mojom("versioning_test_service_interfaces") {
+  # FIXME: Dart packaged applications cannot depend on testonly mojoms.
+  # testonly = true
   sources = [
     "versioning_test_service.mojom",
   ]
 }
 
 mojom("versioning_test_client_interfaces") {
-  testonly = true
+  # FIXME: Dart packaged applications cannot depend on testonly mojoms.
+  # testonly = true
   sources = [
     "versioning_test_client.mojom",
   ]

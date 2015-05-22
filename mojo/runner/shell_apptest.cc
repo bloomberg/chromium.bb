@@ -91,13 +91,13 @@ class ShellHTTPAppTest : public test::ApplicationTestBase {
                                            local_address.Pass());
 
     http_server_->GetPort([this](uint16_t p) { port_ = p; });
-    EXPECT_TRUE(http_server_.WaitForIncomingMethodCall());
+    EXPECT_TRUE(http_server_.WaitForIncomingResponse());
 
     InterfacePtr<http_server::HttpHandler> http_handler;
     handler_.reset(new GetHandler(GetProxy(&http_handler).Pass(), port_));
     http_server_->SetHandler(".*", http_handler.Pass(),
                              [](bool result) { EXPECT_TRUE(result); });
-    EXPECT_TRUE(http_server_.WaitForIncomingMethodCall());
+    EXPECT_TRUE(http_server_.WaitForIncomingResponse());
   }
 
   std::string GetURL(const std::string& path) {

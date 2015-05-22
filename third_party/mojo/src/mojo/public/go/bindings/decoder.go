@@ -149,6 +149,21 @@ func (d *Decoder) StartStruct() (DataHeader, error) {
 	return header, nil
 }
 
+// StartUnion starts decoding a union and reads its header.
+// Returns the read data header. The caller should check if it is valid.
+// Note: it doesn't read the data field.
+func (d *Decoder) StartUnion() (DataHeader, error) {
+	header, err := d.readDataHeader()
+	if err != nil {
+		return DataHeader{}, err
+	}
+
+	if err := d.pushState(header, 0); err != nil {
+		return DataHeader{}, err
+	}
+	return header, nil
+}
+
 func (d *Decoder) readDataHeader() (DataHeader, error) {
 	if err := d.claimData(dataHeaderSize); err != nil {
 		return DataHeader{}, err

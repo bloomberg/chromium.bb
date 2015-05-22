@@ -15,10 +15,6 @@ _CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(_CURRENT_PATH, "pylib"))
 import gs
 
-if not sys.platform.startswith("linux"):
-  print "Not supported for your platform"
-  sys.exit(0)
-
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
 

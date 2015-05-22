@@ -30,7 +30,7 @@ TEST_F(DirectoryImplTest, Read) {
     error = ERROR_INTERNAL;
     directory->OpenFile(files_to_create[i].name, nullptr,
                         files_to_create[i].open_flags, Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+    ASSERT_TRUE(directory.WaitForIncomingResponse());
     EXPECT_EQ(ERROR_OK, error);
   }
   // Make a directory.
@@ -38,13 +38,13 @@ TEST_F(DirectoryImplTest, Read) {
   directory->OpenDirectory("my_dir", nullptr,
                            kOpenFlagRead | kOpenFlagWrite | kOpenFlagCreate,
                            Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
 
   error = ERROR_INTERNAL;
   mojo::Array<DirectoryEntryPtr> directory_contents;
   directory->Read(Capture(&error, &directory_contents));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
 
   // Expected contents of the directory.
@@ -81,7 +81,7 @@ TEST_F(DirectoryImplTest, StatTouch) {
   error = ERROR_INTERNAL;
   FileInformationPtr file_info;
   directory->Stat(Capture(&error, &file_info));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
   ASSERT_FALSE(file_info.is_null());
   EXPECT_EQ(FILE_TYPE_DIRECTORY, file_info->type);
@@ -100,14 +100,14 @@ TEST_F(DirectoryImplTest, StatTouch) {
   const int64_t kPartyTime1 = 1234567890;  // Party like it's 2009-02-13.
   t->timespec->seconds = kPartyTime1;
   directory->Touch(t.Pass(), nullptr, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
 
   // Stat again.
   error = ERROR_INTERNAL;
   file_info.reset();
   directory->Stat(Capture(&error, &file_info));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
   ASSERT_FALSE(file_info.is_null());
   ASSERT_FALSE(file_info->atime.is_null());
@@ -122,14 +122,14 @@ TEST_F(DirectoryImplTest, StatTouch) {
   const int64_t kPartyTime2 = 1425059525;  // No time like the present.
   t->timespec->seconds = kPartyTime2;
   directory->Touch(nullptr, t.Pass(), Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
 
   // Stat again.
   error = ERROR_INTERNAL;
   file_info.reset();
   directory->Stat(Capture(&error, &file_info));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
   ASSERT_FALSE(file_info.is_null());
   ASSERT_FALSE(file_info->atime.is_null());
@@ -152,41 +152,41 @@ TEST_F(DirectoryImplTest, BasicRenameDelete) {
   error = ERROR_INTERNAL;
   directory->OpenFile("my_file", nullptr, kOpenFlagWrite | kOpenFlagCreate,
                       Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
 
   // Opening my_file should succeed.
   error = ERROR_INTERNAL;
   directory->OpenFile("my_file", nullptr, kOpenFlagRead, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
 
   // Rename my_file to my_new_file.
   directory->Rename("my_file", "my_new_file", Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
 
   // Opening my_file should fail.
   error = ERROR_INTERNAL;
   directory->OpenFile("my_file", nullptr, kOpenFlagRead, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_UNKNOWN, error);
 
   // Opening my_new_file should succeed.
   error = ERROR_INTERNAL;
   directory->OpenFile("my_new_file", nullptr, kOpenFlagRead, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
 
   // Delete my_new_file (no flags).
   directory->Delete("my_new_file", 0, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_OK, error);
 
   // Opening my_new_file should fail.
   error = ERROR_INTERNAL;
   directory->OpenFile("my_new_file", nullptr, kOpenFlagRead, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingMethodCall());
+  ASSERT_TRUE(directory.WaitForIncomingResponse());
   EXPECT_EQ(ERROR_UNKNOWN, error);
 }
 

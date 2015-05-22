@@ -30,15 +30,15 @@ const char* GetFilename(const char* s) {
 
 }  // namespace
 
-LogMessage::LogMessage(const char* file, int line, MojoLogLevel log_level)
-    : log_level_(log_level) {
-  // Note: Don't include the log level in the message, since that's passed on.
-  stream_ << GetFilename(file) << '(' << line << "): ";
+// TODO(vtl): Maybe we should preserve the full path and strip it out at a
+// different level instead?
+LogMessage::LogMessage(MojoLogLevel log_level, const char* file, int line)
+    : log_level_(log_level), file_(GetFilename(file)), line_(line) {
 }
 
 LogMessage::~LogMessage() {
-  Environment::GetDefaultLogger()->LogMessage(log_level_,
-                                              stream_.str().c_str());
+  Environment::GetDefaultLogger()->LogMessage(
+      log_level_, file_, static_cast<uint32_t>(line_), stream_.str().c_str());
 }
 
 }  // namespace internal

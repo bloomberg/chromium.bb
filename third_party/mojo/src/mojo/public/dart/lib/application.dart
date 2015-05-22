@@ -8,8 +8,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:mojo/public/dart/bindings.dart' as bindings;
-import 'package:mojo/public/dart/core.dart' as core;
+import 'package:mojo/bindings.dart' as bindings;
+import 'package:mojo/core.dart' as core;
 import 'package:mojom/mojo/application.mojom.dart' as application_mojom;
 import 'package:mojom/mojo/service_provider.mojom.dart';
 import 'package:mojom/mojo/shell.mojom.dart' as shell_mojom;

@@ -86,7 +86,7 @@ if (mojo_use_prebuilt_network_service) {
 
 # This rule can be seen as a sort of adapter. This takes a dart framework
 # loaded from Google Storage and then puts it in a rule which the
-# "dart_package" template in mojo/public/dart/rules.gni can introspect on,
+# "dartzip_package" template in mojo/public/dart/rules.gni can introspect on,
 # accessing the 'label' and 'target_out_dir' variables.
 if (mojo_use_dart_apptest_framework) {
   copy("dart_apptest_framework") {

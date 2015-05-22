@@ -5,7 +5,6 @@
 package org.chromium.mojo.bindings;
 
 import org.chromium.mojo.bindings.Interface.Proxy;
-import org.chromium.mojo.bindings.Struct.DataHeader;
 import org.chromium.mojo.system.DataPipe;
 import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.InvalidHandle;
@@ -114,26 +113,60 @@ public class Decoder {
     }
 
     /**
-     * Deserializes a {@link DataHeader} at the given offset.
+     * Deserializes a {@link DataHeader} at the current position.
      */
     public DataHeader readDataHeader() {
         // Claim the memory for the header.
         mValidator.claimMemory(mBaseOffset, mBaseOffset + DataHeader.HEADER_SIZE);
-        int size = readInt(DataHeader.SIZE_OFFSET);
-        int elementsOrVersion = readInt(DataHeader.ELEMENTS_OR_VERSION_OFFSET);
+        DataHeader result = readDataHeaderAtOffset(0, false);
+        // Claim the rest of the memory.
+        mValidator.claimMemory(mBaseOffset + DataHeader.HEADER_SIZE, mBaseOffset + result.size);
+        return result;
+    }
+
+    /**
+     * Deserializes a {@link DataHeader} for an union at the given offset.
+     */
+    public DataHeader readDataHeaderForUnion(int offset) {
+        DataHeader result = readDataHeaderAtOffset(offset, true);
+        if (result.size == 0) {
+            if (result.elementsOrVersion != 0) {
+                throw new DeserializationException(
+                        "Unexpected version tag for a null union. Expecting 0, found: "
+                        + result.elementsOrVersion);
+            }
+        } else if (result.size != BindingsHelper.UNION_SIZE) {
+            throw new DeserializationException(
+                    "Unexpected size of an union. The size must be 0 for a null union, or 16 for "
+                    + "a non-null union.");
+        }
+        return result;
+    }
+
+    /**
+     * @returns a decoder suitable to decode an union defined as the root object of a message.
+     */
+    public Decoder decoderForSerializedUnion() {
+        mValidator.claimMemory(0, BindingsHelper.UNION_SIZE);
+        return this;
+    }
+
+    /**
+     * Deserializes a {@link DataHeader} at the given offset.
+     */
+    private DataHeader readDataHeaderAtOffset(int offset, boolean isUnion) {
+        int size = readInt(offset + DataHeader.SIZE_OFFSET);
+        int elementsOrVersion = readInt(offset + DataHeader.ELEMENTS_OR_VERSION_OFFSET);
         if (size < 0) {
             throw new DeserializationException(
                     "Negative size. Unsigned integers are not valid for java.");
         }
-        if (elementsOrVersion < 0) {
+        if (elementsOrVersion < 0 && (!isUnion || elementsOrVersion != -1)) {
             throw new DeserializationException(
                     "Negative elements or version. Unsigned integers are not valid for java.");
         }
 
-        // Claim the remaining memory.
-        mValidator.claimMemory(mBaseOffset + DataHeader.HEADER_SIZE, mBaseOffset + size);
-        DataHeader res = new DataHeader(size, elementsOrVersion);
-        return res;
+        return new DataHeader(size, elementsOrVersion);
     }
 
     public DataHeader readAndValidateDataHeader(DataHeader[] versionArray) {
@@ -163,10 +196,18 @@ public class Decoder {
 
     /**
      * Deserializes a {@link DataHeader} at the given offset and checks if it is correct for an
-     * array where element have the given size.
+     * array where elements are pointers.
      */
     public DataHeader readDataHeaderForPointerArray(int expectedLength) {
-        return readDataHeaderForArray(8, expectedLength);
+        return readDataHeaderForArray(BindingsHelper.POINTER_SIZE, expectedLength);
+    }
+
+    /**
+     * Deserializes a {@link DataHeader} at the given offset and checks if it is correct for an
+     * array where elements are unions.
+     */
+    public DataHeader readDataHeaderForUnionArray(int expectedLength) {
+        return readDataHeaderForArray(BindingsHelper.UNION_SIZE, expectedLength);
     }
 
     /**

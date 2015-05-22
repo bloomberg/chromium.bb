@@ -10,22 +10,30 @@ namespace mojo {
 namespace {
 
 TEST(LoggerTest, Basic) {
+  const char kPath[] = "/fake/path/to/file.cc";
+
   Environment environment;
   const MojoLogger* const logger = Environment::GetDefaultLogger();
 
-  logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE - 1, "Logged at VERBOSE-1 level");
-  logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE, "Logged at VERBOSE level");
-  logger->LogMessage(MOJO_LOG_LEVEL_INFO, "Logged at INFO level");
-  logger->LogMessage(MOJO_LOG_LEVEL_WARNING, "Logged at WARNING level");
-  logger->LogMessage(MOJO_LOG_LEVEL_ERROR, "Logged at ERROR level");
+  logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE - 1, kPath, 123,
+                     "Logged at VERBOSE-1 level");
+  logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE, kPath, 123,
+                     "Logged at VERBOSE level");
+  logger->LogMessage(MOJO_LOG_LEVEL_INFO, kPath, 123, "Logged at INFO level");
+  logger->LogMessage(MOJO_LOG_LEVEL_WARNING, kPath, 123,
+                     "Logged at WARNING level");
+  logger->LogMessage(MOJO_LOG_LEVEL_ERROR, kPath, 123, "Logged at ERROR level");
 
   // This should kill us:
-  EXPECT_DEATH_IF_SUPPORTED(
-      { logger->LogMessage(MOJO_LOG_LEVEL_FATAL, "Logged at FATAL level"); },
-      "");
+  EXPECT_DEATH_IF_SUPPORTED({
+    logger->LogMessage(MOJO_LOG_LEVEL_FATAL, kPath, 123,
+                       "Logged at FATAL level");
+  }, "");
 }
 
 TEST(LoggerTest, LogLevels) {
+  const char kPath[] = "/fake/path/to/file.cc";
+
   Environment environment;
   const MojoLogger* const logger = Environment::GetDefaultLogger();
 
@@ -39,17 +47,42 @@ TEST(LoggerTest, LogLevels) {
     else
       EXPECT_EQ(MOJO_LOG_LEVEL_FATAL, logger->GetMinimumLogLevel());
 
-    logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE - 1, "Logged at VERBOSE-1 level");
-    logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE, "Logged at VERBOSE level");
-    logger->LogMessage(MOJO_LOG_LEVEL_INFO, "Logged at INFO level");
-    logger->LogMessage(MOJO_LOG_LEVEL_WARNING, "Logged at WARNING level");
-    logger->LogMessage(MOJO_LOG_LEVEL_ERROR, "Logged at ERROR level");
+    logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE - 1, kPath, 123,
+                       "Logged at VERBOSE-1 level");
+    logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE, kPath, 123,
+                       "Logged at VERBOSE level");
+    logger->LogMessage(MOJO_LOG_LEVEL_INFO, kPath, 123, "Logged at INFO level");
+    logger->LogMessage(MOJO_LOG_LEVEL_WARNING, kPath, 123,
+                       "Logged at WARNING level");
+    logger->LogMessage(MOJO_LOG_LEVEL_ERROR, kPath, 123,
+                       "Logged at ERROR level");
 
     // This should kill us:
-    EXPECT_DEATH_IF_SUPPORTED(
-        { logger->LogMessage(MOJO_LOG_LEVEL_FATAL, "Logged at FATAL level"); },
-        "");
+    EXPECT_DEATH_IF_SUPPORTED({
+      logger->LogMessage(MOJO_LOG_LEVEL_FATAL, kPath, 123,
+                         "Logged at FATAL level");
+    }, "");
   }
+}
+
+TEST(LoggerTest, NoFile) {
+  Environment environment;
+  const MojoLogger* const logger = Environment::GetDefaultLogger();
+
+  logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE - 1, nullptr, 0,
+                     "Logged at VERBOSE-1 level");
+  logger->LogMessage(MOJO_LOG_LEVEL_VERBOSE, nullptr, 0,
+                     "Logged at VERBOSE level");
+  logger->LogMessage(MOJO_LOG_LEVEL_INFO, nullptr, 0, "Logged at INFO level");
+  logger->LogMessage(MOJO_LOG_LEVEL_WARNING, nullptr, 0,
+                     "Logged at WARNING level");
+  logger->LogMessage(MOJO_LOG_LEVEL_ERROR, nullptr, 0, "Logged at ERROR level");
+
+  // This should kill us:
+  EXPECT_DEATH_IF_SUPPORTED({
+    logger->LogMessage(MOJO_LOG_LEVEL_FATAL, nullptr, 0,
+                       "Logged at FATAL level");
+  }, "");
 }
 
 }  // namespace

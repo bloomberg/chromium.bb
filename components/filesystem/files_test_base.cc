@@ -27,7 +27,7 @@ void FilesTestBase::SetUp() {
 void FilesTestBase::GetTemporaryRoot(DirectoryPtr* directory) {
   Error error = ERROR_INTERNAL;
   files()->OpenFileSystem(nullptr, GetProxy(directory), Capture(&error));
-  ASSERT_TRUE(files().WaitForIncomingMethodCall());
+  ASSERT_TRUE(files().WaitForIncomingResponse());
   ASSERT_EQ(ERROR_OK, error);
 }
 

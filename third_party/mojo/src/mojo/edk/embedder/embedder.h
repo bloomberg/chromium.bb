@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_EMBEDDER_EMBEDDER_H_
 #define MOJO_EDK_EMBEDDER_EMBEDDER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -108,16 +110,42 @@ MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupport();
 
 // Interprocess communication (IPC) functions ----------------------------------
 
-// Connects to a slave process to the IPC system. This should only be called in
-// a process initialized (using |InitIPCSupport()|) with process type
-// |ProcessType::MASTER|. |slave_info| is caller-dependent slave information,
-// which should remain alive until the master process delegate's
-// |OnSlaveDisconnect()| is called. |platform_handle| should be a handle to one
-// end of an OS "pipe"; the slave process should |InitIPCSupport()| with
-// |ProcessType::SLAVE| and the handle to the other end of this OS "pipe".
+// Called in the master process to connect to a slave process to the IPC system.
+// (This should only be called in a process initialized (using
+// |InitIPCSupport()|) with process type |ProcessType::MASTER|.)
+//
+// This should typically be called *before* the slave process is even created.
+// It requires an OS "pipe" to be established between the master and slave
+// processes, with |platform_handle| being a handle to the end that remains on
+// the master. This will create a second OS "pipe" (returned in
+// |*platform_connection_handle|), and an ID string (returned in
+// |*platform_connection_id|) that must be passed to the slave, e.g., on the
+// command line.
+//
+// The slave should call |InitIPCSupport()| with |ProcessType::SLAVE| and the
+// handle to the other end of the first "pipe" above. Then it should call
+// |ConnectToMaster()| with the ID string |*platform_connection_id|.
+//
+// |slave_info| is caller-dependent slave information, which should typically
+// remain alive until the master process delegate's |OnSlaveDisconnect()| is
+// called. (It may, however, be null.)
 MOJO_SYSTEM_IMPL_EXPORT void ConnectToSlave(
     SlaveInfo slave_info,
-    ScopedPlatformHandle platform_handle);
+    ScopedPlatformHandle platform_handle,
+    ScopedPlatformHandle* platform_connection_handle,
+    std::string* platform_connection_id);
+
+// Called in a slave process to connect it to the IPC system. (This should only
+// be called in a process initialized (using |InitIPCSupport()|) with process
+// type |ProcessType::SLAVE|.) This should be called exactly once in each slave
+// process.
+//
+// See |ConnectToSlave()| for details. (Note that if this fails in any way,
+// e.g., if |platform_connection_id| is invalid, this will CHECK-fail and
+// terminate the process.)
+MOJO_SYSTEM_IMPL_EXPORT void ConnectToMaster(
+    const std::string& platform_connection_id,
+    ScopedPlatformHandle* platform_connection_handle);
 
 // A "channel" is a connection on top of an OS "pipe", on top of which Mojo
 // message pipes (etc.) can be multiplexed. It must "live" on some I/O thread.

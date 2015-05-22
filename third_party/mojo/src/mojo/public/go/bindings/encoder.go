@@ -163,6 +163,12 @@ func (e *Encoder) StartStruct(size, version uint32) {
 	e.pushState(header, 0)
 }
 
+// StartUnion starts encoding a union and writes its data header.
+func (e *Encoder) StartUnion(tag uint32) {
+	header := DataHeader{uint32(16), tag}
+	e.pushState(header, 0)
+}
+
 func (e *Encoder) writeDataHeader(header DataHeader) {
 	binary.LittleEndian.PutUint32(e.buf[e.state().offset:], header.Size)
 	binary.LittleEndian.PutUint32(e.buf[e.state().offset+4:], header.ElementsOrVersion)
@@ -283,6 +289,22 @@ func (e *Encoder) WriteFloat32(value float32) error {
 // WriteFloat64 writes a float64 value.
 func (e *Encoder) WriteFloat64(value float64) error {
 	return e.WriteUint64(math.Float64bits(value))
+}
+
+// WriteNullUnion writes a null union.
+func (e *Encoder) WriteNullUnion() error {
+	if err := ensureElementBitSizeAndCapacity(e.state(), 128); err != nil {
+		return err
+	}
+	e.state().alignOffsetToBytes()
+	e.state().offset = align(e.state().offset, 16)
+	binary.LittleEndian.PutUint64(e.buf[e.state().offset:], 0)
+	e.state().skipBytes(8)
+	binary.LittleEndian.PutUint64(e.buf[e.state().offset:], 0)
+	e.state().skipBytes(8)
+	e.state().elementsProcessed++
+
+	return nil
 }
 
 // WriteNullPointer writes a null pointer.

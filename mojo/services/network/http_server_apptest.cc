@@ -567,7 +567,7 @@ class HttpServerAppTest : public test::ApplicationTestBase {
           EXPECT_NE(0u, bound_to->ipv4->port);
           *out_bound_to = bound_to.Pass();
         });
-    network_service_.WaitForIncomingMethodCall();
+    network_service_.WaitForIncomingResponse();
   }
 
   NetworkServicePtr network_service_;

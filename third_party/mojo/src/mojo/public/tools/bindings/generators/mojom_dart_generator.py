@@ -149,7 +149,7 @@ def DartDefaultValue(field):
 def DartDeclType(kind):
   if kind in mojom.PRIMITIVES:
     return _kind_to_dart_decl_type[kind]
-  if mojom.IsStructKind(kind):
+  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     return GetDartType(kind)
   if mojom.IsArrayKind(kind):
     array_type = DartDeclType(kind.kind)
@@ -191,7 +191,7 @@ def ConstantStyle(name):
 
 def GetNameForElement(element):
   if (mojom.IsEnumKind(element) or mojom.IsInterfaceKind(element) or
-      mojom.IsStructKind(element)):
+      mojom.IsStructKind(element) or mojom.IsUnionKind(element)):
     return UpperCamelCase(element.name)
   if mojom.IsInterfaceRequestKind(element):
     return GetNameForElement(element.kind)
@@ -291,6 +291,8 @@ def EncodeMethod(kind, variable, offset, bit):
   def _EncodeMethodName(kind):
     if mojom.IsStructKind(kind):
       return 'encodeStruct'
+    if mojom.IsUnionKind(kind):
+      return 'encodeUnion'
     if mojom.IsArrayKind(kind):
       return _EncodeMethodName(kind.kind) + 'Array'
     if mojom.IsEnumKind(kind):
@@ -375,6 +377,7 @@ class Generator(generator.Generator):
     'is_nullable_kind': mojom.IsNullableKind,
     'is_pointer_array_kind': IsPointerArrayKind,
     'is_struct_kind': mojom.IsStructKind,
+    'is_union_kind': mojom.IsUnionKind,
     'dart_true_false': GetDartTrueFalse,
     'dart_type': DartDeclType,
     'name': GetNameForElement,
@@ -398,10 +401,13 @@ class Generator(generator.Generator):
   def GenerateLibModule(self, args):
     return self.GetParameters(args)
 
+
   def GenerateFiles(self, args):
     elements = self.module.namespace.split('.')
     elements.append("%s.dart" % self.module.name)
-    path = os.path.join("dart-gen", "mojom", *elements)
+    path = os.path.join("dart-pkg", "mojom/lib", *elements)
+    self.Write(self.GenerateLibModule(args), path)
+    path = os.path.join("dart-gen", "mojom/lib", *elements)
     self.Write(self.GenerateLibModule(args), path)
     link = self.MatchMojomFilePath("%s.dart" % self.module.name)
     if os.path.exists(os.path.join(self.output_dir, link)):

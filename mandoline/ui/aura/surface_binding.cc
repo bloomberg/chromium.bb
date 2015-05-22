@@ -214,7 +214,7 @@ void SurfaceBinding::PerViewManagerState::Init() {
       base::Bind(&SurfaceBinding::PerViewManagerState::SetIdNamespace,
                  base::Unretained(this)));
   // Block until we receive our id namespace.
-  surface_.WaitForIncomingMethodCall();
+  surface_.WaitForIncomingResponse();
   DCHECK_NE(0u, id_namespace_);
 
   mojo::ResourceReturnerPtr returner_ptr;

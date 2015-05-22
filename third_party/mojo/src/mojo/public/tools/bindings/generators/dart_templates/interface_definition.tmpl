@@ -160,6 +160,14 @@ class {{interface|name}}Proxy implements bindings.ProxyBase {
 
   Future close({bool immediate: false}) => impl.close(immediate: immediate);
 
+  int get version => impl.version;
+
+  Future<int> queryVersion() => impl.queryVersion();
+
+  void requireVersion(int requiredVersion) {
+    impl.requireVersion(requiredVersion);
+  }
+
   String toString() {
     return "{{interface|name}}Proxy($impl)";
   }
@@ -202,6 +210,11 @@ class {{interface|name}}Stub extends bindings.Stub {
 {%- endfor %}
 
   Future<bindings.Message> handleMessage(bindings.ServiceMessage message) {
+    if (bindings.ControlMessageHandler.isControlMessage(message)) {
+      return bindings.ControlMessageHandler.handleMessage(this,
+                                                          {{interface.version}},
+                                                          message);
+    }
     assert(_impl != null);
     switch (message.header.type) {
 {%- for method in interface.methods %}
@@ -241,7 +254,7 @@ class {{interface|name}}Stub extends bindings.Stub {
   }
 
   {{interface|name}} get impl => _impl;
-      set impl({{interface|name}} d) {
+  set impl({{interface|name}} d) {
     assert(_impl == null);
     _impl = d;
   }
@@ -250,4 +263,6 @@ class {{interface|name}}Stub extends bindings.Stub {
     var superString = super.toString();
     return "{{interface|name}}Stub($superString)";
   }
+
+  int get version => {{interface.version}};
 }

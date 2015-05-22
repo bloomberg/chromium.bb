@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/system/macros.h"
 
 #define MOJO_LOG_STREAM(level)                                             \
-  ::mojo::internal::LogMessage(__FILE__, __LINE__, MOJO_LOG_LEVEL_##level) \
+  ::mojo::internal::LogMessage(MOJO_LOG_LEVEL_##level, __FILE__, __LINE__) \
       .stream()
 
 #define MOJO_LAZY_LOG_STREAM(level, condition) \
@@ -64,13 +64,15 @@ namespace internal {
 
 class LogMessage {
  public:
-  LogMessage(const char* file, int line, MojoLogLevel log_level);
+  LogMessage(MojoLogLevel log_level, const char* file, int line);
   ~LogMessage();
 
   std::ostream& stream() { return stream_; }
 
  private:
   const MojoLogLevel log_level_;
+  const char* const file_;
+  const int line_;
   std::ostringstream stream_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(LogMessage);

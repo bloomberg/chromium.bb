@@ -70,6 +70,12 @@ void SerializeUnion_({{union.name}}Ptr input, mojo::internal::Buffer* buf,
 {%    elif field.kind|is_any_handle_kind %}
         result->data.f_{{field.name}} =
             input_acc.data()->{{field.name}}->release().value();
+{%    elif field.kind|is_interface_kind %}
+        mojo::internal::Interface_Data* {{field.name}} =
+            reinterpret_cast<mojo::internal::Interface_Data*>(
+                &result->data.f_{{field.name}});
+        mojo::internal::InterfacePointerToData(
+            input_acc.data()->{{field.name}}->Pass(), {{field.name}});
 {%    else %}
         result->data.f_{{field.name}} = input_acc.data()->{{field.name}};
 {%-   endif %}
@@ -100,6 +106,14 @@ void Deserialize_(internal::{{union.name}}_Data* input,
         {{field.kind|cpp_wrapper_type}}* {{field.name}} =
             reinterpret_cast<{{field.kind|cpp_wrapper_type}}*>(&input->data.f_{{field.name}});
         result->set_{{field.name}}({{field.name}}->Pass());
+{%    elif field.kind|is_interface_kind %}
+        {{field.kind|cpp_wrapper_type}} {{field.name}}_out;
+        mojo::internal::Interface_Data* {{field.name}}_in =
+            reinterpret_cast<mojo::internal::Interface_Data*>(
+                &input->data.f_{{field.name}});
+        mojo::internal::InterfaceDataToPointer(
+            {{field.name}}_in, &{{field.name}}_out);
+        result->set_{{field.name}}({{field.name}}_out.Pass());
 {%    elif field.kind|is_enum_kind %}
         result->set_{{field.name}}(static_cast<{{field.kind|cpp_wrapper_type}}>(input->data.f_{{field.name}}));
 {%    else %}

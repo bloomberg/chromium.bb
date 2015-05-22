@@ -19,6 +19,7 @@ import (
 {% import "enum.tmpl" as enum_macros %}
 {% import "interface.tmpl" as interface_macros %}
 {% import "struct.tmpl" as struct_macros %}
+{% import "union.tmpl" as union_macros %}
 
 {#- Enum definitions #}
 {% for enum in enums %}
@@ -33,4 +34,9 @@ import (
 {#- Struct definitions #}
 {% for struct in structs %}
 {{struct_macros.define(struct)}}
+{%- endfor %}
+
+{#- Union definitions #}
+{% for union in unions %}
+{{union_macros.define(union)}}
 {%- endfor %}

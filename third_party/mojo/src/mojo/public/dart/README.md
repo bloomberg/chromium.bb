@@ -15,12 +15,12 @@ all make it to the right place.
 ### GN Template
 
 Dart Mojo applications are built with the GN template
-'dart_packaged_application' defined in `//mojo/public/dart/rules.gni`.
+'dartzip_packaged_application' defined in `//mojo/public/dart/rules.gni`.
 Here is an example:
 
 
 ```
-dart_packaged_application("foo") {
+dartzip_packaged_application("foo") {
   output_name = "dart_foo"
   uses_pub = true
   sources = [
@@ -73,8 +73,8 @@ Dart packages. `pub get` also creates a `pubspec.lock` file that locks down
 pub packages to specific versions. This `pubspec.lock` file must be checked in
 in order to have hermetic builds.
 
-During the build, The `dart_packaged_application` rule looks for a "packages/"
-directory, and copies its contents into the zip file.
+During the build, The `dartzip_packaged_application` rule looks for a
+"packages/" directory, and copies its contents into the zip file.
 
 ### Generated bindings
 

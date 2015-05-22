@@ -2,32 +2,46 @@ import("../mojo_sdk.gni")
 import("rules.gni")
 
 dart_mojo_sdk_sources = [
-  "application.dart",
-  "bindings.dart",
-  "core.dart",
-  "src/application_connection.dart",
-  "src/application.dart",
-  "src/buffer.dart",
-  "src/codec.dart",
-  "src/data_pipe.dart",
-  "src/drain_data.dart",
-  "src/event_stream.dart",
-  "src/handle.dart",
-  "src/message.dart",
-  "src/message_pipe.dart",
-  "src/proxy.dart",
-  "src/struct.dart",
-  "src/stub.dart",
-  "src/types.dart",
+  "lib/application.dart",
+  "lib/bindings.dart",
+  "lib/core.dart",
+  "lib/src/application_connection.dart",
+  "lib/src/application.dart",
+  "lib/src/buffer.dart",
+  "lib/src/codec.dart",
+  "lib/src/control_message.dart",
+  "lib/src/data_pipe.dart",
+  "lib/src/drain_data.dart",
+  "lib/src/event_stream.dart",
+  "lib/src/handle.dart",
+  "lib/src/message.dart",
+  "lib/src/message_pipe.dart",
+  "lib/src/proxy.dart",
+  "lib/src/struct.dart",
+  "lib/src/stub.dart",
+  "lib/src/types.dart",
 ]
 
-dart_package("dart") {
-  # This base dir ensures that Dart's Mojo SDK can be imported with, e.g.,
-  # import 'package:mojo/public/dart/core.dart' even when the Mojo SDK lives
-  # somewhere else in the source tree.
-  base_dir = rebase_path("../../$mojo_root", ".", ".")
-  sources = dart_mojo_sdk_sources
+dartzip_package("dart") {
+  sources = dart_mojo_sdk_sources + [
+              "pubspec.yaml",
+              "README.md",
+            ]
+  uses_pub = true
+  package_name_override = "mojo"
   deps = [
     "../interfaces/application",
+    "../interfaces/bindings",
+  ]
+}
+
+dart_pkg("mojo") {
+  sources = dart_mojo_sdk_sources + [
+              "pubspec.yaml",
+              "README.md",
+            ]
+  deps = [
+    "../interfaces/application",
+    "../interfaces/bindings",
   ]
 }

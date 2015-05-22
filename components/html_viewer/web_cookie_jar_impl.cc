@@ -43,7 +43,7 @@ void WebCookieJarImpl::setCookie(const blink::WebURL& url,
   // and URLLoader, so that we could let this method call run asynchronously
   // without suffering an ordering problem. See crbug/386825.
   //
-  store_.WaitForIncomingMethodCall();
+  store_.WaitForIncomingResponse();
 }
 
 blink::WebString WebCookieJarImpl::cookies(
@@ -53,9 +53,9 @@ blink::WebString WebCookieJarImpl::cookies(
   store_->Get(url.string().utf8(), base::Bind(&CopyString, &result));
 
   // Wait for the result. Since every outbound request we make to the cookie
-  // store is followed up with WaitForIncomingMethodCall, we can be sure that
+  // store is followed up with WaitForIncomingResponse, we can be sure that
   // the next incoming method call will be the response to our request.
-  store_.WaitForIncomingMethodCall();
+  store_.WaitForIncomingResponse();
   if (!result)
     return blink::WebString();
 

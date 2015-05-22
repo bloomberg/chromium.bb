@@ -26,6 +26,13 @@ MultiprocessTestHelper::~MultiprocessTestHelper() {
 }
 
 void MultiprocessTestHelper::StartChild(const std::string& test_child_name) {
+  StartChildWithExtraSwitch(test_child_name, std::string(), std::string());
+}
+
+void MultiprocessTestHelper::StartChildWithExtraSwitch(
+    const std::string& test_child_name,
+    const std::string& switch_string,
+    const std::string& switch_value) {
   CHECK(platform_channel_pair_);
   CHECK(!test_child_name.empty());
   CHECK(!test_child_.IsValid());
@@ -37,6 +44,14 @@ void MultiprocessTestHelper::StartChild(const std::string& test_child_name) {
   embedder::HandlePassingInformation handle_passing_info;
   platform_channel_pair_->PrepareToPassClientHandleToChildProcess(
       &command_line, &handle_passing_info);
+
+  if (!switch_string.empty()) {
+    CHECK(!command_line.HasSwitch(switch_string));
+    if (!switch_value.empty())
+      command_line.AppendSwitchASCII(switch_string, switch_value);
+    else
+      command_line.AppendSwitch(switch_string);
+  }
 
   base::LaunchOptions options;
 #if defined(OS_POSIX)
