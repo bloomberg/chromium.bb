@@ -111,6 +111,10 @@ struct CSSParserValue {
         CSSParserString string;
         CSSParserFunction* function;
         CSSParserValueList* valueList;
+        struct {
+            UChar32 start;
+            UChar32 end;
+        } m_unicodeRange;
     };
     enum {
         Operator  = 0x100000,
@@ -120,7 +124,7 @@ struct CSSParserValue {
         HexColor = 0x100004,
         // Represents a dimension by a list of two values, a CSS_NUMBER and an CSS_IDENT
         DimensionList = 0x100006,
-        // Represents a unicode range by a list of two CSS_NUMBERs
+        // Represents a unicode range by a pair of UChar32 values
         UnicodeRange = 0x100007,
     };
     int unit;

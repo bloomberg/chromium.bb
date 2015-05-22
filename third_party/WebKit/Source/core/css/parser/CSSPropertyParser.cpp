@@ -4791,13 +4791,11 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRang
         if (!current || current->unit != CSSParserValue::UnicodeRange)
             return nullptr;
 
-        CSSParserValue* start = current->valueList->valueAt(0);
-        CSSParserValue* end = current->valueList->valueAt(1);
-        ASSERT(start->unit == CSSPrimitiveValue::CSS_NUMBER);
-        ASSERT(end->unit == CSSPrimitiveValue::CSS_NUMBER);
-        if (start->fValue > end->fValue)
+        UChar32 start = current->m_unicodeRange.start;
+        UChar32 end = current->m_unicodeRange.end;
+        if (start > end)
             return nullptr;
-        values->append(CSSUnicodeRangeValue::create(start->fValue, end->fValue));
+        values->append(CSSUnicodeRangeValue::create(start, end));
         m_valueList->next();
     } while (consumeComma(m_valueList));
 

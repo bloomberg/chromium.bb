@@ -162,20 +162,11 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
             value.isInt = (token.numericValueType() == IntegerValueType);
             break;
         case UnicodeRangeToken: {
-            value.unit = CSSParserValue::UnicodeRange;
-            CSSParserValueList* list = new CSSParserValueList;
-            value.valueList = list;
             value.id = CSSValueInvalid;
-
-            CSSParserValue start;
-            start.setFromNumber(token.unicodeRangeStart());
-            start.isInt = true;
-            list->addValue(start);
-
-            CSSParserValue end;
-            end.setFromNumber(token.unicodeRangeEnd());
-            end.isInt = true;
-            list->addValue(end);
+            value.isInt = false;
+            value.m_unicodeRange.start = token.unicodeRangeStart();
+            value.m_unicodeRange.end = token.unicodeRangeEnd();
+            value.unit = CSSParserValue::UnicodeRange;
             break;
         }
         case HashToken:
