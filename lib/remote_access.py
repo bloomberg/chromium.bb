@@ -641,9 +641,9 @@ class RemoteDevice(object):
       return None
 
     if self._work_dir is None:
-      self.BaseRunCommand(['mkdir', '-p', self._base_dir])
       self._work_dir = self.BaseRunCommand(
-          ['mktemp', '-d', '--tmpdir=%s' % self._base_dir],
+          ['mkdir', '-p', self._base_dir, '&&',
+           'mktemp', '-d', '--tmpdir=%s' % self._base_dir],
           capture_output=True).output.strip()
       logging.debug('The temporary working directory on the device is %s',
                     self._work_dir)

@@ -243,7 +243,6 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
 
   def _SetupRemoteTempDir(self):
     """Mock out the calls needed for a remote tempdir."""
-    self.rsh_mock.AddCmdResult(partial_mock.In('mkdir'))
     self.rsh_mock.AddCmdResult(partial_mock.In('mktemp'))
     self.rsh_mock.AddCmdResult(partial_mock.In('rm'))
 
@@ -296,13 +295,14 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
       self.assertEqual(self.rsh_mock.call_count, 0)
 
       # The work dir will get automatically created when we use it.
-      self.rsh_mock.AddCmdResult(partial_mock.In('mkdir'))
       self.rsh_mock.AddCmdResult(partial_mock.In('mktemp'))
       _ = device.work_dir
-      self.assertEqual(self.rsh_mock.call_count, 2)
+      self.assertEqual(self.rsh_mock.call_count, 1)
 
       # Add a mock for the clean up logic.
       self.rsh_mock.AddCmdResult(partial_mock.In('rm'))
+
+    self.assertEqual(self.rsh_mock.call_count, 2)
 
 
 class USBDeviceTestCase(mdns_unittest.mDnsTestCase):
