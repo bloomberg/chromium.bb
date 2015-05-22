@@ -1845,14 +1845,14 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
   }
 #if defined(OS_CHROMEOS)
   LOG(WARNING) << "Pepper module/plugin creation failed.";
-  return NULL;
 #else
-  // TODO(jam): change to take RenderFrame.
-  return new WebPluginImpl(frame, params, info.path, render_view_, this);
+  if (info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
+    // TODO(jam): change to take RenderFrame.
+    return new WebPluginImpl(frame, params, info.path, render_view_, this);
+  }
 #endif
-#else
+#endif
   return NULL;
-#endif
 }
 
 void RenderFrameImpl::LoadURLExternally(blink::WebLocalFrame* frame,
