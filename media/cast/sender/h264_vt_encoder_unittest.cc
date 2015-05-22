@@ -90,7 +90,7 @@ class MetadataRecorder : public base::RefCountedThreadSafe<MetadataRecorder> {
                                    expected_reference_time});
   }
 
-  void CompareFrameWithExpected(scoped_ptr<EncodedFrame> encoded_frame) {
+  void CompareFrameWithExpected(scoped_ptr<SenderEncodedFrame> encoded_frame) {
     ASSERT_LT(0u, expectations_.size());
     auto e = expectations_.front();
     expectations_.pop();
@@ -145,7 +145,7 @@ class EndToEndFrameChecker
     expectations_.push(frame);
   }
 
-  void EncodeDone(scoped_ptr<EncodedFrame> encoded_frame) {
+  void EncodeDone(scoped_ptr<SenderEncodedFrame> encoded_frame) {
     auto buffer = DecoderBuffer::CopyFrom(encoded_frame->bytes(),
                                           encoded_frame->data.size());
     decoder_.Decode(buffer, base::Bind(&EndToEndFrameChecker::DecodeDone,
@@ -193,7 +193,7 @@ void CreateFrameAndMemsetPlane(VideoFrameFactory* const video_frame_factory) {
 }
 
 void NoopFrameEncodedCallback(
-    scoped_ptr<media::cast::EncodedFrame> /*encoded_frame*/) {
+    scoped_ptr<media::cast::SenderEncodedFrame> /*encoded_frame*/) {
 }
 
 class TestPowerSource : public base::PowerMonitorSource {

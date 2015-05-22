@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/net/cast_transport_config.h"
+#include "media/cast/sender/performance_metrics_overlay.h"
 #include "media/cast/sender/video_encoder.h"
 
 namespace media {
@@ -87,6 +88,8 @@ VideoSender::VideoSender(
       frames_in_encoder_(0),
       last_bitrate_(0),
       playout_delay_change_cb_(playout_delay_change_cb),
+      last_reported_deadline_utilization_(-1.0),
+      last_reported_lossy_utilization_(-1.0),
       weak_factory_(this) {
   video_encoder_ = VideoEncoder::Create(
       cast_environment_,
@@ -194,6 +197,12 @@ void VideoSender::InsertRawVideoFrame(
     return;
   }
 
+  MaybeRenderPerformanceMetricsOverlay(bitrate,
+                                       frames_in_encoder_ + 1,
+                                       last_reported_deadline_utilization_,
+                                       last_reported_lossy_utilization_,
+                                       video_frame.get());
+
   if (video_encoder_->EncodeVideoFrame(
           video_frame,
           reference_time,
@@ -233,7 +242,7 @@ void VideoSender::OnAck(uint32 frame_id) {
 
 void VideoSender::OnEncodedVideoFrame(
     int encoder_bitrate,
-    scoped_ptr<EncodedFrame> encoded_frame) {
+    scoped_ptr<SenderEncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   frames_in_encoder_--;
@@ -241,6 +250,11 @@ void VideoSender::OnEncodedVideoFrame(
 
   duration_in_encoder_ =
       last_enqueued_frame_reference_time_ - encoded_frame->reference_time;
+
+  last_reported_deadline_utilization_ = encoded_frame->deadline_utilization;
+  last_reported_lossy_utilization_ = encoded_frame->lossy_utilization;
+  // TODO(miu): Plumb-in a utilization feedback signal back to the producer of
+  // the video frames.  http://crbug.com/156767
 
   SendEncodedFrame(encoder_bitrate, encoded_frame.Pass());
 }

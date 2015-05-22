@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "media/cast/sender/sender_encoded_frame.h"
 
 namespace base {
 class TimeTicks;
@@ -18,7 +19,6 @@ class VideoFrame;
 
 namespace media {
 namespace cast {
-struct EncodedFrame;
 
 class SoftwareVideoEncoder {
  public:
@@ -31,7 +31,7 @@ class SoftwareVideoEncoder {
   // Encode a raw image (as a part of a video stream).
   virtual void Encode(const scoped_refptr<media::VideoFrame>& video_frame,
                       const base::TimeTicks& reference_time,
-                      EncodedFrame* encoded_frame) = 0;
+                      SenderEncodedFrame* encoded_frame) = 0;
 
   // Update the encoder with a new target bit rate.
   virtual void UpdateRates(uint32 new_bitrate) = 0;

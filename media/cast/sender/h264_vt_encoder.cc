@@ -729,7 +729,7 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
   // frame. VideoToolbox calls the output callback serially, so this is safe.
   const uint32 frame_id = ++encoder->last_frame_id_;
 
-  scoped_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
+  scoped_ptr<SenderEncodedFrame> encoded_frame(new SenderEncodedFrame());
   encoded_frame->frame_id = frame_id;
   encoded_frame->reference_time = request->reference_time;
   encoded_frame->rtp_timestamp = request->rtp_timestamp;
@@ -752,6 +752,9 @@ void H264VideoToolboxEncoder::CompressionCallback(void* encoder_opaque,
 
   if (has_frame_data)
     CopySampleBufferToAnnexBBuffer(sbuf, &encoded_frame->data, keyframe);
+
+  // TODO(miu): Compute and populate the |deadline_utilization| and
+  // |lossy_utilization| performance metrics in |encoded_frame|.
 
   encoder->cast_environment_->PostTask(
       CastEnvironment::MAIN, FROM_HERE,

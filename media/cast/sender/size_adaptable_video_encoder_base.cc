@@ -156,7 +156,7 @@ void SizeAdaptableVideoEncoderBase::OnEncoderStatusChange(
 
 void SizeAdaptableVideoEncoderBase::OnEncodedVideoFrame(
     const FrameEncodedCallback& frame_encoded_callback,
-    scoped_ptr<EncodedFrame> encoded_frame) {
+    scoped_ptr<SenderEncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   --frames_in_encoder_;
   DCHECK_GE(frames_in_encoder_, 0);

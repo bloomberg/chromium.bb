@@ -26,9 +26,6 @@ class VideoEncoderImpl : public VideoEncoder {
     int bit_rate;
   };
 
-  typedef base::Callback<void(scoped_ptr<EncodedFrame>)>
-      FrameEncodedCallback;
-
   // Returns true if VideoEncoderImpl can be used with the given |video_config|.
   static bool IsSupported(const VideoSenderConfig& video_config);
 

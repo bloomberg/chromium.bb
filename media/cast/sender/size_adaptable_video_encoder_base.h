@@ -85,7 +85,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
 
   // Called by the |encoder_| with the next EncodedFrame.
   void OnEncodedVideoFrame(const FrameEncodedCallback& frame_encoded_callback,
-                           scoped_ptr<EncodedFrame> encoded_frame);
+                           scoped_ptr<SenderEncodedFrame> encoded_frame);
 
   const scoped_refptr<CastEnvironment> cast_environment_;
 
