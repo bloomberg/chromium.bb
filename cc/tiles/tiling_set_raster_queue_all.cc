@@ -52,32 +52,36 @@ TilingSetRasterQueueAll::TilingSetRasterQueueAll(
     }
   }
 
-  bool use_low_res_tiling = low_res_tiling && low_res_tiling->has_tiles();
-  if (use_low_res_tiling && prioritize_low_res) {
-    iterators_[LOW_RES] =
-        TilingIterator(low_res_tiling, &low_res_tiling->tiling_data_);
-    stages_->push_back(IterationStage(LOW_RES, TilePriority::NOW));
+  bool use_low_res_tiling = low_res_tiling && low_res_tiling->has_tiles() &&
+                            !low_res_tiling->all_tiles_done();
+  bool use_high_res_tiling = high_res_tiling && high_res_tiling->has_tiles() &&
+                             !high_res_tiling->all_tiles_done();
+  bool use_active_non_ideal_pending_high_res_tiling =
+      active_non_ideal_pending_high_res_tiling &&
+      active_non_ideal_pending_high_res_tiling->has_tiles() &&
+      !active_non_ideal_pending_high_res_tiling->all_tiles_done();
+
+  // Make the tiling iterators.
+  if (use_low_res_tiling)
+    MakeTilingIterator(LOW_RES, low_res_tiling);
+  if (use_high_res_tiling)
+    MakeTilingIterator(HIGH_RES, high_res_tiling);
+  if (use_active_non_ideal_pending_high_res_tiling) {
+    MakeTilingIterator(ACTIVE_NON_IDEAL_PENDING_HIGH_RES,
+                       active_non_ideal_pending_high_res_tiling);
   }
 
-  bool use_high_res_tiling = high_res_tiling && high_res_tiling->has_tiles();
-  if (use_high_res_tiling) {
-    iterators_[HIGH_RES] =
-        TilingIterator(high_res_tiling, &high_res_tiling->tiling_data_);
+  // Set up the stages.
+  if (use_low_res_tiling && prioritize_low_res)
+    stages_->push_back(IterationStage(LOW_RES, TilePriority::NOW));
+
+  if (use_high_res_tiling)
     stages_->push_back(IterationStage(HIGH_RES, TilePriority::NOW));
-  }
 
-  if (low_res_tiling && !prioritize_low_res) {
-    iterators_[LOW_RES] =
-        TilingIterator(low_res_tiling, &low_res_tiling->tiling_data_);
+  if (low_res_tiling && !prioritize_low_res)
     stages_->push_back(IterationStage(LOW_RES, TilePriority::NOW));
-  }
 
-  if (active_non_ideal_pending_high_res_tiling &&
-      active_non_ideal_pending_high_res_tiling->has_tiles()) {
-    iterators_[ACTIVE_NON_IDEAL_PENDING_HIGH_RES] =
-        TilingIterator(active_non_ideal_pending_high_res_tiling,
-                       &active_non_ideal_pending_high_res_tiling->tiling_data_);
-
+  if (use_active_non_ideal_pending_high_res_tiling) {
     stages_->push_back(
         IterationStage(ACTIVE_NON_IDEAL_PENDING_HIGH_RES, TilePriority::NOW));
     stages_->push_back(
@@ -99,6 +103,13 @@ TilingSetRasterQueueAll::TilingSetRasterQueueAll(
 }
 
 TilingSetRasterQueueAll::~TilingSetRasterQueueAll() {
+}
+
+void TilingSetRasterQueueAll::MakeTilingIterator(IteratorType type,
+                                                 PictureLayerTiling* tiling) {
+  iterators_[type] = TilingIterator(tiling, &tiling->tiling_data_);
+  if (iterators_[type].done())
+    tiling->set_all_tiles_done(true);
 }
 
 bool TilingSetRasterQueueAll::IsEmpty() const {

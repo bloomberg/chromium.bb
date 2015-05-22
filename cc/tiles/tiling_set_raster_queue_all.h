@@ -173,6 +173,7 @@ class CC_EXPORT TilingSetRasterQueueAll {
     NUM_ITERATORS
   };
 
+  void MakeTilingIterator(IteratorType type, PictureLayerTiling* tiling);
   void AdvanceToNextStage();
 
   PictureLayerTilingSet* tiling_set_;

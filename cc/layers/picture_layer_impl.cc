@@ -577,6 +577,12 @@ void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
         gfx::ScaleRect(tile->content_rect(), 1.f / tile->contents_scale());
     AddDamageRect(layer_damage_rect);
   }
+  if (tile->draw_info().NeedsRaster()) {
+    PictureLayerTiling* tiling =
+        tilings_->FindTilingWithScale(tile->contents_scale());
+    if (tiling)
+      tiling->set_all_tiles_done(false);
+  }
 }
 
 void PictureLayerImpl::DidBeginTracing() {

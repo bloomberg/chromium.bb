@@ -68,7 +68,8 @@ PictureLayerTiling::PictureLayerTiling(
       has_visible_rect_tiles_(false),
       has_skewport_rect_tiles_(false),
       has_soon_border_rect_tiles_(false),
-      has_eventually_rect_tiles_(false) {
+      has_eventually_rect_tiles_(false),
+      all_tiles_done_(true) {
   DCHECK(!raster_source->IsSolidColor());
   gfx::Size content_bounds = gfx::ToCeiledSize(
       gfx::ScaleSize(raster_source_->GetSize(), contents_scale));
@@ -109,6 +110,7 @@ Tile* PictureLayerTiling::CreateTile(int i, int j) {
   if (!raster_source_->CoversRect(tile_rect, contents_scale_))
     return nullptr;
 
+  all_tiles_done_ = false;
   ScopedTilePtr tile = client_->CreateTile(contents_scale_, tile_rect);
   Tile* raw_ptr = tile.get();
   tile->set_tiling_index(i, j);
@@ -151,13 +153,16 @@ void PictureLayerTiling::TakeTilesAndPropertiesFrom(
 
   if (tiles_.empty()) {
     tiles_.swap(pending_twin->tiles_);
+    all_tiles_done_ = pending_twin->all_tiles_done_;
   } else {
     while (!pending_twin->tiles_.empty()) {
       TileMapKey key = pending_twin->tiles_.begin()->first;
       tiles_.set(key, pending_twin->tiles_.take_and_erase(key));
     }
+    all_tiles_done_ &= pending_twin->all_tiles_done_;
   }
   DCHECK(pending_twin->tiles_.empty());
+  pending_twin->all_tiles_done_ = true;
 
   if (create_missing_tiles)
     CreateMissingTilesInLiveTilesRect();
@@ -501,6 +506,7 @@ bool PictureLayerTiling::RemoveTileAt(int i, int j) {
 void PictureLayerTiling::Reset() {
   live_tiles_rect_ = gfx::Rect();
   tiles_.clear();
+  all_tiles_done_ = true;
 }
 
 gfx::Rect PictureLayerTiling::ComputeSkewport(

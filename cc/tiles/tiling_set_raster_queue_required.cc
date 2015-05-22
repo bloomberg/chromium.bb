@@ -41,7 +41,7 @@ TilingSetRasterQueueRequired::TilingSetRasterQueueRequired(
   // If we don't have a tiling, then this queue will yield no tiles. See
   // PictureLayerImpl::CanHaveTilings for examples of when a HIGH_RESOLUTION
   // tiling would not be generated.
-  if (!tiling)
+  if (!tiling || tiling->all_tiles_done())
     return;
 
   if (type == RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION) {
