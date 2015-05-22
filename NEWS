@@ -1,12 +1,14 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 2.7.0 (2015-06-01)
+* Noteworthy changes in release 2.6.3 (2015-06-01)
 
 ** New features
 
 ** Bug fixes
 
 ** Braille table improvements
+- Improvements to Bengali, Devanagari, Kannada, Gujarati, Malayalam,
+  Telugu and Oriya, thanks to Sreeja Param
 
 * Noteworthy changes in release 2.6.2 (2015-03-02)
 This release, which was mostly pushed out the door by Bert and Mesar,
