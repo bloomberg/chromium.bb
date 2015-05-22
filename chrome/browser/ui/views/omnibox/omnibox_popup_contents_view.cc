@@ -176,6 +176,10 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     const AutocompleteMatch& match = GetMatchAtIndex(i);
     view->SetMatch(match);
     view->SetVisible(i >= hidden_matches);
+    if (match.answer && !model_->answer_bitmap().isNull()) {
+      view->SetAnswerImage(
+          gfx::ImageSkia::CreateFrom1xBitmap(model_->answer_bitmap()));
+    }
     if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
       max_match_contents_width_ = std::max(
           max_match_contents_width_, view->GetMatchContentsWidth());

@@ -27,6 +27,8 @@ class OmniboxPopupViewMac;
   base::scoped_nsobject<NSAttributedString> separator_;
   base::scoped_nsobject<NSAttributedString> description_;
 
+  base::scoped_nsobject<NSImage> answerImage_;
+
   // NOTE: While |prefix_| is used only for postfix suggestions, it still needs
   // to be a member of the class. This allows the |NSAttributedString| instance
   // to stay alive between the call to |drawTitle| and the actual paint event
@@ -39,6 +41,8 @@ class OmniboxPopupViewMac;
   // The offset at which the infinite suggestion contents should be displayed.
   CGFloat contentsOffset_;
 }
+
+- (void)setAnswerImage:(NSImage*)image;
 
 - (void)setMatch:(const AutocompleteMatch&)match;
 

@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
 #include "components/omnibox/autocomplete_match.h"
 
 class AUtocompleteInput;
@@ -73,6 +74,9 @@ class OmniboxController : public AutocompleteControllerDelegate {
   // TODO(beaudoin): Make private once OmniboxEditModel no longer refers to it.
   void DoPreconnect(const AutocompleteMatch& match);
 
+  // Stores the bitmap in the OmniboxPopupModel.
+  void SetAnswerBitmap(const SkBitmap& bitmap);
+
  private:
   // Weak, it owns us.
   // TODO(beaudoin): Consider defining a delegate to ease unit testing.
@@ -89,6 +93,10 @@ class OmniboxController : public AutocompleteControllerDelegate {
   // but the ones specifically needed are unclear. We should therefore spend
   // some time to extract these fields and use a tighter structure here.
   AutocompleteMatch current_match_;
+
+  BitmapFetcherService::RequestId request_id_;
+
+  base::WeakPtrFactory<OmniboxController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxController);
 };

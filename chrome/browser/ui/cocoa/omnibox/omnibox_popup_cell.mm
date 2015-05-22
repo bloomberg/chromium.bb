@@ -175,15 +175,19 @@ NSAttributedString* CreateClassifiedAttributedString(
   return self;
 }
 
+- (void)setAnswerImage:(NSImage*)image {
+  answerImage_.reset([image retain]);
+}
+
 - (void)setMatch:(const AutocompleteMatch&)match {
   match_ = match;
   NSAttributedString *contents = CreateClassifiedAttributedString(
       match_.contents, ContentTextColor(), match_.contents_class);
   [self setAttributedTitle:contents];
 
+  [self setAnswerImage:nil];
   if (match_.answer) {
     base::string16 answerString;
-    DCHECK(!match_.answer->second_line().text_fields().empty());
     for (const SuggestionAnswer::TextField& textField :
          match_.answer->second_line().text_fields())
       answerString += textField.text();
@@ -285,6 +289,17 @@ NSAttributedString* CreateClassifiedAttributedString(
                          atOffset:offset
                      withMaxWidth:separatorWidth
                            inView:controlView];
+    if (answerImage_) {
+      NSRect imageRect = NSMakeRect(offset, NSMinY(cellFrame),
+          NSHeight(cellFrame), NSHeight(cellFrame));
+      [answerImage_ drawInRect:FlipIfRTL(imageRect, cellFrame)
+                      fromRect:NSZeroRect
+                     operation:NSCompositeSourceOver
+                      fraction:1.0
+                respectFlipped:YES
+                         hints:nil];
+      offset += NSWidth(imageRect);
+    }
     offset += [self drawMatchPart:description_
                         withFrame:cellFrame
                          atOffset:offset

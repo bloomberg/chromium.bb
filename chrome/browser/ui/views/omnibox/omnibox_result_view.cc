@@ -17,8 +17,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
@@ -44,34 +42,6 @@ namespace {
 // The minimum distance between the top and bottom of the icon and the
 // top or bottom of the row.
 const int kMinimumIconVerticalPadding = 2;
-
-// Calls back to the OmniboxResultView when the requested image is downloaded.
-// This is a separate class instead of being implemented on OmniboxResultView
-// because BitmapFetcherService currently takes ownership of this object.
-// TODO(dschuyler): Make BitmapFetcherService use the more typical non-owning
-// ObserverList pattern and have OmniboxResultView implement the Observer call
-// directly.
-class AnswerImageObserver : public BitmapFetcherService::Observer {
- public:
-  explicit AnswerImageObserver(
-      const base::WeakPtr<OmniboxResultView>& view)
-      : view_(view) {}
-
-  void OnImageChanged(BitmapFetcherService::RequestId request_id,
-                      const SkBitmap& image) override;
-
- private:
-  const base::WeakPtr<OmniboxResultView> view_;
-  DISALLOW_COPY_AND_ASSIGN(AnswerImageObserver);
-};
-
-void AnswerImageObserver::OnImageChanged(
-    BitmapFetcherService::RequestId request_id,
-    const SkBitmap& image) {
-  DCHECK(!image.empty());
-  if (view_)
-    view_->SetAnswerImage(gfx::ImageSkia::CreateFrom1xBitmap(image));
-}
 
 // A mapping from OmniboxResultView's ResultViewState/ColorKind types to
 // NativeTheme colors.
@@ -254,17 +224,13 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       model_(model),
       model_index_(model_index),
       location_bar_view_(location_bar_view),
-      image_service_(BitmapFetcherServiceFactory::GetForBrowserContext(
-          location_bar_view_->profile())),
       font_list_(font_list),
       font_height_(
           std::max(font_list.GetHeight(),
                    font_list.DeriveWithStyle(gfx::Font::BOLD).GetHeight())),
       mirroring_context_(new MirroringContext()),
       keyword_icon_(new views::ImageView()),
-      animation_(new gfx::SlideAnimation(this)),
-      request_id_(BitmapFetcherService::REQUEST_ID_INVALID),
-      weak_ptr_factory_(this) {
+      animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0);
   if (default_icon_size_ == 0) {
     default_icon_size_ =
@@ -279,8 +245,6 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
 }
 
 OmniboxResultView::~OmniboxResultView() {
-  if (image_service_)
-    image_service_->CancelRequest(request_id_);
 }
 
 SkColor OmniboxResultView::GetColor(
@@ -301,16 +265,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   match_ = match;
   ResetRenderTexts();
   animation_->Reset();
-
   answer_image_ = gfx::ImageSkia();
-  if (image_service_) {
-    image_service_->CancelRequest(request_id_);
-    if (match_.answer) {
-      request_id_ = image_service_->RequestImage(
-          match_.answer->second_line().image_url(),
-          new AnswerImageObserver(weak_ptr_factory_.GetWeakPtr()));
-    }
-}
 
   AutocompleteMatch* associated_keyword_match = match_.associated_keyword.get();
   if (associated_keyword_match) {

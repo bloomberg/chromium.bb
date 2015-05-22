@@ -6,12 +6,14 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
@@ -68,6 +70,34 @@ const AutocompleteMatch* GetMatchToPrefetch(const AutocompleteResult& result) {
   return NULL;
 }
 
+// Calls back to the OmniboxController when the requested image is downloaded.
+// This is a separate class instead of being implemented on OmniboxController
+// because BitmapFetcherService currently takes ownership of this object.
+// TODO(dschuyler): Make BitmapFetcherService use the more typical non-owning
+// ObserverList pattern and have OmniboxController implement the Observer call
+// directly.
+class AnswerImageObserver : public BitmapFetcherService::Observer {
+ public:
+  explicit AnswerImageObserver(
+      const base::WeakPtr<OmniboxController>& controller)
+      : controller_(controller) {}
+
+  void OnImageChanged(BitmapFetcherService::RequestId request_id,
+                      const SkBitmap& image) override;
+
+ private:
+  const base::WeakPtr<OmniboxController> controller_;
+  DISALLOW_COPY_AND_ASSIGN(AnswerImageObserver);
+};
+
+void AnswerImageObserver::OnImageChanged(
+    BitmapFetcherService::RequestId request_id,
+    const SkBitmap& image) {
+  DCHECK(!image.empty());
+  DCHECK(controller_);
+  controller_->SetAnswerBitmap(image);
+}
+
 }  // namespace
 
 OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
@@ -75,12 +105,20 @@ OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
     : omnibox_edit_model_(omnibox_edit_model),
       profile_(profile),
       popup_(NULL),
-      autocomplete_controller_(new AutocompleteController(profile,
-          TemplateURLServiceFactory::GetForProfile(profile), this,
-          AutocompleteClassifier::kDefaultOmniboxProviders)) {
+      autocomplete_controller_(new AutocompleteController(
+          profile,
+          TemplateURLServiceFactory::GetForProfile(profile),
+          this,
+          AutocompleteClassifier::kDefaultOmniboxProviders)),
+      request_id_(BitmapFetcherService::REQUEST_ID_INVALID),
+      weak_ptr_factory_(this) {
 }
 
 OmniboxController::~OmniboxController() {
+  BitmapFetcherService* image_service =
+      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
+  if (image_service)
+    image_service->CancelRequest(request_id_);
 }
 
 void OmniboxController::StartAutocomplete(
@@ -135,6 +173,22 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
     // clear the prefetched results.
     omnibox_edit_model_->SetSuggestionToPrefetch(prefetch_suggestion);
   }
+
+  for (AutocompleteResult::const_iterator match(result().begin());
+       match != result().end(); ++match) {
+    if (match->answer) {
+      BitmapFetcherService* image_service =
+          BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
+      if (image_service) {
+        image_service->CancelRequest(request_id_);
+        request_id_ = image_service->RequestImage(
+            match->answer->second_line().image_url(),
+            new AnswerImageObserver(weak_ptr_factory_.GetWeakPtr()));
+      }
+      // We only fetch one answer image.
+      break;
+    }
+  }
 }
 
 void OmniboxController::InvalidateCurrentMatch() {
@@ -161,4 +215,9 @@ void OmniboxController::DoPreconnect(const AutocompleteMatch& match) {
     // can be many of these as a user types an initial series of characters,
     // the OS DNS cache could suffer eviction problems for minimal gain.
   }
+}
+
+void OmniboxController::SetAnswerBitmap(const SkBitmap& bitmap) {
+  request_id_ = BitmapFetcherService::REQUEST_ID_INVALID;
+  popup_->SetAnswerBitmap(bitmap);
 }

@@ -10,6 +10,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "components/omnibox/autocomplete_result.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class OmniboxPopupModelObserver;
 class OmniboxPopupView;
@@ -121,11 +122,17 @@ class OmniboxPopupModel {
   void AddObserver(OmniboxPopupModelObserver* observer);
   void RemoveObserver(OmniboxPopupModelObserver* observer);
 
+  // Stores the image in a local data member and schedules a repaint.
+  void SetAnswerBitmap(const SkBitmap& bitmap);
+  const SkBitmap& answer_bitmap() const { return answer_bitmap_; }
+
   // The token value for selected_line_, hover_line_ and functions dealing with
   // a "line number" that indicates "no line".
   static const size_t kNoMatch;
 
  private:
+  SkBitmap answer_bitmap_;
+
   OmniboxPopupView* view_;
 
   OmniboxEditModel* edit_model_;
