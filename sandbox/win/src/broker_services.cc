@@ -520,8 +520,11 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   policy_base->AddRef();
   if (job.IsValid()) {
     scoped_ptr<JobTracker> tracker(new JobTracker(job.Take(), policy_base));
-    if (!AssociateCompletionPort(tracker->job, job_port_, tracker.get()))
-      return SpawnCleanup(target, 0);
+
+    // There is no obvious recovery after failure here. Previous version with
+    // SpawnCleanup() caused deletion of TargetProcess twice. crbug.com/480639
+    CHECK(AssociateCompletionPort(tracker->job, job_port_, tracker.get()));
+
     // Save the tracker because in cleanup we might need to force closing
     // the Jobs.
     tracker_list_.push_back(tracker.release());
