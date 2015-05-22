@@ -14,6 +14,9 @@ generator_supports_multiple_toolsets = True
 
 generator_wants_static_library_dependencies_adjusted = False
 
+generator_filelist_paths = {
+}
+
 generator_default_variables = {
 }
 for dirname in ['INTERMEDIATE_DIR', 'SHARED_INTERMEDIATE_DIR', 'PRODUCT_DIR',
