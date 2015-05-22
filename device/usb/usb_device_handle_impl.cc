@@ -515,7 +515,7 @@ void UsbDeviceHandleImpl::SetConfiguration(int configuration_value,
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UsbDeviceHandleImpl::SetConfigurationOnBlockingThread, this,
-                 handle_, configuration_value, callback));
+                 configuration_value, callback));
 }
 
 void UsbDeviceHandleImpl::ClaimInterface(int interface_number,
@@ -533,7 +533,7 @@ void UsbDeviceHandleImpl::ClaimInterface(int interface_number,
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UsbDeviceHandleImpl::ClaimInterfaceOnBlockingThread, this,
-                 handle_, interface_number, callback));
+                 interface_number, callback));
 }
 
 bool UsbDeviceHandleImpl::ReleaseInterface(int interface_number) {
@@ -571,7 +571,7 @@ void UsbDeviceHandleImpl::SetInterfaceAlternateSetting(
       FROM_HERE,
       base::Bind(
           &UsbDeviceHandleImpl::SetInterfaceAlternateSettingOnBlockingThread,
-          this, handle_, interface_number, alternate_setting, callback));
+          this, interface_number, alternate_setting, callback));
 }
 
 void UsbDeviceHandleImpl::ResetDevice(const ResultCallback& callback) {
@@ -583,7 +583,7 @@ void UsbDeviceHandleImpl::ResetDevice(const ResultCallback& callback) {
 
   blocking_task_runner_->PostTask(
       FROM_HERE, base::Bind(&UsbDeviceHandleImpl::ResetDeviceOnBlockingThread,
-                            this, handle_, callback));
+                            this, callback));
 }
 
 void UsbDeviceHandleImpl::ControlTransfer(UsbEndpointDirection direction,
@@ -679,14 +679,12 @@ UsbDeviceHandleImpl::UsbDeviceHandleImpl(
 }
 
 UsbDeviceHandleImpl::~UsbDeviceHandleImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
+  // This class is RefCountedThreadSafe and so the destructor may be called on
+  // any thread.
   libusb_close(handle_);
-  handle_ = NULL;
 }
 
 void UsbDeviceHandleImpl::SetConfigurationOnBlockingThread(
-    PlatformUsbDeviceHandle handle,
     int configuration_value,
     const ResultCallback& callback) {
   int rv = libusb_set_configuration(handle_, configuration_value);
@@ -710,10 +708,9 @@ void UsbDeviceHandleImpl::SetConfigurationComplete(
 }
 
 void UsbDeviceHandleImpl::ClaimInterfaceOnBlockingThread(
-    PlatformUsbDeviceHandle handle,
     int interface_number,
     const ResultCallback& callback) {
-  int rv = libusb_claim_interface(handle, interface_number);
+  int rv = libusb_claim_interface(handle_, interface_number);
   if (rv != LIBUSB_SUCCESS) {
     VLOG(1) << "Failed to claim interface: "
             << ConvertPlatformUsbErrorToString(rv);
@@ -736,11 +733,10 @@ void UsbDeviceHandleImpl::ClaimInterfaceComplete(
 }
 
 void UsbDeviceHandleImpl::SetInterfaceAlternateSettingOnBlockingThread(
-    PlatformUsbDeviceHandle handle,
     int interface_number,
     int alternate_setting,
     const ResultCallback& callback) {
-  int rv = libusb_set_interface_alt_setting(handle, interface_number,
+  int rv = libusb_set_interface_alt_setting(handle_, interface_number,
                                             alternate_setting);
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to set interface " << interface_number
@@ -768,21 +764,13 @@ void UsbDeviceHandleImpl::SetInterfaceAlternateSettingComplete(
 }
 
 void UsbDeviceHandleImpl::ResetDeviceOnBlockingThread(
-    PlatformUsbDeviceHandle handle,
     const ResultCallback& callback) {
-  int rv = libusb_reset_device(handle);
+  int rv = libusb_reset_device(handle_);
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to reset device: "
                    << ConvertPlatformUsbErrorToString(rv);
   }
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&UsbDeviceHandleImpl::ResetDeviceComplete, this,
-                            rv == LIBUSB_SUCCESS, callback));
-}
-
-void UsbDeviceHandleImpl::ResetDeviceComplete(bool success,
-                                              const ResultCallback& callback) {
-  callback.Run(success);
+  task_runner_->PostTask(FROM_HERE, base::Bind(callback, rv == LIBUSB_SUCCESS));
 }
 
 void UsbDeviceHandleImpl::RefreshEndpointMap() {

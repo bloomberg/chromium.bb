@@ -102,18 +102,15 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   class InterfaceClaimer;
   class Transfer;
 
-  void SetConfigurationOnBlockingThread(PlatformUsbDeviceHandle handle,
-                                        int configuration_value,
+  void SetConfigurationOnBlockingThread(int configuration_value,
                                         const ResultCallback& callback);
   void SetConfigurationComplete(bool success, const ResultCallback& callback);
-  void ClaimInterfaceOnBlockingThread(PlatformUsbDeviceHandle handle,
-                                      int interface_number,
+  void ClaimInterfaceOnBlockingThread(int interface_number,
                                       const ResultCallback& callback);
   void ClaimInterfaceComplete(int interface_number,
                               bool success,
                               const ResultCallback& callback);
   void SetInterfaceAlternateSettingOnBlockingThread(
-      PlatformUsbDeviceHandle handle,
       int interface_number,
       int alternate_setting,
       const ResultCallback& callback);
@@ -121,9 +118,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                                             int alternate_setting,
                                             bool success,
                                             const ResultCallback& callback);
-  void ResetDeviceOnBlockingThread(PlatformUsbDeviceHandle handle,
-                                   const ResultCallback& callback);
-  void ResetDeviceComplete(bool success, const ResultCallback& callback);
+  void ResetDeviceOnBlockingThread(const ResultCallback& callback);
 
   // Refresh endpoint_map_ after ClaimInterface, ReleaseInterface and
   // SetInterfaceAlternateSetting.
