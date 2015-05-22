@@ -3,6 +3,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 * Noteworthy changes in release 2.6.3 (2015-06-01)
 
 ** New features
+- [beta] The new function lou_findTable can be used for table
+  discovery based on metadata in table headers. Thanks to Bert Frees.
 
 ** Bug fixes
 - Fixed a problem in resolveTable when using a Java resolver, thanks

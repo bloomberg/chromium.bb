@@ -340,24 +340,6 @@ static const char *opcodeNames[CTO_None] = {
 };
 static short opcodeLengths[CTO_None] = { 0 };
 
-typedef enum
-{ noEncoding, bigEndian, littleEndian, ascii8 } EncodingType;
-
-
-typedef struct
-{
-  const char *fileName;
-  FILE *in;
-  int lineNumber;
-  EncodingType encoding;
-  int status;
-  int linelen;
-  int linepos;
-  int checkencoding[2];
-  widechar line[MAXSTRING];
-}
-FileInfo;
-
 static char scratchBuf[MAXSTRING];
 
 char *
@@ -576,7 +558,7 @@ getAChar (FileInfo * nested)
   return EOF;
 }
 
-static int
+int
 getALine (FileInfo * nested)
 {
 /*Read a line of widechar's from an input file */
@@ -4602,6 +4584,30 @@ resolveSubtable (const char *table, const char *base, const char *searchPath)
   return NULL;
 }
 
+char *
+getTablePath()
+{
+  char searchPath[MAXSTRING];
+  char *path;
+  char *cp;
+  cp = searchPath;
+  path = getenv ("LOUIS_TABLEPATH");
+  if (path != NULL && path[0] != '\0')
+    cp += sprintf (cp, ",%s", path);
+  path = lou_getDataPath ();
+  if (path != NULL && path[0] != '\0')
+    cp += sprintf (cp, ",%s%c%s%c%s", path, DIR_SEP, "liblouis", DIR_SEP,
+		   "tables");
+#ifdef _WIN32
+  path = lou_getProgramPath ();
+  if (path != NULL && path[0] != '\0')
+    cp += sprintf (cp, ",%s%s", path, "\\share\\liblouis\\tables");
+#else
+  cp += sprintf (cp, ",%s", TABLESDIR);
+#endif
+  return strdup(searchPath);
+}
+
 /**
  * The default table resolver
  *
@@ -4619,31 +4625,16 @@ resolveSubtable (const char *table, const char *base, const char *searchPath)
 static char **
 defaultTableResolver (const char *tableList, const char *base)
 {
-  char searchPath[MAXSTRING];
+  char * searchPath;
   char **tableFiles;
   char *subTable;
   char *tableList_copy;
   char *cp;
-  char *path;
   int last;
   int k;
   
   /* Set up search path */
-  cp = searchPath;
-  path = getenv ("LOUIS_TABLEPATH");
-  if (path != NULL && path[0] != '\0')
-    cp += sprintf (cp, ",%s", path);
-  path = lou_getDataPath ();
-  if (path != NULL && path[0] != '\0')
-    cp += sprintf (cp, ",%s%c%s%c%s", path, DIR_SEP, "liblouis", DIR_SEP,
-		   "tables");
-#ifdef _WIN32
-  path = lou_getProgramPath ();
-  if (path != NULL && path[0] != '\0')
-    cp += sprintf (cp, ",%s%s", path, "\\share\\liblouis\\tables");
-#else
-  cp += sprintf (cp, ",%s", TABLESDIR);
-#endif
+  searchPath = getTablePath();
   
   /* Count number of subtables in table list */
   k = 0;
@@ -4663,6 +4654,7 @@ defaultTableResolver (const char *tableList, const char *base)
       if (!(tableFiles[k++] = resolveSubtable (subTable, base, searchPath)))
 	{
 	  logMessage (LOG_ERROR, "Cannot resolve table '%s'", subTable);
+	  free(searchPath);
 	  free(tableList_copy);
 	  free (tableFiles);
 	  return NULL;
@@ -4672,6 +4664,7 @@ defaultTableResolver (const char *tableList, const char *base)
       if (last)
 	break;
     }
+  free(searchPath);
   free(tableList_copy);
   tableFiles[k] = NULL;
   return tableFiles;
@@ -4699,7 +4692,7 @@ copyStringArray(const char ** array)
   return copy;
 }
 
-static char **
+char **
 resolveTable (const char *tableList, const char *base)
 {
   return copyStringArray((*tableResolver) (tableList, base));
