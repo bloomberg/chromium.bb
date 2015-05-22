@@ -159,6 +159,9 @@ public:
     virtual String debugName(const GraphicsLayer*) override;
     DocumentLifecycle& lifecycle() const;
 
+    bool needsUpdateDescendantDependentFlags() const { return m_needsUpdateDescendantDependentFlags; }
+    void setNeedsUpdateDescendantDependentFlags() { m_needsUpdateDescendantDependentFlags = true; }
+
     void updatePotentialCompositingReasonsFromStyle(DeprecatedPaintLayer*);
 
     // Whether the layer could ever be composited.
@@ -230,6 +233,8 @@ private:
     bool m_rootShouldAlwaysCompositeDirty;
     bool m_needsUpdateFixedBackground;
     bool m_isTrackingPaintInvalidations; // Used for testing.
+    bool m_inOverlayFullscreenVideo;
+    bool m_needsUpdateDescendantDependentFlags;
 
     RootLayerAttachment m_rootLayerAttachment;
 
@@ -244,8 +249,6 @@ private:
     OwnPtr<GraphicsLayer> m_layerForHorizontalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForVerticalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
-
-    bool m_inOverlayFullscreenVideo;
 };
 
 } // namespace blink

@@ -651,6 +651,7 @@ LayoutRect DeprecatedPaintLayer::computePaintInvalidationRect(const LayoutObject
 
 void DeprecatedPaintLayer::dirtyVisibleContentStatus()
 {
+    compositor()->setNeedsUpdateDescendantDependentFlags();
     m_visibleContentStatusDirty = true;
     if (parent())
         parent()->dirtyAncestorChainVisibleDescendantStatus();
@@ -667,10 +668,11 @@ void DeprecatedPaintLayer::potentiallyDirtyVisibleContentStatus(EVisibility visi
 
 void DeprecatedPaintLayer::dirtyAncestorChainVisibleDescendantStatus()
 {
+    compositor()->setNeedsUpdateDescendantDependentFlags();
+
     for (DeprecatedPaintLayer* layer = this; layer; layer = layer->parent()) {
         if (layer->m_visibleDescendantStatusDirty)
             break;
-
         layer->m_visibleDescendantStatusDirty = true;
     }
 }
@@ -695,22 +697,6 @@ void DeprecatedPaintLayer::updateScrollingStateAfterCompositingChange()
             return;
         }
     }
-}
-
-// The descendant-dependent flags system is badly broken because we clean dirty
-// bits in upward tree walks, which means we need to call updateDescendantDependentFlags
-// at every node in the tree to fully clean all the dirty bits. While we'll in
-// the process of fixing this issue, updateDescendantDependentFlagsForEntireSubtree
-// provides a big hammer for actually cleaning all the dirty bits in a subtree.
-//
-// FIXME: Remove this function once the descendant-dependent flags system keeps
-// its dirty bits scoped to subtrees.
-void DeprecatedPaintLayer::updateDescendantDependentFlagsForEntireSubtree()
-{
-    updateDescendantDependentFlags();
-
-    for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling())
-        child->updateDescendantDependentFlagsForEntireSubtree();
 }
 
 void DeprecatedPaintLayer::updateDescendantDependentFlags()

@@ -74,8 +74,9 @@ DeprecatedPaintLayerCompositor::DeprecatedPaintLayerCompositor(LayoutView& layou
     , m_rootShouldAlwaysCompositeDirty(true)
     , m_needsUpdateFixedBackground(false)
     , m_isTrackingPaintInvalidations(false)
-    , m_rootLayerAttachment(RootLayerUnattached)
     , m_inOverlayFullscreenVideo(false)
+    , m_needsUpdateDescendantDependentFlags(false)
+    , m_rootLayerAttachment(RootLayerUnattached)
 {
     updateAcceleratedCompositingSettings();
 }
@@ -182,6 +183,22 @@ static LayoutVideo* findFullscreenVideoLayoutObject(Document& document)
     return toLayoutVideo(layoutObject);
 }
 
+// The descendant-dependent flags system is badly broken because we clean dirty
+// bits in upward tree walks, which means we need to call updateDescendantDependentFlags
+// at every node in the tree to fully clean all the dirty bits. While we'll in
+// the process of fixing this issue, updateDescendantDependentFlagsForEntireSubtree
+// provides a big hammer for actually cleaning all the dirty bits in a subtree.
+//
+// FIXME: Remove this function once the descendant-dependent flags system keeps
+// its dirty bits scoped to subtrees.
+void updateDescendantDependentFlagsForEntireSubtree(DeprecatedPaintLayer& layer)
+{
+    layer.updateDescendantDependentFlags();
+
+    for (DeprecatedPaintLayer* child = layer.firstChild(); child; child = child->nextSibling())
+        updateDescendantDependentFlagsForEntireSubtree(*child);
+}
+
 void DeprecatedPaintLayerCompositor::updateIfNeededRecursive()
 {
     for (Frame* child = m_layoutView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
@@ -205,7 +222,11 @@ void DeprecatedPaintLayerCompositor::updateIfNeededRecursive()
     // which asserts that it's not InCompositingUpdate.
     enableCompositingModeIfNeeded();
 
-    rootLayer()->updateDescendantDependentFlagsForEntireSubtree();
+    if (m_needsUpdateDescendantDependentFlags) {
+        updateDescendantDependentFlagsForEntireSubtree(*rootLayer());
+        m_needsUpdateDescendantDependentFlags = false;
+    }
+
     m_layoutView.commitPendingSelection();
 
     lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);

@@ -491,7 +491,6 @@ public:
     void setShouldIsolateCompositedDescendants(bool);
 
     void updateDescendantDependentFlags();
-    void updateDescendantDependentFlagsForEntireSubtree();
 
     void updateOrRemoveFilterEffectBuilder();
 
