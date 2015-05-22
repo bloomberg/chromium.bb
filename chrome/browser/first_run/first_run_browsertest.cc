@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -308,5 +310,56 @@ INSTANTIATE_TEST_CASE_P(
             kSettingsEnforcementGroupEnforceAlwaysWithDSE,
         chrome_prefs::internals::
             kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE));
+
+// Test suppressed first run default browser prompt master preference.
+extern const char kSuppressFirstRunDefaultBrowserPrompt[] =
+    "{\n"
+    "  \"distribution\":\n"
+    "  {\n"
+    "    \"suppress_first_run_default_browser_prompt\": true\n"
+    "  }\n"
+    "}\n";
+typedef FirstRunMasterPrefsBrowserTestT<kSuppressFirstRunDefaultBrowserPrompt>
+    FirstRunMasterPrefsSuppressFirstRunDefaultBrowserPrompt;
+IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsSuppressFirstRunDefaultBrowserPrompt,
+                       SuppressFirstRunDefaultBrowserPrompt) {
+  // We expect that the first run default browser prompt will be suppressed on
+  // all platforms and builds.
+  // We check the value from startup_metric_utils: if the default browser prompt
+  // was displayed, the value will be true and this test will fail.
+  // (see first_run_internal_posix::DoPostImportPlatformSpecificTasks)
+  EXPECT_FALSE(startup_metric_utils::WasNonBrowserUIDisplayed());
+}
+
+// Test unsuppressed first run default browser prompt master preference.
+extern const char kNoSuppressFirstRunDefaultBrowserPrompt[] =
+    "{\n"
+    "  \"distribution\":\n"
+    "  {\n"
+    "    \"suppress_first_run_default_browser_prompt\": false\n"
+    "  }\n"
+    "}\n";
+typedef FirstRunMasterPrefsBrowserTestT<kNoSuppressFirstRunDefaultBrowserPrompt>
+    FirstRunMasterPrefsNoSuppressFirstRunDefaultBrowserPrompt;
+IN_PROC_BROWSER_TEST_F(
+    FirstRunMasterPrefsNoSuppressFirstRunDefaultBrowserPrompt,
+    NoSuppressFirstRunDefaultBrowserPrompt) {
+
+  bool first_run_default_browser_prompt_expected =
+  #if (defined(OS_LINUX) || defined(OS_MACOSX)) && defined(GOOGLE_CHROME_BUILD)
+      true;
+  #elif defined(OS_WIN)
+      base::win::GetVersion() >= base::win::VERSION_WIN8;
+  #else
+      false;
+  #endif
+
+  // We expect that the default browser prompt is displayed on certain
+  // platforms. Then we compare our expected state with whether or not the
+  // prompt was displayed by checking the value from startup_metric_utils.
+  // If our expected state changes, this test will fail rather than not run.
+  EXPECT_EQ(first_run_default_browser_prompt_expected,
+            startup_metric_utils::WasNonBrowserUIDisplayed());
+}
 
 #endif  // !defined(OS_CHROMEOS)

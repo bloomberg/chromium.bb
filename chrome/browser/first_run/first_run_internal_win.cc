@@ -118,7 +118,9 @@ bool CreateEULASentinel() {
 namespace first_run {
 namespace internal {
 
-void DoPostImportPlatformSpecificTasks(Profile* /* profile */) {
+void DoPostImportPlatformSpecificTasks(
+    Profile* /* profile */,
+    bool /* suppress_first_run_default_browser_prompt */) {
   // Trigger the Active Setup command for system-level Chromes to finish
   // configuring this user's install (e.g. per-user shortcuts).
   // Delay the task slightly to give Chrome launch I/O priority while also

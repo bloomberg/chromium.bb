@@ -39,7 +39,9 @@ bool CreateSentinel();
 
 // -- Platform-specific functions --
 
-void DoPostImportPlatformSpecificTasks(Profile* profile);
+void DoPostImportPlatformSpecificTasks(
+    Profile* profile,
+    bool suppress_first_run_default_browser_prompt);
 
 // Returns true if the sentinel file exists (or the path cannot be obtained).
 // Migrates Windows legacy sentinel files to the corrent location, if needed.
