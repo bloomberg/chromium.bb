@@ -2291,6 +2291,9 @@ crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
 
 crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-41-t.svg [ ImageOnlyFailure ]
 crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-46-t.svg [ ImageOnlyFailure ]
+crbug.com/471405 [ Mac ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ NeedsRebaseline ]
+crbug.com/471405 [ Mac ] fast/text/fallback-traits-fixup.html [ NeedsRebaseline ]
+crbug.com/471405 [ Mac ] virtual/antialiasedtext/fast/text/fallback-traits-fixup.html [ NeedsRebaseline ]
 
 crbug.com/321237 crbug.com/478014 [ SnowLeopard ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 crbug.com/478014 [ Win SnowLeopard ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
