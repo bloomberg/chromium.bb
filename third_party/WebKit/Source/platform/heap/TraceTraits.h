@@ -352,17 +352,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, T, Traits>
     template<typename VisitorDispatcher>
     static bool trace(VisitorDispatcher visitor, T& t)
     {
-        blink::TraceTrait<T>::trace(visitor, &t);
-        return false;
-    }
-};
-
-template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
-struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Member<T>, Traits> {
-    template<typename VisitorDispatcher>
-    static bool trace(VisitorDispatcher visitor, blink::Member<T>& t)
-    {
-        blink::TraceTrait<T>::mark(visitor, const_cast<typename RemoveConst<T>::Type*>(t.get()));
+        visitor->trace(t);
         return false;
     }
 };
