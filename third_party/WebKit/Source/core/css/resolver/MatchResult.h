@@ -86,19 +86,6 @@ public:
     void addMatchedProperties(const StylePropertySet* properties, unsigned linkMatchType = CSSSelector::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
 };
 
-inline bool operator==(const MatchRanges& a, const MatchRanges& b)
-{
-    return a.firstUARule == b.firstUARule
-        && a.lastUARule == b.lastUARule
-        && a.firstAuthorRule == b.firstAuthorRule
-        && a.lastAuthorRule == b.lastAuthorRule;
-}
-
-inline bool operator!=(const MatchRanges& a, const MatchRanges& b)
-{
-    return !(a == b);
-}
-
 inline bool operator==(const MatchedProperties& a, const MatchedProperties& b)
 {
     return a.properties == b.properties && a.m_types.linkMatchType == b.m_types.linkMatchType;
