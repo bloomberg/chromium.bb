@@ -216,7 +216,7 @@ class DeployChrome(object):
                                     error_code_ok=error_code_ok,
                                     capture_output=True)
     if (result.returncode and
-        not self.device.IsPathWritable(self.options.target_dir)):
+        not self.device.IsDirWritable(self.options.target_dir)):
       self._target_dir_is_still_readonly.set()
 
   def _GetDeviceInfo(self):

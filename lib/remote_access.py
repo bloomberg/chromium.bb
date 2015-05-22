@@ -720,23 +720,17 @@ class RemoteDevice(object):
     """Copy path to working directory on the device."""
     return self.CopyToDevice(src, os.path.join(self.work_dir, dest), **kwargs)
 
-  def IsPathWritable(self, path):
-    """Checks if the given path is writable on the device.
+  def IsDirWritable(self, path):
+    """Checks if the given directory is writable on the device.
 
     Args:
-      path: path on the device to check.
+      path: Directory on the device to check.
     """
-    tmp_file = os.path.join(path, 'tmp.remote_access')
-    result = self.GetAgent().RemoteSh(['touch', tmp_file], remote_sudo=True,
-                                      error_code_ok=True, capture_output=True)
-
-    if result.returncode != 0:
-      return False
-
-    self.GetAgent().RemoteSh(['rm', tmp_file], error_code_ok=True,
-                             remote_sudo=True)
-
-    return True
+    tmp_file = os.path.join(path, '.tmp.remote_access.is.writable')
+    result = self.GetAgent().RemoteSh(
+        ['touch', tmp_file, '&&', 'rm', tmp_file],
+        error_code_ok=True, remote_sudo=True, capture_output=True)
+    return result.returncode == 0
 
   def IsFileExecutable(self, path):
     """Check if the given file is executable on the device.

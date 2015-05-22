@@ -1006,7 +1006,7 @@ def Deploy(device, packages, board=None, brick_name=None, blueprint=None,
         logging.notice('Cleaning outdated binary packages from %s', sysroot)
         portage_util.CleanOutdatedBinaryPackages(sysroot)
 
-      if not device_handler.IsPathWritable(root):
+      if not device_handler.IsDirWritable(root):
         # Only remounts rootfs if the given root is not writable.
         if not device_handler.MountRootfsReadWrite():
           raise DeployError('Cannot remount rootfs as read-write. Exiting.')

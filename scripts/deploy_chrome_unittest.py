@@ -203,7 +203,7 @@ class TestMount(DeployTest):
   def testMountError(self):
     """Test that mount failure doesn't raise an exception by default."""
     self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
-    self.PatchObject(remote_access.RemoteDevice, 'IsPathWritable',
+    self.PatchObject(remote_access.RemoteDevice, 'IsDirWritable',
                      return_value=False, autospec=True)
     self.deploy._MountRootfsAsWritable()
     self.assertTrue(self.deploy._target_dir_is_still_readonly.is_set())
@@ -217,7 +217,7 @@ class TestMount(DeployTest):
   def testMountTempDir(self):
     """Test that mount succeeds if target dir is writable."""
     self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())
-    self.PatchObject(remote_access.RemoteDevice, 'IsPathWritable',
+    self.PatchObject(remote_access.RemoteDevice, 'IsDirWritable',
                      return_value=True, autospec=True)
     self.deploy._MountRootfsAsWritable()
     self.assertFalse(self.deploy._target_dir_is_still_readonly.is_set())

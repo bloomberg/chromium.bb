@@ -35,7 +35,7 @@ class ChromiumOSDeviceFake(object):
     self.port = None
     self.lsb_release = None
 
-  def IsPathWritable(self, _):
+  def IsDirWritable(self, _):
     return True
 
 
