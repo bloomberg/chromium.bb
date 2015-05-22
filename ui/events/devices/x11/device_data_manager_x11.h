@@ -63,7 +63,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
     DT_CMT_FLING_X,        // Fling amount on the X (horizontal) direction.
     DT_CMT_FLING_Y,        // Fling amount on the Y (vertical) direction.
     DT_CMT_FLING_STATE,    // The state of fling gesture (whether the user just
-                           // start flinging or that he/she taps down).
+                           // started flinging or they tapped down).
     DT_CMT_METRICS_TYPE,   // Metrics type of the metrics gesture, which are
                            // used to wrap interesting patterns that we would
                            // like to track via the UMA system.
