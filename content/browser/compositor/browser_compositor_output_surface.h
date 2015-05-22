@@ -68,6 +68,9 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
   ReflectorImpl* reflector_;
 
+  // True when BeginFrame scheduling is enabled.
+  bool use_begin_frame_scheduling_;
+
  private:
   void Initialize();
 

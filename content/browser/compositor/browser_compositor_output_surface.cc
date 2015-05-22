@@ -5,8 +5,10 @@
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
+#include "cc/base/switches.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -20,7 +22,9 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
         overlay_candidate_validator)
     : OutputSurface(context_provider),
       vsync_manager_(vsync_manager),
-      reflector_(nullptr) {
+      reflector_(nullptr),
+      use_begin_frame_scheduling_(base::CommandLine::ForCurrentProcess()->
+          HasSwitch(cc::switches::kEnableBeginFrameScheduling)) {
   overlay_candidate_validator_ = overlay_candidate_validator.Pass();
   Initialize();
 }
@@ -30,7 +34,9 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
     : OutputSurface(software_device.Pass()),
       vsync_manager_(vsync_manager),
-      reflector_(nullptr) {
+      reflector_(nullptr),
+      use_begin_frame_scheduling_(base::CommandLine::ForCurrentProcess()->
+          HasSwitch(cc::switches::kEnableBeginFrameScheduling)) {
   Initialize();
 }
 
@@ -40,7 +46,11 @@ BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
   DCHECK(!reflector_);
   if (!HasClient())
     return;
-  vsync_manager_->RemoveObserver(this);
+
+  // When BeginFrame scheduling is enabled, vsync info is not routed to renderer
+  // by using |vsync_manager_|. Instead, BeginFrame message is used.
+  if (!use_begin_frame_scheduling_)
+    vsync_manager_->RemoveObserver(this);
 }
 
 void BrowserCompositorOutputSurface::Initialize() {
@@ -52,8 +62,10 @@ bool BrowserCompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
   if (!OutputSurface::BindToClient(client))
     return false;
+
   // Don't want vsync notifications until there is a client.
-  vsync_manager_->AddObserver(this);
+  if (!use_begin_frame_scheduling_)
+    vsync_manager_->AddObserver(this);
   return true;
 }
 
@@ -61,6 +73,7 @@ void BrowserCompositorOutputSurface::OnUpdateVSyncParameters(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
   DCHECK(HasClient());
+  DCHECK(!use_begin_frame_scheduling_);
   CommitVSyncParameters(timebase, interval);
 }
 
@@ -68,6 +81,11 @@ void BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
   DCHECK(HasClient());
+  if (use_begin_frame_scheduling_) {
+    CommitVSyncParameters(timebase, interval);
+    return;
+  }
+
   vsync_manager_->UpdateVSyncParameters(timebase, interval);
 }
 

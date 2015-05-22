@@ -447,7 +447,7 @@ void RenderWidgetCompositor::Initialize() {
     settings.create_low_res_tiling = true;
   if (cmd->HasSwitch(switches::kDisableLowResTiling))
     settings.create_low_res_tiling = false;
-  if (cmd->HasSwitch(switches::kEnableBeginFrameScheduling))
+  if (cmd->HasSwitch(cc::switches::kEnableBeginFrameScheduling))
     settings.use_external_begin_frame_source = true;
 
   if (widget_->for_oopif()) {

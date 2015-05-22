@@ -127,6 +127,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   gfx::Size GetRequestedRendererSize() const;
   void SetCompositor(ui::Compositor* compositor);
   void ResetCompositor();
+  void SetVSyncParameters(const base::TimeTicks& timebase,
+                          const base::TimeDelta& interval);
   // Note: |src_subset| is specified in DIP dimensions while |output_size|
   // expects pixels.
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
@@ -248,7 +250,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
 
   // The current VSync timebase and interval. These are zero until the first
-  // call to OnUpdateVSyncParameters().
+  // call to SetVSyncParameters().
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
 

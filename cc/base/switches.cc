@@ -60,6 +60,9 @@ const char kEnablePropertyTreeVerification[] =
 // Disable partial swap which is needed for some OpenGL drivers / emulators.
 const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
 
+// Use a BeginFrame signal from browser to renderer to schedule rendering.
+const char kEnableBeginFrameScheduling[] = "enable-begin-frame-scheduling";
+
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
 

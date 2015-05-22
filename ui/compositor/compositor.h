@@ -220,6 +220,14 @@ class COMPOSITOR_EXPORT Compositor
   // Gets the visibility of the underlying compositor.
   bool IsVisible();
 
+  // The "authoritative" vsync interval, if provided, will override interval
+  // reported from 3D context. This is typically the value reported by a more
+  // reliable source, e.g, the platform display configuration.
+  // In the particular case of ChromeOS -- this is the value queried through
+  // XRandR, which is more reliable than the value queried through the 3D
+  // context.
+  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
+
   // Returns the widget for this compositor.
   gfx::AcceleratedWidget widget() const { return widget_; }
 

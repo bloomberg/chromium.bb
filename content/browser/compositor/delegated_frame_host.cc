@@ -898,8 +898,7 @@ void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
 void DelegatedFrameHost::OnUpdateVSyncParameters(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  vsync_timebase_ = timebase;
-  vsync_interval_ = interval;
+  SetVSyncParameters(timebase, interval);
   if (client_->DelegatedFrameHostIsVisible())
     client_->DelegatedFrameHostUpdateVSyncParameters(timebase, interval);
 }
@@ -975,6 +974,12 @@ void DelegatedFrameHost::ResetCompositor() {
     vsync_manager_ = NULL;
   }
   compositor_ = nullptr;
+}
+
+void DelegatedFrameHost::SetVSyncParameters(const base::TimeTicks& timebase,
+                                            const base::TimeDelta& interval) {
+  vsync_timebase_ = timebase;
+  vsync_interval_ = interval;
 }
 
 void DelegatedFrameHost::LockResources() {

@@ -264,6 +264,17 @@ bool Compositor::IsVisible() {
   return host_->visible();
 }
 
+void Compositor::SetAuthoritativeVSyncInterval(
+    const base::TimeDelta& interval) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+         cc::switches::kEnableBeginFrameScheduling)) {
+    host_->SetAuthoritativeVSyncInterval(interval);
+    return;
+  }
+
+  vsync_manager_->SetAuthoritativeVSyncInterval(interval);
+}
+
 scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
   return vsync_manager_;
 }
