@@ -29,6 +29,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
     files.
   - Added three files for Korean braille 2006 revision along with a
     test harness.
+- New table for Polish 8 dot computer braille. Thanks to Karol Pecyna.
 
 * Noteworthy changes in release 2.6.2 (2015-03-02)
 This release, which was mostly pushed out the door by Bert and Mesar,
