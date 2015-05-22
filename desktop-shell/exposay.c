@@ -519,7 +519,8 @@ exposay_set_inactive(struct desktop_shell *shell)
 	struct weston_seat *seat = shell->exposay.seat;
 
 	weston_keyboard_end_grab(seat->keyboard);
-	weston_pointer_end_grab(seat->pointer);
+	if (seat->pointer_device_count)
+		weston_pointer_end_grab(seat->pointer);
 	if (seat->keyboard->input_method_resource)
 		seat->keyboard->grab = &seat->keyboard->input_method_grab;
 
@@ -570,11 +571,13 @@ exposay_transition_active(struct desktop_shell *shell)
 	weston_keyboard_set_focus(seat->keyboard, NULL);
 
 	shell->exposay.grab_ptr.interface = &exposay_ptr_grab;
-	weston_pointer_start_grab(seat->pointer,
-	                          &shell->exposay.grab_ptr);
-	weston_pointer_set_focus(seat->pointer, NULL,
-			         seat->pointer->x, seat->pointer->y);
-
+	if (seat->pointer_device_count) {
+		weston_pointer_start_grab(seat->pointer,
+		                          &shell->exposay.grab_ptr);
+		weston_pointer_set_focus(seat->pointer, NULL,
+				         seat->pointer->x,
+					 seat->pointer->y);
+	}
 	wl_list_for_each(shell_output, &shell->output_list, link) {
 		enum exposay_layout_state state;
 
