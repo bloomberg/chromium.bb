@@ -566,30 +566,18 @@ void DummyRTLMirror(gfx::Rect* bounds) {
       if ([completionAnimation_ isAnimating]) {
         if (percentDone_ == -1) {
           DownloadShelf::PaintDownloadComplete(
-              &canvas,
-              base::Bind(&DummyRTLMirror),
-              x,
-              y,
-              [completionAnimation_ currentValue],
-              DownloadShelf::SMALL);
+              &canvas, base::Bind(&DummyRTLMirror), x, y,
+              [completionAnimation_ currentValue]);
         } else {
           DownloadShelf::PaintDownloadInterrupted(
-              &canvas,
-              base::Bind(&DummyRTLMirror),
-              x,
-              y,
-              [completionAnimation_ currentValue],
-              DownloadShelf::SMALL);
+              &canvas, base::Bind(&DummyRTLMirror), x, y,
+              [completionAnimation_ currentValue]);
         }
       }
     } else if (percentDone_ >= 0 || indeterminateProgressTimer_) {
-      DownloadShelf::PaintDownloadProgress(&canvas,
-                                           base::Bind(&DummyRTLMirror),
-                                           x,
-                                           y,
-                                           indeterminateProgressAngle_,
-                                           percentDone_,
-                                           DownloadShelf::SMALL);
+      DownloadShelf::PaintDownloadProgress(&canvas, base::Bind(&DummyRTLMirror),
+                                           x, y, indeterminateProgressAngle_,
+                                           percentDone_);
     }
   }
 

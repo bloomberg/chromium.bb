@@ -62,27 +62,6 @@ DownloadShelf::DownloadShelf()
 
 DownloadShelf::~DownloadShelf() {}
 
-// static
-int DownloadShelf::GetBigProgressIconSize() {
-  static int big_progress_icon_size = 0;
-  if (big_progress_icon_size == 0) {
-    base::string16 locale_size_str =
-        l10n_util::GetStringUTF16(IDS_DOWNLOAD_BIG_PROGRESS_SIZE);
-    bool rc = base::StringToInt(locale_size_str, &big_progress_icon_size);
-    if (!rc || big_progress_icon_size < kBigProgressIconSize) {
-      NOTREACHED();
-      big_progress_icon_size = kBigProgressIconSize;
-    }
-  }
-
-  return big_progress_icon_size;
-}
-
-// static
-int DownloadShelf::GetBigProgressIconOffset() {
-  return (GetBigProgressIconSize() - kBigIconSize) / 2;
-}
-
 // Download progress painting --------------------------------------------------
 
 // Common images used for download progress animations. We load them once the
@@ -90,22 +69,34 @@ int DownloadShelf::GetBigProgressIconOffset() {
 // same.
 gfx::ImageSkia* g_foreground_16 = NULL;
 gfx::ImageSkia* g_background_16 = NULL;
-gfx::ImageSkia* g_foreground_32 = NULL;
-gfx::ImageSkia* g_background_32 = NULL;
 
 // static
-void DownloadShelf::PaintCustomDownloadProgress(
+void DownloadShelf::PaintDownloadProgress(
     gfx::Canvas* canvas,
-    const gfx::ImageSkia& background_image,
-    const gfx::ImageSkia& foreground_image,
-    int image_size,
-    const gfx::Rect& bounds,
+    const BoundsAdjusterCallback& rtl_mirror,
+    int origin_x,
+    int origin_y,
     int start_angle,
     int percent_done) {
+  // Load up our common images.
+  if (!g_background_16) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    g_foreground_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
+    g_background_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_BACKGROUND_16);
+    DCHECK_EQ(g_foreground_16->width(), g_background_16->width());
+    DCHECK_EQ(g_foreground_16->height(), g_background_16->height());
+  }
+
+  // We start by storing the bounds of the images so that it is easy to mirror
+  // the bounds if the UI layout is RTL.
+  gfx::Rect bounds(origin_x, origin_y, g_background_16->width(),
+                   g_background_16->height());
+
+  // Mirror the positions if necessary.
+  rtl_mirror.Run(&bounds);
+
   // Draw the background progress image.
-  canvas->DrawImageInt(background_image,
-                       bounds.x(),
-                       bounds.y());
+  canvas->DrawImageInt(*g_background_16, bounds.x(), bounds.y());
 
   // Layer the foreground progress image in an arc proportional to the download
   // progress. The arc grows clockwise, starting in the midnight position, as
@@ -128,77 +119,23 @@ void DownloadShelf::PaintCustomDownloadProgress(
   canvas->Save();
   if (sweep_angle < static_cast<float>(kMaxDegrees - 1)) {
     SkRect oval;
-    oval.set(SkIntToScalar(bounds.x()),
-             SkIntToScalar(bounds.y()),
-             SkIntToScalar(bounds.x() + image_size),
-             SkIntToScalar(bounds.y() + image_size));
+    oval.set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.y()),
+             SkIntToScalar(bounds.x() + DownloadShelf::kSmallProgressIconSize),
+             SkIntToScalar(bounds.y() + DownloadShelf::kSmallProgressIconSize));
     SkPath path;
     path.arcTo(oval,
                SkFloatToScalar(start_pos),
                SkFloatToScalar(sweep_angle), false);
-    path.lineTo(SkIntToScalar(bounds.x() + image_size / 2),
-                SkIntToScalar(bounds.y() + image_size / 2));
+    path.lineTo(
+        SkIntToScalar(bounds.x() + DownloadShelf::kSmallProgressIconSize / 2),
+        SkIntToScalar(bounds.y() + DownloadShelf::kSmallProgressIconSize / 2));
 
     // gfx::Canvas::ClipPath does not provide for anti-aliasing.
     canvas->sk_canvas()->clipPath(path, SkRegion::kIntersect_Op, true);
   }
 
-  canvas->DrawImageInt(foreground_image,
-                       bounds.x(),
-                       bounds.y());
+  canvas->DrawImageInt(*g_foreground_16, bounds.x(), bounds.y());
   canvas->Restore();
-}
-
-// static
-void DownloadShelf::PaintDownloadProgress(
-    gfx::Canvas* canvas,
-    const BoundsAdjusterCallback& rtl_mirror,
-    int origin_x,
-    int origin_y,
-    int start_angle,
-    int percent_done,
-    PaintDownloadProgressSize size) {
-  // Load up our common images.
-  if (!g_background_16) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    g_foreground_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
-    g_background_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_BACKGROUND_16);
-    g_foreground_32 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_32);
-    g_background_32 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_BACKGROUND_32);
-    DCHECK_EQ(g_foreground_16->width(), g_background_16->width());
-    DCHECK_EQ(g_foreground_16->height(), g_background_16->height());
-    DCHECK_EQ(g_foreground_32->width(), g_background_32->width());
-    DCHECK_EQ(g_foreground_32->height(), g_background_32->height());
-  }
-
-  gfx::ImageSkia* background =
-      (size == BIG) ? g_background_32 : g_background_16;
-  gfx::ImageSkia* foreground =
-      (size == BIG) ? g_foreground_32 : g_foreground_16;
-
-  const int kProgressIconSize =
-      (size == BIG) ? kBigProgressIconSize : kSmallProgressIconSize;
-
-  // We start by storing the bounds of the images so that it is easy to mirror
-  // the bounds if the UI layout is RTL.
-  gfx::Rect bounds(origin_x, origin_y,
-                   background->width(), background->height());
-
-  // Mirror the positions if necessary.
-  rtl_mirror.Run(&bounds);
-
-  // Draw the background progress image.
-  canvas->DrawImageInt(*background,
-                       bounds.x(),
-                       bounds.y());
-
-  PaintCustomDownloadProgress(canvas,
-                              *background,
-                              *foreground,
-                              kProgressIconSize,
-                              bounds,
-                              start_angle,
-                              percent_done);
 }
 
 // static
@@ -207,26 +144,22 @@ void DownloadShelf::PaintDownloadComplete(
     const BoundsAdjusterCallback& rtl_mirror,
     int origin_x,
     int origin_y,
-    double animation_progress,
-    PaintDownloadProgressSize size) {
+    double animation_progress) {
   // Load up our common images.
   if (!g_foreground_16) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     g_foreground_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
-    g_foreground_32 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_32);
   }
 
-  gfx::ImageSkia* complete = (size == BIG) ? g_foreground_32 : g_foreground_16;
-
-  gfx::Rect complete_bounds(origin_x, origin_y,
-                            complete->width(), complete->height());
+  gfx::Rect complete_bounds(origin_x, origin_y, g_foreground_16->width(),
+                            g_foreground_16->height());
   // Mirror the positions if necessary.
   rtl_mirror.Run(&complete_bounds);
 
   // Start at full opacity, then loop back and forth five times before ending
   // at zero opacity.
-  canvas->DrawImageInt(*complete, complete_bounds.x(), complete_bounds.y(),
-                       GetOpacity(animation_progress));
+  canvas->DrawImageInt(*g_foreground_16, complete_bounds.x(),
+                       complete_bounds.y(), GetOpacity(animation_progress));
 }
 
 // static
@@ -235,26 +168,11 @@ void DownloadShelf::PaintDownloadInterrupted(
     const BoundsAdjusterCallback& rtl_mirror,
     int origin_x,
     int origin_y,
-    double animation_progress,
-    PaintDownloadProgressSize size) {
-  // Load up our common images.
-  if (!g_foreground_16) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    g_foreground_16 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_16);
-    g_foreground_32 = rb.GetImageSkiaNamed(IDR_DOWNLOAD_PROGRESS_FOREGROUND_32);
-  }
-
-  gfx::ImageSkia* complete = (size == BIG) ? g_foreground_32 : g_foreground_16;
-
-  gfx::Rect complete_bounds(origin_x, origin_y,
-                            complete->width(), complete->height());
-  // Mirror the positions if necessary.
-  rtl_mirror.Run(&complete_bounds);
-
+    double animation_progress) {
   // Start at zero opacity, then loop back and forth five times before ending
   // at full opacity.
-  canvas->DrawImageInt(*complete, complete_bounds.x(), complete_bounds.y(),
-                       GetOpacity(1.0 - animation_progress));
+  PaintDownloadComplete(canvas, rtl_mirror, origin_x, origin_y,
+                        1.0 - animation_progress);
 }
 
 void DownloadShelf::AddDownload(DownloadItem* download) {

@@ -872,32 +872,18 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
       DownloadShelf::BoundsAdjusterCallback rtl_mirror =
           base::Bind(&RTLMirrorXForView, base::Unretained(this));
       if (state == DownloadItem::IN_PROGRESS) {
-        DownloadShelf::PaintDownloadProgress(canvas,
-                                             rtl_mirror,
-                                             0,
-                                             0,
+        DownloadShelf::PaintDownloadProgress(canvas, rtl_mirror, 0, 0,
                                              progress_angle_,
-                                             model_.PercentComplete(),
-                                             DownloadShelf::SMALL);
+                                             model_.PercentComplete());
       } else if (complete_animation_.get() &&
                  complete_animation_->is_animating()) {
         if (state == DownloadItem::INTERRUPTED) {
           DownloadShelf::PaintDownloadInterrupted(
-              canvas,
-              rtl_mirror,
-              0,
-              0,
-              complete_animation_->GetCurrentValue(),
-              DownloadShelf::SMALL);
+              canvas, rtl_mirror, 0, 0, complete_animation_->GetCurrentValue());
         } else {
           DCHECK_EQ(DownloadItem::COMPLETE, state);
           DownloadShelf::PaintDownloadComplete(
-              canvas,
-              rtl_mirror,
-              0,
-              0,
-              complete_animation_->GetCurrentValue(),
-              DownloadShelf::SMALL);
+              canvas, rtl_mirror, 0, 0, complete_animation_->GetCurrentValue());
         }
       }
     }

@@ -40,11 +40,6 @@ class DownloadShelf {
     USER_ACTION
   };
 
-  enum PaintDownloadProgressSize {
-    SMALL = 0,
-    BIG
-  };
-
   // Download progress animations ----------------------------------------------
 
   enum {
@@ -63,12 +58,11 @@ class DownloadShelf {
     // Progress animation timer period, in milliseconds.
     kProgressRateMs = 150,
 
-    // XP and Vista must support icons of this size.
+    // Size of the filetype icon.
     kSmallIconSize = 16,
-    kBigIconSize = 32,
 
+    // Size of the progress asset that's painted behind the filetype icon.
     kSmallProgressIconSize = 39,
-    kBigProgressIconSize = 52,
 
     kSmallProgressIconOffset = (kSmallProgressIconSize - kSmallIconSize) / 2
   };
@@ -83,14 +77,6 @@ class DownloadShelf {
 
   DownloadShelf();
   virtual ~DownloadShelf();
-
-  // Our progress halo around the icon.
-  // Load a language dependent height so that the dangerous download
-  // confirmation message doesn't overlap with the download link label.
-  static int GetBigProgressIconSize();
-
-  // The offset required to center the icon in the progress images.
-  static int GetBigProgressIconOffset();
 
   // Paint the common download animation progress foreground and background,
   // clipping the foreground to 'percent' full. If percent is -1, then we don't
@@ -109,22 +95,19 @@ class DownloadShelf {
                                     int origin_x,
                                     int origin_y,
                                     int start_angle,
-                                    int percent,
-                                    PaintDownloadProgressSize size);
+                                    int percent);
 
   static void PaintDownloadComplete(gfx::Canvas* canvas,
                                     const BoundsAdjusterCallback& rtl_mirror,
                                     int origin_x,
                                     int origin_y,
-                                    double animation_progress,
-                                    PaintDownloadProgressSize size);
+                                    double animation_progress);
 
   static void PaintDownloadInterrupted(gfx::Canvas* canvas,
                                        const BoundsAdjusterCallback& rtl_mirror,
                                        int origin_x,
                                        int origin_y,
-                                       double animation_progress,
-                                       PaintDownloadProgressSize size);
+                                       double animation_progress);
 
   // A new download has started. Add it to our shelf and show the download
   // started animation.
