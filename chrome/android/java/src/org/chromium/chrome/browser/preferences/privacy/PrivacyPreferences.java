@@ -16,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
@@ -272,7 +273,8 @@ public class PrivacyPreferences extends PreferenceFragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_help_privacy) {
-            ((Preferences) getActivity()).showPrivacyPreferencesHelp();
+            HelpAndFeedback.getInstance(getActivity()).show(
+                    getActivity(), HelpAndFeedback.CONTEXT_PRIVACY, null, null);
             return true;
         }
         return false;

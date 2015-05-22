@@ -14,7 +14,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.UrlUtilities;
 
@@ -49,7 +49,7 @@ public class HelpAndFeedback {
     public static HelpAndFeedback getInstance(Context context) {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
-            sInstance = ((ChromeMobileApplication) context.getApplicationContext())
+            sInstance = ((ChromiumApplication) context.getApplicationContext())
                     .createHelpAndFeedback();
         }
         return sInstance;

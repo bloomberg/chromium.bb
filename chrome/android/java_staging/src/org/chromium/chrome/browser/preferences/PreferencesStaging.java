@@ -4,16 +4,11 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import android.view.MenuItem;
-
-import com.google.android.apps.chrome.R;
-
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
-import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 
@@ -41,11 +36,6 @@ public class PreferencesStaging extends Preferences {
     }
 
     @Override
-    public void showGoogleTranslateHelp() {
-        HelpAndFeedback.getInstance(this).show(this, HelpAndFeedback.CONTEXT_TRANSLATE, null, null);
-    }
-
-    @Override
     public void logContextualSearchToggled(boolean newValue) {
         ContextualSearchUma.logPreferenceChange(newValue);
     }
@@ -61,24 +51,8 @@ public class PreferencesStaging extends Preferences {
     }
 
     @Override
-    public void showPrivacyPreferencesHelp() {
-        HelpAndFeedback.getInstance(this).show(this, HelpAndFeedback.CONTEXT_PRIVACY, null, null);
-    }
-
-    @Override
     protected void onPause() {
         super.onPause();
         ChromiumApplication.flushPersistentData();
     }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menu_id_help_general) {
-            HelpAndFeedback.getInstance(this).show(this, HelpAndFeedback.CONTEXT_SETTINGS, null,
-                    null);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
 }

@@ -31,6 +31,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 
 /**
  * The Chrome settings activity.
@@ -75,16 +76,6 @@ public abstract class Preferences extends AppCompatActivity implements
      * TODO(newt): remove this method when EmbedContentViewActivity is upstreamed.
      */
     public abstract void showUrl(int titleResId, int urlResId);
-
-    /**
-     * Launches the help page for Google translate.
-     */
-    public void showGoogleTranslateHelp() {}
-
-    /**
-     * Launches the help page for privacy settings.
-     */
-    public void showPrivacyPreferencesHelp() {}
 
     /**
      * Called when user changes the contextual search preference.
@@ -261,6 +252,10 @@ public abstract class Preferences extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish();
+            return true;
+        } else if (item.getItemId() == R.id.menu_id_help_general) {
+            HelpAndFeedback.getInstance(this).show(
+                    this, HelpAndFeedback.CONTEXT_SETTINGS, null, null);
             return true;
         }
         return super.onOptionsItemSelected(item);

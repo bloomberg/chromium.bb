@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.child_accounts.ChildAccountService;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
@@ -336,5 +337,12 @@ public abstract class ChromiumApplication extends ContentApplication {
      */
     public ExternalAuthUtils createExternalAuthUtils() {
         return new ExternalAuthUtils();
+    }
+
+    /**
+     * Returns a new instance of HelpAndFeedback.
+     */
+    public HelpAndFeedback createHelpAndFeedback() {
+        return new HelpAndFeedback();
     }
 }

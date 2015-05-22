@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.document.TabDelegateImpl;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.firstrun.FirstRunActivityStaging;
 import org.chromium.chrome.browser.gsa.GSAHelper;
-import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
@@ -419,13 +418,6 @@ public class ChromeMobileApplication extends ChromiumApplication {
                 }
             }
         };
-    }
-
-    /**
-     * Returns a new instance of HelpAndFeedback.
-     */
-    public HelpAndFeedback createHelpAndFeedback() {
-        return new HelpAndFeedback();
     }
 
     /**
