@@ -38,7 +38,9 @@ static const int kHttpNotFound = 404;
 class MediaInfoLoaderTest : public testing::Test {
  public:
   MediaInfoLoaderTest()
-      : view_(WebView::create(NULL)), frame_(WebLocalFrame::create(&client_)) {
+      : view_(WebView::create(NULL)),
+        frame_(WebLocalFrame::create(blink::WebTreeScopeType::Document,
+                                     &client_)) {
     view_->setMainFrame(frame_);
   }
 
