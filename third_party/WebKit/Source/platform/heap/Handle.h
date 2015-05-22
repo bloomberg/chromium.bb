@@ -155,25 +155,6 @@ protected:
         m_next->m_prev = this;
     }
 
-    inline explicit PersistentBase(const PersistentBase& otherref)
-        : PersistentNode(otherref.m_trace)
-#if ENABLE(ASSERT)
-        , m_roots(RootsAccessor::roots())
-#endif
-    {
-        ASSERT(m_roots == GlobalPersistents::roots() || ThreadState::current());
-        // We don't support allocation of thread local Persistents while doing
-        // thread shutdown/cleanup.
-        ASSERT(!ThreadState::current()->isTerminating());
-        typename RootsAccessor::Lock lock;
-        ASSERT(otherref.m_roots == m_roots); // Handles must belong to the same list.
-        PersistentBase* other = const_cast<PersistentBase*>(&otherref);
-        m_prev = other;
-        m_next = other->m_next;
-        other->m_next = this;
-        m_next->m_prev = this;
-    }
-
     inline PersistentBase& operator=(const PersistentBase& otherref) { return *this; }
 
 #if ENABLE(ASSERT)
@@ -497,6 +478,8 @@ class PersistentHeapCollectionBase
     WTF_USE_ALLOCATOR(PersistentHeapCollectionBase, WTF::DefaultAllocator);
 public:
     PersistentHeapCollectionBase() { }
+
+    PersistentHeapCollectionBase(const PersistentHeapCollectionBase& other) : Collection(other) { }
 
     template<typename OtherCollection>
     PersistentHeapCollectionBase(const OtherCollection& other) : Collection(other) { }
