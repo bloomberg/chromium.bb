@@ -999,12 +999,12 @@ static bool executeScrollPageForward(LocalFrame& frame, Event*, EditorCommandSou
 
 static bool executeScrollLineUp(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().bubblingScroll(ScrollUp, ScrollByLine);
+    return frame.eventHandler().bubblingScroll(ScrollUpIgnoringWritingMode, ScrollByLine);
 }
 
 static bool executeScrollLineDown(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().bubblingScroll(ScrollDown, ScrollByLine);
+    return frame.eventHandler().bubblingScroll(ScrollDownIgnoringWritingMode, ScrollByLine);
 }
 
 static bool executeScrollToBeginningOfDocument(LocalFrame& frame, Event*, EditorCommandSource, const String&)
@@ -1699,10 +1699,10 @@ bool Editor::executeCommand(const String& commandName, const String& value)
 {
     // moveToBeginningOfDocument and moveToEndfDocument are only handled by WebKit for editable nodes.
     if (!canEdit() && commandName == "moveToBeginningOfDocument")
-        return frame().eventHandler().bubblingScroll(ScrollUp, ScrollByDocument);
+        return frame().eventHandler().bubblingScroll(ScrollUpIgnoringWritingMode, ScrollByDocument);
 
     if (!canEdit() && commandName == "moveToEndOfDocument")
-        return frame().eventHandler().bubblingScroll(ScrollDown, ScrollByDocument);
+        return frame().eventHandler().bubblingScroll(ScrollDownIgnoringWritingMode, ScrollByDocument);
 
     if (commandName == "showGuessPanel") {
         spellChecker().showSpellingGuessPanel();

@@ -226,7 +226,7 @@ void Scrollbar::autoscrollPressedPart(double delay)
     }
 
     // Handle the arrows and track.
-    if (m_scrollableArea && m_scrollableArea->scroll(pressedPartScrollDirection(), pressedPartScrollGranularity()))
+    if (m_scrollableArea && m_scrollableArea->scroll(pressedPartScrollDirectionPhysical(), pressedPartScrollGranularity()))
         startTimerIfNeeded(delay);
 }
 
@@ -245,7 +245,7 @@ void Scrollbar::startTimerIfNeeded(double delay)
     }
 
     // We can't scroll if we've hit the beginning or end.
-    ScrollDirection dir = pressedPartScrollDirection();
+    ScrollDirectionPhysical dir = pressedPartScrollDirectionPhysical();
     if (dir == ScrollUp || dir == ScrollLeft) {
         if (m_currentPos == 0)
             return;
@@ -263,7 +263,7 @@ void Scrollbar::stopTimerIfNeeded()
         m_scrollTimer.stop();
 }
 
-ScrollDirection Scrollbar::pressedPartScrollDirection()
+ScrollDirectionPhysical Scrollbar::pressedPartScrollDirectionPhysical()
 {
     if (m_orientation == HorizontalScrollbar) {
         if (m_pressedPart == BackButtonStartPart || m_pressedPart == BackButtonEndPart || m_pressedPart == BackTrackPart)
@@ -377,7 +377,7 @@ bool Scrollbar::gestureEvent(const PlatformGestureEvent& evt)
         return false;
     case PlatformEvent::GestureTap: {
         if (m_pressedPart != ThumbPart && m_pressedPart != NoPart && m_scrollableArea
-            && m_scrollableArea->scroll(pressedPartScrollDirection(), pressedPartScrollGranularity())) {
+            && m_scrollableArea->scroll(pressedPartScrollDirectionPhysical(), pressedPartScrollGranularity())) {
             return true;
         }
         m_scrollPos = 0;

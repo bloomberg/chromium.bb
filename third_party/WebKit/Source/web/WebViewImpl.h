@@ -461,7 +461,7 @@ public:
     // Returns true if the event leads to scrolling.
     static bool mapKeyCodeForScroll(
         int keyCode,
-        ScrollDirection*,
+        ScrollDirectionPhysical*,
         ScrollGranularity*);
 
     // Called by a full frame plugin inside this view to inform it that its

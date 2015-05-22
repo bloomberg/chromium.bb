@@ -886,35 +886,35 @@ bool WebFrameWidgetImpl::mapKeyCodeForScroll(
 {
     switch (keyCode) {
     case VKEY_LEFT:
-        *scrollDirection = ScrollLeft;
+        *scrollDirection = ScrollLeftIgnoringWritingMode;
         *scrollGranularity = ScrollByLine;
         break;
     case VKEY_RIGHT:
-        *scrollDirection = ScrollRight;
+        *scrollDirection = ScrollRightIgnoringWritingMode;
         *scrollGranularity = ScrollByLine;
         break;
     case VKEY_UP:
-        *scrollDirection = ScrollUp;
+        *scrollDirection = ScrollUpIgnoringWritingMode;
         *scrollGranularity = ScrollByLine;
         break;
     case VKEY_DOWN:
-        *scrollDirection = ScrollDown;
+        *scrollDirection = ScrollDownIgnoringWritingMode;
         *scrollGranularity = ScrollByLine;
         break;
     case VKEY_HOME:
-        *scrollDirection = ScrollUp;
+        *scrollDirection = ScrollUpIgnoringWritingMode;
         *scrollGranularity = ScrollByDocument;
         break;
     case VKEY_END:
-        *scrollDirection = ScrollDown;
+        *scrollDirection = ScrollDownIgnoringWritingMode;
         *scrollGranularity = ScrollByDocument;
         break;
     case VKEY_PRIOR: // page up
-        *scrollDirection = ScrollUp;
+        *scrollDirection = ScrollUpIgnoringWritingMode;
         *scrollGranularity = ScrollByPage;
         break;
     case VKEY_NEXT: // page down
-        *scrollDirection = ScrollDown;
+        *scrollDirection = ScrollDownIgnoringWritingMode;
         *scrollGranularity = ScrollByPage;
         break;
     default:

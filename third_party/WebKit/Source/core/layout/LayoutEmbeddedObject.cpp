@@ -152,7 +152,7 @@ PaintInvalidationReason LayoutEmbeddedObject::invalidatePaintIfNeeded(
     return reason;
 }
 
-bool LayoutEmbeddedObject::scroll(ScrollDirection direction, ScrollGranularity granularity, float)
+bool LayoutEmbeddedObject::scroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float)
 {
     return false;
 }

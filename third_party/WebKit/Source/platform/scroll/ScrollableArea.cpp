@@ -122,10 +122,8 @@ GraphicsLayer* ScrollableArea::layerForContainer() const
     return layerForScrolling() ? layerForScrolling()->parent() : 0;
 }
 
-bool ScrollableArea::scroll(ScrollDirection direction, ScrollGranularity granularity, float delta)
+bool ScrollableArea::scroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
 {
-    ASSERT(!isLogical(direction));
-
     ScrollbarOrientation orientation;
     if (direction == ScrollUp || direction == ScrollDown)
         orientation = VerticalScrollbar;

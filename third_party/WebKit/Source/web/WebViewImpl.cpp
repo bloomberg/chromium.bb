@@ -1559,7 +1559,7 @@ bool WebViewImpl::keyEventDefault(const WebKeyboardEvent& event)
 
 bool WebViewImpl::scrollViewWithKeyboard(int keyCode, int modifiers)
 {
-    ScrollDirection scrollDirection;
+    ScrollDirectionPhysical scrollDirectionPhysical;
     ScrollGranularity scrollGranularity;
 #if OS(MACOSX)
     // Control-Up/Down should be PageUp/Down on Mac.
@@ -1570,17 +1570,17 @@ bool WebViewImpl::scrollViewWithKeyboard(int keyCode, int modifiers)
         keyCode = VKEY_NEXT;
     }
 #endif
-    if (!mapKeyCodeForScroll(keyCode, &scrollDirection, &scrollGranularity))
+    if (!mapKeyCodeForScroll(keyCode, &scrollDirectionPhysical, &scrollGranularity))
         return false;
 
     if (LocalFrame* frame = toLocalFrame(focusedCoreFrame()))
-        return frame->eventHandler().bubblingScroll(scrollDirection, scrollGranularity);
+        return frame->eventHandler().bubblingScroll(toScrollDirection(scrollDirectionPhysical), scrollGranularity);
     return false;
 }
 
 bool WebViewImpl::mapKeyCodeForScroll(
     int keyCode,
-    ScrollDirection* scrollDirection,
+    ScrollDirectionPhysical* scrollDirection,
     ScrollGranularity* scrollGranularity)
 {
     switch (keyCode) {

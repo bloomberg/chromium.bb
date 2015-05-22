@@ -217,7 +217,7 @@ void WebPluginScrollbarImpl::setDocumentSize(int size)
 
 void WebPluginScrollbarImpl::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
 {
-    blink::ScrollDirection dir;
+    blink::ScrollDirectionPhysical dir;
     bool horizontal = m_scrollbar->orientation() == HorizontalScrollbar;
     if (direction == ScrollForward)
         dir = horizontal ? ScrollRight : ScrollDown;
@@ -354,7 +354,7 @@ bool WebPluginScrollbarImpl::onKeyDown(const WebInputEvent& event)
 
         keyCode = keyboard.windowsKeyCode;
     }
-    blink::ScrollDirection scrollDirection;
+    blink::ScrollDirectionPhysical scrollDirection;
     blink::ScrollGranularity scrollGranularity;
     if (WebViewImpl::mapKeyCodeForScroll(keyCode, &scrollDirection, &scrollGranularity)) {
         // Will return false if scroll direction wasn't compatible with this scrollbar.

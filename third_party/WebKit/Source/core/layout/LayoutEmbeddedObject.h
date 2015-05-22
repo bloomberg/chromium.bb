@@ -60,7 +60,7 @@ private:
 
     virtual DeprecatedPaintLayerType layerTypeRequired() const override final;
 
-    virtual bool scroll(ScrollDirection, ScrollGranularity, float multiplier) override final;
+    virtual bool scroll(ScrollDirectionPhysical, ScrollGranularity, float multiplier) override final;
 
     virtual CompositingReasons additionalCompositingReasons() const override;
 

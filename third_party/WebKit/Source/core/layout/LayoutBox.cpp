@@ -711,13 +711,10 @@ int LayoutBox::intrinsicScrollbarLogicalWidth() const
     return 0;
 }
 
-bool LayoutBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float delta)
+bool LayoutBox::scroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
 {
     // Presumably the same issue as in setScrollTop. See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
-
-    // Logical scroll is a higher level concept, all directions by here must be physical
-    ASSERT(!isLogical(direction));
 
     if (!layer() || !layer()->scrollableArea())
         return false;

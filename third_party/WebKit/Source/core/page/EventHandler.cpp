@@ -563,7 +563,7 @@ bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granulari
 
     LayoutBox* curBox = node->layoutObject()->enclosingBox();
     while (curBox && !curBox->isLayoutView()) {
-        ScrollDirection physicalDirection = toPhysicalDirection(
+        ScrollDirectionPhysical physicalDirection = toPhysicalDirection(
             direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
 
         // If we're at the stopNode, we should try to scroll it but we shouldn't bubble past it
@@ -606,7 +606,7 @@ bool EventHandler::bubblingScroll(ScrollDirection direction, ScrollGranularity g
     LocalFrame* frame = m_frame;
     FrameView* view = frame->view();
     if (view) {
-        ScrollDirection physicalDirection =
+        ScrollDirectionPhysical physicalDirection =
             toPhysicalDirection(direction, view->isVerticalDocument(), view->isFlippedDocument());
         if (view->scrollableArea()->scroll(physicalDirection, granularity)) {
             setFrameWasScrolledByUser();
@@ -1793,11 +1793,11 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
 
     // FIXME: enable scroll customization in this case. See crbug.com/410974.
     if (wheelEvent->railsMode() != Event::RailsModeVertical
-        && scroll(ScrollRight, granularity, startNode, &stopNode, wheelEvent->deltaX(), absolutePosition))
+        && scroll(ScrollRightIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaX(), absolutePosition))
         wheelEvent->setDefaultHandled();
 
     if (wheelEvent->railsMode() != Event::RailsModeHorizontal
-        && scroll(ScrollDown, granularity, startNode, &stopNode, wheelEvent->deltaY(), absolutePosition))
+        && scroll(ScrollDownIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaY(), absolutePosition))
         wheelEvent->setDefaultHandled();
 
     if (!m_latchedWheelEventNode)
@@ -2283,10 +2283,10 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
             // First try to scroll the closest scrollable LayoutBox ancestor of |node|.
             ScrollGranularity granularity = ScrollByPrecisePixel;
-            bool horizontalScroll = scroll(ScrollLeft, granularity, node, &stopNode, delta.width());
+            bool horizontalScroll = scroll(ScrollLeftIgnoringWritingMode, granularity, node, &stopNode, delta.width());
             if (!gestureEvent.preventPropagation())
                 stopNode = nullptr;
-            bool verticalScroll = scroll(ScrollUp, granularity, node, &stopNode, delta.height());
+            bool verticalScroll = scroll(ScrollUpIgnoringWritingMode, granularity, node, &stopNode, delta.height());
             scrolled = horizontalScroll || verticalScroll;
 
             if (gestureEvent.preventPropagation())
@@ -3217,7 +3217,7 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
     if (!view)
         return;
 
-    ScrollDirection physicalDirection =
+    ScrollDirectionPhysical physicalDirection =
         toPhysicalDirection(direction, view->isVerticalDocument(), view->isFlippedDocument());
 
     if (view->scrollableArea()->scroll(physicalDirection, ScrollByPage))

@@ -31,10 +31,10 @@
 namespace blink {
 
 enum ScrollDirection {
-    ScrollUp,
-    ScrollDown,
-    ScrollLeft,
-    ScrollRight,
+    ScrollUpIgnoringWritingMode,
+    ScrollDownIgnoringWritingMode,
+    ScrollLeftIgnoringWritingMode,
+    ScrollRightIgnoringWritingMode,
 
     ScrollBlockDirectionBackward,
     ScrollBlockDirectionForward,
@@ -42,13 +42,15 @@ enum ScrollDirection {
     ScrollInlineDirectionForward
 };
 
-inline bool isLogical(ScrollDirection direction)
-{
-    return direction >= ScrollBlockDirectionBackward;
-}
+enum ScrollDirectionPhysical {
+    ScrollUp,
+    ScrollDown,
+    ScrollLeft,
+    ScrollRight
+};
 
 // Convert logical scroll direction to physical. Physical scroll directions are unaffected.
-inline ScrollDirection toPhysicalDirection(ScrollDirection direction, bool isVertical, bool isFlipped)
+inline ScrollDirectionPhysical toPhysicalDirection(ScrollDirection direction, bool isVertical, bool isFlipped)
 {
     switch (direction) {
     case ScrollBlockDirectionBackward: {
@@ -92,16 +94,37 @@ inline ScrollDirection toPhysicalDirection(ScrollDirection direction, bool isVer
         return ScrollUp;
     }
     // Direction is already physical
-    case ScrollUp:
-    case ScrollDown:
-    case ScrollLeft:
-    case ScrollRight:
-        return direction;
+    case ScrollUpIgnoringWritingMode:
+        return ScrollUp;
+    case ScrollDownIgnoringWritingMode:
+        return ScrollDown;
+    case ScrollLeftIgnoringWritingMode:
+        return ScrollLeft;
+    case ScrollRightIgnoringWritingMode:
+        return ScrollRight;
     default:
         ASSERT_NOT_REACHED();
         break;
     }
-    return direction;
+    return ScrollUp;
+}
+
+inline ScrollDirection toScrollDirection(ScrollDirectionPhysical direction)
+{
+    switch (direction) {
+    case ScrollUp:
+        return ScrollUpIgnoringWritingMode;
+    case ScrollDown:
+        return ScrollDownIgnoringWritingMode;
+    case ScrollLeft:
+        return ScrollLeftIgnoringWritingMode;
+    case ScrollRight:
+        return ScrollRightIgnoringWritingMode;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+    return ScrollUpIgnoringWritingMode;
 }
 
 enum ScrollGranularity {

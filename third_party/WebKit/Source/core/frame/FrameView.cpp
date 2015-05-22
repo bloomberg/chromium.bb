@@ -3268,14 +3268,6 @@ void FrameView::setScrollOffset(const DoublePoint& offset)
     scrollTo(adjustScrollPositionWithinRange(offset));
 }
 
-bool FrameView::scroll(ScrollDirection direction, ScrollGranularity granularity, float delta)
-{
-    ScrollDirection physicalDirection =
-        toPhysicalDirection(direction, isVerticalDocument(), isFlippedDocument());
-
-    return ScrollableArea::scroll(physicalDirection, granularity, delta);
-}
-
 void FrameView::windowResizerRectChanged()
 {
     updateScrollbars(scrollOffsetDouble());

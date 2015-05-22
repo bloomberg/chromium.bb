@@ -164,7 +164,7 @@ protected:
     void startTimerIfNeeded(double delay);
     void stopTimerIfNeeded();
     void autoscrollPressedPart(double delay);
-    ScrollDirection pressedPartScrollDirection();
+    ScrollDirectionPhysical pressedPartScrollDirectionPhysical();
     ScrollGranularity pressedPartScrollGranularity();
 
     ScrollableArea* m_scrollableArea;

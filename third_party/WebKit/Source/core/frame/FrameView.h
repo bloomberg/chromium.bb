@@ -360,7 +360,6 @@ public:
     virtual bool isScrollCornerVisible() const override;
     virtual bool userInputScrollable(ScrollbarOrientation) const override;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const override;
-    virtual bool scroll(ScrollDirection, ScrollGranularity, float delta = 1) override;
     virtual LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,
         const ScrollAlignment& alignX,

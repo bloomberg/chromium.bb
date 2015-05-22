@@ -922,7 +922,7 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event)
     }
 }
 
-static inline bool gestureScrollHelper(ScrollbarGroup* scrollbarGroup, ScrollDirection positiveDirection, ScrollDirection negativeDirection, float delta)
+static inline bool gestureScrollHelper(ScrollbarGroup* scrollbarGroup, ScrollDirectionPhysical positiveDirection, ScrollDirectionPhysical negativeDirection, float delta)
 {
     if (!delta)
         return false;
