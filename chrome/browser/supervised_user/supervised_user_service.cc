@@ -133,6 +133,7 @@ ExtensionState GetExtensionState(const extensions::Extension* extension) {
   // anyway, so there's no need to enforce them again for supervised users.
   if (extensions::Manifest::IsComponentLocation(extension->location()) ||
       extension->is_theme() ||
+      extension->from_bookmark() ||
       was_installed_by_default) {
     return EXTENSION_ALLOWED;
   }
