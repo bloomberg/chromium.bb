@@ -1297,6 +1297,8 @@ template("android_apk") {
   _rebased_build_config = rebase_path(_build_config, root_build_dir)
   _create_abi_split =
       defined(invoker.create_abi_split) && invoker.create_abi_split
+  _create_density_splits =
+      defined(invoker.create_density_splits) && invoker.create_density_splits
 
   # Help GN understand that _create_abi_split is not unused (bug in GN).
   assert(_create_abi_split || true)
@@ -1488,6 +1490,7 @@ template("android_apk") {
     resources_zip = _all_resources_zip_path
     dex_path = final_dex_path
     load_library_from_apk = _load_library_from_apk
+    create_density_splits = _create_density_splits
 
     version_code = _version_code
     version_name = _version_name

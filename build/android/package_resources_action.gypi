@@ -12,6 +12,8 @@
 #  app_manifest_version_code - set the apps version number.
 # Optional variables:
 #  asset_location - The directory where assets are located (if any).
+#  create_density_splits - Whether to create density-based apk splits. Splits
+#    are supported only for minSdkVersion >= 21.
 #  resource_zips - List of paths to resource zip files.
 #  shared_resources - Make a resource package that can be loaded by a different
 #    application at runtime to access the package's resources.
@@ -20,6 +22,7 @@
 {
   'variables': {
     'asset_location%': '',
+    'create_density_splits%': 0,
     'resource_zips%': [],
     'shared_resources%': 0,
     'extensions_to_not_compress%': '',
@@ -59,6 +62,17 @@
     ['asset_location != ""', {
       'action': [
         '--asset-dir', '<(asset_location)',
+      ],
+    }],
+    ['create_density_splits == 1', {
+      'action': [
+        '--create-density-splits',
+      ],
+      'outputs': [
+        '<(resource_packaged_apk_path)-hdpi',
+        '<(resource_packaged_apk_path)-xhdpi',
+        '<(resource_packaged_apk_path)-xxhdpi',
+        '<(resource_packaged_apk_path)-tvdpi',
       ],
     }],
     ['resource_zips != []', {

@@ -438,6 +438,50 @@ template("process_java_prebuilt") {
   }
 }
 
+template("finalize_apk") {
+  action(target_name) {
+    script = "//build/android/gyp/finalize_apk.py"
+    depfile = "$target_gen_dir/$target_name.d"
+
+    sources = [
+      invoker.input_apk_path,
+    ]
+    inputs = [
+      invoker.keystore_path,
+    ]
+    outputs = [
+      depfile,
+      invoker.output_apk_path,
+    ]
+
+    args = [
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+      "--zipalign-path",
+      rebase_path(zipalign_path, root_build_dir),
+      "--unsigned-apk-path",
+      rebase_path(invoker.input_apk_path, root_build_dir),
+      "--final-apk-path",
+      rebase_path(invoker.output_apk_path, root_build_dir),
+      "--key-path",
+      rebase_path(invoker.keystore_path, root_build_dir),
+      "--key-name",
+      invoker.keystore_name,
+      "--key-passwd",
+      invoker.keystore_password,
+    ]
+    if (defined(invoker.rezip_apk) && invoker.rezip_apk) {
+      _rezip_jar_path = "$root_build_dir/lib.java/rezip_apk.jar"
+      inputs += [ _rezip_jar_path ]
+      args += [
+        "--load-library-from-zip=1",
+        "--rezip-apk-jar-path",
+        rebase_path(_rezip_jar_path, root_build_dir),
+      ]
+    }
+  }
+}
+
 # Packages resources, assets, dex, and native libraries into an apk. Signs and
 # zipaligns the apk.
 template("create_apk") {
@@ -456,14 +500,11 @@ template("create_apk") {
   if (defined(invoker.dex_path)) {
     _dex_path = invoker.dex_path
   }
-  _keystore_path = invoker.keystore_path
-  _keystore_name = invoker.keystore_name
-  _keystore_password = invoker.keystore_password
   _load_library_from_apk = invoker.load_library_from_apk
 
-  _deps = []
+  _package_deps = []
   if (defined(invoker.deps)) {
-    _deps = invoker.deps
+    _package_deps = invoker.deps
   }
 
   _native_libs_dir = "//build/android/empty/res"
@@ -490,8 +531,20 @@ template("create_apk") {
     _configuration_name = "Debug"
   }
 
-  action("${target_name}__package_resources") {
-    deps = _deps
+  _create_density_splits =
+      defined(invoker.create_density_splits) && invoker.create_density_splits
+  if (_create_density_splits) {
+    _split_densities = [
+      "hdpi",
+      "xhdpi",
+      "xxhdpi",
+      "tvdpi",
+    ]
+  }
+
+  _package_resources_target_name = "${target_name}__package_resources"
+  action(_package_resources_target_name) {
+    deps = _package_deps
 
     script = "//build/android/gyp/package_resources.py"
     depfile = "${target_gen_dir}/${target_name}.d"
@@ -539,12 +592,21 @@ template("create_apk") {
     if (_shared_resources) {
       args += [ "--shared-resources" ]
     }
+    if (_create_density_splits) {
+      args += [ "--create-density-splits" ]
+      foreach(_density, _split_densities) {
+        outputs += [ "${_resource_packaged_apk_path}-${_density}" ]
+      }
+    }
   }
 
   action("${target_name}__package") {
     script = "//build/android/gyp/ant.py"
     _ant_script = "//build/android/ant/apk-package.xml"
 
+    deps = [
+      ":${_package_resources_target_name}",
+    ]
     depfile = "$target_gen_dir/$target_name.d"
 
     inputs = [
@@ -594,53 +656,37 @@ template("create_apk") {
     }
   }
 
-  action("${target_name}__finalize") {
-    script = "//build/android/gyp/finalize_apk.py"
-    depfile = "$target_gen_dir/$target_name.d"
+  _finalize_apk_rule_name = "${target_name}__finalize"
+  finalize_apk(_finalize_apk_rule_name) {
+    input_apk_path = _packaged_apk_path
+    output_apk_path = _final_apk_path
+    keystore_path = invoker.keystore_path
+    keystore_name = invoker.keystore_name
+    keystore_password = invoker.keystore_password
+    rezip_apk = _load_library_from_apk
+  }
 
-    sources = [
-      _packaged_apk_path,
-    ]
-    inputs = [
-      _keystore_path,
-    ]
-    outputs = [
-      depfile,
-      _final_apk_path,
-    ]
+  _final_deps = [ ":${_finalize_apk_rule_name}" ]
 
-    args = [
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
-      "--zipalign-path",
-      rebase_path(zipalign_path, root_build_dir),
-      "--unsigned-apk-path",
-      rebase_path(_packaged_apk_path, root_build_dir),
-      "--final-apk-path",
-      rebase_path(_final_apk_path, root_build_dir),
-      "--key-path",
-      rebase_path(_keystore_path, root_build_dir),
-      "--key-name",
-      _keystore_name,
-      "--key-passwd",
-      _keystore_password,
-    ]
-    if (_load_library_from_apk) {
-      _rezip_jar_path = "$root_build_dir/lib.java/rezip_apk.jar"
-      inputs += [ _rezip_jar_path ]
-      args += [
-        "--load-library-from-zip=1",
-        "--rezip-apk-jar-path",
-        rebase_path(_rezip_jar_path, root_build_dir),
-      ]
+  if (_create_density_splits) {
+    foreach(_density, _split_densities) {
+      _finalize_split_rule_name = "${target_name}__finalize_${_density}_split"
+      finalize_apk(_finalize_split_rule_name) {
+        input_apk_path = "${_resource_packaged_apk_path}-${_density}"
+        _output_paths = process_file_template(
+                [ _final_apk_path ],
+                "{{source_dir}}/{{source_name_part}}-${_density}.apk")
+        output_apk_path = _output_paths[0]
+        keystore_path = invoker.keystore_path
+        keystore_name = invoker.keystore_name
+        keystore_password = invoker.keystore_password
+      }
+      _final_deps += [ ":${_finalize_split_rule_name}" ]
     }
   }
 
   group(target_name) {
-    deps = [
-      ":${target_name}__finalize",
-      ":${target_name}__package_resources",
-    ]
+    deps = _final_deps
   }
 }
 

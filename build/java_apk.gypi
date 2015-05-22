@@ -31,6 +31,8 @@
 #  additional_bundled_libs - Additional libraries what will be stripped and
 #    bundled in the apk.
 #  asset_location - The directory where assets are located.
+#  create_density_splits - Whether to create density-based apk splits. Splits
+#    are supported only for minSdkVersion >= 21.
 #  generated_src_dirs - Same as additional_src_dirs except used for .java files
 #    that are generated at build time. This should be set automatically by a
 #    target's dependencies. The .java files in these directories are not
@@ -67,6 +69,7 @@
     'tested_apk_obfuscated_jar_path%': '/',
     'tested_apk_dex_path%': '/',
     'additional_input_paths': [],
+    'create_density_splits%': 0,
     'input_jars_paths': [],
     'library_dexed_jars_paths': [],
     'additional_src_dirs': [],
@@ -132,6 +135,7 @@
     'resource_zip_path': '<(intermediate_dir)/<(_target_name).resources.zip',
     'shared_resources%': 0,
     'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
+    'final_apk_path_no_extension%': '<(PRODUCT_DIR)/apks/<(apk_name)',
     'final_abi_split_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name)-abi-<(android_app_abi).apk',
     'incomplete_apk_path': '<(intermediate_dir)/<(apk_name)-incomplete.apk',
     'apk_install_record': '<(intermediate_dir)/apk_install.record.stamp',
@@ -576,6 +580,7 @@
             'apk_name': '<(main_apk_name)-abi-<(android_app_abi)',
             'asset_location': '',
             'android_manifest_path': '<(split_android_manifest_path)',
+            'create_density_splits': 0,
           },
           'includes': [ 'android/package_resources_action.gypi' ],
         },
@@ -651,8 +656,33 @@
               'action': [
                 '--apk-path=<(incomplete_apk_path)',
               ],
-            }]
+            }],
+            ['create_density_splits == 1', {
+              'inputs': [
+                '<(final_apk_path_no_extension)-density-hdpi.apk',
+                '<(final_apk_path_no_extension)-density-xhdpi.apk',
+                '<(final_apk_path_no_extension)-density-xxhdpi.apk',
+                '<(final_apk_path_no_extension)-density-tvdpi.apk',
+              ],
+              'action': [
+                '--split-apk-path=<(final_apk_path_no_extension)-density-hdpi.apk',
+                '--split-apk-path=<(final_apk_path_no_extension)-density-xhdpi.apk',
+                '--split-apk-path=<(final_apk_path_no_extension)-density-xxhdpi.apk',
+                '--split-apk-path=<(final_apk_path_no_extension)-density-tvdpi.apk',
+              ],
+            }],
           ],
+        },
+      ],
+    }],
+    ['create_density_splits == 1', {
+      'actions': [
+        {
+          'action_name': 'finalize_density_splits',
+          'variables': {
+            'density_splits': 1,
+          },
+          'includes': [ 'android/finalize_splits_action.gypi']
         },
       ],
     }],

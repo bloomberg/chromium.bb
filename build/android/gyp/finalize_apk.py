@@ -86,6 +86,17 @@ def main():
 
   options, _ = parser.parse_args()
 
+  FinalizeApk(options)
+
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile, build_utils.GetPythonDependencies())
+
+  if options.stamp:
+    build_utils.Touch(options.stamp)
+
+
+def FinalizeApk(options):
   with tempfile.NamedTemporaryFile() as signed_apk_path_tmp, \
       tempfile.NamedTemporaryFile() as apk_to_sign_tmp:
 
@@ -115,13 +126,6 @@ def main():
     else:
       # Align uncompressed items to 4 bytes
       AlignApk(options.zipalign_path, signed_apk_path, options.final_apk_path)
-
-  if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile, build_utils.GetPythonDependencies())
-
-  if options.stamp:
-    build_utils.Touch(options.stamp)
 
 
 if __name__ == '__main__':
