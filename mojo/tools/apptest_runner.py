@@ -6,8 +6,10 @@
 """A test runner for gtest application tests."""
 
 import argparse
+import json
 import logging
 import sys
+import time
 
 from mopy import gtest
 from mopy.android import AndroidShell
@@ -21,6 +23,8 @@ def main():
                       help="a file listing apptests to run")
   parser.add_argument("build_dir", type=str, help="the build output directory")
   parser.add_argument("--verbose", default=False, action='store_true')
+  parser.add_argument('--write-full-results-to', metavar='FILENAME',
+                      help='Path to write the JSON list of full results.')
   args = parser.parse_args()
 
   gtest.set_color()
@@ -69,7 +73,54 @@ def main():
   print "[  FAILED  ] %d apptests" % len(failed),
   print ": %s" % ", ".join(failed) if failed else ""
 
+  if args.write_full_results_to:
+    _WriteJSONResults(tests, failed, args.write_full_results_to)
+
   return 1 if failed else 0
+
+
+def _WriteJSONResults(tests, failed, write_full_results_to):
+  """Write the apptest results in the Chromium JSON test results format.
+     See <http://www.chromium.org/developers/the-json-test-results-format>
+     TODO(msw): Use Chromium and TYP testing infrastructure.
+     TODO(msw): Use GTest Suite.Fixture names, not the apptest names.
+     Adapted from chrome/test/mini_installer/test_installer.py
+  """
+  results = {
+    'interrupted': False,
+    'path_delimiter': '.',
+    'version': 3,
+    'seconds_since_epoch': time.time(),
+    'num_failures_by_type': {
+      'FAIL': len(failed),
+      'PASS': len(tests) - len(failed),
+    },
+    'tests': {}
+  }
+
+  for test in tests:
+    value = {
+      'expected': 'PASS',
+      'actual': 'FAIL' if test in failed else 'PASS',
+      'is_unexpected': True if test in failed else False,
+    }
+    _AddPathToTrie(results['tests'], test, value)
+
+  with open(write_full_results_to, 'w') as fp:
+    json.dump(results, fp, indent=2)
+    fp.write('\n')
+
+  return results
+
+
+def _AddPathToTrie(trie, path, value):
+  if '.' not in path:
+    trie[path] = value
+    return
+  directory, rest = path.split('.', 1)
+  if directory not in trie:
+    trie[directory] = {}
+  _AddPathToTrie(trie[directory], rest, value)
 
 
 if __name__ == '__main__':
