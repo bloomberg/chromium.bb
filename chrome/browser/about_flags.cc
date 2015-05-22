@@ -896,6 +896,17 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableScrollPrediction)
   },
+#if defined(ENABLE_TOPCHROME_MD)
+  {
+    "top-chrome-md",
+    IDS_FLAGS_TOP_CHROME_MD,
+    IDS_FLAGS_TOP_CHROME_MD_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(
+    switches::kTopChromeMDEnabled,
+    switches::kTopChromeMDDisabled)
+  },
+#endif
   {
     "touch-events",
     IDS_TOUCH_EVENTS_NAME,

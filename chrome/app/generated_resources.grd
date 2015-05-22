@@ -5739,6 +5739,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SCROLL_PREDICTION_NAME" desc="Title of the flag which enables scroll prediction.">
         Enable scroll prediction
       </message>
+      <message name="IDS_FLAGS_TOP_CHROME_MD" desc="Title of the flag which enables or disables material design in the top chrome of the browser.">
+        Material design in the browser's top chrome
+      </message>
+      <message name="IDS_FLAGS_TOP_CHROME_MD_DESCRIPTION" desc="Description of the flag which enables or disables material design in the top chrome of the browser.">
+        Enable or disable material design elements in the browser's chrome.
+      </message>
       <message name="IDS_FLAGS_ENABLE_SCROLL_PREDICTION_DESCRIPTION" desc="Description of the flag to enable scroll prediction.">
         Predicts the finger's future position during scrolls allowing time to render the frame before the finger is there.
       </message>

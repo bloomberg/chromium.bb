@@ -82,6 +82,9 @@
           # Enable HiDPI support.
           'enable_hidpi%': 0,
 
+          # Enable top chrome material design.
+          'enable_topchrome_md%' : 0,
+
           # Override buildtype to select the desired build flavor.
           # Dev - everyday build for development/testing
           # Official - release build (generally implies additional processing)
@@ -147,6 +150,7 @@
         'use_openssl_certs%': '<(use_openssl_certs)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
+        'enable_topchrome_md%': '<(enable_topchrome_md)',
         'buildtype%': '<(buildtype)',
         'branding%': '<(branding)',
         'branding_path_component%': '<(branding)',
@@ -220,6 +224,11 @@
           # Enable HiDPI on Mac OS, Chrome OS, Windows and Linux.
           ['OS=="mac" or chromeos==1 or OS=="win" or OS=="linux"', {
             'enable_hidpi%': 1,
+          }],
+
+          # Enable Top Chrome Material Design on Chrome OS, and Windows.
+          ['chromeos==1 or OS=="win"', {
+            'enable_topchrome_md%': 1,
           }],
 
           # Enable the OpenSSL backend on Mac OS and Windows.
@@ -298,6 +307,7 @@
       'use_openssl_certs%': '<(use_openssl_certs)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
+      'enable_topchrome_md%': '<(enable_topchrome_md)',
       'android_channel%': '<(android_channel)',
       'use_goma%': '<(use_goma)',
       'gomadir%': '<(gomadir)',
@@ -1109,6 +1119,7 @@
     'chromecast%': '<(chromecast)',
     'enable_viewport%': '<(enable_viewport)',
     'enable_hidpi%': '<(enable_hidpi)',
+	'enable_topchrome_md%': '<(enable_topchrome_md)',
     'image_loader_extension%': '<(image_loader_extension)',
     'fastbuild%': '<(fastbuild)',
     'dont_embed_build_metadata%': '<(dont_embed_build_metadata)',
@@ -2729,6 +2740,9 @@
       }],
       ['enable_hidpi==1', {
         'defines': ['ENABLE_HIDPI=1'],
+      }],
+      ['enable_topchrome_md==1', {
+        'defines': ['ENABLE_TOPCHROME_MD=1'],
       }],
       ['native_memory_pressure_signals==1', {
         'defines': ['SYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE'],
