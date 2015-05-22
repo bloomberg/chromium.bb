@@ -89,13 +89,13 @@ def FindTarget(target):
   # Loaded via ~/bin in $PATH to chromite bin/ subdir.
   $ ln -s $PWD/bin/cros ~/bin; cros --help
   # No $PATH needed.
-  $ ./buildbot/cbuildbot_config --help
+  $ ./cbuildbot/cbuildbot --help
   # No $PATH needed, but symlink inside of chromite dir.
-  $ ln -s ./buildbot/cbuildbot_config; ./cbuildbot_config --help
+  $ ln -s ./cbuildbot/cbuildbot; ./cbuildbot --help
   # Loaded via ~/bin in $PATH to non-chromite bin/ subdir.
-  $ ln -s $PWD/buildbot/cbuildbot_config ~/bin/; cbuildbot_config --help
+  $ ln -s $PWD/cbuildbot/cbuildbot ~/bin/; cbuildbot --help
   # No $PATH needed, but a relative symlink to a symlink to the chromite dir.
-  $ cd ~; ln -s bin/cbuildbot_config ./; ./cbuildbot_config --help
+  $ cd ~; ln -s bin/cbuildbot ./; ./cbuildbot --help
 
   Args:
     target: Path to the script we're trying to run.
