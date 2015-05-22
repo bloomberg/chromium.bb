@@ -36,14 +36,6 @@
 
 namespace blink {
 
-ErrorEventInit::ErrorEventInit()
-    : message()
-    , filename()
-    , lineno(0)
-    , colno(0)
-{
-}
-
 ErrorEvent::ErrorEvent()
     : m_sanitizedMessage()
     , m_fileName()
@@ -55,12 +47,22 @@ ErrorEvent::ErrorEvent()
 
 ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializer)
     : Event(type, initializer)
-    , m_sanitizedMessage(initializer.message)
-    , m_fileName(initializer.filename)
-    , m_lineNumber(initializer.lineno)
-    , m_columnNumber(initializer.colno)
+    , m_sanitizedMessage()
+    , m_fileName()
+    , m_lineNumber(0)
+    , m_columnNumber(0)
     , m_world(DOMWrapperWorld::current(v8::Isolate::GetCurrent()))
 {
+    if (initializer.hasMessage())
+        m_sanitizedMessage = initializer.message();
+    if (initializer.hasFilename())
+        m_fileName = initializer.filename();
+    if (initializer.hasLineno())
+        m_lineNumber = initializer.lineno();
+    if (initializer.hasColno())
+        m_columnNumber = initializer.colno();
+    if (initializer.hasError())
+        m_error = initializer.error();
 }
 
 ErrorEvent::ErrorEvent(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, DOMWrapperWorld* world)
@@ -86,6 +88,19 @@ ErrorEvent::~ErrorEvent()
 const AtomicString& ErrorEvent::interfaceName() const
 {
     return EventNames::ErrorEvent;
+}
+
+ScriptValue ErrorEvent::error(ScriptState* scriptState) const
+{
+    // Don't return |m_error| when we are in the different worlds to avoid
+    // leaking a V8 value.
+    // We do not clone Error objects (exceptions), for 2 reasons:
+    // 1) Errors carry a reference to the isolated world's global object, and
+    //    thus passing it around would cause leakage.
+    // 2) Errors cannot be cloned (or serialized):
+    if (world() != &scriptState->world())
+        return ScriptValue();
+    return m_error;
 }
 
 DEFINE_TRACE(ErrorEvent)

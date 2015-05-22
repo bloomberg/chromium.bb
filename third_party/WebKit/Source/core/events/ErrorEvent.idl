@@ -28,13 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/multipage/webappapis.html#the-errorevent-interface
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional ErrorEventInit eventInitDict),
 ] interface ErrorEvent : Event {
-    [InitializedByEventConstructor] readonly attribute DOMString message;
-    [InitializedByEventConstructor] readonly attribute DOMString filename;
-    [InitializedByEventConstructor] readonly attribute unsigned long lineno;
-    [InitializedByEventConstructor] readonly attribute unsigned long colno;
-    [Custom=Getter, InitializedByEventConstructor] readonly attribute any error;
+    readonly attribute DOMString message;
+    readonly attribute DOMString filename;
+    readonly attribute unsigned long lineno;
+    readonly attribute unsigned long colno;
+    [Custom=Getter] readonly attribute any error;
 };
 

@@ -584,16 +584,10 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     {% else %}
     RefPtrWillBeRawPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit);
     {% endif %}
-    {% if any_type_attributes and not interface_name == 'ErrorEvent' %}
+    {% if any_type_attributes %}
     {# If we're in an isolated world, create a SerializedScriptValue and store
        it in the event for later cloning if the property is accessed from
-       another world. The main world case is handled lazily (in custom code).
-
-       We do not clone Error objects (exceptions), for 2 reasons:
-       1) Errors carry a reference to the isolated world's global object, and
-          thus passing it around would cause leakage.
-       2) Errors cannot be cloned (or serialized):
-       http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#safe-passing-of-structured-data #}
+       another world. The main world case is handled lazily (in custom code). #}
     if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld()) {
         {% for attribute in any_type_attributes %}
         if (!{{attribute.name}}.IsEmpty())
