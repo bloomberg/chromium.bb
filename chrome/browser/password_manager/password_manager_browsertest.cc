@@ -1367,8 +1367,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoLastLoadGoodLastLoad) {
 // former has not finished matching, and the latter has, the latter should be
 // used (otherwise we'd give up even though we could have saved the password).
 //
-// Disabled on Mac due to flakiness: http://crbug.com/477812
-#if defined(OS_MACOSX)
+// Disabled on Mac and Linux due to flakiness: http://crbug.com/477812
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_PreferPasswordFormManagerWhichFinishedMatching \
   DISABLED_PreferPasswordFormManagerWhichFinishedMatching
 #else
