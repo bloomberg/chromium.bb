@@ -59,7 +59,12 @@ public class CoreImpl implements Core, AsyncWaiter {
     /**
      * The run loop for the current thread.
      */
-    private ThreadLocal<BaseRunLoop> mCurrentRunLoop = new ThreadLocal<BaseRunLoop>();
+    private final ThreadLocal<BaseRunLoop> mCurrentRunLoop = new ThreadLocal<BaseRunLoop>();
+
+    /**
+     * The offset needed to get an aligned buffer.
+     */
+    private final int mByteBufferOffset;
 
     /**
      * @return the instance.
@@ -68,7 +73,12 @@ public class CoreImpl implements Core, AsyncWaiter {
         return LazyHolder.INSTANCE;
     }
 
-    private CoreImpl() {}
+    private CoreImpl() {
+        // Fix for the ART runtime, before:
+        // https://android.googlesource.com/platform/libcore/+/fb6c80875a8a8d0a9628562f89c250b6a962e824%5E!/
+        // This assumes consistent allocation.
+        mByteBufferOffset = nativeGetNativeBufferOffset(ByteBuffer.allocateDirect(8), 8);
+    }
 
     /**
      * @see Core#getTimeTicksNow()
@@ -476,10 +486,13 @@ public class CoreImpl implements Core, AsyncWaiter {
         return code;
     }
 
-    private static ByteBuffer allocateDirectBuffer(int capacity) {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(capacity);
-        buffer.order(ByteOrder.nativeOrder());
-        return buffer;
+    private ByteBuffer allocateDirectBuffer(int capacity) {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(capacity + mByteBufferOffset);
+        if (mByteBufferOffset != 0) {
+            buffer.position(mByteBufferOffset);
+            buffer = buffer.slice();
+        }
+        return buffer.order(ByteOrder.nativeOrder());
     }
 
     /**
@@ -618,4 +631,6 @@ public class CoreImpl implements Core, AsyncWaiter {
             int mojoHandle, int signals, long deadline, AsyncWaiter.Callback callback);
 
     private native void nativeCancelAsyncWait(long mId, long dataPtr);
+
+    private native int nativeGetNativeBufferOffset(ByteBuffer buffer, int alignment);
 }

@@ -14,7 +14,6 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.bindings.InterfaceRequest;
 import org.chromium.mojo.bindings.test.mojom.math.Calculator;
-import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.Pair;
 import org.chromium.mojo.system.impl.CoreImpl;
@@ -31,7 +30,6 @@ public class ServiceRegistryTest extends ContentShellTestBase {
     private static final long RUN_LOOP_TIMEOUT_MS = 25;
 
     private final List<Closeable> mCloseablesToClose = new ArrayList<Closeable>();
-    private final Core mCore = CoreImpl.getInstance();
     private long mNativeTestEnvironment;
 
     static class CalcConnectionErrorHandler implements ConnectionErrorHandler {
@@ -128,7 +126,7 @@ public class ServiceRegistryTest extends ContentShellTestBase {
         serviceRegistryA.addService(Calculator.MANAGER, new CalculatorFactory());
 
         Pair<Calculator.Proxy, InterfaceRequest<Calculator>> requestPair =
-                Calculator.MANAGER.getInterfaceRequest(mCore);
+                Calculator.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
 
         mCloseablesToClose.add(requestPair.first);
         serviceRegistryB.connectToRemoteService(Calculator.MANAGER, requestPair.second);
@@ -160,7 +158,7 @@ public class ServiceRegistryTest extends ContentShellTestBase {
 
         // Request the Calculator service before it is added.
         Pair<Calculator.Proxy, InterfaceRequest<Calculator>> requestPair =
-                Calculator.MANAGER.getInterfaceRequest(mCore);
+                Calculator.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
         Calculator.Proxy calculator = requestPair.first;
         CalcConnectionErrorHandler errorHandler = new CalcConnectionErrorHandler();
         calculator.getProxyHandler().setErrorHandler(errorHandler);
@@ -175,7 +173,7 @@ public class ServiceRegistryTest extends ContentShellTestBase {
         // Add the Calculator service and request it again.
         errorHandler.mLastMojoException = null;
         serviceRegistryA.addService(Calculator.MANAGER, new CalculatorFactory());
-        requestPair = Calculator.MANAGER.getInterfaceRequest(mCore);
+        requestPair = Calculator.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
         calculator = requestPair.first;
         errorHandler = new CalcConnectionErrorHandler();
         mCloseablesToClose.add(calculator);
@@ -189,7 +187,7 @@ public class ServiceRegistryTest extends ContentShellTestBase {
         // Remove the Calculator service and request it again.
         errorHandler.mLastMojoException = null;
         serviceRegistryA.removeService(Calculator.MANAGER);
-        requestPair = Calculator.MANAGER.getInterfaceRequest(mCore);
+        requestPair = Calculator.MANAGER.getInterfaceRequest(CoreImpl.getInstance());
         calculator = requestPair.first;
         errorHandler = new CalcConnectionErrorHandler();
         calculator.getProxyHandler().setErrorHandler(errorHandler);

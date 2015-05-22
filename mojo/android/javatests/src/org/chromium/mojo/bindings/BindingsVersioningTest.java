@@ -6,8 +6,7 @@ package org.chromium.mojo.bindings;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import junit.framework.TestCase;
-
+import org.chromium.mojo.MojoTestCase;
 import org.chromium.mojo.bindings.test.mojom.test_structs.MultiVersionStruct;
 import org.chromium.mojo.bindings.test.mojom.test_structs.MultiVersionStructV0;
 import org.chromium.mojo.bindings.test.mojom.test_structs.MultiVersionStructV1;
@@ -22,7 +21,7 @@ import org.chromium.mojo.system.impl.CoreImpl;
  * mojo/public/interfaces/bindings/tests/rect.mojom and
  * mojo/public/interfaces/bindings/tests/test_structs.mojom
  */
-public class BindingsVersioningTest extends TestCase {
+public class BindingsVersioningTest extends MojoTestCase {
     private static Rect newRect(int factor) {
         Rect rect = new Rect();
         rect.x = factor;

@@ -388,6 +388,18 @@ static void CancelAsyncWait(JNIEnv* env,
   Environment::GetDefaultAsyncWaiter()->CancelWait(id);
 }
 
+static jint GetNativeBufferOffset(JNIEnv* env,
+                                  jobject jcaller,
+                                  jobject buffer,
+                                  jint alignment) {
+  jint offset =
+      reinterpret_cast<uintptr_t>(env->GetDirectBufferAddress(buffer)) %
+      alignment;
+  if (offset == 0)
+    return 0;
+  return alignment - offset;
+}
+
 bool RegisterCoreImpl(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
