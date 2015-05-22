@@ -351,8 +351,6 @@ crbug.com/489672 http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.
 # Flaky tests under Linux Aura
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]
 
-crbug.com/395877 [ Mac ] fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
-
 # Untriaged Linux-specific Aura failures
 
 crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip ]
