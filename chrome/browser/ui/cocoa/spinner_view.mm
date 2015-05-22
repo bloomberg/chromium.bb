@@ -34,7 +34,7 @@ NSString* const kRotationAnimationName = @"RotationAnimationName";
   base::scoped_nsobject<CAAnimationGroup> spinnerAnimation_;
   base::scoped_nsobject<CABasicAnimation> rotationAnimation_;
   CAShapeLayer* shapeLayer_;  // Weak.
-  CAShapeLayer* rotationLayer_;  // Weak.
+  CALayer* rotationLayer_;  // Weak.
 }
 @end
 
