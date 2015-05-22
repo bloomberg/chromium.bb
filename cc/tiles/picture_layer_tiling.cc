@@ -845,25 +845,21 @@ TilePriority PictureLayerTiling::ComputePriorityForTile(
     const Tile* tile,
     PriorityRectType priority_rect_type) const {
   // TODO(vmpstr): See if this can be moved to iterators.
-  TilePriority::PriorityBin max_tile_priority_bin =
-      client_->GetMaxTilePriorityBin();
-
   DCHECK_EQ(ComputePriorityRectTypeForTile(tile), priority_rect_type);
   DCHECK_EQ(TileAt(tile->tiling_i_index(), tile->tiling_j_index()), tile);
 
-  TilePriority::PriorityBin priority_bin = max_tile_priority_bin;
+  TilePriority::PriorityBin priority_bin = client_->GetMaxTilePriorityBin();
 
   switch (priority_rect_type) {
     case VISIBLE_RECT:
       return TilePriority(resolution_, priority_bin, 0);
     case PENDING_VISIBLE_RECT:
-      if (max_tile_priority_bin <= TilePriority::SOON)
-        return TilePriority(resolution_, TilePriority::SOON, 0);
-      priority_bin = TilePriority::EVENTUALLY;
-      break;
+      if (priority_bin < TilePriority::SOON)
+        priority_bin = TilePriority::SOON;
+      return TilePriority(resolution_, priority_bin, 0);
     case SKEWPORT_RECT:
     case SOON_BORDER_RECT:
-      if (max_tile_priority_bin <= TilePriority::SOON)
+      if (priority_bin < TilePriority::SOON)
         priority_bin = TilePriority::SOON;
       break;
     case EVENTUALLY_RECT:
