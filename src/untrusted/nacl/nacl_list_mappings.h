@@ -7,6 +7,8 @@
 #ifndef _NATIVE_CLIENT_SRC_UNTRUSTED_NACL_NACL_LIST_MAPPINGS_H_
 #define _NATIVE_CLIENT_SRC_UNTRUSTED_NACL_NACL_LIST_MAPPINGS_H_ 1
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

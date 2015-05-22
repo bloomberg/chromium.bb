@@ -16,11 +16,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <utime.h>
 
 #include "native_client/src/include/nacl_assert.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 #define PRINT_HEADER 0

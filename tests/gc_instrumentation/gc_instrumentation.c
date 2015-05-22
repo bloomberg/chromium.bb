@@ -18,9 +18,9 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 /* TODO(bradchen): fix this include once it is moved to the right place */
 #include "native_client/src/untrusted/nacl/gc_hooks.h"
+#include "native_client/src/untrusted/nacl/nacl_dyncode.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 

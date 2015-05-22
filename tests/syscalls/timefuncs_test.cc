@@ -20,7 +20,6 @@
 #include <unistd.h>
 
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 // #include "native_client/tests/syscalls/test.h"
 #ifdef USE_RAW_SYSCALLS

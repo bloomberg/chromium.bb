@@ -14,7 +14,6 @@
 #include <unistd.h>
 
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 /*
  * Newlib's time.h not working right: getting the nanosleep

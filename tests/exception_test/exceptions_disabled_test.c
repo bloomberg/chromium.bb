@@ -9,7 +9,6 @@
 #include <stdio.h>
 
 #include "native_client/src/include/nacl/nacl_exception.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 /*

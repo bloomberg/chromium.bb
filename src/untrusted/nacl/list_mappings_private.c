@@ -4,9 +4,10 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/untrusted/nacl/nacl_list_mappings.h"
+
 #include <errno.h>
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int nacl_list_mappings(struct NaClMemMappingInfo *regions, size_t count,

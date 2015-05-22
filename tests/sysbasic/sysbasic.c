@@ -18,6 +18,7 @@
  * nacl-newlib.
  */
 #include <sys/mman.h>
+#include <time.h>
 #include <unistd.h>
 
 /* NOTE: defining CHECK_ERRNO pulls in some newlib magic (reent.h, etc.) */

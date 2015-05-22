@@ -13,7 +13,6 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include <time.h>
 
 volatile pthread_t tmain;

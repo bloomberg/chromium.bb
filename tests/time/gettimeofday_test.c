@@ -13,7 +13,6 @@
 #include <unistd.h>
 
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 /*
  * The mocking of gettimeofday is only useful for testing the libc

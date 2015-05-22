@@ -4,9 +4,10 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/untrusted/nacl/nacl_dyncode.h"
+
 #include <errno.h>
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int nacl_dyncode_create(void *dest, const void *src, size_t size) {
