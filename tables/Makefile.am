@@ -252,6 +252,7 @@ table_files = \
 	uni-text.dis \
 	us-table.dis \
 	vi.ctb \
+	vi-g1.ctb \
 	wiskunde-chardefs.cti \
 	wiskunde.ctb \
 	wiskunde-translation.cti \
