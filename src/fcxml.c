@@ -57,6 +57,9 @@
 extern FcChar8 fontconfig_instprefix[];
 #endif
 
+static FcChar8  *__fc_userdir = NULL;
+static FcChar8  *__fc_userconf = NULL;
+
 static void
 FcExprDestroy (FcExpr *e);
 
@@ -2262,6 +2265,24 @@ FcParseCacheDir (FcConfigParse *parse)
 	FcStrFree (data);
 }
 
+void
+FcConfigPathFini (void)
+{
+    FcChar8 *s;
+
+retry_dir:
+    s = fc_atomic_ptr_get (&__fc_userdir);
+    if (!fc_atomic_ptr_cmpexch (&__fc_userdir, s, NULL))
+	goto retry_dir;
+    free (s);
+
+retry_conf:
+    s = fc_atomic_ptr_get (&__fc_userconf);
+    if (!fc_atomic_ptr_cmpexch (&__fc_userconf, s, NULL))
+	goto retry_conf;
+    free (s);
+}
+
 static void
 FcParseInclude (FcConfigParse *parse)
 {
@@ -2272,8 +2293,7 @@ FcParseInclude (FcConfigParse *parse)
     FcBool	    deprecated = FcFalse;
 #endif
     FcChar8	    *prefix = NULL, *p;
-    static FcChar8  *userdir = NULL;
-    static FcChar8  *userconf = NULL;
+    FcChar8	    userdir, userconf;
 
     s = FcStrBufDoneStatic (&parse->pstack->str);
     if (!s)
@@ -2303,6 +2323,7 @@ FcParseInclude (FcConfigParse *parse)
     {
 	size_t plen = strlen ((const char *)prefix);
 	size_t dlen = strlen ((const char *)s);
+	FcChar8 *u;
 
 	p = realloc (prefix, plen + 1 + dlen + 1);
 	if (!p)
@@ -2318,14 +2339,32 @@ FcParseInclude (FcConfigParse *parse)
 	if (FcFileIsDir (s))
 	{
 	userdir:
+	    userdir = fc_atomic_ptr_get (&__fc_userdir);
 	    if (!userdir)
-		userdir = FcStrdup (s);
+	    {
+		u = FcStrdup (s);
+		if (!fc_atomic_ptr_cmpexch (&__fc_userdir, userdir, u))
+		{
+		    free (u);
+		    goto userdir;
+		}
+		userdir = u;
+	    }
 	}
 	else if (FcFileIsFile (s))
 	{
 	userconf:
+	    userconf = fc_atomic_ptr_get (&__fc_userconf);
 	    if (!userconf)
-		userconf = FcStrdup (s);
+	    {
+		u = FcStrdup (s);
+		if (!fc_atomic_ptr_cmpexch (&__fc_userconf, userconf, u))
+		{
+		    free (u);
+		    goto userconf;
+		}
+		userconf = u;
+	    }
 	}
 	else
 	{

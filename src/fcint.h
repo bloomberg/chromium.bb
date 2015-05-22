@@ -881,6 +881,9 @@ FcInitLoadOwnConfigAndFonts (FcConfig *config);
 
 /* fcxml.c */
 FcPrivate void
+FcConfigPathFini (void);
+
+FcPrivate void
 FcTestDestroy (FcTest *test);
 
 FcPrivate void
@@ -1191,6 +1194,9 @@ FcPrivate FcChar8 *
 FcStrSerialize (FcSerialize *serialize, const FcChar8 *str);
 
 /* fcobjs.c */
+
+FcPrivate void
+FcObjectFini (void);
 
 FcPrivate FcObject
 FcObjectLookupIdByName (const char *str);

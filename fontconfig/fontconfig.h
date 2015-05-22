@@ -217,7 +217,7 @@ typedef struct _FcMatrix {
 typedef struct _FcCharSet FcCharSet;
 
 typedef struct _FcObjectType {
-    const char	*object;
+    char	*object;
     FcType	type;
 } FcObjectType;
 

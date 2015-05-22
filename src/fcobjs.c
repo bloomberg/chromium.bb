@@ -44,6 +44,26 @@ struct FcObjectOtherTypeInfo {
     FcObject id;
 } *other_types;
 
+void
+FcObjectFini (void)
+{
+    struct FcObjectOtherTypeInfo *ots, *ot;
+
+retry:
+    ots = fc_atomic_ptr_get (&other_types);
+    if (!fc_atomic_ptr_cmpexch (&other_types, ots, NULL))
+	goto retry;
+
+    while (ots)
+    {
+	ot = ots->next;
+	if (ots->object.object)
+	    free (ots->object.object);
+	free (ots);
+	ots = ot;
+    }
+}
+
 static FcObjectType *
 _FcObjectLookupOtherTypeByName (const char *str, FcObject *id)
 {
@@ -62,13 +82,16 @@ retry:
 	if (!ot)
 	    return NULL;
 
-	ot->object.object = (const char *) FcStrdup (str);
+	ot->object.object = (char *) FcStrdup (str);
 	ot->object.type = FcTypeUnknown;
 	ot->id = fc_atomic_int_add (next_id, +1);
 	ot->next = ots;
 
 	if (!fc_atomic_ptr_cmpexch (&other_types, ots, ot)) {
+	    if (ot->object.object)
+		free (ot->object.object);
 	    free (ot);
+	    fc_atomic_int_add (next_id, -1);
 	    goto retry;
 	}
     }

@@ -192,6 +192,8 @@ FcFini (void)
     FcConfigFini ();
     FcCacheFini ();
     FcDefaultFini ();
+    FcObjectFini ();
+    FcConfigPathFini ();
 }
 
 /*
