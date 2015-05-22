@@ -1886,6 +1886,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
 {
     ThreadState* state = ThreadState::current();
     RELEASE_ASSERT(!state->isInGC());
+    state->completeSweep();
     ThreadState::GCState originalGCState = state->gcState();
     state->setGCState(ThreadState::StoppingOtherThreads);
 
