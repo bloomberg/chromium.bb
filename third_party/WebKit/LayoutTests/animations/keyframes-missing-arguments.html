@@ -8,7 +8,6 @@
 <script>
   var keyframes = document.styleSheets[0].rules[0];
   shouldBeType("keyframes", "CSSKeyframesRule");
-  shouldThrow("keyframes.insertRule()");
   shouldThrow("keyframes.appendRule()");
   shouldThrow("keyframes.deleteRule()");
   shouldThrow("keyframes.findRule()");

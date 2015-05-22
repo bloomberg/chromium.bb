@@ -521,8 +521,6 @@ public:
         AttrChildAccess = 600,
         AttrChildChange = 601,
         NotificationCloseEvent = 603,
-        CSSKeyframesRuleAppendRule = 604,
-        CSSKeyframesRuleInsertRule = 605,
         StyleMedia = 606,
         StyleMediaType = 607,
         StyleMediaMatchMedium = 608,

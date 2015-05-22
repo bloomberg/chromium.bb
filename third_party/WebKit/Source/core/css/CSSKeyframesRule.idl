@@ -32,11 +32,10 @@ interface CSSKeyframesRule : CSSRule {
     attribute DOMString name;
     readonly attribute CSSRuleList cssRules;
 
-    [MeasureAs=CSSKeyframesRuleAppendRule] void appendRule(DOMString rule);
+    void appendRule(DOMString rule);
     void deleteRule(DOMString select);
     CSSKeyframeRule? findRule(DOMString select);
 
     // Non-standard APIs
     [ImplementedAs=item, NotEnumerable] getter CSSKeyframeRule (unsigned long index);
-    [DeprecateAs=CSSKeyframesRuleInsertRule, ImplementedAs=appendRule] void insertRule(DOMString rule);
 };

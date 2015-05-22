@@ -881,9 +881,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case AttrChildChange:
         return "Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.";
 
-    case CSSKeyframesRuleInsertRule:
-        return "'CSSKeyframesRule.insertRule()' is deprecated and will be removed in M45, around August 2015. Please use 'CSSKeyframesRule.appendRule()' instead.";
-
     // Powerful features on insecure origins (https://goo.gl/rStTGz)
     case GeolocationInsecureOrigin:
         return "getCurrentPosition() and watchPosition() are deprecated on insecure origins, and support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";

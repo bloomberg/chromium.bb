@@ -116,9 +116,9 @@ shouldBe("rules1.item(1).cssText", "'100% { left: 20px; }'");
 debug("");
 debug("Insert new rules");
 
-keyframes1.insertRule("30% { left: 30px; }");
-keyframes1.insertRule("60% { left: 60px; }");
-keyframes1.insertRule("20% { left: 50px; }");
+keyframes1.appendRule("30% { left: 30px; }");
+keyframes1.appendRule("60% { left: 60px; }");
+keyframes1.appendRule("20% { left: 50px; }");
 
 shouldBe("rules1.length", "5");
 shouldBe("rules1.item(0).cssText", "'0% { left: 10px; }'");
@@ -131,10 +131,10 @@ debug("");
 debug("Insert invalid rules");
 
 var keyframes2 = document.styleSheets.item(0).cssRules.item(1);
-keyframes2.insertRule("foo");
-keyframes2.insertRule("foo { left: 30px; }");
-keyframes2.insertRule("-10% { left: 30px; }");
-keyframes2.insertRule("10% { left: 30px; }");
+keyframes2.appendRule("foo");
+keyframes2.appendRule("foo { left: 30px; }");
+keyframes2.appendRule("-10% { left: 30px; }");
+keyframes2.appendRule("10% { left: 30px; }");
 
 var rules2 = keyframes2.cssRules;
 shouldBe("rules2.length", "6");

@@ -364,7 +364,6 @@ interface CSSKeyframesRule
     method constructor
     method deleteRule
     method findRule
-    method insertRule
     setter name
 interface CSSMediaRule
     getter cssRules

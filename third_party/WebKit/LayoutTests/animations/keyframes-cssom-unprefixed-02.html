@@ -38,7 +38,7 @@ shouldBeEqualToString("keyframeRule.findRule('from').cssText", "0% { left: 200px
 shouldBeEqualToString("keyframeRule.findRule('to').cssText", "100% { left: 300px; }");
 keyframeRule.deleteRule("from");
 shouldBeNull("keyframeRule.findRule('from')");
-keyframeRule.insertRule("from { left: 200px; }");
+keyframeRule.appendRule("from { left: 200px; }");
 shouldBeEqualToString("keyframeRule.findRule('from').cssText", "0% { left: 200px; }");
 shouldBeEqualToString("keyframeRule.cssRules[0].toString()", "[object CSSKeyframeRule]");
 shouldBeEqualToString("keyframeRule.cssRules[0].cssText", "100% { left: 300px; }");
