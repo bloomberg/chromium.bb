@@ -35,7 +35,6 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -109,40 +108,6 @@ PassRefPtrWillBeRawPtr<CanvasStyle> CanvasStyle::createFromPattern(PassRefPtrWil
 {
     ASSERT(pattern);
     return adoptRefWillBeNoop(new CanvasStyle(pattern));
-}
-
-void CanvasStyle::applyStrokeColor(GraphicsContext* context)
-{
-    if (!context)
-        return;
-    switch (m_type) {
-    case ColorRGBA:
-        context->setStrokeColor(m_rgba);
-        break;
-    case Gradient:
-        context->setStrokeGradient(canvasGradient()->gradient());
-        break;
-    case ImagePattern:
-        context->setStrokePattern(canvasPattern()->pattern());
-        break;
-    }
-}
-
-void CanvasStyle::applyFillColor(GraphicsContext* context)
-{
-    if (!context)
-        return;
-    switch (m_type) {
-    case ColorRGBA:
-        context->setFillColor(m_rgba);
-        break;
-    case Gradient:
-        context->setFillGradient(canvasGradient()->gradient());
-        break;
-    case ImagePattern:
-        context->setFillPattern(canvasPattern()->pattern());
-        break;
-    }
 }
 
 SkShader* CanvasStyle::shader() const

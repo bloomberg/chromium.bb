@@ -39,7 +39,6 @@ namespace blink {
 
     class CanvasGradient;
     class CanvasPattern;
-    class GraphicsContext;
     class HTMLCanvasElement;
 
     class CanvasStyle final : public RefCountedWillBeGarbageCollected<CanvasStyle> {
@@ -52,8 +51,6 @@ namespace blink {
         CanvasGradient* canvasGradient() const { return m_gradient.get(); }
         CanvasPattern* canvasPattern() const { return m_pattern.get(); }
 
-        void applyFillColor(GraphicsContext*); // Deprecated
-        void applyStrokeColor(GraphicsContext*); // Deprecated
         SkShader* shader() const;
         RGBA32 paintColor() const;
 
