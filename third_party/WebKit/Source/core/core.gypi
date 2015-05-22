@@ -1374,6 +1374,8 @@
             'editing/ReplaceNodeWithSpanCommand.cpp',
             'editing/ReplaceNodeWithSpanCommand.h',
             'editing/ReplaceSelectionCommand.cpp',
+            'editing/SelectionController.cpp',
+            'editing/SelectionController.h',
             'editing/SelectionType.h',
             'editing/SetNodeAttributeCommand.cpp',
             'editing/SetNodeAttributeCommand.h',
