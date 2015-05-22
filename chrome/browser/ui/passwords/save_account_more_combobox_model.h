@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_SAVE_ACCOUNT_MORE_COMBOBOX_MODEL_H_
-#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_SAVE_ACCOUNT_MORE_COMBOBOX_MODEL_H_
+#ifndef CHROME_BROWSER_UI_PASSWORDS_SAVE_ACCOUNT_MORE_COMBOBOX_MODEL_H_
+#define CHROME_BROWSER_UI_PASSWORDS_SAVE_ACCOUNT_MORE_COMBOBOX_MODEL_H_
 
 #include <vector>
 #include "base/basictypes.h"
@@ -33,4 +33,4 @@ class SaveAccountMoreComboboxModel : public ui::ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(SaveAccountMoreComboboxModel);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_SAVE_ACCOUNT_MORE_COMBOBOX_MODEL_H_
+#endif  // CHROME_BROWSER_UI_PASSWORDS_SAVE_ACCOUNT_MORE_COMBOBOX_MODEL_H_

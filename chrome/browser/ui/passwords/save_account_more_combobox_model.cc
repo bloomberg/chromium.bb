@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/passwords/save_account_more_combobox_model.h"
+#include "chrome/browser/ui/passwords/save_account_more_combobox_model.h"
 
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
