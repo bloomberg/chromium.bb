@@ -322,8 +322,7 @@ crbug.com/382491 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ I
 crbug.com/382491 virtual/slimmingpaint/fast/borders/border-image-rotate-transform.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/borders/table-borders.html [ ImageOnlyFailure ]
 
-# TODO(fmalita): re-enable after http://crrev.com/954943005
-#crbug.com/133097 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
+crbug.com/133097 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
 
 crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ ImageOnlyFailure ]
 
@@ -869,8 +868,7 @@ crbug.com/439457 [ Android ] css1/font_properties/font_variant.html [ Timeout Cr
 crbug.com/439457 [ Android ] css1/formatting_model/canvas.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] css1/formatting_model/horizontal_formatting.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] css1/text_properties/text_align.html [ Timeout Crash ]
-# TODO(fmalita): re-enable after http://crrev.com/954943005
-#crbug.com/439457 [ Android ] editing/caret/caret-color.html [ Timeout Crash ]
+crbug.com/439457 [ Android ] editing/caret/caret-color.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] fast/compact/002.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] fast/inline-block/overflow-clip.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] fast/text/chromium-linux-fontconfig-renderstyle.html [ Timeout Crash ]
@@ -1492,8 +1490,7 @@ crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing [ Pass Failure ]
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
 crbug.com/421854 [ SnowLeopard ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
 crbug.com/421854 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/atsui-bidi-control.html [ Timeout Crash ]
-# TODO(fmalita): re-enable after http://crrev.com/954943005
-#crbug.com/421854 [ Debug SnowLeopard ] fast/dom/52776.html [ Crash ]
+crbug.com/421854 [ Debug SnowLeopard ] fast/dom/52776.html [ Crash ]
 crbug.com/421854 [ Debug SnowLeopard ] fast/text/zero-width-characters-complex-script.html [ Crash ]
 crbug.com/421854 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/zero-width-characters-complex-script.html [ Crash ]
 crbug.com/421854 [ SnowLeopard Debug ] virtual/slimmingpaint/fast/text/zero-width-characters-complex-script.html [ Skip ]
