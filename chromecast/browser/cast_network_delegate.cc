@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "chromecast/common/chromecast_switches.h"
+#include "chromecast/base/chromecast_switches.h"
 
 namespace chromecast {
 namespace shell {

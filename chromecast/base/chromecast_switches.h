@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_COMMON_CHROMECAST_SWITCHES_H_
-#define CHROMECAST_COMMON_CHROMECAST_SWITCHES_H_
+#ifndef CHROMECAST_BASE_CHROMECAST_SWITCHES_H_
+#define CHROMECAST_BASE_CHROMECAST_SWITCHES_H_
 
 #include "build/build_config.h"
 
@@ -28,4 +28,4 @@ extern const char kPreviousApp[];
 
 }  // namespace switches
 
-#endif  // CHROMECAST_COMMON_CHROMECAST_SWITCHES_H_
+#endif  // CHROMECAST_BASE_CHROMECAST_SWITCHES_H_

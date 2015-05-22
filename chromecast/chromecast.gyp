@@ -63,6 +63,8 @@
       'sources': [
         'base/cast_paths.cc',
         'base/cast_paths.h',
+        'base/chromecast_switches.cc',
+        'base/chromecast_switches.h',
         'base/metrics/cast_histograms.h',
         'base/metrics/cast_metrics_helper.cc',
         'base/metrics/cast_metrics_helper.h',
@@ -272,8 +274,6 @@
         'common/cast_content_client.h',
         'common/cast_resource_delegate.cc',
         'common/cast_resource_delegate.h',
-        'common/chromecast_switches.cc',
-        'common/chromecast_switches.h',
         'common/media/cast_messages.h',
         'common/media/cast_message_generator.cc',
         'common/media/cast_message_generator.h',
