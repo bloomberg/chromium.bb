@@ -342,6 +342,9 @@ class Command;
                                 errorType:
                                     (translate::TranslateErrors::Type)errorType;
 
+// Dismiss the permission bubble
+- (void)dismissPermissionBubble;
+
 // Shows or hides the docked web inspector depending on |contents|'s state.
 - (void)updateDevToolsForContents:(content::WebContents*)contents;
 

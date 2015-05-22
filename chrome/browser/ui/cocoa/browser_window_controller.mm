@@ -1838,6 +1838,11 @@ using content::WebContents;
                object:[translateBubbleController_ window]];
 }
 
+- (void)dismissPermissionBubble {
+  if (permissionBubbleCocoa_)
+    permissionBubbleCocoa_->Hide();
+}
+
 // Nil out the weak translate bubble controller reference.
 - (void)translateBubbleWindowWillClose:(NSNotification*)notification {
   DCHECK_EQ([notification object], [translateBubbleController_ window]);
