@@ -933,14 +933,14 @@ void TestRunnerBindings::SetMockDeviceOrientation(gin::Arguments* args) {
   if (!runner_)
     return;
 
-  bool has_alpha;
-  double alpha;
-  bool has_beta;
-  double beta;
-  bool has_gamma;
-  double gamma;
-  bool has_absolute;
-  bool absolute;
+  bool has_alpha = false;
+  double alpha = 0.0;
+  bool has_beta = false;
+  double beta = 0.0;
+  bool has_gamma = false;
+  double gamma = 0.0;
+  bool has_absolute = false;
+  bool absolute = false;
 
   args->GetNext(&has_alpha);
   args->GetNext(&alpha);
