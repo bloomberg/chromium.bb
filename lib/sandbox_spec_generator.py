@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Logic to generate a ContainerSpec from an appc pod manifest.
+"""Logic to generate a SandboxSpec from an appc pod manifest.
 
 https://github.com/appc/spec/blob/master/SPEC.md
 """
@@ -21,7 +21,7 @@ from chromite.lib import user_db
 KEY_ANNOTATIONS_LIST = 'annotations'
 KEY_ANNOTATION_NAME = 'name'
 KEY_ANNOTATION_VALUE = 'value'
-SERVICE_NAME_ANNOTATION_PREFIX = 'bruteus-service-'
+ENDPOINT_NAME_ANNOTATION_PREFIX = 'bruteus-endpoint-'
 
 KEY_APPS_LIST = 'apps'
 KEY_APP_NAME = 'name'
@@ -62,7 +62,7 @@ def IsValidAcName(name):
   return bool(re.match(r'^[a-z0-9]+([-./][a-z0-9]+)*$', name))
 
 
-class ContainerSpecWrapper(object):
+class SandboxSpecWrapper(object):
   """Wrapper that knows how to set fields in a protocol buffer.
 
   This makes mocking out our protocol buffer interface much simpler.
@@ -71,16 +71,16 @@ class ContainerSpecWrapper(object):
   def __init__(self):
     # In the context of unittests run from outside the chroot, this import
     # will fail.  Tests will mock out this entire class.
-    from generated import soma_container_spec_pb2
-    self.container_spec = soma_container_spec_pb2.ContainerSpec()
+    from generated import soma_sandbox_spec_pb2
+    self.sandbox_spec = soma_sandbox_spec_pb2.SandboxSpec()
 
   def SetName(self, name):
     """Set the name of the runnable brick."""
-    self.container_spec.name = name
-    self.container_spec.service_bundle_path = '/bricks/%s' % name
+    self.sandbox_spec.name = name
+    self.sandbox_spec.overlay_path = '/bricks/%s' % name
 
   def AddExecutable(self, uid, gid, command_line, tcp_ports, udp_ports):
-    """Add an executable to the wrapped ContainerSpec.
+    """Add an executable to the wrapped SandboxSpec.
 
     Args:
       uid: integer UID of the user to run this executable.
@@ -89,7 +89,7 @@ class ContainerSpecWrapper(object):
       tcp_ports: list of PortSpec tuples.
       udp_ports: list of PortSpec tuples.
     """
-    executable = self.container_spec.executables.add()
+    executable = self.sandbox_spec.executables.add()
     executable.uid = uid
     executable.gid = gid
     executable.command_line.extend(command_line)
@@ -101,9 +101,9 @@ class ContainerSpecWrapper(object):
         listen_ports.allow_all = False
         listen_ports.ports.extend(ports.port_list)
 
-  def AddServiceName(self, service_name):
-    """Adds the name of an service that'll run inside this container."""
-    self.container_spec.service_names.append(service_name)
+  def AddEndpointName(self, endpoint_name):
+    """Adds the name of an endpoint that'll run inside this sandbox."""
+    self.sandbox_spec.endpoint_names.append(endpoint_name)
 
 
 def _CheckType(instance, expected_type, description):
@@ -192,8 +192,8 @@ def _GetPortList(desired_protocol, appc_port_list):
   return PortSpec(allow_all, port_list)
 
 
-class ContainerSpecGenerator(object):
-  """Delegate that knows how to read appc manifests and write ContainerSpecs."""
+class SandboxSpecGenerator(object):
+  """Delegate that knows how to read appc manifests and write SandboxSpecs."""
 
   def __init__(self, sysroot):
     self._sysroot = sysroot
@@ -207,19 +207,19 @@ class ContainerSpecGenerator(object):
           path_to_binary)
     return True
 
-  def _FillInServiceNamesFromAnnotations(self, wrapper, annotations):
-    """Fill in the ContainerSpec service_names field from |annotations|.
+  def _FillInEndpointNamesFromAnnotations(self, wrapper, annotations):
+    """Fill in the SandboxSpec endpoint_names field from |annotations|.
 
     An appc pod specification can contain a list of (mostly) arbitrary
     annotations that projects can use to add their own metadata fields.
     |annotations| is a list of dicts that each contain a name and value field,
     and this method looks for 'name' fields that are prefixed with
-    SERVICE_NAME_ANNOTATION_PREFIX and treats the associated 'value' as the
-    name of an service that psyched will expect to be registered from within
+    ENDPOINT_NAME_ANNOTATION_PREFIX and treats the associated 'value' as the
+    name of an endpoint that psyched will expect to be registered from within
     this sandbox.
 
     Args:
-      wrapper: instance of ContainerSpecWrapper.
+      wrapper: instance of SandboxSpecWrapper.
       annotations: list of dicts, each with a name and value field.
     """
     for annotation in annotations:
@@ -229,19 +229,19 @@ class ContainerSpecGenerator(object):
       if not IsValidAcName(name):
         raise ValueError('Annotation name "%s" contains illegal characters.' %
                          name)
-      if name.startswith(SERVICE_NAME_ANNOTATION_PREFIX):
-        service_name = _GetValueOfType(annotation, KEY_ANNOTATION_VALUE,
-                                       unicode, 'service name value')
+      if name.startswith(ENDPOINT_NAME_ANNOTATION_PREFIX):
+        endpoint_name = _GetValueOfType(annotation, KEY_ANNOTATION_VALUE,
+                                        unicode, 'endpoint name value')
         if not IsValidAcName(name):
-          raise ValueError('Service name "%s" contains illegal characters.' %
-                           service_name)
-        wrapper.AddServiceName(service_name)
+          raise ValueError('Endpoint name "%s" contains illegal characters.' %
+                           endpoint_name)
+        wrapper.AddEndpointName(endpoint_name)
 
   def _FillInExecutableFromApp(self, wrapper, app):
-    """Fill in the fields of a ContainerSpec.Executable object from |app|.
+    """Fill in the fields of a SandboxSpec.Executable object from |app|.
 
     Args:
-      wrapper: instance of ContainerSpecWrapper.
+      wrapper: instance of SandboxSpecWrapper.
       app: dictionary of information taken from the appc pod manifest.
     """
     sub_app = _GetValueOfType(app, KEY_APP_SUB_APP, dict, 'per app app dict')
@@ -268,18 +268,18 @@ class ContainerSpecGenerator(object):
                           _GetPortList(PROTOCOL_TCP, port_list),
                           _GetPortList(PROTOCOL_UDP, port_list))
 
-  def GetContainerSpec(self, appc_contents, container_spec_name):
-    """Create a ContainerSpec encoding the information in an appc pod manifest.
+  def GetSandboxSpec(self, appc_contents, sandbox_spec_name):
+    """Create a SandboxSpec encoding the information in an appc pod manifest.
 
     Args:
       appc_contents: string contents of an appc pod manifest
-      container_spec_name: string unique name of this container.
+      sandbox_spec_name: string unique name of this sandbox.
 
     Returns:
-      an instance of ContainerSpec.
+      an instance of SandboxSpec.
     """
-    wrapper = ContainerSpecWrapper()
-    service_bundle_name = None
+    wrapper = SandboxSpecWrapper()
+    overlay_name = None
 
     for app in _GetValueOfType(appc_contents, KEY_APPS_LIST, list, 'app list'):
       _CheckType(app, dict, 'app')
@@ -300,40 +300,40 @@ class ContainerSpecGenerator(object):
         raise ValueError('Image name "%s" contains illegal characters.' %
                          image_name)
 
-      if service_bundle_name and service_bundle_name != image_name:
+      if overlay_name and overlay_name != image_name:
         raise ValueError(
             'All elements of "apps" must have the same image.name.')
-      service_bundle_name = image_name
+      overlay_name = image_name
 
-      # Add the executable corresponding to this app to our ContainerSpec.
+      # Add the executable corresponding to this app to our SandboxSpec.
       self._FillInExecutableFromApp(wrapper, app)
 
-    if not service_bundle_name:
-      raise ValueError('Service bundles must declare at least one app')
+    if not overlay_name:
+      raise ValueError('Overlays must declare at least one app')
 
-    self._FillInServiceNamesFromAnnotations(
+    self._FillInEndpointNamesFromAnnotations(
         wrapper,
         _GetValueOfType(appc_contents, KEY_ANNOTATIONS_LIST, list,
                         'list of all annotations'))
-    wrapper.SetName(container_spec_name)
-    return wrapper.container_spec
+    wrapper.SetName(sandbox_spec_name)
+    return wrapper.sandbox_spec
 
-  def WriteContainerSpec(self, appc_pod_manifest_path, output_path):
-    """Write a ContainerSpec corresponding to |appc_pod_manifest_path| to disk.
+  def WriteSandboxSpec(self, appc_pod_manifest_path, output_path):
+    """Write a SandboxSpec corresponding to |appc_pod_manifest_path| to disk.
 
     Args:
       appc_pod_manifest_path: path to an appc pod manifest file.
-      output_path: path to file to write serialized ContainerSpec. The
+      output_path: path to file to write serialized SandboxSpec. The
           containing directory must exist, but the file may not.  This is not
           checked atomically.
     """
     if os.path.isfile(output_path):
       raise ValueError(
-          'Refusing to write ContainerSpec to file %s which already exists!' %
+          'Refusing to write SandboxSpec to file %s which already exists!' %
           output_path)
 
     appc_contents = json.loads(osutils.ReadFile(appc_pod_manifest_path))
-    # Use the file name without extension as the the name of the container spec.
-    container_name = os.path.basename(appc_pod_manifest_path).rsplit('.', 1)[0]
-    spec = self.GetContainerSpec(appc_contents, container_name)
+    # Use the file name without extension as the the name of the sandbox spec.
+    sandbox_name = os.path.basename(appc_pod_manifest_path).rsplit('.', 1)[0]
+    spec = self.GetSandboxSpec(appc_contents, sandbox_name)
     osutils.WriteFile(output_path, spec.SerializeToString())

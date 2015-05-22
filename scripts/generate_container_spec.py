@@ -5,17 +5,17 @@
 """This script generates brick runtime environment metadata from appc manifests.
 
 On the device image we encode the outlines of the brick runtime environment in
-ContainerSpecs, a protocol buffer understood by somad.  Brick developers specify
-the information that goes into a ContainerSpec in the form of an appc pod
+SandboxSpecs, a protocol buffer understood by somad.  Brick developers specify
+the information that goes into a SandboxSpec in the form of an appc pod
 manifest, which a JSON blob adhering to an open standard.  This scripts maps
-from pod manifests to ContainerSpecs.
+from pod manifests to SandboxSpecs.
 """
 
 from __future__ import print_function
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import container_spec_generator
+from chromite.lib import sandbox_spec_generator
 
 
 def main(argv):
@@ -24,15 +24,15 @@ def main(argv):
                       help='The sysroot to use for brick metadata validation.')
   parser.add_argument('appc_pod_manifest_path', type='path',
                       help='path to appc pod manifest')
-  parser.add_argument('container_spec_path', type='path',
-                      help='path to file to write resulting ContainerSpec to. '
+  parser.add_argument('sandbox_spec_path', type='path',
+                      help='path to file to write resulting SandboxSpec to. '
                            'Must not exist.')
   options = parser.parse_args(argv)
   options.Freeze()
 
   cros_build_lib.AssertInsideChroot()
 
-  generator = container_spec_generator.ContainerSpecGenerator(options.sysroot)
-  generator.WriteContainerSpec(options.appc_pod_manifest_path,
-                               options.container_spec_path)
+  generator = sandbox_spec_generator.SandboxSpecGenerator(options.sysroot)
+  generator.WriteSandboxSpec(options.appc_pod_manifest_path,
+                             options.sandbox_spec_path)
   return 0
