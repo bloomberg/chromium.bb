@@ -35,7 +35,6 @@
 #include "content/shell/browser/shell.h"
 #include "net/base/net_util.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 using base::ASCIIToUTF16;
@@ -86,13 +85,6 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
 
     foo_host_port_ = test_server()->host_port_pair();
     foo_host_port_.set_host(foo_com_);
-  }
-
-  void StartEmbeddedServer() {
-    // Support multiple sites on the embedded test server.
-    host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-    SetupCrossSiteRedirector(embedded_test_server());
   }
 
   // Returns a URL on foo.com with the given path.
@@ -1728,36 +1720,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Ensure that the file access still exists in the new process ID.
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       shell()->web_contents()->GetRenderProcessHost()->GetID(), file));
-}
-
-// Ensures that no RenderFrameHost/RenderViewHost objects are leaked when
-// doing a simple cross-process navigation.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       CleanupOnCrossProcessNavigation) {
-  StartEmbeddedServer();
-
-  // Do an initial navigation and capture objects we expect to be cleaned up
-  // on cross-process navigation.
-  GURL start_url = embedded_test_server()->GetURL("/title1.html");
-  NavigateToURL(shell(), start_url);
-
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-  SiteInstance* orig_site = root->current_frame_host()->GetSiteInstance();
-  int initial_process_id = orig_site->GetProcess()->GetID();
-  int initial_rfh_id = root->current_frame_host()->GetRoutingID();
-  int initial_rvh_id =
-    root->current_frame_host()->render_view_host()->GetRoutingID();
-
-  // Navigate cross-process and ensure that cleanup is performed as expected.
-  GURL cross_site_url =
-    embedded_test_server()->GetURL("foo.com", "/title2.html");
-  NavigateToURL(shell(), cross_site_url);
-
-  EXPECT_NE(orig_site, root->current_frame_host()->GetSiteInstance());
-  EXPECT_FALSE(RenderFrameHost::FromID(initial_process_id, initial_rfh_id));
-  EXPECT_FALSE(RenderViewHost::FromID(initial_process_id, initial_rvh_id));
 }
 
 }  // namespace content

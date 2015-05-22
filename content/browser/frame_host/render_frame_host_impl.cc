@@ -166,7 +166,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       weak_ptr_factory_(this) {
   bool is_swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
   bool hidden = !!(flags & CREATE_RF_HIDDEN);
-  frame_tree_->AddRenderViewHostRef(render_view_host_);
+  frame_tree_->RegisterRenderFrameHost(this);
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().insert(std::make_pair(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_),
@@ -207,7 +207,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   // Notify the FrameTree that this RFH is going away, allowing it to shut down
   // the corresponding RenderViewHost if it is no longer needed.
-  frame_tree_->ReleaseRenderViewHostRef(render_view_host_);
+  frame_tree_->UnregisterRenderFrameHost(this);
 
   // NULL out the swapout timer; in crash dumps this member will be null only if
   // the dtor has run.
