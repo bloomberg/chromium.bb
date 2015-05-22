@@ -61,7 +61,8 @@ class CONTENT_EXPORT RenderFrameProxy
   // proxy will eventually swap places with.
   static RenderFrameProxy* CreateProxyToReplaceFrame(
       RenderFrameImpl* frame_to_replace,
-      int routing_id);
+      int routing_id,
+      blink::WebTreeScopeType scope);
 
   // This method should be used to create a RenderFrameProxy, when there isn't
   // an existing RenderFrame. It should be called to construct a local

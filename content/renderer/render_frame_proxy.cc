@@ -39,7 +39,8 @@ base::LazyInstance<FrameMap> g_frame_map = LAZY_INSTANCE_INITIALIZER;
 // static
 RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
     RenderFrameImpl* frame_to_replace,
-    int routing_id) {
+    int routing_id,
+    blink::WebTreeScopeType scope) {
   CHECK_NE(routing_id, MSG_ROUTING_NONE);
 
   scoped_ptr<RenderFrameProxy> proxy(
@@ -48,7 +49,8 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   // When a RenderFrame is replaced by a RenderProxy, the WebRemoteFrame should
   // always come from WebRemoteFrame::create and a call to WebFrame::swap must
   // follow later.
-  blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::create(proxy.get());
+  blink::WebRemoteFrame* web_frame =
+      blink::WebRemoteFrame::create(scope, proxy.get());
   proxy->Init(web_frame, frame_to_replace->render_view());
   return proxy.release();
 }
@@ -65,7 +67,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
   if (parent_routing_id == MSG_ROUTING_NONE) {
     // Create a top level frame.
     render_view = RenderViewImpl::FromRoutingID(render_view_routing_id);
-    web_frame = blink::WebRemoteFrame::create(proxy.get());
+    web_frame =
+        blink::WebRemoteFrame::create(replicated_state.scope, proxy.get());
     render_view->webview()->setMainFrame(web_frame);
   } else {
     // Create a frame under an existing parent. The parent is always expected
@@ -74,6 +77,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     RenderFrameProxy* parent =
         RenderFrameProxy::FromRoutingID(parent_routing_id);
     web_frame = parent->web_frame()->createRemoteChild(
+        replicated_state.scope,
         blink::WebString::fromUTF8(replicated_state.name),
         RenderFrameImpl::ContentToWebSandboxFlags(
             replicated_state.sandbox_flags),
@@ -85,6 +89,11 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
 
   // Initialize proxy's WebRemoteFrame with the security origin and other
   // replicated information.
+  // TODO(dcheng): Calling this when parent_routing_id != MSG_ROUTING_NONE is
+  // mostly redundant, since we already pass the name and sandbox flags in
+  // createLocalChild(). We should update the Blink interface so it also takes
+  // the origin. Then it will be clear that the replication call is only needed
+  // for the case of setting up a main frame proxy.
   proxy->SetReplicatedState(replicated_state);
 
   return proxy.release();

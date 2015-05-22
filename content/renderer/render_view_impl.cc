@@ -673,7 +673,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
       this, params.main_frame_routing_id);
   // The main frame WebLocalFrame object is closed by
   // RenderFrameImpl::frameDetached().
-  WebLocalFrame* web_frame = WebLocalFrame::create(main_render_frame_);
+  WebLocalFrame* web_frame = WebLocalFrame::create(
+      blink::WebTreeScopeType::Document, main_render_frame_);
   main_render_frame_->SetWebFrame(web_frame);
 
   compositor_deps_ = compositor_deps;
@@ -734,7 +735,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   if (params.proxy_routing_id != MSG_ROUTING_NONE) {
     CHECK(params.swapped_out);
     proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
-        main_render_frame_, params.proxy_routing_id);
+        main_render_frame_, params.proxy_routing_id,
+        blink::WebTreeScopeType::Document);
     main_render_frame_->set_render_frame_proxy(proxy);
   }
 

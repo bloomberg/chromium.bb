@@ -21,6 +21,10 @@ class MessageFilter;
 class MessageReplyDeserializer;
 }
 
+namespace blink {
+enum class WebTreeScopeType;
+}
+
 namespace content {
 
 enum class SandboxFlags;
@@ -134,6 +138,7 @@ class MockRenderThread : public RenderThread {
 
   // The Frame expects to be returned a valid route_id different from its own.
   void OnCreateChildFrame(int new_frame_routing_id,
+                          blink::WebTreeScopeType scope,
                           const std::string& frame_name,
                           SandboxFlags sandbox_flags,
                           int* new_render_frame_id);

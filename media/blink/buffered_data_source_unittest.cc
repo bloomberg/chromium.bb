@@ -113,7 +113,8 @@ class BufferedDataSourceTest : public testing::Test {
  public:
   BufferedDataSourceTest()
       : view_(WebView::create(NULL)),
-        frame_(WebLocalFrame::create(&client_)),
+        frame_(
+            WebLocalFrame::create(blink::WebTreeScopeType::Document, &client_)),
         preload_(BufferedDataSource::AUTO) {
     view_->setMainFrame(frame_);
   }

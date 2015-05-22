@@ -52,7 +52,7 @@ WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate,
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
-  web_frame_ = WebLocalFrame::create(this);
+  web_frame_ = WebLocalFrame::create(blink::WebTreeScopeType::Document, this);
   web_view_->setMainFrame(web_frame_);
 }
 

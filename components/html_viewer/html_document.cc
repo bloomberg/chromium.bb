@@ -172,7 +172,8 @@ void HTMLDocument::Load(URLResponsePtr response) {
   touch_handler_.reset(new TouchHandler(web_view_));
   web_layer_tree_view_impl_->set_widget(web_view_);
   ConfigureSettings(web_view_->settings());
-  web_view_->setMainFrame(blink::WebLocalFrame::create(this));
+  web_view_->setMainFrame(
+      blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, this));
 
   GURL url(response->url);
 
@@ -269,9 +270,10 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
 
 blink::WebFrame* HTMLDocument::createChildFrame(
     blink::WebLocalFrame* parent,
+    blink::WebTreeScopeType scope,
     const blink::WebString& frameName,
     blink::WebSandboxFlags sandboxFlags) {
-  blink::WebLocalFrame* web_frame = blink::WebLocalFrame::create(this);
+  blink::WebLocalFrame* web_frame = blink::WebLocalFrame::create(scope, this);
   parent->appendChild(web_frame);
   return web_frame;
 }

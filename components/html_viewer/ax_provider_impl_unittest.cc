@@ -103,7 +103,8 @@ TEST_F(AxProviderImplTest, MAYBE_Basic) {
   TestWebViewClient web_view_client;
   TestWebFrameClient web_frame_client;
   WebView* view = WebView::create(&web_view_client);
-  view->setMainFrame(WebLocalFrame::create(&web_frame_client));
+  view->setMainFrame(WebLocalFrame::create(blink::WebTreeScopeType::Document,
+                                           &web_frame_client));
   view->mainFrame()->loadHTMLString(
       WebData(
           "<html><body>foo<a "

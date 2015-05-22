@@ -80,6 +80,7 @@ class CONTENT_EXPORT FrameTree {
   RenderFrameHostImpl* AddFrame(FrameTreeNode* parent,
                                 int process_id,
                                 int new_routing_id,
+                                blink::WebTreeScopeType scope,
                                 const std::string& frame_name,
                                 SandboxFlags sandbox_flags);
   void RemoveFrame(FrameTreeNode* child);

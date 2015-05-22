@@ -64,7 +64,9 @@ static bool CorrectAcceptEncoding(const blink::WebURLRequest &request) {
 class BufferedResourceLoaderTest : public testing::Test {
  public:
   BufferedResourceLoaderTest()
-      : view_(WebView::create(NULL)), frame_(WebLocalFrame::create(&client_)) {
+      : view_(WebView::create(NULL)),
+        frame_(WebLocalFrame::create(blink::WebTreeScopeType::Document,
+                                     &client_)) {
     view_->setMainFrame(frame_);
 
     for (int i = 0; i < kDataSize; ++i) {

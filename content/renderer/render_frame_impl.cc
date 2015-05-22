@@ -595,7 +595,7 @@ void RenderFrameImpl::CreateFrame(
     render_frame =
         RenderFrameImpl::Create(parent_proxy->render_view(), routing_id);
     web_frame = parent_web_frame->createLocalChild(
-        WebString::fromUTF8(replicated_state.name),
+        replicated_state.scope, WebString::fromUTF8(replicated_state.name),
         ContentToWebSandboxFlags(replicated_state.sandbox_flags), render_frame,
         previous_sibling_web_frame);
   } else {
@@ -603,7 +603,8 @@ void RenderFrameImpl::CreateFrame(
         RenderFrameProxy::FromRoutingID(proxy_routing_id);
     CHECK(proxy);
     render_frame = RenderFrameImpl::Create(proxy->render_view(), routing_id);
-    web_frame = blink::WebLocalFrame::create(render_frame);
+    web_frame =
+        blink::WebLocalFrame::create(replicated_state.scope, render_frame);
     render_frame->proxy_routing_id_ = proxy_routing_id;
     web_frame->initializeToReplaceRemoteFrame(
         proxy->web_frame(), WebString::fromUTF8(replicated_state.name),
@@ -1164,8 +1165,8 @@ void RenderFrameImpl::OnSwapOut(
     // If we need a proxy to replace this, create it now so its routing id is
     // registered for receiving IPC messages.
     if (proxy_routing_id != MSG_ROUTING_NONE) {
-      proxy = RenderFrameProxy::CreateProxyToReplaceFrame(this,
-                                                          proxy_routing_id);
+      proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
+          this, proxy_routing_id, replicated_frame_state.scope);
     }
 
     // Synchronously run the unload handler before sending the ACK.
@@ -2110,13 +2111,14 @@ void RenderFrameImpl::didAccessInitialDocument(blink::WebLocalFrame* frame) {
 
 blink::WebFrame* RenderFrameImpl::createChildFrame(
     blink::WebLocalFrame* parent,
+    blink::WebTreeScopeType scope,
     const blink::WebString& name,
     blink::WebSandboxFlags sandbox_flags) {
   // Synchronously notify the browser of a child frame creation to get the
   // routing_id for the RenderFrame.
   int child_routing_id = MSG_ROUTING_NONE;
   Send(new FrameHostMsg_CreateChildFrame(
-      routing_id_, base::UTF16ToUTF8(name),
+      routing_id_, scope, base::UTF16ToUTF8(name),
       WebToContentSandboxFlags(sandbox_flags), &child_routing_id));
 
   // Allocation of routing id failed, so we can't create a child frame. This can
@@ -2130,7 +2132,8 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   // Create the RenderFrame and WebLocalFrame, linking the two.
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
       render_view_.get(), child_routing_id);
-  blink::WebLocalFrame* web_frame = WebLocalFrame::create(child_render_frame);
+  blink::WebLocalFrame* web_frame =
+      WebLocalFrame::create(scope, child_render_frame);
   child_render_frame->SetWebFrame(web_frame);
 
   // Add the frame to the frame tree and initialize it.
@@ -2138,6 +2141,14 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   child_render_frame->Initialize();
 
   return web_frame;
+}
+
+blink::WebFrame* RenderFrameImpl::createChildFrame(
+    blink::WebLocalFrame* parent,
+    const blink::WebString& name,
+    blink::WebSandboxFlags sandbox_flags) {
+  return createChildFrame(parent, blink::WebTreeScopeType::Document, name,
+                          sandbox_flags);
 }
 
 void RenderFrameImpl::didDisownOpener(blink::WebLocalFrame* frame) {

@@ -108,6 +108,9 @@ FrameTree::FrameTree(Navigator* navigator,
                               render_view_delegate,
                               render_widget_delegate,
                               manager_delegate,
+                              // The top-level frame must always be in a
+                              // document scope.
+                              blink::WebTreeScopeType::Document,
                               std::string(),
                               SandboxFlags::NONE)),
       focused_frame_tree_node_id_(-1),
@@ -180,6 +183,7 @@ void FrameTree::ForEach(
 RenderFrameHostImpl* FrameTree::AddFrame(FrameTreeNode* parent,
                                          int process_id,
                                          int new_routing_id,
+                                         blink::WebTreeScopeType scope,
                                          const std::string& frame_name,
                                          SandboxFlags sandbox_flags) {
   // A child frame always starts with an initial empty document, which means
@@ -191,9 +195,10 @@ RenderFrameHostImpl* FrameTree::AddFrame(FrameTreeNode* parent,
   if (parent->current_frame_host()->GetProcess()->GetID() != process_id)
     return nullptr;
 
-  scoped_ptr<FrameTreeNode> node(new FrameTreeNode(
-      this, parent->navigator(), render_frame_delegate_, render_view_delegate_,
-      render_widget_delegate_, manager_delegate_, frame_name, sandbox_flags));
+  scoped_ptr<FrameTreeNode> node(
+      new FrameTreeNode(this, parent->navigator(), render_frame_delegate_,
+                        render_view_delegate_, render_widget_delegate_,
+                        manager_delegate_, scope, frame_name, sandbox_flags));
   FrameTreeNode* node_ptr = node.get();
   // AddChild is what creates the RenderFrameHost.
   parent->AddChild(node.Pass(), process_id, new_routing_id);

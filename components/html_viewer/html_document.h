@@ -95,6 +95,7 @@ class HTMLDocument : public blink::WebViewClient,
       blink::WebContentDecryptionModule* initial_cdm);
   virtual blink::WebFrame* createChildFrame(
       blink::WebLocalFrame* parent,
+      blink::WebTreeScopeType scope,
       const blink::WebString& frameName,
       blink::WebSandboxFlags sandboxFlags);
   virtual void frameDetached(blink::WebFrame*);

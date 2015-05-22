@@ -26,6 +26,7 @@
 #include "content/public/common/javascript_message_type.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
+#include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/page_transition_types.h"
 
@@ -202,6 +203,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   int routing_id() const { return routing_id_; }
   void OnCreateChildFrame(int new_routing_id,
+                          blink::WebTreeScopeType scope,
                           const std::string& frame_name,
                           SandboxFlags sandbox_flags);
 

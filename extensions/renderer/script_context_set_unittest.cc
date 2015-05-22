@@ -22,7 +22,8 @@ TEST(ScriptContextSetTest, Lifecycle) {
   base::MessageLoop loop;
 
   blink::WebView* webview = blink::WebView::create(nullptr);
-  blink::WebLocalFrame* frame = blink::WebLocalFrame::create(nullptr);
+  blink::WebLocalFrame* frame =
+      blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, nullptr);
   webview->setMainFrame(frame);
 
   // Do this after construction of the webview, since it may construct the

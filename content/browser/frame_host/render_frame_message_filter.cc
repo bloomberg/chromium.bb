@@ -15,6 +15,7 @@ namespace {
 
 void CreateChildFrameOnUI(int process_id,
                           int parent_routing_id,
+                          blink::WebTreeScopeType scope,
                           const std::string& frame_name,
                           SandboxFlags sandbox_flags,
                           int new_routing_id) {
@@ -24,7 +25,7 @@ void CreateChildFrameOnUI(int process_id,
   // Handles the RenderFrameHost being deleted on the UI thread while
   // processing a subframe creation message.
   if (render_frame_host) {
-    render_frame_host->OnCreateChildFrame(new_routing_id, frame_name,
+    render_frame_host->OnCreateChildFrame(new_routing_id, scope, frame_name,
                                           sandbox_flags);
   }
 }
@@ -53,6 +54,7 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RenderFrameMessageFilter::OnCreateChildFrame(int parent_routing_id,
+                                                  blink::WebTreeScopeType scope,
                                                   const std::string& frame_name,
                                                   SandboxFlags sandbox_flags,
                                                   int* new_routing_id) {
@@ -60,7 +62,7 @@ void RenderFrameMessageFilter::OnCreateChildFrame(int parent_routing_id,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&CreateChildFrameOnUI, render_process_id_, parent_routing_id,
-                 frame_name, sandbox_flags, *new_routing_id));
+                 scope, frame_name, sandbox_flags, *new_routing_id));
 }
 
 }  // namespace content

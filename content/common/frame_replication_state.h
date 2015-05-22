@@ -8,6 +8,10 @@
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
+namespace blink {
+enum class WebTreeScopeType;
+}
+
 namespace content {
 
 // Sandboxing flags for iframes.  These flags are set via an iframe's "sandbox"
@@ -45,7 +49,9 @@ inline SandboxFlags operator~(SandboxFlags flags) {
 // RenderFrame and any of its associated RenderFrameProxies.
 struct CONTENT_EXPORT FrameReplicationState {
   FrameReplicationState();
-  FrameReplicationState(const std::string& name, SandboxFlags sandbox_flags);
+  FrameReplicationState(blink::WebTreeScopeType scope,
+                        const std::string& name,
+                        SandboxFlags sandbox_flags);
   ~FrameReplicationState();
 
   // Current serialized security origin of the frame.  Unique origins are
@@ -85,6 +91,14 @@ struct CONTENT_EXPORT FrameReplicationState {
   // --site-per-process mode), so that other frames can look up or navigate a
   // frame using its updated name (e.g., using window.open(url, frame_name)).
   std::string name;
+
+  // Whether the frame is in a document tree or a shadow tree, per the Shadow
+  // DOM spec: https://w3c.github.io/webcomponents/spec/shadow/
+  // Note: This should really be const, as it can never change once a frame is
+  // created. However, making it const makes it a pain to embed into IPC message
+  // params: having a const member implicitly deletes the copy assignment
+  // operator.
+  blink::WebTreeScopeType scope;
 
   // TODO(alexmos): Eventually, this structure can also hold other state that
   // needs to be replicated, such as frame sizing info.

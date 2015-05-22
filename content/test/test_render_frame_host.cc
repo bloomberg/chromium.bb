@@ -18,6 +18,7 @@
 #include "content/test/test_render_view_host.h"
 #include "net/base/load_flags.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
+#include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -73,7 +74,8 @@ MockRenderProcessHost* TestRenderFrameHost::GetProcess() {
 
 TestRenderFrameHost* TestRenderFrameHost::AppendChild(
     const std::string& frame_name) {
-  OnCreateChildFrame(GetProcess()->GetNextRoutingID(), frame_name,
+  OnCreateChildFrame(GetProcess()->GetNextRoutingID(),
+                     blink::WebTreeScopeType::Document, frame_name,
                      SandboxFlags::NONE);
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());

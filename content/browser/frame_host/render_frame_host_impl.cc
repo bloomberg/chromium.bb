@@ -706,6 +706,7 @@ void RenderFrameHostImpl::OnAddMessageToConsole(
 }
 
 void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
+                                             blink::WebTreeScopeType scope,
                                              const std::string& frame_name,
                                              SandboxFlags sandbox_flags) {
   // It is possible that while a new RenderFrameHost was committed, the
@@ -717,7 +718,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
 
   RenderFrameHostImpl* new_frame =
       frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(),
-                            new_routing_id, frame_name, sandbox_flags);
+                            new_routing_id, scope, frame_name, sandbox_flags);
   if (!new_frame)
     return;
 

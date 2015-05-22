@@ -23,6 +23,7 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/common/transition_element.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -44,6 +45,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_UILoadMetricsReportType::Value,
                           FrameMsg_UILoadMetricsReportType::REPORT_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
                           blink::WebContextMenuData::MediaTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
+                          blink::WebTreeScopeType::Last)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
 IPC_ENUM_TRAITS(content::SandboxFlags)  // Bitmask.
 
@@ -635,8 +638,9 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_AddMessageToConsole,
 //
 // Each of these messages will have a corresponding FrameHostMsg_Detach message
 // sent when the frame is detached from the DOM.
-IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_CreateChildFrame,
+IPC_SYNC_MESSAGE_CONTROL4_1(FrameHostMsg_CreateChildFrame,
                             int32 /* parent_routing_id */,
+                            blink::WebTreeScopeType /* scope */,
                             std::string /* frame_name */,
                             content::SandboxFlags /* sandbox flags */,
                             int32 /* new_routing_id */)

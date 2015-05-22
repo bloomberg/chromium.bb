@@ -670,8 +670,8 @@ TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
   {
     RenderFrameHostCreatedObserver observer(contents());
     initial_rfh->OnCreateChildFrame(
-        initial_rfh->GetProcess()->GetNextRoutingID(), std::string(),
-        SandboxFlags::NONE);
+        initial_rfh->GetProcess()->GetNextRoutingID(),
+        blink::WebTreeScopeType::Document, std::string(), SandboxFlags::NONE);
     EXPECT_TRUE(observer.created());
   }
 
@@ -693,8 +693,8 @@ TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
     // to create child frames.
     RenderFrameHostCreatedObserver observer(contents());
     initial_rfh->OnCreateChildFrame(
-        initial_rfh->GetProcess()->GetNextRoutingID(), std::string(),
-        SandboxFlags::NONE);
+        initial_rfh->GetProcess()->GetNextRoutingID(),
+        blink::WebTreeScopeType::Document, std::string(), SandboxFlags::NONE);
     EXPECT_FALSE(observer.created());
   }
 }
@@ -1976,10 +1976,10 @@ TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
   contents()->NavigateAndCommit(kUrlA);
   contents()->GetMainFrame()->OnCreateChildFrame(
       contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
-      std::string("frame_name"), SandboxFlags::NONE);
+      blink::WebTreeScopeType::Document, "frame_name", SandboxFlags::NONE);
   contents()->GetMainFrame()->OnCreateChildFrame(
       contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
-      std::string("frame_name"), SandboxFlags::NONE);
+      blink::WebTreeScopeType::Document, "frame_name", SandboxFlags::NONE);
   RenderFrameHostManager* root_manager =
       contents()->GetFrameTree()->root()->render_manager();
   RenderFrameHostManager* iframe1 =
@@ -2117,7 +2117,7 @@ TEST_F(RenderFrameHostManagerTest, TwoTabsCrashOneReloadsOneLeaves) {
   // |contents1| creates an out of process iframe.
   contents1->GetMainFrame()->OnCreateChildFrame(
       contents1->GetMainFrame()->GetProcess()->GetNextRoutingID(),
-      std::string("frame_name"), SandboxFlags::NONE);
+      blink::WebTreeScopeType::Document, "frame_name", SandboxFlags::NONE);
   RenderFrameHostManager* iframe =
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
   NavigationEntryImpl entry(NULL /* instance */, -1 /* page_id */, kUrl2,

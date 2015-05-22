@@ -7,6 +7,7 @@
 
 #include "content/common/frame_replication_state.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "third_party/WebKit/public/web/WebTreeScopeType.h"
 
 namespace content {
 class RenderWidgetHelper;
@@ -28,6 +29,7 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
   ~RenderFrameMessageFilter() override;
 
   void OnCreateChildFrame(int parent_routing_id,
+                          blink::WebTreeScopeType scope,
                           const std::string& frame_name,
                           SandboxFlags sandbox_flags,
                           int* new_render_frame_id);
