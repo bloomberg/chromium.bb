@@ -21,8 +21,7 @@
 // https://dom.spec.whatwg.org/#interface-processinginstruction
 
 interface ProcessingInstruction : CharacterData {
-    // FIXME: target should not be nullable.
-    readonly attribute DOMString? target;
+    readonly attribute DOMString target;
 
     // FIXME: CharacterData.sheet is not part of any modern spec.
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28068

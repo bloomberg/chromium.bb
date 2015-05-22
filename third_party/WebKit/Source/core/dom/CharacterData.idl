@@ -22,8 +22,7 @@
 interface CharacterData : Node {
     [TreatNullAs=NullString] attribute DOMString data;
     readonly attribute unsigned long length;
-    // FIXME: substringData return value should not be nullable.
-    [RaisesException] DOMString? substringData(unsigned long offset, unsigned long count);
+    [RaisesException] DOMString substringData(unsigned long offset, unsigned long count);
     void appendData(DOMString data);
     [RaisesException] void insertData(unsigned long offset, DOMString data);
     [RaisesException] void deleteData(unsigned long offset, unsigned long count);
