@@ -4872,6 +4872,28 @@ bool GLES2DecoderImpl::GetHelper(
         return true;
       }
   }
+  if (unsafe_es3_apis_enabled()) {
+    switch (pname) {
+      case GL_MAX_VARYING_COMPONENTS: {
+        if (feature_info_->gl_version_info().is_es) {
+          // We can just delegate this query to the driver.
+          return false;
+        }
+
+        // GL_MAX_VARYING_COMPONENTS is deprecated in the desktop
+        // OpenGL core profile, so for simplicity, just compute it
+        // from GL_MAX_VARYING_VECTORS on non-OpenGL ES
+        // configurations.
+        GLint max_varying_vectors = 0;
+        glGetIntegerv(GL_MAX_VARYING_VECTORS, &max_varying_vectors);
+        *num_written = 1;
+        if (params) {
+          *params = max_varying_vectors * 4;
+        }
+        return true;
+      }
+    }
+  }
   switch (pname) {
     case GL_MAX_VIEWPORT_DIMS:
       if (offscreen_target_frame_buffer_.get()) {
@@ -5287,6 +5309,23 @@ void GLES2DecoderImpl::DoGetFloatv(GLenum pname, GLfloat* params) {
 
 void GLES2DecoderImpl::DoGetInteger64v(GLenum pname, GLint64* params) {
   DCHECK(params);
+  if (unsafe_es3_apis_enabled()) {
+    switch (pname) {
+      case GL_MAX_ELEMENT_INDEX: {
+        if (feature_info_->gl_version_info().IsAtLeastGLES(3, 0) ||
+            feature_info_->gl_version_info().IsAtLeastGL(4, 3)) {
+          glGetInteger64v(GL_MAX_ELEMENT_INDEX, params);
+        } else {
+          // Assume that desktop GL implementations can generally support
+          // 32-bit indices.
+          if (params) {
+            *params = std::numeric_limits<unsigned int>::max();
+          }
+        }
+        return;
+      }
+    }
+  }
   pname = AdjustGetPname(pname);
   glGetInteger64v(pname, params);
 }

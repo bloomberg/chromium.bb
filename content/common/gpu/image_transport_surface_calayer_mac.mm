@@ -211,21 +211,33 @@ bool CALayerStorageProvider::AllocateColorBufferStorage(
         0, 0, 0, 1,
       };
       glGenBuffersARB(1, &vertex_buffer_);
+      // If the allocation path used GLContext::RestoreStateIfDirtiedExternally
+      // as the draw path does, this manual state restoration would not be
+      // necessary.
+      GLint bound_buffer = 0;
+      glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &bound_buffer);
       glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
       glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data),
                    vertex_data, GL_STATIC_DRAW);
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glBindBuffer(GL_ARRAY_BUFFER, bound_buffer);
     }
     if (!vertex_array_) {
+      // If the allocation path used GLContext::RestoreStateIfDirtiedExternally
+      // as the draw path does, this manual state restoration would not be
+      // necessary.
+      GLint bound_vao = 0;
+      glGetIntegerv(GL_VERTEX_ARRAY_BINDING_OES, &bound_vao);
       glGenVertexArraysOES(1, &vertex_array_);
       glBindVertexArrayOES(vertex_array_);
       {
         glEnableVertexAttribArray(position_location_);
+        GLint bound_buffer = 0;
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &bound_buffer);
         glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
         glVertexAttribPointer(position_location_, 4, GL_FLOAT, GL_FALSE, 0, 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, bound_buffer);
       }
-      glBindVertexArrayOES(0);
+      glBindVertexArrayOES(bound_vao);
     }
   } else {
     glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,
