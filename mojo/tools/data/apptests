@@ -44,8 +44,7 @@ if config.target_os != config.OS_ANDROID:
     {
       "test": "mojo:view_manager_apptests",
       "type": "gtest_isolated",
-      "args": ["--use-headless-config",
-               "--url-mappings=mojo:window_manager=mojo:test_window_manager"]
+      "args": ["--use-headless-config"]
     },
     {
       "test": "mojo:resource_provider_apptests",
