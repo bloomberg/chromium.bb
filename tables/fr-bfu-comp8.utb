@@ -29,9 +29,10 @@
 #  -    Désactivation de certaines dirrectives pouvant causer problème.
 # Uncontracted Unified French Table
 # ----------------------------------
+undefined 0
 space \s 0      			# blank 32
 space \X00A0 7          # no-break space
-space \t 8-4568-7              # tab 9
+space \t 138              # tab 9
 space \x001B 1b         # escape
 space \x000A 0          # lf
 space \x000D 0          # cr
@@ -68,10 +69,13 @@ uplow Ëë 12467,12468		e tréma
 uplow Ïï 124567,124568		i tréma
 uplow Öö 24678,358		o tréma
 uplow Üü 12567,12568		u tréma
-uplow \x009F\x00FF 145678,2568		y tréma
+uplow \x0178\x00FF 145678,2568		y tréma
 
 uplow \x008C\x009C 2467,2468		oe liés
+uplow \x0152\x0153 2467,2468		oe liés
 
+uplow \X0160\x0161 234678,23468		s caron
+uplow \X017d\x017e 135678,13568		z caron
 
 uplow \x00C3\x00E3 178,18		a tilde
 uplow \x00D1\x00F1 134578,1245678		n tilde
@@ -82,6 +86,7 @@ punctuation ; 23		point-virgule
 punctuation : 25		deux-points
 punctuation - 36		trait d'union
 punctuation . 256		point
+punctuation \X2026 368	8230 MS Word smart ellipsis
 punctuation ? 26		point d'interrogation
 punctuation ! 235		point d'exclamation
 punctuation " 2356 	guillemet
@@ -94,7 +99,6 @@ punctuation \X0093 378   # [left double quotation mark] (set transmit state)
 punctuation \X0094 678   # [right double quotation mark] (cancel character)
 punctuation \X2018 68
 punctuation \X2019 37
-sign \X2026 368	8230 MS Word smart ellipsis
 punctuation \X00AB 23568   # left-pointing double angle quotation mark
 punctuation \X00BB 23567   # right-pointing double angle quotation mark
 punctuation \x2013 478  tiret cadratin
@@ -186,18 +190,25 @@ sign \X00DF 2348   # latin small letter sharp s
 sign \X00E5 28   #*latin small letter a with ring above
 sign \X00E6 3458   #*latin small letter ae
 sign \X00F0 128   # latin small letter eth
-sign \X00F7 2578   # division sign
 sign \X00F8 568   # latin small letter o with stroke
 sign \X00FE 2458   # latin small letter thorn
+sign \X0192 1248		f hameçon min.
+sign \X2020 3568   #
+sign \X201a 67   #
 sign \X201e 56   #
+sign \X2021 3567   #
 sign \X2022 124578		puce
+sign \X2039 57   #
+sign \X203a 58   #
 sign \x20ac 1578		EURO SIGN
 sign \x2122 23458		TRADE MARK SIGN
+sign \x25a0 12345678-0   #
 sign \x25aa 124578-0   #
 
 math + 23578				plus
 math = 235678				égal
 math × 3578					multiplié par
+math \X00F7 2578   # division sign
 math < 238				inférieur à
 math > 567				supérieur à
 math \x2264 238-235678
@@ -205,8 +216,6 @@ math \x2265 567-235678
 math / 34						barre oblique
 math \x0060 6
 
-sign \x0153 2468						oe lié
-sign \x0152 24678						oe lié
 sign \x0007 4568					barre verticale
 sign \x02dc 467
 sign \x02c6 48
