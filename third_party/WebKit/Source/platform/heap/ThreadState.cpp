@@ -125,14 +125,14 @@ ThreadState::ThreadState()
     m_likelyToBePromptlyFreed = adoptArrayPtr(new int[likelyToBePromptlyFreedArraySize]);
     clearHeapAges();
 
-    m_weakCallbackStack = new CallbackStack();
+    m_threadLocalWeakCallbackStack = new CallbackStack();
 }
 
 ThreadState::~ThreadState()
 {
     checkThread();
-    delete m_weakCallbackStack;
-    m_weakCallbackStack = nullptr;
+    delete m_threadLocalWeakCallbackStack;
+    m_threadLocalWeakCallbackStack = nullptr;
     for (int i = 0; i < NumberOfHeaps; ++i)
         delete m_heaps[i];
     deleteAllValues(m_interruptors);
@@ -468,20 +468,20 @@ void ThreadState::incrementMarkedObjectsAge()
 }
 #endif
 
-void ThreadState::pushWeakPointerCallback(void* object, WeakPointerCallback callback)
+void ThreadState::pushThreadLocalWeakCallback(void* object, WeakCallback callback)
 {
-    CallbackStack::Item* slot = m_weakCallbackStack->allocateEntry();
+    CallbackStack::Item* slot = m_threadLocalWeakCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(object, callback);
 }
 
-bool ThreadState::popAndInvokeWeakPointerCallback(Visitor* visitor)
+bool ThreadState::popAndInvokeThreadLocalWeakCallback(Visitor* visitor)
 {
     // For weak processing we should never reach orphaned pages since orphaned
     // pages are not traced and thus objects on those pages are never be
     // registered as objects on orphaned pages. We cannot assert this here since
     // we might have an off-heap collection. We assert it in
-    // Heap::pushWeakPointerCallback.
-    if (CallbackStack::Item* item = m_weakCallbackStack->pop()) {
+    // Heap::pushThreadLocalWeakCallback.
+    if (CallbackStack::Item* item = m_threadLocalWeakCallbackStack->pop()) {
         item->call(visitor);
         return true;
     }
@@ -880,7 +880,7 @@ void ThreadState::preSweep()
             {
                 TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
                 // Perform thread-specific weak processing.
-                while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
+                while (popAndInvokeThreadLocalWeakCallback(Heap::s_markingVisitor)) { }
             }
             {
                 TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");

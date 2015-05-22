@@ -340,7 +340,7 @@ public:
     {
         registerWeakMembers(obj, &TraceMethodDelegate<T, method>::trampoline);
     }
-    void registerWeakMembers(const void* object, WeakPointerCallback callback)
+    void registerWeakMembers(const void* object, WeakCallback callback)
     {
         Derived::fromHelper(this)->registerWeakMembers(object, object, callback);
     }
@@ -419,10 +419,10 @@ public:
     virtual void registerDelayedMarkNoTracing(const void*) = 0;
 
     // If the object calls this during the regular trace callback, then the
-    // WeakPointerCallback argument may be called later, when the strong roots
-    // have all been found. The WeakPointerCallback will normally use isAlive
+    // WeakCallback argument may be called later, when the strong roots
+    // have all been found. The WeakCallback will normally use isAlive
     // to find out whether some pointers are pointing to dying objects. When
-    // the WeakPointerCallback is done the object must have purged all pointers
+    // the WeakCallback is done the object must have purged all pointers
     // to objects where isAlive returned false. In the weak callback it is not
     // allowed to touch other objects (except using isAlive) or to allocate on
     // the GC heap. Note that even removing things from HeapHashSet or
@@ -436,7 +436,7 @@ public:
     // pointed to belong to the same thread as the object receiving
     // the weak callback. Since other threads have been resumed the
     // mark bits are not valid for objects from other threads.
-    virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) = 0;
+    virtual void registerWeakMembers(const void*, const void*, WeakCallback) = 0;
     using VisitorHelper<Visitor>::registerWeakMembers;
 
     virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) = 0;
@@ -462,7 +462,7 @@ protected:
         : m_isGlobalMarkingVisitor(markingMode == GlobalMarking)
     { }
 
-    virtual void registerWeakCellWithCallback(void**, WeakPointerCallback) = 0;
+    virtual void registerWeakCellWithCallback(void**, WeakCallback) = 0;
 #if ENABLE(GC_PROFILING)
     virtual void recordObjectGraphEdge(const void*) = 0;
 

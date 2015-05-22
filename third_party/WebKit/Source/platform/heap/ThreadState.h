@@ -69,7 +69,7 @@ using Address = uint8_t*;
 using FinalizationCallback = void (*)(void*);
 using VisitorCallback = void (*)(Visitor*, void* self);
 using TraceCallback = VisitorCallback;
-using WeakPointerCallback = VisitorCallback;
+using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
 
 // Declare that a class has a pre-finalizer function.  The function is called in
@@ -498,8 +498,8 @@ public:
     void reportMarkSweepStats(const char* statsName, const ClassAgeCountsMap&) const;
 #endif
 
-    void pushWeakPointerCallback(void*, WeakPointerCallback);
-    bool popAndInvokeWeakPointerCallback(Visitor*);
+    void pushThreadLocalWeakCallback(void*, WeakCallback);
+    bool popAndInvokeThreadLocalWeakCallback(Visitor*);
 
     size_t objectPayloadSizeForTesting();
     void prepareHeapForTermination();
@@ -697,7 +697,7 @@ private:
     bool m_shouldFlushHeapDoesNotContainCache;
     GCState m_gcState;
 
-    CallbackStack* m_weakCallbackStack;
+    CallbackStack* m_threadLocalWeakCallbackStack;
     HashMap<void*, bool (*)(void*, Visitor&)> m_preFinalizers;
 
     v8::Isolate* m_isolate;

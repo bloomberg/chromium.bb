@@ -135,7 +135,7 @@ public:
     }
 
     template<typename VisitorDispatcher>
-    static void registerWeakMembers(VisitorDispatcher visitor, const void* closure, const void* object, WeakPointerCallback callback)
+    static void registerWeakMembers(VisitorDispatcher visitor, const void* closure, const void* object, WeakCallback callback)
     {
         visitor->registerWeakMembers(closure, object, callback);
     }

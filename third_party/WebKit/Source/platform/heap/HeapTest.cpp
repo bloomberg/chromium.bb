@@ -286,12 +286,12 @@ public:
     }
 
     virtual void registerDelayedMarkNoTracing(const void*) override { }
-    virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) override { }
+    virtual void registerWeakMembers(const void*, const void*, WeakCallback) override { }
     virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) override { }
 #if ENABLE(ASSERT)
     virtual bool weakTableRegistered(const void*) override { return false; }
 #endif
-    virtual void registerWeakCellWithCallback(void**, WeakPointerCallback) override { }
+    virtual void registerWeakCellWithCallback(void**, WeakCallback) override { }
 #if ENABLE(GC_PROFILING)
     virtual void recordObjectGraphEdge(const void*) override { }
 #endif

@@ -1613,7 +1613,7 @@ void Heap::init()
     ThreadState::init();
     s_markingStack = new CallbackStack();
     s_postMarkingCallbackStack = new CallbackStack();
-    s_weakCallbackStack = new CallbackStack();
+    s_globalWeakCallbackStack = new CallbackStack();
     s_ephemeronStack = new CallbackStack();
     s_heapDoesNotContainCache = new HeapDoesNotContainCache();
     s_markingVisitor = new MarkingVisitor<Visitor::GlobalMarking>();
@@ -1648,8 +1648,8 @@ void Heap::doShutdown()
     s_freePagePool = nullptr;
     delete s_orphanedPagePool;
     s_orphanedPagePool = nullptr;
-    delete s_weakCallbackStack;
-    s_weakCallbackStack = nullptr;
+    delete s_globalWeakCallbackStack;
+    s_globalWeakCallbackStack = nullptr;
     delete s_postMarkingCallbackStack;
     s_postMarkingCallbackStack = nullptr;
     delete s_markingStack;
@@ -1802,29 +1802,29 @@ bool Heap::popAndInvokePostMarkingCallback(Visitor* visitor)
     return false;
 }
 
-void Heap::pushWeakCellPointerCallback(void** cell, WeakPointerCallback callback)
+void Heap::pushGlobalWeakCallback(void** cell, WeakCallback callback)
 {
     ASSERT(!Heap::orphanedPagePool()->contains(cell));
-    CallbackStack::Item* slot = s_weakCallbackStack->allocateEntry();
+    CallbackStack::Item* slot = s_globalWeakCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(cell, callback);
 }
 
-void Heap::pushWeakPointerCallback(void* closure, void* object, WeakPointerCallback callback)
+void Heap::pushThreadLocalWeakCallback(void* closure, void* object, WeakCallback callback)
 {
     BasePage* page = pageFromObject(object);
     ASSERT(!page->orphaned());
     ThreadState* state = page->heap()->threadState();
-    state->pushWeakPointerCallback(closure, callback);
+    state->pushThreadLocalWeakCallback(closure, callback);
 }
 
-bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)
+bool Heap::popAndInvokeGlobalWeakCallback(Visitor* visitor)
 {
     // For weak processing we should never reach orphaned pages since orphaned
     // pages are not traced and thus objects on those pages are never be
     // registered as objects on orphaned pages.  We cannot assert this here
     // since we might have an off-heap collection.  We assert it in
-    // Heap::pushWeakPointerCallback.
-    if (CallbackStack::Item* item = s_weakCallbackStack->pop()) {
+    // Heap::pushWeakCallback.
+    if (CallbackStack::Item* item = s_globalWeakCallbackStack->pop()) {
         item->call(visitor);
         return true;
     }
@@ -2049,7 +2049,7 @@ void Heap::globalWeakProcessing(Visitor* markingVisitor)
 {
     TRACE_EVENT0("blink_gc", "Heap::globalWeakProcessing");
     // Call weak callbacks on objects that may now be pointing to dead objects.
-    while (popAndInvokeWeakPointerCallback(markingVisitor)) { }
+    while (popAndInvokeGlobalWeakCallback(markingVisitor)) { }
 
     // It is not permitted to trace pointers of live objects in the weak
     // callback phase, so the marking stack should still be empty here.
@@ -2225,7 +2225,7 @@ void Heap::resetHeapCounters()
 Visitor* Heap::s_markingVisitor;
 CallbackStack* Heap::s_markingStack;
 CallbackStack* Heap::s_postMarkingCallbackStack;
-CallbackStack* Heap::s_weakCallbackStack;
+CallbackStack* Heap::s_globalWeakCallbackStack;
 CallbackStack* Heap::s_ephemeronStack;
 HeapDoesNotContainCache* Heap::s_heapDoesNotContainCache;
 bool Heap::s_shutdownCalled = false;

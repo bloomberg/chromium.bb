@@ -866,13 +866,13 @@ public:
     // the containerObject can be the same thing, but the containerObject is
     // constrained to be on the heap, since the heap is used to identify the
     // correct thread.
-    static void pushWeakPointerCallback(void* closure, void* containerObject, WeakPointerCallback);
+    static void pushThreadLocalWeakCallback(void* closure, void* containerObject, WeakCallback);
 
-    // Similar to the more general pushWeakPointerCallback, but cell
+    // Similar to the more general pushThreadLocalWeakCallback, but cell
     // pointer callbacks are added to a static callback work list and the weak
     // callback is performed on the thread performing garbage collection.  This
     // is OK because cells are just cleared and no deallocation can happen.
-    static void pushWeakCellPointerCallback(void** cell, WeakPointerCallback);
+    static void pushGlobalWeakCallback(void** cell, WeakCallback);
 
     // Pop the top of a marking stack and call the callback with the visitor
     // and the object.  Returns false when there is nothing more to do.
@@ -886,7 +886,7 @@ public:
     // Remove an item from the weak callback work list and call the callback
     // with the visitor and the closure pointer.  Returns false when there is
     // nothing more to do.
-    static bool popAndInvokeWeakPointerCallback(Visitor*);
+    static bool popAndInvokeGlobalWeakCallback(Visitor*);
 
     // Register an ephemeron table for fixed-point iteration.
     static void registerWeakTable(void* containerObject, EphemeronCallback, EphemeronCallback);
@@ -1021,7 +1021,7 @@ private:
     static Visitor* s_markingVisitor;
     static CallbackStack* s_markingStack;
     static CallbackStack* s_postMarkingCallbackStack;
-    static CallbackStack* s_weakCallbackStack;
+    static CallbackStack* s_globalWeakCallbackStack;
     static CallbackStack* s_ephemeronStack;
     static HeapDoesNotContainCache* s_heapDoesNotContainCache;
     static bool s_shutdownCalled;

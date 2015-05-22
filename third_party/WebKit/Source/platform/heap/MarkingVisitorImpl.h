@@ -71,9 +71,9 @@ protected:
         Heap::pushPostMarkingCallback(const_cast<void*>(objectPointer), &markNoTracingCallback);
     }
 
-    inline void registerWeakMembers(const void* closure, const void* objectPointer, WeakPointerCallback callback)
+    inline void registerWeakMembers(const void* closure, const void* objectPointer, WeakCallback callback)
     {
-        Heap::pushWeakPointerCallback(const_cast<void*>(closure), const_cast<void*>(objectPointer), callback);
+        Heap::pushThreadLocalWeakCallback(const_cast<void*>(closure), const_cast<void*>(objectPointer), callback);
     }
 
     inline void registerWeakTable(const void* closure, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
@@ -121,9 +121,9 @@ protected:
     }
 
 protected:
-    inline void registerWeakCellWithCallback(void** cell, WeakPointerCallback callback)
+    inline void registerWeakCellWithCallback(void** cell, WeakCallback callback)
     {
-        Heap::pushWeakCellPointerCallback(cell, callback);
+        Heap::pushGlobalWeakCallback(cell, callback);
     }
 
 private:

@@ -41,7 +41,7 @@ public:
         Impl::registerDelayedMarkNoTracing(object);
     }
 
-    virtual void registerWeakMembers(const void* closure, const void* objectPointer, WeakPointerCallback callback) override
+    virtual void registerWeakMembers(const void* closure, const void* objectPointer, WeakCallback callback) override
     {
         Impl::registerWeakMembers(closure, objectPointer, callback);
     }
@@ -178,7 +178,7 @@ public:
 #endif
 
 protected:
-    virtual void registerWeakCellWithCallback(void** cell, WeakPointerCallback callback) override
+    virtual void registerWeakCellWithCallback(void** cell, WeakCallback callback) override
     {
         Impl::registerWeakCellWithCallback(cell, callback);
     }
