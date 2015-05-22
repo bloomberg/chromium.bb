@@ -120,19 +120,6 @@ bool GpuMemoryBufferImplSharedMemory::IsFormatSupported(Format format) {
 }
 
 // static
-bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(Usage usage) {
-  switch (usage) {
-    case MAP:
-    case PERSISTENT_MAP:
-      return true;
-    case SCANOUT:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
-// static
 bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
     const gfx::Size& size,
     Format format) {

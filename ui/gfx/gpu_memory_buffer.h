@@ -59,10 +59,7 @@ class GFX_EXPORT GpuMemoryBuffer {
 
   // The usage mode affects how a buffer can be used. Only buffers created with
   // MAP can be mapped into the client's address space and accessed by the CPU.
-  // PERSISTENT_MAP adds the additional condition that successive Map() calls
-  // (with Unmap() calls between) will return a pointer to the same memory
-  // contents.
-  enum Usage { MAP, PERSISTENT_MAP, SCANOUT, USAGE_LAST = SCANOUT };
+  enum Usage { MAP, SCANOUT, USAGE_LAST = SCANOUT };
 
   virtual ~GpuMemoryBuffer() {}
 

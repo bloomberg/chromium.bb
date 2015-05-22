@@ -323,9 +323,11 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
   // and handle failure in a controlled way when not. We just need to make
   // sure |format| and |usage| are supported here.
   if (GpuMemoryBufferImplSharedMemory::IsFormatSupported(format) &&
-      GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage)) {
+      usage == gfx::GpuMemoryBuffer::MAP) {
     *handle = GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
-        g_next_gpu_memory_buffer_id.GetNext(), gfx::Size(width, height), format,
+        g_next_gpu_memory_buffer_id.GetNext(),
+        gfx::Size(width, height),
+        format,
         peer_process_.Handle());
   }
 }
