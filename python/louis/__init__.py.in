@@ -289,6 +289,7 @@ italic = 1
 underline = 2
 bold = 4
 computer_braille = 8
+#}
 
 #{ Translation modes
 noContractions = 1
@@ -305,5 +306,3 @@ if __name__ == '__main__':
     # Just some common tests.
     print(version())
     print(translate([b'../tables/en-us-g2.ctb'], 'Hello world!', cursorPos=5))
-
-
