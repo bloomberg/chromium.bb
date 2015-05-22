@@ -1741,7 +1741,6 @@ void LayoutBox::positionLineBox(InlineBox* box)
             // in flow).  This value was cached in the y() of the box.
             layer()->setStaticBlockPosition(box->logicalTop());
         }
-        markStaticPositionedBoxForLayout(box->isHorizontal(), originallyInline);
 
         if (container()->isLayoutInline())
             moveWithEdgeOfInlineContainerIfNecessary(box->isHorizontal());
@@ -1755,15 +1754,6 @@ void LayoutBox::positionLineBox(InlineBox* box)
         setLocationAndUpdateOverflowControlsIfNeeded(box->topLeft().roundedLayoutPoint());
         setInlineBoxWrapper(box);
     }
-}
-
-void LayoutBox::markStaticPositionedBoxForLayout(bool isHorizontal, bool isInline)
-{
-    ASSERT(isOutOfFlowPositioned());
-    if (normalChildNeedsLayout())
-        return;
-    if (isInline ? style()->hasStaticInlinePosition(isHorizontal) : style()->hasStaticBlockPosition(isHorizontal))
-        setChildNeedsLayout(MarkOnlyThis);
 }
 
 void LayoutBox::moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal)

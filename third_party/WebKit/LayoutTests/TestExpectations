@@ -829,6 +829,8 @@ crbug.com/356834 virtual/slimmingpaint/fast/repaint/shift-relative-positioned-co
 
 crbug.com/306249 media/W3C/video/networkState/networkState_during_progress.html [ Pass Failure ]
 
+crbug.com/477840 virtual/slimmingpaint/fast/repaint/remove-block-after-layout.html [ NeedsRebaseline ]
+
 crbug.com/345649 fast/repaint/delete-into-nested-block.html [ Pass Failure ]
 crbug.com/345648 fast/repaint/selection-gap-overflow-scroll.html [ Pass Failure ]
 crbug.com/345646 fast/repaint/selection-after-remove.html [ Pass Failure ]

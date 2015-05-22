@@ -463,7 +463,6 @@ public:
 
     void positionLineBox(InlineBox*);
     void moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal);
-    void markStaticPositionedBoxForLayout(bool isHorizontal, bool isInline);
 
     virtual InlineBox* createInlineBox();
     void dirtyLineBoxes(bool fullLayout);
