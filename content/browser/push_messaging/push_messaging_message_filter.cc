@@ -191,12 +191,12 @@ bool PushMessagingMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PushMessagingMessageFilter, message)
-    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromDocument,
-                        OnRegisterFromDocument)
-    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromWorker,
-                        OnRegisterFromWorker)
-    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_Unregister,
-                        OnUnregister)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_SubscribeFromDocument,
+                        OnSubscribeFromDocument)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_SubscribeFromWorker,
+                        OnSubscribeFromWorker)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_Unsubscribe,
+                        OnUnsubscribe)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetRegistration, OnGetRegistration)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetPermissionStatus,
                         OnGetPermissionStatus)
@@ -205,11 +205,11 @@ bool PushMessagingMessageFilter::OnMessageReceived(
   return handled;
 }
 
-// Register methods on both IO and UI threads, merged in order of use from
+// Subscribe methods on both IO and UI threads, merged in order of use from
 // PushMessagingMessageFilter and Core.
 // -----------------------------------------------------------------------------
 
-void PushMessagingMessageFilter::OnRegisterFromDocument(
+void PushMessagingMessageFilter::OnSubscribeFromDocument(
     int render_frame_id,
     int request_id,
     const std::string& sender_id,
@@ -244,7 +244,7 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
                  data, sender_id));
 }
 
-void PushMessagingMessageFilter::OnRegisterFromWorker(
+void PushMessagingMessageFilter::OnSubscribeFromWorker(
     int request_id,
     int64_t service_worker_registration_id,
     bool user_visible) {
@@ -367,13 +367,13 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
   }
 
   if (data.FromDocument()) {
-    push_service->RegisterFromDocument(
+    push_service->SubscribeFromDocument(
         data.requesting_origin, data.service_worker_registration_id, sender_id,
         render_process_id_, data.render_frame_id, data.user_visible,
         base::Bind(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
                    data));
   } else {
-    push_service->RegisterFromWorker(
+    push_service->SubscribeFromWorker(
         data.requesting_origin, data.service_worker_registration_id, sender_id,
         data.user_visible,
         base::Bind(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
@@ -433,10 +433,10 @@ void PushMessagingMessageFilter::SendRegisterError(
   // Only called from IO thread, but would be safe to call from UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (data.FromDocument()) {
-    Send(new PushMessagingMsg_RegisterFromDocumentError(
+    Send(new PushMessagingMsg_SubscribeFromDocumentError(
         data.render_frame_id, data.request_id, status));
   } else {
-    Send(new PushMessagingMsg_RegisterFromWorkerError(
+    Send(new PushMessagingMsg_SubscribeFromWorkerError(
         data.request_id, status));
   }
   RecordRegistrationStatus(status);
@@ -456,21 +456,21 @@ void PushMessagingMessageFilter::SendRegisterSuccess(
     return;
   }
   if (data.FromDocument()) {
-    Send(new PushMessagingMsg_RegisterFromDocumentSuccess(
+    Send(new PushMessagingMsg_SubscribeFromDocumentSuccess(
         data.render_frame_id,
         data.request_id, push_endpoint_, push_registration_id));
   } else {
-    Send(new PushMessagingMsg_RegisterFromWorkerSuccess(
+    Send(new PushMessagingMsg_SubscribeFromWorkerSuccess(
         data.request_id, push_endpoint_, push_registration_id));
   }
   RecordRegistrationStatus(status);
 }
 
-// Unregister methods on both IO and UI threads, merged in order of use from
+// Unsubscribe methods on both IO and UI threads, merged in order of use from
 // PushMessagingMessageFilter and Core.
 // -----------------------------------------------------------------------------
 
-void PushMessagingMessageFilter::OnUnregister(
+void PushMessagingMessageFilter::OnUnsubscribe(
     int request_id, int64_t service_worker_registration_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ServiceWorkerRegistration* service_worker_registration =
@@ -484,18 +484,18 @@ void PushMessagingMessageFilter::OnUnregister(
   service_worker_context_->GetRegistrationUserData(
       service_worker_registration_id,
       kPushRegistrationIdServiceWorkerKey,
-      base::Bind(
-          &PushMessagingMessageFilter::UnregisterHavingGottenPushRegistrationId,
-          weak_factory_io_to_io_.GetWeakPtr(), request_id,
-          service_worker_registration_id,
-          service_worker_registration->pattern().GetOrigin()));
+      base::Bind(&PushMessagingMessageFilter::
+                     UnsubscribeHavingGottenPushSubscriptionId,
+                 weak_factory_io_to_io_.GetWeakPtr(), request_id,
+                 service_worker_registration_id,
+                 service_worker_registration->pattern().GetOrigin()));
 }
 
-void PushMessagingMessageFilter::UnregisterHavingGottenPushRegistrationId(
+void PushMessagingMessageFilter::UnsubscribeHavingGottenPushSubscriptionId(
     int request_id,
     int64_t service_worker_registration_id,
     const GURL& requesting_origin,
-    const std::string& push_registration_id,  // Unused, we just want the status
+    const std::string& push_subscription_id,  // Unused, we just want the status
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -504,22 +504,22 @@ void PushMessagingMessageFilter::UnregisterHavingGottenPushRegistrationId(
         service_worker_registration_id,
         kPushSenderIdServiceWorkerKey,
         base::Bind(
-            &PushMessagingMessageFilter::UnregisterHavingGottenSenderId,
+            &PushMessagingMessageFilter::UnsubscribeHavingGottenSenderId,
             weak_factory_io_to_io_.GetWeakPtr(),
             request_id,
             service_worker_registration_id,
             requesting_origin));
   } else {
     // Errors are handled the same, whether we were trying to get the
-    // push_registration_id or the sender_id.
-    UnregisterHavingGottenSenderId(request_id, service_worker_registration_id,
-                                   requesting_origin,
-                                   std::string() /* sender_id */,
-                                   service_worker_status);
+    // push_subscription_id or the sender_id.
+    UnsubscribeHavingGottenSenderId(request_id, service_worker_registration_id,
+                                    requesting_origin,
+                                    std::string() /* sender_id */,
+                                    service_worker_status);
   }
 }
 
-void PushMessagingMessageFilter::UnregisterHavingGottenSenderId(
+void PushMessagingMessageFilter::UnsubscribeHavingGottenSenderId(
     int request_id,
     int64_t service_worker_registration_id,
     const GURL& requesting_origin,
@@ -587,7 +587,7 @@ void PushMessagingMessageFilter::Core::UnregisterFromService(
     return;
   }
 
-  push_service->Unregister(
+  push_service->Unsubscribe(
       requesting_origin, service_worker_registration_id, sender_id,
       base::Bind(&Core::DidUnregisterFromService,
                  weak_factory_ui_to_ui_.GetWeakPtr(),
@@ -659,17 +659,17 @@ void PushMessagingMessageFilter::DidUnregister(
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED:
     case PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR:
     case PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR:
-      Send(new PushMessagingMsg_UnregisterSuccess(request_id, true));
+      Send(new PushMessagingMsg_UnsubscribeSuccess(request_id, true));
       break;
     case PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED:
-      Send(new PushMessagingMsg_UnregisterSuccess(request_id, false));
+      Send(new PushMessagingMsg_UnsubscribeSuccess(request_id, false));
       break;
     case PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER:
     case PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE:
     case PUSH_UNREGISTRATION_STATUS_STORAGE_ERROR:
-      Send(new PushMessagingMsg_UnregisterError(
-        request_id, blink::WebPushError::ErrorTypeAbort,
-        PushUnregistrationStatusToString(unregistration_status)));
+      Send(new PushMessagingMsg_UnsubscribeError(
+          request_id, blink::WebPushError::ErrorTypeAbort,
+          PushUnregistrationStatusToString(unregistration_status)));
       break;
     case PUSH_UNREGISTRATION_STATUS_NETWORK_ERROR:
       NOTREACHED();

@@ -75,7 +75,7 @@ void PushProvider::subscribe(
   subscription_callbacks_.AddWithID(callbacks, request_id);
   int64 service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
-  thread_safe_sender_->Send(new PushMessagingHostMsg_RegisterFromWorker(
+  thread_safe_sender_->Send(new PushMessagingHostMsg_SubscribeFromWorker(
       request_id, service_worker_registration_id, options.userVisibleOnly));
 }
 
@@ -90,7 +90,7 @@ void PushProvider::unsubscribe(
 
   int64 service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
-  thread_safe_sender_->Send(new PushMessagingHostMsg_Unregister(
+  thread_safe_sender_->Send(new PushMessagingHostMsg_Unsubscribe(
       request_id, service_worker_registration_id));
 }
 
@@ -124,14 +124,14 @@ void PushProvider::getPermissionStatus(
 bool PushProvider::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PushProvider, message)
-    IPC_MESSAGE_HANDLER(PushMessagingMsg_RegisterFromWorkerSuccess,
-                        OnRegisterFromWorkerSuccess);
-    IPC_MESSAGE_HANDLER(PushMessagingMsg_RegisterFromWorkerError,
-                        OnRegisterFromWorkerError);
-    IPC_MESSAGE_HANDLER(PushMessagingMsg_UnregisterSuccess,
-                        OnUnregisterSuccess);
-    IPC_MESSAGE_HANDLER(PushMessagingMsg_UnregisterError,
-                        OnUnregisterError);
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_SubscribeFromWorkerSuccess,
+                        OnSubscribeFromWorkerSuccess);
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_SubscribeFromWorkerError,
+                        OnSubscribeFromWorkerError);
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_UnsubscribeSuccess,
+                        OnUnsubscribeSuccess);
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_UnsubscribeError,
+                        OnUnsubscribeError);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_GetRegistrationSuccess,
                         OnGetRegistrationSuccess);
     IPC_MESSAGE_HANDLER(PushMessagingMsg_GetRegistrationError,
@@ -146,10 +146,10 @@ bool PushProvider::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void PushProvider::OnRegisterFromWorkerSuccess(
+void PushProvider::OnSubscribeFromWorkerSuccess(
     int request_id,
     const GURL& endpoint,
-    const std::string& registration_id) {
+    const std::string& subscription_id) {
   blink::WebPushSubscriptionCallbacks* callbacks =
       subscription_callbacks_.Lookup(request_id);
   if (!callbacks)
@@ -158,14 +158,14 @@ void PushProvider::OnRegisterFromWorkerSuccess(
   scoped_ptr<blink::WebPushSubscription> subscription(
       new blink::WebPushSubscription(
           blink::WebString::fromUTF8(endpoint.spec()),
-          blink::WebString::fromUTF8(registration_id)));
+          blink::WebString::fromUTF8(subscription_id)));
   callbacks->onSuccess(subscription.release());
 
   subscription_callbacks_.Remove(request_id);
 }
 
-void PushProvider::OnRegisterFromWorkerError(int request_id,
-                                             PushRegistrationStatus status) {
+void PushProvider::OnSubscribeFromWorkerError(int request_id,
+                                              PushRegistrationStatus status) {
   blink::WebPushSubscriptionCallbacks* callbacks =
       subscription_callbacks_.Lookup(request_id);
   if (!callbacks)
@@ -179,18 +179,18 @@ void PushProvider::OnRegisterFromWorkerError(int request_id,
   subscription_callbacks_.Remove(request_id);
 }
 
-void PushProvider::OnUnregisterSuccess(int request_id, bool did_unregister) {
+void PushProvider::OnUnsubscribeSuccess(int request_id, bool did_unsubscribe) {
   blink::WebPushUnsubscribeCallbacks* callbacks =
       unsubscribe_callbacks_.Lookup(request_id);
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(&did_unregister);
+  callbacks->onSuccess(&did_unsubscribe);
 
   unsubscribe_callbacks_.Remove(request_id);
 }
 
-void PushProvider::OnUnregisterError(
+void PushProvider::OnUnsubscribeError(
     int request_id,
     blink::WebPushError::ErrorType error_type,
     const std::string& error_message) {

@@ -63,14 +63,15 @@ class PushProvider : public blink::WebPushProvider,
                PushDispatcher* push_dispatcher);
 
   // IPC message handlers.
-  void OnRegisterFromWorkerSuccess(int request_id,
-                                   const GURL& endpoint,
-                                   const std::string& registration_id);
-  void OnRegisterFromWorkerError(int request_id, PushRegistrationStatus status);
-  void OnUnregisterSuccess(int request_id, bool did_unregister);
-  void OnUnregisterError(int request_id,
-                         blink::WebPushError::ErrorType error_type,
-                         const std::string& error_message);
+  void OnSubscribeFromWorkerSuccess(int request_id,
+                                    const GURL& endpoint,
+                                    const std::string& subscription_id);
+  void OnSubscribeFromWorkerError(int request_id,
+                                  PushRegistrationStatus status);
+  void OnUnsubscribeSuccess(int request_id, bool did_unsubscribe);
+  void OnUnsubscribeError(int request_id,
+                          blink::WebPushError::ErrorType error_type,
+                          const std::string& error_message);
   void OnGetRegistrationSuccess(int request_id,
                                 const GURL& endpoint,
                                 const std::string& registration_id);

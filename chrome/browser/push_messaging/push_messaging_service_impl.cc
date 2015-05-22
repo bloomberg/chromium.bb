@@ -93,13 +93,13 @@ void PushMessagingServiceImpl::InitializeForProfile(Profile* profile) {
 
   PushMessagingServiceImpl* push_service =
       PushMessagingServiceFactory::GetForProfile(profile);
-  push_service->IncreasePushRegistrationCount(count, false /* is_pending */);
+  push_service->IncreasePushSubscriptionCount(count, false /* is_pending */);
 }
 
 PushMessagingServiceImpl::PushMessagingServiceImpl(Profile* profile)
     : profile_(profile),
-      push_registration_count_(0),
-      pending_push_registration_count_(0),
+      push_subscription_count_(0),
+      pending_push_subscription_count_(0),
 #if defined(ENABLE_NOTIFICATIONS)
       notification_manager_(profile),
 #endif
@@ -112,34 +112,34 @@ PushMessagingServiceImpl::~PushMessagingServiceImpl() {
   profile_->GetHostContentSettingsMap()->RemoveObserver(this);
 }
 
-void PushMessagingServiceImpl::IncreasePushRegistrationCount(int add,
+void PushMessagingServiceImpl::IncreasePushSubscriptionCount(int add,
                                                              bool is_pending) {
   DCHECK(add > 0);
-  if (push_registration_count_ + pending_push_registration_count_ == 0) {
+  if (push_subscription_count_ + pending_push_subscription_count_ == 0) {
     GetGCMDriver()->AddAppHandler(kPushMessagingAppIdentifierPrefix, this);
   }
   if (is_pending) {
-    pending_push_registration_count_ += add;
+    pending_push_subscription_count_ += add;
   } else {
-    push_registration_count_ += add;
+    push_subscription_count_ += add;
     profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
-                                     push_registration_count_);
+                                     push_subscription_count_);
   }
 }
 
-void PushMessagingServiceImpl::DecreasePushRegistrationCount(int subtract,
+void PushMessagingServiceImpl::DecreasePushSubscriptionCount(int subtract,
                                                              bool was_pending) {
   DCHECK(subtract > 0);
   if (was_pending) {
-    pending_push_registration_count_ -= subtract;
-    DCHECK(pending_push_registration_count_ >= 0);
+    pending_push_subscription_count_ -= subtract;
+    DCHECK(pending_push_subscription_count_ >= 0);
   } else {
-    push_registration_count_ -= subtract;
-    DCHECK(push_registration_count_ >= 0);
+    push_subscription_count_ -= subtract;
+    DCHECK(push_subscription_count_ >= 0);
     profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
-                                     push_registration_count_);
+                                     push_subscription_count_);
   }
-  if (push_registration_count_ + pending_push_registration_count_ == 0) {
+  if (push_subscription_count_ + pending_push_subscription_count_ == 0) {
     GetGCMDriver()->RemoveAppHandler(kPushMessagingAppIdentifierPrefix);
   }
 }
@@ -253,9 +253,9 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     case content::PUSH_DELIVERY_STATUS_UNKNOWN_APP_ID:
     case content::PUSH_DELIVERY_STATUS_PERMISSION_DENIED:
     case content::PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER:
-      Unregister(app_id, message.sender_id,
-                 base::Bind(&UnregisterCallbackToClosure,
-                 message_handled_closure));
+      Unsubscribe(
+          app_id, message.sender_id,
+          base::Bind(&UnregisterCallbackToClosure, message_handled_closure));
       break;
   }
   RecordDeliveryStatus(status);
@@ -291,9 +291,9 @@ GURL PushMessagingServiceImpl::GetPushEndpoint() {
   return GURL(std::string(kPushMessagingEndpoint));
 }
 
-// Register and GetPermissionStatus methods ------------------------------------
+// Subscribe and GetPermissionStatus methods -----------------------------------
 
-void PushMessagingServiceImpl::RegisterFromDocument(
+void PushMessagingServiceImpl::SubscribeFromDocument(
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
     const std::string& sender_id,
@@ -305,11 +305,10 @@ void PushMessagingServiceImpl::RegisterFromDocument(
       PushMessagingAppIdentifier::Generate(requesting_origin,
                                            service_worker_registration_id);
 
-  if (push_registration_count_ + pending_push_registration_count_
-      >= kMaxRegistrations) {
-    RegisterEnd(callback,
-                std::string(),
-                content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
+  if (push_subscription_count_ + pending_push_subscription_count_ >=
+      kMaxRegistrations) {
+    SubscribeEnd(callback, std::string(),
+                 content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
     return;
   }
 
@@ -334,9 +333,9 @@ void PushMessagingServiceImpl::RegisterFromDocument(
       PushMessagingPermissionContextFactory::GetForProfile(profile_);
 
   if (permission_context == NULL || !user_visible) {
-    RegisterEnd(callback,
-                std::string(),
-                content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
+    SubscribeEnd(callback,
+                 std::string(),
+                 content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
     return;
   }
 
@@ -352,7 +351,7 @@ void PushMessagingServiceImpl::RegisterFromDocument(
                  callback));
 }
 
-void PushMessagingServiceImpl::RegisterFromWorker(
+void PushMessagingServiceImpl::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
     const std::string& sender_id,
@@ -364,8 +363,8 @@ void PushMessagingServiceImpl::RegisterFromWorker(
 
   if (profile_->GetPrefs()->GetInteger(
           prefs::kPushMessagingRegistrationCount) >= kMaxRegistrations) {
-    RegisterEnd(register_callback, std::string(),
-                content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
+    SubscribeEnd(register_callback, std::string(),
+                 content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
     return;
   }
 
@@ -378,18 +377,17 @@ void PushMessagingServiceImpl::RegisterFromWorker(
                                                     embedding_origin,
                                                     user_visible);
   if (permission_status != blink::WebPushPermissionStatusGranted) {
-    RegisterEnd(register_callback, std::string(),
-                content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
+    SubscribeEnd(register_callback, std::string(),
+                 content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
     return;
   }
 
-  IncreasePushRegistrationCount(1, true /* is_pending */);
+  IncreasePushSubscriptionCount(1, true /* is_pending */);
   std::vector<std::string> sender_ids(1, sender_id);
-  GetGCMDriver()->Register(
-      app_identifier.app_id(), sender_ids,
-      base::Bind(&PushMessagingServiceImpl::DidRegister,
-                 weak_factory_.GetWeakPtr(),
-                 app_identifier, register_callback));
+  GetGCMDriver()->Register(app_identifier.app_id(), sender_ids,
+                           base::Bind(&PushMessagingServiceImpl::DidSubscribe,
+                                      weak_factory_.GetWeakPtr(),
+                                      app_identifier, register_callback));
 }
 
 blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
@@ -408,17 +406,17 @@ bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
   return false;
 }
 
-void PushMessagingServiceImpl::RegisterEnd(
+void PushMessagingServiceImpl::SubscribeEnd(
     const content::PushMessagingService::RegisterCallback& callback,
-    const std::string& registration_id,
+    const std::string& subscription_id,
     content::PushRegistrationStatus status) {
-  callback.Run(registration_id, status);
+  callback.Run(subscription_id, status);
 }
 
-void PushMessagingServiceImpl::DidRegister(
+void PushMessagingServiceImpl::DidSubscribe(
     const PushMessagingAppIdentifier& app_identifier,
     const content::PushMessagingService::RegisterCallback& callback,
-    const std::string& registration_id,
+    const std::string& subscription_id,
     gcm::GCMClient::Result result) {
   content::PushRegistrationStatus status =
       content::PUSH_REGISTRATION_STATUS_SERVICE_ERROR;
@@ -426,7 +424,7 @@ void PushMessagingServiceImpl::DidRegister(
     case gcm::GCMClient::SUCCESS:
       status = content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE;
       app_identifier.PersistToPrefs(profile_);
-      IncreasePushRegistrationCount(1, false /* is_pending */);
+      IncreasePushSubscriptionCount(1, false /* is_pending */);
       break;
     case gcm::GCMClient::INVALID_PARAMETER:
     case gcm::GCMClient::GCM_DISABLED:
@@ -440,8 +438,8 @@ void PushMessagingServiceImpl::DidRegister(
       status = content::PUSH_REGISTRATION_STATUS_NETWORK_ERROR;
       break;
   }
-  RegisterEnd(callback, registration_id, status);
-  DecreasePushRegistrationCount(1, true /* was_pending */);
+  SubscribeEnd(callback, subscription_id, status);
+  DecreasePushSubscriptionCount(1, true /* was_pending */);
 }
 
 void PushMessagingServiceImpl::DidRequestPermission(
@@ -450,25 +448,23 @@ void PushMessagingServiceImpl::DidRequestPermission(
     const content::PushMessagingService::RegisterCallback& register_callback,
     ContentSetting content_setting) {
   if (content_setting != CONTENT_SETTING_ALLOW) {
-    RegisterEnd(register_callback,
-                std::string(),
-                content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
+    SubscribeEnd(register_callback,
+                 std::string(),
+                 content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
     return;
   }
 
-  IncreasePushRegistrationCount(1, true /* is_pending */);
+  IncreasePushSubscriptionCount(1, true /* is_pending */);
   std::vector<std::string> sender_ids(1, sender_id);
-  GetGCMDriver()->Register(
-      app_identifier.app_id(),
-      sender_ids,
-      base::Bind(&PushMessagingServiceImpl::DidRegister,
-                 weak_factory_.GetWeakPtr(),
-                 app_identifier, register_callback));
+  GetGCMDriver()->Register(app_identifier.app_id(), sender_ids,
+                           base::Bind(&PushMessagingServiceImpl::DidSubscribe,
+                                      weak_factory_.GetWeakPtr(),
+                                      app_identifier, register_callback));
 }
 
-// Unregister methods ----------------------------------------------------------
+// Unsubscribe methods ---------------------------------------------------------
 
-void PushMessagingServiceImpl::Unregister(
+void PushMessagingServiceImpl::Unsubscribe(
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
     const std::string& sender_id,
@@ -484,10 +480,10 @@ void PushMessagingServiceImpl::Unregister(
     return;
   }
 
-  Unregister(app_identifier.app_id(), sender_id, callback);
+  Unsubscribe(app_identifier.app_id(), sender_id, callback);
 }
 
-void PushMessagingServiceImpl::Unregister(
+void PushMessagingServiceImpl::Unsubscribe(
     const std::string& app_id,
     const std::string& sender_id,
     const content::PushMessagingService::UnregisterCallback& callback) {
@@ -502,12 +498,11 @@ void PushMessagingServiceImpl::Unregister(
     app_identifier.DeleteFromPrefs(profile_);
 
   const auto& unregister_callback =
-      base::Bind(&PushMessagingServiceImpl::DidUnregister,
-                 weak_factory_.GetWeakPtr(),
-                 was_registered, callback);
+      base::Bind(&PushMessagingServiceImpl::DidUnsubscribe,
+                 weak_factory_.GetWeakPtr(), was_registered, callback);
 #if defined(OS_ANDROID)
   // On Android the backend is different, and requires the original sender_id.
-  // UnregisterBecausePermissionRevoked sometimes calls us with an empty one.
+  // UnsubscribeBecausePermissionRevoked sometimes calls us with an empty one.
   if (sender_id.empty())
     unregister_callback.Run(gcm::GCMClient::INVALID_PARAMETER);
   else
@@ -518,18 +513,18 @@ void PushMessagingServiceImpl::Unregister(
 #endif
 }
 
-void PushMessagingServiceImpl::DidUnregister(
-    bool was_registered,
+void PushMessagingServiceImpl::DidUnsubscribe(
+    bool was_subscribed,
     const content::PushMessagingService::UnregisterCallback& callback,
     gcm::GCMClient::Result result) {
-  if (was_registered)
-    DecreasePushRegistrationCount(1, false /* was_pending */);
+  if (was_subscribed)
+    DecreasePushSubscriptionCount(1, false /* was_pending */);
 
   // Internal calls pass a null callback.
   if (callback.is_null())
     return;
 
-  if (!was_registered) {
+  if (!was_subscribed) {
     callback.Run(
         content::PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
     return;
@@ -594,29 +589,31 @@ void PushMessagingServiceImpl::OnContentSettingChanged(
         profile_, app_identifier.origin(),
         app_identifier.service_worker_registration_id(),
         base::Bind(
-            &PushMessagingServiceImpl::UnregisterBecausePermissionRevoked,
+            &PushMessagingServiceImpl::UnsubscribeBecausePermissionRevoked,
             weak_factory_.GetWeakPtr(), app_identifier, barrier_closure));
   }
 }
 
-void PushMessagingServiceImpl::UnregisterBecausePermissionRevoked(
+void PushMessagingServiceImpl::UnsubscribeBecausePermissionRevoked(
     const PushMessagingAppIdentifier& app_identifier,
-    const base::Closure& closure, const std::string& sender_id,
-    bool success, bool not_found) {
+    const base::Closure& closure,
+    const std::string& sender_id,
+    bool success,
+    bool not_found) {
   base::Closure barrier_closure = base::BarrierClosure(2, closure);
 
-  // Unregister the PushMessagingAppIdentifier with the push service.
+  // Unsubscribe the PushMessagingAppIdentifier with the push service.
   // It's possible for GetSenderId to have failed and sender_id to be empty, if
   // cookies (and the SW database) for an origin got cleared before permissions
-  // are cleared for the origin. In that case Unregister will just delete the
+  // are cleared for the origin. In that case Unsubscribe will just delete the
   // app identifier to block future messages.
   // TODO(johnme): Auto-unregister before SW DB is cleared
   // (https://crbug.com/402458).
-  Unregister(app_identifier.app_id(), sender_id,
-             base::Bind(&UnregisterCallbackToClosure, barrier_closure));
+  Unsubscribe(app_identifier.app_id(), sender_id,
+              base::Bind(&UnregisterCallbackToClosure, barrier_closure));
 
   // Clear the associated service worker push registration id.
-  ClearPushRegistrationID(profile_, app_identifier.origin(),
+  ClearPushSubscriptionID(profile_, app_identifier.origin(),
                           app_identifier.service_worker_registration_id(),
                           barrier_closure);
 }

@@ -38,10 +38,10 @@ PushMessagingDispatcher::~PushMessagingDispatcher() {}
 bool PushMessagingDispatcher::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PushMessagingDispatcher, message)
-    IPC_MESSAGE_HANDLER(PushMessagingMsg_RegisterFromDocumentSuccess,
-                        OnRegisterFromDocumentSuccess)
-    IPC_MESSAGE_HANDLER(PushMessagingMsg_RegisterFromDocumentError,
-                        OnRegisterFromDocumentError)
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_SubscribeFromDocumentSuccess,
+                        OnSubscribeFromDocumentSuccess)
+    IPC_MESSAGE_HANDLER(PushMessagingMsg_SubscribeFromDocumentError,
+                        OnSubscribeFromDocumentError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -77,8 +77,8 @@ void PushMessagingDispatcher::DoSubscribe(
           ? std::string()
           : base::UTF16ToUTF8(manifest.gcm_sender_id.string());
   if (sender_id.empty()) {
-    OnRegisterFromDocumentError(request_id,
-                                PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
+    OnSubscribeFromDocumentError(request_id,
+                                 PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
     return;
   }
 
@@ -96,7 +96,7 @@ void PushMessagingDispatcher::DoSubscribe(
   const bool user_visible = manifest.gcm_user_visible_only ||
                             options.userVisibleOnly;
 
-  Send(new PushMessagingHostMsg_RegisterFromDocument(
+  Send(new PushMessagingHostMsg_SubscribeFromDocument(
       routing_id(), request_id,
       manifest.gcm_sender_id.is_null()
           ? std::string()
@@ -104,10 +104,10 @@ void PushMessagingDispatcher::DoSubscribe(
       user_visible, service_worker_registration_id));
 }
 
-void PushMessagingDispatcher::OnRegisterFromDocumentSuccess(
+void PushMessagingDispatcher::OnSubscribeFromDocumentSuccess(
     int32_t request_id,
     const GURL& endpoint,
-    const std::string& registration_id) {
+    const std::string& subscription_id) {
   blink::WebPushSubscriptionCallbacks* callbacks =
       subscription_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
@@ -115,13 +115,13 @@ void PushMessagingDispatcher::OnRegisterFromDocumentSuccess(
   scoped_ptr<blink::WebPushSubscription> subscription(
       new blink::WebPushSubscription(
           WebString::fromUTF8(endpoint.spec()),
-          WebString::fromUTF8(registration_id)));
+          WebString::fromUTF8(subscription_id)));
   callbacks->onSuccess(subscription.release());
 
   subscription_callbacks_.Remove(request_id);
 }
 
-void PushMessagingDispatcher::OnRegisterFromDocumentError(
+void PushMessagingDispatcher::OnSubscribeFromDocumentError(
     int32_t request_id,
     PushRegistrationStatus status) {
   blink::WebPushSubscriptionCallbacks* callbacks =

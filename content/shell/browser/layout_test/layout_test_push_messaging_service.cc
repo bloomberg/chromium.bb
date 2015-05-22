@@ -42,7 +42,7 @@ GURL LayoutTestPushMessagingService::GetPushEndpoint() {
   return GURL("https://example.com/LayoutTestEndpoint");
 }
 
-void LayoutTestPushMessagingService::RegisterFromDocument(
+void LayoutTestPushMessagingService::SubscribeFromDocument(
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
     const std::string& sender_id,
@@ -50,11 +50,11 @@ void LayoutTestPushMessagingService::RegisterFromDocument(
     int render_frame_id,
     bool user_visible,
     const PushMessagingService::RegisterCallback& callback) {
-  RegisterFromWorker(requesting_origin, service_worker_registration_id,
-                     sender_id, user_visible, callback);
+  SubscribeFromWorker(requesting_origin, service_worker_registration_id,
+                      sender_id, user_visible, callback);
 }
 
-void LayoutTestPushMessagingService::RegisterFromWorker(
+void LayoutTestPushMessagingService::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
     const std::string& sender_id,
@@ -86,7 +86,7 @@ bool LayoutTestPushMessagingService::SupportNonVisibleMessages() {
   return false;
 }
 
-void LayoutTestPushMessagingService::Unregister(
+void LayoutTestPushMessagingService::Unsubscribe(
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
     const std::string& sender_id,

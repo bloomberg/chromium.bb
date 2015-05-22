@@ -63,7 +63,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // content::PushMessagingService implementation:
   GURL GetPushEndpoint() override;
-  void RegisterFromDocument(
+  void SubscribeFromDocument(
       const GURL& requesting_origin,
       int64 service_worker_registration_id,
       const std::string& sender_id,
@@ -71,13 +71,13 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       int render_frame_id,
       bool user_visible,
       const content::PushMessagingService::RegisterCallback& callback) override;
-  void RegisterFromWorker(
+  void SubscribeFromWorker(
       const GURL& requesting_origin,
       int64 service_worker_registration_id,
       const std::string& sender_id,
       bool user_visible,
       const content::PushMessagingService::RegisterCallback& callback) override;
-  void Unregister(
+  void Unsubscribe(
       const GURL& requesting_origin,
       int64 service_worker_registration_id,
       const std::string& sender_id,
@@ -103,9 +103,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const base::Closure& callback);
 
  private:
-  // A registration is pending until it has succeeded or failed.
-  void IncreasePushRegistrationCount(int add, bool is_pending);
-  void DecreasePushRegistrationCount(int subtract, bool was_pending);
+  // A subscription is pending until it has succeeded or failed.
+  void IncreasePushSubscriptionCount(int add, bool is_pending);
+  void DecreasePushSubscriptionCount(int subtract, bool was_pending);
 
   // OnMessage methods ---------------------------------------------------------
 
@@ -116,17 +116,17 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                               const base::Closure& message_handled_closure,
                               content::PushDeliveryStatus status);
 
-  // Register methods ----------------------------------------------------------
+  // Subscribe methods ---------------------------------------------------------
 
-  void RegisterEnd(
+  void SubscribeEnd(
       const content::PushMessagingService::RegisterCallback& callback,
-      const std::string& registration_id,
+      const std::string& subscription_id,
       content::PushRegistrationStatus status);
 
-  void DidRegister(
+  void DidSubscribe(
       const PushMessagingAppIdentifier& app_identifier,
       const content::PushMessagingService::RegisterCallback& callback,
-      const std::string& registration_id,
+      const std::string& subscription_id,
       gcm::GCMClient::Result result);
 
   void DidRequestPermission(
@@ -135,19 +135,19 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const content::PushMessagingService::RegisterCallback& callback,
       ContentSetting content_setting);
 
-  // Unregister methods --------------------------------------------------------
+  // Unsubscribe methods -------------------------------------------------------
 
-  void Unregister(const std::string& app_id,
-                  const std::string& sender_id,
-                  const content::PushMessagingService::UnregisterCallback&);
+  void Unsubscribe(const std::string& app_id,
+                   const std::string& sender_id,
+                   const content::PushMessagingService::UnregisterCallback&);
 
-  void DidUnregister(bool was_registered,
-                     const content::PushMessagingService::UnregisterCallback&,
-                     gcm::GCMClient::Result result);
+  void DidUnsubscribe(bool was_subscribed,
+                      const content::PushMessagingService::UnregisterCallback&,
+                      gcm::GCMClient::Result result);
 
   // OnContentSettingChanged methods -------------------------------------------
 
-  void UnregisterBecausePermissionRevoked(
+  void UnsubscribeBecausePermissionRevoked(
       const PushMessagingAppIdentifier& app_identifier,
       const base::Closure& closure,
       const std::string& sender_id,
@@ -163,8 +163,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   Profile* profile_;
 
-  int push_registration_count_;
-  int pending_push_registration_count_;
+  int push_subscription_count_;
+  int pending_push_subscription_count_;
 
   base::Closure message_callback_for_testing_;
   base::Closure content_setting_changed_callback_for_testing_;

@@ -50,12 +50,12 @@ class PushMessagingDispatcher : public RenderFrameObserver,
       blink::WebPushSubscriptionCallbacks* callbacks,
       const Manifest& manifest);
 
-  void OnRegisterFromDocumentSuccess(int32_t request_id,
-                                     const GURL& endpoint,
-                                     const std::string& registration_id);
+  void OnSubscribeFromDocumentSuccess(int32_t request_id,
+                                      const GURL& endpoint,
+                                      const std::string& subscription_id);
 
-  void OnRegisterFromDocumentError(int32_t request_id,
-                                   PushRegistrationStatus status);
+  void OnSubscribeFromDocumentError(int32_t request_id,
+                                    PushRegistrationStatus status);
 
   IDMap<blink::WebPushSubscriptionCallbacks, IDMapOwnPointer>
       subscription_callbacks_;

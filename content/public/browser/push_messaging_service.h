@@ -40,33 +40,33 @@ class CONTENT_EXPORT PushMessagingService {
   // origins and push registrations.
   virtual GURL GetPushEndpoint() = 0;
 
-  // Register the given |sender_id| with the push messaging service in a
+  // Subscribe the given |sender_id| with the push messaging service in a
   // document context. The frame is known and a permission UI may be displayed
   // to the user.
-  virtual void RegisterFromDocument(const GURL& requesting_origin,
-                                    int64 service_worker_registration_id,
-                                    const std::string& sender_id,
-                                    int renderer_id,
-                                    int render_frame_id,
-                                    bool user_visible,
-                                    const RegisterCallback& callback) = 0;
+  virtual void SubscribeFromDocument(const GURL& requesting_origin,
+                                     int64 service_worker_registration_id,
+                                     const std::string& sender_id,
+                                     int renderer_id,
+                                     int render_frame_id,
+                                     bool user_visible,
+                                     const RegisterCallback& callback) = 0;
 
-  // Register the given |sender_id| with the push messaging service. The frame
+  // Subscribe the given |sender_id| with the push messaging service. The frame
   // is not known so if permission was not previously granted by the user this
   // request should fail.
-  virtual void RegisterFromWorker(const GURL& requesting_origin,
-                                  int64 service_worker_registration_id,
-                                  const std::string& sender_id,
-                                  bool user_visible,
-                                  const RegisterCallback& callback) = 0;
+  virtual void SubscribeFromWorker(const GURL& requesting_origin,
+                                   int64 service_worker_registration_id,
+                                   const std::string& sender_id,
+                                   bool user_visible,
+                                   const RegisterCallback& callback) = 0;
 
-  // Unregister the given |sender_id| from the push messaging service. The
-  // registration will be synchronously deactivated locally, and asynchronously
+  // Unsubscribe the given |sender_id| from the push messaging service. The
+  // subscription will be synchronously deactivated locally, and asynchronously
   // sent to the push service, with automatic retry.
-  virtual void Unregister(const GURL& requesting_origin,
-                          int64 service_worker_registration_id,
-                          const std::string& sender_id,
-                          const UnregisterCallback& callback) = 0;
+  virtual void Unsubscribe(const GURL& requesting_origin,
+                           int64 service_worker_registration_id,
+                           const std::string& sender_id,
+                           const UnregisterCallback& callback) = 0;
 
   // Checks the permission status for the requesting origin. Permission is only
   // ever granted when the requesting origin matches the top level embedding
@@ -103,9 +103,9 @@ class CONTENT_EXPORT PushMessagingService {
                           int64 service_worker_registration_id,
                           const StringCallback& callback);
 
-  // Clear the push registration id stored in the service worker with the given
+  // Clear the push subscription id stored in the service worker with the given
   // |service_worker_registration_id| for the given |origin|.
-  static void ClearPushRegistrationID(BrowserContext* browser_context,
+  static void ClearPushSubscriptionID(BrowserContext* browser_context,
                                       const GURL& origin,
                                       int64 service_worker_registration_id,
                                       const base::Closure& callback);

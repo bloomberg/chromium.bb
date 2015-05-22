@@ -45,17 +45,17 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // Register methods on IO thread ---------------------------------------------
+  // Subscribe methods on IO thread --------------------------------------------
 
-  void OnRegisterFromDocument(int render_frame_id,
-                              int request_id,
-                              const std::string& sender_id,
-                              bool user_visible,
-                              int64_t service_worker_registration_id);
+  void OnSubscribeFromDocument(int render_frame_id,
+                               int request_id,
+                               const std::string& sender_id,
+                               bool user_visible,
+                               int64_t service_worker_registration_id);
 
-  void OnRegisterFromWorker(int request_id,
-                            int64_t service_worker_registration_id,
-                            bool user_visible);
+  void OnSubscribeFromWorker(int request_id,
+                             int64_t service_worker_registration_id,
+                             bool user_visible);
 
   void DidPersistSenderId(const RegisterData& data,
                           const std::string& sender_id,
@@ -94,18 +94,18 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                            PushRegistrationStatus status,
                            const std::string& push_registration_id);
 
-  // Unregister methods on IO thread -------------------------------------------
+  // Unsubscribe methods on IO thread ------------------------------------------
 
-  void OnUnregister(int request_id, int64_t service_worker_registration_id);
+  void OnUnsubscribe(int request_id, int64_t service_worker_registration_id);
 
-  void UnregisterHavingGottenPushRegistrationId(
+  void UnsubscribeHavingGottenPushSubscriptionId(
       int request_id,
       int64_t service_worker_registration_id,
       const GURL& requesting_origin,
-      const std::string& push_registration_id,
+      const std::string& push_subscription_id,
       ServiceWorkerStatusCode service_worker_status);
 
-  void UnregisterHavingGottenSenderId(
+  void UnsubscribeHavingGottenSenderId(
       int request_id,
       int64_t service_worker_registration_id,
       const GURL& requesting_origin,
