@@ -67,6 +67,8 @@ import org.chromium.content.browser.DownloadController;
 import org.chromium.printing.PrintingController;
 import org.chromium.ui.UiUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -149,6 +151,8 @@ public class ChromeMobileApplication extends ChromiumApplication {
     private ChromeLifetimeController mChromeLifetimeController;
     private PrintingController mPrintingController;
     private PolicyManager mPolicyManager;
+    private List<PolicyChangeListener> mPendingPolicyChangeListeners =
+            new ArrayList<PolicyChangeListener>();
 
     /**
      * This is called once per ChromeMobileApplication instance, which get created per process
@@ -329,7 +333,12 @@ public class ChromeMobileApplication extends ChromiumApplication {
         ApplicationStatus.registerApplicationStateListener(createApplicationStateListener());
         AppBannerManager.setAppDetailsDelegate(createAppDetailsDelegate());
         mChromeLifetimeController = new ChromeLifetimeController(this);
+
         mPolicyManager = new PolicyManager();
+        for (int i = 0; i < mPendingPolicyChangeListeners.size(); i++) {
+            mPolicyManager.addPolicyChangeListener(mPendingPolicyChangeListeners.get(i));
+        }
+        mPendingPolicyChangeListeners.clear();
         registerPolicyProviders(mPolicyManager);
 
         PrefServiceBridge.getInstance().migratePreferences(this);
@@ -403,6 +412,7 @@ public class ChromeMobileApplication extends ChromiumApplication {
             PartnerBrowserCustomizations.destroy();
             ShareHelper.clearSharedScreenshots(this);
             mPolicyManager.destroy();
+            mPendingPolicyChangeListeners.clear();
             mPolicyManager = null;
         }
     }
@@ -528,11 +538,25 @@ public class ChromeMobileApplication extends ChromiumApplication {
         manager.registerProvider(new AppRestrictionsProvider(getApplicationContext()));
     }
 
+    /**
+     * Add a listener to be notified upon policy changes.
+     */
     public void addPolicyChangeListener(PolicyChangeListener listener) {
+        if (mPolicyManager == null) {
+            mPendingPolicyChangeListeners.add(listener);
+            return;
+        }
         mPolicyManager.addPolicyChangeListener(listener);
     }
 
+    /**
+     * Remove a listener to be notified upon policy changes.
+     */
     public void removePolicyChangeListener(PolicyChangeListener listener) {
+        if (mPolicyManager == null) {
+            mPendingPolicyChangeListeners.remove(listener);
+            return;
+        }
         mPolicyManager.removePolicyChangeListener(listener);
     }
 
