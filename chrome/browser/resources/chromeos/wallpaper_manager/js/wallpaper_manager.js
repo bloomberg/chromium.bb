@@ -35,7 +35,7 @@ function WallpaperManager(dialogDom) {
    * URL of the learn more page for wallpaper picker.
    */
   /** @const */ var LearnMoreURL =
-      'https://support.google.com/chromeos/?p=wallpaper_fileerror&hl=' +
+      'https://support.google.com/chromebook/?p=wallpaper_fileerror&hl=' +
           navigator.language;
 
   /**

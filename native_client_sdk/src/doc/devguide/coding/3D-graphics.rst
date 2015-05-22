@@ -160,7 +160,7 @@ code should describe the issue as clearly as possible. That's easy if there is a
 missing feature. Failure to create a graphics context is tougher to diagnose. At
 the very least, you can suggest that the user try to update the driver.  You
 might want to linke to the Chrome page that describes `how to do updates
-<http://support.google.com/chrome/bin/answer.py?hl=en&answer=1202946>`_.
+<https://support.google.com/chrome/answer/1202946>`_.
 
 If a user can't update the driver, or their problem persists, be sure to gather
 information about their graphics environment. Ask for the contents of the Chrome

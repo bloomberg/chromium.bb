@@ -10,7 +10,7 @@ namespace autofill {
 
 const char kHelpURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=settings_autofill";
+    "https://support.google.com/chromebook/?p=settings_autofill";
 #else
     "https://support.google.com/chrome/?p=settings_autofill";
 #endif

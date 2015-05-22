@@ -35,7 +35,7 @@ public class ConnectionInfoPopup implements OnClickListener {
     private static final String TAG = "ConnectionInfoPopup";
 
     private static final String HELP_URL =
-            "http://www.google.com/support/chrome/bin/answer.py?answer=95617";
+            "https://support.google.com/chrome/answer/95617";
     private static final int DESCRIPTION_TEXT_SIZE_SP = 12;
     private final Context mContext;
     private final Dialog mDialog;

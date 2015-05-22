@@ -101,8 +101,7 @@ bool InsecureContentInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
       content::OpenURLParams(
-          GURL("https://www.google.com/"
-               "support/chrome/bin/answer.py?answer=1342714"),
+          GURL("https://support.google.com/chrome/answer/1342714"),
           content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
           ui::PAGE_TRANSITION_LINK, false));

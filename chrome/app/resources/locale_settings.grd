@@ -372,7 +372,7 @@
       </message>
 
       <message name="IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL" translateable="false">
-        https://www.google.com/support/chrome/bin/answer.py?answer=1181420
+        https://support.google.com/chrome/answer/1181420
       </message>
 
       <!-- The width for the "create application shortcuts" dialog in characters. -->
@@ -419,7 +419,7 @@
         </message>
 
         <message name="IDS_FACTORY_RESET_HELP_URL" translateable="false">
-          http://support.google.com/chromeos/bin/answer.py?answer=183084&amp;hl=[GRITLANGCODE]
+          https://support.google.com/chromebook/answer/183084?hl=[GRITLANGCODE]
         </message>
       </if>
     </messages>

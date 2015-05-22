@@ -364,7 +364,7 @@ const char kSyncGoogleDashboardURL[] =
 
 const char kPasswordManagerLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=settings_password";
+    "https://support.google.com/chromebook/?p=settings_password";
 #else
     "https://support.google.com/chrome/?p=settings_password";
 #endif
@@ -380,7 +380,7 @@ const char kChromeHelpViaKeyboardURL[] =
 #if defined(OFFICIAL_BUILD)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
-    "https://support.google.com/chromeos/?p=help&ctx=keyboard";
+    "https://support.google.com/chromebook/?p=help&ctx=keyboard";
 #endif  // defined(OFFICIAL_BUILD
 #else
     "https://support.google.com/chrome/?p=help&ctx=keyboard";
@@ -391,7 +391,7 @@ const char kChromeHelpViaMenuURL[] =
 #if defined(OFFICIAL_BUILD)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
-    "https://support.google.com/chromeos/?p=help&ctx=menu";
+    "https://support.google.com/chromebook/?p=help&ctx=menu";
 #endif  // defined(OFFICIAL_BUILD
 #else
     "https://support.google.com/chrome/?p=help&ctx=menu";
@@ -402,7 +402,7 @@ const char kChromeHelpViaWebUIURL[] =
 #if defined(OFFICIAL_BUILD)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
-    "https://support.google.com/chromeos/?p=help&ctx=settings";
+    "https://support.google.com/chromebook/?p=help&ctx=settings";
 #endif  // defined(OFFICIAL_BUILD
 #else
     "https://support.google.com/chrome/?p=help&ctx=settings";
@@ -410,14 +410,14 @@ const char kChromeHelpViaWebUIURL[] =
 
 #if defined(OS_CHROMEOS)
 const char kChromeAccessibilityHelpURL[] =
-    "https://support.google.com/chromeos/?p=accessibility_menu";
+    "https://support.google.com/chromebook/?p=accessibility_menu";
 const char kChromeAccessibilitySettingsURL[] =
     "/chromevox/background/options.html";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 const char kChromeSyncLearnMoreURL[] =
-    "http://support.google.com/chrome/bin/answer.py?answer=165139";
+    "https://support.google.com/chrome/answer/165139";
 
 const char kChromeSyncMergeTroubleshootingURL[] =
     "https://support.google.com/chrome/answer/1181420#merge";
@@ -425,7 +425,7 @@ const char kChromeSyncMergeTroubleshootingURL[] =
 
 #if defined(OS_MACOSX)
 const char kChromeEnterpriseSignInLearnMoreURL[] =
-  "http://support.google.com/chromeos/bin/answer.py?hl=en&answer=1331549";
+    "https://support.google.com/chromebook/answer/1331549";
 #endif
 
 const char kResetProfileSettingsLearnMoreURL[] =
@@ -440,49 +440,49 @@ const char kSupervisedUserManagementDisplayURL[] = "www.chrome.com/manage";
 
 const char kSettingsSearchHelpURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=settings_search_help";
+    "https://support.google.com/chromebook/?p=settings_search_help";
 #else
     "https://support.google.com/chrome/?p=settings_search_help";
 #endif
 
 const char kOmniboxLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=settings_omnibox";
+    "https://support.google.com/chromebook/?p=settings_omnibox";
 #else
     "https://support.google.com/chrome/?p=settings_omnibox";
 #endif
 
 const char kPageInfoHelpCenterURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=ui_security_indicator";
+    "https://support.google.com/chromebook/?p=ui_security_indicator";
 #else
     "https://support.google.com/chrome/?p=ui_security_indicator";
 #endif
 
 const char kCrashReasonURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=e_awsnap";
+    "https://support.google.com/chromebook/?p=e_awsnap";
 #else
     "https://support.google.com/chrome/?p=e_awsnap";
 #endif
 
 const char kKillReasonURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=e_deadjim";
+    "https://support.google.com/chromebook/?p=e_deadjim";
 #else
     "https://support.google.com/chrome/?p=e_deadjim";
 #endif
 
 const char kPrivacyLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=settings_privacy";
+    "https://support.google.com/chromebook/?p=settings_privacy";
 #else
     "https://support.google.com/chrome/?p=settings_privacy";
 #endif
 
 const char kDoNotTrackLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=settings_do_not_track";
+    "https://support.google.com/chromebook/?p=settings_do_not_track";
 #else
     "https://support.google.com/chrome/?p=settings_do_not_track";
 #endif
@@ -538,7 +538,7 @@ const char kSyncEverythingLearnMoreURL[] =
 
 const char kCloudPrintLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=settings_cloud_print";
+    "https://support.google.com/chromebook/?p=settings_cloud_print";
 #else
     "https://support.google.com/chrome/?p=settings_cloud_print";
 #endif
@@ -551,7 +551,7 @@ const char kAppLauncherHelpURL[] =
 
 const char kSyncEncryptionHelpURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=settings_encryption";
+    "https://support.google.com/chromebook/?p=settings_encryption";
 #else
     "https://support.google.com/chrome/?p=settings_encryption";
 #endif
@@ -561,12 +561,12 @@ const char kSyncErrorsHelpURL[] =
 
 #if defined(OS_CHROMEOS)
 const char kNaturalScrollHelpURL[] =
-    "https://support.google.com/chromeos/?p=simple_scrolling";
+    "https://support.google.com/chromebook/?p=simple_scrolling";
 #endif
 
 #if defined(OS_CHROMEOS)
 const char kLearnMoreEnterpriseURL[] =
-    "https://support.google.com/chromeos/bin/answer.py?answer=2535613";
+    "https://support.google.com/chromebook/answer/2535613";
 #endif
 
 const char kRemoveNonCWSExtensionURL[] =

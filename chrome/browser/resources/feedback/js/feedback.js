@@ -6,7 +6,7 @@
  * @const
  */
 var FEEDBACK_LANDING_PAGE =
-    'https://www.google.com/support/chrome/go/feedback_confirmation';
+    'https://support.google.com/chrome/go/feedback_confirmation';
 /** @type {number}
  * @const
  */

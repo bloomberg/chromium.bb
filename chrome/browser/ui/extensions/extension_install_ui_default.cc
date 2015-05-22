@@ -125,7 +125,7 @@ base::string16 ErrorInfoBarDelegate::GetLinkText() const {
 bool ErrorInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   InfoBarService::WebContentsFromInfoBar(infobar())->OpenURL(
       content::OpenURLParams(
-          GURL("http://support.google.com/chrome_webstore/?p=crx_warning"),
+          GURL("https://support.google.com/chrome_webstore/?p=crx_warning"),
           content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
           ui::PAGE_TRANSITION_LINK, false));

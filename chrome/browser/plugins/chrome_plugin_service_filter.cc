@@ -57,7 +57,7 @@ enum PluginGroup {
 };
 
 static const char kLearnMoreUrl[] =
-    "https://www.google.com/support/chrome/bin/answer.py?answer=6213033";
+    "https://support.google.com/chrome/answer/6213033";
 
 void AuthorizeRenderer(content::RenderFrameHost* render_frame_host) {
   ChromePluginServiceFilter::GetInstance()->AuthorizePlugin(

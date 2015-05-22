@@ -134,7 +134,7 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
              file_specific_info.has_document_extension()) {
     const std::string file_extension = file_specific_info.document_extension();
     // What's available offline? See the 'Web' column at:
-    // http://support.google.com/drive/answer/1628467
+    // https://support.google.com/drive/answer/1628467
     properties->available_offline.reset(
         new bool(file_extension == ".gdoc" || file_extension == ".gdraw" ||
                  file_extension == ".gsheet" || file_extension == ".gslides"));

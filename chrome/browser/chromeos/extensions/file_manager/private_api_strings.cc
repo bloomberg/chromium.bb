@@ -23,7 +23,7 @@ const char kGoogleDriveBuyStorageUrl[] =
 
 // Location of the overview page about Google Drive.
 const char kGoogleDriveOverviewUrl[] =
-    "https://support.google.com/chromeos/?p=filemanager_drive";
+    "https://support.google.com/chromebook/?p=filemanager_drive";
 
 // Location of Google drive redeem page.
 const char kGoogleDriveRedeemUrl[] =
@@ -32,7 +32,7 @@ const char kGoogleDriveRedeemUrl[] =
 
 // Location of Google Drive specific help.
 const char kGoogleDriveHelpUrl[] =
-    "https://support.google.com/chromeos/?p=filemanager_drivehelp";
+    "https://support.google.com/chromebook/?p=filemanager_drivehelp";
 
 // Location of Google Drive root.
 const char kGoogleDriveRootUrl[] = "https://drive.google.com";

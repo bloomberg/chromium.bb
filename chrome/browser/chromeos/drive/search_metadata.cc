@@ -296,7 +296,7 @@ bool MatchesType(int options, const ResourceEntry& entry) {
   if (options & SEARCH_METADATA_OFFLINE) {
     if (entry.file_specific_info().is_hosted_document()) {
       // Not all hosted documents are cached by Drive offline app.
-      // http://support.google.com/drive/bin/answer.py?hl=en&answer=1628467
+      // https://support.google.com/drive/answer/2375012
       std::string mime_type = entry.file_specific_info().content_mime_type();
       return mime_type == drive::util::kGoogleDocumentMimeType ||
              mime_type == drive::util::kGoogleSpreadsheetMimeType ||

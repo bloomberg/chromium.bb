@@ -16,7 +16,7 @@ namespace {
 
 const char kAboutGoogleTranslateURL[] =
 #if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=ib_translation_bar";
+    "https://support.google.com/chromebook/?p=ib_translation_bar";
 #else
     "https://support.google.com/chrome/?p=ib_translation_bar";
 #endif

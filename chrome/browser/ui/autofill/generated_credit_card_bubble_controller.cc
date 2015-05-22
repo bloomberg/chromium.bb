@@ -39,7 +39,7 @@ namespace {
 static const int kMaxGeneratedCardTimesToShow = INT_MAX;
 static const base::char16 kRangeSeparator = '|';
 static const char kWalletGeneratedCardLearnMoreLink[] =
-    "http://support.google.com/wallet/bin/answer.py?hl=en&answer=2740044";
+    "https://support.google.com/wallet/answer/2740044";
 
 GeneratedCreditCardBubbleController* GetOrCreate(content::WebContents* wc) {
   GeneratedCreditCardBubbleController::CreateForWebContents(wc);

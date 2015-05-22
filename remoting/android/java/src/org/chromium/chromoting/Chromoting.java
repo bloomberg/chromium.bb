@@ -57,7 +57,7 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
 
     /** Web page to be displayed in the Help screen when launched from this activity. */
     private static final String HELP_URL =
-            "http://support.google.com/chrome/?p=mobile_crd_hostslist";
+            "https://support.google.com/chrome/?p=mobile_crd_hostslist";
 
     /** Web page to be displayed when user triggers the hyperlink for setting up hosts. */
     private static final String HOST_SETUP_URL =
