@@ -2938,26 +2938,6 @@ _CONFIG.AddConfig(project_sdk,
   use_lkgm=False,
 )
 
-def GetDisplayPosition(config_name,
-                       type_order=config_lib.CONFIG_TYPE_DUMP_ORDER):
-  """Given a config_name, return display position specified by suffix_order.
-
-  Args:
-    config_name: Name of config to look up.
-    type_order: A tuple/list of config types in the order they are to be
-                displayed.
-
-  Returns:
-    If |config_name| does not contain any of the suffixes, returns the index
-    position after the last element of suffix_order.
-  """
-  for index, config_type in enumerate(type_order):
-    if config_name.endswith('-' + config_type) or config_name == config_type:
-      return index
-
-  return len(type_order)
-
-
 # On release branches, x86-mario is the release master.
 #
 # TODO(dnj): This should go away once the boardless release master is complete

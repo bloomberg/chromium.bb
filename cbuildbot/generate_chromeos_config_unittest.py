@@ -426,43 +426,35 @@ class CBuildBotTest(cros_test_lib.TestCase):
             'Chrome lkgm currently only works with an internal manifest: %s' % (
                 build_name,))
 
+  def _HasValidSuffix(self, config_name, config_types):
+    """Given a config_name, see if it has a suffix in config_types.
+
+    Args:
+      config_name: Name of config to compare.
+      config_types: A tuple/list of config suffixes.
+
+    Returns:
+      True, if the config has a suffix matching one of the types.
+    """
+    for config_type in config_types:
+      if config_name.endswith('-' + config_type) or config_name == config_type:
+        return True
+
+    return False
+
   def testNonOverlappingConfigTypes(self):
     """Test that a config can only match one build suffix."""
+    # This test belongs in config_lib_unittest, except nobody else cares.
     for config_type in config_lib.CONFIG_TYPE_DUMP_ORDER:
-      # A longer config_type should never end with a shorter suffix.
-      my_list = list(config_lib.CONFIG_TYPE_DUMP_ORDER)
-      my_list.remove(config_type)
-      self.assertEquals(
-          generate_chromeos_config.GetDisplayPosition(
-              config_type, type_order=my_list),
-          len(my_list))
-
-  def testCorrectConfigTypeIndex(self):
-    """Test that the correct build suffix index is returned."""
-    type_order = (
-        'type1',
-        'donkey-type2',
-        'kong-type3')
-
-    for index, config_type in enumerate(type_order):
-      config = '-'.join(['pre-fix', config_type])
-      self.assertEquals(
-          generate_chromeos_config.GetDisplayPosition(
-              config, type_order=type_order),
-          index)
-
-    # Verify suffix needs to match up to a '-'.
-    self.assertEquals(
-        generate_chromeos_config.GetDisplayPosition(
-            'pre-fix-sometype1', type_order=type_order),
-        len(type_order))
+      trimmed_configs = list(config_lib.CONFIG_TYPE_DUMP_ORDER)
+      trimmed_configs.remove(config_type)
+      self.assertFalse(self._HasValidSuffix(config_type, trimmed_configs))
 
   def testConfigTypesComplete(self):
     """Verify CONFIG_TYPE_DUMP_ORDER contains all valid config types."""
     for config_name in generate_chromeos_config.GetConfig():
-      self.assertNotEqual(
-          generate_chromeos_config.GetDisplayPosition(config_name),
-          len(config_lib.CONFIG_TYPE_DUMP_ORDER),
+      self.assertTrue(
+          self._HasValidSuffix(config_name, config_lib.CONFIG_TYPE_DUMP_ORDER),
           '%s did not match any types in %s' %
           (config_name, 'config_lib.CONFIG_TYPE_DUMP_ORDER'))
 

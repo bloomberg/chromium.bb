@@ -23,6 +23,7 @@ CONFIG_TYPE_FIRMWARE = 'firmware'
 CONFIG_TYPE_FACTORY = 'factory'
 CONFIG_TYPE_RELEASE_AFDO = 'release-afdo'
 
+# This is only used for unitests... find a better solution?
 CONFIG_TYPE_DUMP_ORDER = (
     CONFIG_TYPE_PALADIN,
     constants.PRE_CQ_GROUP_CONFIG,
