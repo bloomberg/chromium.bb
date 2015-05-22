@@ -8,7 +8,6 @@ include_rules = [
   "+components/mime_util",
   "+components/resource_provider/public",
   "+components/scheduler",
-  "+components/surfaces",
   "+components/view_manager",
   "+components/webcrypto",
   "+gin",
