@@ -251,7 +251,7 @@ void ChangeQueue::EraseNotification(const std::string& id, bool by_user) {
   if (iter == changes_.rend()) {
     scoped_ptr<Change> change(new Change(CHANGE_TYPE_DELETE, id, nullptr));
     change->set_by_user(by_user);
-    changes_.push_back(change.release());
+    changes_.push_back(change.Pass());
     return;
   }
 

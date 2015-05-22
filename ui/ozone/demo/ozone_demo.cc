@@ -316,7 +316,7 @@ void WindowManager::OnDisplayConfigured(const gfx::Rect& bounds, bool success) {
     scoped_ptr<DemoWindow> window(
         new DemoWindow(this, &renderer_factory_, bounds));
     window->Start();
-    windows_.push_back(window.release());
+    windows_.push_back(window.Pass());
   } else {
     LOG(ERROR) << "Failed to configure display at " << bounds.ToString();
   }

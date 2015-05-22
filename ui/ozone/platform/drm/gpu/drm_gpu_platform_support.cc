@@ -182,7 +182,7 @@ DrmGpuPlatformSupport::~DrmGpuPlatformSupport() {
 }
 
 void DrmGpuPlatformSupport::AddHandler(scoped_ptr<GpuPlatformSupport> handler) {
-  handlers_.push_back(handler.release());
+  handlers_.push_back(handler.Pass());
 }
 
 void DrmGpuPlatformSupport::OnChannelEstablished(IPC::Sender* sender) {

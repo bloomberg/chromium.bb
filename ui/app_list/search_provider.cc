@@ -14,7 +14,7 @@ SearchProvider::~SearchProvider() {
 }
 
 void SearchProvider::Add(scoped_ptr<SearchResult> result) {
-  results_.push_back(result.release());
+  results_.push_back(result.Pass());
   FireResultChanged();
 }
 

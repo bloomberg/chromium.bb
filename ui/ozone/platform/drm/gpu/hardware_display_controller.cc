@@ -134,7 +134,7 @@ void HardwareDisplayController::AddCrtc(scoped_ptr<CrtcController> controller) {
   owned_hardware_planes_.add(
       controller->drm().get(),
       scoped_ptr<HardwareDisplayPlaneList>(new HardwareDisplayPlaneList()));
-  crtc_controllers_.push_back(controller.release());
+  crtc_controllers_.push_back(controller.Pass());
 }
 
 scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(

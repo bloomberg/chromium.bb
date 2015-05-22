@@ -109,7 +109,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
     scoped_ptr<HardwareDisplayPlane> plane(
         CreatePlane(drm_plane->plane_id, drm_plane->possible_crtcs));
     if (plane->Initialize(drm))
-      planes_.push_back(plane.release());
+      planes_.push_back(plane.Pass());
   }
 
   // crbug.com/464085: if driver reports no primary planes for a crtc, create a
@@ -123,7 +123,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
             CreatePlane(resources->crtcs[i] - 1, (1 << i)));
         dummy_plane->set_is_dummy(true);
         if (dummy_plane->Initialize(drm))
-          planes_.push_back(dummy_plane.release());
+          planes_.push_back(dummy_plane.Pass());
       }
     }
   }

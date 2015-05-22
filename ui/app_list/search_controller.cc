@@ -122,7 +122,7 @@ void SearchController::AddProvider(size_t group_id,
       &SearchController::OnResultsChanged,
       base::Unretained(this)));
   mixer_->AddProviderToGroup(group_id, provider.get());
-  providers_.push_back(provider.release());  // Takes ownership.
+  providers_.push_back(provider.Pass());
 }
 
 void SearchController::OnResultsChanged() {
