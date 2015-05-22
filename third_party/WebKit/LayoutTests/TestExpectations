@@ -40,10 +40,6 @@ crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/keyboard-scroll-page-scale.html [ Failure ]
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
 
-# Slimming Paint printing failures
-crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Crash Timeout Pass ]
-crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing.html [ Crash Timeout Pass ]
-
 crbug.com/464039 [ Mac ] fast/block/float/float-mark-descendants-for-layout-crash.html [ Pass Crash ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests

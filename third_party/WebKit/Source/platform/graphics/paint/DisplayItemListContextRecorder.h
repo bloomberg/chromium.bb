@@ -25,6 +25,8 @@ public:
         m_displayItemList = DisplayItemList::create();
         m_displayItemListContext = adoptPtr(new GraphicsContext(m_displayItemList.get(),
             context.contextDisabled() ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled));
+        m_displayItemListContext->setDeviceScaleFactor(context.deviceScaleFactor());
+        m_displayItemListContext->setPrinting(context.printing());
     }
 
     ~DisplayItemListContextRecorder()

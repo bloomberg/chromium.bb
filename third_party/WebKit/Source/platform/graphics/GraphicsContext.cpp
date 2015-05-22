@@ -1060,7 +1060,9 @@ void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkRect* src,
     // Textures are bound to the blink main-thread GrContext, which can not be
     // used on the compositor raster thread.
     // FIXME: Mailbox support would make this possible in the GPU-raster case.
-    ASSERT(!isRecording() || !bitmap.getTexture());
+    // If we're printing it is safe to access the texture because we are always
+    // on main thread, even if the other conditions are not met.
+    ASSERT(!isRecording() || !bitmap.getTexture() || printing());
     if (contextDisabled())
         return;
 
