@@ -63,14 +63,6 @@ public:
         assign(other);
         return *this;
     }
-    bool operator==(const WebRTCSessionDescription& other)
-    {
-        return sdp() == other.sdp() && type() == other.type();
-    }
-    bool operator!=(const WebRTCSessionDescription& other)
-    {
-        return !(*this == other);
-    }
 
     BLINK_PLATFORM_EXPORT void assign(const WebRTCSessionDescription&);
 

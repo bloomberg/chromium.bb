@@ -44,12 +44,7 @@ class VoidCallback;
 class RTCVoidRequestImpl final : public RTCVoidRequest, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCVoidRequestImpl);
 public:
-    enum RequestType {
-        RequestTypeNone,
-        RequestTypeLocal,
-        RequestTypeRemote
-    };
-    static RTCVoidRequestImpl* create(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCErrorCallback*, RequestType);
+    static RTCVoidRequestImpl* create(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCErrorCallback*);
     virtual ~RTCVoidRequestImpl();
 
     // RTCVoidRequest
@@ -62,14 +57,13 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RTCVoidRequestImpl(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCErrorCallback*, RequestType);
+    RTCVoidRequestImpl(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCErrorCallback*);
 
     void clear();
 
     Member<VoidCallback> m_successCallback;
     Member<RTCErrorCallback> m_errorCallback;
     Member<RTCPeerConnection> m_requester;
-    RequestType m_requestType;
 };
 
 } // namespace blink
