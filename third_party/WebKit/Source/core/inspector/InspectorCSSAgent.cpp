@@ -1109,7 +1109,11 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
 
     const MediaQuerySet* queries = media->queries();
     const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& queryVector = queries->queryVector();
-    LocalFrame* frame = parentStyleSheet ? parentStyleSheet->ownerDocument()->frame() : nullptr;
+    LocalFrame* frame = nullptr;
+    if (parentStyleSheet) {
+        if (Document* document = parentStyleSheet->ownerDocument())
+            frame = document->frame();
+    }
     OwnPtr<MediaQueryEvaluator> mediaEvaluator = adoptPtr(new MediaQueryEvaluator(frame));
 
     InspectorStyleSheet* inspectorStyleSheet = parentStyleSheet ? m_cssStyleSheetToInspectorStyleSheet.get(parentStyleSheet) : nullptr;
