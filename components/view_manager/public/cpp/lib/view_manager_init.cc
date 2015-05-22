@@ -59,7 +59,7 @@ void ViewManagerInit::OnCreate(InterfaceRequest<ViewManagerClient> request) {
 }
 
 void ViewManagerInit::OnConnectionError() {
-  mojo::ApplicationImpl::Terminate();
+  app_->Terminate();
 }
 
 }  // namespace mojo

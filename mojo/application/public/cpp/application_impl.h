@@ -92,7 +92,7 @@ class ApplicationImpl : public Application {
                          ShellPtr* shell);
 
   // Quits the main run loop for this application.
-  static void Terminate();
+  void Terminate();
 
  protected:
   // Application implementation.

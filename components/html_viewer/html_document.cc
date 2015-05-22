@@ -364,8 +364,8 @@ void HTMLDocument::OnViewViewportMetricsChanged(
 void HTMLDocument::OnViewDestroyed(View* view) {
   DCHECK_EQ(view, root_);
   root_ = nullptr;
+  setup_->app()->Terminate();
   delete this;
-  mojo::ApplicationImpl::Terminate();
 }
 
 void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {

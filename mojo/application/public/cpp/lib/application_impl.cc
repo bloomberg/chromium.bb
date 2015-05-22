@@ -4,6 +4,7 @@
 
 #include "mojo/application/public/cpp/application_impl.h"
 
+#include "base/message_loop/message_loop.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/lib/service_registry.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -87,6 +88,11 @@ void ApplicationImpl::UnbindConnections(
     ShellPtr* shell) {
   *application_request = binding_.Unbind();
   shell->Bind(shell_.PassInterface());
+}
+
+void ApplicationImpl::Terminate() {
+  if (base::MessageLoop::current()->is_running())
+    base::MessageLoop::current()->Quit();
 }
 
 void ApplicationImpl::AcceptConnection(

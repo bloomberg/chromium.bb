@@ -49,8 +49,8 @@ class Setup {
   void InitIfNecessary(const gfx::Size& screen_size_in_pixels,
                        float device_pixel_ratio);
 
+  mojo::ApplicationImpl* app() const { return app_; }
   bool is_headless() const { return is_headless_; }
-
   bool did_init() const { return did_init_; }
 
   const gfx::Size& screen_size_in_pixels() const {

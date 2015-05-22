@@ -27,12 +27,6 @@ __attribute__((visibility("default"))) void InitCommandLineArgs(
 
 namespace mojo {
 
-// static
-void ApplicationImpl::Terminate() {
-  if (base::MessageLoop::current()->is_running())
-    base::MessageLoop::current()->Quit();
-}
-
 ApplicationRunner::ApplicationRunner(ApplicationDelegate* delegate)
     : delegate_(scoped_ptr<ApplicationDelegate>(delegate)),
       message_loop_type_(base::MessageLoop::TYPE_CUSTOM),

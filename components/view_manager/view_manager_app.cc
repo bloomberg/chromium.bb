@@ -72,7 +72,7 @@ bool ViewManagerApp::ConfigureIncomingConnection(
 }
 
 void ViewManagerApp::OnLostConnectionToWindowManager() {
-  ApplicationImpl::Terminate();
+  app_impl_->Terminate();
 }
 
 ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(
@@ -160,7 +160,7 @@ void ViewManagerApp::Create(
 }
 
 void ViewManagerApp::OnConnectionError() {
-  ApplicationImpl::Terminate();
+  app_impl_->Terminate();
 }
 
 }  // namespace view_manager
