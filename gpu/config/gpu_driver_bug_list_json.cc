@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.05",
+  "version": "8.07",
   "entries": [
     {
       "id": 1,
@@ -1368,6 +1368,23 @@ LONG_STRING_CONST(
       },
       "disabled_extensions": [
         "GL_EXT_disjoint_timer_query"
+      ]
+    },
+    {
+      "id": 116,
+      "description": "Adreno 420 support for EXT_multisampled_render_to_texture is buggy on Android < 5.1",
+      "cr_bugs": [490379],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "5.1"
+        }
+      },
+      "gl_vendor": "Qualcomm.*",
+      "gl_renderer": ".*420",
+      "features": [
+        "disable_multisampled_render_to_texture"
       ]
     }
   ]
