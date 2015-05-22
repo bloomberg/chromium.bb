@@ -353,7 +353,7 @@ bool TestPlugin::PrepareTextureMailbox(
   if (texture_mailbox_.IsTexture()) {
     *release_callback =
         cc::SingleReleaseCallback::Create(base::Bind(&IgnoreReleaseCallback));
-  } else {
+  } else if (texture_mailbox_.IsSharedMemory()) {
     *release_callback = cc::SingleReleaseCallback::Create(
         base::Bind(&ReleaseSharedMemory, base::Passed(&shared_bitmap_)));
   }
