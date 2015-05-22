@@ -20,6 +20,7 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
+from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib
@@ -999,3 +1000,70 @@ pre-cq-configs: link-pre-cq
     requeued_actions = [a for a in actions_for_patch
                         if a.action == constants.CL_ACTION_REQUEUED]
     self.assertEqual(1, len(requeued_actions))
+
+
+class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
+  """Unit tests for MasterSlaveLKGMSyncStage"""
+
+  BOT_ID = constants.PFQ_MASTER
+
+  def setUp(self):
+    """Setup"""
+    self.source_repo = 'ssh://source/repo'
+    self.manifest_version_url = 'fake manifest url'
+    self.branch = 'master'
+    self.build_name = 'master-chromium-pfq'
+    self.incr_type = 'branch'
+    self.next_version = 'next_version'
+    self.sync_stage = None
+
+    repo = repository.RepoRepository(
+        self.source_repo, self.tempdir, self.branch)
+    self.manager = lkgm_manager.LKGMManager(
+        source_repo=repo, manifest_repo=self.manifest_version_url,
+        build_names=[self.build_name],
+        build_type=constants.CHROME_PFQ_TYPE,
+        incr_type=self.incr_type,
+        force=False, branch=self.branch, dry_run=True)
+
+    # Create and set up a fake cidb instance.
+    self.fake_db = fake_cidb.FakeCIDBConnection()
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
+
+    self._Prepare()
+
+  def _Prepare(self, bot_id=None, **kwargs):
+    super(MasterSlaveLKGMSyncTest, self)._Prepare(bot_id, **kwargs)
+
+    self._run.config['manifest_version'] = self.manifest_version_url
+    self.sync_stage = sync_stages.MasterSlaveLKGMSyncStage(self._run)
+    self.sync_stage.manifest_manager = self.manager
+    self._run.attrs.manifest_manager = self.manager
+
+  def testGetLastChromeOSVersion(self):
+    """Test GetLastChromeOSVersion"""
+    id1 = self.fake_db.InsertBuild(
+        builder_name='test_builder',
+        waterfall=constants.WATERFALL_TRYBOT,
+        build_number=666,
+        build_config='master-chromium-pfq',
+        bot_hostname='test_hostname')
+    id2 = self.fake_db.InsertBuild(
+        builder_name='test_builder',
+        waterfall=constants.WATERFALL_TRYBOT,
+        build_number=667,
+        build_config='master-chromium-pfq',
+        bot_hostname='test_hostname')
+    metadata_1 = metadata_lib.CBuildbotMetadata()
+    metadata_1.UpdateWithDict(
+        {'version': {'full': 'R42-7140.0.0-rc1'}})
+    metadata_2 = metadata_lib.CBuildbotMetadata()
+    metadata_2.UpdateWithDict(
+        {'version': {'full': 'R43-7141.0.0-rc1'}})
+    self._run.attrs.metadata.UpdateWithDict(
+        {'version': {'full': 'R44-7142.0.0-rc1'}})
+    self.fake_db.UpdateMetadata(id1 + 1, metadata_1)
+    self.fake_db.UpdateMetadata(id2 + 1, metadata_2)
+    v = self.sync_stage.GetLastChromeOSVersion()
+    self.assertEqual(v.milestone, '43')
+    self.assertEqual(v.platform, '7141.0.0-rc1')

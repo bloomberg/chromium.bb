@@ -452,6 +452,7 @@ class BuildSpecsManager(object):
     self.master = master
 
     # Directories and specifications are set once we load the specs.
+    self.buildspecs_dir = None
     self.all_specs_dir = None
     self.pass_dirs = None
     self.fail_dirs = None
@@ -509,11 +510,11 @@ class BuildSpecsManager(object):
     assert version_info or version, 'version or version_info must be specified'
     working_dir = os.path.join(self.manifest_dir, self.rel_working_dir)
     specs_for_builder = os.path.join(working_dir, 'build-name', '%(builder)s')
-    buildspecs = os.path.join(working_dir, 'buildspecs')
+    self.buildspecs_dir = os.path.join(working_dir, 'buildspecs')
 
     # If version is specified, find out what Chrome branch it is on.
     if version is not None:
-      dirs = glob.glob(os.path.join(buildspecs, '*', version + '.xml'))
+      dirs = glob.glob(os.path.join(self.buildspecs_dir, '*', version + '.xml'))
       if len(dirs) == 0:
         return False
       assert len(dirs) <= 1, 'More than one spec found for %s' % version
@@ -522,7 +523,7 @@ class BuildSpecsManager(object):
     else:
       dir_pfx = version_info.chrome_branch
 
-    self.all_specs_dir = os.path.join(buildspecs, dir_pfx)
+    self.all_specs_dir = os.path.join(self.buildspecs_dir, dir_pfx)
     self.pass_dirs, self.fail_dirs = [], []
     for build_name in self.build_names:
       specs_for_build = specs_for_builder % {'builder': build_name}
@@ -544,6 +545,18 @@ class BuildSpecsManager(object):
           self.latest_unprocessed = self.latest
 
     return True
+
+  def GetBuildSpecFilePath(self, milestone, platform):
+    """Get the file path given milestone and platform versions.
+
+    Args:
+      milestone: a string representing milestone, e.g. '44'
+      platform: a string representing platform version, e.g. '7072.0.0-rc4'
+
+    Returns:
+      A string, representing the path to its spec file.
+    """
+    return os.path.join(self.buildspecs_dir, milestone, platform + '.xml')
 
   def GetCurrentVersionInfo(self):
     """Returns the current version info from the version file."""
