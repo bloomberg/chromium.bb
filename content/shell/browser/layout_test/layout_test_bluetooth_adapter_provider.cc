@@ -70,22 +70,17 @@ namespace content {
 scoped_refptr<BluetoothAdapter>
 LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     const std::string& fake_adapter_name) {
-  // TODO(ortuno): Remove RejectRequestDevice once LayoutTests are modified
-  if (fake_adapter_name == "RejectRequestDevice_NotFoundError" ||
-      fake_adapter_name == "EmptyAdapter") {
+  if (fake_adapter_name == "EmptyAdapter")
     return GetEmptyAdapter();
-  }
-  // TODO(ortuno): Remove "Single Empty Device" once LayoutTests are modified
-  else if (fake_adapter_name == "Single Empty Device" ||
-           fake_adapter_name == "SingleEmptyDeviceAdapter") {
+  else if (fake_adapter_name == "SingleEmptyDeviceAdapter")
     return GetSingleEmptyDeviceAdapter();
-  } else if (fake_adapter_name == "ConnectableDeviceAdapter") {
+  else if (fake_adapter_name == "ConnectableDeviceAdapter")
     return GetConnectableDeviceAdapter();
-  } else if (fake_adapter_name == "UnconnectableDeviceAdapter") {
+  else if (fake_adapter_name == "UnconnectableDeviceAdapter")
     return GetUnconnectableDeviceAdapter();
-  } else if (fake_adapter_name == "") {
+  else if (fake_adapter_name == "")
     return NULL;
-  }
+
   NOTREACHED();
   return NULL;
 }

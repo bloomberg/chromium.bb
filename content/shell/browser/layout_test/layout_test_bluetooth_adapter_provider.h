@@ -30,7 +30,7 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetEmptyAdapter();
 
-  // Returns "SingleEmptyDevice" fake BluetoothAdapter with the following
+  // Returns "SingleEmptyDeviceAdapter" fake BluetoothAdapter with the following
   // characteristics:
   //  - |StartDiscoverySession| runs the first argument with |DiscoverySession|
   //    as argument.
