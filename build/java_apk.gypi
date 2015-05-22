@@ -642,6 +642,7 @@
             '--build-device-configuration=<(build_device_config_path)',
             '--install-record=<(apk_install_record)',
             '--configuration-name=<(CONFIGURATION_NAME)',
+            '--android-sdk-tools', '<(android_sdk_tools)',
           ],
           'conditions': [
             ['create_abi_split == 1', {
