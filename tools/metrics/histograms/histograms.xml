@@ -4629,6 +4629,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.ProxyPrefMigrationResult"
+    enum="DataReductionProxyProxyPrefMigrationResult">
+  <owner>sclittle@chromium.org</owner>
+  <summary>
+    Records the result of migrating the Data Reduction Proxy away from being
+    configured via a proxy preference, including cases when no migration action
+    was taken.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.RequestCompletionErrorCodes"
     enum="NetErrorCodes">
   <owner>sclittle@chromium.org</owner>
@@ -49960,6 +49970,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Dismissed from second screen"/>
   <int value="2" label="Enabled from first screen"/>
   <int value="3" label="Enabled from second screen"/>
+</enum>
+
+<enum name="DataReductionProxyProxyPrefMigrationResult" type="int">
+  <int value="0" label="Proxy pref not cleared"/>
+  <int value="1" label="Empty proxy pref was cleared"/>
+  <int value="2" label="System proxy pref was cleared"/>
+  <int value="3" label="Proxy pref containing a DRP was cleared"/>
+  <int value="4"
+      label="Proxy pref containing a *.googlezip.net proxy was cleared"/>
 </enum>
 
 <enum name="DataReductionProxyResponseProxyServerStatus" type="int">

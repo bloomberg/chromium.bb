@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_util.h"
@@ -67,42 +68,57 @@ bool ContainsDataReductionProxyDefaultHostSuffix(
 // prefs, if present. |proxy_pref_name| is the name of the proxy pref.
 void DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefs(
     PrefService* prefs) {
+  ProxyPrefMigrationResult proxy_pref_status =
+      MigrateDataReductionProxyOffProxyPrefsHelper(prefs);
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.ProxyPrefMigrationResult",
+                            proxy_pref_status,
+                            DataReductionProxyChromeSettings::PROXY_PREF_MAX);
+}
+
+DataReductionProxyChromeSettings::ProxyPrefMigrationResult
+DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
+    PrefService* prefs) {
   base::DictionaryValue* dict =
-      (base::DictionaryValue*) prefs->GetUserPrefValue(prefs::kProxy);
+      (base::DictionaryValue*)prefs->GetUserPrefValue(prefs::kProxy);
   if (!dict)
-    return;
+    return PROXY_PREF_NOT_CLEARED;
 
   // Clear empty "proxy" dictionary created by a bug. See http://crbug/448172.
   if (dict->empty()) {
     prefs->ClearPref(prefs::kProxy);
-    return;
+    return PROXY_PREF_CLEARED_EMPTY;
   }
 
   std::string mode;
   if (!dict->GetString("mode", &mode))
-    return;
+    return PROXY_PREF_NOT_CLEARED;
   // Clear "system" proxy entry since this is the default. This entry was
   // created by bug (http://crbug/448172).
   if (ProxyModeToString(ProxyPrefs::MODE_SYSTEM) == mode) {
     prefs->ClearPref(prefs::kProxy);
-    return;
+    return PROXY_PREF_CLEARED_MODE_SYSTEM;
   }
   if (ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS) != mode)
-    return;
+    return PROXY_PREF_NOT_CLEARED;
   std::string proxy_server;
   if (!dict->GetString("server", &proxy_server))
-    return;
+    return PROXY_PREF_NOT_CLEARED;
   net::ProxyConfig::ProxyRules proxy_rules;
   proxy_rules.ParseFromString(proxy_server);
   // Clear the proxy pref if it matches a currently configured Data Reduction
   // Proxy, or if the proxy host ends with ".googlezip.net", in order to ensure
   // that any DRP in the pref is cleared even if the DRP configuration was
   // changed. See http://crbug.com/476610.
-  if (!Config()->ContainsDataReductionProxy(proxy_rules) &&
-      !ContainsDataReductionProxyDefaultHostSuffix(proxy_rules)) {
-    return;
-  }
+  ProxyPrefMigrationResult rv;
+  if (Config()->ContainsDataReductionProxy(proxy_rules))
+    rv = PROXY_PREF_CLEARED_DRP;
+  else if (ContainsDataReductionProxyDefaultHostSuffix(proxy_rules))
+    rv = PROXY_PREF_CLEARED_GOOGLEZIP;
+  else
+    return PROXY_PREF_NOT_CLEARED;
+
   prefs->ClearPref(prefs::kProxy);
+  return rv;
 }
 
 DataReductionProxyChromeSettings::DataReductionProxyChromeSettings()
