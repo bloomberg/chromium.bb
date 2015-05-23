@@ -116,6 +116,10 @@
 #include "chrome/browser/signin/cross_device_promo_factory.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
+#endif
+
 #if !defined(OS_ANDROID)
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #endif
@@ -202,6 +206,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_EXTENSIONS)
   EasyUnlockServiceFactory::GetInstance();
   EnhancedBookmarkKeyServiceFactory::GetInstance();
+#endif
+#if defined(OS_CHROMEOS)
+  extensions::VerifyTrustAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();
   FindBarStateFactory::GetInstance();

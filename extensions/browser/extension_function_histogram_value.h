@@ -1099,6 +1099,7 @@ enum HistogramValue {
   PASSWORDSPRIVATE_REMOVEPASSWORDEXCEPTION,
   PASSWORDSPRIVATE_GETPLAINTEXTPASSWORD,
   LAUNCHERPAGE_HIDE,
+  PLATFORMKEYS_VERIFYTLSSERVERCERTIFICATE,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

@@ -13,12 +13,13 @@
 namespace net {
 class X509Certificate;
 typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
-}
+}  // net
 
 namespace extensions {
 namespace platform_keys {
 
 extern const char kErrorInvalidToken[];
+extern const char kErrorInvalidX509Cert[];
 
 // Returns whether |token_id| references a known Token.
 bool ValidateToken(const std::string& token_id,
@@ -68,6 +69,18 @@ class PlatformKeysInternalSignFunction
 
   DECLARE_EXTENSION_FUNCTION("platformKeysInternal.sign",
                              PLATFORMKEYSINTERNAL_SIGN);
+};
+
+class PlatformKeysVerifyTLSServerCertificateFunction
+    : public UIThreadExtensionFunction {
+ private:
+  ~PlatformKeysVerifyTLSServerCertificateFunction() override;
+  ResponseAction Run() override;
+
+  void FinishedVerification(const std::string& error, int result);
+
+  DECLARE_EXTENSION_FUNCTION("platformKeys.verifyTLSServerCertificate",
+                             PLATFORMKEYS_VERIFYTLSSERVERCERTIFICATE);
 };
 
 }  // namespace extensions

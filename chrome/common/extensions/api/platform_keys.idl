@@ -59,6 +59,24 @@ namespace platformKeys {
     boolean interactive;
   };
 
+  dictionary VerificationDetails {
+    // Each chain entry must be the DER encoding of a X.509 certificate, the
+    // first entry must be the server certificate and each entry must certify
+    // the entry preceding it.
+    ArrayBuffer[] serverCertificateChain;
+
+    // The hostname of the server to verify the certificate for, e.g. the server
+    // that presented the <code>serverCertificateChain</code>.
+    DOMString hostname;
+  };
+
+  dictionary VerificationResult {
+    // The result of the trust verificaiton: true if trust for the given
+    // verification details could be established and false if trust is rejected
+    // for any reason.
+    boolean trusted;
+  };
+
   // |matches|: The list of certificates that match the request, that the
   // extension has permission for and, if <code>interactive</code> is true, that
   // were selected by the user.
@@ -72,6 +90,8 @@ namespace platformKeys {
   //   access to it.
   callback GetKeyPairCallback = void (object publicKey, 
                                       optional object privateKey);
+
+  callback VerificationCallback = void (VerificationResult result);
 
   interface Functions {
     // This function filters from a list of client certificates the ones that
@@ -108,6 +128,18 @@ namespace platformKeys {
     // that allows crypto operations on keys of client certificates that are
     // available to this extension.
     [nocompile] static object subtleCrypto();
+
+    // Checks whether <code>details.serverCertificateChain</code> can be trusted
+    // for <code>details.serverHostname</code> according to the trust
+    // settings of the platform.
+    // Note: The actual behavior of the trust verification is not fully
+    // specified and might change in the future.
+    // The API implementation verifies certificate expiration, validates the
+    // certification path and checks trust by a known CA.
+    // The implementation is supposed to respect the EKU serverAuth and to
+    // support subject alternative names.
+    static void verifyTLSServerCertificate(VerificationDetails details,
+                                           VerificationCallback callback);
   };
 };
 
