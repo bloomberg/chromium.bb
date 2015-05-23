@@ -345,8 +345,8 @@ std::string DescribeContext(GSSAPILibrary* gssapi_lib,
                                              &ctx_flags,
                                              &locally_initiated,
                                              &open);
-  ScopedName(src_name, gssapi_lib);
-  ScopedName(targ_name, gssapi_lib);
+  ScopedName scoped_src_name(src_name, gssapi_lib);
+  ScopedName scoped_targ_name(targ_name, gssapi_lib);
   if (major_status != GSS_S_COMPLETE) {
     std::string error =
         base::StringPrintf("Unable to describe context 0x%p, %s",
