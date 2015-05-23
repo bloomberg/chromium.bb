@@ -40,6 +40,9 @@ using base::TimeTicks;
 namespace content {
 namespace {
 
+// The interval for calls to ResourceLoader::ReportUploadProgress.
+const int kUploadProgressIntervalMsec = 100;
+
 void PopulateResourceResponse(ResourceRequestInfoImpl* info,
                               net::URLRequest* request,
                               ResourceResponse* response) {
@@ -139,6 +142,8 @@ void ResourceLoader::CancelWithError(int error_code) {
 }
 
 void ResourceLoader::ReportUploadProgress() {
+  DCHECK(GetRequestInfo()->is_upload_progress_enabled());
+
   if (waiting_for_upload_progress_ack_)
     return;  // Send one progress event at a time.
 
@@ -161,11 +166,8 @@ void ResourceLoader::ReportUploadProgress() {
   bool too_much_time_passed = time_since_last > kOneSecond;
 
   if (is_finished || enough_new_progress || too_much_time_passed) {
-    ResourceRequestInfoImpl* info = GetRequestInfo();
-    if (info->is_upload_progress_enabled()) {
-      handler_->OnUploadProgress(progress.position(), progress.size());
-      waiting_for_upload_progress_ack_ = true;
-    }
+    handler_->OnUploadProgress(progress.position(), progress.size());
+    waiting_for_upload_progress_ack_ = true;
     last_upload_ticks_ = TimeTicks::Now();
     last_upload_position_ = progress.position();
   }
@@ -334,6 +336,8 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
 
   VLOG(1) << "OnResponseStarted: " << request_->url().spec();
 
+  progress_timer_.Stop();
+
   // The CanLoadPage check should take place after any server redirects have
   // finished, at the point in time that we know a page will commit in the
   // renderer process.
@@ -355,8 +359,10 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
   // We want to send a final upload progress message prior to sending the
   // response complete message even if we're waiting for an ack to to a
   // previous upload progress message.
-  waiting_for_upload_progress_ack_ = false;
-  ReportUploadProgress();
+  if (info->is_upload_progress_enabled()) {
+    waiting_for_upload_progress_ack_ = false;
+    ReportUploadProgress();
+  }
 
   CompleteResponseStarted();
 
@@ -496,6 +502,15 @@ void ResourceLoader::StartRequestInternal() {
   request_->Start();
 
   delegate_->DidStartRequest(this);
+
+  if (GetRequestInfo()->is_upload_progress_enabled() &&
+      request_->has_upload()) {
+    progress_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kUploadProgressIntervalMsec),
+        this,
+        &ResourceLoader::ReportUploadProgress);
+  }
 }
 
 void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {

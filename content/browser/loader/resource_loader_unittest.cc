@@ -14,6 +14,7 @@
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
@@ -22,13 +23,16 @@
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_web_contents.h"
 #include "ipc/ipc_message.h"
+#include "net/base/chunked_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mock_file_stream.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/base/upload_bytes_element_reader.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -175,7 +179,8 @@ class ResourceHandlerStub : public ResourceHandler {
         received_on_will_read_(false),
         received_eof_(false),
         received_response_completed_(false),
-        total_bytes_downloaded_(0) {
+        total_bytes_downloaded_(0),
+        upload_position_(0) {
   }
 
   // If true, defers the resource load in OnWillStart.
@@ -207,9 +212,21 @@ class ResourceHandlerStub : public ResourceHandler {
     controller()->Resume();
   }
 
+  // Waits until OnUploadProgress is called and returns the upload position.
+  uint64 WaitForUploadProgress() {
+    wait_for_progress_loop_.reset(new base::RunLoop());
+    wait_for_progress_loop_->Run();
+    wait_for_progress_loop_.reset();
+    return upload_position_;
+  }
+
   // ResourceHandler implementation:
   bool OnUploadProgress(uint64 position, uint64 size) override {
-    NOTREACHED();
+    EXPECT_LE(position, size);
+    EXPECT_GT(position, upload_position_);
+    upload_position_ = position;
+    if (wait_for_progress_loop_)
+      wait_for_progress_loop_->Quit();
     return true;
   }
 
@@ -301,6 +318,8 @@ class ResourceHandlerStub : public ResourceHandler {
   bool received_response_completed_;
   net::URLRequestStatus status_;
   int total_bytes_downloaded_;
+  scoped_ptr<base::RunLoop> wait_for_progress_loop_;
+  uint64 upload_position_;
 };
 
 // Test browser client that captures calls to SelectClientCertificates and
@@ -351,6 +370,39 @@ class ResourceContextStub : public MockResourceContext {
   scoped_ptr<net::ClientCertStore> dummy_cert_store_;
 };
 
+// Wraps a ChunkedUploadDataStream to behave as non-chunked to enable upload
+// progress reporting.
+class NonChunkedUploadDataStream : public net::UploadDataStream {
+ public:
+  explicit NonChunkedUploadDataStream(uint64 size)
+      : net::UploadDataStream(false, 0), stream_(0), size_(size) {}
+
+  void AppendData(const char* data) {
+    stream_.AppendData(data, strlen(data), false);
+  }
+
+ private:
+  int InitInternal() override {
+    SetSize(size_);
+    stream_.Init(base::Bind(&NonChunkedUploadDataStream::OnInitCompleted,
+                            base::Unretained(this)));
+    return net::OK;
+  }
+
+  int ReadInternal(net::IOBuffer* buf, int buf_len) override {
+    return stream_.Read(buf, buf_len,
+                        base::Bind(&NonChunkedUploadDataStream::OnReadCompleted,
+                                   base::Unretained(this)));
+  }
+
+  void ResetInternal() override { stream_.Reset(); }
+
+  net::ChunkedUploadDataStream stream_;
+  uint64 size_;
+
+  DISALLOW_COPY_AND_ASSIGN(NonChunkedUploadDataStream);
+};
+
 // Fails to create a temporary file with the given error.
 void CreateTemporaryError(
     base::File::Error error,
@@ -380,6 +432,17 @@ class ResourceLoaderTest : public testing::Test,
     return net::URLRequestTestJob::test_data_1();
   }
 
+  // Waits until upload progress reaches |target_position|
+  void WaitForUploadProgress(uint64 target_position) {
+    while (true) {
+      uint64 position = raw_ptr_resource_handler_->WaitForUploadProgress();
+      EXPECT_LE(position, target_position);
+      loader_->OnUploadProgressACK();
+      if (position == target_position)
+        break;
+    }
+  }
+
   virtual net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler() {
     return net::URLRequestTestJob::CreateProtocolHandler();
   }
@@ -390,22 +453,11 @@ class ResourceLoaderTest : public testing::Test,
     return leaf_handler.Pass();
   }
 
-  void SetUp() override {
-    job_factory_.SetProtocolHandler("test", CreateProtocolHandler());
-
-    browser_context_.reset(new TestBrowserContext());
-    scoped_refptr<SiteInstance> site_instance =
-        SiteInstance::Create(browser_context_.get());
-    web_contents_.reset(
-        TestWebContents::Create(browser_context_.get(), site_instance.get()));
-    RenderFrameHost* rfh = web_contents_->GetMainFrame();
-
-    scoped_ptr<net::URLRequest> request(
-        resource_context_.GetRequestContext()->CreateRequest(
-            test_url(),
-            net::DEFAULT_PRIORITY,
-            NULL /* delegate */));
+  // Replaces loader_ with a new one for |request|.
+  void SetUpResourceLoader(scoped_ptr<net::URLRequest> request) {
     raw_ptr_to_request_ = request.get();
+
+    RenderFrameHost* rfh = web_contents_->GetMainFrame();
     ResourceRequestInfo::AllocateForTesting(
         request.get(), RESOURCE_TYPE_MAIN_FRAME, &resource_context_,
         rfh->GetProcess()->GetID(), rfh->GetRenderViewHost()->GetRoutingID(),
@@ -419,6 +471,23 @@ class ResourceLoaderTest : public testing::Test,
         request.Pass(),
         WrapResourceHandler(resource_handler.Pass(), raw_ptr_to_request_),
         this));
+  }
+
+  void SetUp() override {
+    job_factory_.SetProtocolHandler("test", CreateProtocolHandler());
+
+    browser_context_.reset(new TestBrowserContext());
+    scoped_refptr<SiteInstance> site_instance =
+        SiteInstance::Create(browser_context_.get());
+    web_contents_.reset(
+        TestWebContents::Create(browser_context_.get(), site_instance.get()));
+
+    scoped_ptr<net::URLRequest> request(
+        resource_context_.GetRequestContext()->CreateRequest(
+            test_url(),
+            net::DEFAULT_PRIORITY,
+            nullptr /* delegate */));
+    SetUpResourceLoader(request.Pass());
   }
 
   void TearDown() override {
@@ -638,6 +707,39 @@ TEST_F(ResourceLoaderTest, DeferEOF) {
   EXPECT_TRUE(raw_ptr_resource_handler_->received_response_completed());
   EXPECT_EQ(net::URLRequestStatus::SUCCESS,
             raw_ptr_resource_handler_->status().status());
+}
+
+// Tests that progress is reported correctly while uploading.
+// TODO(andresantoso): Add test for the redirect case.
+TEST_F(ResourceLoaderTest, UploadProgress) {
+  // Set up a test server.
+  net::test_server::EmbeddedTestServer server;
+  ASSERT_TRUE(server.InitializeAndWaitUntilReady());
+  base::FilePath path;
+  PathService::Get(content::DIR_TEST_DATA, &path);
+  server.ServeFilesFromDirectory(path);
+
+  scoped_ptr<net::URLRequest> request(
+      resource_context_.GetRequestContext()->CreateRequest(
+          server.GetURL("/title1.html"),
+          net::DEFAULT_PRIORITY,
+          nullptr /* delegate */));
+
+  // Start an upload.
+  auto stream = new NonChunkedUploadDataStream(10);
+  request->set_upload(make_scoped_ptr(stream));
+
+  SetUpResourceLoader(request.Pass());
+  loader_->StartRequest();
+
+  stream->AppendData("xx");
+  WaitForUploadProgress(2);
+
+  stream->AppendData("yyy");
+  WaitForUploadProgress(5);
+
+  stream->AppendData("zzzzz");
+  WaitForUploadProgress(10);
 }
 
 class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {

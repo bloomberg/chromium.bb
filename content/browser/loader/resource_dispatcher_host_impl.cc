@@ -2179,10 +2179,6 @@ ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes() {
   scoped_ptr<LoadInfoMap> info_map(new LoadInfoMap());
 
   for (const auto& loader : pending_loaders_) {
-    // Also poll for upload progress on this timer and send upload progress ipc
-    // messages to the plugin process.
-    loader.second->ReportUploadProgress();
-
     net::URLRequest* request = loader.second->request();
     net::UploadProgress upload_progress = request->GetUploadProgress();
 

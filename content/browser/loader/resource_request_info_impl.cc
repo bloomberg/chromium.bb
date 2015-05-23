@@ -60,7 +60,7 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
           allow_download,                    // allow_download
           false,                             // has_user_gesture
           false,                             // enable load timing
-          false,                             // enable upload progress
+          request->has_upload(),             // enable upload progress
           false,                             // do_not_prompt_for_login
           blink::WebReferrerPolicyDefault,   // referrer_policy
           blink::WebPageVisibilityStateVisible,  // visibility_state
