@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/mac/LocalCurrentGraphicsContext.h"
 #include "platform/mac/ThemeMac.h"
 
@@ -27,14 +28,28 @@
 
 namespace blink {
 
-LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext* graphicsContext, IntRect dirtyRect)
+LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext* graphicsContext, const IntRect& dirtyRect)
+  : LocalCurrentGraphicsContext(graphicsContext, nullptr, dirtyRect)
+{
+}
+
+LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext* graphicsContext, const IntRect* interestRect,
+                                                         const IntRect& dirtyRect)
     : m_didSetGraphicsContext(false)
+    , m_inflatedDirtyRect(ThemeMac::inflateRectForAA(dirtyRect))
     , m_skiaBitLocker(graphicsContext->canvas(),
-                      ThemeMac::inflateRectForAA(dirtyRect),
+                      m_inflatedDirtyRect,
                       graphicsContext->deviceScaleFactor())
 {
     m_savedGraphicsContext = graphicsContext;
     graphicsContext->save();
+
+    bool clipToInterest = interestRect && RuntimeEnabledFeatures::slimmingPaintEnabled() && !interestRect->contains(m_inflatedDirtyRect);
+    if (clipToInterest) {
+      IntRect clippedBounds(m_inflatedDirtyRect);
+      clippedBounds.intersect(*interestRect);
+      graphicsContext->clipRect(clippedBounds, NotAntiAliased, SkRegion::kIntersect_Op);
+    }
 
     CGContextRef cgContext = this->cgContext();
     if (cgContext == [[NSGraphicsContext currentContext] graphicsPort]) {
