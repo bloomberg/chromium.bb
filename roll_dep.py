@@ -15,12 +15,26 @@ import subprocess
 import sys
 
 
+NEED_SHELL = sys.platform.startswith('win')
+
+
+def check_output(*args, **kwargs):
+  """subprocess.check_output() passing shell=True on Windows for git."""
+  kwargs.setdefault('shell', NEED_SHELL)
+  return subprocess.check_output(*args, **kwargs)
+
+
+def check_call(*args, **kwargs):
+  """subprocess.check_call() passing shell=True on Windows for git."""
+  kwargs.setdefault('shell', NEED_SHELL)
+  subprocess.check_call(*args, **kwargs)
+
+
 def is_pristine(root, merge_base='origin/master'):
   """Returns True if a git checkout is pristine."""
   cmd = ['git', 'diff', '--ignore-submodules', merge_base]
-  return not (
-      subprocess.check_output(cmd, cwd=root).strip() or
-      subprocess.check_output(cmd + ['--cached'], cwd=root).strip())
+  return not (check_output(cmd, cwd=root).strip() or
+              check_output(cmd + ['--cached'], cwd=root).strip())
 
 
 def roll(root, deps_dir, key, reviewers, bug):
@@ -37,8 +51,8 @@ def roll(root, deps_dir, key, reviewers, bug):
     print >> sys.stderr, 'Ensure %s is clean first.' % root
     return 1
 
-  full_dir = os.path.join(os.path.dirname(root), deps_dir)
-  head = subprocess.check_output(
+  full_dir = os.path.normpath(os.path.join(os.path.dirname(root), deps_dir))
+  head = check_output(
       ['git', 'rev-parse', 'HEAD'], cwd=full_dir).strip()
 
   if not head in deps_content:
@@ -58,8 +72,8 @@ def roll(root, deps_dir, key, reviewers, bug):
 
   print('Found old revision %s' % head)
 
-  subprocess.check_call(['git', 'fetch', 'origin'], cwd=full_dir)
-  master = subprocess.check_output(
+  check_call(['git', 'fetch', 'origin'], cwd=full_dir)
+  master = check_output(
       ['git', 'rev-parse', 'origin/master'], cwd=full_dir).strip()
   print('Found new revision %s' % master)
 
@@ -69,7 +83,7 @@ def roll(root, deps_dir, key, reviewers, bug):
 
   commit_range = '%s..%s' % (head[:9], master[:9])
 
-  logs = subprocess.check_output(
+  logs = check_output(
       ['git', 'log', commit_range, '--date=short', '--format=%ad %ae %s'],
       cwd=full_dir).strip()
   logs = re.sub(r'(?m)^(\d\d\d\d-\d\d-\d\d [^@]+)@[^ ]+( .*)$', r'\1\2', logs)
@@ -95,8 +109,8 @@ def roll(root, deps_dir, key, reviewers, bug):
   deps_content = deps_content.replace(head, master)
   with open(deps, 'wb') as f:
     f.write(deps_content)
-  subprocess.check_call(['git', 'add', 'DEPS'], cwd=root)
-  subprocess.check_call(['git', 'commit', '-m', msg], cwd=root)
+  check_call(['git', 'add', 'DEPS'], cwd=root)
+  check_call(['git', 'commit', '-m', msg], cwd=root)
   print('')
   if not reviewers:
     print('You forgot to pass -r, make sure to insert a R=foo@example.com line')
@@ -114,7 +128,7 @@ def main():
   parser.add_option(
       '-r', '--reviewer', default='',
       help='To specify multiple reviewers, use comma separated list, e.g. '
-           '-r joe,jack,john. Defaults to @chromium.org')
+           '-r joe,jane,john. Defaults to @chromium.org')
   parser.add_option('-b', '--bug', default='')
   options, args = parser.parse_args()
   if not len(args) or len(args) > 2:
