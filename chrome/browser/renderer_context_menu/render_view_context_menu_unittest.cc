@@ -448,9 +448,8 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverEnabledSaveImageAs) {
 
   const std::string& headers =
       content::WebContentsTester::For(web_contents())->GetSaveFrameHeaders();
-  EXPECT_TRUE(headers.find("X-PSA-Client-Options: v=1,m=1") !=
-                  std::string::npos &&
-              headers.find("Cache-Control: no-cache") != std::string::npos);
+  EXPECT_TRUE(headers.find("Chrome-Proxy: pass-through") != std::string::npos);
+  EXPECT_TRUE(headers.find("Cache-Control: no-cache") != std::string::npos);
 }
 
 // Verify that request headers do not specify pass through when "Save Image
@@ -468,9 +467,8 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
 
   const std::string& headers =
       content::WebContentsTester::For(web_contents())->GetSaveFrameHeaders();
-  EXPECT_TRUE(headers.find("X-PSA-Client-Options: v=1,m=1") ==
-                  std::string::npos &&
-              headers.find("Cache-Control: no-cache") == std::string::npos);
+  EXPECT_TRUE(headers.find("Chrome-Proxy: pass-through") == std::string::npos);
+  EXPECT_TRUE(headers.find("Cache-Control: no-cache") == std::string::npos);
 }
 
 // Verify that the Chrome-Proxy Lo-Fi directive causes the context menu to

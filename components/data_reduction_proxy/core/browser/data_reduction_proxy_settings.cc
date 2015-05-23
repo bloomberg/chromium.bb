@@ -34,7 +34,7 @@ bool IsLoFiEnabledOnCommandLine() {
 namespace data_reduction_proxy {
 
 const char kDataReductionPassThroughHeader[] =
-    "X-PSA-Client-Options: v=1,m=1\nCache-Control: no-cache";
+    "Chrome-Proxy: pass-through\nCache-Control: no-cache";
 
 DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),
