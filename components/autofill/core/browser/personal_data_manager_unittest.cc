@@ -476,7 +476,7 @@ TEST_F(PersonalDataManagerTest, RefuseToStoreFullCard) {
 
   // On Linux this should be disabled automatically. Elsewhere, only if the
   // flag is passed.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   EXPECT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableOfferStoreUnmaskedWalletCards));
 #else
@@ -498,6 +498,16 @@ TEST_F(PersonalDataManagerTest, RefuseToStoreFullCard) {
   ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
   EXPECT_EQ(CreditCard::MASKED_SERVER_CARD,
             personal_data_->GetCreditCards()[0]->record_type());
+}
+
+TEST_F(PersonalDataManagerTest, OfferStoreUnmaskedCards) {
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX) || \
+    defined(OS_IOS) || defined(OS_ANDROID)
+  bool should_offer = true;
+#elif defined(OS_LINUX)
+  bool should_offer = false;
+#endif
+  EXPECT_EQ(should_offer, OfferStoreUnmaskedCards());
 }
 
 // Tests that UpdateServerCreditCard can be used to mask or unmask server cards.
