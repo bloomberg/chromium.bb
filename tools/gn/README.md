@@ -55,7 +55,8 @@ Ideally we're done when all of the GYP files have been deleted from
 Chromium and no one misses them.
 
 We will be "mostly" done when the following are true:
-  * All of the bots maintained by the Chrome infra team for Chromium and 
+
+  * All of the bots maintained by the Chrome infra team for Chromium and
     downstream of Chromium have been switched to GN. (Upstream projects
     like Skia and V8 can choose to stay on GYP if they like).
   * Any developer configurations we care about that don't have bots also
