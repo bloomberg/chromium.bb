@@ -100,6 +100,10 @@ MessagePumpForIO* ToPumpIO(MessagePump* pump) {
 }
 #endif  // !defined(OS_NACL_SFI)
 
+scoped_ptr<MessagePump> ReturnPump(scoped_ptr<MessagePump> pump) {
+  return pump;
+}
+
 }  // namespace
 
 //------------------------------------------------------------------------------
@@ -116,41 +120,19 @@ MessageLoop::DestructionObserver::~DestructionObserver() {
 //------------------------------------------------------------------------------
 
 MessageLoop::MessageLoop(Type type)
-    : type_(type),
-#if defined(OS_WIN)
-      pending_high_res_tasks_(0),
-      in_high_res_mode_(false),
-#endif
-      nestable_tasks_allowed_(true),
-#if defined(OS_WIN)
-      os_modal_loop_(false),
-#endif  // OS_WIN
-      message_histogram_(NULL),
-      run_loop_(NULL) {
-  Init();
-
-  pump_ = CreateMessagePumpForType(type).Pass();
+    : MessageLoop(type, MessagePumpFactoryCallback()) {
+  BindToCurrentThread();
 }
 
 MessageLoop::MessageLoop(scoped_ptr<MessagePump> pump)
-    : pump_(pump.Pass()),
-      type_(TYPE_CUSTOM),
-#if defined(OS_WIN)
-      pending_high_res_tasks_(0),
-      in_high_res_mode_(false),
-#endif
-      nestable_tasks_allowed_(true),
-#if defined(OS_WIN)
-      os_modal_loop_(false),
-#endif  // OS_WIN
-      message_histogram_(NULL),
-      run_loop_(NULL) {
-  DCHECK(pump_.get());
-  Init();
+    : MessageLoop(TYPE_CUSTOM, Bind(&ReturnPump, Passed(&pump))) {
+  BindToCurrentThread();
 }
 
 MessageLoop::~MessageLoop() {
-  DCHECK_EQ(this, current());
+  // current() could be NULL if this message loop is destructed before it is
+  // bound to a thread.
+  DCHECK(current() == this || !current());
 
   // iOS just attaches to the loop, it doesn't Run it.
   // TODO(stuartmorgan): Consider wiring up a Detach().
@@ -299,11 +281,13 @@ void MessageLoop::PostNonNestableDelayedTask(
 }
 
 void MessageLoop::Run() {
+  DCHECK(pump_);
   RunLoop run_loop;
   run_loop.Run();
 }
 
 void MessageLoop::RunUntilIdle() {
+  DCHECK(pump_);
   RunLoop run_loop;
   run_loop.RunUntilIdle();
 }
@@ -383,13 +367,43 @@ bool MessageLoop::IsIdleForTesting() {
 
 //------------------------------------------------------------------------------
 
-void MessageLoop::Init() {
+scoped_ptr<MessageLoop> MessageLoop::CreateUnbound(
+    Type type, MessagePumpFactoryCallback pump_factory) {
+  return make_scoped_ptr(new MessageLoop(type, pump_factory));
+}
+
+MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
+    : type_(type),
+#if defined(OS_WIN)
+      pending_high_res_tasks_(0),
+      in_high_res_mode_(false),
+#endif
+      nestable_tasks_allowed_(true),
+#if defined(OS_WIN)
+      os_modal_loop_(false),
+#endif  // OS_WIN
+      pump_factory_(pump_factory),
+      message_histogram_(NULL),
+      run_loop_(NULL),
+      incoming_task_queue_(new internal::IncomingTaskQueue(this)),
+      message_loop_proxy_(
+          new internal::MessageLoopProxyImpl(incoming_task_queue_)) {
+  // If type is TYPE_CUSTOM non-null pump_factory must be given.
+  DCHECK_EQ(type_ == TYPE_CUSTOM, !pump_factory_.is_null());
+}
+
+void MessageLoop::BindToCurrentThread() {
+  DCHECK(!pump_);
+  if (!pump_factory_.is_null())
+    pump_ = pump_factory_.Run();
+  else
+    pump_ = CreateMessagePumpForType(type_);
+
   DCHECK(!current()) << "should only have one message loop per thread";
   lazy_tls_ptr.Pointer()->Set(this);
 
-  incoming_task_queue_ = new internal::IncomingTaskQueue(this);
-  message_loop_proxy_ =
-      new internal::MessageLoopProxyImpl(incoming_task_queue_);
+  incoming_task_queue_->StartScheduling();
+  message_loop_proxy_->BindToCurrentThread();
   thread_task_runner_handle_.reset(
       new ThreadTaskRunnerHandle(message_loop_proxy_));
 }

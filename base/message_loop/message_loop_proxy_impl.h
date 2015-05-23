@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/pending_task.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {
@@ -23,6 +24,9 @@ class BASE_EXPORT MessageLoopProxyImpl : public MessageLoopProxy {
  public:
   explicit MessageLoopProxyImpl(
       scoped_refptr<IncomingTaskQueue> incoming_queue);
+
+  // Initialize this message loop proxy on the current thread.
+  void BindToCurrentThread();
 
   // MessageLoopProxy implementation
   bool PostDelayedTask(const tracked_objects::Location& from_here,
@@ -40,8 +44,10 @@ class BASE_EXPORT MessageLoopProxyImpl : public MessageLoopProxy {
   // THe incoming queue receiving all posted tasks.
   scoped_refptr<IncomingTaskQueue> incoming_queue_;
 
-  // ID of the thread |this| was created on.
+  // ID of the thread |this| was created on.  Could be accessed on multiple
+  // threads, protected by |valid_thread_id_lock_|.
   PlatformThreadId valid_thread_id_;
+  mutable Lock valid_thread_id_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageLoopProxyImpl);
 };

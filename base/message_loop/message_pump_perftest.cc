@@ -20,7 +20,6 @@
 #endif
 
 namespace base {
-namespace {
 
 class ScheduleWorkTest : public testing::Test {
  public:
@@ -224,9 +223,6 @@ TEST_F(ScheduleWorkTest, ThreadTimeToJavaFromFourThreads) {
 }
 #endif
 
-static void DoNothing() {
-}
-
 class FakeMessagePump : public MessagePump {
  public:
   FakeMessagePump() {}
@@ -289,5 +285,4 @@ TEST_F(PostTaskTest, OneHundredTasksPerReload) {
   Run(1000, 100);
 }
 
-}  // namespace
 }  // namespace base

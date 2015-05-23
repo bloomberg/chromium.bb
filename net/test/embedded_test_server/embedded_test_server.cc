@@ -190,6 +190,7 @@ void EmbeddedTestServer::StartThread() {
   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.reset(new base::Thread("EmbeddedTestServer io thread"));
   CHECK(io_thread_->StartWithOptions(thread_options));
+  CHECK(io_thread_->WaitUntilThreadStarted());
 }
 
 void EmbeddedTestServer::InitializeOnIOThread() {

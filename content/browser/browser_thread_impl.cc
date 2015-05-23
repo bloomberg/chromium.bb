@@ -159,14 +159,8 @@ void BrowserThreadImpl::Init() {
   AtomicWord stored_pointer = base::subtle::NoBarrier_Load(storage);
   BrowserThreadDelegate* delegate =
       reinterpret_cast<BrowserThreadDelegate*>(stored_pointer);
-  if (delegate) {
+  if (delegate)
     delegate->Init();
-    message_loop()->PostTask(FROM_HERE,
-                             base::Bind(&BrowserThreadDelegate::InitAsync,
-                                        // Delegate is expected to exist for the
-                                        // duration of the thread's lifetime
-                                        base::Unretained(delegate)));
-  }
 }
 
 // We disable optimizations for this block of functions so the compiler doesn't
@@ -298,6 +292,15 @@ BrowserThreadImpl::~BrowserThreadImpl() {
         "Threads must be listed in the reverse order that they die";
   }
 #endif
+}
+
+bool BrowserThreadImpl::StartWithOptions(const Options& options) {
+  // The global thread table needs to be locked while a new thread is
+  // starting, as the new thread can asynchronously start touching the
+  // table (and other thread's message_loop).
+  BrowserThreadGlobals& globals = g_globals.Get();
+  base::AutoLock lock(globals.lock);
+  return Thread::StartWithOptions(options);
 }
 
 // static

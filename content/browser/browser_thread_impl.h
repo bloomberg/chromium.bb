@@ -25,6 +25,8 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
                     base::MessageLoop* message_loop);
   ~BrowserThreadImpl() override;
 
+  bool StartWithOptions(const Options& options);
+
   static void ShutdownThreadPool();
 
  protected:

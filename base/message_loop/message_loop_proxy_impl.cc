@@ -15,7 +15,13 @@ namespace internal {
 MessageLoopProxyImpl::MessageLoopProxyImpl(
     scoped_refptr<IncomingTaskQueue> incoming_queue)
     : incoming_queue_(incoming_queue),
-      valid_thread_id_(PlatformThread::CurrentId()) {
+      valid_thread_id_(kInvalidThreadId) {
+}
+
+void MessageLoopProxyImpl::BindToCurrentThread() {
+  AutoLock lock(valid_thread_id_lock_);
+  DCHECK_EQ(kInvalidThreadId, valid_thread_id_);
+  valid_thread_id_ = PlatformThread::CurrentId();
 }
 
 bool MessageLoopProxyImpl::PostDelayedTask(
@@ -35,6 +41,7 @@ bool MessageLoopProxyImpl::PostNonNestableDelayedTask(
 }
 
 bool MessageLoopProxyImpl::RunsTasksOnCurrentThread() const {
+  AutoLock lock(valid_thread_id_lock_);
   return valid_thread_id_ == PlatformThread::CurrentId();
 }
 
