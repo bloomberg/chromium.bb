@@ -12,6 +12,52 @@
 
 namespace blink {
 
+static void recordSelectorStats(const CSSParserContext& context, const CSSSelectorList& selectorList)
+{
+    if (!context.useCounter())
+        return;
+
+    for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector)) {
+        for (const CSSSelector* current = selector; current ; current = current->tagHistory()) {
+            UseCounter::Feature feature = UseCounter::NumberOfFeatures;
+            switch (current->pseudoType()) {
+            case CSSSelector::PseudoUnresolved:
+                feature = UseCounter::CSSSelectorPseudoUnresolved;
+                break;
+            case CSSSelector::PseudoShadow:
+                feature = UseCounter::CSSSelectorPseudoShadow;
+                break;
+            case CSSSelector::PseudoContent:
+                feature = UseCounter::CSSSelectorPseudoContent;
+                break;
+            case CSSSelector::PseudoHost:
+                feature = UseCounter::CSSSelectorPseudoHost;
+                break;
+            case CSSSelector::PseudoHostContext:
+                feature = UseCounter::CSSSelectorPseudoHostContext;
+                break;
+            case CSSSelector::PseudoFullScreenDocument:
+                feature = UseCounter::CSSSelectorPseudoFullScreenDocument;
+                break;
+            case CSSSelector::PseudoFullScreenAncestor:
+                feature = UseCounter::CSSSelectorPseudoFullScreenAncestor;
+                break;
+            case CSSSelector::PseudoFullScreen:
+                feature = UseCounter::CSSSelectorPseudoFullScreen;
+                break;
+            default:
+                break;
+            }
+            if (feature != UseCounter::NumberOfFeatures)
+                context.useCounter()->count(feature);
+            if (current->relation() == CSSSelector::ShadowDeep)
+                context.useCounter()->count(UseCounter::CSSDeepCombinator);
+            if (current->selectorList())
+                recordSelectorStats(context, *current->selectorList());
+        }
+    }
+}
+
 void CSSSelectorParser::parseSelector(CSSParserTokenRange range, const CSSParserContext& context, const AtomicString& defaultNamespace, StyleSheetContents* styleSheet, CSSSelectorList& output)
 {
     CSSSelectorParser parser(context, defaultNamespace, styleSheet);
@@ -620,52 +666,6 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::addSimpleSelectorToCompound(Pas
     // All other simple selectors are added to the end of the compound.
     compoundSelector->appendTagHistory(CSSSelector::SubSelector, simpleSelector);
     return compoundSelector;
-}
-
-void CSSSelectorParser::recordSelectorStats(const CSSParserContext& context, const CSSSelectorList& selectorList)
-{
-    if (!context.useCounter())
-        return;
-
-    for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector)) {
-        for (const CSSSelector* current = selector; current ; current = current->tagHistory()) {
-            UseCounter::Feature feature = UseCounter::NumberOfFeatures;
-            switch (current->pseudoType()) {
-            case CSSSelector::PseudoUnresolved:
-                feature = UseCounter::CSSSelectorPseudoUnresolved;
-                break;
-            case CSSSelector::PseudoShadow:
-                feature = UseCounter::CSSSelectorPseudoShadow;
-                break;
-            case CSSSelector::PseudoContent:
-                feature = UseCounter::CSSSelectorPseudoContent;
-                break;
-            case CSSSelector::PseudoHost:
-                feature = UseCounter::CSSSelectorPseudoHost;
-                break;
-            case CSSSelector::PseudoHostContext:
-                feature = UseCounter::CSSSelectorPseudoHostContext;
-                break;
-            case CSSSelector::PseudoFullScreenDocument:
-                feature = UseCounter::CSSSelectorPseudoFullScreenDocument;
-                break;
-            case CSSSelector::PseudoFullScreenAncestor:
-                feature = UseCounter::CSSSelectorPseudoFullScreenAncestor;
-                break;
-            case CSSSelector::PseudoFullScreen:
-                feature = UseCounter::CSSSelectorPseudoFullScreen;
-                break;
-            default:
-                break;
-            }
-            if (feature != UseCounter::NumberOfFeatures)
-                context.useCounter()->count(feature);
-            if (current->relation() == CSSSelector::ShadowDeep)
-                context.useCounter()->count(UseCounter::CSSDeepCombinator);
-            if (current->selectorList())
-                recordSelectorStats(context, *current->selectorList());
-        }
-    }
 }
 
 } // namespace blink

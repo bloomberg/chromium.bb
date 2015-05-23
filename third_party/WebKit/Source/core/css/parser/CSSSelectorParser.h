@@ -22,9 +22,6 @@ public:
 
     static bool consumeANPlusB(CSSParserTokenRange&, std::pair<int, int>&);
 
-    // FIXME: This shouldn't be in the header once the Bison parser is removed
-    static void recordSelectorStats(const CSSParserContext&, const CSSSelectorList&);
-
 private:
     CSSSelectorParser(const CSSParserContext&, const AtomicString& defaultNamespace, StyleSheetContents*);
 
