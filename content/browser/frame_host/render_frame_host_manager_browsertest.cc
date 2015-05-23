@@ -35,6 +35,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/base/net_util.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 using base::ASCIIToUTF16;
@@ -85,6 +86,13 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
 
     foo_host_port_ = test_server()->host_port_pair();
     foo_host_port_.set_host(foo_com_);
+  }
+
+  void StartEmbeddedServer() {
+    // Support multiple sites on the embedded test server.
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    SetupCrossSiteRedirector(embedded_test_server());
   }
 
   // Returns a URL on foo.com with the given path.
@@ -1720,6 +1728,82 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Ensure that the file access still exists in the new process ID.
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       shell()->web_contents()->GetRenderProcessHost()->GetID(), file));
+}
+
+// This class implements waiting for RenderFrameHost destruction. It relies on
+// the fact that RenderFrameDeleted event is fired when RenderFrameHost is
+// destroyed.
+// Note: RenderFrameDeleted is also fired when the process associated with the
+// RenderFrameHost crashes, so this cannot be used in cases where process dying
+// is expected.
+class RenderFrameHostDestructionObserver : public WebContentsObserver {
+ public:
+  explicit RenderFrameHostDestructionObserver(RenderFrameHost* rfh)
+      : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
+        message_loop_runner_(new MessageLoopRunner),
+        deleted_(false),
+        render_frame_host_(rfh) {}
+  ~RenderFrameHostDestructionObserver() override {}
+
+  void Wait() {
+    if (deleted_)
+      return;
+
+    message_loop_runner_->Run();
+  }
+
+  // WebContentsObserver implementation:
+  void RenderFrameDeleted(RenderFrameHost* rfh) override {
+    if (rfh == render_frame_host_) {
+      CHECK(!deleted_);
+      deleted_ = true;
+    }
+
+    if (deleted_ && message_loop_runner_->loop_running()) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, message_loop_runner_->QuitClosure());
+    }
+  }
+
+ private:
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  bool deleted_;
+  RenderFrameHost* render_frame_host_;
+};
+
+// Ensures that no RenderFrameHost/RenderViewHost objects are leaked when
+// doing a simple cross-process navigation.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       CleanupOnCrossProcessNavigation) {
+  StartEmbeddedServer();
+
+  // Do an initial navigation and capture objects we expect to be cleaned up
+  // on cross-process navigation.
+  GURL start_url = embedded_test_server()->GetURL("/title1.html");
+  NavigateToURL(shell(), start_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  int32 orig_site_instance_id =
+      root->current_frame_host()->GetSiteInstance()->GetId();
+  int initial_process_id =
+      root->current_frame_host()->GetSiteInstance()->GetProcess()->GetID();
+  int initial_rfh_id = root->current_frame_host()->GetRoutingID();
+  int initial_rvh_id =
+      root->current_frame_host()->render_view_host()->GetRoutingID();
+
+  // Navigate cross-process and ensure that cleanup is performed as expected.
+  GURL cross_site_url =
+      embedded_test_server()->GetURL("foo.com", "/title2.html");
+  RenderFrameHostDestructionObserver rfh_observer(root->current_frame_host());
+  NavigateToURL(shell(), cross_site_url);
+  rfh_observer.Wait();
+
+  EXPECT_NE(orig_site_instance_id,
+            root->current_frame_host()->GetSiteInstance()->GetId());
+  EXPECT_FALSE(RenderFrameHost::FromID(initial_process_id, initial_rfh_id));
+  EXPECT_FALSE(RenderViewHost::FromID(initial_process_id, initial_rvh_id));
 }
 
 }  // namespace content

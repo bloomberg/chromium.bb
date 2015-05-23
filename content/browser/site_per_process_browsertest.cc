@@ -459,11 +459,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CleanupCrossSiteIframe) {
   EXPECT_EQ(foo_url, observer.last_navigation_url());
 
   // Ensure that we have created a new process for the subframes.
-  ASSERT_EQ(2U, root->child_count());
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-            root->child_at(0)->current_frame_host()->GetSiteInstance());
-  EXPECT_EQ(root->child_at(0)->current_frame_host()->GetSiteInstance(),
-            root->child_at(1)->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://foo.com/",
+      DepictFrameTree(root));
+
+  int subframe_process_id = root->child_at(0)
+                                ->current_frame_host()
+                                ->GetSiteInstance()
+                                ->GetProcess()
+                                ->GetID();
+  int subframe_rvh_id = root->child_at(0)
+                            ->current_frame_host()
+                            ->render_view_host()
+                            ->GetRoutingID();
+  EXPECT_TRUE(RenderViewHost::FromID(subframe_process_id, subframe_rvh_id));
 
   // Use Javascript in the parent to remove one of the frames and ensure that
   // the subframe goes away.
@@ -477,6 +490,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CleanupCrossSiteIframe) {
   GURL new_url(embedded_test_server()->GetURL("/title1.html"));
   NavigateToURL(shell(), new_url);
   ASSERT_EQ(0U, root->child_count());
+
+  // Ensure the RVH for the subframe gets cleaned up when the frame goes away.
+  EXPECT_FALSE(RenderViewHost::FromID(subframe_process_id, subframe_rvh_id));
 }
 
 // Ensure that root frames cannot be detached.

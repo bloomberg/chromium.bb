@@ -44,17 +44,21 @@ RenderFrameProxyHost* RenderFrameProxyHost::FromID(int process_id,
 }
 
 RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
+                                           RenderViewHostImpl* render_view_host,
                                            FrameTreeNode* frame_tree_node)
     : routing_id_(site_instance->GetProcess()->GetNextRoutingID()),
       site_instance_(site_instance),
       process_(site_instance->GetProcess()),
       frame_tree_node_(frame_tree_node),
-      render_frame_proxy_created_(false) {
+      render_frame_proxy_created_(false),
+      render_view_host_(render_view_host) {
   GetProcess()->AddRoute(routing_id_, this);
   CHECK(g_routing_id_frame_proxy_map.Get().insert(
       std::make_pair(
           RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_),
           this)).second);
+  CHECK(render_view_host_);
+  frame_tree_node_->frame_tree()->AddRenderViewHostRef(render_view_host_);
 
   if (!frame_tree_node_->IsMainFrame() &&
       frame_tree_node_->parent()
@@ -82,6 +86,7 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
       Send(new FrameMsg_DeleteProxy(routing_id_));
   }
 
+  frame_tree_node_->frame_tree()->ReleaseRenderViewHostRef(render_view_host_);
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_proxy_map.Get().erase(
       RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_));
