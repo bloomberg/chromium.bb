@@ -34,8 +34,7 @@ class URLFetcher;
 // lifetime of this object, when the first call is made to AddAccountToCookie.
 class GaiaCookieManagerService : public KeyedService,
                                  public GaiaAuthConsumer,
-                                 public UbertokenConsumer,
-                                 public net::URLFetcherDelegate {
+                                 public UbertokenConsumer {
  public:
   enum GaiaCookieRequestType {
     ADD_ACCOUNT,
@@ -215,6 +214,8 @@ class GaiaCookieManagerService : public KeyedService,
   void OnMergeSessionFailure(const GoogleServiceAuthError& error) override;
   void OnListAccountsSuccess(const std::string& data) override;
   void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
+  void OnLogOutSuccess() override;
+  void OnLogOutFailure(const GoogleServiceAuthError& error) override;
 
   // Helper method for AddAccountToCookie* methods.
   void AddAccountToCookieInternal(const std::string& account_id);
@@ -226,17 +227,14 @@ class GaiaCookieManagerService : public KeyedService,
   // Virtual for testing purposes.
   virtual void StartFetchingMergeSession();
 
-  // Virtual for testing purpose.
-  virtual void StartLogOutUrlFetch();
-
   // Virtual for testing purposes.
   virtual void StartFetchingListAccounts();
 
+  // Virtual for testing purpose.
+  virtual void StartFetchingLogOut();
+
   // Start the next request, if needed.
   void HandleNextRequest();
-
-  // Overridden from URLFetcherDelgate.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   OAuth2TokenService* token_service_;
   SigninClient* signin_client_;
@@ -280,7 +278,6 @@ class GaiaCookieManagerService : public KeyedService,
   std::vector<std::pair<std::string, bool> > listed_accounts_;
 
   bool list_accounts_fetched_once_;
-  scoped_ptr<net::URLFetcher> logout_url_request_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaCookieManagerService);
 };

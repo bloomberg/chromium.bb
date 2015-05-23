@@ -209,12 +209,14 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
       oauth_login_gurl_(GaiaUrls::GetInstance()->oauth1_login_url()),
       list_accounts_gurl_(
           GaiaUrls::GetInstance()->ListAccountsURLWithSource(source)),
+      logout_gurl_(GaiaUrls::GetInstance()->LogOutURLWithSource(source)),
       get_check_connection_info_url_(
           GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(source)),
       oauth2_iframe_url_(GaiaUrls::GetInstance()->oauth2_iframe_url()),
       client_login_to_oauth2_gurl_(
           GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
-      fetch_pending_(false) {}
+      fetch_pending_(false) {
+}
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
 
@@ -776,6 +778,15 @@ void GaiaAuthFetcher::StartListAccounts() {
   fetcher_->Start();
 }
 
+void GaiaAuthFetcher::StartLogOut() {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  fetcher_ = CreateGaiaFetcher(getter_, std::string(), std::string(),
+                               logout_gurl_, net::LOAD_NORMAL, this);
+  fetch_pending_ = true;
+  fetcher_->Start();
+}
+
 void GaiaAuthFetcher::StartGetCheckConnectionInfo() {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
@@ -952,6 +963,16 @@ void GaiaAuthFetcher::OnListAccountsFetched(const std::string& data,
   }
 }
 
+void GaiaAuthFetcher::OnLogOutFetched(const std::string& data,
+                                      const net::URLRequestStatus& status,
+                                      int response_code) {
+  if (status.is_success() && response_code == net::HTTP_OK) {
+    consumer_->OnLogOutSuccess();
+  } else {
+    consumer_->OnLogOutFailure(GenerateAuthError(data, status));
+  }
+}
+
 void GaiaAuthFetcher::OnGetUserInfoFetched(
     const std::string& data,
     const net::URLRequestStatus& status,
@@ -1100,6 +1121,8 @@ void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     OnOAuth2RevokeTokenFetched(data, status, response_code);
   } else if (url == list_accounts_gurl_) {
     OnListAccountsFetched(data, status, response_code);
+  } else if (url == logout_gurl_) {
+    OnLogOutFetched(data, status, response_code);
   } else if (url == get_check_connection_info_url_) {
     OnGetCheckConnectionInfoFetched(data, status, response_code);
   } else if (url == oauth2_iframe_url_) {

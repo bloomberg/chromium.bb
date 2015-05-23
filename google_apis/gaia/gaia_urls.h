@@ -50,6 +50,7 @@ class GaiaUrls {
   const GURL& gaia_login_form_realm() const;
 
   GURL ListAccountsURLWithSource(const std::string& source);
+  GURL LogOutURLWithSource(const std::string& source);
   GURL GetCheckConnectionInfoURLWithSource(const std::string& source);
 
  private:

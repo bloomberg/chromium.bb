@@ -403,7 +403,7 @@ void GaiaCookieManagerService::LogOutAllAccounts() {
     if (requests_.size() == 1) {
       fetcher_retries_ = 0;
       signin_client_->DelayNetworkCall(
-          base::Bind(&GaiaCookieManagerService::StartLogOutUrlFetch,
+          base::Bind(&GaiaCookieManagerService::StartFetchingLogOut,
                      base::Unretained(this)));
     }
   }
@@ -470,18 +470,6 @@ void GaiaCookieManagerService::SignalComplete(
   // be the last call in any other method.
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnAddAccountToCookieCompleted(account_id, error));
-}
-
-void GaiaCookieManagerService::StartLogOutUrlFetch() {
-  DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
-  VLOG(1) << "GaiaCookieManagerService::StartLogOutUrlFetch";
-  GURL logout_url(GaiaUrls::GetInstance()->service_logout_url().Resolve(
-      base::StringPrintf("?source=%s", source_.c_str())));
-  logout_url_request_ =
-      net::URLFetcher::Create(logout_url, net::URLFetcher::GET, this);
-  logout_url_request_->SetRequestContext(
-      signin_client_->GetURLRequestContext());
-  logout_url_request_->Start();
 }
 
 void GaiaCookieManagerService::OnUbertokenSuccess(
@@ -600,6 +588,33 @@ void GaiaCookieManagerService::OnListAccountsFailure(
   HandleNextRequest();
 }
 
+void GaiaCookieManagerService::OnLogOutSuccess() {
+  DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
+  VLOG(1) << "GaiaCookieManagerService::OnLogOutSuccess";
+
+  fetcher_backoff_.InformOfRequest(true);
+  HandleNextRequest();
+}
+
+void GaiaCookieManagerService::OnLogOutFailure(
+    const GoogleServiceAuthError& error) {
+  DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
+  VLOG(1) << "GaiaCookieManagerService::OnLogOutFailure";
+
+  if (++fetcher_retries_ < kMaxFetcherRetries) {
+    fetcher_backoff_.InformOfRequest(false);
+    fetcher_timer_.Start(
+        FROM_HERE, fetcher_backoff_.GetTimeUntilRelease(),
+        base::Bind(&SigninClient::DelayNetworkCall,
+                   base::Unretained(signin_client_),
+                   base::Bind(&GaiaCookieManagerService::StartFetchingLogOut,
+                              base::Unretained(this))));
+    return;
+  }
+
+  HandleNextRequest();
+}
+
 void GaiaCookieManagerService::StartFetchingUbertoken() {
   VLOG(1) << "GaiaCookieManagerService::StartFetchingUbertoken account_id="
           << requests_.front().account_id();
@@ -624,36 +639,20 @@ void GaiaCookieManagerService::StartFetchingMergeSession() {
       external_cc_result_fetcher_.GetExternalCcResult());
 }
 
+void GaiaCookieManagerService::StartFetchingLogOut() {
+  DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
+  VLOG(1) << "GaiaCookieManagerService::StartFetchingLogOut";
+  gaia_auth_fetcher_.reset(new GaiaAuthFetcher(
+      this, source_, signin_client_->GetURLRequestContext()));
+  gaia_auth_fetcher_->StartLogOut();
+}
+
 void GaiaCookieManagerService::StartFetchingListAccounts() {
   VLOG(1) << "GaiaCookieManagerService::ListAccounts";
   gaia_auth_fetcher_.reset(
       new GaiaAuthFetcher(this, source_,
                           signin_client_->GetURLRequestContext()));
   gaia_auth_fetcher_->StartListAccounts();
-}
-
-void GaiaCookieManagerService::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
-  VLOG(1) << "GaiaCookieManagerService::OnURLFetchComplete";
-  scoped_ptr<net::URLFetcher> logout_url_request(logout_url_request_.Pass());
-
-  if ((!source->GetStatus().is_success() ||
-      source->GetResponseCode() != net::HTTP_OK) &&
-      ++fetcher_retries_ < kMaxFetcherRetries) {
-    fetcher_backoff_.InformOfRequest(false);
-    fetcher_timer_.Start(
-        FROM_HERE, fetcher_backoff_.GetTimeUntilRelease(),
-        base::Bind(&SigninClient::DelayNetworkCall,
-                   base::Unretained(signin_client_),
-                   base::Bind(
-                       &GaiaCookieManagerService::StartLogOutUrlFetch,
-                       base::Unretained(this))));
-    return;
-  }
-
-  fetcher_backoff_.InformOfRequest(true);
-  HandleNextRequest();
 }
 
 void GaiaCookieManagerService::HandleNextRequest() {
@@ -685,7 +684,7 @@ void GaiaCookieManagerService::HandleNextRequest() {
         break;
       case GaiaCookieRequestType::LOG_OUT:
         signin_client_->DelayNetworkCall(
-            base::Bind(&GaiaCookieManagerService::StartLogOutUrlFetch,
+            base::Bind(&GaiaCookieManagerService::StartFetchingLogOut,
                        base::Unretained(this)));
         break;
       case GaiaCookieRequestType::LIST_ACCOUNTS:

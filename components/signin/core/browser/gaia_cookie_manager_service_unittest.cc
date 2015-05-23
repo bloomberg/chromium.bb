@@ -62,33 +62,19 @@ class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
 
   MOCK_METHOD0(StartFetchingUbertoken, void());
   MOCK_METHOD0(StartFetchingListAccounts, void());
+  MOCK_METHOD0(StartFetchingLogOut, void());
   MOCK_METHOD0(StartFetchingMergeSession, void());
-  MOCK_METHOD0(StartLogOutUrlFetch, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstrumentedGaiaCookieManagerService);
 };
 
-class GaiaCookieManagerServiceTest : public testing::Test,
-                                     public net::URLFetcherDelegate {
+class GaiaCookieManagerServiceTest : public testing::Test {
  public:
   GaiaCookieManagerServiceTest()
       : no_error_(GoogleServiceAuthError::NONE),
         error_(GoogleServiceAuthError::SERVICE_ERROR),
         canceled_(GoogleServiceAuthError::REQUEST_CANCELED) {}
-
-  void SetUp() override {
-    GURL logout_url(GaiaUrls::GetInstance()->service_logout_url().Resolve(
-        base::StringPrintf("?source=%s", GaiaConstants::kChromeSource)));
-
-    successful_fetcher_.reset(new net::TestURLFetcher(0, logout_url, this));
-    successful_fetcher_->set_status(net::URLRequestStatus());
-    successful_fetcher_->set_response_code(200);
-
-    failed_fetcher_.reset(new net::TestURLFetcher(0, logout_url, this));
-    failed_fetcher_->set_status(net::URLRequestStatus());
-    failed_fetcher_->set_response_code(500);
-  }
 
   OAuth2TokenService* token_service() { return &token_service_; }
   TestSigninClient* signin_client() { return &signin_client_; }
@@ -118,9 +104,13 @@ class GaiaCookieManagerServiceTest : public testing::Test,
     consumer->OnListAccountsSuccess(data);
   }
 
-  void SimulateLogoutComplete(net::URLFetcherDelegate* consumer,
-                             net::URLFetcher* fetcher) {
-    consumer->OnURLFetchComplete(fetcher);
+  void SimulateLogOutSuccess(GaiaAuthConsumer* consumer) {
+    consumer->OnLogOutSuccess();
+  }
+
+  void SimulateLogOutFailure(GaiaAuthConsumer* consumer,
+                             const GoogleServiceAuthError& error) {
+    consumer->OnLogOutFailure(error);
   }
 
   void SimulateGetCheckConnctionInfoSuccess(net::TestURLFetcher* fetcher,
@@ -141,13 +131,9 @@ class GaiaCookieManagerServiceTest : public testing::Test,
     test_fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
-  void OnURLFetchComplete(const net::URLFetcher* source) override {}
-
   const GoogleServiceAuthError& no_error() { return no_error_; }
   const GoogleServiceAuthError& error() { return error_; }
   const GoogleServiceAuthError& canceled() { return canceled_; }
-  net::URLFetcher* successful_fetcher() { return successful_fetcher_.get(); }
-  net::URLFetcher* failed_fetcher() { return failed_fetcher_.get(); }
 
   net::TestURLFetcherFactory* factory() { return &factory_; }
 
@@ -159,8 +145,6 @@ class GaiaCookieManagerServiceTest : public testing::Test,
   GoogleServiceAuthError error_;
   GoogleServiceAuthError canceled_;
   TestSigninClient signin_client_;
-  scoped_ptr<net::TestURLFetcher> successful_fetcher_;
-  scoped_ptr<net::TestURLFetcher> failed_fetcher_;
 };
 
 }  // namespace
@@ -345,13 +329,13 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsNoQueue) {
   EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
                                                       no_error()));
-  EXPECT_CALL(helper, StartLogOutUrlFetch());
+  EXPECT_CALL(helper, StartFetchingLogOut());
 
   helper.AddAccountToCookie("acc2@gmail.com");
   SimulateMergeSessionSuccess(&helper, "token1");
 
   helper.LogOutAllAccounts();
-  SimulateLogoutComplete(&helper, successful_fetcher());
+  SimulateLogOutSuccess(&helper);
   ASSERT_FALSE(helper.is_running());
 }
 
@@ -362,13 +346,13 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsFails) {
   EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
                                                       no_error()));
-  EXPECT_CALL(helper, StartLogOutUrlFetch());
+  EXPECT_CALL(helper, StartFetchingLogOut());
 
   helper.AddAccountToCookie("acc2@gmail.com");
   SimulateMergeSessionSuccess(&helper, "token1");
 
   helper.LogOutAllAccounts();
-  SimulateLogoutComplete(&helper, failed_fetcher());
+  SimulateLogOutFailure(&helper, error());
   // CookieManagerService is still running; it is retrying the failed logout.
   ASSERT_TRUE(helper.is_running());
 }
@@ -380,13 +364,13 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsAfterOneAddInQueue) {
   EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
                                                       no_error()));
-  EXPECT_CALL(helper, StartLogOutUrlFetch());
+  EXPECT_CALL(helper, StartFetchingLogOut());
 
   helper.AddAccountToCookie("acc2@gmail.com");
   helper.LogOutAllAccounts();
 
   SimulateMergeSessionSuccess(&helper, "token1");
-  SimulateLogoutComplete(&helper, successful_fetcher());
+  SimulateLogOutSuccess(&helper);
 }
 
 TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsAfterTwoAddsInQueue) {
@@ -398,7 +382,7 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsAfterTwoAddsInQueue) {
                                                       no_error()));
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
                                                       canceled()));
-  EXPECT_CALL(helper, StartLogOutUrlFetch());
+  EXPECT_CALL(helper, StartFetchingLogOut());
 
   helper.AddAccountToCookie("acc1@gmail.com");
   // The Log Out should prevent this AddAccount from being fetched.
@@ -406,7 +390,7 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsAfterTwoAddsInQueue) {
   helper.LogOutAllAccounts();
 
   SimulateMergeSessionSuccess(&helper, "token1");
-  SimulateLogoutComplete(&helper, successful_fetcher());
+  SimulateLogOutSuccess(&helper);
 }
 
 TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsTwice) {
@@ -416,7 +400,7 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsTwice) {
   EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
                                                       no_error()));
-  EXPECT_CALL(helper, StartLogOutUrlFetch());
+  EXPECT_CALL(helper, StartFetchingLogOut());
 
   helper.AddAccountToCookie("acc2@gmail.com");
   SimulateMergeSessionSuccess(&helper, "token1");
@@ -424,7 +408,7 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsTwice) {
   helper.LogOutAllAccounts();
   // Only one LogOut will be fetched.
   helper.LogOutAllAccounts();
-  SimulateLogoutComplete(&helper, successful_fetcher());
+  SimulateLogOutSuccess(&helper);
 }
 
 TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsBeforeAdd) {
@@ -434,7 +418,7 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsBeforeAdd) {
   EXPECT_CALL(helper, StartFetchingUbertoken()).Times(2);
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
                                                       no_error()));
-  EXPECT_CALL(helper, StartLogOutUrlFetch());
+  EXPECT_CALL(helper, StartFetchingLogOut());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc3@gmail.com",
                                                       no_error()));
   helper.AddAccountToCookie("acc2@gmail.com");
@@ -443,7 +427,7 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsBeforeAdd) {
   helper.LogOutAllAccounts();
   helper.AddAccountToCookie("acc3@gmail.com");
 
-  SimulateLogoutComplete(&helper, successful_fetcher());
+  SimulateLogOutSuccess(&helper);
   // After LogOut the MergeSession should be fetched.
   SimulateMergeSessionSuccess(&helper, "token2");
 }
@@ -456,7 +440,7 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsBeforeLogoutAndAdd) {
   EXPECT_CALL(helper, StartFetchingUbertoken()).Times(2);
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
                                                       no_error()));
-  EXPECT_CALL(helper, StartLogOutUrlFetch());
+  EXPECT_CALL(helper, StartFetchingLogOut());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc3@gmail.com",
                                                       no_error()));
 
@@ -468,7 +452,7 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsBeforeLogoutAndAdd) {
   helper.LogOutAllAccounts();
   helper.AddAccountToCookie("acc3@gmail.com");
 
-  SimulateLogoutComplete(&helper, successful_fetcher());
+  SimulateLogOutSuccess(&helper);
   // After LogOut the MergeSession should be fetched.
   SimulateMergeSessionSuccess(&helper, "token2");
 }
@@ -482,7 +466,7 @@ TEST_F(GaiaCookieManagerServiceTest, PendingSigninThenSignout) {
                                                       no_error()));
 
   // From the sign out and then re-sign in.
-  EXPECT_CALL(helper, StartLogOutUrlFetch());
+  EXPECT_CALL(helper, StartFetchingLogOut());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc3@gmail.com",
                                                       no_error()));
 
@@ -493,7 +477,7 @@ TEST_F(GaiaCookieManagerServiceTest, PendingSigninThenSignout) {
   helper.LogOutAllAccounts();
 
   SimulateMergeSessionSuccess(&helper, "token1");
-  SimulateLogoutComplete(&helper, successful_fetcher());
+  SimulateLogOutSuccess(&helper);
 
   helper.AddAccountToCookie("acc3@gmail.com");
   SimulateMergeSessionSuccess(&helper, "token3");
@@ -508,14 +492,14 @@ TEST_F(GaiaCookieManagerServiceTest, CancelSignIn) {
                                                       canceled()));
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
                                                       no_error()));
-  EXPECT_CALL(helper, StartLogOutUrlFetch());
+  EXPECT_CALL(helper, StartFetchingLogOut());
 
   helper.AddAccountToCookie("acc1@gmail.com");
   helper.AddAccountToCookie("acc2@gmail.com");
   helper.LogOutAllAccounts();
 
   SimulateMergeSessionSuccess(&helper, "token1");
-  SimulateLogoutComplete(&helper, successful_fetcher());
+  SimulateLogOutSuccess(&helper);
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ListAccountsFirstReturnsEmpty) {

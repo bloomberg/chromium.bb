@@ -197,6 +197,9 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // Starts a request to list the accounts in the GAIA cookie.
   void StartListAccounts();
 
+  // Starts a request to log out the accounts in the GAIA cookie.
+  void StartLogOut();
+
   // Starts a request to get the list of URLs to check for connection info.
   // Returns token/URL pairs to check, and the resulting status can be given to
   // /MergeSession requests.
@@ -318,6 +321,10 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   void OnListAccountsFetched(const std::string& data,
                              const net::URLRequestStatus& status,
                              int response_code);
+
+  void OnLogOutFetched(const std::string& data,
+                       const net::URLRequestStatus& status,
+                       int response_code);
 
   void OnGetUserInfoFetched(const std::string& data,
                             const net::URLRequestStatus& status,
@@ -454,6 +461,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   const GURL uberauth_token_gurl_;
   const GURL oauth_login_gurl_;
   const GURL list_accounts_gurl_;
+  const GURL logout_gurl_;
   const GURL get_check_connection_info_url_;
   const GURL oauth2_iframe_url_;
 
