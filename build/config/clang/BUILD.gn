@@ -31,6 +31,16 @@ config("find_bad_constructs") {
       ]
     }
 
+    # https://crbug.com/441916
+    if (is_linux) {
+      cflags += [
+        "-Xclang",
+        "-plugin-arg-find-bad-constructs",
+        "-Xclang",
+        "check-templates",
+      ]
+    }
+
     cflags += [
       "-Xclang",
       "-add-plugin",

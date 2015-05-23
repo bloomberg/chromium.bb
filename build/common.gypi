@@ -2189,13 +2189,19 @@
               # On Windows, the plugin is built directly into clang, so there's
               # no need to load it dynamically.
               'clang_dynlib_flags%': '',
-            }]
+            }],
+            # https://crbug.com/441916
+            ['OS=="linux"', {
+              'clang_plugin_args%': '-Xclang -plugin-arg-find-bad-constructs -Xclang check-templates ',
+            }, { # OS != "linux"
+              'clang_plugin_args%': ''
+            }],
           ],
         },
         # If you change these, also change build/config/clang/BUILD.gn.
         'clang_chrome_plugins_flags%':
           '<(clang_dynlib_flags)'
-          '-Xclang -add-plugin -Xclang find-bad-constructs ',
+          '-Xclang -add-plugin -Xclang find-bad-constructs <(clang_plugin_args)',
       }],
       ['asan==1 or msan==1 or lsan==1 or tsan==1', {
         'clang%': 1,
