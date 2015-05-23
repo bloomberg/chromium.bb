@@ -31,26 +31,24 @@ import sys
 import time
 
 from pylib import constants
+from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.utils import apk_helper
 from pylib.utils import run_tests_helper
 
-def CreateAppData(device, old_apk, app_data):
+def CreateAppData(device, old_apk, app_data, package_name):
   device.Install(old_apk)
   raw_input('Set the application state. Once ready, press enter and '
             'select "Backup my data" on the device.')
-  package_name = apk_helper.GetPackageName(old_apk)
   device.adb.Backup(app_data, packages=[package_name])
   logging.critical('Application data saved to %s' % app_data)
 
-def TestUpdate(device, old_apk, new_apk, app_data):
+def TestUpdate(device, old_apk, new_apk, app_data, package_name):
   device.Install(old_apk)
   device.adb.Restore(app_data)
   # Restore command is not synchronous
   raw_input('Select "Restore my data" on the device. Then press enter to '
             'continue.')
-
-  package_name = apk_helper.GetPackageName(new_apk)
   device_path = device.GetApplicationPath(package_name)
   if not device_path:
     raise Exception('Expected package %s to already be installed. '
@@ -70,30 +68,39 @@ def main():
 
   subparser = command_parsers.add_parser('create_app_data')
   subparser.add_argument('--old-apk', required=True,
-                      help='Path to apk to update from.')
+                         help='Path to apk to update from.')
   subparser.add_argument('--app-data', required=True,
-                      help='Path to where the app data backup should be '
+                         help='Path to where the app data backup should be '
                            'saved to.')
+  subparser.add_argument('--package-name',
+                         help='Chrome apk package name.')
 
   subparser = command_parsers.add_parser('test_update')
   subparser.add_argument('--old-apk', required=True,
-                      help='Path to apk to update from.')
+                         help='Path to apk to update from.')
   subparser.add_argument('--new-apk', required=True,
-                      help='Path to apk to update to.')
+                         help='Path to apk to update to.')
   subparser.add_argument('--app-data', required=True,
-                      help='Path to where the app data backup is saved.')
+                         help='Path to where the app data backup is saved.')
+  subparser.add_argument('--package-name',
+                         help='Chrome apk package name.')
 
   args = parser.parse_args()
   run_tests_helper.SetLogLevel(args.verbose)
 
   devices = device_utils.DeviceUtils.HealthyDevices()
+  if not devices:
+    raise device_errors.NoDevicesError()
   device = devices[0]
   logging.info('Using device %s for testing.' % str(device))
 
+  package_name = (args.package_name if args.package_name
+                  else apk_helper.GetPackageName(args.old_apk))
   if args.command == 'create_app_data':
-    CreateAppData(device, args.old_apk, args.app_data)
+    CreateAppData(device, args.old_apk, args.app_data, package_name)
   elif args.command == 'test_update':
-    TestUpdate(device,  args.old_apk, args.new_apk, args.app_data)
+    TestUpdate(
+        device, args.old_apk, args.new_apk, args.app_data, package_name)
   else:
     raise Exception('Unknown test command: %s' % args.command)
 
