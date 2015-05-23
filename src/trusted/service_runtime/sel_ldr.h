@@ -68,7 +68,6 @@ EXTERN_C_BEGIN
 struct NaClAppThread;
 struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 struct NaClDynamicRegion;
-struct NaClDescQuotaInterface;
 struct NaClSignalContext;
 struct NaClThreadInterface;  /* see sel_ldr_thread_interface.h */
 struct NaClValidationCache;
@@ -241,8 +240,6 @@ struct NaClApp {
   struct NaClSecureService          *secure_service;
 
   struct NaClResourceNaClApp        resources;
-
-  struct NaClDescQuotaInterface     *desc_quota_interface;
 
   /*
    * The ordering in this enum is important. We use the ordering
@@ -655,9 +652,6 @@ void NaClAppLoadModule(struct NaClApp      *self,
                        void                (*load_cb)(void *instance_data,
                                                       NaClErrorCode status),
                        void                *instance_data);
-
-int NaClAppDescQuotaSetup(struct NaClApp                *self,
-                          struct NaClDescQuotaInterface *rev_quota);
 
 /*
  * Starts the NaCl app, the |start_cb| callback is invoked before the
