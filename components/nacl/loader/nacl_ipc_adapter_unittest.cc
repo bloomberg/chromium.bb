@@ -12,7 +12,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "ipc/ipc_test_sink.h"
-#include "native_client/src/trusted/desc/nacl_desc_custom.h"
+#include "native_client/src/public/nacl_desc_custom.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "testing/gtest/include/gtest/gtest.h"
