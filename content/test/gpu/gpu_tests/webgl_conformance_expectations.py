@@ -21,11 +21,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     GpuTestExpectations.Skip(self, pattern, condition, bug)
 
   def CheckPatternIsValid(self, pattern):
-    full_path = os.path.normpath(os.path.join(self.conformance_path, pattern))
-
-    if not os.path.exists(full_path):
-      raise Exception('The WebGL conformance test path specified in' +
-        'expectation does not exist: ' + full_path)
+    # Look for basic wildcards.
+    if not '*' in pattern:
+      full_path = os.path.normpath(os.path.join(self.conformance_path, pattern))
+      if not os.path.exists(full_path):
+        raise Exception('The WebGL conformance test path specified in' +
+          'expectation does not exist: ' + full_path)
 
   def SetExpectations(self):
     # Fails on all platforms
@@ -66,7 +67,21 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/misc/shader-with-array-of-structs-uniform.html',
         ['win7', 'intel', 'nvidia'], bug=373972)
 
-    # Win / AMD failures
+    # Win / AMD flakiness seen on new tryservers (affecting most tests
+    # randomly, must investigate ASAP)
+    self.Fail('conformance/canvas/drawingbuffer-hd-dpi-test.html',
+        ['win', ('amd', 0x6779)], bug=491419)
+    self.Fail('conformance/context/' +
+        'context-attributes-alpha-depth-stencil-antialias.html',
+        ['win', ('amd', 0x6779)], bug=491419)
+    self.Fail('conformance/extensions/oes-standard-derivatives.html',
+        ['win', ('amd', 0x6779)], bug=491419)
+    self.Fail('conformance/glsl/functions/*',
+        ['win', ('amd', 0x6779)], bug=491419)
+    self.Fail('conformance/glsl/misc/glsl-long-variable-names.html',
+        ['win', ('amd', 0x6779)], bug=491419)
+
+    # Win / AMD D3D9 failures
     self.Fail('conformance/textures/texparameter-test.html',
         ['win', 'amd', 'd3d9'], bug=839) # angle bug ID
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
