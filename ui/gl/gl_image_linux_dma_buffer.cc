@@ -37,6 +37,7 @@ bool ValidFormat(gfx::GpuMemoryBuffer::Format format) {
     case gfx::GpuMemoryBuffer::DXT5:
     case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::R_8:
+    case gfx::GpuMemoryBuffer::RGBA_4444:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::YUV_420:
       return false;
@@ -58,6 +59,7 @@ EGLint FourCC(gfx::GpuMemoryBuffer::Format format) {
     case GpuMemoryBuffer::DXT5:
     case GpuMemoryBuffer::ETC1:
     case GpuMemoryBuffer::R_8:
+    case GpuMemoryBuffer::RGBA_4444:
     case GpuMemoryBuffer::RGBA_8888:
     case GpuMemoryBuffer::YUV_420:
       NOTREACHED();

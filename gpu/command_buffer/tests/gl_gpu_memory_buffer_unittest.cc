@@ -77,24 +77,37 @@ SHADER(
 );
 // clang-format on
 
-std::vector<uint8> GetTexturePixel(gfx::GpuMemoryBuffer::Format format) {
-  std::vector<uint8> pixel;
+void SetRow(gfx::GpuMemoryBuffer::Format format,
+            uint8_t* buffer,
+            int width,
+            uint8_t pixel[4]) {
   switch (format) {
     case gfx::GpuMemoryBuffer::R_8:
-      pixel.push_back(255u);
-      return pixel;
+      for (int i = 0; i < width; ++i)
+        buffer[i] = pixel[0];
+      return;
+    case gfx::GpuMemoryBuffer::RGBA_4444:
+      for (int i = 0; i < width * 2; i += 2) {
+        buffer[i + 0] = (pixel[1] << 4) | (pixel[0] & 0xf);
+        buffer[i + 1] = (pixel[3] << 4) | (pixel[2] & 0xf);
+      }
+      return;
     case gfx::GpuMemoryBuffer::RGBA_8888:
-      pixel.push_back(255u);
-      pixel.push_back(0u);
-      pixel.push_back(0u);
-      pixel.push_back(255u);
-      return pixel;
+      for (int i = 0; i < width * 4; i += 4) {
+        buffer[i + 0] = pixel[0];
+        buffer[i + 1] = pixel[1];
+        buffer[i + 2] = pixel[2];
+        buffer[i + 3] = pixel[3];
+      }
+      return;
     case gfx::GpuMemoryBuffer::BGRA_8888:
-      pixel.push_back(0u);
-      pixel.push_back(0u);
-      pixel.push_back(255u);
-      pixel.push_back(255u);
-      return pixel;
+      for (int i = 0; i < width * 4; i += 4) {
+        buffer[i + 0] = pixel[2];
+        buffer[i + 1] = pixel[1];
+        buffer[i + 2] = pixel[0];
+        buffer[i + 3] = pixel[3];
+      }
+      return;
     case gfx::GpuMemoryBuffer::ATC:
     case gfx::GpuMemoryBuffer::ATCIA:
     case gfx::GpuMemoryBuffer::DXT1:
@@ -103,44 +116,17 @@ std::vector<uint8> GetTexturePixel(gfx::GpuMemoryBuffer::Format format) {
     case gfx::GpuMemoryBuffer::RGBX_8888:
     case gfx::GpuMemoryBuffer::YUV_420:
       NOTREACHED();
-      return std::vector<uint8>();
+      return;
   }
 
   NOTREACHED();
-  return std::vector<uint8>();
-}
-
-std::vector<uint8> GetFramebufferPixel(
-    gfx::GpuMemoryBuffer::Format format) {
-  std::vector<uint8> pixel;
-  switch (format) {
-    case gfx::GpuMemoryBuffer::R_8:
-    case gfx::GpuMemoryBuffer::RGBA_8888:
-    case gfx::GpuMemoryBuffer::BGRA_8888:
-      pixel.push_back(255u);
-      pixel.push_back(0u);
-      pixel.push_back(0u);
-      pixel.push_back(255u);
-      return pixel;
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
-    case gfx::GpuMemoryBuffer::RGBX_8888:
-    case gfx::GpuMemoryBuffer::YUV_420:
-      NOTREACHED();
-      return std::vector<uint8>();
-  }
-
-  NOTREACHED();
-  return std::vector<uint8>();
 }
 
 GLenum InternalFormat(gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
     case gfx::GpuMemoryBuffer::R_8:
       return GL_R8;
+    case gfx::GpuMemoryBuffer::RGBA_4444:
     case gfx::GpuMemoryBuffer::RGBA_8888:
       return GL_RGBA;
     case gfx::GpuMemoryBuffer::BGRA_8888:
@@ -185,20 +171,17 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
   bool rv = buffer->Map(&data);
   DCHECK(rv);
 
-  uint8* mapped_buffer = static_cast<uint8*>(data);
+  uint8_t* mapped_buffer = static_cast<uint8_t*>(data);
   ASSERT_TRUE(mapped_buffer != NULL);
+
+  uint8_t pixel[] = {255u, 0u, 0u, 255u};
 
   // Assign a value to each pixel.
   int stride = 0;
   buffer->GetStride(&stride);
   ASSERT_NE(stride, 0);
-  std::vector<uint8> pixel = GetTexturePixel(GetParam());
-  for (int y = 0; y < kImageHeight; ++y) {
-    for (int x = 0; x < kImageWidth; ++x) {
-      std::copy(pixel.begin(), pixel.end(),
-                mapped_buffer + y * stride + x * pixel.size());
-    }
-  }
+  for (int y = 0; y < kImageHeight; ++y)
+    SetRow(GetParam(), mapped_buffer + y * stride, kImageWidth, pixel);
 
   // Unmap the buffer.
   buffer->Unmap();
@@ -234,8 +217,7 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
   ASSERT_TRUE(glGetError() == GL_NO_ERROR);
 
   // Check if pixels match the values that were assigned to the mapped buffer.
-  GLTestHelper::CheckPixels(0, 0, kImageWidth, kImageHeight, 0,
-                            &GetFramebufferPixel(GetParam()).front());
+  GLTestHelper::CheckPixels(0, 0, kImageWidth, kImageHeight, 0, pixel);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   // Release the image.
@@ -253,6 +235,7 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
 INSTANTIATE_TEST_CASE_P(GpuMemoryBufferTests,
                         GpuMemoryBufferTest,
                         ::testing::Values(gfx::GpuMemoryBuffer::R_8,
+                                          gfx::GpuMemoryBuffer::RGBA_4444,
                                           gfx::GpuMemoryBuffer::RGBA_8888,
                                           gfx::GpuMemoryBuffer::BGRA_8888));
 

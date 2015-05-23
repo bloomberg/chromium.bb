@@ -41,6 +41,7 @@ bool ValidFormat(GpuMemoryBuffer::Format format) {
     case GpuMemoryBuffer::DXT5:
     case GpuMemoryBuffer::ETC1:
     case GpuMemoryBuffer::R_8:
+    case GpuMemoryBuffer::RGBA_4444:
     case GpuMemoryBuffer::RGBA_8888:
     case GpuMemoryBuffer::BGRA_8888:
       return true;
@@ -63,6 +64,7 @@ bool IsCompressedFormat(GpuMemoryBuffer::Format format) {
     case GpuMemoryBuffer::YUV_420:
       return true;
     case GpuMemoryBuffer::R_8:
+    case GpuMemoryBuffer::RGBA_4444:
     case GpuMemoryBuffer::RGBA_8888:
     case GpuMemoryBuffer::BGRA_8888:
     case GpuMemoryBuffer::RGBX_8888:
@@ -87,6 +89,7 @@ GLenum TextureFormat(GpuMemoryBuffer::Format format) {
       return GL_ETC1_RGB8_OES;
     case GpuMemoryBuffer::R_8:
       return GL_RED;
+    case GpuMemoryBuffer::RGBA_4444:
     case GpuMemoryBuffer::RGBA_8888:
       return GL_RGBA;
     case GpuMemoryBuffer::BGRA_8888:
@@ -107,6 +110,8 @@ GLenum DataFormat(GpuMemoryBuffer::Format format) {
 
 GLenum DataType(GpuMemoryBuffer::Format format) {
   switch (format) {
+    case GpuMemoryBuffer::RGBA_4444:
+      return GL_UNSIGNED_SHORT_4_4_4_4;
     case GpuMemoryBuffer::RGBA_8888:
     case GpuMemoryBuffer::BGRA_8888:
     case GpuMemoryBuffer::R_8:
@@ -183,6 +188,12 @@ bool GLImageMemory::StrideInBytes(size_t width,
       if (!checked_stride.IsValid())
         return false;
       *stride_in_bytes = checked_stride.ValueOrDie() & ~0x3;
+      return true;
+    case GpuMemoryBuffer::RGBA_4444:
+      checked_stride *= 2;
+      if (!checked_stride.IsValid())
+        return false;
+      *stride_in_bytes = checked_stride.ValueOrDie();
       return true;
     case GpuMemoryBuffer::RGBA_8888:
     case GpuMemoryBuffer::BGRA_8888:

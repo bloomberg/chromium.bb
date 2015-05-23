@@ -49,6 +49,7 @@ class GFX_EXPORT GpuMemoryBuffer {
     DXT5,
     ETC1,
     R_8,
+    RGBA_4444,
     RGBA_8888,
     RGBX_8888,
     BGRA_8888,

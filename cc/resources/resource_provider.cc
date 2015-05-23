@@ -123,6 +123,7 @@ gfx::GpuMemoryBuffer::Format ToGpuMemoryBufferFormat(ResourceFormat format) {
     case BGRA_8888:
       return gfx::GpuMemoryBuffer::Format::BGRA_8888;
     case RGBA_4444:
+      return gfx::GpuMemoryBuffer::Format::RGBA_4444;
     case ALPHA_8:
     case LUMINANCE_8:
     case RGB_565:

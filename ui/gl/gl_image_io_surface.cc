@@ -33,6 +33,7 @@ bool ValidFormat(GpuMemoryBuffer::Format format) {
     case GpuMemoryBuffer::DXT1:
     case GpuMemoryBuffer::DXT5:
     case GpuMemoryBuffer::ETC1:
+    case GpuMemoryBuffer::RGBA_4444:
     case GpuMemoryBuffer::RGBA_8888:
     case GpuMemoryBuffer::RGBX_8888:
     case GpuMemoryBuffer::YUV_420:
@@ -54,6 +55,7 @@ GLenum TextureFormat(GpuMemoryBuffer::Format format) {
     case GpuMemoryBuffer::DXT1:
     case GpuMemoryBuffer::DXT5:
     case GpuMemoryBuffer::ETC1:
+    case GpuMemoryBuffer::RGBA_4444:
     case GpuMemoryBuffer::RGBA_8888:
     case GpuMemoryBuffer::RGBX_8888:
     case GpuMemoryBuffer::YUV_420:
@@ -76,6 +78,7 @@ GLenum DataFormat(GpuMemoryBuffer::Format format) {
     case GpuMemoryBuffer::DXT1:
     case GpuMemoryBuffer::DXT5:
     case GpuMemoryBuffer::ETC1:
+    case GpuMemoryBuffer::RGBA_4444:
     case GpuMemoryBuffer::RGBA_8888:
     case GpuMemoryBuffer::RGBX_8888:
     case GpuMemoryBuffer::YUV_420:
@@ -98,6 +101,7 @@ GLenum DataType(GpuMemoryBuffer::Format format) {
     case GpuMemoryBuffer::DXT1:
     case GpuMemoryBuffer::DXT5:
     case GpuMemoryBuffer::ETC1:
+    case GpuMemoryBuffer::RGBA_4444:
     case GpuMemoryBuffer::RGBA_8888:
     case GpuMemoryBuffer::RGBX_8888:
     case GpuMemoryBuffer::YUV_420:

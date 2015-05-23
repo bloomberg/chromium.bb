@@ -87,6 +87,7 @@ size_t GpuMemoryBufferImpl::NumberOfPlanesForGpuMemoryBufferFormat(
     case DXT5:
     case ETC1:
     case R_8:
+    case RGBA_4444:
     case RGBA_8888:
     case RGBX_8888:
     case BGRA_8888:
@@ -107,6 +108,7 @@ size_t GpuMemoryBufferImpl::SubsamplingFactor(Format format, int plane) {
     case DXT5:
     case ETC1:
     case R_8:
+    case RGBA_4444:
     case RGBA_8888:
     case RGBX_8888:
     case BGRA_8888:
@@ -146,6 +148,11 @@ bool GpuMemoryBufferImpl::RowSizeInBytes(size_t width,
         return false;
       *size_in_bytes = checked_size.ValueOrDie() & ~0x3;
       return true;
+    case RGBA_4444:
+      checked_size *= 2;
+      if (!checked_size.IsValid())
+        return false;
+      *size_in_bytes = checked_size.ValueOrDie();
     case RGBX_8888:
     case RGBA_8888:
     case BGRA_8888:

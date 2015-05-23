@@ -19,6 +19,7 @@ size_t NumberOfPlanesForGpuMemoryBufferFormat(
     case gfx::GpuMemoryBuffer::Format::DXT5:
     case gfx::GpuMemoryBuffer::Format::ETC1:
     case gfx::GpuMemoryBuffer::Format::R_8:
+    case gfx::GpuMemoryBuffer::Format::RGBA_4444:
     case gfx::GpuMemoryBuffer::Format::RGBA_8888:
     case gfx::GpuMemoryBuffer::Format::RGBX_8888:
     case gfx::GpuMemoryBuffer::Format::BGRA_8888:
@@ -38,6 +39,7 @@ size_t SubsamplingFactor(gfx::GpuMemoryBuffer::Format format, int plane) {
     case gfx::GpuMemoryBuffer::DXT5:
     case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::R_8:
+    case gfx::GpuMemoryBuffer::RGBA_4444:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
@@ -68,6 +70,9 @@ size_t StrideInBytes(size_t width,
       return width / 2;
     case gfx::GpuMemoryBuffer::R_8:
       return (width + 3) & ~0x3;
+    case gfx::GpuMemoryBuffer::RGBA_4444:
+      DCHECK_EQ(plane, 0);
+      return width * 2;
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:

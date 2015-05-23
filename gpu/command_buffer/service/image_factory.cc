@@ -84,6 +84,7 @@ bool ImageFactory::IsGpuMemoryBufferFormatSupported(
       return capabilities.texture_format_etc1;
     case gfx::GpuMemoryBuffer::R_8:
       return capabilities.texture_rg;
+    case gfx::GpuMemoryBuffer::RGBA_4444:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
     case gfx::GpuMemoryBuffer::YUV_420:
@@ -108,6 +109,7 @@ bool ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(
       // by the block size.
       return size.width() % 4 == 0 && size.height() % 4 == 0;
     case gfx::GpuMemoryBuffer::R_8:
+    case gfx::GpuMemoryBuffer::RGBA_4444:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
