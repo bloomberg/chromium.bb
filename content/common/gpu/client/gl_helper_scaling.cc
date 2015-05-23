@@ -191,7 +191,6 @@ class ScalerImpl : public GLHelper::ScalerInterface,
 
     ScopedBufferBinder<GL_ARRAY_BUFFER> buffer_binder(
         gl_, scaler_helper_->vertex_attributes_buffer_);
-    DCHECK(shader_program_->Initialized());
     shader_program_->UseProgram(spec_.src_size,
                                 spec_.src_subrect,
                                 spec_.dst_size,
@@ -868,6 +867,17 @@ void ShaderProgram::Setup(const GLchar* vertex_shader_text,
   scaling_vector_location_ =
       gl_->GetUniformLocation(program_, "scaling_vector");
   color_weights_location_ = gl_->GetUniformLocation(program_, "color_weights");
+  // The only reason fetching these attribute locations should fail is
+  // if the context was spontaneously lost (i.e., because the GPU
+  // process crashed, perhaps deliberately for testing).
+  // Unfortunately, the only way to reliably detect context loss from
+  // GLES2Interface would be to repeatedly call GetError(), and this
+  // seems fragile. Most of the APIs in GLHelper should be updated to
+  // be able to return an error. Fortunately, many users of this code
+  // check for context loss at a higher level.
+  if (!Initialized()) {
+    LOG(ERROR) << "ShaderProgram::Setup: initialization failed (context lost?)";
+  }
   return;
 }
 
