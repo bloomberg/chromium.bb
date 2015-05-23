@@ -24,6 +24,8 @@
          disable_arb_sync)                                   \
   GPU_OP(DISABLE_ASYNC_READPIXELS,                           \
          disable_async_readpixels)                           \
+  GPU_OP(DISABLE_BLEND_EQUATION_ADVANCED,                    \
+         disable_blend_equation_advanced)                    \
   GPU_OP(DISABLE_CHROMIUM_FRAMEBUFFER_MULTISAMPLE,           \
          disable_chromium_framebuffer_multisample)           \
   GPU_OP(DISABLE_D3D11,                                      \

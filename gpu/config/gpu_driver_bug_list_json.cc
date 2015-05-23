@@ -1386,6 +1386,19 @@ LONG_STRING_CONST(
       "features": [
         "disable_multisampled_render_to_texture"
       ]
+    },
+    {
+      "id": 117,
+      "description": "GL_KHR_blend_equation_advanced breaks blending on Adreno 4xx",
+      "cr_bugs": [488485],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Qualcomm.*",
+      "gl_renderer": ".*4\\d\\d",
+      "features": [
+        "disable_blend_equation_advanced"
+      ]
     }
   ]
 }
