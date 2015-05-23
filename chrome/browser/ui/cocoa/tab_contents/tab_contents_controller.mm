@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
+#import "ui/base/cocoa/nscolor_additions.h"
 #include "ui/gfx/geometry/rect.h"
 
 using content::WebContents;
@@ -146,18 +147,8 @@ class FullscreenObserver : public WebContentsObserver {
 }
 
 - (void)updateBackgroundColor {
-  // Convert from an NSColor to a CGColorRef.
-  NSColor* nsBackgroundColor = [self computeBackgroundColor];
-  NSColorSpace* nsColorSpace = [nsBackgroundColor colorSpace];
-  CGColorSpaceRef cgColorSpace = [nsColorSpace CGColorSpace];
-  const NSInteger numberOfComponents = [nsBackgroundColor numberOfComponents];
-  CGFloat components[numberOfComponents];
-  [nsBackgroundColor getComponents:components];
-  base::ScopedCFTypeRef<CGColorRef> cgBackgroundColor(
-      CGColorCreate(cgColorSpace, components));
-
   ScopedCAActionDisabler disabler;
-  [[self layer] setBackgroundColor:cgBackgroundColor];
+  [[self layer] setBackgroundColor:[[self computeBackgroundColor] cr_CGColor]];
 }
 
 - (ViewID)viewID {

@@ -111,6 +111,8 @@
         'cocoa/menu_controller.mm',
         'cocoa/nib_loading.h',
         'cocoa/nib_loading.mm',
+        'cocoa/nscolor_additions.h',
+        'cocoa/nscolor_additions.mm',
         'cocoa/nsgraphics_context_additions.h',
         'cocoa/nsgraphics_context_additions.mm',
         'cocoa/nsview_additions.h',

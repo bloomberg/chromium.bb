@@ -62,6 +62,7 @@
         'cocoa/fullscreen_window_manager_unittest.mm',
         'cocoa/hover_image_button_unittest.mm',
         'cocoa/menu_controller_unittest.mm',
+        'cocoa/nscolor_additions_unittest.mm',
         'cocoa/nsgraphics_context_additions_unittest.mm',
         'cocoa/nsview_additions_unittest.mm',
         'cocoa/three_part_image_unittest.mm',
