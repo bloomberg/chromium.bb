@@ -9,11 +9,16 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
+#include "base/location.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
+#include "base/task_runner.h"
 #include "ui/gfx/win/singleton_hwnd.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
+#include "ui/views/views_delegate.h"
 
 namespace views {
 
@@ -61,8 +66,20 @@ class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
     singleton_hwnd_observer_.reset(new gfx::SingletonHwndObserver(
         base::Bind(&WtsRegistrationNotificationManager::OnWndProc,
                    base::Unretained(this))));
-    WTSRegisterSessionNotification(gfx::SingletonHwnd::GetInstance()->hwnd(),
-                                   NOTIFY_FOR_THIS_SESSION);
+    scoped_refptr<base::TaskRunner> task_runner;
+    if (ViewsDelegate::views_delegate) {
+      task_runner = ViewsDelegate::views_delegate->GetBlockingPoolTaskRunner();
+    }
+
+    base::Closure wts_register =
+        base::Bind(base::IgnoreResult(&WTSRegisterSessionNotification),
+                   gfx::SingletonHwnd::GetInstance()->hwnd(),
+                   NOTIFY_FOR_THIS_SESSION);
+    if (task_runner) {
+      task_runner->PostTask(FROM_HERE, wts_register);
+    } else {
+      wts_register.Run();
+    }
   }
 
   void RemoveSingletonHwndObserver() {
@@ -70,6 +87,12 @@ class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
       return;
 
     singleton_hwnd_observer_.reset(nullptr);
+    // There is no race condition between this code and the worker thread.
+    // RemoveSingletonHwndObserver is only called from two places:
+    //   1) Destruction due to Singleton Destruction.
+    //   2) WM_DESTROY fired by SingletonHwnd.
+    // Under both cases we are in shutdown, which means no other worker threads
+    // can be running.
     WTSUnRegisterSessionNotification(gfx::SingletonHwnd::GetInstance()->hwnd());
     FOR_EACH_OBSERVER(WindowsSessionChangeObserver,
                       observer_list_,

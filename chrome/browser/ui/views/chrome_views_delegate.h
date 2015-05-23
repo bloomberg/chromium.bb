@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_CHROME_VIEWS_DELEGATE_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/views/views_delegate.h"
@@ -49,14 +51,11 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 #endif
   ui::ContextFactory* GetContextFactory() override;
   std::string GetApplicationName() override;
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  scoped_refptr<base::TaskRunner>
-      GetTaskRunnerForAuraLinuxAccessibilityInit() override;
-#endif
 #if defined(OS_WIN)
   int GetAppbarAutohideEdges(HMONITOR monitor,
                              const base::Closure& callback) override;
 #endif
+  scoped_refptr<base::TaskRunner> GetBlockingPoolTaskRunner() override;
 
  private:
 #if defined(OS_WIN)

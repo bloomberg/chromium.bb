@@ -91,18 +91,15 @@ std::string ViewsDelegate::GetApplicationName() {
   return program.BaseName().AsUTF8Unsafe();
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-scoped_refptr<base::TaskRunner>
-    ViewsDelegate::GetTaskRunnerForAuraLinuxAccessibilityInit() {
-  return nullptr;
-}
-#endif
-
 #if defined(OS_WIN)
 int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
                                           const base::Closure& callback) {
   return EDGE_BOTTOM;
 }
 #endif
+
+scoped_refptr<base::TaskRunner> ViewsDelegate::GetBlockingPoolTaskRunner() {
+  return nullptr;
+}
 
 }  // namespace views

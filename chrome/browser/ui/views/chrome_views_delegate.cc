@@ -389,16 +389,6 @@ std::string ChromeViewsDelegate::GetApplicationName() {
   return chrome::VersionInfo().Name();
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-scoped_refptr<base::TaskRunner>
-    ChromeViewsDelegate::GetTaskRunnerForAuraLinuxAccessibilityInit() {
-  // This should be on the FILE thread so that we can open libatk-bridge.so
-  // without blocking.
-  return content::BrowserThread::GetMessageLoopProxyForThread(
-      content::BrowserThread::FILE);
-}
-#endif
-
 #if defined(OS_WIN)
 int ChromeViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
                                                 const base::Closure& callback) {
@@ -438,6 +428,11 @@ void ChromeViewsDelegate::OnGotAppbarAutohideEdges(
   callback.Run();
 }
 #endif
+
+scoped_refptr<base::TaskRunner>
+ChromeViewsDelegate::GetBlockingPoolTaskRunner() {
+  return content::BrowserThread::GetBlockingPool();
+}
 
 #if !defined(USE_AURA) && !defined(USE_CHROMEOS)
 views::Widget::InitParams::WindowOpacity

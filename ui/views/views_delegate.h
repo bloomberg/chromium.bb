@@ -11,6 +11,8 @@
 #include <windows.h>
 #endif
 
+#include "base/callback.h"
+#include "base/location.h"
 #include "base/strings/string16.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/base/ui_base_types.h"
@@ -139,13 +141,6 @@ class VIEWS_EXPORT ViewsDelegate {
   // Returns the user-visible name of the application.
   virtual std::string GetApplicationName();
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // Get a task runner suitable for posting initialization tasks for
-  // Aura Linux accessibility.
-  virtual scoped_refptr<base::TaskRunner>
-      GetTaskRunnerForAuraLinuxAccessibilityInit();
-#endif
-
 #if defined(OS_WIN)
   // Starts a query for the appbar autohide edges of the specified monitor and
   // returns the current value.  If the query finds the edges have changed from
@@ -156,6 +151,9 @@ class VIEWS_EXPORT ViewsDelegate {
   virtual int GetAppbarAutohideEdges(HMONITOR monitor,
                                      const base::Closure& callback);
 #endif
+
+  // Returns a blocking pool task runner given a TaskRunnerType.
+  virtual scoped_refptr<base::TaskRunner> GetBlockingPoolTaskRunner();
 
   // The active ViewsDelegate used by the views system.
   static ViewsDelegate* views_delegate;

@@ -143,7 +143,7 @@ AtkUtilAuraLinux::AtkUtilAuraLinux() {
 }
 
 void AtkUtilAuraLinux::Initialize(
-    scoped_refptr<base::TaskRunner> init_task_runner) {
+    scoped_refptr<base::TaskRunner> /* init_task_runner */) {
   // TODO(k.czech): use |init_task_runner| to post a task to do the
   // initialization rather than doing it on this thread.
   // http://crbug.com/468112
