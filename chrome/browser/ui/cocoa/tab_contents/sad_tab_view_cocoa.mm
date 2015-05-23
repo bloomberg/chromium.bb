@@ -38,7 +38,6 @@ static const CGFloat kTabHorzMargin = 13;
 
 - (id)initWithView:(SadTabView*)view withText:(int)textIds {
   if (self = [super init]) {
-    [self setTextColor:[NSColor whiteColor]];
     [self setAlignment:NSCenterTextAlignment];
     [self setStringValue:l10n_util::GetNSString(textIds)];
     [self setEditable:NO];
@@ -66,23 +65,25 @@ static const CGFloat kTabHorzMargin = 13;
 
 
   // Initialize background color.
-  NSColor* backgroundColor = [[NSColor colorWithCalibratedRed:(35.0f/255.0f)
-                                                        green:(48.0f/255.0f)
-                                                         blue:(64.0f/255.0f)
-                                                        alpha:1.0] retain];
-  backgroundColor_.reset(backgroundColor);
+  NSColor* backgroundColor = [NSColor colorWithCalibratedWhite:247.0f/255.0f
+                                                         alpha:1.0];
+  backgroundColor_.reset([backgroundColor retain]);
 
   // Set up the title.
   title_.reset([[SadTabTextView alloc]
       initWithView:self withText:IDS_SAD_TAB_TITLE]);
-  [title_ setFont:[NSFont boldSystemFontOfSize:[NSFont systemFontSize]]];
+  [title_ setFont:[NSFont systemFontOfSize:24]];
   [title_ setBackgroundColor:backgroundColor];
+  [title_ setTextColor:[NSColor colorWithCalibratedWhite:51.0f/255.0f
+                                                   alpha:1.0]];
 
   // Set up the message.
   message_.reset([[SadTabTextView alloc]
       initWithView:self withText:IDS_SAD_TAB_MESSAGE]);
-  [message_ setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+  [message_ setFont:[NSFont systemFontOfSize:15]];
   [message_ setBackgroundColor:backgroundColor];
+  [message_ setTextColor:[NSColor colorWithCalibratedWhite:100.0f/255.0f
+                                                     alpha:1.0]];
 
   DCHECK(controller_);
   [self initializeHelpText];
@@ -167,10 +168,13 @@ static const CGFloat kTabHorzMargin = 13;
 - (void)initializeHelpText {
   // Programmatically create the help link. Note that the frame's initial
   // height must be set for the programmatic resizing to work.
-  help_.reset(
-      [[HyperlinkTextView alloc] initWithFrame:NSMakeRect(0, 0, 1, 17)]);
+  NSFont* helpFont = [message_ font];
+  NSRect helpFrame = NSMakeRect(0, 0, 1, [helpFont pointSize] + 4);
+  help_.reset([[HyperlinkTextView alloc] initWithFrame:helpFrame]);
   [help_ setAutoresizingMask:
       NSViewMinXMargin|NSViewWidthSizable|NSViewMaxXMargin|NSViewMinYMargin];
+  [help_ setDrawsBackground:YES];
+  [help_ setBackgroundColor:[message_ backgroundColor]];
   [self addSubview:help_];
   [help_ setDelegate:self];
 
@@ -180,13 +184,12 @@ static const CGFloat kTabHorzMargin = 13;
       l10n_util::GetStringUTF16(IDS_SAD_TAB_HELP_LINK);
   NSString* helpMessage(base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
       IDS_SAD_TAB_HELP_MESSAGE, helpLink, &linkOffset)));
-  NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
   [help_ setMessage:helpMessage
-           withFont:font
-       messageColor:[NSColor whiteColor]];
+           withFont:helpFont
+       messageColor:[message_ textColor]];
   [help_ addLinkRange:NSMakeRange(linkOffset, helpLink.length())
              withName:@""
-            linkColor:[NSColor whiteColor]];
+            linkColor:[message_ textColor]];
   [help_ setAlignment:NSCenterTextAlignment];
 }
 
