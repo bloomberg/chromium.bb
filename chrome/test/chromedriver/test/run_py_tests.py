@@ -1045,6 +1045,31 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     else:
       self.assertFalse(self._driver.capabilities['hasTouchScreen'])
 
+  def testSwitchesToTopFrameAfterNavigation(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/outer.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/outer.html'))
+    p = self._driver.FindElement('tag name', 'p')
+    self.assertEquals('Two', p.GetText())
+
+  def testSwitchesToTopFrameAfterRefresh(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/outer.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    self._driver.Refresh()
+    p = self._driver.FindElement('tag name', 'p')
+    self.assertEquals('Two', p.GetText())
+
+  def testSwitchesToTopFrameAfterGoingBack(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/outer.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/inner.html'))
+    self._driver.GoBack()
+    p = self._driver.FindElement('tag name', 'p')
+    self.assertEquals('Two', p.GetText())
+
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
   """End to end tests for Android-specific tests."""

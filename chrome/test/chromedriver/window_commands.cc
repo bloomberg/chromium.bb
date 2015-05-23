@@ -246,7 +246,11 @@ Status ExecuteGet(
   std::string url;
   if (!params.GetString("url", &url))
     return Status(kUnknownError, "'url' must be a string");
-  return web_view->Load(url);
+  Status status = web_view->Load(url);
+  if (status.IsError())
+    return status;
+  session->SwitchToTopFrame();
+  return Status(kOk);
 }
 
 Status ExecuteExecuteScript(
@@ -437,7 +441,11 @@ Status ExecuteGoBack(
     WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  return web_view->TraverseHistory(-1);
+  Status status = web_view->TraverseHistory(-1);
+  if (status.IsError())
+    return status;
+  session->SwitchToTopFrame();
+  return Status(kOk);
 }
 
 Status ExecuteGoForward(
@@ -445,7 +453,11 @@ Status ExecuteGoForward(
     WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  return web_view->TraverseHistory(1);
+  Status status = web_view->TraverseHistory(1);
+  if (status.IsError())
+    return status;
+  session->SwitchToTopFrame();
+  return Status(kOk);
 }
 
 Status ExecuteRefresh(
@@ -453,7 +465,11 @@ Status ExecuteRefresh(
     WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  return web_view->Reload();
+  Status status = web_view->Reload();
+  if (status.IsError())
+    return status;
+  session->SwitchToTopFrame();
+  return Status(kOk);
 }
 
 Status ExecuteMouseMoveTo(
