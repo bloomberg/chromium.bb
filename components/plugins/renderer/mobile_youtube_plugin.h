@@ -19,7 +19,8 @@ class MobileYouTubePlugin : public PluginPlaceholder {
   MobileYouTubePlugin(content::RenderFrame* render_frame,
                       blink::WebLocalFrame* frame,
                       const blink::WebPluginParams& params,
-                      base::StringPiece& template_html);
+                      base::StringPiece& template_html,
+                      GURL placeholderDataUrl);
 
   // Whether this is a youtube url.
   static bool IsYouTubeURL(const GURL& url, const std::string& mime_type);
@@ -29,6 +30,9 @@ class MobileYouTubePlugin : public PluginPlaceholder {
 
   // Opens a youtube app in the current tab.
   void OpenYoutubeUrlCallback();
+
+  // WebViewPlugin::Delegate (via PluginPlaceholder) method
+  void BindWebFrame(blink::WebFrame* frame) override;
 
   // gin::Wrappable (via PluginPlaceholder) method
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
