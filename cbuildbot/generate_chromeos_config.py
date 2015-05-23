@@ -2743,6 +2743,7 @@ _AddGroupConfig('strago', 'strago', (
     'cyan',
     ),
     important=False,
+    vm_tests=[],
 )
 
 # oak-based boards
