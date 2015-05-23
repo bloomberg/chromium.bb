@@ -231,8 +231,8 @@ void RlzValueStoreChromeOS::WriteStore() {
   std::string json_data;
   JSONStringValueSerializer serializer(&json_data);
   serializer.set_pretty_print(true);
-  scoped_ptr<base::DictionaryValue> copy(
-      rlz_store_->DeepCopyWithoutEmptyChildren());
+  scoped_ptr<base::DictionaryValue> copy =
+      rlz_store_->DeepCopyWithoutEmptyChildren();
   if (!serializer.Serialize(*copy.get())) {
     LOG(ERROR) << "Failed to serialize RLZ data";
     NOTREACHED();

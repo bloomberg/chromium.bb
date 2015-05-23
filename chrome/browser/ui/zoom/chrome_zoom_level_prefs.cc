@@ -130,8 +130,8 @@ void ChromeZoomLevelPrefs::ExtractPerHostZoomLevels(
     const base::DictionaryValue* host_zoom_dictionary,
     bool sanitize_partition_host_zoom_levels) {
   std::vector<std::string> keys_to_remove;
-  scoped_ptr<base::DictionaryValue> host_zoom_dictionary_copy(
-      host_zoom_dictionary->DeepCopyWithoutEmptyChildren());
+  scoped_ptr<base::DictionaryValue> host_zoom_dictionary_copy =
+      host_zoom_dictionary->DeepCopyWithoutEmptyChildren();
   for (base::DictionaryValue::Iterator i(*host_zoom_dictionary_copy);
        !i.IsAtEnd();
        i.Advance()) {

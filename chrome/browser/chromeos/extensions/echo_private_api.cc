@@ -97,12 +97,12 @@ bool EchoPrivateSetOfferInfoFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const std::string& service_id = params->id;
-  base::DictionaryValue* dict = params->offer_info.
-      additional_properties.DeepCopyWithoutEmptyChildren();
+  scoped_ptr<base::DictionaryValue> dict =
+      params->offer_info.additional_properties.DeepCopyWithoutEmptyChildren();
 
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate offer_update(local_state, prefs::kEchoCheckedOffers);
-  offer_update->SetWithoutPathExpansion("echo." + service_id, dict);
+  offer_update->SetWithoutPathExpansion("echo." + service_id, dict.Pass());
   return true;
 }
 

@@ -51,7 +51,7 @@ std::string ValueAsString(const base::Value* value) {
   const base::DictionaryValue* dict_value;
   scoped_ptr<base::DictionaryValue> canonical_dict_value;
   if (value && value->GetAsDictionary(&dict_value)) {
-    canonical_dict_value.reset(dict_value->DeepCopyWithoutEmptyChildren());
+    canonical_dict_value = dict_value->DeepCopyWithoutEmptyChildren();
     value = canonical_dict_value.get();
   }
 

@@ -672,25 +672,25 @@ TEST(ValuesTest, RemoveEmptyChildren) {
   root->Set("empty_list", make_scoped_ptr(new ListValue));
   root->SetWithoutPathExpansion("a.b.c.d.e",
                                 make_scoped_ptr(new DictionaryValue));
-  root.reset(root->DeepCopyWithoutEmptyChildren());
+  root = root->DeepCopyWithoutEmptyChildren();
   EXPECT_TRUE(root->empty());
 
   // Make sure we don't prune too much.
   root->SetBoolean("bool", true);
   root->Set("empty_dict", make_scoped_ptr(new DictionaryValue));
   root->SetString("empty_string", std::string());
-  root.reset(root->DeepCopyWithoutEmptyChildren());
+  root = root->DeepCopyWithoutEmptyChildren();
   EXPECT_EQ(2U, root->size());
 
   // Should do nothing.
-  root.reset(root->DeepCopyWithoutEmptyChildren());
+  root = root->DeepCopyWithoutEmptyChildren();
   EXPECT_EQ(2U, root->size());
 
   // Nested test cases.  These should all reduce back to the bool and string
   // set above.
   {
     root->Set("a.b.c.d.e", make_scoped_ptr(new DictionaryValue));
-    root.reset(root->DeepCopyWithoutEmptyChildren());
+    root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->size());
   }
   {
@@ -698,7 +698,7 @@ TEST(ValuesTest, RemoveEmptyChildren) {
     inner->Set("empty_dict", make_scoped_ptr(new DictionaryValue));
     inner->Set("empty_list", make_scoped_ptr(new ListValue));
     root->Set("dict_with_empty_children", inner.Pass());
-    root.reset(root->DeepCopyWithoutEmptyChildren());
+    root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->size());
   }
   {
@@ -706,7 +706,7 @@ TEST(ValuesTest, RemoveEmptyChildren) {
     inner->Append(make_scoped_ptr(new DictionaryValue));
     inner->Append(make_scoped_ptr(new ListValue));
     root->Set("list_with_empty_children", inner.Pass());
-    root.reset(root->DeepCopyWithoutEmptyChildren());
+    root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->size());
   }
 
@@ -720,7 +720,7 @@ TEST(ValuesTest, RemoveEmptyChildren) {
     inner2->Set("empty_dict", make_scoped_ptr(new DictionaryValue));
     inner2->Set("empty_list", make_scoped_ptr(new ListValue));
     root->Set("dict_with_empty_children", inner2.Pass());
-    root.reset(root->DeepCopyWithoutEmptyChildren());
+    root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->size());
   }
 
@@ -732,7 +732,7 @@ TEST(ValuesTest, RemoveEmptyChildren) {
     inner->Append(make_scoped_ptr(new DictionaryValue));
     inner->Append(inner2.Pass());
     root->Set("list_with_empty_children", inner.Pass());
-    root.reset(root->DeepCopyWithoutEmptyChildren());
+    root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(3U, root->size());
 
     ListValue* inner_value, *inner_value2;
