@@ -106,10 +106,8 @@
       'conditions': [
         # Note: When gyp merges lists, it appends them to the old value.
         ['OS=="mac"', {
-          # <(mac_product_name) can contain a space, so don't use FOO=<(FOO)
-          # form.
           'action': [
-            '--extra-variable', 'mac_product_name', '<(mac_product_name)',
+            '--extra-variable', 'mac_product_name=<(mac_product_name)',
           ],
         }],
         ["test_isolation_outdir!=''", {
