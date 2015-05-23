@@ -150,7 +150,6 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoSpatialNavigationFocus:
     case CSSSelector::PseudoListBox:
         return true;
-    case CSSSelector::PseudoNotParsed:
     case CSSSelector::PseudoUnknown:
     case CSSSelector::PseudoLeftPage:
     case CSSSelector::PseudoRightPage:

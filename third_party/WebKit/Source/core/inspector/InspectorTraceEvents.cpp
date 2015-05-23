@@ -69,7 +69,6 @@ const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType)
 {
     switch (pseudoType) {
 #define DEFINE_STRING_MAPPING(pseudoType) case CSSSelector::pseudoType: return #pseudoType;
-        DEFINE_STRING_MAPPING(PseudoNotParsed)
         DEFINE_STRING_MAPPING(PseudoUnknown)
         DEFINE_STRING_MAPPING(PseudoEmpty)
         DEFINE_STRING_MAPPING(PseudoFirstChild)

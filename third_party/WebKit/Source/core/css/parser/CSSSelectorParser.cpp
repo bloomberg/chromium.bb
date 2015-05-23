@@ -278,8 +278,10 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
 
     OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
     selector->setMatch(colons == 1 ? CSSSelector::PseudoClass : CSSSelector::PseudoElement);
+
     String value = token.value();
-    selector->setValue(AtomicString(value.is8Bit() ? value.lower() : value));
+    bool hasArguments = token.type() == FunctionToken;
+    selector->updatePseudoType(AtomicString(value.is8Bit() ? value.lower() : value), hasArguments);
 
     if (token.type() == IdentToken) {
         range.consume();
@@ -290,61 +292,58 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
 
     CSSParserTokenRange block = range.consumeBlock();
     block.consumeWhitespace();
+    if (selector->pseudoType() == CSSSelector::PseudoUnknown)
+        return nullptr;
 
-    if ((colons == 1
-        && (token.valueEqualsIgnoringCase("host")
-            || token.valueEqualsIgnoringCase("host-context")
-            || token.valueEqualsIgnoringCase("-webkit-any")))
-        || (colons == 2 && token.valueEqualsIgnoringCase("cue"))) {
-
-        OwnPtr<CSSSelectorList> selectorList = adoptPtr(new CSSSelectorList());
-        consumeCompoundSelectorList(block, *selectorList);
-        if (!selectorList->isValid() || !block.atEnd())
-            return nullptr;
-
-        selector->setSelectorList(selectorList.release());
-        selector->pseudoType(); // FIXME: Do we need to force the pseudo type to be cached?
-        ASSERT(selector->pseudoType() != CSSSelector::PseudoUnknown);
-        return selector.release();
-    }
-
-    if (colons == 1 && token.valueEqualsIgnoringCase("not")) {
-        OwnPtr<CSSParserSelector> innerSelector = consumeCompoundSelector(block);
-        block.consumeWhitespace();
-        if (!innerSelector || !innerSelector->isSimple() || !block.atEnd())
-            return nullptr;
-        Vector<OwnPtr<CSSParserSelector>> selectorVector;
-        selectorVector.append(innerSelector.release());
-        selector->adoptSelectorVector(selectorVector);
-        return selector.release();
-    }
-
-    if (colons == 1 && token.valueEqualsIgnoringCase("lang")) {
-        // FIXME: CSS Selectors Level 4 allows :lang(*-foo)
-        const CSSParserToken& ident = block.consumeIncludingWhitespace();
-        if (ident.type() != IdentToken || !block.atEnd())
-            return nullptr;
-        selector->setArgument(ident.value());
-        selector->pseudoType(); // FIXME: Do we need to force the pseudo type to be cached?
-        ASSERT(selector->pseudoType() == CSSSelector::PseudoLang);
-        return selector.release();
-    }
-
-    if (colons == 1
-        && (token.valueEqualsIgnoringCase("nth-child")
-            || token.valueEqualsIgnoringCase("nth-last-child")
-            || token.valueEqualsIgnoringCase("nth-of-type")
-            || token.valueEqualsIgnoringCase("nth-last-of-type"))) {
-        std::pair<int, int> ab;
-        if (!consumeANPlusB(block, ab))
-            return nullptr;
-        block.consumeWhitespace();
-        if (!block.atEnd())
-            return nullptr;
-        selector->setNth(ab.first, ab.second);
-        selector->pseudoType(); // FIXME: Do we need to force the pseudo type to be cached?
-        ASSERT(selector->pseudoType() != CSSSelector::PseudoUnknown);
-        return selector.release();
+    switch (selector->pseudoType()) {
+    case CSSSelector::PseudoHost:
+    case CSSSelector::PseudoHostContext:
+    case CSSSelector::PseudoAny:
+    case CSSSelector::PseudoCue:
+        {
+            OwnPtr<CSSSelectorList> selectorList = adoptPtr(new CSSSelectorList());
+            consumeCompoundSelectorList(block, *selectorList);
+            if (!selectorList->isValid() || !block.atEnd())
+                return nullptr;
+            selector->setSelectorList(selectorList.release());
+            return selector.release();
+        }
+    case CSSSelector::PseudoNot:
+        {
+            OwnPtr<CSSParserSelector> innerSelector = consumeCompoundSelector(block);
+            block.consumeWhitespace();
+            if (!innerSelector || !innerSelector->isSimple() || !block.atEnd())
+                return nullptr;
+            Vector<OwnPtr<CSSParserSelector>> selectorVector;
+            selectorVector.append(innerSelector.release());
+            selector->adoptSelectorVector(selectorVector);
+            return selector.release();
+        }
+    case CSSSelector::PseudoLang:
+        {
+            // FIXME: CSS Selectors Level 4 allows :lang(*-foo)
+            const CSSParserToken& ident = block.consumeIncludingWhitespace();
+            if (ident.type() != IdentToken || !block.atEnd())
+                return nullptr;
+            selector->setArgument(ident.value());
+            return selector.release();
+        }
+    case CSSSelector::PseudoNthChild:
+    case CSSSelector::PseudoNthLastChild:
+    case CSSSelector::PseudoNthOfType:
+    case CSSSelector::PseudoNthLastOfType:
+        {
+            std::pair<int, int> ab;
+            if (!consumeANPlusB(block, ab))
+                return nullptr;
+            block.consumeWhitespace();
+            if (!block.atEnd())
+                return nullptr;
+            selector->setNth(ab.first, ab.second);
+            return selector.release();
+        }
+    default:
+        break;
     }
 
     return nullptr;

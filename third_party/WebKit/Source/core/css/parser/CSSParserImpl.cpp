@@ -531,7 +531,7 @@ PassRefPtrWillBeRawPtr<StyleRulePage> CSSParserImpl::consumePageRule(CSSParserTo
         selector = CSSParserSelector::create();
         if (!pseudo.isNull()) {
             selector->setMatch(CSSSelector::PagePseudoClass);
-            selector->setValue(pseudo.lower());
+            selector->updatePseudoType(pseudo.lower());
             if (selector->pseudoType() == CSSSelector::PseudoUnknown)
                 return nullptr; // Parse error; unknown page pseudo-class
         }

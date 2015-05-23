@@ -157,8 +157,6 @@ unsigned CSSSelector::specificityForPage() const
             case PseudoRightPage:
                 s += 1;
                 break;
-            case PseudoNotParsed:
-                break;
             default:
                 ASSERT_NOT_REACHED();
             }
@@ -268,9 +266,6 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoSpatialNavigationFocus:
     case PseudoListBox:
         return NOPSEUDO;
-    case PseudoNotParsed:
-        ASSERT_NOT_REACHED();
-        return NOPSEUDO;
     }
 
     ASSERT_NOT_REACHED();
@@ -341,11 +336,6 @@ const static NameToPseudoStruct pseudoTypeWithoutArgumentsMap[] = {
 {"left",                          CSSSelector::PseudoLeftPage},
 {"link",                          CSSSelector::PseudoLink},
 {"no-button",                     CSSSelector::PseudoNoButton},
-// :nth-* actually have arguments
-{"nth-child",                     CSSSelector::PseudoNthChild},
-{"nth-last-child",                CSSSelector::PseudoNthLastChild},
-{"nth-last-of-type",              CSSSelector::PseudoNthLastOfType},
-{"nth-of-type",                   CSSSelector::PseudoNthOfType},
 {"only-child",                    CSSSelector::PseudoOnlyChild},
 {"only-of-type",                  CSSSelector::PseudoOnlyOfType},
 {"optional",                      CSSSelector::PseudoOptional},
@@ -376,6 +366,10 @@ const static NameToPseudoStruct pseudoTypeWithArgumentsMap[] = {
 {"host-context",     CSSSelector::PseudoHostContext},
 {"lang",             CSSSelector::PseudoLang},
 {"not",              CSSSelector::PseudoNot},
+{"nth-child",        CSSSelector::PseudoNthChild},
+{"nth-last-child",   CSSSelector::PseudoNthLastChild},
+{"nth-last-of-type", CSSSelector::PseudoNthLastOfType},
+{"nth-of-type",      CSSSelector::PseudoNthOfType},
 };
 
 class NameToPseudoCompare {
@@ -460,23 +454,24 @@ CSSSelector::PseudoType CSSSelector::parsePseudoType(const AtomicString& name, b
     return PseudoUnknown;
 }
 
-void CSSSelector::extractPseudoType() const
+void CSSSelector::updatePseudoType(const AtomicString& value, bool hasArguments)
 {
-    if (m_match != PseudoClass && m_match != PseudoElement && m_match != PagePseudoClass)
-        return;
+    ASSERT(m_match == PseudoClass || m_match == PseudoElement || m_match == PagePseudoClass);
 
-    m_pseudoType = parsePseudoType(value(), !argument().isNull() || selectorList());
-
-    bool element = false; // pseudo-element
-    bool compat = false; // single colon compatbility mode
-    bool isPagePseudoClass = false; // Page pseudo-class
+    setValue(value);
+    m_pseudoType = parsePseudoType(value, hasArguments);
 
     switch (m_pseudoType) {
     case PseudoAfter:
     case PseudoBefore:
     case PseudoFirstLetter:
     case PseudoFirstLine:
-        compat = true;
+        // The spec says some pseudos allow both single and double colons like
+        // :before for backwards compatability. Single colon becomes PseudoClass,
+        // but should be PseudoElement like double colon.
+        if (m_match == PseudoClass)
+            m_match = PseudoElement;
+        // fallthrough
     case PseudoBackdrop:
     case PseudoCue:
     case PseudoResizer:
@@ -490,88 +485,79 @@ void CSSSelector::extractPseudoType() const
     case PseudoWebKitCustomElement:
     case PseudoContent:
     case PseudoShadow:
-        element = true;
-        break;
-    case PseudoUnknown:
-    case PseudoEmpty:
-    case PseudoFirstChild:
-    case PseudoFirstOfType:
-    case PseudoLastChild:
-    case PseudoLastOfType:
-    case PseudoOnlyChild:
-    case PseudoOnlyOfType:
-    case PseudoNthChild:
-    case PseudoNthOfType:
-    case PseudoNthLastChild:
-    case PseudoNthLastOfType:
-    case PseudoLink:
-    case PseudoVisited:
-    case PseudoAny:
-    case PseudoAnyLink:
-    case PseudoAutofill:
-    case PseudoHover:
-    case PseudoDrag:
-    case PseudoFocus:
-    case PseudoActive:
-    case PseudoChecked:
-    case PseudoEnabled:
-    case PseudoFullPageMedia:
-    case PseudoDefault:
-    case PseudoDisabled:
-    case PseudoOptional:
-    case PseudoRequired:
-    case PseudoReadOnly:
-    case PseudoReadWrite:
-    case PseudoScope:
-    case PseudoValid:
-    case PseudoInvalid:
-    case PseudoIndeterminate:
-    case PseudoTarget:
-    case PseudoLang:
-    case PseudoNot:
-    case PseudoRoot:
-    case PseudoWindowInactive:
-    case PseudoCornerPresent:
-    case PseudoDecrement:
-    case PseudoIncrement:
-    case PseudoHorizontal:
-    case PseudoVertical:
-    case PseudoStart:
-    case PseudoEnd:
-    case PseudoDoubleButton:
-    case PseudoSingleButton:
-    case PseudoNoButton:
-    case PseudoNotParsed:
-    case PseudoFullScreen:
-    case PseudoFullScreenDocument:
-    case PseudoFullScreenAncestor:
-    case PseudoInRange:
-    case PseudoOutOfRange:
-    case PseudoFutureCue:
-    case PseudoPastCue:
-    case PseudoHost:
-    case PseudoHostContext:
-    case PseudoUnresolved:
-    case PseudoSpatialNavigationFocus:
-    case PseudoListBox:
+        if (m_match != PseudoElement)
+            m_pseudoType = PseudoUnknown;
         break;
     case PseudoFirstPage:
     case PseudoLeftPage:
     case PseudoRightPage:
-        isPagePseudoClass = true;
-        break;
-    }
-
-    bool matchPagePseudoClass = (m_match == PagePseudoClass);
-    if (matchPagePseudoClass != isPagePseudoClass)
-        m_pseudoType = PseudoUnknown;
-    else if (m_match == PseudoClass && element) {
-        if (!compat)
+        if (m_match != PagePseudoClass)
             m_pseudoType = PseudoUnknown;
-        else
-            m_match = PseudoElement;
-    } else if (m_match == PseudoElement && !element)
-        m_pseudoType = PseudoUnknown;
+        break;
+    case PseudoActive:
+    case PseudoAny:
+    case PseudoAnyLink:
+    case PseudoAutofill:
+    case PseudoChecked:
+    case PseudoCornerPresent:
+    case PseudoDecrement:
+    case PseudoDefault:
+    case PseudoDisabled:
+    case PseudoDoubleButton:
+    case PseudoDrag:
+    case PseudoEmpty:
+    case PseudoEnabled:
+    case PseudoEnd:
+    case PseudoFirstChild:
+    case PseudoFirstOfType:
+    case PseudoFocus:
+    case PseudoFullPageMedia:
+    case PseudoFullScreen:
+    case PseudoFullScreenAncestor:
+    case PseudoFullScreenDocument:
+    case PseudoFutureCue:
+    case PseudoHorizontal:
+    case PseudoHost:
+    case PseudoHostContext:
+    case PseudoHover:
+    case PseudoInRange:
+    case PseudoIncrement:
+    case PseudoIndeterminate:
+    case PseudoInvalid:
+    case PseudoLang:
+    case PseudoLastChild:
+    case PseudoLastOfType:
+    case PseudoLink:
+    case PseudoListBox:
+    case PseudoNoButton:
+    case PseudoNot:
+    case PseudoNthChild:
+    case PseudoNthLastChild:
+    case PseudoNthLastOfType:
+    case PseudoNthOfType:
+    case PseudoOnlyChild:
+    case PseudoOnlyOfType:
+    case PseudoOptional:
+    case PseudoOutOfRange:
+    case PseudoPastCue:
+    case PseudoReadOnly:
+    case PseudoReadWrite:
+    case PseudoRequired:
+    case PseudoRoot:
+    case PseudoScope:
+    case PseudoSingleButton:
+    case PseudoSpatialNavigationFocus:
+    case PseudoStart:
+    case PseudoTarget:
+    case PseudoUnknown:
+    case PseudoUnresolved:
+    case PseudoValid:
+    case PseudoVertical:
+    case PseudoVisited:
+    case PseudoWindowInactive:
+        if (m_match != PseudoClass)
+            m_pseudoType = PseudoUnknown;
+    }
 }
 
 bool CSSSelector::operator==(const CSSSelector& other) const

@@ -1013,7 +1013,6 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
     case CSSSelector::PseudoCornerPresent:
         return false;
     case CSSSelector::PseudoUnknown:
-    case CSSSelector::PseudoNotParsed:
     default:
         ASSERT_NOT_REACHED();
         break;

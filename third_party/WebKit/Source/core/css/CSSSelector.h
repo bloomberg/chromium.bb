@@ -132,7 +132,6 @@ namespace blink {
         };
 
         enum PseudoType {
-            PseudoNotParsed,
             PseudoUnknown,
             PseudoEmpty,
             PseudoFirstChild,
@@ -242,10 +241,10 @@ namespace blink {
 
         PseudoType pseudoType() const
         {
-            if (m_pseudoType == PseudoNotParsed)
-                extractPseudoType();
             return static_cast<PseudoType>(m_pseudoType);
         }
+
+        void updatePseudoType(const AtomicString&, bool hasArguments);
 
         static PseudoType parsePseudoType(const AtomicString&, bool hasArguments);
         static PseudoId pseudoId(PseudoType);
@@ -339,7 +338,6 @@ namespace blink {
 
         unsigned specificityForOneSelector() const;
         unsigned specificityForPage() const;
-        void extractPseudoType() const;
 
         // Hide.
         CSSSelector& operator=(const CSSSelector&);
@@ -393,8 +391,6 @@ inline CSSSelector::AttributeMatchType CSSSelector::attributeMatchType() const
 
 inline bool CSSSelector::matchesPseudoElement() const
 {
-    if (m_pseudoType == PseudoUnknown)
-        extractPseudoType();
     return m_match == PseudoElement;
 }
 
@@ -455,7 +451,6 @@ inline bool CSSSelector::isInsertionPointCrossing() const
 inline void CSSSelector::setValue(const AtomicString& value)
 {
     ASSERT(m_match != Tag);
-    ASSERT(m_pseudoType == PseudoNotParsed);
     // Need to do ref counting manually for the union.
     if (m_hasRareData) {
         m_data.m_rareData->m_value = value;
@@ -470,7 +465,7 @@ inline void CSSSelector::setValue(const AtomicString& value)
 inline CSSSelector::CSSSelector()
     : m_relation(SubSelector)
     , m_match(Unknown)
-    , m_pseudoType(PseudoNotParsed)
+    , m_pseudoType(PseudoUnknown)
     , m_isLastInSelectorList(false)
     , m_isLastInTagHistory(true)
     , m_hasRareData(false)
@@ -483,7 +478,7 @@ inline CSSSelector::CSSSelector()
 inline CSSSelector::CSSSelector(const QualifiedName& tagQName, bool tagIsImplicit)
     : m_relation(SubSelector)
     , m_match(Tag)
-    , m_pseudoType(PseudoNotParsed)
+    , m_pseudoType(PseudoUnknown)
     , m_isLastInSelectorList(false)
     , m_isLastInTagHistory(true)
     , m_hasRareData(false)

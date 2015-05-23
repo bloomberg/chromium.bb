@@ -206,6 +206,8 @@ public:
     void setRelationIsAffectedByPseudoContent() { m_selector->setRelationIsAffectedByPseudoContent(); }
     bool relationIsAffectedByPseudoContent() const { return m_selector->relationIsAffectedByPseudoContent(); }
 
+    void updatePseudoType(const AtomicString& value, bool hasArguments = false) const { m_selector->updatePseudoType(value, hasArguments); }
+
     void adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectorVector);
     void setSelectorList(PassOwnPtr<CSSSelectorList>);
 
