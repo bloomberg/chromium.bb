@@ -1760,6 +1760,9 @@ crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
 crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline ]
 crbug.com/459555 virtual/slimmingpaint/fast/js/reserved-words-as-property.html [ Skip ]
 
+crbug.com/487279 fast/flexbox/009-horizontal.html [ NeedsRebaseline ]
+crbug.com/487279 virtual/slimmingpaint/fast/flexbox/009-horizontal.html [ NeedsRebaseline ]
+
 crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
 
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug28928.html [ Pass ImageOnlyFailure ]

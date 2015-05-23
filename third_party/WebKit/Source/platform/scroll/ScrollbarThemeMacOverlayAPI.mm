@@ -106,7 +106,10 @@ void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context,
 }
 
 void ScrollbarThemeMacOverlayAPI::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
-    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarThumb, rect);
+    // Expand dirty rect to allow for scroll thumb anti-aliasing in minimum thumb size case.
+    IntRect dirtyRect = IntRect(rect);
+    dirtyRect.inflate(1);
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarThumb, dirtyRect);
     if (recorder.canUseCachedDrawing())
         return;
 
