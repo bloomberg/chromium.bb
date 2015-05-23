@@ -78,7 +78,6 @@ load_surface_from_png(const char *fname) {
 	int bpp;
 	int stride;
 
-	printf("Loading reference image %s\n", fname);
 	reference_cairo_surface = cairo_image_surface_create_from_png(fname);
 	status = cairo_surface_status(reference_cairo_surface);
 	if (status != CAIRO_STATUS_SUCCESS) {
