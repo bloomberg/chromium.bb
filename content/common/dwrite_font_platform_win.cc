@@ -191,6 +191,9 @@ class FontCollectionLoader
   // Loads static cache file.
   bool LoadCacheFile();
 
+  // Unloads cache file and related data.
+  void UnloadCacheFile();
+
   // Puts class in static cache creating mode. In this mode we record all
   // direct write requests and store chunks of font data.
   void EnterStaticCacheMode(const WCHAR* file_name);
@@ -947,6 +950,12 @@ bool FontCollectionLoader::LoadCacheFile() {
   return true;
 }
 
+void FontCollectionLoader::UnloadCacheFile() {
+  cache_.reset();
+  STLDeleteContainerPairSecondPointers(cache_map_.begin(), cache_map_.end());
+  cache_map_.clear();
+}
+
 void FontCollectionLoader::EnterStaticCacheMode(const WCHAR* file_name) {
   cache_writer_.reset(new FontCacheWriter());
   if (cache_writer_->Create(file_name))
@@ -1078,6 +1087,7 @@ IDWriteFontCollection* GetCustomFontCollection(IDWriteFactory* factory) {
     g_font_loader->EnableCollectionBuildingMode(true);
     hr = factory->CreateCustomFontCollection(
         g_font_loader.Get(), NULL, 0, g_font_collection.GetAddressOf());
+    g_font_loader->UnloadCacheFile();
     g_font_loader->EnableCollectionBuildingMode(false);
   }
   bool loading_restricted = false;
