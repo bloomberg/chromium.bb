@@ -358,7 +358,7 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
     Span* span = spans_[offset];
     if (!IsInFreeList(span)) {
       allocated_objects_count++;
-      allocated_objects_size_in_bytes += span->length_;
+      allocated_objects_size_in_bytes += span->length_ * block_size_;
     }
     offset += span->length_;
   }
