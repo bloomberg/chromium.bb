@@ -292,12 +292,29 @@ Status WebViewImpl::GetFrameByFunction(const std::string& frame,
 
 Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
                                         const std::string& frame) {
+  double page_scale_factor = 1.0;
+  if (browser_info_->build_no >= 2358 &&
+      (browser_info_->is_android ||
+       mobile_emulation_override_manager_->IsEmulatingTouch())) {
+    // As of crrev.com/323900, on Android and under mobile emulation,
+    // Input.dispatchMouseEvent fails to apply the page scale factor to the
+    // mouse event coordinates. This leads to the MouseEvent being triggered on
+    // the wrong location on the page.
+    // TODO(samuong): remove once crbug.com/490157 is fixed on the browser side.
+    scoped_ptr<base::Value> value;
+    Status status = EvaluateScript(
+        std::string(), "window.screen.width / window.innerWidth;", &value);
+    if (status.IsError())
+      return status;
+    if (!value->GetAsDouble(&page_scale_factor))
+      return Status(kUnknownError, "unable to determine page scale factor");
+  }
   for (std::list<MouseEvent>::const_iterator it = events.begin();
        it != events.end(); ++it) {
     base::DictionaryValue params;
     params.SetString("type", GetAsString(it->type));
-    params.SetInteger("x", it->x);
-    params.SetInteger("y", it->y);
+    params.SetInteger("x", it->x * page_scale_factor);
+    params.SetInteger("y", it->y * page_scale_factor);
     params.SetInteger("modifiers", it->modifiers);
     params.SetString("button", GetAsString(it->button));
     params.SetInteger("clickCount", it->click_count);

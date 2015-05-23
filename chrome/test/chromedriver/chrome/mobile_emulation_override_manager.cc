@@ -37,6 +37,10 @@ Status MobileEmulationOverrideManager::OnEvent(
   return Status(kOk);
 }
 
+bool MobileEmulationOverrideManager::IsEmulatingTouch() {
+  return overridden_device_metrics_ && overridden_device_metrics_->touch;
+}
+
 Status MobileEmulationOverrideManager::ApplyOverrideIfNeeded() {
   if (overridden_device_metrics_ == NULL)
     return Status(kOk);
