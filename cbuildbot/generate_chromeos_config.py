@@ -1349,6 +1349,11 @@ _base_layout_boards = frozenset([
     'lakitu',
 ])
 
+_testable_boards = _x86_boards | frozenset((
+    'storm',
+    'whirlwind',
+))
+
 # A base config for each board.
 _base_configs = dict()
 
@@ -1359,7 +1364,7 @@ def _CreateBaseConfigs():
       base.update(internal)
       base.update(official_chrome)
       base.update(manifest=constants.OFFICIAL_MANIFEST)
-    if board not in _x86_boards:
+    if board not in _testable_boards:
       base.update(non_testable_builder)
     if board in _brillo_boards:
       base.update(brillo)
@@ -2453,8 +2458,6 @@ _CONFIG.AddConfig(_release, 'storm-release',
   paygen_skip_testing=True,
   important=True,
   signer_tests=False,
-  tests_supported=True,
-  unittests=True,
 )
 
 _CONFIG.AddConfig(_release, 'mipsel-o32-generic-release',
@@ -2519,8 +2522,6 @@ _CONFIG.AddConfig(_release, 'whirlwind-release',
   important=True,
   afdo_use=True,
   dev_installer_prebuilts=True,
-  tests_supported=True,
-  unittests=True,
 )
 
 _CONFIG.AddConfig(_release, 'lakitu-release',

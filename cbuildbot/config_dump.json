@@ -24872,9 +24872,7 @@
                 "overlays": "both",
                 "pre_cq": true,
                 "sync_chrome": false,
-                "tests_supported": false,
                 "trybot_list": true,
-                "unittests": false,
                 "upload_standalone_images": false,
                 "useflags": [
                     "chrome_internal"
@@ -24901,9 +24899,7 @@
         "overlays": "both",
         "pre_cq": true,
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
-        "unittests": false,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
@@ -31462,7 +31458,6 @@
                 "overlays": "both",
                 "pre_cq": true,
                 "sync_chrome": false,
-                "tests_supported": false,
                 "trybot_list": true,
                 "unittests": false,
                 "upload_standalone_images": false,
@@ -31492,7 +31487,6 @@
         "overlays": "both",
         "pre_cq": true,
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
@@ -46016,9 +46010,7 @@
                 "overlays": "both",
                 "pre_cq": true,
                 "sync_chrome": false,
-                "tests_supported": false,
                 "trybot_list": true,
-                "unittests": false,
                 "upload_standalone_images": false,
                 "useflags": [
                     "chrome_internal"
@@ -56027,8 +56019,6 @@
         "overlays": "both",
         "prebuilts": "private",
         "sync_chrome": false,
-        "tests_supported": false,
-        "unittests": false,
         "uprev": false,
         "useflags": [
             "chrome_internal"
@@ -56050,8 +56040,6 @@
         "overlays": "both",
         "prebuilts": "public",
         "sync_chrome": false,
-        "tests_supported": false,
-        "unittests": false,
         "uprev": false,
         "useflags": [
             "-chrome_internal"
@@ -56085,7 +56073,6 @@
         "overlays": "both",
         "pre_cq": true,
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
@@ -56122,7 +56109,6 @@
         ],
         "push_image": true,
         "sync_chrome": false,
-        "tests_supported": false,
         "unittests": false,
         "upload_hw_test_artifacts": false,
         "useflags": [
@@ -56151,9 +56137,7 @@
         "name": "storm-full",
         "prebuilts": "public",
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
-        "unittests": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -56186,9 +56170,7 @@
         "overlays": "both",
         "pre_cq": true,
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
-        "unittests": false,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
@@ -56213,9 +56195,7 @@
         "overlays": "both",
         "prebuilts": "private",
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
-        "unittests": false,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
@@ -56264,9 +56244,7 @@
         "overlays": "both",
         "pre_cq": true,
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
-        "unittests": false,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
@@ -56572,8 +56550,6 @@
         "name": "storm-tot-chrome-pfq-informational",
         "overlays": "both",
         "sync_chrome": false,
-        "tests_supported": false,
-        "unittests": false,
         "uprev": false,
         "use_lkgm": true,
         "useflags": [
@@ -56591,8 +56567,6 @@
         "description": "Informational Chromium Uprev & Build (public)",
         "name": "storm-tot-chromium-pfq-informational",
         "sync_chrome": false,
-        "tests_supported": false,
-        "unittests": false,
         "uprev": false,
         "use_lkgm": true,
         "useflags": [
@@ -70217,8 +70191,6 @@
         "overlays": "both",
         "prebuilts": "private",
         "sync_chrome": false,
-        "tests_supported": false,
-        "unittests": false,
         "uprev": false,
         "useflags": [
             "chrome_internal"
@@ -70240,8 +70212,6 @@
         "overlays": "both",
         "prebuilts": "public",
         "sync_chrome": false,
-        "tests_supported": false,
-        "unittests": false,
         "uprev": false,
         "useflags": [
             "-chrome_internal"
@@ -70275,7 +70245,6 @@
         "overlays": "both",
         "pre_cq": true,
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
@@ -70304,9 +70273,7 @@
         "name": "whirlwind-full",
         "prebuilts": "public",
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
-        "unittests": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -70339,9 +70306,7 @@
         "overlays": "both",
         "pre_cq": true,
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
-        "unittests": false,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
@@ -70365,9 +70330,7 @@
         "overlays": "both",
         "prebuilts": "private",
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
-        "unittests": false,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
@@ -70416,9 +70379,7 @@
         "overlays": "both",
         "pre_cq": true,
         "sync_chrome": false,
-        "tests_supported": false,
         "trybot_list": true,
-        "unittests": false,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
@@ -70726,8 +70687,6 @@
         "name": "whirlwind-tot-chrome-pfq-informational",
         "overlays": "both",
         "sync_chrome": false,
-        "tests_supported": false,
-        "unittests": false,
         "uprev": false,
         "use_lkgm": true,
         "useflags": [
@@ -70745,8 +70704,6 @@
         "description": "Informational Chromium Uprev & Build (public)",
         "name": "whirlwind-tot-chromium-pfq-informational",
         "sync_chrome": false,
-        "tests_supported": false,
-        "unittests": false,
         "uprev": false,
         "use_lkgm": true,
         "useflags": [
