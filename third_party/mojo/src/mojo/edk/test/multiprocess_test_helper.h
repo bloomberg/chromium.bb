@@ -31,6 +31,12 @@ class MultiprocessTestHelper {
   // declared using |MOJO_MULTIPROCESS_TEST_CHILD_MAIN()| or
   // |MOJO_MULTIPROCESS_TEST_CHILD_TEST()| (below).
   void StartChild(const std::string& test_child_name);
+  // Like |StartChild()|, but appends an extra switch (with ASCII value) to the
+  // command line. (The switch must not already be present in the default
+  // command line.)
+  void StartChildWithExtraSwitch(const std::string& test_child_name,
+                                 const std::string& switch_string,
+                                 const std::string& switch_value);
   // Wait for the child process to terminate.
   // Returns the exit code of the child process. Note that, though it's declared
   // to be an |int|, the exit code is subject to mangling by the OS. E.g., we

@@ -251,11 +251,46 @@ void ShutdownIPCSupport() {
 }
 
 void ConnectToSlave(SlaveInfo slave_info,
-                    ScopedPlatformHandle platform_handle) {
+                    ScopedPlatformHandle platform_handle,
+                    ScopedPlatformHandle* platform_connection_handle,
+                    std::string* platform_connection_id) {
   DCHECK(platform_handle.is_valid());
+  DCHECK(platform_connection_handle);
+  DCHECK(platform_connection_id);
   DCHECK(internal::g_process_type == ProcessType::MASTER);
-  static_cast<system::MasterConnectionManager*>(g_connection_manager)
-      ->AddSlave(slave_info, platform_handle.Pass());
+  DCHECK(g_connection_manager);
+
+  system::ConnectionIdentifier connection_id =
+      g_connection_manager->GenerateConnectionIdentifier();
+  system::ProcessIdentifier slave_id = system::kInvalidProcessIdentifier;
+  CHECK(static_cast<system::MasterConnectionManager*>(g_connection_manager)
+            ->AddSlaveAndBootstrap(slave_info, platform_handle.Pass(),
+                                   connection_id, &slave_id));
+
+  system::ProcessIdentifier peer_id = system::kInvalidProcessIdentifier;
+  CHECK(g_connection_manager->Connect(connection_id, &peer_id,
+                                      platform_connection_handle));
+  DCHECK_EQ(peer_id, slave_id);
+  DCHECK(platform_connection_handle->is_valid());
+
+  *platform_connection_id = connection_id.ToString();
+}
+
+void ConnectToMaster(const std::string& platform_connection_id,
+                     ScopedPlatformHandle* platform_connection_handle) {
+  DCHECK(internal::g_process_type == ProcessType::SLAVE);
+  DCHECK(g_connection_manager);
+
+  bool ok = false;
+  system::ConnectionIdentifier connection_id =
+      system::ConnectionIdentifier::FromString(platform_connection_id, &ok);
+  CHECK(ok);
+
+  system::ProcessIdentifier peer_id;
+  CHECK(g_connection_manager->Connect(connection_id, &peer_id,
+                                      platform_connection_handle));
+  DCHECK_EQ(peer_id, system::kMasterProcessIdentifier);
+  DCHECK(platform_connection_handle->is_valid());
 }
 
 // TODO(vtl): Write tests for this.

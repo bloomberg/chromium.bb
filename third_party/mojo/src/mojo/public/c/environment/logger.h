@@ -30,10 +30,17 @@ const MojoLogLevel MOJO_LOG_LEVEL_FATAL = 3;
 // macros may be built). The functions are thread-safe, except for
 // |SetMinimumLogLevel()| (see below).
 struct MojoLogger {
-  // Logs |message| at level |log_level| if |log_level| is at least the current
-  // minimum log level. If |log_level| is |MOJO_LOG_LEVEL_FATAL| (or greater),
-  // aborts the application/process.
-  void (*LogMessage)(MojoLogLevel log_level, const char* message);
+  // Logs |message| (which must not be null) at level |log_level| if |log_level|
+  // is at least the current minimum log level. If |log_level| is
+  // |MOJO_LOG_LEVEL_FATAL| (or greater), aborts the application/process.
+  // |source_file| and |source_line| indicate the source file and (1-based) line
+  // number, respectively; they are optional: |source_file| may be null and
+  // |source_line| may be zero (if |source_file| is null, then |source_line| may
+  // be ignored).
+  void (*LogMessage)(MojoLogLevel log_level,
+                     const char* source_file,
+                     uint32_t source_line,
+                     const char* message);
 
   // Gets the minimum log level (see above), which will always be at most
   // |MOJO_LOG_LEVEL_FATAL|. (Though |LogMessage()| will automatically avoid

@@ -81,7 +81,8 @@ def FieldStyle(name):
 
 def GetNameForElement(element):
   if (mojom.IsEnumKind(element) or mojom.IsInterfaceKind(element) or
-      mojom.IsStructKind(element) or isinstance(element, mojom.Method)):
+      mojom.IsStructKind(element) or mojom.IsUnionKind(element) or
+      isinstance(element, mojom.Method)):
     return UpperCamelCase(element.name)
   if isinstance(element, mojom.EnumValue):
     return (GetNameForElement(element.enum) + '.' +
@@ -145,7 +146,7 @@ def GetFieldType(kind, field=None):
       arguments.append('nullable=True')
     return '_descriptor.MapType(%s)' % ', '.join(arguments)
 
-  if mojom.IsStructKind(kind):
+  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     arguments = [ 'lambda: %s' % GetFullyQualifiedName(kind) ]
     if mojom.IsNullableKind(kind):
       arguments.append('nullable=True')

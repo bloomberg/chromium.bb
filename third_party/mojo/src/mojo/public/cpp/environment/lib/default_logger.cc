@@ -38,12 +38,20 @@ const char* GetLogLevelString(MojoLogLevel log_level) {
   return "FATAL";
 }
 
-void LogMessage(MojoLogLevel log_level, const char* message) {
+void LogMessage(MojoLogLevel log_level,
+                const char* source_file,
+                uint32_t source_line,
+                const char* message) {
   if (log_level < g_minimum_log_level)
     return;
 
   // TODO(vtl): Add timestamp also?
-  fprintf(stderr, "%s: %s\n", GetLogLevelString(log_level), message);
+  if (source_file) {
+    fprintf(stderr, "%s: %s(%u): %s\n", GetLogLevelString(log_level),
+            source_file, static_cast<unsigned>(source_line), message);
+  } else {
+    fprintf(stderr, "%s: %s\n", GetLogLevelString(log_level), message);
+  }
   if (log_level >= MOJO_LOG_LEVEL_FATAL)
     abort();
 }

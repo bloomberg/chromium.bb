@@ -1,0 +1,66 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{% import "encoding_macros.tmpl" as encoding_macros %}
+
+
+{% macro define(union, exported=True) %}
+type {{union|name(exported)}} interface {
+	Tag() uint32
+	Interface() interface{}
+	__Reflect(__{{union|name(exported)}}Reflect)
+	Encode(encoder *bindings.Encoder) error
+}
+
+type __{{union|name(exported)}}Reflect struct {
+{%   for field in union.fields %}
+	{{field|name(exported)}} {{field.kind|go_type}}
+{%   endfor %}
+}
+
+func Decode{{union|name(exported)}}(decoder *bindings.Decoder) ({{union|name(exported)}}, error) {
+	header, err := decoder.StartUnion()
+	if err != nil {
+		return nil, err
+	}
+
+	if header.Size == 0 {
+		return nil, nil
+	}
+
+	switch header.ElementsOrVersion {
+{%   for field in union.fields %}
+	case {{field.ordinal}}:
+		var value {{union|name(exported)}}{{field|name(exported)}}
+		value.decodeInternal(decoder)
+		decoder.Finish()
+		return &value, nil
+{%   endfor %}
+	}
+
+	return nil, fmt.Errorf("Unknown tag %d in {{union|name(exported)}}", header.ElementsOrVersion);
+}
+
+{%   for field in union.fields %}
+{%-    set struct_name = union|name(exported) + field|name(exported) %}
+type {{struct_name}} struct { Value {{field.kind|go_type}} }
+func (u *{{struct_name}}) Tag() uint32 { return {{field.ordinal}} }
+func (u *{{struct_name}}) Interface() interface{} { return u.Value }
+func (u *{{struct_name}}) __Reflect(__{{union|name(exported)}}Reflect) {}
+
+func (u *{{struct_name}}) Encode(encoder *bindings.Encoder) error {
+	encoder.StartUnion(u.Tag())
+	{{encoding_macros.encode('u.Value', field.kind)|tab_indent()}}
+	encoder.Finish()
+	return nil
+}
+
+func (u *{{struct_name}}) decodeInternal(decoder *bindings.Decoder) error {
+	{{encoding_macros.decode('u.Value', field.kind)|tab_indent()}}
+	return nil
+}
+
+{%   endfor %}
+
+{% endmacro %}

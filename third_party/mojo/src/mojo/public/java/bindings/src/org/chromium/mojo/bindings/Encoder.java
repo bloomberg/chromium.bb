@@ -5,7 +5,6 @@
 package org.chromium.mojo.bindings;
 
 import org.chromium.mojo.bindings.Interface.AbstractProxy.HandlerImpl;
-import org.chromium.mojo.bindings.Struct.DataHeader;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.MessagePipeHandle;
@@ -50,8 +49,8 @@ public class Encoder {
         public int dataEnd;
 
         /**
-         * @param core the |Core| implementation used to generate handles. Only used if the |Struct|
-         *            being encoded contains interfaces, can be |null| otherwise.
+         * @param core the |Core| implementation used to generate handles. Only used if the data
+         *            structure being encoded contains interfaces, can be |null| otherwise.
          * @param bufferSize A hint on the size of the message. Used to build the initial byte
          *            buffer.
          */
@@ -119,8 +118,8 @@ public class Encoder {
     /**
      * Constructor.
      *
-     * @param core the |Core| implementation used to generate handles. Only used if the |Struct|
-     *            being encoded contains interfaces, can be |null| otherwise.
+     * @param core the |Core| implementation used to generate handles. Only used if the data
+     *            structure being encoded contains interfaces, can be |null| otherwise.
      * @param sizeHint A hint on the size of the message. Used to build the initial byte buffer.
      */
     public Encoder(Core core, int sizeHint) {
@@ -220,6 +219,22 @@ public class Encoder {
     }
 
     /**
+     * Encode a {@link Union} at the given offset.
+     */
+    public void encode(Union v, int offset, boolean nullable) {
+        if (v == null && !nullable) {
+            throw new SerializationException(
+                    "Trying to encode a null pointer for a non-nullable type.");
+        }
+        if (v == null) {
+            encode(0L, offset);
+            encode(0L, offset + DataHeader.HEADER_SIZE);
+            return;
+        }
+        v.encode(this, offset);
+    }
+
+    /**
      * Encodes a String.
      */
     public void encode(String v, int offset, boolean nullable) {
@@ -297,6 +312,13 @@ public class Encoder {
      */
     public Encoder encodePointerArray(int length, int offset, int expectedLength) {
         return encoderForArray(BindingsHelper.POINTER_SIZE, length, offset, expectedLength);
+    }
+
+    /**
+     * Returns an {@link Encoder} suitable for encoding an array of union of the given length.
+     */
+    public Encoder encodeUnionArray(int length, int offset, int expectedLength) {
+        return encoderForArray(BindingsHelper.UNION_SIZE, length, offset, expectedLength);
     }
 
     /**
@@ -432,6 +454,17 @@ public class Encoder {
     }
 
     /**
+     * Encodes a pointer to the next unclaimed memory and returns an encoder suitable to encode an
+     * union at this location.
+     */
+    public Encoder encoderForUnionPointer(int offset) {
+        encodePointerToNextUnclaimedData(offset);
+        Encoder result = new Encoder(mEncoderState);
+        result.mEncoderState.claimMemory(16);
+        return result;
+    }
+
+    /**
      * Encodes an array of {@link InterfaceRequest}.
      */
     public <I extends Interface> void encode(InterfaceRequest<I>[] v, int offset,
@@ -469,6 +502,13 @@ public class Encoder {
                     "Trying to encode an invalid handle for a non-nullable type.");
         }
         mEncoderState.byteBuffer.putInt(mBaseOffset + offset, -1);
+    }
+
+    /**
+     * Claim the given amount of memory at the end of the buffer, resizing it if needed.
+     */
+    void claimMemory(int size) {
+        mEncoderState.claimMemory(BindingsHelper.align(size));
     }
 
     private void encodePointerToNextUnclaimedData(int offset) {

@@ -33,7 +33,10 @@ MojoLogLevel ChromiumToMojoLogLevel(int chromium_log_level) {
   return static_cast<MojoLogLevel>(chromium_log_level);
 }
 
-void LogMessage(MojoLogLevel log_level, const char* message) {
+void LogMessage(MojoLogLevel log_level,
+                const char* source_file,
+                uint32_t source_line,
+                const char* message) {
   int chromium_log_level = MojoToChromiumLogLevel(log_level);
   int chromium_min_log_level = logging::GetMinLogLevel();
   // "Fatal" errors aren't suppressable.

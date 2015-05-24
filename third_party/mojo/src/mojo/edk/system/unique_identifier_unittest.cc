@@ -5,7 +5,7 @@
 #include "mojo/edk/system/unique_identifier.h"
 
 #include <set>
-#include <sstream>
+#include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
@@ -47,19 +47,66 @@ TEST_F(UniqueIdentifierTest, Basic) {
   id2 = id1;
 }
 
-TEST_F(UniqueIdentifierTest, Logging) {
-  std::ostringstream oss1;
+TEST_F(UniqueIdentifierTest, ToString) {
   UniqueIdentifier id1 = UniqueIdentifier::Generate(platform_support());
-  oss1 << id1;
-  EXPECT_FALSE(oss1.str().empty());
+  std::string id1_string = id1.ToString();
+  EXPECT_FALSE(id1_string.empty());
 
-  std::ostringstream oss2;
+  // The string should be printable, and not contain certain characters.
+  for (size_t i = 0; i < id1_string.size(); i++) {
+    char c = id1_string[i];
+    // Printable characters, not including space.
+    EXPECT_GT(c, ' ');
+    EXPECT_LE(c, '\x7e');
+    // Single and double quotes, and backslashes are disallowed.
+    EXPECT_NE(c, '\'');
+    EXPECT_NE(c, '"');
+    EXPECT_NE(c, '\\');
+  }
+
   UniqueIdentifier id2 = UniqueIdentifier::Generate(platform_support());
-  oss2 << id2;
-  EXPECT_FALSE(oss2.str().empty());
+  std::string id2_string = id2.ToString();
+  EXPECT_FALSE(id2_string.empty());
 
   EXPECT_NE(id1, id2);
-  EXPECT_NE(oss1.str(), oss2.str());
+  EXPECT_NE(id1_string, id2_string);
+}
+
+TEST_F(UniqueIdentifierTest, FromString) {
+  UniqueIdentifier id = UniqueIdentifier::Generate(platform_support());
+  std::string id_string = id.ToString();
+  EXPECT_FALSE(id_string.empty());
+
+  bool success = false;
+  UniqueIdentifier id_restored =
+      UniqueIdentifier::FromString(id_string, &success);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(id, id_restored);
+}
+
+TEST_F(UniqueIdentifierTest, FromStringFailures) {
+  bool success = true;
+  UniqueIdentifier::FromString("", &success);
+  EXPECT_FALSE(success);
+
+  // That the cases below will fail requires *some* knowledge of the (private)
+  // encoding. So first check something that we know should succeed, to roughly
+  // confirm our knowledge.
+  success = false;
+  UniqueIdentifier::FromString("0123456789abcdef0123456789ABCDEF", &success);
+  EXPECT_TRUE(success);
+
+  success = true;
+  UniqueIdentifier::FromString("!@#$%^&*()_+-=/\\,.<>[]{};':\"|", &success);
+  EXPECT_FALSE(success);
+
+  success = true;
+  UniqueIdentifier::FromString("0123456789abcdef0123456789ABCDE", &success);
+  EXPECT_FALSE(success);
+
+  success = true;
+  UniqueIdentifier::FromString("0123456789abcdef0123456789ABCD", &success);
+  EXPECT_FALSE(success);
 }
 
 TEST_F(UniqueIdentifierTest, StdSet) {

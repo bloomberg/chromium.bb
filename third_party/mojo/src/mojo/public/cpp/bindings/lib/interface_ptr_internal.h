@@ -91,7 +91,7 @@ class InterfacePtrState {
     version_ = info.version();
   }
 
-  bool WaitForIncomingMethodCall() {
+  bool WaitForIncomingResponse() {
     ConfigureProxyIfNecessary();
 
     MOJO_DCHECK(router_);

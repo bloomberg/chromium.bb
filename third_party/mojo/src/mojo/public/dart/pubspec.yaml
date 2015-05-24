@@ -1,0 +1,4 @@
+name: mojo
+version: 0.0.6
+dependencies:
+  mojom: any

@@ -4,6 +4,7 @@
 
 #include <vector>
 #include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
@@ -11,6 +12,7 @@
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
+#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_unions.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -497,7 +499,8 @@ TEST(UnionTest, Validation_UnionsInStruct) {
   Serialize_(small_struct.Pass(), &buf, &data);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data, size, 0);
+  mojo::internal::BoundsChecker bounds_checker(data,
+                                               static_cast<uint32_t>(size), 0);
   EXPECT_TRUE(internal::SmallStruct_Data::Validate(raw_buf, &bounds_checker));
   free(raw_buf);
 }
@@ -517,7 +520,8 @@ TEST(UnionTest, Validation_PodUnionInStruct_Failure) {
   data->pod_union.tag = static_cast<internal::PodUnion_Data::PodUnion_Tag>(100);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data, size, 0);
+  mojo::internal::BoundsChecker bounds_checker(data,
+                                               static_cast<uint32_t>(size), 0);
   EXPECT_FALSE(internal::SmallStruct_Data::Validate(raw_buf, &bounds_checker));
   free(raw_buf);
 }
@@ -535,7 +539,8 @@ TEST(UnionTest, Validation_NullUnion_Failure) {
       internal::SmallStructNonNullableUnion_Data::New(&buf);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data, size, 0);
+  mojo::internal::BoundsChecker bounds_checker(data,
+                                               static_cast<uint32_t>(size), 0);
   EXPECT_FALSE(internal::SmallStructNonNullableUnion_Data::Validate(
       raw_buf, &bounds_checker));
   free(raw_buf);
@@ -553,7 +558,8 @@ TEST(UnionTest, Validation_NullableUnion) {
   Serialize_(small_struct.Pass(), &buf, &data);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data, size, 0);
+  mojo::internal::BoundsChecker bounds_checker(data,
+                                               static_cast<uint32_t>(size), 0);
   EXPECT_TRUE(internal::SmallStruct_Data::Validate(raw_buf, &bounds_checker));
   free(raw_buf);
 }
@@ -1041,6 +1047,91 @@ TEST(UnionTest, HandleInUnionValidationNull) {
   EXPECT_FALSE(
       internal::HandleUnion_Data::Validate(raw_buf, &bounds_checker, false));
   free(raw_buf);
+}
+
+class SmallCacheImpl : public SmallCache {
+ public:
+  SmallCacheImpl() : int_value_(0) {}
+  ~SmallCacheImpl() override {}
+  int64_t int_value() const { return int_value_; }
+
+ private:
+  void SetIntValue(int64_t int_value) override { int_value_ = int_value; }
+  void GetIntValue(const GetIntValueCallback& callback) override {
+    callback.Run(int_value_);
+  }
+
+  int64_t int_value_;
+};
+
+TEST(UnionTest, InterfaceInUnion) {
+  Environment env;
+  RunLoop run_loop;
+  SmallCacheImpl impl;
+  SmallCachePtr ptr;
+  Binding<SmallCache> bindings(&impl, GetProxy(&ptr));
+
+  HandleUnionPtr handle(HandleUnion::New());
+  handle->set_f_small_cache(ptr.Pass());
+
+  handle->get_f_small_cache()->SetIntValue(10);
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(10, impl.int_value());
+}
+
+TEST(UnionTest, InterfaceInUnionSerialization) {
+  Environment env;
+  RunLoop run_loop;
+  SmallCacheImpl impl;
+  SmallCachePtr ptr;
+  Binding<SmallCache> bindings(&impl, GetProxy(&ptr));
+
+  HandleUnionPtr handle(HandleUnion::New());
+  handle->set_f_small_cache(ptr.Pass());
+  size_t size = GetSerializedSize_(handle, false);
+  EXPECT_EQ(16U, size);
+
+  mojo::internal::FixedBuffer buf(size);
+  internal::HandleUnion_Data* data = nullptr;
+  SerializeUnion_(handle.Pass(), &buf, &data, false);
+
+  std::vector<Handle> handles;
+  data->EncodePointersAndHandles(&handles);
+  EXPECT_EQ(1U, handles.size());
+  data->DecodePointersAndHandles(&handles);
+
+  HandleUnionPtr handle2(HandleUnion::New());
+  Deserialize_(data, &handle2);
+
+  handle2->get_f_small_cache()->SetIntValue(10);
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(10, impl.int_value());
+}
+
+class UnionInterfaceImpl : public UnionInterface {
+ public:
+  UnionInterfaceImpl() {}
+  ~UnionInterfaceImpl() override {}
+
+ private:
+  void Echo(PodUnionPtr in, const EchoCallback& callback) override {
+    callback.Run(in.Pass());
+  }
+};
+
+TEST(UnionTest, UnionInInterface) {
+  Environment env;
+  RunLoop run_loop;
+  UnionInterfaceImpl impl;
+  UnionInterfacePtr ptr;
+  Binding<UnionInterface> bindings(&impl, GetProxy(&ptr));
+
+  PodUnionPtr pod(PodUnion::New());
+  pod->set_f_int16(16);
+
+  ptr->Echo(pod.Pass(),
+            [](PodUnionPtr out) { EXPECT_EQ(16, out->get_f_int16()); });
+  run_loop.RunUntilIdle();
 }
 
 }  // namespace test

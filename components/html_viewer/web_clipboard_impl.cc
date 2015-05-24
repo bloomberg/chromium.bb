@@ -69,7 +69,7 @@ uint64_t WebClipboardImpl::sequenceNumber(Buffer buffer) {
                                 base::Bind(&CopyUint64, &number));
 
   // Force this to be synchronous.
-  clipboard_.WaitForIncomingMethodCall();
+  clipboard_.WaitForIncomingResponse();
   return number;
 }
 
@@ -81,7 +81,7 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
       clipboard_type, base::Bind(&CopyVectorString, &types));
 
   // Force this to be synchronous.
-  clipboard_.WaitForIncomingMethodCall();
+  clipboard_.WaitForIncomingResponse();
 
   switch (format) {
     case FormatPlainText:
@@ -108,7 +108,7 @@ blink::WebVector<blink::WebString> WebClipboardImpl::readAvailableTypes(
       clipboard_type, base::Bind(&CopyVectorString, &types));
 
   // Force this to be synchronous.
-  clipboard_.WaitForIncomingMethodCall();
+  clipboard_.WaitForIncomingResponse();
 
   // AFAICT, every instance of setting contains_filenames is false.
   *contains_filenames = false;
@@ -129,7 +129,7 @@ blink::WebString WebClipboardImpl::readPlainText(Buffer buffer) {
                            base::Bind(&CopyWebString, &text));
 
   // Force this to be synchronous.
-  clipboard_.WaitForIncomingMethodCall();
+  clipboard_.WaitForIncomingResponse();
 
   return text;
 }
@@ -143,14 +143,14 @@ blink::WebString WebClipboardImpl::readHTML(Buffer buffer,
   blink::WebString html;
   clipboard_->ReadMimeType(type, Clipboard::MIME_TYPE_HTML,
                            base::Bind(&CopyWebString, &html));
-  clipboard_.WaitForIncomingMethodCall();
+  clipboard_.WaitForIncomingResponse();
 
   *fragment_start = 0;
   *fragment_end = static_cast<unsigned>(html.length());
 
   clipboard_->ReadMimeType(type, Clipboard::MIME_TYPE_URL,
                            base::Bind(&CopyURL, page_url));
-  clipboard_.WaitForIncomingMethodCall();
+  clipboard_.WaitForIncomingResponse();
 
   return html;
 }
@@ -165,7 +165,7 @@ blink::WebString WebClipboardImpl::readCustomData(
       clipboard_type, mime_type.utf8(), base::Bind(&CopyWebString, &data));
 
   // Force this to be synchronous.
-  clipboard_.WaitForIncomingMethodCall();
+  clipboard_.WaitForIncomingResponse();
 
   return data;
 }

@@ -61,9 +61,22 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
   // |embedder::MasterProcessDelegate| to track this process. It must remain
   // alive until the delegate's |OnSlaveDisconnect()| is called with it as the
   // argument. |OnSlaveDisconnect()| will always be called for each slave,
-  // assuming proper shutdown.)
+  // assuming proper shutdown. |*slave_process_identifier| will be set to the
+  // process identifier for the newly-added slave.
   void AddSlave(embedder::SlaveInfo slave_info,
-                embedder::ScopedPlatformHandle platform_handle);
+                embedder::ScopedPlatformHandle platform_handle,
+                ProcessIdentifier* slave_process_identifier);
+
+  // Like |AddSlave()|, but allows a connection to be bootstrapped: both the
+  // master and slave may call |Connect()| with |connection_id| immediately (as
+  // if both had already called |AllowConnect()|). Returns false if |Connect()|
+  // will not be possible.
+  // TODO(vtl): Is |AddSlave()| really needed? (It's probably mostly useful for
+  // tests.)
+  bool AddSlaveAndBootstrap(embedder::SlaveInfo slave_info,
+                            embedder::ScopedPlatformHandle platform_handle,
+                            const ConnectionIdentifier& connection_id,
+                            ProcessIdentifier* slave_process_identifier);
 
   // |ConnectionManager| methods:
   void Shutdown() override;
@@ -92,6 +105,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
   // Signals |*event| on completion.
   void AddSlaveOnPrivateThread(embedder::SlaveInfo slave_info,
                                embedder::ScopedPlatformHandle platform_handle,
+                               ProcessIdentifier slave_process_identifier,
                                base::WaitableEvent* event);
   // Called by |Helper::OnError()|.
   void OnError(ProcessIdentifier process_identifier);
@@ -120,12 +134,13 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
   base::Thread private_thread_;
 
   // The following members are only accessed on |private_thread_|:
-  ProcessIdentifier next_process_identifier_;
   base::hash_map<ProcessIdentifier, Helper*> helpers_;  // Owns its values.
 
   // Protects the members below (except in the constructor, |Init()|,
   // |Shutdown()|/|ShutdownOnPrivateThread()|, and the destructor).
   base::Lock lock_;
+
+  ProcessIdentifier next_process_identifier_;
 
   struct PendingConnectionInfo;
   base::hash_map<ConnectionIdentifier, PendingConnectionInfo*>

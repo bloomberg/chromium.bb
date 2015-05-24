@@ -87,7 +87,6 @@ void RawChannel::WriteBuffer::GetPlatformHandlesToSend(
   if (serialized_platform_handle_size_ > 0) {
     size_t serialization_data_offset =
         transport_data->platform_handle_table_offset();
-    DCHECK_GT(serialization_data_offset, 0u);
     serialization_data_offset +=
         platform_handles_offset_ * serialized_platform_handle_size_;
     *serialization_data = static_cast<char*>(transport_data->buffer()) +

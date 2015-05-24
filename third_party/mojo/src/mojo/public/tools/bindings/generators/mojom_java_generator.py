@@ -116,7 +116,7 @@ def ConstantStyle(name):
 
 def GetNameForElement(element):
   if (mojom.IsEnumKind(element) or mojom.IsInterfaceKind(element) or
-      mojom.IsStructKind(element)):
+      mojom.IsStructKind(element) or mojom.IsUnionKind(element)):
     return UpperCamelCase(element.name)
   if mojom.IsInterfaceRequestKind(element):
     return GetNameForElement(element.kind)
@@ -243,7 +243,9 @@ def GetBoxedJavaType(context, kind, with_generics=True):
 def GetJavaType(context, kind, boxed=False, with_generics=True):
   if boxed:
     return GetBoxedJavaType(context, kind)
-  if mojom.IsStructKind(kind) or mojom.IsInterfaceKind(kind):
+  if (mojom.IsStructKind(kind) or
+      mojom.IsInterfaceKind(kind) or
+      mojom.IsUnionKind(kind)):
     return GetNameForKind(context, kind)
   if mojom.IsInterfaceRequestKind(kind):
     return ('org.chromium.mojo.bindings.InterfaceRequest<%s>' %
@@ -344,7 +346,13 @@ def IsPointerArrayKind(kind):
   if not mojom.IsArrayKind(kind):
     return False
   sub_kind = kind.kind
-  return mojom.IsObjectKind(sub_kind)
+  return mojom.IsObjectKind(sub_kind) and not mojom.IsUnionKind(sub_kind)
+
+def IsUnionArrayKind(kind):
+  if not mojom.IsArrayKind(kind):
+    return False
+  sub_kind = kind.kind
+  return mojom.IsUnionKind(sub_kind)
 
 def GetConstantsMainEntityName(module):
   if module.attributes and 'JavaConstantsClassName' in module.attributes:
@@ -406,11 +414,14 @@ class Generator(generator.Generator):
     'is_pointer_array_kind': IsPointerArrayKind,
     'is_reference_kind': mojom.IsReferenceKind,
     'is_struct_kind': mojom.IsStructKind,
+    'is_union_array_kind': IsUnionArrayKind,
+    'is_union_kind': mojom.IsUnionKind,
     'java_true_false': GetJavaTrueFalse,
     'java_type': GetJavaType,
     'method_ordinal_name': GetMethodOrdinalName,
     'name': GetNameForElement,
     'new_array': NewArray,
+    'ucc': lambda x: UpperCamelCase(x.name),
   }
 
   def GetJinjaExports(self):
@@ -433,6 +444,12 @@ class Generator(generator.Generator):
   def GenerateStructSource(self, struct):
     exports = self.GetJinjaExports()
     exports.update({'struct': struct})
+    return exports
+
+  @UseJinja('java_templates/union.java.tmpl', filters=java_filters)
+  def GenerateUnionSource(self, union):
+    exports = self.GetJinjaExports()
+    exports.update({'union': union})
     return exports
 
   @UseJinja('java_templates/interface.java.tmpl', filters=java_filters)
@@ -458,6 +475,10 @@ class Generator(generator.Generator):
     for struct in self.GetStructs():
       self.Write(self.GenerateStructSource(struct),
                  '%s.java' % GetNameForElement(struct))
+
+    for union in self.module.unions:
+      self.Write(self.GenerateUnionSource(union),
+                 '%s.java' % GetNameForElement(union))
 
     for enum in self.module.enums:
       self.Write(self.GenerateEnumSource(enum),

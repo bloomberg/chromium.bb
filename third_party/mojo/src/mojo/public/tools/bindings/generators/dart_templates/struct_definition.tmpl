@@ -33,9 +33,12 @@ encoder{{level}}.{{kind|encode_method(variable, offset, bit)}};
 
 
 {%- macro decode(variable, kind, offset, bit, level=0) %}
-{%- if kind|is_struct_kind or kind|is_pointer_array_kind or kind|is_map_kind %}
+{%- if kind|is_struct_kind or
+       kind|is_union_kind or
+       kind|is_pointer_array_kind or
+       kind|is_map_kind %}
 var decoder{{level+1}} = decoder{{level}}.decodePointer({{offset}}, {{kind|is_nullable_kind|dart_true_false}});
-{%-   if kind|is_struct_kind %}
+{%-   if kind|is_struct_kind or kind|is_union_kind %}
 {{variable}} = {{kind|dart_type}}.decode(decoder{{level+1}});
 {%-   else %}{# kind|is_pointer_array_kind or is_map_kind #}
 {%-     if kind|is_nullable_kind %}
@@ -117,9 +120,12 @@ class {{struct|name}} extends bindings.Struct {
       // Scan in reverse order to optimize for more recent versions.
       for (int i = kVersions.length - 1; i >= 0; --i) {
         if (mainDataHeader.version >= kVersions[i].version) {
-          if (mainDataHeader.size != kVersions[i].size)
-            throw new bindings.MojoCodecError(
-                'Header doesn\'t correspond to any known version.');
+          if (mainDataHeader.size == kVersions[i].size) {
+            // Found a match.
+            break;
+          }
+          throw new bindings.MojoCodecError(
+              'Header size doesn\'t correspond to known version size.');
         }
       }
     } else if (mainDataHeader.size < kVersions.last.size) {

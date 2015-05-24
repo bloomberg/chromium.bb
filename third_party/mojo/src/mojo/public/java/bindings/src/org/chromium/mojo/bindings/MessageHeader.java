@@ -4,8 +4,6 @@
 
 package org.chromium.mojo.bindings;
 
-import org.chromium.mojo.bindings.Struct.DataHeader;
-
 import java.nio.ByteBuffer;
 
 /**
@@ -182,12 +180,9 @@ public class MessageHeader {
      */
     @Override
     public boolean equals(Object object) {
-        if (object == this)
-            return true;
-        if (object == null)
-            return false;
-        if (getClass() != object.getClass())
-            return false;
+        if (object == this) return true;
+        if (object == null) return false;
+        if (getClass() != object.getClass()) return false;
 
         MessageHeader other = (MessageHeader) object;
         return (BindingsHelper.equals(mDataHeader, other.mDataHeader)
