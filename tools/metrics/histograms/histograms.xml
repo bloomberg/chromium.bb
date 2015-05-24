@@ -12167,7 +12167,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="GPU.ANGLE.D3D11CreateDeviceError" units="D3DHresult">
+<histogram name="GPU.ANGLE.D3D11CreateDeviceError" enum="D3DHresult">
   <owner>jmadill@chromium.org</owner>
   <summary>
     An extended Windows error code returned from D3D11CreateDevice on error. Can
@@ -12185,7 +12185,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="GPU.ANGLE.D3D11FeatureLevel" units="D3DFeatureLevel">
+<histogram name="GPU.ANGLE.D3D11FeatureLevel" enum="D3DFeatureLevel">
   <owner>jmadill@chromium.org</owner>
   <summary>
     The maxmium supported (or currently requested) Direct3D feature level in
@@ -12211,7 +12211,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="GPU.ANGLE.SupportsDXGI1_2" units="BooleanSupported">
+<histogram name="GPU.ANGLE.SupportsDXGI1_2" enum="BooleanSupported">
   <owner>jmadill@chromium.org</owner>
   <summary>
     Windows computers running Windows 8+, or running Windows 7 with a platform
