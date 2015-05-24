@@ -78,7 +78,7 @@ enum SerializationTag {
     NumberObjectTag = 'n', // value:double -> new Number(value) (ref)
     TrueObjectTag = 'y', // new Boolean(true) (ref)
     FalseObjectTag = 'x', // new Boolean(false) (ref)
-    CompositorProxyTag = 'C',
+    CompositorProxyTag = 'C', // elementId:uint64_t, bitfields:uint32_t -> CompositorProxy (ref)
     VersionTag = 0xFF // version:uint32_t -> Uses this as the file version.
 };
 
