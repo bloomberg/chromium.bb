@@ -656,6 +656,15 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method json
 [Worker]     method text
+[Worker] interface ServiceWorkerRegistration
+[Worker]     getter onupdatefound
+[Worker]     getter pushManager
+[Worker]     getter scope
+[Worker]     method constructor
+[Worker]     method getNotifications
+[Worker]     method showNotification
+[Worker]     method unregister
+[Worker]     setter onupdatefound
 [Worker] interface Set
 [Worker]     getter size
 [Worker]     method add
