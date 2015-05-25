@@ -1367,6 +1367,24 @@ TEST_F(MaximizeModeWindowManagerTest, AlwaysOnTopWindows) {
   EXPECT_TRUE(wm::GetWindowState(w1.get())->can_be_dragged());
   EXPECT_TRUE(wm::GetWindowState(w2.get())->can_be_dragged());
 }
+
+// Tests that docked windows are not maximized, and not tracked.
+TEST_F(MaximizeModeWindowManagerTest, DontMaximizeDockedWindows) {
+  gfx::Rect rect(10, 10, 200, 50);
+  scoped_ptr<aura::Window> window(
+      CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+
+  wm::WMEvent dock_event(wm::WM_EVENT_DOCK);
+  wm::GetWindowState(window.get())->OnWMEvent(&dock_event);
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsDocked());
+  EXPECT_FALSE(wm::GetWindowState(window.get())->IsMaximized());
+
+  ash::MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsDocked());
+  EXPECT_FALSE(wm::GetWindowState(window.get())->IsMaximized());
+  EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
+}
+
 #endif  // OS_WIN
 
 }  // namespace ash

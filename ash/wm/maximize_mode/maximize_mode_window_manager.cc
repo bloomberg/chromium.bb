@@ -260,6 +260,10 @@ bool MaximizeModeWindowManager::ShouldHandleWindow(aura::Window* window) {
   if (window->GetProperty(aura::client::kAlwaysOnTopKey))
     return false;
 
+  // Windows in the dock should not be managed by us.
+  if (wm::GetWindowState(window)->IsDocked())
+    return false;
+
   return window->type() == ui::wm::WINDOW_TYPE_NORMAL;
 }
 

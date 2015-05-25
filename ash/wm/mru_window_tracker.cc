@@ -36,19 +36,6 @@ void AddTrackedWindows(aura::Window* root,
   windows->insert(windows->end(), children.begin(), children.end());
 }
 
-// Adds windows being dragged in the docked container to |windows| list.
-void AddDraggedWindows(aura::Window* root,
-                       MruWindowTracker::WindowList* windows) {
-  aura::Window* container =
-      Shell::GetContainer(root, kShellWindowId_DockedContainer);
-  const MruWindowTracker::WindowList& children = container->children();
-  for (MruWindowTracker::WindowList::const_iterator iter = children.begin();
-       iter != children.end(); ++iter) {
-    if (wm::GetWindowState(*iter)->is_dragged())
-      windows->insert(windows->end(), *iter);
-  }
-}
-
 // Returns whether |w1| should be considered less recently used than |w2|. This
 // is used for a stable sort to move minimized windows to the LRU end of the
 // list.
@@ -79,10 +66,6 @@ MruWindowTracker::WindowList BuildWindowListInternal(
   // in the active root window becomes the front of the list.
   for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i)
     AddTrackedWindows(active_root, kSwitchableWindowContainerIds[i], &windows);
-
-  // Dragged windows are temporarily parented in docked container. Include them
-  // in the in tracked list.
-  AddDraggedWindows(active_root, &windows);
 
   // Removes unfocusable windows.
   std::vector<aura::Window*>::iterator itr = windows.begin();
