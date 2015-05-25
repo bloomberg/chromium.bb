@@ -22,23 +22,6 @@ void CallbackStack::Block::invokeEphemeronCallbacks(Visitor* visitor)
     // iteration starts.
     for (unsigned i = 0; m_buffer + i < m_current; i++) {
         Item& item = m_buffer[i];
-
-        // We don't need to check for orphaned pages when popping an ephemeron
-        // callback since the callback is only pushed after the object containing
-        // it has been traced. There are basically three cases to consider:
-        // 1. Member<EphemeronCollection>
-        // 2. EphemeronCollection is part of a containing object
-        // 3. EphemeronCollection is a value object in a collection
-        //
-        // Ad. 1. In this case we push the start of the ephemeron on the
-        // marking stack and do the orphaned page check when popping it off
-        // the marking stack.
-        // Ad. 2. The containing object cannot be on an orphaned page since
-        // in that case we wouldn't have traced its parts. This also means
-        // the ephemeron collection is not on the orphaned page.
-        // Ad. 3. Is the same as 2. The collection containing the ephemeron
-        // collection as a value object cannot be on an orphaned page since
-        // it would not have traced its values in that case.
         item.call(visitor);
     }
 }

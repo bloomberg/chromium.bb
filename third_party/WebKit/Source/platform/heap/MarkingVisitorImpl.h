@@ -24,13 +24,6 @@ protected:
     {
         ASSERT(header);
         ASSERT(objectPointer);
-        // Check that we are not marking objects that are outside
-        // the heap by calling Heap::contains.  However we cannot
-        // call Heap::contains when outside a GC and we call mark
-        // when doing weakness for ephemerons.  Hence we only check
-        // when called within.
-        ASSERT(!ThreadState::current()->isInGC() || Heap::containedInHeapOrOrphanedPage(header));
-
         if (!toDerived()->shouldMarkObject(objectPointer))
             return;
 
@@ -47,6 +40,7 @@ protected:
 
 #if ENABLE(ASSERT)
         toDerived()->checkMarkingAllowed();
+        ASSERT(Heap::findPageFromAddress(header));
 #endif
         header->mark();
 
