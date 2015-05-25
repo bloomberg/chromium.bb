@@ -190,6 +190,13 @@ void ToplevelWindowEventHandler::OnMouseEvent(
       (ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON)) != 0)
     return;
 
+  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED) {
+    // Capture is grabbed when both gesture and mouse drags start. Handle
+    // capture loss regardless of which type of drag is in progress.
+    HandleCaptureLost(event);
+    return;
+  }
+
   if (in_gesture_drag_)
     return;
 
@@ -201,7 +208,6 @@ void ToplevelWindowEventHandler::OnMouseEvent(
     case ui::ET_MOUSE_DRAGGED:
       HandleDrag(target, event);
       break;
-    case ui::ET_MOUSE_CAPTURE_CHANGED:
     case ui::ET_MOUSE_RELEASED:
       HandleMouseReleased(target, event);
       break;
@@ -512,11 +518,8 @@ void ToplevelWindowEventHandler::HandleMousePressed(
 void ToplevelWindowEventHandler::HandleMouseReleased(
     aura::Window* target,
     ui::MouseEvent* event) {
-  if (event->phase() != ui::EP_PRETARGET)
-    return;
-
-  CompleteDrag(event->type() == ui::ET_MOUSE_RELEASED ?
-                   DRAG_COMPLETE : DRAG_REVERT);
+  if (event->phase() == ui::EP_PRETARGET)
+    CompleteDrag(DRAG_COMPLETE);
 }
 
 void ToplevelWindowEventHandler::HandleDrag(
@@ -577,6 +580,11 @@ void ToplevelWindowEventHandler::HandleMouseExited(
       Shell::GetInstance()->resize_shadow_controller();
   if (controller)
     controller->HideShadow(target);
+}
+
+void ToplevelWindowEventHandler::HandleCaptureLost(ui::LocatedEvent* event) {
+  if (event->phase() == ui::EP_PRETARGET)
+    CompleteDrag(DRAG_REVERT);
 }
 
 void ToplevelWindowEventHandler::SetWindowStateTypeFromGesture(

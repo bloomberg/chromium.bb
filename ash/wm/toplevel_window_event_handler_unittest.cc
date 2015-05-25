@@ -16,6 +16,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -723,6 +724,32 @@ TEST_F(ToplevelWindowEventHandlerTest, CaptureLossAfterMouseRelease) {
   EXPECT_EQ(aura::client::MOVE_SUCCESSFUL,
             move_client->RunMoveLoop(window.get(), gfx::Vector2d(),
                 aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+}
+
+namespace {
+
+// Checks that |window| has capture and releases capture.
+void CheckHasCaptureAndReleaseCapture(aura::Window* window) {
+  ASSERT_TRUE(window->HasCapture());
+  window->ReleaseCapture();
+}
+
+}  // namespace
+
+// Test that releasing capture cancels an in-progress gesture drag.
+TEST_F(ToplevelWindowEventHandlerTest, GestureDragCaptureLoss) {
+  scoped_ptr<aura::Window> window(CreateWindow(HTNOWHERE));
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     window.get());
+
+  aura::client::WindowMoveClient* move_client =
+      aura::client::GetWindowMoveClient(window->GetRootWindow());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&CheckHasCaptureAndReleaseCapture,
+                            base::Unretained(window.get())));
+  EXPECT_EQ(aura::client::MOVE_CANCELED,
+            move_client->RunMoveLoop(window.get(), gfx::Vector2d(),
+                                     aura::client::WINDOW_MOVE_SOURCE_TOUCH));
 }
 
 // Showing the resize shadows when the mouse is over the window edges is tested

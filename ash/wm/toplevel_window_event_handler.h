@@ -89,6 +89,9 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // Called for mouse exits to hide window resize shadows.
   void HandleMouseExited(aura::Window* target, ui::LocatedEvent* event);
 
+  // Called when mouse capture is lost.
+  void HandleCaptureLost(ui::LocatedEvent* event);
+
   // Sets |window|'s state type to |new_state_type|. Called after the drag has
   // been completed for fling gestures.
   void SetWindowStateTypeFromGesture(aura::Window* window,
