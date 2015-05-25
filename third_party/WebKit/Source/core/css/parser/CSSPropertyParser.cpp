@@ -103,7 +103,17 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     int parsedPropertiesSize = parsedProperties.size();
 
     CSSPropertyParser parser(valueList, context, parsedProperties, ruleType);
-    bool parseSuccess = parser.parseValue(unresolvedProperty, important);
+    CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
+    bool parseSuccess;
+
+    if (ruleType == StyleRule::Viewport) {
+        parseSuccess = (RuntimeEnabledFeatures::cssViewportEnabled() || isUASheetBehavior(context.mode()))
+            && parser.parseViewportProperty(resolvedProperty, important);
+    } else if (ruleType == StyleRule::FontFace) {
+        parseSuccess = !important && parser.parseFontFaceDescriptor(resolvedProperty);
+    } else {
+        parseSuccess = parser.parseValue(unresolvedProperty, important);
+    }
 
     // This doesn't count UA style sheets
     if (parseSuccess && context.useCounter())
@@ -409,26 +419,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 {
     CSSPropertyID propId = resolveCSSPropertyID(unresolvedProperty);
 
-    if (!m_valueList)
-        return false;
-
     CSSParserValue* value = m_valueList->current();
-
-    if (!value)
-        return false;
-
-    if (m_ruleType == StyleRule::Viewport) {
-        // Allow @viewport rules from UA stylesheets even if the feature is disabled.
-        if (!RuntimeEnabledFeatures::cssViewportEnabled() && !isUASheetBehavior(m_context.mode()))
-            return false;
-
-        return parseViewportProperty(propId, important);
-    }
-    if (m_ruleType == StyleRule::FontFace) {
-        if (important)
-            return false;
-        return parseFontFaceDescriptor(propId);
-    }
 
     // Note: m_parsedCalculation is used to pass the calc value to validUnit and then cleared at the end of this function.
     // FIXME: This is to avoid having to pass parsedCalc to all validUnit callers.
