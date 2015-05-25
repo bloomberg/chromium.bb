@@ -40,10 +40,7 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   }
 };
 
-// Disable unconditionally to enable blink roll.  Sample failure:
-// http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_chromium_rel_ng/builds/66651
-//#if defined(OS_CHROMEOS)
-#if 1
+#if defined(OS_CHROMEOS)
 #define MAYBE_RunsAudioVideoWebRTCCallInTwoTabs \
     DISABLED_RunsAudioVideoWebRTCCallInTwoTabs
 #else
