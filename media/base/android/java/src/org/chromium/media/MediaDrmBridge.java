@@ -379,7 +379,7 @@ public class MediaDrmBridge {
         mResetDeviceCredentialsPending = true;
         MediaDrm.ProvisionRequest request = mMediaDrm.getProvisionRequest();
         PostRequestTask postTask = new PostRequestTask(request.getData());
-        postTask.execute(request.getDefaultUrl());
+        postTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, request.getDefaultUrl());
     }
 
     /**
@@ -718,7 +718,7 @@ public class MediaDrmBridge {
         mProvisioningPending = true;
         MediaDrm.ProvisionRequest request = mMediaDrm.getProvisionRequest();
         PostRequestTask postTask = new PostRequestTask(request.getData());
-        postTask.execute(request.getDefaultUrl());
+        postTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, request.getDefaultUrl());
     }
 
     /**

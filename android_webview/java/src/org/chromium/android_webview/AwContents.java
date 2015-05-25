@@ -1802,7 +1802,7 @@ public class AwContents implements SmartClipProvider,
             protected void onPostExecute(String result) {
                 saveWebArchiveInternal(result, callback);
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public String getOriginalUrl() {

@@ -191,7 +191,7 @@ public class MediaPlayerBridge {
         if (!"base64".equals(headerInfo[1])) return false;
 
         mLoadDataUriTask = new LoadDataUriTask(context, data);
-        mLoadDataUriTask.execute();
+        mLoadDataUriTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         return true;
     }
 

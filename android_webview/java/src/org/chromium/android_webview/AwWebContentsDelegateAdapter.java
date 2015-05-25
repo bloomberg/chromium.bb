@@ -231,7 +231,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
                 }
                 GetDisplayNameTask task = new GetDisplayNameTask(
                         mContext.getContentResolver(), processId, renderId, modeFlags, results);
-                task.execute();
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
         }, params);
     }

@@ -122,7 +122,7 @@ public final class AwDataReductionProxyManager {
                 AwContentsStatics.setDataReductionProxyEnabled(enabled);
             }
         };
-        task.execute();
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private static boolean isDataReductionProxyEnabled(Context context) {
