@@ -70,8 +70,6 @@ static FcObjectType *
 _FcObjectLookupOtherTypeByName (const char *str, FcObject *id)
 {
     struct FcObjectOtherTypeInfo *ots, *ot;
-    static fc_atomic_int_t first_id = 0;
-    static FcBool overflow = FcFalse;
 
 retry:
     ots = fc_atomic_ptr_get (&other_types);
@@ -80,11 +78,6 @@ retry:
 	if (0 == strcmp (ot->object.object, str))
 	    break;
 
-    if (!ots)
-    {
-	first_id = fc_atomic_int_add (next_id, 0);
-	overflow = FcFalse;
-    }
     if (!ot)
     {
 	ot = malloc (sizeof (*ot));
@@ -93,18 +86,11 @@ retry:
 
 	ot->object.object = (char *) FcStrdup (str);
 	ot->object.type = FcTypeUnknown;
-    retry_id:
 	ot->id = fc_atomic_int_add (next_id, +1);
-	if (overflow && ot->id == first_id)
+	if (ot->id < (FC_MAX_BASE_OBJECT + FC_EXT_OBJ_INDEX))
 	{
 	    fprintf (stderr, "Fontconfig error: No object ID to assign\n");
 	    abort ();
-	}
-	if (ot->id < (FC_MAX_BASE_OBJECT + FC_EXT_OBJ_INDEX))
-	{
-	    overflow = FcTrue;
-	    fc_atomic_ptr_cmpexch (&next_id, ot->id + 1, FC_MAX_BASE_OBJECT + FC_EXT_OBJ_INDEX + 1);
-	    goto retry_id;
 	}
 	ot->next = ots;
 
