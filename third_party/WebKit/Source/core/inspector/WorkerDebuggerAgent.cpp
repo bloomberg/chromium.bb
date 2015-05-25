@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/V8Debugger.h"
 #include "core/inspector/InjectedScript.h"
-#include "core/inspector/WorkerInspectorController.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/MessageQueue.h"

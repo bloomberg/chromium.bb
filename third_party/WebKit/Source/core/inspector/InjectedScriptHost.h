@@ -46,7 +46,6 @@ class EventTarget;
 class InjectedScriptHostClient;
 class InspectorConsoleAgent;
 class InspectorDebuggerAgent;
-class InspectorInspectorAgent;
 class JSONValue;
 class Node;
 class ScriptValue;
