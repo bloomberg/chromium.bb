@@ -7,6 +7,8 @@
 #include <signal.h>
 #include <stdio.h>
 #include <sys/resource.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
@@ -17,6 +19,11 @@
 #include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
 #include "sandbox/linux/tests/unit_tests.h"
+
+// Specifically, PNaCl toolchain does not have this flag.
+#if !defined(POLLRDHUP)
+#define POLLRDHUP 0x2000
+#endif
 
 namespace {
 std::string TestFailedMessage(const std::string& msg) {
@@ -67,7 +74,9 @@ bool IsRunningOnValgrind() { return RUNNING_ON_VALGRIND; }
 static const int kExpectedValue = 42;
 static const int kIgnoreThisTest = 43;
 static const int kExitWithAssertionFailure = 1;
+#if !defined(OS_NACL_NONSFI)
 static const int kExitForTimeout = 2;
+#endif
 
 #if defined(SANDBOX_USES_BASE_TEST_SUITE)
 // This is due to StackDumpSignalHandler() performing _exit(1).
@@ -75,6 +84,10 @@ static const int kExitForTimeout = 2;
 const int kExitAfterSIGSEGV = 1;
 #endif
 
+// PNaCl toolchain's signal ABIs are incompatible with Linux's.
+// So, for simplicity, just drop the "timeout" feature from unittest framework
+// with relying on the buildbot's timeout feature.
+#if !defined(OS_NACL_NONSFI)
 static void SigAlrmHandler(int) {
   const char failure_message[] = "Timeout reached!\n";
   // Make sure that we never block here.
@@ -106,6 +119,7 @@ static void SetProcessTimeout(int time_in_seconds) {
   SANDBOX_ASSERT(alarm(time_in_seconds) == 0);  // There should be no previous
                                                 // alarm.
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 // Runs a test in a sub-process. This is necessary for most of the code
 // in the BPF sandbox, as it potentially makes global state changes and as
@@ -163,7 +177,9 @@ void UnitTests::RunTestInProcess(SandboxTestRunner* test_runner,
     // Don't set a timeout if running on Valgrind, since it's generally much
     // slower.
     if (!IsRunningOnValgrind()) {
+#if !defined(OS_NACL_NONSFI)
       SetProcessTimeout(GetSubProcessTimeoutTimeInSeconds());
+#endif
     }
 
     // Disable core files. They are not very useful for our individual test

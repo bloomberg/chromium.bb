@@ -1455,6 +1455,9 @@
     # untrusted toolchain.
     'disable_nacl_untrusted%': 0,
 
+    # PNaCl toolchain does not support sanitizers. Disable by default.
+    'enable_nacl_nonsfi_test%': 0,
+
     # Disable Dart by default.
     'enable_dart%': 0,
 
@@ -2209,6 +2212,11 @@
         'use_sanitizer_options%': 1,
         # Disable ICF in the linker to avoid debug info loss.
         'gold_icf_level%': 'none',
+      }],
+      ['OS=="linux" and asan==0 and msan==0 and lsan==0 and tsan==0', {
+        # PNaCl toolchain Non-SFI build only supports linux OS build.
+        # Also, it does not support sanitizers.
+        'enable_nacl_nonsfi_test%': 1,
       }],
       ['asan==1 and OS=="linux" and chromeos==0', {
         'use_custom_libcxx%': 1,
