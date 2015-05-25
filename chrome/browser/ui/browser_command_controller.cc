@@ -954,7 +954,10 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_MINUS, true);
 
   // Show various bits of UI
-  const bool guest_session = profile()->IsGuestSession();
+  const bool guest_session = profile()->IsGuestSession() ||
+                             profile()->IsSystemProfile();
+  DCHECK(!profile()->IsSystemProfile())
+      << "Ought to never have browser for the system profile.";
   const bool normal_window = browser_->is_type_tabbed();
   UpdateOpenFileState(&command_updater_);
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS, false);
@@ -1193,6 +1196,7 @@ void BrowserCommandController::UpdateCommandsForBookmarkBar() {
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_BOOKMARK_BAR,
       browser_defaults::bookmarks_enabled && !profile()->IsGuestSession() &&
+          !profile()->IsSystemProfile() &&
           !profile()->GetPrefs()->IsManagedPreference(
               bookmarks::prefs::kShowBookmarkBar) &&
           IsShowingMainUI());

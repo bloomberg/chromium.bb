@@ -306,6 +306,7 @@ Profile* ProfileManager::GetLastUsedProfile() {
 Profile* ProfileManager::GetLastUsedProfileAllowedByPolicy() {
   Profile* profile = GetLastUsedProfile();
   if (profile->IsGuestSession() ||
+      profile->IsSystemProfile() ||
       IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
       IncognitoModePrefs::FORCED) {
     return profile->GetOffTheRecordProfile();
@@ -439,8 +440,10 @@ void ProfileManager::CreateProfileAsync(
     if (iter != profiles_info_.end() && info->created) {
       Profile* profile = info->profile.get();
       // If this was the guest profile, apply settings and go OffTheRecord.
-      if (profile->GetPath() == ProfileManager::GetGuestProfilePath()) {
-        SetGuestProfilePrefs(profile);
+      // The system profile also needs characteristics of being off the record,
+      // such as having no extensions, not writing to disk, etc.
+      if (profile->IsGuestSession() || profile->IsSystemProfile()) {
+        SetNonPersonalProfilePrefs(profile);
         profile = profile->GetOffTheRecordProfile();
       }
       // Profile has already been created. Run callback immediately.
@@ -1004,9 +1007,10 @@ void ProfileManager::OnProfileCreated(Profile* profile,
   }
 
   if (profile) {
-    // If this was the guest profile, finish setting its special status.
-    if (profile->GetPath() == ProfileManager::GetGuestProfilePath())
-      SetGuestProfilePrefs(profile);
+    // If this was the guest or system profile, finish setting its special
+    // status.
+    if (profile->IsGuestSession() || profile->IsSystemProfile())
+      SetNonPersonalProfilePrefs(profile);
 
     // Invoke CREATED callback for incognito profiles.
     if (go_off_the_record)
@@ -1326,16 +1330,12 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
   }
 }
 
-void ProfileManager::SetGuestProfilePrefs(Profile* profile) {
+void ProfileManager::SetNonPersonalProfilePrefs(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
   prefs->SetBoolean(prefs::kSigninAllowed, false);
   prefs->SetBoolean(bookmarks::prefs::kEditBookmarksEnabled, false);
   prefs->SetBoolean(bookmarks::prefs::kShowBookmarkBar, false);
   prefs->ClearPref(DefaultSearchManager::kDefaultSearchProviderDataPrefName);
-  // This can be removed in the future but needs to be present through
-  // a release (or two) so that any existing installs get switched to
-  // the new state and away from the previous "forced" state.
-  IncognitoModePrefs::SetAvailability(prefs, IncognitoModePrefs::ENABLED);
 }
 
 bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
@@ -1344,7 +1344,7 @@ bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
     return true;
   }
 #endif
-  return profile->IsGuestSession();
+  return profile->IsGuestSession() || profile->IsSystemProfile();
 }
 
 void ProfileManager::RunCallbacks(const std::vector<CreateCallback>& callbacks,
@@ -1370,7 +1370,9 @@ void ProfileManager::UpdateLastUser(Profile* last_active) {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
   // Only keep track of profiles that we are managing; tests may create others.
-  if (profiles_info_.find(last_active->GetPath()) != profiles_info_.end()) {
+  // Also never consider the SystemProfile as "active".
+  if (profiles_info_.find(last_active->GetPath()) != profiles_info_.end() &&
+      !last_active->IsSystemProfile()) {
     std::string profile_path_base =
         last_active->GetPath().BaseName().MaybeAsASCII();
     if (profile_path_base != GetLastUsedProfileName())

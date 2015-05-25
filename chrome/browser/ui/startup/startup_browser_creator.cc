@@ -682,15 +682,16 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
       bool signin_required = profile_index != std::string::npos &&
           profile_info.ProfileIsSigninRequiredAtIndex(profile_index);
 
-      // Guest or locked profiles cannot be re-opened on startup. The only
-      // exception is if there's already a Guest window open in a separate
+      // Guest, system or locked profiles cannot be re-opened on startup. The
+      // only exception is if there's already a Guest window open in a separate
       // process (for example, launching a new browser after clicking on a
       // downloaded file in Guest mode).
-      bool has_guest_browsers = last_used_profile->IsGuestSession() &&
+      bool guest_or_system = last_used_profile->IsGuestSession() ||
+                             last_used_profile->IsSystemProfile();
+      bool has_guest_browsers = guest_or_system &&
           chrome::GetTotalBrowserCountForProfile(
               last_used_profile->GetOffTheRecordProfile()) > 0;
-      if (signin_required ||
-          (last_used_profile->IsGuestSession() && !has_guest_browsers)) {
+      if (signin_required || (guest_or_system && !has_guest_browsers)) {
         profiles::UserManagerProfileSelected action =
             command_line.HasSwitch(switches::kShowAppList) ?
                 profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER :

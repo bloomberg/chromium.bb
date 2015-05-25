@@ -374,9 +374,9 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
     // Use the original profile as on chromeos we may get a temporary off the
     // record profile, unless in guest session (where off the record profile is
     // the right one).
-    Profile* active_profile = ProfileManager::GetActiveUserProfile();
-    profile_ = active_profile->IsGuestSession() ? active_profile :
-        active_profile->GetOriginalProfile();
+    profile_ = ProfileManager::GetActiveUserProfile();
+    if (!profile_->IsGuestSession() && !profile_->IsSystemProfile())
+      profile_ = profile_->GetOriginalProfile();
 
     app_sync_ui_state_ = AppSyncUIState::Get(profile_);
     if (app_sync_ui_state_)
@@ -2052,7 +2052,8 @@ bool ChromeLauncherController::IsIncognito(
     const content::WebContents* web_contents) const {
   const Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return profile->IsOffTheRecord() && !profile->IsGuestSession();
+  return profile->IsOffTheRecord() && !profile->IsGuestSession() &&
+         !profile->IsSystemProfile();
 }
 
 void ChromeLauncherController::CloseWindowedAppsFromRemovedExtension(

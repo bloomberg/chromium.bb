@@ -384,7 +384,7 @@ bool IsLockAvailable(Profile* profile) {
   if (!switches::IsNewProfileManagement())
     return false;
 
-  if (profile->IsGuestSession())
+  if (profile->IsGuestSession() || profile->IsSystemProfile())
     return false;
 
   std::string hosted_domain = profile->GetPrefs()->

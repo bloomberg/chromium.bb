@@ -1781,6 +1781,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="BrowserForSystemProfile">
+  <owner>mlerman@chromium.org</owner>
+  <description>
+    A browser opened with the System Profile. Tsk, tsk. Any non-zero amount
+    means something is using the system profile for a browser when it likely
+    shouldn't be.
+  </description>
+</action>
+
 <action name="BrowserPlugin.Guest.AbnormalDeath">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

@@ -41,7 +41,8 @@ bool ChromeProcessManagerDelegate::IsBackgroundPageAllowed(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
-  bool is_normal_session = !profile->IsGuestSession();
+  bool is_normal_session = !profile->IsGuestSession() &&
+                           !profile->IsSystemProfile();
 #if defined(OS_CHROMEOS)
   is_normal_session = is_normal_session &&
                       user_manager::UserManager::Get()->IsUserLoggedIn();

@@ -286,8 +286,9 @@ class ProfileManager : public base::NonThreadSafe,
   // Adds |profile| to the profile info cache if it hasn't been added yet.
   void AddProfileToCache(Profile* profile);
 
-  // Apply settings for (desktop) Guest User profile.
-  void SetGuestProfilePrefs(Profile* profile);
+  // Apply settings for profiles created by the system rather than users: The
+  // (desktop) Guest User profile and (desktop) System Profile.
+  void SetNonPersonalProfilePrefs(Profile* profile);
 
   // For ChromeOS, determines if profile should be otr.
   bool ShouldGoOffTheRecord(Profile* profile);

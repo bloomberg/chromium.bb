@@ -130,7 +130,7 @@ TestingProfile* TestingProfileManager::CreateGuestProfile() {
   TestingProfile::Builder().BuildIncognito(profile);
 
   profile_manager_->AddProfile(profile);  // Takes ownership.
-  profile_manager_->SetGuestProfilePrefs(profile);
+  profile_manager_->SetNonPersonalProfilePrefs(profile);
 
   testing_profiles_.insert(std::make_pair(kGuestProfileName, profile));
 

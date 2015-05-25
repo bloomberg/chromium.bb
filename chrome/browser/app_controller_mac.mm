@@ -1032,9 +1032,10 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   NSInteger tag = [sender tag];
 
   // If there are no browser windows, and we are trying to open a browser
-  // for a locked profile, we have to show the User Manager instead as the
-  // locked profile needs authentication.
-  if (IsProfileSignedOut(lastProfile)) {
+  // for a locked profile or the system profile, we have to show the User
+  // Manager instead as the locked profile needs authentication and the system
+  // profile cannot have a browser.
+  if (IsProfileSignedOut(lastProfile) || lastProfile->IsSystemProfile()) {
     UserManager::Show(base::FilePath(),
                       profiles::USER_MANAGER_NO_TUTORIAL,
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
@@ -1246,11 +1247,12 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   // Otherwise open a new window.
   // If the last profile was locked, we have to open the User Manager, as the
-  // profile requires authentication. Similarly, because guest mode is
-  // implemented as forced incognito, we can't open a new guest browser either,
-  // so we have to show the User Manager as well.
+  // profile requires authentication. Similarly, because guest mode and system
+  // profile are implemented as forced incognito, we can't open a new guest
+  // browser either, so we have to show the User Manager as well.
   Profile* lastProfile = [self lastProfile];
-  if (lastProfile->IsGuestSession() || IsProfileSignedOut(lastProfile)) {
+  if (lastProfile->IsGuestSession() || IsProfileSignedOut(lastProfile) ||
+      lastProfile->IsSystemProfile()) {
     UserManager::Show(base::FilePath(),
                       profiles::USER_MANAGER_NO_TUTORIAL,
                       profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
