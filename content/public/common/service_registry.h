@@ -53,10 +53,6 @@ class CONTENT_EXPORT ServiceRegistry {
 
   // Connect to an interface provided by the remote service provider.
   template <typename Interface>
-  void ConnectToRemoteService(mojo::InterfacePtr<Interface>* ptr) {
-    ConnectToRemoteService(mojo::GetProxy(ptr));
-  }
-  template <typename Interface>
   void ConnectToRemoteService(mojo::InterfaceRequest<Interface> ptr) {
     ConnectToRemoteService(Interface::Name_, ptr.PassMessagePipe());
   }

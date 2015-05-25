@@ -30,7 +30,7 @@ RendererResource::RendererResource(base::ProcessHandle process,
   content::ServiceRegistry* service_registry =
       render_view_host_->GetProcess()->GetServiceRegistry();
   if (service_registry)
-    service_registry->ConnectToRemoteService(&service);
+    service_registry->ConnectToRemoteService(mojo::GetProxy(&service));
   process_resource_usage_.reset(new ProcessResourceUsage(service.Pass()));
 }
 

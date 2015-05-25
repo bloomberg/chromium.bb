@@ -1073,8 +1073,8 @@ void RendererBlinkPlatformImpl::cancelVibration() {
 device::VibrationManagerPtr&
 RendererBlinkPlatformImpl::GetConnectedVibrationManagerService() {
   if (!vibration_manager_) {
-    RenderThread::Get()->GetServiceRegistry()
-        ->ConnectToRemoteService(&vibration_manager_);
+    RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(
+        mojo::GetProxy(&vibration_manager_));
   }
   return vibration_manager_;
 }

@@ -17,7 +17,7 @@ BatteryStatusDispatcher::BatteryStatusDispatcher(
 
   if (ServiceRegistry* registry = RenderThread::Get()->GetServiceRegistry()) {
     // registry can be null during testing.
-    registry->ConnectToRemoteService(&monitor_);
+    registry->ConnectToRemoteService(mojo::GetProxy(&monitor_));
     QueryNextStatus();
   }
 }

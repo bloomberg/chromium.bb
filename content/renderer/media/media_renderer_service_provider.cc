@@ -17,7 +17,7 @@ MediaRendererServiceProvider::~MediaRendererServiceProvider() {
 
 void MediaRendererServiceProvider::ConnectToService(
     mojo::InterfacePtr<mojo::MediaRenderer>* media_renderer_ptr) {
-  service_registry_->ConnectToRemoteService(media_renderer_ptr);
+  service_registry_->ConnectToRemoteService(mojo::GetProxy(media_renderer_ptr));
 }
 
 }  // namespace content

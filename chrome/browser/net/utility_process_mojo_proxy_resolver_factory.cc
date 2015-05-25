@@ -51,7 +51,8 @@ void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
   if (process_started) {
     content::ServiceRegistry* service_registry =
         utility_process_host->GetServiceRegistry();
-    service_registry->ConnectToRemoteService(&resolver_factory_);
+    service_registry->ConnectToRemoteService(
+        mojo::GetProxy(&resolver_factory_));
     resolver_factory_.set_error_handler(this);
     weak_utility_process_host_ = utility_process_host->AsWeakPtr();
   } else {

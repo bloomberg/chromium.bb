@@ -26,7 +26,7 @@ void NotificationPermissionDispatcher::RequestPermission(
     blink::WebNotificationPermissionCallback* callback) {
   if (!permission_service_.get()) {
     render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-        &permission_service_);
+        mojo::GetProxy(&permission_service_));
   }
 
   int request_id = pending_requests_.Add(callback);

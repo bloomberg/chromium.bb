@@ -27,7 +27,7 @@ void MidiDispatcher::requestSysexPermission(
       const WebMIDIPermissionRequest& request) {
   if (!permission_service_.get()) {
     render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-        &permission_service_);
+        mojo::GetProxy(&permission_service_));
   }
 
   int permission_request_id =

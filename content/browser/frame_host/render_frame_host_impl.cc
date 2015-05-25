@@ -1814,7 +1814,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
 
   RegisterMojoServices();
   RenderFrameSetupPtr setup;
-  GetProcess()->GetServiceRegistry()->ConnectToRemoteService(&setup);
+  GetProcess()->GetServiceRegistry()->ConnectToRemoteService(
+      mojo::GetProxy(&setup));
 
   mojo::ServiceProviderPtr exposed_services;
   service_registry_->Bind(GetProxy(&exposed_services));

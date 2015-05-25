@@ -36,7 +36,7 @@ void MediaPermissionDispatcher::HasPermission(
 
   if (!permission_service_.get()) {
     render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-        &permission_service_);
+        mojo::GetProxy(&permission_service_));
   }
 
   uint32_t request_id = next_request_id_++;
@@ -60,7 +60,7 @@ void MediaPermissionDispatcher::RequestPermission(
 
   if (!permission_service_.get()) {
     render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-        &permission_service_);
+        mojo::GetProxy(&permission_service_));
   }
 
   uint32_t request_id = next_request_id_++;

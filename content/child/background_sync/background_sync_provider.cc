@@ -234,8 +234,10 @@ void BackgroundSyncProvider::GetRegistrationsCallback(
 
 BackgroundSyncServicePtr&
 BackgroundSyncProvider::GetBackgroundSyncServicePtr() {
-  if (!background_sync_service_.get())
-    service_registry_->ConnectToRemoteService(&background_sync_service_);
+  if (!background_sync_service_.get()) {
+    service_registry_->ConnectToRemoteService(
+        mojo::GetProxy(&background_sync_service_));
+  }
   return background_sync_service_;
 }
 

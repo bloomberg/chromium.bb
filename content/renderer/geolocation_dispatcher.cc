@@ -33,7 +33,7 @@ GeolocationDispatcher::~GeolocationDispatcher() {}
 void GeolocationDispatcher::startUpdating() {
   if (!geolocation_service_) {
     render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-        &geolocation_service_);
+        mojo::GetProxy(&geolocation_service_));
   }
   if (enable_high_accuracy_)
     geolocation_service_->SetHighAccuracy(true);
@@ -75,7 +75,7 @@ void GeolocationDispatcher::requestPermission(
     const WebGeolocationPermissionRequest& permissionRequest) {
   if (!permission_service_.get()) {
     render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-        &permission_service_);
+        mojo::GetProxy(&permission_service_));
   }
 
   int permission_request_id = pending_permissions_->add(permissionRequest);

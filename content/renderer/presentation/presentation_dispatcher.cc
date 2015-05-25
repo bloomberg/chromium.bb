@@ -343,7 +343,7 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
     return;
 
   render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-      &presentation_service_);
+      mojo::GetProxy(&presentation_service_));
   presentation::PresentationServiceClientPtr client_ptr;
   binding_.Bind(GetProxy(&client_ptr));
   presentation_service_->SetClient(client_ptr.Pass());

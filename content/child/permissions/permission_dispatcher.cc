@@ -190,8 +190,10 @@ void PermissionDispatcher::RunCallbackOnWorkerThread(
 }
 
 PermissionServicePtr& PermissionDispatcher::GetPermissionServicePtr() {
-  if (!permission_service_.get())
-    service_registry_->ConnectToRemoteService(&permission_service_);
+  if (!permission_service_.get()) {
+    service_registry_->ConnectToRemoteService(
+        mojo::GetProxy(&permission_service_));
+  }
   return permission_service_;
 }
 
