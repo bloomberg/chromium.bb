@@ -695,6 +695,7 @@ public:
         V8MessagePort_Start_Method = 782,
         V8MessagePort_Close_Method = 783,
         MessagePortsTransferred = 784,
+        CSSKeyframesRuleAnonymousIndexedGetter = 785,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -37,5 +37,5 @@ interface CSSKeyframesRule : CSSRule {
     CSSKeyframeRule? findRule(DOMString select);
 
     // Non-standard APIs
-    [ImplementedAs=item, NotEnumerable] getter CSSKeyframeRule (unsigned long index);
+    [NotEnumerable] getter CSSKeyframeRule (unsigned long index);
 };

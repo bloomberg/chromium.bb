@@ -101,6 +101,7 @@ public:
     // For IndexedGetter and CSSRuleList.
     unsigned length() const;
     CSSKeyframeRule* item(unsigned index) const;
+    CSSKeyframeRule* anonymousIndexedGetter(unsigned index) const;
 
     bool isVendorPrefixed() const { return m_isPrefixed; }
     void setVendorPrefixed(bool isPrefixed) { m_isPrefixed = isPrefixed; }

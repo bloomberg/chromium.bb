@@ -195,6 +195,13 @@ CSSKeyframeRule* CSSKeyframesRule::item(unsigned index) const
     return rule.get();
 }
 
+CSSKeyframeRule* CSSKeyframesRule::anonymousIndexedGetter(unsigned index) const
+{
+    if (UseCounter* useCounter = UseCounter::getFrom(parentStyleSheet()))
+        useCounter->count(UseCounter::CSSKeyframesRuleAnonymousIndexedGetter);
+    return item(index);
+}
+
 CSSRuleList* CSSKeyframesRule::cssRules() const
 {
     if (!m_ruleListCSSOMWrapper)
