@@ -872,17 +872,6 @@ inline bool isAtShadowBoundary(const Element* element)
     return parentNode && parentNode->isShadowRoot();
 }
 
-inline bool shadowHostContainsFocusedElement(const Element* host)
-{
-    ASSERT(isShadowHost(host));
-    Element* element = host->document().focusedElement();
-    for (; element; element = element->shadowHost()) {
-        if (host == element)
-            return true;
-    }
-    return false;
-}
-
 // These macros do the same as their NODE equivalents but additionally provide a template specialization
 // for isElementOfType<>() so that the Traversal<> API works for these Element types.
 #define DEFINE_ELEMENT_TYPE_CASTS(thisType, predicate) \

@@ -2345,7 +2345,8 @@ void Element::setTabStop(bool flag)
 void Element::setTabStopInternal(bool flag)
 {
     ensureElementRareData().setTabStop(flag);
-    focusStateChanged();
+    if (shadowRoot() && shadowRoot()->containsIncludingShadowDOM(document().focusedElement()))
+        setFocus(true);
 }
 
 bool Element::isFocusedElementInDocument() const
