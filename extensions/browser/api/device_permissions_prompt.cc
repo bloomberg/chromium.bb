@@ -334,7 +334,7 @@ void DevicePermissionsPrompt::Prompt::AddCheckedDevice(
     scoped_ptr<DeviceInfo> device,
     bool allowed) {
   if (allowed) {
-    devices_.push_back(device.release());
+    devices_.push_back(device.Pass());
     if (observer_) {
       observer_->OnDevicesChanged();
     }
