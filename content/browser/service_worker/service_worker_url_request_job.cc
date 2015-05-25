@@ -357,7 +357,6 @@ void ServiceWorkerURLRequestJob::StartRequest() {
           base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr())));
       fetch_start_time_ = base::TimeTicks::Now();
-      load_timing_info_.send_start = fetch_start_time_;
       fetch_dispatcher_->Run();
       return;
   }
@@ -474,6 +473,7 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
 
 void ServiceWorkerURLRequestJob::DidPrepareFetchEvent() {
   fetch_ready_time_ = base::TimeTicks::Now();
+  load_timing_info_.send_start = fetch_ready_time_;
 }
 
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
