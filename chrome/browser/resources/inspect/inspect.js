@@ -174,7 +174,7 @@ function populateRemoteTargets(devices) {
   if (!devices)
     return;
 
-  if (window.modal) {
+  if ($('port-forwarding-config').open) {
     window.holdDevices = devices;
     return;
   }
@@ -610,7 +610,7 @@ function initSettings() {
   $('port-forwarding-config-close').addEventListener(
       'click', closePortForwardingConfig);
   $('port-forwarding-config-done').addEventListener(
-      'click', commitPortForwardingConfig.bind(true));
+      'click', commitPortForwardingConfig.bind(null, true));
 }
 
 function enableDiscoverUsbDevices(event) {
@@ -637,68 +637,37 @@ function handleKey(event) {
         commitPortForwardingConfig(true);
       }
       break;
-
-    case 27:
-      commitPortForwardingConfig(true);
-      break;
   }
-}
-
-function setModal(dialog) {
-  dialog.deactivatedNodes = Array.prototype.filter.call(
-      document.querySelectorAll('*'),
-      function(n) {
-        return n != dialog && !dialog.contains(n) && n.tabIndex >= 0;
-      });
-
-  dialog.tabIndexes = dialog.deactivatedNodes.map(
-    function(n) { return n.getAttribute('tabindex'); });
-
-  dialog.deactivatedNodes.forEach(function(n) { n.tabIndex = -1; });
-  window.modal = dialog;
-}
-
-function unsetModal(dialog) {
-  for (var i = 0; i < dialog.deactivatedNodes.length; i++) {
-    var node = dialog.deactivatedNodes[i];
-    if (dialog.tabIndexes[i] === null)
-      node.removeAttribute('tabindex');
-    else
-      node.setAttribute('tabindex', dialog.tabIndexes[i]);
-  }
-
-  if (window.holdDevices) {
-    populateRemoteTargets(window.holdDevices);
-    delete window.holdDevices;
-  }
-
-  delete dialog.deactivatedNodes;
-  delete dialog.tabIndexes;
-  delete window.modal;
 }
 
 function openPortForwardingConfig() {
   loadPortForwardingConfig(window.portForwardingConfig);
 
-  $('port-forwarding-overlay').classList.add('open');
+  $('port-forwarding-config').showModal();
   document.addEventListener('keyup', handleKey);
+  $('port-forwarding-config').onclose = function() {
+    commitPortForwardingConfig(true);
+  };
 
   var freshPort = document.querySelector('.fresh .port');
   if (freshPort)
     freshPort.focus();
   else
     $('port-forwarding-config-done').focus();
-
-  setModal($('port-forwarding-overlay'));
 }
 
 function closePortForwardingConfig() {
-  if (!$('port-forwarding-overlay').classList.contains('open'))
+  if (!$('port-forwarding-config').open)
     return;
 
-  $('port-forwarding-overlay').classList.remove('open');
+  $('port-forwarding-config').onclose = null;
+  $('port-forwarding-config').close();
   document.removeEventListener('keyup', handleKey);
-  unsetModal($('port-forwarding-overlay'));
+
+  if (window.holdDevices) {
+    populateRemoteTargets(window.holdDevices);
+    delete window.holdDevices;
+  }
 }
 
 function loadPortForwardingConfig(config) {
