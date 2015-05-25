@@ -4,6 +4,7 @@
 
 #include "content/shell/renderer/test_runner/web_test_interfaces.h"
 
+#include "content/shell/renderer/test_runner/app_banner_client.h"
 #include "content/shell/renderer/test_runner/mock_web_audio_device.h"
 #include "content/shell/renderer/test_runner/mock_web_media_stream_center.h"
 #include "content/shell/renderer/test_runner/mock_web_midi_accessor.h"
@@ -76,6 +77,13 @@ WebMIDIAccessor* WebTestInterfaces::CreateMIDIAccessor(
 
 WebAudioDevice* WebTestInterfaces::CreateAudioDevice(double sample_rate) {
   return new MockWebAudioDevice(sample_rate);
+}
+
+scoped_ptr<blink::WebAppBannerClient>
+WebTestInterfaces::CreateAppBannerClient() {
+  scoped_ptr<AppBannerClient> client(new AppBannerClient);
+  interfaces_->SetAppBannerClient(client.get());
+  return client.Pass();
 }
 
 }  // namespace content

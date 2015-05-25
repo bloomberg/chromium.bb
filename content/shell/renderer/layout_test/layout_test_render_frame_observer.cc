@@ -4,9 +4,7 @@
 
 #include "content/shell/renderer/layout_test/layout_test_render_frame_observer.h"
 
-#include "base/command_line.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
 #include "content/shell/renderer/test_runner/web_test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_test_runner.h"

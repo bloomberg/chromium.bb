@@ -230,6 +230,8 @@
         'shell/renderer/shell_render_view_observer.h',
         'shell/renderer/test_runner/accessibility_controller.cc',
         'shell/renderer/test_runner/accessibility_controller.h',
+        'shell/renderer/test_runner/app_banner_client.cc',
+        'shell/renderer/test_runner/app_banner_client.h',
         'shell/renderer/test_runner/event_sender.cc',
         'shell/renderer/test_runner/event_sender.h',
         'shell/renderer/test_runner/gamepad_controller.cc',

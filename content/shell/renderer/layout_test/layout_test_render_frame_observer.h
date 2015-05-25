@@ -7,10 +7,6 @@
 
 #include "content/public/renderer/render_frame_observer.h"
 
-namespace blink {
-class WebFrame;
-}
-
 namespace content {
 class RenderFrame;
 

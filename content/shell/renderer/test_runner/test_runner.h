@@ -8,6 +8,7 @@
 #include <deque>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -541,6 +542,16 @@ class TestRunner : public WebTestRunner,
                      const GURL& origin,
                      const GURL& embedding_origin);
 
+  // Causes the beforeinstallprompt event to be sent to the renderer.
+  void DispatchBeforeInstallPromptEvent(
+      int request_id,
+      const std::vector<std::string>& event_platforms,
+      v8::Local<v8::Function> callback);
+
+  // Resolve the beforeinstallprompt event with the matching request id.
+  void ResolveBeforeInstallPromptPromise(int request_id,
+                                         const std::string& platform);
+
   // Calls setlocale(LC_ALL, ...) for a specified locale.
   // Resets between tests.
   void SetPOSIXLocale(const std::string& locale);
@@ -594,6 +605,8 @@ class TestRunner : public WebTestRunner,
                            const std::string& data);
   void CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
                              const SkBitmap& snapshot);
+  void DispatchBeforeInstallPromptCallback(scoped_ptr<InvokeCallbackTask> task,
+                                           bool canceled);
 
   void CheckResponseMimeType();
   void CompleteNotifyDone();

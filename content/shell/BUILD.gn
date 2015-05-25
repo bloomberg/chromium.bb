@@ -168,6 +168,8 @@ static_library("content_shell_lib") {
     "renderer/shell_render_view_observer.h",
     "renderer/test_runner/accessibility_controller.cc",
     "renderer/test_runner/accessibility_controller.h",
+    "renderer/test_runner/app_banner_client.cc",
+    "renderer/test_runner/app_banner_client.h",
     "renderer/test_runner/event_sender.cc",
     "renderer/test_runner/event_sender.h",
     "renderer/test_runner/gamepad_controller.cc",

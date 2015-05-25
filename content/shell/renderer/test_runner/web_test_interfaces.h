@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace blink {
+class WebAppBannerClient;
 class WebAudioDevice;
 class WebFrame;
 class WebMediaStreamCenter;
@@ -53,6 +54,8 @@ class WebTestInterfaces {
       blink::WebMIDIAccessorClient* client);
 
   blink::WebAudioDevice* CreateAudioDevice(double sample_rate);
+
+  scoped_ptr<blink::WebAppBannerClient> CreateAppBannerClient();
 
   TestInterfaces* GetTestInterfaces();
 

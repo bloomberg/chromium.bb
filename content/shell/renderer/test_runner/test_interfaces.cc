@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
+#include "content/shell/renderer/test_runner/app_banner_client.h"
 #include "content/shell/renderer/test_runner/event_sender.h"
 #include "content/shell/renderer/test_runner/gamepad_controller.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
@@ -29,7 +30,8 @@ TestInterfaces::TestInterfaces()
       event_sender_(new EventSender(this)),
       text_input_controller_(new TextInputController()),
       test_runner_(new TestRunner(this)),
-      delegate_(0) {
+      delegate_(nullptr),
+      app_banner_client_(nullptr) {
   blink::setLayoutTestMode(true);
   // NOTE: please don't put feature specific enable flags here,
   // instead add them to RuntimeEnabledFeatures.in
@@ -129,6 +131,10 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   }
 }
 
+void TestInterfaces::SetAppBannerClient(AppBannerClient* app_banner_client) {
+  app_banner_client_ = app_banner_client;
+}
+
 void TestInterfaces::WindowOpened(WebTestProxyBase* proxy) {
   window_list_.push_back(proxy);
 }
@@ -173,6 +179,10 @@ blink::WebThemeEngine* TestInterfaces::GetThemeEngine() {
   if (!theme_engine_.get())
     theme_engine_.reset(new MockWebThemeEngine());
   return theme_engine_.get();
+}
+
+AppBannerClient* TestInterfaces::GetAppBannerClient() {
+  return app_banner_client_;
 }
 
 }  // namespace content

@@ -23,6 +23,7 @@ class WebView;
 namespace content {
 
 class AccessibilityController;
+class AppBannerClient;
 class EventSender;
 class GamepadController;
 class TestRunner;
@@ -43,6 +44,7 @@ class TestInterfaces {
   void SetTestIsRunning(bool running);
   void ConfigureForTestWithURL(const blink::WebURL& test_url,
                                bool generate_pixels);
+  void SetAppBannerClient(AppBannerClient* app_banner_client);
 
   void WindowOpened(WebTestProxyBase* proxy);
   void WindowClosed(WebTestProxyBase* proxy);
@@ -54,6 +56,7 @@ class TestInterfaces {
   WebTestProxyBase* GetProxy();
   const std::vector<WebTestProxyBase*>& GetWindowList();
   blink::WebThemeEngine* GetThemeEngine();
+  AppBannerClient* GetAppBannerClient();
 
  private:
   scoped_ptr<AccessibilityController> accessibility_controller_;
@@ -63,6 +66,7 @@ class TestInterfaces {
   scoped_ptr<TestRunner> test_runner_;
   WebTestDelegate* delegate_;
   WebTestProxyBase* proxy_;
+  AppBannerClient* app_banner_client_;
 
   std::vector<WebTestProxyBase*> window_list_;
   scoped_ptr<MockWebThemeEngine> theme_engine_;

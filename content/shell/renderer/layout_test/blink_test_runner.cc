@@ -36,8 +36,10 @@
 #include "content/shell/renderer/layout_test/gc_controller.h"
 #include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
 #include "content/shell/renderer/layout_test/leak_detector.h"
+#include "content/shell/renderer/test_runner/app_banner_client.h"
 #include "content/shell/renderer/test_runner/gamepad_controller.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
+#include "content/shell/renderer/test_runner/test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_task.h"
 #include "content/shell/renderer/test_runner/web_test_interfaces.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
@@ -57,6 +59,7 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptReply.h"
 #include "third_party/WebKit/public/web/WebArrayBufferView.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -643,6 +646,33 @@ blink::WebLayer* BlinkTestRunner::InstantiateWebLayer(
 
 cc::SharedBitmapManager* BlinkTestRunner::GetSharedBitmapManager() {
   return RenderThread::Get()->GetSharedBitmapManager();
+}
+
+void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
+    int request_id,
+    const std::vector<std::string>& event_platforms,
+    const base::Callback<void(bool)>& callback) {
+  // Send the event to the frame.
+  blink::WebAppBannerPromptReply reply;
+  std::vector<blink::WebString> blink_web_strings;
+  for (const auto& platform : event_platforms)
+    blink_web_strings.push_back(blink::WebString::fromUTF8(platform));
+  blink::WebVector<blink::WebString> blink_event_platforms(blink_web_strings);
+
+  WebLocalFrame* main_frame =
+      render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
+  main_frame->willShowInstallBannerPrompt(request_id, blink_event_platforms,
+                                          &reply);
+
+  callback.Run(reply == blink::WebAppBannerPromptReply::Cancel);
+}
+
+  void BlinkTestRunner::ResolveBeforeInstallPromptPromise(
+      int request_id, const std::string& platform) {
+  WebTestInterfaces* interfaces =
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
+  interfaces->GetTestInterfaces()->GetAppBannerClient()->ResolvePromise(
+      request_id, platform);
 }
 
 // RenderViewObserver  --------------------------------------------------------

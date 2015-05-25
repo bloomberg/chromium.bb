@@ -122,6 +122,13 @@ class BlinkTestRunner : public RenderViewObserver,
   blink::WebLayer* InstantiateWebLayer(
       scoped_refptr<cc::TextureLayer> layer) override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
+  void DispatchBeforeInstallPromptEvent(
+      int request_id,
+      const std::vector<std::string>& event_platforms,
+      const base::Callback<void(bool)>& callback) override;
+  void ResolveBeforeInstallPromptPromise(
+      int request_id,
+      const std::string& platform) override;
 
   void Reset();
 

@@ -6,6 +6,7 @@
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_TEST_DELEGATE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
@@ -226,6 +227,24 @@ class WebTestDelegate {
       scoped_refptr<cc::TextureLayer> layer) = 0;
 
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
+
+  // Causes the beforeinstallprompt event to be sent to the renderer with a
+  // request id of |request_id|. |event_platforms| are the platforms to be sent
+  // with the event. Once the event listener completes, |callback| will be
+  // called with a boolean argument. This argument will be true if the event is
+  // canceled, and false otherwise.
+  virtual void DispatchBeforeInstallPromptEvent(
+      int request_id,
+      const std::vector<std::string>& event_platforms,
+      const base::Callback<void(bool)>& callback) = 0;
+
+  // Resolve the promise associated with the beforeinstallprompt even with
+  // request id |request_id|. The promise is resolved with a result.platform set
+  // to |platform|. If |platform| is not empty, result.outcome will be
+  // 'accepted', otherwise it will be 'dismissed'.
+  virtual void ResolveBeforeInstallPromptPromise(
+      int request_id,
+      const std::string& platform) = 0;
 };
 
 }  // namespace content
