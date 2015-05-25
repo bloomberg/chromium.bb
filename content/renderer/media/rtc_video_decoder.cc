@@ -215,10 +215,20 @@ int32_t RTCVideoDecoder::Decode(
 
   bool need_to_reset_for_midstream_resize = false;
   if (inputImage._frameType == webrtc::kKeyFrame) {
-    DVLOG(2) << "Got key frame. size=" << inputImage._encodedWidth << "x"
-             << inputImage._encodedHeight;
+    gfx::Size new_frame_size(inputImage._encodedWidth,
+                             inputImage._encodedHeight);
+    DVLOG(2) << "Got key frame. size=" << new_frame_size.ToString();
+
+    if (new_frame_size.width() > max_resolution_.width() ||
+        new_frame_size.width() < min_resolution_.width() ||
+        new_frame_size.height() > max_resolution_.height() ||
+        new_frame_size.height() < min_resolution_.height()) {
+      DVLOG(1) << "Resolution unsupported, falling back to software decode";
+      return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+    }
+
     gfx::Size prev_frame_size = frame_size_;
-    frame_size_.SetSize(inputImage._encodedWidth, inputImage._encodedHeight);
+    frame_size_ = new_frame_size;
     if (!kVDACanHandleMidstreamResize && !prev_frame_size.IsEmpty() &&
         prev_frame_size != frame_size_) {
       need_to_reset_for_midstream_resize = true;
@@ -655,12 +665,34 @@ void RTCVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
     vda_->ReusePictureBuffer(picture_buffer_id);
 }
 
+bool RTCVideoDecoder::IsProfileSupported(media::VideoCodecProfile profile) {
+  DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
+  media::VideoDecodeAccelerator::SupportedProfiles supported_profiles =
+      factories_->GetVideoDecodeAcceleratorSupportedProfiles();
+
+  for (const auto& supported_profile : supported_profiles) {
+    if (profile == supported_profile.profile) {
+      min_resolution_ = supported_profile.min_resolution;
+      max_resolution_ = supported_profile.max_resolution;
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void RTCVideoDecoder::CreateVDA(media::VideoCodecProfile profile,
                                 base::WaitableEvent* waiter) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  vda_ = factories_->CreateVideoDecodeAccelerator();
-  if (vda_ && !vda_->Initialize(profile, this))
-    vda_.release()->Destroy();
+
+  if (!IsProfileSupported(profile)) {
+    DVLOG(1) << "Unsupported profile " << profile;
+  } else {
+    vda_ = factories_->CreateVideoDecodeAccelerator();
+    if (vda_ && !vda_->Initialize(profile, this))
+      vda_.release()->Destroy();
+  }
+
   waiter->Signal();
 }
 

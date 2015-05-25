@@ -177,6 +177,11 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Assert the contract that this class is operated on the right thread.
   void DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent() const;
 
+  // Query factories_ whether |profile| is supported and return true is so,
+  // false otherwise. If true, also set resolution limits for |profile|
+  // in min/max_resolution_.
+  bool IsProfileSupported(media::VideoCodecProfile profile);
+
   enum State {
     UNINITIALIZED,  // The decoder has not initialized.
     INITIALIZED,    // The decoder has initialized.
@@ -256,6 +261,10 @@ class CONTENT_EXPORT RTCVideoDecoder
   // A buffer that has an id less than this should be dropped because Reset or
   // Release has been called. Guarded by |lock_|.
   int32 reset_bitstream_buffer_id_;
+
+  // Minimum and maximum supported resolutions for the current profile/VDA.
+  gfx::Size min_resolution_;
+  gfx::Size max_resolution_;
 
   // Must be destroyed, or invalidated, on |vda_loop_proxy_|
   // NOTE: Weak pointers must be invalidated before all other member variables.
