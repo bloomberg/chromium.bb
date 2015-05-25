@@ -553,7 +553,8 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
   gyp_env['GYP_GENERATORS'] = 'ninja'
   gyp_defines = gyp_defines or []
   gyp_defines.append('nacl_allow_thin_archives=0')
-  gyp_defines.append('use_sysroot=1')
+  if not options.no_use_sysroot:
+    gyp_defines.append('use_sysroot=1')
   if options.mac_sdk:
     gyp_defines.append('mac_sdk=%s' % options.mac_sdk)
 
@@ -999,6 +1000,8 @@ def main(args):
       help='Set the mac-sdk (e.g. 10.6) to use when building with ninja.')
   parser.add_argument('--no-arm-trusted', action='store_true',
       help='Disable building of ARM trusted components (sel_ldr, etc).')
+  parser.add_argument('--no-use-sysroot', action='store_true',
+      help='Disable building against sysroot.')
 
   # To setup bash completion for this command first install optcomplete
   # and then add this line to your .bashrc:
