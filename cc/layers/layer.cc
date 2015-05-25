@@ -1145,6 +1145,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   if (frame_viewer_instrumentation::IsTracingLayerTreeSnapshots())
     layer->SetDebugInfo(TakeDebugInfo());
 
+  layer->SetTransformTreeIndex(transform_tree_index());
+  layer->SetOpacityTreeIndex(opacity_tree_index());
+  layer->SetClipTreeIndex(clip_tree_index());
+  layer->set_offset_to_transform_parent(offset_to_transform_parent_);
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
       draw_checkerboard_for_missing_tiles_);
@@ -1163,8 +1167,14 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
   layer->SetScrollBlocksOn(scroll_blocks_on_);
   layer->SetContentsOpaque(contents_opaque_);
-  if (!layer->OpacityIsAnimatingOnImplOnly() && !OpacityIsAnimating())
+  if (!layer->OpacityIsAnimatingOnImplOnly() && !OpacityIsAnimating()) {
     layer->SetOpacity(opacity_);
+  } else {
+    // The just-pushed opacity tree will contain |opacity_|. Since we didn't
+    // push this value to |layer|, it might have a different opacity value. To
+    // ensure consistency, we need to update the opacity tree.
+    layer->UpdatePropertyTreeOpacity();
+  }
   DCHECK(!(OpacityIsAnimating() && layer->OpacityIsAnimatingOnImplOnly()));
   layer->SetBlendMode(blend_mode_);
   layer->SetIsRootForIsolatedGroup(is_root_for_isolated_group_);
@@ -1176,15 +1186,17 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
-  if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())
+  if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating()) {
     layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
+  } else {
+    // The just-pushed transform tree will contain |transform_|. Since we
+    // didn't push this value to |layer|, it might have a different transform
+    // value. To ensure consistency, we need to update the transform tree.
+    layer->UpdatePropertyTreeTransform();
+  }
   DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));
   layer->Set3dSortingContextId(sorting_context_id_);
   layer->SetNumDescendantsThatDrawContent(num_descendants_that_draw_content_);
-  layer->SetTransformTreeIndex(transform_tree_index());
-  layer->SetOpacityTreeIndex(opacity_tree_index());
-  layer->SetClipTreeIndex(clip_tree_index());
-  layer->set_offset_to_transform_parent(offset_to_transform_parent_);
 
   layer->SetScrollClipLayer(scroll_clip_layer_id_);
   layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);

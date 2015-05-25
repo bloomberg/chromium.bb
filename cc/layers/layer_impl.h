@@ -185,6 +185,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return should_flatten_transform_from_property_tree_;
   }
 
+  void UpdatePropertyTreeTransform();
+  void UpdatePropertyTreeOpacity();
+
   // For compatibility with Layer.
   bool has_render_surface() const { return !!render_surface(); }
 

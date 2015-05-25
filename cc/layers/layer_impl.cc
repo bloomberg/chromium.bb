@@ -806,6 +806,34 @@ void LayerImpl::ResetAllChangeTrackingForSubtree() {
   num_dependents_need_push_properties_ = 0;
 }
 
+void LayerImpl::UpdatePropertyTreeTransform() {
+  if (transform_tree_index_ != -1) {
+    TransformTree& transform_tree =
+        layer_tree_impl()->property_trees()->transform_tree;
+    TransformNode* node = transform_tree.Node(transform_tree_index_);
+    if (node->data.local != transform_) {
+      node->data.local = transform_;
+      node->data.needs_local_transform_update = true;
+      transform_tree.set_needs_update(true);
+      // TODO(ajuma): The current criteria for creating clip nodes means that
+      // property trees may need to be rebuilt when the new transform isn't
+      // axis-aligned wrt the old transform (see Layer::SetTransform). Since
+      // rebuilding property trees every frame of a transform animation is
+      // something we should try to avoid, change property tree-building so that
+      // it doesn't depend on axis aliginment.
+    }
+  }
+}
+
+void LayerImpl::UpdatePropertyTreeOpacity() {
+  if (opacity_tree_index_ != -1) {
+    OpacityTree& opacity_tree =
+        layer_tree_impl()->property_trees()->opacity_tree;
+    OpacityNode* node = opacity_tree.Node(opacity_tree_index_);
+    node->data = opacity_;
+  }
+}
+
 gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
   return CurrentScrollOffset();
 }
@@ -816,10 +844,12 @@ void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
 
 void LayerImpl::OnOpacityAnimated(float opacity) {
   SetOpacity(opacity);
+  UpdatePropertyTreeOpacity();
 }
 
 void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
   SetTransform(transform);
+  UpdatePropertyTreeTransform();
 }
 
 void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
