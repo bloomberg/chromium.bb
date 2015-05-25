@@ -415,18 +415,16 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     document->initContentSecurityPolicy(m_mainScriptLoader->releaseContentSecurityPolicy());
 
     KURL scriptURL = m_mainScriptLoader->url();
-    OwnPtr<WorkerThreadStartupData> startupData =
-        WorkerThreadStartupData::create(
-            scriptURL,
-            m_workerStartData.userAgent,
-            m_mainScriptLoader->script(),
-            m_mainScriptLoader->releaseCachedMetadata(),
-            startMode,
-            document->contentSecurityPolicy()->deprecatedHeader(),
-            document->contentSecurityPolicy()->deprecatedHeaderType(),
-            starterOrigin,
-            workerClients.release(),
-            static_cast<V8CacheOptions>(m_workerStartData.v8CacheOptions));
+    OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
+        scriptURL,
+        m_workerStartData.userAgent,
+        m_mainScriptLoader->script(),
+        m_mainScriptLoader->releaseCachedMetadata(),
+        startMode,
+        document->contentSecurityPolicy()->headers(),
+        starterOrigin,
+        workerClients.release(),
+        static_cast<V8CacheOptions>(m_workerStartData.v8CacheOptions));
 
     m_mainScriptLoader.clear();
 

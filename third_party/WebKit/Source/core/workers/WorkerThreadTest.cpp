@@ -171,14 +171,17 @@ public:
     {
         OwnPtr<WebWaitableEvent> completionEvent = adoptPtr(Platform::current()->createWaitableEvent());
 
+        OwnPtr<Vector<CSPHeaderAndType>> headers = adoptPtr(new Vector<CSPHeaderAndType>());
+        CSPHeaderAndType headerAndType("contentSecurityPolicy", ContentSecurityPolicyHeaderTypeReport);
+        headers->append(headerAndType);
+
         m_workerThread->start(WorkerThreadStartupData::create(
             KURL(ParsedURLString, "http://fake.url/"),
             "fake user agent",
             "//fake source code",
             nullptr,
             DontPauseWorkerGlobalScopeOnStart,
-            "contentSecurityPolicy",
-            ContentSecurityPolicyHeaderTypeReport,
+            headers.release(),
             m_securityOrigin.get(),
             WorkerClients::create(),
             V8CacheOptionsDefault));

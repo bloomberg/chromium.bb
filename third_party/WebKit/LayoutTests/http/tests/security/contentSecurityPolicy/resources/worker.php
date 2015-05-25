@@ -10,6 +10,9 @@
       $csp = stripslashes($csp);
     }
     header("Content-Security-Policy: " . $csp);
+  } else if ($_GET["type"] == "multiple-headers") {
+    header("Content-Security-Policy: connect-src 'none'");
+    header("Content-Security-Policy: script-src 'self'", false);
   }
 ?>
 
@@ -125,6 +128,27 @@ onconnect = function (e) {
     };
     xhr.send();
 };
+
+<?php
+} else if ($_GET["type"] == "multiple-headers") {
+?>
+
+try {
+    var xhr = new XMLHttpRequest;
+    xhr.open("GET", "http://127.0.0.1:8000/xmlhttprequest/resources/get.txt", true);
+    postMessage("xhr allowed");
+} catch(e) {
+    postMessage("xhr blocked");
+}
+
+var id = 0;
+try {
+  id = eval("1 + 2 + 3");
+}
+catch (e) {
+}
+
+postMessage(id === 0 ? "eval blocked" : "eval allowed");
 
 <?php
 }

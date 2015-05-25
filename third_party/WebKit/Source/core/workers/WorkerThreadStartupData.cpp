@@ -35,18 +35,21 @@
 
 namespace blink {
 
-WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients, V8CacheOptions v8CacheOptions)
+WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const PassOwnPtr<Vector<CSPHeaderAndType>> contentSecurityPolicyHeaders, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients, V8CacheOptions v8CacheOptions)
     : m_scriptURL(scriptURL.copy())
     , m_userAgent(userAgent.isolatedCopy())
     , m_sourceCode(sourceCode.isolatedCopy())
     , m_cachedMetaData(cachedMetaData)
     , m_startMode(startMode)
-    , m_contentSecurityPolicy(contentSecurityPolicy.isolatedCopy())
-    , m_contentSecurityPolicyType(contentSecurityPolicyType)
     , m_starterOrigin(starterOrigin)
     , m_workerClients(workerClients)
     , m_v8CacheOptions(v8CacheOptions)
 {
+    m_contentSecurityPolicyHeaders = adoptPtr(new Vector<CSPHeaderAndType>());
+    for (const auto& header : *contentSecurityPolicyHeaders) {
+        CSPHeaderAndType copiedHeader(header.first.isolatedCopy(), header.second);
+        m_contentSecurityPolicyHeaders->append(copiedHeader);
+    }
 }
 
 WorkerThreadStartupData::~WorkerThreadStartupData()

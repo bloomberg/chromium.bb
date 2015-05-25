@@ -43,6 +43,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
+#include <utility>
 
 namespace WTF {
 class OrdinalNumber;
@@ -62,6 +63,7 @@ class SecurityOrigin;
 typedef int SandboxFlags;
 typedef Vector<OwnPtr<CSPDirectiveList>> CSPDirectiveListVector;
 typedef WillBePersistentHeapVector<RefPtrWillBeMember<ConsoleMessage>> ConsoleMessageVector;
+typedef std::pair<String, ContentSecurityPolicyHeaderType> CSPHeaderAndType;
 
 class CORE_EXPORT ContentSecurityPolicy : public RefCounted<ContentSecurityPolicy> {
     WTF_MAKE_FAST_ALLOCATED(ContentSecurityPolicy);
@@ -129,10 +131,7 @@ public:
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
     void didReceiveHeader(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
-    // These functions are wrong because they assume that there is only one header.
-    // FIXME: Replace them with functions that return vectors.
-    const String& deprecatedHeader() const;
-    ContentSecurityPolicyHeaderType deprecatedHeaderType() const;
+    const PassOwnPtr<Vector<CSPHeaderAndType>> headers() const;
 
     bool allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowInlineEventHandlers(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;

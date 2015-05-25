@@ -302,14 +302,14 @@ void ContentSecurityPolicy::setOverrideURLForSelf(const KURL& url)
     m_selfSource = adoptPtr(new CSPSource(this, m_selfProtocol, origin->host(), origin->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
 }
 
-const String& ContentSecurityPolicy::deprecatedHeader() const
+const PassOwnPtr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers() const
 {
-    return m_policies.isEmpty() ? emptyString() : m_policies[0]->header();
-}
-
-ContentSecurityPolicyHeaderType ContentSecurityPolicy::deprecatedHeaderType() const
-{
-    return m_policies.isEmpty() ? ContentSecurityPolicyHeaderTypeEnforce : m_policies[0]->headerType();
+    OwnPtr<Vector<CSPHeaderAndType>> headers = adoptPtr(new Vector<CSPHeaderAndType>);
+    for (const auto& policy : m_policies) {
+        CSPHeaderAndType headerAndType(policy->header(), policy->headerType());
+        headers->append(headerAndType);
+    }
+    return headers.release();
 }
 
 template<bool (CSPDirectiveList::*allowed)(ContentSecurityPolicy::ReportingStatus) const>

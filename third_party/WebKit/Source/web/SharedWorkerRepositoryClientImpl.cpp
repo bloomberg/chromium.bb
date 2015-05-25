@@ -116,7 +116,21 @@ void SharedWorkerRepositoryClientImpl::connect(PassRefPtrWillBeRawPtr<SharedWork
     // No nested workers (for now) - connect() should only be called from document context.
     ASSERT(worker->executionContext()->isDocument());
     Document* document = toDocument(worker->executionContext());
-    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document), worker->executionContext()->contentSecurityPolicy()->deprecatedHeader(), static_cast<WebContentSecurityPolicyType>(worker->executionContext()->contentSecurityPolicy()->deprecatedHeaderType())));
+
+    // TODO(estark): this is broken, as it only uses the first header
+    // when multiple might have been sent. Fix by making the
+    // SharedWorkerConnector interface take a map that can contain
+    // multiple headers.
+    OwnPtr<Vector<CSPHeaderAndType>> headers = worker->executionContext()->contentSecurityPolicy()->headers();
+    WebString header;
+    WebContentSecurityPolicyType headerType = WebContentSecurityPolicyTypeReport;
+
+    if (headers->size() > 0) {
+        header = (*headers)[0].first;
+        headerType = static_cast<WebContentSecurityPolicyType>((*headers)[0].second);
+    }
+
+    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document), header, headerType));
     if (!webWorkerConnector) {
         // Existing worker does not match this url, so return an error back to the caller.
         exceptionState.throwDOMException(URLMismatchError, "The location of the SharedWorker named '" + name + "' does not exactly match the provided URL ('" + url.elidedString() + "').");
