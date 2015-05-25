@@ -18,7 +18,7 @@ SRC_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, os.pardir))
 import find_depot_tools
 find_depot_tools.add_depot_tools_to_path()
 import rietveld
-import roll_dep
+import roll_dep_svn
 from gclient import GClientKeywords
 from third_party import upload
 
@@ -329,11 +329,11 @@ class AutoRoller(object):
     dep_name = os.path.join('src', dep_relative_to_src)
     comment = 'commit position %s' % commit_info.commit_position
 
-    # roll_dep.py relies on cwd being the Chromium checkout, so let's
+    # roll_dep_svn.py relies on cwd being the Chromium checkout, so let's
     # temporarily change the working directory and then change back.
     cwd = os.getcwd()
     os.chdir(os.path.dirname(deps_filename))
-    roll_dep.update_deps(deps_filename, dep_relative_to_src, dep_name,
+    roll_dep_svn.update_deps(deps_filename, dep_relative_to_src, dep_name,
                          commit_info.git_commit, comment)
     os.chdir(cwd)
 
