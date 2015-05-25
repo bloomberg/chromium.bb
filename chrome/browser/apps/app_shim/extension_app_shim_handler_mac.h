@@ -57,8 +57,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
         Profile* profile,
         const std::string& extension_id);
 
-    virtual const extensions::Extension* GetAppExtension(
-        Profile* profile, const std::string& extension_id);
+    virtual const extensions::Extension* MaybeGetAppExtension(
+        Profile* profile,
+        const std::string& extension_id);
     virtual void EnableExtension(Profile* profile,
                                  const std::string& extension_id,
                                  const base::Callback<void()>& callback);
@@ -83,11 +84,11 @@ class ExtensionAppShimHandler : public AppShimHandler,
                           const std::string& app_id,
                           bool hidden);
 
-  static const extensions::Extension* GetAppExtension(
+  static const extensions::Extension* MaybeGetAppExtension(
       Profile* profile,
       const std::string& extension_id);
 
-  static const extensions::Extension* GetAppForBrowser(Browser* browser);
+  static const extensions::Extension* MaybeGetAppForBrowser(Browser* browser);
 
   static void QuitAppForWindow(extensions::AppWindow* app_window);
 
@@ -155,6 +156,14 @@ class ExtensionAppShimHandler : public AppShimHandler,
  private:
   // Helper function to get the instance on the browser process.
   static ExtensionAppShimHandler* GetInstance();
+
+  // Gets the extension for the corresponding |host|. Note that extensions can
+  // be uninstalled at any time (even between sending OnAppClosed() to the host,
+  // and receiving the quit confirmation). If the extension has been uninstalled
+  // or disabled, the host is immediately closed. If non-nil, the Extension's
+  // Profile will be set in |profile|.
+  const extensions::Extension* MaybeGetExtensionOrCloseHost(Host* host,
+                                                            Profile** profile);
 
   // Closes all browsers associated with an app.
   void CloseBrowsersForApp(const std::string& app_id);

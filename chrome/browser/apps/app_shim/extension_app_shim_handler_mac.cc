@@ -39,6 +39,7 @@
 
 using extensions::AppWindow;
 using extensions::AppWindowRegistry;
+using extensions::Extension;
 using extensions::ExtensionRegistry;
 
 namespace {
@@ -180,11 +181,10 @@ AppWindowList ExtensionAppShimHandler::Delegate::GetWindows(
   return AppWindowRegistry::Get(profile)->GetAppWindowsForApp(extension_id);
 }
 
-const extensions::Extension*
-ExtensionAppShimHandler::Delegate::GetAppExtension(
+const Extension* ExtensionAppShimHandler::Delegate::MaybeGetAppExtension(
     Profile* profile,
     const std::string& extension_id) {
-  return ExtensionAppShimHandler::GetAppExtension(profile, extension_id);
+  return ExtensionAppShimHandler::MaybeGetAppExtension(profile, extension_id);
 }
 
 void ExtensionAppShimHandler::Delegate::EnableExtension(
@@ -196,7 +196,7 @@ void ExtensionAppShimHandler::Delegate::EnableExtension(
 
 void ExtensionAppShimHandler::Delegate::LaunchApp(
     Profile* profile,
-    const extensions::Extension* extension,
+    const Extension* extension,
     const std::vector<base::FilePath>& files) {
   extensions::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
@@ -217,9 +217,8 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
   }
 }
 
-void ExtensionAppShimHandler::Delegate::LaunchShim(
-    Profile* profile,
-    const extensions::Extension* extension) {
+void ExtensionAppShimHandler::Delegate::LaunchShim(Profile* profile,
+                                                   const Extension* extension) {
   web_app::MaybeLaunchShortcut(
       web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
 }
@@ -276,14 +275,14 @@ void ExtensionAppShimHandler::SetHostedAppHidden(Profile* profile,
 }
 
 // static
-const extensions::Extension* ExtensionAppShimHandler::GetAppExtension(
+const Extension* ExtensionAppShimHandler::MaybeGetAppExtension(
     Profile* profile,
     const std::string& extension_id) {
   if (!profile)
     return NULL;
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
-  const extensions::Extension* extension =
+  const Extension* extension =
       registry->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
   return extension &&
                  (extension->is_platform_app() || extension->is_hosted_app())
@@ -292,12 +291,12 @@ const extensions::Extension* ExtensionAppShimHandler::GetAppExtension(
 }
 
 // static
-const extensions::Extension* ExtensionAppShimHandler::GetAppForBrowser(
+const Extension* ExtensionAppShimHandler::MaybeGetAppForBrowser(
     Browser* browser) {
   if (!browser || !browser->is_app())
     return NULL;
 
-  return GetAppExtension(
+  return MaybeGetAppExtension(
       browser->profile(),
       web_app::GetExtensionIdFromApplicationName(browser->app_name()));
 }
@@ -452,6 +451,25 @@ ExtensionAppShimHandler* ExtensionAppShimHandler::GetInstance() {
       ->extension_app_shim_handler();
 }
 
+const Extension* ExtensionAppShimHandler::MaybeGetExtensionOrCloseHost(
+    Host* host,
+    Profile** profile_out) {
+  DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
+  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
+
+  const Extension* extension =
+      delegate_->MaybeGetAppExtension(profile, host->GetAppId());
+  if (!extension) {
+    // Extensions may have been uninstalled or disabled since the shim
+    // started.
+    host->OnAppClosed();
+  }
+
+  if (profile_out)
+    *profile_out = profile;
+  return extension;
+}
+
 void ExtensionAppShimHandler::CloseBrowsersForApp(const std::string& app_id) {
   AppBrowserMap::iterator it = app_browser_windows_.find(app_id);
   if (it == app_browser_windows_.end())
@@ -488,8 +506,7 @@ void ExtensionAppShimHandler::OnProfileLoaded(
   // need to watch for 'app successfully launched' or at least 'background page
   // exists/was created' and time out with failure if we don't see that sign of
   // life within a certain window.
-  const extensions::Extension* extension =
-      delegate_->GetAppExtension(profile, app_id);
+  const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
   if (extension) {
     delegate_->LaunchApp(profile, extension, files);
     // If it's a hosted app that opens in a tab, let the shim terminate
@@ -518,8 +535,7 @@ void ExtensionAppShimHandler::OnExtensionEnabled(
   if (!profile)
     return;
 
-  const extensions::Extension* extension =
-      delegate_->GetAppExtension(profile, app_id);
+  const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
   if (!extension || !delegate_->ProfileExistsForPath(profile_path)) {
     // If !extension, the extension doesn't exist, or was not re-enabled.
     // If the profile doesn't exist, it may have been deleted during the enable
@@ -549,12 +565,14 @@ void ExtensionAppShimHandler::OnShimFocus(
     Host* host,
     AppShimFocusType focus_type,
     const std::vector<base::FilePath>& files) {
-  DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
-  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
+  Profile* profile;
+  const Extension* extension = MaybeGetExtensionOrCloseHost(host, &profile);
+  if (!extension)
+    return;
 
   bool windows_focused;
   const std::string& app_id = host->GetAppId();
-  if (delegate_->GetAppExtension(profile, app_id)->is_hosted_app()) {
+  if (extension->is_hosted_app()) {
     AppBrowserMap::iterator it = app_browser_windows_.find(app_id);
     if (it == app_browser_windows_.end())
       return;
@@ -571,26 +589,19 @@ void ExtensionAppShimHandler::OnShimFocus(
     return;
   }
 
-  const extensions::Extension* extension =
-      delegate_->GetAppExtension(profile, host->GetAppId());
-  if (extension) {
-    delegate_->LaunchApp(profile, extension, files);
-  } else {
-    // Extensions may have been uninstalled or disabled since the shim
-    // started.
-    host->OnAppClosed();
-  }
+  delegate_->LaunchApp(profile, extension, files);
 }
 
 void ExtensionAppShimHandler::OnShimSetHidden(Host* host, bool hidden) {
-  DCHECK(delegate_->ProfileExistsForPath(host->GetProfilePath()));
-  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
+  Profile* profile;
+  const Extension* extension = MaybeGetExtensionOrCloseHost(host, &profile);
+  if (!extension)
+    return;
 
-  const std::string& app_id = host->GetAppId();
-  if (delegate_->GetAppExtension(profile, app_id)->is_hosted_app())
-    SetHostedAppHidden(profile, app_id, hidden);
+  if (extension->is_hosted_app())
+    SetHostedAppHidden(profile, host->GetAppId(), hidden);
   else
-    SetAppHidden(profile, app_id, hidden);
+    SetAppHidden(profile, host->GetAppId(), hidden);
 }
 
 void ExtensionAppShimHandler::OnShimQuit(Host* host) {
@@ -598,8 +609,7 @@ void ExtensionAppShimHandler::OnShimQuit(Host* host) {
   Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
 
   const std::string& app_id = host->GetAppId();
-  const extensions::Extension* extension =
-      delegate_->GetAppExtension(profile, app_id);
+  const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
   if (!extension)
     return;
 
@@ -656,7 +666,7 @@ void ExtensionAppShimHandler::Observe(
     case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
       Browser* browser = content::Source<Browser>(source).ptr();
       // Don't keep track of browsers that are not associated with an app.
-      const extensions::Extension* extension = GetAppForBrowser(browser);
+      const Extension* extension = MaybeGetAppForBrowser(browser);
       if (!extension)
         return;
 
@@ -679,8 +689,7 @@ void ExtensionAppShimHandler::OnAppStart(Profile* profile,
 
 void ExtensionAppShimHandler::OnAppActivated(Profile* profile,
                                              const std::string& app_id) {
-  const extensions::Extension* extension =
-      delegate_->GetAppExtension(profile, app_id);
+  const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
   if (!extension)
     return;
 
@@ -718,7 +727,7 @@ void ExtensionAppShimHandler::OnBrowserAdded(Browser* browser) {
 }
 
 void ExtensionAppShimHandler::OnBrowserRemoved(Browser* browser) {
-  const extensions::Extension* extension = GetAppForBrowser(browser);
+  const Extension* extension = MaybeGetAppForBrowser(browser);
   if (!extension)
     return;
 

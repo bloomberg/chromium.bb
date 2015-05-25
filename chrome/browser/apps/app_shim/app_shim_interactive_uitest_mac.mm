@@ -190,7 +190,7 @@ class HostedAppBrowserListObserver : public chrome::BrowserListObserver {
   // BrowserListObserver overrides:
   void OnBrowserAdded(Browser* browser) override {
     const extensions::Extension* app =
-        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+        apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
     if (app && app->id() == app_id_) {
       observed_add_ = true;
       if (run_loop_.get())
@@ -200,7 +200,7 @@ class HostedAppBrowserListObserver : public chrome::BrowserListObserver {
 
   void OnBrowserRemoved(Browser* browser) override {
     const extensions::Extension* app =
-        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+        apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
     if (app && app->id() == app_id_) {
       observed_removed_ = true;
       if (run_loop_.get())
@@ -292,7 +292,7 @@ Browser* GetFirstHostedAppWindow() {
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
   for (Browser* browser : *browsers) {
     const extensions::Extension* extension =
-        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+        apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
     if (extension && extension->is_hosted_app())
       return browser;
   }

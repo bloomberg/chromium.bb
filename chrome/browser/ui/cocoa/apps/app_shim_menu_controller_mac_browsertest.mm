@@ -211,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
   for (Browser* browser : *browsers) {
     const extensions::Extension* extension =
-        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+        apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
     if (extension && extension->is_hosted_app()) {
       hosted_app_browser = browser;
       break;

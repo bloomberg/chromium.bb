@@ -386,7 +386,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
     if (appWindow)
       extension = appWindow->GetExtension();
     else
-      extension = apps::ExtensionAppShimHandler::GetAppForBrowser(
+      extension = apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(
           chrome::FindBrowserWithWindow(window));
 
     if (extension)
@@ -490,7 +490,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
   } else {
     Browser* browser = chrome::FindBrowserWithWindow([NSApp keyWindow]);
     const extensions::Extension* extension =
-        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+        apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
     if (extension)
       apps::ExtensionAppShimHandler::QuitHostedAppForWindow(browser->profile(),
                                                             extension->id());
@@ -506,7 +506,7 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
   } else {
     Browser* browser = chrome::FindBrowserWithWindow([NSApp keyWindow]);
     const extensions::Extension* extension =
-        apps::ExtensionAppShimHandler::GetAppForBrowser(browser);
+        apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
     if (extension)
       apps::ExtensionAppShimHandler::HideHostedApp(browser->profile(),
                                                    extension->id());

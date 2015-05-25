@@ -38,7 +38,8 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
 
   MOCK_METHOD2(GetWindows, AppWindowList(Profile*, const std::string&));
 
-  MOCK_METHOD2(GetAppExtension, const Extension*(Profile*, const std::string&));
+  MOCK_METHOD2(MaybeGetAppExtension,
+               const Extension*(Profile*, const std::string&));
   MOCK_METHOD3(EnableExtension, void(Profile*,
                                      const std::string&,
                                      const base::Callback<void()>&));
@@ -181,9 +182,9 @@ class ExtensionAppShimHandlerTest : public testing::Test {
     EXPECT_CALL(*delegate_, GetWindows(_, _))
         .WillRepeatedly(Return(app_window_list));
 
-    EXPECT_CALL(*delegate_, GetAppExtension(_, kTestAppIdA))
+    EXPECT_CALL(*delegate_, MaybeGetAppExtension(_, kTestAppIdA))
         .WillRepeatedly(Return(extension_a_.get()));
-    EXPECT_CALL(*delegate_, GetAppExtension(_, kTestAppIdB))
+    EXPECT_CALL(*delegate_, MaybeGetAppExtension(_, kTestAppIdB))
         .WillRepeatedly(Return(extension_b_.get()));
     EXPECT_CALL(*delegate_, LaunchApp(_, _, _))
         .WillRepeatedly(Return());
@@ -199,6 +200,30 @@ class ExtensionAppShimHandlerTest : public testing::Test {
     handler_->OnShimLaunch(host,
                            APP_SHIM_LAUNCH_REGISTER_ONLY,
                            std::vector<base::FilePath>());
+  }
+
+  // Completely launch a shim host and leave it running.
+  void LaunchAndActivate(FakeHost* host, Profile* profile) {
+    NormalLaunch(host);
+    EXPECT_EQ(host, handler_->FindHost(profile, host->GetAppId()));
+    EXPECT_CALL(*host, OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS));
+    EXPECT_CALL(*handler_, OnShimFocus(host, APP_SHIM_FOCUS_NORMAL, _));
+    handler_->OnAppActivated(profile, host->GetAppId());
+  }
+
+  // Simulates a focus request coming from a running app shim.
+  void ShimNormalFocus(FakeHost* host) {
+    EXPECT_CALL(*handler_, OnShimFocus(host, APP_SHIM_FOCUS_NORMAL, _))
+        .WillOnce(Invoke(handler_.get(),
+                         &TestingExtensionAppShimHandler::RealOnShimFocus));
+
+    const std::vector<base::FilePath> no_files;
+    handler_->OnShimFocus(host, APP_SHIM_FOCUS_NORMAL, no_files);
+  }
+
+  // Simulates a hide (or unhide) request coming from a running app shim.
+  void ShimSetHidden(FakeHost* host, bool hidden) {
+    handler_->OnShimSetHidden(host, hidden);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -230,7 +255,7 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchProfileNotFound) {
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotFound) {
   // App not found.
-  EXPECT_CALL(*delegate_, GetAppExtension(&profile_a_, kTestAppIdA))
+  EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_a_, kTestAppIdA))
       .WillRepeatedly(Return(static_cast<const Extension*>(NULL)));
   EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(WithArgs<2>(Invoke(delegate_, &MockDelegate::RunCallback)));
@@ -240,7 +265,7 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotFound) {
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotEnabled) {
   // App not found.
-  EXPECT_CALL(*delegate_, GetAppExtension(&profile_a_, kTestAppIdA))
+  EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_a_, kTestAppIdA))
       .WillOnce(Return(static_cast<const Extension*>(NULL)))
       .WillRepeatedly(Return(extension_a_.get()));
   EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
@@ -310,15 +335,10 @@ TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
       .WillRepeatedly(Return(app_window_list));
 
   // Non-reopen focus does nothing.
-  EXPECT_CALL(*handler_, OnShimFocus(&host_aa_, APP_SHIM_FOCUS_NORMAL, _))
-      .WillOnce(Invoke(handler_.get(),
-                       &TestingExtensionAppShimHandler::RealOnShimFocus));
   EXPECT_CALL(*delegate_,
               LaunchApp(&profile_a_, extension_a_.get(), _))
       .Times(0);
-  handler_->OnShimFocus(&host_aa_,
-                        APP_SHIM_FOCUS_NORMAL,
-                        std::vector<base::FilePath>());
+  ShimNormalFocus(&host_aa_);
 
   // Reopen focus launches the app.
   EXPECT_CALL(*handler_, OnShimFocus(&host_aa_, APP_SHIM_FOCUS_REOPEN, _))
@@ -393,6 +413,39 @@ TEST_F(ExtensionAppShimHandlerTest, LoadProfile) {
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
   delegate_->RunLoadProfileCallback(profile_path_a_, &profile_a_);
   EXPECT_TRUE(handler_->FindHost(&profile_a_, kTestAppIdA));
+}
+
+// Tests that calls to OnShimFocus, OnShimHide correctly handle a null extension
+// being provided by the extension system.
+TEST_F(ExtensionAppShimHandlerTest, ExtensionUninstalled) {
+  LaunchAndActivate(&host_aa_, &profile_a_);
+
+  // Have GetWindows() return an empty window list for focus (otherwise, it
+  // will contain a single nullptr, which can't be focused). Expect 1 call only.
+  AppWindowList empty_window_list;
+  EXPECT_CALL(*delegate_, GetWindows(_, _)).WillOnce(Return(empty_window_list));
+
+  ShimNormalFocus(&host_aa_);
+  EXPECT_EQ(0, host_aa_.close_count());
+
+  // Set up the mock to return a null extension, as if it were uninstalled.
+  EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_a_, kTestAppIdA))
+      .WillRepeatedly(Return(nullptr));
+
+  // Now trying to focus should automatically close the shim, and not try to
+  // get the window list.
+  ShimNormalFocus(&host_aa_);
+  EXPECT_EQ(1, host_aa_.close_count());
+
+  // Do the same for SetHidden on host_bb.
+  LaunchAndActivate(&host_bb_, &profile_b_);
+  ShimSetHidden(&host_bb_, true);
+  EXPECT_EQ(0, host_bb_.close_count());
+
+  EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_b_, kTestAppIdB))
+      .WillRepeatedly(Return(nullptr));
+  ShimSetHidden(&host_bb_, true);
+  EXPECT_EQ(1, host_bb_.close_count());
 }
 
 }  // namespace apps
