@@ -51,7 +51,7 @@
       'enable_oilpan%': 0,
       'blink_gc_profiling%': 0,
       'blink_logging_always_on%': 0,
-      'link_core_modules_separately%': 0,
+      'link_core_modules_separately%': 1,
     },
     'conditions': [
       ['use_concatenated_impulse_responses==1', {
@@ -99,7 +99,7 @@
           'LOG_DISABLED=0',
         ],
       }],
-      ['link_core_modules_separately==1', {
+      ['component=="shared_library" and link_core_modules_separately==1', {
         'feature_defines': [
           'LINK_CORE_MODULES_SEPARATELY',
         ],
