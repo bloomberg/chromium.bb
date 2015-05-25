@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 // TODO(nona): Add more tests.
 
-#include "ui/base/ime/chromeos/composition_text.h"
+#include "ui/base/ime/chromeos/composition_text_chromeos.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"

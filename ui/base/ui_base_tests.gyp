@@ -70,6 +70,7 @@
         'dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
         'ime/candidate_window_unittest.cc',
         'ime/chromeos/character_composer_unittest.cc',
+        'ime/chromeos/composition_text_chromeos_unittest.cc',
         'ime/composition_text_util_pango_unittest.cc',
         'ime/input_method_base_unittest.cc',
         'ime/input_method_chromeos_unittest.cc',

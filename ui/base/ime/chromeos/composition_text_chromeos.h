@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_CHROMEOS_COMPOSITION_TEXT_H_
-#define UI_BASE_IME_CHROMEOS_COMPOSITION_TEXT_H_
+#ifndef UI_BASE_IME_CHROMEOS_COMPOSITION_TEXT_CHROMEOS_H_
+#define UI_BASE_IME_CHROMEOS_COMPOSITION_TEXT_CHROMEOS_H_
 
 #include <string>
 #include <vector>
@@ -67,4 +67,4 @@ class UI_BASE_IME_EXPORT CompositionText {
 
 }  // namespace chromeos
 
-#endif  // UI_BASE_IME_CHROMEOS_COMPOSITION_TEXT_H_
+#endif  // UI_BASE_IME_CHROMEOS_COMPOSITION_TEXT_CHROMEOS_H_
