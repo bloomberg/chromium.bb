@@ -249,9 +249,9 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         static bool compare(const T* a, const T* b, size_t size)
         {
-            if (LIKELY(a && b))
-                return std::equal(a, a + size, b);
-            return !a && !b;
+            ASSERT(a);
+            ASSERT(b);
+            return std::equal(a, a + size, b);
         }
     };
 
@@ -260,6 +260,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         static bool compare(const T* a, const T* b, size_t size)
         {
+            ASSERT(a);
+            ASSERT(b);
             return memcmp(a, b, sizeof(T) * size) == 0;
         }
     };
@@ -1293,7 +1295,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         if (a.size() != b.size())
             return false;
-
+        if (a.isEmpty())
+            return true;
         return VectorTypeOperations<T>::compare(a.data(), b.data(), a.size());
     }
 
