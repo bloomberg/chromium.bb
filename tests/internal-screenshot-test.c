@@ -184,51 +184,86 @@ capture_screenshot_of_output(struct client *client) {
 	return screenshot;
 }
 
+static void
+draw_stuff(char *pixels, int w, int h)
+{
+	int x, y;
+
+	for (x = 0; x < w; x++)
+		for (y = 0; y < h; y++) {
+			pixels[y * w * 4 + x * 4] = x;
+			pixels[y * w * 4 + x * 4 + 1] = x + y;
+			pixels[y * w * 4 + x * 4 + 2] = y;
+			pixels[y * w * 4 + x * 4 + 3] = 255;
+		}
+}
+
 TEST(internal_screenshot)
 {
+	struct wl_buffer *buf;
 	struct client *client;
+	struct wl_surface *surface;
 	struct surface *screenshot = NULL;
-	struct surface *reference = NULL;
+	struct surface *reference_good = NULL;
+	struct surface *reference_bad = NULL;
 	struct rectangle clip;
 	const char *fname;
 	bool match = false;
 	bool dump_all_images = true;
+	void *pixels;
 
 	/* Create the client */
 	printf("Creating client for test\n");
 	client = create_client_and_test_surface(100, 100, 100, 100);
 	assert(client);
+	surface = client->surface->wl_surface;
+
+	buf = create_shm_buffer(client, 100, 100, &pixels);
+	draw_stuff(pixels, 100, 100);
+	wl_surface_attach(surface, buf, 0, 0);
+	wl_surface_damage(surface, 0, 0, 100, 100);
+	wl_surface_commit(surface);
 
 	/* Take a snapshot.  Result will be in screenshot->wl_buffer. */
 	printf("Taking a screenshot\n");
 	screenshot = capture_screenshot_of_output(client);
 	assert(screenshot);
 
-	/* Load reference image */
-	fname = screenshot_reference_filename("internal-screenshot", 0);
-	printf("Loading reference image %s\n", fname);
-	reference = load_surface_from_png(fname);
-	assert(reference);
+	/* Load good reference image */
+	fname = screenshot_reference_filename("internal-screenshot-good", 0);
+	printf("Loading good reference image %s\n", fname);
+	reference_good = load_surface_from_png(fname);
+	assert(reference_good);
+
+	/* Load bad reference image */
+	fname = screenshot_reference_filename("internal-screenshot-bad", 0);
+	printf("Loading bad reference image %s\n", fname);
+	reference_bad = load_surface_from_png(fname);
+	assert(reference_bad);
 
 	/* Test check_surfaces_equal()
-	 * We expect this to fail since the clock will differ from when we made the reference image
+	 * We expect this to fail since we use a bad reference image
 	 */
-	match = check_surfaces_equal(screenshot, reference);
+	match = check_surfaces_equal(screenshot, reference_bad);
 	printf("Screenshot %s reference image\n", match? "equal to" : "different from");
 	assert(!match);
+	free(reference_bad->data);
+	free(reference_bad);
 
 	/* Test check_surfaces_match_in_clip()
 	 * Alpha-blending and other effects can cause irrelevant discrepancies, so look only
 	 * at a small portion of the solid-colored background
 	 */
-	clip.x = 50;
-	clip.y = 50;
-	clip.width = 101;
-	clip.height = 101;
+	clip.x = 100;
+	clip.y = 100;
+	clip.width = 100;
+	clip.height = 100;
 	printf("Clip: %d,%d %d x %d\n", clip.x, clip.y, clip.width, clip.height);
-	match = check_surfaces_match_in_clip(screenshot, reference, &clip);
+	match = check_surfaces_match_in_clip(screenshot, reference_good,
+					     &clip);
 	printf("Screenshot %s reference image in clipped area\n", match? "matches" : "doesn't match");
-	free(reference);
+	free(reference_good->data);
+	free(reference_good);
 
 	/* Test dumping of non-matching images */
 	if (!match || dump_all_images) {
