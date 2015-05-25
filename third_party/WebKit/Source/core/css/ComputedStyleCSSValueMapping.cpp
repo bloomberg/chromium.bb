@@ -1503,7 +1503,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
             return cssValuePool().createIdentifierValue(CSSValueAuto);
         return cssValuePool().createValue(style.columnCount(), CSSPrimitiveValue::CSS_NUMBER);
     case CSSPropertyColumnFill:
-        ASSERT(RuntimeEnabledFeatures::regionBasedColumnsEnabled());
+        ASSERT(RuntimeEnabledFeatures::columnFillEnabled());
         return cssValuePool().createValue(style.columnFill());
     case CSSPropertyWebkitColumnGap:
         if (style.hasNormalColumnGap())

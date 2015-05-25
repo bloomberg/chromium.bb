@@ -30,6 +30,7 @@
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/MultiColumnFragmentainerGroup.h"
 #include "core/paint/MultiColumnSetPainter.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -137,8 +138,16 @@ bool LayoutMultiColumnSet::heightIsAuto() const
 {
     LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
     if (!flowThread->isLayoutPagedFlowThread()) {
-        if (multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance)
-            return true;
+        // If support for the column-fill property isn't enabled, we want to behave as if
+        // column-fill were auto, so that multicol containers with specified height don't get their
+        // columns balanced (auto-height multicol containers will still get their columns balanced,
+        // even if column-fill isn't 'balance' - in accordance with the spec). Pretending that
+        // column-fill is auto also matches the old multicol implementation, which has no support
+        // for this property.
+        if (RuntimeEnabledFeatures::columnFillEnabled()) {
+            if (multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance)
+                return true;
+        }
         if (LayoutBox* next = nextSiblingBox()) {
             if (next->isLayoutMultiColumnSpannerPlaceholder()) {
                 // If we're followed by a spanner, we need to balance.
