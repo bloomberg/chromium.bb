@@ -626,13 +626,18 @@ WebString WebAXObject::containerLiveRegionStatus() const
 
 bool WebAXObject::ariaOwns(WebVector<WebAXObject>& ownsElements) const
 {
-    // aria-owns rearranges the accessibility tree rather than just
-    // exposing an attribute.
+    if (isDetached())
+        return false;
 
-    // FIXME(dmazzoni): remove this function after we stop calling it
-    // from Chromium.  http://crbug.com/489590
+    AXObject::AccessibilityChildrenVector owns;
+    m_private->ariaOwnsElements(owns);
 
-    return false;
+    WebVector<WebAXObject> result(owns.size());
+    for (size_t i = 0; i < owns.size(); i++)
+        result[i] = WebAXObject(owns[i]);
+    ownsElements.swap(result);
+
+    return true;
 }
 
 WebRect WebAXObject::boundingBoxRect() const

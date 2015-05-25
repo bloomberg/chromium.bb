@@ -226,6 +226,7 @@ private:
     LayoutRect computeElementRect() const;
     VisibleSelection selection() const;
     int indexForVisiblePosition(const VisiblePosition&) const;
+    void accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector&) const;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXLayoutObject, isAXLayoutObject());

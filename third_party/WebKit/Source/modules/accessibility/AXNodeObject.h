@@ -67,10 +67,7 @@ protected:
     String ariaAutoComplete() const;
     void ariaLabeledByElements(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const;
     AccessibilityRole determineAriaRoleAttribute() const;
-    void tokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
     void elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName&) const;
-    void accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector&) const;
-
     bool hasContentEditableAttributeSet() const;
     bool isTextControl() const override;
     bool allowsTextRanges() const { return isTextControl(); }
@@ -207,9 +204,6 @@ protected:
     // Position in set and Size of set
     virtual int posInSet() const override;
     virtual int setSize() const override;
-
-    // Aria-owns.
-    void computeAriaOwnsChildren(Vector<AXObject*>& ownedChildren);
 
 private:
     Node* m_node;

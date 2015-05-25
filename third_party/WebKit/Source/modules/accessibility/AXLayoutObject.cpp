@@ -1173,6 +1173,18 @@ AXObject* AXLayoutObject::activeDescendant() const
     return 0;
 }
 
+void AXLayoutObject::accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector& children) const
+{
+    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    elementsFromAttribute(elements, attr);
+
+    AXObjectCacheImpl* cache = axObjectCache();
+    for (const auto& element : elements) {
+        if (AXObject* child = cache->getOrCreate(element))
+            children.append(child);
+    }
+}
+
 void AXLayoutObject::ariaFlowToElements(AccessibilityChildrenVector& flowTo) const
 {
     accessibilityChildrenFromAttribute(aria_flowtoAttr, flowTo);
@@ -1681,13 +1693,8 @@ void AXLayoutObject::addChildren()
     if (!canHaveChildren())
         return;
 
-    Vector<AXObject*> ownedChildren;
-    computeAriaOwnsChildren(ownedChildren);
-
-    for (RefPtr<AXObject> obj = firstChild(); obj; obj = obj->nextSibling()) {
-        if (!axObjectCache()->isAriaOwned(obj.get()))
-            addChild(obj.get());
-    }
+    for (RefPtr<AXObject> obj = firstChild(); obj; obj = obj->nextSibling())
+        addChild(obj.get());
 
     addHiddenChildren();
     addAttachmentChildren();
@@ -1702,9 +1709,6 @@ void AXLayoutObject::addChildren()
         if (!child->cachedParentObject())
             child->setParent(this);
     }
-
-    for (const auto& ownedChild : ownedChildren)
-        addChild(ownedChild);
 }
 
 bool AXLayoutObject::canHaveChildren() const

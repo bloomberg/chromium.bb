@@ -539,43 +539,25 @@ AccessibilityRole AXNodeObject::determineAriaRoleAttribute() const
     return UnknownRole;
 }
 
-void AXNodeObject::tokenVectorFromAttribute(Vector<String>& tokens, const QualifiedName& attribute) const
+void AXNodeObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName& attribute) const
 {
     Node* node = this->node();
     if (!node || !node->isElementNode())
         return;
 
-    String attributeValue = getAttribute(attribute).string();
-    if (attributeValue.isEmpty())
+    TreeScope& scope = node->treeScope();
+
+    String idList = getAttribute(attribute).string();
+    if (idList.isEmpty())
         return;
 
-    attributeValue.simplifyWhiteSpace();
-    attributeValue.split(' ', tokens);
-}
+    idList.replace('\n', ' ');
+    Vector<String> idVector;
+    idList.split(' ', idVector);
 
-void AXNodeObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName& attribute) const
-{
-    Vector<String> ids;
-    tokenVectorFromAttribute(ids, attribute);
-    if (ids.isEmpty())
-        return;
-
-    TreeScope& scope = node()->treeScope();
-    for (const auto& id : ids) {
-        if (Element* idElement = scope.getElementById(AtomicString(id)))
+    for (const auto& idName : idVector) {
+        if (Element* idElement = scope.getElementById(AtomicString(idName)))
             elements.append(idElement);
-    }
-}
-
-void AXNodeObject::accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector& children) const
-{
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
-    elementsFromAttribute(elements, attr);
-
-    AXObjectCacheImpl* cache = axObjectCache();
-    for (const auto& element : elements) {
-        if (AXObject* child = cache->getOrCreate(element))
-            children.append(child);
     }
 }
 
@@ -1993,17 +1975,8 @@ void AXNodeObject::addChildren()
     if (layoutObject() && !isHTMLCanvasElement(*m_node))
         return;
 
-    Vector<AXObject*> ownedChildren;
-    computeAriaOwnsChildren(ownedChildren);
-
-    for (Node& child : NodeTraversal::childrenOf(*m_node)) {
-        AXObject* childObj = axObjectCache()->getOrCreate(&child);
-        if (!axObjectCache()->isAriaOwned(childObj))
-            addChild(childObj);
-    }
-
-    for (const auto& ownedChild : ownedChildren)
-        addChild(ownedChild);
+    for (Node& child : NodeTraversal::childrenOf(*m_node))
+        addChild(axObjectCache()->getOrCreate(&child));
 
     for (const auto& child : m_children)
         child->setParent(this);
@@ -2285,17 +2258,6 @@ void AXNodeObject::updateAccessibilityRole()
     // The AX hierarchy only needs to be updated if the ignored status of an element has changed.
     if (ignoredStatus != accessibilityIsIgnored())
         childrenChanged();
-}
-
-void AXNodeObject::computeAriaOwnsChildren(Vector<AXObject*>& ownedChildren)
-{
-    if (!hasAttribute(aria_ownsAttr))
-        return;
-
-    Vector<String> idVector;
-    tokenVectorFromAttribute(idVector, aria_ownsAttr);
-
-    axObjectCache()->updateAriaOwns(this, idVector, ownedChildren);
 }
 
 String AXNodeObject::alternativeTextForWebArea() const
