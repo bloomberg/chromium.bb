@@ -176,7 +176,6 @@
         'res_extra_files': ['<!@(find <(res_channel_dir) -type f)'],
       },
       'dependencies': [
-        # Listed first to ensure that it overrides public strings.
         'chrome_staging_strings_grd',
         'chrome_template_resources',
         'hosted_service_aidl',
@@ -217,7 +216,7 @@
       'includes': [ '../../build/java_strings_grd.gypi' ],
     },
     {
-      # GN: //chrome/android:chrome_staging_test_support_java
+      # GN: //chrome/test/android:chrome_staging_test_support_java
       'target_name': 'chrome_staging_test_support_java',
       'type': 'none',
       'variables': {
