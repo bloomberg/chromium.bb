@@ -46,13 +46,13 @@ void CrossDevicePromoFactory::RegisterProfilePrefs(
   user_prefs->RegisterBooleanPref(prefs::kCrossDevicePromoActive, false);
   user_prefs->RegisterInt64Pref(
       prefs::kCrossDevicePromoObservedSingleAccountCookie,
-      base::Time::Time().ToInternalValue());
+      base::Time().ToInternalValue());
   user_prefs->RegisterInt64Pref(
       prefs::kCrossDevicePromoNextFetchListDevicesTime,
-      base::Time::Time().ToInternalValue());
+      base::Time().ToInternalValue());
   user_prefs->RegisterIntegerPref(prefs::kCrossDevicePromoNumDevices, 0);
   user_prefs->RegisterInt64Pref(prefs::kCrossDevicePromoLastDeviceActiveTime,
-                                base::Time::Time().ToInternalValue());
+                                base::Time().ToInternalValue());
 }
 
 KeyedService* CrossDevicePromoFactory::BuildServiceInstanceFor(
