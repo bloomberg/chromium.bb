@@ -32,7 +32,8 @@ HardwareDisplayPlaneManagerAtomic::~HardwareDisplayPlaneManagerAtomic() {
 
 bool HardwareDisplayPlaneManagerAtomic::Commit(
     HardwareDisplayPlaneList* plane_list,
-    bool is_sync) {
+    bool is_sync,
+    bool test_only) {
   for (HardwareDisplayPlane* plane : plane_list->old_plane_list) {
     bool found =
         std::find(plane_list->plane_list.begin(), plane_list->plane_list.end(),
@@ -55,14 +56,19 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
       crtcs.push_back(atomic_plane->crtc()->AsWeakPtr());
   }
 
-  plane_list->plane_list.swap(plane_list->old_plane_list);
+  if (test_only) {
+    for (HardwareDisplayPlane* plane : plane_list->plane_list) {
+      plane->set_in_use(false);
+    }
+  } else {
+    plane_list->plane_list.swap(plane_list->old_plane_list);
+  }
   plane_list->plane_list.clear();
   if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), 0, is_sync,
-                              base::Bind(&AtomicPageFlipCallback, crtcs))) {
+                              test_only, base::Bind(&AtomicPageFlipCallback))) {
     PLOG(ERROR) << "Failed to commit properties";
     return false;
   }
-  plane_list->committed = true;
   return true;
 }
 

@@ -19,7 +19,16 @@ HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() {
 
 bool HardwareDisplayPlaneManagerLegacy::Commit(
     HardwareDisplayPlaneList* plane_list,
-    bool is_sync) {
+    bool is_sync,
+    bool test_only) {
+  if (test_only) {
+    for (HardwareDisplayPlane* plane : plane_list->plane_list) {
+      plane->set_in_use(false);
+    }
+    plane_list->plane_list.clear();
+    plane_list->legacy_page_flips.clear();
+    return true;
+  }
   if (plane_list->plane_list.empty())  // No assigned planes, nothing to do.
     return true;
   bool ret = true;

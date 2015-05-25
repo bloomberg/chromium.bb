@@ -114,8 +114,15 @@ class OZONE_EXPORT HardwareDisplayController {
   // called again before the page flip occurrs.
   //
   // Returns true if the page flip was successfully registered, false otherwise.
+  //
+  // When called with |test_only| true, this performs the page flip without
+  // changing any state, reporting if this page flip would be allowed to occur.
+  // This is always a synchronous operation, so |is_sync| is ignored and the
+  // callback is called immediately but should also be ignored; only the return
+  // value matters.
   bool SchedulePageFlip(const OverlayPlaneList& plane_list,
                         bool is_sync,
+                        bool test_only,
                         const base::Closure& callback);
 
   // Set the hardware cursor to show the contents of |surface|.

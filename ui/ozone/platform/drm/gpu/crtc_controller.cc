@@ -69,6 +69,7 @@ bool CrtcController::Disable() {
 bool CrtcController::SchedulePageFlip(
     HardwareDisplayPlaneList* plane_list,
     const OverlayPlaneList& overlays,
+    bool test_only,
     scoped_refptr<PageFlipRequest> page_flip_request) {
   DCHECK(!page_flip_request_.get());
   DCHECK(!is_disabled_);
@@ -96,8 +97,12 @@ bool CrtcController::SchedulePageFlip(
     return false;
   }
 
-  pending_planes_ = overlays;
-  page_flip_request_ = page_flip_request;
+  if (test_only) {
+    page_flip_request->Signal();
+  } else {
+    pending_planes_ = overlays;
+    page_flip_request_ = page_flip_request;
+  }
 
   return true;
 }

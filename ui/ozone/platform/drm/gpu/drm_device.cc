@@ -552,9 +552,15 @@ bool DrmDevice::CloseBufferHandle(uint32_t handle) {
 bool DrmDevice::CommitProperties(drmModePropertySet* properties,
                                  uint32_t flags,
                                  bool is_sync,
+                                 bool test_only,
                                  const PageFlipCallback& callback) {
 #if defined(USE_DRM_ATOMIC)
-  flags |= DRM_MODE_PAGE_FLIP_EVENT;
+  if (test_only)
+    flags |= DRM_MODE_TEST_ONLY;
+  else
+    flags |= DRM_MODE_PAGE_FLIP_EVENT;
+  scoped_ptr<PageFlipPayload> payload(
+      new PageFlipPayload(base::ThreadTaskRunnerHandle::Get(), callback));
   uint64_t id = page_flip_manager_->GetNextId();
   if (!drmModePropertySetCommit(file_.GetPlatformFile(), flags,
                                 reinterpret_cast<void*>(id), properties)) {

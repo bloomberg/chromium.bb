@@ -109,6 +109,7 @@ class MockDrmDevice : public ui::DrmDevice {
   bool CommitProperties(drmModePropertySet* properties,
                         uint32_t flags,
                         bool is_sync,
+                        bool test_only,
                         const PageFlipCallback& callback) override;
   bool SetGammaRamp(uint32_t crtc_id,
                     const std::vector<GammaRampRGBEntry>& lut) override;

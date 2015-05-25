@@ -127,7 +127,7 @@ bool DrmWindow::SchedulePageFlip(bool is_sync, const base::Closure& callback) {
   last_swap_sync_ = is_sync;
 
   if (controller_) {
-    return controller_->SchedulePageFlip(last_submitted_planes_, is_sync,
+    return controller_->SchedulePageFlip(last_submitted_planes_, is_sync, false,
                                          callback);
   }
 

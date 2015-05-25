@@ -62,6 +62,7 @@ void HardwareDisplayController::Disable() {
 bool HardwareDisplayController::SchedulePageFlip(
     const OverlayPlaneList& plane_list,
     bool is_sync,
+    bool test_only,
     const base::Closure& callback) {
   TRACE_EVENT0("drm", "HDC::SchedulePageFlip");
 
@@ -86,11 +87,12 @@ bool HardwareDisplayController::SchedulePageFlip(
   for (size_t i = 0; i < crtc_controllers_.size(); ++i) {
     status &= crtc_controllers_[i]->SchedulePageFlip(
         owned_hardware_planes_.get(crtc_controllers_[i]->drm().get()),
-        pending_planes, page_flip_request);
+        pending_planes, test_only, page_flip_request);
   }
 
   for (const auto& planes : owned_hardware_planes_) {
-    if (!planes.first->plane_manager()->Commit(planes.second, is_sync)) {
+    if (!planes.first->plane_manager()->Commit(planes.second, is_sync,
+                                               test_only)) {
       status = false;
     }
   }
