@@ -503,6 +503,7 @@ Mosaic.prototype.onLeadChange_ = function(event) {
 Mosaic.prototype.onSplice_ = function(event) {
   var index = event.index;
   this.layoutModel_.invalidateFromTile_(index);
+  this.errorBanner_.clear();
 
   if (event.removed.length) {
     for (var t = 0; t !== event.removed.length; t++) {

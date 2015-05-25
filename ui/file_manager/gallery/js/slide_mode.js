@@ -516,12 +516,12 @@ SlideMode.prototype.enter = function(
 
   // The latest |leave| call might have left the image animating. Remove it.
   this.unloadImage_();
+  this.errorBanner_.clear();
 
   new Promise(function(fulfill) {
     // If the items are empty, just show the error message.
     if (this.getItemCount_() === 0) {
       this.displayedItem_ = null;
-      //TODO(hirono) Show this message in the grid mode too.
       this.errorBanner_.show('GALLERY_NO_IMAGES');
       fulfill();
       return;
