@@ -60,27 +60,4 @@ TEST_F(FirstRunTest, SetupMasterPrefsFromInstallPrefs_VariationsSeedSignature) {
   EXPECT_TRUE(install_prefs.master_dictionary().empty());
 }
 
-TEST_F(FirstRunTest,
-       SetupMasterPrefsFromInstallPrefs_SuppressFirstRunDefaultBrowserPrompt) {
-  installer::MasterPreferences install_prefs(
-      "{ \"distribution\": "
-         "{\"suppress_first_run_default_browser_prompt\": true } }");
-  EXPECT_EQ(1U, install_prefs.master_dictionary().size());
-
-  MasterPrefs out_prefs;
-  internal::SetupMasterPrefsFromInstallPrefs(install_prefs, &out_prefs);
-  EXPECT_TRUE(out_prefs.suppress_first_run_default_browser_prompt);
-}
-
-TEST_F(
-    FirstRunTest,
-    SetupMasterPrefsFromInstallPrefs_NoSuppressFirstRunDefaultBrowserPrompt) {
-  installer::MasterPreferences install_prefs("{ }");
-  EXPECT_TRUE(install_prefs.master_dictionary().empty());
-
-  MasterPrefs out_prefs;
-  internal::SetupMasterPrefsFromInstallPrefs(install_prefs, &out_prefs);
-  EXPECT_FALSE(out_prefs.suppress_first_run_default_browser_prompt);
-}
-
 }  // namespace first_run

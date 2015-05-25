@@ -790,9 +790,7 @@ void AutoImport(
   g_auto_import_state |= AUTO_IMPORT_CALLED;
 }
 
-void DoPostImportTasks(Profile* profile,
-                       bool make_chrome_default_for_user,
-                       bool suppress_first_run_default_browser_prompt) {
+void DoPostImportTasks(Profile* profile, bool make_chrome_default_for_user) {
   // Only set default browser after import as auto import relies on the current
   // default browser to know what to import from.
   ProcessDefaultBrowserPolicy(make_chrome_default_for_user);
@@ -805,9 +803,7 @@ void DoPostImportTasks(Profile* profile,
   SetShouldShowWelcomePage();
   SetShouldDoPersonalDataManagerFirstRun();
 
-  internal::DoPostImportPlatformSpecificTasks(
-      profile,
-      suppress_first_run_default_browser_prompt);
+  internal::DoPostImportPlatformSpecificTasks(profile);
 }
 
 uint16 auto_import_state() {

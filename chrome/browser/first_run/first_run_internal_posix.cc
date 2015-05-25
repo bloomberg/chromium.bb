@@ -21,18 +21,14 @@
 namespace first_run {
 namespace internal {
 
-void DoPostImportPlatformSpecificTasks(
-    Profile* profile,
-    bool suppress_first_run_default_browser_prompt) {
+void DoPostImportPlatformSpecificTasks(Profile* profile) {
 #if !defined(OS_CHROMEOS)
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = base::PathExists(local_state_path);
   // Launch the first run dialog only for certain builds, and only if the user
   // has not already set preferences.
-  if (internal::IsOrganicFirstRun() &&
-      !local_state_file_exists &&
-      !suppress_first_run_default_browser_prompt) {
+  if (internal::IsOrganicFirstRun() && !local_state_file_exists) {
     if (ShowFirstRunDialog(profile))
       startup_metric_utils::SetNonBrowserUIDisplayed();
   }
