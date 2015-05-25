@@ -56,11 +56,9 @@ LayoutMenuList::LayoutMenuList(Element* element)
     , m_buttonText(nullptr)
     , m_innerBlock(nullptr)
     , m_optionsChanged(true)
-    , m_isEmpty(false)
-    , m_hasUpdatedActiveOption(false)
-    , m_popupIsVisible(false)
     , m_optionsWidth(0)
     , m_lastActiveIndex(-1)
+    , m_popupIsVisible(false)
     , m_indexToSelectOnCancel(-1)
 {
     ASSERT(isHTMLSelectElement(element));
@@ -97,14 +95,6 @@ void LayoutMenuList::createInnerBlock()
     // Create an anonymous block.
     ASSERT(!firstChild());
     m_innerBlock = createAnonymousBlock();
-
-    m_buttonText = new LayoutText(&document(), StringImpl::empty());
-    // We need to set the text explicitly though it was specified in the
-    // constructor because LayoutText doesn't refer to the text
-    // specified in the constructor in a case of re-transforming.
-    m_buttonText->setStyle(mutableStyle());
-    m_innerBlock->addChild(m_buttonText);
-
     adjustInnerStyle();
     LayoutFlexibleBox::addChild(m_innerBlock);
 }
@@ -146,6 +136,7 @@ inline HTMLSelectElement* LayoutMenuList::selectElement() const
 
 void LayoutMenuList::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
+    createInnerBlock();
     m_innerBlock->addChild(newChild, beforeChild);
     ASSERT(m_innerBlock == firstChild());
 
@@ -167,11 +158,10 @@ void LayoutMenuList::styleDidChange(StyleDifference diff, const ComputedStyle* o
 {
     LayoutBlock::styleDidChange(diff, oldStyle);
 
-    if (!m_innerBlock)
-        createInnerBlock();
-
-    m_buttonText->setStyle(mutableStyle());
-    adjustInnerStyle();
+    if (m_buttonText)
+        m_buttonText->setStyle(mutableStyle());
+    if (m_innerBlock) // LayoutBlock handled updating the anonymous block's style.
+        adjustInnerStyle();
 
     bool fontChanged = !oldStyle || oldStyle->font() != style()->font();
     if (fontChanged)
@@ -297,23 +287,40 @@ void LayoutMenuList::setTextFromOption(int optionIndex)
 void LayoutMenuList::setText(const String& s)
 {
     if (s.isEmpty()) {
-        // FIXME: This is a hack. We need the select to have the same baseline positioning as
-        // any surrounding text. Wihtout any content, we align the bottom of the select to the bottom
-        // of the text. With content (In this case the faked " ") we correctly align the middle of
-        // the select to the middle of the text. It should be possible to remove this, just set
-        // s.impl() into the text and have things align correctly ...  crbug.com/485982
-        m_isEmpty = true;
-        m_buttonText->setText(StringImpl::create(" ", 1), true);
+        if (!m_buttonText || !m_buttonText->isBR()) {
+            // FIXME: We should not modify the structure of the layout tree
+            // during layout. crbug.com/370462
+            DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
+            if (m_buttonText)
+                m_buttonText->destroy();
+            m_buttonText = new LayoutBR(&document());
+            m_buttonText->setStyle(mutableStyle());
+            addChild(m_buttonText);
+        }
     } else {
-        m_isEmpty = false;
-        m_buttonText->setText(s.impl(), true);
+        if (m_buttonText && !m_buttonText->isBR()) {
+            m_buttonText->setText(s.impl(), true);
+        } else {
+            // FIXME: We should not modify the structure of the layout tree
+            // during layout. crbug.com/370462
+            DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
+            if (m_buttonText)
+                m_buttonText->destroy();
+            m_buttonText = new LayoutText(&document(), s.impl());
+            m_buttonText->setStyle(mutableStyle());
+            // We need to set the text explicitly though it was specified in the
+            // constructor because LayoutText doesn't refer to the text
+            // specified in the constructor in a case of re-transforming.
+            m_buttonText->setText(s.impl(), true);
+            addChild(m_buttonText);
+        }
+        adjustInnerStyle();
     }
-    adjustInnerStyle();
 }
 
 String LayoutMenuList::text() const
 {
-    return m_buttonText && !m_isEmpty ? m_buttonText->text() : String();
+    return m_buttonText ? m_buttonText->text() : String();
 }
 
 LayoutRect LayoutMenuList::controlClipRect(const LayoutPoint& additionalOffset) const
@@ -346,6 +353,10 @@ void LayoutMenuList::showPopup()
     if (document().frameHost()->chrome().hasOpenedPopup())
         return;
 
+    // Create m_innerBlock here so it ends up as the first child.
+    // This is important because otherwise we might try to create m_innerBlock
+    // inside the showPopup call and it would fail.
+    createInnerBlock();
     if (!m_popup)
         m_popup = document().frameHost()->chrome().createPopupMenu(*document().frame(), this);
     m_popupIsVisible = true;
@@ -356,6 +367,7 @@ void LayoutMenuList::showPopup()
     m_popup->show(quad, size, select->optionToListIndex(select->selectedIndex()));
     if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->didShowMenuListPopup(this);
+
 }
 
 void LayoutMenuList::hidePopup()
@@ -423,14 +435,6 @@ void LayoutMenuList::didUpdateActiveOption(int optionIndex)
     int listIndex = select->optionToListIndex(optionIndex);
     if (listIndex < 0 || listIndex >= static_cast<int>(select->listItems().size()))
         return;
-
-    // We skip sending accessiblity notifications for the very first option, otherwise
-    // we get extra focus and select events that are undesired.
-    if (!m_hasUpdatedActiveOption) {
-        m_hasUpdatedActiveOption = true;
-        return;
-    }
-
     document().existingAXObjectCache()->handleUpdateActiveMenuOption(this, optionIndex);
 }
 
