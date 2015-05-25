@@ -5028,7 +5028,7 @@ static inline bool mightBeRGB(const CharacterType* characters, unsigned length)
 }
 
 template <typename CharacterType>
-static inline bool fastParseColorInternal(RGBA32& rgb, const CharacterType* characters, unsigned length , bool strict)
+static inline bool fastParseColorInternal(RGBA32& rgb, const CharacterType* characters, unsigned length, bool strict)
 {
     CSSPrimitiveValue::UnitType expect = CSSPrimitiveValue::CSS_UNKNOWN;
 
@@ -5251,9 +5251,13 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
         while (color.length() < 6)
             color = "0" + color;
         return fastParseColor(c, color, false);
-    } else if (value->unit == CSSParserValue::HexColor || value->unit == CSSPrimitiveValue::CSS_IDENT) {
-        if (!fastParseColor(c, value->string, !acceptQuirkyColors && value->unit == CSSPrimitiveValue::CSS_IDENT))
+    } else if (value->unit == CSSPrimitiveValue::CSS_IDENT) {
+        if (!fastParseColor(c, value->string, !acceptQuirkyColors))
             return false;
+    } else if (value->unit == CSSParserValue::HexColor) {
+        if (value->string.is8Bit())
+            return Color::parseHexColor(value->string.characters8(), value->string.length(), c);
+        return Color::parseHexColor(value->string.characters16(), value->string.length(), c);
     } else if (value->unit == CSSParserValue::Function &&
                 value->function->args != 0 &&
                 value->function->args->size() == 5 /* rgb + two commas */ &&

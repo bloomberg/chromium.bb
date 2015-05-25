@@ -170,15 +170,6 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
             break;
         }
         case HashToken:
-            // FIXME: Move this logic to the property parser
-            // This check prevents us from allowing #red and similar
-            for (size_t i = 0; i < token.value().length(); ++i) {
-                if (!isASCIIHexDigit(token.value()[i])) {
-                    destroyAndClear();
-                    return;
-                }
-            }
-            // fallthrough
         case StringToken:
         case UrlToken: {
             value.id = CSSValueInvalid;
