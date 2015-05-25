@@ -4,6 +4,7 @@
 
 #include "net/quic/test_tools/quic_session_peer.h"
 
+#include "base/stl_util.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/reliable_quic_stream.h"
 
@@ -56,6 +57,37 @@ QuicDataStream* QuicSessionPeer::GetIncomingDataStream(
 map<QuicStreamId, QuicStreamOffset>&
 QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(QuicSession* session) {
   return session->locally_closed_streams_highest_offset_;
+}
+
+// static
+bool QuicSessionPeer::IsStreamClosed(QuicSession* session, QuicStreamId id) {
+  DCHECK_NE(0u, id);
+  return session->IsClosedStream(id);
+}
+
+// static
+bool QuicSessionPeer::IsStreamCreated(QuicSession* session, QuicStreamId id) {
+  DCHECK_NE(0u, id);
+  return ContainsKey(session->stream_map_, id);
+}
+
+// static
+bool QuicSessionPeer::IsStreamImplicitlyCreated(QuicSession* session,
+                                                QuicStreamId id) {
+  DCHECK_NE(0u, id);
+  return ContainsKey(session->implicitly_created_streams_, id);
+}
+
+// static
+bool QuicSessionPeer::IsStreamUncreated(QuicSession* session, QuicStreamId id) {
+  DCHECK_NE(0u, id);
+  if (id % 2 == session->next_stream_id_ % 2) {
+    // locally-created stream.
+    return id >= session->next_stream_id_;
+  } else {
+    // peer-created stream.
+    return id > session->largest_peer_created_stream_id_;
+  }
 }
 
 }  // namespace test

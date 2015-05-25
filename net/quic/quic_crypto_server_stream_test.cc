@@ -210,10 +210,14 @@ TEST_P(QuicCryptoServerStreamTest, StatelessRejectAfterCHLO) {
   EXPECT_FALSE(server_stream_->encryption_established());
   EXPECT_FALSE(server_stream_->handshake_confirmed());
 
-  // Check the client state to make sure that it received a
-  // server-designated connection id.
+  // Check the client state to make sure that it received a server-designated
+  // connection id.
   QuicCryptoClientConfig::CachedState* client_state =
       client_crypto_config_.LookupOrCreate(server_id_);
+
+  ASSERT_TRUE(client_state->has_server_nonce());
+  ASSERT_FALSE(client_state->GetNextServerNonce().empty());
+  ASSERT_FALSE(client_state->has_server_nonce());
 
   ASSERT_TRUE(client_state->has_server_designated_connection_id());
   const QuicConnectionId server_designated_connection_id =
@@ -260,34 +264,11 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   InitializeFakeClient(/* supports_stateless_rejects= */ true);
 
   client_stream_->CryptoConnect();
-  if (AsyncStrikeRegisterVerification()) {
-    EXPECT_FALSE(client_stream_->handshake_confirmed());
-    EXPECT_FALSE(server_stream_->handshake_confirmed());
 
-    // Advance the handshake.  Expect that the server will be stuck
-    // waiting for client nonce verification to complete.
-    pair<size_t, size_t> messages_moved = CryptoTestUtils::AdvanceHandshake(
-        client_connection_, client_stream_.get(), 0, server_connection_,
-        server_stream_.get(), 0);
-    EXPECT_EQ(1u, messages_moved.first);
-    EXPECT_EQ(0u, messages_moved.second);
-    EXPECT_EQ(1, strike_register_client_->PendingVerifications());
-    EXPECT_FALSE(client_stream_->handshake_confirmed());
-    EXPECT_FALSE(server_stream_->handshake_confirmed());
-
-    // The server handshake completes once the nonce verification completes.
-    strike_register_client_->RunPendingVerifications();
-    EXPECT_FALSE(client_stream_->handshake_confirmed());
-    EXPECT_TRUE(server_stream_->handshake_confirmed());
-
-    messages_moved = CryptoTestUtils::AdvanceHandshake(
-        client_connection_, client_stream_.get(), messages_moved.first,
-        server_connection_, server_stream_.get(), messages_moved.second);
-    EXPECT_EQ(1u, messages_moved.first);
-    EXPECT_EQ(1u, messages_moved.second);
-  } else {
-    AdvanceHandshakeWithFakeClient();
-  }
+  // In the stateless case, the second handshake contains a server-nonce, so the
+  // AsyncStrikeRegisterVerification() case will still succeed (unlike a 0-RTT
+  // handshake).
+  AdvanceHandshakeWithFakeClient();
 
   // On the second round, encryption will be established.
   EXPECT_TRUE(server_stream_->encryption_established());
@@ -299,8 +280,8 @@ TEST_P(QuicCryptoServerStreamTest, NoStatelessRejectIfNoClientSupport) {
                               true);
   server_stream_->set_use_stateless_rejects_if_peer_supported(true);
 
-  // The server is configured to use stateless rejects, but the client
-  // does not support it.
+  // The server is configured to use stateless rejects, but the client does not
+  // support it.
   InitializeFakeClient(/* supports_stateless_rejects= */ false);
   AdvanceHandshakeWithFakeClient();
 
@@ -335,8 +316,8 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
     EXPECT_FALSE(client_stream_->handshake_confirmed());
     EXPECT_FALSE(server_stream_->handshake_confirmed());
 
-    // Advance the handshake.  Expect that the server will be stuck
-    // waiting for client nonce verification to complete.
+    // Advance the handshake.  Expect that the server will be stuck waiting for
+    // client nonce verification to complete.
     pair<size_t, size_t> messages_moved = CryptoTestUtils::AdvanceHandshake(
         client_connection_, client_stream_.get(), 0, server_connection_,
         server_stream_.get(), 0);

@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
   if (!client.Connect()) {
     net::QuicErrorCode error = client.session()->error();
     if (FLAGS_version_mismatch_ok && error == net::QUIC_INVALID_VERSION) {
-      cout << "Server talks QUIC, but none of the versions supoorted by "
+      cout << "Server talks QUIC, but none of the versions supported by "
            << "this client: " << QuicVersionVectorToString(versions) << endl;
       // Version mismatch is not deemed a failure.
       return 0;

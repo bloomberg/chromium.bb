@@ -109,10 +109,8 @@ WriteResult TestWriterFactory::PerConnectionPacketWriter::WritePacket(
   // in a different way, so TestWriterFactory::OnPacketSent might never be
   // called.
   factory_->current_writer_ = this;
-  return QuicPerConnectionPacketWriter::WritePacket(buffer,
-                                                    buf_len,
-                                                    self_address,
-                                                    peer_address);
+  return QuicPerConnectionPacketWriter::WritePacket(buffer, buf_len,
+                                                    self_address, peer_address);
 }
 
 MockTimeWaitListManager::MockTimeWaitListManager(

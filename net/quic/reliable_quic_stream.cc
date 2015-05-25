@@ -157,7 +157,7 @@ void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
     fin_received_ = true;
   }
 
-  // This count include duplicate data received.
+  // This count includes duplicate data received.
   size_t frame_payload_size = frame.data.TotalBufferSize();
   stream_bytes_read_ += frame_payload_size;
 

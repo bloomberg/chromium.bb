@@ -59,6 +59,7 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
   // ReliableQuicStream implementation
   void OnClose() override;
   uint32 ProcessRawData(const char* data, uint32 data_len) override;
+
   // By default, this is the same as priority(), however it allows streams
   // to temporarily alter effective priority.   For example if a SPDY stream has
   // compressed but not written headers it can write the headers with a higher

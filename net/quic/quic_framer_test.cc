@@ -31,6 +31,7 @@ using std::pair;
 using std::string;
 using std::vector;
 using testing::Return;
+using testing::Truly;
 using testing::_;
 
 namespace net {
@@ -4404,6 +4405,81 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+}
+
+static char kTestString[] = "At least 20 characters.";
+static QuicStreamId kTestQuicStreamId = 1;
+static bool ExpectedStreamFrame(const QuicStreamFrame& frame) {
+  scoped_ptr<string> data(frame.GetDataAsString());
+  return frame.stream_id == kTestQuicStreamId && !frame.fin &&
+         frame.offset == 0 && *data == kTestString;
+  // FIN is hard-coded false in ConstructEncryptedPacket.
+  // Offset 0 is hard-coded in ConstructEncryptedPacket.
+}
+
+// Verify that the packet returned by ConstructEncryptedPacket() can be properly
+// parsed by the framer.
+TEST_P(QuicFramerTest, ConstructEncryptedPacket) {
+  // Since we are using ConstructEncryptedPacket, we have to set the framer's
+  // crypto to be Null.
+  framer_.SetDecrypter(QuicDecrypter::Create(kNULL), ENCRYPTION_NONE);
+  framer_.SetEncrypter(ENCRYPTION_NONE, QuicEncrypter::Create(kNULL));
+
+  scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
+      42, false, false, kTestQuicStreamId, kTestString,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_SEQUENCE_NUMBER));
+
+  MockFramerVisitor visitor;
+  framer_.set_visitor(&visitor);
+  EXPECT_CALL(visitor, OnPacket()).Times(1);
+  EXPECT_CALL(visitor, OnUnauthenticatedPublicHeader(_))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(visitor, OnUnauthenticatedHeader(_))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(visitor, OnPacketHeader(_)).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(visitor, OnDecryptedPacket(_)).Times(1);
+  EXPECT_CALL(visitor, OnError(_)).Times(0);
+  EXPECT_CALL(visitor, OnStreamFrame(_)).Times(0);
+  EXPECT_CALL(visitor, OnStreamFrame(Truly(ExpectedStreamFrame))).Times(1);
+  EXPECT_CALL(visitor, OnAckFrame(_)).Times(0);
+  EXPECT_CALL(visitor, OnPacketComplete()).Times(1);
+
+  EXPECT_TRUE(framer_.ProcessPacket(*packet));
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+}
+
+// Verify that the packet returned by ConstructMisFramedEncryptedPacket()
+// does cause the framer to return an error.
+TEST_P(QuicFramerTest, ConstructMisFramedEncryptedPacket) {
+  // Since we are using ConstructEncryptedPacket, we have to set the framer's
+  // crypto to be Null.
+  framer_.SetDecrypter(QuicDecrypter::Create(kNULL), ENCRYPTION_NONE);
+  framer_.SetEncrypter(ENCRYPTION_NONE, QuicEncrypter::Create(kNULL));
+
+  scoped_ptr<QuicEncryptedPacket> packet(ConstructMisFramedEncryptedPacket(
+      42, false, false, kTestQuicStreamId, kTestString,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_SEQUENCE_NUMBER, nullptr));
+
+  MockFramerVisitor visitor;
+  framer_.set_visitor(&visitor);
+  EXPECT_CALL(visitor, OnPacket()).Times(1);
+  EXPECT_CALL(visitor, OnUnauthenticatedPublicHeader(_))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(visitor, OnUnauthenticatedHeader(_))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(visitor, OnPacketHeader(_)).Times(0);
+  EXPECT_CALL(visitor, OnDecryptedPacket(_)).Times(1);
+  EXPECT_CALL(visitor, OnError(_)).Times(1);
+  EXPECT_CALL(visitor, OnStreamFrame(_)).Times(0);
+  EXPECT_CALL(visitor, OnAckFrame(_)).Times(0);
+  EXPECT_CALL(visitor, OnPacketComplete()).Times(0);
+
+  EXPECT_FALSE(framer_.ProcessPacket(*packet));
+  EXPECT_EQ(QUIC_INVALID_PACKET_HEADER, framer_.error());
 }
 
 }  // namespace test

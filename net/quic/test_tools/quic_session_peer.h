@@ -33,6 +33,13 @@ class QuicSessionPeer {
   static std::map<QuicStreamId, QuicStreamOffset>&
   GetLocallyClosedStreamsHighestOffset(QuicSession* session);
 
+  // Discern the state of a stream.  Exactly one of these should be true at a
+  // time for any stream id > 0 (other than the special streams 1 and 3).
+  static bool IsStreamClosed(QuicSession* session, QuicStreamId id);
+  static bool IsStreamCreated(QuicSession* session, QuicStreamId id);
+  static bool IsStreamImplicitlyCreated(QuicSession* session, QuicStreamId id);
+  static bool IsStreamUncreated(QuicSession* session, QuicStreamId id);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSessionPeer);
 };

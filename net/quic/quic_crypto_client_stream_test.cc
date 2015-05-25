@@ -277,6 +277,8 @@ TEST_F(QuicCryptoClientStreamStatelessTest, StatelessReject) {
   // complete, and can be used for a subsequent successful handshake.
   EXPECT_TRUE(client_state->IsComplete(QuicWallTime::FromUNIXSeconds(0)));
 
+  ASSERT_TRUE(client_state->has_server_nonce());
+  ASSERT_FALSE(client_state->GetNextServerNonce().empty());
   ASSERT_TRUE(client_state->has_server_designated_connection_id());
   QuicConnectionId server_designated_id =
       client_state->GetNextServerDesignatedConnectionId();

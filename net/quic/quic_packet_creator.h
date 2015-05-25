@@ -52,6 +52,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // return true if an FEC group is open.
   bool ShouldSendFec(bool force_close) const;
 
+  // Resets (closes) the FEC group. This method should only be called on a
+  // packet boundary.
+  void ResetFecGroup();
+
   // Returns true if an FEC packet is under construction.
   bool IsFecGroupOpen() const;
 

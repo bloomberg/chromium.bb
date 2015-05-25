@@ -76,11 +76,10 @@ QuicClient::QuicClient(IPEndPoint server_address,
 
 QuicClient::~QuicClient() {
   if (connected()) {
-    session()->connection()->SendConnectionClosePacket(
-        QUIC_PEER_GOING_AWAY, "");
+    session()->connection()->SendConnectionClose(QUIC_PEER_GOING_AWAY);
   }
 
-  CleanUpUDPSocket();
+  CleanUpUDPSocketImpl();
 }
 
 bool QuicClient::Initialize() {
@@ -237,9 +236,14 @@ void QuicClient::Disconnect() {
 }
 
 void QuicClient::CleanUpUDPSocket() {
+  CleanUpUDPSocketImpl();
+}
+
+void QuicClient::CleanUpUDPSocketImpl() {
   if (fd_ > -1) {
     epoll_server_->UnregisterFD(fd_);
-    close(fd_);
+    int rc = close(fd_);
+    DCHECK_EQ(0, rc);
     fd_ = -1;
   }
 }

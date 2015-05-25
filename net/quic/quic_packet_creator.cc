@@ -124,6 +124,15 @@ bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
           fec_group_->NumReceivedPackets() >= max_packets_per_fec_group_);
 }
 
+void QuicPacketCreator::ResetFecGroup() {
+  if (HasPendingFrames()) {
+    LOG_IF(DFATAL, packet_size_ != 0)
+        << "Cannot reset FEC group with pending frames.";
+    return;
+  }
+  fec_group_.reset(nullptr);
+}
+
 bool QuicPacketCreator::IsFecGroupOpen() const {
   return fec_group_.get() != nullptr;
 }

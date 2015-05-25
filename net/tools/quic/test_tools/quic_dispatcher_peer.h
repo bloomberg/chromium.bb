@@ -37,6 +37,10 @@ class QuicDispatcherPeer {
   static QuicDispatcher::WriteBlockedList* GetWriteBlockedList(
       QuicDispatcher* dispatcher);
 
+  // Get the dispatcher's record of the last error reported to its framer
+  // visitor's OnError() method.  Then set that record to QUIC_NO_ERROR.
+  static QuicErrorCode GetAndClearLastError(QuicDispatcher* dispatcher);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcherPeer);
 };

@@ -576,13 +576,22 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   header.fec_flag = false;
   header.is_in_fec_group = NOT_IN_FEC_GROUP;
   header.fec_group = 0;
+  QuicStreamFrame stream_frame(1, false, 0, MakeIOVector(data));
+  QuicFrame frame(&stream_frame);
   QuicFrames frames;
-  QuicFramer framer(versions ? *versions : QuicSupportedVersions(),
+  frames.push_back(frame);
+  QuicFramer framer(versions != nullptr ? *versions : QuicSupportedVersions(),
                     QuicTime::Zero(), Perspective::IS_CLIENT);
-  // Build a packet with zero frames, which is an error.
+
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   EXPECT_TRUE(packet != nullptr);
+
+  // Now set the packet's private flags byte to 0xFF, which is an invalid value.
+  reinterpret_cast<unsigned char*>(
+      packet->mutable_data())[GetStartOfEncryptedData(
+      connection_id_length, version_flag, sequence_number_length)] = 0xFF;
+
   char buffer[kMaxPacketSize];
   scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPacket(
       ENCRYPTION_NONE, sequence_number, *packet, buffer, kMaxPacketSize));

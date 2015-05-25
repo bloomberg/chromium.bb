@@ -6,11 +6,10 @@
 #define NET_QUIC_TEST_TOOLS_QUIC_FRAMER_PEER_H_
 
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
-
-class QuicFramer;
 
 namespace test {
 

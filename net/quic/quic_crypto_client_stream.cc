@@ -10,6 +10,7 @@
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/quic_client_session_base.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
 
@@ -299,6 +300,15 @@ void QuicCryptoClientStream::DoSendCHLO(
     next_state_ = STATE_RECV_REJ;
     SendHandshakeMessage(out);
     return;
+  }
+
+  // If the server nonce is empty, copy over the server nonce from a previous
+  // SREJ, if there is one.
+  if (FLAGS_enable_quic_stateless_reject_support &&
+      crypto_negotiated_params_.server_nonce.empty() &&
+      cached->has_server_nonce()) {
+    crypto_negotiated_params_.server_nonce = cached->GetNextServerNonce();
+    DCHECK(!crypto_negotiated_params_.server_nonce.empty());
   }
 
   string error_details;

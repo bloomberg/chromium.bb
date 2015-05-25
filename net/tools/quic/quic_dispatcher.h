@@ -84,7 +84,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   void InitializeWithWriter(QuicPacketWriter* writer);
 
   // Process the incoming packet by creating a new session, passing it to
-  // an existing session, or passing it to the TimeWaitListManager.
+  // an existing session, or passing it to the time wait list.
   void ProcessPacket(const IPEndPoint& server_address,
                      const IPEndPoint& client_address,
                      const QuicEncryptedPacket& packet) override;
@@ -148,11 +148,11 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   virtual bool OnUnauthenticatedPublicHeader(
       const QuicPacketPublicHeader& header);
 
-  // Values to be returned by ValidityChecks() to indicate what should
-  // be done with a packet.  Fates with greater values are considered
-  // to be higher priority, in that if one validity test indicates a
-  // lower-valued fate and another validity test indicates a
-  // higher-valued fate, the higher-valued fate should be obeyed.
+  // Values to be returned by ValidityChecks() to indicate what should be done
+  // with a packet.  Fates with greater values are considered to be higher
+  // priority, in that if one validity check indicates a lower-valued fate and
+  // another validity check indicates a higher-valued fate, the higher-valued
+  // fate should be obeyed.
   enum QuicPacketFate {
     // Process the packet normally, which is usually to establish a connection.
     kFateProcess,
@@ -202,6 +202,8 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   const QuicConnection::PacketWriterFactory& connection_writer_factory() {
     return connection_writer_factory_;
   }
+
+  void SetLastError(QuicErrorCode error);
 
  private:
   class QuicFramerVisitor;
@@ -276,6 +278,10 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   QuicFramer framer_;
   scoped_ptr<QuicFramerVisitor> framer_visitor_;
+
+  // The last error set by SetLastError(), which is called by
+  // framer_visitor_->OnError().
+  QuicErrorCode last_error_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcher);
 };

@@ -66,6 +66,8 @@ void GenerateBody(std::string* body, int length);
 
 // Create an encrypted packet for testing.
 // If versions == nullptr, uses &QuicSupportedVersions().
+// Note that the packet is encrypted with NullEncrypter, so to decrypt the
+// constructed packet, the framer must be set to use NullDecrypter.
 QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
@@ -96,8 +98,11 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicPacketSequenceNumber sequence_number,
     const std::string& data);
 
-// Create an encrypted packet for testing whose data portion contains
-// a framing error.
+// Create an encrypted packet for testing whose data portion erroneous.
+// The specific way the data portion is erroneous is not specified, but
+// it is an error that QuicFramer detects.
+// Note that the packet is encrypted with NullEncrypter, so to decrypt the
+// constructed packet, the framer must be set to use NullDecrypter.
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,

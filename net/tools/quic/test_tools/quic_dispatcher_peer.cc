@@ -49,6 +49,14 @@ QuicDispatcher::WriteBlockedList* QuicDispatcherPeer::GetWriteBlockedList(
   return &dispatcher->write_blocked_list_;
 }
 
+// static
+QuicErrorCode QuicDispatcherPeer::GetAndClearLastError(
+    QuicDispatcher* dispatcher) {
+  QuicErrorCode ret = dispatcher->last_error_;
+  dispatcher->last_error_ = QUIC_NO_ERROR;
+  return ret;
+}
+
 }  // namespace test
 }  // namespace tools
 }  // namespace net

@@ -1099,6 +1099,83 @@ TEST_P(QuicPacketCreatorTest, EntropyFlag) {
   delete frames_[0].stream_frame;
 }
 
+TEST_P(QuicPacketCreatorTest, ResetFecGroup) {
+  // Enable FEC protection, and send FEC packet every 6 packets.
+  EXPECT_TRUE(SwitchFecProtectionOn(6));
+  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
+  char buffer[kMaxPacketSize];
+  SerializedPacket serialized =
+      creator_.SerializeAllFrames(frames_, buffer, kMaxPacketSize);
+  delete serialized.packet;
+
+  EXPECT_TRUE(creator_.IsFecProtected());
+  EXPECT_TRUE(creator_.IsFecGroupOpen());
+  // We do not have enough packets in the FEC group to trigger an FEC packet.
+  EXPECT_FALSE(creator_.ShouldSendFec(/*force_close=*/false));
+  // Should return true since there are packets in the FEC group.
+  EXPECT_TRUE(creator_.ShouldSendFec(/*force_close=*/true));
+
+  // Close the FEC Group.
+  creator_.ResetFecGroup();
+  EXPECT_TRUE(creator_.IsFecProtected());
+  EXPECT_FALSE(creator_.IsFecGroupOpen());
+  // We do not have enough packets in the FEC group to trigger an FEC packet.
+  EXPECT_FALSE(creator_.ShouldSendFec(/*force_close=*/false));
+  // Confirm that there is no FEC packet under construction.
+  EXPECT_FALSE(creator_.ShouldSendFec(/*force_close=*/true));
+
+  EXPECT_DFATAL(serialized = creator_.SerializeFec(buffer, kMaxPacketSize),
+                "SerializeFEC called but no group or zero packets in group.");
+  delete serialized.packet;
+
+  // Start a new FEC packet.
+  serialized = creator_.SerializeAllFrames(frames_, buffer, kMaxPacketSize);
+  delete frames_[0].stream_frame;
+  delete serialized.packet;
+
+  EXPECT_TRUE(creator_.IsFecProtected());
+  EXPECT_TRUE(creator_.IsFecGroupOpen());
+  // We do not have enough packets in the FEC group to trigger an FEC packet.
+  EXPECT_FALSE(creator_.ShouldSendFec(/*force_close=*/false));
+  // Should return true since there are packets in the FEC group.
+  EXPECT_TRUE(creator_.ShouldSendFec(/*force_close=*/true));
+
+  // Should return false since we do not have enough packets in the FEC group to
+  // trigger an FEC packet.
+  ASSERT_FALSE(creator_.ShouldSendFec(/*force_close=*/false));
+  // Should return true since there are packets in the FEC group.
+  ASSERT_TRUE(creator_.ShouldSendFec(/*force_close=*/true));
+
+  serialized = creator_.SerializeFec(buffer, kMaxPacketSize);
+  ASSERT_EQ(3u, serialized.sequence_number);
+  delete serialized.packet;
+}
+
+TEST_P(QuicPacketCreatorTest, ResetFecGroupWithQueuedFrames) {
+  // Add a stream frame to the creator.
+  QuicFrame frame;
+  size_t consumed =
+      creator_.CreateStreamFrame(1u, MakeIOVector("test"), 0u, false, &frame);
+  EXPECT_EQ(4u, consumed);
+  ASSERT_TRUE(frame.stream_frame);
+  EXPECT_TRUE(creator_.AddSavedFrame(frame));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  EXPECT_DFATAL(creator_.ResetFecGroup(),
+                "Cannot reset FEC group with pending frames.");
+
+  // Serialize packet for transmission.
+  char buffer[kMaxPacketSize];
+  SerializedPacket serialized =
+      creator_.SerializePacket(buffer, kMaxPacketSize);
+  delete serialized.packet;
+  delete serialized.retransmittable_frames;
+  EXPECT_FALSE(creator_.HasPendingFrames());
+
+  // Close the FEC Group.
+  creator_.ResetFecGroup();
+  EXPECT_FALSE(creator_.IsFecGroupOpen());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

@@ -152,9 +152,6 @@ void QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
       continue;
     }
     stream->OnStreamFrame(frames[i]);
-    if (!connection_->connected()) {
-      return;
-    }
   }
 }
 
@@ -633,12 +630,9 @@ QuicDataStream* QuicSession::GetIncomingDataStream(QuicStreamId stream_id) {
       }
       return nullptr;
     }
-    if (largest_peer_created_stream_id_ == 0) {
-      if (perspective() == Perspective::IS_SERVER) {
-        largest_peer_created_stream_id_ = 3;
-      } else {
-        largest_peer_created_stream_id_ = 1;
-      }
+    if (largest_peer_created_stream_id_ == 0 &&
+        perspective() == Perspective::IS_SERVER) {
+      largest_peer_created_stream_id_ = 3;
     }
     for (QuicStreamId id = largest_peer_created_stream_id_ + 2;
          id < stream_id;
