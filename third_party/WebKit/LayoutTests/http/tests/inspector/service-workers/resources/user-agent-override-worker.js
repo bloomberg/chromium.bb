@@ -11,6 +11,6 @@ function dumpUserAgent()
         });
 }
 
-self.oninstall = function(event) {
+self.onmessage = function(event) {
     dumpUserAgent();
 };

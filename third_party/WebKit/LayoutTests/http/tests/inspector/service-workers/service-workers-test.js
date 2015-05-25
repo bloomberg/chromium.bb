@@ -10,6 +10,11 @@ InspectorTest.unregisterServiceWorker = function(scope)
     return InspectorTest.invokePageFunctionPromise("unregisterServiceWorker", [scope]);
 }
 
+InspectorTest.postToServiceWorker = function(scope, message)
+{
+    return InspectorTest.invokePageFunctionPromise("postToServiceWorker", [scope, message]);
+}
+
 function replaceInnerTextAll(rootElement, selectors, replacementString)
 {
     var elements = rootElement.querySelectorAll(selectors);
@@ -67,6 +72,12 @@ function registerServiceWorker(resolve, reject, script, scope)
             registrations[scope] = reg;
             resolve();
         }, reject);
+}
+
+function postToServiceWorker(resolve, reject, scope, message)
+{
+    registrations[scope].active.postMessage(message);
+    resolve();
 }
 
 function unregisterServiceWorker(resolve, reject, scope)

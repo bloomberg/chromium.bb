@@ -7,17 +7,38 @@
 <script>
 function test()
 {
+    function waitForTarget()
+    {
+        return new Promise(function(resolve) {
+            var sniffer = {
+                targetAdded: function(target)
+                {
+                    if (target.isServiceWorker()) {
+                        resolve();
+                        WebInspector.targetManager.unobserveTargets(sniffer);
+                    }
+                },
+
+                targetRemoved: function(e)
+                {
+                }
+            };
+            WebInspector.targetManager.observeTargets(sniffer);
+        });
+    }
+
     function waitForConsoleMessage(regex)
     {
         return new Promise(function(resolve) {
-            function sniff(msg)
+            WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, sniff);
+
+            function sniff(e)
             {
-                if (regex.test(msg.messageText))
-                    resolve(msg);
-                else
-                    InspectorTest.addConsoleSniffer(sniff);
+                if (e.data && regex.test(e.data.messageText)) {
+                    resolve(e.data);
+                    WebInspector.multitargetConsoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, sniff);
+                }
             }
-            InspectorTest.addConsoleSniffer(sniff);
         });
     }
 
@@ -30,29 +51,28 @@ function test()
     WebInspector.overridesSupport.setEmulationEnabled(true);
     WebInspector.overridesSupport.settings.userAgent.set(userAgentString);
 
-    var consolePromise = waitForConsoleMessage(/HTTP_USER_AGENT/);
-    InspectorTest.registerServiceWorker(scriptURL, scope);
-
-    consolePromise
+    InspectorTest.registerServiceWorker(scriptURL, scope)
+        .then(waitForTarget)
+        .then(InspectorTest.postToServiceWorker.bind(InspectorTest, scope, "message"))
+        .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
         .then(function(msg) {
-            var expected = 'HTTP_USER_AGENT: ' + userAgentString;
-            InspectorTest.assertEquals(expected, msg.messageText, "User-Agent with override");
-
+            InspectorTest.addResult("Overriden user agent: " + msg.messageText);
             InspectorTest.addResult("Disable emulation");
             WebInspector.overridesSupport.setEmulationEnabled(false);
-            var consolePromise2 = waitForConsoleMessage(/HTTP_USER_AGENT/);
-            InspectorTest.registerServiceWorker(scriptURL + '?2', scope);
-            return consolePromise2;
-        }).then(function(msg) {
-            var expected = 'HTTP_USER_AGENT: ' + originalUserAgent;
-            InspectorTest.assertEquals(expected, msg.messageText, "User-Agent without override");
-
-            InspectorTest.unregisterServiceWorker(scope)
-                .then(function() {
-                    InspectorTest.addResult("Test complete");
-                    InspectorTest.completeTest();
-                });
-        }).catch(function(err) {
+            return InspectorTest.registerServiceWorker(scriptURL + '?2', scope);
+        })
+        .then(waitForTarget)
+        .then(InspectorTest.postToServiceWorker.bind(InspectorTest, scope, "message"))
+        .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
+        .then(function(msg) {
+            InspectorTest.addResult("User agent without override is correct: " + (msg.messageText != userAgentString));
+            return InspectorTest.unregisterServiceWorker(scope);
+        })
+        .then(function() {
+            InspectorTest.addResult("Test complete");
+            InspectorTest.completeTest();
+        })
+        .catch(function(err) {
             console.log(err);
             InspectorTest.completeTest();
         });
