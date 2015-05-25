@@ -50,7 +50,6 @@ class MAYBE_WebRtcBrowserTest : public WebRtcContentBrowserTest {
     GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
     NavigateToURL(shell(), url);
 
-    DisableOpusIfOnAndroid();
     ExecuteJavascriptAndWaitForOk(javascript);
   }
 
@@ -373,6 +372,13 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        EstablishAudioOnlyCallAndEnsureAudioIsPlaying) {
   MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
       "callAndEnsureAudioIsPlaying(%s, {audio:true});",
+      kUseLenientAudioChecking));
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       EstablishIsac16KCallAndEnsureAudioIsPlaying) {
+  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
+      "callWithIsac16KAndEnsureAudioIsPlaying(%s, {audio:true});",
       kUseLenientAudioChecking));
 }
 

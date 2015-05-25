@@ -84,7 +84,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
 
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
-  DisableOpusIfOnAndroid();
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
 
   EXPECT_FALSE(base::PathExists(dump_file));
@@ -143,7 +142,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest,
 
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
-  DisableOpusIfOnAndroid();
   ExecuteJavascriptAndWaitForOk("call({video: true, audio: true});");
 
   // Add file extensions that we expect to be added.

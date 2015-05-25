@@ -97,14 +97,6 @@ std::string WebRtcContentBrowserTest::GenerateGetUserMediaCall(
       max_frame_rate);
 }
 
-void WebRtcContentBrowserTest::DisableOpusIfOnAndroid() {
-#if defined(OS_ANDROID)
-  // Always force iSAC 16K on Android for now (Opus is broken).
-  EXPECT_EQ("isac-forced",
-            ExecuteJavascriptAndReturnResult("forceIsac16KInSdp();"));
-#endif
-}
-
 bool WebRtcContentBrowserTest::OnWinXp() const {
 #if defined(OS_WIN)
   return base::win::GetVersion() <= base::win::VERSION_XP;

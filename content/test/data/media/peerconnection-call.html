@@ -27,26 +27,6 @@
   var onLocalDescriptionError = function(error) { failTest(error); };
   var onRemoteDescriptionError = function(error) { failTest(error); };
 
-  // Temporary measure to be able to force iSAC 16K where needed, particularly
-  // on Android. This applies to every test which is why it's implemented like
-  // this.
-  var maybeForceIsac16K = function(sdp) { return sdp; };
-  function forceIsac16KInSdp() {
-    maybeForceIsac16K = function(sdp) {
-      if (sdp.search('m=audio') == -1)
-        return sdp;
-
-      sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
-                        'm=audio $1 RTP/SAVPF 103 126\r\n');
-      sdp = sdp.replace('a=fmtp:111 minptime=10', 'a=fmtp:103 minptime=10');
-      if (sdp.search('a=rtpmap:103 ISAC/16000') == -1)
-        failTest('Missing iSAC 16K codec on Android; cannot force codec.');
-
-      return sdp;
-    };
-    sendValueToTest('isac-forced');
-  }
-
   // When using external SDES, the crypto key is chosen by javascript.
   var EXTERNAL_SDES_LINES = {
     'audio': 'a=crypto:1 AES_CM_128_HMAC_SHA1_80 ' +
@@ -381,6 +361,19 @@
     };
 
     waitForConnectionToStabilize(gFirstConnection, onCallEstablished);
+  }
+
+  function callWithIsac16KAndEnsureAudioIsPlaying(beLenient, constraints) {
+    transformSdp = function(sdp) {
+      sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
+                        'm=audio $1 RTP/SAVPF 103 126\r\n');
+      sdp = sdp.replace('a=fmtp:111 minptime=10', 'a=fmtp:103 minptime=10');
+      if (sdp.search('a=rtpmap:103 ISAC/16000') == -1)
+        failTest('Missing iSAC 16K codec on Android; cannot force codec.');
+
+      return sdp;
+    }
+    callAndEnsureAudioIsPlaying(beLenient, constraints);
   }
 
   function enableRemoteVideo(peerConnection, enabled) {
@@ -792,7 +785,7 @@
   }
 
   function onOfferCreated(offer, caller, callee) {
-    offer.sdp = maybeForceIsac16K(transformSdp(offer.sdp));
+    offer.sdp = transformSdp(offer.sdp);
     console.log('Offer:\n' + offer.sdp);
     caller.setLocalDescription(offer, function() {
       assertEquals('have-local-offer', caller.signalingState);
@@ -869,7 +862,7 @@
   }
 
   function onAnswerCreated(answer, caller, callee) {
-    answer.sdp = maybeForceIsac16K(transformSdp(answer.sdp));
+    answer.sdp = transformSdp(answer.sdp);
     console.log('Answer:\n' + answer.sdp);
     callee.setLocalDescription(answer,
                                function () {
