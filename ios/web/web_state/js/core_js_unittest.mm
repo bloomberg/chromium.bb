@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
-// Unit tests for the ios_internal/web/web_state/js/core.js JavaScript file.
+// Unit tests for ios/web/web_state/js/resources/core.js.
 
 namespace {
 
@@ -245,13 +245,13 @@ WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, Stringify) {
 // Tests the javascript of the url of the an image present in the DOM.
 WEB_TEST_F(CoreJSUIWebViewTest, CoreJSWKWebViewTest, LinkOfImage) {
   // A page with a large image surrounded by a link.
-  const char image[] =
+  static const char image[] =
       "<a href='%s'><img width=400 height=400 src='foo'></img></a>";
 
   // A page with a link to a destination URL.
   this->LoadHtml(base::StringPrintf(image, "http://destination"));
-  NSString* result;
-  result = this->RunJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
+  NSString* result =
+      this->RunJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
   std::string expected_result =
       R"({"src":"foo","referrerPolicy":"default",)"
       R"("href":"http://destination/"})";

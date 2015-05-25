@@ -49,6 +49,7 @@
         'url_util_unittest.cc',
         'weak_nsobject_counter_unittest.mm',
         'web_state/crw_web_view_scroll_view_proxy_unittest.mm',
+        'web_state/js/common_js_unittest.mm',
         'web_state/js/core_js_unittest.mm',
         'web_state/js/credential_util_unittest.mm',
         'web_state/js/crw_js_early_script_manager_unittest.mm',
