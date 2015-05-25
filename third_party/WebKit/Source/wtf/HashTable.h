@@ -1227,10 +1227,6 @@ template<typename Key, typename Value, typename Extractor, typename HashFunction
             typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
             HashTableType* table = reinterpret_cast<HashTableType*>(closure);
             ASSERT(table->m_table);
-            // This is run as part of weak processing after full
-            // marking. The backing store is therefore marked if
-            // we get here.
-            ASSERT(visitor->isHeapObjectAlive(table->m_table));
             // Now perform weak processing (this is a no-op if the backing
             // was accessible through an iterator and was already marked
             // strongly).
@@ -1312,6 +1308,9 @@ template<typename Key, typename Value, typename Extractor, typename HashFunction
             Allocator::markNoTracing(visitor, m_table);
         } else {
             Allocator::registerDelayedMarkNoTracing(visitor, m_table);
+            // Since we're delaying marking this HashTable, it is possible
+            // that the registerWeakMembers is called multiple times (in rare
+            // cases). However, it shouldn't cause any issue.
             Allocator::registerWeakMembers(visitor, this, m_table, WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::process);
         }
         if (ShouldBeTraced<Traits>::value) {
