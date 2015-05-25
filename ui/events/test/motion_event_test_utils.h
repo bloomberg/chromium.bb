@@ -55,7 +55,7 @@ struct MockMotionEvent : public MotionEventGeneric {
 
  private:
   void PushPointer(float x, float y);
-  void ResolvePointers();
+  void UpdatePointersAndID();
 };
 
 std::string ToString(const MotionEvent& event);

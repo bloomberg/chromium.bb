@@ -61,12 +61,9 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   bool ProcessTouchEventPreDispatch(TouchEvent* event,
                                     GestureConsumer* consumer) override;
 
-  Gestures* AckAsyncTouchEvent(ui::EventResult result,
-                               GestureConsumer* consumer) override;
-
-  Gestures* AckSyncTouchEvent(const uint64 unique_event_id,
-                              ui::EventResult result,
-                              GestureConsumer* consumer) override;
+  Gestures* AckTouchEvent(uint32 unique_event_id,
+                          ui::EventResult result,
+                          GestureConsumer* consumer) override;
 
   bool CleanupStateForConsumer(GestureConsumer* consumer) override;
   void AddGestureEventHelper(GestureEventHelper* helper) override;

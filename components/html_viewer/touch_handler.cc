@@ -162,7 +162,8 @@ void TouchHandler::SendMotionEventToGestureProvider() {
 
   blink::WebTouchEvent web_event = ui::CreateWebTouchEventFromMotionEvent(
       *current_motion_event_, result.did_generate_scroll);
-  gesture_provider_.OnSyncTouchEventAck(web_view_->handleInputEvent(web_event));
+  gesture_provider_.OnTouchEventAck(web_event.uniqueTouchEventId,
+                                    web_view_->handleInputEvent(web_event));
 }
 
 void TouchHandler::PostProcessMotionEvent(const mojo::Event& event) {

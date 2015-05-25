@@ -18,9 +18,7 @@ GestureProviderAura::GestureProviderAura(GestureProviderAuraClient* client)
       filtered_gesture_provider_(
           GetGestureProviderConfig(GestureProviderConfigType::CURRENT_PLATFORM),
           this),
-      handling_event_(false),
-      last_unique_touch_event_id_(
-          std::numeric_limits<unsigned long long>::max()) {
+      handling_event_(false) {
   filtered_gesture_provider_.SetDoubleTapSupportForPlatformEnabled(false);
 }
 
@@ -29,8 +27,6 @@ GestureProviderAura::~GestureProviderAura() {}
 bool GestureProviderAura::OnTouchEvent(TouchEvent* event) {
   if (!pointer_state_.OnTouch(*event))
     return false;
-
-  last_unique_touch_event_id_ = event->unique_event_id();
 
   auto result = filtered_gesture_provider_.OnTouchEvent(pointer_state_);
   if (!result.succeeded)
@@ -41,20 +37,12 @@ bool GestureProviderAura::OnTouchEvent(TouchEvent* event) {
   return true;
 }
 
-void GestureProviderAura::OnAsyncTouchEventAck(bool event_consumed) {
+void GestureProviderAura::OnTouchEventAck(uint32 unique_event_id,
+                                          bool event_consumed) {
   DCHECK(pending_gestures_.empty());
   DCHECK(!handling_event_);
   base::AutoReset<bool> handling_event(&handling_event_, true);
-  filtered_gesture_provider_.OnAsyncTouchEventAck(event_consumed);
-}
-
-void GestureProviderAura::OnSyncTouchEventAck(const uint64 unique_event_id,
-                                              bool event_consumed) {
-  DCHECK_EQ(last_unique_touch_event_id_, unique_event_id);
-  DCHECK(pending_gestures_.empty());
-  DCHECK(!handling_event_);
-  base::AutoReset<bool> handling_event(&handling_event_, true);
-  filtered_gesture_provider_.OnSyncTouchEventAck(event_consumed);
+  filtered_gesture_provider_.OnTouchEventAck(unique_event_id, event_consumed);
 }
 
 void GestureProviderAura::OnGestureEvent(

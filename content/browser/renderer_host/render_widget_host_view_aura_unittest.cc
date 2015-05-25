@@ -217,9 +217,10 @@ class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {
       : WindowEventDispatcher(host),
         processed_touch_event_count_(0) {}
 
-  void ProcessedTouchEvent(aura::Window* window,
+  void ProcessedTouchEvent(uint32 unique_event_id,
+                           aura::Window* window,
                            ui::EventResult result) override {
-    WindowEventDispatcher::ProcessedTouchEvent(window, result);
+    WindowEventDispatcher::ProcessedTouchEvent(unique_event_id, window, result);
     processed_touch_event_count_++;
   }
 

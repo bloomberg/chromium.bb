@@ -234,14 +234,16 @@ void TouchEmulator::HandleEmulatedTouchEvent(blink::WebTouchEvent event) {
   const bool event_consumed = true;
   // Block emulated event when emulated native stream is active.
   if (native_stream_active_sequence_count_) {
-    gesture_provider_->OnSyncTouchEventAck(event_consumed);
+    gesture_provider_->OnTouchEventAck(event.uniqueTouchEventId,
+                                       event_consumed);
     return;
   }
 
   bool is_sequence_start = WebTouchEventTraits::IsTouchSequenceStart(event);
   // Do not allow middle-sequence event to pass through, if start was blocked.
   if (!emulated_stream_active_sequence_count_ && !is_sequence_start) {
-    gesture_provider_->OnSyncTouchEventAck(event_consumed);
+    gesture_provider_->OnTouchEventAck(event.uniqueTouchEventId,
+                                       event_consumed);
     return;
   }
 
@@ -261,7 +263,8 @@ bool TouchEmulator::HandleTouchEventAck(
 
     const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
     if (gesture_provider_)
-      gesture_provider_->OnAsyncTouchEventAck(event_consumed);
+      gesture_provider_->OnTouchEventAck(event.uniqueTouchEventId,
+                                         event_consumed);
     return true;
   }
 

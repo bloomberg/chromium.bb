@@ -145,7 +145,7 @@ void RenderWidgetHostViewGuest::ProcessAckedTouchEvent(
       continue;
 
     scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-    gestures.reset(gesture_recognizer_->AckSyncTouchEvent(
+    gestures.reset(gesture_recognizer_->AckTouchEvent(
         (*iter)->unique_event_id(), result, this));
     ProcessGestures(gestures.get());
   }

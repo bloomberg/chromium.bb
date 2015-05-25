@@ -48,6 +48,7 @@ TEST_F(FilteredGestureProviderTest, TouchDidGenerateScroll) {
   EXPECT_TRUE(result.did_generate_scroll);
 
   // No movement should indicate no scrolling.
+  event.MovePoint(0, kSlopRegion * 2.f, 0);
   result = provider.OnTouchEvent(event);
   EXPECT_TRUE(result.succeeded);
   EXPECT_FALSE(result.did_generate_scroll);

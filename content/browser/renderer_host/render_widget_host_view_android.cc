@@ -1589,7 +1589,8 @@ gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
   const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
-  gesture_provider_.OnAsyncTouchEventAck(event_consumed);
+  gesture_provider_.OnTouchEventAck(touch.event.uniqueTouchEventId,
+                                    event_consumed);
 }
 
 void RenderWidgetHostViewAndroid::GestureEventAck(

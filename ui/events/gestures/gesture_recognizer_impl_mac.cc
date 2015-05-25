@@ -22,13 +22,9 @@ class GestureRecognizerImplMac : public GestureRecognizer {
     return false;
   }
 
-  Gestures* AckAsyncTouchEvent(ui::EventResult result,
-                               GestureConsumer* consumer) override {
-    return NULL;
-  }
-  Gestures* AckSyncTouchEvent(const uint64 unique_event_id,
-                              ui::EventResult result,
-                              GestureConsumer* consumer) override {
+  Gestures* AckTouchEvent(uint32 unique_event_id,
+                          ui::EventResult result,
+                          GestureConsumer* consumer) override {
     return NULL;
   }
   bool CleanupStateForConsumer(GestureConsumer* consumer) override {

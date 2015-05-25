@@ -47,12 +47,9 @@ FilteredGestureProvider::OnTouchEvent(const MotionEvent& event) {
   return result;
 }
 
-void FilteredGestureProvider::OnAsyncTouchEventAck(bool event_consumed) {
-  gesture_filter_.OnTouchEventAckForQueueFront(event_consumed);
-}
-
-void FilteredGestureProvider::OnSyncTouchEventAck(bool event_consumed) {
-  gesture_filter_.OnTouchEventAckForQueueBack(event_consumed);
+void FilteredGestureProvider::OnTouchEventAck(uint32 unique_event_id,
+                                              bool event_consumed) {
+  gesture_filter_.OnTouchEventAck(unique_event_id, event_consumed);
 }
 
 void FilteredGestureProvider::ResetDetection() {

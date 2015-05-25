@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "base/logging.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/bitset_32.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
@@ -77,6 +78,7 @@ MockMotionEvent::MockMotionEvent(Action action,
                                  const std::vector<gfx::PointF>& positions) {
   set_action(action);
   set_event_time(time);
+  set_unique_event_id(ui::GetNextTouchEventId());
   if (action == ACTION_POINTER_UP || action == ACTION_POINTER_DOWN)
     set_action_index(static_cast<int>(positions.size()) - 1);
   for (size_t i = 0; i < positions.size(); ++i)
@@ -91,7 +93,7 @@ MockMotionEvent::~MockMotionEvent() {
 }
 
 void MockMotionEvent::PressPoint(float x, float y) {
-  ResolvePointers();
+  UpdatePointersAndID();
   PushPointer(x, y);
   if (GetPointerCount() > 1) {
     set_action_index(static_cast<int>(GetPointerCount()) - 1);
@@ -102,7 +104,7 @@ void MockMotionEvent::PressPoint(float x, float y) {
 }
 
 void MockMotionEvent::MovePoint(size_t index, float x, float y) {
-  ResolvePointers();
+  UpdatePointersAndID();
   DCHECK_LT(index, GetPointerCount());
   PointerProperties& p = pointer(index);
   float dx = x - p.x;
@@ -115,7 +117,7 @@ void MockMotionEvent::MovePoint(size_t index, float x, float y) {
 }
 
 void MockMotionEvent::ReleasePoint() {
-  ResolvePointers();
+  UpdatePointersAndID();
   DCHECK_GT(GetPointerCount(), 0U);
   if (GetPointerCount() > 1) {
     set_action_index(static_cast<int>(GetPointerCount()) - 1);
@@ -126,7 +128,7 @@ void MockMotionEvent::ReleasePoint() {
 }
 
 void MockMotionEvent::CancelPoint() {
-  ResolvePointers();
+  UpdatePointersAndID();
   DCHECK_GT(GetPointerCount(), 0U);
   set_action(ACTION_CANCEL);
 }
@@ -153,8 +155,9 @@ void MockMotionEvent::PushPointer(float x, float y) {
       CreatePointer(x, y, static_cast<int>(GetPointerCount())));
 }
 
-void MockMotionEvent::ResolvePointers() {
+void MockMotionEvent::UpdatePointersAndID() {
   set_action_index(-1);
+  set_unique_event_id(ui::GetNextTouchEventId());
   switch (GetAction()) {
     case ACTION_UP:
     case ACTION_POINTER_UP:

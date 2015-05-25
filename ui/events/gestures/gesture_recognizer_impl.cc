@@ -238,27 +238,13 @@ bool GestureRecognizerImpl::ProcessTouchEventPreDispatch(
   return gesture_provider->OnTouchEvent(event);
 }
 
-// TODO(tdresser): we should take a unique_event_id here, and validate
-// that the correct event is being acked. See crbug.com/457669 for
-// details.
-GestureRecognizer::Gestures*
-GestureRecognizerImpl::AckAsyncTouchEvent(
+GestureRecognizer::Gestures* GestureRecognizerImpl::AckTouchEvent(
+    uint32 unique_event_id,
     ui::EventResult result,
     GestureConsumer* consumer) {
   GestureProviderAura* gesture_provider =
       GetGestureProviderForConsumer(consumer);
-  gesture_provider->OnAsyncTouchEventAck(result != ER_UNHANDLED);
-  return gesture_provider->GetAndResetPendingGestures();
-}
-
-GestureRecognizer::Gestures* GestureRecognizerImpl::AckSyncTouchEvent(
-    const uint64 unique_event_id,
-    ui::EventResult result,
-    GestureConsumer* consumer) {
-  GestureProviderAura* gesture_provider =
-      GetGestureProviderForConsumer(consumer);
-  gesture_provider->OnSyncTouchEventAck(unique_event_id,
-                                        result != ER_UNHANDLED);
+  gesture_provider->OnTouchEventAck(unique_event_id, result != ER_UNHANDLED);
   return gesture_provider->GetAndResetPendingGestures();
 }
 

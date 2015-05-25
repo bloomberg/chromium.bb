@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <list>
+
 #include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
@@ -26,8 +28,6 @@
 #include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-
-#include <queue>
 
 namespace aura {
 namespace test {
@@ -340,13 +340,15 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
   void OnTouchEvent(ui::TouchEvent* event) override {
     event->DisableSynchronousHandling();
     if (synchronous_ack_for_next_event_ != AckState::PENDING) {
-      ui::GestureRecognizer::Get()->AckSyncTouchEvent(
+      ui::GestureRecognizer::Get()->AckTouchEvent(
           event->unique_event_id(),
           synchronous_ack_for_next_event_ == AckState::CONSUMED
               ? ui::ER_CONSUMED
               : ui::ER_UNHANDLED,
           window_);
       synchronous_ack_for_next_event_ = AckState::PENDING;
+    } else {
+      sent_events_ids_.push_back(event->unique_event_id());
     }
   }
 
@@ -373,13 +375,20 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
   };
 
   void ReceivedAckImpl(bool prevent_defaulted) {
+    DCHECK(!sent_events_ids_.empty());
+    if (sent_events_ids_.empty())
+      return;
+    uint32 sent_event_id = sent_events_ids_.front();
+    sent_events_ids_.pop_front();
     dispatcher_->ProcessedTouchEvent(
-        window_, prevent_defaulted ? ui::ER_HANDLED : ui::ER_UNHANDLED);
+        sent_event_id, window_,
+        prevent_defaulted ? ui::ER_HANDLED : ui::ER_UNHANDLED);
   }
 
   Window* window_;
   WindowEventDispatcher* dispatcher_;
   AckState synchronous_ack_for_next_event_;
+  std::list<uint32> sent_events_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(QueueTouchEventDelegate);
 };

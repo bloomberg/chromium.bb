@@ -166,12 +166,22 @@ TouchDispositionGestureFilter::OnGesturePacket(
     return SUCCESS;
   }
 
+  // Check the packet's unique_touch_event_id is valid and unique.
+  if (!Tail().empty()) {
+    DCHECK_NE(packet.unique_touch_event_id(),
+              Tail().back().unique_touch_event_id());
+  }
+  if (!Head().empty()) {
+    DCHECK_NE(packet.unique_touch_event_id(),
+              Head().front().unique_touch_event_id());
+  }
+
   Tail().push(packet);
   return SUCCESS;
 }
 
-void TouchDispositionGestureFilter::OnTouchEventAckForQueueFront(
-    bool event_consumed) {
+void TouchDispositionGestureFilter::OnTouchEventAck(uint32 unique_event_id,
+                                                    bool event_consumed) {
   // Spurious asynchronous acks should not trigger a crash.
   if (IsEmpty() || (Head().empty() && sequences_.size() == 1))
     return;
@@ -179,23 +189,17 @@ void TouchDispositionGestureFilter::OnTouchEventAckForQueueFront(
   if (Head().empty())
     PopGestureSequence();
 
-  Head().front().Ack(event_consumed);
-  SendAckedEvents();
-}
-
-void TouchDispositionGestureFilter::OnTouchEventAckForQueueBack(
-    bool event_consumed) {
-  // Make sure there is an event to ack.
-  CHECK(!IsEmpty());
-  CHECK(!Tail().empty());
-
-  Tail().back().Ack(event_consumed);
-
-  if (Head().empty())
-    PopGestureSequence();
-
-  if (sequences_.size() == 1 && Tail().size() == 1)
+  if (!Tail().empty() &&
+      Tail().back().unique_touch_event_id() == unique_event_id) {
+    Tail().back().Ack(event_consumed);
+    if (sequences_.size() == 1 && Tail().size() == 1)
+      SendAckedEvents();
+  } else {
+    DCHECK(!Head().empty());
+    DCHECK_EQ(Head().front().unique_touch_event_id(), unique_event_id);
+    Head().front().Ack(event_consumed);
     SendAckedEvents();
+  }
 }
 
 void TouchDispositionGestureFilter::SendAckedEvents() {

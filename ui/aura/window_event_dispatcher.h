@@ -92,7 +92,9 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // event processing, so that gesture events can be properly created and
   // dispatched. |event|'s location should be in the dispatcher's coordinate
   // space, in DIPs.
-  virtual void ProcessedTouchEvent(Window* window, ui::EventResult result);
+  virtual void ProcessedTouchEvent(uint32 unique_event_id,
+                                   Window* window,
+                                   ui::EventResult result);
 
   // These methods are used to defer the processing of mouse/touch events
   // related to resize. A client (typically a RenderWidgetHostViewAura) can call

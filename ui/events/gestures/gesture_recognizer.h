@@ -33,15 +33,11 @@ class EVENTS_EXPORT GestureRecognizer {
                                             GestureConsumer* consumer) = 0;
 
   // Returns a list of zero or more GestureEvents. The caller is responsible for
-  // freeing the returned events. Acks the first gesture packet in the queue.
-  virtual Gestures* AckAsyncTouchEvent(ui::EventResult result,
-                                       GestureConsumer* consumer) = 0;
-
-  // Returns a list of zero or more GestureEvents. The caller is responsible for
-  // freeing the returned events. Acks the last gesture packet in the queue.
-  virtual Gestures* AckSyncTouchEvent(const uint64 unique_event_id,
-                                      ui::EventResult result,
-                                      GestureConsumer* consumer) = 0;
+  // freeing the returned events. Acks the gesture packet in the queue which
+  // matches with unique_event_id.
+  virtual Gestures* AckTouchEvent(uint32 unique_event_id,
+                                  ui::EventResult result,
+                                  GestureConsumer* consumer) = 0;
 
   // This is called when the consumer is destroyed. So this should cleanup any
   // internal state maintained for |consumer|. Returns true iff there was
