@@ -128,8 +128,8 @@ IN_PROC_BROWSER_TEST_P(ProxyAuthOnUserBoardScreenTest,
 
 INSTANTIATE_TEST_CASE_P(ProxyAuthOnUserBoardScreenTestSuite,
                         ProxyAuthOnUserBoardScreenTest,
-// Times out under MSan: https://crbug.com/481651
-#if defined(MEMORY_SANITIZER)
+// Times out under MSan, and is flaky for ASan: https://crbug.com/481651
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
                         testing::Values(false));
 #else
                         testing::Bool());
