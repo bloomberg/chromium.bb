@@ -133,13 +133,6 @@ static int submit(unsigned ndw, unsigned ip)
 	if (r)
 		return r;
 
-	r = amdgpu_cs_alloc_ib(context_handle, IB_SIZE, &ib_result);
-	if (r)
-		return r;
-
-	ib_handle = ib_result.handle;
-	ib_cpu = ib_result.cpu;
-
 	fence_status.context = context_handle;
 	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
 	fence_status.ip_type = ip;

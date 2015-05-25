@@ -210,6 +210,12 @@ static void amdgpu_command_submission_gfx_separate_ibs(void)
 	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
 	CU_ASSERT_EQUAL(r, 0);
 
+	r = amdgpu_cs_free_ib(ib_result.handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_cs_free_ib(ib_result_ce.handle);
+	CU_ASSERT_EQUAL(r, 0);
+
 	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }
@@ -264,6 +270,9 @@ static void amdgpu_command_submission_gfx_shared_ib(void)
 	fence_status.ip_type = AMDGPU_HW_IP_GFX;
 
 	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_cs_free_ib(ib_result.handle);
 	CU_ASSERT_EQUAL(r, 0);
 
 	r = amdgpu_cs_ctx_free(context_handle);
@@ -323,6 +332,9 @@ static void amdgpu_command_submission_compute(void)
 		fence_status.ring = instance;
 
 		r = amdgpu_cs_query_fence_status(&fence_status, &expired);
+		CU_ASSERT_EQUAL(r, 0);
+
+		r = amdgpu_cs_free_ib(ib_result.handle);
 		CU_ASSERT_EQUAL(r, 0);
 	}
 
@@ -394,6 +406,9 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
 	CU_ASSERT_EQUAL(r, 0);
 	CU_ASSERT_EQUAL(expired, true);
+
+	r = amdgpu_cs_free_ib(ib_result.handle);
+	CU_ASSERT_EQUAL(r, 0);
 }
 
 static void amdgpu_command_submission_sdma_write_linear(void)
