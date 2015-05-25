@@ -141,6 +141,7 @@ void V4L2CaptureDelegate::BufferTracker::AddMmapedPlane(uint8_t* const start,
   Plane plane;
   plane.start = start;
   plane.length = length;
+  plane.payload_size = 0;
   planes_.push_back(plane);
 }
 
@@ -399,6 +400,7 @@ void V4L2CaptureDelegate::DoCapture() {
       return;
     }
 
+    SetPayloadSize(buffer_tracker_pool_[buffer.index], buffer);
     SendBuffer(buffer_tracker_pool_[buffer.index], video_fmt_);
 
     if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QBUF, &buffer)) < 0) {

@@ -29,14 +29,18 @@ void V4L2CaptureDelegateSinglePlane::FinishFillingV4L2Buffer(
   buffer->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 }
 
+void V4L2CaptureDelegateSinglePlane::SetPayloadSize(
+    const scoped_refptr<BufferTracker>& buffer_tracker,
+    const v4l2_buffer& buffer) const {
+  buffer_tracker->SetPlanePayloadSize(0, buffer.bytesused);
+}
+
 void V4L2CaptureDelegateSinglePlane::SendBuffer(
     const scoped_refptr<BufferTracker>& buffer_tracker,
     const v4l2_format& format) const {
-  const size_t data_length = format.fmt.pix.sizeimage;
-  DCHECK_GE(data_length, capture_format().ImageAllocationSize());
   client()->OnIncomingCapturedData(
       buffer_tracker->GetPlaneStart(0),
-      data_length,
+      buffer_tracker->GetPlanePayloadSize(0),
       capture_format(),
       rotation(),
       base::TimeTicks::Now());

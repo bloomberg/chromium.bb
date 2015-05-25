@@ -45,6 +45,8 @@ class V4L2CaptureDelegateMultiPlane final : public V4L2CaptureDelegate {
                       uint32_t height,
                       uint32_t pixelformat_fourcc) const override;
   void FinishFillingV4L2Buffer(v4l2_buffer* buffer) const override;
+  void SetPayloadSize(const scoped_refptr<BufferTracker>& buffer_tracker,
+                      const v4l2_buffer& buffer) const override;
   void SendBuffer(const scoped_refptr<BufferTracker>& buffer_tracker,
                   const v4l2_format& format) const override;
 

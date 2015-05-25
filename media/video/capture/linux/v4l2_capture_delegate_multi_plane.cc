@@ -55,6 +55,13 @@ void V4L2CaptureDelegateMultiPlane::FinishFillingV4L2Buffer(
   buffer->m.planes = v4l2_planes_.data();
 }
 
+void V4L2CaptureDelegateMultiPlane::SetPayloadSize(
+    const scoped_refptr<BufferTracker>& buffer_tracker,
+    const v4l2_buffer& buffer) const {
+  for (size_t i = 0; i < v4l2_planes_.size() && i < buffer.length; i++)
+    buffer_tracker->SetPlanePayloadSize(i, buffer.m.planes[i].bytesused);
+}
+
 void V4L2CaptureDelegateMultiPlane::SendBuffer(
     const scoped_refptr<BufferTracker>& buffer_tracker,
     const v4l2_format& format) const {

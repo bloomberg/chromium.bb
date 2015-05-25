@@ -66,6 +66,17 @@ class V4L2CaptureDelegate
       return planes_[plane].start;
     }
 
+    size_t GetPlanePayloadSize(size_t plane) const {
+      DCHECK_LT(plane, planes_.size());
+      return planes_[plane].payload_size;
+    }
+
+    void SetPlanePayloadSize(size_t plane, size_t payload_size) {
+      DCHECK_LT(plane, planes_.size());
+      DCHECK_LE(payload_size, planes_[plane].length);
+      planes_[plane].payload_size = payload_size;
+    }
+
    protected:
     friend class base::RefCounted<BufferTracker>;
     virtual ~BufferTracker();
@@ -76,6 +87,7 @@ class V4L2CaptureDelegate
     struct Plane {
       uint8_t* start;
       size_t length;
+      size_t payload_size;
     };
     std::vector<Plane> planes_;
   };
@@ -97,6 +109,12 @@ class V4L2CaptureDelegate
 
   // Finish filling |buffer| struct with planarity-dependent data.
   virtual void FinishFillingV4L2Buffer(v4l2_buffer* buffer) const = 0;
+
+  // Fetch the number of bytes occupied by data in |buffer| and set to
+  // |buffer_tracker|.
+  virtual void SetPayloadSize(
+      const scoped_refptr<BufferTracker>& buffer_tracker,
+      const v4l2_buffer& buffer) const = 0;
 
   // Sends the captured |buffer| to the |client_|, synchronously.
   virtual void SendBuffer(
