@@ -4,6 +4,8 @@
 
 #include "ui/ozone/demo/gl_renderer.h"
 
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -11,7 +13,7 @@
 namespace ui {
 
 GlRenderer::GlRenderer(gfx::AcceleratedWidget widget, const gfx::Size& size)
-    : RendererBase(widget, size) {
+    : RendererBase(widget, size), weak_ptr_factory_(this) {
 }
 
 GlRenderer::~GlRenderer() {
@@ -38,6 +40,7 @@ bool GlRenderer::Initialize() {
     return false;
   }
 
+  PostRenderFrameTask();
   return true;
 }
 
@@ -50,8 +53,15 @@ void GlRenderer::RenderFrame() {
   glClearColor(1 - fraction, fraction, 0.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  if (!surface_->SwapBuffers())
+  if (!surface_->SwapBuffersAsync(base::Bind(&GlRenderer::PostRenderFrameTask,
+                                             weak_ptr_factory_.GetWeakPtr())))
     LOG(FATAL) << "Failed to swap buffers";
+}
+
+void GlRenderer::PostRenderFrameTask() {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&GlRenderer::RenderFrame, weak_ptr_factory_.GetWeakPtr()));
 }
 
 scoped_refptr<gfx::GLSurface> GlRenderer::CreateSurface() {

@@ -7,7 +7,13 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "ui/ozone/demo/renderer_base.h"
+
+namespace gfx {
+class VSyncProvider;
+}  // namespace gfx
 
 namespace ui {
 
@@ -20,10 +26,23 @@ class SoftwareRenderer : public RendererBase {
 
   // Renderer:
   bool Initialize() override;
-  void RenderFrame() override;
 
  private:
+  void RenderFrame();
+
+  void UpdateVSyncParameters(const base::TimeTicks timebase,
+                             const base::TimeDelta interval);
+
   scoped_ptr<SurfaceOzoneCanvas> software_surface_;
+
+  scoped_ptr<gfx::VSyncProvider> vsync_provider_;
+
+  // Timer for animation.
+  base::RepeatingTimer<SoftwareRenderer> timer_;
+
+  base::TimeDelta vsync_period_;
+
+  base::WeakPtrFactory<SoftwareRenderer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareRenderer);
 };

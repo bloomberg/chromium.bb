@@ -5,7 +5,6 @@
 #ifndef UI_OZONE_DEMO_SURFACELESS_GL_RENDERER_H_
 #define UI_OZONE_DEMO_SURFACELESS_GL_RENDERER_H_
 
-#include "base/memory/weak_ptr.h"
 #include "ui/ozone/demo/gl_renderer.h"
 
 namespace gfx {
@@ -26,13 +25,10 @@ class SurfacelessGlRenderer : public GlRenderer {
 
   // Renderer:
   bool Initialize() override;
-  void RenderFrame() override;
 
  private:
-  // Called by swap buffers when the actual swap finished.
-  void OnSwapBuffersAck();
-
   // GlRenderer:
+  void RenderFrame() override;
   scoped_refptr<gfx::GLSurface> CreateSurface() override;
 
   class BufferWrapper {
@@ -59,7 +55,6 @@ class SurfacelessGlRenderer : public GlRenderer {
 
   BufferWrapper buffers_[2];
   int back_buffer_;
-  bool is_swapping_buffers_;
 
   base::WeakPtrFactory<SurfacelessGlRenderer> weak_ptr_factory_;
 

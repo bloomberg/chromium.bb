@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/timer/timer.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/display/types/native_display_observer.h"
@@ -31,8 +30,6 @@
 
 const int kTestWindowWidth = 800;
 const int kTestWindowHeight = 600;
-
-const int kFrameDelayMilliseconds = 16;
 
 const char kDisableGpu[] = "disable-gpu";
 
@@ -133,7 +130,6 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   }
 
   void Quit() {
-    StopAnimation();
     window_manager_->Quit();
   }
 
@@ -161,22 +157,13 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   void StartOnGpu() {
     renderer_ =
         renderer_factory_->CreateRenderer(GetAcceleratedWidget(), GetSize());
-    if (renderer_->Initialize()) {
-      timer_.Start(FROM_HERE,
-                   base::TimeDelta::FromMilliseconds(kFrameDelayMilliseconds),
-                   renderer_.get(), &ui::Renderer::RenderFrame);
-    }
+    renderer_->Initialize();
   }
-
-  void StopAnimation() { timer_.Stop(); }
 
   WindowManager* window_manager_;      // Not owned.
   RendererFactory* renderer_factory_;  // Not owned.
 
   scoped_ptr<ui::Renderer> renderer_;
-
-  // Timer for animation.
-  base::RepeatingTimer<ui::Renderer> timer_;
 
   // Window-related state.
   scoped_ptr<ui::PlatformWindow> platform_window_;

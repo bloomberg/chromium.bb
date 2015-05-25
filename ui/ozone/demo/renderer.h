@@ -12,8 +12,6 @@ class Renderer {
   virtual ~Renderer() {}
 
   virtual bool Initialize() = 0;
-
-  virtual void RenderFrame() = 0;
 };
 
 }  // namespace ui

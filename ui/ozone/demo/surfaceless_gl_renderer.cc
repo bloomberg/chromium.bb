@@ -86,7 +86,6 @@ SurfacelessGlRenderer::SurfacelessGlRenderer(
     : GlRenderer(widget, size),
       buffer_factory_(buffer_factory),
       back_buffer_(0),
-      is_swapping_buffers_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -104,13 +103,11 @@ bool SurfacelessGlRenderer::Initialize() {
     if (!buffers_[i].Initialize(buffer_factory_, widget_, size_))
       return false;
 
+  PostRenderFrameTask();
   return true;
 }
 
 void SurfacelessGlRenderer::RenderFrame() {
-  if (is_swapping_buffers_)
-    return;
-
   float fraction = NextFraction();
 
   context_->MakeCurrent(surface_.get());
@@ -121,16 +118,10 @@ void SurfacelessGlRenderer::RenderFrame() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   buffers_[back_buffer_].SchedulePlane();
-  is_swapping_buffers_ = true;
-  if (!surface_->SwapBuffersAsync(
-          base::Bind(&SurfacelessGlRenderer::OnSwapBuffersAck,
-                     weak_ptr_factory_.GetWeakPtr())))
-    LOG(FATAL) << "Failed to swap buffers";
-}
-
-void SurfacelessGlRenderer::OnSwapBuffersAck() {
-  is_swapping_buffers_ = false;
   back_buffer_ ^= 1;
+  if (!surface_->SwapBuffersAsync(base::Bind(&GlRenderer::PostRenderFrameTask,
+                                             weak_ptr_factory_.GetWeakPtr())))
+    LOG(FATAL) << "Failed to swap buffers";
 }
 
 scoped_refptr<gfx::GLSurface> SurfacelessGlRenderer::CreateSurface() {
