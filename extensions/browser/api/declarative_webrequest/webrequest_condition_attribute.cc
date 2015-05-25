@@ -385,7 +385,7 @@ scoped_ptr<const HeaderMatcher> HeaderMatcher::Create(
         HeaderMatchTest::Create(tests));
     if (header_test.get() == NULL)
       return scoped_ptr<const HeaderMatcher>();
-    header_tests.push_back(header_test.release());
+    header_tests.push_back(header_test.Pass());
   }
 
   return scoped_ptr<const HeaderMatcher>(new HeaderMatcher(&header_tests));
