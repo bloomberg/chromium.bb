@@ -26,9 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#barprop
+
 [
     WillBeGarbageCollected,
 ] interface BarProp {
+    // TODO(philipj): Remove readonly or have it added to the spec:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28697
     readonly attribute boolean visible;
 };
-
