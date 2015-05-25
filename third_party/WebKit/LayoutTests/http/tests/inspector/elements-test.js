@@ -413,14 +413,14 @@ InspectorTest.toggleMatchedStyleProperty = function(propertyName, checked)
 
 InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 {
-    InspectorTest.addSniffer(WebInspector.EventListenersSidebarPane.prototype, "_onEventListeners", listenersArrived);
+    InspectorTest.addSniffer(WebInspector.EventListenersSidebarPane.prototype, "_eventListenersArivedForTest", listenersArrived);
 
     var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
     sidebarPane.expand();
 
     function listenersArrived()
     {
-        var listenerTypes = sidebarPane._treeOutline.rootElement().children();
+        var listenerTypes = sidebarPane._eventListenersView._treeOutline.rootElement().children();
         for (var i = 0; i < listenerTypes.length; ++i) {
             listenerTypes[i].expand();
             var listenerItems = listenerTypes[i].children();
@@ -432,7 +432,7 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 
     function objectsExpanded()
     {
-        var listenerTypes = sidebarPane._treeOutline.rootElement().children();
+        var listenerTypes = sidebarPane._eventListenersView._treeOutline.rootElement().children();
         for (var i = 0; i < listenerTypes.length; ++i) {
             var eventType = listenerTypes[i]._title;
             InspectorTest.addResult("");

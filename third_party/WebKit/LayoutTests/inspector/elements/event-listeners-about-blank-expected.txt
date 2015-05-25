@@ -4,15 +4,11 @@ Tests event listeners output in the Elements sidebar panel when the listeners ar
 
 ======== click ========
 [expanded] bodyevent-listeners-about-blank.html:9
-    attachment: script
-    handler: function f() {}
-    node: body
     useCapture: true
+    handler: function f() {}
 
 ======== hover ========
 [expanded] div#div-in-iframeevent-listeners-about-blank.html:9
-    attachment: script
-    handler: function f() {}
-    node: div#div-in-iframe
     useCapture: true
+    handler: function f() {}
 
