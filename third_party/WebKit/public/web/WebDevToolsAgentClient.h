@@ -46,8 +46,6 @@ public:
     // potential re-attach. |callId| for notifications is 0, |state| for notifications is empty.
     virtual void sendProtocolMessage(int callId, const WebString& response, const WebString& state) { }
 
-    virtual void sendDebuggerOutput(const WebString&) { }
-
     // Returns process id.
     virtual long processId() { return -1; }
 
@@ -67,17 +65,8 @@ public:
     virtual void willEnterDebugLoop() { }
     virtual void didExitDebugLoop() { }
 
-    typedef void (*TraceEventCallback)(char phase, const unsigned char*, const char* name, unsigned long long id,
-        int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
-        unsigned char flags, double timestamp);
-
-    virtual void setTraceEventCallback(const WebString& categoryFilter, TraceEventCallback) { }
-    virtual void resetTraceEventCallback() { }
     virtual void enableTracing(const WebString& categoryFilter) { }
     virtual void disableTracing() { }
-
-    virtual void startGPUEventsRecording() { }
-    virtual void stopGPUEventsRecording() { }
 
 protected:
     ~WebDevToolsAgentClient() { }
