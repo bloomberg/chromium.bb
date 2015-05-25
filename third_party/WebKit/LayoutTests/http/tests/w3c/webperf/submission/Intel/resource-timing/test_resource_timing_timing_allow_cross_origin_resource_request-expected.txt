@@ -4,7 +4,7 @@ This test validates the values in resource timing for a timing-allow-origin cros
 
 
 
-
+This is a testharness.js-based test.
 PASS Starting document.location.hostname is correct (127.0.0.1:8000) 
 PASS redirectStart should be 0 in cross-origin request since no redirect! 
 PASS redirectEnd should be 0 in cross-origin request since no redirect! 
@@ -17,4 +17,5 @@ PASS responseStart should not be 0 in timing-allow cross-origin request!
 PASS secureConnectionStart should be 0 in cross-origin request since no ssl! 
 PASS fetchStart should not be 0 in timing-allow cross-origin request! 
 PASS responseEnd should not be 0 in timing-allow cross-origin request! 
+Harness: the test ran to completion.
 

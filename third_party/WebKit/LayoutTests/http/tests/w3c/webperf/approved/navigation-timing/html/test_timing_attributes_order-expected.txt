@@ -1,19 +1,6 @@
 frame "<!--framePath //<!--frame0-->-->" - has 1 onunload handler(s)
-Description
 
-This test validates the ordering of the window.performance.timing attributes.
-
-This page should be loaded with a yellow background frame below which contains an unload event handler.
-
-After the page loads, the frame is navigated to a new blank page with a green background. At this point, the navigation timeline is verified
-
-This test passes if all of the checks to the frame.window.performance.timing attributes are correct throughout the navigation scenario and the frame below ends with a green background. Otherwise, this test fails.
-
-Setup
-
-
-
-
+ This is a testharness.js-based test.
 PASS window.performance is defined 
 PASS window.performance.timing is defined 
 PASS window.performance.navigation is defined 
@@ -55,4 +42,5 @@ PASS window.performance.timing.unloadEventStart > 0
 PASS window.performance.timing.unloadEventStart >= window.performance.timing.navigationStart 
 PASS window.performance.timing.unloadEventEnd > 0 
 PASS window.performance.timing.unloadEventEnd >= window.performance.timing.unloadEventStart 
+Harness: the test ran to completion.
 

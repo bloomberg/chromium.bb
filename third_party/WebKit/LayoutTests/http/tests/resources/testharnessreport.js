@@ -38,6 +38,19 @@ function convertResult(resultStatus) {
 */
 setup({"output":false});
 
+/* If the test has a meta tag named flags and the content contains "dom", then it's a CSSWG test.
+ */
+function isCSSWGTest() {
+    var flags = document.querySelector('meta[name=flags]'),
+        content = flags ? flags.getAttribute('content') : null;
+
+    return content && content.match(/\bdom\b/);
+}
+
+function isJSTest() {
+    return !!document.querySelector('script[src*="/resources/testharness"]');
+}
+
 /*  Using a callback function, test results will be added to the page in a
 *   manner that allows dumpAsText to produce readable test results
 */
@@ -82,9 +95,30 @@ add_completion_callback(function (tests, harness_status) {
     // Set results element's textContent to the results string
     results.textContent = resultStr;
 
-    // Add results element to document
-    document.body.appendChild(results);
+    function done() {
+        if (self.testRunner) {
+            var logDiv = document.getElementById('log');
+            if ((isCSSWGTest() || isJSTest()) && logDiv) {
+                // Assume it's a CSSWG style test, and anything other than the log div isn't
+                // material to the testrunner output, so should be hidden from the text dump
+                for (var i = 0; i < document.body.children.length; i++) {
+                    if (document.body.children[i] === logDiv) continue;
 
-    if (self.testRunner)
-        testRunner.notifyDone();
+                    document.body.children[i].style.visibility = "hidden";
+                }
+            }
+        }
+
+        // Add results element to document
+        document.body.appendChild(results);
+
+        if (self.testRunner)
+            testRunner.notifyDone();
+    }
+
+    if (!document.body || document.readyState === 'loading') {
+        window.addEventListener('load', done);
+    } else {
+        done();
+    }
 });

@@ -1,7 +1,0 @@
-Description
-
-This test validates that performance.memory exists in shared workers.
-
-
-PASS window.performance.memory in shared workers 
-

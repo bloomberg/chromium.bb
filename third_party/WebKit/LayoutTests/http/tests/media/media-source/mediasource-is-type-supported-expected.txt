@@ -1,4 +1,4 @@
-
+This is a testharness.js-based test.
 PASS Test invalid MIME format "video" 
 PASS Test invalid MIME format "video/" 
 PASS Test invalid MIME format "video/webm" 
@@ -38,4 +38,5 @@ FAIL Test valid MP4 type "video/mp4;codecs="mp4a.40.2"" assert_equals: supported
 FAIL Test valid MP4 type "video/mp4;codecs="avc1.4d001e,mp4a.40.2"" assert_equals: supported expected true but got false
 FAIL Test valid MP4 type "video/mp4;codecs="mp4a.40.2 , avc1.4d001e "" assert_equals: supported expected true but got false
 FAIL Test valid MP4 type "video/mp4;codecs="avc1.4d001e,mp4a.40.5"" assert_equals: supported expected true but got false
+Harness: the test ran to completion.
 

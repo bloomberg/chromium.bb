@@ -3,7 +3,7 @@ Description
 This test validates the values in resource timing for a cross-origin redirect.
 
 
-
+This is a testharness.js-based test.
 PASS Starting document.location.hostname is correct (127.0.0.1:8000) 
 PASS redirectStart should be 0 in cross-origin redirect! 
 PASS redirectEnd should be 0 in cross-origin redirect! 
@@ -16,4 +16,5 @@ PASS responseStart should be 0 in cross-origin redirect!
 PASS secureConnectionStart should be 0 in cross-origin redirect! 
 PASS fetchStart should be greater than 0 in cross-origin redirect! 
 PASS responseEnd should be greater than 0 in cross-origin redirect! 
+Harness: the test ran to completion.
 

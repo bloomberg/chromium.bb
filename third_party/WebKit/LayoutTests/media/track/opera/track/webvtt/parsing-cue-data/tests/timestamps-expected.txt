@@ -1,5 +1,3 @@
-WebVTT cue data parser test timestamps
-
 This is a testharness.js-based test.
 PASS WebVTT cue data parser test timestamps - 54c245f3fbe7a3e25398b13971d44f2bb3a5f947 
 PASS WebVTT cue data parser test timestamps - 5e190a1b4541fcb10e403af111c14ef152fecb0d 

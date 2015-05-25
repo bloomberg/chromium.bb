@@ -1,5 +1,3 @@
-IndexedDB IDL tests
-
 This is a testharness.js-based test.
 FAIL Window interface: attribute indexedDB assert_equals: "indexedDB" must have a getter expected "function" but got "undefined"
 PASS IDBKeyRange interface: existence and properties of interface object 

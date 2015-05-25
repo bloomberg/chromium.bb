@@ -47,6 +47,10 @@ function isCSSWGTest() {
     return content && content.match(/\bdom\b/);
 }
 
+function isJSTest() {
+    return !!document.querySelector('script[src*="/resources/testharness"]');
+}
+
 /*  Using a callback function, test results will be added to the page in a
 *   manner that allows dumpAsText to produce readable test results
 */
@@ -94,7 +98,7 @@ add_completion_callback(function (tests, harness_status) {
     function done() {
         if (self.testRunner) {
             var logDiv = document.getElementById('log');
-            if (isCSSWGTest() && logDiv) {
+            if ((isCSSWGTest() || isJSTest()) && logDiv) {
                 // Assume it's a CSSWG style test, and anything other than the log div isn't
                 // material to the testrunner output, so should be hidden from the text dump
                 for (var i = 0; i < document.body.children.length; i++) {

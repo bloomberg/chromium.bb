@@ -1,49 +1,4 @@
-idlharness test
-
-This test validates the WebIDL included in the Navigation Timing specification.
-
-interface PerformanceTiming {
-  readonly attribute unsigned long long navigationStart;
-  readonly attribute unsigned long long unloadEventStart;
-  readonly attribute unsigned long long unloadEventEnd;
-  readonly attribute unsigned long long redirectStart;
-  readonly attribute unsigned long long redirectEnd;
-  readonly attribute unsigned long long fetchStart;
-  readonly attribute unsigned long long domainLookupStart;
-  readonly attribute unsigned long long domainLookupEnd;
-  readonly attribute unsigned long long connectStart;
-  readonly attribute unsigned long long connectEnd;
-  readonly attribute unsigned long long secureConnectionStart;
-  readonly attribute unsigned long long requestStart;
-  readonly attribute unsigned long long responseStart;
-  readonly attribute unsigned long long responseEnd;
-  readonly attribute unsigned long long domLoading;
-  readonly attribute unsigned long long domInteractive;
-  readonly attribute unsigned long long domContentLoadedEventStart;
-  readonly attribute unsigned long long domContentLoadedEventEnd;
-  readonly attribute unsigned long long domComplete;
-  readonly attribute unsigned long long loadEventStart;
-  readonly attribute unsigned long long loadEventEnd;
-};
-
-interface PerformanceNavigation {
-  const unsigned short TYPE_NAVIGATE = 0;
-  const unsigned short TYPE_RELOAD = 1;
-  const unsigned short TYPE_BACK_FORWARD = 2;
-  const unsigned short TYPE_RESERVED = 255;
-  readonly attribute unsigned short type;
-  readonly attribute unsigned short redirectCount;
-};
-
-interface Performance {
-  readonly attribute PerformanceTiming timing;
-  readonly attribute PerformanceNavigation navigation;
-};
-
-partial interface Window {
-  [Replaceable] readonly attribute Performance performance;
-};
-
+This is a testharness.js-based test.
 FAIL Window interface: attribute performance assert_true: The prototype object must have a property "performance" expected true got false
 PASS Window must be primary interface of window 
 FAIL Stringification of window assert_equals: class string of window expected "[object Window]" but got "[object global]"
@@ -128,4 +83,5 @@ PASS Performance must be primary interface of window.performance
 PASS Stringification of window.performance 
 PASS Performance interface: window.performance must inherit property "timing" with the proper type (0) 
 PASS Performance interface: window.performance must inherit property "navigation" with the proper type (1) 
+Harness: the test ran to completion.
 

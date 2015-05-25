@@ -1,6 +1,0 @@
-<tr><td>Filler 
-Text
-This is a testharness.js-based test.
-PASS document.write plaintext 
-Harness: the test ran to completion.
-

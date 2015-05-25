@@ -1,22 +1,4 @@
-idlharness test
-
-This test validates the WebIDL included in the user Timing specification.
-
-partial interface Performance {
-    void mark(DOMString markName);
-    void clearMarks(optional  DOMString markName);
-
-    void measure(DOMString measureName, optional DOMString startMark, optional DOMString endMark);
-    void clearMeasures(optional DOMString measureName);
-};
-
-interface PerformanceMark : PerformanceEntry {
-};
-
-interface PerformanceMeasure : PerformanceEntry {
-};
-
-
+This is a testharness.js-based test.
 PASS Performance interface: operation mark(DOMString) 
 PASS Performance interface: operation clearMarks(DOMString) 
 PASS Performance interface: operation measure(DOMString,DOMString,DOMString) 
@@ -39,4 +21,5 @@ PASS PerformanceMeasure interface: existence and properties of interface object
 PASS PerformanceMeasure interface object length 
 FAIL PerformanceMeasure interface: existence and properties of interface prototype object assert_equals: class string of PerformanceMeasure.prototype expected "[object PerformanceMeasurePrototype]" but got "[object Object]"
 PASS PerformanceMeasure interface: existence and properties of interface prototype object's "constructor" property 
+Harness: the test ran to completion.
 
