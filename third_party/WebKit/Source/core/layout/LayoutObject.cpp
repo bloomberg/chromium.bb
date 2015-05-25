@@ -1746,7 +1746,8 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
     diff = adjustStyleDifference(diff);
 
     if (m_style) {
-        if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
+        LayoutFlowThread* flowThread = flowThreadContainingBlock();
+        if (flowThread && flowThread != this)
             flowThread->flowThreadDescendantStyleWillChange(this, diff, *style);
     }
     styleWillChange(diff, *style);
@@ -1766,7 +1767,8 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
 
     styleDidChange(diff, oldStyle.get());
     if (oldStyle.get()) {
-        if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
+        LayoutFlowThread* flowThread = flowThreadContainingBlock();
+        if (flowThread && flowThread != this)
             flowThread->flowThreadDescendantStyleDidChange(this, diff, *oldStyle.get());
     }
 
