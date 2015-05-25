@@ -1808,6 +1808,7 @@ crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsMan
 crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-background.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/hixie/perf/005.xml [ Skip ]
+crbug.com/463358 [ Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure Pass ]
 
 crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/hixie/perf/006.xml [ Skip ]
