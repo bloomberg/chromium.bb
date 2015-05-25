@@ -34,11 +34,11 @@ namespace cc {
 
 base::StaticAtomicSequenceNumber g_next_layer_id;
 
-scoped_refptr<Layer> Layer::Create() {
-  return make_scoped_refptr(new Layer());
+scoped_refptr<Layer> Layer::Create(const LayerSettings& settings) {
+  return make_scoped_refptr(new Layer(settings));
 }
 
-Layer::Layer()
+Layer::Layer(const LayerSettings& settings)
     : needs_push_properties_(false),
       num_dependents_need_push_properties_(false),
       stacking_order_changed_(false),

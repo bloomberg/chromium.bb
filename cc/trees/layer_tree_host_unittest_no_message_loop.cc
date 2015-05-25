@@ -151,7 +151,7 @@ class LayerTreeHostNoMessageLoopSmokeTest
     // Set up root layer.
     {
       scoped_refptr<SolidColorLayer> solid_color_layer =
-          SolidColorLayer::Create();
+          SolidColorLayer::Create(LayerSettings());
       solid_color_layer->SetBackgroundColor(SK_ColorRED);
       solid_color_layer->SetBounds(size_);
       solid_color_layer->SetIsDrawable(true);
@@ -177,9 +177,10 @@ class LayerTreeHostNoMessageLoopDelegatedLayer
     frame_provider_ = new DelegatedFrameProvider(
         resource_collection_.get(), CreateFrameDataWithResource(998));
 
-    root_layer_ = Layer::Create();
-    delegated_layer_ =
-        FakeDelegatedRendererLayer::Create(frame_provider_.get());
+    LayerSettings layer_settings;
+    root_layer_ = Layer::Create(layer_settings);
+    delegated_layer_ = FakeDelegatedRendererLayer::Create(
+        layer_settings, frame_provider_.get());
     delegated_layer_->SetBounds(size_);
     delegated_layer_->SetIsDrawable(true);
     root_layer_->AddChild(delegated_layer_);

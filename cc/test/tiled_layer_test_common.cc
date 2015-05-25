@@ -67,8 +67,9 @@ FakeTiledLayerImpl::FakeTiledLayerImpl(LayerTreeImpl* tree_impl, int id)
 
 FakeTiledLayerImpl::~FakeTiledLayerImpl() {}
 
-FakeTiledLayer::FakeTiledLayer(PrioritizedResourceManager* resource_manager)
-    : TiledLayer(),
+FakeTiledLayer::FakeTiledLayer(const LayerSettings& settings,
+                               PrioritizedResourceManager* resource_manager)
+    : TiledLayer(settings),
       fake_updater_(make_scoped_refptr(new FakeLayerUpdater)),
       resource_manager_(resource_manager) {
   SetTileSize(tile_size());
@@ -80,8 +81,10 @@ FakeTiledLayer::FakeTiledLayer(PrioritizedResourceManager* resource_manager)
 }
 
 FakeTiledLayerWithScaledBounds::FakeTiledLayerWithScaledBounds(
+    const LayerSettings& settings,
     PrioritizedResourceManager* resource_manager)
-    : FakeTiledLayer(resource_manager) {}
+    : FakeTiledLayer(settings, resource_manager) {
+}
 
 FakeTiledLayerWithScaledBounds::~FakeTiledLayerWithScaledBounds() {}
 

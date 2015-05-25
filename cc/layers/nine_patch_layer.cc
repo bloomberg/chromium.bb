@@ -14,11 +14,14 @@
 
 namespace cc {
 
-scoped_refptr<NinePatchLayer> NinePatchLayer::Create() {
-  return make_scoped_refptr(new NinePatchLayer());
+scoped_refptr<NinePatchLayer> NinePatchLayer::Create(
+    const LayerSettings& settings) {
+  return make_scoped_refptr(new NinePatchLayer(settings));
 }
 
-NinePatchLayer::NinePatchLayer() : fill_center_(false) {}
+NinePatchLayer::NinePatchLayer(const LayerSettings& settings)
+    : UIResourceLayer(settings), fill_center_(false) {
+}
 
 NinePatchLayer::~NinePatchLayer() {}
 

@@ -18,7 +18,7 @@ class ScopedUIResource;
 
 class CC_EXPORT UIResourceLayer : public Layer {
  public:
-  static scoped_refptr<UIResourceLayer> Create();
+  static scoped_refptr<UIResourceLayer> Create(const LayerSettings& settings);
 
   void PushPropertiesTo(LayerImpl* layer) override;
 
@@ -48,7 +48,7 @@ class CC_EXPORT UIResourceLayer : public Layer {
   };
 
  protected:
-  UIResourceLayer();
+  explicit UIResourceLayer(const LayerSettings& settings);
   ~UIResourceLayer() override;
 
   bool HasDrawableContent() const override;

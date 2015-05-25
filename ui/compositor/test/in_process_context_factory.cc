@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/reflector.h"
 #include "ui/compositor/test/in_process_context_provider.h"
 #include "ui/gl/gl_implementation.h"
@@ -83,6 +84,8 @@ InProcessContextFactory::InProcessContextFactory(
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gfx::GLSurface::InitializeOneOffForTests()";
+
+  Layer::InitializeUILayerSettings();
 }
 
 InProcessContextFactory::~InProcessContextFactory() {

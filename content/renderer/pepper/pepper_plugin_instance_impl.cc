@@ -2049,13 +2049,15 @@ void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
     bool opaque = false;
     if (want_3d_layer) {
       DCHECK(bound_graphics_3d_.get());
-      texture_layer_ = cc::TextureLayer::CreateForMailbox(NULL);
+      texture_layer_ = cc::TextureLayer::CreateForMailbox(
+          cc_blink::WebLayerImpl::LayerSettings(), NULL);
       opaque = bound_graphics_3d_->IsOpaque();
       texture_layer_->SetTextureMailboxWithoutReleaseCallback(
           cc::TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point));
     } else {
       DCHECK(bound_graphics_2d_platform_);
-      texture_layer_ = cc::TextureLayer::CreateForMailbox(this);
+      texture_layer_ = cc::TextureLayer::CreateForMailbox(
+          cc_blink::WebLayerImpl::LayerSettings(), this);
       bound_graphics_2d_platform_->AttachedToNewLayer();
       opaque = bound_graphics_2d_platform_->IsAlwaysOpaque();
       texture_layer_->SetFlipped(false);

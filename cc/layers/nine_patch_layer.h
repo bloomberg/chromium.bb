@@ -19,7 +19,7 @@ class ScopedUIResource;
 
 class CC_EXPORT NinePatchLayer : public UIResourceLayer {
  public:
-  static scoped_refptr<NinePatchLayer> Create();
+  static scoped_refptr<NinePatchLayer> Create(const LayerSettings& settings);
 
   void PushPropertiesTo(LayerImpl* layer) override;
 
@@ -40,7 +40,7 @@ class CC_EXPORT NinePatchLayer : public UIResourceLayer {
   void SetFillCenter(bool fill_center);
 
  private:
-  NinePatchLayer();
+  explicit NinePatchLayer(const LayerSettings& settings);
   ~NinePatchLayer() override;
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 

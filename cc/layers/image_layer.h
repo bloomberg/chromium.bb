@@ -16,7 +16,7 @@ class ImageLayerUpdater;
 // A Layer that contains only an Image element.
 class CC_EXPORT ImageLayer : public TiledLayer {
  public:
-  static scoped_refptr<ImageLayer> Create();
+  static scoped_refptr<ImageLayer> Create(const LayerSettings& settings);
 
   // Layer implementation.
   void SetTexturePriorities(const PriorityCalculator& priority_calc) override;
@@ -34,7 +34,7 @@ class CC_EXPORT ImageLayer : public TiledLayer {
   bool HasDrawableContent() const override;
 
  private:
-  ImageLayer();
+  explicit ImageLayer(const LayerSettings& settings);
   ~ImageLayer() override;
 
   // TiledLayer Implementation.

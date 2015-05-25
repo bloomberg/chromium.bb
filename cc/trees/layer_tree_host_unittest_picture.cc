@@ -17,10 +17,10 @@ namespace {
 class LayerTreeHostPictureTest : public LayerTreeTest {
  protected:
   void SetupTreeWithSinglePictureLayer(const gfx::Size& size) {
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(size);
 
-    root_picture_layer_ = FakePictureLayer::Create(&client_);
+    root_picture_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     root_picture_layer_->SetBounds(size);
     root->AddChild(root_picture_layer_);
 
@@ -57,7 +57,7 @@ class LayerTreeHostPictureTestTwinLayer
         // Add a new picture layer so the activate will have a pending layer
         // without an active twin.
         scoped_refptr<FakePictureLayer> picture =
-            FakePictureLayer::Create(&client_);
+            FakePictureLayer::Create(layer_settings(), &client_);
         layer_tree_host()->root_layer()->AddChild(picture);
         break;
       }
@@ -137,11 +137,11 @@ class LayerTreeHostPictureTestResizeViewportWithGpuRaster
   }
 
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(768, 960));
 
     client_.set_fill_with_nonsolid_color(true);
-    picture_ = FakePictureLayer::Create(&client_);
+    picture_ = FakePictureLayer::Create(layer_settings(), &client_);
     picture_->SetBounds(gfx::Size(768, 960));
     root->AddChild(picture_);
 
@@ -200,13 +200,13 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
     frame_ = 0;
     did_post_commit_ = false;
 
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(100, 100));
 
     // The layer is big enough that the live tiles rect won't cover the full
     // layer.
     client_.set_fill_with_nonsolid_color(true);
-    picture_ = FakePictureLayer::Create(&client_);
+    picture_ = FakePictureLayer::Create(layer_settings(), &client_);
     picture_->SetBounds(gfx::Size(100, 100000));
     root->AddChild(picture_);
 
@@ -299,15 +299,15 @@ MULTI_THREAD_IMPL_TEST_F(
 
 class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(100, 100));
 
-    child_ = Layer::Create();
+    child_ = Layer::Create(layer_settings());
     root->AddChild(child_);
 
     // Don't be solid color so the layer has tilings/tiles.
     client_.set_fill_with_nonsolid_color(true);
-    picture_ = FakePictureLayer::Create(&client_);
+    picture_ = FakePictureLayer::Create(layer_settings(), &client_);
     picture_->SetBounds(gfx::Size(100, 100));
     child_->AddChild(picture_);
 
@@ -388,10 +388,10 @@ SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostPictureTestRSLLMembership);
 class LayerTreeHostPictureTestRSLLMembershipWithScale
     : public LayerTreeHostPictureTest {
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(100, 100));
 
-    pinch_ = Layer::Create();
+    pinch_ = Layer::Create(layer_settings());
     pinch_->SetBounds(gfx::Size(500, 500));
     pinch_->SetScrollClipLayerId(root->id());
     pinch_->SetIsContainerForFixedPositionLayers(true);
@@ -399,7 +399,7 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
 
     // Don't be solid color so the layer has tilings/tiles.
     client_.set_fill_with_nonsolid_color(true);
-    picture_ = FakePictureLayer::Create(&client_);
+    picture_ = FakePictureLayer::Create(layer_settings(), &client_);
     picture_->SetBounds(gfx::Size(100, 100));
     pinch_->AddChild(picture_);
 

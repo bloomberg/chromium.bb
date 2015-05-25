@@ -12,11 +12,14 @@
 
 namespace cc {
 
-scoped_refptr<PictureImageLayer> PictureImageLayer::Create() {
-  return make_scoped_refptr(new PictureImageLayer());
+scoped_refptr<PictureImageLayer> PictureImageLayer::Create(
+    const LayerSettings& settings) {
+  return make_scoped_refptr(new PictureImageLayer(settings));
 }
 
-PictureImageLayer::PictureImageLayer() : PictureLayer(this) {}
+PictureImageLayer::PictureImageLayer(const LayerSettings& settings)
+    : PictureLayer(settings, this) {
+}
 
 PictureImageLayer::~PictureImageLayer() {
   ClearClient();

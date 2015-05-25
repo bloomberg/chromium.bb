@@ -13,14 +13,17 @@
 namespace cc {
 class FakePictureLayer : public PictureLayer {
  public:
-  static scoped_refptr<FakePictureLayer> Create(ContentLayerClient* client) {
-    return make_scoped_refptr(new FakePictureLayer(client));
+  static scoped_refptr<FakePictureLayer> Create(const LayerSettings& settings,
+                                                ContentLayerClient* client) {
+    return make_scoped_refptr(new FakePictureLayer(settings, client));
   }
 
   static scoped_refptr<FakePictureLayer> CreateWithRecordingSource(
+      const LayerSettings& settings,
       ContentLayerClient* client,
       scoped_ptr<RecordingSource> source) {
-    return make_scoped_refptr(new FakePictureLayer(client, source.Pass()));
+    return make_scoped_refptr(
+        new FakePictureLayer(settings, client, source.Pass()));
   }
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -48,8 +51,9 @@ class FakePictureLayer : public PictureLayer {
   }
 
  private:
-  explicit FakePictureLayer(ContentLayerClient* client);
-  FakePictureLayer(ContentLayerClient* client,
+  FakePictureLayer(const LayerSettings& settings, ContentLayerClient* client);
+  FakePictureLayer(const LayerSettings& settings,
+                   ContentLayerClient* client,
                    scoped_ptr<RecordingSource> source);
   ~FakePictureLayer() override;
 

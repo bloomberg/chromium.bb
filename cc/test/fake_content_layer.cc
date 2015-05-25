@@ -18,8 +18,9 @@ class FakeContentLayerUpdater : public ContentLayerUpdater {
   ~FakeContentLayerUpdater() override {}
 };
 
-FakeContentLayer::FakeContentLayer(ContentLayerClient* client)
-    : ContentLayer(client),
+FakeContentLayer::FakeContentLayer(const LayerSettings& settings,
+                                   ContentLayerClient* client)
+    : ContentLayer(settings, client),
       update_count_(0),
       push_properties_count_(0),
       output_surface_created_count_(0),

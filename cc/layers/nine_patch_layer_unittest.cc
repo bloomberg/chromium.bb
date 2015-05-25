@@ -47,7 +47,8 @@ class NinePatchLayerTest : public testing::Test {
 };
 
 TEST_F(NinePatchLayerTest, SetLayerProperties) {
-  scoped_refptr<NinePatchLayer> test_layer = NinePatchLayer::Create();
+  scoped_refptr<NinePatchLayer> test_layer =
+      NinePatchLayer::Create(LayerSettings());
   ASSERT_TRUE(test_layer.get());
   test_layer->SetIsDrawable(true);
   test_layer->SetBounds(gfx::Size(100, 100));

@@ -13,9 +13,11 @@ namespace cc_blink {
 
 WebImageLayerImpl::WebImageLayerImpl() {
   if (WebLayerImpl::UsingPictureLayer())
-    layer_.reset(new WebLayerImplFixedBounds(cc::PictureImageLayer::Create()));
+    layer_.reset(new WebLayerImplFixedBounds(
+        cc::PictureImageLayer::Create(WebLayerImpl::LayerSettings())));
   else
-    layer_.reset(new WebLayerImpl(cc::ImageLayer::Create()));
+    layer_.reset(new WebLayerImpl(
+        cc::ImageLayer::Create(WebLayerImpl::LayerSettings())));
 }
 
 WebImageLayerImpl::~WebImageLayerImpl() {

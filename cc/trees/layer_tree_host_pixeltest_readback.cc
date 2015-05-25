@@ -485,18 +485,18 @@ class LayerTreeHostReadbackDeviceScalePixelTest
 
 TEST_P(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackSubrect) {
   scoped_refptr<FakePictureLayer> background =
-      FakePictureLayer::Create(&white_client_);
+      FakePictureLayer::Create(layer_settings(), &white_client_);
   background->SetBounds(gfx::Size(100, 100));
   background->SetIsDrawable(true);
 
   scoped_refptr<FakePictureLayer> green =
-      FakePictureLayer::Create(&green_client_);
+      FakePictureLayer::Create(layer_settings(), &green_client_);
   green->SetBounds(gfx::Size(100, 100));
   green->SetIsDrawable(true);
   background->AddChild(green);
 
   scoped_refptr<FakePictureLayer> blue =
-      FakePictureLayer::Create(&blue_client_);
+      FakePictureLayer::Create(layer_settings(), &blue_client_);
   blue->SetPosition(gfx::Point(50, 50));
   blue->SetBounds(gfx::Size(25, 25));
   blue->SetIsDrawable(true);
@@ -512,19 +512,19 @@ TEST_P(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackSubrect) {
 
 TEST_P(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackNonRootLayerSubrect) {
   scoped_refptr<FakePictureLayer> background =
-      FakePictureLayer::Create(&white_client_);
+      FakePictureLayer::Create(layer_settings(), &white_client_);
   background->SetBounds(gfx::Size(100, 100));
   background->SetIsDrawable(true);
 
   scoped_refptr<FakePictureLayer> green =
-      FakePictureLayer::Create(&green_client_);
+      FakePictureLayer::Create(layer_settings(), &green_client_);
   green->SetPosition(gfx::Point(10, 20));
   green->SetBounds(gfx::Size(90, 80));
   green->SetIsDrawable(true);
   background->AddChild(green);
 
   scoped_refptr<FakePictureLayer> blue =
-      FakePictureLayer::Create(&blue_client_);
+      FakePictureLayer::Create(layer_settings(), &blue_client_);
   blue->SetPosition(gfx::Point(50, 50));
   blue->SetBounds(gfx::Size(25, 25));
   blue->SetIsDrawable(true);

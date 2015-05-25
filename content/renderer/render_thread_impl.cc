@@ -33,6 +33,7 @@
 #include "cc/blink/web_external_bitmap_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/raster/task_graph_runner.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
@@ -575,6 +576,11 @@ void RenderThreadImpl::Init() {
       !command_line.HasSwitch(switches::kDisableImplSidePainting);
   cc_blink::WebLayerImpl::SetImplSidePaintingEnabled(
       is_impl_side_painting_enabled_);
+
+  cc::LayerSettings layer_settings;
+  if (command_line.HasSwitch(switches::kEnableCompositorAnimationTimelines))
+    layer_settings.use_compositor_animation_timelines = true;
+  cc_blink::WebLayerImpl::SetLayerSettings(layer_settings);
 
   is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy);
   is_one_copy_enabled_ = !command_line.HasSwitch(switches::kDisableOneCopy);

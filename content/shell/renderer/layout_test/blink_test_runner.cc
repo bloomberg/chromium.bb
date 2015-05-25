@@ -639,6 +639,11 @@ void BlinkTestRunner::ResetPermissions() {
   Send(new LayoutTestHostMsg_ResetPermissions(routing_id()));
 }
 
+scoped_refptr<cc::TextureLayer> BlinkTestRunner::CreateTextureLayerForMailbox(
+    cc::TextureLayerClient* client) {
+  return ::content::CreateTextureLayerForMailbox(client);
+}
+
 blink::WebLayer* BlinkTestRunner::InstantiateWebLayer(
     scoped_refptr<cc::TextureLayer> layer) {
   return ::content::InstantiateWebLayer(layer);

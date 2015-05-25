@@ -11,6 +11,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "cc/base/switches.h"
+#include "cc/trees/layer_tree_settings.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -93,6 +95,12 @@ void SetContentCommandLineFlags(bool single_process,
     parsed_command_line->AppendSwitchASCII(
         switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);
   }
+
+  cc::LayerSettings layer_settings;
+  if (parsed_command_line->HasSwitch(
+          switches::kEnableAndroidCompositorAnimationTimelines))
+    layer_settings.use_compositor_animation_timelines = true;
+  Compositor::SetLayerSettings(layer_settings);
 }
 
 }  // namespace content

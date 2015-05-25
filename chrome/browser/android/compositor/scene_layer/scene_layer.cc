@@ -5,6 +5,7 @@
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 
 #include "cc/layers/layer.h"
+#include "content/public/browser/android/compositor.h"
 #include "jni/SceneLayer_jni.h"
 
 namespace chrome {
@@ -18,7 +19,9 @@ SceneLayer* SceneLayer::FromJavaObject(JNIEnv* env, jobject jobj) {
 }
 
 SceneLayer::SceneLayer(JNIEnv* env, jobject jobj)
-    : SceneLayer(env, jobj, cc::Layer::Create()) {
+    : SceneLayer(env,
+                 jobj,
+                 cc::Layer::Create(content::Compositor::LayerSettings())) {
 }
 
 SceneLayer::SceneLayer(JNIEnv* env,

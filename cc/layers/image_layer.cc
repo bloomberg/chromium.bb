@@ -13,11 +13,12 @@
 
 namespace cc {
 
-scoped_refptr<ImageLayer> ImageLayer::Create() {
-  return make_scoped_refptr(new ImageLayer());
+scoped_refptr<ImageLayer> ImageLayer::Create(const LayerSettings& settings) {
+  return make_scoped_refptr(new ImageLayer(settings));
 }
 
-ImageLayer::ImageLayer() : TiledLayer() {}
+ImageLayer::ImageLayer(const LayerSettings& settings) : TiledLayer(settings) {
+}
 
 ImageLayer::~ImageLayer() {}
 

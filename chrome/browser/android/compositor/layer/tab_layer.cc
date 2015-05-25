@@ -16,6 +16,7 @@
 #include "chrome/browser/android/compositor/layer/toolbar_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
+#include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/resources/ui_resource_android.h"
 #include "ui/base/l10n/l10n_util_android.h"
@@ -530,16 +531,21 @@ TabLayer::TabLayer(bool incognito,
     : incognito_(incognito),
       resource_manager_(resource_manager),
       layer_title_cache_(layer_title_cache),
-      layer_(cc::Layer::Create()),
+      layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
       toolbar_layer_(ToolbarLayer::Create()),
-      title_(cc::Layer::Create()),
+      title_(cc::Layer::Create(content::Compositor::LayerSettings())),
       content_(ContentLayer::Create(tab_content_manager)),
-      padding_(cc::SolidColorLayer::Create()),
-      close_button_(cc::UIResourceLayer::Create()),
-      front_border_(cc::NinePatchLayer::Create()),
-      contour_shadow_(cc::NinePatchLayer::Create()),
-      shadow_(cc::NinePatchLayer::Create()),
-      back_logo_(cc::UIResourceLayer::Create()),
+      padding_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
+      close_button_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      front_border_(
+          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+      contour_shadow_(
+          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+      shadow_(cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+      back_logo_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       brightness_(1.f) {
   layer_->AddChild(shadow_);
   layer_->AddChild(contour_shadow_);

@@ -23,10 +23,10 @@ class LayerTreeHostCopyRequestTestMultipleRequests
     : public LayerTreeHostCopyRequestTest {
  protected:
   void SetupTree() override {
-    root = FakeContentLayer::Create(&client_);
+    root = FakeContentLayer::Create(layer_settings(), &client_);
     root->SetBounds(gfx::Size(20, 20));
 
-    child = FakeContentLayer::Create(&client_);
+    child = FakeContentLayer::Create(layer_settings(), &client_);
     child->SetBounds(gfx::Size(10, 10));
     root->AddChild(child);
 
@@ -148,14 +148,14 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
     : public LayerTreeHostCopyRequestTest {
  protected:
   void SetupTree() override {
-    root_ = FakeContentLayer::Create(&client_);
+    root_ = FakeContentLayer::Create(layer_settings(), &client_);
     root_->SetBounds(gfx::Size(20, 20));
 
-    main_destroyed_ = FakeContentLayer::Create(&client_);
+    main_destroyed_ = FakeContentLayer::Create(layer_settings(), &client_);
     main_destroyed_->SetBounds(gfx::Size(15, 15));
     root_->AddChild(main_destroyed_);
 
-    impl_destroyed_ = FakeContentLayer::Create(&client_);
+    impl_destroyed_ = FakeContentLayer::Create(layer_settings(), &client_);
     impl_destroyed_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(impl_destroyed_);
 
@@ -240,20 +240,20 @@ class LayerTreeHostCopyRequestTestInHiddenSubtree
     : public LayerTreeHostCopyRequestTest {
  protected:
   void SetupTree() override {
-    root_ = FakeContentLayer::Create(&client_);
+    root_ = FakeContentLayer::Create(layer_settings(), &client_);
     root_->SetBounds(gfx::Size(20, 20));
 
-    grand_parent_layer_ = FakeContentLayer::Create(&client_);
+    grand_parent_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     grand_parent_layer_->SetBounds(gfx::Size(15, 15));
     root_->AddChild(grand_parent_layer_);
 
     // parent_layer_ owns a render surface.
-    parent_layer_ = FakeContentLayer::Create(&client_);
+    parent_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     parent_layer_->SetBounds(gfx::Size(15, 15));
     parent_layer_->SetForceRenderSurface(true);
     grand_parent_layer_->AddChild(parent_layer_);
 
-    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     copy_layer_->SetBounds(gfx::Size(10, 10));
     parent_layer_->AddChild(copy_layer_);
 
@@ -339,21 +339,21 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
     : public LayerTreeHostCopyRequestTest {
  protected:
   void SetupTree() override {
-    root_ = FakeContentLayer::Create(&client_);
+    root_ = FakeContentLayer::Create(layer_settings(), &client_);
     root_->SetBounds(gfx::Size(20, 20));
 
-    grand_parent_layer_ = FakeContentLayer::Create(&client_);
+    grand_parent_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     grand_parent_layer_->SetBounds(gfx::Size(15, 15));
     grand_parent_layer_->SetHideLayerAndSubtree(true);
     root_->AddChild(grand_parent_layer_);
 
     // parent_layer_ owns a render surface.
-    parent_layer_ = FakeContentLayer::Create(&client_);
+    parent_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     parent_layer_->SetBounds(gfx::Size(15, 15));
     parent_layer_->SetForceRenderSurface(true);
     grand_parent_layer_->AddChild(parent_layer_);
 
-    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     copy_layer_->SetBounds(gfx::Size(10, 10));
     parent_layer_->AddChild(copy_layer_);
 
@@ -417,15 +417,15 @@ class LayerTreeHostCopyRequestTestClippedOut
     : public LayerTreeHostCopyRequestTest {
  protected:
   void SetupTree() override {
-    root_ = FakeContentLayer::Create(&client_);
+    root_ = FakeContentLayer::Create(layer_settings(), &client_);
     root_->SetBounds(gfx::Size(20, 20));
 
-    parent_layer_ = FakeContentLayer::Create(&client_);
+    parent_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     parent_layer_->SetBounds(gfx::Size(15, 15));
     parent_layer_->SetMasksToBounds(true);
     root_->AddChild(parent_layer_);
 
-    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     copy_layer_->SetPosition(gfx::Point(15, 15));
     copy_layer_->SetBounds(gfx::Size(10, 10));
     parent_layer_->AddChild(copy_layer_);
@@ -465,10 +465,10 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
     : public LayerTreeHostCopyRequestTest {
  protected:
   void SetupTree() override {
-    root_ = FakeContentLayer::Create(&client_);
+    root_ = FakeContentLayer::Create(layer_settings(), &client_);
     root_->SetBounds(gfx::Size(20, 20));
 
-    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     copy_layer_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(copy_layer_);
 
@@ -547,10 +547,10 @@ class LayerTreeHostCopyRequestTestLostOutputSurface
   }
 
   void SetupTree() override {
-    root_ = FakeContentLayer::Create(&client_);
+    root_ = FakeContentLayer::Create(layer_settings(), &client_);
     root_->SetBounds(gfx::Size(20, 20));
 
-    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     copy_layer_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(copy_layer_);
 
@@ -669,10 +669,10 @@ class LayerTreeHostCopyRequestTestCountTextures
   }
 
   void SetupTree() override {
-    root_ = FakeContentLayer::Create(&client_);
+    root_ = FakeContentLayer::Create(layer_settings(), &client_);
     root_->SetBounds(gfx::Size(20, 20));
 
-    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     copy_layer_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(copy_layer_);
 
@@ -823,10 +823,10 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
     : public LayerTreeHostCopyRequestTest {
  protected:
   void SetupTree() override {
-    root_ = FakeContentLayer::Create(&client_);
+    root_ = FakeContentLayer::Create(layer_settings(), &client_);
     root_->SetBounds(gfx::Size(20, 20));
 
-    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     copy_layer_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(copy_layer_);
 
@@ -900,10 +900,10 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
     : public LayerTreeHostCopyRequestTest {
  protected:
   void SetupTree() override {
-    root_ = FakeContentLayer::Create(&client_);
+    root_ = FakeContentLayer::Create(layer_settings(), &client_);
     root_->SetBounds(gfx::Size(20, 20));
 
-    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     copy_layer_->SetBounds(gfx::Size(10, 10));
     root_->AddChild(copy_layer_);
 
@@ -971,10 +971,11 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
     : public LayerTreeHostCopyRequestTest {
  protected:
   void SetupTree() override {
-    scoped_refptr<FakeContentLayer> root = FakeContentLayer::Create(&client_);
+    scoped_refptr<FakeContentLayer> root =
+        FakeContentLayer::Create(layer_settings(), &client_);
     root->SetBounds(gfx::Size(20, 20));
 
-    child_ = FakeContentLayer::Create(&client_);
+    child_ = FakeContentLayer::Create(layer_settings(), &client_);
     child_->SetBounds(gfx::Size(10, 10));
     root->AddChild(child_);
     child_->SetHideLayerAndSubtree(true);

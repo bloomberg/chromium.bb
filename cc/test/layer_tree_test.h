@@ -156,10 +156,13 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     verify_property_trees_ = verify_property_trees;
   }
 
+  const LayerSettings& layer_settings() { return layer_settings_; }
+
  protected:
   LayerTreeTest();
 
   virtual void InitializeSettings(LayerTreeSettings* settings) {}
+  virtual void InitializeLayerSettings(LayerSettings* layer_settings) {}
 
   void RealEndTest();
 
@@ -221,6 +224,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
  private:
   LayerTreeSettings settings_;
+  LayerSettings layer_settings_;
+
   scoped_ptr<LayerTreeHostClientForTesting> client_;
   scoped_ptr<LayerTreeHost> layer_tree_host_;
   FakeOutputSurface* output_surface_;

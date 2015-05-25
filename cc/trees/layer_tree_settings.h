@@ -15,6 +15,14 @@
 
 namespace cc {
 
+class CC_EXPORT LayerSettings {
+ public:
+  LayerSettings();
+  ~LayerSettings();
+
+  bool use_compositor_animation_timelines;
+};
+
 class CC_EXPORT LayerTreeSettings {
  public:
   LayerTreeSettings();
@@ -83,7 +91,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_cached_picture_in_display_list;
   bool verify_property_trees;
   bool gather_pixel_refs;
-  bool use_compositor_animation_timelines;
+  LayerSettings hud_layer_settings;
 
   LayerTreeDebugState initial_debug_state;
 

@@ -6,6 +6,7 @@
 
 #include "cc/layers/ui_resource_layer.h"
 #include "content/browser/android/animation_utils.h"
+#include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/resources/system_ui_resource_type.h"
 
@@ -48,7 +49,7 @@ const ui::SystemUIResourceType kResourceId = ui::OVERSCROLL_GLOW_L;
 
 EdgeEffectL::EdgeEffectL(ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
-      glow_(cc::UIResourceLayer::Create()),
+      glow_(cc::UIResourceLayer::Create(Compositor::LayerSettings())),
       glow_alpha_(0),
       glow_scale_y_(0),
       glow_alpha_start_(0),

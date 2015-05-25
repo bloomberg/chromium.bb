@@ -14,7 +14,8 @@
 namespace cc_blink {
 
 WebNinePatchLayerImpl::WebNinePatchLayerImpl() {
-  layer_.reset(new WebLayerImpl(cc::NinePatchLayer::Create()));
+  layer_.reset(new WebLayerImpl(
+      cc::NinePatchLayer::Create(WebLayerImpl::LayerSettings())));
 }
 
 WebNinePatchLayerImpl::~WebNinePatchLayerImpl() {

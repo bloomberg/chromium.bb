@@ -6,6 +6,7 @@
 
 #include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
+#include "content/public/browser/android/compositor.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace chrome {
@@ -49,7 +50,9 @@ scoped_refptr<cc::Layer> ThumbnailLayer::layer() {
   return layer_;
 }
 
-ThumbnailLayer::ThumbnailLayer() : layer_(cc::UIResourceLayer::Create()) {
+ThumbnailLayer::ThumbnailLayer()
+    : layer_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())) {
   layer_->SetIsDrawable(true);
 }
 

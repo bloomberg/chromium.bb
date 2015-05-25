@@ -342,6 +342,7 @@ class PictureLayerImplTest : public testing::Test {
   FakePictureLayerImpl* pending_layer_;
   FakePictureLayerImpl* old_pending_layer_;
   FakePictureLayerImpl* active_layer_;
+  LayerSettings layer_settings_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImplTest);
@@ -4613,7 +4614,8 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   gfx::Rect layer_rect(layer_bounds);
 
   FakeContentLayerClient client;
-  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+  scoped_refptr<PictureLayer> layer =
+      PictureLayer::Create(layer_settings_, &client);
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&host_client);
   host->SetRootLayer(layer);
@@ -4676,7 +4678,8 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   gfx::Rect layer_rect(layer_bounds);
 
   FakeContentLayerClient client;
-  scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+  scoped_refptr<PictureLayer> layer =
+      PictureLayer::Create(layer_settings_, &client);
   FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
   scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&host_client);
   host->SetRootLayer(layer);

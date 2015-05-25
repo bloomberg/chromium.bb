@@ -131,11 +131,14 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
   gfx::Size layer_size = gfx::Size(100, 100);
   gfx::Rect visible_content_rect = gfx::Rect(layer_size);
 
-  scoped_refptr<SolidColorLayer> layer = SolidColorLayer::Create();
+  LayerSettings layer_settings;
+
+  scoped_refptr<SolidColorLayer> layer =
+      SolidColorLayer::Create(layer_settings);
   layer->SetBounds(layer_size);
   layer->SetForceRenderSurface(true);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings);
   root->AddChild(layer);
 
   FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);

@@ -30,12 +30,14 @@ void ContentLayerPainter::Paint(SkCanvas* canvas,
                          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
 }
 
-scoped_refptr<ContentLayer> ContentLayer::Create(ContentLayerClient* client) {
-  return make_scoped_refptr(new ContentLayer(client));
+scoped_refptr<ContentLayer> ContentLayer::Create(const LayerSettings& settings,
+                                                 ContentLayerClient* client) {
+  return make_scoped_refptr(new ContentLayer(settings, client));
 }
 
-ContentLayer::ContentLayer(ContentLayerClient* client)
-    : TiledLayer(), client_(client) {
+ContentLayer::ContentLayer(const LayerSettings& settings,
+                           ContentLayerClient* client)
+    : TiledLayer(settings), client_(client) {
 }
 
 ContentLayer::~ContentLayer() {}

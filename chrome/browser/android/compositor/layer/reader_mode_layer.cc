@@ -10,6 +10,7 @@
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -115,15 +116,19 @@ void ReaderModeLayer::SetProperties(
   layer_->SetPosition(gfx::PointF(x, 0.f));
 }
 
-ReaderModeLayer::ReaderModeLayer(
-    ui::ResourceManager* resource_manager)
+ReaderModeLayer::ReaderModeLayer(ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
-      layer_(cc::Layer::Create()),
-      panel_background_(cc::NinePatchLayer::Create()),
-      panel_text_(cc::UIResourceLayer::Create()),
-      content_shadow_(cc::NinePatchLayer::Create()),
-      content_solid_(cc::SolidColorLayer::Create()),
-      content_view_container_(cc::Layer::Create()) {
+      layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
+      panel_background_(
+          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+      panel_text_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      content_shadow_(
+          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+      content_solid_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
+      content_view_container_(
+          cc::Layer::Create(content::Compositor::LayerSettings())) {
   layer_->SetMasksToBounds(false);
 
   // Reader Mode Background

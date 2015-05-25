@@ -29,7 +29,8 @@ namespace {
 
 class TestContentLayer : public Layer {
  public:
-  TestContentLayer() : Layer(), override_opaque_contents_rect_(false) {
+  explicit TestContentLayer(const LayerSettings& settings)
+      : Layer(settings), override_opaque_contents_rect_(false) {
     SetIsDrawable(true);
   }
 
@@ -117,9 +118,11 @@ struct OcclusionTrackerTestMainThreadTypes {
   typedef LayerIterator<Layer> TestLayerIterator;
   typedef OcclusionTracker<Layer> OcclusionTrackerType;
 
-  static LayerPtrType CreateLayer(HostType*  host) { return Layer::Create(); }
+  static LayerPtrType CreateLayer(HostType* host) {
+    return Layer::Create(LayerSettings());
+  }
   static ContentLayerPtrType CreateContentLayer(HostType* host) {
-    return make_scoped_refptr(new ContentLayerType());
+    return make_scoped_refptr(new ContentLayerType(LayerSettings()));
   }
 
   template <typename T>

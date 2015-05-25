@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/ui_resource_layer.h"
+#include "content/public/browser/android/compositor.h"
 #include "jni/HandleViewResources_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 
@@ -84,7 +85,7 @@ CompositedTouchHandleDrawable::CompositedTouchHandleDrawable(
     jobject context)
     : dpi_scale_(dpi_scale),
       orientation_(ui::TouchHandleOrientation::UNDEFINED),
-      layer_(cc::UIResourceLayer::Create()) {
+      layer_(cc::UIResourceLayer::Create(Compositor::LayerSettings())) {
   g_selection_resources.Get().LoadIfNecessary(context);
   DCHECK(root_layer);
   root_layer->AddChild(layer_.get());

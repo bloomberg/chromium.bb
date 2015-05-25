@@ -119,7 +119,8 @@ void LayerTreePixelTest::AfterTest() {
 
 scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
     const gfx::Rect& rect, SkColor color) {
-  scoped_refptr<SolidColorLayer> layer = SolidColorLayer::Create();
+  scoped_refptr<SolidColorLayer> layer =
+      SolidColorLayer::Create(layer_settings());
   layer->SetIsDrawable(true);
   layer->SetBounds(rect.size());
   layer->SetPosition(rect.origin());
@@ -176,7 +177,8 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::
 
 scoped_refptr<TextureLayer> LayerTreePixelTest::CreateTextureLayer(
     const gfx::Rect& rect, const SkBitmap& bitmap) {
-  scoped_refptr<TextureLayer> layer = TextureLayer::CreateForMailbox(NULL);
+  scoped_refptr<TextureLayer> layer =
+      TextureLayer::CreateForMailbox(layer_settings(), NULL);
   layer->SetIsDrawable(true);
   layer->SetBounds(rect.size());
   layer->SetPosition(rect.origin());
@@ -229,7 +231,7 @@ void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
 }
 
 void LayerTreePixelTest::SetupTree() {
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   root->SetBounds(content_root_->bounds());
   root->AddChild(content_root_);
   layer_tree_host()->SetRootLayer(root);

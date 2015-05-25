@@ -39,6 +39,7 @@ class ConvertableToTraceFormat;
 
 namespace cc {
 class Layer;
+class LayerSettings;
 }
 
 namespace cc_blink {
@@ -53,6 +54,10 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
 
   static bool UsingPictureLayer();
   CC_BLINK_EXPORT static void SetImplSidePaintingEnabled(bool enabled);
+
+  CC_BLINK_EXPORT static void SetLayerSettings(
+      const cc::LayerSettings& settings);
+  CC_BLINK_EXPORT static const cc::LayerSettings& LayerSettings();
 
   CC_BLINK_EXPORT cc::Layer* layer() const;
 

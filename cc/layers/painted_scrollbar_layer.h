@@ -22,6 +22,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   static scoped_refptr<PaintedScrollbarLayer> Create(
+      const LayerSettings& settings,
       scoped_ptr<Scrollbar> scrollbar,
       int scroll_layer_id);
 
@@ -47,7 +48,9 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   }
 
  protected:
-  PaintedScrollbarLayer(scoped_ptr<Scrollbar> scrollbar, int scroll_layer_id);
+  PaintedScrollbarLayer(const LayerSettings& settings,
+                        scoped_ptr<Scrollbar> scrollbar,
+                        int scroll_layer_id);
   ~PaintedScrollbarLayer() override;
 
   // For unit tests

@@ -82,7 +82,8 @@ CompositorView::CompositorView(JNIEnv* env,
                                TabContentManager* tab_content_manager)
     : layer_title_cache_(layer_title_cache),
       tab_content_manager_(tab_content_manager),
-      root_layer_(cc::SolidColorLayer::Create()),
+      root_layer_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
       toolbar_layer_(ToolbarLayer::Create()),
       scene_layer_(nullptr),
       current_surface_format_(0),

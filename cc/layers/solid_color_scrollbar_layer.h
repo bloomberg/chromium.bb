@@ -17,6 +17,7 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   static scoped_refptr<SolidColorScrollbarLayer> Create(
+      const LayerSettings& settings,
       ScrollbarOrientation orientation,
       int thumb_thickness,
       int track_start,
@@ -40,7 +41,8 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
   ScrollbarOrientation orientation() const override;
 
  protected:
-  SolidColorScrollbarLayer(ScrollbarOrientation orientation,
+  SolidColorScrollbarLayer(const LayerSettings& settings,
+                           ScrollbarOrientation orientation,
                            int thumb_thickness,
                            int track_start,
                            bool is_left_side_vertical_scrollbar,

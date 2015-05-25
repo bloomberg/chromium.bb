@@ -81,11 +81,13 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       compositor_lock_(NULL),
       layer_animator_collection_(this),
       weak_ptr_factory_(this) {
-  root_web_layer_ = cc::Layer::Create();
+  root_web_layer_ = cc::Layer::Create(Layer::UILayerSettings());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   cc::LayerTreeSettings settings;
+  settings.hud_layer_settings = Layer::UILayerSettings();
+
   // When impl-side painting is enabled, this will ensure PictureLayers always
   // can have LCD text, to match the previous behaviour with ContentLayers,
   // where LCD-not-allowed notifications were ignored.
@@ -135,9 +137,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   // Note: gathering of pixel refs is only needed when using multiple
   // raster threads.
   settings.gather_pixel_refs = false;
-
-  settings.use_compositor_animation_timelines =
-      command_line->HasSwitch(switches::kUIEnableCompositorAnimationTimelines);
 
   base::TimeTicks before_create = base::TimeTicks::Now();
 

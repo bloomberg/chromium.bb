@@ -12,14 +12,16 @@
 namespace cc {
 
 scoped_refptr<DelegatedRendererLayer> DelegatedRendererLayer::Create(
+    const LayerSettings& settings,
     const scoped_refptr<DelegatedFrameProvider>& frame_provider) {
   return scoped_refptr<DelegatedRendererLayer>(
-      new DelegatedRendererLayer(frame_provider));
+      new DelegatedRendererLayer(settings, frame_provider));
 }
 
 DelegatedRendererLayer::DelegatedRendererLayer(
+    const LayerSettings& settings,
     const scoped_refptr<DelegatedFrameProvider>& frame_provider)
-    : Layer(),
+    : Layer(settings),
       frame_provider_(frame_provider),
       should_collect_new_frame_(true),
       frame_data_(nullptr),

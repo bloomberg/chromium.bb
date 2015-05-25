@@ -19,12 +19,14 @@
 namespace cc {
 
 scoped_refptr<TextureLayer> TextureLayer::CreateForMailbox(
+    const LayerSettings& settings,
     TextureLayerClient* client) {
-  return scoped_refptr<TextureLayer>(new TextureLayer(client));
+  return scoped_refptr<TextureLayer>(new TextureLayer(settings, client));
 }
 
-TextureLayer::TextureLayer(TextureLayerClient* client)
-    : Layer(),
+TextureLayer::TextureLayer(const LayerSettings& settings,
+                           TextureLayerClient* client)
+    : Layer(settings),
       client_(client),
       flipped_(true),
       nearest_neighbor_(false),

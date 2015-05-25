@@ -6,6 +6,7 @@
 
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
+#include "content/public/browser/android/compositor.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/resources/ui_resource_android.h"
@@ -64,11 +65,15 @@ void ToolbarLayer::PushResource(
 }
 
 ToolbarLayer::ToolbarLayer()
-    : layer_(cc::Layer::Create()),
-      bitmap_layer_(cc::UIResourceLayer::Create()),
-      progress_layer_(cc::UIResourceLayer::Create()),
-      anonymize_layer_(cc::SolidColorLayer::Create()),
-      debug_layer_(cc::SolidColorLayer::Create()) {
+    : layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
+      bitmap_layer_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      progress_layer_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      anonymize_layer_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
+      debug_layer_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())) {
   bitmap_layer_->SetIsDrawable(true);
   layer_->AddChild(bitmap_layer_);
 

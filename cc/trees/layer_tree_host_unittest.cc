@@ -203,7 +203,7 @@ class LayerTreeHostTestReadyToActivateNonEmpty
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
     scoped_refptr<FakePictureLayer> root_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     root_layer->SetBounds(gfx::Size(1024, 1024));
     root_layer->SetIsDrawable(true);
 
@@ -273,7 +273,7 @@ class LayerTreeHostTestReadyToDrawNonEmpty
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
     scoped_refptr<FakePictureLayer> root_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     root_layer->SetBounds(gfx::Size(1024, 1024));
     root_layer->SetIsDrawable(true);
 
@@ -368,7 +368,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit2);
 class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->CreateRenderSurface();
     root->SetBounds(gfx::Size(10, 10));
     layer_tree_host()->SetRootLayer(root);
@@ -503,9 +503,9 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
 
   void BeginTest() override {
     if (layer_tree_host()->settings().impl_side_painting)
-      root_layer_ = FakePictureLayer::Create(&client_);
+      root_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     else
-      root_layer_ = ContentLayer::Create(&client_);
+      root_layer_ = ContentLayer::Create(layer_settings(), &client_);
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(bounds_);
     layer_tree_host()->SetRootLayer(root_layer_);
@@ -563,7 +563,7 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
 
   void BeginTest() override {
     client_.set_fill_with_nonsolid_color(true);
-    root_layer_ = FakePictureLayer::Create(&client_);
+    root_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     root_layer_->SetIsDrawable(true);
     gfx::Transform transform;
     // Translate the layer out of the viewport to force it to not update its
@@ -641,14 +641,14 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
   }
 
   void SetupTree() override {
-    root_layer_ = Layer::Create();
+    root_layer_ = Layer::Create(layer_settings());
     root_layer_->SetBounds(gfx::Size(10, 20));
     root_layer_->CreateRenderSurface();
 
     if (layer_tree_host()->settings().impl_side_painting)
-      scaled_layer_ = FakePictureLayer::Create(&client_);
+      scaled_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     else
-      scaled_layer_ = FakeContentLayer::Create(&client_);
+      scaled_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     scaled_layer_->SetBounds(gfx::Size(1, 1));
     root_layer_->AddChild(scaled_layer_);
 
@@ -695,14 +695,14 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
   }
 
   void SetupTree() override {
-    root_layer_ = Layer::Create();
+    root_layer_ = Layer::Create(layer_settings());
     root_layer_->SetBounds(gfx::Size(10, 20));
     root_layer_->CreateRenderSurface();
 
     bool paint_scrollbar = true;
     bool has_thumb = false;
     scrollbar_ = FakePaintedScrollbarLayer::Create(
-        paint_scrollbar, has_thumb, root_layer_->id());
+        layer_settings(), paint_scrollbar, has_thumb, root_layer_->id());
     scrollbar_->SetPosition(gfx::Point(0, 10));
     scrollbar_->SetBounds(gfx::Size(10, 10));
 
@@ -753,9 +753,9 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
 
   void BeginTest() override {
     if (layer_tree_host()->settings().impl_side_painting)
-      root_layer_ = FakePictureLayer::Create(&client_);
+      root_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     else
-      root_layer_ = ContentLayer::Create(&client_);
+      root_layer_ = ContentLayer::Create(layer_settings(), &client_);
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(bounds_);
     layer_tree_host()->SetRootLayer(root_layer_);
@@ -853,9 +853,9 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
 
   void SetupTree() override {
     if (layer_tree_host()->settings().impl_side_painting)
-      root_layer_ = FakePictureLayer::Create(&client_);
+      root_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     else
-      root_layer_ = ContentLayer::Create(&client_);
+      root_layer_ = ContentLayer::Create(layer_settings(), &client_);
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(gfx::Size(50, 50));
     layer_tree_host()->SetRootLayer(root_layer_);
@@ -863,17 +863,17 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
     // The initially transparent layer has a larger child layer, which is
     // not initially drawn because of the this (parent) layer.
     if (layer_tree_host()->settings().impl_side_painting)
-      parent_layer_ = FakePictureLayer::Create(&client_);
+      parent_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     else
-      parent_layer_ = FakeContentLayer::Create(&client_);
+      parent_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     parent_layer_->SetBounds(gfx::Size(15, 15));
     parent_layer_->SetOpacity(0.0f);
     root_layer_->AddChild(parent_layer_);
 
     if (layer_tree_host()->settings().impl_side_painting)
-      child_layer_ = FakePictureLayer::Create(&client_);
+      child_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     else
-      child_layer_ = FakeContentLayer::Create(&client_);
+      child_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     child_layer_->SetBounds(gfx::Size(25, 25));
     parent_layer_->AddChild(child_layer_);
 
@@ -957,15 +957,15 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
     scoped_ptr<FakePicturePile> pile(
         new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
                             ImplSidePaintingSettings().default_tile_grid_size));
-    root_layer_ =
-        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+    root_layer_ = FakePictureLayer::CreateWithRecordingSource(
+        layer_settings(), &client_, pile.Pass());
     root_layer_->SetBounds(gfx::Size(50, 50));
 
     pile.reset(
         new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
                             ImplSidePaintingSettings().default_tile_grid_size));
-    child_layer_ =
-        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+    child_layer_ = FakePictureLayer::CreateWithRecordingSource(
+        layer_settings(), &client_, pile.Pass());
     child_layer_->SetBounds(gfx::Size(25, 25));
     child_layer_->SetIsDrawable(true);
     child_layer_->SetContentsOpaque(true);
@@ -1060,7 +1060,7 @@ class LayerTreeHostTestUndrawnLayersPushContentBoundsLater
     : public LayerTreeHostTest {
  public:
   LayerTreeHostTestUndrawnLayersPushContentBoundsLater()
-      : root_layer_(Layer::Create()) {}
+      : root_layer_(Layer::Create(layer_settings())) {}
 
   void SetupTree() override {
     root_layer_->CreateRenderSurface();
@@ -1068,12 +1068,12 @@ class LayerTreeHostTestUndrawnLayersPushContentBoundsLater
     root_layer_->SetBounds(gfx::Size(20, 20));
     layer_tree_host()->SetRootLayer(root_layer_);
 
-    parent_layer_ = Layer::Create();
+    parent_layer_ = Layer::Create(layer_settings());
     parent_layer_->SetBounds(gfx::Size(20, 20));
     parent_layer_->SetOpacity(0.0f);
     root_layer_->AddChild(parent_layer_);
 
-    child_layer_ = Layer::Create();
+    child_layer_ = Layer::Create(layer_settings());
     child_layer_->SetBounds(gfx::Size(15, 15));
     parent_layer_->AddChild(child_layer_);
 
@@ -1271,7 +1271,8 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_refptr<FakePictureLayer> layer = FakePictureLayer::Create(&client_);
+    scoped_refptr<FakePictureLayer> layer =
+        FakePictureLayer::Create(layer_settings(), &client_);
     layer->set_always_update_resources(true);
     scroll_layer_ = layer;
 
@@ -1392,8 +1393,10 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
 class ContentLayerWithUpdateTracking : public ContentLayer {
  public:
   static scoped_refptr<ContentLayerWithUpdateTracking> Create(
+      const LayerSettings& settings,
       ContentLayerClient* client) {
-    return make_scoped_refptr(new ContentLayerWithUpdateTracking(client));
+    return make_scoped_refptr(
+        new ContentLayerWithUpdateTracking(settings, client));
   }
 
   int PaintContentsCount() { return paint_contents_count_; }
@@ -1407,8 +1410,9 @@ class ContentLayerWithUpdateTracking : public ContentLayer {
   }
 
  private:
-  explicit ContentLayerWithUpdateTracking(ContentLayerClient* client)
-      : ContentLayer(client), paint_contents_count_(0) {
+  ContentLayerWithUpdateTracking(const LayerSettings& settings,
+                                 ContentLayerClient* client)
+      : ContentLayer(settings, client), paint_contents_count_(0) {
     SetBounds(gfx::Size(10, 10));
     SetIsDrawable(true);
   }
@@ -1425,14 +1429,14 @@ class LayerTreeHostTestOpacityChange : public LayerTreeHostTest {
 
   void BeginTest() override {
     if (layer_tree_host()->settings().impl_side_painting) {
-      update_check_picture_layer_ =
-          FakePictureLayer::Create(&test_opacity_change_delegate_);
+      update_check_picture_layer_ = FakePictureLayer::Create(
+          layer_settings(), &test_opacity_change_delegate_);
       test_opacity_change_delegate_.SetTestLayer(
           update_check_picture_layer_.get());
       is_impl_paint_ = true;
     } else {
       update_check_content_layer_ = ContentLayerWithUpdateTracking::Create(
-          &test_opacity_change_delegate_);
+          layer_settings(), &test_opacity_change_delegate_);
       test_opacity_change_delegate_.SetTestLayer(
           update_check_content_layer_.get());
       is_impl_paint_ = false;
@@ -1477,8 +1481,8 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
 
   void BeginTest() override {
     client_.set_fill_with_nonsolid_color(true);
-    root_layer_ = FakePictureLayer::Create(&client_);
-    child_layer_ = FakePictureLayer::Create(&client_);
+    root_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    child_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
 
     layer_tree_host()->SetViewportSize(gfx::Size(60, 60));
     layer_tree_host()->SetDeviceScaleFactor(1.5);
@@ -1586,13 +1590,13 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
   }
 
   void SetupTree() override {
-    layer_ = FakeContentLayer::Create(&client_);
+    layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     layer_->SetBounds(gfx::Size(10, 20));
 
     bool paint_scrollbar = true;
     bool has_thumb = false;
     scrollbar_ = FakePaintedScrollbarLayer::Create(
-        paint_scrollbar, has_thumb, layer_->id());
+        layer_settings(), paint_scrollbar, has_thumb, layer_->id());
     scrollbar_->SetPosition(gfx::Point(0, 10));
     scrollbar_->SetBounds(gfx::Size(10, 10));
 
@@ -1761,10 +1765,10 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
   }
 
   void SetupTree() override {
-    parent_ = FakeContentLayer::Create(&client_);
+    parent_ = FakeContentLayer::Create(layer_settings(), &client_);
     parent_->SetBounds(gfx::Size(10, 20));
 
-    child_ = FakeContentLayer::Create(&client_);
+    child_ = FakeContentLayer::Create(layer_settings(), &client_);
     child_->SetPosition(gfx::Point(0, 10));
     child_->SetBounds(gfx::Size(3, 10));
 
@@ -1927,25 +1931,25 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
-    root_layer_ = FakeContentLayer::Create(&client_);
+    root_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
     root_layer_->SetBounds(gfx::Size(100, 100));
 
-    surface_layer1_ = FakeContentLayer::Create(&client_);
+    surface_layer1_ = FakeContentLayer::Create(layer_settings(), &client_);
     surface_layer1_->SetBounds(gfx::Size(100, 100));
     surface_layer1_->SetForceRenderSurface(true);
     surface_layer1_->SetOpacity(0.5f);
     root_layer_->AddChild(surface_layer1_);
 
-    surface_layer2_ = FakeContentLayer::Create(&client_);
+    surface_layer2_ = FakeContentLayer::Create(layer_settings(), &client_);
     surface_layer2_->SetBounds(gfx::Size(100, 100));
     surface_layer2_->SetForceRenderSurface(true);
     surface_layer2_->SetOpacity(0.5f);
     surface_layer1_->AddChild(surface_layer2_);
 
-    replica_layer1_ = FakeContentLayer::Create(&client_);
+    replica_layer1_ = FakeContentLayer::Create(layer_settings(), &client_);
     surface_layer1_->SetReplicaLayer(replica_layer1_.get());
 
-    replica_layer2_ = FakeContentLayer::Create(&client_);
+    replica_layer2_ = FakeContentLayer::Create(layer_settings(), &client_);
     surface_layer2_->SetReplicaLayer(replica_layer2_.get());
 
     layer_tree_host()->SetRootLayer(root_layer_);
@@ -2016,8 +2020,9 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(
 
 class EvictionTestLayer : public Layer {
  public:
-  static scoped_refptr<EvictionTestLayer> Create() {
-    return make_scoped_refptr(new EvictionTestLayer());
+  static scoped_refptr<EvictionTestLayer> Create(
+      const LayerSettings& settings) {
+    return make_scoped_refptr(new EvictionTestLayer(settings));
   }
 
   bool Update(ResourceUpdateQueue*, const OcclusionTracker<Layer>*) override;
@@ -2032,7 +2037,7 @@ class EvictionTestLayer : public Layer {
   }
 
  private:
-  EvictionTestLayer() : Layer() {}
+  explicit EvictionTestLayer(const LayerSettings& settings) : Layer(settings) {}
   ~EvictionTestLayer() override {}
 
   void CreateTextureIfNeeded() {
@@ -2107,7 +2112,7 @@ void EvictionTestLayer::PushPropertiesTo(LayerImpl* layer_impl) {
 class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {
  public:
   LayerTreeHostTestEvictTextures()
-      : layer_(EvictionTestLayer::Create()),
+      : layer_(EvictionTestLayer::Create(layer_settings())),
         impl_for_evict_textures_(0),
         num_commits_(0) {}
 
@@ -2243,9 +2248,9 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
 
     if (layer_tree_host()->settings().impl_side_painting)
-      layer_ = FakePictureLayer::Create(&client_);
+      layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     else
-      layer_ = FakeContentLayer::Create(&client_);
+      layer_ = FakeContentLayer::Create(layer_settings(), &client_);
 
     layer_->SetBounds(gfx::Size(10, 10));
     layer_->SetPosition(gfx::PointF(0.f, 0.f));
@@ -2589,9 +2594,9 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
     : public LayerTreeHostTest {
  public:
   LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted()
-      : root_layer_(FakeContentLayer::Create(&client_)),
-        child_layer1_(FakeContentLayer::Create(&client_)),
-        child_layer2_(FakeContentLayer::Create(&client_)),
+      : root_layer_(FakeContentLayer::Create(layer_settings(), &client_)),
+        child_layer1_(FakeContentLayer::Create(layer_settings(), &client_)),
+        child_layer2_(FakeContentLayer::Create(layer_settings(), &client_)),
         num_commits_(0) {}
 
   void BeginTest() override {
@@ -2671,7 +2676,8 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
   void SetupTree() override {
     num_tiles_rastered_ = 0;
 
-    scoped_refptr<Layer> root_layer = PictureLayer::Create(&client_);
+    scoped_refptr<Layer> root_layer =
+        PictureLayer::Create(layer_settings(), &client_);
     client_.set_fill_with_nonsolid_color(true);
     root_layer->SetIsDrawable(true);
     root_layer->SetBounds(gfx::Size(10, 10));
@@ -2903,7 +2909,8 @@ class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_refptr<Layer> layer = PictureLayer::Create(&client_);
+    scoped_refptr<Layer> layer =
+        PictureLayer::Create(layer_settings(), &client_);
     layer->SetTransform(gfx::Transform(0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
     layer->SetBounds(gfx::Size(10, 10));
     layer_tree_host()->root_layer()->AddChild(layer);
@@ -2955,10 +2962,12 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
 
   void SetupTree() override {
     if (layer_tree_host()->settings().impl_side_painting) {
-      scoped_refptr<PictureLayer> root_layer = PictureLayer::Create(&client_);
+      scoped_refptr<PictureLayer> root_layer =
+          PictureLayer::Create(layer_settings(), &client_);
       layer_tree_host()->SetRootLayer(root_layer);
     } else {
-      scoped_refptr<ContentLayer> root_layer = ContentLayer::Create(&client_);
+      scoped_refptr<ContentLayer> root_layer =
+          ContentLayer::Create(layer_settings(), &client_);
       layer_tree_host()->SetRootLayer(root_layer);
     }
     Layer* root_layer = layer_tree_host()->root_layer();
@@ -3042,7 +3051,8 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
     io_surface_id_ = 9;
     io_surface_size_ = gfx::Size(6, 7);
 
-    scoped_refptr<IOSurfaceLayer> io_surface_layer = IOSurfaceLayer::Create();
+    scoped_refptr<IOSurfaceLayer> io_surface_layer =
+        IOSurfaceLayer::Create(layer_settings());
     io_surface_layer->SetBounds(gfx::Size(10, 10));
     io_surface_layer->SetIsDrawable(true);
     io_surface_layer->SetContentsOpaque(true);
@@ -3195,16 +3205,16 @@ TEST_F(LayerTreeHostTestNumFramesPending, DISABLED_GLRenderer) {
 class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
  public:
   void SetupTree() override {
-    root_layer_ = FakePictureLayer::Create(&client_);
+    root_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     root_layer_->SetIsDrawable(true);
     root_layer_->SetBounds(gfx::Size(50, 50));
 
-    parent_layer_ = FakePictureLayer::Create(&client_);
+    parent_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     parent_layer_->SetIsDrawable(true);
     parent_layer_->SetBounds(gfx::Size(50, 50));
     parent_layer_->SetForceRenderSurface(true);
 
-    child_layer_ = FakePictureLayer::Create(&client_);
+    child_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     child_layer_->SetIsDrawable(true);
     child_layer_->SetBounds(gfx::Size(50, 50));
 
@@ -3421,8 +3431,9 @@ class PushPropertiesCountingLayerImpl : public LayerImpl {
 
 class PushPropertiesCountingLayer : public Layer {
  public:
-  static scoped_refptr<PushPropertiesCountingLayer> Create() {
-    return new PushPropertiesCountingLayer();
+  static scoped_refptr<PushPropertiesCountingLayer> Create(
+      const LayerSettings& settings) {
+    return new PushPropertiesCountingLayer(settings);
   }
 
   void PushPropertiesTo(LayerImpl* layer) override {
@@ -3449,8 +3460,10 @@ class PushPropertiesCountingLayer : public Layer {
   }
 
  private:
-  PushPropertiesCountingLayer()
-      : push_properties_count_(0), persist_needs_push_properties_(false) {
+  explicit PushPropertiesCountingLayer(const LayerSettings& settings)
+      : Layer(settings),
+        push_properties_count_(0),
+        persist_needs_push_properties_(false) {
     SetBounds(gfx::Size(1, 1));
   }
   ~PushPropertiesCountingLayer() override {}
@@ -3473,12 +3486,13 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
   }
 
   void SetupTree() override {
-    root_ = PushPropertiesCountingLayer::Create();
+    root_ = PushPropertiesCountingLayer::Create(layer_settings());
     root_->CreateRenderSurface();
-    child_ = PushPropertiesCountingLayer::Create();
-    child2_ = PushPropertiesCountingLayer::Create();
-    grandchild_ = PushPropertiesCountingLayer::Create();
-    leaf_always_pushing_layer_ = PushPropertiesCountingLayer::Create();
+    child_ = PushPropertiesCountingLayer::Create(layer_settings());
+    child2_ = PushPropertiesCountingLayer::Create(layer_settings());
+    grandchild_ = PushPropertiesCountingLayer::Create(layer_settings());
+    leaf_always_pushing_layer_ =
+        PushPropertiesCountingLayer::Create(layer_settings());
     leaf_always_pushing_layer_->set_persist_needs_push_properties(true);
 
     root_->AddChild(child_);
@@ -3486,7 +3500,7 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     child_->AddChild(grandchild_);
     child2_->AddChild(leaf_always_pushing_layer_);
 
-    other_root_ = PushPropertiesCountingLayer::Create();
+    other_root_ = PushPropertiesCountingLayer::Create(layer_settings());
     other_root_->CreateRenderSurface();
 
     // Don't set the root layer here.
@@ -3865,14 +3879,14 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void SetupTree() override {
-    root_ = Layer::Create();
+    root_ = Layer::Create(layer_settings());
     root_->CreateRenderSurface();
     root_->SetBounds(gfx::Size(1, 1));
 
     bool paint_scrollbar = true;
     bool has_thumb = false;
     scrollbar_layer_ = FakePaintedScrollbarLayer::Create(
-        paint_scrollbar, has_thumb, root_->id());
+        layer_settings(), paint_scrollbar, has_thumb, root_->id());
 
     root_->AddChild(scrollbar_layer_);
 
@@ -3922,9 +3936,9 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void SetupTree() override {
-    root_ = PushPropertiesCountingLayer::Create();
+    root_ = PushPropertiesCountingLayer::Create(layer_settings());
     root_->CreateRenderSurface();
-    child_ = PushPropertiesCountingLayer::Create();
+    child_ = PushPropertiesCountingLayer::Create(layer_settings());
     root_->AddChild(child_);
 
     layer_tree_host()->SetRootLayer(root_);
@@ -3984,12 +3998,12 @@ class LayerTreeHostTestCasePushPropertiesThreeGrandChildren
   }
 
   void SetupTree() override {
-    root_ = PushPropertiesCountingLayer::Create();
+    root_ = PushPropertiesCountingLayer::Create(layer_settings());
     root_->CreateRenderSurface();
-    child_ = PushPropertiesCountingLayer::Create();
-    grandchild1_ = PushPropertiesCountingLayer::Create();
-    grandchild2_ = PushPropertiesCountingLayer::Create();
-    grandchild3_ = PushPropertiesCountingLayer::Create();
+    child_ = PushPropertiesCountingLayer::Create(layer_settings());
+    grandchild1_ = PushPropertiesCountingLayer::Create(layer_settings());
+    grandchild2_ = PushPropertiesCountingLayer::Create(layer_settings());
+    grandchild3_ = PushPropertiesCountingLayer::Create(layer_settings());
 
     root_->AddChild(child_);
     child_->AddChild(grandchild1_);
@@ -4497,8 +4511,8 @@ class LayerTreeHostTestVideoLayerInvalidate : public LayerInvalidateCausesDraw {
  public:
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
-    scoped_refptr<VideoLayer> video_layer =
-        VideoLayer::Create(&provider_, media::VIDEO_ROTATION_0);
+    scoped_refptr<VideoLayer> video_layer = VideoLayer::Create(
+        layer_settings(), &provider_, media::VIDEO_ROTATION_0);
     video_layer->SetBounds(gfx::Size(10, 10));
     video_layer->SetIsDrawable(true);
     layer_tree_host()->root_layer()->AddChild(video_layer);
@@ -4520,7 +4534,8 @@ class LayerTreeHostTestIOSurfaceLayerInvalidate
  public:
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
-    scoped_refptr<IOSurfaceLayer> layer = IOSurfaceLayer::Create();
+    scoped_refptr<IOSurfaceLayer> layer =
+        IOSurfaceLayer::Create(layer_settings());
     layer->SetBounds(gfx::Size(10, 10));
     uint32_t fake_io_surface_id = 7;
     layer->SetIOSurfaceProperties(fake_io_surface_id, layer->bounds());
@@ -4538,18 +4553,18 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
 class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
-    root_layer_ = Layer::Create();
+    root_layer_ = Layer::Create(layer_settings());
     root_layer_->CreateRenderSurface();
     root_layer_->SetPosition(gfx::Point());
     root_layer_->SetBounds(gfx::Size(10, 10));
 
-    parent_layer_ = SolidColorLayer::Create();
+    parent_layer_ = SolidColorLayer::Create(layer_settings());
     parent_layer_->SetPosition(gfx::Point());
     parent_layer_->SetBounds(gfx::Size(10, 10));
     parent_layer_->SetIsDrawable(true);
     root_layer_->AddChild(parent_layer_);
 
-    child_layer_ = SolidColorLayer::Create();
+    child_layer_ = SolidColorLayer::Create(layer_settings());
     child_layer_->SetPosition(gfx::Point());
     child_layer_->SetBounds(gfx::Size(10, 10));
     child_layer_->SetIsDrawable(true);
@@ -4609,7 +4624,7 @@ class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
   }
 
   void SetupTree() override {
-    root_layer_ = FakePictureLayer::Create(&client_);
+    root_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     root_layer_->SetBounds(gfx::Size(10, 10));
 
     layer_tree_host()->SetRootLayer(root_layer_);
@@ -4645,7 +4660,8 @@ class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
 
  protected:
   void SetupTree() override {
-    scoped_refptr<SolidColorLayer> root_layer = SolidColorLayer::Create();
+    scoped_refptr<SolidColorLayer> root_layer =
+        SolidColorLayer::Create(layer_settings());
     root_layer->SetBounds(gfx::Size(200, 200));
     root_layer->SetIsDrawable(true);
     root_layer->CreateRenderSurface();
@@ -4721,7 +4737,7 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
     scoped_refptr<FakePictureLayer> root_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     root_layer->SetBounds(gfx::Size(1024, 1024));
     root_layer->SetIsDrawable(true);
 
@@ -4876,9 +4892,9 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
 
   void SetupTree() override {
     if (layer_tree_host()->settings().impl_side_painting)
-      root_ = FakePictureLayer::Create(&client_);
+      root_ = FakePictureLayer::Create(layer_settings(), &client_);
     else
-      root_ = FakeContentLayer::Create(&client_);
+      root_ = FakeContentLayer::Create(layer_settings(), &client_);
     root_->SetBounds(gfx::Size(20, 20));
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostTest::SetupTree();
@@ -5080,7 +5096,7 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeTest {
   LayerTreeHostTestKeepSwapPromise() {}
 
   void BeginTest() override {
-    layer_ = SolidColorLayer::Create();
+    layer_ = SolidColorLayer::Create(layer_settings());
     layer_->SetIsDrawable(true);
     layer_->SetBounds(gfx::Size(10, 10));
     layer_tree_host()->SetRootLayer(layer_);
@@ -5399,7 +5415,8 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_refptr<PictureLayer> layer = PictureLayer::Create(&layer_client_);
+    scoped_refptr<PictureLayer> layer =
+        PictureLayer::Create(layer_settings(), &layer_client_);
     layer->SetBounds(gfx::Size(10, 10));
     layer->SetIsDrawable(true);
     layer_tree_host()->root_layer()->AddChild(layer);
@@ -5453,7 +5470,8 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_refptr<PictureLayer> layer = PictureLayer::Create(&layer_client_);
+    scoped_refptr<PictureLayer> layer =
+        PictureLayer::Create(layer_settings(), &layer_client_);
     layer->SetBounds(gfx::Size(10, 10));
     layer->SetIsDrawable(true);
     layer_tree_host()->root_layer()->AddChild(layer);
@@ -5517,7 +5535,7 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
 
     scoped_refptr<FakePictureLayer> layer =
-        FakePictureLayer::Create(&layer_client_);
+        FakePictureLayer::Create(layer_settings(), &layer_client_);
     layer->SetBounds(gfx::Size(10, 10));
     layer->SetIsDrawable(true);
     layer_tree_host()->root_layer()->AddChild(layer);
@@ -5577,15 +5595,16 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
   enum { kExpectedNumCommits = 10 };
 
   void SetupTree() override {
-    scoped_refptr<Layer> root_layer = Layer::Create();
+    scoped_refptr<Layer> root_layer = Layer::Create(layer_settings());
     root_layer->SetBounds(bounds_);
     root_layer->CreateRenderSurface();
 
     if (layer_tree_host()->settings().impl_side_painting) {
-      picture_layer_ = FakePictureLayer::Create(&client_);
+      picture_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
       child_layer_ = picture_layer_.get();
     } else {
-      content_layer_ = ContentLayerWithUpdateTracking::Create(&client_);
+      content_layer_ =
+          ContentLayerWithUpdateTracking::Create(layer_settings(), &client_);
       child_layer_ = content_layer_.get();
     }
     child_layer_->SetBounds(bounds_);
@@ -5986,10 +6005,10 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     posted_ = false;
     client_.set_fill_with_nonsolid_color(true);
 
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(500, 500));
 
-    scoped_refptr<Layer> pinch = Layer::Create();
+    scoped_refptr<Layer> pinch = Layer::Create(layer_settings());
     pinch->SetBounds(gfx::Size(500, 500));
     pinch->SetScrollClipLayerId(root->id());
     pinch->SetIsContainerForFixedPositionLayers(true);
@@ -6000,7 +6019,8 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
                             ImplSidePaintingSettings().default_tile_grid_size));
     pile->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
-        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+        FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
+                                                    pile.Pass());
     layer->SetBounds(gfx::Size(500, 500));
     layer->SetContentsOpaque(true);
     // Avoid LCD text on the layer so we don't cause extra commits when we
@@ -6197,14 +6217,15 @@ class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
 
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(500, 500));
 
     scoped_ptr<FakePicturePile> pile(
         new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
                             ImplSidePaintingSettings().default_tile_grid_size));
     scoped_refptr<FakePictureLayer> layer =
-        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+        FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
+                                                    pile.Pass());
     layer->SetBounds(gfx::Size(500, 500));
     layer->SetContentsOpaque(true);
     root->AddChild(layer);
@@ -6246,7 +6267,8 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
         new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
                             ImplSidePaintingSettings().default_tile_grid_size));
     scoped_refptr<FakePictureLayer> root =
-        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+        FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
+                                                    pile.Pass());
     root->SetBounds(gfx::Size(10000, 10000));
     root->SetContentsOpaque(true);
 
@@ -6289,10 +6311,10 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     continuous_draws_ = 0;
     client_.set_fill_with_nonsolid_color(true);
 
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(500, 500));
 
-    scoped_refptr<Layer> pinch = Layer::Create();
+    scoped_refptr<Layer> pinch = Layer::Create(layer_settings());
     pinch->SetBounds(gfx::Size(500, 500));
     pinch->SetScrollClipLayerId(root->id());
     pinch->SetIsContainerForFixedPositionLayers(true);
@@ -6303,7 +6325,8 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
                             ImplSidePaintingSettings().default_tile_grid_size));
     pile->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
-        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+        FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
+                                                    pile.Pass());
     layer->SetBounds(gfx::Size(500, 500));
     layer->SetContentsOpaque(true);
     // Avoid LCD text on the layer so we don't cause extra commits when we
@@ -6462,7 +6485,7 @@ class LayerTreeHostTestOneActivatePerPrepareTiles : public LayerTreeHostTest {
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
     scoped_refptr<FakePictureLayer> root_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     root_layer->SetBounds(gfx::Size(1500, 1500));
     root_layer->SetIsDrawable(true);
 
@@ -6517,12 +6540,12 @@ class LayerTreeHostTestFrameTimingRequestsSaveTimestamps
 
   void SetupTree() override {
     scoped_refptr<FakePictureLayer> root_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     root_layer->SetBounds(gfx::Size(200, 200));
     root_layer->SetIsDrawable(true);
 
     scoped_refptr<FakePictureLayer> child_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     child_layer->SetBounds(gfx::Size(1500, 1500));
     child_layer->SetIsDrawable(true);
 
@@ -6603,7 +6626,7 @@ class LayerTreeHostTestActivationCausesPrepareTiles : public LayerTreeHostTest {
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
     scoped_refptr<FakePictureLayer> root_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     root_layer->SetBounds(gfx::Size(150, 150));
     root_layer->SetIsDrawable(true);
 
@@ -6683,10 +6706,10 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoTasksBetweenWillAndDidCommit);
 class LayerPreserveRenderSurfaceFromOutputRequests : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->CreateRenderSurface();
     root->SetBounds(gfx::Size(10, 10));
-    child_ = Layer::Create();
+    child_ = Layer::Create(layer_settings());
     child_->SetBounds(gfx::Size(20, 20));
     root->AddChild(child_);
 
@@ -6758,8 +6781,8 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerPreserveRenderSurfaceFromOutputRequests);
 class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
-    root = Layer::Create();
-    child = Layer::Create();
+    root = Layer::Create(layer_settings());
+    child = Layer::Create(layer_settings());
     root->AddChild(child);
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostTest::SetupTree();
@@ -6801,21 +6824,21 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     // the surface bounds to be larger. It also has a parent that clips the
     // masked layer and its surface.
 
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
 
-    scoped_refptr<Layer> clipping_layer = Layer::Create();
+    scoped_refptr<Layer> clipping_layer = Layer::Create(layer_settings());
     root->AddChild(clipping_layer);
 
     scoped_refptr<FakePictureLayer> content_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     clipping_layer->AddChild(content_layer);
 
     scoped_refptr<FakePictureLayer> content_child_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     content_layer->AddChild(content_child_layer);
 
     scoped_refptr<FakePictureLayer> mask_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     content_layer->SetMaskLayer(mask_layer.get());
 
     gfx::Size root_size(100, 100);
@@ -6895,17 +6918,17 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
     //       +-- Content Layer
     //             +--Mask
 
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
 
-    scoped_refptr<Layer> scaling_layer = Layer::Create();
+    scoped_refptr<Layer> scaling_layer = Layer::Create(layer_settings());
     root->AddChild(scaling_layer);
 
     scoped_refptr<FakePictureLayer> content_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     scaling_layer->AddChild(content_layer);
 
     scoped_refptr<FakePictureLayer> mask_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     content_layer->SetMaskLayer(mask_layer.get());
 
     gfx::Size root_size(100, 100);
@@ -6990,14 +7013,14 @@ class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
     // The mask layer has bounds 100x100 but is attached to a layer with bounds
     // 50x50.
 
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
 
     scoped_refptr<FakePictureLayer> content_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     root->AddChild(content_layer);
 
     scoped_refptr<FakePictureLayer> mask_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     content_layer->SetMaskLayer(mask_layer.get());
 
     gfx::Size root_size(100, 100);
@@ -7078,17 +7101,17 @@ class LayerTreeTestReflectionMaskLayerWithDifferentBounds
     // The replica's mask layer has bounds 100x100 but the replica is of a
     // layer with bounds 50x50.
 
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
 
     scoped_refptr<FakePictureLayer> content_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     root->AddChild(content_layer);
 
-    scoped_refptr<Layer> replica_layer = Layer::Create();
+    scoped_refptr<Layer> replica_layer = Layer::Create(layer_settings());
     content_layer->SetReplicaLayer(replica_layer.get());
 
     scoped_refptr<FakePictureLayer> mask_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     replica_layer->SetMaskLayer(mask_layer.get());
 
     gfx::Size root_size(100, 100);
@@ -7171,20 +7194,20 @@ class LayerTreeTestReflectionMaskLayerForSurfaceWithUnclippedChild
     // The replica is of a layer with bounds 50x50, but it has a child that
     // causes the surface bounds to be larger.
 
-    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
 
     scoped_refptr<FakePictureLayer> content_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     root->AddChild(content_layer);
 
-    content_child_layer_ = FakePictureLayer::Create(&client_);
+    content_child_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     content_layer->AddChild(content_child_layer_);
 
-    scoped_refptr<Layer> replica_layer = Layer::Create();
+    scoped_refptr<Layer> replica_layer = Layer::Create(layer_settings());
     content_layer->SetReplicaLayer(replica_layer.get());
 
     scoped_refptr<FakePictureLayer> mask_layer =
-        FakePictureLayer::Create(&client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     replica_layer->SetMaskLayer(mask_layer.get());
 
     gfx::Size root_size(100, 100);

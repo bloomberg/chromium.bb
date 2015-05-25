@@ -15,14 +15,14 @@ namespace cc {
 // SetBackgroundColor() on the base class.
 class CC_EXPORT SolidColorLayer : public Layer {
  public:
-  static scoped_refptr<SolidColorLayer> Create();
+  static scoped_refptr<SolidColorLayer> Create(const LayerSettings& settings);
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   void SetBackgroundColor(SkColor color) override;
 
  protected:
-  SolidColorLayer();
+  explicit SolidColorLayer(const LayerSettings& settings);
 
  private:
   ~SolidColorLayer() override;

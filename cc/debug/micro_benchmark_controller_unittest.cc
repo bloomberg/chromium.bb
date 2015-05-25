@@ -28,7 +28,7 @@ class MicroBenchmarkControllerTest : public testing::Test {
         impl_proxy_.get(), shared_bitmap_manager_.get(), nullptr));
 
     layer_tree_host_ = FakeLayerTreeHost::Create(&layer_tree_host_client_);
-    layer_tree_host_->SetRootLayer(Layer::Create());
+    layer_tree_host_->SetRootLayer(Layer::Create(LayerSettings()));
     layer_tree_host_->InitializeForTesting(scoped_ptr<Proxy>(new FakeProxy));
   }
 

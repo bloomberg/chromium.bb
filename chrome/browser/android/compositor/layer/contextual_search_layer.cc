@@ -8,6 +8,7 @@
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/resource_manager.h"
@@ -294,18 +295,29 @@ void ContextualSearchLayer::SetProperties(
 ContextualSearchLayer::ContextualSearchLayer(
     ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
-      layer_(cc::Layer::Create()),
-      search_bar_background_(cc::NinePatchLayer::Create()),
-      search_bar_text_(cc::UIResourceLayer::Create()),
-      search_bar_shadow_(cc::UIResourceLayer::Create()),
-      search_provider_icon_(cc::UIResourceLayer::Create()),
-      search_icon_(cc::UIResourceLayer::Create()),
-      content_view_container_(cc::Layer::Create()),
-      search_bar_border_(cc::SolidColorLayer::Create()),
-      progress_bar_(cc::NinePatchLayer::Create()),
-      progress_bar_background_(cc::NinePatchLayer::Create()),
-      search_promo_(cc::UIResourceLayer::Create()),
-      search_promo_container_(cc::SolidColorLayer::Create()) {
+      layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
+      search_bar_background_(
+          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+      search_bar_text_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      search_bar_shadow_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      search_provider_icon_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      search_icon_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      content_view_container_(
+          cc::Layer::Create(content::Compositor::LayerSettings())),
+      search_bar_border_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
+      progress_bar_(
+          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+      progress_bar_background_(
+          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+      search_promo_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      search_promo_container_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())) {
   layer_->SetMasksToBounds(false);
   layer_->SetIsDrawable(true);
 

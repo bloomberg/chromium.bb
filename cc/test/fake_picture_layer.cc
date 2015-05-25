@@ -8,8 +8,9 @@
 
 namespace cc {
 
-FakePictureLayer::FakePictureLayer(ContentLayerClient* client)
-    : PictureLayer(client),
+FakePictureLayer::FakePictureLayer(const LayerSettings& settings,
+                                   ContentLayerClient* client)
+    : PictureLayer(settings, client),
       update_count_(0),
       push_properties_count_(0),
       output_surface_created_count_(0),
@@ -19,9 +20,10 @@ FakePictureLayer::FakePictureLayer(ContentLayerClient* client)
   SetIsDrawable(true);
 }
 
-FakePictureLayer::FakePictureLayer(ContentLayerClient* client,
+FakePictureLayer::FakePictureLayer(const LayerSettings& settings,
+                                   ContentLayerClient* client,
                                    scoped_ptr<RecordingSource> source)
-    : PictureLayer(client, source.Pass()),
+    : PictureLayer(settings, client, source.Pass()),
       update_count_(0),
       push_properties_count_(0),
       output_surface_created_count_(0),

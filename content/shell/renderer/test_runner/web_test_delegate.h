@@ -35,6 +35,7 @@ struct WebURLError;
 
 namespace cc {
 class TextureLayer;
+class TextureLayerClient;
 class SharedBitmapManager;
 }
 
@@ -221,6 +222,10 @@ class WebTestDelegate {
 
   // Clear all the permissions set via SetPermission().
   virtual void ResetPermissions() = 0;
+
+  // Creates cc::TextureLayer for TestPlugin.
+  virtual scoped_refptr<cc::TextureLayer> CreateTextureLayerForMailbox(
+      cc::TextureLayerClient* client) = 0;
 
   // Instantiates WebLayerImpl for TestPlugin.
   virtual blink::WebLayer* InstantiateWebLayer(

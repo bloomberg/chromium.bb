@@ -133,7 +133,8 @@ void ChildFrameCompositingHelper::DidCommitCompositorFrame() {
 
 void ChildFrameCompositingHelper::EnableCompositing(bool enable) {
   if (enable && !background_layer_.get()) {
-    background_layer_ = cc::SolidColorLayer::Create();
+    background_layer_ =
+        cc::SolidColorLayer::Create(cc_blink::WebLayerImpl::LayerSettings());
     background_layer_->SetMasksToBounds(true);
     background_layer_->SetBackgroundColor(
         SkColorSetARGBInline(255, 255, 255, 255));
@@ -240,8 +241,8 @@ void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
         resource_collection_.get(), frame->delegated_frame_data.Pass());
     if (delegated_layer_.get())
       delegated_layer_->RemoveFromParent();
-    delegated_layer_ =
-        cc::DelegatedRendererLayer::Create(frame_provider_.get());
+    delegated_layer_ = cc::DelegatedRendererLayer::Create(
+        cc_blink::WebLayerImpl::LayerSettings(), frame_provider_.get());
     delegated_layer_->SetIsDrawable(true);
     buffer_size_ = gfx::Size();
     SetContentsOpaque(opaque_);

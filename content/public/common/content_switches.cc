@@ -939,6 +939,11 @@ const char kDisableScreenOrientationLock[]  = "disable-screen-orientation-lock";
 // WebRTC is enabled by default on Android.
 const char kDisableWebRTC[]                 = "disable-webrtc";
 
+// Enable external animation system for Android compositor.
+// See also kEnableCompositorAnimationTimelines for renderer compositors.
+const char kEnableAndroidCompositorAnimationTimelines[] =
+    "enable-android-compositor-animation-timelines";
+
 // The telephony region (ISO country code) to use in phone number detection.
 const char kNetworkCountryIso[] = "network-country-iso";
 

@@ -28,7 +28,8 @@ class LayerTreeHostDamageTestSetNeedsRedraw
     : public LayerTreeHostDamageTest {
   void SetupTree() override {
     // Viewport is 10x10.
-    scoped_refptr<FakeContentLayer> root = FakeContentLayer::Create(&client_);
+    scoped_refptr<FakeContentLayer> root =
+        FakeContentLayer::Create(layer_settings(), &client_);
     root->SetBounds(gfx::Size(10, 10));
 
     layer_tree_host()->SetRootLayer(root);
@@ -89,7 +90,8 @@ class LayerTreeHostDamageTestSetViewportSize
     : public LayerTreeHostDamageTest {
   void SetupTree() override {
     // Viewport is 10x10.
-    scoped_refptr<FakeContentLayer> root = FakeContentLayer::Create(&client_);
+    scoped_refptr<FakeContentLayer> root =
+        FakeContentLayer::Create(layer_settings(), &client_);
     root->SetBounds(gfx::Size(10, 10));
 
     layer_tree_host()->SetRootLayer(root);
@@ -155,11 +157,12 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
   }
 
   void SetupTree() override {
-    scoped_refptr<FakeContentLayer> root = FakeContentLayer::Create(&client_);
+    scoped_refptr<FakeContentLayer> root =
+        FakeContentLayer::Create(layer_settings(), &client_);
     root->SetBounds(gfx::Size(10, 10));
 
     // Most of the layer isn't visible.
-    content_ = FakeContentLayer::Create(&client_);
+    content_ = FakeContentLayer::Create(layer_settings(), &client_);
     content_->SetBounds(gfx::Size(2000, 100));
     root->AddChild(content_);
 
@@ -240,8 +243,8 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void SetupTree() override {
-    root_ = FakeContentLayer::Create(&client_);
-    child_ = FakeContentLayer::Create(&client_);
+    root_ = FakeContentLayer::Create(layer_settings(), &client_);
+    child_ = FakeContentLayer::Create(layer_settings(), &client_);
 
     root_->SetBounds(gfx::Size(500, 500));
     child_->SetPosition(gfx::Point(100, 100));
@@ -349,13 +352,14 @@ SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(LayerTreeHostDamageTestForcedFullDamage);
 
 class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
   void SetupTree() override {
-    scoped_refptr<Layer> root_layer = Layer::Create();
+    scoped_refptr<Layer> root_layer = Layer::Create(layer_settings());
     root_layer->SetBounds(gfx::Size(400, 400));
     root_layer->SetMasksToBounds(true);
     layer_tree_host()->SetRootLayer(root_layer);
 
-    scoped_refptr<Layer> scroll_clip_layer = Layer::Create();
-    scoped_refptr<Layer> content_layer = FakeContentLayer::Create(&client_);
+    scoped_refptr<Layer> scroll_clip_layer = Layer::Create(layer_settings());
+    scoped_refptr<Layer> content_layer =
+        FakeContentLayer::Create(layer_settings(), &client_);
     content_layer->SetScrollClipLayerId(scroll_clip_layer->id());
     content_layer->SetScrollOffset(gfx::ScrollOffset(10, 20));
     content_layer->SetBounds(gfx::Size(100, 200));
@@ -365,8 +369,8 @@ class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
     scroll_clip_layer->AddChild(content_layer);
     root_layer->AddChild(scroll_clip_layer);
 
-    scoped_refptr<Layer> scrollbar_layer =
-        FakePaintedScrollbarLayer::Create(false, true, content_layer->id());
+    scoped_refptr<Layer> scrollbar_layer = FakePaintedScrollbarLayer::Create(
+        layer_settings(), false, true, content_layer->id());
     scrollbar_layer->SetPosition(gfx::Point(300, 300));
     scrollbar_layer->SetBounds(gfx::Size(10, 100));
     scrollbar_layer->ToScrollbarLayer()->SetClipLayer(scroll_clip_layer->id());

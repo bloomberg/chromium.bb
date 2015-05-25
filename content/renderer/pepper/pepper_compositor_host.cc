@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
+#include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
@@ -160,7 +161,7 @@ PepperCompositorHost::PepperCompositorHost(
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       bound_instance_(NULL),
       weak_factory_(this) {
-  layer_ = cc::Layer::Create();
+  layer_ = cc::Layer::Create(cc_blink::WebLayerImpl::LayerSettings());
   // TODO(penghuang): SetMasksToBounds() can be expensive if the layer is
   // transformed. Possibly better could be to explicitly clip the child layers
   // (by modifying their bounds).
@@ -247,7 +248,7 @@ void PepperCompositorHost::UpdateLayer(
     scoped_refptr<cc::Layer> clip_parent = layer->parent();
     if (clip_parent.get() == layer_.get()) {
       // Create a clip parent layer, if it does not exist.
-      clip_parent = cc::Layer::Create();
+      clip_parent = cc::Layer::Create(cc_blink::WebLayerImpl::LayerSettings());
       clip_parent->SetMasksToBounds(true);
       clip_parent->SetIsDrawable(true);
       layer_->ReplaceChild(layer.get(), clip_parent);
@@ -389,9 +390,11 @@ int32_t PepperCompositorHost::OnHostMsgCommitLayers(
 
     if (!cc_layer.get()) {
       if (pp_layer->color)
-        cc_layer = cc::SolidColorLayer::Create();
+        cc_layer = cc::SolidColorLayer::Create(
+            cc_blink::WebLayerImpl::LayerSettings());
       else if (pp_layer->texture || pp_layer->image)
-        cc_layer = cc::TextureLayer::CreateForMailbox(NULL);
+        cc_layer = cc::TextureLayer::CreateForMailbox(
+            cc_blink::WebLayerImpl::LayerSettings(), NULL);
       layer_->AddChild(cc_layer);
     }
 

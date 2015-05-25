@@ -60,7 +60,7 @@ class LayerPerfTest : public testing::Test {
 };
 
 TEST_F(LayerPerfTest, PushPropertiesTo) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
+  scoped_refptr<Layer> test_layer = Layer::Create(LayerSettings());
   scoped_ptr<LayerImpl> impl_layer =
       LayerImpl::Create(host_impl_.active_tree(), 1);
 

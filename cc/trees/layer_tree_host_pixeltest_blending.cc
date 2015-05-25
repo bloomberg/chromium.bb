@@ -137,7 +137,8 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
       canvas.drawRect(
           SkRect::MakeXYWH(0, i * kLaneHeight, kLaneWidth, kLaneHeight), paint);
     }
-    scoped_refptr<PictureImageLayer> layer = PictureImageLayer::Create();
+    scoped_refptr<PictureImageLayer> layer =
+        PictureImageLayer::Create(layer_settings());
     layer->SetIsDrawable(true);
     layer->SetBounds(gfx::Size(width, height));
     layer->SetBitmap(backing_store);
@@ -147,7 +148,8 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
   void SetupMaskLayer(scoped_refptr<Layer> layer) {
     const int kMaskOffset = 2;
     gfx::Size bounds = layer->bounds();
-    scoped_refptr<PictureImageLayer> mask = PictureImageLayer::Create();
+    scoped_refptr<PictureImageLayer> mask =
+        PictureImageLayer::Create(layer_settings());
     mask->SetIsDrawable(true);
     mask->SetIsMask(true);
     mask->SetBounds(bounds);

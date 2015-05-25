@@ -8,11 +8,14 @@
 
 namespace cc {
 
-scoped_refptr<IOSurfaceLayer> IOSurfaceLayer::Create() {
-  return make_scoped_refptr(new IOSurfaceLayer());
+scoped_refptr<IOSurfaceLayer> IOSurfaceLayer::Create(
+    const LayerSettings& settings) {
+  return make_scoped_refptr(new IOSurfaceLayer(settings));
 }
 
-IOSurfaceLayer::IOSurfaceLayer() : Layer(), io_surface_id_(0) {}
+IOSurfaceLayer::IOSurfaceLayer(const LayerSettings& settings)
+    : Layer(settings), io_surface_id_(0) {
+}
 
 IOSurfaceLayer::~IOSurfaceLayer() {}
 

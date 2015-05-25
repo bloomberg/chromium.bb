@@ -34,7 +34,8 @@ class CC_EXPORT ContentLayerPainter : public LayerPainter {
 // A layer that renders its contents into an SkCanvas.
 class CC_EXPORT ContentLayer : public TiledLayer {
  public:
-  static scoped_refptr<ContentLayer> Create(ContentLayerClient* client);
+  static scoped_refptr<ContentLayer> Create(const LayerSettings& settings,
+                                            ContentLayerClient* client);
 
   void ClearClient();
 
@@ -51,7 +52,7 @@ class CC_EXPORT ContentLayer : public TiledLayer {
   void OnOutputSurfaceCreated() override;
 
  protected:
-  explicit ContentLayer(ContentLayerClient* client);
+  ContentLayer(const LayerSettings& settings, ContentLayerClient* client);
   ~ContentLayer() override;
 
   bool HasDrawableContent() const override;

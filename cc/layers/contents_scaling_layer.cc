@@ -14,9 +14,11 @@ gfx::Size ContentsScalingLayer::ComputeContentBoundsForScale(
   return gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scale_x, scale_y));
 }
 
-ContentsScalingLayer::ContentsScalingLayer()
-    : last_update_contents_scale_x_(0.f),
-      last_update_contents_scale_y_(0.f) {}
+ContentsScalingLayer::ContentsScalingLayer(const LayerSettings& settings)
+    : Layer(settings),
+      last_update_contents_scale_x_(0.f),
+      last_update_contents_scale_y_(0.f) {
+}
 
 ContentsScalingLayer::~ContentsScalingLayer() {
 }

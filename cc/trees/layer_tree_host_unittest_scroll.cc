@@ -39,7 +39,7 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
 
   void BeginTest() override {
     Layer* root_layer = layer_tree_host()->root_layer();
-    scoped_refptr<Layer> scroll_layer = Layer::Create();
+    scoped_refptr<Layer> scroll_layer = Layer::Create(layer_settings());
     root_layer->AddChild(scroll_layer);
     // Create an effective max_scroll_offset of (100, 100).
     scroll_layer->SetBounds(gfx::Size(root_layer->bounds().width() + 100,
@@ -117,7 +117,7 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
 
   void BeginTest() override {
     Layer* root_layer = layer_tree_host()->root_layer();
-    scroll_layer_ = Layer::Create();
+    scroll_layer_ = Layer::Create(layer_settings());
     root_layer->AddChild(scroll_layer_);
     // Create an effective max_scroll_offset of (100, 100).
     scroll_layer_->SetBounds(gfx::Size(root_layer->bounds().width() + 100,
@@ -221,7 +221,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
   void SetupTree() override {
     LayerTreeHostScrollTest::SetupTree();
     Layer* root_layer = layer_tree_host()->root_layer();
-    scoped_refptr<Layer> root_scroll_layer = Layer::Create();
+    scoped_refptr<Layer> root_scroll_layer = Layer::Create(layer_settings());
     root_scroll_layer->SetScrollClipLayerId(root_layer->id());
     root_scroll_layer->SetScrollOffset(initial_scroll_);
     root_scroll_layer->SetBounds(gfx::Size(200, 200));
@@ -403,7 +403,7 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
   void SetupTree() override {
     LayerTreeHostScrollTest::SetupTree();
     Layer* root_layer = layer_tree_host()->root_layer();
-    scoped_refptr<Layer> root_scroll_layer = Layer::Create();
+    scoped_refptr<Layer> root_scroll_layer = Layer::Create(layer_settings());
     root_scroll_layer->SetScrollClipLayerId(root_layer->id());
     root_scroll_layer->SetBounds(
         gfx::Size(root_layer->bounds().width() + 100,
@@ -470,10 +470,11 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
   void SetupTree() override {
     layer_tree_host()->SetDeviceScaleFactor(device_scale_factor_);
 
-    scoped_refptr<Layer> root_layer = Layer::Create();
+    scoped_refptr<Layer> root_layer = Layer::Create(layer_settings());
     root_layer->SetBounds(gfx::Size(10, 10));
 
-    root_scroll_layer_ = FakePictureLayer::Create(&fake_content_layer_client_);
+    root_scroll_layer_ =
+        FakePictureLayer::Create(layer_settings(), &fake_content_layer_client_);
     root_scroll_layer_->SetBounds(gfx::Size(110, 110));
 
     root_scroll_layer_->SetPosition(gfx::Point());
@@ -483,7 +484,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     root_scroll_layer_->SetIsContainerForFixedPositionLayers(true);
     root_layer->AddChild(root_scroll_layer_);
 
-    child_layer_ = FakePictureLayer::Create(&fake_content_layer_client_);
+    child_layer_ =
+        FakePictureLayer::Create(layer_settings(), &fake_content_layer_client_);
     child_layer_->set_did_scroll_callback(
         base::Bind(&LayerTreeHostScrollTestCaseWithChild::DidScroll,
                    base::Unretained(this)));
@@ -774,7 +776,7 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
   void SetupTree() override {
     LayerTreeHostScrollTest::SetupTree();
     Layer* root_layer = layer_tree_host()->root_layer();
-    scoped_refptr<Layer> root_scroll_layer = Layer::Create();
+    scoped_refptr<Layer> root_scroll_layer = Layer::Create(layer_settings());
     root_scroll_layer->SetScrollClipLayerId(root_layer->id());
     root_scroll_layer->SetScrollOffset(initial_scroll_);
     root_scroll_layer->SetBounds(
@@ -899,7 +901,7 @@ class ImplSidePaintingScrollTestImplOnlyScroll
   void SetupTree() override {
     LayerTreeHostScrollTest::SetupTree();
     Layer* root_layer = layer_tree_host()->root_layer();
-    scoped_refptr<Layer> root_scroll_layer = Layer::Create();
+    scoped_refptr<Layer> root_scroll_layer = Layer::Create(layer_settings());
     root_scroll_layer->SetScrollClipLayerId(root_layer->id());
     root_scroll_layer->SetScrollOffset(initial_scroll_);
     root_scroll_layer->SetBounds(
@@ -1033,7 +1035,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
 
   void SetupTree() override {
     LayerTreeTest::SetupTree();
-    scoped_refptr<Layer> scroll_layer = Layer::Create();
+    scoped_refptr<Layer> scroll_layer = Layer::Create(layer_settings());
     layer_tree_host()->root_layer()->AddChild(scroll_layer);
   }
 
@@ -1156,7 +1158,7 @@ class LayerTreeHostScrollTestLayerStructureChange
       : scroll_destroy_whole_tree_(false) {}
 
   void SetupTree() override {
-    scoped_refptr<Layer> root_layer = Layer::Create();
+    scoped_refptr<Layer> root_layer = Layer::Create(layer_settings());
     root_layer->SetBounds(gfx::Size(10, 10));
 
     Layer* root_scroll_layer =
@@ -1208,7 +1210,7 @@ class LayerTreeHostScrollTestLayerStructureChange
 
   Layer* CreateScrollLayer(Layer* parent, FakeLayerScrollClient* client) {
     scoped_refptr<PictureLayer> scroll_layer =
-        PictureLayer::Create(&fake_content_layer_client_);
+        PictureLayer::Create(layer_settings(), &fake_content_layer_client_);
     scroll_layer->SetBounds(gfx::Size(110, 110));
     scroll_layer->SetPosition(gfx::Point(0, 0));
     scroll_layer->SetIsDrawable(true);

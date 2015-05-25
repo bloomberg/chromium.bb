@@ -92,7 +92,8 @@ class FakeTiledLayerImpl : public TiledLayerImpl {
 
 class FakeTiledLayer : public TiledLayer {
  public:
-  explicit FakeTiledLayer(PrioritizedResourceManager* resource_manager);
+  explicit FakeTiledLayer(const LayerSettings& settings,
+                          PrioritizedResourceManager* resource_manager);
 
   static gfx::Size tile_size() { return gfx::Size(100, 100); }
 
@@ -134,8 +135,8 @@ class FakeTiledLayer : public TiledLayer {
 
 class FakeTiledLayerWithScaledBounds : public FakeTiledLayer {
  public:
-  explicit FakeTiledLayerWithScaledBounds(
-      PrioritizedResourceManager* resource_manager);
+  FakeTiledLayerWithScaledBounds(const LayerSettings& settings,
+                                 PrioritizedResourceManager* resource_manager);
 
   void SetContentBounds(const gfx::Size& content_bounds);
   void CalculateContentsScale(float ideal_contents_scale,

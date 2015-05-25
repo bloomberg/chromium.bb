@@ -19,6 +19,7 @@ namespace cc {
 class CC_EXPORT DelegatedRendererLayer : public Layer {
  public:
   static scoped_refptr<DelegatedRendererLayer> Create(
+      const LayerSettings& settings,
       const scoped_refptr<DelegatedFrameProvider>& frame_provider);
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -34,6 +35,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
 
  protected:
   DelegatedRendererLayer(
+      const LayerSettings& settings,
       const scoped_refptr<DelegatedFrameProvider>& frame_provider);
   ~DelegatedRendererLayer() override;
 

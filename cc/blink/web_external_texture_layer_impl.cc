@@ -26,7 +26,8 @@ WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(
     blink::WebExternalTextureLayerClient* client)
     : client_(client) {
   cc::TextureLayerClient* cc_client = client_ ? this : nullptr;
-  scoped_refptr<TextureLayer> layer = TextureLayer::CreateForMailbox(cc_client);
+  scoped_refptr<TextureLayer> layer =
+      TextureLayer::CreateForMailbox(WebLayerImpl::LayerSettings(), cc_client);
   layer->SetIsDrawable(true);
   layer_.reset(new WebLayerImpl(layer));
 }

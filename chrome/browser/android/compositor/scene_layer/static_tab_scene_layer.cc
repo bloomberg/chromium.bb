@@ -8,6 +8,7 @@
 #include "chrome/browser/android/compositor/layer/content_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
+#include "content/public/browser/android/compositor.h"
 #include "jni/StaticTabSceneLayer_jni.h"
 #include "third_party/skia/include/core/SkColor.h"
 

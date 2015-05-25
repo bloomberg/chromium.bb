@@ -37,7 +37,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   void OnOutputSurfaceCreated() override;
 
  protected:
-  TiledLayer();
+  explicit TiledLayer(const LayerSettings& settings);
   ~TiledLayer() override;
 
   void UpdateTileSizeAndTilingOption();

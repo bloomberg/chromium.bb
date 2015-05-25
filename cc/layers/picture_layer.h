@@ -19,7 +19,8 @@ class ResourceUpdateQueue;
 
 class CC_EXPORT PictureLayer : public Layer {
  public:
-  static scoped_refptr<PictureLayer> Create(ContentLayerClient* client);
+  static scoped_refptr<PictureLayer> Create(const LayerSettings& settings,
+                                            ContentLayerClient* client);
 
   void ClearClient();
 
@@ -45,9 +46,11 @@ class CC_EXPORT PictureLayer : public Layer {
   }
 
  protected:
-  explicit PictureLayer(ContentLayerClient* client);
+  PictureLayer(const LayerSettings& settings, ContentLayerClient* client);
   // Allow tests to inject a recording source.
-  PictureLayer(ContentLayerClient* client, scoped_ptr<RecordingSource> source);
+  PictureLayer(const LayerSettings& settings,
+               ContentLayerClient* client,
+               scoped_ptr<RecordingSource> source);
   ~PictureLayer() override;
 
   bool HasDrawableContent() const override;

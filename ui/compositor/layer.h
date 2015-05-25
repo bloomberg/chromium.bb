@@ -78,6 +78,9 @@ class COMPOSITOR_EXPORT Layer
 
   static bool UsingPictureLayer();
 
+  static const cc::LayerSettings& UILayerSettings();
+  static void InitializeUILayerSettings();
+
   // Retrieves the Layer's compositor. The Layer will walk up its parent chain
   // to locate it. Returns NULL if the Layer is not attached to a compositor.
   Compositor* GetCompositor() {

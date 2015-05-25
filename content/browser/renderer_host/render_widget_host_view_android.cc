@@ -63,6 +63,7 @@
 #include "content/common/input/did_overscroll_params.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -470,13 +471,15 @@ scoped_refptr<cc::Layer> RenderWidgetHostViewAndroid::CreateDelegatedLayer()
     DCHECK(manager);
     // manager must outlive compositors using it.
     scoped_refptr<cc::SurfaceLayer> surface_layer = cc::SurfaceLayer::Create(
+        Compositor::LayerSettings(),
         base::Bind(&SatisfyCallback, base::Unretained(manager)),
         base::Bind(&RequireCallback, base::Unretained(manager)));
     surface_layer->SetSurfaceId(surface_id_, 1.f, texture_size_in_layer_);
     delegated_layer = surface_layer;
   } else {
     DCHECK(frame_provider_.get());
-    delegated_layer = cc::DelegatedRendererLayer::Create(frame_provider_);
+    delegated_layer = cc::DelegatedRendererLayer::Create(
+        Compositor::LayerSettings(), frame_provider_);
   }
   delegated_layer->SetBounds(content_size_in_layer_);
   delegated_layer->SetIsDrawable(true);
@@ -1093,7 +1096,8 @@ void RenderWidgetHostViewAndroid::SubmitFrame(
       RemoveLayers();
       frame_provider_ = new cc::DelegatedFrameProvider(
           resource_collection_.get(), frame_data.Pass());
-      layer_ = cc::DelegatedRendererLayer::Create(frame_provider_);
+      layer_ = cc::DelegatedRendererLayer::Create(Compositor::LayerSettings(),
+                                                  frame_provider_);
       AttachLayers();
     } else {
       frame_provider_->SetFrameData(frame_data.Pass());

@@ -9,6 +9,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "chrome/browser/android/compositor/decoration_title.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
+#include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/resources/ui_resource_android.h"
 #include "ui/base/l10n/l10n_util_android.h"
@@ -177,10 +178,13 @@ scoped_refptr<cc::Layer> TabHandleLayer::layer() {
 
 TabHandleLayer::TabHandleLayer(LayerTitleCache* layer_title_cache)
     : layer_title_cache_(layer_title_cache),
-      layer_(cc::Layer::Create()),
-      close_button_(cc::UIResourceLayer::Create()),
-      decoration_tab_(cc::NinePatchLayer::Create()),
-      border_(cc::SolidColorLayer::Create()),
+      layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
+      close_button_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      decoration_tab_(
+          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+      border_(
+          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
       brightness_(1.0f),
       foreground_(false) {
   decoration_tab_->SetIsDrawable(true);

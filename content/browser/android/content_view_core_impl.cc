@@ -37,6 +37,7 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
@@ -220,7 +221,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
-      root_layer_(cc::SolidColorLayer::Create()),
+      root_layer_(cc::SolidColorLayer::Create(Compositor::LayerSettings())),
       dpi_scale_(GetPrimaryDisplayDeviceScaleFactor()),
       view_android_(new ui::ViewAndroid(view_android_delegate, window_android)),
       window_android_(window_android),

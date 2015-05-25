@@ -15,7 +15,8 @@ namespace cc {
 
 class CC_EXPORT HeadsUpDisplayLayer : public Layer {
  public:
-  static scoped_refptr<HeadsUpDisplayLayer> Create();
+  static scoped_refptr<HeadsUpDisplayLayer> Create(
+      const LayerSettings& settings);
 
   void PrepareForCalculateDrawProperties(
       const gfx::Size& device_viewport, float device_scale_factor);
@@ -23,7 +24,7 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
  protected:
-  HeadsUpDisplayLayer();
+  explicit HeadsUpDisplayLayer(const LayerSettings& settings);
   bool HasDrawableContent() const override;
 
  private:

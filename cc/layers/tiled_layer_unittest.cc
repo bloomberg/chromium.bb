@@ -108,7 +108,7 @@ class TiledLayerTest : public testing::Test {
     layer_tree_host_->SetLayerTreeHostClientReady();
     CHECK(synchronous_output_surface_client_.EnsureOutputSurfaceCreated());
 
-    layer_tree_host_->SetRootLayer(Layer::Create());
+    layer_tree_host_->SetRootLayer(Layer::Create(layer_settings_));
 
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
@@ -239,6 +239,7 @@ class TiledLayerTest : public testing::Test {
  public:
   Proxy* proxy_;
   LayerTreeSettings settings_;
+  LayerSettings layer_settings_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
@@ -256,8 +257,8 @@ class TiledLayerTest : public testing::Test {
 TEST_F(TiledLayerTest, PushDirtyTiles) {
   layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000));
 
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   RenderSurfaceLayerList render_surface_layer_list;
@@ -289,8 +290,8 @@ TEST_F(TiledLayerTest, Scale) {
 
   layer_tree_host_->SetDeviceScaleFactor(1.5);
 
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   RenderSurfaceLayerList render_surface_layer_list;
@@ -308,8 +309,8 @@ TEST_F(TiledLayerTest, Scale) {
 }
 
 TEST_F(TiledLayerTest, PushOccludedDirtyTiles) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   TestOcclusionTracker occluded;
@@ -351,8 +352,8 @@ TEST_F(TiledLayerTest, PushOccludedDirtyTiles) {
 TEST_F(TiledLayerTest, PushDeletedTiles) {
   layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000));
 
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   RenderSurfaceLayerList render_surface_layer_list;
@@ -390,8 +391,8 @@ TEST_F(TiledLayerTest, PushDeletedTiles) {
 }
 
 TEST_F(TiledLayerTest, PushIdlePaintTiles) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   RenderSurfaceLayerList render_surface_layer_list;
@@ -430,8 +431,8 @@ TEST_F(TiledLayerTest, PushIdlePaintTiles) {
 }
 
 TEST_F(TiledLayerTest, PredictivePainting) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
 
@@ -509,12 +510,12 @@ TEST_F(TiledLayerTest, PushTilesAfterIdlePaintFailed) {
   // Start with 2mb of memory, but the test is going to try to use just more
   // than 1mb, so we reduce to 1mb later.
   resource_manager_->SetMaxMemoryLimitBytes(2 * 1024 * 1024);
-  scoped_refptr<FakeTiledLayer> layer1 =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer1 = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl1 =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
-  scoped_refptr<FakeTiledLayer> layer2 =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer2 = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl2 =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 2));
   RenderSurfaceLayerList render_surface_layer_list;
@@ -570,8 +571,8 @@ TEST_F(TiledLayerTest, PushTilesAfterIdlePaintFailed) {
 }
 
 TEST_F(TiledLayerTest, PushIdlePaintedOccludedTiles) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   RenderSurfaceLayerList render_surface_layer_list;
@@ -593,8 +594,8 @@ TEST_F(TiledLayerTest, PushIdlePaintedOccludedTiles) {
 }
 
 TEST_F(TiledLayerTest, PushTilesMarkedDirtyDuringPaint) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   RenderSurfaceLayerList render_surface_layer_list;
@@ -617,10 +618,10 @@ TEST_F(TiledLayerTest, PushTilesMarkedDirtyDuringPaint) {
 }
 
 TEST_F(TiledLayerTest, PushTilesLayerMarkedDirtyDuringPaintOnNextLayer) {
-  scoped_refptr<FakeTiledLayer> layer1 =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
-  scoped_refptr<FakeTiledLayer> layer2 =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer1 = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer2 = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer1_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   scoped_ptr<FakeTiledLayerImpl> layer2_impl =
@@ -648,10 +649,10 @@ TEST_F(TiledLayerTest, PushTilesLayerMarkedDirtyDuringPaintOnNextLayer) {
 }
 
 TEST_F(TiledLayerTest, PushTilesLayerMarkedDirtyDuringPaintOnPreviousLayer) {
-  scoped_refptr<FakeTiledLayer> layer1 =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
-  scoped_refptr<FakeTiledLayer> layer2 =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer1 = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer2 = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer1_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   scoped_ptr<FakeTiledLayerImpl> layer2_impl =
@@ -697,8 +698,8 @@ TEST_F(TiledLayerTest, PaintSmallAnimatedLayersImmediately) {
 
     resource_manager_->SetMaxMemoryLimitBytes(memory_for_layer);
 
-    scoped_refptr<FakeTiledLayer> layer =
-        make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+        new FakeTiledLayer(layer_settings_, resource_manager_.get()));
     scoped_ptr<FakeTiledLayerImpl> layer_impl =
         make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
     RenderSurfaceLayerList render_surface_layer_list;
@@ -744,8 +745,8 @@ TEST_F(TiledLayerTest, PaintSmallAnimatedLayersImmediately) {
 }
 
 TEST_F(TiledLayerTest, IdlePaintOutOfMemory) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   RenderSurfaceLayerList render_surface_layer_list;
@@ -773,8 +774,8 @@ TEST_F(TiledLayerTest, IdlePaintOutOfMemory) {
 }
 
 TEST_F(TiledLayerTest, IdlePaintZeroSizedLayer) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
 
@@ -806,8 +807,8 @@ TEST_F(TiledLayerTest, IdlePaintZeroSizedLayer) {
 }
 
 TEST_F(TiledLayerTest, IdlePaintNonVisibleLayers) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
 
@@ -844,8 +845,8 @@ TEST_F(TiledLayerTest, IdlePaintNonVisibleLayers) {
 }
 
 TEST_F(TiledLayerTest, InvalidateFromPrepare) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   RenderSurfaceLayerList render_surface_layer_list;
@@ -886,8 +887,9 @@ TEST_F(TiledLayerTest, InvalidateFromPrepare) {
 TEST_F(TiledLayerTest, VerifyUpdateRectWhenContentBoundsAreScaled) {
   // The update rect (that indicates what was actually painted) should be in
   // layer space, not the content space.
-  scoped_refptr<FakeTiledLayerWithScaledBounds> layer = make_scoped_refptr(
-      new FakeTiledLayerWithScaledBounds(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayerWithScaledBounds> layer =
+      make_scoped_refptr(new FakeTiledLayerWithScaledBounds(
+          layer_settings_, resource_manager_.get()));
 
   layer_tree_host_->root_layer()->AddChild(layer);
 
@@ -936,8 +938,8 @@ TEST_F(TiledLayerTest, VerifyUpdateRectWhenContentBoundsAreScaled) {
 }
 
 TEST_F(TiledLayerTest, VerifyInvalidationWhenContentsScaleChanges) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
       make_scoped_ptr(new FakeTiledLayerImpl(host_impl_->active_tree(), 1));
   RenderSurfaceLayerList render_surface_layer_list;
@@ -1010,10 +1012,12 @@ TEST_F(TiledLayerTest, SkipsDrawGetsReset) {
   // We have enough memory for only one of the two layers.
   int memory_limit = 4 * 300 * 300;  // 4 bytes per pixel.
 
-  scoped_refptr<FakeTiledLayer> root_layer = make_scoped_refptr(
-      new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
-  scoped_refptr<FakeTiledLayer> child_layer = make_scoped_refptr(
-      new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
+  scoped_refptr<FakeTiledLayer> root_layer =
+      make_scoped_refptr(new FakeTiledLayer(
+          layer_settings_, layer_tree_host_->contents_texture_manager()));
+  scoped_refptr<FakeTiledLayer> child_layer =
+      make_scoped_refptr(new FakeTiledLayer(
+          layer_settings_, layer_tree_host_->contents_texture_manager()));
   root_layer->AddChild(child_layer);
 
   root_layer->SetBounds(content_bounds);
@@ -1050,8 +1054,8 @@ TEST_F(TiledLayerTest, SkipsDrawGetsReset) {
 }
 
 TEST_F(TiledLayerTest, ResizeToSmaller) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
 
   layer_tree_host_->root_layer()->AddChild(layer);
 
@@ -1069,8 +1073,8 @@ TEST_F(TiledLayerTest, ResizeToSmaller) {
 }
 
 TEST_F(TiledLayerTest, HugeLayerUpdateCrash) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
 
   layer_tree_host_->root_layer()->AddChild(layer);
 
@@ -1096,8 +1100,8 @@ TEST_F(TiledLayerPartialUpdateTest, PartialUpdates) {
   gfx::Size content_bounds(300, 200);
   gfx::Rect content_rect(content_bounds);
 
-  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
-      new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(
+      layer_settings_, layer_tree_host_->contents_texture_manager()));
   layer->SetBounds(content_bounds);
   layer->SetPosition(gfx::PointF(0, 0));
   layer->draw_properties().visible_content_rect = content_rect;
@@ -1202,8 +1206,8 @@ TEST_F(TiledLayerPartialUpdateTest, PartialUpdates) {
 TEST_F(TiledLayerTest, TilesPaintedWithoutOcclusion) {
   layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000));
 
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   RenderSurfaceLayerList render_surface_layer_list;
 
   layer_tree_host_->root_layer()->AddChild(layer);
@@ -1220,8 +1224,8 @@ TEST_F(TiledLayerTest, TilesPaintedWithoutOcclusion) {
 }
 
 TEST_F(TiledLayerTest, TilesPaintedWithOcclusion) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   RenderSurfaceLayerList render_surface_layer_list;
   TestOcclusionTracker occluded;
   occlusion_ = &occluded;
@@ -1269,8 +1273,8 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusion) {
 }
 
 TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndVisiblityConstraints) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   RenderSurfaceLayerList render_surface_layer_list;
   TestOcclusionTracker occluded;
   occlusion_ = &occluded;
@@ -1326,8 +1330,8 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndVisiblityConstraints) {
 }
 
 TEST_F(TiledLayerTest, TilesNotPaintedWithoutInvalidation) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   RenderSurfaceLayerList render_surface_layer_list;
   TestOcclusionTracker occluded;
   occlusion_ = &occluded;
@@ -1363,8 +1367,8 @@ TEST_F(TiledLayerTest, TilesNotPaintedWithoutInvalidation) {
 }
 
 TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndTransforms) {
-  scoped_refptr<FakeTiledLayer> layer =
-      make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
+  scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(
+      new FakeTiledLayer(layer_settings_, resource_manager_.get()));
   RenderSurfaceLayerList render_surface_layer_list;
   TestOcclusionTracker occluded;
   occlusion_ = &occluded;
@@ -1398,13 +1402,13 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndTransforms) {
 
 TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndScaling) {
   scoped_refptr<FakeTiledLayer> layer =
-      new FakeTiledLayer(resource_manager_.get());
+      new FakeTiledLayer(layer_settings_, resource_manager_.get());
   RenderSurfaceLayerList render_surface_layer_list;
   TestOcclusionTracker occluded;
   occlusion_ = &occluded;
 
   scoped_refptr<FakeTiledLayer> scale_layer =
-      new FakeTiledLayer(resource_manager_.get());
+      new FakeTiledLayer(layer_settings_, resource_manager_.get());
   gfx::Transform scale_transform;
   scale_transform.Scale(2.0, 2.0);
   scale_layer->SetTransform(scale_transform);
@@ -1487,13 +1491,13 @@ TEST_F(TiledLayerTest, DontAllocateContentsWhenTargetSurfaceCantBeAllocated) {
   gfx::Rect child_rect(0, 0, 300, 100);
   gfx::Rect child2_rect(0, 100, 300, 100);
 
-  scoped_refptr<FakeTiledLayer> root = make_scoped_refptr(
-      new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
-  scoped_refptr<Layer> surface = Layer::Create();
-  scoped_refptr<FakeTiledLayer> child = make_scoped_refptr(
-      new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
-  scoped_refptr<FakeTiledLayer> child2 = make_scoped_refptr(
-      new FakeTiledLayer(layer_tree_host_->contents_texture_manager()));
+  scoped_refptr<FakeTiledLayer> root = make_scoped_refptr(new FakeTiledLayer(
+      layer_settings_, layer_tree_host_->contents_texture_manager()));
+  scoped_refptr<Layer> surface = Layer::Create(layer_settings_);
+  scoped_refptr<FakeTiledLayer> child = make_scoped_refptr(new FakeTiledLayer(
+      layer_settings_, layer_tree_host_->contents_texture_manager()));
+  scoped_refptr<FakeTiledLayer> child2 = make_scoped_refptr(new FakeTiledLayer(
+      layer_settings_, layer_tree_host_->contents_texture_manager()));
 
   root->SetBounds(root_rect.size());
   root->draw_properties().drawable_content_rect = root_rect;
@@ -1661,8 +1665,9 @@ class TrackingLayerPainter : public LayerPainter {
 
 class UpdateTrackingTiledLayer : public FakeTiledLayer {
  public:
-  explicit UpdateTrackingTiledLayer(PrioritizedResourceManager* manager)
-      : FakeTiledLayer(manager) {
+  explicit UpdateTrackingTiledLayer(const LayerSettings& settings,
+                                    PrioritizedResourceManager* manager)
+      : FakeTiledLayer(settings, manager) {
     scoped_ptr<TrackingLayerPainter> painter(TrackingLayerPainter::Create());
     tracking_layer_painter_ = painter.get();
     layer_updater_ = BitmapContentLayerUpdater::Create(painter.Pass(), 0);
@@ -1681,8 +1686,8 @@ class UpdateTrackingTiledLayer : public FakeTiledLayer {
 };
 
 TEST_F(TiledLayerTest, NonIntegerContentsScaleIsNotDistortedDuringPaint) {
-  scoped_refptr<UpdateTrackingTiledLayer> layer =
-      make_scoped_refptr(new UpdateTrackingTiledLayer(resource_manager_.get()));
+  scoped_refptr<UpdateTrackingTiledLayer> layer = make_scoped_refptr(
+      new UpdateTrackingTiledLayer(layer_settings_, resource_manager_.get()));
 
   layer_tree_host_->root_layer()->AddChild(layer);
 
@@ -1721,8 +1726,8 @@ TEST_F(TiledLayerTest, NonIntegerContentsScaleIsNotDistortedDuringPaint) {
 
 TEST_F(TiledLayerTest,
        NonIntegerContentsScaleIsNotDistortedDuringInvalidation) {
-  scoped_refptr<UpdateTrackingTiledLayer> layer =
-      make_scoped_refptr(new UpdateTrackingTiledLayer(resource_manager_.get()));
+  scoped_refptr<UpdateTrackingTiledLayer> layer = make_scoped_refptr(
+      new UpdateTrackingTiledLayer(layer_settings_, resource_manager_.get()));
 
   layer_tree_host_->root_layer()->AddChild(layer);
 

@@ -32,15 +32,18 @@ scoped_ptr<LayerImpl> PaintedScrollbarLayer::CreateLayerImpl(
 }
 
 scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::Create(
+    const LayerSettings& settings,
     scoped_ptr<Scrollbar> scrollbar,
     int scroll_layer_id) {
   return make_scoped_refptr(
-      new PaintedScrollbarLayer(scrollbar.Pass(), scroll_layer_id));
+      new PaintedScrollbarLayer(settings, scrollbar.Pass(), scroll_layer_id));
 }
 
-PaintedScrollbarLayer::PaintedScrollbarLayer(scoped_ptr<Scrollbar> scrollbar,
+PaintedScrollbarLayer::PaintedScrollbarLayer(const LayerSettings& settings,
+                                             scoped_ptr<Scrollbar> scrollbar,
                                              int scroll_layer_id)
-    : scrollbar_(scrollbar.Pass()),
+    : Layer(settings),
+      scrollbar_(scrollbar.Pass()),
       scroll_layer_id_(scroll_layer_id),
       clip_layer_id_(Layer::INVALID_ID),
       internal_contents_scale_(0.f),

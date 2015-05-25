@@ -31,6 +31,7 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     blink::WebScrollbarThemePainter painter,
     blink::WebScrollbarThemeGeometry* geometry)
     : layer_(new WebLayerImpl(PaintedScrollbarLayer::Create(
+          WebLayerImpl::LayerSettings(),
           scoped_ptr<cc::Scrollbar>(
               new ScrollbarImpl(make_scoped_ptr(scrollbar),
                                 painter,
@@ -44,7 +45,8 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     int track_start,
     bool is_left_side_vertical_scrollbar)
     : layer_(new WebLayerImpl(
-          SolidColorScrollbarLayer::Create(ConvertOrientation(orientation),
+          SolidColorScrollbarLayer::Create(WebLayerImpl::LayerSettings(),
+                                           ConvertOrientation(orientation),
                                            thumb_thickness,
                                            track_start,
                                            is_left_side_vertical_scrollbar,

@@ -16,21 +16,25 @@
 
 namespace cc {
 
-scoped_refptr<PictureLayer> PictureLayer::Create(ContentLayerClient* client) {
-  return make_scoped_refptr(new PictureLayer(client));
+scoped_refptr<PictureLayer> PictureLayer::Create(const LayerSettings& settings,
+                                                 ContentLayerClient* client) {
+  return make_scoped_refptr(new PictureLayer(settings, client));
 }
 
-PictureLayer::PictureLayer(ContentLayerClient* client)
-    : client_(client),
+PictureLayer::PictureLayer(const LayerSettings& settings,
+                           ContentLayerClient* client)
+    : Layer(settings),
+      client_(client),
       instrumentation_object_tracker_(id()),
       update_source_frame_number_(-1),
       is_mask_(false),
       nearest_neighbor_(false) {
 }
 
-PictureLayer::PictureLayer(ContentLayerClient* client,
+PictureLayer::PictureLayer(const LayerSettings& settings,
+                           ContentLayerClient* client,
                            scoped_ptr<RecordingSource> source)
-    : PictureLayer(client) {
+    : PictureLayer(settings, client) {
   recording_source_ = source.Pass();
 }
 

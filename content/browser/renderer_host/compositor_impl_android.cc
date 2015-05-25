@@ -36,6 +36,7 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
@@ -49,6 +50,7 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/host_shared_bitmap_manager.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/compositor_client.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -164,6 +166,9 @@ class SingleThreadTaskGraphRunner
 base::LazyInstance<SingleThreadTaskGraphRunner> g_task_graph_runner =
     LAZY_INSTANCE_INITIALIZER;
 
+base::LazyInstance<cc::LayerSettings> g_layer_settings =
+    LAZY_INSTANCE_INITIALIZER;
+
 } // anonymous namespace
 
 // static
@@ -177,6 +182,16 @@ void Compositor::Initialize() {
   DCHECK(!CompositorImpl::IsInitialized());
   g_initialized = true;
   g_use_surface_manager = UseSurfacesEnabled();
+}
+
+// static
+const cc::LayerSettings& Compositor::LayerSettings() {
+  return g_layer_settings.Get();
+}
+
+// static
+void Compositor::SetLayerSettings(const cc::LayerSettings& settings) {
+  g_layer_settings.Get() = settings;
 }
 
 // static
@@ -198,7 +213,7 @@ scoped_ptr<cc::SurfaceIdAllocator> CompositorImpl::CreateSurfaceIdAllocator() {
 
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
-    : root_layer_(cc::Layer::Create()),
+    : root_layer_(cc::Layer::Create(Compositor::LayerSettings())),
       resource_manager_(&ui_resource_provider_),
       surface_id_allocator_(CreateSurfaceIdAllocator()),
       has_transparent_background_(false),

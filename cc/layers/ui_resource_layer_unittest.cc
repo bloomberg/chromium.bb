@@ -31,8 +31,9 @@ namespace {
 
 class TestUIResourceLayer : public UIResourceLayer {
  public:
-  static scoped_refptr<TestUIResourceLayer> Create() {
-    return make_scoped_refptr(new TestUIResourceLayer());
+  static scoped_refptr<TestUIResourceLayer> Create(
+      const LayerSettings& settings) {
+    return make_scoped_refptr(new TestUIResourceLayer(settings));
   }
 
   UIResourceId GetUIResourceId() {
@@ -42,7 +43,10 @@ class TestUIResourceLayer : public UIResourceLayer {
   }
 
  protected:
-  TestUIResourceLayer() : UIResourceLayer() { SetIsDrawable(true); }
+  explicit TestUIResourceLayer(const LayerSettings& settings)
+      : UIResourceLayer(settings) {
+    SetIsDrawable(true);
+  }
   ~TestUIResourceLayer() override {}
 };
 
@@ -63,10 +67,12 @@ class UIResourceLayerTest : public testing::Test {
 
   FakeLayerTreeHostClient fake_client_;
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
+  LayerSettings layer_settings_;
 };
 
 TEST_F(UIResourceLayerTest, SetBitmap) {
-  scoped_refptr<UIResourceLayer> test_layer = TestUIResourceLayer::Create();
+  scoped_refptr<UIResourceLayer> test_layer =
+      TestUIResourceLayer::Create(layer_settings_);
   ASSERT_TRUE(test_layer.get());
   test_layer->SetBounds(gfx::Size(100, 100));
 
@@ -93,7 +99,8 @@ TEST_F(UIResourceLayerTest, SetBitmap) {
 }
 
 TEST_F(UIResourceLayerTest, SetUIResourceId) {
-  scoped_refptr<TestUIResourceLayer> test_layer = TestUIResourceLayer::Create();
+  scoped_refptr<TestUIResourceLayer> test_layer =
+      TestUIResourceLayer::Create(layer_settings_);
   ASSERT_TRUE(test_layer.get());
   test_layer->SetBounds(gfx::Size(100, 100));
 
@@ -128,7 +135,8 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
 }
 
 TEST_F(UIResourceLayerTest, BitmapClearedOnSetUIResourceId) {
-  scoped_refptr<UIResourceLayer> test_layer = TestUIResourceLayer::Create();
+  scoped_refptr<UIResourceLayer> test_layer =
+      TestUIResourceLayer::Create(layer_settings_);
   ASSERT_TRUE(test_layer.get());
   test_layer->SetBounds(gfx::Size(100, 100));
 

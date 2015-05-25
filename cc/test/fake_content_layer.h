@@ -12,8 +12,9 @@ namespace cc {
 
 class FakeContentLayer : public ContentLayer {
  public:
-  static scoped_refptr<FakeContentLayer> Create(ContentLayerClient* client) {
-    return make_scoped_refptr(new FakeContentLayer(client));
+  static scoped_refptr<FakeContentLayer> Create(const LayerSettings& settings,
+                                                ContentLayerClient* client) {
+    return make_scoped_refptr(new FakeContentLayer(settings, client));
   }
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -43,7 +44,8 @@ class FakeContentLayer : public ContentLayer {
   bool HaveBackingAt(int i, int j);
 
  private:
-  explicit FakeContentLayer(ContentLayerClient* client);
+  explicit FakeContentLayer(const LayerSettings& settings,
+                            ContentLayerClient* client);
   ~FakeContentLayer() override;
 
   size_t update_count_;

@@ -23,7 +23,7 @@ class CC_EXPORT ContentsScalingLayer : public Layer {
               const OcclusionTracker<Layer>* occlusion) override;
 
  protected:
-  ContentsScalingLayer();
+  explicit ContentsScalingLayer(const LayerSettings& settings);
   ~ContentsScalingLayer() override;
 
   gfx::Size ComputeContentBoundsForScale(float scale_x, float scale_y) const;

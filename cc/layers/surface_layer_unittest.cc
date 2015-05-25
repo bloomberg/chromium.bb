@@ -46,6 +46,7 @@ class SurfaceLayerTest : public testing::Test {
   scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
   FakeLayerTreeHostClient fake_client_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  LayerSettings layer_settings_;
 };
 
 void SatisfyCallback(SurfaceSequence* out, SurfaceSequence in) {
@@ -68,7 +69,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   SurfaceId required_id;
   std::set<SurfaceSequence> required_seq;
   scoped_refptr<SurfaceLayer> layer(SurfaceLayer::Create(
-      base::Bind(&SatisfyCallback, &blank_change),
+      layer_settings_, base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
   layer->SetSurfaceId(SurfaceId(1), 1.f, gfx::Size(1, 1));
   layer_tree_host_->set_surface_id_namespace(1);
@@ -77,7 +78,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   scoped_ptr<FakeLayerTreeHost> layer_tree_host2 =
       FakeLayerTreeHost::Create(&fake_client_);
   scoped_refptr<SurfaceLayer> layer2(SurfaceLayer::Create(
-      base::Bind(&SatisfyCallback, &blank_change),
+      layer_settings_, base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
   layer2->SetSurfaceId(SurfaceId(1), 1.f, gfx::Size(1, 1));
   layer_tree_host2->set_surface_id_namespace(2);
@@ -129,7 +130,7 @@ TEST_F(SurfaceLayerTest, ScaleSurface) {
   SurfaceId required_id;
   std::set<SurfaceSequence> required_seq;
   scoped_refptr<SurfaceLayer> layer(SurfaceLayer::Create(
-      base::Bind(&SatisfyCallback, &blank_change),
+      layer_settings_, base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
   gfx::Size surface_size(10, 15);
   layer->SetSurfaceId(SurfaceId(1), 2.f, surface_size);
@@ -154,7 +155,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
   void BeginTest() override {
     layer_tree_host()->set_surface_id_namespace(1);
     layer_ = SurfaceLayer::Create(
-        base::Bind(&SatisfyCallback, &satisfied_sequence_),
+        layer_settings(), base::Bind(&SatisfyCallback, &satisfied_sequence_),
         base::Bind(&RequireCallback, &required_id_, &required_set_));
     layer_->SetSurfaceId(SurfaceId(1), 1.f, gfx::Size(1, 1));
 
@@ -185,7 +186,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     switch (commit_count_) {
       case 1:
         // Remove SurfaceLayer from tree to cause SwapPromise to be created.
-        blank_layer_ = SolidColorLayer::Create();
+        blank_layer_ = SolidColorLayer::Create(layer_settings());
         blank_layer_->SetIsDrawable(true);
         blank_layer_->SetBounds(gfx::Size(10, 10));
         layer_tree_host()->SetRootLayer(blank_layer_);

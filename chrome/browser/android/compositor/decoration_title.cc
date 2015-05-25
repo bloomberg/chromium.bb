@@ -11,6 +11,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
+#include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/resources/ui_resource_android.h"
 #include "ui/base/l10n/l10n_util_android.h"
@@ -31,10 +32,13 @@ DecorationTitle::DecorationTitle(LayerTitleCache* layer_title_cache,
                                  int favicon_end_padding,
                                  bool is_incognito,
                                  bool is_rtl)
-    : layer_(cc::Layer::Create()),
-      layer_opaque_(cc::UIResourceLayer::Create()),
-      layer_fade_(cc::UIResourceLayer::Create()),
-      layer_favicon_(cc::UIResourceLayer::Create()),
+    : layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
+      layer_opaque_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      layer_fade_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      layer_favicon_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       title_resource_id_(title_resource_id),
       favicon_resource_id_(favicon_resource_id),
       spinner_resource_id_(spinner_resource_id),

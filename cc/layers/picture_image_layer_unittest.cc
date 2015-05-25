@@ -6,6 +6,7 @@
 
 #include "cc/playback/display_item.h"
 #include "cc/test/skia_common.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -15,7 +16,8 @@ namespace cc {
 namespace {
 
 TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
-  scoped_refptr<PictureImageLayer> layer = PictureImageLayer::Create();
+  scoped_refptr<PictureImageLayer> layer =
+      PictureImageLayer::Create(LayerSettings());
   gfx::Rect layer_rect(200, 200);
 
   SkBitmap image_bitmap;
@@ -47,7 +49,8 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
 }
 
 TEST(PictureImageLayerTest, PaintContentsToCachedDisplayList) {
-  scoped_refptr<PictureImageLayer> layer = PictureImageLayer::Create();
+  scoped_refptr<PictureImageLayer> layer =
+      PictureImageLayer::Create(LayerSettings());
   gfx::Rect layer_rect(200, 200);
 
   SkBitmap image_bitmap;

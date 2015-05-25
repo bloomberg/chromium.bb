@@ -15,7 +15,7 @@ namespace cc {
 
 class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
  public:
-  static scoped_refptr<PictureImageLayer> Create();
+  static scoped_refptr<PictureImageLayer> Create(const LayerSettings& settings);
 
   void SetBitmap(const SkBitmap& image);
 
@@ -37,7 +37,7 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   bool HasDrawableContent() const override;
 
  private:
-  PictureImageLayer();
+  explicit PictureImageLayer(const LayerSettings& settings);
   ~PictureImageLayer() override;
 
   SkBitmap bitmap_;

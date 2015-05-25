@@ -424,6 +424,12 @@ std::string DumpBackForwardList(std::vector<PageState>& page_state,
   return result;
 }
 
+scoped_refptr<cc::TextureLayer> CreateTextureLayerForMailbox(
+    cc::TextureLayerClient* client) {
+  return cc::TextureLayer::CreateForMailbox(
+      cc_blink::WebLayerImpl::LayerSettings(), client);
+}
+
 blink::WebLayer* InstantiateWebLayer(scoped_refptr<cc::TextureLayer> layer) {
   return new cc_blink::WebLayerImpl(layer);
 }

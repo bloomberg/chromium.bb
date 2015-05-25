@@ -23,8 +23,8 @@ namespace {
 
 class TestLayer : public Layer {
  public:
-  static scoped_refptr<TestLayer> Create() {
-    return make_scoped_refptr(new TestLayer());
+  static scoped_refptr<TestLayer> Create(const LayerSettings& settings) {
+    return make_scoped_refptr(new TestLayer(settings));
   }
 
   int count_representing_target_surface_;
@@ -35,7 +35,8 @@ class TestLayer : public Layer {
   void set_draws_content(bool draws_content) { draws_content_ = draws_content; }
 
  private:
-  TestLayer() : Layer(), draws_content_(true) {
+  explicit TestLayer(const LayerSettings& settings)
+      : Layer(settings), draws_content_(true) {
     SetBounds(gfx::Size(100, 100));
     SetPosition(gfx::Point());
   }
@@ -100,11 +101,12 @@ TEST(LayerIteratorTest, EmptyTree) {
 }
 
 TEST(LayerIteratorTest, SimpleTree) {
-  scoped_refptr<TestLayer> root_layer = TestLayer::Create();
-  scoped_refptr<TestLayer> first = TestLayer::Create();
-  scoped_refptr<TestLayer> second = TestLayer::Create();
-  scoped_refptr<TestLayer> third = TestLayer::Create();
-  scoped_refptr<TestLayer> fourth = TestLayer::Create();
+  LayerSettings settings;
+  scoped_refptr<TestLayer> root_layer = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> first = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> second = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> third = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> fourth = TestLayer::Create(settings);
 
   root_layer->AddChild(first);
   root_layer->AddChild(second);
@@ -129,15 +131,16 @@ TEST(LayerIteratorTest, SimpleTree) {
 }
 
 TEST(LayerIteratorTest, ComplexTree) {
-  scoped_refptr<TestLayer> root_layer = TestLayer::Create();
-  scoped_refptr<TestLayer> root1 = TestLayer::Create();
-  scoped_refptr<TestLayer> root2 = TestLayer::Create();
-  scoped_refptr<TestLayer> root3 = TestLayer::Create();
-  scoped_refptr<TestLayer> root21 = TestLayer::Create();
-  scoped_refptr<TestLayer> root22 = TestLayer::Create();
-  scoped_refptr<TestLayer> root23 = TestLayer::Create();
-  scoped_refptr<TestLayer> root221 = TestLayer::Create();
-  scoped_refptr<TestLayer> root231 = TestLayer::Create();
+  LayerSettings settings;
+  scoped_refptr<TestLayer> root_layer = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root1 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root2 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root3 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root21 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root22 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root23 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root221 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root231 = TestLayer::Create(settings);
 
   root_layer->AddChild(root1);
   root_layer->AddChild(root2);
@@ -170,15 +173,16 @@ TEST(LayerIteratorTest, ComplexTree) {
 }
 
 TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
-  scoped_refptr<TestLayer> root_layer = TestLayer::Create();
-  scoped_refptr<TestLayer> root1 = TestLayer::Create();
-  scoped_refptr<TestLayer> root2 = TestLayer::Create();
-  scoped_refptr<TestLayer> root3 = TestLayer::Create();
-  scoped_refptr<TestLayer> root21 = TestLayer::Create();
-  scoped_refptr<TestLayer> root22 = TestLayer::Create();
-  scoped_refptr<TestLayer> root23 = TestLayer::Create();
-  scoped_refptr<TestLayer> root221 = TestLayer::Create();
-  scoped_refptr<TestLayer> root231 = TestLayer::Create();
+  LayerSettings settings;
+  scoped_refptr<TestLayer> root_layer = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root1 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root2 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root3 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root21 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root22 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root23 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root221 = TestLayer::Create(settings);
+  scoped_refptr<TestLayer> root231 = TestLayer::Create(settings);
 
   root_layer->AddChild(root1);
   root_layer->AddChild(root2);

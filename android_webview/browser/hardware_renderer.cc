@@ -31,6 +31,12 @@
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
+namespace {
+cc::LayerSettings HardwareRendererLayerSettings() {
+  return cc::LayerSettings();
+}
+}
+
 namespace android_webview {
 
 HardwareRenderer::HardwareRenderer(SharedRendererState* state)
@@ -39,7 +45,7 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
       stencil_enabled_(false),
       viewport_clip_valid_for_dcheck_(false),
       gl_surface_(new AwGLSurface),
-      root_layer_(cc::Layer::Create()),
+      root_layer_(cc::Layer::Create(HardwareRendererLayerSettings())),
       resource_collection_(new cc::DelegatedFrameResourceCollection),
       output_surface_(NULL) {
   DCHECK(last_egl_context_);
@@ -134,7 +140,8 @@ void HardwareRenderer::CommitFrame() {
     frame_provider_ = new cc::DelegatedFrameProvider(
         resource_collection_.get(), frame->delegated_frame_data.Pass());
 
-    delegated_layer_ = cc::DelegatedRendererLayer::Create(frame_provider_);
+    delegated_layer_ = cc::DelegatedRendererLayer::Create(
+        HardwareRendererLayerSettings(), frame_provider_);
     delegated_layer_->SetBounds(frame_size_);
     delegated_layer_->SetIsDrawable(true);
 

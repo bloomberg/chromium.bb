@@ -84,8 +84,8 @@ class UpdatableTile : public LayerTilingData::Tile {
   DISALLOW_COPY_AND_ASSIGN(UpdatableTile);
 };
 
-TiledLayer::TiledLayer()
-    : ContentsScalingLayer(),
+TiledLayer::TiledLayer(const LayerSettings& settings)
+    : ContentsScalingLayer(settings),
       texture_format_(RGBA_8888),
       skips_draw_(false),
       failed_update_(false),

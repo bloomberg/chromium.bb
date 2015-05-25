@@ -46,7 +46,8 @@ namespace {
 
 class LayerWithForcedDrawsContent : public Layer {
  public:
-  LayerWithForcedDrawsContent() {}
+  explicit LayerWithForcedDrawsContent(const LayerSettings& settings)
+      : Layer(settings) {}
 
   bool DrawsContent() const override;
 
@@ -73,16 +74,19 @@ class MockContentLayerClient : public ContentLayerClient {
 };
 
 scoped_refptr<FakePictureLayer> CreateDrawablePictureLayer(
+    const LayerSettings& settings,
     ContentLayerClient* delegate) {
   scoped_refptr<FakePictureLayer> to_return =
-      FakePictureLayer::Create(delegate);
+      FakePictureLayer::Create(settings, delegate);
   to_return->SetIsDrawable(true);
   return to_return;
 }
 
 scoped_refptr<ContentLayer> CreateDrawableContentLayer(
+    const LayerSettings& settings,
     ContentLayerClient* delegate) {
-  scoped_refptr<ContentLayer> to_return = ContentLayer::Create(delegate);
+  scoped_refptr<ContentLayer> to_return =
+      ContentLayer::Create(settings, delegate);
   to_return->SetIsDrawable(true);
   return to_return;
 }
@@ -104,9 +108,9 @@ TEST_F(LayerTreeHostCommonTest, TransformsForNoOpLayer) {
   // screen space transform, and the hierarchy passed on to children
   // layers should also be identity transforms.
 
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> grand_child = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
   parent->AddChild(child);
   child->AddChild(grand_child);
 
@@ -148,9 +152,9 @@ TEST_F(LayerTreeHostCommonTest, TransformsForNoOpLayer) {
 }
 
 TEST_F(LayerTreeHostCommonTest, DoNotSkipLayersWithHandlers) {
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> grand_child = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
   parent->AddChild(child);
   child->AddChild(grand_child);
 
@@ -195,9 +199,9 @@ TEST_F(LayerTreeHostCommonTest, DoNotSkipLayersWithHandlers) {
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   gfx::Transform identity_matrix;
-  scoped_refptr<Layer> layer = Layer::Create();
+  scoped_refptr<Layer> layer = Layer::Create(layer_settings());
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -393,10 +397,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   gfx::Transform identity_matrix;
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> grand_child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
   root->AddChild(parent);
   parent->AddChild(child);
   child->AddChild(grand_child);
@@ -519,11 +523,11 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(parent);
   parent->AddChild(child);
   child->AddChild(grand_child);
@@ -614,12 +618,12 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> child_replica = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child_replica = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(parent);
   parent->AddChild(child);
   child->AddChild(grand_child);
@@ -720,20 +724,20 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   //   - verifying that each layer has a reference to the correct render surface
   //   and render target values.
 
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
-  scoped_refptr<Layer> render_surface2 = Layer::Create();
-  scoped_refptr<Layer> child_of_root = Layer::Create();
-  scoped_refptr<Layer> child_of_rs1 = Layer::Create();
-  scoped_refptr<Layer> child_of_rs2 = Layer::Create();
-  scoped_refptr<Layer> replica_of_rs1 = Layer::Create();
-  scoped_refptr<Layer> replica_of_rs2 = Layer::Create();
-  scoped_refptr<Layer> grand_child_of_root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface2 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child_of_root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child_of_rs1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child_of_rs2 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> replica_of_rs1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> replica_of_rs2 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child_of_root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> grand_child_of_rs1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> grand_child_of_rs2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(parent);
   parent->AddChild(render_surface1);
   parent->AddChild(child_of_root);
@@ -1006,12 +1010,12 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
   // Note that the way the code is currently implemented, it is not expected to
   // use a canonical orthographic projection.
 
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> great_grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   gfx::Transform rotation_about_y_axis;
   rotation_about_y_axis.RotateAboutYAxis(30.0);
@@ -1102,10 +1106,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {
   // implicitly inherited by the rest of the subtree, which then is positioned
   // incorrectly as a result.
 
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   // The child height is zero, but has non-zero width that should be accounted
   // for while computing draw transforms.
@@ -1155,9 +1159,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   // to child layers instead of applied to the root RenderSurface.
   const gfx::Transform identity_matrix;
   scoped_refptr<LayerWithForcedDrawsContent> root =
-      new LayerWithForcedDrawsContent;
+      new LayerWithForcedDrawsContent(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      new LayerWithForcedDrawsContent;
+      new LayerWithForcedDrawsContent(layer_settings());
   child->SetScrollClipLayerId(root->id());
   root->AddChild(child);
 
@@ -1309,10 +1313,10 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
 
 TEST_F(LayerTreeHostCommonTest,
        RenderSurfaceListForRenderSurfaceWithClippedLayer) {
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
   host->SetRootLayer(parent);
@@ -1363,10 +1367,10 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
   host->SetRootLayer(parent);
@@ -1409,9 +1413,9 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
-  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
   host->SetRootLayer(parent);
@@ -1439,10 +1443,10 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
 }
 
 TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   render_surface1->SetForceRenderSurface(true);
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
@@ -1508,12 +1512,12 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfacesFlattenScreenSpaceTransform) {
   // Render surfaces act as a flattening point for their subtree, so should
   // always flatten the target-to-screen space transform seen by descendants.
 
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   gfx::Transform rotation_about_y_axis;
   rotation_about_y_axis.RotateAboutYAxis(30.0);
@@ -1590,14 +1594,14 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
   //
 
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> grand_child = Layer::Create();
-  scoped_refptr<Layer> great_grand_child = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> great_grand_child = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> leaf_node1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> leaf_node2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   parent->AddChild(child);
   child->AddChild(grand_child);
   grand_child->AddChild(great_grand_child);
@@ -1691,11 +1695,11 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
   // in the render_surface_layer_list.
 
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> grand_child = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> leaf_node =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   parent->AddChild(child);
   child->AddChild(grand_child);
   grand_child->AddChild(leaf_node);
@@ -1786,15 +1790,15 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
   //    and propagates the clip to the subtree.
 
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child1 = Layer::Create();
-  scoped_refptr<Layer> child2 = Layer::Create();
-  scoped_refptr<Layer> grand_child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child2 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> leaf_node1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> leaf_node2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(parent);
   parent->AddChild(child1);
   parent->AddChild(child2);
@@ -1947,12 +1951,12 @@ TEST_F(LayerTreeHostCommonTest, DrawableContentRectForLayers) {
   //
 
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> grand_child1 = Layer::Create();
-  scoped_refptr<Layer> grand_child2 = Layer::Create();
-  scoped_refptr<Layer> grand_child3 = Layer::Create();
-  scoped_refptr<Layer> grand_child4 = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child2 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child3 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child4 = Layer::Create(layer_settings());
 
   parent->AddChild(child);
   child->AddChild(grand_child1);
@@ -2037,20 +2041,20 @@ TEST_F(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
   // They may still have a clip rect of their own layer bounds, however, if
   // masksToBounds was true.
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> grand_child1 = Layer::Create();
-  scoped_refptr<Layer> grand_child2 = Layer::Create();
-  scoped_refptr<Layer> grand_child3 = Layer::Create();
-  scoped_refptr<Layer> grand_child4 = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child2 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child3 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child4 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> leaf_node1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> leaf_node2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> leaf_node3 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> leaf_node4 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   parent->AddChild(child);
   child->AddChild(grand_child1);
@@ -2175,17 +2179,17 @@ TEST_F(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
 }
 
 TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
-  scoped_refptr<Layer> render_surface2 = Layer::Create();
-  scoped_refptr<Layer> child_of_root = Layer::Create();
-  scoped_refptr<Layer> child_of_rs1 = Layer::Create();
-  scoped_refptr<Layer> child_of_rs2 = Layer::Create();
-  scoped_refptr<Layer> grand_child_of_root = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface2 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child_of_root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child_of_rs1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child_of_rs2 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child_of_root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> grand_child_of_rs1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> grand_child_of_rs2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   parent->AddChild(render_surface1);
   parent->AddChild(child_of_root);
   render_surface1->AddChild(child_of_rs1);
@@ -2672,13 +2676,13 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectForPerspectiveUnprojection) {
 }
 
 TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsForSimpleLayers) {
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child3 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(child1);
   root->AddChild(child2);
   root->AddChild(child3);
@@ -2738,14 +2742,14 @@ TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsForSimpleLayers) {
 
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersClippedByLayer) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> grand_child1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> grand_child2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> grand_child3 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(child);
   child->AddChild(grand_child1);
   child->AddChild(grand_child2);
@@ -2816,10 +2820,10 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectWithClippingAndScaling) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(child);
   child->AddChild(grand_child);
 
@@ -2850,14 +2854,14 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectWithClippingAndScaling) {
 
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersInUnclippedRenderSurface) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child3 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(render_surface1);
   render_surface1->AddChild(child1);
   render_surface1->AddChild(child2);
@@ -2933,13 +2937,13 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        VisibleContentRectsForClippedSurfaceWithEmptyClip) {
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child3 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(child1);
   root->AddChild(child2);
   root->AddChild(child3);
@@ -2983,9 +2987,9 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersWithUninvertibleTransform) {
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(child);
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
@@ -3057,9 +3061,9 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        SingularTransformDoesNotPreventClearingDrawProperties) {
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(child);
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
@@ -3104,7 +3108,7 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        SingularNonAnimatingTransformDoesNotPreventClearingDrawProperties) {
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
   host->SetRootLayer(root);
@@ -3132,14 +3136,14 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersInClippedRenderSurface) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child3 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(render_surface1);
   render_surface1->AddChild(child1);
   render_surface1->AddChild(child2);
@@ -3219,15 +3223,15 @@ TEST_F(LayerTreeHostCommonTest,
 TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForSurfaceHierarchy) {
   // Check that clipping does not propagate down surfaces.
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
-  scoped_refptr<Layer> render_surface2 = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface2 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child3 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(render_surface1);
   render_surface1->AddChild(render_surface2);
   render_surface2->AddChild(child1);
@@ -3325,10 +3329,10 @@ TEST_F(LayerTreeHostCommonTest,
   // Layers that have non-axis aligned bounds (due to transforms) have an
   // expanded, axis-aligned DrawableContentRect and visible content rect.
 
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(render_surface1);
   render_surface1->AddChild(child1);
 
@@ -3394,10 +3398,10 @@ TEST_F(LayerTreeHostCommonTest,
   // Layers that have non-axis aligned bounds (due to transforms) have an
   // expanded, axis-aligned DrawableContentRect and visible content rect.
 
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(render_surface1);
   render_surface1->AddChild(child1);
 
@@ -3462,14 +3466,17 @@ TEST_F(LayerTreeHostCommonTest,
 TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsInHighDPI) {
   MockContentLayerClient client;
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<FakePictureLayer> render_surface1 =
-      CreateDrawablePictureLayer(&client);
+      CreateDrawablePictureLayer(layer_settings(), &client);
   scoped_refptr<FakePictureLayer> render_surface2 =
-      CreateDrawablePictureLayer(&client);
-  scoped_refptr<FakePictureLayer> child1 = CreateDrawablePictureLayer(&client);
-  scoped_refptr<FakePictureLayer> child2 = CreateDrawablePictureLayer(&client);
-  scoped_refptr<FakePictureLayer> child3 = CreateDrawablePictureLayer(&client);
+      CreateDrawablePictureLayer(layer_settings(), &client);
+  scoped_refptr<FakePictureLayer> child1 =
+      CreateDrawablePictureLayer(layer_settings(), &client);
+  scoped_refptr<FakePictureLayer> child2 =
+      CreateDrawablePictureLayer(layer_settings(), &client);
+  scoped_refptr<FakePictureLayer> child3 =
+      CreateDrawablePictureLayer(layer_settings(), &client);
   root->AddChild(render_surface1);
   render_surface1->AddChild(render_surface2);
   render_surface2->AddChild(child1);
@@ -3568,27 +3575,27 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   // "flattened" to each parent layer according to current W3C spec.
 
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> front_facing_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> back_facing_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> front_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> back_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent>
       front_facing_child_of_front_facing_surface =
-          make_scoped_refptr(new LayerWithForcedDrawsContent());
+          make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent>
       back_facing_child_of_front_facing_surface =
-          make_scoped_refptr(new LayerWithForcedDrawsContent());
+          make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent>
       front_facing_child_of_back_facing_surface =
-          make_scoped_refptr(new LayerWithForcedDrawsContent());
+          make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent>
       back_facing_child_of_back_facing_surface =
-          make_scoped_refptr(new LayerWithForcedDrawsContent());
+          make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   parent->AddChild(front_facing_child);
   parent->AddChild(back_facing_child);
@@ -3770,31 +3777,31 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   // is used.
 
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> front_facing_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> back_facing_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> front_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> back_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent>
-  front_facing_child_of_front_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      front_facing_child_of_front_facing_surface =
+          make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent>
-  back_facing_child_of_front_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      back_facing_child_of_front_facing_surface =
+          make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent>
-  front_facing_child_of_back_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      front_facing_child_of_back_facing_surface =
+          make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent>
-  back_facing_child_of_back_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      back_facing_child_of_back_facing_surface =
+          make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> dummy_replica_layer1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> dummy_replica_layer2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   parent->AddChild(front_facing_child);
   parent->AddChild(back_facing_child);
@@ -3955,17 +3962,17 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   // transforms should be treated as "unknown" so we can not be sure that their
   // back face is really showing.
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> animating_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child_of_animating_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> animating_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   parent->AddChild(child);
   parent->AddChild(animating_surface);
@@ -4104,15 +4111,15 @@ TEST_F(LayerTreeHostCommonTest,
   // created when it flattens its subtree, and its parent has preserves-3d.
 
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> front_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> back_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   parent->AddChild(front_facing_surface);
   parent->AddChild(back_facing_surface);
@@ -4214,8 +4221,10 @@ TEST_F(LayerTreeHostCommonTest,
 
 class NoScaleContentLayer : public ContentLayer {
  public:
-  static scoped_refptr<NoScaleContentLayer> Create(ContentLayerClient* client) {
-    return make_scoped_refptr(new NoScaleContentLayer(client));
+  static scoped_refptr<NoScaleContentLayer> Create(
+      const LayerSettings& settings,
+      ContentLayerClient* client) {
+    return make_scoped_refptr(new NoScaleContentLayer(settings, client));
   }
 
   void CalculateContentsScale(float ideal_contents_scale,
@@ -4230,15 +4239,16 @@ class NoScaleContentLayer : public ContentLayer {
   }
 
  protected:
-  explicit NoScaleContentLayer(ContentLayerClient* client)
-      : ContentLayer(client) {}
+  NoScaleContentLayer(const LayerSettings& settings, ContentLayerClient* client)
+      : ContentLayer(settings, client) {}
   ~NoScaleContentLayer() override {}
 };
 
 scoped_refptr<NoScaleContentLayer> CreateNoScaleDrawableContentLayer(
+    const LayerSettings& settings,
     ContentLayerClient* delegate) {
   scoped_refptr<NoScaleContentLayer> to_return =
-      NoScaleContentLayer::Create(delegate);
+      NoScaleContentLayer::Create(settings, delegate);
   to_return->SetIsDrawable(true);
   return to_return;
 }
@@ -4249,7 +4259,7 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
   gfx::Transform identity_matrix;
 
   scoped_refptr<FakePictureLayer> parent =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -4258,7 +4268,8 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
                                false,
                                true);
 
-  scoped_refptr<FakePictureLayer> child = CreateDrawablePictureLayer(&delegate);
+  scoped_refptr<FakePictureLayer> child =
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -4268,7 +4279,7 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
                                true);
 
   scoped_refptr<FakePictureLayer> child_empty =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child_empty.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -4369,10 +4380,10 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
   gfx::Transform scale_small_matrix;
   scale_small_matrix.Scale(SK_MScalar1 / 10.f, SK_MScalar1 / 12.f);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
 
   scoped_refptr<FakePictureLayer> parent =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -4382,7 +4393,7 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
                                true);
 
   scoped_refptr<FakePictureLayer> perspective_surface =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(perspective_surface.get(),
                                perspective_matrix * scale_small_matrix,
                                gfx::Point3F(),
@@ -4392,7 +4403,7 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
                                true);
 
   scoped_refptr<FakePictureLayer> scale_surface =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(scale_surface.get(),
                                scale_small_matrix,
                                gfx::Point3F(),
@@ -4485,7 +4496,8 @@ TEST_F(LayerTreeHostCommonTest,
   MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
 
-  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<ContentLayer> parent =
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -4494,7 +4506,8 @@ TEST_F(LayerTreeHostCommonTest,
                                false,
                                true);
 
-  scoped_refptr<ContentLayer> child = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<ContentLayer> child =
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -4504,7 +4517,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true);
 
   scoped_refptr<NoScaleContentLayer> child_no_scale =
-      CreateNoScaleDrawableContentLayer(&delegate);
+      CreateNoScaleDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child_no_scale.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -4608,10 +4621,11 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
   SkMScalar initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   root->SetBounds(gfx::Size(100, 100));
 
-  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<ContentLayer> parent =
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                parent_scale_matrix,
                                gfx::Point3F(),
@@ -4621,7 +4635,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
                                true);
 
   scoped_refptr<ContentLayer> child_scale =
-      CreateDrawableContentLayer(&delegate);
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -4631,7 +4645,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
                                true);
 
   scoped_refptr<ContentLayer> child_empty =
-      CreateDrawableContentLayer(&delegate);
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child_empty.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -4641,7 +4655,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
                                true);
 
   scoped_refptr<NoScaleContentLayer> child_no_scale =
-      CreateNoScaleDrawableContentLayer(&delegate);
+      CreateNoScaleDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child_no_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -4797,10 +4811,11 @@ TEST_F(LayerTreeHostCommonTest,
   SkMScalar initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   root->SetBounds(gfx::Size(100, 100));
 
-  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<ContentLayer> parent =
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                parent_scale_matrix,
                                gfx::Point3F(),
@@ -4810,7 +4825,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true);
 
   scoped_refptr<ContentLayer> child_scale =
-      CreateDrawableContentLayer(&delegate);
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -4820,7 +4835,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true);
 
   scoped_refptr<ContentLayer> child_empty =
-      CreateDrawableContentLayer(&delegate);
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child_empty.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -4830,7 +4845,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true);
 
   scoped_refptr<NoScaleContentLayer> child_no_scale =
-      CreateNoScaleDrawableContentLayer(&delegate);
+      CreateNoScaleDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child_no_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -4902,11 +4917,11 @@ TEST_F(LayerTreeHostCommonTest, SmallIdealScale) {
   SkMScalar initial_child_scale = 0.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   root->SetBounds(gfx::Size(100, 100));
 
   scoped_refptr<FakePictureLayer> parent =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                parent_scale_matrix,
                                gfx::Point3F(),
@@ -4916,7 +4931,7 @@ TEST_F(LayerTreeHostCommonTest, SmallIdealScale) {
                                true);
 
   scoped_refptr<FakePictureLayer> child_scale =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -4970,10 +4985,11 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
   SkMScalar initial_child_scale = 3.0;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   root->SetBounds(gfx::Size(100, 100));
 
-  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<ContentLayer> parent =
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                parent_scale_matrix,
                                gfx::Point3F(),
@@ -4983,7 +4999,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
                                true);
 
   scoped_refptr<ContentLayer> surface_scale =
-      CreateDrawableContentLayer(&delegate);
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -4993,7 +5009,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
                                true);
 
   scoped_refptr<ContentLayer> surface_scale_child_scale =
-      CreateDrawableContentLayer(&delegate);
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_scale_child_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5003,7 +5019,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
                                true);
 
   scoped_refptr<NoScaleContentLayer> surface_scale_child_no_scale =
-      CreateNoScaleDrawableContentLayer(&delegate);
+      CreateNoScaleDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_scale_child_no_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5013,7 +5029,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
                                true);
 
   scoped_refptr<NoScaleContentLayer> surface_no_scale =
-      CreateNoScaleDrawableContentLayer(&delegate);
+      CreateNoScaleDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_no_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5023,7 +5039,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
                                true);
 
   scoped_refptr<ContentLayer> surface_no_scale_child_scale =
-      CreateDrawableContentLayer(&delegate);
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_no_scale_child_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5033,7 +5049,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
                                true);
 
   scoped_refptr<NoScaleContentLayer> surface_no_scale_child_no_scale =
-      CreateNoScaleDrawableContentLayer(&delegate);
+      CreateNoScaleDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_no_scale_child_no_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5173,10 +5189,11 @@ TEST_F(LayerTreeHostCommonTest,
   SkMScalar initial_child_scale = 3.0;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   root->SetBounds(gfx::Size(100, 100));
 
-  scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<ContentLayer> parent =
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                parent_scale_matrix,
                                gfx::Point3F(),
@@ -5186,7 +5203,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true);
 
   scoped_refptr<ContentLayer> surface_scale =
-      CreateDrawableContentLayer(&delegate);
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5196,7 +5213,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true);
 
   scoped_refptr<ContentLayer> surface_scale_child_scale =
-      CreateDrawableContentLayer(&delegate);
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_scale_child_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5206,7 +5223,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true);
 
   scoped_refptr<NoScaleContentLayer> surface_scale_child_no_scale =
-      CreateNoScaleDrawableContentLayer(&delegate);
+      CreateNoScaleDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_scale_child_no_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5216,7 +5233,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true);
 
   scoped_refptr<NoScaleContentLayer> surface_no_scale =
-      CreateNoScaleDrawableContentLayer(&delegate);
+      CreateNoScaleDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_no_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5226,7 +5243,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true);
 
   scoped_refptr<ContentLayer> surface_no_scale_child_scale =
-      CreateDrawableContentLayer(&delegate);
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_no_scale_child_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5236,7 +5253,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true);
 
   scoped_refptr<NoScaleContentLayer> surface_no_scale_child_no_scale =
-      CreateNoScaleDrawableContentLayer(&delegate);
+      CreateNoScaleDrawableContentLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(surface_no_scale_child_no_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5382,11 +5399,11 @@ TEST_F(LayerTreeHostCommonTest, IdealScaleForAnimatingLayer) {
   SkMScalar initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   root->SetBounds(gfx::Size(100, 100));
 
   scoped_refptr<FakePictureLayer> parent =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                parent_scale_matrix,
                                gfx::Point3F(),
@@ -5396,7 +5413,7 @@ TEST_F(LayerTreeHostCommonTest, IdealScaleForAnimatingLayer) {
                                true);
 
   scoped_refptr<FakePictureLayer> child_scale =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child_scale.get(),
                                child_scale_matrix,
                                gfx::Point3F(),
@@ -5431,8 +5448,9 @@ TEST_F(LayerTreeHostCommonTest, IdealScaleForAnimatingLayer) {
 TEST_F(LayerTreeHostCommonTest,
        ChangeInContentBoundsOrScaleTriggersPushProperties) {
   MockContentLayerClient delegate;
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = CreateDrawableContentLayer(&delegate);
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child =
+      CreateDrawableContentLayer(layer_settings(), &delegate);
   root->AddChild(child);
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
@@ -5494,7 +5512,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   gfx::Transform identity_matrix;
 
   scoped_refptr<FakePictureLayer> parent =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -5503,7 +5521,8 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
                                false,
                                true);
 
-  scoped_refptr<FakePictureLayer> child = CreateDrawablePictureLayer(&delegate);
+  scoped_refptr<FakePictureLayer> child =
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -5515,7 +5534,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   gfx::Transform replica_transform;
   replica_transform.Scale(1.0, -1.0);
   scoped_refptr<FakePictureLayer> replica =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(replica.get(),
                                replica_transform,
                                gfx::Point3F(),
@@ -5527,7 +5546,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   // This layer should end up in the same surface as child, with the same draw
   // and screen space transforms.
   scoped_refptr<FakePictureLayer> duplicate_child_non_owner =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(duplicate_child_non_owner.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -5634,7 +5653,7 @@ TEST_F(LayerTreeHostCommonTest,
   gfx::Transform identity_matrix;
 
   scoped_refptr<FakePictureLayer> parent =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -5643,7 +5662,8 @@ TEST_F(LayerTreeHostCommonTest,
                                false,
                                true);
 
-  scoped_refptr<FakePictureLayer> child = CreateDrawablePictureLayer(&delegate);
+  scoped_refptr<FakePictureLayer> child =
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -5655,7 +5675,7 @@ TEST_F(LayerTreeHostCommonTest,
   gfx::Transform replica_transform;
   replica_transform.Scale(1.0, -1.0);
   scoped_refptr<FakePictureLayer> replica =
-      CreateDrawablePictureLayer(&delegate);
+      CreateDrawablePictureLayer(layer_settings(), &delegate);
   SetLayerPropertiesForTesting(replica.get(),
                                replica_transform,
                                gfx::Point3F(),
@@ -5705,11 +5725,11 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest, SubtreeSearch) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> grand_child = Layer::Create();
-  scoped_refptr<Layer> mask_layer = Layer::Create();
-  scoped_refptr<Layer> replica_layer = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> mask_layer = Layer::Create(layer_settings());
+  scoped_refptr<Layer> replica_layer = Layer::Create(layer_settings());
 
   grand_child->SetReplicaLayer(replica_layer.get());
   child->AddChild(grand_child.get());
@@ -5738,10 +5758,10 @@ TEST_F(LayerTreeHostCommonTest, SubtreeSearch) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransparentChildRenderSurfaceCreation) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   const gfx::Transform identity_matrix;
   SetLayerPropertiesForTesting(root.get(),
@@ -6036,7 +6056,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayer) {
   host_impl.CreatePendingTree();
   const gfx::Transform identity_matrix;
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6046,7 +6066,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayer) {
                                false);
   root->SetIsDrawable(true);
 
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6056,7 +6076,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayer) {
                                false);
   child->SetIsDrawable(true);
 
-  scoped_refptr<Layer> grand_child = Layer::Create();
+  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(grand_child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6139,7 +6159,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayers) {
   host_impl.CreatePendingTree();
   const gfx::Transform identity_matrix;
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6149,7 +6169,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayers) {
                                false);
   root->SetIsDrawable(true);
 
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6160,7 +6180,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayers) {
   child->SetIsDrawable(true);
   child->SetHideLayerAndSubtree(true);
 
-  scoped_refptr<Layer> grand_child = Layer::Create();
+  scoped_refptr<Layer> grand_child = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(grand_child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6241,7 +6261,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   host_impl.CreatePendingTree();
   const gfx::Transform identity_matrix;
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6251,7 +6271,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
                                false);
   root->SetIsDrawable(true);
 
-  scoped_refptr<Layer> copy_grand_parent = Layer::Create();
+  scoped_refptr<Layer> copy_grand_parent = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(copy_grand_parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6261,7 +6281,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
                                false);
   copy_grand_parent->SetIsDrawable(true);
 
-  scoped_refptr<Layer> copy_parent = Layer::Create();
+  scoped_refptr<Layer> copy_parent = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(copy_parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6272,7 +6292,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   copy_parent->SetIsDrawable(true);
   copy_parent->SetForceRenderSurface(true);
 
-  scoped_refptr<Layer> copy_layer = Layer::Create();
+  scoped_refptr<Layer> copy_layer = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(copy_layer.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6282,7 +6302,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
                                false);
   copy_layer->SetIsDrawable(true);
 
-  scoped_refptr<Layer> copy_child = Layer::Create();
+  scoped_refptr<Layer> copy_child = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(copy_child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6292,7 +6312,8 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
                                false);
   copy_child->SetIsDrawable(true);
 
-  scoped_refptr<Layer> copy_grand_parent_sibling_before = Layer::Create();
+  scoped_refptr<Layer> copy_grand_parent_sibling_before =
+      Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(copy_grand_parent_sibling_before.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6302,7 +6323,8 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
                                false);
   copy_grand_parent_sibling_before->SetIsDrawable(true);
 
-  scoped_refptr<Layer> copy_grand_parent_sibling_after = Layer::Create();
+  scoped_refptr<Layer> copy_grand_parent_sibling_after =
+      Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(copy_grand_parent_sibling_after.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6388,7 +6410,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   host_impl.CreatePendingTree();
   const gfx::Transform identity_matrix;
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6398,7 +6420,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
                                false);
   root->SetIsDrawable(true);
 
-  scoped_refptr<Layer> copy_parent = Layer::Create();
+  scoped_refptr<Layer> copy_parent = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(copy_parent.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6409,7 +6431,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   copy_parent->SetIsDrawable(true);
   copy_parent->SetMasksToBounds(true);
 
-  scoped_refptr<Layer> copy_layer = Layer::Create();
+  scoped_refptr<Layer> copy_layer = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(copy_layer.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6419,7 +6441,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
                                false);
   copy_layer->SetIsDrawable(true);
 
-  scoped_refptr<Layer> copy_child = Layer::Create();
+  scoped_refptr<Layer> copy_child = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(copy_child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6463,7 +6485,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
   host_impl.CreatePendingTree();
   const gfx::Transform identity_matrix;
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6474,7 +6496,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
   root->SetIsDrawable(true);
 
   // The surface is moved slightly outside of the viewport.
-  scoped_refptr<Layer> surface = Layer::Create();
+  scoped_refptr<Layer> surface = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(surface.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6484,7 +6506,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
                                false);
   surface->SetForceRenderSurface(true);
 
-  scoped_refptr<Layer> surface_child = Layer::Create();
+  scoped_refptr<Layer> surface_child = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(surface_child.get(),
                                identity_matrix,
                                gfx::Point3F(),
@@ -6524,12 +6546,12 @@ TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
   //
   // The render surface should be resized correctly and the clip child should
   // inherit the right clip rect.
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> render_surface = Layer::Create();
-  scoped_refptr<Layer> clip_parent = Layer::Create();
-  scoped_refptr<Layer> intervening = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface = Layer::Create(layer_settings());
+  scoped_refptr<Layer> clip_parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> intervening = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> clip_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(render_surface);
   render_surface->AddChild(clip_parent);
@@ -6626,13 +6648,13 @@ TEST_F(LayerTreeHostCommonTest, ClipParentWithInterveningRenderSurface) {
   //          + render_surface2 (also sets opacity)
   //            + clip_child
   //
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> clip_parent = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
-  scoped_refptr<Layer> intervening = Layer::Create();
-  scoped_refptr<Layer> render_surface2 = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> clip_parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> intervening = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface2 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> clip_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(clip_parent);
   clip_parent->AddChild(render_surface1);
@@ -6753,13 +6775,13 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   //          + render_surface2 (also sets opacity)
   //            + clip_child
   //
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> clip_parent = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
-  scoped_refptr<Layer> intervening = Layer::Create();
-  scoped_refptr<Layer> render_surface2 = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> clip_parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
+  scoped_refptr<Layer> intervening = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface2 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> clip_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(clip_parent);
   clip_parent->AddChild(render_surface1);
@@ -6879,12 +6901,12 @@ TEST_F(LayerTreeHostCommonTest, DescendantsOfClipChildren) {
   //        + clip_child
   //          + child
   //
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> clip_parent = Layer::Create();
-  scoped_refptr<Layer> intervening = Layer::Create();
-  scoped_refptr<Layer> clip_child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> clip_parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> intervening = Layer::Create(layer_settings());
+  scoped_refptr<Layer> clip_child = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(clip_parent);
   clip_parent->AddChild(intervening);
@@ -6963,14 +6985,14 @@ TEST_F(LayerTreeHostCommonTest,
   //        + non_clip_child
   //
   // In this example render_surface2 should be unaffected by clip_child.
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> clip_parent = Layer::Create();
-  scoped_refptr<Layer> render_surface1 = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> clip_parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> clip_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
-  scoped_refptr<Layer> render_surface2 = Layer::Create();
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  scoped_refptr<Layer> render_surface2 = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> non_clip_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(clip_parent);
   clip_parent->AddChild(render_surface1);
@@ -7172,10 +7194,10 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
 }
 
 TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleSurfaces) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> render_surface = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> render_surface = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(render_surface);
   render_surface->AddChild(child);
@@ -7244,13 +7266,13 @@ TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
   //   |   + scroll_parent
   //   + scroll_child
   //
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> scroll_parent_border = Layer::Create();
-  scoped_refptr<Layer> scroll_parent_clip = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> scroll_parent_border = Layer::Create(layer_settings());
+  scoped_refptr<Layer> scroll_parent_clip = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> scroll_parent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> scroll_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(scroll_child);
 
@@ -7313,11 +7335,11 @@ TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
 
 TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
   scoped_refptr<LayerWithForcedDrawsContent> root =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> parent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(parent);
   parent->AddChild(child);
@@ -7385,13 +7407,13 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollParent) {
   //     + scroll_parent_clip
   //       + scroll_parent
   //
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> scroll_parent_border = Layer::Create();
-  scoped_refptr<Layer> scroll_parent_clip = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> scroll_parent_border = Layer::Create(layer_settings());
+  scoped_refptr<Layer> scroll_parent_clip = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> scroll_parent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> scroll_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(scroll_parent_border);
   scroll_parent_border->AddChild(scroll_parent_clip);
@@ -7465,19 +7487,21 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
   //     + scroll_grandparent_clip
   //       + scroll_grandparent
   //
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> scroll_parent_border = Layer::Create();
-  scoped_refptr<Layer> scroll_parent_clip = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> scroll_parent_border = Layer::Create(layer_settings());
+  scoped_refptr<Layer> scroll_parent_clip = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> scroll_parent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
-  scoped_refptr<Layer> scroll_grandparent_border = Layer::Create();
-  scoped_refptr<Layer> scroll_grandparent_clip = Layer::Create();
+  scoped_refptr<Layer> scroll_grandparent_border =
+      Layer::Create(layer_settings());
+  scoped_refptr<Layer> scroll_grandparent_clip =
+      Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> scroll_grandparent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   scoped_refptr<LayerWithForcedDrawsContent> scroll_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(scroll_child);
 
@@ -7590,24 +7614,26 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   //         + render_surface2
   //
   scoped_refptr<LayerWithForcedDrawsContent> root =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
-  scoped_refptr<Layer> scroll_parent_border = Layer::Create();
-  scoped_refptr<Layer> scroll_parent_clip = Layer::Create();
+  scoped_refptr<Layer> scroll_parent_border = Layer::Create(layer_settings());
+  scoped_refptr<Layer> scroll_parent_clip = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> scroll_parent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> render_surface1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
-  scoped_refptr<Layer> scroll_grandparent_border = Layer::Create();
-  scoped_refptr<Layer> scroll_grandparent_clip = Layer::Create();
+  scoped_refptr<Layer> scroll_grandparent_border =
+      Layer::Create(layer_settings());
+  scoped_refptr<Layer> scroll_grandparent_clip =
+      Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> scroll_grandparent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> render_surface2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   scoped_refptr<LayerWithForcedDrawsContent> scroll_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(scroll_child);
 
@@ -7742,13 +7768,13 @@ TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
   //     + fixed
   //       + child
   //
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> render_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> fixed =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(render_surface);
   render_surface->AddChild(fixed);
@@ -8727,7 +8753,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(),
                                gfx::Transform(),
                                gfx::Point3F(),
@@ -8737,7 +8763,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
                                false);
   root->SetIsDrawable(true);
 
-  scoped_refptr<Layer> clip = Layer::Create();
+  scoped_refptr<Layer> clip = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(clip.get(),
                                gfx::Transform(),
                                gfx::Point3F(),
@@ -8747,7 +8773,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
                                false);
   clip->SetMasksToBounds(true);
 
-  scoped_refptr<Layer> content = Layer::Create();
+  scoped_refptr<Layer> content = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(content.get(),
                                gfx::Transform(),
                                gfx::Point3F(),
@@ -8850,9 +8876,9 @@ TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
 
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> animated =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(animated);
 
@@ -8879,14 +8905,14 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
 TEST_F(LayerTreeHostCommonTest,
        VisibleContentRectForAnimatedLayerWithSingularTransform) {
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> clip = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> clip = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> animated =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> descendant_of_animation =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(clip);
   clip->AddChild(animated);
@@ -8956,9 +8982,9 @@ TEST_F(LayerTreeHostCommonTest,
 // Verify that having an animated filter (but no current filter, as these
 // are mutually exclusive) correctly creates a render surface.
 TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> grandchild = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<Layer> grandchild = Layer::Create(layer_settings());
   root->AddChild(child);
   child->AddChild(grandchild);
 
@@ -8993,10 +9019,10 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
 // Ensures that the property tree code accounts for offsets between fixed
 // position layers and their respective containers.
 TEST_F(LayerTreeHostCommonTest, PropertyTreesAccountForFixedParentOffset) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> grandchild =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(child);
   child->AddChild(grandchild);
@@ -9038,35 +9064,35 @@ TEST_F(LayerTreeHostCommonTest, CombineClipsUsingContentTarget) {
   rotate.Rotate(5);
   gfx::Transform identity;
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(2500, 1500), true,
                                false);
 
-  scoped_refptr<Layer> frame_clip = Layer::Create();
+  scoped_refptr<Layer> frame_clip = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(frame_clip.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(2500, 1500), true,
                                false);
   frame_clip->SetMasksToBounds(true);
 
-  scoped_refptr<Layer> rotated = Layer::Create();
+  scoped_refptr<Layer> rotated = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(rotated.get(), rotate,
                                gfx::Point3F(1250, 250, 0), gfx::PointF(),
                                gfx::Size(2500, 500), true, false);
 
-  scoped_refptr<Layer> surface = Layer::Create();
+  scoped_refptr<Layer> surface = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(surface.get(), rotate, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(2500, 500), true,
                                false);
   surface->SetOpacity(0.5);
 
   scoped_refptr<LayerWithForcedDrawsContent> container =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   SetLayerPropertiesForTesting(container.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(300, 300), true, false);
 
   scoped_refptr<LayerWithForcedDrawsContent> box =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   SetLayerPropertiesForTesting(box.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(100, 100), true, false);
 
@@ -9087,19 +9113,19 @@ TEST_F(LayerTreeHostCommonTest, OnlyApplyFixedPositioningOnce) {
   gfx::Transform translate_z;
   translate_z.Translate3d(0, 0, 10);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(800, 800), true, false);
   root->SetIsContainerForFixedPositionLayers(true);
 
-  scoped_refptr<Layer> frame_clip = Layer::Create();
+  scoped_refptr<Layer> frame_clip = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(frame_clip.get(), translate_z, gfx::Point3F(),
                                gfx::PointF(500, 100), gfx::Size(100, 100), true,
                                false);
   frame_clip->SetMasksToBounds(true);
 
   scoped_refptr<LayerWithForcedDrawsContent> fixed =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   SetLayerPropertiesForTesting(fixed.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(1000, 1000), true,
                                false);
@@ -9126,19 +9152,19 @@ TEST_F(LayerTreeHostCommonTest,
   gfx::Transform translate_z;
   translate_z.Translate3d(0, 0, 10);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(800, 800), true, false);
   root->SetIsContainerForFixedPositionLayers(true);
 
-  scoped_refptr<Layer> frame_clip = Layer::Create();
+  scoped_refptr<Layer> frame_clip = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(frame_clip.get(), translate_z, gfx::Point3F(),
                                gfx::PointF(500, 100), gfx::Size(100, 100), true,
                                false);
   frame_clip->SetMasksToBounds(true);
 
   scoped_refptr<LayerWithForcedDrawsContent> scroller =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   SetLayerPropertiesForTesting(scroller.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(1000, 1000), true,
                                false);
@@ -9148,7 +9174,7 @@ TEST_F(LayerTreeHostCommonTest,
   scroller->SetScrollClipLayerId(frame_clip->id());
 
   scoped_refptr<LayerWithForcedDrawsContent> fixed =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   SetLayerPropertiesForTesting(fixed.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false);
 
@@ -9157,7 +9183,7 @@ TEST_F(LayerTreeHostCommonTest,
   fixed->SetPositionConstraint(constraint);
 
   scoped_refptr<LayerWithForcedDrawsContent> fixed_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   SetLayerPropertiesForTesting(fixed_child.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(10, 10), true, false);
 
@@ -9183,19 +9209,19 @@ TEST_F(LayerTreeHostCommonTest,
 TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
   gfx::Transform identity;
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(800, 800), true, false);
   root->SetIsContainerForFixedPositionLayers(true);
 
-  scoped_refptr<Layer> frame_clip = Layer::Create();
+  scoped_refptr<Layer> frame_clip = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(frame_clip.get(), identity, gfx::Point3F(),
                                gfx::PointF(500, 100), gfx::Size(100, 100), true,
                                false);
   frame_clip->SetMasksToBounds(true);
 
   scoped_refptr<LayerWithForcedDrawsContent> scroller =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   SetLayerPropertiesForTesting(scroller.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(1000, 1000), true,
                                false);
@@ -9204,7 +9230,7 @@ TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
   scroller->SetScrollClipLayerId(frame_clip->id());
 
   scoped_refptr<LayerWithForcedDrawsContent> fixed =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   SetLayerPropertiesForTesting(fixed.get(), identity, gfx::Point3F(),
                                gfx::PointF(100, 100), gfx::Size(50, 50), true,
                                false);
@@ -9236,7 +9262,7 @@ TEST_F(LayerTreeHostCommonTest, ChangingAxisAlignmentTriggersRebuild) {
   translate.Translate(10, 10);
   rotate.Rotate(45);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(800, 800), true, false);
   root->SetIsContainerForFixedPositionLayers(true);
@@ -9255,9 +9281,9 @@ TEST_F(LayerTreeHostCommonTest, ChangingAxisAlignmentTriggersRebuild) {
 }
 
 TEST_F(LayerTreeHostCommonTest, ChangeTransformOrigin) {
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   root->AddChild(child);
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
@@ -9281,11 +9307,11 @@ TEST_F(LayerTreeHostCommonTest, ChangeTransformOrigin) {
 }
 
 TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> scroll_parent =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> scroll_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent);
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
 
   root->AddChild(scroll_child);
   root->AddChild(scroll_parent);
@@ -9323,13 +9349,13 @@ static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
 TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   gfx::Transform identity;
   FakeContentLayerClient client;
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> grandchild =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<FakeContentLayer> greatgrandchild(
-      FakeContentLayer::Create(&client));
+      FakeContentLayer::Create(layer_settings(), &client));
   SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(100, 100), true, false);
   SetLayerPropertiesForTesting(child.get(), identity, gfx::Point3F(),
@@ -9485,9 +9511,9 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
 TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
   gfx::Transform identity;
   FakeContentLayerClient client;
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(100, 100), true, false);
   SetLayerPropertiesForTesting(child.get(), identity, gfx::Point3F(),
@@ -9528,9 +9554,9 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
 TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
   // Ensure that the treewalk in LayerTreeHostCommom::
   // PreCalculateMetaInformation happens when its required.
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
 
   root->AddChild(parent);
   parent->AddChild(child);
@@ -9573,8 +9599,8 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
 TEST_F(LayerTreeHostCommonTest, InputHandlersRecursiveUpdateTest) {
   // Ensure that the treewalk in LayertreeHostCommon::
   // PreCalculateMetaInformation updates input handlers correctly.
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
 
   root->AddChild(child);
 
@@ -9602,11 +9628,11 @@ TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
   gfx::Transform translate_z;
   translate_z.Translate3d(0, 0, 10);
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(800, 800), true, false);
 
-  scoped_refptr<Layer> child = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
   SetLayerPropertiesForTesting(child.get(), translate_z, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(100, 100), true, false);
 

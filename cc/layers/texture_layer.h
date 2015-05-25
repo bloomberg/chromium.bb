@@ -86,6 +86,7 @@ class CC_EXPORT TextureLayer : public Layer {
 
   // Used when mailbox names are specified instead of texture IDs.
   static scoped_refptr<TextureLayer> CreateForMailbox(
+      const LayerSettings& settings,
       TextureLayerClient* client);
 
   // Resets the client, which also resets the texture.
@@ -147,7 +148,7 @@ class CC_EXPORT TextureLayer : public Layer {
   SimpleEnclosedRegion VisibleContentOpaqueRegion() const override;
 
  protected:
-  explicit TextureLayer(TextureLayerClient* client);
+  TextureLayer(const LayerSettings& settings, TextureLayerClient* client);
   ~TextureLayer() override;
   bool HasDrawableContent() const override;
 

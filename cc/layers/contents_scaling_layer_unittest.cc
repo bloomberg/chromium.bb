@@ -15,8 +15,8 @@ namespace {
 
 class MockContentsScalingLayer : public ContentsScalingLayer {
  public:
-  MockContentsScalingLayer()
-      : ContentsScalingLayer() {}
+  explicit MockContentsScalingLayer(const LayerSettings& settings)
+      : ContentsScalingLayer(settings) {}
 
   void SetNeedsDisplayRect(const gfx::Rect& dirty_rect) override {
     last_needs_display_rect_ = dirty_rect;
@@ -42,13 +42,15 @@ static void CalcDrawProps(FakeLayerTreeHost* host, float device_scale_factor) {
 }
 
 TEST(ContentsScalingLayerTest, CheckContentsBounds) {
+  LayerSettings layer_settings;
+
   FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
   scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&client);
 
   scoped_refptr<MockContentsScalingLayer> test_layer =
-      make_scoped_refptr(new MockContentsScalingLayer());
+      make_scoped_refptr(new MockContentsScalingLayer(layer_settings));
 
-  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> root = Layer::Create(layer_settings);
   root->AddChild(test_layer);
   host->SetRootLayer(root);
 
