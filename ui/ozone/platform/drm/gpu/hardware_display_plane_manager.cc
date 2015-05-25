@@ -24,7 +24,7 @@ const float kFixedPointScaleValue = 65536.0f;
 
 }  // namespace
 
-HardwareDisplayPlaneList::HardwareDisplayPlaneList() : committed(false) {
+HardwareDisplayPlaneList::HardwareDisplayPlaneList() {
 #if defined(USE_DRM_ATOMIC)
   atomic_property_set.reset(drmModePropertySetAlloc());
 #endif  // defined(USE_DRM_ATOMIC)
@@ -162,19 +162,18 @@ int HardwareDisplayPlaneManager::LookupCrtcIndex(uint32_t crtc_id) {
   return -1;
 }
 
+void HardwareDisplayPlaneManager::BeginFrame(
+    HardwareDisplayPlaneList* plane_list) {
+  for (auto* plane : plane_list->old_plane_list) {
+    plane->set_in_use(false);
+  }
+}
+
 bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     HardwareDisplayPlaneList* plane_list,
     const OverlayPlaneList& overlay_list,
     uint32_t crtc_id,
     CrtcController* crtc) {
-  // If we had previously committed this set, mark all owned planes as free.
-  if (plane_list->committed) {
-    plane_list->committed = false;
-    for (auto* plane : plane_list->old_plane_list) {
-      plane->set_in_use(false);
-    }
-  }
-
   int crtc_index = LookupCrtcIndex(crtc_id);
   if (crtc_index < 0) {
     LOG(ERROR) << "Cannot find crtc " << crtc_id;

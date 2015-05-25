@@ -189,8 +189,8 @@ TEST_F(HardwareDisplayPlaneManagerTest, MultipleFrames) {
                                                   default_crtcs_[0], nullptr));
   EXPECT_EQ(1, plane_manager_->plane_count());
   // Pretend we committed the frame.
-  state_.committed = true;
   state_.plane_list.swap(state_.old_plane_list);
+  plane_manager_->BeginFrame(&state_);
   ui::HardwareDisplayPlane* old_plane = state_.old_plane_list[0];
   // The same plane should be used.
   EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
@@ -241,11 +241,13 @@ TEST(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
   assigns.push_back(ui::OverlayPlane(fake_buffer));
   ui::HardwareDisplayPlaneList hdpl;
   ui::CrtcController crtc(drm, crtcs[0], 0);
+  drm->plane_manager()->BeginFrame(&hdpl);
   EXPECT_TRUE(drm->plane_manager()->AssignOverlayPlanes(&hdpl, assigns,
                                                         crtcs[0], &crtc));
   EXPECT_TRUE(drm->plane_manager()->Commit(&hdpl, false, false));
   assigns.clear();
   assigns.push_back(ui::OverlayPlane(fake_buffer));
+  drm->plane_manager()->BeginFrame(&hdpl);
   EXPECT_TRUE(drm->plane_manager()->AssignOverlayPlanes(&hdpl, assigns,
                                                         crtcs[0], &crtc));
   EXPECT_EQ(0, drm->get_overlay_clear_call_count());

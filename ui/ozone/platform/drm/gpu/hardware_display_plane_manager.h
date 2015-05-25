@@ -65,9 +65,6 @@ struct OZONE_EXPORT HardwareDisplayPlaneList {
 #if defined(USE_DRM_ATOMIC)
   ScopedDrmPropertySetPtr atomic_property_set;
 #endif  // defined(USE_DRM_ATOMIC)
-
-  // Set if the last operation on this list was a Commit().
-  bool committed;
 };
 
 class OZONE_EXPORT HardwareDisplayPlaneManager {
@@ -78,6 +75,10 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
   // This parses information from the drm driver, adding any new planes
   // or crtcs found.
   bool Initialize(DrmDevice* drm);
+
+  // Clears old frame state out. Must be called before any AssignOverlayPlanes
+  // calls.
+  void BeginFrame(HardwareDisplayPlaneList* plane_list);
 
   // Assign hardware planes from the |planes_| list to |overlay_list| entries,
   // recording the plane IDs in the |plane_list|. Only planes compatible with

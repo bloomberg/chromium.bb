@@ -83,6 +83,9 @@ bool HardwareDisplayController::SchedulePageFlip(
               return l.z_order < r.z_order;
             });
 
+  for (const auto& planes : owned_hardware_planes_)
+    planes.first->plane_manager()->BeginFrame(planes.second);
+
   bool status = true;
   for (size_t i = 0; i < crtc_controllers_.size(); ++i) {
     status &= crtc_controllers_[i]->SchedulePageFlip(

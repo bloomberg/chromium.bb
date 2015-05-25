@@ -81,7 +81,6 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
   plane_list->plane_list.swap(plane_list->old_plane_list);
   plane_list->plane_list.clear();
   plane_list->legacy_page_flips.clear();
-  plane_list->committed = true;
   return ret;
 }
 
