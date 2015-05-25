@@ -15,18 +15,18 @@ function wait_for_install(worker) {
     });
 }
 
-function wait_for_activate_event(worker) {
-  return new Promise(function(resolve) {
+function wait_for_activate(worker) {
+  return new Promise(function(resolve, reject) {
       worker.addEventListener('statechange', function(event) {
           if (worker.state == 'activated')
-            resolve(true);
+            resolve();
           else if (worker.state == 'redundant')
-            resolve(false);
+            reject();
         });
     });
 }
 
-function make_test(name, script, expect_activate) {
+function make_test(name, script) {
   promise_test(function(t) {
       var scope = script;
       var registration;
@@ -36,11 +36,8 @@ function make_test(name, script, expect_activate) {
             return wait_for_install(registration.installing);
           })
         .then(function() {
-            return wait_for_activate_event(registration.waiting);
-          })
-        .then(function(did_activate) {
-            assert_equals(did_activate, expect_activate,
-                          'The worker was activated');
+            // Activate should succeed regardless of script errors.
+            return wait_for_activate(registration.waiting);
           });
     }, name);
 }
@@ -49,29 +46,24 @@ function make_test(name, script, expect_activate) {
   {
     name: 'activate handler throws an error',
     script: 'resources/onactivate-throw-error-worker.js',
-    expect_activate: false
   },
   {
     name: 'activate handler throws an error, error handler does not cancel',
     script: 'resources/onactivate-throw-error-with-empty-onerror-worker.js',
-    expect_activate: false
   },
   {
     name: 'activate handler dispatches an event that throws an error',
     script: 'resources/onactivate-throw-error-from-nested-event-worker.js',
-    expect_activate: true
   },
   {
     name: 'activate handler throws an error that is cancelled',
     script: 'resources/onactivate-throw-error-then-cancel-worker.js',
-    expect_activate: true
   },
   {
     name: 'activate handler throws an error and prevents default',
     script: 'resources/onactivate-throw-error-then-prevent-default-worker.js',
-    expect_activate: true
   }
 ].forEach(function(test_case) {
-    make_test(test_case.name, test_case.script, test_case.expect_activate);
+    make_test(test_case.name, test_case.script);
   });
 </script>

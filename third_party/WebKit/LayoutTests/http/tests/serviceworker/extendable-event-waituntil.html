@@ -12,6 +12,8 @@ function runTest(test, scope, onRegister) {
       });
 }
 
+// Sends a SYN to the worker and asynchronously listens for an ACK; sets
+// |obj.synced| to true once ack'd.
 function syncWorker(test, worker, obj) {
   var channel = new MessageChannel();
   channel.port1.onmessage = test.step_func(function(e) {
@@ -42,6 +44,38 @@ async_test(function(t) {
       };
     runTest(t, scope, onRegister);
   }, 'Test install event waitUntil fulfilled');
+
+async_test(function(t) {
+    var scope = 'resources/install-multiple-fulfilled';
+    var onRegister = function(worker) {
+        var obj1 = {};
+        var obj2 = {};
+        wait_for_state(t, worker, 'installed')
+          .then(function() {
+              assert_true(
+                obj1.synced && obj2.synced,
+                'state should be "installed" after all waitUntil promises ' +
+                    'for "oninstall" are fulfilled.');
+              service_worker_unregister_and_done(t, scope);
+            })
+          .catch(unreached_rejection(t));
+        syncWorker(t, worker, obj1);
+        syncWorker(t, worker, obj2);
+      };
+    runTest(t, scope, onRegister);
+  }, 'Test ExtendableEvent multiple waitUntil fulfilled.');
+
+async_test(function(t) {
+    var scope = 'resources/install-reject-precedence';
+    var onRegister = function(worker) {
+        wait_for_state(t, worker, 'redundant')
+          .then(function() {
+              service_worker_unregister_and_done(t, scope);
+            })
+          .catch(unreached_rejection(t));
+      };
+    runTest(t, scope, onRegister);
+  }, 'Test ExtendableEvent waitUntil reject precedence.');
 
 async_test(function(t) {
     var scope = 'resources/activate-fulfilled';
@@ -79,7 +113,7 @@ async_test(function(t) {
 async_test(function(t) {
     var scope = 'resources/activate-rejected';
     var onRegister = function(worker) {
-        wait_for_state(t, worker, 'redundant')
+        wait_for_state(t, worker, 'activated')
           .then(function() {
               service_worker_unregister_and_done(t, scope);
             })
@@ -88,38 +122,4 @@ async_test(function(t) {
     runTest(t, scope, onRegister);
   }, 'Test activate event waitUntil rejected.');
 
-async_test(function(t) {
-    var scope = 'resources/activate-multiple-fulfilled';
-    var onRegister = function(worker) {
-        var obj1 = {};
-        var obj2 = {};
-        wait_for_state(t, worker, 'activating')
-          .then(function() {
-              syncWorker(t, worker, obj1);
-              syncWorker(t, worker, obj2);
-              return wait_for_state(t, worker, 'activated');
-            })
-          .then(function() {
-              assert_true(
-                obj1.synced && obj2.synced,
-                'state should be "activated" after all waitUntil promises ' +
-                    'for "onactivate" are fulfilled.');
-              service_worker_unregister_and_done(t, scope);
-            })
-          .catch(unreached_rejection(t));
-      };
-    runTest(t, scope, onRegister);
-  }, 'Test ExtendableEvent multiple waitUntil fulfilled.');
-
-async_test(function(t) {
-    var scope = 'resources/activate-reject-precedence';
-    var onRegister = function(worker) {
-        wait_for_state(t, worker, 'redundant')
-          .then(function() {
-              service_worker_unregister_and_done(t, scope);
-            })
-          .catch(unreached_rejection(t));
-      };
-    runTest(t, scope, onRegister);
-  }, 'Test ExtendableEvent waitUntil reject precedence.');
 </script>

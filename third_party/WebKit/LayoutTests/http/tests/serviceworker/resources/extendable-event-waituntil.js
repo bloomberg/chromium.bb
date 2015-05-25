@@ -52,6 +52,14 @@ oninstall = function(e) {
     case 'install-rejected':
       e.waitUntil(rejectPromise());
       break;
+    case 'install-multiple-fulfilled':
+      e.waitUntil(fulfillPromise());
+      e.waitUntil(fulfillPromise());
+      break;
+    case 'install-reject-precedence':
+      e.waitUntil(fulfillPromise());
+      e.waitUntil(rejectPromise());
+      break;
   }
 };
 
@@ -61,14 +69,6 @@ onactivate = function(e) {
       e.waitUntil(fulfillPromise());
       break;
     case 'activate-rejected':
-      e.waitUntil(rejectPromise());
-      break;
-    case 'activate-multiple-fulfilled':
-      e.waitUntil(fulfillPromise());
-      e.waitUntil(fulfillPromise());
-      break;
-    case 'activate-reject-precedence':
-      e.waitUntil(fulfillPromise());
       e.waitUntil(rejectPromise());
       break;
   }
