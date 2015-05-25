@@ -37,5 +37,12 @@ Inspect Me
 [expanded] button#nodeevent-listener-sidebar.html:14
     useCapture: false
     handler: function hoverHandler(event) { console.log("hover - button - bubbling"); }
+
+======== load ========
+[expanded] Windowevent-listener-sidebar.html:75
+    useCapture: false
+    handler: function onload(event) {
+  onloadHandler()
+}
 Listeners for selected node only(should be no listeners):
 

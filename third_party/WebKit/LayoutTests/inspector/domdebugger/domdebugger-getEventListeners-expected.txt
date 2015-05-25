@@ -1,4 +1,4 @@
-Tests RemoteObject.getEventListeners.
+Tests RemoteObject.eventListeners.
 
 
 Running: testSetUp

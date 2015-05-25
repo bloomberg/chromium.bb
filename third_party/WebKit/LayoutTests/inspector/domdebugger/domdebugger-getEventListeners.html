@@ -52,17 +52,17 @@ function test()
 
         function testWindowEventListeners(next)
         {
-            windowObject.getEventListeners(dumpListeners.bind(this, next));
+            windowObject.eventListeners().then(dumpListeners.bind(this, next));
         },
 
         function testDivEventListeners(next)
         {
-            divWithHandlers.getEventListeners(dumpListeners.bind(this, next));
+            divWithHandlers.eventListeners().then(dumpListeners.bind(this, next));
         },
 
         function testDivWithoutEventListeners(next)
         {
-            divWithoutHandlers.getEventListeners(dumpListeners.bind(this, next));
+            divWithoutHandlers.eventListeners().then(dumpListeners.bind(this, next));
         }
     ]);
 }
@@ -71,7 +71,7 @@ function test()
 </head>
 <body>
 <p>
-Tests RemoteObject.getEventListeners.
+Tests RemoteObject.eventListeners.
 </p>
 <div id="with-handlers" onclick="return 42;"></div>
 <div id="without-handlers"></div>
