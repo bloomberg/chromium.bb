@@ -55,6 +55,13 @@ LaunchType GetLaunchType(const ExtensionPrefs* prefs,
     result = LAUNCH_TYPE_REGULAR;
 #endif
 
+  if (extensions::util::IsNewBookmarkAppsEnabled()) {
+    if (result == LAUNCH_TYPE_PINNED)
+      result = LAUNCH_TYPE_REGULAR;
+    if (result == LAUNCH_TYPE_FULLSCREEN)
+      result = LAUNCH_TYPE_WINDOW;
+  }
+
   return result;
 }
 
