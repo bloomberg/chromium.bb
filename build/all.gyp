@@ -377,8 +377,6 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            '../chrome/chrome.gyp:app_installer',
-            '../chrome/chrome.gyp:app_installer_unittests',
             '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:installer_util_unittests',
             # ../chrome/test/mini_installer requires mini_installer.
@@ -1219,7 +1217,6 @@
               'target_name': 'chrome_official_builder_no_unittests',
               'type': 'none',
               'dependencies': [
-                '../chrome/chrome.gyp:app_installer',
                 '../chrome/chrome.gyp:crash_service',
                 '../chrome/chrome.gyp:gcapi_dll',
                 '../chrome/chrome.gyp:pack_policy_templates',
@@ -1249,7 +1246,6 @@
               'dependencies': [
 	        'chrome_official_builder_no_unittests',
                 '../base/base.gyp:base_unittests',
-		'../chrome/chrome.gyp:app_installer_unittests',
                 '../chrome/chrome.gyp:browser_tests',
                 '../chrome/chrome.gyp:sync_integration_tests',
                 '../ipc/ipc.gyp:ipc_tests',

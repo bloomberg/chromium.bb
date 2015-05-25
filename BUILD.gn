@@ -846,7 +846,6 @@ if (is_linux) {
       "//base:base_unittests",  # PASSES 4/20/2015
       "//cc:cc_unittests",  # PASSES 4/17/2015
       "//chrome_elf:chrome_elf_unittests",  # FAILS 4/20/2015
-      "//chrome/app_installer:app_installer_unittests",  # PASSES 4/24/2015
       "//chrome/installer/util:installer_util_unittests",
       "//chrome/test:browser_tests",
       "//chrome/test:interactive_ui_tests",
