@@ -26,16 +26,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://dev.w3.org/csswg/cssom-view/#the-screen-interface
 
 [
     GarbageCollected,
 ] interface Screen {
-    readonly attribute unsigned long height;
+    // TODO(philipj): availWidth/availHeight/width/height should not be unsigned.
+    readonly attribute unsigned long availWidth;
+    readonly attribute unsigned long availHeight;
     readonly attribute unsigned long width;
+    readonly attribute unsigned long height;
     readonly attribute unsigned long colorDepth;
     readonly attribute unsigned long pixelDepth;
-    readonly attribute long availLeft;
-    readonly attribute long availTop;
-    readonly attribute unsigned long availHeight;
-    readonly attribute unsigned long availWidth;
+
+    // Non-standard
+    [Measure] readonly attribute long availLeft;
+    [Measure] readonly attribute long availTop;
 };
