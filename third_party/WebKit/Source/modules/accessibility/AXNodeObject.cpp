@@ -1050,7 +1050,7 @@ bool AXNodeObject::isReadOnly() const
 bool AXNodeObject::isRequired() const
 {
     Node* n = this->node();
-    if (n && (n->isElementNode() && toElement(n)->isFormControlElement()))
+    if (n && (n->isElementNode() && toElement(n)->isFormControlElement()) && hasAttribute(requiredAttr))
         return toHTMLFormControlElement(n)->isRequired();
 
     if (equalIgnoringCase(getAttribute(aria_requiredAttr), "true"))
