@@ -475,7 +475,7 @@ void NativeAppWindowCocoa::Show() {
   }
 
   [window_controller_ showWindow:nil];
-  Activate();
+  [BrowserWindowUtils activateWindowForController:window_controller_];
 }
 
 void NativeAppWindowCocoa::ShowInactive() {
@@ -491,7 +491,7 @@ void NativeAppWindowCocoa::Close() {
 }
 
 void NativeAppWindowCocoa::Activate() {
-  [BrowserWindowUtils activateWindowForController:window_controller_];
+  Show();
 }
 
 void NativeAppWindowCocoa::Deactivate() {

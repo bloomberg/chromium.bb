@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_APPS_APP_SHIM_TEST_APP_SHIM_HOST_MANAGER_TEST_API_MAC_H
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 class AppShimHostManager;
 
@@ -14,6 +15,7 @@ class FilePath;
 }
 
 namespace apps {
+class ExtensionAppShimHandler;
 class UnixDomainSocketAcceptor;
 }
 
@@ -26,6 +28,9 @@ class AppShimHostManagerTestApi {
   apps::UnixDomainSocketAcceptor* acceptor();
 
   const base::FilePath& directory_in_tmp();
+
+  void SetExtensionAppShimHandler(
+      scoped_ptr<apps::ExtensionAppShimHandler> handler);
 
  private:
   AppShimHostManager* host_manager_;  // Not owned.

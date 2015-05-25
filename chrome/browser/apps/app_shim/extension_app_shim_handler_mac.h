@@ -74,7 +74,10 @@ class ExtensionAppShimHandler : public AppShimHandler,
   ExtensionAppShimHandler();
   ~ExtensionAppShimHandler() override;
 
-  AppShimHandler::Host* FindHost(Profile* profile, const std::string& app_id);
+  // Get the host corresponding to a profile and app id, or null if there is
+  // none. Virtual for tests.
+  virtual AppShimHandler::Host* FindHost(Profile* profile,
+                                         const std::string& app_id);
 
   void SetHostedAppHidden(Profile* profile,
                           const std::string& app_id,

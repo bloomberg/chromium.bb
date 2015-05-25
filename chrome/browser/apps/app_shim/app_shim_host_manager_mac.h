@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/unix_domain_socket_acceptor.h"
 #include "content/public/browser/browser_thread.h"
+
+namespace apps {
+class ExtensionAppShimHandler;
+}
 
 namespace base {
 class FilePath;
@@ -33,7 +36,7 @@ class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
   void Init();
 
   apps::ExtensionAppShimHandler* extension_app_shim_handler() {
-    return &extension_app_shim_handler_;
+    return extension_app_shim_handler_.get();
   }
 
  private:
@@ -56,16 +59,11 @@ class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
   // Called on the IO thread to begin listening for connections from app shims.
   void ListenOnIOThread();
 
-  // The AppShimHostManager is only initialized if the Chrome process
-  // successfully took the singleton lock. This prevents subsequent processes
-  // from deleting existing app shim socket files.
-  bool did_init_;
-
   base::FilePath directory_in_tmp_;
 
   scoped_ptr<apps::UnixDomainSocketAcceptor> acceptor_;
 
-  apps::ExtensionAppShimHandler extension_app_shim_handler_;
+  scoped_ptr<apps::ExtensionAppShimHandler> extension_app_shim_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostManager);
 };
