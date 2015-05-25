@@ -70,10 +70,20 @@ function StepsRunner() {
 
 /**
  * Creates a StepsRunner instance and runs the passed steps.
+ * @param {!Array<function>} steps
  */
 StepsRunner.run = function(steps) {
   var stepsRunner = new StepsRunner();
   stepsRunner.run_(steps);
+};
+
+/**
+ * Creates a StepsRunner instance and runs multiple groups of steps.
+ * @param {!Array<!Array<function>>} groups
+ */
+StepsRunner.runGroups = function(groups) {
+  // Squash all groups into a flat list of steps.
+  StepsRunner.run(Array.prototype.concat.apply([], groups));
 };
 
 StepsRunner.prototype = {

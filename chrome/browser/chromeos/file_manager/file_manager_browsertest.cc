@@ -794,9 +794,11 @@ void FileManagerBrowserTestBase::OnMessage(const std::string& name,
   }
 
   if (name == "installProviderExtension") {
+    std::string manifest;
+    ASSERT_TRUE(value.GetString("manifest", &manifest));
     InstallExtension(base::FilePath(FILE_PATH_LITERAL(
                          "ui/file_manager/integration_tests/testing_provider")),
-                     "manifest.json");
+                     manifest.c_str());
     return;
   }
 
@@ -1227,7 +1229,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Providers,
     FileManagerBrowserTest,
-    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "requestMount")));
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE, "requestMount"),
+        TestParameter(NOT_IN_GUEST_MODE, "requestMountMultipleMounts"),
+        TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceDevice"),
+        TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceFile")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {

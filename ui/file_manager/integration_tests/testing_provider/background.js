@@ -6,6 +6,16 @@
 
 var dialogSettings = {};
 
+function mountFileSystem(onSuccess, onError) {
+  chrome.fileSystemProvider.getAll(function(mounted) {
+    var index = mounted.length + 1;
+    chrome.fileSystemProvider.mount({
+      fileSystemId: 'test-fs-' + index,
+      displayName: 'Test (' + index + ')'
+    });
+  });
+}
+
 chrome.fileSystemProvider.onGetMetadataRequested.addListener(
     function(options, onSuccess, onError) {
       onSuccess({
@@ -21,16 +31,7 @@ chrome.fileSystemProvider.onReadDirectoryRequested.addListener(
       onSuccess([], false /* hasMore */);
     });
 
-chrome.fileSystemProvider.onMountRequested.addListener(
-    function(onSuccess, onError) {
-      chrome.fileSystemProvider.getAll(function(mounted) {
-        var index = mounted.length + 1;
-        chrome.fileSystemProvider.mount({
-          fileSystemId: 'test-fs-' + index,
-          displayName: 'Test (' + index + ')'
-        });
-      });
-    });
+chrome.fileSystemProvider.onMountRequested.addListener(mountFileSystem);
 
 chrome.fileSystemProvider.onUnmountRequested.addListener(
     function(options, onSuccess, onError) {
@@ -45,3 +46,10 @@ chrome.fileSystemProvider.onUnmountRequested.addListener(
               onSuccess();
           });
     });
+
+// If the manifest for device or file source is used, then mount a fake file
+// system on install.
+if (chrome.runtime.getManifest().name === "Testing Provider Device" ||
+    chrome.runtime.getManifest().name === "Testing Provider File") {
+  chrome.runtime.onInstalled.addListener(mountFileSystem);
+}

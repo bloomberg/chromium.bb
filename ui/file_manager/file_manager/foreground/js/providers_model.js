@@ -128,7 +128,10 @@ ProvidersModel.prototype.getMountableProviders = function() {
         mountedProviders[volumeInfo.extensionId] = true;
     }
     return extensions.filter(function(item) {
-      return item.source !== 'file' &&
+      // File systems handling files are mounted via file handlers. Device
+      // handlers are mounted when a device is inserted. Only network file
+      // systems are mounted manually by user via a menu.
+      return item.source === 'network' &&
           (!mountedProviders[item.extensionId] || item.multipleMounts);
     });
   }.bind(this));
