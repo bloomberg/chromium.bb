@@ -9,8 +9,6 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -40,8 +38,6 @@ static base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
 
 WebRTCInternals::WebRTCInternals()
     : aec_dump_enabled_(false) {
-  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllBrowserContextsAndSources());
 // TODO(grunell): Shouldn't all the webrtc_internals* files be excluded from the
 // build if WebRTC is disabled?
 #if defined(ENABLE_WEBRTC)
@@ -90,6 +86,12 @@ void WebRTCInternals::OnAddPeerConnection(int render_process_id,
 
   if (observers_.might_have_observers())
     SendUpdate("addPeerConnection", dict);
+
+  if (render_process_id_set_.insert(render_process_id).second) {
+    RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
+    if (host)
+      host->AddObserver(this);
+  }
 }
 
 void WebRTCInternals::OnRemovePeerConnection(ProcessId pid, int lid) {
@@ -202,6 +204,12 @@ void WebRTCInternals::OnGetUserMedia(int rid,
 
   if (observers_.might_have_observers())
     SendUpdate("addGetUserMedia", dict);
+
+  if (render_process_id_set_.insert(rid).second) {
+    RenderProcessHost* host = RenderProcessHost::FromID(rid);
+    if (host)
+      host->AddObserver(this);
+  }
 }
 
 void WebRTCInternals::AddObserver(WebRTCInternalsUIObserver *observer) {
@@ -282,12 +290,12 @@ void WebRTCInternals::SendUpdate(const string& command, base::Value* value) {
                     OnUpdate(command, value));
 }
 
-void WebRTCInternals::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+void WebRTCInternals::RenderProcessHostDestroyed(RenderProcessHost* host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  OnRendererExit(Source<RenderProcessHost>(source)->GetID());
+  OnRendererExit(host->GetID());
+
+  render_process_id_set_.erase(host->GetID());
+  host->RemoveObserver(this);
 }
 
 void WebRTCInternals::FileSelected(const base::FilePath& path,

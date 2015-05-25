@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_H_
 #define CONTENT_BROWSER_MEDIA_WEBRTC_INTERNALS_H_
 
+#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -12,8 +13,7 @@
 #include "base/process/process.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace content {
@@ -26,7 +26,7 @@ class WebRTCInternalsUIObserver;
 // It collects peer connection infomation from the renderers,
 // forwards the data to WebRTCInternalsUIObserver and
 // sends data collecting commands to the renderers.
-class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
+class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
                                        public ui::SelectFileDialog::Listener {
  public:
   static WebRTCInternals* GetInstance();
@@ -115,10 +115,8 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
 
   void SendUpdate(const std::string& command, base::Value* value);
 
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) override;
+  // RenderProcessHostObserver implementation.
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   // ui::SelectFileDialog::Listener implementation.
   void FileSelected(const base::FilePath& path,
@@ -166,8 +164,6 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
   // "video" -- the serialized video constraints if video is requested.
   base::ListValue get_user_media_requests_;
 
-  NotificationRegistrar registrar_;
-
   // For managing select file dialog.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
@@ -179,6 +175,9 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
   // PowerSaveBlocker.  This prevents the application from being suspended while
   // remoting.
   scoped_ptr<PowerSaveBlocker> power_save_blocker_;
+
+  // Set of render process hosts that |this| is registered as an observer on.
+  base::hash_set<int> render_process_id_set_;
 };
 
 }  // namespace content
