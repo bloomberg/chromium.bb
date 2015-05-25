@@ -161,15 +161,17 @@ void AutocompleteResult::CopyOldMatches(
   SortAndCull(input, template_url_service);
 }
 
-void AutocompleteResult::AppendMatches(const ACMatches& matches) {
+void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
+                                       const ACMatches& matches) {
+  for (auto i : matches) {
 #ifndef NDEBUG
-  for (ACMatches::const_iterator i(matches.begin()); i != matches.end(); ++i) {
-    DCHECK_EQ(AutocompleteMatch::SanitizeString(i->contents), i->contents);
-    DCHECK_EQ(AutocompleteMatch::SanitizeString(i->description),
-              i->description);
-  }
+    DCHECK_EQ(AutocompleteMatch::SanitizeString(i.contents), i.contents);
+    DCHECK_EQ(AutocompleteMatch::SanitizeString(i.description),
+              i.description);
 #endif
-  std::copy(matches.begin(), matches.end(), std::back_inserter(matches_));
+    matches_.push_back(i);
+    matches_.back().PossiblySwapContentsAndDescriptionForURLSuggestion(input);
+  }
   default_match_ = end();
   alternate_nav_url_ = GURL();
 }

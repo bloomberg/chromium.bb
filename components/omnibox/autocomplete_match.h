@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match_type.h"
 #include "components/search_engines/template_url.h"
 #include "ui/base/page_transition_types.h"
@@ -258,6 +259,14 @@ struct AutocompleteMatch {
   // Returns whether this match or any duplicate of this match can be deleted.
   // This is used to decide whether we should call DeleteMatch().
   bool SupportsDeletion() const;
+
+  // Swaps the contents and description fields, and their associated
+  // classifications, if this is a match for which we should emphasize the
+  // title (stored in the description field) over the URL (in the contents
+  // field).  See the implementation for the conditions under which this is
+  // true.
+  void PossiblySwapContentsAndDescriptionForURLSuggestion(
+      const AutocompleteInput& input);
 
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is

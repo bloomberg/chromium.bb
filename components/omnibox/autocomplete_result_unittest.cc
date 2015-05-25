@@ -207,13 +207,13 @@ void AutocompleteResultTest::RunCopyOldMatchesTest(
   ACMatches last_matches;
   PopulateAutocompleteMatches(last, last_size, &last_matches);
   AutocompleteResult last_result;
-  last_result.AppendMatches(last_matches);
+  last_result.AppendMatches(input, last_matches);
   last_result.SortAndCull(input, template_url_service_.get());
 
   ACMatches current_matches;
   PopulateAutocompleteMatches(current, current_size, &current_matches);
   AutocompleteResult current_result;
-  current_result.AppendMatches(current_matches);
+  current_result.AppendMatches(input, current_matches);
   current_result.SortAndCull(input, template_url_service_.get());
   current_result.CopyOldMatches(
       input, last_result, template_url_service_.get());
@@ -241,7 +241,7 @@ TEST_F(AutocompleteResultTest, Swap) {
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true, TestSchemeClassifier());
   matches.push_back(match);
-  r1.AppendMatches(matches);
+  r1.AppendMatches(input, matches);
   r1.SortAndCull(input, template_url_service_.get());
   EXPECT_EQ(r1.begin(), r1.default_match());
   EXPECT_EQ("http://a/", r1.alternate_nav_url().spec());
@@ -374,13 +374,13 @@ TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
   matches[3].destination_url = GURL();
   matches[4].destination_url = GURL();
 
-  AutocompleteResult result;
-  result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
                           std::string(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true,
                           TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
   result.SortAndCull(input, template_url_service_.get());
 
   // Of the two results with the same non-empty destination URL, the
@@ -421,13 +421,13 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   matches[3].destination_url = GURL("http://www.foo.com/s?q=foo&aqs=0");
   matches[4].destination_url = GURL("http://www.foo.com/");
 
-  AutocompleteResult result;
-  result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
                           std::string(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true,
                           TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
   result.SortAndCull(input, template_url_service_.get());
 
   // We expect the 3rd and 4th results to be removed.
@@ -474,13 +474,13 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   matches[4].destination_url = GURL("http://www.foo.com/");
   matches[5].destination_url = GURL("http://www.foo.com/s?q=foo2&oq=f");
 
-  AutocompleteResult result;
-  result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
                           std::string(), GURL(),
                           OmniboxEventProto::INVALID_SPEC, false, false, false,
                           true,
                           TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
   result.SortAndCull(input, template_url_service_.get());
 
   // Expect 3 unique results after SortAndCull().
@@ -529,13 +529,13 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
   base::FieldTrialList::CreateFieldTrial(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
-  AutocompleteResult result;
-  result.AppendMatches(matches);
   AutocompleteInput input(base::string16(), base::string16::npos,
                           std::string(), GURL(),
                           OmniboxEventProto::HOME_PAGE, false, false, false,
                           true,
                           TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
   result.SortAndCull(input, template_url_service_.get());
 
   // Check the new ordering.  The history-title results should be omitted.
@@ -575,13 +575,13 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDupsAndDemotionsByType) {
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "C");
 
   {
-    AutocompleteResult result;
-    result.AppendMatches(matches);
     AutocompleteInput input(
         base::string16(), base::string16::npos, std::string(), GURL(),
         OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS, false,
         false, false, true,
         TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
     result.SortAndCull(input, template_url_service_.get());
 
     // The NAVSUGGEST dup-url stay above search-url since the navsuggest
@@ -614,13 +614,13 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     // PopulateAutocompleteMatches()).
     ACMatches matches;
     PopulateAutocompleteMatches(data, arraysize(data), &matches);
-    AutocompleteResult result;
-    result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
                             std::string(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
                             true,
                             TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
     result.SortAndCull(input, template_url_service_.get());
     AssertResultMatches(result, data, 4);
   }
@@ -631,13 +631,13 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     PopulateAutocompleteMatches(data, arraysize(data), &matches);
     matches[0].allowed_to_be_default_match = false;
     matches[1].allowed_to_be_default_match = false;
-    AutocompleteResult result;
-    result.AppendMatches(matches);
     AutocompleteInput input(base::string16(), base::string16::npos,
                             std::string(), GURL(),
                             OmniboxEventProto::HOME_PAGE, false, false, false,
                             true,
                             TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
     result.SortAndCull(input, template_url_service_.get());
     ASSERT_EQ(4U, result.size());
     EXPECT_EQ("http://c/", result.match_at(0)->destination_url.spec());
@@ -655,7 +655,7 @@ TEST_F(AutocompleteResultTest, ShouldHideTopMatch) {
   // Case 1: Top match is a verbatim match.
   PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
   AutocompleteResult result;
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   EXPECT_TRUE(result.ShouldHideTopMatch());
   matches.clear();
   result.Reset();
@@ -665,7 +665,7 @@ TEST_F(AutocompleteResultTest, ShouldHideTopMatch) {
   PopulateAutocompleteMatchesFromTestData(kVerbatimMatches,
                                           arraysize(kVerbatimMatches),
                                           &matches);
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   EXPECT_FALSE(result.ShouldHideTopMatch());
   matches.clear();
   result.Reset();
@@ -675,7 +675,7 @@ TEST_F(AutocompleteResultTest, ShouldHideTopMatch) {
   PopulateAutocompleteMatchesFromTestData(kVerbatimMatches,
                                           arraysize(kVerbatimMatches),
                                           &matches);
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   EXPECT_FALSE(result.ShouldHideTopMatch());
 }
 
@@ -691,20 +691,20 @@ TEST_F(AutocompleteResultTest, ShouldHideTopMatchAfterCopy) {
   for (size_t i = 1; i < arraysize(kVerbatimMatches); ++i)
     matches[i].from_previous = true;
   AutocompleteResult result;
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   EXPECT_TRUE(result.ShouldHideTopMatch());
   result.Reset();
 
   // Case 2: The copied matches are then followed by a non-verbatim match.
   PopulateAutocompleteMatchesFromTestData(kNonVerbatimMatches, 1, &matches);
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   EXPECT_TRUE(result.ShouldHideTopMatch());
   result.Reset();
 
   // Case 3: The copied matches are instead followed by a verbatim match.
   matches.back().from_previous = true;
   PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   EXPECT_FALSE(result.ShouldHideTopMatch());
 }
 
@@ -716,7 +716,7 @@ TEST_F(AutocompleteResultTest, DoNotHideTopMatch_FieldTrialFlagDisabled) {
   ACMatches matches;
   PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
   AutocompleteResult result;
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   // Field trial flag "hide_verbatim" is disabled. Do not hide top match.
   EXPECT_FALSE(result.ShouldHideTopMatch());
 }
@@ -724,21 +724,21 @@ TEST_F(AutocompleteResultTest, DoNotHideTopMatch_FieldTrialFlagDisabled) {
 TEST_F(AutocompleteResultTest, TopMatchIsStandaloneVerbatimMatch) {
   ACMatches matches;
   AutocompleteResult result;
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
 
   // Case 1: Result set is empty.
   EXPECT_FALSE(result.TopMatchIsStandaloneVerbatimMatch());
 
   // Case 2: Top match is not a verbatim match.
   PopulateAutocompleteMatchesFromTestData(kNonVerbatimMatches, 1, &matches);
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   EXPECT_FALSE(result.TopMatchIsStandaloneVerbatimMatch());
   result.Reset();
   matches.clear();
 
   // Case 3: Top match is a verbatim match.
   PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   EXPECT_TRUE(result.TopMatchIsStandaloneVerbatimMatch());
   result.Reset();
   matches.clear();
@@ -746,7 +746,7 @@ TEST_F(AutocompleteResultTest, TopMatchIsStandaloneVerbatimMatch) {
   // Case 4: Standalone verbatim match found in AutocompleteResult.
   PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
   PopulateAutocompleteMatchesFromTestData(kNonVerbatimMatches, 1, &matches);
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   EXPECT_TRUE(result.TopMatchIsStandaloneVerbatimMatch());
   result.Reset();
   matches.clear();
@@ -755,6 +755,6 @@ TEST_F(AutocompleteResultTest, TopMatchIsStandaloneVerbatimMatch) {
   PopulateAutocompleteMatchesFromTestData(kVerbatimMatches,
                                           arraysize(kVerbatimMatches),
                                           &matches);
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   EXPECT_FALSE(result.ShouldHideTopMatch());
 }

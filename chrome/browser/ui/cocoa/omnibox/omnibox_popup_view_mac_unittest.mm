@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/omnibox/autocomplete_input.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/text_elider.h"
@@ -29,7 +30,7 @@ class MockOmniboxPopupViewMac : public OmniboxPopupViewMac {
     for (size_t i = 0; i < count; ++i)
       matches.push_back(AutocompleteMatch());
     result_.Reset();
-    result_.AppendMatches(matches);
+    result_.AppendMatches(AutocompleteInput(), matches);
   }
 
  protected:

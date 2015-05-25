@@ -9,6 +9,7 @@ namespace switches {
 
 extern const char kDisableAnswersInSuggest[];
 extern const char kEnableAnswersInSuggest[];
+extern const char kEmphasizeTitlesInOmniboxDropdown[];
 
 }  // namespace switches
 

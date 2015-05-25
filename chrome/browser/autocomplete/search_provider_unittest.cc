@@ -3534,7 +3534,7 @@ TEST_F(SearchProviderTest, AnswersCache) {
   // Test that an answer in the first slot populates the cache.
   matches.push_back(match1);
   matches.push_back(non_answer_match1);
-  result.AppendMatches(matches);
+  result.AppendMatches(AutocompleteInput(), matches);
   provider_->RegisterDisplayedAnswers(result);
   ASSERT_FALSE(provider_->answers_cache_.empty());
 

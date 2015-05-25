@@ -406,12 +406,12 @@ void AutocompleteProviderTest::RunKeywordTest(const base::string16& input,
     matches.push_back(match);
   }
 
-  AutocompleteResult result;
-  result.AppendMatches(matches);
   controller_->input_ = AutocompleteInput(
       input, base::string16::npos, std::string(), GURL(),
       metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
       false, true, true, true, ChromeAutocompleteSchemeClassifier(&profile_));
+  AutocompleteResult result;
+  result.AppendMatches(controller_->input_, matches);
   controller_->UpdateAssociatedKeywords(&result);
 
   for (size_t j = 0; j < result.size(); ++j) {
@@ -438,7 +438,7 @@ void AutocompleteProviderTest::RunAssistedQueryStatsTest(
     matches.push_back(match);
   }
   result_.Reset();
-  result_.AppendMatches(matches);
+  result_.AppendMatches(AutocompleteInput(), matches);
 
   // Update AQS.
   controller_->UpdateAssistedQueryStats(&result_);

@@ -4,6 +4,7 @@
 
 #include "components/omnibox/autocomplete_match.h"
 
+#include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -13,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/omnibox/autocomplete_provider.h"
+#include "components/omnibox/omnibox_switches.h"
 #include "components/omnibox/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -524,6 +526,18 @@ bool AutocompleteMatch::SupportsDeletion() const {
       return true;
   }
   return false;
+}
+
+void AutocompleteMatch::PossiblySwapContentsAndDescriptionForURLSuggestion(
+    const AutocompleteInput& input) {
+  if (!IsSearchType(type) && !description.empty() &&
+      base::CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEmphasizeTitlesInOmniboxDropdown) &&
+      ((input.type() == metrics::OmniboxInputType::QUERY) ||
+       (input.type() == metrics::OmniboxInputType::FORCED_QUERY))) {
+    std::swap(contents, description);
+    std::swap(contents_class, description_class);
+  }
 }
 
 #ifndef NDEBUG

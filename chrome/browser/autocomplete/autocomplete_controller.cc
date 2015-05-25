@@ -429,7 +429,7 @@ void AutocompleteController::UpdateResult(
 
   for (Providers::const_iterator i(providers_.begin());
        i != providers_.end(); ++i)
-    result_.AppendMatches((*i)->matches());
+    result_.AppendMatches(input_, (*i)->matches());
 
   // Sort the matches and trim to a small number of "best" matches.
   result_.SortAndCull(input_, template_url_service_);

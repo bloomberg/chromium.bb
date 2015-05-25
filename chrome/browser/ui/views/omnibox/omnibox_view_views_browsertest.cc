@@ -311,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
   matches.push_back(match);
   match.destination_url = GURL("http://autocomplete-result2/");
   matches.push_back(match);
-  results.AppendMatches(matches);
+  results.AppendMatches(AutocompleteInput(), matches);
   results.SortAndCull(
       AutocompleteInput(),
       TemplateURLServiceFactory::GetForProfile(browser()->profile()));
