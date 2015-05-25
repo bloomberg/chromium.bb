@@ -143,7 +143,7 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 {% for method in methods %}
 {% if method.should_be_exposed_to_script %}
 {% for world_suffix in method.world_suffixes %}
-{% if not method.is_custom and method.visible %}
+{% if not method.is_custom and not method.is_post_message and method.visible %}
 {{generate_method(method, world_suffix)}}
 {% endif %}
 {% if method.overloads and method.overloads.visible %}

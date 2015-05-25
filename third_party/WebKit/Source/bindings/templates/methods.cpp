@@ -472,6 +472,8 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     {% endif %}
     {% if method.is_custom %}
     {{v8_class}}::{{method.name}}MethodCustom(info);
+    {% elif method.is_post_message %}
+    postMessageMethodCommon("{{interface_name}}", {{v8_class}}::toImpl(info.Holder()), info);
     {% else %}
     {{cpp_class_or_partial}}V8Internal::{{method.name}}Method{{world_suffix}}(info);
     {% endif %}

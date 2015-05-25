@@ -118,6 +118,9 @@ def method_context(interface, method, is_visible=True):
 
     is_raises_exception = 'RaisesException' in extended_attributes
     is_custom_call_epilogue = has_extended_attribute_value(method, 'Custom', 'CallEpilogue')
+    is_post_message = 'PostMessage' in extended_attributes
+    if is_post_message:
+        includes.add('bindings/core/v8/PostMessage.h')
 
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
@@ -166,6 +169,7 @@ def method_context(interface, method, is_visible=True):
         'is_partial_interface_member':
             'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
+        'is_post_message': is_post_message,
         'is_raises_exception': is_raises_exception,
         'is_read_only': is_unforgeable(interface, method),
         'is_static': is_static,
