@@ -31,7 +31,7 @@ class TouchNoiseFinderTest : public testing::Test {
   bool FilterAndCheck(const TouchEntry entries[], size_t count) {
     std::vector<InProgressTouchEvdev> touches;
     size_t start_index = 0u;
-    bool was_touching = false;
+    std::bitset<kNumTouchEvdevSlots> was_touching;
     for (size_t i = 0; i < count; ++i) {
       const TouchEntry& entry = entries[i];
 
@@ -40,8 +40,9 @@ class TouchNoiseFinderTest : public testing::Test {
       touch.y = entry.location.y();
       touch.tracking_id = entry.slot;
       touch.slot = entry.slot;
-      touch.was_touching = was_touching;
+      touch.was_touching = was_touching.test(touch.slot);
       touch.touching = entry.touching;
+      touches.push_back(touch);
 
       if (i == count - 1 || entry.time_ms != entries[i + 1].time_ms) {
         touch_noise_finder_->HandleTouches(
@@ -50,18 +51,19 @@ class TouchNoiseFinderTest : public testing::Test {
         for (size_t j = 0; j < touches.size(); ++j) {
           bool expect_noise = entries[j + start_index].expect_noise;
           size_t slot = touches[j].slot;
-          if (touch_noise_finder_->SlotHasNoise(slot) != expect_noise)
+          if (touch_noise_finder_->SlotHasNoise(slot) != expect_noise) {
             LOG(ERROR) << base::StringPrintf(
                 "Incorrect filtering at %dms for slot %lu", entry.time_ms,
                 slot);
-          return false;
+            return false;
+          }
         }
 
         start_index = i + 1;
         touches.clear();
       }
 
-      was_touching = entry.touching;
+      was_touching.set(entry.slot, entry.touching);
     }
 
     return true;
@@ -134,6 +136,18 @@ TEST_F(TouchNoiseFinderTest, SamePosition) {
       {4000, 2, false, gfx::PointF(10, 10), true},
       {4500, 1, true, gfx::PointF(10, 10), true},
       {5000, 1, false, gfx::PointF(10, 10), true}};
+  EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
+}
+
+// Test that a multi-second touch is considered noise.
+TEST_F(TouchNoiseFinderTest, MultiSecondTouch) {
+  const TouchEntry kTestData[] = {
+      {1000, 1, true, gfx::PointF(10, 10), false},
+      {2000, 1, true, gfx::PointF(10, 11), false},
+      {3000, 1, true, gfx::PointF(10, 10), false},
+      {4000, 1, true, gfx::PointF(10, 11), true},
+      {5000, 1, true, gfx::PointF(10, 10), true},
+      {6000, 1, true, gfx::PointF(10, 11), true}};
   EXPECT_TRUE(FilterAndCheck(kTestData, arraysize(kTestData)));
 }
 

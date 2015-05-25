@@ -126,12 +126,14 @@ void SinglePositionTouchNoiseFilter::StopTrackingTouch(size_t index) {
 void SinglePositionTouchNoiseFilter::TrackTouch(
     const InProgressTouchEvdev& touch,
     base::TimeDelta time) {
-  size_t index = (tracked_touches_end_ + 1) % kNumTrackedTouches;
+  size_t index = tracked_touches_end_;
+  tracked_touches_end_ = (tracked_touches_end_ + 1) % kNumTrackedTouches;
   // If we would reach the start touch index, we cannot track any more touches.
-  if (index == tracked_touches_start_)
+  if (tracked_touches_end_ == tracked_touches_start_) {
+    tracked_touches_end_ = index;
     return;
+  }
 
-  tracked_touches_end_ = index;
   tracked_touches_[index].valid = true;
   tracked_touches_[index].slot = touch.slot;
   tracked_touches_[index].x = touch.x;
