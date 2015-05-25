@@ -32,6 +32,11 @@ struct LanguageDetectionDetails {
   // Whether the CLD detection is reliable or not.
   bool is_cld_reliable;
 
+  // Whether the notranslate is specified in head tag as a meta;
+  //   <meta name="google" value="notranslate"> or
+  //   <meta name="google" content="notranslate">.
+  bool has_notranslate;
+
   // The language written in the lang attribute of the html element.
   std::string html_root_language;
 

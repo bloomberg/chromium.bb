@@ -84,6 +84,10 @@ td.detection-logs-url {
   width: 5%;
 }
 
+.detection-logs-has-notranslate {
+  width: 5%;
+}
+
 .detection-logs-html-root-language {
   width: 10%;
 }
@@ -93,7 +97,7 @@ td.detection-logs-url {
 }
 
 .detection-logs-content {
-  width: 25%;
+  width: 20%;
 }
 
 td.detection-logs-content div {

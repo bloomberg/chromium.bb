@@ -92,6 +92,9 @@ void TranslateInternalsHandler::Observe(
       "is_cld_reliable",
       new base::FundamentalValue(language_detection_details->is_cld_reliable));
   dict.Set(
+      "has_notranslate",
+      new base::FundamentalValue(language_detection_details->has_notranslate));
+  dict.Set(
       "html_root_language",
       new base::StringValue(language_detection_details->html_root_language));
   dict.Set("adopted_language",

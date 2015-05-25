@@ -174,11 +174,6 @@ class TranslateHelper : public content::RenderViewObserver {
   // Converts language code to the one used in server supporting list.
   static void ConvertLanguageCodeSynonym(std::string* code);
 
-  // Returns whether the page associated with |document| is a candidate for
-  // translation.  Some pages can explictly specify (via a meta-tag) that they
-  // should not be translated.
-  static bool IsTranslationAllowed(blink::WebDocument* document);
-
   // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 

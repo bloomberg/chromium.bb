@@ -81,6 +81,45 @@ scoped_ptr<translate::RendererCldDataProvider> CreateDataProvider(
       CreateRendererCldDataProvider(render_view_observer));
 }
 
+// Returns whether the page associated with |document| is a candidate for
+// translation.  Some pages can explictly specify (via a meta-tag) that they
+// should not be translated.
+bool HasNoTranslateMeta(WebDocument* document) {
+  WebElement head = document->head();
+  if (head.isNull() || !head.hasChildNodes())
+    return false;
+
+  const WebString meta(ASCIIToUTF16("meta"));
+  const WebString name(ASCIIToUTF16("name"));
+  const WebString google(ASCIIToUTF16("google"));
+  const WebString value(ASCIIToUTF16("value"));
+  const WebString content(ASCIIToUTF16("content"));
+
+  WebNodeList children = head.childNodes();
+  for (size_t i = 0; i < children.length(); ++i) {
+    WebNode node = children.item(i);
+    if (!node.isElementNode())
+      continue;
+    WebElement element = node.to<WebElement>();
+    // Check if a tag is <meta>.
+    if (!element.hasHTMLTagName(meta))
+      continue;
+    // Check if the tag contains name="google".
+    WebString attribute = element.getAttribute(name);
+    if (attribute.isNull() || attribute != google)
+      continue;
+    // Check if the tag contains value="notranslate", or content="notranslate".
+    attribute = element.getAttribute(value);
+    if (attribute.isNull())
+      attribute = element.getAttribute(content);
+    if (attribute.isNull())
+      continue;
+    if (LowerCaseEqualsASCII(attribute, "notranslate"))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace translate {
@@ -204,6 +243,7 @@ void TranslateHelper::PageCapturedImpl(int page_seq_no,
   details.content_language = content_language;
   details.cld_language = cld_language;
   details.is_cld_reliable = is_cld_reliable;
+  details.has_notranslate = HasNoTranslateMeta(&document);
   details.html_root_language = html_lang;
   details.adopted_language = language;
 
@@ -214,7 +254,7 @@ void TranslateHelper::PageCapturedImpl(int page_seq_no,
   Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
       routing_id(),
       details,
-      IsTranslationAllowed(&document) && !language.empty()));
+      !details.has_notranslate && !language.empty()));
 }
 
 void TranslateHelper::CancelPendingTranslation() {
@@ -339,44 +379,6 @@ double TranslateHelper::ExecuteScriptAndGetDoubleResult(
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, private:
 //
-
-// static
-bool TranslateHelper::IsTranslationAllowed(WebDocument* document) {
-  WebElement head = document->head();
-  if (head.isNull() || !head.hasChildNodes())
-    return true;
-
-  const WebString meta(ASCIIToUTF16("meta"));
-  const WebString name(ASCIIToUTF16("name"));
-  const WebString google(ASCIIToUTF16("google"));
-  const WebString value(ASCIIToUTF16("value"));
-  const WebString content(ASCIIToUTF16("content"));
-
-  WebNodeList children = head.childNodes();
-  for (size_t i = 0; i < children.length(); ++i) {
-    WebNode node = children.item(i);
-    if (!node.isElementNode())
-      continue;
-    WebElement element = node.to<WebElement>();
-    // Check if a tag is <meta>.
-    if (!element.hasHTMLTagName(meta))
-      continue;
-    // Check if the tag contains name="google".
-    WebString attribute = element.getAttribute(name);
-    if (attribute.isNull() || attribute != google)
-      continue;
-    // Check if the tag contains value="notranslate", or content="notranslate".
-    attribute = element.getAttribute(value);
-    if (attribute.isNull())
-      attribute = element.getAttribute(content);
-    if (attribute.isNull())
-      continue;
-    if (LowerCaseEqualsASCII(attribute, "notranslate"))
-      return false;
-  }
-  return true;
-}
-
 bool TranslateHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TranslateHelper, message)

@@ -329,6 +329,7 @@
       appendTD(tr, formatLanguageCode(detail['cld_language']),
                'detection-logs-cld-language');
       appendTD(tr, detail['is_cld_reliable'], 'detection-logs-is-cld-reliable');
+      appendTD(tr, detail['has_notranslate'], 'detection-logs-has-notranslate');
       appendTD(tr, formatLanguageCode(detail['html_root_language']),
                'detection-logs-html-root-language');
       appendTD(tr, formatLanguageCode(detail['adopted_language']),
