@@ -253,13 +253,13 @@ SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingCont
         return SelectorFailsLocally;
 
     if (context.selector->match() == CSSSelector::PseudoElement) {
-        if (context.selector->isCustomPseudoElement()) {
+        if (context.selector->pseudoType() == CSSSelector::PseudoWebKitCustomElement) {
             if (!matchesCustomPseudoElement(context.element, *context.selector))
                 return SelectorFailsLocally;
-        } else if (context.selector->isContentPseudoElement()) {
+        } else if (context.selector->pseudoType() == CSSSelector::PseudoContent) {
             if (!context.element->isInShadowTree() || !context.element->isInsertionPoint())
                 return SelectorFailsLocally;
-        } else if (context.selector->isShadowPseudoElement()) {
+        } else if (context.selector->pseudoType() == CSSSelector::PseudoShadow) {
             if (!context.element->isInShadowTree() || !context.previousElement)
                 return SelectorFailsCompletely;
         } else {
@@ -377,7 +377,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         nextContext.isSubSelector = false;
         nextContext.inRightmostCompound = false;
 
-        if (nextContext.selector->isShadowPseudoElement())
+        if (nextContext.selector->pseudoType() == CSSSelector::PseudoShadow)
             return matchForPseudoShadow(nextContext, context.element->containingShadowRoot(), result);
 
         for (nextContext.element = parentElement(context); nextContext.element; nextContext.element = parentElement(nextContext)) {
@@ -396,7 +396,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             nextContext.isSubSelector = false;
             nextContext.inRightmostCompound = false;
 
-            if (nextContext.selector->isShadowPseudoElement())
+            if (nextContext.selector->pseudoType() == CSSSelector::PseudoShadow)
                 return matchForPseudoShadow(nextContext, context.element->parentNode(), result);
 
             nextContext.element = parentElement(context);
@@ -406,7 +406,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         }
     case CSSSelector::DirectAdjacent:
         // Shadow roots can't have sibling elements
-        if (nextContext.selector->isShadowPseudoElement())
+        if (nextContext.selector->pseudoType() == CSSSelector::PseudoShadow)
             return SelectorFailsCompletely;
 
         if (m_mode == ResolvingStyle) {
@@ -422,7 +422,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
     case CSSSelector::IndirectAdjacent:
         // Shadow roots can't have sibling elements
-        if (nextContext.selector->isShadowPseudoElement())
+        if (nextContext.selector->pseudoType() == CSSSelector::PseudoShadow)
             return SelectorFailsCompletely;
 
         if (m_mode == ResolvingStyle) {

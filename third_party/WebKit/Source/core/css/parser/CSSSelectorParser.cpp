@@ -135,7 +135,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeComplexSelector(CSSParse
         while (end->tagHistory())
             end = end->tagHistory();
         end->setRelation(combinator);
-        if (selector->isContentPseudoElement())
+        if (selector->pseudoType() == CSSSelector::PseudoContent)
             end->setRelationIsAffectedByPseudoContent();
         end->setTagHistory(selector.release());
 
@@ -563,7 +563,7 @@ void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespac
     if (compoundSelector->crossesTreeScopes())
         return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, compoundSelector, elementName.isNull());
 
-    if (compoundSelector->isContentPseudoElement())
+    if (compoundSelector->pseudoType() == CSSSelector::PseudoContent)
         return rewriteSpecifiersWithElementNameForContentPseudoElement(tag, compoundSelector, elementName.isNull());
 
     // *:host never matches, so we can't discard the * otherwise we can't tell the
@@ -602,7 +602,7 @@ void CSSSelectorParser::rewriteSpecifiersWithElementNameForContentPseudoElement(
     CSSParserSelector* history = specifiers;
     while (history->tagHistory()) {
         history = history->tagHistory();
-        if (history->isContentPseudoElement() || history->relationIsAffectedByPseudoContent())
+        if (history->pseudoType() == CSSSelector::PseudoContent || history->relationIsAffectedByPseudoContent())
             last = history;
     }
 
@@ -650,13 +650,13 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::addSimpleSelectorToCompound(Pas
 
     CSSSelector::Relation relation = CSSSelector::SubSelector;
 
-    if (simpleSelector->crossesTreeScopes() || simpleSelector->isContentPseudoElement()) {
+    if (simpleSelector->crossesTreeScopes() || simpleSelector->pseudoType() == CSSSelector::PseudoContent) {
         if (simpleSelector->crossesTreeScopes())
             relation = CSSSelector::ShadowPseudo;
         simpleSelector->appendTagHistory(relation, compoundSelector);
         return simpleSelector;
     }
-    if (compoundSelector->crossesTreeScopes() || compoundSelector->isContentPseudoElement()) {
+    if (compoundSelector->crossesTreeScopes() || compoundSelector->pseudoType() == CSSSelector::PseudoContent) {
         if (compoundSelector->crossesTreeScopes())
             relation = CSSSelector::ShadowPseudo;
         compoundSelector->insertTagHistory(CSSSelector::SubSelector, simpleSelector, relation);

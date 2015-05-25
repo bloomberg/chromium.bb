@@ -212,11 +212,11 @@ public:
     void setSelectorList(PassOwnPtr<CSSSelectorList>);
 
     bool hasHostPseudoSelector() const;
-    bool isContentPseudoElement() const { return m_selector->isContentPseudoElement(); }
 
     CSSSelector::PseudoType pseudoType() const { return m_selector->pseudoType(); }
-    bool isCustomPseudoElement() const { return m_selector->isCustomPseudoElement(); }
-    bool crossesTreeScopes() const { return isCustomPseudoElement() || pseudoType() == CSSSelector::PseudoCue || pseudoType() == CSSSelector::PseudoShadow; }
+
+    // TODO(esprehn): This set of cases doesn't make sense, why PseudoShadow but not a check for ::content or /deep/ ?
+    bool crossesTreeScopes() const { return pseudoType() == CSSSelector::PseudoWebKitCustomElement || pseudoType() == CSSSelector::PseudoCue || pseudoType() == CSSSelector::PseudoShadow; }
 
     bool isSimple() const;
     bool hasShadowPseudo() const;

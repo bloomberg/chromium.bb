@@ -185,7 +185,7 @@ class SelectorCrossesTreeScopes {
 public:
     bool operator()(const CSSSelector& selector)
     {
-        return selector.relation() == CSSSelector::ShadowDeep || selector.isShadowPseudoElement();
+        return selector.relation() == CSSSelector::ShadowDeep || selector.pseudoType() == CSSSelector::PseudoShadow;
     }
 };
 

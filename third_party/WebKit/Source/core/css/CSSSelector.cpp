@@ -415,7 +415,6 @@ void CSSSelector::show(int indent) const
 {
     printf("%*sselectorText(): %s\n", indent, "", selectorText().ascii().data());
     printf("%*sm_match: %d\n", indent, "", m_match);
-    printf("%*sisCustomPseudoElement(): %d\n", indent, "", isCustomPseudoElement());
     if (m_match != Tag)
         printf("%*svalue(): %s\n", indent, "", value().ascii().data());
     printf("%*spseudoType(): %d\n", indent, "", pseudoType());
@@ -459,7 +458,7 @@ void CSSSelector::updatePseudoType(const AtomicString& value, bool hasArguments)
     ASSERT(m_match == PseudoClass || m_match == PseudoElement || m_match == PagePseudoClass);
 
     setValue(value);
-    m_pseudoType = parsePseudoType(value, hasArguments);
+    setPseudoType(parsePseudoType(value, hasArguments));
 
     switch (m_pseudoType) {
     case PseudoAfter:
@@ -852,17 +851,6 @@ bool CSSSelector::isCompound() const
     }
 
     return true;
-}
-
-bool CSSSelector::isCommonPseudoClass() const
-{
-    if (m_match != CSSSelector::PseudoClass)
-        return false;
-    CSSSelector::PseudoType pseudoType = this->pseudoType();
-    return pseudoType == CSSSelector::PseudoLink
-        || pseudoType == CSSSelector::PseudoAnyLink
-        || pseudoType == CSSSelector::PseudoVisited
-        || pseudoType == CSSSelector::PseudoFocus;
 }
 
 unsigned CSSSelector::computeLinkMatchType() const

@@ -318,7 +318,7 @@ void CSSParserSelector::setSelectorList(PassOwnPtr<CSSSelectorList> selectorList
 
 bool CSSParserSelector::isSimple() const
 {
-    if (m_selector->selectorList() || m_selector->matchesPseudoElement())
+    if (m_selector->selectorList() || m_selector->match() == CSSSelector::PseudoElement)
         return false;
 
     if (!m_tagHistory)

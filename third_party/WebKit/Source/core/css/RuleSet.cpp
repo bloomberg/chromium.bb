@@ -145,7 +145,7 @@ static void extractValuesforSelector(const CSSSelector* selector, AtomicString& 
     default:
         break;
     }
-    if (selector->isCustomPseudoElement())
+    if (selector->pseudoType() == CSSSelector::PseudoWebKitCustomElement)
         customPseudoElementName = selector->value();
 }
 
@@ -184,25 +184,20 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
         return true;
     }
 
-    if (component.pseudoType() == CSSSelector::PseudoCue) {
+    switch (component.pseudoType()) {
+    case CSSSelector::PseudoCue:
         m_cuePseudoRules.append(ruleData);
         return true;
-    }
-
-    if (component.isCommonPseudoClass()) {
-        switch (component.pseudoType()) {
-        case CSSSelector::PseudoLink:
-        case CSSSelector::PseudoVisited:
-        case CSSSelector::PseudoAnyLink:
-            m_linkPseudoClassRules.append(ruleData);
-            return true;
-        case CSSSelector::PseudoFocus:
-            m_focusPseudoClassRules.append(ruleData);
-            return true;
-        default:
-            ASSERT_NOT_REACHED();
-            return true;
-        }
+    case CSSSelector::PseudoLink:
+    case CSSSelector::PseudoVisited:
+    case CSSSelector::PseudoAnyLink:
+        m_linkPseudoClassRules.append(ruleData);
+        return true;
+    case CSSSelector::PseudoFocus:
+        m_focusPseudoClassRules.append(ruleData);
+        return true;
+    default:
+        break;
     }
 
     if (!tagName.isEmpty()) {
@@ -210,10 +205,14 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
         return true;
     }
 
+    // TODO(esprehn): We shouldn't favor tagName over m_shadowHostRules, it means
+    // selectors with div:host end up in the tagName list matched against all tags
+    // even though they can't match anything at all.
     if (component.isHostPseudoClass()) {
         m_shadowHostRules.append(ruleData);
         return true;
     }
+
     return false;
 }
 

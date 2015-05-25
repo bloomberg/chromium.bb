@@ -74,11 +74,6 @@ namespace blink {
     // Attribute selectors return the attribute name in the attribute() method. The value() method returns the value matched against
     // in case of selectors like [attr="value"].
     //
-    // ** isCustomPseudoElement():
-    //
-    // It appears this is used only for pseudo elements that appear in user-agent shadow DOM. They are not exposed to author-created
-    // shadow DOM.
-
     class CORE_EXPORT CSSSelector {
         WTF_MAKE_FAST_ALLOCATED(CSSSelector);
     public:
@@ -88,15 +83,9 @@ namespace blink {
 
         ~CSSSelector();
 
-        /**
-         * Re-create selector text from selector's data
-         */
-        String selectorText(const String& = "") const;
+        String selectorText(const String& rightSide = "") const;
 
-        // checks if the 2 selectors (including sub selectors) agree.
         bool operator==(const CSSSelector&) const;
-
-        // tag == -1 means apply to all elements (Selector = *)
 
         // http://www.w3.org/TR/css3-selectors/#specificity
         // We use 256 as the base of the specificity number system.
@@ -239,11 +228,7 @@ namespace blink {
             CaseInsensitive,
         };
 
-        PseudoType pseudoType() const
-        {
-            return static_cast<PseudoType>(m_pseudoType);
-        }
-
+        PseudoType pseudoType() const { return static_cast<PseudoType>(m_pseudoType); }
         void updatePseudoType(const AtomicString&, bool hasArguments);
 
         static PseudoType parsePseudoType(const AtomicString&, bool hasArguments);
@@ -263,7 +248,8 @@ namespace blink {
         // http://www.w3.org/TR/css3-selectors/#attrnmsp
         const QualifiedName& attribute() const;
         AttributeMatchType attributeMatchType() const;
-        // Returns the argument of a parameterized selector. For example, nth-child(2) would have an argument of 2.
+        // Returns the argument of a parameterized selector. For example, :lang(en-US) would have an argument of en-US.
+        // Note that :nth-* selectors don't store an argument and just store the numbers.
         const AtomicString& argument() const { return m_hasRareData ? m_data.m_rareData->m_argument : nullAtom; }
         const CSSSelectorList* selectorList() const { return m_hasRareData ? m_data.m_rareData->m_selectorList.get() : 0; }
 
@@ -280,18 +266,14 @@ namespace blink {
         void setNth(int a, int b);
         bool matchNth(int count) const;
 
-        bool matchesPseudoElement() const;
-        bool isCustomPseudoElement() const;
-        bool isDirectAdjacentSelector() const { return m_relation == DirectAdjacent; }
         bool isAdjacentSelector() const { return m_relation == DirectAdjacent || m_relation == IndirectAdjacent; }
         bool isShadowSelector() const { return m_relation == ShadowPseudo || m_relation == ShadowDeep; }
         bool isSiblingSelector() const;
-        bool isAttributeSelector() const;
-        bool isContentPseudoElement() const;
-        bool isShadowPseudoElement() const;
-        bool isHostPseudoClass() const;
-        bool isTreeBoundaryCrossing() const;
-        bool isInsertionPointCrossing() const;
+        bool isAttributeSelector() const { return m_match >= FirstAttributeSelectorMatch; }
+        bool isHostPseudoClass() const { return m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext; }
+        bool isTreeBoundaryCrossing() const { return m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext; }
+        bool isInsertionPointCrossing() const { return m_pseudoType == PseudoHostContext || m_pseudoType == PseudoContent; }
+
         Relation relation() const { return static_cast<Relation>(m_relation); }
         void setRelation(Relation relation)
         {
@@ -314,8 +296,6 @@ namespace blink {
         // http://dev.w3.org/csswg/selectors4/#compound
         bool isCompound() const;
 
-        bool isCommonPseudoClass() const;
-
         enum LinkMatchMask { MatchLink = 1, MatchVisited = 2, MatchAll = MatchLink | MatchVisited };
         unsigned computeLinkMatchType() const;
 
@@ -335,6 +315,12 @@ namespace blink {
         unsigned m_isForPage              : 1;
         unsigned m_tagIsImplicit          : 1;
         unsigned m_relationIsAffectedByPseudoContent  : 1;
+
+        void setPseudoType(PseudoType pseudoType)
+        {
+            m_pseudoType = pseudoType;
+            ASSERT(static_cast<PseudoType>(m_pseudoType) == pseudoType); // using a bitfield.
+        }
 
         unsigned specificityForOneSelector() const;
         unsigned specificityForPage() const;
@@ -389,21 +375,6 @@ inline CSSSelector::AttributeMatchType CSSSelector::attributeMatchType() const
     return m_data.m_rareData->m_bits.m_attributeMatchType;
 }
 
-inline bool CSSSelector::matchesPseudoElement() const
-{
-    return m_match == PseudoElement;
-}
-
-inline bool CSSSelector::isCustomPseudoElement() const
-{
-    return m_match == PseudoElement && m_pseudoType == PseudoWebKitCustomElement;
-}
-
-inline bool CSSSelector::isHostPseudoClass() const
-{
-    return m_match == PseudoClass && (m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext);
-}
-
 inline bool CSSSelector::isSiblingSelector() const
 {
     PseudoType type = pseudoType();
@@ -420,32 +391,6 @@ inline bool CSSSelector::isSiblingSelector() const
         || type == PseudoNthOfType
         || type == PseudoNthLastChild
         || type == PseudoNthLastOfType;
-}
-
-inline bool CSSSelector::isAttributeSelector() const
-{
-    return m_match >= FirstAttributeSelectorMatch;
-}
-
-inline bool CSSSelector::isContentPseudoElement() const
-{
-    return m_match == PseudoElement && pseudoType() == PseudoContent;
-}
-
-inline bool CSSSelector::isShadowPseudoElement() const
-{
-    return m_match == PseudoElement && pseudoType() == PseudoShadow;
-}
-
-inline bool CSSSelector::isTreeBoundaryCrossing() const
-{
-    return m_match == PseudoClass && (pseudoType() == PseudoHost || pseudoType() == PseudoHostContext);
-}
-
-inline bool CSSSelector::isInsertionPointCrossing() const
-{
-    return (m_match == PseudoClass && pseudoType() == PseudoHostContext)
-        || (m_match == PseudoElement && pseudoType() == PseudoContent);
 }
 
 inline void CSSSelector::setValue(const AtomicString& value)
