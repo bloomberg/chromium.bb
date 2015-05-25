@@ -42,7 +42,7 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
 
   void Launch(const GURL& origin,
               const std::string& native_host_name,
-              LaunchedCallback callback) const override;
+              const LaunchedCallback& callback) const override;
 
  private:
   class Core : public base::RefCountedThreadSafe<Core> {
@@ -50,7 +50,7 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
     Core(bool allow_user_level_hosts, intptr_t native_window);
     void Launch(const GURL& origin,
                 const std::string& native_host_name,
-                LaunchedCallback callback);
+                const LaunchedCallback& callback);
     void Detach();
 
    private:
@@ -59,13 +59,13 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
 
     void DoLaunchOnThreadPool(const GURL& origin,
                               const std::string& native_host_name,
-                              LaunchedCallback callback);
+                              const LaunchedCallback& callback);
     void PostErrorResult(const LaunchedCallback& callback, LaunchResult error);
     void PostResult(const LaunchedCallback& callback,
                     base::Process process,
                     base::File read_file,
                     base::File write_file);
-    void CallCallbackOnIOThread(LaunchedCallback callback,
+    void CallCallbackOnIOThread(const LaunchedCallback& callback,
                                 LaunchResult result,
                                 base::Process process,
                                 base::File read_file,
@@ -105,7 +105,7 @@ void NativeProcessLauncherImpl::Core::Detach() {
 void NativeProcessLauncherImpl::Core::Launch(
     const GURL& origin,
     const std::string& native_host_name,
-    LaunchedCallback callback) {
+    const LaunchedCallback& callback) {
   content::BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(&Core::DoLaunchOnThreadPool, this,
                             origin, native_host_name, callback));
@@ -114,7 +114,7 @@ void NativeProcessLauncherImpl::Core::Launch(
 void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     const GURL& origin,
     const std::string& native_host_name,
-    LaunchedCallback callback) {
+    const LaunchedCallback& callback) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   if (!NativeMessagingHostManifest::IsValidName(native_host_name)) {
@@ -204,7 +204,7 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
 }
 
 void NativeProcessLauncherImpl::Core::CallCallbackOnIOThread(
-    LaunchedCallback callback,
+    const LaunchedCallback& callback,
     LaunchResult result,
     base::Process process,
     base::File read_file,
@@ -250,7 +250,7 @@ NativeProcessLauncherImpl::~NativeProcessLauncherImpl() {
 
 void NativeProcessLauncherImpl::Launch(const GURL& origin,
                                        const std::string& native_host_name,
-                                       LaunchedCallback callback) const {
+                                       const LaunchedCallback& callback) const {
   core_->Launch(origin, native_host_name, callback);
 }
 

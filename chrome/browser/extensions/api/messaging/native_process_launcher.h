@@ -56,7 +56,7 @@ class NativeProcessLauncher {
   // closing IO pipes).
   virtual void Launch(const GURL& origin,
                       const std::string& native_host_name,
-                      LaunchedCallback callback) const = 0;
+                      const LaunchedCallback& callback) const = 0;
 
  protected:
   // The following two methods are platform specific and are implemented in
