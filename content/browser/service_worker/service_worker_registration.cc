@@ -308,22 +308,14 @@ void ServiceWorkerRegistration::DeleteVersion(
     const scoped_refptr<ServiceWorkerVersion>& version) {
   DCHECK_EQ(id(), version->registration_id());
 
-  // "Set registration's active worker to null." (The spec's step order may
-  // differ. It's OK because the other steps queue a task.)
   UnsetVersion(version.get());
 
-  // "Run the Update State algorithm passing registration's active worker and
-  // 'redundant' as the arguments."
-  version->SetStatus(ServiceWorkerVersion::REDUNDANT);
-
-  // "For each service worker client client whose active worker is
-  // registration's active worker..." set the active worker to null.
   for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context_->GetProviderHostIterator();
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
     if (host->controlling_version() == version)
-      host->NotifyControllerActivationFailed();
+      host->NotifyControllerLost();
   }
 
   version->Doom();
@@ -348,24 +340,19 @@ void ServiceWorkerRegistration::DeleteVersion(
 void ServiceWorkerRegistration::OnActivateEventFinished(
     ServiceWorkerVersion* activating_version,
     ServiceWorkerStatusCode status) {
-  if (!context_ || activating_version != active_version())
+  if (!context_ || activating_version != active_version() ||
+      activating_version->status() != ServiceWorkerVersion::ACTIVATING)
     return;
-  ServiceWorkerMetrics::RecordActivateEventStatus(status);
 
-  // "If activateFailed is true, then:..."
-  if (status != SERVICE_WORKER_OK) {
-    DeleteVersion(make_scoped_refptr(activating_version));
-    return;
-  }
+  // |status| is just for UMA. Once we've attempted to dispatch the activate
+  // event to an installed worker, it's committed to becoming active.
+  ServiceWorkerMetrics::RecordActivateEventStatus(status);
 
   // "Run the Update State algorithm passing registration's active worker and
   // 'activated' as the arguments."
   activating_version->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  if (context_) {
-    context_->storage()->UpdateToActiveState(
-        this,
-        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-  }
+  context_->storage()->UpdateToActiveState(
+      this, base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 
 void ServiceWorkerRegistration::OnDeleteFinished(

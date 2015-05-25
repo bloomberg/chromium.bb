@@ -1212,10 +1212,8 @@ void ServiceWorkerVersion::OnActivateEventFinished(
     return;
   }
   ServiceWorkerStatusCode rv = SERVICE_WORKER_OK;
-  if (result == blink::WebServiceWorkerEventResultRejected ||
-      status() != ACTIVATING) {
+  if (result == blink::WebServiceWorkerEventResultRejected)
     rv = SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED;
-  }
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(rv);

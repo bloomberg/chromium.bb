@@ -1458,14 +1458,14 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
   helper->set_activate_event_result(blink::WebServiceWorkerEventResultRejected);
   EXPECT_EQ(registration, RunRegisterJob(pattern, script2));
 
-  // Verify the registration was uninstalled.
+  // Verify the registration remains.
   EXPECT_FALSE(registration->is_uninstalling());
-  EXPECT_TRUE(registration->is_uninstalled());
+  EXPECT_FALSE(registration->is_uninstalled());
 
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, old_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
 
-  FindRegistrationForPattern(pattern, SERVICE_WORKER_ERROR_NOT_FOUND);
+  FindRegistrationForPattern(pattern, SERVICE_WORKER_OK);
 }
 
 }  // namespace content

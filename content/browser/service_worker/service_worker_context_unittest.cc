@@ -192,6 +192,11 @@ TEST_F(ServiceWorkerContextTest, Register) {
       EmbeddedWorkerMsg_StopWorker::ID));
   EXPECT_NE(kInvalidServiceWorkerRegistrationId, registration_id);
 
+  ASSERT_EQ(1u, notifications_.size());
+  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(pattern, notifications_[0].pattern);
+  EXPECT_EQ(registration_id, notifications_[0].registration_id);
+
   context()->storage()->FindRegistrationForId(
       registration_id,
       pattern.GetOrigin(),
@@ -200,11 +205,6 @@ TEST_F(ServiceWorkerContextTest, Register) {
                  false /* expect_waiting */,
                  true /* expect_active */));
   base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(1u, notifications_.size());
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
-  EXPECT_EQ(pattern, notifications_[0].pattern);
-  EXPECT_EQ(registration_id, notifications_[0].registration_id);
 }
 
 // Test registration when the service worker rejects the install event. The
@@ -216,6 +216,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
 
   helper_.reset();  // Make sure the process lookups stay overridden.
   helper_.reset(new RejectInstallTestHelper(render_process_id_));
+  helper_->context_wrapper()->AddObserver(this);
   int64 registration_id = kInvalidServiceWorkerRegistrationId;
   bool called = false;
   context()->RegisterServiceWorker(
@@ -239,6 +240,11 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
       EmbeddedWorkerMsg_StopWorker::ID));
   EXPECT_NE(kInvalidServiceWorkerRegistrationId, registration_id);
 
+  ASSERT_EQ(1u, notifications_.size());
+  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(pattern, notifications_[0].pattern);
+  EXPECT_EQ(registration_id, notifications_[0].registration_id);
+
   context()->storage()->FindRegistrationForId(
       registration_id,
       pattern.GetOrigin(),
@@ -247,22 +253,21 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
                  false /* expect_waiting */,
                  false /* expect_active */));
   base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(notifications_.empty());
 }
 
 // Test registration when the service worker rejects the activate event. The
-// registration callback should indicate success, but there should be no waiting
-// or active worker in the registration.
+// worker should be activated anyway.
 TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
-  helper_.reset();  // Make sure the process lookups stay overridden.
+  GURL pattern("http://www.example.com/");
+  GURL script_url("http://www.example.com/service_worker.js");
+
+  helper_.reset();
   helper_.reset(new RejectActivateTestHelper(render_process_id_));
+  helper_->context_wrapper()->AddObserver(this);
   int64 registration_id = kInvalidServiceWorkerRegistrationId;
   bool called = false;
   context()->RegisterServiceWorker(
-      GURL("http://www.example.com/"),
-      GURL("http://www.example.com/service_worker.js"),
-      NULL,
+      pattern, script_url, NULL,
       MakeRegisteredCallback(&called, &registration_id));
 
   ASSERT_FALSE(called);
@@ -280,16 +285,16 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
       EmbeddedWorkerMsg_StopWorker::ID));
   EXPECT_NE(kInvalidServiceWorkerRegistrationId, registration_id);
 
-  context()->storage()->FindRegistrationForId(
-      registration_id,
-      GURL("http://www.example.com"),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_ERROR_NOT_FOUND,
-                 false /* expect_waiting */,
-                 false /* expect_active */));
-  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1u, notifications_.size());
+  EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
+  EXPECT_EQ(pattern, notifications_[0].pattern);
+  EXPECT_EQ(registration_id, notifications_[0].registration_id);
 
-  EXPECT_TRUE(notifications_.empty());
+  context()->storage()->FindRegistrationForId(
+      registration_id, pattern.GetOrigin(),
+      base::Bind(&ExpectRegisteredWorkers, SERVICE_WORKER_OK,
+                 false /* expect_waiting */, true /* expect_active */));
+  base::RunLoop().RunUntilIdle();
 }
 
 // Make sure registrations are cleaned up when they are unregistered.

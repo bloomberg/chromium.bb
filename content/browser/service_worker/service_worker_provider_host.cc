@@ -302,7 +302,7 @@ ServiceWorkerProviderHost::MatchRegistration() const {
   return nullptr;
 }
 
-void ServiceWorkerProviderHost::NotifyControllerActivationFailed() {
+void ServiceWorkerProviderHost::NotifyControllerLost() {
   SetControllerVersionAttribute(nullptr, true /* notify_controllerchange */);
 }
 

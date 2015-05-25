@@ -220,7 +220,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // for current document.
   ServiceWorkerRegistration* MatchRegistration() const;
 
-  void NotifyControllerActivationFailed();
+  // Called when our controller has been terminated and doomed due to an
+  // exceptional condition like it could no longer be read from the script
+  // cache.
+  void NotifyControllerLost();
 
  private:
   friend class ServiceWorkerProviderHostTest;
