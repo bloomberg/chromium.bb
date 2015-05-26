@@ -1278,13 +1278,14 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
         root.get(), root->bounds(), translate, &render_surface_layer_list);
     inputs.page_scale_factor = page_scale_factor;
-    inputs.page_scale_application_layer = root.get();
+    inputs.page_scale_layer = root.get();
     inputs.can_adjust_raster_scales = true;
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     gfx::Transform page_scaled_translate = translate;
     page_scaled_translate.Scale(page_scale_factor, page_scale_factor);
-    EXPECT_EQ(translate, root->draw_properties().target_space_transform);
+    EXPECT_EQ(page_scaled_translate,
+              root->draw_properties().target_space_transform);
     EXPECT_EQ(page_scaled_translate,
               child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
@@ -4430,7 +4431,7 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
       root.get(), parent->bounds(), &render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_application_layer = root.get();
+  inputs.page_scale_layer = root.get();
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -4540,7 +4541,7 @@ TEST_F(LayerTreeHostCommonTest,
       parent.get(), parent->bounds(), &render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_application_layer = parent.get();
+  inputs.page_scale_layer = parent.get();
   inputs.can_adjust_raster_scales = true;
   inputs.verify_property_trees = false;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
@@ -4682,7 +4683,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
         root.get(), root->bounds(), &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
-    inputs.page_scale_application_layer = root.get();
+    inputs.page_scale_layer = root.get();
     inputs.can_adjust_raster_scales = true;
     inputs.verify_property_trees = false;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
@@ -4726,7 +4727,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
         root.get(), root->bounds(), &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
-    inputs.page_scale_application_layer = root.get();
+    inputs.page_scale_layer = root.get();
     inputs.can_adjust_raster_scales = true;
     inputs.verify_property_trees = false;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
@@ -4755,7 +4756,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
         root.get(), root->bounds(), &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
-    inputs.page_scale_application_layer = root.get();
+    inputs.page_scale_layer = root.get();
     inputs.can_adjust_raster_scales = true;
     inputs.verify_property_trees = false;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
@@ -4781,7 +4782,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
         root.get(), root->bounds(), &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
-    inputs.page_scale_application_layer = root.get();
+    inputs.page_scale_layer = root.get();
     inputs.can_adjust_raster_scales = true;
     inputs.verify_property_trees = false;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
@@ -4872,7 +4873,7 @@ TEST_F(LayerTreeHostCommonTest,
       root.get(), root->bounds(), &render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_application_layer = root.get();
+  inputs.page_scale_layer = root.get();
   inputs.verify_property_trees = false;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -4956,7 +4957,7 @@ TEST_F(LayerTreeHostCommonTest, SmallIdealScale) {
         root.get(), root->bounds(), &render_surface_layer_list);
     inputs.device_scale_factor = device_scale_factor;
     inputs.page_scale_factor = page_scale_factor;
-    inputs.page_scale_application_layer = root.get();
+    inputs.page_scale_layer = root.get();
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -5082,7 +5083,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
       root.get(), root->bounds(), &render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_application_layer = root.get();
+  inputs.page_scale_layer = root.get();
   inputs.can_adjust_raster_scales = true;
   inputs.verify_property_trees = false;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
@@ -5286,7 +5287,7 @@ TEST_F(LayerTreeHostCommonTest,
       root.get(), root->bounds(), &render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_application_layer = root.get();
+  inputs.page_scale_layer = root.get();
   inputs.verify_property_trees = false;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -8642,7 +8643,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
 
   inputs.page_scale_factor = page_scale_factor;
   inputs.can_adjust_raster_scales = true;
-  inputs.page_scale_application_layer = root_layer;
+  inputs.page_scale_layer = root_layer;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_FLOAT_EQ(1.f, root_layer->draw_properties().ideal_contents_scale);
@@ -8797,7 +8798,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
       host->root_layer(), device_viewport_size, &render_surface_layer_list);
   inputs.device_scale_factor = 2.f;
   inputs.page_scale_factor = 1.f;
-  inputs.page_scale_application_layer = NULL;
+  inputs.page_scale_layer = NULL;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   // Layers in the root render surface have their visible content rect clipped

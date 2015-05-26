@@ -2127,11 +2127,11 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   host_impl().active_tree()->GetViewportSelection(&output);
   EXPECT_EQ(input.start.type, output.start.type);
   gfx::PointF expected_output_start_top = input.start.edge_top;
-  gfx::PointF expected_output_edge_botom = input.start.edge_bottom;
+  gfx::PointF expected_output_edge_bottom = input.start.edge_bottom;
   expected_output_start_top.Scale(page_scale_factor);
-  expected_output_edge_botom.Scale(page_scale_factor);
-  EXPECT_EQ(input.start.edge_top, output.start.edge_top);
-  EXPECT_EQ(input.start.edge_bottom, output.start.edge_bottom);
+  expected_output_edge_bottom.Scale(page_scale_factor);
+  EXPECT_EQ(expected_output_start_top, output.start.edge_top);
+  EXPECT_EQ(expected_output_edge_bottom, output.start.edge_bottom);
   EXPECT_TRUE(output.start.visible);
   EXPECT_EQ(input.end.type, output.end.type);
 

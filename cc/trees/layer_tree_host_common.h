@@ -39,7 +39,7 @@ class CC_EXPORT LayerTreeHostCommon {
                         const gfx::Transform& device_transform,
                         float device_scale_factor,
                         float page_scale_factor,
-                        const LayerType* page_scale_application_layer,
+                        const LayerType* page_scale_layer,
                         const gfx::Vector2dF& elastic_overscroll,
                         const LayerType* elastic_overscroll_application_layer,
                         int max_texture_size,
@@ -56,7 +56,7 @@ class CC_EXPORT LayerTreeHostCommon {
           device_transform(device_transform),
           device_scale_factor(device_scale_factor),
           page_scale_factor(page_scale_factor),
-          page_scale_application_layer(page_scale_application_layer),
+          page_scale_layer(page_scale_layer),
           elastic_overscroll(elastic_overscroll),
           elastic_overscroll_application_layer(
               elastic_overscroll_application_layer),
@@ -76,7 +76,7 @@ class CC_EXPORT LayerTreeHostCommon {
     gfx::Transform device_transform;
     float device_scale_factor;
     float page_scale_factor;
-    const LayerType* page_scale_application_layer;
+    const LayerType* page_scale_layer;
     gfx::Vector2dF elastic_overscroll;
     const LayerType* elastic_overscroll_application_layer;
     int max_texture_size;

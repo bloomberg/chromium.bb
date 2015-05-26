@@ -35,7 +35,7 @@ void SetLayerPropertiesForTesting(LayerImpl* layer,
 void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
                                     float device_scale_factor,
                                     float page_scale_factor,
-                                    LayerImpl* page_scale_application_layer,
+                                    LayerImpl* page_scale_layer,
                                     bool can_use_lcd_text) {
   gfx::Transform identity_matrix;
   std::vector<LayerImpl*> dummy_render_surface_layer_list;
@@ -51,15 +51,14 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
       root_layer, device_viewport_size, &dummy_render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_application_layer = page_scale_application_layer;
+  inputs.page_scale_layer = page_scale_layer;
   inputs.can_use_lcd_text = can_use_lcd_text;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
 
 void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {
-  LayerImpl* page_scale_application_layer = nullptr;
-  ExecuteCalculateDrawProperties(
-      root_layer, 1.f, 1.f, page_scale_application_layer, false);
+  LayerImpl* page_scale_layer = nullptr;
+  ExecuteCalculateDrawProperties(root_layer, 1.f, 1.f, page_scale_layer, false);
 }
 
 class LayerPositionConstraintTest : public testing::Test {

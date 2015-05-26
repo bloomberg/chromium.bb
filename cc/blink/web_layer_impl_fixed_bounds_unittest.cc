@@ -115,7 +115,7 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
         root_layer->layer(), kDeviceViewportSize, &render_surface_layer_list);
     inputs.device_scale_factor = kDeviceScaleFactor;
     inputs.page_scale_factor = kPageScaleFactor;
-    inputs.page_scale_application_layer = root_layer->layer(),
+    inputs.page_scale_layer = root_layer->layer(),
     cc::LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     ExpectEqualLayerRectsInTarget(normal_layer->layer(),
@@ -132,7 +132,7 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
         root_layer->layer(), kDeviceViewportSize, &render_surface_layer_list);
     inputs.device_scale_factor = kDeviceScaleFactor;
     inputs.page_scale_factor = kPageScaleFactor;
-    inputs.page_scale_application_layer = root_layer->layer(),
+    inputs.page_scale_layer = root_layer->layer(),
     cc::LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     ExpectEqualLayerRectsInTarget(normal_layer->layer(),

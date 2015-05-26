@@ -56,10 +56,10 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     Layer* root_layer,
     float device_scale_factor,
     float page_scale_factor,
-    Layer* page_scale_application_layer,
+    Layer* page_scale_layer,
     bool can_use_lcd_text,
     bool layers_always_allowed_lcd_text) {
-  EXPECT_TRUE(page_scale_application_layer || (page_scale_factor == 1.f));
+  EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
   gfx::Transform identity_matrix;
   gfx::Size device_viewport_size =
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
@@ -74,7 +74,7 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
       root_layer, device_viewport_size, render_surface_layer_list_.get());
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_application_layer = page_scale_application_layer;
+  inputs.page_scale_layer = page_scale_layer;
   inputs.can_use_lcd_text = can_use_lcd_text;
   inputs.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text;
   inputs.can_adjust_raster_scales = true;
@@ -129,7 +129,7 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     LayerImpl* root_layer,
     float device_scale_factor,
     float page_scale_factor,
-    LayerImpl* page_scale_application_layer,
+    LayerImpl* page_scale_layer,
     bool can_use_lcd_text,
     bool layers_always_allowed_lcd_text) {
   gfx::Transform identity_matrix;
@@ -146,7 +146,7 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
       root_layer, device_viewport_size, render_surface_layer_list_impl_.get());
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_application_layer = page_scale_application_layer;
+  inputs.page_scale_layer = page_scale_layer;
   inputs.can_use_lcd_text = can_use_lcd_text;
   inputs.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text;
   inputs.can_adjust_raster_scales = true;

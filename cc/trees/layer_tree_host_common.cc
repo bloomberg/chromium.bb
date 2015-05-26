@@ -1374,7 +1374,7 @@ struct SubtreeGlobals {
   int max_texture_size;
   float device_scale_factor;
   float page_scale_factor;
-  const LayerType* page_scale_application_layer;
+  const LayerType* page_scale_layer;
   gfx::Vector2dF elastic_overscroll;
   const LayerType* elastic_overscroll_application_layer;
   bool can_adjust_raster_scales;
@@ -1422,7 +1422,7 @@ struct DataForRecursion {
   bool ancestor_clips_subtree;
   typename LayerType::RenderSurfaceType*
       nearest_occlusion_immune_ancestor_surface;
-  bool in_subtree_of_page_scale_application_layer;
+  bool in_subtree_of_page_scale_layer;
   bool subtree_can_use_lcd_text;
   bool subtree_is_visible_from_ancestor;
 };
@@ -1690,8 +1690,7 @@ static void CalculateDrawPropertiesInternal(
 
   // It makes no sense to have a non-unit page_scale_factor without specifying
   // which layer roots the subtree the scale is applied to.
-  DCHECK(globals.page_scale_application_layer ||
-         (globals.page_scale_factor == 1.f));
+  DCHECK(globals.page_scale_layer || (globals.page_scale_factor == 1.f));
 
   CHECK(!layer->visited());
   bool visited = true;
@@ -1701,8 +1700,8 @@ static void CalculateDrawPropertiesInternal(
   typename LayerType::RenderSurfaceType*
       nearest_occlusion_immune_ancestor_surface =
           data_from_ancestor.nearest_occlusion_immune_ancestor_surface;
-  data_for_children.in_subtree_of_page_scale_application_layer =
-      data_from_ancestor.in_subtree_of_page_scale_application_layer;
+  data_for_children.in_subtree_of_page_scale_layer =
+      data_from_ancestor.in_subtree_of_page_scale_layer;
   data_for_children.subtree_can_use_lcd_text =
       data_from_ancestor.subtree_can_use_lcd_text;
 
@@ -1838,7 +1837,7 @@ static void CalculateDrawPropertiesInternal(
   // Compute the 2d scale components of the transform hierarchy up to the target
   // surface. From there, we can decide on a contents scale for the layer.
   float layer_scale_factors = globals.device_scale_factor;
-  if (data_from_ancestor.in_subtree_of_page_scale_application_layer)
+  if (data_from_ancestor.in_subtree_of_page_scale_layer)
     layer_scale_factors *= globals.page_scale_factor;
   gfx::Vector2dF combined_transform_scales =
       MathUtil::ComputeTransform2dScaleComponents(
@@ -1850,20 +1849,17 @@ static void CalculateDrawPropertiesInternal(
       ? std::max(combined_transform_scales.x(),
                  combined_transform_scales.y())
       : layer_scale_factors;
-  UpdateLayerContentsScale(
-      layer,
-      globals.can_adjust_raster_scales,
-      ideal_contents_scale,
-      globals.device_scale_factor,
-      data_from_ancestor.in_subtree_of_page_scale_application_layer
-          ? globals.page_scale_factor
-          : 1.f,
-      animating_transform_to_screen);
+  UpdateLayerContentsScale(layer, globals.can_adjust_raster_scales,
+                           ideal_contents_scale, globals.device_scale_factor,
+                           data_from_ancestor.in_subtree_of_page_scale_layer
+                               ? globals.page_scale_factor
+                               : 1.f,
+                           animating_transform_to_screen);
 
   UpdateLayerScaleDrawProperties(
       layer, ideal_contents_scale, combined_maximum_animation_contents_scale,
       combined_starting_animation_contents_scale,
-      data_from_ancestor.in_subtree_of_page_scale_application_layer
+      data_from_ancestor.in_subtree_of_page_scale_layer
           ? globals.page_scale_factor
           : 1.f,
       globals.device_scale_factor);
@@ -1874,7 +1870,7 @@ static void CalculateDrawPropertiesInternal(
         mask_layer, ideal_contents_scale,
         combined_maximum_animation_contents_scale,
         combined_starting_animation_contents_scale,
-        data_from_ancestor.in_subtree_of_page_scale_application_layer
+        data_from_ancestor.in_subtree_of_page_scale_layer
             ? globals.page_scale_factor
             : 1.f,
         globals.device_scale_factor);
@@ -1887,10 +1883,16 @@ static void CalculateDrawPropertiesInternal(
         replica_mask_layer, ideal_contents_scale,
         combined_maximum_animation_contents_scale,
         combined_starting_animation_contents_scale,
-        data_from_ancestor.in_subtree_of_page_scale_application_layer
+        data_from_ancestor.in_subtree_of_page_scale_layer
             ? globals.page_scale_factor
             : 1.f,
         globals.device_scale_factor);
+  }
+
+  if (layer == globals.page_scale_layer) {
+    combined_transform.Scale(globals.page_scale_factor,
+                             globals.page_scale_factor);
+    data_for_children.in_subtree_of_page_scale_layer = true;
   }
 
   // The draw_transform that gets computed below is effectively the layer's
@@ -2219,12 +2221,6 @@ static void CalculateDrawPropertiesInternal(
   size_t layer_list_child_sorting_start_index = descendants.size();
 
   if (!layer->children().empty()) {
-    if (layer == globals.page_scale_application_layer) {
-      data_for_children.parent_matrix.Scale(
-          globals.page_scale_factor,
-          globals.page_scale_factor);
-      data_for_children.in_subtree_of_page_scale_application_layer = true;
-    }
     if (layer == globals.elastic_overscroll_application_layer) {
       data_for_children.parent_matrix.Translate(
           -globals.elastic_overscroll.x(), -globals.elastic_overscroll.y());
@@ -2500,7 +2496,7 @@ static void ProcessCalcDrawPropsInputs(
   globals->device_scale_factor =
       inputs.device_scale_factor * device_transform_scale;
   globals->page_scale_factor = inputs.page_scale_factor;
-  globals->page_scale_application_layer = inputs.page_scale_application_layer;
+  globals->page_scale_layer = inputs.page_scale_layer;
   globals->elastic_overscroll = inputs.elastic_overscroll;
   globals->elastic_overscroll_application_layer =
       inputs.elastic_overscroll_application_layer;
@@ -2521,7 +2517,7 @@ static void ProcessCalcDrawPropsInputs(
   data_for_recursion->ancestor_is_animating_scale = false;
   data_for_recursion->ancestor_clips_subtree = true;
   data_for_recursion->nearest_occlusion_immune_ancestor_surface = NULL;
-  data_for_recursion->in_subtree_of_page_scale_application_layer = false;
+  data_for_recursion->in_subtree_of_page_scale_layer = false;
   data_for_recursion->subtree_can_use_lcd_text = inputs.can_use_lcd_text;
   data_for_recursion->subtree_is_visible_from_ancestor = true;
 }
@@ -2720,7 +2716,7 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
         }
 
         BuildPropertyTreesAndComputeVisibleRects(
-            inputs->root_layer, inputs->page_scale_application_layer,
+            inputs->root_layer, inputs->page_scale_layer,
             inputs->page_scale_factor, inputs->device_scale_factor,
             gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
             inputs->property_trees, &update_layer_list);

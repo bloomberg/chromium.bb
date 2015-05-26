@@ -33,7 +33,7 @@ struct DataForRecursion {
   const LayerType* page_scale_layer;
   float page_scale_factor;
   float device_scale_factor;
-  bool in_subtree_of_page_scale_application_layer;
+  bool in_subtree_of_page_scale_layer;
   bool should_flatten;
   bool ancestor_clips_subtree;
   const gfx::Transform* device_transform;
@@ -163,8 +163,7 @@ bool AddTransformNodeIfNeeded(
     LayerType* layer,
     DataForRecursion<LayerType>* data_for_children) {
   const bool is_root = !layer->parent();
-  const bool is_page_scale_application_layer =
-      layer->parent() && layer->parent() == data_from_ancestor.page_scale_layer;
+  const bool is_page_scale_layer = layer == data_from_ancestor.page_scale_layer;
   const bool is_scrollable = layer->scrollable();
   const bool is_fixed = layer->position_constraint().is_fixed_position();
 
@@ -182,7 +181,7 @@ bool AddTransformNodeIfNeeded(
 
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
                        has_potentially_animated_transform || has_surface ||
-                       is_fixed || is_page_scale_application_layer;
+                       is_fixed || is_page_scale_layer;
 
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
 
@@ -262,13 +261,13 @@ bool AddTransformNodeIfNeeded(
     post_local_scale_factor = data_from_ancestor.device_scale_factor;
   }
 
-  if (is_page_scale_application_layer)
+  if (is_page_scale_layer)
     post_local_scale_factor *= data_from_ancestor.page_scale_factor;
 
   if (has_surface && !is_root) {
     node->data.needs_sublayer_scale = true;
     node->data.layer_scale_factor = data_from_ancestor.device_scale_factor;
-    if (data_from_ancestor.in_subtree_of_page_scale_application_layer)
+    if (data_from_ancestor.in_subtree_of_page_scale_layer)
       node->data.layer_scale_factor *= data_from_ancestor.page_scale_factor;
   }
 
@@ -358,7 +357,7 @@ void BuildPropertyTreesInternal(
     AddOpacityNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
   if (layer == data_from_parent.page_scale_layer)
-    data_for_children.in_subtree_of_page_scale_application_layer = true;
+    data_for_children.in_subtree_of_page_scale_layer = true;
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     if (!layer->child_at(i)->scroll_parent())
@@ -399,7 +398,7 @@ void BuildPropertyTreesTopLevelInternal(LayerType* root_layer,
   data_for_recursion.page_scale_layer = page_scale_layer;
   data_for_recursion.page_scale_factor = page_scale_factor;
   data_for_recursion.device_scale_factor = device_scale_factor;
-  data_for_recursion.in_subtree_of_page_scale_application_layer = false;
+  data_for_recursion.in_subtree_of_page_scale_layer = false;
   data_for_recursion.should_flatten = false;
   data_for_recursion.ancestor_clips_subtree = true;
   data_for_recursion.device_transform = &device_transform;
