@@ -228,7 +228,7 @@ double ProcessMetrics::GetCPUUsage() {
   // are together adding to more than one CPU's worth.
   TimeDelta cpu_time = internal::ClockTicksToTimeDelta(cpu);
   TimeDelta last_cpu_time = internal::ClockTicksToTimeDelta(last_cpu_);
-  int percentage = 100 * (cpu_time - last_cpu_time).InSecondsF() /
+  double percentage = 100.0 * (cpu_time - last_cpu_time).InSecondsF() /
       TimeDelta::FromMicroseconds(time_delta).InSecondsF();
 
   last_cpu_time_ = time;
