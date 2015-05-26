@@ -1912,3 +1912,12 @@ crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Fai
 crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
 crbug.com/474798 virtual/slimmingpaint/fast/repaint/align-self-change-keeping-geometry-grid.html [ Skip ]
 crbug.com/474798 virtual/slimmingpaint/fast/repaint/justify-self-change-keeping-geometry.html [ Skip ]
+
+crbug.com/492084 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
+crbug.com/492084 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
+crbug.com/492084 virtual/stable/webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
+crbug.com/492084 webexposed/global-interface-listing-compositor-worker.html [ NeedsManualRebaseline ]
+crbug.com/492084 webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
+crbug.com/492084 webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
+crbug.com/492084 webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
+
