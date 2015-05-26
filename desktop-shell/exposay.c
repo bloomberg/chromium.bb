@@ -296,9 +296,6 @@ exposay_layout(struct desktop_shell *shell, struct shell_output *shell_output)
 		esurface->eoutput = eoutput;
 		esurface->view = view;
 
-		esurface->view_destroy_listener.notify = handle_view_destroy;
-		wl_signal_add(&view->destroy_signal, &esurface->view_destroy_listener);
-
 		esurface->row = i / eoutput->grid_size;
 		esurface->column = i % eoutput->grid_size;
 
@@ -321,6 +318,15 @@ exposay_layout(struct desktop_shell *shell, struct shell_output *shell_output)
 			highlight = esurface;
 
 		exposay_animate_in(esurface);
+
+		/* We want our destroy handler to be after the animation
+		 * destroy handler in the list, this way when the view is
+		 * destroyed, the animation can safely call the animation
+		 * completion callback before we free the esurface in our
+		 * destroy handler.
+		 */
+		esurface->view_destroy_listener.notify = handle_view_destroy;
+		wl_signal_add(&view->destroy_signal, &esurface->view_destroy_listener);
 
 		i++;
 	}
