@@ -285,10 +285,7 @@ math        \x00BE        3456-14-34-3456-145 ¾                   VULGAR FRACTI
 # NL uses the definitions from Greek (International), p. 185 [2] and rule §2.2 Alfabetwisselingsteken [1]
 # BE uses prefix "456" for capital letters
 letter      \x0391        56-46-1             Α                   GREEK CAPITAL LETTER ALPHA
-
-# (!) FIXME: GREEK CAPITAL LETTER BETA should be dots "56-46-12"
-# BE uses dots "456-12"
-letter      \x0392        56-46-2             Β                   GREEK CAPITAL LETTER BETA
+letter      \x0392        56-46-12            Β                   GREEK CAPITAL LETTER BETA
 letter      \x0393        56-46-1245          Γ                   GREEK CAPITAL LETTER GAMMA
 letter      \x0394        56-46-145           Δ                   GREEK CAPITAL LETTER DELTA
 letter      \x0395        56-46-15            Ε                   GREEK CAPITAL LETTER EPSILON
@@ -327,9 +324,7 @@ letter      \x03A8        56-46-13456         Ψ                   GREEK CAPITAL
 # BE uses dots "456-245" which is not conforming with Greek (International) [2]
 letter      \x03A9        56-46-2456          Ω                   GREEK CAPITAL LETTER OMEGA
 lowercase   \x03B1        56-1                α                   GREEK SMALL LETTER ALPHA
-
-# (!) FIXME: GREEK SMALL LETTER BETA should be dots "56-12"
-lowercase   \x03B2        56-2                β                   GREEK SMALL LETTER BETA
+lowercase   \x03B2        56-12               β                   GREEK SMALL LETTER BETA
 lowercase   \x03B3        56-1245             γ                   GREEK SMALL LETTER GAMMA
 lowercase   \x03B4        56-145              δ                   GREEK SMALL LETTER DELTA
 lowercase   \x03B5        56-15               ε                   GREEK SMALL LETTER EPSILON
