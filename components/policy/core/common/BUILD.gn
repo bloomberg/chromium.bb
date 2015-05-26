@@ -66,8 +66,6 @@ source_set("common") {
       "cloud/user_cloud_policy_store_base.h",
       "cloud/user_info_fetcher.cc",
       "cloud/user_info_fetcher.h",
-      "cloud/user_policy_request_context.cc",
-      "cloud/user_policy_request_context.h",
       "config_dir_policy_loader.cc",
       "config_dir_policy_loader.h",
       "configuration_policy_provider.cc",

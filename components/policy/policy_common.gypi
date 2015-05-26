@@ -81,8 +81,6 @@
         'core/common/cloud/user_cloud_policy_store_base.h',
         'core/common/cloud/user_info_fetcher.cc',
         'core/common/cloud/user_info_fetcher.h',
-        'core/common/cloud/user_policy_request_context.cc',
-        'core/common/cloud/user_policy_request_context.h',
         'core/common/config_dir_policy_loader.cc',
         'core/common/config_dir_policy_loader.h',
         'core/common/configuration_policy_provider.cc',

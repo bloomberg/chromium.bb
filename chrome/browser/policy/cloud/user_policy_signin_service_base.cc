@@ -15,7 +15,6 @@
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/system_policy_request_context.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
-#include "components/policy/core/common/cloud/user_policy_request_context.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -50,10 +49,9 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
     const std::string& client_id,
     scoped_refptr<net::URLRequestContextGetter> profile_request_context,
     const PolicyFetchCallback& callback) {
-  scoped_ptr<CloudPolicyClient> client(
+  scoped_ptr<CloudPolicyClient> client =
       UserCloudPolicyManager::CreateCloudPolicyClient(
-          device_management_service_,
-          CreateUserRequestContext(profile_request_context)).Pass());
+          device_management_service_, profile_request_context);
   client->SetupRegistration(dm_token, client_id);
   DCHECK(client->is_registered());
   // The user has just signed in, so the UserCloudPolicyManager should not yet
@@ -218,7 +216,7 @@ void UserPolicySigninServiceBase::InitializeForSignedInUser(
         username,
         UserCloudPolicyManager::CreateCloudPolicyClient(
             device_management_service_,
-            CreateUserRequestContext(profile_request_context)).Pass());
+            profile_request_context));
   } else {
     manager->SetSigninUsername(username);
   }
@@ -259,13 +257,6 @@ scoped_refptr<net::URLRequestContextGetter>
 UserPolicySigninServiceBase::CreateSystemRequestContext() {
   return new SystemPolicyRequestContext(
       system_request_context(), GetUserAgent());
-}
-
-scoped_refptr<net::URLRequestContextGetter>
-UserPolicySigninServiceBase::CreateUserRequestContext(
-    scoped_refptr<net::URLRequestContextGetter> profile_request_context) {
-  return new UserPolicyRequestContext(
-      profile_request_context, system_request_context(), GetUserAgent());
 }
 
 }  // namespace policy
