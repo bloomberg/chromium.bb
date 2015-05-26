@@ -228,39 +228,44 @@ struct PartitionFreelistEntry {
     PartitionFreelistEntry* next;
 };
 
-// Some notes on page states. A page can be in one of three major states:
+// Some notes on page states. A page can be in one of four major states:
 // 1) Active.
 // 2) Full.
-// 3) Free.
-// An active page has available free slots. A full page has no free slots. A
-// free page has had its backing memory released back to the system.
+// 3) Empty.
+// 4) Decommitted.
+// An active page has available free slots. A full page has no free slots. An
+// empty page has no free slots, and a decommitted page is an empty page that
+// had its backing memory released back to the system.
 // There are two linked lists tracking the pages. The "active page" list is an
-// approximation of a list of active pages. It is an approximation because both
-// free and full pages may briefly be present in the list until we next do a
-// scan over it. The "free page" list is an accurate list of pages which have
-// been returned back to the system.
+// approximation of a list of active pages. It is an approximation because
+// full, empty and decommitted pages may briefly be present in the list until
+// we next do a scan over it.
+// The "empty page" list is an accurate list of pages which are either empty
+// or decommitted.
+//
 // The significant page transitions are:
 // - free() will detect when a full page has a slot free()'d and immediately
 // return the page to the head of the active list.
 // - free() will detect when a page is fully emptied. It _may_ add it to the
-// free list and it _may_ leave it on the active list until a future list scan.
+// empty list or it _may_ leave it on the active list until a future list scan.
 // - malloc() _may_ scan the active page list in order to fulfil the request.
-// If it does this, full and free pages encountered will be booted out of the
-// active list. If there are no suitable active pages found, a free page (if one
-// exists) will be pulled from the free list on to the active list.
+// If it does this, full, empty and decommitted pages encountered will be
+// booted out of the active list. If there are no suitable active pages found,
+// an empty or decommitted page (if one exists) will be pulled from the empty
+// list on to the active list.
 struct PartitionPage {
     PartitionFreelistEntry* freelistHead;
     PartitionPage* nextPage;
     PartitionBucket* bucket;
-    int16_t numAllocatedSlots; // Deliberately signed, -1 for free page, -n for full pages.
+    int16_t numAllocatedSlots; // Deliberately signed, 0 for empty or decommitted page, -n for full pages.
     uint16_t numUnprovisionedSlots;
     uint16_t pageOffset;
-    int16_t freeCacheIndex; // -1 if not in the free cache.
+    int16_t emptyCacheIndex; // -1 if not in the empty cache.
 };
 
 struct PartitionBucket {
     PartitionPage* activePagesHead; // Accessed most in hot path => goes first.
-    PartitionPage* freePagesHead;
+    PartitionPage* emptyPagesHead;
     uint32_t slotSize;
     uint16_t numSystemPagesPerSlotSpan;
     uint16_t numFullPages;
@@ -342,6 +347,7 @@ struct PartitionBucketMemoryStats {
     size_t freeableBytes; // Total bytes that could be decomitted (non-resident).
     size_t numFullPages; // Number of pages with all slots allocated.
     size_t numActivePages; // Number of pages that have at least one provisioned slot.
+    // TODO(cevans): Split this into empty and decommitted pages, or get rid of it.
     size_t numFreePages; // Number of pages in freelist + free pages in active list but are not freed.
 };
 
