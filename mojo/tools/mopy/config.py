@@ -69,7 +69,7 @@ class Config(object):
     if machine in ("x86", "x86-32", "x86_32", "x8632", "i386", "i686", "ia32",
                    "32"):
       return Config.ARCH_X86
-    if machine in ("x86-64", "amd64", "x86_64", "x8664", "64"):
+    if machine in ("x86-64", "amd64", "AMD64", "x86_64", "x8664", "64"):
       return Config.ARCH_X64
     if machine.startswith("arm"):
       return Config.ARCH_ARM
