@@ -2588,7 +2588,6 @@
       'browser/services/gcm/instance_id/instance_id_profile_service_factory.h',
     ],
     'chrome_browser_session_sources': [
-      'browser/sessions/base_session_service_delegate.h',
       'browser/sessions/base_session_service_delegate_impl.cc',
       'browser/sessions/base_session_service_delegate_impl.h',
       'browser/sessions/session_data_deleter.cc',
