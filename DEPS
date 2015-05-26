@@ -404,9 +404,6 @@ deps_os = {
     'src/third_party/pyelftools':
      Var('chromium_git') + '/chromiumos/third_party/pyelftools.git' + '@' + 'bdc1d380acd88d4bfaf47265008091483b0d614e',
 
-    'src/third_party/undoview':
-     Var('chromium_git') + '/chromium/deps/undoview.git' + '@' + '3ba503e248f3cdbd81b78325a24ece0984637559',
-
     'src/third_party/liblouis/src':
      Var('chromium_git') + '/external/liblouis-github.git' + '@' + '5f9c03f2a3478561deb6ae4798175094be8a26c2',
 
