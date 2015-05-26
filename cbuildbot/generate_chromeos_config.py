@@ -2507,6 +2507,10 @@ _CONFIG.AddConfig(_release, 'rush-release',
 
 _CONFIG.AddConfig(_release, 'rush_ryu-release',
   _base_configs['rush_ryu'],
+  images=['base', 'test', 'factory_install'],
+  paygen=False,
+  signer_tests=False,
+  push_image=False,
   hw_tests=[],
 )
 

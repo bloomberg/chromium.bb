@@ -51814,22 +51814,6 @@
         ],
         "vm_tests": []
     },
-    "rush_ryu-payloads": {
-        "boards": [
-            "rush_ryu"
-        ],
-        "build_type": "payloads",
-        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
-        "description": "Regenerate release payloads.",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "manifest_version": true,
-        "name": "rush_ryu-payloads",
-        "overlays": "both",
-        "paygen": true,
-        "upload_hw_test_artifacts": false,
-        "vm_tests": []
-    },
     "rush_ryu-pre-cq": {
         "archive": false,
         "boards": [
@@ -51885,7 +51869,6 @@
         "image_test": true,
         "images": [
             "base",
-            "recovery",
             "test",
             "factory_install"
         ],
@@ -51895,9 +51878,6 @@
         "manifest_version": true,
         "name": "rush_ryu-release",
         "overlays": "both",
-        "paygen": true,
-        "push_image": true,
-        "signer_tests": true,
         "tests_supported": false,
         "trybot_list": true,
         "unittests": false,
