@@ -192,6 +192,12 @@ size_t RegisterChromeCrashKeys() {
     { kKaskoEquivalentGuid, kSmallSize },
 #endif
     { kBug464926CrashKey, kSmallSize },
+    // Temporary for http://crbug.com/369661
+    { "navurl", kLargeSize },
+    { "oldtype", kSmallSize },
+    { "newtype", kSmallSize },
+    { "spp", kSmallSize },
+    // End http://crbug.com/369661
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering

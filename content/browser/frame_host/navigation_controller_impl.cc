@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"  // Temporary
@@ -822,7 +823,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params);
-#if DCHECK_IS_ON()
   NavigationType new_type = ClassifyNavigationWithoutPageID(rfh, params);
   bool ignore_mismatch = false;
   // There are disagreements on some Android bots over SAME_PAGE between the two
@@ -842,9 +842,15 @@ bool NavigationControllerImpl::RendererDidNavigate(
                        new_type == NAVIGATION_TYPE_AUTO_SUBFRAME;
   }
   if (!ignore_mismatch) {
-    DCHECK_EQ(details->type, new_type);
+    base::debug::SetCrashKeyValue("oldtype", base::IntToString(details->type));
+    base::debug::SetCrashKeyValue("newtype", base::IntToString(new_type));
+    base::debug::SetCrashKeyValue("navurl", params.url.spec());
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+      base::debug::SetCrashKeyValue("spp", "yes");
+    }
+    CHECK_EQ(details->type, new_type);
   }
-#endif  // DCHECK_IS_ON()
 
   // is_in_page must be computed before the entry gets committed.
   details->is_in_page = AreURLsInPageNavigation(rfh->GetLastCommittedURL(),
