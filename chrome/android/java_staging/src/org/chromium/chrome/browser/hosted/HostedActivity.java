@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.hosted;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,18 +32,49 @@ import org.chromium.content_public.browser.LoadUrlParams;
  * The activity for hosted mode. It will be launched on top of a client's task.
  */
 public class HostedActivity extends CompositorChromeActivity {
+    private static HostedContentHandler sActiveContentHandler;
+
     private HostedTab mTab;
     private ToolbarHelper mToolbarHelper;
     private HostedAppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
     private FindToolbarManager mFindToolbarManager;
     private HostedIntentDataProvider mIntentDataProvider;
+    private long mSessionId;
+    private HostedContentHandler mHostedContentHandler;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
     // TODO(ianwen, yusufo): Figure out a solution to extract external resources without having to
     // change the package name.
     private boolean mShouldOverridePackage;
+
+    /**
+     * Sets the currently active {@link HostedContentHandler} in focus.
+     * @param contentHandler {@link HostedContentHandler} to set.
+     */
+    public static void setActiveContentHandler(HostedContentHandler contentHandler) {
+        sActiveContentHandler = contentHandler;
+    }
+
+    /**
+     * Used to check whether an incoming intent can be handled by the
+     * current {@link HostedContentHandler}.
+     * @return Whether the active {@link HostedContentHandler} has handled the intent.
+     */
+    public static boolean handleInActiveContentIfNeeded(Intent intent) {
+        if (sActiveContentHandler == null) return false;
+
+        long intentSessionId = intent.getLongExtra(HostedIntentDataProvider.EXTRA_HOSTED_SESSION_ID,
+                        HostedIntentDataProvider.INVALID_SESSION_ID);
+        if (intentSessionId == HostedIntentDataProvider.INVALID_SESSION_ID) return false;
+
+        if (sActiveContentHandler.getSessionId() != intentSessionId) return false;
+        String url = IntentHandler.getUrlFromIntent(intent);
+        if (TextUtils.isEmpty(url)) return false;
+        sActiveContentHandler.loadUrl(new LoadUrlParams(url));
+        return true;
+    }
 
     @Override
     public void onStart() {
@@ -102,8 +134,8 @@ public class HostedActivity extends CompositorChromeActivity {
     @Override
     public void finishNativeInitialization() {
         String url = IntentHandler.getUrlFromIntent(getIntent());
-        long sessionId = mIntentDataProvider.getSessionId();
-        mTab = new HostedTab(this, getWindowAndroid(), sessionId, url, Tab.INVALID_TAB_ID);
+        mSessionId = mIntentDataProvider.getSessionId();
+        mTab = new HostedTab(this, getWindowAndroid(), mSessionId, url, Tab.INVALID_TAB_ID);
         getTabModelSelector().setTab(mTab);
 
         ToolbarControlContainer controlContainer = (ToolbarControlContainer) findViewById(
@@ -125,7 +157,30 @@ public class HostedActivity extends CompositorChromeActivity {
 
         mTab.setFullscreenManager(getFullscreenManager());
         mTab.loadUrl(new LoadUrlParams(url));
+        mHostedContentHandler = new HostedContentHandler() {
+            @Override
+            public void loadUrl(LoadUrlParams params) {
+                mTab.loadUrl(params);
+            }
+
+            @Override
+            public long getSessionId() {
+                return mSessionId;
+            }
+        };
         super.finishNativeInitialization();
+    }
+
+    @Override
+    public void onStartWithNative() {
+        super.onStartWithNative();
+        setActiveContentHandler(mHostedContentHandler);
+    }
+
+    @Override
+    public void onStopWithNative() {
+        super.onStopWithNative();
+        setActiveContentHandler(null);
     }
 
     @Override

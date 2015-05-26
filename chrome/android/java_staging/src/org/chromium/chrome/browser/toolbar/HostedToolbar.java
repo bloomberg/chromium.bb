@@ -116,7 +116,13 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
 
     @Override
     public boolean shouldEmphasizeHttpsScheme() {
-        return !mUseDarkColors;
+        int securityLevel = getSecurityLevel();
+        if (securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
+                || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING
+                || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_POLICY_WARNING) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -170,6 +176,7 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
 
     @Override
     public void updateLoadingState(boolean updateUrl) {
+        if (updateUrl) setUrlToPageUrl();
         updateSecurityIcon(getSecurityLevel());
     }
 

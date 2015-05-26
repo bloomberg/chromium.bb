@@ -266,6 +266,9 @@ public class ChromeLauncherActivity extends Activity
         String url = IntentHandler.getUrlFromIntent(getIntent());
         if (url == null) return false;
 
+        boolean handled = HostedActivity.handleInActiveContentIfNeeded(getIntent());
+        if (handled) return true;
+
         // Create and fire a launch intent. Use the copy constructor to carry over the myriad of
         // extras.
         Intent newIntent = new Intent(getIntent());
