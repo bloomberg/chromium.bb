@@ -119,6 +119,7 @@ class CC_EXPORT LayerTreeHostCommon {
   static void CalculateDrawProperties(CalcDrawPropsMainInputs* inputs);
   static void PreCalculateMetaInformation(Layer* root_layer);
   static void PreCalculateMetaInformationForTesting(LayerImpl* root_layer);
+  static void PreCalculateMetaInformationForTesting(Layer* root_layer);
 
   typedef CalcDrawPropsInputs<LayerImpl, LayerImplList> CalcDrawPropsImplInputs;
   typedef CalcDrawPropsInputsForTesting<LayerImpl, LayerImplList>

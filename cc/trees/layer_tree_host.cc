@@ -94,6 +94,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params)
       needs_meta_info_recomputation_(true),
       client_(params->client),
       source_frame_number_(0),
+      meta_information_sequence_number_(1),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
       output_surface_lost_(true),
       settings_(*params->settings),

@@ -141,6 +141,14 @@ class CC_EXPORT LayerTreeHost {
 
   int source_frame_number() const { return source_frame_number_; }
 
+  int meta_information_sequence_number() {
+    return meta_information_sequence_number_;
+  }
+
+  void IncrementMetaInformationSequenceNumber() {
+    meta_information_sequence_number_++;
+  }
+
   void SetNeedsDisplayOnAllLayers();
 
   void CollectRenderingStats(RenderingStats* stats) const;
@@ -404,6 +412,7 @@ class CC_EXPORT LayerTreeHost {
   scoped_ptr<Proxy> proxy_;
 
   int source_frame_number_;
+  int meta_information_sequence_number_;
   scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
 
   bool output_surface_lost_;

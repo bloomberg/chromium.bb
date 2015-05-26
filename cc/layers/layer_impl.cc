@@ -81,7 +81,10 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       num_dependents_need_push_properties_(0),
       sorting_context_id_(0),
       current_draw_mode_(DRAW_MODE_NONE),
-      frame_timing_requests_dirty_(false) {
+      frame_timing_requests_dirty_(false),
+      visited_(false),
+      layer_or_descendant_is_drawn_(false),
+      sorted_for_recursion_(false) {
   DCHECK_GT(layer_id_, 0);
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);

@@ -56,6 +56,7 @@ Layer::Layer(const LayerSettings& settings)
       property_tree_sequence_number_(-1),
       num_layer_or_descendants_with_copy_request_(0),
       num_layer_or_descendants_with_input_handler_(0),
+      num_children_with_scroll_parent_(0),
       should_flatten_transform_from_property_tree_(false),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
@@ -81,6 +82,9 @@ Layer::Layer(const LayerSettings& settings)
       opacity_(1.f),
       blend_mode_(SkXfermode::kSrcOver_Mode),
       scroll_parent_(nullptr),
+      layer_or_descendant_is_drawn_tracker_(0),
+      sorted_for_recursion_tracker_(0),
+      visited_tracker_(0),
       clip_parent_(nullptr),
       replica_layer_(nullptr),
       raster_scale_(0.f),
@@ -759,6 +763,10 @@ void Layer::AddScrollChild(Layer* child) {
   if (!scroll_children_)
     scroll_children_.reset(new std::set<Layer*>);
   scroll_children_->insert(child);
+  if (layer_tree_host_ && !layer_tree_host_->needs_meta_info_recomputation()) {
+    num_children_with_scroll_parent_++;
+    draw_properties().has_child_with_a_scroll_parent = true;
+  }
   SetNeedsCommit();
 }
 
@@ -766,6 +774,12 @@ void Layer::RemoveScrollChild(Layer* child) {
   scroll_children_->erase(child);
   if (scroll_children_->empty())
     scroll_children_ = nullptr;
+  if (layer_tree_host_ && !layer_tree_host_->needs_meta_info_recomputation()) {
+    num_children_with_scroll_parent_--;
+    DCHECK_GE(num_children_with_scroll_parent_, 0);
+    draw_properties().has_child_with_a_scroll_parent =
+        (num_children_with_scroll_parent_ != 0);
+  }
   SetNeedsCommit();
 }
 
@@ -1585,6 +1599,41 @@ void Layer::DidBeginTracing() {
   // side -- otherwise this won't happen for the the layers that
   // remain unchanged since tracing started.
   SetNeedsPushProperties();
+}
+
+void Layer::set_visited(bool visited) {
+  visited_tracker_ =
+      visited ? layer_tree_host()->meta_information_sequence_number() : 0;
+}
+
+bool Layer::visited() {
+  return visited_tracker_ ==
+         layer_tree_host()->meta_information_sequence_number();
+}
+
+void Layer::set_layer_or_descendant_is_drawn(
+    bool layer_or_descendant_is_drawn) {
+  layer_or_descendant_is_drawn_tracker_ =
+      layer_or_descendant_is_drawn
+          ? layer_tree_host()->meta_information_sequence_number()
+          : 0;
+}
+
+bool Layer::layer_or_descendant_is_drawn() {
+  return layer_or_descendant_is_drawn_tracker_ ==
+         layer_tree_host()->meta_information_sequence_number();
+}
+
+void Layer::set_sorted_for_recursion(bool sorted_for_recursion) {
+  sorted_for_recursion_tracker_ =
+      sorted_for_recursion
+          ? layer_tree_host()->meta_information_sequence_number()
+          : 0;
+}
+
+bool Layer::sorted_for_recursion() {
+  return sorted_for_recursion_tracker_ ==
+         layer_tree_host()->meta_information_sequence_number();
 }
 
 }  // namespace cc

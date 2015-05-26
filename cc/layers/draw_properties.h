@@ -32,10 +32,7 @@ struct CC_EXPORT DrawProperties {
         num_unclipped_descendants(0),
         layer_or_descendant_has_copy_request(false),
         layer_or_descendant_has_input_handler(false),
-        layer_or_descendant_is_drawn(false),
         has_child_with_a_scroll_parent(false),
-        sorted_for_recursion(false),
-        visited(false),
         index_of_first_descendants_addition(0),
         num_descendants_added(0),
         index_of_first_render_surface_layer_list_addition(0),
@@ -116,21 +113,11 @@ struct CC_EXPORT DrawProperties {
   // If true, the layer or one of its descendants has a wheel or touch handler.
   bool layer_or_descendant_has_input_handler;
 
-  // If true, the layer or one of its descendants is drawn
-  bool layer_or_descendant_is_drawn;
-
   // This is true if the layer has any direct child that has a scroll parent.
   // This layer will not be the scroll parent in this case. This information
   // lets us avoid work in CalculateDrawPropertiesInternal -- if none of our
   // children have scroll parents, we will not need to recur out of order.
   bool has_child_with_a_scroll_parent;
-
-  // This is true if the order (wrt to its siblings in the tree) in which the
-  // layer will be visited while computing draw properties has been determined.
-  bool sorted_for_recursion;
-
-  // This is used to sanity-check CDP and ensure that we don't revisit a layer.
-  bool visited;
 
   // If this layer is visited out of order, its contribution to the descendant
   // and render surface layer lists will be put aside in a temporary list.

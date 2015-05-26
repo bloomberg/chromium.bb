@@ -3088,7 +3088,7 @@ TEST_F(LayerTreeHostCommonTest,
                                true,
                                false);
 
-  child->draw_properties().sorted_for_recursion = true;
+  child->set_sorted_for_recursion(true);
 
   TransformOperations start_transform_operations;
   start_transform_operations.AppendScale(1.f, 0.f, 0.f);
@@ -3103,7 +3103,7 @@ TEST_F(LayerTreeHostCommonTest,
 
   ExecuteCalculateDrawProperties(root.get());
 
-  EXPECT_FALSE(child->draw_properties().sorted_for_recursion);
+  EXPECT_FALSE(child->sorted_for_recursion());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -3125,13 +3125,13 @@ TEST_F(LayerTreeHostCommonTest,
                                true,
                                false);
 
-  root->draw_properties().sorted_for_recursion = true;
+  root->set_sorted_for_recursion(true);
 
   EXPECT_FALSE(root->TransformIsAnimating());
 
   ExecuteCalculateDrawProperties(root.get());
 
-  EXPECT_FALSE(root->draw_properties().sorted_for_recursion);
+  EXPECT_FALSE(root->sorted_for_recursion());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -9648,6 +9648,45 @@ TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
 
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
   EXPECT_EQ(-1, child->transform_tree_index());
+}
+
+TEST_F(LayerTreeHostCommonTest, ResetLayerDrawPropertiestest) {
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+
+  root->AddChild(child);
+  gfx::Transform identity;
+
+  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  EXPECT_FALSE(root->layer_or_descendant_is_drawn());
+  EXPECT_FALSE(root->visited());
+  EXPECT_FALSE(root->sorted_for_recursion());
+  EXPECT_FALSE(child->layer_or_descendant_is_drawn());
+  EXPECT_FALSE(child->visited());
+  EXPECT_FALSE(child->sorted_for_recursion());
+
+  root->set_layer_or_descendant_is_drawn(true);
+  root->set_visited(true);
+  root->set_sorted_for_recursion(true);
+  child->set_layer_or_descendant_is_drawn(true);
+  child->set_visited(true);
+  child->set_sorted_for_recursion(true);
+
+  LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root.get());
+
+  EXPECT_FALSE(root->layer_or_descendant_is_drawn());
+  EXPECT_FALSE(root->visited());
+  EXPECT_FALSE(root->sorted_for_recursion());
+  EXPECT_FALSE(child->layer_or_descendant_is_drawn());
+  EXPECT_FALSE(child->visited());
+  EXPECT_FALSE(child->sorted_for_recursion());
 }
 
 }  // namespace

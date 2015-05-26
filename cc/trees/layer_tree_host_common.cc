@@ -1124,8 +1124,8 @@ static inline void MarkLayerWithRenderSurfaceLayerListId(
     int current_render_surface_layer_list_id) {
   layer->draw_properties().last_drawn_render_surface_layer_list_id =
       current_render_surface_layer_list_id;
-  layer->draw_properties().layer_or_descendant_is_drawn =
-      !!current_render_surface_layer_list_id;
+  layer->set_layer_or_descendant_is_drawn(
+      !!current_render_surface_layer_list_id);
 }
 
 template <typename LayerTypePtr>
@@ -1220,30 +1220,15 @@ static void ValidateRenderSurface(LayerImpl* layer) {
 static void ValidateRenderSurface(Layer* layer) {
 }
 
-static void ResetDrawProperties(Layer* layer) {
-  layer->draw_properties().sorted_for_recursion = false;
-  layer->draw_properties().has_child_with_a_scroll_parent = false;
-  layer->draw_properties().layer_or_descendant_is_drawn = false;
-  layer->draw_properties().visited = false;
-  if (!HasInvertibleOrAnimatedTransform(layer)) {
-    // Layers with singular transforms should not be drawn, the whole subtree
-    // can be skipped.
-    return;
-  }
-
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    Layer* child_layer = layer->child_at(i);
-    if (child_layer->scroll_parent())
-      layer->draw_properties().has_child_with_a_scroll_parent = true;
-    ResetDrawProperties(child_layer);
-  }
-}
-
-static void ResetDrawProperties(LayerImpl* layer) {
-}
-
 static bool IsMetaInformationRecomputationNeeded(Layer* layer) {
   return layer->layer_tree_host()->needs_meta_info_recomputation();
+}
+
+static void UpdateMetaInformationSequenceNumber(Layer* root_layer) {
+  root_layer->layer_tree_host()->IncrementMetaInformationSequenceNumber();
+}
+
+static void UpdateMetaInformationSequenceNumber(LayerImpl* root_layer) {
 }
 
 // Recursively walks the layer tree(if needed) to compute any information
@@ -1252,6 +1237,12 @@ static void PreCalculateMetaInformationInternal(
     Layer* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
   ValidateRenderSurface(layer);
+
+  layer->set_sorted_for_recursion(false);
+  layer->draw_properties().has_child_with_a_scroll_parent = false;
+  layer->set_layer_or_descendant_is_drawn(false);
+  layer->set_visited(false);
+
   if (!HasInvertibleOrAnimatedTransform(layer)) {
     // Layers with singular transforms should not be drawn, the whole subtree
     // can be skipped.
@@ -1266,12 +1257,18 @@ static void PreCalculateMetaInformationInternal(
   if (layer->clip_parent())
     recursive_data->num_unclipped_descendants++;
 
+  layer->set_num_children_with_scroll_parent(0);
   for (size_t i = 0; i < layer->children().size(); ++i) {
     Layer* child_layer = layer->child_at(i);
 
     PreCalculateMetaInformationRecursiveData data_for_child;
     PreCalculateMetaInformationInternal(child_layer, &data_for_child);
 
+    if (child_layer->scroll_parent()) {
+      layer->draw_properties().has_child_with_a_scroll_parent = true;
+      layer->set_num_children_with_scroll_parent(
+          layer->num_children_with_scroll_parent() + 1);
+    }
     recursive_data->Merge(data_for_child);
   }
 
@@ -1308,10 +1305,10 @@ static void PreCalculateMetaInformationInternal(
     PreCalculateMetaInformationRecursiveData* recursive_data) {
   ValidateRenderSurface(layer);
 
-  layer->draw_properties().sorted_for_recursion = false;
+  layer->set_sorted_for_recursion(false);
   layer->draw_properties().has_child_with_a_scroll_parent = false;
-  layer->draw_properties().layer_or_descendant_is_drawn = false;
-  layer->draw_properties().visited = false;
+  layer->set_layer_or_descendant_is_drawn(false);
+  layer->set_visited(false);
 
   if (!HasInvertibleOrAnimatedTransform(layer)) {
     // Layers with singular transforms should not be drawn, the whole subtree
@@ -1361,6 +1358,13 @@ void LayerTreeHostCommon::PreCalculateMetaInformation(Layer* root_layer) {
 
 void LayerTreeHostCommon::PreCalculateMetaInformationForTesting(
     LayerImpl* root_layer) {
+  PreCalculateMetaInformationRecursiveData recursive_data;
+  PreCalculateMetaInformationInternal(root_layer, &recursive_data);
+}
+
+void LayerTreeHostCommon::PreCalculateMetaInformationForTesting(
+    Layer* root_layer) {
+  UpdateMetaInformationSequenceNumber(root_layer);
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformationInternal(root_layer, &recursive_data);
 }
@@ -1466,14 +1470,15 @@ static void AddScrollParentChain(std::vector<LayerType*>* out,
   // that we will potentionally add to the list. That is, the child of parent
   // containing |layer|.
   LayerType* child = GetChildContainingLayer(parent, layer);
-  if (child->draw_properties().sorted_for_recursion)
+  if (child->sorted_for_recursion())
     return;
 
   if (LayerType* scroll_parent = child->scroll_parent())
     AddScrollParentChain(out, parent, scroll_parent);
 
   out->push_back(child);
-  child->draw_properties().sorted_for_recursion = true;
+  bool sorted_for_recursion = true;
+  child->set_sorted_for_recursion(sorted_for_recursion);
 }
 
 template <typename LayerType>
@@ -1485,7 +1490,7 @@ static bool SortChildrenForRecursion(std::vector<LayerType*>* out,
     LayerType* current =
         LayerTreeHostCommon::get_layer_as_raw_ptr(parent.children(), i);
 
-    if (current->draw_properties().sorted_for_recursion) {
+    if (current->sorted_for_recursion()) {
       order_changed = true;
       continue;
     }
@@ -1688,8 +1693,9 @@ static void CalculateDrawPropertiesInternal(
   DCHECK(globals.page_scale_application_layer ||
          (globals.page_scale_factor == 1.f));
 
-  CHECK(!layer->draw_properties().visited);
-  layer->draw_properties().visited = true;
+  CHECK(!layer->visited());
+  bool visited = true;
+  layer->set_visited(visited);
 
   DataForRecursion<LayerType> data_for_children;
   typename LayerType::RenderSurfaceType*
@@ -2295,8 +2301,11 @@ static void CalculateDrawPropertiesInternal(
         render_surface_layer_list->size() -
         child->draw_properties()
             .index_of_first_render_surface_layer_list_addition;
-    layer_draw_properties.layer_or_descendant_is_drawn |=
-        child->draw_properties().layer_or_descendant_is_drawn;
+
+    if (child->layer_or_descendant_is_drawn()) {
+      bool layer_or_descendant_is_drawn = true;
+      layer->set_layer_or_descendant_is_drawn(layer_or_descendant_is_drawn);
+    }
   }
 
   // Add the unsorted layer list contributions, if necessary.
@@ -2669,6 +2678,7 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
   DataForRecursion<LayerType> data_for_recursion;
 
   ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
+  UpdateMetaInformationSequenceNumber(inputs->root_layer);
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformationInternal(inputs->root_layer, &recursive_data);
 
@@ -2680,7 +2690,6 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
     TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
                        "LayerTreeHostCommon::CalculateDrawProperties");
   }
-  ResetDrawProperties(inputs->root_layer);
 
   std::vector<AccumulatedSurfaceState<LayerType>> accumulated_surface_state;
   CalculateDrawPropertiesInternal<LayerType>(
