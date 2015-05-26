@@ -385,10 +385,12 @@
           "output": "⠉⠁⠻⠕⠝"
         },
         {
+          "comment": "Some Greek lowercase",
           "input": "α β γ",
           "output": "⠰⠁ ⠰⠃ ⠰⠛"
         },
         {
+          "comment": "Some Greek uppercase",
           "xfail": "Fails because ??",
           "input": "Α Β Γ",
           "output": "⠰⠨⠁ ⠰⠨⠃ ⠰⠨⠛"
