@@ -209,7 +209,7 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(
   NaClDescSyncSocketInternalize,
   NaClDescXferableDataDescInternalize,
   NaClDescInternalizeNotImplemented,  /* imc socket */
-  NaClDescQuotaInternalize,           /* quota wrapper */
+  NaClDescInternalizeNotImplemented,  /* quota wrapper */
   NaClDescInternalizeNotImplemented,  /* custom */
   NaClDescNullInternalize,
 };

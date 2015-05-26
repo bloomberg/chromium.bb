@@ -56,11 +56,6 @@ int NaClDescQuotaCtor(struct NaClDescQuota           *self,
                       struct NaClDescQuotaInterface  *quota_interface)
     NACL_WUR;
 
-int NaClDescQuotaInternalize(struct NaClDesc               **baseptr,
-                             struct NaClDescXferState      *xfer,
-                             struct NaClDescQuotaInterface *quota_interface)
-    NACL_WUR;
-
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_QUOTA_H_ */
