@@ -243,13 +243,6 @@ private:
 #endif
 };
 
-inline HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload)
-{
-    Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
-    HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
-    return header;
-}
-
 class FreeListEntry final : public HeapObjectHeader {
 public:
     NO_SANITIZE_ADDRESS
@@ -1187,6 +1180,14 @@ size_t HeapObjectHeader::payloadSize()
     }
     ASSERT(!pageFromObject(this)->isLargeObjectPage());
     return size - sizeof(HeapObjectHeader);
+}
+
+inline HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload)
+{
+    Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
+    HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
+    header->checkHeader();
+    return header;
 }
 
 NO_SANITIZE_ADDRESS inline
