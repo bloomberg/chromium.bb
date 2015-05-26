@@ -42,7 +42,7 @@ runall runAll:
 	@$(harness_ENVIRONMENT) $(HARNESS_DIR)/runHarness.py
 
 $(harness_TESTS):
-	@$(harness_ENVIRONMENT) $(HARNESS_DIR)/runHarness.py --compact_output $@
+	@$(harness_ENVIRONMENT) $(HARNESS_DIR)/runHarness.py $@
 else
 runall runAll:
 	@echo Please configure with --enable-ucs4

@@ -1,3 +1,4 @@
+
 {
   "tables": [
     "unicode.dis",
@@ -143,7 +144,7 @@
       "data": [
         {
           "comment": "Alphabet used in Norwegian: Example 5",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Kärnten",
           "output": "⠅⠜⠗⠝⠞⠑⠝"
         }
@@ -171,7 +172,7 @@
       "data": [
         {
           "comment": "Alphabet used in Norwegian: Example 8",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Det er én ting jeg lurer på, sa André.",
           "output": "⠲⠠⠙⠑⠞ ⠑⠗ ⠿⠝ ⠞⠊⠝⠛ ⠚⠑⠛ ⠇⠥⠗⠑⠗ ⠏⠡⠂⠲ ⠎⠁ ⠠⠁⠝⠙⠗⠿⠄"
         }
@@ -226,7 +227,7 @@
       "data": [
         {
           "comment": "Alphabet used in Norwegian: Example 14",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Det trur eg òg.",
           "output": "⠙⠑⠞ ⠞⠗⠥⠗ ⠑⠛ ⠬⠛⠄"
         }
@@ -272,7 +273,7 @@
       "data": [
         {
           "comment": "Alphabet used in Sami",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "a á b c č d đ e f g h i j k l m n ŋ o p r s š t ŧ u v z ž",
           "output": "⠁ ⠷ ⠃ ⠉ ⠩ ⠙ ⠹ ⠑ ⠋ ⠛ ⠓ ⠊ ⠚ ⠅ ⠇ ⠍ ⠝ ⠫ ⠕ ⠏ ⠗ ⠎ ⠱ ⠞ ⠳ ⠥ ⠧ ⠵ ⠮"
         }
@@ -282,7 +283,7 @@
       "data": [
         {
           "comment": "Alphabet used in norrønt",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "a á b c d ð e é f g h i í j k l m n o ó p q r s t u ú v w x y ý z þ æ ö oe ǫ",
           "output": "⠁ ⠡ ⠃ ⠉ ⠙ ⠱ ⠑ ⠮ ⠋ ⠛ ⠓ ⠊ ⠣ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠹ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠻ ⠧ ⠺ ⠭ ⠽ ⠯ ⠵ ⠫ ⠜ ⠪ ⠬ ⠾"
         }
@@ -292,7 +293,7 @@
       "data": [
         {
           "comment": "Alphabet used in Iceland",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "a á b c d ð e é f g h i í j k l m n o ó p q r s t u ú v w x y ý z þ æ ö",
           "output": "⠁ ⠡ ⠃ ⠉ ⠙ ⠱ ⠑ ⠮ ⠋ ⠛ ⠓ ⠊ ⠣ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠹ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠻ ⠧ ⠺ ⠭ ⠽ ⠯ ⠵ ⠫ ⠜ ⠪"
         }
@@ -302,7 +303,7 @@
       "data": [
         {
           "comment": "Alphabet used in Denmark and Norwegian",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "a á b d ð e f g h i í j k l m n o ó p r s t u ú v y ý æ ö",
           "output": "⠁ ⠡ ⠃ ⠙ ⠱ ⠑ ⠋ ⠛ ⠓ ⠊ ⠣ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠹ ⠏ ⠗ ⠎ ⠞ ⠥ ⠻ ⠧ ⠽ ⠯ ⠜ ⠪"
         }
@@ -384,7 +385,7 @@
       "data": [
         {
           "comment": "Full stop: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "H.C. Andersen.",
           "output": "⠓⠄⠠⠉⠄ ⠠⠁⠝⠙⠑⠗⠎⠑⠝⠄"
         }
@@ -394,7 +395,7 @@
       "data": [
         {
           "comment": "Full stop: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Det er helt tåp...",
           "output": "⠙⠑⠞ ⠑⠗ ⠓⠑⠇⠞ ⠞⠡⠏…"
         }
@@ -575,7 +576,7 @@
       "data": [
         {
           "comment": "Question mark: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Skal vi gå ut og spise i dag? spurte Karin.",
           "output": "⠲⠠⠎⠅⠁⠇ ⠧⠊ ⠛⠡ ⠥⠞ ⠕⠛ ⠎⠏⠊⠎⠑ ⠊ ⠙⠁⠛⠢⠲ ⠎⠏⠥⠗⠞⠑ ⠠⠅⠁⠗⠊⠝⠄"
         }
@@ -666,7 +667,7 @@
       "data": [
         {
           "comment": "Curly brackets: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "{ }",
           "output": "⠷ ⠠⠾"
         }
@@ -685,7 +686,7 @@
       "data": [
         {
           "comment": "Mengdeparentes: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "{ }",
           "output": "⠣ ⠜"
         }
@@ -695,7 +696,7 @@
       "data": [
         {
           "comment": "Mengdeparentes: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "L = {1, 3, 4}",
           "output": "⠠⠇ ⠶⠣⠼⠁⠂ ⠼⠉⠂ ⠼⠙⠜"
         }
@@ -714,7 +715,7 @@
       "data": [
         {
           "comment": "Quotes: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Jeg går nå, sa han.",
           "output": "⠲⠠⠚⠑⠛ ⠛⠡⠗ ⠝⠡⠂⠲ ⠎⠁ ⠓⠁⠝⠄"
         }
@@ -733,7 +734,7 @@
       "data": [
         {
           "comment": "Quotes: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Reiste han med Vesta\"?\"",
           "output": "⠲⠠⠗⠑⠊⠎⠞⠑ ⠓⠁⠝ ⠍⠑⠙ ⠲⠠⠧⠑⠎⠞⠁⠲⠢⠲"
         }
@@ -743,7 +744,7 @@
       "data": [
         {
           "comment": "Quotes: Example 5",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Vera\" het båten,\" rettet hun.",
           "output": "⠲⠲⠠⠧⠑⠗⠁⠲ ⠓⠑⠞ ⠃⠡⠞⠑⠝⠂⠲ ⠗⠑⠞⠞⠑⠞ ⠓⠥⠝⠄"
         }
@@ -780,7 +781,7 @@
       "data": [
         {
           "comment": " Apostrophe : Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Dette må være Vigdis' bok.",
           "output": "⠠⠙⠑⠞⠞⠑ ⠍⠡ ⠧⠜⠗⠑ ⠧⠊⠛⠙⠊⠎⠐ ⠃⠕⠅⠄"
         }
@@ -790,7 +791,7 @@
       "data": [
         {
           "comment": " Apostrophe : Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Møtet var i NATO's faste råd.",
           "output": "⠠⠍⠪⠞⠑⠞ ⠧⠁⠗ ⠊ ⠠⠠⠝⠁⠞⠕⠠⠎ ⠋⠁⠎⠞⠑ ⠗⠡⠙⠄"
         }
@@ -845,7 +846,7 @@
       "data": [
         {
           "comment": "Section sign:Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "§ 18 § 223 2. ledd",
           "output": "⠬⠼⠁⠓ ⠬⠼⠃⠃⠉ ⠼⠃⠄ ⠇⠑⠙⠙"
         }
@@ -855,7 +856,7 @@
       "data": [
         {
           "comment": "Section sign:Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "§§ 28—32 §§ 20 og 24",
           "output": "⠬⠬⠼⠃⠓⠤⠤⠼⠉⠃ ⠬⠬⠼⠃⠚ ⠕⠛ ⠼⠃⠙"
         }
@@ -874,7 +875,7 @@
       "data": [
         {
           "comment": "Number sign:Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "På telefonen finner du tasten #.",
           "output": "⠏⠡ ⠞⠑⠇⠑⠋⠕⠝⠑⠝ ⠋⠊⠝⠝⠑⠗ ⠙⠥ ⠞⠁⠎⠞⠑⠝ ⠼⠄"
         }
@@ -884,7 +885,7 @@
       "data": [
         {
           "comment": "Number sign:Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Viderekobling oppløses ved å trykke #21#.",
           "output": "⠠⠧⠊⠙⠑⠗⠑⠅⠕⠃⠇⠊⠝⠛ ⠕⠏⠏⠇⠪⠎⠑⠎ ⠧⠑⠙ ⠡ ⠞⠗⠽⠅⠅⠑ ⠼⠠⠼⠃⠁⠼⠄"
         }
@@ -894,7 +895,7 @@
       "data": [
         {
           "comment": "Dash :Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "-",
           "output": "⠤"
         }
@@ -904,7 +905,7 @@
       "data": [
         {
           "comment": "Dash :Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Anne-Lise fikk en aha-opplevelse.",
           "output": "⠠⠁⠝⠝⠑⠤⠠⠇⠊⠎⠑ ⠋⠊⠅⠅ ⠑⠝ ⠁⠓⠁⠕⠏⠏⠇⠑⠧⠑⠇⠎⠑⠄"
         }
@@ -1022,7 +1023,7 @@
       "data": [
         {
           "comment": "Slash: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "De framførte \"Våren\" av Grieg/Vinje.",
           "output": "⠠⠙⠑ ⠋⠗⠁⠍⠋⠪⠗⠞⠑ ⠲⠧⠡⠗⠑⠝⠲ ⠁⠧ ⠠⠛⠗⠊⠑⠛⠌⠠⠧⠊⠝⠚⠑⠄"
         }
@@ -1032,7 +1033,7 @@
       "data": [
         {
           "comment": "Slash: Example 5",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Det må lederen og/eller kassereren bestemme.",
           "output": "⠙⠑⠞ ⠍⠡ ⠇⠑⠙⠑⠗⠑⠝ ⠕⠛⠌⠑⠇⠇⠑⠗ ⠅⠁⠎⠎⠑⠗⠑⠗⠑⠝ ⠃⠑⠎⠞⠑⠍⠍⠑⠄"
         }
@@ -1051,7 +1052,7 @@
       "data": [
         {
           "comment": "Small Latin letters: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Anne løser oppgavene 19 c, 24 d og 33 c.",
           "output": "⠠⠁⠝⠝⠑ ⠇⠪⠎⠑⠗ ⠕⠏⠏⠛⠁⠧⠑⠝⠑ ⠼⠁⠊⠰⠉⠂ ⠼⠃⠙⠰⠙ ⠕⠛ ⠼⠉⠉⠰⠉⠄"
         }
@@ -1061,7 +1062,7 @@
       "data": [
         {
           "comment": "Small Latin letters: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Jeg vet at hun spiller i klasse a.",
           "output": "⠚⠑⠛ ⠧⠑⠞ ⠁⠞ ⠓⠥⠝ ⠎⠏⠊⠇⠇⠑⠗ ⠊ ⠅⠇⠁⠎⠎⠑ ⠁⠄"
         }
@@ -1098,7 +1099,7 @@
       "data": [
         {
           "comment": "Capital Latin letter: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "SVs landsmøte i 2007 ble avholdt i tiden 22.–25. mars.",
           "output": "⠠⠠⠎⠧⠰⠎ ⠇⠁⠝⠙⠎⠍⠪⠞⠑ ⠊ ⠼⠃⠚⠚⠛ ⠃⠇⠑ ⠁⠧⠓⠕⠇⠙⠞ ⠊ ⠞⠊⠙⠑⠝ ⠼⠃⠃⠄⠤⠤⠼⠃⠑⠄ ⠍⠁⠗⠎⠄"
         }
@@ -1126,7 +1127,7 @@
       "data": [
         {
           "comment": "Capital Latin letter: Example 7",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "MediaLT RadiOrakel",
           "output": "⠠⠍⠑⠙⠊⠁⠠⠇⠠⠞ ⠠⠗⠁⠙⠊⠠⠕⠗⠁⠅⠑⠇"
         }
@@ -1145,7 +1146,7 @@
       "data": [
         {
           "comment": "Capital Latin letter: Example 9",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "TVNorge har flere nyhetssendinger pr. dag.",
           "output": "⠠⠞⠠⠧⠠⠝⠕⠗⠛⠑ ⠓⠁⠗ ⠋⠇⠑⠗⠑ ⠝⠽⠓⠑⠞⠎⠎⠑⠝⠙⠊⠝⠛⠑⠗ ⠏⠗⠄ ⠙⠁⠛⠄"
         }
@@ -1155,7 +1156,7 @@
       "data": [
         {
           "comment": "Capital Latin letter: Example 10",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "DTBook NBfU",
           "output": "⠠⠙⠠⠞⠠⠃⠕⠕⠅ ⠠⠝⠠⠃⠋⠠⠥"
         }
@@ -1165,7 +1166,7 @@
       "data": [
         {
           "comment": "Capital Latin letter: Example 11",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "MHz kHz",
           "output": "⠠⠍⠠⠓⠵ ⠅⠠⠓⠵"
         }
@@ -1184,7 +1185,7 @@
       "data": [
         {
           "comment": "Capital Latin letter: Example 13",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "CO2 NaCl",
           "output": "⠠⠉⠠⠕⠡⠼⠃ ⠠⠝⠁⠠⠉⠇"
         }
@@ -1194,7 +1195,7 @@
       "data": [
         {
           "comment": "Capital Latin letter: Example 14",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "H2SO4",
           "output": "⠠⠓⠡⠼⠃⠠⠎⠠⠕⠡⠼⠙"
         }
@@ -1204,7 +1205,7 @@
       "data": [
         {
           "comment": "Capital Latin letter: Example 15",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "HCl CHCl3",
           "output": "⠠⠓⠠⠉⠇ ⠠⠉⠠⠓⠠⠉⠇⠡⠼⠉"
         }
@@ -1214,7 +1215,7 @@
       "data": [
         {
           "comment": "Greek Letters: Example1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "π = 3,14",
           "output": "⠘⠏ ⠶⠼⠉⠂⠁⠙"
         }
@@ -1224,7 +1225,7 @@
       "data": [
         {
           "comment": "Greek Letters: Example2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Øretelefonen tåler en motstand på 8 Ω (Ohm).",
           "output": "⠠⠪⠗⠑⠞⠑⠇⠑⠋⠕⠝⠑⠝ ⠞⠡⠇⠑⠗ ⠑⠝ ⠍⠕⠞⠎⠞⠁⠝⠙ ⠏⠡ ⠼⠓ ⠸⠺ ⠦⠠⠕⠓⠍⠴⠄"
         }
@@ -1243,7 +1244,7 @@
       "data": [
         {
           "comment": "Roman numbers: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Haakon VII var konge i Norge 1905—1957.",
           "output": "⠠⠓⠁⠁⠅⠕⠝ ⠠⠧⠊⠊ ⠧⠁⠗ ⠅⠕⠝⠛⠑ ⠊ ⠠⠝⠕⠗⠛⠑ ⠼⠁⠊⠚⠑⠤⠤⠼⠁⠊⠑⠛⠄"
         }
@@ -1253,7 +1254,7 @@
       "data": [
         {
           "comment": "Roman numbers: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Utdraget er hentet fra kap. IV iii.",
           "output": "⠠⠥⠞⠙⠗⠁⠛⠑⠞ ⠑⠗ ⠓⠑⠝⠞⠑⠞ ⠋⠗⠁ ⠅⠁⠏⠄ ⠠⠊⠧ ⠰⠊⠊⠊⠄"
         }
@@ -1263,7 +1264,7 @@
       "data": [
         {
           "comment": "Highlighting: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input":    "hund hunden hunder hundene",
           "typeform": "00000000011100001110000111",
           "output": "⠓⠥⠝⠙ ⠓⠥⠝⠙⠆⠑⠝⠰ ⠓⠥⠝⠙⠆⠑⠗⠰ ⠓⠥⠝⠙⠆⠑⠝⠑⠰"
@@ -1274,7 +1275,7 @@
       "data": [
         {
           "comment": "Highlighting: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input":    "Det var bare det at hun også misunte ham det",
           "typeform": "00000000000000000000000000000111000000000000",
           "output": "⠠⠙⠑⠞ ⠧⠁⠗ ⠃⠁⠗⠑ ⠙⠑⠞ ⠁⠞ ⠓⠥⠝ ⠕⠛⠎⠡ ⠆⠍⠊⠎⠰⠥⠝⠞⠑ ⠓⠁⠍ ⠙⠑⠞⠄"
@@ -1285,7 +1286,7 @@
       "data": [
         {
           "comment": "Highlighting: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input":    "Jeg verken vil eller kan gjøre dette for deg!",
           "typeform": "000000000001111000000111100000000000000000000",
           "output": "⠠⠚⠑⠛ ⠧⠑⠗⠅⠑⠝ ⠆⠧⠊⠇⠰ ⠑⠇⠇⠑⠗ ⠆⠅⠁⠝⠰ ⠛⠚⠪⠗⠑ ⠙⠑⠞⠞⠑ ⠋⠕⠗ ⠙⠑⠛⠖"
@@ -1296,7 +1297,7 @@
       "data": [
         {
           "comment": "Highlighting: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input":    "Karin Fossum slo gjennom som krimforfatter med romanen Evas øye, som kom ut i 1995.",
           "typeform": "00000000000000000000000000000000000000000000000000000001111111100000000000000000000",
           "output": "⠠⠅⠁⠗⠊⠝ ⠠⠋⠕⠎⠎⠥⠍ ⠎⠇⠕ ⠛⠚⠑⠝⠝⠕⠍ ⠎⠕⠍ ⠅⠗⠊⠍⠋⠕⠗⠋⠁⠞⠞⠑⠗ ⠍⠑⠙ ⠗⠕⠍⠁⠝⠑⠝ ⠆⠑⠧⠁⠎ ⠪⠽⠑⠰⠂ ⠎⠕⠍ ⠅⠕⠍ ⠥⠞ ⠊ ⠼⠁⠊⠊⠑⠄"
@@ -1307,7 +1308,7 @@
       "data": [
         {
           "comment": "Highlighting: Example 5",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input":    "\"Hør her: du må gjøre det!\"",
           "typeform": "000000000011155511111111100",
           "output": "⠲⠠⠓⠪⠗ ⠓⠑⠗⠒ ⠆⠙⠥ ⠸⠍⠡⠸ ⠛⠚⠪⠗⠑ ⠙⠑⠞⠰⠖⠲"
@@ -1318,7 +1319,7 @@
       "data": [
         {
           "comment": "Highlighting: Example 6",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input":    "Romanen Tusen  strålende soler av den afghansk-amerikanske forfatteren Khaled Hosseini  tyder på å bli en like stor suksess som den forrige romanen, Drageløperen. I bokanmeldelsen fra Dagbladet 06.06.07 forklares dette med: Ikke fordi Hosseini er en spesielt god  forfatter. Men fordi tematikken til den USA-bosatte Hosseini, har en spesiell  dragning på et vestlig publikum.",
           "typeform": "000000001111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111111111110000000000000000000000011111111110000000000000000000000000000002222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222",
           "output": "⠠⠗⠕⠍⠁⠝⠑⠝ ⠆⠠⠞⠥⠎⠑⠝ ⠎⠞⠗⠡⠇⠑⠝⠙⠑ ⠎⠕⠇⠑⠗⠰ ⠁⠧ ⠙⠑⠝ ⠁⠋⠛⠓⠁⠝⠎⠅⠁⠍⠑⠗⠊⠅⠁⠝⠎⠅⠑ ⠋⠕⠗⠋⠁⠞⠞⠑⠗⠑⠝ ⠠⠅⠓⠁⠇⠑⠙ ⠠⠓⠕⠎⠎⠑⠊⠝⠊ ⠞⠽⠙⠑⠗ ⠏⠡ ⠡ ⠃⠇⠊ ⠑⠝ ⠇⠊⠅⠑ ⠎⠞⠕⠗ ⠎⠥⠅⠎⠑⠎⠎ ⠎⠕⠍ ⠙⠑⠝ ⠋⠕⠗⠗⠊⠛⠑ ⠗⠕⠍⠁⠝⠑⠝⠂ ⠆⠠⠙⠗⠁⠛⠑⠇⠪⠏⠑⠗⠑⠝⠰⠄ ⠠⠊ ⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑⠝ ⠋⠗⠁ ⠆⠠⠙⠁⠛⠃⠇⠁⠙⠑⠞⠰ ⠼⠚⠋⠄⠚⠋⠄⠚⠛ ⠋⠕⠗⠅⠇⠁⠗⠑⠎ ⠙⠑⠞⠞⠑ ⠍⠑⠙⠒ ⠠⠄⠊⠅⠅⠑ ⠋⠕⠗⠙⠊ ⠠⠓⠕⠎⠎⠑⠊⠝⠊ ⠑⠗ ⠑⠝ ⠎⠏⠑⠎⠊⠑⠇⠞ ⠛⠕⠙ ⠋⠕⠗⠋⠁⠞⠞⠑⠗⠄ ⠠⠍⠑⠝ ⠋⠕⠗⠙⠊ ⠞⠑⠍⠁⠞⠊⠅⠅⠑⠝ ⠞⠊⠇ ⠙⠑⠝ ⠠⠠⠥⠎⠁⠃⠕⠎⠁⠞⠞⠑ ⠠⠓⠕⠎⠎⠑⠊⠝⠊⠂ ⠓⠁⠗ ⠑⠝ ⠎⠏⠑⠎⠊⠑⠇⠇ ⠙⠗⠁⠛⠝⠊⠝⠛ ⠏⠡ ⠑⠞ ⠧⠑⠎⠞⠇⠊⠛ ⠏⠥⠃⠇⠊⠅⠥⠍⠄⠠⠄"
@@ -1329,7 +1330,7 @@
       "data": [
         {
           "comment": "Highlighting: Example 7",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input":    "Vinje, Finn-Erik. 2004. Skriveregler. 8. utg. Oslo",
           "typeform": "00000000000000000000000011111111111100000000000000",
           "output": "⠠⠧⠊⠝⠚⠑⠂ ⠠⠋⠊⠝⠝⠤⠠⠑⠗⠊⠅⠄ ⠼⠃⠚⠚⠙⠄ ⠠⠄⠠⠎⠅⠗⠊⠧⠑⠗⠑⠛⠇⠑⠗⠠⠄⠄ ⠼⠓⠄ ⠥⠞⠛⠄⠠⠕⠎⠇⠕"
@@ -1340,7 +1341,7 @@
       "data": [
         {
           "comment": "Highlighting: Example 8",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input":    "Hellevik, Alf. 1970. God nynorsk.  Oslo",
           "typeform": "000000000000000000000111111111110000000",
           "output": "⠠⠓⠑⠇⠇⠑⠧⠊⠅⠂ ⠠⠁⠇⠋⠄ ⠼⠁⠊⠛⠚⠄ ⠠⠄⠛⠕⠙ ⠝⠽⠝⠕⠗⠎⠅⠠⠄⠄ ⠠⠕⠎⠇⠕"
@@ -1351,7 +1352,7 @@
       "data": [
         {
           "comment": "Highlighting: Example 9",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input":    "Ny afghansk bestselger. Bokanmeldelse Dagbladet 06.06.07",
           "typeform": "00000000000000000000000000000000000000111111111100000000",
           "output": "⠠⠝⠽ ⠁⠋⠛⠓⠁⠝⠎⠅ ⠃⠑⠎⠞⠎⠑⠇⠛⠑⠗⠄⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑ ⠠⠄⠙⠁⠛⠃⠇⠁⠙⠑⠞⠠⠄⠼⠚⠋⠄⠚⠋⠄⠚⠛"
@@ -1362,7 +1363,7 @@
       "data": [
         {
           "comment": "Sperret tekst: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Det viktigste er å få fram m e n i n g e n.",
           "output": "⠙⠑⠞ ⠧⠊⠅⠞⠊⠛⠎⠞⠑ ⠑⠗ ⠡ ⠋⠡ ⠋⠗⠁⠍ ⠐⠂⠍⠑⠝⠊⠝⠛⠑⠝⠐⠂⠄"
         }
@@ -1372,7 +1373,7 @@
       "data": [
         {
           "comment": "Sperret tekst: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "L a s t a t e n ( k o m m u n e n ) g å f o r a n.",
           "output": "⠐⠂⠠⠇⠁ ⠎⠞⠁⠞⠑⠝ ⠦⠅⠕⠍⠍⠥⠝⠑⠝⠴ ⠛⠡ ⠋⠕⠗⠁⠝⠄⠐⠂"
         }
@@ -1382,7 +1383,7 @@
       "data": [
         {
           "comment": "Capitalization: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Jeg bare MÅ snakke med deg!",
           "output": "⠚⠑⠛ ⠃⠁⠗⠑ ⠠⠠⠍⠡ ⠎⠝⠁⠅⠅⠑ ⠍⠑⠙ ⠙⠑⠛⠖"
         }
@@ -1401,7 +1402,7 @@
       "data": [
         {
           "comment": "Headlines:  Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "EN ROSE MED TORNER",
           "output": "⠠⠑⠝ ⠠⠠⠗⠕⠎⠑ ⠠⠠⠍⠑⠙ ⠠⠠⠞⠕⠗⠝⠑⠗"
         }
@@ -1411,7 +1412,7 @@
       "data": [
         {
           "comment": "Headlines:  Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "SAK 27/07 SØKNAD OM ØKONOMISK STØTTE FOR 2007",
           "output": "⠎⠁⠅ ⠼⠃⠛⠌⠼⠚⠛ ⠠⠠⠎⠪⠅⠝⠁⠙ ⠠⠠⠕⠍ ⠠⠠⠪⠅⠕⠝⠕⠍⠊⠎⠅ ⠠⠠⠎⠞⠪⠞⠞⠑ ⠠⠠⠋⠕⠗ ⠼⠃⠚⠚⠛"
         }
@@ -1448,7 +1449,7 @@
       "data": [
         {
           "comment": "Numeric characters: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "2300",
           "output": "⠼⠃⠄⠉⠚⠚"
         }
@@ -1467,7 +1468,7 @@
       "data": [
         {
           "comment": "Numeric characters: Example 6",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "6 712",
           "output": "⠼⠋⠄⠛⠁⠃"
         }
@@ -1477,7 +1478,7 @@
       "data": [
         {
           "comment": "Numeric characters: Example 7",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "27 764",
           "output": "⠼⠃⠛⠄⠛⠋⠙"
         }
@@ -1487,7 +1488,7 @@
       "data": [
         {
           "comment": "Numeric characters: Example 8",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "1 000 000",
           "output": "⠼⠁⠄⠚⠚⠚⠄⠚⠚⠚"
         }
@@ -1497,7 +1498,7 @@
       "data": [
         {
           "comment": "Numeric characters: Example 9",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Han tjente 2 000 kr i år 2000.",
           "output": "⠠⠓⠁⠝ ⠞⠚⠑⠝⠞⠑ ⠼⠃⠄⠚⠚⠚ ⠅⠗ ⠊ ⠡⠗ ⠼⠃⠚⠚⠚⠄"
         }
@@ -1516,7 +1517,7 @@
       "data": [
         {
           "comment": "Numeric characters: Example 11",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "π = 3,141.59",
           "output": "⠘⠏ ⠶⠼⠉⠂⠁⠙⠁⠄⠑⠊"
         }
@@ -1526,7 +1527,7 @@
       "data": [
         {
           "comment": "Numeric characters: Example 12",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "(tlf)39 25 07 82",
           "output": "⠼⠉⠊⠄⠃⠑⠄⠚⠛⠄⠓⠃"
         }
@@ -1536,7 +1537,7 @@
       "data": [
         {
           "comment": "Numeric characters: Example 13",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "(mob)998 72 008",
           "output": "⠼⠊⠊⠓⠄⠛⠃⠄⠚⠚⠓"
         }
@@ -1546,7 +1547,7 @@
       "data": [
         {
           "comment": "Numeric characters: Example 14",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "(pn)280280 53862",
           "output": "⠼⠃⠓⠚⠃⠓⠚⠄⠑⠉⠓⠋⠃"
         }
@@ -1556,7 +1557,7 @@
       "data": [
         {
           "comment": "Numeric characters: Example 15",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Mitt bankkontonummer er 6411 18 96267.",
           "output": "⠠⠍⠊⠞⠞ ⠃⠁⠝⠅⠅⠕⠝⠞⠕⠝⠥⠍⠍⠑⠗ ⠑⠗ ⠼⠋⠙⠁⠁⠼⠁⠓⠼⠊⠋⠃⠋⠛⠄"
         }
@@ -1566,7 +1567,7 @@
       "data": [
         {
           "comment": "Numeric characters: Example 16",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Mitt kontonummer er 0531 57 96263.",
           "output": "⠠⠍⠊⠞⠞ ⠅⠕⠝⠞⠕⠝⠥⠍⠍⠑⠗ ⠑⠗ ⠼⠚⠑⠉⠁⠼⠑⠛⠼⠊⠋⠃⠋⠉⠄"
         }
@@ -1603,7 +1604,7 @@
       "data": [
         {
           "comment": "Fractions and mixed numbers: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Han kjøpte 2 1 1/2-litersflasker brus.",
           "output": "⠠⠓⠁⠝ ⠅⠚⠪⠏⠞⠑ ⠼⠃ ⠼⠁⠼⠁⠌⠼⠃⠇⠊⠞⠑⠗⠎⠋⠇⠁⠎⠅⠑⠗ ⠃⠗⠥⠎⠄"
         }
@@ -1631,7 +1632,7 @@
       "data": [
         {
           "comment": "Time Indications: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Kurset ble holdt helga 18.—20. mars.",
           "output": "⠠⠅⠥⠗⠎⠑⠞ ⠃⠇⠑ ⠓⠕⠇⠙⠞ ⠓⠑⠇⠛⠁ ⠼⠁⠓⠄⠤⠼⠃⠚⠄ ⠍⠁⠗⠎⠄"
         }
@@ -1650,7 +1651,7 @@
       "data": [
         {
           "comment": "Bible References: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Matt 4,1-11",
           "output": "⠍⠁⠞⠞ ⠼⠙⠂⠁⠤⠁⠁"
         }
@@ -1660,7 +1661,7 @@
       "data": [
         {
           "comment": "Bible References: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Gal 5,26-6,5",
           "output": "⠛⠁⠇ ⠼⠑⠂⠃⠋⠤⠼⠋⠂⠑"
         }
@@ -1670,7 +1671,7 @@
       "data": [
         {
           "comment": "Bible References: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "5 Mos 8,7.11-18",
           "output": "⠼⠑ ⠠⠍⠕⠎ ⠼⠓⠂⠛⠄⠁⠁⠤⠁⠓"
         }
@@ -1680,7 +1681,7 @@
       "data": [
         {
           "comment": "Bible References: Example 5",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "2 Mos 20,1-8.12-17",
           "output": "⠼⠃ ⠠⠍⠕⠎ ⠼⠃⠚⠂⠁⠤⠓⠄⠁⠃⠤⠁⠛"
         }
@@ -1690,7 +1691,7 @@
       "data": [
         {
           "comment": "Bible References: Example 6",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Luk 4,16-22a",
           "output": "⠠⠇⠥⠅ ⠼⠙⠂⠁⠋⠤⠃⠃⠰⠁"
         }
@@ -1700,7 +1701,7 @@
       "data": [
         {
           "comment": "Bible References: Example 7",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Pet 3,13-15a.17-18",
           "output": "⠠⠏⠑⠞ ⠼⠉⠂⠁⠉⠤⠁⠑⠰⠁⠄⠼⠁⠛⠤⠁⠓"
         }
@@ -1719,7 +1720,7 @@
       "data": [
         {
           "comment": "Koranen References: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Sure 13,12-20",
           "output": "⠠⠎⠥⠗⠑ ⠼⠁⠉⠂⠁⠃⠤⠃⠚"
         }
@@ -1729,7 +1730,7 @@
       "data": [
         {
           "comment": "Other writings: : Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "III.77",
           "output": "⠠⠊⠊⠊⠄⠼⠛⠛"
         }
@@ -1739,7 +1740,7 @@
       "data": [
         {
           "comment": "Mathematical signs Operators: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "2 + 2 = 4",
           "output": "⠼⠃ ⠖⠼⠃ ⠶⠼⠙"
         }
@@ -1749,7 +1750,7 @@
       "data": [
         {
           "comment": "Mathematical signs Operators: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "13 - 4 = 9",
           "output": "⠼⠁⠉ ⠤⠼⠙ ⠶⠼⠊"
         }
@@ -1759,7 +1760,7 @@
       "data": [
         {
           "comment": "Mathematical signs Operators: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "4 . 7 = 28",
           "output": "⠼⠙ ⠄⠼⠛ ⠶⠼⠃⠓"
         }
@@ -1769,7 +1770,7 @@
       "data": [
         {
           "comment": "Mathematical signs Operators: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "32 : 4 = 8",
           "output": "⠼⠉⠃ ⠒⠼⠙ ⠶⠼⠓"
         }
@@ -1797,7 +1798,7 @@
       "data": [
         {
           "comment": "Inequality Signs: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "8 > 7,98",
           "output": "⠼⠓ ⠕⠂⠼⠛⠂⠊⠓"
         }
@@ -1825,7 +1826,7 @@
       "data": [
         {
           "comment": "Fractions sign: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Han hadde bare en 1/2-kartong med melk.",
           "output": "⠓⠁⠝ ⠓⠁⠙⠙⠑ ⠃⠁⠗⠑ ⠑⠝ ⠼⠁⠌⠼⠃⠤⠅⠁⠗⠞⠕⠝⠛ ⠍⠑⠙ ⠍⠑⠇⠅⠄"
         }
@@ -1835,7 +1836,7 @@
       "data": [
         {
           "comment": "Fractions sign: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "56+35/9+4  = 7",
           "output": "⠆⠼⠑⠋ ⠖⠼⠉⠑ ⠌ ⠼⠊ ⠖⠼⠙⠰ ⠶⠼⠛"
         }
@@ -1845,7 +1846,7 @@
       "data": [
         {
           "comment": "Fractions sign: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Effekt = energioverføring / tid.",
           "output": "⠠⠑⠋⠋⠑⠅⠞ ⠶ ⠆⠑⠝⠑⠗⠛⠊⠕⠧⠑⠗⠋⠪⠗⠊⠝⠛ ⠲⠠ ⠞⠊⠙⠰⠄"
         }
@@ -1855,7 +1856,7 @@
       "data": [
         {
           "comment": "Indices: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Gulvet er 10 m2 stort.",
           "output": "⠠⠛⠥⠇⠧⠑⠞ ⠑⠗ ⠼⠁⠚ ⠍⠨⠼⠃ ⠎⠞⠕⠗⠞⠄"
         }
@@ -1865,7 +1866,7 @@
       "data": [
         {
           "comment": "Indices: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "xn - 1 er et nokså ukjent tall.",
           "output": "⠭⠨⠦⠝ ⠤⠼⠁⠴ ⠑⠗ ⠑⠞ ⠝⠕⠅⠎⠡ ⠥⠅⠚⠑⠝⠞ ⠞⠁⠇⠇⠄"
         }
@@ -1875,7 +1876,7 @@
       "data": [
         {
           "comment": "Indices: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "x1 = 8",
           "output": "⠭⠡⠼⠁ ⠶⠼⠓"
         }
@@ -1885,7 +1886,7 @@
       "data": [
         {
           "comment": "Indices: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Minimumstemperaturen, xmin, var 2 grader.",
           "output": "⠠⠍⠊⠝⠊⠍⠥⠍⠎⠞⠑⠍⠏⠑⠗⠁⠞⠥⠗⠑⠝⠂ ⠭⠡⠦⠍⠊⠝⠴⠂ ⠧⠁⠗ ⠼⠃ ⠛⠗⠁⠙⠑⠗⠄"
         }
@@ -1895,7 +1896,7 @@
       "data": [
         {
           "comment": "Indices: Example 5",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Norge kjøper CO2-kvoter.",
           "output": "⠠⠝⠕⠗⠛⠑ ⠅⠚⠪⠏⠑⠗ ⠠⠉⠠⠕⠡⠼⠃⠤⠅⠧⠕⠞⠑⠗⠄"
         }
@@ -1914,7 +1915,7 @@
       "data": [
         {
           "comment": "Indices: Example 7",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "√49-24 =5",
           "output": "⠩⠦⠼⠙⠊ ⠤⠼⠃⠙⠴ ⠶⠼⠑"
         }
@@ -1924,7 +1925,7 @@
       "data": [
         {
           "comment": "Percent: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Det er 10 % rabatt på alle varer onsdag.",
           "output": "⠠⠙⠑⠞ ⠑⠗ ⠼⠁⠚⠨⠴ ⠗⠁⠃⠁⠞⠞ ⠏⠡ ⠁⠇⠇⠑ ⠧⠁⠗⠑⠗ ⠕⠝⠎⠙⠁⠛⠄"
         }
@@ -1934,7 +1935,7 @@
       "data": [
         {
           "comment": "Percent: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Det bør være en promillegrense på 0,2 ‰ på sjøen.",
           "output": "⠙⠑⠞ ⠃⠪⠗ ⠧⠜⠗⠑ ⠑⠝ ⠏⠗⠕⠍⠊⠇⠇⠑⠛⠗⠑⠝⠎⠑ ⠏⠡ ⠼⠚⠂⠃⠨⠴⠴ ⠏⠡ ⠎⠚⠪⠑⠝⠄"
         }
@@ -1944,7 +1945,7 @@
       "data": [
         {
           "comment": "Percent: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Det er ikke snakk om å endre promillegrensa (0,2 ‰) ved bilkjøring.",
           "output": "⠠⠙⠑⠞ ⠑⠗ ⠊⠅⠅⠑ ⠎⠝⠁⠅⠅ ⠕⠍ ⠡ ⠑⠝⠙⠗⠑ ⠏⠗⠕⠍⠊⠇⠇⠑⠛⠗⠑⠝⠎⠁ ⠦⠼⠚⠂⠃⠨⠴⠶⠠⠴ ⠧⠑⠙ ⠃⠊⠇⠅⠚⠪⠗⠊⠝⠛⠄"
         }
@@ -1954,7 +1955,7 @@
       "data": [
         {
           "comment": "Hyphen: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Totalvekten = bilens vekt + vekten på lasten.",
           "output": "⠠⠞⠕⠞⠁⠇⠧⠑⠅⠞⠑⠝ ⠶ ⠃⠊⠇⠑⠝⠎ ⠧⠑⠅⠞ ⠖⠠ ⠧⠑⠅⠞⠑⠝ ⠏⠡ ⠇⠁⠎⠞⠑⠝⠄"
         }
@@ -1991,7 +1992,7 @@
       "data": [
         {
           "comment": "Kaliber",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": ".",
           "output": "⠼⠄"
         }
@@ -2001,7 +2002,7 @@
       "data": [
         {
           "comment": "Annotations: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Spydkastet var 85,71 m.",
           "output": "⠎⠏⠽⠙⠅⠁⠎⠞⠑⠞ ⠧⠁⠗ ⠼⠓⠑⠂⠛⠁ ⠍⠄"
         }
@@ -2020,7 +2021,7 @@
       "data": [
         {
           "comment": "Annotations: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Det er bare 30 g smør i kaka!",
           "output": "⠠⠙⠑⠞ ⠑⠗ ⠃⠁⠗⠑ ⠼⠉⠚ ⠛ ⠎⠍ø⠗ ⠊ ⠅⠁⠅⠁⠖"
         }
@@ -2030,7 +2031,7 @@
       "data": [
         {
           "comment": "Annotations: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Lua kostet bare 64 kr på salg.",
           "output": "⠇⠥⠁ ⠅⠕⠎⠞⠑⠞ ⠃⠁⠗⠑ ⠼⠋⠙ ⠅⠗ ⠏⠡ ⠎⠁⠇⠛⠄"
         }
@@ -2040,7 +2041,7 @@
       "data": [
         {
           "comment": "Annotations: Example 5",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Radiostasjonen sender på 98,4 MHz.",
           "output": "⠠⠗⠁⠙⠊⠕⠎⠞⠁⠎⠚⠕⠝⠑⠝ ⠎⠑⠝⠙⠑⠗ ⠏⠡ ⠼⠊⠓⠂⠙ ⠠⠍⠠⠓⠵⠄"
         }
@@ -2059,7 +2060,7 @@
       "data": [
         {
           "comment": "Degrees: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Vinkelen var 45°.",
           "output": "⠧⠊⠝⠅⠑⠇⠑⠝ ⠧⠁⠗ ⠼⠙⠑⠐⠴⠄"
         }
@@ -2078,7 +2079,7 @@
       "data": [
         {
           "comment": "Degrees: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Ute er det 20° C.",
           "output": "⠠⠥⠞⠑ ⠑⠗ ⠙⠑⠞ ⠼⠃⠚⠐⠴⠠⠉⠄"
         }
@@ -2088,7 +2089,7 @@
       "data": [
         {
           "comment": "Degrees: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Vannet har nådd kokepunktet (100°).",
           "output": "⠧⠁⠝⠝⠑⠞ ⠓⠁⠗ ⠝⠡⠙⠙ ⠅⠕⠅⠑⠏⠥⠝⠅⠞⠑⠞ ⠦⠼⠁⠚⠚⠐⠴⠠⠴⠄"
         }
@@ -2116,7 +2117,7 @@
       "data": [
         {
           "comment": "Kaliber: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Hun prøvde å skyte meg med en 38 Colt!",
           "output": "⠠⠓⠥⠝ ⠏⠗⠪⠧⠙⠑ ⠡ ⠎⠅⠽⠞⠑ ⠍⠑⠛ ⠍⠑⠙ ⠑⠝ ⠼⠄⠉⠓ ⠠⠉⠕⠇⠞⠖"
         }
@@ -2189,7 +2190,7 @@
       "data": [
         {
           "comment": "Currencies: Example 8",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "$29 kostet boka, sa han.",
           "output": "⠲⠠⠲⠼⠃⠊ ⠅⠕⠎⠞⠑⠞ ⠃⠕⠅⠁⠂⠲ ⠎⠁ ⠓⠁⠝⠄"
         }
@@ -2226,7 +2227,7 @@
       "data": [
         {
           "comment": "Edb-sign: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Hun har e-postadressen line@online.no.",
           "output": "⠠⠓⠥⠝ ⠓⠁⠗ ⠑⠤⠏⠕⠎⠞⠁⠙⠗⠑⠎⠎⠑⠝ ⠣⠇⠊⠝⠑⠈⠕⠝⠇⠊⠝⠑⠄⠝⠕⠜⠄"
         }
@@ -2236,7 +2237,7 @@
       "data": [
         {
           "comment": "Edb-sign: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Hun oppga tone21@hotmail.com som sin adresse.",
           "output": "⠠⠓⠥⠝ ⠕⠏⠏⠛⠁ ⠣⠞⠕⠝⠑⠼⠃⠁⠈⠓⠕⠞⠍⠁⠊⠇⠄⠉⠕⠍⠜ ⠎⠕⠍ ⠎⠊⠝ ⠁⠙⠗⠑⠎⠎⠑⠄"
         }
@@ -2246,7 +2247,7 @@
       "data": [
         {
           "comment": "Edb-sign: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Han har e-postadressen msvendsen@c2i.net.",
           "output": "⠠⠓⠁⠝ ⠓⠁⠗ ⠑⠤⠏⠕⠎⠞⠁⠙⠗⠑⠎⠎⠑⠝ ⠣⠍⠎⠧⠑⠝⠙⠎⠑⠝⠈⠉⠼⠃⠰⠊⠄⠝⠑⠞⠜⠄"
         }
@@ -2265,7 +2266,7 @@
       "data": [
         {
           "comment": "Edb-sign: Example 5",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "per_erik.iversen@online.no",
           "output": "⠏⠑⠗⠸⠑⠗⠊⠅⠄⠊⠧⠑⠗⠎⠑⠝⠈⠕⠝⠇⠊⠝⠑⠄⠝⠕"
         }
@@ -2275,7 +2276,7 @@
       "data": [
         {
           "comment": "Edb-sign: Example 6",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Dokumentet heter en_spøkelseshistorie_fra_lofoten.doc.",
           "output": "⠠⠙⠕⠅⠥⠍⠑⠝⠞⠑⠞ ⠓⠑⠞⠑⠗ ⠑⠝⠸⠎⠏⠪⠅⠑⠇⠎⠑⠎⠓⠊⠎⠞⠕⠗⠊⠑⠸⠋⠗⠁⠸⠠ ⠇⠕⠋⠕⠞⠑⠝⠄⠙⠕⠉⠄"
         }
@@ -2285,7 +2286,7 @@
       "data": [
         {
           "comment": "Edb-sign: Example 7",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Den midlertidige filen $~pgave.doc slettes når Word avsluttes.",
           "output": "⠠⠙⠑⠝ ⠍⠊⠙⠇⠑⠗⠞⠊⠙⠊⠛⠑ ⠋⠊⠇⠑⠝ ⠲⠹⠏⠛⠁⠧⠑⠄⠙⠕⠉ ⠎⠇⠑⠞⠞⠑⠎ ⠝⠡⠗ ⠠⠺⠕⠗⠙ ⠁⠧⠎⠇⠥⠞⠞⠑⠎⠄"
         }
@@ -2295,7 +2296,7 @@
       "data": [
         {
           "comment": "Edb-sign: Example 8",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Han har hjemmeside www.nettpark.no/~tjb.",
           "output": "⠠⠓⠁⠝ ⠓⠁⠗ ⠓⠚⠑⠍⠍⠑⠎⠊⠙⠑ ⠣⠺⠺⠺⠄⠝⠑⠞⠞⠏⠁⠗⠅⠄⠝⠕⠌⠹⠞⠚⠃⠜⠄"
         }
@@ -2341,7 +2342,7 @@
       "data": [
         {
           "comment": "Edb-sign: Example 13",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Du finner alltid ferske nyheter på www.nrk.no.",
           "output": "⠠⠙⠥ ⠋⠊⠝⠝⠑⠗ ⠁⠇⠇⠞⠊⠙ ⠋⠑⠗⠎⠅⠑ ⠝⠽⠓⠑⠞⠑⠗ ⠏⠡ ⠣⠺⠺⠺⠄⠝⠗⠅⠄⠝⠕⠜⠄"
         }
@@ -2351,7 +2352,7 @@
       "data": [
         {
           "comment": "Edb-sign: Example 14",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "set path=c:\\prog;%PATH%",
           "output": "⠎⠑⠞ ⠏⠁⠞⠓⠶⠉⠒⠱⠏⠗⠕⠛⠆⠫⠠⠠⠏⠁⠞⠓⠫"
         }
@@ -2361,7 +2362,7 @@
       "data": [
         {
           "comment": "Edb-sign: Example 15",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "<a href=\"http://www.aftenposten.no\">Aftenposten<a>",
           "output": "⠣⠁ ⠓⠗⠑⠋⠶⠮⠓⠞⠞⠏⠒⠌⠌⠺⠺⠺⠄⠁⠋⠞⠑⠝⠏⠕⠎⠞⠑⠝⠠⠄⠝⠕⠮⠜⠠⠁⠋⠞⠑⠝⠏⠕⠎⠞⠑⠝⠣⠁⠜"
         }
@@ -2380,7 +2381,7 @@
       "data": [
         {
           "comment": "Edb-sign: Example 17",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Send inn et ønske til onskekonserten@nrk.no du også!",
           "output": "⠠⠎⠑⠝⠙ ⠊⠝⠝ ⠑⠞ ⠪⠝⠎⠅⠑ ⠞⠊⠇⠣⠕⠝⠎⠅⠑⠅⠕⠝⠎⠑⠗⠞⠑⠝⠈⠠ ⠝⠗⠅⠄⠝⠕⠜ ⠙⠥ ⠕⠛⠎⠡⠖"
         }
@@ -2453,7 +2454,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Forlì",
           "output": "⠠⠋⠕⠗⠇⠈⠊"
         }
@@ -2463,7 +2464,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Citroën",
           "output": "⠠⠉⠊⠞⠗⠕⠈⠑⠝"
         }
@@ -2473,7 +2474,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "hôpital",
           "output": "⠓⠈⠕⠏⠊⠞⠁⠇"
         }
@@ -2483,7 +2484,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Dvořák",
           "output": "⠠⠙⠧⠕⠈⠗⠈⠁⠅"
         }
@@ -2493,7 +2494,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 5",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Brăila",
           "output": "⠠⠃⠗⠈⠁⠊⠇⠁"
         }
@@ -2503,7 +2504,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 6",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "français",
           "output": "⠋⠗⠁⠝⠈⠉⠁⠊⠎"
         }
@@ -2513,7 +2514,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 7",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Częstochowa",
           "output": "⠠⠉⠵⠈⠑⠎⠞⠕⠉⠓⠕⠺⠁"
         }
@@ -2523,7 +2524,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 8",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Łódź",
           "output": "⠠⠈⠇⠈⠕⠙⠈⠵"
         }
@@ -2533,7 +2534,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 9",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "ođđasat",
           "output": "⠕⠈⠙⠈⠙⠁⠎⠁⠞"
         }
@@ -2543,7 +2544,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 10",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Han fór opp.",
           "output": "⠠⠓⠁⠝ ⠋⠈⠕⠗ ⠕⠏⠏⠄"
         }
@@ -2553,7 +2554,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 11",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Málaga",
           "output": "⠠⠍⠈⠁⠇⠁⠛⠁"
         }
@@ -2563,7 +2564,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 12",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Bartók",
           "output": "⠠⠃⠁⠗⠞⠈⠕⠅"
         }
@@ -2573,7 +2574,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 13",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Gdańsk",
           "output": "⠠⠛⠙⠁⠈⠝⠎⠅"
         }
@@ -2583,7 +2584,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 14",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "où ",
           "output": "⠕⠘⠥"
         }
@@ -2602,7 +2603,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 16",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "lātus",
           "output": "⠇⠘⠁⠞⠥⠎"
         }
@@ -2612,7 +2613,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 17",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "São Paulo",
           "output": "⠎⠹⠁⠕ ⠠⠏⠁⠥⠇⠕"
         }
@@ -2622,7 +2623,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 18",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "España",
           "output": "⠠⠑⠎⠏⠁⠹⠝⠁"
         }
@@ -2641,7 +2642,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 20",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "że",
           "output": "⠒⠵⠑"
         }
@@ -2669,7 +2670,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 23",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "ĵus",
           "output": "⠨⠚⠥⠎"
         }
@@ -2679,7 +2680,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 24",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "sápmelaš",
           "output": "⠎⠈⠁⠏⠍⠑⠇⠁⠨⠎"
         }
@@ -2689,7 +2690,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 25",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Dvořák",
           "output": "⠠⠙⠧⠕⠨⠗⠈⠁⠅"
         }
@@ -2699,7 +2700,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 26",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "lătus",
           "output": "⠇⠲⠁⠞⠥⠎"
         }
@@ -2709,7 +2710,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 27",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "aŭ",
           "output": "⠁⠲⠥"
         }
@@ -2719,7 +2720,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 28",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Brăila",
           "output": "⠠⠃⠗⠲⠁⠊⠇⠁"
         }
@@ -2729,7 +2730,7 @@
       "data": [
         {
           "comment": "Universal Accent: Example 29",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "dům",
           "output": "⠙⠲⠥⠍"
         }
@@ -2739,7 +2740,7 @@
       "data": [
         {
           "comment": "Sign under the character: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "français",
           "output": "⠋⠗⠁⠝⠖⠉⠁⠊⠎"
         }
@@ -2749,7 +2750,7 @@
       "data": [
         {
           "comment": "Sign under the character: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Moçambique",
           "output": "⠠⠍⠕⠖⠉⠁⠍⠃⠊⠟⠥⠑"
         }
@@ -2759,7 +2760,7 @@
       "data": [
         {
           "comment": "Sign under the character: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Constanţa",
           "output": "⠠⠉⠕⠝⠎⠞⠁⠝⠖⠞⠁"
         }
@@ -2769,7 +2770,7 @@
       "data": [
         {
           "comment": "Sign under the character: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Częstochowa",
           "output": "⠠⠉⠵⠖⠑⠎⠞⠕⠉⠓⠕⠺⠁"
         }
@@ -2779,7 +2780,7 @@
       "data": [
         {
           "comment": "Strikethrough: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Łódź",
           "output": "⠠⠔⠇⠈⠕⠙⠈⠵"
         }
@@ -2789,7 +2790,7 @@
       "data": [
         {
           "comment": "Strikethrough: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "ođđasat",
           "output": "⠕⠔⠙⠔⠙⠁⠎⠁⠞"
         }
@@ -2799,7 +2800,7 @@
       "data": [
         {
           "comment": "Strikethrough: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Bláalóniđ",
           "output": "⠠⠃⠇⠈⠁⠁⠇⠈⠕⠝⠊⠔⠙"
         }
@@ -2809,7 +2810,7 @@
       "data": [
         {
           "comment": "Strikethrough: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Ruoŧŧa",
           "output": "⠠⠗⠥⠕⠔⠞⠔⠞⠁"
         }
@@ -2819,7 +2820,7 @@
       "data": [
         {
           "comment": "Strikethrough: Example 5",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "þingvellir",
           "output": "⠔⠞⠊⠝⠛⠧⠑⠇⠇⠊⠗"
         }
@@ -2829,7 +2830,7 @@
       "data": [
         {
           "comment": "Strikethrough: Example 6",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "groß",
           "output": "⠛⠗⠕⠔⠎"
         }
@@ -2839,7 +2840,7 @@
       "data": [
         {
           "comment": "Special characters: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Would you like to come and play football with us? John asked, staring at me with a threatening look. \"Oh yes, let's play football,\" I said, showing great enthusiasm (but in fact I was deadly frightened).",
           "output": "⠲⠠⠺⠕⠥⠇⠙ ⠆⠽⠕⠥⠰ ⠇⠊⠅⠑ ⠞⠕ ⠉⠕⠍⠑ ⠁⠝⠙ ⠏⠇⠁⠽ ⠋⠕⠕⠞⠃⠁⠇⠇ ⠺⠊⠞⠓ ⠥⠎⠢⠲ ⠠⠚⠕⠓⠝ ⠁⠎⠅⠑⠙⠂ ⠎⠞⠁⠗⠊⠝⠛ ⠁⠞ ⠍⠑ ⠺⠊⠞⠓ ⠁ ⠞⠓⠗⠑⠁⠞⠑⠝⠊⠝⠛ ⠇⠕⠕⠅⠄ ⠲⠆⠕⠓ ⠽⠑⠎⠂ ⠇⠑⠞⠐⠎ ⠏⠇⠁⠽ ⠋⠕⠕⠞⠃⠁⠇⠇⠰⠂⠲ ⠠⠊ ⠎⠁⠊⠙⠂ ⠎⠓⠕⠺⠊⠝⠛ ⠛⠗⠑⠁⠞ ⠑⠝⠞⠓⠥⠎⠊⠁⠎⠍ ⠦⠃⠥⠞ ⠊⠝ ⠋⠁⠉⠞ ⠠⠊ ⠺⠁⠎ ⠙⠑⠁⠙⠇⠽ ⠋⠗⠊⠛⠓⠞⠑⠝⠑⠙⠴⠄"
         }
@@ -2849,7 +2850,7 @@
       "data": [
         {
           "comment": "Special characters: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Would you like to come and play football with us? John asked, staring at me with a threatening look. \"Oh yes, let's play football,\" I said, showing great enthusiasm (but in fact I was deadly frightened).",
           "output": "⠐⠂⠦⠠⠺⠕⠥⠇⠙ ⠨⠽⠕⠥ ⠇⠊⠅⠑ ⠞⠕ ⠉⠕⠍⠑ ⠁⠝⠙ ⠏⠇⠁⠽ ⠋⠕⠕⠞⠃⠁⠇⠇ ⠺⠊⠞⠓ ⠥⠎⠦⠴ ⠠⠚⠕⠓⠝ ⠁⠎⠅⠑⠙⠂ ⠎⠞⠁⠗⠊⠝⠛ ⠁⠞ ⠍⠑ ⠺⠊⠞⠓ ⠁ ⠞⠓⠗⠑⠁⠞⠑⠝⠊⠝⠛ ⠇⠕⠕⠅⠲ ⠦⠨⠨⠠⠕⠓ ⠽⠑⠎⠂ ⠇⠑⠞⠄⠎ ⠏⠇⠁⠽ ⠋⠕⠕⠞⠃⠁⠇⠇⠂⠴⠨⠄ ⠠⠊ ⠎⠁⠊⠙⠂ ⠎⠓⠕⠺⠊⠝⠛ ⠛⠗⠑⠁⠞ ⠑⠝⠞⠓⠥⠎⠊⠁⠎⠍ ⠶⠃⠥⠞ ⠊⠝ ⠋⠁⠉⠞ ⠠⠊ ⠺⠁⠎ ⠙⠑⠁⠙⠇⠽ ⠋⠗⠊⠛⠓⠞⠑⠝⠑⠙⠶⠲⠐⠂"
         }
@@ -2859,7 +2860,7 @@
       "data": [
         {
           "comment": "Special characters: Example 3",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "[`k'a:kə]",
           "output": "⠰⠶⠦⠂⠘⠅⠤⠁⠒⠅⠢⠰⠶"
         }
@@ -2869,7 +2870,7 @@
       "data": [
         {
           "comment": "Special characters: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "/`ka:ke/",
           "output": "⠸⠶⠦⠂⠘⠅⠁⠒⠅⠑⠸⠶"
         }
@@ -2879,7 +2880,7 @@
       "data": [
         {
           "comment": "Bullet Points: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "I 2007 feires det 100-årsjubileum ifm. Edvard Griegs død i 1907. I en avis sto blant annet følgende fakta om Edvard Grieg:",
           "output": "⠠⠊ ⠼⠃⠚⠚⠛ ⠋⠑⠊⠗⠑⠎ ⠙⠑⠞ ⠼⠁⠚⠚⠡⠗⠎⠚⠥⠃⠊⠇⠑⠥⠍ ⠊⠋⠍⠄ ⠠⠑⠙⠧⠁⠗⠙ ⠠⠛⠗⠊⠑⠛⠎ ⠙⠪⠙ ⠊ ⠼⠁⠊⠚⠛⠄ ⠠⠊ ⠑⠝ ⠁⠧⠊⠎ ⠎⠞⠕ ⠃⠇⠄⠁⠄ ⠋⠪⠇⠛⠑⠝⠙⠑ ⠋⠁⠅⠞⠁ ⠕⠍ ⠠⠑⠙⠧⠁⠗⠙ ⠠⠛⠗⠊⠑⠛⠒"
         }
@@ -2970,7 +2971,7 @@
       "data": [
         {
           "comment": "Bullet Points: Example 11",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "•      Før kunne foreldre og elever søke om fritak fra faget kristendom. Da fikk elevene faget alternativ livssynsundervisning i stedet.",
           "output": "⠶ ⠠⠋⠪⠗ ⠅⠥⠝⠝⠑ ⠋⠕⠗⠑⠇⠙⠗⠑ ⠕⠛ ⠑⠇⠑⠧⠑⠗ ⠎⠪⠅⠑ ⠕⠍ ⠋⠗⠊⠞⠁⠅ ⠋⠗⠁ ⠋⠁⠛⠑⠞ ⠅⠗⠊⠎⠞⠑⠝⠙⠕⠍⠄ ⠠⠙⠁ ⠋⠊⠅⠅ ⠑⠇⠑⠧⠑⠝⠑ ⠋⠁⠛⠑⠞ ⠁⠇⠞⠑⠗⠝⠁⠞⠊⠧ ⠇⠊⠧⠎⠎⠽⠝⠎⠥⠝⠙⠑⠗⠧⠊⠎⠝⠊⠝⠛ ⠊ ⠎⠞⠑⠙⠑⠞⠄"
         }
@@ -2980,7 +2981,7 @@
       "data": [
         {
           "comment": "Bullet Points: Example 12",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "•      I 1997 ble de to fagene slått sammen til ett fag: kristendoms-, religions- og livssynskunnskap (KRL).",
           "output": "⠶ ⠠⠊ ⠼⠁⠊⠊⠛ ⠃⠇⠑ ⠙⠑ ⠞⠕ ⠋⠁⠛⠑⠝⠑ ⠎⠇⠡⠞⠞ ⠎⠁⠍⠍⠑⠝ ⠞⠊⠇ ⠑⠞⠞ ⠋⠁⠛⠒ ⠅⠗⠊⠎⠞⠑⠝⠙⠕⠍⠎⠤⠂ ⠗⠑⠇⠊⠛⠊⠕⠝⠎⠤ ⠕⠛ ⠇⠊⠧⠎⠎⠽⠝⠎⠅⠥⠝⠝⠎⠅⠁⠏ ⠦⠠⠠⠅⠗⠇⠴⠄"
         }
@@ -2990,7 +2991,7 @@
       "data": [
         {
           "comment": "Bullet Points: Example 13",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "•      Det ble gjort mindre endringer i KRL-faget i 2001 og 2005, og det ble enklere å søke om fritak fra aktiviteter i faget.",
           "output": "⠶ ⠠⠙⠑⠞ ⠃⠇⠑ ⠛⠚⠕⠗⠞ ⠍⠊⠝⠙⠗⠑ ⠑⠝⠙⠗⠊⠝⠛⠑⠗ ⠊ ⠠⠠⠅⠗⠇⠤⠋⠁⠛⠑⠞ ⠊ ⠼⠃⠚⠚⠁ ⠕⠛ ⠼⠃⠚⠚⠑⠂ ⠕⠛ ⠙⠑⠞ ⠃⠇⠑ ⠑⠝⠅⠇⠑⠗⠑ ⠡ ⠎⠪⠅⠑ ⠕⠍ ⠋⠗⠊⠞⠁⠅ ⠋⠗⠁ ⠁⠅⠞⠊⠧⠊⠞⠑⠞⠑⠗ ⠊ ⠋⠁⠛⠑⠞⠄"
         }
@@ -3000,7 +3001,7 @@
       "data": [
         {
           "comment": "Footnotes and endnotes: Example 1",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Skolen ble åpnet i den franske hovedstaden i 1784,*",
           "output": "⠠⠎⠅⠕⠇⠑⠝ ⠃⠇⠑ ⠡⠏⠝⠑⠞ ⠊ ⠙⠑⠝ ⠋⠗⠁⠝⠎⠅⠑ ⠓⠕⠧⠑⠙⠎⠞⠁⠙⠑⠝ ⠊ ⠼⠁⠛⠓⠙⠂⠔ "
         }
@@ -3010,7 +3011,7 @@
       "data": [
         {
           "comment": "Footnotes and endnotes: Example 2",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "*Dette var verdens første skole for blinde.",
           "output": "⠔⠙⠑⠞⠞⠑ ⠧⠁⠗ ⠧⠑⠗⠙⠑⠝⠎ ⠋⠪⠗⠎⠞⠑ ⠎⠅⠕⠇⠑ ⠋⠕⠗ ⠃⠇⠊⠝⠙⠑⠄"
         }
@@ -3029,7 +3030,7 @@
       "data": [
         {
           "comment": "Footnotes and endnotes: Example 4",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Året etter1 ble den første spesialskole for blinde barn etablert i Paris.2 Etter hvert som tiden gikk, vokste det fram …",
           "output": "⠠⠡⠗⠑⠞ ⠑⠞⠞⠑⠗⠠⠼⠁ ⠃⠇⠑ ⠙⠑⠝ ⠋⠪⠗⠎⠞⠑ ⠎⠏⠑⠎⠊⠁⠇⠎⠅⠕⠇⠑ ⠋⠕⠗ ⠃⠇⠊⠝⠙⠑ ⠃⠁⠗⠝ ⠑⠞⠁⠃⠇⠑⠗⠞ ⠊ ⠠⠏⠁⠗⠊⠎⠄⠠⠼⠃ ⠠⠑⠞⠞⠑⠗ ⠓⠧⠑⠗⠞ ⠎⠕⠍ ⠞⠊⠙⠑⠝ ⠛⠊⠅⠅⠂ ⠧⠕⠅⠎⠞⠑ ⠙⠑⠞ ⠋⠗⠁⠍ ⠄⠄⠄"
         }
@@ -3039,7 +3040,7 @@
       "data": [
         {
           "comment": "Footnotes and endnotes: Example 5",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "1 1784.",
           "output": "⠠⠼⠁ ⠼⠁⠛⠓⠙⠄"
         }
@@ -3049,7 +3050,7 @@
       "data": [
         {
           "comment": "Footnotes and endnotes: Example 6",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "2 Grunnleggerens navn var Valentin Haüy.",
           "output": "⠠⠼⠃ ⠠⠛⠗⠥⠝⠝⠇⠑⠛⠛⠑⠗⠑⠝⠎ ⠝⠁⠧⠝ ⠧⠁⠗ ⠠⠧⠁⠇⠑⠝⠞⠊⠝ ⠠⠓⠁⠳⠽⠄"
         }
@@ -3059,7 +3060,7 @@
       "data": [
         {
           "comment": "Footnotes and endnotes: Example 7",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "Man viser til en fotnote med et siffer1 som settes opphøyd uten mellomrom inntil det ord eller det uttrykk som noten gjelder: Hun brukte uttrykket \"takle problemet\"2",
           "output": "⠠⠍⠁⠝ ⠧⠊⠎⠑⠗ ⠞⠊⠇ ⠑⠝ ⠋⠕⠞⠝⠕⠞⠑ ⠍⠑⠙ ⠑⠞ ⠎⠊⠋⠋⠑⠗⠠⠼⠁ ⠎⠕⠍ ⠎⠑⠞⠞⠑⠎ ⠕⠏⠏⠓⠪⠽⠙ ⠥⠞⠑⠝ ⠍⠑⠇⠇⠕⠍⠗⠕⠍ ⠊⠝⠝⠞⠊⠇ ⠙⠑⠞ ⠕⠗⠙ ⠑⠇⠇⠑⠗ ⠙⠑⠞ ⠥⠞⠞⠗⠽⠅⠅ ⠎⠕⠍ ⠝⠕⠞⠑⠝ ⠛⠚⠑⠇⠙⠑⠗⠒ ⠆⠠⠓⠥⠝ ⠃⠗⠥⠅⠞⠑ ⠥⠞⠞⠗⠽⠅⠅⠑⠞ ⠲⠞⠁⠅⠇⠑ ⠏⠗⠕⠃⠇⠑⠍⠑⠞⠲⠰⠠⠼⠃"
         }
@@ -3078,7 +3079,7 @@
       "data": [
         {
           "comment": "Footnotes and endnotes: Example 9",
-          "xfail": "Fails because ??",
+          "xfail": false,
           "input": "1 Hvis det er bare én fotnote på siden, forekommer også asterisk (*) som notetegn. I eldre tekster ble også kors brukt. Siffer er å foretrekke.",
           "output": "⠼⠁ ⠠⠓⠧⠊⠎ ⠙⠑⠞ ⠑⠗ ⠃⠁⠗⠑ ⠿⠝ ⠋⠕⠞⠝⠕⠞⠑ ⠏⠡ ⠎⠊⠙⠑⠝⠂ ⠋⠕⠗⠑⠅⠕⠍⠍⠑⠗ ⠕⠛⠎⠡ ⠁⠎⠞⠑⠗⠊⠎⠅ ⠦⠔⠴ ⠎⠕⠍ ⠝⠕⠞⠑⠞⠑⠛⠝⠄ ⠠⠊ ⠑⠇⠙⠗⠑ ⠞⠑⠅⠎⠞⠑⠗ ⠃⠇⠑ ⠕⠛⠎⠡ ⠅⠕⠗⠎ ⠃⠗⠥⠅⠞⠄ ⠠⠎⠊⠋⠋⠑⠗ ⠑⠗ ⠡ ⠕⠗⠑⠞⠗⠑⠅⠅⠑⠄"
         }
@@ -3088,8 +3089,9 @@
       "data": [
         {
           "comment": "Footnotes and endnotes: Example 10",
-          "xfail": "Fails because ??",
-          "input": "2 Fra engelsk tackle a problem.",
+          "xfail": false,
+          "input":    "2 Fra engelsk tackle a problem.",
+          "typeform": "0000000000000011111111111111110",
           "output": "⠼⠃ ⠠⠋⠗⠁ ⠑⠝⠛⠑⠇⠎⠅ ⠆⠞⠁⠉⠅⠇⠑ ⠁ ⠏⠗⠕⠃⠇⠑⠍⠰⠄"
         }
       ]
