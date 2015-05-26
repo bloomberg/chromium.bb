@@ -423,7 +423,7 @@ config("compiler") {
       "-fuse-ld=gold",
 
       # TODO(brettw) common.gypi has this only for target toolset.
-      "-Wl,--icf=safe",
+      "-Wl,--icf=all",
 
       # Experimentation found that using four linking threads
       # saved ~20% of link time.
@@ -520,7 +520,7 @@ config("compiler") {
     if (current_cpu == "arm") {
       ldflags += [
         # Enable identical code folding to reduce size.
-        "-Wl,--icf=safe",
+        "-Wl,--icf=all",
       ]
     }
 
