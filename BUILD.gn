@@ -752,7 +752,7 @@ if (!is_ios) {
     }
 
     if (!is_win && !is_android) {
-      deps += [ "//breakpad:minidump_stackwalk" ]
+      deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]
     }
 
     if (is_mac) {
