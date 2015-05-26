@@ -698,6 +698,7 @@ public:
         CSSKeyframesRuleAnonymousIndexedGetter = 785,
         V8Screen_AvailLeft_AttributeGetter = 786,
         V8Screen_AvailTop_AttributeGetter = 787,
+        ObjectObserve = 788,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
