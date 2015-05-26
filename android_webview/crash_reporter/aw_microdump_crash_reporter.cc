@@ -4,6 +4,7 @@
 
 #include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
 
+#include "android_webview/common/aw_version_info_values.h"
 #include "base/lazy_instance.h"
 #include "build/build_config.h"
 #include "components/crash/app/breakpad_linux.h"
@@ -22,6 +23,11 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
   bool IsRunningUnattended() override { return false; }
   bool GetCollectStatsConsent() override { return false; }
 
+  void GetProductNameAndVersion(const char** product_name,
+                                const char** version) override {
+    *product_name = "WebView";
+    *version = PRODUCT_VERSION;
+  }
   // Microdumps are always enabled in WebView builds, conversely to what happens
   // in the case of the other Chrome for Android builds (where they are enabled
   // only when NO_UNWIND_TABLES == 1).
