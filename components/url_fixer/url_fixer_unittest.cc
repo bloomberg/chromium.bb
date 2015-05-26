@@ -15,7 +15,7 @@
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/url_parse.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 namespace url {
 

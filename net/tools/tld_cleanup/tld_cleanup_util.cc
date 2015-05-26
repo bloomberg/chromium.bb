@@ -9,7 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "url/gurl.h"
-#include "url/url_parse.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 namespace {
 

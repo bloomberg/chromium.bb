@@ -10,11 +10,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 #include "url/url_canon_stdstring.h"
 #include "url/url_constants.h"
 #include "url/url_export.h"
-#include "url/url_parse.h"
 
 class URL_EXPORT GURL {
  public:

@@ -15,7 +15,7 @@
 #include "net/base/escape.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "url/url_parse.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 namespace {
 

@@ -23,7 +23,7 @@
 #include "jni/ProxyChangeListener_jni.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_config.h"
-#include "url/url_parse.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;

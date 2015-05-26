@@ -41,7 +41,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "url/url_parse.h"
+#include "url/third_party/mozilla/url_parse.h"
 #include "url/url_util.h"
 
 bool HistoryQuickProvider::disabled_ = false;

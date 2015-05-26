@@ -27,7 +27,7 @@
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "url/url_parse.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 #define REGISTER_RESPONSE_HANDLER(url, method) \
   request_handlers_.insert(std::make_pair( \

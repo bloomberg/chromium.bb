@@ -13,7 +13,7 @@
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
-#include "url/url_parse.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 class AutocompleteSchemeClassifier;
 

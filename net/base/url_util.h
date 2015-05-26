@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
-#include "url/url_parse.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 class GURL;
 

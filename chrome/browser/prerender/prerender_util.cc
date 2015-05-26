@@ -12,8 +12,8 @@
 #include "content/public/common/resource_type.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
-#include "url/url_parse.h"
 #include "url/url_util.h"
 
 using content::ResourceType;

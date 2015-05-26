@@ -51,7 +51,7 @@
 #include "net/base/net_module.h"
 #include "net/base/net_util.h"
 #include "url/gurl.h"
-#include "url/url_parse.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 namespace net {
 namespace registry_controlled_domains {

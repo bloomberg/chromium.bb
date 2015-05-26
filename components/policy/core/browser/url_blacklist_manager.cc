@@ -19,8 +19,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
+#include "url/third_party/mozilla/url_parse.h"
 #include "url/url_constants.h"
-#include "url/url_parse.h"
 
 using url_matcher::URLMatcher;
 using url_matcher::URLMatcherCondition;

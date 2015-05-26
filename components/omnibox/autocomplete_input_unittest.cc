@@ -12,7 +12,7 @@
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/test_scheme_classifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/url_parse.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 using base::ASCIIToUTF16;
 using metrics::OmniboxEventProto;

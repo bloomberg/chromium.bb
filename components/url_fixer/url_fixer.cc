@@ -18,8 +18,8 @@
 #include "net/base/filename_util.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/third_party/mozilla/url_parse.h"
 #include "url/url_file.h"
-#include "url/url_parse.h"
 #include "url/url_util.h"
 
 const char* url_fixer::home_directory_override = NULL;

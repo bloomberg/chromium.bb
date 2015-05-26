@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 #include "url/url_constants.h"
 #include "url/url_export.h"
-#include "url/url_parse.h"
 
 namespace url {
 

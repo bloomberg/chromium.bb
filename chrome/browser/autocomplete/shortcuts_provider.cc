@@ -33,7 +33,7 @@
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/omnibox/url_prefix.h"
 #include "components/url_fixer/url_fixer.h"
-#include "url/url_parse.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 namespace {
 
