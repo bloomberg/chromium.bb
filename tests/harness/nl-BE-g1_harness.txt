@@ -436,6 +436,51 @@
           "xfail": "Fails because apostrophe and minute sign have different braille notations even though they are represented by the same character in plain text",
           "input": "57° 38' noorderbreedte",
           "output": "⠼⠑⠛⠈⠴ ⠼⠉⠓⠈⠔ ⠝⠕⠕⠗⠙⠑⠗⠃⠗⠑⠑⠙⠞⠑"
+        },
+        {
+          "input":    "Landt je vader op Schiphol?",
+          "typeform": "000040000000000000000000000",
+          "output": "⠨⠇⠁⠝⠙⠸⠞ ⠚⠑ ⠧⠁⠙⠑⠗ ⠕⠏ ⠨⠎⠉⠓⠊⠏⠓⠕⠇⠢"
+        },
+        {
+          "input":    "Amsterdam en Brussel",
+          "typeform": "44444444400004444444",
+          "output": "⠸⠨⠁⠍⠎⠞⠑⠗⠙⠁⠍ ⠑⠝ ⠸⠨⠃⠗⠥⠎⠎⠑⠇"
+        },
+        {
+          "input":    "Heb je Vlucht langs de Anapoer al gelezen?",
+          "typeform": "000000044444444444444444444444000000000000",
+          "output": "⠨⠓⠑⠃ ⠚⠑ ⠸⠸⠨⠧⠇⠥⠉⠓⠞ ⠇⠁⠝⠛⠎ ⠙⠑⠀⠸⠨⠁⠝⠁⠏⠕⠑⠗⠀⠁⠇ ⠛⠑⠇⠑⠵⠑⠝⠢"
+        },
+        {
+          "input":    "'t Is tijd om naar huis te gaan.",
+          "typeform": "44444444444444444444444444444444",
+          "output": "⠸⠸⠄⠞ ⠨⠊⠎ ⠞⠊⠚⠙ ⠕⠍ ⠝⠁⠁⠗ ⠓⠥⠊⠎ ⠞⠑ ⠸⠛⠁⠁⠝⠲"
+        },
+        {
+          "input":    "ZUID-AFRIKA was zijn droom.",
+          "typeform": "4444444444400000000000000000",
+          "output": "⠸⠘⠵⠥⠊⠙⠤⠁⠋⠗⠊⠅⠁ ⠺⠁⠎ ⠵⠊⠚⠝ ⠙⠗⠕⠕⠍⠲"
+        },
+        {
+          "input":    "BTW-tarieven",
+          "typeform": "444400000000",
+          "output": "⠸⠘⠃⠞⠺⠤⠠⠞⠁⠗⠊⠑⠧⠑⠝"
+        },
+        {
+          "input":    "cursief",
+          "typeform": "1111111",
+          "output": "⠸⠉⠥⠗⠎⠊⠑⠋"
+        },
+        {
+          "input":    "onderstreept",
+          "typeform": "222222222222",
+          "output": "⠸⠕⠝⠙⠑⠗⠎⠞⠗⠑⠑⠏⠞"
+        },
+        {
+          "input":    "vetgedrukt",
+          "typeform": "4444444444",
+          "output": "⠸⠧⠑⠞⠛⠑⠙⠗⠥⠅⠞"
         }
       ]
     }
