@@ -416,7 +416,7 @@ void WebPluginContainerImpl::scrollRect(const WebRect& rect)
 void WebPluginContainerImpl::setNeedsLayout()
 {
     if (m_element->layoutObject())
-        m_element->layoutObject()->setNeedsLayout("Plugin needs layout");
+        m_element->layoutObject()->setNeedsLayoutAndFullPaintInvalidation("Plugin needs layout");
 }
 
 void WebPluginContainerImpl::reportGeometry()
