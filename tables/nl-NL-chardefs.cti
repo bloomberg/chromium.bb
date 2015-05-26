@@ -92,11 +92,7 @@ space       \x0020        0                                       SPACE
 punctuation \x0021        235                 !                   EXCLAMATION MARK
 punctuation \x0022        2356                "                   QUOTATION MARK
 sign        \x0024        145                 $                   DOLLAR SIGN
-
-# (!) FIXME: PERCENT SIGN
-# NL puts a space before and after, see §2.18 Procent- en promilleteken [1]
-# should be covered by nl-NL-g1.ctb (endnum); if not please provide a test that shows this change is needed
-sign        \x0025        0-123456-0          %                   PERCENT SIGN
+sign        \x0025        123456          %                   PERCENT SIGN
 sign        \x0026        12346a              &                   AMPERSAND
 punctuation \x0027        3                   '                   APOSTROPHE
 punctuation \x0028        236                 (                   LEFT PARENTHESIS
