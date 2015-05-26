@@ -156,6 +156,7 @@ def write_ninja(path, options):
       'base/files/file_enumerator.cc',
       'base/files/file_path.cc',
       'base/files/file_path_constants.cc',
+      'base/files/file_tracing.cc',
       'base/files/file_util.cc',
       'base/files/scoped_file.cc',
       'base/json/json_parser.cc',
