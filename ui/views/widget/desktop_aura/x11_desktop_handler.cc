@@ -86,8 +86,6 @@ void X11DesktopHandler::ActivateWindow(::Window window) {
     // in an active X window.
   }
 
-  XRaiseWindow(xdisplay_, window);
-
   if (wm_supports_active_window_) {
     DCHECK_EQ(gfx::GetXDisplay(), xdisplay_);
 
@@ -107,9 +105,10 @@ void X11DesktopHandler::ActivateWindow(::Window window) {
                SubstructureRedirectMask | SubstructureNotifyMask,
                &xclient);
   } else {
-    // XRaiseWindow will not give input focus to the window. We now need to ask
-    // the X server to do that. Note that the call will raise an X error if the
-    // window is not mapped.
+    XRaiseWindow(xdisplay_, window);
+    // Directly ask the X server to give focus to the window. Note
+    // that the call will raise an X error if the window is not
+    // mapped.
     XSetInputFocus(xdisplay_, window, RevertToParent, CurrentTime);
 
     OnActiveWindowChanged(window, ACTIVE);
