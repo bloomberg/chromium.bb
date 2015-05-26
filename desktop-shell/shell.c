@@ -5353,9 +5353,12 @@ do_shell_fade_startup(void *data)
 {
 	struct desktop_shell *shell = data;
 
-	if (shell->startup_animation_type == ANIMATION_FADE)
+	if (shell->startup_animation_type == ANIMATION_FADE) {
 		shell_fade(shell, FADE_IN);
-	else if (shell->startup_animation_type == ANIMATION_NONE) {
+	} else {
+		weston_log("desktop shell: "
+			   "unexpected fade-in animation type %d\n",
+			   shell->startup_animation_type);
 		weston_surface_destroy(shell->fade.view->surface);
 		shell->fade.view = NULL;
 	}
@@ -5400,6 +5403,9 @@ shell_fade_init(struct desktop_shell *shell)
 			   __func__);
 		return;
 	}
+
+	if (shell->startup_animation_type == ANIMATION_NONE)
+		return;
 
 	shell->fade.view = shell_fade_create_surface(shell);
 	if (!shell->fade.view)
