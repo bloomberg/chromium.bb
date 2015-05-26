@@ -803,7 +803,7 @@ std::wstring GetLogFileFullPath() {
 }
 #endif
 
-void LogErrorNotReached(const char* file, int line) {
+BASE_EXPORT void LogErrorNotReached(const char* file, int line) {
   LogMessage(file, line, LOG_ERROR).stream()
       << "NOTREACHED() hit.";
 }
