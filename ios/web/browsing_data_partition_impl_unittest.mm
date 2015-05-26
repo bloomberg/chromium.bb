@@ -5,6 +5,7 @@
 #import "ios/web/browsing_data_partition_impl.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -15,6 +16,23 @@ namespace web {
 namespace {
 
 class BrowsingDataPartitionImplTest : public PlatformTest {
+ protected:
+  void SetUp() override {
+    PlatformTest::SetUp();
+    browser_state_.reset(new TestBrowserState());
+    BrowserState::GetActiveStateManager(browser_state_.get())->SetActive(true);
+  }
+  void TearDown() override {
+    // The BrowserState needs to be destroyed first so that it is outlived by
+    // the WebThreadBundle.
+    BrowserState::GetActiveStateManager(browser_state_.get())->SetActive(false);
+    browser_state_.reset();
+    PlatformTest::TearDown();
+  }
+
+  // The BrowserState used for testing purposes.
+  scoped_ptr<BrowserState> browser_state_;
+
  private:
   // Used to create TestWebThreads.
   TestWebThreadBundle thread_bundle_;
@@ -25,10 +43,8 @@ class BrowsingDataPartitionImplTest : public PlatformTest {
 // Tests that a BrowsingDataPartitionImplTest is succesfully created with a
 // BrowserState. And that it returns a non-nil BrowsingDataStore.
 TEST_F(BrowsingDataPartitionImplTest, CreationAndBrowsingDataStore) {
-  scoped_ptr<BrowserState> browser_state(new TestBrowserState());
-
   BrowsingDataPartition* browsing_data_partition =
-      BrowserState::GetBrowsingDataPartition(browser_state.get());
+      BrowserState::GetBrowsingDataPartition(browser_state_.get());
   ASSERT_TRUE(browsing_data_partition);
 
   EXPECT_TRUE(browsing_data_partition->GetBrowsingDataStore());

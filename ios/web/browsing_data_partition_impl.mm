@@ -11,15 +11,6 @@
 
 namespace web {
 
-// static
-BrowsingDataPartition* BrowsingDataPartition::Create(
-    BrowserState* browser_state) {
-  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
-  DCHECK(browser_state);
-
-  return new BrowsingDataPartitionImpl(browser_state);
-}
-
 BrowsingDataPartitionImpl::BrowsingDataPartitionImpl(
     BrowserState* browser_state)
     : browser_state_(browser_state) {

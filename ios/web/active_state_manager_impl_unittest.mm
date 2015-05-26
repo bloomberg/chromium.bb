@@ -23,8 +23,8 @@ class ActiveStateManagerImplTest : public PlatformTest {
     browser_state_.reset(new TestBrowserState());
   }
   void TearDown() override {
-    // The BrowserState needs to be destroyed first so that it outlives the
-    // WebThreadBundle.
+    // The BrowserState needs to be destroyed first so that it is outlived by
+    // the WebThreadBundle.
     if (browser_state_) {
       BrowserState::GetActiveStateManager(browser_state_.get())
           ->SetActive(false);

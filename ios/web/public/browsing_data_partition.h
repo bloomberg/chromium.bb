@@ -24,11 +24,6 @@ class BrowsingDataPartition {
   // Returns the underlying CRWBrowsingDataStore.
   virtual CRWBrowsingDataStore* GetBrowsingDataStore() = 0;
 
-  // Creates a BrowsingDataParition with the given |browser_state|.
-  // Caller is responsible for destroying the BrowsingDataPartition.
-  // |browser_state| cannot be a nullptr.
-  static BrowsingDataPartition* Create(BrowserState* browser_state);
-
  protected:
   virtual ~BrowsingDataPartition(){};
 };
