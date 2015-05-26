@@ -119,6 +119,9 @@ std::string DeriveCommandLine(const GURL& start_url,
     ::switches::kEnableViewport,
     ::switches::kEnableViewportMeta,
     ::switches::kEnableZeroCopy,
+#if defined(USE_OZONE)
+    ::switches::kExtraTouchNoiseFiltering,
+#endif
     ::switches::kMainFrameResizesAreOrientationChanges,
     ::switches::kForceDeviceScaleFactor,
     ::switches::kForceGpuRasterization,
