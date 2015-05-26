@@ -586,9 +586,7 @@ void build_output_lut(struct curveType *trc,
 
 }
 
-const unsigned short* half_float_base_table()
-{
-    static const unsigned short half_float_base_table_data[512] = {
+const unsigned short qcms_half_float_base_table[512] = {
         0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,
         0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,
         0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,
@@ -621,14 +619,9 @@ const unsigned short* half_float_base_table()
         64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,
         64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,
         64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512,  64512
-    };
+};
 
-    return half_float_base_table_data;
-}
-
-const unsigned char* half_float_shift_table()
-{
-    static const unsigned char half_float_shift_table_data[512] = {
+const unsigned char qcms_half_float_shift_table[512] = {
         24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,
         24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,
         24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,
@@ -661,7 +654,4 @@ const unsigned char* half_float_shift_table()
         24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,
         24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,
         24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     24,     13
-    };
-
-    return half_float_shift_table_data;
-}
+};

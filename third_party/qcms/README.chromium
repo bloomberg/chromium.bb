@@ -69,6 +69,8 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=471749
  - Add float to half float conversion routine
    - https://code.google.com/p/chromium/issues/detail?id=491784
+ - Use half float conversion tables (not functions)
+   - https://code.google.com/p/chromium/issues/detail?id=491784
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
