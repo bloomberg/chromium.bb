@@ -29,6 +29,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::DisplayConnectionType,
 
 IPC_ENUM_TRAITS_MAX_VALUE(ui::HDCPState, ui::HDCP_STATE_LAST)
 
+// clang-format off
+
 IPC_STRUCT_TRAITS_BEGIN(ui::DisplayMode_Params)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(is_interlaced)
@@ -57,6 +59,8 @@ IPC_STRUCT_TRAITS_BEGIN(ui::GammaRampRGBEntry)
   IPC_STRUCT_TRAITS_MEMBER(g)
   IPC_STRUCT_TRAITS_MEMBER(b)
 IPC_STRUCT_TRAITS_END()
+
+// clang-format on
 
 //------------------------------------------------------------------------------
 // GPU Messages
