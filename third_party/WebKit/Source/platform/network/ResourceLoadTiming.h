@@ -49,9 +49,7 @@ public:
         timing->m_dnsEnd = m_dnsEnd;
         timing->m_connectStart = m_connectStart;
         timing->m_connectEnd = m_connectEnd;
-        timing->m_serviceWorkerFetchStart = m_serviceWorkerFetchStart;
-        timing->m_serviceWorkerFetchReady = m_serviceWorkerFetchReady;
-        timing->m_serviceWorkerFetchEnd = m_serviceWorkerFetchEnd;
+        timing->m_workerStart = m_workerStart;
         timing->m_sendStart = m_sendStart;
         timing->m_sendEnd = m_sendEnd;
         timing->m_receiveHeadersEnd = m_receiveHeadersEnd;
@@ -69,9 +67,7 @@ public:
             && m_dnsEnd == other.m_dnsEnd
             && m_connectStart == other.m_connectStart
             && m_connectEnd == other.m_connectEnd
-            && m_serviceWorkerFetchStart == other.m_serviceWorkerFetchStart
-            && m_serviceWorkerFetchReady == other.m_serviceWorkerFetchReady
-            && m_serviceWorkerFetchEnd == other.m_serviceWorkerFetchEnd
+            && m_workerStart == other.m_workerStart
             && m_sendStart == other.m_sendStart
             && m_sendEnd == other.m_sendEnd
             && m_receiveHeadersEnd == other.m_receiveHeadersEnd
@@ -91,9 +87,7 @@ public:
     void setDnsEnd(double dnsEnd) { m_dnsEnd = dnsEnd; }
     void setConnectStart(double connectStart) { m_connectStart = connectStart; }
     void setConnectEnd(double connectEnd) { m_connectEnd = connectEnd; }
-    void setServiceWorkerFetchStart(double serviceWorkerFetchStart) { m_serviceWorkerFetchStart = serviceWorkerFetchStart; }
-    void setServiceWorkerFetchReady(double serviceWorkerFetchReady) { m_serviceWorkerFetchReady = serviceWorkerFetchReady; }
-    void setServiceWorkerFetchEnd(double serviceWorkerFetchEnd) { m_serviceWorkerFetchEnd = serviceWorkerFetchEnd; }
+    void setWorkerStart(double workerStart) { m_workerStart = workerStart; }
     void setSendStart(double sendStart) { m_sendStart = sendStart; }
     void setSendEnd(double sendEnd) { m_sendEnd = sendEnd; }
     void setReceiveHeadersEnd(double receiveHeadersEnd) { m_receiveHeadersEnd = receiveHeadersEnd; }
@@ -107,9 +101,7 @@ public:
     double dnsEnd() const { return m_dnsEnd; }
     double connectStart() const { return m_connectStart; }
     double connectEnd() const { return m_connectEnd; }
-    double serviceWorkerFetchStart() const { return m_serviceWorkerFetchStart; }
-    double serviceWorkerFetchReady() const { return m_serviceWorkerFetchReady; }
-    double serviceWorkerFetchEnd() const { return m_serviceWorkerFetchEnd; }
+    double workerStart() const { return m_workerStart; }
     double sendStart() const { return m_sendStart; }
     double sendEnd() const { return m_sendEnd; }
     double receiveHeadersEnd() const { return m_receiveHeadersEnd; }
@@ -127,9 +119,7 @@ private:
         , m_dnsEnd(0)
         , m_connectStart(0)
         , m_connectEnd(0)
-        , m_serviceWorkerFetchStart(0)
-        , m_serviceWorkerFetchReady(0)
-        , m_serviceWorkerFetchEnd(0)
+        , m_workerStart(0)
         , m_sendStart(0)
         , m_sendEnd(0)
         , m_receiveHeadersEnd(0)
@@ -152,9 +142,7 @@ private:
     double m_dnsEnd;
     double m_connectStart;
     double m_connectEnd;
-    double m_serviceWorkerFetchStart;
-    double m_serviceWorkerFetchReady;
-    double m_serviceWorkerFetchEnd;
+    double m_workerStart;
     double m_sendStart;
     double m_sendEnd;
     double m_receiveHeadersEnd;
