@@ -184,16 +184,19 @@ capture_screenshot_of_output(struct client *client) {
 }
 
 static void
-draw_stuff(char *pixels, int w, int h)
+draw_stuff(void *pixels, int w, int h)
 {
 	int x, y;
+	uint8_t r, g, b;
+	uint32_t *pixel;
 
 	for (x = 0; x < w; x++)
 		for (y = 0; y < h; y++) {
-			pixels[y * w * 4 + x * 4] = x;
-			pixels[y * w * 4 + x * 4 + 1] = x + y;
-			pixels[y * w * 4 + x * 4 + 2] = y;
-			pixels[y * w * 4 + x * 4 + 3] = 255;
+			b = x;
+			g = x + y;
+			r = y;
+			pixel = (uint32_t *)pixels + y * w + x;
+			*pixel = (255 << 24) | (r << 16) | (g << 8) | b;
 		}
 }
 
