@@ -96,7 +96,6 @@ component("gfx") {
     "font_render_params_linux.cc",
     "font_render_params_mac.cc",
     "font_render_params_win.cc",
-    "frame_time.h",
     "gdi_util.cc",
     "gdi_util.h",
     "gfx_paths.cc",

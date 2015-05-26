@@ -61,7 +61,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -1234,7 +1233,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
 
       // Since we might use a low-resolution clock on Windows, we need to
       // make sure that the clock has incremented past first_frame_time_.
-      while (first_frame_time_ == gfx::FrameTime::Now()) {
+      while (first_frame_time_ == base::TimeTicks::Now()) {
       }
 
       return;
@@ -5879,14 +5878,14 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     scoped_ptr<SwapPromise> swap_promise0(
         new TestSwapPromise(&swap_promise_result_[0]));
     layer_tree_host()->QueueSwapPromise(swap_promise0.Pass());
-    layer_tree_host()->Composite(gfx::FrameTime::Now());
+    layer_tree_host()->Composite(base::TimeTicks::Now());
 
     // Fail to swap (no damage).
     scoped_ptr<SwapPromise> swap_promise1(
         new TestSwapPromise(&swap_promise_result_[1]));
     layer_tree_host()->QueueSwapPromise(swap_promise1.Pass());
     layer_tree_host()->SetNeedsCommit();
-    layer_tree_host()->Composite(gfx::FrameTime::Now());
+    layer_tree_host()->Composite(base::TimeTicks::Now());
 
     // Fail to draw (not visible).
     scoped_ptr<SwapPromise> swap_promise2(
@@ -5894,7 +5893,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     layer_tree_host()->QueueSwapPromise(swap_promise2.Pass());
     layer_tree_host()->SetNeedsDisplayOnAllLayers();
     layer_tree_host()->SetVisible(false);
-    layer_tree_host()->Composite(gfx::FrameTime::Now());
+    layer_tree_host()->Composite(base::TimeTicks::Now());
 
     EndTest();
   }

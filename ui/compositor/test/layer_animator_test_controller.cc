@@ -5,7 +5,6 @@
 #include "cc/animation/animation.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
@@ -50,7 +49,7 @@ void LayerAnimatorTestController::StartThreadedAnimationsIfNeeded() {
 
     animator_->OnThreadedAnimationStarted(cc::AnimationEvent(
         cc::AnimationEvent::STARTED, 0, element->animation_group_id(),
-        threaded_properties[i], gfx::FrameTime::Now()));
+        threaded_properties[i], base::TimeTicks::Now()));
   }
 }
 

@@ -15,7 +15,6 @@
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/scheduler/delay_based_time_source.h"
-#include "ui/gfx/frame_time.h"
 
 namespace cc {
 
@@ -121,7 +120,7 @@ Scheduler::~Scheduler() {
 }
 
 base::TimeTicks Scheduler::Now() const {
-  base::TimeTicks now = gfx::FrameTime::Now();
+  base::TimeTicks now = base::TimeTicks::Now();
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.now"),
                "Scheduler::Now",
                "now",

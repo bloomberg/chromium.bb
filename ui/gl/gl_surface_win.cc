@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -89,10 +88,10 @@ class WinVSyncProvider : public VSyncProvider {
               timing_info.rateRefresh.uiNumerator);
         }
 
-        if (gfx::FrameTime::TimestampsAreHighRes()) {
+        if (base::TimeTicks::IsHighResolution()) {
           // qpcRefreshPeriod is very accurate but noisy, and must be used with
           // a high resolution timebase to avoid frequently missing Vsync.
-          timebase = gfx::FrameTime::FromQPCValue(
+          timebase = base::TimeTicks::FromQPCValue(
               static_cast<LONGLONG>(timing_info.qpcVBlank));
           interval = base::TimeDelta::FromQPCValue(
               static_cast<LONGLONG>(timing_info.qpcRefreshPeriod));

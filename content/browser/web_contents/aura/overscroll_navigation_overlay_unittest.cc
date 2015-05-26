@@ -23,7 +23,6 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/frame_time.h"
 
 namespace content {
 

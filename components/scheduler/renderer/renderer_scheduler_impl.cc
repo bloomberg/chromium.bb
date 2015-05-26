@@ -11,7 +11,6 @@
 #include "cc/output/begin_frame_args.h"
 #include "components/scheduler/child/nestable_single_thread_task_runner.h"
 #include "components/scheduler/child/prioritizing_task_queue_selector.h"
-#include "ui/gfx/frame_time.h"
 
 namespace scheduler {
 

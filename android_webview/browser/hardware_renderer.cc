@@ -25,7 +25,6 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -197,7 +196,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
     base::AutoReset<bool> frame_resetter(&viewport_clip_valid_for_dcheck_,
                                          true);
     layer_tree_host_->SetNeedsRedrawRect(clip_);
-    layer_tree_host_->Composite(gfx::FrameTime::Now());
+    layer_tree_host_->Composite(base::TimeTicks::Now());
   }
   gl_surface_->ResetBackingFrameBufferObject();
 }

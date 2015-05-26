@@ -8,7 +8,6 @@
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_registry.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/gfx/frame_time.h"
 
 namespace content {
 

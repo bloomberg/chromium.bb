@@ -31,7 +31,6 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator_collection.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_switches.h"
 
@@ -390,7 +389,7 @@ void Compositor::DidCompleteSwapBuffers() {
 }
 
 void Compositor::DidPostSwapBuffers() {
-  base::TimeTicks start_time = gfx::FrameTime::Now();
+  base::TimeTicks start_time = base::TimeTicks::Now();
   FOR_EACH_OBSERVER(CompositorObserver, observer_list_,
                     OnCompositingStarted(this, start_time));
 }

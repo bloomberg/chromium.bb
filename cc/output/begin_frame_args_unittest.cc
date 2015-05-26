@@ -8,7 +8,6 @@
 #include "cc/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/frame_time.h"
 
 namespace cc {
 namespace {
@@ -33,7 +32,7 @@ TEST(BeginFrameArgsTest, Helpers) {
   BeginFrameArgs args3 =
       CreateExpiredBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
   EXPECT_TRUE(args3.IsValid()) << args3;
-  EXPECT_GT(gfx::FrameTime::Now(), args3.deadline);
+  EXPECT_GT(base::TimeTicks::Now(), args3.deadline);
   EXPECT_EQ(BeginFrameArgs::NORMAL, args3.type);
 
   BeginFrameArgs args4 = CreateBeginFrameArgsForTesting(

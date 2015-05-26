@@ -34,7 +34,6 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace cc {
@@ -786,7 +785,7 @@ void LayerTreeTest::DispatchSetNextCommitForcesRedraw() {
 void LayerTreeTest::DispatchCompositeImmediately() {
   DCHECK(!proxy() || proxy()->IsMainThread());
   if (layer_tree_host_)
-    layer_tree_host_->Composite(gfx::FrameTime::Now());
+    layer_tree_host_->Composite(base::TimeTicks::Now());
 }
 
 void LayerTreeTest::RunTest(bool threaded,

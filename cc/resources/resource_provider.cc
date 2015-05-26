@@ -27,7 +27,6 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrTextureProvider.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -838,8 +837,9 @@ base::TimeTicks ResourceProvider::EstimatedUploadCompletionTime(
   // Software resource uploads happen on impl thread, so don't bother batching
   // them up and trying to wait for them to complete.
   if (!texture_uploader_) {
-    return gfx::FrameTime::Now() + base::TimeDelta::FromMicroseconds(
-        base::Time::kMicrosecondsPerSecond * kSoftwareUploadTickRate);
+    return base::TimeTicks::Now() +
+           base::TimeDelta::FromMicroseconds(
+               base::Time::kMicrosecondsPerSecond * kSoftwareUploadTickRate);
   }
 
   base::TimeDelta upload_one_texture_time =
@@ -848,7 +848,7 @@ base::TimeTicks ResourceProvider::EstimatedUploadCompletionTime(
       uploads_per_tick;
 
   size_t total_uploads = NumBlockingUploads() + uploads_per_tick;
-  return gfx::FrameTime::Now() + upload_one_texture_time * total_uploads;
+  return base::TimeTicks::Now() + upload_one_texture_time * total_uploads;
 }
 
 ResourceProvider::Resource* ResourceProvider::InsertResource(

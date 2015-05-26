@@ -25,7 +25,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkLumaColorFilter.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace content {
@@ -245,7 +244,7 @@ void DelegatedFrameHost::DidReceiveFrameFromRenderer(
   if (!frame_subscriber() || !CanCopyToVideoFrame())
     return;
 
-  const base::TimeTicks now = gfx::FrameTime::Now();
+  const base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks present_time;
   if (vsync_timebase_.is_null() || vsync_interval_ <= base::TimeDelta()) {
     present_time = now;

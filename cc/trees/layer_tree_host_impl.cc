@@ -76,7 +76,6 @@
 #include "cc/trees/tree_synchronizer.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -1715,7 +1714,7 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
   current_begin_frame_args_ = args;
   // TODO(mithro): Stop overriding the frame time once the usage of frame
   // timing is unified.
-  current_begin_frame_args_.frame_time = gfx::FrameTime::Now();
+  current_begin_frame_args_.frame_time = base::TimeTicks::Now();
 
   // Cache the begin impl frame interval
   begin_impl_frame_interval_ = args.interval;
@@ -3201,7 +3200,7 @@ BeginFrameArgs LayerTreeHostImpl::CurrentBeginFrameArgs() const {
   if (current_begin_frame_args_.IsValid())
     return current_begin_frame_args_;
   return BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, gfx::FrameTime::Now(), base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, base::TimeTicks::Now(), base::TimeTicks(),
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
 }
 

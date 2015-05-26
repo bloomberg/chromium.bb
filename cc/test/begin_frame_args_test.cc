@@ -6,13 +6,12 @@
 
 #include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
-#include "ui/gfx/frame_time.h"
 
 namespace cc {
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location) {
-  return CreateBeginFrameArgsForTesting(location, gfx::FrameTime::Now());
+  return CreateBeginFrameArgsForTesting(location, base::TimeTicks::Now());
 }
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
@@ -49,7 +48,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
 
 BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location) {
-  base::TimeTicks now = gfx::FrameTime::Now();
+  base::TimeTicks now = base::TimeTicks::Now();
   return BeginFrameArgs::Create(
       location, now, now - BeginFrameArgs::DefaultInterval(),
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);

@@ -12,7 +12,6 @@
 #include "cc/input/top_controls_manager_client.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform.h"
 
@@ -190,7 +189,7 @@ void TopControlsManager::SetupAnimation(AnimationDirection direction) {
   }
 
   top_controls_animation_ = KeyframedFloatAnimationCurve::Create();
-  base::TimeDelta start_time = gfx::FrameTime::Now() - base::TimeTicks();
+  base::TimeDelta start_time = base::TimeTicks::Now() - base::TimeTicks();
   top_controls_animation_->AddKeyframe(
       FloatKeyframe::Create(start_time, TopControlsShownRatio(), nullptr));
   float max_ending_ratio = (direction == SHOWING_CONTROLS ? 1 : -1);

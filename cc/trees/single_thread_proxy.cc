@@ -19,7 +19,6 @@
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
-#include "ui/gfx/frame_time.h"
 
 namespace cc {
 

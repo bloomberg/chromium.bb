@@ -60,7 +60,6 @@
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/device_display_info.h"
-#include "ui/gfx/frame_time.h"
 
 namespace content {
 
@@ -335,7 +334,7 @@ void CompositorImpl::Composite(CompositingTrigger trigger) {
   // we are about to draw.
   ignore_schedule_composite_ = true;
 
-  const base::TimeTicks frame_time = gfx::FrameTime::Now();
+  const base::TimeTicks frame_time = base::TimeTicks::Now();
   if (needs_animate_) {
     needs_animate_ = false;
     root_window_->Animate(frame_time);

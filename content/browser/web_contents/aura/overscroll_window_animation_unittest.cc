@@ -10,7 +10,6 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
-#include "ui/gfx/frame_time.h"
 
 namespace content {
 
@@ -204,7 +203,7 @@ TEST_F(OverscrollWindowAnimationTest, NewOverscrollCompletesPreviousGesture) {
 
   base::TimeDelta duration = settings.GetTransitionDuration();
   test_controller.StartThreadedAnimationsIfNeeded();
-  base::TimeTicks start_time = gfx::FrameTime::Now();
+  base::TimeTicks start_time = base::TimeTicks::Now();
 
   // Halfway through the animation, OverscrollCompleting should have been fired.
   animator->Step(start_time + duration / 2);

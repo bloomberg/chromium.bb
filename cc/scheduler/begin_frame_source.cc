@@ -12,7 +12,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/scheduler.h"
-#include "ui/gfx/frame_time.h"
 
 #ifdef NDEBUG
 #define DEBUG_FRAMES(...)
@@ -159,7 +158,7 @@ BackToBackBeginFrameSource::~BackToBackBeginFrameSource() {
 }
 
 base::TimeTicks BackToBackBeginFrameSource::Now() {
-  return gfx::FrameTime::Now();
+  return base::TimeTicks::Now();
 }
 
 void BackToBackBeginFrameSource::OnNeedsBeginFramesChange(
@@ -211,7 +210,7 @@ scoped_ptr<SyntheticBeginFrameSource> SyntheticBeginFrameSource::Create(
     base::TimeTicks initial_vsync_timebase,
     base::TimeDelta initial_vsync_interval) {
   scoped_refptr<DelayBasedTimeSource> time_source;
-  if (gfx::FrameTime::TimestampsAreHighRes()) {
+  if (base::TimeTicks::IsHighResolution()) {
     time_source = DelayBasedTimeSourceHighRes::Create(initial_vsync_interval,
                                                       task_runner);
   } else {

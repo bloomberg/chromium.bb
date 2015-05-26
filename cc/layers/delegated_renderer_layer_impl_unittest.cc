@@ -24,7 +24,6 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

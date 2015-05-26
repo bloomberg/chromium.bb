@@ -9,7 +9,6 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_provider.h"
-#include "ui/gfx/frame_time.h"
 
 namespace {
 

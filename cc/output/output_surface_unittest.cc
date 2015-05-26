@@ -15,7 +15,6 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/frame_time.h"
 
 namespace cc {
 namespace {

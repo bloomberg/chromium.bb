@@ -9,12 +9,11 @@
 #include "base/time/time.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
-#include "ui/gfx/frame_time.h"
 
 namespace ui {
 
 LayerAnimatorCollection::LayerAnimatorCollection(Compositor* compositor)
-    : compositor_(compositor), last_tick_time_(gfx::FrameTime::Now()) {
+    : compositor_(compositor), last_tick_time_(base::TimeTicks::Now()) {
 }
 
 LayerAnimatorCollection::~LayerAnimatorCollection() {
@@ -26,7 +25,7 @@ void LayerAnimatorCollection::StartAnimator(
     scoped_refptr<LayerAnimator> animator) {
   DCHECK_EQ(0U, animators_.count(animator));
   if (!animators_.size())
-    last_tick_time_ = gfx::FrameTime::Now();
+    last_tick_time_ = base::TimeTicks::Now();
   animators_.insert(animator);
   if (animators_.size() == 1U && compositor_)
     compositor_->AddAnimationObserver(this);

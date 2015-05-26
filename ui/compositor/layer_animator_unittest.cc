@@ -23,7 +23,6 @@
 #include "ui/compositor/test/test_layer_animation_delegate.h"
 #include "ui/compositor/test/test_layer_animation_observer.h"
 #include "ui/compositor/test/test_utils.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -194,7 +193,7 @@ TEST(LayerAnimatorTest, ImplicitAnimation) {
   animator->set_disable_timer_for_test(true);
   TestLayerAnimationDelegate delegate;
   animator->SetDelegate(&delegate);
-  base::TimeTicks now = gfx::FrameTime::Now();
+  base::TimeTicks now = base::TimeTicks::Now();
   animator->SetBrightness(0.5);
   EXPECT_TRUE(animator->is_animating());
   animator->Step(now + base::TimeDelta::FromSeconds(1));
@@ -1042,7 +1041,7 @@ TEST(LayerAnimatorTest, StartTogetherSetsLastStepTime) {
   // miniscule (fractions of a millisecond). If set correctly, then the delta
   // should be enormous. Arbitrarily choosing 1 minute as the threshold,
   // though a much smaller value would probably have sufficed.
-  delta = gfx::FrameTime::Now() - animator->last_step_time();
+  delta = base::TimeTicks::Now() - animator->last_step_time();
   EXPECT_GT(60.0, delta.InSecondsF());
 }
 
@@ -1642,7 +1641,7 @@ TEST(LayerAnimatorTest, AnimatorKeptAliveBySettings) {
     // ScopedLayerAnimationSettings should keep the Animator alive as long as
     // it is alive, even beyond the end of the animation.
     ScopedLayerAnimationSettings settings(animator);
-    base::TimeTicks now = gfx::FrameTime::Now();
+    base::TimeTicks now = base::TimeTicks::Now();
     animator->SetBrightness(0.5);
     animator->Step(now + base::TimeDelta::FromSeconds(1));
     EXPECT_FALSE(destruction_observer.IsAnimatorDeleted());

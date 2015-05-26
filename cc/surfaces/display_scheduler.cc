@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/output_surface.h"
-#include "ui/gfx/frame_time.h"
 
 namespace cc {
 
@@ -115,7 +114,7 @@ void DisplayScheduler::DrawAndSwap() {
 }
 
 bool DisplayScheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
-  base::TimeTicks now = gfx::FrameTime::Now();
+  base::TimeTicks now = base::TimeTicks::Now();
   TRACE_EVENT2("cc", "DisplayScheduler::BeginFrame", "args", args.AsValue(),
                "now", now);
 
@@ -234,7 +233,7 @@ void DisplayScheduler::ScheduleBeginFrameDeadline() {
   begin_frame_deadline_task_.Reset(begin_frame_deadline_closure_);
 
   base::TimeDelta delta =
-      std::max(base::TimeDelta(), desired_deadline - gfx::FrameTime::Now());
+      std::max(base::TimeDelta(), desired_deadline - base::TimeTicks::Now());
   task_runner_->PostDelayedTask(FROM_HERE,
                                 begin_frame_deadline_task_.callback(), delta);
   TRACE_EVENT2("cc", "Using new deadline", "delta", delta.ToInternalValue(),

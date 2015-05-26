@@ -28,7 +28,6 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "ui/gfx/frame_time.h"
 
 namespace cc {
 

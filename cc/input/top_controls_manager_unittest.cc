@@ -18,7 +18,6 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
@@ -159,7 +158,7 @@ TEST(TopControlsManagerTest, PartialShownHideAnimation) {
 
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = gfx::FrameTime::Now();
+  base::TimeTicks time = base::TimeTicks::Now();
   float previous;
   while (manager->animation()) {
     previous = manager->TopControlsShownRatio();
@@ -189,7 +188,7 @@ TEST(TopControlsManagerTest, PartialShownShowAnimation) {
 
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = gfx::FrameTime::Now();
+  base::TimeTicks time = base::TimeTicks::Now();
   float previous;
   while (manager->animation()) {
     previous = manager->TopControlsShownRatio();
@@ -215,7 +214,7 @@ TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdShows) {
   manager->ScrollEnd();
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = gfx::FrameTime::Now();
+  base::TimeTicks time = base::TimeTicks::Now();
   float previous;
   while (manager->animation()) {
     previous = manager->TopControlsShownRatio();
@@ -241,7 +240,7 @@ TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdHides) {
   manager->ScrollEnd();
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = gfx::FrameTime::Now();
+  base::TimeTicks time = base::TimeTicks::Now();
   float previous;
   while (manager->animation()) {
     previous = manager->TopControlsShownRatio();
@@ -271,7 +270,7 @@ TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdHides) {
   manager->ScrollEnd();
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = gfx::FrameTime::Now();
+  base::TimeTicks time = base::TimeTicks::Now();
   float previous;
   while (manager->animation()) {
     previous = manager->TopControlsShownRatio();
@@ -301,7 +300,7 @@ TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdShows) {
   manager->ScrollEnd();
   EXPECT_TRUE(manager->animation());
 
-  base::TimeTicks time = gfx::FrameTime::Now();
+  base::TimeTicks time = base::TimeTicks::Now();
   float previous;
   while (manager->animation()) {
     previous = manager->TopControlsShownRatio();

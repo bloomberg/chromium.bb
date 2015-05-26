@@ -43,7 +43,6 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSelection.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
 
@@ -753,7 +752,7 @@ void RenderWidgetCompositor::ScheduleCommit() {
 
 void RenderWidgetCompositor::SynchronousCommit() {
   DCHECK(CommitIsSynchronous());
-  layer_tree_host_->Composite(gfx::FrameTime::Now());
+  layer_tree_host_->Composite(base::TimeTicks::Now());
 }
 
 void RenderWidgetCompositor::finishAllRendering() {

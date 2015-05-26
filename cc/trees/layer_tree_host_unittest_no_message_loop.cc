@@ -21,7 +21,6 @@
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/frame_time.h"
 
 namespace cc {
 namespace {
@@ -117,7 +116,7 @@ class LayerTreeHostNoMessageLoopTest
   void Composite() {
     did_commit_ = false;
     did_commit_and_draw_frame_ = false;
-    layer_tree_host_->Composite(gfx::FrameTime::Now());
+    layer_tree_host_->Composite(base::TimeTicks::Now());
     EXPECT_TRUE(did_initialize_output_surface_);
     EXPECT_TRUE(did_commit_);
     EXPECT_TRUE(did_commit_and_draw_frame_);

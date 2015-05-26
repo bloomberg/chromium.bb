@@ -171,7 +171,6 @@
         'font_render_params_linux.cc',
         'font_render_params_mac.cc',
         'font_render_params_win.cc',
-        'frame_time.h',
         'gfx_export.h',
         'gfx_paths.cc',
         'gfx_paths.h',

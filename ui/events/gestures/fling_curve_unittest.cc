@@ -5,13 +5,12 @@
 #include "ui/events/gestures/fling_curve.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/frame_time.h"
 
 namespace ui {
 
 TEST(FlingCurveTest, Basic) {
   const gfx::Vector2dF velocity(0, 5000);
-  base::TimeTicks now = gfx::FrameTime::Now();
+  base::TimeTicks now = base::TimeTicks::Now();
   FlingCurve curve(velocity, now);
 
   gfx::Vector2dF delta;

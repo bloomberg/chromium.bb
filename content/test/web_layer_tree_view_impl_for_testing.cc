@@ -22,7 +22,6 @@
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "ui/gfx/frame_time.h"
 
 using blink::WebColor;
 using blink::WebGraphicsContext3D;

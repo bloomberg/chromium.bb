@@ -27,8 +27,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
-#include "ui/gfx/frame_time.h"
-
 namespace cc {
 namespace {
 

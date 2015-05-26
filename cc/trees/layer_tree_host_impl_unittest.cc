@@ -65,7 +65,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -1718,7 +1717,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
 
     SetupLayers(settings);
 
-    base::TimeTicks fake_now = gfx::FrameTime::Now();
+    base::TimeTicks fake_now = base::TimeTicks::Now();
 
     EXPECT_FALSE(did_request_animate_);
     EXPECT_FALSE(did_request_redraw_);
@@ -6905,7 +6904,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
 
   // The top controls should properly animate until finished, despite the scroll
   // offset being at the origin.
-  base::TimeTicks animation_time = gfx::FrameTime::Now();
+  base::TimeTicks animation_time = base::TimeTicks::Now();
   while (did_request_animate_) {
     did_request_redraw_ = false;
     did_request_animate_ = false;
@@ -6975,7 +6974,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
   EXPECT_FALSE(did_request_commit_);
 
   // Animate the top controls to the limit.
-  base::TimeTicks animation_time = gfx::FrameTime::Now();
+  base::TimeTicks animation_time = base::TimeTicks::Now();
   while (did_request_animate_) {
     did_request_redraw_ = false;
     did_request_animate_ = false;
@@ -7039,7 +7038,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest,
   EXPECT_FALSE(did_request_commit_);
 
   // Animate the top controls to the limit.
-  base::TimeTicks animation_time = gfx::FrameTime::Now();
+  base::TimeTicks animation_time = base::TimeTicks::Now();
   while (did_request_animate_) {
     did_request_redraw_ = false;
     did_request_animate_ = false;
