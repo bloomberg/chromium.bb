@@ -11,6 +11,7 @@
 
 namespace mojo {
 
+class ApplicationImpl;
 class AppLifetimeHelper;
 
 // A service implementation should keep this object as a member variable to hold
@@ -56,7 +57,7 @@ class AppRefCount {
 // quit with a call to mojo::ApplicationImpl::Terminate().
 class AppLifetimeHelper {
  public:
-  AppLifetimeHelper();
+  explicit AppLifetimeHelper(ApplicationImpl* app);
   ~AppLifetimeHelper();
 
   scoped_ptr<AppRefCount> CreateAppRefCount();
@@ -66,6 +67,10 @@ class AppLifetimeHelper {
   void AddRef();
   void Release();
 
+  friend ApplicationImpl;
+  void ApplicationTerminated();
+
+  ApplicationImpl* app_;
   int ref_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLifetimeHelper);

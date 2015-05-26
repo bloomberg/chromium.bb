@@ -148,7 +148,7 @@ void ViewManagerApp::Create(
       is_headless_,
       gpu_state_,
       request.Pass(),
-      app_lifetime_helper_.CreateAppRefCount());
+      app_impl_->app_lifetime_helper()->CreateAppRefCount());
 }
 
 void ViewManagerApp::Create(

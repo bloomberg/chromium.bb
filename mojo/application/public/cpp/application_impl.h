@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/lib/service_registry.h"
@@ -72,6 +73,8 @@ class ApplicationImpl : public Application,
 
   const std::string& url() const { return url_; }
 
+  AppLifetimeHelper* app_lifetime_helper() { return &app_lifetime_helper_; }
+
   // Requests a new connection to an application. Returns a pointer to the
   // connection if the connection is permitted by this application's delegate,
   // or nullptr otherwise. Caller does not take ownership. The pointer remains
@@ -124,6 +127,7 @@ class ApplicationImpl : public Application,
   ShellPtr shell_;
   std::string url_;
   base::Closure termination_closure_;
+  AppLifetimeHelper app_lifetime_helper_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationImpl);
 };

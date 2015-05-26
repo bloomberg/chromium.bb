@@ -16,7 +16,7 @@
 namespace native_viewport {
 
 NativeViewportApplicationDelegate::NativeViewportApplicationDelegate()
-    : is_headless_(false) {
+    : is_headless_(false), app_(nullptr) {
 }
 
 NativeViewportApplicationDelegate::~NativeViewportApplicationDelegate() {
@@ -24,6 +24,7 @@ NativeViewportApplicationDelegate::~NativeViewportApplicationDelegate() {
 
 void NativeViewportApplicationDelegate::Initialize(
     mojo::ApplicationImpl* application) {
+  app_ = application;
   tracing_.Initialize(application);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -50,7 +51,7 @@ void NativeViewportApplicationDelegate::Create(
   if (!gpu_state_.get())
     gpu_state_ = new gles2::GpuState;
   new NativeViewportImpl(is_headless_, gpu_state_, request.Pass(),
-                         app_lifetime_helper_.CreateAppRefCount());
+                         app_->app_lifetime_helper()->CreateAppRefCount());
 }
 
 void NativeViewportApplicationDelegate::Create(

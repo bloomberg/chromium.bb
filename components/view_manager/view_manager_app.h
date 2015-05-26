@@ -83,7 +83,6 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
   void OnConnectionError() override;
 
   mojo::ApplicationImpl* app_impl_;
-  mojo::AppLifetimeHelper app_lifetime_helper_;
   scoped_ptr<mojo::Binding<mojo::ViewManagerRoot>> view_manager_root_binding_;
   scoped_ptr<ConnectionManager> connection_manager_;
   mojo::TracingImpl tracing_;

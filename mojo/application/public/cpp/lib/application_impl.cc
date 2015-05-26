@@ -33,7 +33,8 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  const base::Closure& termination_closure)
     : delegate_(delegate),
       binding_(this, request.Pass()),
-      termination_closure_(termination_closure) {
+      termination_closure_(termination_closure),
+      app_lifetime_helper_(this) {
 }
 
 void ApplicationImpl::ClearConnections() {
@@ -51,6 +52,7 @@ void ApplicationImpl::ClearConnections() {
 
 ApplicationImpl::~ApplicationImpl() {
   ClearConnections();
+  app_lifetime_helper_.ApplicationTerminated();
 }
 
 ApplicationConnection* ApplicationImpl::ConnectToApplication(

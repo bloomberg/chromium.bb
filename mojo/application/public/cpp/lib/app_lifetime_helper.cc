@@ -63,8 +63,8 @@ scoped_ptr<AppRefCount> AppRefCount::Clone() {
       app_lifetime_helper_, app_task_runner_));
 }
 
-AppLifetimeHelper::AppLifetimeHelper()
-    : ref_count_(0) {
+AppLifetimeHelper::AppLifetimeHelper(ApplicationImpl* app)
+    : app_(app), ref_count_(0) {
 }
 
 AppLifetimeHelper::~AppLifetimeHelper() {
@@ -82,9 +82,15 @@ void AppLifetimeHelper::AddRef() {
 
 void AppLifetimeHelper::Release() {
   if (!--ref_count_) {
-    // Disabled until network_service tests pass again http://crbug.com/484234
-    //ApplicationImpl::Terminate();
+    if (app_) {
+      // Disabled until network_service tests pass again http://crbug.com/484234
+      //ApplicationImpl::Terminate();
+    }
   }
+}
+
+void AppLifetimeHelper::ApplicationTerminated() {
+  app_ = nullptr;
 }
 
 }  // namespace mojo
