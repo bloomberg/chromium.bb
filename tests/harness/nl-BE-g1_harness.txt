@@ -28,8 +28,8 @@
         },
         {
           "comment": "a accent",
-          "input": "ä â à á",
-          "output": "⠜ ⠡ ⠷ ⠷"
+          "input": "ä â à",
+          "output": "⠜ ⠡ ⠷"
         },
         {
           "comment": "c accent",
@@ -38,13 +38,13 @@
         },
         {
           "comment": "e accent",
-          "input": "ë ê è é",
-          "output": "⠫ ⠣ ⠮ ⠿"
+          "input": "é ë ê è",
+          "output": "⠿ ⠫ ⠣ ⠮"
         },
         {
           "comment": "i accent",
-          "input": "ï î ì í",
-          "output": "⠻ ⠩ ⠌ ⠌"
+          "input": "ï î",
+          "output": "⠻ ⠩"
         },
         {
           "comment": "n accent",
@@ -53,18 +53,13 @@
         },
         {
           "comment": "o accent",
-          "input": "ö ô ò ó",
-          "output": "⠪ ⠹ ⠬ ⠬"
-        },
-        {
-          "comment": "s accent",
-          "input": "ß",
-          "output": "⠮"
+          "input": "ö ô",
+          "output": "⠪ ⠹"
         },
         {
           "comment": "u accent",
-          "input": "ü û ù ú",
-          "output": "⠳ ⠱ ⠾ ⠾"
+          "input": "ü û ù",
+          "output": "⠳ ⠱ ⠾"
         },
         {
           "input": "beletselteken ...",
