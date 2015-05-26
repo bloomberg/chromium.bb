@@ -59,6 +59,9 @@ const char kClassDoesNotRequireFinalization[] =
 const char kFinalizerAccessesFinalizedField[] =
     "[blink-gc] Finalizer %0 accesses potentially finalized field %1.";
 
+const char kFinalizerAccessesEagerlyFinalizedField[] =
+    "[blink-gc] Finalizer %0 accesses eagerly finalized field %1.";
+
 const char kRawPtrToGCManagedClassNote[] =
     "[blink-gc] Raw pointer field %0 to a GC managed class declared here:";
 
@@ -107,6 +110,9 @@ const char kMissingFinalizeDispatch[] =
 
 const char kFinalizedFieldNote[] =
     "[blink-gc] Potentially finalized field %0 declared here:";
+
+const char kEagerlyFinalizedFieldNote[] =
+    "[blink-gc] Field %0 having eagerly finalized value, declared here:";
 
 const char kUserDeclaredDestructorNote[] =
     "[blink-gc] User-declared destructor declared here:";
@@ -243,11 +249,27 @@ class CheckFinalizerVisitor
   // during finalization.
   class MightBeCollectedVisitor : public EdgeVisitor {
    public:
-    MightBeCollectedVisitor() : might_be_collected_(false) {}
+    MightBeCollectedVisitor(bool is_eagerly_finalized)
+        : might_be_collected_(false)
+        , is_eagerly_finalized_(is_eagerly_finalized)
+        , as_eagerly_finalized_(false) {}
     bool might_be_collected() { return might_be_collected_; }
-    void VisitMember(Member* edge) override { might_be_collected_ = true; }
+    bool as_eagerly_finalized() { return as_eagerly_finalized_; }
+    void VisitMember(Member* edge) override {
+      if (is_eagerly_finalized_) {
+        if (edge->ptr()->IsValue()) {
+          Value* member = static_cast<Value*>(edge->ptr());
+          if (member->value()->IsEagerlyFinalized()) {
+            might_be_collected_ = true;
+            as_eagerly_finalized_ = true;
+          }
+        }
+        return;
+      }
+      might_be_collected_ = true;
+    }
     void VisitCollection(Collection* edge) override {
-      if (edge->on_heap()) {
+      if (edge->on_heap() && !is_eagerly_finalized_) {
         might_be_collected_ = !edge->is_root();
       } else {
         edge->AcceptMembers(this);
@@ -256,13 +278,31 @@ class CheckFinalizerVisitor
 
    private:
     bool might_be_collected_;
+    bool is_eagerly_finalized_;
+    bool as_eagerly_finalized_;
   };
 
  public:
-  typedef std::vector<std::pair<MemberExpr*, FieldPoint*> > Errors;
+  class Error {
+  public:
+    Error(MemberExpr *member,
+          bool as_eagerly_finalized,
+          FieldPoint* field)
+        : member_(member)
+        , as_eagerly_finalized_(as_eagerly_finalized)
+        , field_(field) {}
 
-  CheckFinalizerVisitor(RecordCache* cache)
-      : blacklist_context_(false), cache_(cache) {}
+    MemberExpr* member_;
+    bool as_eagerly_finalized_;
+    FieldPoint* field_;
+  };
+
+  typedef std::vector<Error> Errors;
+
+  CheckFinalizerVisitor(RecordCache* cache, bool is_eagerly_finalized)
+      : blacklist_context_(false)
+      , cache_(cache)
+      , is_eagerly_finalized_(is_eagerly_finalized) {}
 
   Errors& finalized_fields() { return finalized_fields_; }
 
@@ -300,21 +340,32 @@ class CheckFinalizerVisitor
     if (it == info->GetFields().end())
       return true;
 
-    if (blacklist_context_ && MightBeCollected(&it->second))
-      finalized_fields_.push_back(std::make_pair(member, &it->second));
+    if (seen_members_.find(member) != seen_members_.end())
+      return true;
+
+    bool as_eagerly_finalized = false;
+    if (blacklist_context_ &&
+        MightBeCollected(&it->second, as_eagerly_finalized)) {
+      finalized_fields_.push_back(
+          Error(member, as_eagerly_finalized, &it->second));
+      seen_members_.insert(member);
+    }
     return true;
   }
 
-  bool MightBeCollected(FieldPoint* point) {
-    MightBeCollectedVisitor visitor;
+  bool MightBeCollected(FieldPoint* point, bool& as_eagerly_finalized) {
+    MightBeCollectedVisitor visitor(is_eagerly_finalized_);
     point->edge()->Accept(&visitor);
+    as_eagerly_finalized = visitor.as_eagerly_finalized();
     return visitor.might_be_collected();
   }
 
  private:
   bool blacklist_context_;
   Errors finalized_fields_;
+  std::set<MemberExpr*> seen_members_;
   RecordCache* cache_;
+  bool is_eagerly_finalized_;
 };
 
 // This visitor checks that a method contains within its body, a call to a
@@ -969,6 +1020,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         DiagnosticsEngine::Warning, kClassDoesNotRequireFinalization);
     diag_finalizer_accesses_finalized_field_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kFinalizerAccessesFinalizedField);
+    diag_finalizer_eagerly_finalized_field_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kFinalizerAccessesEagerlyFinalizedField);
     diag_overridden_non_virtual_trace_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kOverriddenNonVirtualTrace);
     diag_missing_trace_dispatch_method_ = diagnostic_.getCustomDiagID(
@@ -1018,6 +1071,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         DiagnosticsEngine::Note, kFieldContainsGCRootNote);
     diag_finalized_field_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kFinalizedFieldNote);
+    diag_eagerly_finalized_field_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kEagerlyFinalizedFieldNote);
     diag_user_declared_destructor_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kUserDeclaredDestructorNote);
     diag_user_declared_finalizer_note_ = diagnostic_.getCustomDiagID(
@@ -1387,7 +1442,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     // For finalized classes, check the finalization method if possible.
     if (info->IsGCFinalized()) {
       if (dtor && dtor->hasBody()) {
-        CheckFinalizerVisitor visitor(&cache_);
+        CheckFinalizerVisitor visitor(&cache_, info->IsEagerlyFinalized());
         visitor.TraverseCXXMethodDecl(dtor);
         if (!visitor.finalized_fields().empty()) {
           ReportFinalizerAccessesFinalizedFields(
@@ -1816,12 +1871,19 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     for (CheckFinalizerVisitor::Errors::iterator it = fields->begin();
          it != fields->end();
          ++it) {
-      SourceLocation loc = it->first->getLocStart();
+      SourceLocation loc = it->member_->getLocStart();
       SourceManager& manager = instance_.getSourceManager();
+      bool as_eagerly_finalized = it->as_eagerly_finalized_;
+      unsigned diag_error = as_eagerly_finalized ?
+          diag_finalizer_eagerly_finalized_field_ :
+          diag_finalizer_accesses_finalized_field_;
+      unsigned diag_note = as_eagerly_finalized ?
+          diag_eagerly_finalized_field_note_ :
+          diag_finalized_field_note_;
       FullSourceLoc full_loc(loc, manager);
-      diagnostic_.Report(full_loc, diag_finalizer_accesses_finalized_field_)
-          << dtor << it->second->field();
-      NoteField(it->second, diag_finalized_field_note_);
+      diagnostic_.Report(full_loc, diag_error)
+          << dtor << it->field_->field();
+      NoteField(it->field_, diag_note);
     }
   }
 
@@ -2030,6 +2092,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_class_requires_finalization_;
   unsigned diag_class_does_not_require_finalization_;
   unsigned diag_finalizer_accesses_finalized_field_;
+  unsigned diag_finalizer_eagerly_finalized_field_;
   unsigned diag_overridden_non_virtual_trace_;
   unsigned diag_missing_trace_dispatch_method_;
   unsigned diag_missing_finalize_dispatch_method_;
@@ -2045,6 +2108,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
 
   unsigned diag_base_requires_tracing_note_;
   unsigned diag_field_requires_tracing_note_;
+  unsigned diag_field_illegally_traced_note_;
   unsigned diag_raw_ptr_to_gc_managed_class_note_;
   unsigned diag_ref_ptr_to_gc_managed_class_note_;
   unsigned diag_own_ptr_to_gc_managed_class_note_;
@@ -2054,6 +2118,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_part_object_contains_gc_root_note_;
   unsigned diag_field_contains_gc_root_note_;
   unsigned diag_finalized_field_note_;
+  unsigned diag_eagerly_finalized_field_note_;
   unsigned diag_user_declared_destructor_note_;
   unsigned diag_user_declared_finalizer_note_;
   unsigned diag_base_requires_finalization_note_;

@@ -31,6 +31,7 @@ const char kVisitorDispatcherName[] = "VisitorDispatcher";
 const char kVisitorVarName[] = "visitor";
 const char kAdjustAndMarkName[] = "adjustAndMark";
 const char kIsHeapObjectAliveName[] = "isHeapObjectAlive";
+const char kIsEagerlyFinalizedName[] = "IsEagerlyFinalizedMarker";
 
 class Config {
  public:

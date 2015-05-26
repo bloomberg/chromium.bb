@@ -21,6 +21,7 @@ RecordInfo::RecordInfo(CXXRecordDecl* record, RecordCache* cache)
       does_need_finalization_(kNotComputed),
       has_gc_mixin_methods_(kNotComputed),
       is_declaring_local_trace_(kNotComputed),
+      is_eagerly_finalized_(kNotComputed),
       determined_trace_methods_(false),
       trace_method_(0),
       trace_dispatch_method_(0),
@@ -166,6 +167,23 @@ bool RecordInfo::IsGCMixin() {
 // Test if a record is allocated on the managed heap.
 bool RecordInfo::IsGCAllocated() {
   return IsGCDerived() || IsHeapAllocatedCollection();
+}
+
+bool RecordInfo::IsEagerlyFinalized() {
+  if (is_eagerly_finalized_ == kNotComputed) {
+    is_eagerly_finalized_ = kFalse;
+    if (IsGCFinalized()) {
+      for (Decl* decl : record_->decls()) {
+        if (TypedefDecl* typedef_decl = dyn_cast<TypedefDecl>(decl)) {
+          if (typedef_decl->getNameAsString() == kIsEagerlyFinalizedName) {
+            is_eagerly_finalized_ = kTrue;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return is_eagerly_finalized_;
 }
 
 RecordInfo* RecordCache::Lookup(CXXRecordDecl* record) {

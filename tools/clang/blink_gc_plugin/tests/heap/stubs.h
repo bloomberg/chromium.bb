@@ -147,6 +147,8 @@ public:                                                         \
     virtual void adjustAndMark(Visitor*) const override { }     \
     virtual bool isHeapObjectAlive(Visitor*) const override { return 0; }
 
+#define EAGERLY_FINALIZED() typedef int IsEagerlyFinalizedMarker
+
 template<typename T> class GarbageCollected { };
 
 template<typename T>
