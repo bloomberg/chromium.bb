@@ -13,11 +13,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_delayed_task_controller.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 
 namespace gcm {
 class GCMDriver;
+class InstanceIDHandler;
 }  // namespace gcm
 
 namespace instance_id {
@@ -41,15 +43,31 @@ class InstanceIDImpl : public InstanceID {
   void DeleteID(const DeleteIDCallback& callback) override;
 
  private:
+  gcm::InstanceIDHandler* GetInstanceIDHandler() const;
+
   void EnsureIDGenerated();
-  void GetInstanceIDDataCompleted(const std::string& instance_id_data);
+
+  void OnGetTokenCompleted(const GetTokenCallback& callback,
+                           const std::string& token,
+                           gcm::GCMClient::Result result);
+  void OnDeleteTokenCompleted(const DeleteTokenCallback& callback,
+                              gcm::GCMClient::Result result);
+  void OnDeleteIDCompleted(const DeleteIDCallback& callback,
+                           gcm::GCMClient::Result result);
+  void GetInstanceIDDataCompleted(const std::string& instance_id,
+                                  const std::string& extra_data);
 
   void DoGetID(const GetIDCallback& callback);
   void DoGetCreationTime(const GetCreationTimeCallback& callback);
-
-  // Encodes/decodes the InstanceID data to work with the persistent store.
-  std::string SerializeAsString() const;
-  void Deserialize(const std::string& serialized_data);
+  void DoGetToken(
+      const std::string& authorized_entity,
+      const std::string& scope,
+      const std::map<std::string, std::string>& options,
+      const GetTokenCallback& callback);
+  void DoDeleteToken(const std::string& authorized_entity,
+                     const std::string& scope,
+                     const DeleteTokenCallback& callback);
+  void DoDeleteID(const DeleteIDCallback& callback);
 
   gcm::GCMDriver* gcm_driver_;  // Not owned.
 

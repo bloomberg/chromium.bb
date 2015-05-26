@@ -10,8 +10,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/gcm_driver/gcm_activity.h"
+#include "components/gcm_driver/registration_info.h"
 
 template <class T> class scoped_refptr;
 
@@ -163,18 +165,22 @@ class GCMClient {
   class Delegate {
    public:
     // Called when the registration completed successfully or an error occurs.
-    // |app_id|: application ID.
+    // |registration_info|: the specific information required for the
+    //                      registration.
     // |registration_id|: non-empty if the registration completed successfully.
     // |result|: the type of the error if an error occured, success otherwise.
-    virtual void OnRegisterFinished(const std::string& app_id,
-                                    const std::string& registration_id,
-                                    Result result) = 0;
+    virtual void OnRegisterFinished(
+        const linked_ptr<RegistrationInfo>& registration_info,
+        const std::string& registration_id,
+        Result result) = 0;
 
     // Called when the unregistration completed.
-    // |app_id|: application ID.
+    // |registration_info|: the specific information required for the
+    //                      registration.
     // |result|: result of the unregistration.
-    virtual void OnUnregisterFinished(const std::string& app_id,
-                                      GCMClient::Result result) = 0;
+    virtual void OnUnregisterFinished(
+        const linked_ptr<RegistrationInfo>& registration_info,
+        GCMClient::Result result) = 0;
 
     // Called when the message is scheduled to send successfully or an error
     // occurs.
@@ -258,20 +264,24 @@ class GCMClient {
   // Stops using the GCM service. This will not erase the persisted data.
   virtual void Stop() = 0;
 
-  // Registers the application for GCM. Delegate::OnRegisterFinished will be
-  // called asynchronously upon completion.
-  // |app_id|: application ID.
-  // |sender_ids|: list of IDs of the servers that are allowed to send the
-  //               messages to the application. These IDs are assigned by the
-  //               Google API Console.
-  virtual void Register(const std::string& app_id,
-                        const std::vector<std::string>& sender_ids) = 0;
+  // Registers with the server to access the provided service.
+  // Delegate::OnRegisterFinished will be called asynchronously upon completion.
+  // |registration_info|: the specific information required for the
+  //                      registration. For GCM, it will contain app id and
+  //                      sender IDs. For InstanceID, it will contain app_id,
+  //                      authorized entity and scope.
+  virtual void Register(
+      const linked_ptr<RegistrationInfo>& registration_info) = 0;
 
-  // Unregisters the application from GCM when it is uninstalled.
+  // Unregisters from the server to stop accessing the provided service.
   // Delegate::OnUnregisterFinished will be called asynchronously upon
   // completion.
-  // |app_id|: application ID.
-  virtual void Unregister(const std::string& app_id) = 0;
+  // |registration_info|: the specific information required for the
+  //                      registration. For GCM, it will contain app id (sender
+  //                      IDs can be ingored). For InstanceID, it will contain
+  //                      app id, authorized entity and scope.
+  virtual void Unregister(
+      const linked_ptr<RegistrationInfo>& registration_info) = 0;
 
   // Sends a message to a given receiver. Delegate::OnSendFinished will be
   // called asynchronously upon completion.
@@ -312,14 +322,17 @@ class GCMClient {
 
   // Adds the Instance ID data for a specific app to the persistent store.
   virtual void AddInstanceIDData(const std::string& app_id,
-                                 const std::string& instance_id_data) = 0;
+                                 const std::string& instance_id,
+                                 const std::string& extra_data) = 0;
 
   // Removes the Instance ID data for a specific app from the persistent store.
   virtual void RemoveInstanceIDData(const std::string& app_id) = 0;
 
   // Retrieves the Instance ID data for a specific app from the persistent
   // store.
-  virtual std::string GetInstanceIDData(const std::string& app_id) = 0;
+  virtual void GetInstanceIDData(const std::string& app_id,
+                                 std::string* instance_id,
+                                 std::string* extra_data) = 0;
 
   // Gets and sets custom heartbeat interval for the MCS connection.
   // |scope| is used to identify the component that requests a custom interval

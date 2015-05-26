@@ -248,6 +248,9 @@ class GCMClientImplTest : public testing::Test,
   void BuildGCMClient(base::TimeDelta clock_step);
   void InitializeGCMClient();
   void StartGCMClient();
+  void Register(const std::string& app_id,
+                const std::vector<std::string>& senders);
+  void Unregister(const std::string& app_id);
   void ReceiveMessageFromMCS(const MCSMessage& message);
   void ReceiveOnMessageSentToMCS(
       const std::string& app_id,
@@ -267,11 +270,12 @@ class GCMClientImplTest : public testing::Test,
                        const std::string& registration_id);
 
   // GCMClient::Delegate overrides (for verification).
-  void OnRegisterFinished(const std::string& app_id,
+  void OnRegisterFinished(const linked_ptr<RegistrationInfo>& registration_info,
                           const std::string& registration_id,
                           GCMClient::Result result) override;
-  void OnUnregisterFinished(const std::string& app_id,
-                            GCMClient::Result result) override;
+  void OnUnregisterFinished(
+      const linked_ptr<RegistrationInfo>& registration_info,
+      GCMClient::Result result) override;
   void OnSendFinished(const std::string& app_id,
                       const std::string& message_id,
                       GCMClient::Result result) override {}
@@ -494,17 +498,17 @@ void GCMClientImplTest::VerifyPendingRequestFetcherDeleted() {
 }
 
 bool GCMClientImplTest::ExistsRegistration(const std::string& app_id) const {
-  return gcm_client_->registrations_.count(app_id) > 0;
+  return ExistsGCMRegistrationInMap(gcm_client_->registrations_, app_id);
 }
 
 void GCMClientImplTest::AddRegistration(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids,
     const std::string& registration_id) {
-  linked_ptr<RegistrationInfo> registration(new RegistrationInfo);
+  linked_ptr<GCMRegistrationInfo> registration(new GCMRegistrationInfo);
+  registration->app_id = app_id;
   registration->sender_ids = sender_ids;
-  registration->registration_id = registration_id;
-  gcm_client_->registrations_[app_id] = registration;
+  gcm_client_->registrations_[registration] = registration_id;
 }
 
 void GCMClientImplTest::InitializeGCMClient() {
@@ -525,6 +529,21 @@ void GCMClientImplTest::StartGCMClient() {
   gcm_client_->Start(GCMClient::IMMEDIATE_START);
 
   PumpLoopUntilIdle();
+}
+
+void GCMClientImplTest::Register(const std::string& app_id,
+                                 const std::vector<std::string>& senders) {
+  scoped_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
+  gcm_info->app_id = app_id;
+  gcm_info->sender_ids = senders;
+  gcm_client()->Register(make_linked_ptr<RegistrationInfo>(gcm_info.release()));
+}
+
+void GCMClientImplTest::Unregister(const std::string& app_id) {
+  scoped_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
+  gcm_info->app_id = app_id;
+  gcm_client()->Unregister(
+      make_linked_ptr<RegistrationInfo>(gcm_info.release()));
 }
 
 void GCMClientImplTest::ReceiveMessageFromMCS(const MCSMessage& message) {
@@ -558,19 +577,21 @@ void GCMClientImplTest::OnMessageReceived(
   QuitLoop();
 }
 
-void GCMClientImplTest::OnRegisterFinished(const std::string& app_id,
-                                           const std::string& registration_id,
-                                           GCMClient::Result result) {
+void GCMClientImplTest::OnRegisterFinished(
+    const linked_ptr<RegistrationInfo>& registration_info,
+    const std::string& registration_id,
+    GCMClient::Result result) {
   last_event_ = REGISTRATION_COMPLETED;
-  last_app_id_ = app_id;
+  last_app_id_ = registration_info->app_id;
   last_registration_id_ = registration_id;
   last_result_ = result;
 }
 
-void GCMClientImplTest::OnUnregisterFinished(const std::string& app_id,
-                                             GCMClient::Result result) {
+void GCMClientImplTest::OnUnregisterFinished(
+    const linked_ptr<RegistrationInfo>& registration_info,
+    GCMClient::Result result) {
   last_event_ = UNREGISTRATION_COMPLETED;
-  last_app_id_ = app_id;
+  last_app_id_ = registration_info->app_id;
   last_result_ = result;
 }
 
@@ -642,7 +663,7 @@ TEST_F(GCMClientImplTest, RegisterApp) {
 
   std::vector<std::string> senders;
   senders.push_back("sender");
-  gcm_client()->Register(kAppId, senders);
+  Register(kAppId, senders);
   CompleteRegistration("reg_id");
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
@@ -657,7 +678,7 @@ TEST_F(GCMClientImplTest, DISABLED_RegisterAppFromCache) {
 
   std::vector<std::string> senders;
   senders.push_back("sender");
-  gcm_client()->Register(kAppId, senders);
+  Register(kAppId, senders);
   CompleteRegistration("reg_id");
   EXPECT_TRUE(ExistsRegistration(kAppId));
 
@@ -679,11 +700,11 @@ TEST_F(GCMClientImplTest, UnregisterApp) {
 
   std::vector<std::string> senders;
   senders.push_back("sender");
-  gcm_client()->Register(kAppId, senders);
+  Register(kAppId, senders);
   CompleteRegistration("reg_id");
   EXPECT_TRUE(ExistsRegistration(kAppId));
 
-  gcm_client()->Unregister(kAppId);
+  Unregister(kAppId);
   CompleteUnregistration(kAppId);
 
   EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
@@ -698,7 +719,7 @@ TEST_F(GCMClientImplTest, UnregisterApp) {
 TEST_F(GCMClientImplTest, DeletePendingRequestsWhenStopping) {
   std::vector<std::string> senders;
   senders.push_back("sender");
-  gcm_client()->Register(kAppId, senders);
+  Register(kAppId, senders);
 
   gcm_client()->Stop();
   VerifyPendingRequestFetcherDeleted();
@@ -1148,7 +1169,7 @@ TEST_F(GCMClientImplStartAndStopTest, DelayStart) {
   // Registration.
   std::vector<std::string> senders;
   senders.push_back("sender");
-  gcm_client()->Register(kAppId, senders);
+ Register(kAppId, senders);
   CompleteRegistration("reg_id");
   EXPECT_EQ(GCMClientImpl::READY, gcm_client_state());
 

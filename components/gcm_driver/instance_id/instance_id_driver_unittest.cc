@@ -19,6 +19,10 @@ namespace {
 
 const char kTestAppID1[] = "TestApp1";
 const char kTestAppID2[] = "TestApp2";
+const char kAuthorizedEntity1[] = "Sender 1";
+const char kAuthorizedEntity2[] = "Sender 2";
+const char kScope1[] = "GCM1";
+const char kScope2[] = "FooBar";
 
 bool VerifyInstanceID(const std::string& str) {
   // Checks the length.
@@ -53,6 +57,15 @@ class InstanceIDDriverTest : public testing::Test {
   std::string GetID(InstanceID* instance_id);
   base::Time GetCreationTime(InstanceID* instance_id);
   InstanceID::Result DeleteID(InstanceID* instance_id);
+  std::string GetToken(
+      InstanceID* instance_id,
+      const std::string& authorized_entity,
+      const std::string& scope,
+      const std::map<std::string, std::string>& options);
+  InstanceID::Result DeleteToken(
+      InstanceID* instance_id,
+      const std::string& authorized_entity,
+      const std::string& scope);
 
   InstanceIDDriver* driver() const { return driver_.get(); }
 
@@ -60,6 +73,8 @@ class InstanceIDDriverTest : public testing::Test {
   void GetIDCompleted(const std::string& id);
   void GetCreationTimeCompleted(const base::Time& creation_time);
   void DeleteIDCompleted(InstanceID::Result result);
+  void GetTokenCompleted(const std::string& token, InstanceID::Result result);
+  void DeleteTokenCompleted(InstanceID::Result result);
 
   base::MessageLoopForUI message_loop_;
   scoped_ptr<FakeGCMDriverForInstanceID> gcm_driver_;
@@ -67,6 +82,7 @@ class InstanceIDDriverTest : public testing::Test {
 
   std::string id_;
   base::Time creation_time_;
+  std::string token_;
   InstanceID::Result result_;
 
   bool async_operation_completed_;
@@ -129,7 +145,41 @@ InstanceID::Result InstanceIDDriverTest::DeleteID(InstanceID* instance_id) {
   return result_;
 }
 
+std::string InstanceIDDriverTest::GetToken(
+    InstanceID* instance_id,
+    const std::string& authorized_entity,
+    const std::string& scope,
+    const std::map<std::string, std::string>& options) {
+  async_operation_completed_ = false;
+  token_.clear();
+  result_ = InstanceID::UNKNOWN_ERROR;;
+  instance_id->GetToken(
+      authorized_entity,
+      scope,
+      options,
+      base::Bind(&InstanceIDDriverTest::GetTokenCompleted,
+                 base::Unretained(this)));
+  WaitForAsyncOperation();
+  return token_;
+}
+
+InstanceID::Result InstanceIDDriverTest::DeleteToken(
+    InstanceID* instance_id,
+    const std::string& authorized_entity,
+    const std::string& scope) {
+  async_operation_completed_ = false;
+  result_ = InstanceID::UNKNOWN_ERROR;;
+  instance_id->DeleteToken(
+      authorized_entity,
+      scope,
+      base::Bind(&InstanceIDDriverTest::DeleteTokenCompleted,
+                 base::Unretained(this)));
+  WaitForAsyncOperation();
+  return result_;
+}
+
 void InstanceIDDriverTest::GetIDCompleted(const std::string& id) {
+  DCHECK(!async_operation_completed_);
   async_operation_completed_ = true;
   id_ = id;
   if (!async_operation_completed_callback_.is_null())
@@ -138,6 +188,7 @@ void InstanceIDDriverTest::GetIDCompleted(const std::string& id) {
 
 void InstanceIDDriverTest::GetCreationTimeCompleted(
     const base::Time& creation_time) {
+  DCHECK(!async_operation_completed_);
   async_operation_completed_ = true;
   creation_time_ = creation_time;
   if (!async_operation_completed_callback_.is_null())
@@ -145,6 +196,25 @@ void InstanceIDDriverTest::GetCreationTimeCompleted(
 }
 
 void InstanceIDDriverTest::DeleteIDCompleted(InstanceID::Result result) {
+  DCHECK(!async_operation_completed_);
+  async_operation_completed_ = true;
+  result_ = result;
+  if (!async_operation_completed_callback_.is_null())
+    async_operation_completed_callback_.Run();
+}
+
+void InstanceIDDriverTest::GetTokenCompleted(
+    const std::string& token, InstanceID::Result result){
+  DCHECK(!async_operation_completed_);
+  async_operation_completed_ = true;
+  token_ = token;
+  result_ = result;
+  if (!async_operation_completed_callback_.is_null())
+    async_operation_completed_callback_.Run();
+}
+
+void InstanceIDDriverTest::DeleteTokenCompleted(InstanceID::Result result) {
+  DCHECK(!async_operation_completed_);
   async_operation_completed_ = true;
   result_ = result;
   if (!async_operation_completed_callback_.is_null())
@@ -218,6 +288,57 @@ TEST_F(InstanceIDDriverTest, DeleteID) {
   EXPECT_FALSE(id2.empty());
   EXPECT_NE(id1, id2);
   EXPECT_FALSE(GetCreationTime(instance_id).is_null());
+}
+
+TEST_F(InstanceIDDriverTest, GetToken) {
+  InstanceID* instance_id = driver()->GetInstanceID(kTestAppID1);
+  std::map<std::string, std::string> options;
+  std::string token1 =
+      GetToken(instance_id, kAuthorizedEntity1, kScope1, options);
+  EXPECT_FALSE(token1.empty());
+
+  // Same token is returned for same authorized entity and scope.
+  EXPECT_EQ(token1,
+            GetToken(instance_id, kAuthorizedEntity1, kScope1, options));
+
+  // Different token is returned for different authorized entity or scope.
+  std::string token2 =
+      GetToken(instance_id, kAuthorizedEntity1, kScope2, options);
+  EXPECT_FALSE(token2.empty());
+  EXPECT_NE(token1, token2);
+
+  std::string token3 =
+      GetToken(instance_id, kAuthorizedEntity2, kScope1, options);
+  EXPECT_FALSE(token3.empty());
+  EXPECT_NE(token1, token3);
+  EXPECT_NE(token2, token3);
+}
+
+TEST_F(InstanceIDDriverTest, DeleteToken) {
+  InstanceID* instance_id = driver()->GetInstanceID(kTestAppID1);
+  std::map<std::string, std::string> options;
+
+  // Gets 2 tokens.
+  std::string token1 =
+      GetToken(instance_id, kAuthorizedEntity1, kScope1, options);
+  EXPECT_FALSE(token1.empty());
+  std::string token2 =
+      GetToken(instance_id, kAuthorizedEntity2, kScope1, options);
+  EXPECT_FALSE(token1.empty());
+  EXPECT_NE(token1, token2);
+
+  // Different token is returned for same authorized entity and scope after
+  // deletion.
+  EXPECT_EQ(InstanceID::SUCCESS,
+            DeleteToken(instance_id, kAuthorizedEntity1, kScope1));
+  std::string new_token1 =
+      GetToken(instance_id, kAuthorizedEntity1, kScope2, options);
+  EXPECT_FALSE(new_token1.empty());
+  EXPECT_NE(token1, new_token1);
+
+  // The other token is not affected by the deletion.
+  EXPECT_EQ(token2,
+            GetToken(instance_id, kAuthorizedEntity2, kScope1, options));
 }
 
 }  // instance_id

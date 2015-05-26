@@ -4,7 +4,6 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/gcm/engine/gservices_settings.h"
-#include "google_apis/gcm/engine/registration_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {

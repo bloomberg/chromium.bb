@@ -41,9 +41,9 @@ class FakeGCMClient : public GCMClient {
       Delegate* delegate) override;
   void Start(StartMode start_mode) override;
   void Stop() override;
-  void Register(const std::string& app_id,
-                const std::vector<std::string>& sender_ids) override;
-  void Unregister(const std::string& app_id) override;
+  void Register(const linked_ptr<RegistrationInfo>& registration_info) override;
+  void Unregister(
+      const linked_ptr<RegistrationInfo>& registration_info) override;
   void Send(const std::string& app_id,
             const std::string& receiver_id,
             const OutgoingMessage& message) override;
@@ -57,9 +57,12 @@ class FakeGCMClient : public GCMClient {
   void SetLastTokenFetchTime(const base::Time& time) override;
   void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) override;
   void AddInstanceIDData(const std::string& app_id,
-                         const std::string& instance_id_data) override;
+                         const std::string& instance_id,
+                         const std::string& extra_data) override;
   void RemoveInstanceIDData(const std::string& app_id) override;
-  std::string GetInstanceIDData(const std::string& app_id) override;
+  void GetInstanceIDData(const std::string& app_id,
+                         std::string* instance_id,
+                         std::string* extra_data) override;
   void AddHeartbeatInterval(const std::string& scope, int interval_ms) override;
   void RemoveHeartbeatInterval(const std::string& scope) override;
 
@@ -84,9 +87,11 @@ class FakeGCMClient : public GCMClient {
   // Called on IO thread.
   void DoStart();
   void Started();
-  void RegisterFinished(const std::string& app_id,
-                        const std::string& registrion_id);
-  void UnregisterFinished(const std::string& app_id);
+  void RegisterFinished(
+      const linked_ptr<RegistrationInfo>& registration_info,
+      const std::string& registrion_id);
+  void UnregisterFinished(
+      const linked_ptr<RegistrationInfo>& registration_info);
   void SendFinished(const std::string& app_id, const OutgoingMessage& message);
   void MessageReceived(const std::string& app_id,
                        const IncomingMessage& message);

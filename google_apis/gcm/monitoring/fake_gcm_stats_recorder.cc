@@ -44,18 +44,18 @@ void FakeGCMStatsRecorder::RecordConnectionResetSignaled(
 
 void FakeGCMStatsRecorder::RecordRegistrationSent(
     const std::string& app_id,
-    const std::string& sender_ids) {
+    const std::string& senders) {
 }
 
 void FakeGCMStatsRecorder::RecordRegistrationResponse(
     const std::string& app_id,
-    const std::vector<std::string>& sender_ids,
+    const std::string& senders,
     RegistrationRequest::Status status) {
 }
 
 void FakeGCMStatsRecorder::RecordRegistrationRetryRequested(
     const std::string& app_id,
-    const std::vector<std::string>& sender_ids,
+    const std::string& senders,
     int retries_left) {
 }
 

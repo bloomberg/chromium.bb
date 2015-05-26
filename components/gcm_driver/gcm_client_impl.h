@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -111,9 +112,9 @@ class GCMClientImpl
       GCMClient::Delegate* delegate) override;
   void Start(StartMode start_mode) override;
   void Stop() override;
-  void Register(const std::string& app_id,
-                const std::vector<std::string>& sender_ids) override;
-  void Unregister(const std::string& app_id) override;
+  void Register(const linked_ptr<RegistrationInfo>& registration_info) override;
+  void Unregister(
+      const linked_ptr<RegistrationInfo>& registration_info) override;
   void Send(const std::string& app_id,
             const std::string& receiver_id,
             const OutgoingMessage& message) override;
@@ -127,9 +128,12 @@ class GCMClientImpl
   void SetLastTokenFetchTime(const base::Time& time) override;
   void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) override;
   void AddInstanceIDData(const std::string& app_id,
-                         const std::string& instance_id_data) override;
+                         const std::string& instance_id,
+                         const std::string& extra_data) override;
   void RemoveInstanceIDData(const std::string& app_id) override;
-  std::string GetInstanceIDData(const std::string& app_id) override;
+  void GetInstanceIDData(const std::string& app_id,
+                         std::string* instance_id,
+                         std::string* extra_data) override;
   void AddHeartbeatInterval(const std::string& scope, int interval_ms) override;
   void RemoveHeartbeatInterval(const std::string& scope) override;
 
@@ -165,17 +169,19 @@ class GCMClientImpl
     std::set<std::string> last_checkin_accounts;
   };
 
-  // Collection of pending registration requests. Keys are app IDs, while values
-  // are pending registration requests to obtain a registration ID for
-  // requesting application.
-  typedef std::map<std::string, RegistrationRequest*>
-      PendingRegistrationRequests;
+  // Collection of pending registration requests. Keys are RegistrationInfo
+  // instance, while values are pending registration requests to obtain a
+  // registration ID for requesting application.
+  typedef std::map<linked_ptr<RegistrationInfo>,
+                   RegistrationRequest*,
+                   RegistrationInfoComparer> PendingRegistrationRequests;
 
-  // Collection of pending unregistration requests. Keys are app IDs, while
-  // values are pending unregistration requests to disable the registration ID
-  // currently assigned to the application.
-  typedef std::map<std::string, UnregistrationRequest*>
-      PendingUnregistrationRequests;
+  // Collection of pending unregistration requests. Keys are RegistrationInfo
+  // instance, while values are pending unregistration requests to disable the
+  // registration ID currently assigned to the application.
+  typedef std::map<linked_ptr<RegistrationInfo>,
+                   UnregistrationRequest*,
+                   RegistrationInfoComparer> PendingUnregistrationRequests;
 
   friend class GCMClientImplTest;
 
@@ -247,14 +253,15 @@ class GCMClientImpl
   void ResetStoreCallback(bool success);
 
   // Completes the registration request.
-  void OnRegisterCompleted(const std::string& app_id,
-                           const std::vector<std::string>& sender_ids,
-                           RegistrationRequest::Status status,
-                           const std::string& registration_id);
+  void OnRegisterCompleted(
+      const linked_ptr<RegistrationInfo>& registration_info,
+      RegistrationRequest::Status status,
+      const std::string& registration_id);
 
   // Completes the unregistration request.
-  void OnUnregisterCompleted(const std::string& app_id,
-                             UnregistrationRequest::Status status);
+  void OnUnregisterCompleted(
+      const linked_ptr<RegistrationInfo>& registration_info,
+      UnregistrationRequest::Status status);
 
   // Completes the GCM store destroy request.
   void OnGCMStoreDestroyed(bool success);
@@ -347,8 +354,9 @@ class GCMClientImpl
   // Time of the last successful checkin.
   base::Time last_checkin_time_;
 
-  // Cached instance ID data, key is app id.
-  std::map<std::string, std::string> instance_id_data_;
+  // Cached instance ID data, key is app ID and value is pair of instance ID
+  // and extra data.
+  std::map<std::string, std::pair<std::string, std::string>> instance_id_data_;
 
   // Factory for creating references when scheduling periodic checkin.
   base::WeakPtrFactory<GCMClientImpl> periodic_checkin_ptr_factory_;

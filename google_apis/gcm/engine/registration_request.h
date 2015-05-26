@@ -6,6 +6,7 @@
 #define GOOGLE_APIS_GCM_ENGINE_REGISTRATION_REQUEST_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -59,14 +60,12 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
                               const std::string& registration_id)>
       RegistrationCallback;
 
-  // Details of the of the Registration Request. Only user's android ID and
-  // its serial number are optional and can be set to 0. All other parameters
-  // have to be specified to successfully complete the call.
+  // Defines the common info about a registration/token request. All parameters
+  // are mandatory.
   struct GCM_EXPORT RequestInfo {
     RequestInfo(uint64 android_id,
                 uint64 security_token,
-                const std::string& app_id,
-                const std::vector<std::string>& sender_ids);
+                const std::string& app_id);
     ~RequestInfo();
 
     // Android ID of the device.
@@ -75,20 +74,31 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
     uint64 security_token;
     // Application ID.
     std::string app_id;
-    // Certificate of the application.
-    std::string cert;
-    // List of IDs of senders. Allowed up to 100.
-    std::vector<std::string> sender_ids;
+  };
+
+  // Encapsulates the custom logic that is needed to build and process the
+  // registration request.
+  class GCM_EXPORT CustomRequestHandler {
+   public:
+    CustomRequestHandler();
+    virtual ~CustomRequestHandler();
+
+    // Builds the HTTP request body data. It is called after
+    // RegistrationRequest::BuildRequestBody to append more custom info to
+    // |body|. Note that the request body is encoded in HTTP form format.
+    virtual void BuildRequestBody(std::string* body) = 0;
   };
 
   RegistrationRequest(
       const GURL& registration_url,
       const RequestInfo& request_info,
+      scoped_ptr<CustomRequestHandler> custom_request_handler,
       const net::BackoffEntry::Policy& backoff_policy,
       const RegistrationCallback& callback,
       int max_retry_count,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-      GCMStatsRecorder* recorder);
+      GCMStatsRecorder* recorder,
+      const std::string& source_to_record);
   ~RegistrationRequest() override;
 
   void Start();
@@ -101,12 +111,16 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
   // failure, when |update_backoff| is true.
   void RetryWithBackoff(bool update_backoff);
 
+  void BuildRequestHeaders(std::string* extra_headers);
+  void BuildRequestBody(std::string* body);
+
   // Parse the response returned by the URL fetcher into token, and returns the
   // status.
   Status ParseResponse(const net::URLFetcher* source, std::string* token);
 
   RegistrationCallback callback_;
   RequestInfo request_info_;
+  scoped_ptr<CustomRequestHandler> custom_request_handler_;
   GURL registration_url_;
 
   net::BackoffEntry backoff_entry_;
@@ -117,6 +131,7 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
 
   // Recorder that records GCM activities for debugging purpose. Not owned.
   GCMStatsRecorder* recorder_;
+  std::string source_to_record_;
 
   base::WeakPtrFactory<RegistrationRequest> weak_ptr_factory_;
 

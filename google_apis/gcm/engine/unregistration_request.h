@@ -24,9 +24,9 @@ namespace gcm {
 
 class GCMStatsRecorder;
 
-// Unregistration request is used to revoke registration IDs for applications
-// that were uninstalled and should no longer receive GCM messages. In case an
-// attempt to unregister fails, it will retry using the backoff policy.
+// Encapsulates the common logic applying to both GCM unregistration requests
+// and InstanceID delete-token requests. In case an attempt fails, it will retry
+// using the backoff policy.
 // TODO(fgorski): Consider sharing code with RegistrationRequest if possible.
 class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
  public:
@@ -55,7 +55,8 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
   // Callback completing the unregistration request.
   typedef base::Callback<void(Status success)> UnregistrationCallback;
 
-  // Details of the of the Unregistration Request. All parameters are mandatory.
+  // Defines the common info about an unregistration/token-deletion request.
+  // All parameters are mandatory.
   struct GCM_EXPORT RequestInfo {
     RequestInfo(uint64 android_id,
                 uint64 security_token,
@@ -70,12 +71,30 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
     std::string app_id;
   };
 
+  // Encapsulates the custom logic that is needed to build and process the
+  // unregistration request.
+  class GCM_EXPORT CustomRequestHandler {
+   public:
+    CustomRequestHandler();
+    virtual ~CustomRequestHandler();
+
+    // Builds the HTTP request body data. It is called after
+    // UnregistrationRequest::BuildRequestBody to append more custom info to
+    // |body|. Note that the request body is encoded in HTTP form format.
+    virtual void BuildRequestBody(std::string* body) = 0;
+
+    // Parses the HTTP response. It is called after
+    // UnregistrationRequest::ParseResponse to proceed the parsing.
+    virtual Status ParseResponse(const net::URLFetcher* source) = 0;
+  };
+
   // Creates an instance of UnregistrationRequest. |callback| will be called
   // once registration has been revoked or there has been an error that makes
   // further retries pointless.
   UnregistrationRequest(
       const GURL& registration_url,
       const RequestInfo& request_info,
+      scoped_ptr<CustomRequestHandler> custom_request_handler,
       const net::BackoffEntry::Policy& backoff_policy,
       const UnregistrationCallback& callback,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -85,16 +104,21 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
   // Starts an unregistration request.
   void Start();
 
+ private:
   // URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
- private:
+  void BuildRequestHeaders(std::string* extra_headers);
+  void BuildRequestBody(std::string* body);
+  Status ParseResponse(const net::URLFetcher* source);
+
   // Schedules a retry attempt and informs the backoff of previous request's
   // failure, when |update_backoff| is true.
   void RetryWithBackoff(bool update_backoff);
 
   UnregistrationCallback callback_;
   RequestInfo request_info_;
+  scoped_ptr<CustomRequestHandler> custom_request_handler_;
   GURL registration_url_;
 
   net::BackoffEntry backoff_entry_;

@@ -9,8 +9,8 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "google_apis/gcm/base/gcm_util.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
-#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -30,10 +30,6 @@ const char kRegistrationRequestContentType[] =
 const char kAppIdKey[] = "app";
 const char kDeviceIdKey[] = "device";
 const char kLoginHeader[] = "AidLogin";
-const char kSenderKey[] = "sender";
-
-// Request validation constants.
-const size_t kMaxSenders = 100;
 
 // Response constants.
 const char kErrorPrefix[] = "Error=";
@@ -42,14 +38,6 @@ const char kDeviceRegistrationError[] = "PHONE_REGISTRATION_ERROR";
 const char kAuthenticationFailed[] = "AUTHENTICATION_FAILED";
 const char kInvalidSender[] = "INVALID_SENDER";
 const char kInvalidParameters[] = "INVALID_PARAMETERS";
-
-void BuildFormEncoding(const std::string& key,
-                       const std::string& value,
-                       std::string* out) {
-  if (!out->empty())
-    out->append("&");
-  out->append(key + "=" + net::EscapeUrlEncodedData(value, true));
-}
 
 // Gets correct status from the error message.
 RegistrationRequest::Status GetStatusFromError(const std::string& error) {
@@ -87,31 +75,39 @@ void RecordRegistrationStatusToUMA(RegistrationRequest::Status status) {
 RegistrationRequest::RequestInfo::RequestInfo(
     uint64 android_id,
     uint64 security_token,
-    const std::string& app_id,
-    const std::vector<std::string>& sender_ids)
+    const std::string& app_id)
     : android_id(android_id),
       security_token(security_token),
-      app_id(app_id),
-      sender_ids(sender_ids) {
+      app_id(app_id) {
+  DCHECK(android_id != 0UL);
+  DCHECK(security_token != 0UL);
 }
 
 RegistrationRequest::RequestInfo::~RequestInfo() {}
 
+RegistrationRequest::CustomRequestHandler::CustomRequestHandler() {}
+
+RegistrationRequest::CustomRequestHandler::~CustomRequestHandler() {}
+
 RegistrationRequest::RegistrationRequest(
     const GURL& registration_url,
     const RequestInfo& request_info,
+    scoped_ptr<CustomRequestHandler> custom_request_handler,
     const net::BackoffEntry::Policy& backoff_policy,
     const RegistrationCallback& callback,
     int max_retry_count,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    GCMStatsRecorder* recorder)
+    GCMStatsRecorder* recorder,
+    const std::string& source_to_record)
     : callback_(callback),
       request_info_(request_info),
+      custom_request_handler_(custom_request_handler.Pass()),
       registration_url_(registration_url),
       backoff_entry_(&backoff_policy),
       request_context_getter_(request_context_getter),
       retries_left_(max_retry_count),
       recorder_(recorder),
+      source_to_record_(source_to_record),
       weak_ptr_factory_(this) {
   DCHECK_GE(max_retry_count, 0);
 }
@@ -120,49 +116,47 @@ RegistrationRequest::~RegistrationRequest() {}
 
 void RegistrationRequest::Start() {
   DCHECK(!callback_.is_null());
-  DCHECK(request_info_.android_id != 0UL);
-  DCHECK(request_info_.security_token != 0UL);
-  DCHECK(0 < request_info_.sender_ids.size() &&
-         request_info_.sender_ids.size() <= kMaxSenders);
-
   DCHECK(!url_fetcher_.get());
+
   url_fetcher_ =
       net::URLFetcher::Create(registration_url_, net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(request_context_getter_.get());
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);
 
-  std::string android_id = base::Uint64ToString(request_info_.android_id);
-  std::string auth_header =
-      std::string(net::HttpRequestHeaders::kAuthorization) + ": " +
-      kLoginHeader + " " + android_id + ":" +
-      base::Uint64ToString(request_info_.security_token);
-  url_fetcher_->SetExtraRequestHeaders(auth_header);
+  std::string extra_headers;
+  BuildRequestHeaders(&extra_headers);
+  url_fetcher_->SetExtraRequestHeaders(extra_headers);
 
   std::string body;
-  BuildFormEncoding(kAppIdKey, request_info_.app_id, &body);
-  BuildFormEncoding(kDeviceIdKey, android_id, &body);
-
-  std::string senders;
-  for (std::vector<std::string>::const_iterator iter =
-           request_info_.sender_ids.begin();
-       iter != request_info_.sender_ids.end();
-       ++iter) {
-    DCHECK(!iter->empty());
-    if (!senders.empty())
-      senders.append(",");
-    senders.append(*iter);
-  }
-  BuildFormEncoding(kSenderKey, senders, &body);
-  UMA_HISTOGRAM_COUNTS("GCM.RegistrationSenderIdCount",
-                       request_info_.sender_ids.size());
+  BuildRequestBody(&body);
 
   DVLOG(1) << "Performing registration for: " << request_info_.app_id;
   DVLOG(1) << "Registration request: " << body;
   url_fetcher_->SetUploadData(kRegistrationRequestContentType, body);
-  recorder_->RecordRegistrationSent(request_info_.app_id, senders);
+  recorder_->RecordRegistrationSent(request_info_.app_id, source_to_record_);
   request_start_time_ = base::TimeTicks::Now();
   url_fetcher_->Start();
+}
+
+void RegistrationRequest::BuildRequestHeaders(std::string* extra_headers) {
+  net::HttpRequestHeaders headers;
+  headers.SetHeader(
+      net::HttpRequestHeaders::kAuthorization,
+      std::string(kLoginHeader) + " " +
+          base::Uint64ToString(request_info_.android_id) + ":" +
+          base::Uint64ToString(request_info_.security_token));
+  *extra_headers = headers.ToString();
+}
+
+void RegistrationRequest::BuildRequestBody(std::string* body) {
+  BuildFormEncoding(kAppIdKey, request_info_.app_id, body);
+  BuildFormEncoding(kDeviceIdKey,
+                    base::Uint64ToString(request_info_.android_id),
+                    body);
+
+  DCHECK(custom_request_handler_.get());
+  custom_request_handler_->BuildRequestBody(body);
 }
 
 void RegistrationRequest::RetryWithBackoff(bool update_backoff) {
@@ -237,14 +231,14 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   RecordRegistrationStatusToUMA(status);
   recorder_->RecordRegistrationResponse(
       request_info_.app_id,
-      request_info_.sender_ids,
+      source_to_record_,
       status);
 
   if (ShouldRetryWithStatus(status)) {
     if (retries_left_ > 0) {
       recorder_->RecordRegistrationRetryRequested(
           request_info_.app_id,
-          request_info_.sender_ids,
+          source_to_record_,
           retries_left_);
       RetryWithBackoff(true);
       return;
@@ -253,7 +247,7 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
     status = REACHED_MAX_RETRIES;
     recorder_->RecordRegistrationResponse(
         request_info_.app_id,
-        request_info_.sender_ids,
+        source_to_record_,
         status);
     RecordRegistrationStatusToUMA(status);
   }

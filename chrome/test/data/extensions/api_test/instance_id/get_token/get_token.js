@@ -127,7 +127,6 @@ chrome.test.runTests([
   getTokenWithoutScope,
   getTokenWithInvalidScope,
   getTokenWithInvalidOptionValue,
-  // TODO(jianli): To be enabled when GetToken is implemented.
-  //getTokenWithoutOptions,
-  //getTokenWithValidOptions,
+  getTokenWithoutOptions,
+  getTokenWithValidOptions,
 ]);

@@ -338,7 +338,7 @@ class GCMStatsRecorderImplTest : public testing::Test {
     EXPECT_EQ(details, queue.front().details) << remark;
   }
 
-  std::vector<std::string> sender_ids_;
+  std::string sender_ids_;
   GCMStatsRecorderImpl recorder_;
 };
 
@@ -348,8 +348,7 @@ GCMStatsRecorderImplTest::GCMStatsRecorderImplTest(){
 GCMStatsRecorderImplTest::~GCMStatsRecorderImplTest() {}
 
 void GCMStatsRecorderImplTest::SetUp(){
-  sender_ids_.push_back("s1");
-  sender_ids_.push_back("s2");
+  sender_ids_ = "s1,s2";
   recorder_.SetRecording(true);
 }
 

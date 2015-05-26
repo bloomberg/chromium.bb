@@ -54,6 +54,8 @@
         'gcm_driver/gcm_driver_desktop.h',
         'gcm_driver/gcm_stats_recorder_impl.cc',
         'gcm_driver/gcm_stats_recorder_impl.h',
+        'gcm_driver/registration_info.cc',
+        'gcm_driver/registration_info.h',
         'gcm_driver/system_encryptor.cc',
         'gcm_driver/system_encryptor.h',
       ],

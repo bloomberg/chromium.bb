@@ -20,7 +20,6 @@
 #include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/engine/account_mapping.h"
-#include "google_apis/gcm/engine/registration_info.h"
 
 namespace gcm {
 
@@ -47,7 +46,7 @@ class GCM_EXPORT GCMStore {
     bool success;
     uint64 device_android_id;
     uint64 device_security_token;
-    RegistrationInfoMap registrations;
+    std::map<std::string, std::string> registrations;
     std::vector<std::string> incoming_messages;
     OutgoingMessageMap outgoing_messages;
     std::map<std::string, std::string> gservices_settings;
@@ -82,11 +81,15 @@ class GCM_EXPORT GCMStore {
                                     uint64 device_security_token,
                                     const UpdateCallback& callback) = 0;
 
-  // Registration info.
-  virtual void AddRegistration(const std::string& app_id,
-                               const linked_ptr<RegistrationInfo>& registration,
+  // Registration info for both GCM registrations and InstanceID tokens.
+  // For GCM, |serialized_key| is app_id and |serialized_value| is
+  // serialization of (senders, registration_id). For InstanceID,
+  // |serialized_key| is serialization of (app_id, authorized_entity, scope)
+  // and |serialized_value| is token.
+  virtual void AddRegistration(const std::string& serialized_key,
+                               const std::string& serialized_value,
                                const UpdateCallback& callback) = 0;
-  virtual void RemoveRegistration(const std::string& app_id,
+  virtual void RemoveRegistration(const std::string& serialized_key,
                                   const UpdateCallback& callback) = 0;
 
   // Unacknowledged incoming message handling.

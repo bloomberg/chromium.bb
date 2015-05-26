@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/tuple.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
@@ -44,7 +45,7 @@ class GCMDelayedTaskController;
 
 // GCMDriver implementation for desktop and Chrome OS, using GCMClient.
 class GCMDriverDesktop : public GCMDriver,
-                         public InstanceIDStore {
+                         public InstanceIDHandler {
  public:
   GCMDriverDesktop(
       scoped_ptr<GCMClientFactory> gcm_client_factory,
@@ -84,13 +85,23 @@ class GCMDriverDesktop : public GCMDriver,
   base::Time GetLastTokenFetchTime() override;
   void SetLastTokenFetchTime(const base::Time& time) override;
   void WakeFromSuspendForHeartbeat(bool wake) override;
-  InstanceIDStore* GetInstanceIDStore() override;
+  InstanceIDHandler* GetInstanceIDHandler() override;
   void AddHeartbeatInterval(const std::string& scope, int interval_ms) override;
   void RemoveHeartbeatInterval(const std::string& scope) override;
 
-  // InstanceIDStore overrides:
+  // InstanceIDHandler overrides:
+  void GetToken(const std::string& app_id,
+                const std::string& authorized_entity,
+                const std::string& scope,
+                const std::map<std::string, std::string>& options,
+                const GetTokenCallback& callback) override;
+  void DeleteToken(const std::string& app_id,
+                   const std::string& authorized_entity,
+                   const std::string& scope,
+                   const DeleteTokenCallback& callback) override;
   void AddInstanceIDData(const std::string& app_id,
-                         const std::string& instance_id_data) override;
+                         const std::string& instance_id,
+                         const std::string& extra_data) override;
   void RemoveInstanceIDData(const std::string& app_id) override;
   void GetInstanceIDData(const std::string& app_id,
                          const GetInstanceIDDataCallback& callback) override;
@@ -113,6 +124,11 @@ class GCMDriverDesktop : public GCMDriver,
 
  private:
   class IOWorker;
+
+  typedef Tuple<std::string, std::string, std::string> TokenTuple;
+  struct TokenTupleComparer {
+    bool operator()(const TokenTuple& a, const TokenTuple& b) const;
+  };
 
   //  Stops the GCM service. It can be restarted by calling EnsureStarted again.
   void Stop();
@@ -142,7 +158,17 @@ class GCMDriverDesktop : public GCMDriver,
 
   void GetGCMStatisticsFinished(const GCMClient::GCMStatistics& stats);
   void GetInstanceIDDataFinished(const std::string& app_id,
-                                 const std::string& instance_id_data);
+                                 const std::string& instance_id,
+                                 const std::string& extra_data);
+  void GetTokenFinished(const std::string& app_id,
+                        const std::string& authorized_entity,
+                        const std::string& scope,
+                        const std::string& token,
+                        GCMClient::Result result);
+  void DeleteTokenFinished(const std::string& app_id,
+                           const std::string& authorized_entity,
+                           const std::string& scope,
+                           GCMClient::Result result);
 
   scoped_ptr<GCMChannelStatusSyncer> gcm_channel_status_syncer_;
 
@@ -188,6 +214,12 @@ class GCMDriverDesktop : public GCMDriver,
   // Callbacks for GetInstanceIDData.
   std::map<std::string, GetInstanceIDDataCallback>
       get_instance_id_data_callbacks_;
+
+  // Callbacks for GetToken/DeleteToken.
+  std::map<TokenTuple, GetTokenCallback, TokenTupleComparer>
+      get_token_callbacks_;
+  std::map<TokenTuple, DeleteTokenCallback, TokenTupleComparer>
+      delete_token_callbacks_;
 
   // Used to pass a weak pointer to the IO worker.
   base::WeakPtrFactory<GCMDriverDesktop> weak_ptr_factory_;

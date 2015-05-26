@@ -32,7 +32,7 @@ class GCM_EXPORT GCMStatsRecorder {
   // A delegate interface that allows the GCMStatsRecorderImpl instance to
   // interact with its container.
   class Delegate {
-  public:
+   public:
     // Called when the GCMStatsRecorderImpl is recording activities and a new
     // activity has just been recorded.
     virtual void OnActivityRecorded() = 0;
@@ -73,19 +73,19 @@ class GCM_EXPORT GCMStatsRecorder {
   // Records that a registration request has been sent. This could be initiated
   // directly from API, or from retry logic.
   virtual void RecordRegistrationSent(const std::string& app_id,
-                                      const std::string& sender_ids) = 0;
+                                      const std::string& senders) = 0;
 
   // Records that a registration response has been received from server.
   virtual void RecordRegistrationResponse(
       const std::string& app_id,
-      const std::vector<std::string>& sender_ids,
+      const std::string& senders,
       RegistrationRequest::Status status) = 0;
 
   // Records that a registration retry has been requested. The actual retry
   // action may not occur until some time later according to backoff logic.
   virtual void RecordRegistrationRetryRequested(
       const std::string& app_id,
-      const std::vector<std::string>& sender_ids,
+      const std::string& senders,
       int retries_left) = 0;
 
   // Records that an unregistration request has been sent. This could be

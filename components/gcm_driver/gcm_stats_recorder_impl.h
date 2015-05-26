@@ -55,13 +55,13 @@ class GCMStatsRecorderImpl : public GCMStatsRecorder {
   void RecordConnectionResetSignaled(
       ConnectionFactory::ConnectionResetReason reason) override;
   void RecordRegistrationSent(const std::string& app_id,
-                              const std::string& sender_ids) override;
+                              const std::string& senders) override;
   void RecordRegistrationResponse(const std::string& app_id,
-                                  const std::vector<std::string>& sender_ids,
+                                  const std::string& senders,
                                   RegistrationRequest::Status status) override;
   void RecordRegistrationRetryRequested(
       const std::string& app_id,
-      const std::vector<std::string>& sender_ids,
+      const std::string& senders,
       int retries_left) override;
   void RecordUnregistrationSent(const std::string& app_id) override;
   void RecordUnregistrationResponse(

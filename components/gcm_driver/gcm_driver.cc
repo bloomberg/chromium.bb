@@ -12,10 +12,14 @@
 
 namespace gcm {
 
-InstanceIDStore::InstanceIDStore() {
+namespace {
+const size_t kMaxSenders = 100;
+}  // namespace
+
+InstanceIDHandler::InstanceIDHandler() {
 }
 
-InstanceIDStore::~InstanceIDStore() {
+InstanceIDHandler::~InstanceIDHandler() {
 }
 
 GCMDriver::GCMDriver() : weak_ptr_factory_(this) {
@@ -28,7 +32,7 @@ void GCMDriver::Register(const std::string& app_id,
                          const std::vector<std::string>& sender_ids,
                          const RegisterCallback& callback) {
   DCHECK(!app_id.empty());
-  DCHECK(!sender_ids.empty());
+  DCHECK(!sender_ids.empty() && sender_ids.size() <= kMaxSenders);
   DCHECK(!callback.is_null());
 
   GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);

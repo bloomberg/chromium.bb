@@ -39,6 +39,8 @@ static_library("gcm_driver") {
     "gcm_driver_desktop.h",
     "gcm_stats_recorder_impl.cc",
     "gcm_stats_recorder_impl.h",
+    "registration_info.cc",
+    "registration_info.h",
     "system_encryptor.cc",
     "system_encryptor.h",
   ]

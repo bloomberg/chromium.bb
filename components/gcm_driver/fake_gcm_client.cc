@@ -74,27 +74,33 @@ void FakeGCMClient::Stop() {
   delegate_->OnDisconnected();
 }
 
-void FakeGCMClient::Register(const std::string& app_id,
-                             const std::vector<std::string>& sender_ids) {
+void FakeGCMClient::Register(
+    const linked_ptr<RegistrationInfo>& registration_info) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
-  std::string registration_id = GetRegistrationIdFromSenderIds(sender_ids);
+  GCMRegistrationInfo* gcm_registration_info =
+      GCMRegistrationInfo::FromRegistrationInfo(registration_info.get());
+  DCHECK(gcm_registration_info);
+
+  std::string registration_id = GetRegistrationIdFromSenderIds(
+      gcm_registration_info->sender_ids);
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMClient::RegisterFinished,
                  weak_ptr_factory_.GetWeakPtr(),
-                 app_id,
+                 registration_info,
                  registration_id));
 }
 
-void FakeGCMClient::Unregister(const std::string& app_id) {
+void FakeGCMClient::Unregister(
+    const linked_ptr<RegistrationInfo>& registration_info) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMClient::UnregisterFinished,
                  weak_ptr_factory_.GetWeakPtr(),
-                 app_id));
+                 registration_info));
 }
 
 void FakeGCMClient::Send(const std::string& app_id,
@@ -138,14 +144,16 @@ void FakeGCMClient::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
 }
 
 void FakeGCMClient::AddInstanceIDData(const std::string& app_id,
-                                      const std::string& instance_id_data) {
+                                      const std::string& instance_id,
+                                      const std::string& extra_data) {
 }
 
 void FakeGCMClient::RemoveInstanceIDData(const std::string& app_id) {
 }
 
-std::string FakeGCMClient::GetInstanceIDData(const std::string& app_id) {
-  return std::string();
+void FakeGCMClient::GetInstanceIDData(const std::string& app_id,
+                                      std::string* instance_id,
+                                      std::string* extra_data) {
 }
 
 void FakeGCMClient::AddHeartbeatInterval(const std::string& scope,
@@ -211,14 +219,18 @@ void FakeGCMClient::Started() {
   delegate_->OnConnected(net::IPEndPoint());
 }
 
-void FakeGCMClient::RegisterFinished(const std::string& app_id,
-                                     const std::string& registrion_id) {
+void FakeGCMClient::RegisterFinished(
+    const linked_ptr<RegistrationInfo>& registration_info,
+    const std::string& registrion_id) {
   delegate_->OnRegisterFinished(
-      app_id, registrion_id, registrion_id.empty() ? SERVER_ERROR : SUCCESS);
+      registration_info,
+      registrion_id,
+      registrion_id.empty() ? SERVER_ERROR : SUCCESS);
 }
 
-void FakeGCMClient::UnregisterFinished(const std::string& app_id) {
-  delegate_->OnUnregisterFinished(app_id, GCMClient::SUCCESS);
+void FakeGCMClient::UnregisterFinished(
+    const linked_ptr<RegistrationInfo>& registration_info) {
+  delegate_->OnUnregisterFinished(registration_info, GCMClient::SUCCESS);
 }
 
 void FakeGCMClient::SendFinished(const std::string& app_id,

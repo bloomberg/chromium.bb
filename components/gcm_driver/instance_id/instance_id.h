@@ -30,6 +30,8 @@ class InstanceID {
     INVALID_PARAMETER,
     // Instance ID is disabled.
     DISABLED,
+    // Previous asynchronous operation is still pending to finish.
+    ASYNC_OPERATION_PENDING,
     // Network socket error.
     NETWORK_ERROR,
     // Problem at the server.

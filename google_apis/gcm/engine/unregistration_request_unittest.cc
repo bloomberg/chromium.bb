@@ -8,7 +8,8 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
-#include "google_apis/gcm/engine/unregistration_request.h"
+#include "google_apis/gcm/engine/gcm_unregistration_request_handler.h"
+#include "google_apis/gcm/engine/instance_id_delete_token_request_handler.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -21,8 +22,13 @@ const uint64 kAndroidId = 42UL;
 const char kLoginHeader[] = "AidLogin";
 const char kAppId[] = "TestAppId";
 const char kDeletedAppId[] = "deleted=TestAppId";
+const char kDeletedToken[] = "token=SomeToken";
 const char kRegistrationURL[] = "http://foo.bar/register";
 const uint64 kSecurityToken = 77UL;
+const int kGCMVersion = 40;
+const char kInstanceId[] = "IID1";
+const char kDeveloperId[] = "Project1";
+const char kScope[] = "GCM";
 
 // Backoff policy for testing registration request.
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
@@ -61,7 +67,6 @@ class UnregistrationRequestTest : public testing::Test {
 
   void UnregistrationCallback(UnregistrationRequest::Status status);
 
-  void CreateRequest();
   void SetResponseStatusAndString(net::HttpStatusCode status_code,
                                   const std::string& response_body);
   void CompleteFetch();
@@ -90,19 +95,6 @@ void UnregistrationRequestTest::UnregistrationCallback(
   status_ = status;
 }
 
-void UnregistrationRequestTest::CreateRequest() {
-  request_.reset(new UnregistrationRequest(
-      GURL(kRegistrationURL),
-      UnregistrationRequest::RequestInfo(kAndroidId,
-                                         kSecurityToken,
-                                         kAppId),
-      kDefaultBackoffPolicy,
-      base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
-                 base::Unretained(this)),
-      url_request_context_getter_.get(),
-      &recorder_));
-}
-
 void UnregistrationRequestTest::SetResponseStatusAndString(
     net::HttpStatusCode status_code,
     const std::string& response_body) {
@@ -120,7 +112,37 @@ void UnregistrationRequestTest::CompleteFetch() {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
-TEST_F(UnregistrationRequestTest, RequestDataPassedToFetcher) {
+class GCMUnregistrationRequestTest : public UnregistrationRequestTest {
+ public:
+  GCMUnregistrationRequestTest();
+  ~GCMUnregistrationRequestTest() override;
+
+  void CreateRequest();
+};
+
+GCMUnregistrationRequestTest::GCMUnregistrationRequestTest() {
+}
+
+GCMUnregistrationRequestTest::~GCMUnregistrationRequestTest() {
+}
+
+void GCMUnregistrationRequestTest::CreateRequest() {
+  UnregistrationRequest::RequestInfo request_info(
+      kAndroidId, kSecurityToken, kAppId);
+  scoped_ptr<GCMUnregistrationRequestHandler> request_handler(
+      new GCMUnregistrationRequestHandler(kAppId));
+  request_.reset(new UnregistrationRequest(
+      GURL(kRegistrationURL),
+      request_info,
+      request_handler.Pass(),
+      kDefaultBackoffPolicy,
+      base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
+                 base::Unretained(this)),
+      url_request_context_getter_.get(),
+      &recorder_));
+}
+
+TEST_F(GCMUnregistrationRequestTest, RequestDataPassedToFetcher) {
   CreateRequest();
   request_->Start();
 
@@ -168,7 +190,7 @@ TEST_F(UnregistrationRequestTest, RequestDataPassedToFetcher) {
   EXPECT_EQ(0UL, expected_pairs.size());
 }
 
-TEST_F(UnregistrationRequestTest, SuccessfulUnregistration) {
+TEST_F(GCMUnregistrationRequestTest, SuccessfulUnregistration) {
   CreateRequest();
   request_->Start();
 
@@ -179,7 +201,7 @@ TEST_F(UnregistrationRequestTest, SuccessfulUnregistration) {
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
-TEST_F(UnregistrationRequestTest, ResponseHttpStatusNotOK) {
+TEST_F(GCMUnregistrationRequestTest, ResponseHttpStatusNotOK) {
   CreateRequest();
   request_->Start();
 
@@ -190,7 +212,7 @@ TEST_F(UnregistrationRequestTest, ResponseHttpStatusNotOK) {
   EXPECT_EQ(UnregistrationRequest::HTTP_NOT_OK, status_);
 }
 
-TEST_F(UnregistrationRequestTest, ResponseEmpty) {
+TEST_F(GCMUnregistrationRequestTest, ResponseEmpty) {
   CreateRequest();
   request_->Start();
 
@@ -206,7 +228,7 @@ TEST_F(UnregistrationRequestTest, ResponseEmpty) {
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
-TEST_F(UnregistrationRequestTest, InvalidParametersError) {
+TEST_F(GCMUnregistrationRequestTest, InvalidParametersError) {
   CreateRequest();
   request_->Start();
 
@@ -217,7 +239,7 @@ TEST_F(UnregistrationRequestTest, InvalidParametersError) {
   EXPECT_EQ(UnregistrationRequest::INVALID_PARAMETERS, status_);
 }
 
-TEST_F(UnregistrationRequestTest, UnkwnownError) {
+TEST_F(GCMUnregistrationRequestTest, UnkwnownError) {
   CreateRequest();
   request_->Start();
 
@@ -228,7 +250,7 @@ TEST_F(UnregistrationRequestTest, UnkwnownError) {
   EXPECT_EQ(UnregistrationRequest::UNKNOWN_ERROR, status_);
 }
 
-TEST_F(UnregistrationRequestTest, ServiceUnavailable) {
+TEST_F(GCMUnregistrationRequestTest, ServiceUnavailable) {
   CreateRequest();
   request_->Start();
 
@@ -244,7 +266,7 @@ TEST_F(UnregistrationRequestTest, ServiceUnavailable) {
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
-TEST_F(UnregistrationRequestTest, InternalServerError) {
+TEST_F(GCMUnregistrationRequestTest, InternalServerError) {
   CreateRequest();
   request_->Start();
 
@@ -260,7 +282,7 @@ TEST_F(UnregistrationRequestTest, InternalServerError) {
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
-TEST_F(UnregistrationRequestTest, IncorrectAppId) {
+TEST_F(GCMUnregistrationRequestTest, IncorrectAppId) {
   CreateRequest();
   request_->Start();
 
@@ -276,7 +298,7 @@ TEST_F(UnregistrationRequestTest, IncorrectAppId) {
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
 
-TEST_F(UnregistrationRequestTest, ResponseParsingFailed) {
+TEST_F(GCMUnregistrationRequestTest, ResponseParsingFailed) {
   CreateRequest();
   request_->Start();
 
@@ -290,6 +312,115 @@ TEST_F(UnregistrationRequestTest, ResponseParsingFailed) {
 
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
+}
+
+class InstaceIDDeleteTokenRequestTest : public UnregistrationRequestTest {
+ public:
+  InstaceIDDeleteTokenRequestTest();
+  ~InstaceIDDeleteTokenRequestTest() override;
+
+  void CreateRequest(const std::string& instance_id,
+                     const std::string& authorized_entity,
+                     const std::string& scope);
+};
+
+InstaceIDDeleteTokenRequestTest::InstaceIDDeleteTokenRequestTest() {
+}
+
+InstaceIDDeleteTokenRequestTest::~InstaceIDDeleteTokenRequestTest() {
+}
+
+void InstaceIDDeleteTokenRequestTest::CreateRequest(
+    const std::string& instance_id,
+    const std::string& authorized_entity,
+    const std::string& scope) {
+  UnregistrationRequest::RequestInfo request_info(
+      kAndroidId, kSecurityToken, kAppId);
+  scoped_ptr<InstanceIDDeleteTokenRequestHandler> request_handler(
+      new InstanceIDDeleteTokenRequestHandler(
+          instance_id, authorized_entity, scope, kGCMVersion));
+  request_.reset(new UnregistrationRequest(
+      GURL(kRegistrationURL),
+      request_info,
+      request_handler.Pass(),
+      kDefaultBackoffPolicy,
+      base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
+                 base::Unretained(this)),
+      url_request_context_getter_.get(),
+      &recorder_));
+}
+
+TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataPassedToFetcher) {
+  CreateRequest(kInstanceId, kDeveloperId, kScope);
+  request_->Start();
+
+  // Get data sent by request.
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+
+  EXPECT_EQ(GURL(kRegistrationURL), fetcher->GetOriginalURL());
+
+  // Verify that authorization header was put together properly.
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+  std::string auth_header;
+  headers.GetHeader(net::HttpRequestHeaders::kAuthorization, &auth_header);
+  base::StringTokenizer auth_tokenizer(auth_header, " :");
+  ASSERT_TRUE(auth_tokenizer.GetNext());
+  EXPECT_EQ(kLoginHeader, auth_tokenizer.token());
+  ASSERT_TRUE(auth_tokenizer.GetNext());
+  EXPECT_EQ(base::Uint64ToString(kAndroidId), auth_tokenizer.token());
+  ASSERT_TRUE(auth_tokenizer.GetNext());
+  EXPECT_EQ(base::Uint64ToString(kSecurityToken), auth_tokenizer.token());
+  std::string app_id_header;
+  headers.GetHeader("app", &app_id_header);
+  EXPECT_EQ(kAppId, app_id_header);
+
+  std::map<std::string, std::string> expected_pairs;
+  expected_pairs["gmsv"] = base::IntToString(kGCMVersion);
+  expected_pairs["app"] = kAppId;
+  expected_pairs["device"] = base::Uint64ToString(kAndroidId);
+  expected_pairs["delete"] = "true";
+  expected_pairs["appid"] = kInstanceId;
+  expected_pairs["sender"] = kDeveloperId;
+  expected_pairs["scope"] = kScope;
+
+  // Verify data was formatted properly.
+  std::string upload_data = fetcher->upload_data();
+  base::StringTokenizer data_tokenizer(upload_data, "&=");
+  while (data_tokenizer.GetNext()) {
+    std::map<std::string, std::string>::iterator iter =
+        expected_pairs.find(data_tokenizer.token());
+    ASSERT_TRUE(iter != expected_pairs.end()) << data_tokenizer.token();
+    ASSERT_TRUE(data_tokenizer.GetNext()) << data_tokenizer.token();
+    EXPECT_EQ(iter->second, data_tokenizer.token());
+    // Ensure that none of the keys appears twice.
+    expected_pairs.erase(iter);
+  }
+
+  EXPECT_EQ(0UL, expected_pairs.size());
+}
+
+TEST_F(InstaceIDDeleteTokenRequestTest, SuccessfulUnregistration) {
+  CreateRequest(kInstanceId, kDeveloperId, kScope);
+  request_->Start();
+
+  SetResponseStatusAndString(net::HTTP_OK, kDeletedToken);
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
+}
+
+TEST_F(InstaceIDDeleteTokenRequestTest, ResponseHttpStatusNotOK) {
+  CreateRequest(kInstanceId, kDeveloperId, kScope);
+  request_->Start();
+
+  SetResponseStatusAndString(net::HTTP_UNAUTHORIZED, "");
+  CompleteFetch();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(UnregistrationRequest::HTTP_NOT_OK, status_);
 }
 
 }  // namespace gcm

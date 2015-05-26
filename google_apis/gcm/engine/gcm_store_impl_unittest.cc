@@ -232,22 +232,17 @@ TEST_F(GCMStoreImplTest, Registrations) {
   PumpLoop();
 
   // Add one registration with one sender.
-  linked_ptr<RegistrationInfo> registration1(new RegistrationInfo);
-  registration1->sender_ids.push_back("sender1");
-  registration1->registration_id = "registration1";
+  std::string registration = "sender1=registration1";
   gcm_store->AddRegistration(
-      "app1",
-      registration1,
+      kAppName,
+      registration,
       base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
   PumpLoop();
 
   // Add one registration with multiple senders.
-  linked_ptr<RegistrationInfo> registration2(new RegistrationInfo);
-  registration2->sender_ids.push_back("sender2_1");
-  registration2->sender_ids.push_back("sender2_2");
-  registration2->registration_id = "registration2";
+  std::string registration2 = "sender1,sender2=registration2";
   gcm_store->AddRegistration(
-      "app2",
+      kAppName2,
       registration2,
       base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
   PumpLoop();
@@ -258,25 +253,15 @@ TEST_F(GCMStoreImplTest, Registrations) {
   PumpLoop();
 
   ASSERT_EQ(2u, load_result->registrations.size());
-  ASSERT_TRUE(load_result->registrations.find("app1") !=
+  ASSERT_TRUE(load_result->registrations.find(kAppName) !=
               load_result->registrations.end());
-  EXPECT_EQ(registration1->registration_id,
-            load_result->registrations["app1"]->registration_id);
-  ASSERT_EQ(1u, load_result->registrations["app1"]->sender_ids.size());
-  EXPECT_EQ(registration1->sender_ids[0],
-            load_result->registrations["app1"]->sender_ids[0]);
-  ASSERT_TRUE(load_result->registrations.find("app2") !=
+  EXPECT_EQ(registration, load_result->registrations[kAppName]);
+  ASSERT_TRUE(load_result->registrations.find(kAppName2) !=
               load_result->registrations.end());
-  EXPECT_EQ(registration2->registration_id,
-            load_result->registrations["app2"]->registration_id);
-  ASSERT_EQ(2u, load_result->registrations["app2"]->sender_ids.size());
-  EXPECT_EQ(registration2->sender_ids[0],
-            load_result->registrations["app2"]->sender_ids[0]);
-  EXPECT_EQ(registration2->sender_ids[1],
-            load_result->registrations["app2"]->sender_ids[1]);
+  EXPECT_EQ(registration2, load_result->registrations[kAppName2]);
 
   gcm_store->RemoveRegistration(
-      "app2",
+      kAppName2,
       base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
   PumpLoop();
 
@@ -286,13 +271,9 @@ TEST_F(GCMStoreImplTest, Registrations) {
   PumpLoop();
 
   ASSERT_EQ(1u, load_result->registrations.size());
-  ASSERT_TRUE(load_result->registrations.find("app1") !=
+  ASSERT_TRUE(load_result->registrations.find(kAppName) !=
               load_result->registrations.end());
-  EXPECT_EQ(registration1->registration_id,
-            load_result->registrations["app1"]->registration_id);
-  ASSERT_EQ(1u, load_result->registrations["app1"]->sender_ids.size());
-  EXPECT_EQ(registration1->sender_ids[0],
-            load_result->registrations["app1"]->sender_ids[0]);
+  EXPECT_EQ(registration, load_result->registrations[kAppName]);
 }
 
 // Verify saving some incoming messages, reopening the directory, and then

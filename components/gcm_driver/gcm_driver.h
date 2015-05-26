@@ -22,24 +22,41 @@ class GCMAppHandler;
 class GCMConnectionObserver;
 struct AccountMapping;
 
-// Provides the capability to set/get InstanceID data in the GCM store.
-class InstanceIDStore {
+// Provides the InstanceID support via GCMDriver.
+class InstanceIDHandler {
  public:
-  typedef base::Callback<void(const std::string& instance_id_data)>
+  typedef base::Callback<void(const std::string& token,
+                              GCMClient::Result result)> GetTokenCallback;
+  typedef base::Callback<void(GCMClient::Result result)> DeleteTokenCallback;
+  typedef base::Callback<void(const std::string& instance_id,
+                              const std::string& extra_data)>
       GetInstanceIDDataCallback;
 
-  InstanceIDStore();
-  virtual ~InstanceIDStore();
+  InstanceIDHandler();
+  virtual ~InstanceIDHandler();
 
+  // Token service.
+  virtual void GetToken(const std::string& app_id,
+                        const std::string& authorized_entity,
+                        const std::string& scope,
+                        const std::map<std::string, std::string>& options,
+                        const GetTokenCallback& callback) = 0;
+  virtual void DeleteToken(const std::string& app_id,
+                           const std::string& authorized_entity,
+                           const std::string& scope,
+                           const DeleteTokenCallback& callback) = 0;
+
+  // Persistence support.
   virtual void AddInstanceIDData(const std::string& app_id,
-                                 const std::string& instance_id_data) = 0;
+                                 const std::string& instance_id,
+                                 const std::string& extra_data) = 0;
   virtual void RemoveInstanceIDData(const std::string& app_id) = 0;
   virtual void GetInstanceIDData(
       const std::string& app_id,
       const GetInstanceIDDataCallback& callback) = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InstanceIDStore);
+  DISALLOW_COPY_AND_ASSIGN(InstanceIDHandler);
 };
 
 // Bridge between GCM users in Chrome and the platform-specific implementation.
@@ -166,8 +183,8 @@ class GCMDriver {
   // to send a heartbeat message.
   virtual void WakeFromSuspendForHeartbeat(bool wake) = 0;
 
-  // Supports saving the Instance ID data in the GCM store.
-  virtual InstanceIDStore* GetInstanceIDStore() = 0;
+  // Supports InstanceID handling.
+  virtual InstanceIDHandler* GetInstanceIDHandler() = 0;
 
   // Adds or removes a custom client requested heartbeat interval. If multiple
   // components set that setting, the lowest setting will be used. If the

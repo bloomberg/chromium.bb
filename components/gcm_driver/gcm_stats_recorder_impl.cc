@@ -272,14 +272,14 @@ void GCMStatsRecorderImpl::RecordConnectionResetSignaled(
 
 void GCMStatsRecorderImpl::RecordRegistration(
     const std::string& app_id,
-    const std::string& sender_ids,
+    const std::string& senders,
     const std::string& event,
     const std::string& details) {
   RegistrationActivity data;
   RegistrationActivity* inserted_data = InsertCircularBuffer(
       &registration_activities_, data);
   inserted_data->app_id = app_id;
-  inserted_data->sender_ids = sender_ids;
+  inserted_data->sender_ids = senders;
   inserted_data->event = event;
   inserted_data->details = details;
   NotifyActivityRecorded();
@@ -297,22 +297,22 @@ void GCMStatsRecorderImpl::RecordRegistrationSent(
 
 void GCMStatsRecorderImpl::RecordRegistrationResponse(
     const std::string& app_id,
-    const std::vector<std::string>& sender_ids,
+    const std::string& senders,
     RegistrationRequest::Status status) {
   if (!is_recording_)
     return;
-  RecordRegistration(app_id, JoinString(sender_ids, ","),
+  RecordRegistration(app_id, senders,
                      "Registration response received",
                      GetRegistrationStatusString(status));
 }
 
 void GCMStatsRecorderImpl::RecordRegistrationRetryRequested(
     const std::string& app_id,
-    const std::vector<std::string>& sender_ids,
+    const std::string& senders,
     int retries_left) {
   if (!is_recording_)
     return;
-  RecordRegistration(app_id, JoinString(sender_ids, ","),
+  RecordRegistration(app_id, senders,
                      "Registration retry requested",
                      base::StringPrintf("Retries left: %d", retries_left));
 }

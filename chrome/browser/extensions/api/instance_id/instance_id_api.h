@@ -92,7 +92,7 @@ class InstanceIDGetTokenFunction : public InstanceIDApiFunction {
 
 class InstanceIDDeleteTokenFunction : public InstanceIDApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("instanceID.DeleteToken", INSTANCEID_DELETETOKEN);
+  DECLARE_EXTENSION_FUNCTION("instanceID.deleteToken", INSTANCEID_DELETETOKEN);
 
   InstanceIDDeleteTokenFunction();
 

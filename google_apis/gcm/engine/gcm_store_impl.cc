@@ -190,10 +190,10 @@ class GCMStoreImpl::Backend
   void SetDeviceCredentials(uint64 device_android_id,
                             uint64 device_security_token,
                             const UpdateCallback& callback);
-  void AddRegistration(const std::string& app_id,
-                       const std::string& serialized_registration,
+  void AddRegistration(const std::string& serialized_key,
+                       const std::string& serialized_value,
                        const UpdateCallback& callback);
-  void RemoveRegistration(const std::string& app_id,
+  void RemoveRegistration(const std::string& serialized_key,
                           const UpdateCallback& callback);
   void AddIncomingMessage(const std::string& persistent_id,
                           const UpdateCallback& callback);
@@ -244,7 +244,7 @@ class GCMStoreImpl::Backend
 
   LoadStatus OpenStoreAndLoadData(LoadResult* result);
   bool LoadDeviceCredentials(uint64* android_id, uint64* security_token);
-  bool LoadRegistrations(RegistrationInfoMap* registrations);
+  bool LoadRegistrations(std::map<std::string, std::string>* registrations);
   bool LoadIncomingMessages(std::vector<std::string>* incoming_messages);
   bool LoadOutgoingMessages(OutgoingMessageMap* outgoing_messages);
   bool LoadLastCheckinInfo(base::Time* last_checkin_time,
@@ -417,10 +417,10 @@ void GCMStoreImpl::Backend::SetDeviceCredentials(
 }
 
 void GCMStoreImpl::Backend::AddRegistration(
-    const std::string& app_id,
-    const std::string& serialized_registration,
+    const std::string& serialized_key,
+    const std::string& serialized_value,
     const UpdateCallback& callback) {
-  DVLOG(1) << "Saving registration info for app: " << app_id;
+  DVLOG(1) << "Saving registration info for app: " << serialized_key;
   if (!db_.get()) {
     LOG(ERROR) << "GCMStore db doesn't exist.";
     foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
@@ -429,20 +429,19 @@ void GCMStoreImpl::Backend::AddRegistration(
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
-  std::string key = MakeRegistrationKey(app_id);
-  const leveldb::Status status = db_->Put(write_options,
-                                          MakeSlice(key),
-                                          MakeSlice(serialized_registration));
-  if (status.ok()) {
-    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
-    return;
-  }
-  LOG(ERROR) << "LevelDB put failed: " << status.ToString();
-  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+  const leveldb::Status status = db_->Put(
+      write_options,
+      MakeSlice(MakeRegistrationKey(serialized_key)),
+      MakeSlice(serialized_value));
+  if (!status.ok())
+    LOG(ERROR) << "LevelDB put failed: " << status.ToString();
+  foreground_task_runner_->PostTask(
+      FROM_HERE, base::Bind(callback, status.ok()));
 }
 
-void GCMStoreImpl::Backend::RemoveRegistration(const std::string& app_id,
-                                               const UpdateCallback& callback) {
+void GCMStoreImpl::Backend::RemoveRegistration(
+    const std::string& serialized_key,
+    const UpdateCallback& callback) {
   if (!db_.get()) {
     LOG(ERROR) << "GCMStore db doesn't exist.";
     foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
@@ -451,14 +450,12 @@ void GCMStoreImpl::Backend::RemoveRegistration(const std::string& app_id,
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
-  leveldb::Status status =
-      db_->Delete(write_options, MakeSlice(MakeRegistrationKey(app_id)));
-  if (status.ok()) {
-    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
-    return;
-  }
-  LOG(ERROR) << "LevelDB remove failed: " << status.ToString();
-  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+  leveldb::Status status = db_->Delete(
+      write_options, MakeSlice(MakeRegistrationKey(serialized_key)));
+  if (!status.ok())
+    LOG(ERROR) << "LevelDB remove failed: " << status.ToString();
+  foreground_task_runner_->PostTask(
+      FROM_HERE, base::Bind(callback, status.ok()));
 }
 
 void GCMStoreImpl::Backend::AddIncomingMessage(const std::string& persistent_id,
@@ -902,7 +899,7 @@ bool GCMStoreImpl::Backend::LoadDeviceCredentials(uint64* android_id,
 }
 
 bool GCMStoreImpl::Backend::LoadRegistrations(
-    RegistrationInfoMap* registrations) {
+    std::map<std::string, std::string>* registrations) {
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
@@ -916,13 +913,8 @@ bool GCMStoreImpl::Backend::LoadRegistrations(
       return false;
     }
     std::string app_id = ParseRegistrationKey(iter->key().ToString());
-    linked_ptr<RegistrationInfo> registration(new RegistrationInfo);
-    if (!registration->ParseFromString(iter->value().ToString())) {
-      LOG(ERROR) << "Failed to parse registration with app id " << app_id;
-      return false;
-    }
     DVLOG(1) << "Found registration with app id " << app_id;
-    (*registrations)[app_id] = registration;
+    (*registrations)[app_id] = iter->value().ToString();
   }
 
   return true;
@@ -1182,16 +1174,15 @@ void GCMStoreImpl::SetDeviceCredentials(uint64 device_android_id,
 }
 
 void GCMStoreImpl::AddRegistration(
-    const std::string& app_id,
-    const linked_ptr<RegistrationInfo>& registration,
+    const std::string& serialized_key,
+    const std::string& serialized_value,
     const UpdateCallback& callback) {
-  std::string serialized_registration = registration->SerializeAsString();
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GCMStoreImpl::Backend::AddRegistration,
                  backend_,
-                 app_id,
-                 serialized_registration,
+                 serialized_key,
+                 serialized_value,
                  callback));
 }
 

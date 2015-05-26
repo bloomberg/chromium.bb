@@ -19,6 +19,7 @@ namespace {
 // Error messages.
 const char kInvalidParameter[] = "Function was called with invalid parameters.";
 const char kDisabled[] = "Instance ID is currently disabled.";
+const char kAsyncOperationPending[] = "Asynchronous operation is pending.";
 const char kNetworkError[] = "Network error occurred.";
 const char kServerError[] = "Server error occurred.";
 const char kUnknownError[] = "Unknown error occurred.";
@@ -29,6 +30,8 @@ const char* InstanceIDResultToError(instance_id::InstanceID::Result result) {
       return kInvalidParameter;
     case instance_id::InstanceID::DISABLED:
       return kDisabled;
+    case instance_id::InstanceID::ASYNC_OPERATION_PENDING:
+      return kAsyncOperationPending;
     case instance_id::InstanceID::NETWORK_ERROR:
       return kNetworkError;
     case instance_id::InstanceID::SERVER_ERROR:

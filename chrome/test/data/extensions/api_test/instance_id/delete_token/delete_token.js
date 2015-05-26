@@ -110,6 +110,43 @@ function deleteTokenAfterGetToken() {
   );
 }
 
+var oldToken;
+function getTokenDeleteTokeAndGetToken() {
+  chrome.instanceID.getToken(
+    {"authorizedEntity": "1", "scope": "GCM"},
+    function(token) {
+      if (chrome.runtime.lastError || !token) {
+        chrome.test.fail(
+            "chrome.runtime.lastError was set or token was empty.");
+        return;
+      }
+      oldToken = token;
+      chrome.instanceID.deleteToken(
+        {"authorizedEntity": "1", "scope": "GCM"},
+        function() {
+          if (chrome.runtime.lastError) {
+            chrome.test.fail("chrome.runtime.lastError: " +
+                chrome.runtime.lastError.message);
+            return;
+          }
+
+          chrome.instanceID.getToken(
+            {"authorizedEntity": "1", "scope": "GCM"},
+            function(token) {
+              if (!token || token == oldToken) {
+                chrome.test.fail(
+                    "Different token should be returned after deleteToken.");
+                return;
+              }
+              chrome.test.succeed();
+            }
+          );
+        }
+      );
+    }
+  );
+}
+
 chrome.test.runTests([
   deleteTokenWithoutParameters,
   deleteTokenWithoutCallback,
@@ -117,8 +154,7 @@ chrome.test.runTests([
   deleteTokenWithInvalidAuthorizedEntity,
   deleteTokenWithoutScope,
   deleteTokenWithInvalidScope,
-  // TODO(jianli): To be enabled when deleteToken is implemented.
-  //deleteTokenBeforeGetToken,
-  //deleteTokenAfterGetToken,
-  //getTokenDeleteTokeAndGetToken,
+  deleteTokenBeforeGetToken,
+  deleteTokenAfterGetToken,
+  getTokenDeleteTokeAndGetToken,
 ]);
