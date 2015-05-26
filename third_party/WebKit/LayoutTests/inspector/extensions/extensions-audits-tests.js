@@ -29,7 +29,7 @@ var initialize_ExtensionsAuditsTest = function()
 
     InspectorTest.dumpAuditProgress = function()
     {
-        var progress = document.querySelector(".panel.audits /deep/ progress");
+        var progress = document.querySelector(".progress-indicator").shadowRoot.querySelector("progress");
         InspectorTest.addResult("Progress: " + Math.round(100 * progress.value / progress.max) + "%");
     }
 
