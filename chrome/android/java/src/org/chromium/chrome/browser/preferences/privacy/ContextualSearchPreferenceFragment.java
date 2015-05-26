@@ -8,9 +8,6 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -32,23 +29,6 @@ public class ContextualSearchPreferenceFragment extends PreferenceFragment {
         getActivity().setTitle(R.string.contextual_search_title);
         setHasOptionsMenu(true);
         initContextualSearchSwitch();
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        menu.clear();
-        menu.add(Menu.NONE, R.id.menu_id_contextual_search_learn, Menu.NONE, R.string.learn_more);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() != R.id.menu_id_contextual_search_learn) {
-            return false;
-        }
-
-        ((Preferences) getActivity()).showUrl(R.string.learn_more,
-                R.string.contextual_search_learn_more_url);
-        return true;
     }
 
     private void initContextualSearchSwitch() {
