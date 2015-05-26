@@ -1269,32 +1269,29 @@ void ResourceDispatcherHostImpl::BeginRequest(
   new_request->SetLoadFlags(load_flags);
 
   // Make extra info and read footer (contains request ID).
-  ResourceRequestInfoImpl* extra_info =
-      new ResourceRequestInfoImpl(
-          process_type,
-          child_id,
-          route_id,
-          request_data.origin_pid,
-          request_id,
-          request_data.render_frame_id,
-          request_data.is_main_frame,
-          request_data.parent_is_main_frame,
-          request_data.parent_render_frame_id,
-          request_data.resource_type,
-          request_data.transition_type,
-          request_data.should_replace_current_entry,
-          false,  // is download
-          false,  // is stream
-          allow_download,
-          request_data.has_user_gesture,
-          request_data.enable_load_timing,
-          request_data.enable_upload_progress,
-          do_not_prompt_for_login,
-          request_data.referrer_policy,
-          request_data.visiblity_state,
-          resource_context,
-          filter_->GetWeakPtr(),
-          !is_sync_load);
+  ResourceRequestInfoImpl* extra_info = new ResourceRequestInfoImpl(
+      process_type, child_id, route_id,
+      -1,  // frame_tree_node_id
+      request_data.origin_pid,
+      request_id,
+      request_data.render_frame_id,
+      request_data.is_main_frame,
+      request_data.parent_is_main_frame,
+      request_data.parent_render_frame_id,
+      request_data.resource_type,
+      request_data.transition_type,
+      request_data.should_replace_current_entry,
+      false,  // is download
+      false,  // is stream
+      allow_download,
+      request_data.has_user_gesture,
+      request_data.enable_load_timing,
+      request_data.enable_upload_progress,
+      do_not_prompt_for_login,
+      request_data.referrer_policy,
+      request_data.visiblity_state,
+      resource_context, filter_->GetWeakPtr(),
+      !is_sync_load);
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 
@@ -1534,6 +1531,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       PROCESS_TYPE_RENDERER,
       child_id,
       route_id,
+      -1,  // frame_tree_node_id
       0,
       request_id_,
       MSG_ROUTING_NONE,  // render_frame_id
@@ -1554,7 +1552,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       blink::WebPageVisibilityStateVisible,
       context,
       base::WeakPtr<ResourceMessageFilter>(),  // filter
-      true);     // is_async
+      true);                                   // is_async
 }
 
 void ResourceDispatcherHostImpl::OnRenderViewHostCreated(int child_id,
@@ -1974,37 +1972,37 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   //
   // TODO(davidben): Associate the request with the FrameTreeNode and/or tab so
   // that IO thread -> UI thread hops will work.
-  ResourceRequestInfoImpl* extra_info =
-      new ResourceRequestInfoImpl(
-          PROCESS_TYPE_BROWSER,
-          -1,  // child_id
-          -1,  // route_id
-          -1,  // request_data.origin_pid,
-          request_id_,
-          -1,  // request_data.render_frame_id,
-          info.is_main_frame,
-          info.parent_is_main_frame,
-          -1,  // request_data.parent_render_frame_id,
-          resource_type,
-          info.common_params.transition,
-          // should_replace_current_entry. This was only maintained at layer for
-          // request transfers and isn't needed for browser-side navigations.
-          false,
-          false,  // is download
-          false,  // is stream
-          info.common_params.allow_download,
-          info.begin_params.has_user_gesture,
-          true,   // enable_load_timing
-          false,  // enable_upload_progress
-          false,  // do_not_prompt_for_login
-          info.common_params.referrer.policy,
-          // TODO(davidben): This is only used for prerenders. Replace
-          // is_showing with something for that. Or maybe it just comes from the
-          // same mechanism as the cookie one.
-          blink::WebPageVisibilityStateVisible,
-          resource_context,
-          base::WeakPtr<ResourceMessageFilter>(),  // filter
-          true);
+  ResourceRequestInfoImpl* extra_info = new ResourceRequestInfoImpl(
+      PROCESS_TYPE_BROWSER,
+      -1,  // child_id
+      -1,  // route_id
+      info.frame_tree_node_id,
+      -1,  // request_data.origin_pid,
+      request_id_,
+      -1,  // request_data.render_frame_id,
+      info.is_main_frame,
+      info.parent_is_main_frame,
+      -1,  // request_data.parent_render_frame_id,
+      resource_type,
+      info.common_params.transition,
+      // should_replace_current_entry. This was only maintained at layer for
+      // request transfers and isn't needed for browser-side navigations.
+      false,
+      false,  // is download
+      false,  // is stream
+      info.common_params.allow_download,
+      info.begin_params.has_user_gesture,
+      true,   // enable_load_timing
+      false,  // enable_upload_progress
+      false,  // do_not_prompt_for_login
+      info.common_params.referrer.policy,
+      // TODO(davidben): This is only used for prerenders. Replace
+      // is_showing with something for that. Or maybe it just comes from the
+      // same mechanism as the cookie one.
+      blink::WebPageVisibilityStateVisible,
+      resource_context,
+      base::WeakPtr<ResourceMessageFilter>(),  // filter
+      true);
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 

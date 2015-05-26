@@ -176,6 +176,7 @@ class ResourceSchedulerTest : public testing::Test {
         PROCESS_TYPE_RENDERER,                   // process_type
         child_id,                                // child_id
         route_id,                                // route_id
+        -1,                                      // frame_tree_node_id
         0,                                       // origin_pid
         ++next_request_id_,                      // request_id
         MSG_ROUTING_NONE,                        // render_frame_id

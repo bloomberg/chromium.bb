@@ -109,6 +109,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   static std::vector<WebContentsImpl*> GetAllWebContents();
 
+  static WebContentsImpl* FromFrameTreeNode(FrameTreeNode* frame_tree_node);
+
   // Returns the opener WebContentsImpl, if any. This can be set to null if the
   // opener is closed or the page clears its window.opener.
   WebContentsImpl* opener() const { return opener_; }

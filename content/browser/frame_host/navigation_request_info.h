@@ -27,6 +27,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                         const GURL& first_party_for_cookies,
                         bool is_main_frame,
                         bool parent_is_main_frame,
+                        int frame_tree_node_id,
                         scoped_refptr<ResourceRequestBody> request_body);
   ~NavigationRequestInfo();
 
@@ -39,6 +40,8 @@ struct CONTENT_EXPORT NavigationRequestInfo {
 
   const bool is_main_frame;
   const bool parent_is_main_frame;
+
+  const int frame_tree_node_id;
 
   scoped_refptr<ResourceRequestBody> request_body;
 };

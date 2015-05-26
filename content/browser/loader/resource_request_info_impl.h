@@ -43,6 +43,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       int process_type,
       int child_id,
       int route_id,
+      int frame_tree_node_id,
       int origin_pid,
       int request_id,
       int render_frame_id,
@@ -92,6 +93,11 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   CONTENT_EXPORT GlobalRequestID GetGlobalRequestID() const;
   GlobalRoutingID GetGlobalRoutingID() const;
+
+  // PlzNavigate
+  // The id of the FrameTreeNode that initiated this request (for a navigation
+  // request).
+  int frame_tree_node_id() const { return frame_tree_node_id_; }
 
   // May be NULL (e.g., if process dies during a transfer).
   ResourceMessageFilter* filter() const {
@@ -185,6 +191,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int process_type_;
   int child_id_;
   int route_id_;
+  const int64 frame_tree_node_id_;
   int origin_pid_;
   int request_id_;
   int render_frame_id_;

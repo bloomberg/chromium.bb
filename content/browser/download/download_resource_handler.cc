@@ -128,13 +128,12 @@ DownloadResourceHandler::DownloadResourceHandler(
   // PostTask()
   const ResourceRequestInfoImpl* request_info = GetRequestInfo();
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&InitializeDownloadTabInfoOnUIThread,
-                 DownloadRequestHandle(AsWeakPtr(),
-                                       request_info->GetChildID(),
+                 DownloadRequestHandle(AsWeakPtr(), request_info->GetChildID(),
                                        request_info->GetRouteID(),
-                                       request_info->GetRequestID()),
+                                       request_info->GetRequestID(),
+                                       request_info->frame_tree_node_id()),
                  tab_info_.get()));
   power_save_blocker_ = PowerSaveBlocker::Create(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
@@ -208,10 +207,9 @@ bool DownloadResourceHandler::OnResponseStarted(
   RecordDownloadMimeType(info->mime_type);
   RecordDownloadContentDisposition(info->content_disposition);
 
-  info->request_handle =
-      DownloadRequestHandle(AsWeakPtr(), request_info->GetChildID(),
-                            request_info->GetRouteID(),
-                            request_info->GetRequestID());
+  info->request_handle = DownloadRequestHandle(
+      AsWeakPtr(), request_info->GetChildID(), request_info->GetRouteID(),
+      request_info->GetRequestID(), request_info->frame_tree_node_id());
 
   // Get the last modified time and etag.
   const net::HttpResponseHeaders* headers = request()->response_headers();

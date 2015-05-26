@@ -12,12 +12,14 @@ NavigationRequestInfo::NavigationRequestInfo(
     const GURL& first_party_for_cookies,
     bool is_main_frame,
     bool parent_is_main_frame,
+    int frame_tree_node_id,
     scoped_refptr<ResourceRequestBody> request_body)
     : common_params(common_params),
       begin_params(begin_params),
       first_party_for_cookies(first_party_for_cookies),
       is_main_frame(is_main_frame),
       parent_is_main_frame(parent_is_main_frame),
+      frame_tree_node_id(frame_tree_node_id),
       request_body(request_body) {
 }
 

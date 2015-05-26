@@ -60,7 +60,8 @@ class CONTENT_EXPORT DownloadRequestHandle
   DownloadRequestHandle(const base::WeakPtr<DownloadResourceHandler>& handler,
                         int child_id,
                         int render_view_id,
-                        int request_id);
+                        int request_id,
+                        int frame_tree_node_id);
 
   // Implement DownloadRequestHandleInterface interface.
   WebContents* GetWebContents() const override;
@@ -81,6 +82,10 @@ class CONTENT_EXPORT DownloadRequestHandle
 
   // The ID associated with the request used for the download.
   int request_id_;
+
+  // PlzNavigate
+  // The ID of the FrameTreeNode that started the download.
+  int frame_tree_node_id_;
 };
 
 }  // namespace content

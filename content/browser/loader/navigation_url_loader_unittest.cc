@@ -183,7 +183,7 @@ class NavigationURLLoaderTest : public testing::Test {
     common_params.url = url;
     scoped_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(common_params, begin_params, url, true, false,
-                                  scoped_refptr<ResourceRequestBody>()));
+                                  -1, scoped_refptr<ResourceRequestBody>()));
 
     return NavigationURLLoader::Create(
         browser_context_.get(), 0, request_info.Pass(), delegate);

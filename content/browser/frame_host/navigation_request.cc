@@ -154,8 +154,9 @@ NavigationRequest::NavigationRequest(
   bool parent_is_main_frame = !frame_tree_node->parent() ?
       false : frame_tree_node->parent()->IsMainFrame();
   info_.reset(new NavigationRequestInfo(
-        common_params, begin_params, first_party_for_cookies,
-        frame_tree_node->IsMainFrame(), parent_is_main_frame, body));
+      common_params, begin_params, first_party_for_cookies,
+      frame_tree_node->IsMainFrame(), parent_is_main_frame,
+      frame_tree_node->frame_tree_node_id(), body));
 }
 
 NavigationRequest::~NavigationRequest() {
