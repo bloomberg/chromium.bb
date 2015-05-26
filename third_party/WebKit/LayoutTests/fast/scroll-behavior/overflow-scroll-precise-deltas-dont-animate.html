@@ -35,26 +35,18 @@ function runTest() {
     testRunner.layoutAndPaintAsyncThen(function() {
         // Give the container focus.
         eventSender.mouseMoveTo(100, 100);
-        eventSender.mouseDown();
-        eventSender.mouseUp();
-
-        eventSender.keyDown('end');
+        eventSender.mouseScrollBy(0, -20, /* paged */ false,
+            /* preciseDeltas */ true);
     });
 }
 
 function onElementScroll() {
-    if (prevScrollTop === undefined) {
-        shouldNotBe("element.scrollTop",
-                    "element.scrollHeight - element.clientHeight");
-        shouldBeGreaterThan("element.scrollTop", "0");
-        prevScrollTop = element.scrollTop;
-    } else {
-        shouldBeGreaterThan("element.scrollTop", "prevScrollTop");
-        finishJSTest();
-    }
+    shouldBe("element.scrollTop",
+             "800");
+    finishJSTest();
 }
 
-description("Tests that overflow scrolls are animated.");
+description("Tests that overflow scrolls with precise deltas aren't animated.");
 
 if (window.eventSender)
     runTest();
