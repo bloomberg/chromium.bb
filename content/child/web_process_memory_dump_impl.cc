@@ -41,6 +41,14 @@ WebProcessMemoryDumpImpl::createMemoryAllocatorDump(
   return web_mad_impl;
 }
 
+void WebProcessMemoryDumpImpl::clear() {
+  // Clear all the WebMemoryAllocatorDump wrappers.
+  memory_allocator_dumps_.clear();
+
+  // Clear the actual MemoryAllocatorDump objects from the underlying PMD.
+  process_memory_dump_->Clear();
+}
+
 void WebProcessMemoryDumpImpl::takeAllDumpsFrom(
     blink::WebProcessMemoryDump* other) {
   auto other_impl = static_cast<WebProcessMemoryDumpImpl*>(other);

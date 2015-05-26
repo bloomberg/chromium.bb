@@ -40,6 +40,7 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
   // blink::WebProcessMemoryDump implementation.
   virtual blink::WebMemoryAllocatorDump* createMemoryAllocatorDump(
       const blink::WebString& absolute_name);
+  virtual void clear();
   virtual void takeAllDumpsFrom(blink::WebProcessMemoryDump* other);
 
   const base::trace_event::ProcessMemoryDump* process_memory_dump() const {

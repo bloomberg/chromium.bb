@@ -70,6 +70,16 @@ TEST(WebProcessMemoryDumpImplTest, IntegrationTest) {
   traced_value = new base::trace_event::TracedValue();
   pmd1->process_memory_dump()->AsValueInto(traced_value.get());
 
+  // Check that clear() actually works.
+  pmd1->clear();
+  ASSERT_TRUE(pmd1->process_memory_dump()->allocator_dumps().empty());
+  ASSERT_EQ(nullptr, pmd1->process_memory_dump()->GetAllocatorDump("pmd1/1"));
+  ASSERT_EQ(nullptr, pmd1->process_memory_dump()->GetAllocatorDump("pmd2/1"));
+
+  // Check that AsValueInto() doesn't cause a crash.
+  traced_value = new base::trace_event::TracedValue();
+  pmd1->process_memory_dump()->AsValueInto(traced_value.get());
+
   pmd1.reset();
 }
 
