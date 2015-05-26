@@ -332,13 +332,13 @@ new function() {
    * Gets the referrer policy to use for navigations away from the current page.
    * If a link element is passed, and it includes a rel=noreferrer tag, that
    * will override the page setting.
-   * @param {HTMLElement} linkElement The link triggering the navigation.
-   * @return {String} The policy string.
+   * @param {HTMLElement=} opt_linkElement The link triggering the navigation.
+   * @return {string} The policy string.
    * @private
    */
-  var getReferrerPolicy_ = function(linkElement) {
-    if (linkElement) {
-      var rel = linkElement.getAttribute('rel');
+  var getReferrerPolicy_ = function(opt_linkElement) {
+    if (opt_linkElement) {
+      var rel = opt_linkElement.getAttribute('rel');
       if (rel && rel.toLowerCase() == 'noreferrer') {
         return 'never';
       }
@@ -383,7 +383,7 @@ new function() {
   // cause a page load.
   var originalWindowHistoryReplaceState = window.history.replaceState;
   __gCrWeb['replaceWebViewURL'] = function(url, stateObject) {
-    originalWindowHistoryReplaceState.call(history, stateObject, null, url);
+    originalWindowHistoryReplaceState.call(history, stateObject, '', url);
   };
 
   // Intercept window.history methods to call back/forward natively.
@@ -403,7 +403,7 @@ new function() {
         typeof(stateObject) == 'undefined' ? '' :
             __gCrWeb.common.JSONStringify(stateObject);
     pageUrl = pageUrl || window.location.href;
-    originalWindowHistoryReplaceState.call(history, stateObject, null, pageUrl);
+    originalWindowHistoryReplaceState.call(history, stateObject, '', pageUrl);
     invokeOnHost_({'command': 'window.history.didPushState',
                    'stateObject': serializedState,
                    'baseUrl': document.baseURI,
@@ -416,7 +416,7 @@ new function() {
         typeof(stateObject) == 'undefined' ? '' :
             __gCrWeb.common.JSONStringify(stateObject);
     pageUrl = pageUrl || window.location.href;
-    originalWindowHistoryReplaceState.call(history, stateObject, null, pageUrl);
+    originalWindowHistoryReplaceState.call(history, stateObject, '', pageUrl);
     invokeOnHost_({'command': 'window.history.didReplaceState',
                    'stateObject': serializedState,
                    'baseUrl': document.baseURI,
