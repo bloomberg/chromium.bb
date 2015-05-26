@@ -72,7 +72,17 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
          * @param Y Y-coordinate in dp
          * @return Whether a given coordinates are within the bounds of the "dismiss" button
          */
-        public boolean isInsideDismissButton(float x, float y);
+        boolean isInsideDismissButton(float x, float y);
+
+        /**
+         * Creates the Reader Mode control if necessary.
+         */
+        void createReaderModeControl();
+
+        /**
+         * Destroys the Reader Mode control.
+         */
+        void destroyReaderModeControl();
     }
 
     /**
@@ -551,13 +561,17 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
             return;
         }
 
-        if (isAnimating()) return;
+        if (isAnimating()) {
+            mReaderModeHost.createReaderModeControl();
+            return;
+        }
 
         final int status = mReaderModeHost.getReaderModeStatus();
         if (isPanelWithinScreenBounds()
                 && (status != ReaderModeManager.POSSIBLE
                         || mIsReaderModePanelHidden || mIsReaderModePanelDismissed)) {
             animateTo(0.0f, -1.0f, true);
+            mReaderModeHost.destroyReaderModeControl();
             destroyDistilledContentViewCore();
             requestUpdate();
             return;
@@ -567,6 +581,7 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
                 && (status == ReaderModeManager.POSSIBLE
                         && !mIsReaderModePanelHidden && !mIsReaderModePanelDismissed)) {
             animateTo(0.0f, 0.0f, true);
+            mReaderModeHost.createReaderModeControl();
             requestUpdate();
             return;
         }

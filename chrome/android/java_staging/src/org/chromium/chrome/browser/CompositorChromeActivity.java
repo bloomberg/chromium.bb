@@ -462,7 +462,6 @@ public abstract class CompositorChromeActivity extends ChromeActivity
             mReaderModeActivityDelegate.initialize(contentContainer);
             mReaderModeActivityDelegate.setDynamicResourceLoader(
                     mCompositorViewHolder.getDynamicResourceLoader());
-            mReaderModeActivityDelegate.getReaderModeControl();
         }
 
         layoutManager.addSceneChangeObserver(this);

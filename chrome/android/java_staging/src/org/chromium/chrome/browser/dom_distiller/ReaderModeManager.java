@@ -130,6 +130,8 @@ public class ReaderModeManager extends EmptyTabObserver
             mWebContentsObserver.destroy();
             mWebContentsObserver = null;
         }
+
+        destroyReaderModeControl();
     }
 
     @Override
@@ -190,10 +192,21 @@ public class ReaderModeManager extends EmptyTabObserver
 
     @Override
     public boolean isInsideDismissButton(float x, float y) {
-        if (!(mTab instanceof ChromeTab)) return false;
-        ReaderModeActivityDelegate delegate = ((ChromeTab) mTab).getReaderModeActivityDelegate();
+        ReaderModeActivityDelegate delegate = getReaderModeActivityDelegate();
         if (delegate == null) return false;
         return delegate.getReaderModeControl().isInsideDismissButton(x, y);
+    }
+
+    @Override
+    public void createReaderModeControl() {
+        ReaderModeActivityDelegate delegate = getReaderModeActivityDelegate();
+        if (delegate != null) delegate.getReaderModeControl();
+    }
+
+    @Override
+    public void destroyReaderModeControl() {
+        ReaderModeActivityDelegate delegate = getReaderModeActivityDelegate();
+        if (delegate != null) delegate.destroyReaderModeControl();
     }
 
     /**
@@ -201,6 +214,11 @@ public class ReaderModeManager extends EmptyTabObserver
      */
     public ReaderModePanel getReaderModePanel() {
         return mReaderModePanel;
+    }
+
+    private ReaderModeActivityDelegate getReaderModeActivityDelegate() {
+        if (!(mTab instanceof ChromeTab)) return null;
+        return ((ChromeTab) mTab).getReaderModeActivityDelegate();
     }
 
     private WebContentsObserver createWebContentsObserver(WebContents webContents) {

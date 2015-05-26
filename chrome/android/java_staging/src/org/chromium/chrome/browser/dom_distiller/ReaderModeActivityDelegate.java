@@ -48,13 +48,7 @@ public class ReaderModeActivityDelegate {
      * Destroys the Reader Mode activity delegate.
      */
     public void destroy() {
-        if (mControl != null) {
-            ((ViewGroup) mControl.getParent()).removeView(mControl);
-            mControl = null;
-            if (mResourceLoader != null) {
-                mResourceLoader.unregisterResource(R.id.contextual_search_view);
-            }
-        }
+        destroyReaderModeControl();
         mParentView = null;
     }
 
@@ -86,5 +80,18 @@ public class ReaderModeActivityDelegate {
         assert mControl != null;
         mControl.setVisibility(View.INVISIBLE);
         return mControl;
+    }
+
+    /**
+     * Destroys the Reader Mode control.
+     */
+    public void destroyReaderModeControl() {
+        if (mControl != null) {
+            ((ViewGroup) mControl.getParent()).removeView(mControl);
+            mControl = null;
+            if (mResourceLoader != null) {
+                mResourceLoader.unregisterResource(R.id.reader_mode_view);
+            }
+        }
     }
 }
