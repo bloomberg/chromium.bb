@@ -76,9 +76,9 @@ uintptr_t ThreadState::s_mainThreadUnderestimatedStackSize = 0;
 uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
 SafePointBarrier* ThreadState::s_safePointBarrier = nullptr;
 
-static Mutex& threadAttachMutex()
+RecursiveMutex& ThreadState::threadAttachMutex()
 {
-    AtomicallyInitializedStaticReference(Mutex, mutex, (new Mutex));
+    AtomicallyInitializedStaticReference(RecursiveMutex, mutex, (new RecursiveMutex));
     return mutex;
 }
 

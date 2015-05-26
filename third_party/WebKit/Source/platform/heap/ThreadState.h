@@ -233,6 +233,7 @@ public:
     // garbage collector.
     using AttachedThreadStateSet = HashSet<ThreadState*>;
     static AttachedThreadStateSet& attachedThreads();
+    static RecursiveMutex& threadAttachMutex();
     static void lockThreadAttachMutex();
     static void unlockThreadAttachMutex();
 

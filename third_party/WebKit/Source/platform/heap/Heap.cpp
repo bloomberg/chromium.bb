@@ -1666,20 +1666,12 @@ void Heap::doShutdown()
 #if ENABLE(ASSERT)
 BasePage* Heap::findPageFromAddress(Address address)
 {
-    BasePage* result = nullptr;
-    if (!ThreadState::current()->isInGC())
-        ThreadState::lockThreadAttachMutex();
-
+    MutexLocker lock(ThreadState::threadAttachMutex());
     for (ThreadState* state : ThreadState::attachedThreads()) {
-        if (BasePage* page = state->findPageFromAddress(address)) {
-            result = page;
-            break;
-        }
+        if (BasePage* page = state->findPageFromAddress(address))
+            return page;
     }
-
-    if (!ThreadState::current()->isInGC())
-        ThreadState::unlockThreadAttachMutex();
-    return result;
+    return nullptr;
 }
 #endif
 
