@@ -147,8 +147,9 @@ def _FindThirdPartyDirs():
     # Not shipped, only relates to Chrome for Android, but not to WebView
     os.path.join('clank'),
     # Not checked out on clients, but present on the release bot.
-    # See crbug.com/350472.
+    # See crbug.com/350472, crbug.com/492111.
     os.path.join('chrome', 'browser', 'resources', 'chromeos', 'quickoffice'),
+    os.path.join('isolate_deps_dir'),
     os.path.join('third_party', 'gles2_conform'),
   ])
   third_party_dirs = licenses.FindThirdPartyDirs(
