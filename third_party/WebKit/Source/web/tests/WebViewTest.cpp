@@ -71,6 +71,7 @@
 #include "public/web/WebAutofillClient.h"
 #include "public/web/WebContentDetectionResult.h"
 #include "public/web/WebDateTimeChooserCompletion.h"
+#include "public/web/WebDeviceEmulationParams.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebDragOperation.h"
 #include "public/web/WebElement.h"
@@ -1118,6 +1119,30 @@ TEST_F(WebViewTest, IsSelectionAnchorFirst)
     webView->selectionBounds(anchor, focus);
     frame->selectRange(WebPoint(focus.x, focus.y), WebPoint(anchor.x, anchor.y));
     EXPECT_FALSE(webView->isSelectionAnchorFirst());
+}
+
+TEST_F(WebViewTest, ExitingDeviceEmulationResetsPageScale)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("200-by-300.html"));
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
+    webViewImpl->resize(WebSize(200, 300));
+
+    float pageScaleExpected = webViewImpl->pageScaleFactor();
+
+    WebDeviceEmulationParams params;
+    params.screenPosition = WebDeviceEmulationParams::Desktop;
+    params.deviceScaleFactor = 0;
+    params.fitToView = false;
+    params.offset = WebFloatPoint();
+    params.scale = 1;
+
+    webViewImpl->enableDeviceEmulation(params);
+
+    webViewImpl->setPageScaleFactor(2);
+
+    webViewImpl->disableDeviceEmulation();
+
+    EXPECT_EQ(pageScaleExpected, webViewImpl->pageScaleFactor());
 }
 
 TEST_F(WebViewTest, HistoryResetScrollAndScaleState)

@@ -141,6 +141,7 @@ void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& par
         m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
         m_webViewImpl->updateShowFPSCounterAndContinuousPainting();
     }
+
     m_webViewImpl->page()->settings().setDeviceScaleAdjustment(calculateDeviceScaleAdjustment(params.viewSize.width, params.viewSize.height, params.deviceScaleFactor));
 
     if (params.screenPosition == WebDeviceEmulationParams::Mobile)
@@ -168,6 +169,7 @@ void DevToolsEmulator::disableDeviceEmulation()
     disableMobileEmulation();
     m_webViewImpl->setCompositorDeviceScaleFactorOverride(0.f);
     m_webViewImpl->setRootLayerTransform(WebSize(0.f, 0.f), 1.f);
+    m_webViewImpl->setPageScaleFactor(1.f);
     if (Document* document = m_webViewImpl->mainFrameImpl()->frame()->document()) {
         document->styleResolverChanged();
         document->mediaQueryAffectingValueChanged();
