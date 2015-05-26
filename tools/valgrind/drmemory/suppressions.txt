@@ -773,10 +773,10 @@ scheduler.dll!scheduler::TaskQueueManager::ProcessTaskFromWorkQueue
 
 UNADDRESSABLE ACCESS
 name=http://crbug.com/484352b
-blink_web.dll!blink::WebFrameWidgetImpl::setIsAcceleratedCompositingActive
+...
 blink_web.dll!blink::WebFrameWidgetImpl::setRootGraphicsLayer
 blink_web.dll!blink::ChromeClientImpl::attachRootGraphicsLayer
-blink_web.dll!blink::DeprecatedPaintLayerCompositor::detachRootLayer
+*.dll!blink::DeprecatedPaintLayerCompositor::detachRootLayer
 
 HANDLE LEAK
 name=http://crbug.com/487500
