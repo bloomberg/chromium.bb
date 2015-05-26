@@ -20,8 +20,6 @@ source_set("drm_common") {
     "common/drm_util.h",
     "common/scoped_drm_types.cc",
     "common/scoped_drm_types.h",
-    "drm_surface_factory.cc",
-    "drm_surface_factory.h",
     "gpu/crtc_controller.cc",
     "gpu/crtc_controller.h",
     "gpu/display_change_observer.h",
@@ -43,6 +41,8 @@ source_set("drm_common") {
     "gpu/drm_gpu_platform_support.h",
     "gpu/drm_surface.cc",
     "gpu/drm_surface.h",
+    "gpu/drm_surface_factory.cc",
+    "gpu/drm_surface_factory.h",
     "gpu/drm_vsync_provider.cc",
     "gpu/drm_vsync_provider.h",
     "gpu/drm_window.cc",
@@ -157,8 +157,6 @@ if (ozone_platform_gbm) {
 
   source_set("gbm") {
     sources = [
-      "gbm_surface_factory.cc",
-      "gbm_surface_factory.h",
       "gpu/gbm_buffer.cc",
       "gpu/gbm_buffer.h",
       "gpu/gbm_buffer_base.cc",
@@ -167,6 +165,8 @@ if (ozone_platform_gbm) {
       "gpu/gbm_device.h",
       "gpu/gbm_surface.cc",
       "gpu/gbm_surface.h",
+      "gpu/gbm_surface_factory.cc",
+      "gpu/gbm_surface_factory.h",
       "gpu/gbm_surfaceless.cc",
       "gpu/gbm_surfaceless.h",
       "ozone_platform_gbm.cc",

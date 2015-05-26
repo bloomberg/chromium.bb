@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_GBM_SURFACE_FACTORY_H_
-#define UI_OZONE_PLATFORM_DRM_GBM_SURFACE_FACTORY_H_
+#ifndef UI_OZONE_PLATFORM_DRM_GPU_GBM_SURFACE_FACTORY_H_
+#define UI_OZONE_PLATFORM_DRM_GPU_GBM_SURFACE_FACTORY_H_
 
-#include "ui/ozone/platform/drm/drm_surface_factory.h"
+#include "ui/ozone/platform/drm/gpu/drm_surface_factory.h"
 
 namespace ui {
 
@@ -60,4 +60,4 @@ class GbmSurfaceFactory : public DrmSurfaceFactory {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_GBM_SURFACE_FACTORY_H_
+#endif  // UI_OZONE_PLATFORM_DRM_GPU_GBM_SURFACE_FACTORY_H_

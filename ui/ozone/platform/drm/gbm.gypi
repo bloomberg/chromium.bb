@@ -33,8 +33,6 @@
         'OZONE_IMPLEMENTATION',
       ],
       'sources': [
-        'gbm_surface_factory.cc',
-        'gbm_surface_factory.h',
         'gpu/gbm_buffer.cc',
         'gpu/gbm_buffer.h',
         'gpu/gbm_buffer_base.cc',
@@ -43,6 +41,8 @@
         'gpu/gbm_device.h',
         'gpu/gbm_surface.cc',
         'gpu/gbm_surface.h',
+        'gpu/gbm_surface_factory.cc',
+        'gpu/gbm_surface_factory.h',
         'gpu/gbm_surfaceless.cc',
         'gpu/gbm_surfaceless.h',
         'ozone_platform_gbm.cc',
