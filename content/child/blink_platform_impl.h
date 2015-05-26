@@ -136,6 +136,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
       TraceEventHandle);
   virtual void registerMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp);
   virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp);
+  virtual blink::WebProcessMemoryDump* createProcessMemoryDump();
+
   virtual blink::WebData loadResource(const char* name);
   virtual blink::WebString queryLocalizedString(
       blink::WebLocalizedString::Name name);

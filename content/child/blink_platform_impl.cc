@@ -51,6 +51,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_memory_dump_provider_adapter.h"
+#include "content/child/web_process_memory_dump_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/websocket_bridge.h"
@@ -729,6 +730,10 @@ void BlinkPlatformImpl::unregisterMemoryDumpProvider(
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       wmdp_adapter.get());
   wmdp_adapter->set_is_registered(false);
+}
+
+blink::WebProcessMemoryDump* BlinkPlatformImpl::createProcessMemoryDump() {
+  return new WebProcessMemoryDumpImpl();
 }
 
 namespace {

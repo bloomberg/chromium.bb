@@ -9,6 +9,12 @@
 
 namespace content {
 
+WebProcessMemoryDumpImpl::WebProcessMemoryDumpImpl()
+    : owned_process_memory_dump_(
+          new base::trace_event::ProcessMemoryDump(nullptr)),
+      process_memory_dump_(owned_process_memory_dump_.get()) {
+}
+
 WebProcessMemoryDumpImpl::WebProcessMemoryDumpImpl(
     base::trace_event::ProcessMemoryDump* process_memory_dump)
     : process_memory_dump_(process_memory_dump) {
@@ -33,6 +39,25 @@ WebProcessMemoryDumpImpl::createMemoryAllocatorDump(
   // memory_allocator_dumps_ will take ownership of |web_mad_impl|.
   memory_allocator_dumps_.push_back(web_mad_impl);
   return web_mad_impl;
+}
+
+void WebProcessMemoryDumpImpl::takeAllDumpsFrom(
+    blink::WebProcessMemoryDump* other) {
+  auto other_impl = static_cast<WebProcessMemoryDumpImpl*>(other);
+  // WebProcessMemoryDumpImpl is a container of WebMemoryAllocatorDump(s) which
+  // in turn are wrappers of base::trace_event::MemoryAllocatorDump(s).
+  // In order to expose the move and ownership transfer semantics of the
+  // underlying ProcessMemoryDump, we need to
+
+  // 1) Move and transfer the ownership of the wrapped
+  // base::trace_event::MemoryAllocatorDump(s) instances.
+  process_memory_dump_->TakeAllDumpsFrom(other_impl->process_memory_dump_);
+
+  // 2) Move and transfer the ownership of the WebMemoryAllocatorDump wrappers.
+  memory_allocator_dumps_.insert(memory_allocator_dumps_.end(),
+                                 other_impl->memory_allocator_dumps_.begin(),
+                                 other_impl->memory_allocator_dumps_.end());
+  other_impl->memory_allocator_dumps_.weak_clear();
 }
 
 }  // namespace content
