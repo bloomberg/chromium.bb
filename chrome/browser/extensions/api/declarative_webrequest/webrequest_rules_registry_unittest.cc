@@ -733,7 +733,7 @@ TEST(WebRequestRulesRegistrySimpleTest, HostPermissionsChecker) {
   scoped_ptr<base::Value> action_value = base::JSONReader::Read(kAction);
   ASSERT_TRUE(action_value);
 
-  WebRequestActionSet::AnyVector actions;
+  WebRequestActionSet::Values actions;
   actions.push_back(linked_ptr<base::Value>(action_value.release()));
   ASSERT_TRUE(actions.back().get());
 

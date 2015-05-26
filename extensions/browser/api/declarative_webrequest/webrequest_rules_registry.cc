@@ -62,10 +62,9 @@ std::set<const WebRequestRule*> WebRequestRulesRegistry::GetMatches(
 
   // 1st phase -- add all rules with some conditions without UrlFilter
   // attributes.
-  for (RuleSet::const_iterator it = rules_with_untriggered_conditions_.begin();
-       it != rules_with_untriggered_conditions_.end(); ++it) {
-    if ((*it)->conditions().IsFulfilled(-1, request_data))
-      result.insert(*it);
+  for (const WebRequestRule* rule : rules_with_untriggered_conditions_) {
+    if (rule->conditions().IsFulfilled(-1, request_data))
+      result.insert(rule);
   }
 
   // 2nd phase -- add all rules with some conditions triggered by URL matches.
@@ -91,10 +90,8 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
       PriorityRuleIdPair;
   std::vector<PriorityRuleIdPair> ordered_matches;
   ordered_matches.reserve(matches.size());
-  for (std::set<const WebRequestRule*>::iterator i = matches.begin();
-       i != matches.end(); ++i) {
-    ordered_matches.push_back(make_pair((*i)->priority(), (*i)->id()));
-  }
+  for (const WebRequestRule* rule : matches)
+    ordered_matches.push_back(make_pair(rule->priority(), rule->id()));
   // Sort from rbegin to rend in order to get descending priority order.
   std::sort(ordered_matches.rbegin(), ordered_matches.rend());
 
@@ -107,19 +104,18 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
   typedef std::map<ExtensionId, std::set<std::string> > IgnoreTags;
   MinPriorities min_priorities;
   IgnoreTags ignore_tags;
-  for (std::vector<PriorityRuleIdPair>::iterator i = ordered_matches.begin();
-       i != ordered_matches.end(); ++i) {
-    const WebRequestRule::GlobalRuleId& rule_id = i->second;
+  for (const PriorityRuleIdPair& priority_rule_id_pair : ordered_matches) {
+    const WebRequestRule::GlobalRuleId& rule_id = priority_rule_id_pair.second;
     const ExtensionId& extension_id = rule_id.first;
     min_priorities[extension_id] = std::numeric_limits<int>::min();
   }
 
   // Create deltas until we have passed the minimum priority.
   std::list<LinkedPtrEventResponseDelta> result;
-  for (std::vector<PriorityRuleIdPair>::iterator i = ordered_matches.begin();
-       i != ordered_matches.end(); ++i) {
-    const WebRequestRule::Priority priority_of_rule = i->first;
-    const WebRequestRule::GlobalRuleId& rule_id = i->second;
+  for (const PriorityRuleIdPair& priority_rule_id_pair : ordered_matches) {
+    const WebRequestRule::Priority priority_of_rule =
+        priority_rule_id_pair.first;
+    const WebRequestRule::GlobalRuleId& rule_id = priority_rule_id_pair.second;
     const ExtensionId& extension_id = rule_id.first;
     const WebRequestRule* rule =
         webrequest_rules_[rule_id.first][rule_id.second].get();
@@ -133,12 +129,8 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
 
     if (!rule->tags().empty() && !ignore_tags[extension_id].empty()) {
       bool ignore_rule = false;
-      const WebRequestRule::Tags& tags = rule->tags();
-      for (WebRequestRule::Tags::const_iterator i = tags.begin();
-           !ignore_rule && i != tags.end();
-           ++i) {
-        ignore_rule |= ContainsKey(ignore_tags[extension_id], *i);
-      }
+      for (const std::string& tag : rule->tags())
+        ignore_rule |= ContainsKey(ignore_tags[extension_id], tag);
       if (ignore_rule)
         continue;
     }
@@ -160,7 +152,7 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
 std::string WebRequestRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
     const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
-  typedef std::pair<WebRequestRule::RuleId, linked_ptr<WebRequestRule> >
+  typedef std::pair<WebRequestRule::RuleId, linked_ptr<const WebRequestRule>>
       IdRulePair;
   typedef std::vector<IdRulePair> RulesVector;
 
@@ -174,14 +166,13 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
       extension_info_map_->extensions().GetByID(extension_id);
   RulesMap& registered_rules = webrequest_rules_[extension_id];
 
-  for (std::vector<linked_ptr<RulesRegistry::Rule> >::const_iterator rule =
-       rules.begin(); rule != rules.end(); ++rule) {
-    const WebRequestRule::RuleId& rule_id(*(*rule)->id);
+  for (const linked_ptr<RulesRegistry::Rule>& rule : rules) {
+    const WebRequestRule::RuleId& rule_id(*rule->id);
     DCHECK(registered_rules.find(rule_id) == registered_rules.end());
 
     scoped_ptr<WebRequestRule> webrequest_rule(WebRequestRule::Create(
         url_matcher_.condition_factory(), browser_context(), extension,
-        extension_installation_time, *rule,
+        extension_installation_time, rule,
         base::Bind(&Checker, base::Unretained(extension)), &error));
     if (!error.empty()) {
       // We don't return here, because we want to clear temporary
@@ -204,25 +195,24 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
                           new_webrequest_rules.end());
 
   // Create the triggers.
-  for (RulesVector::const_iterator i = new_webrequest_rules.begin();
-       i != new_webrequest_rules.end(); ++i) {
+  for (const IdRulePair& id_rule_pair : new_webrequest_rules) {
     URLMatcherConditionSet::Vector url_condition_sets;
-    const WebRequestConditionSet& conditions = i->second->conditions();
-    conditions.GetURLMatcherConditionSets(&url_condition_sets);
-    for (URLMatcherConditionSet::Vector::iterator j =
-         url_condition_sets.begin(); j != url_condition_sets.end(); ++j) {
-      rule_triggers_[(*j)->id()] = i->second.get();
+    const linked_ptr<const WebRequestRule>& rule = id_rule_pair.second;
+    rule->conditions().GetURLMatcherConditionSets(&url_condition_sets);
+    for (const scoped_refptr<URLMatcherConditionSet>& condition_set :
+         url_condition_sets) {
+      rule_triggers_[condition_set->id()] = rule.get();
     }
   }
 
   // Register url patterns in |url_matcher_| and
   // |rules_with_untriggered_conditions_|.
   URLMatcherConditionSet::Vector all_new_condition_sets;
-  for (RulesVector::const_iterator i = new_webrequest_rules.begin();
-       i != new_webrequest_rules.end(); ++i) {
-    i->second->conditions().GetURLMatcherConditionSets(&all_new_condition_sets);
-    if (i->second->conditions().HasConditionsWithoutUrls())
-      rules_with_untriggered_conditions_.insert(i->second.get());
+  for (const IdRulePair& id_rule_pair : new_webrequest_rules) {
+    const linked_ptr<const WebRequestRule>& rule = id_rule_pair.second;
+    rule->conditions().GetURLMatcherConditionSets(&all_new_condition_sets);
+    if (rule->conditions().HasConditionsWithoutUrls())
+      rules_with_untriggered_conditions_.insert(rule.get());
   }
   url_matcher_.AddConditionSets(all_new_condition_sets);
 
@@ -245,10 +235,10 @@ std::string WebRequestRulesRegistry::RemoveRulesImpl(
   std::vector<URLMatcherConditionSet::ID> remove_from_url_matcher;
   RulesMap& registered_rules = webrequest_rules_[extension_id];
 
-  for (std::vector<std::string>::const_iterator i = rule_identifiers.begin();
-       i != rule_identifiers.end(); ++i) {
+  for (const std::string& identifier : rule_identifiers) {
     // Skip unknown rules.
-    RulesMap::iterator webrequest_rules_entry = registered_rules.find(*i);
+    RulesMap::iterator webrequest_rules_entry =
+        registered_rules.find(identifier);
     if (webrequest_rules_entry == registered_rules.end())
       continue;
 
@@ -275,10 +265,10 @@ std::string WebRequestRulesRegistry::RemoveAllRulesImpl(
   // First we get out all URLMatcherConditionSets and remove the rule references
   // from |rules_with_untriggered_conditions_|.
   std::vector<URLMatcherConditionSet::ID> remove_from_url_matcher;
-  for (RulesMap::const_iterator it = webrequest_rules_[extension_id].begin();
-       it != webrequest_rules_[extension_id].end();
-       ++it) {
-    CleanUpAfterRule(it->second.get(), &remove_from_url_matcher);
+  for (const std::pair<WebRequestRule::RuleId,
+                       linked_ptr<const WebRequestRule>>& rule_id_rule_pair :
+       webrequest_rules_[extension_id]) {
+    CleanUpAfterRule(rule_id_rule_pair.second.get(), &remove_from_url_matcher);
   }
   url_matcher_.RemoveConditionSets(remove_from_url_matcher);
 
@@ -292,11 +282,10 @@ void WebRequestRulesRegistry::CleanUpAfterRule(
     std::vector<URLMatcherConditionSet::ID>* remove_from_url_matcher) {
   URLMatcherConditionSet::Vector condition_sets;
   rule->conditions().GetURLMatcherConditionSets(&condition_sets);
-  for (URLMatcherConditionSet::Vector::iterator j = condition_sets.begin();
-       j != condition_sets.end();
-       ++j) {
-    remove_from_url_matcher->push_back((*j)->id());
-    rule_triggers_.erase((*j)->id());
+  for (const scoped_refptr<URLMatcherConditionSet>& condition_set :
+       condition_sets) {
+    remove_from_url_matcher->push_back(condition_set->id());
+    rule_triggers_.erase(condition_set->id());
   }
   rules_with_untriggered_conditions_.erase(rule);
 }
@@ -307,11 +296,9 @@ bool WebRequestRulesRegistry::IsEmpty() const {
     return false;
 
   // Now all the registered rules for each extensions.
-  for (std::map<WebRequestRule::ExtensionId, RulesMap>::const_iterator it =
-           webrequest_rules_.begin();
-       it != webrequest_rules_.end();
-       ++it) {
-    if (!it->second.empty())
+  for (const std::pair<WebRequestRule::ExtensionId, RulesMap>&
+           extension_id_rules_map_pair : webrequest_rules_) {
+    if (!extension_id_rules_map_pair.second.empty())
       return false;
   }
   return true;
@@ -347,14 +334,12 @@ bool WebRequestRulesRegistry::HostPermissionsChecker(
 
   // Without the permission for all URLs, actions with the STRATEGY_DEFAULT
   // should not be registered, they would never be able to execute.
-  for (WebRequestActionSet::Actions::const_iterator action_iter =
-           actions->actions().begin();
-       action_iter != actions->actions().end();
-       ++action_iter) {
-    if ((*action_iter)->host_permissions_strategy() ==
+  for (const scoped_refptr<const WebRequestAction>& action :
+       actions->actions()) {
+    if (action->host_permissions_strategy() ==
         WebRequestAction::STRATEGY_DEFAULT) {
       *error = ErrorUtils::FormatErrorMessage(kAllURLsPermissionNeeded,
-                                              (*action_iter)->GetName());
+                                              action->GetName());
       return false;
     }
   }
@@ -372,23 +357,19 @@ bool WebRequestRulesRegistry::StageChecker(
 
   // In which stages there are conditions to evaluate.
   int condition_stages = 0;
-  for (WebRequestConditionSet::Conditions::const_iterator condition_iter =
-           conditions->conditions().begin();
-       condition_iter != conditions->conditions().end();
-       ++condition_iter) {
-    condition_stages |= (*condition_iter)->stages();
+  for (const linked_ptr<const WebRequestCondition>& condition :
+       conditions->conditions()) {
+    condition_stages |= condition->stages();
   }
 
-  for (WebRequestActionSet::Actions::const_iterator action_iter =
-           actions->actions().begin();
-       action_iter != actions->actions().end();
-       ++action_iter) {
+  for (const scoped_refptr<const WebRequestAction>& action :
+       actions->actions()) {
     // Test the intersection of bit masks, this is intentionally & and not &&.
-    if ((*action_iter)->stages() & condition_stages)
+    if (action->stages() & condition_stages)
       continue;
     // We only get here if no matching condition was found.
     *error = ErrorUtils::FormatErrorMessage(kActionCannotBeExecuted,
-                                            (*action_iter)->GetName());
+                                            action->GetName());
     return false;
   }
   return true;
@@ -397,13 +378,11 @@ void WebRequestRulesRegistry::AddTriggeredRules(
     const URLMatches& url_matches,
     const WebRequestCondition::MatchData& request_data,
     RuleSet* result) const {
-  for (URLMatches::const_iterator url_match = url_matches.begin();
-       url_match != url_matches.end(); ++url_match) {
-    RuleTriggers::const_iterator rule_trigger = rule_triggers_.find(*url_match);
+  for (url_matcher::URLMatcherConditionSet::ID url_match : url_matches) {
+    RuleTriggers::const_iterator rule_trigger = rule_triggers_.find(url_match);
     CHECK(rule_trigger != rule_triggers_.end());
     if (!ContainsKey(*result, rule_trigger->second) &&
-        rule_trigger->second->conditions().IsFulfilled(*url_match,
-                                                       request_data))
+        rule_trigger->second->conditions().IsFulfilled(url_match, request_data))
       result->insert(rule_trigger->second);
   }
 }

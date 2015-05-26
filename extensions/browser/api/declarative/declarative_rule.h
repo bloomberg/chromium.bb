@@ -46,7 +46,7 @@ namespace extensions {
 //   static scoped_ptr<ConditionT> Create(
 //       const Extension* extension,
 //       URLMatcherConditionFactory* url_matcher_condition_factory,
-//       // Except this argument gets elements of the AnyVector.
+//       // Except this argument gets elements of the Values array.
 //       const base::Value& definition,
 //       std::string* error);
 //   // If the Condition needs to be filtered by some URLMatcherConditionSets,
@@ -59,7 +59,7 @@ namespace extensions {
 template<typename ConditionT>
 class DeclarativeConditionSet {
  public:
-  typedef std::vector<linked_ptr<base::Value> > AnyVector;
+  typedef std::vector<linked_ptr<base::Value>> Values;
   typedef std::vector<linked_ptr<const ConditionT> > Conditions;
   typedef typename Conditions::const_iterator const_iterator;
 
@@ -69,7 +69,7 @@ class DeclarativeConditionSet {
   static scoped_ptr<DeclarativeConditionSet> Create(
       const Extension* extension,
       url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
-      const AnyVector& conditions,
+      const Values& condition_values,
       std::string* error);
 
   const Conditions& conditions() const {
@@ -120,7 +120,7 @@ class DeclarativeConditionSet {
 //   // Arguments passed through from ActionSet::Create.
 //   static scoped_ptr<ActionT> Create(
 //       const Extension* extension,
-//       // Except this argument gets elements of the AnyVector.
+//       // Except this argument gets elements of the Values array.
 //       const base::Value& definition,
 //       std::string* error, bool* bad_message);
 //   void Apply(const std::string& extension_id,
@@ -142,7 +142,7 @@ class DeclarativeConditionSet {
 template<typename ActionT>
 class DeclarativeActionSet {
  public:
-  typedef std::vector<linked_ptr<base::Value> > AnyVector;
+  typedef std::vector<linked_ptr<base::Value>> Values;
   typedef std::vector<scoped_refptr<const ActionT> > Actions;
 
   explicit DeclarativeActionSet(const Actions& actions);
@@ -153,7 +153,7 @@ class DeclarativeActionSet {
   static scoped_ptr<DeclarativeActionSet> Create(
       content::BrowserContext* browser_context,
       const Extension* extension,
-      const AnyVector& actions,
+      const Values& action_values,
       std::string* error,
       bool* bad_message);
 
@@ -278,10 +278,8 @@ bool DeclarativeConditionSet<ConditionT>::IsFulfilled(
   if (url_match_trigger == -1) {
     // Invalid trigger -- indication that we should only check conditions
     // without URL attributes.
-    for (typename std::vector<const ConditionT*>::const_iterator it =
-             conditions_without_urls_.begin();
-         it != conditions_without_urls_.end(); ++it) {
-      if ((*it)->IsFulfilled(match_data))
+    for (const ConditionT* condition : conditions_without_urls_) {
+      if (condition->IsFulfilled(match_data))
         return true;
     }
     return false;
@@ -296,27 +294,24 @@ bool DeclarativeConditionSet<ConditionT>::IsFulfilled(
 template<typename ConditionT>
 void DeclarativeConditionSet<ConditionT>::GetURLMatcherConditionSets(
     url_matcher::URLMatcherConditionSet::Vector* condition_sets) const {
-  for (typename Conditions::const_iterator i = conditions_.begin();
-       i != conditions_.end(); ++i) {
-    (*i)->GetURLMatcherConditionSets(condition_sets);
-  }
+  for (const linked_ptr<const ConditionT>& condition : conditions_)
+    condition->GetURLMatcherConditionSets(condition_sets);
 }
 
 // static
-template<typename ConditionT>
-scoped_ptr<DeclarativeConditionSet<ConditionT> >
+template <typename ConditionT>
+scoped_ptr<DeclarativeConditionSet<ConditionT>>
 DeclarativeConditionSet<ConditionT>::Create(
     const Extension* extension,
     url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
-    const AnyVector& conditions,
+    const Values& condition_values,
     std::string* error) {
   Conditions result;
 
-  for (AnyVector::const_iterator i = conditions.begin();
-       i != conditions.end(); ++i) {
-    CHECK(i->get());
+  for (const linked_ptr<base::Value>& value : condition_values) {
+    CHECK(value.get());
     scoped_ptr<ConditionT> condition = ConditionT::Create(
-        extension, url_matcher_condition_factory, **i, error);
+        extension, url_matcher_condition_factory, *value, error);
     if (!error->empty())
       return scoped_ptr<DeclarativeConditionSet>();
     result.push_back(make_linked_ptr(condition.release()));
@@ -326,17 +321,15 @@ DeclarativeConditionSet<ConditionT>::Create(
   std::vector<const ConditionT*> conditions_without_urls;
   url_matcher::URLMatcherConditionSet::Vector condition_sets;
 
-  for (typename Conditions::const_iterator i = result.begin();
-       i != result.end(); ++i) {
+  for (const linked_ptr<const ConditionT>& condition : result) {
     condition_sets.clear();
-    (*i)->GetURLMatcherConditionSets(&condition_sets);
+    condition->GetURLMatcherConditionSets(&condition_sets);
     if (condition_sets.empty()) {
-      conditions_without_urls.push_back(i->get());
+      conditions_without_urls.push_back(condition.get());
     } else {
-      for (url_matcher::URLMatcherConditionSet::Vector::const_iterator
-               match_set = condition_sets.begin();
-           match_set != condition_sets.end(); ++match_set)
-        match_id_to_condition[(*match_set)->id()] = i->get();
+      for (const scoped_refptr<url_matcher::URLMatcherConditionSet>& match_set :
+           condition_sets)
+        match_id_to_condition[match_set->id()] = condition.get();
     }
   }
 
@@ -362,23 +355,21 @@ DeclarativeActionSet<ActionT>::DeclarativeActionSet(const Actions& actions)
     : actions_(actions) {}
 
 // static
-template<typename ActionT>
-scoped_ptr<DeclarativeActionSet<ActionT> >
-DeclarativeActionSet<ActionT>::Create(
+template <typename ActionT>
+scoped_ptr<DeclarativeActionSet<ActionT>> DeclarativeActionSet<ActionT>::Create(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    const AnyVector& actions,
+    const Values& action_values,
     std::string* error,
     bool* bad_message) {
   *error = "";
   *bad_message = false;
   Actions result;
 
-  for (AnyVector::const_iterator i = actions.begin();
-       i != actions.end(); ++i) {
-    CHECK(i->get());
+  for (const linked_ptr<base::Value>& value : action_values) {
+    CHECK(value.get());
     scoped_refptr<const ActionT> action =
-        ActionT::Create(browser_context, extension, **i, error, bad_message);
+        ActionT::Create(browser_context, extension, *value, error, bad_message);
     if (!error->empty() || *bad_message)
       return scoped_ptr<DeclarativeActionSet>();
     result.push_back(action);
@@ -392,9 +383,8 @@ void DeclarativeActionSet<ActionT>::Apply(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     typename ActionT::ApplyInfo* apply_info) const {
-  for (typename Actions::const_iterator i = actions_.begin();
-       i != actions_.end(); ++i)
-    (*i)->Apply(extension_id, extension_install_time, apply_info);
+  for (const scoped_refptr<const ActionT>& action : actions_)
+    action->Apply(extension_id, extension_install_time, apply_info);
 }
 
 template<typename ActionT>
@@ -402,9 +392,8 @@ void DeclarativeActionSet<ActionT>::Reapply(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     typename ActionT::ApplyInfo* apply_info) const {
-  for (typename Actions::const_iterator i = actions_.begin();
-       i != actions_.end(); ++i)
-    (*i)->Reapply(extension_id, extension_install_time, apply_info);
+  for (const scoped_refptr<const ActionT>& action : actions_)
+    action->Reapply(extension_id, extension_install_time, apply_info);
 }
 
 template<typename ActionT>
@@ -412,9 +401,8 @@ void DeclarativeActionSet<ActionT>::Revert(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     typename ActionT::ApplyInfo* apply_info) const {
-  for (typename Actions::const_iterator i = actions_.begin();
-       i != actions_.end(); ++i)
-    (*i)->Revert(extension_id, extension_install_time, apply_info);
+  for (const scoped_refptr<const ActionT>& action : actions_)
+    action->Revert(extension_id, extension_install_time, apply_info);
 }
 
 template<typename ActionT>

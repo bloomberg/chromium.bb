@@ -69,7 +69,7 @@ typedef DeclarativeConditionSet<RecordingCondition> RecordingConditionSet;
 
 TEST(DeclarativeConditionTest, ErrorConditionSet) {
   URLMatcher matcher;
-  RecordingConditionSet::AnyVector conditions;
+  RecordingConditionSet::Values conditions;
   conditions.push_back(ScopedToLinkedPtr(ParseJson("{\"key\": 1}")));
   conditions.push_back(ScopedToLinkedPtr(ParseJson("{\"bad_key\": 2}")));
 
@@ -82,7 +82,7 @@ TEST(DeclarativeConditionTest, ErrorConditionSet) {
 
 TEST(DeclarativeConditionTest, CreateConditionSet) {
   URLMatcher matcher;
-  RecordingConditionSet::AnyVector conditions;
+  RecordingConditionSet::Values conditions;
   conditions.push_back(ScopedToLinkedPtr(ParseJson("{\"key\": 1}")));
   conditions.push_back(ScopedToLinkedPtr(ParseJson("[\"val1\", 2]")));
 
@@ -156,7 +156,7 @@ struct FulfillableCondition {
 
 TEST(DeclarativeConditionTest, FulfillConditionSet) {
   typedef DeclarativeConditionSet<FulfillableCondition> FulfillableConditionSet;
-  FulfillableConditionSet::AnyVector conditions;
+  FulfillableConditionSet::Values conditions;
   conditions.push_back(ScopedToLinkedPtr(ParseJson(
       "{\"url_id\": 1, \"max\": 3}")));
   conditions.push_back(ScopedToLinkedPtr(ParseJson(
@@ -263,7 +263,7 @@ class SummingAction : public base::RefCounted<SummingAction> {
 typedef DeclarativeActionSet<SummingAction> SummingActionSet;
 
 TEST(DeclarativeActionTest, ErrorActionSet) {
-  SummingActionSet::AnyVector actions;
+  SummingActionSet::Values actions;
   actions.push_back(ScopedToLinkedPtr(ParseJson("{\"value\": 1}")));
   actions.push_back(ScopedToLinkedPtr(ParseJson("{\"error\": \"the error\"}")));
 
@@ -285,7 +285,7 @@ TEST(DeclarativeActionTest, ErrorActionSet) {
 }
 
 TEST(DeclarativeActionTest, ApplyActionSet) {
-  SummingActionSet::AnyVector actions;
+  SummingActionSet::Values actions;
   actions.push_back(ScopedToLinkedPtr(ParseJson(
       "{\"value\": 1,"
       " \"priority\": 5}")));

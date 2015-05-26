@@ -253,7 +253,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   base::MessageLoopForIO message_loop;
   URLMatcher matcher;
 
-  WebRequestConditionSet::AnyVector conditions;
+  WebRequestConditionSet::Values conditions;
   conditions.push_back(linked_ptr<base::Value>(base::test::ParseJson(
       "{ \n"
       "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
@@ -322,7 +322,7 @@ TEST(WebRequestConditionTest, TestPortFilter) {
   base::MessageLoopForIO message_loop;
   URLMatcher matcher;
 
-  WebRequestConditionSet::AnyVector conditions;
+  WebRequestConditionSet::Values conditions;
   conditions.push_back(linked_ptr<base::Value>(base::test::ParseJson(
       "{ \n"
       "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"

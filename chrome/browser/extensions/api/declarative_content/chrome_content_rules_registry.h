@@ -127,7 +127,7 @@ class ChromeContentRulesRegistry : public ContentRulesRegistry,
   // Applies all content rules given that a tab was just navigated.
   void OnTabNavigation(content::WebContents* tab, bool is_in_page_navigation);
 
-  std::set<ContentRule*> GetMatches(
+  std::set<const ContentRule*> GetMatches(
       const RendererContentMatchData& renderer_data,
       bool is_incognito_renderer) const;
 
@@ -148,9 +148,9 @@ class ChromeContentRulesRegistry : public ContentRulesRegistry,
   // Evaluates the conditions for tabs in each browser window.
   void EvaluateConditionsForAllTabs();
 
-  typedef std::map<url_matcher::URLMatcherConditionSet::ID, ContentRule*>
+  typedef std::map<url_matcher::URLMatcherConditionSet::ID, const ContentRule*>
       URLMatcherIdToRule;
-  typedef std::map<ContentRule::GlobalRuleId, linked_ptr<ContentRule>>
+  typedef std::map<ContentRule::GlobalRuleId, linked_ptr<const ContentRule>>
       RulesMap;
   typedef std::map<content::WebContents*, std::vector<std::string>>
       CssSelectors;
@@ -163,7 +163,7 @@ class ChromeContentRulesRegistry : public ContentRulesRegistry,
 
   // Maps a WebContents to the set of rules that match on that WebContents.
   // This lets us call Revert as appropriate.
-  std::map<content::WebContents*, std::set<ContentRule*>> active_rules_;
+  std::map<content::WebContents*, std::set<const ContentRule*>> active_rules_;
 
   // Matches URLs for the page_url condition.
   url_matcher::URLMatcher url_matcher_;

@@ -45,7 +45,7 @@ scoped_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
   const base::ListValue* parsed_list;
   CHECK(parsed_value->GetAsList(&parsed_list));
 
-  WebRequestActionSet::AnyVector actions;
+  WebRequestActionSet::Values actions;
   for (base::ListValue::const_iterator it = parsed_list->begin();
        it != parsed_list->end();
        ++it) {
@@ -221,7 +221,7 @@ TEST(WebRequestActionTest, CreateActionSet) {
   bool bad_message = false;
   scoped_ptr<WebRequestActionSet> result;
 
-  WebRequestActionSet::AnyVector input;
+  WebRequestActionSet::Values input;
 
   // Test empty input.
   error.clear();
