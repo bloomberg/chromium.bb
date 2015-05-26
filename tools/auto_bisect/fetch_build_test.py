@@ -101,6 +101,14 @@ class BuildArchiveTest(unittest.TestCase):
         'android_perf_rel/full-build-linux_123456.zip',
         archive.FilePath('123456'))
 
+  def test_PerfBuildArchive_AndroidArm64(self):
+    archive = fetch_build.PerfBuildArchive()
+    archive._platform = 'android_arm64'
+    self.assertEqual('chrome-perf', archive.BucketName())
+    self.assertEqual(
+        'android_perf_rel_arm64/full-build-linux_123456.zip',
+        archive.FilePath('123456'))
+
   def test_PerfBuildArchive_64BitWindows(self):
     archive = fetch_build.PerfBuildArchive(target_arch='x64')
     archive._platform = 'win64'
