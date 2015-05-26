@@ -6,17 +6,21 @@
 #define CONTENT_PUBLIC_TEST_FAKE_SPEECH_RECOGNITION_MANAGER_H_
 
 #include "base/callback_forward.h"
+#include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
 
 namespace content {
 
+class SpeechRecognitionManagerDelegate;
+
 // Fake SpeechRecognitionManager class that can be used for tests.
 // By default the recognition manager will respond with "Pictures of the moon"
 // as recognized result from speech. This result can be overridden by calling
 // SetFakeResult().
-class FakeSpeechRecognitionManager : public SpeechRecognitionManager {
+class FakeSpeechRecognitionManager : public SpeechRecognitionManager,
+                                     public SpeechRecognitionEventListener {
  public:
   FakeSpeechRecognitionManager();
   ~FakeSpeechRecognitionManager() override;
@@ -60,6 +64,24 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManager {
   SpeechRecognitionSessionContext GetSessionContext(
       int session_id) const override;
 
+  // SpeechRecognitionEventListener implementation.
+  void OnRecognitionStart(int session_id) override {}
+  void OnAudioStart(int session_id) override {}
+  void OnEnvironmentEstimationComplete(int session_id) override {}
+  void OnSoundStart(int session_id) override {}
+  void OnSoundEnd(int session_id) override {}
+  void OnAudioEnd(int session_id) override {}
+  void OnRecognitionEnd(int session_id) override {}
+  void OnRecognitionResults(int session_id,
+                            const SpeechRecognitionResults& result) override {}
+  void OnRecognitionError(int session_id,
+                          const SpeechRecognitionError& error) override {}
+  void OnAudioLevelsChange(int session_id,
+                           float volume,
+                           float noise_volume) override {}
+
+  void SetDelegate(SpeechRecognitionManagerDelegate* delegate);
+
  private:
   void SetFakeRecognitionResult();
 
@@ -72,6 +94,7 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManager {
   bool did_cancel_all_;
   bool should_send_fake_response_;
   base::Closure recognition_started_closure_;
+  SpeechRecognitionManagerDelegate* delegate_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(FakeSpeechRecognitionManager);
 };

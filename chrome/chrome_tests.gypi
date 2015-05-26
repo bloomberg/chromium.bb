@@ -789,6 +789,7 @@
     ],
     'chrome_browser_tests_speech_sources': [
       'browser/speech/extension_api/tts_extension_apitest.cc',
+      'browser/speech/speech_recognition_browsertest.cc',
     ],
     'chrome_browser_tests_full_safe_browsing_sources': [
       'browser/safe_browsing/local_safebrowsing_test_server.cc',
