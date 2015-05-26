@@ -100,7 +100,7 @@ class Gsutil(object):
     if ('You are attempting to access protected data with '
           'no configured credentials.' in err):
       return (403, out, err)
-    if 'No such object' in err:
+    if 'matched no objects' in err:
       return (404, out, err)
     return (code, out, err)
 
@@ -206,11 +206,19 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
         continue
     # Check if file exists.
     file_url = '%s/%s' % (base_url, input_sha1_sum)
-    if gsutil.check_call('ls', file_url)[0] != 0:
-      out_q.put('%d> File %s for %s does not exist, skipping.' % (
-          thread_num, file_url, output_filename))
-      ret_codes.put((1, 'File %s for %s does not exist.' % (
-          file_url, output_filename)))
+    (code, _, err) = gsutil.check_call('ls', file_url)
+    if code != 0:
+      if code == 404:
+        out_q.put('%d> File %s for %s does not exist, skipping.' % (
+            thread_num, file_url, output_filename))
+        ret_codes.put((1, 'File %s for %s does not exist.' % (
+            file_url, output_filename)))
+      else:
+        # Other error, probably auth related (bad ~/.boto, etc).
+        out_q.put('%d> Failed to fetch file %s for %s, skipping. [Err: %s]' % (
+            thread_num, file_url, output_filename, err))
+        ret_codes.put((1, 'Failed to fetch file %s for %s. [Err: %s]' % (
+            file_url, output_filename, err)))
       continue
     # Fetch the file.
     out_q.put('%d> Downloading %s...' % (thread_num, output_filename))
