@@ -4,6 +4,8 @@
 {
   'variables': {
     'trace_event_sources' : [
+      'trace_event/category_filter.cc',
+      'trace_event/category_filter.h',
       'trace_event/java_heap_dump_provider_android.cc',
       'trace_event/java_heap_dump_provider_android.h',
       'trace_event/memory_allocator_dump.cc',
@@ -41,6 +43,8 @@
       'trace_event/trace_event_system_stats_monitor.h',
       'trace_event/trace_event_win.cc',
       'trace_event/trace_event_win.h',
+      'trace_event/trace_options.cc',
+      'trace_event/trace_options.h',
       'trace_event/winheap_dump_provider_win.cc',
       'trace_event/winheap_dump_provider_win.h',
     ],
@@ -53,6 +57,7 @@
       }],
     ],
     'trace_event_test_sources' : [
+      'trace_event/category_filter_unittest.cc',
       'trace_event/java_heap_dump_provider_android_unittest.cc',
       'trace_event/memory_allocator_dump_unittest.cc',
       'trace_event/memory_dump_manager_unittest.cc',
@@ -65,6 +70,7 @@
       'trace_event/trace_event_system_stats_monitor_unittest.cc',
       'trace_event/trace_event_unittest.cc',
       'trace_event/trace_event_win_unittest.cc',
+      'trace_event/trace_options_unittest.cc',
       'trace_event/winheap_dump_provider_win_unittest.cc',
     ],
   },

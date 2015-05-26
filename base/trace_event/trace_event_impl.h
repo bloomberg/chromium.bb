@@ -24,6 +24,8 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
+#include "base/trace_event/category_filter.h"
+#include "base/trace_event/trace_options.h"
 
 // Older style trace macros with explicit id and extra data
 // Only these macros result in publishing data to ETW as currently implemented.
@@ -279,155 +281,7 @@ class BASE_EXPORT TraceResultBuffer {
   bool append_comma_;
 };
 
-class BASE_EXPORT CategoryFilter {
- public:
-  typedef std::vector<std::string> StringList;
-
-  // The default category filter, used when none is provided.
-  // Allows all categories through, except if they end in the suffix 'Debug' or
-  // 'Test'.
-  static const char kDefaultCategoryFilterString[];
-
-  // |filter_string| is a comma-delimited list of category wildcards.
-  // A category can have an optional '-' prefix to make it an excluded category.
-  // All the same rules apply above, so for example, having both included and
-  // excluded categories in the same list would not be supported.
-  //
-  // Example: CategoryFilter"test_MyTest*");
-  // Example: CategoryFilter("test_MyTest*,test_OtherStuff");
-  // Example: CategoryFilter("-excluded_category1,-excluded_category2");
-  // Example: CategoryFilter("-*,webkit"); would disable everything but webkit.
-  // Example: CategoryFilter("-webkit"); would enable everything but webkit.
-  //
-  // Category filters can also be used to configure synthetic delays.
-  //
-  // Example: CategoryFilter("DELAY(gpu.PresentingFrame;16)"); would make swap
-  //          buffers always take at least 16 ms.
-  // Example: CategoryFilter("DELAY(gpu.PresentingFrame;16;oneshot)"); would
-  //          make swap buffers take at least 16 ms the first time it is
-  //          called.
-  // Example: CategoryFilter("DELAY(gpu.PresentingFrame;16;alternating)");
-  //          would make swap buffers take at least 16 ms every other time it
-  //          is called.
-  explicit CategoryFilter(const std::string& filter_string);
-
-  CategoryFilter();
-
-  CategoryFilter(const CategoryFilter& cf);
-
-  ~CategoryFilter();
-
-  CategoryFilter& operator=(const CategoryFilter& rhs);
-
-  // Writes the string representation of the CategoryFilter. This is a comma
-  // separated string, similar in nature to the one used to determine
-  // enabled/disabled category patterns, except here there is an arbitrary
-  // order, included categories go first, then excluded categories. Excluded
-  // categories are distinguished from included categories by the prefix '-'.
-  std::string ToString() const;
-
-  // Returns true if at least one category in the list is enabled by this
-  // category filter.
-  bool IsCategoryGroupEnabled(const char* category_group) const;
-
-  // Return a list of the synthetic delays specified in this category filter.
-  const StringList& GetSyntheticDelayValues() const;
-
-  // Merges nested_filter with the current CategoryFilter
-  void Merge(const CategoryFilter& nested_filter);
-
-  // Clears both included/excluded pattern lists. This would be equivalent to
-  // creating a CategoryFilter with an empty string, through the constructor.
-  // i.e: CategoryFilter().
-  //
-  // When using an empty filter, all categories are considered included as we
-  // are not excluding anything.
-  void Clear();
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture, CategoryFilter);
-
-  // Returns true if category is enable according to this filter.
-  bool IsCategoryEnabled(const char* category_name) const;
-
-  static bool IsEmptyOrContainsLeadingOrTrailingWhitespace(
-      const std::string& str);
-
-  void Initialize(const std::string& filter_string);
-  void WriteString(const StringList& values,
-                   std::string* out,
-                   bool included) const;
-  void WriteString(const StringList& delays, std::string* out) const;
-  bool HasIncludedPatterns() const;
-
-  StringList included_;
-  StringList disabled_;
-  StringList excluded_;
-  StringList delays_;
-};
-
 class TraceSamplingThread;
-
-// Options determines how the trace buffer stores data.
-enum TraceRecordMode {
-  // Record until the trace buffer is full.
-  RECORD_UNTIL_FULL,
-
-  // Record until the user ends the trace. The trace buffer is a fixed size
-  // and we use it as a ring buffer during recording.
-  RECORD_CONTINUOUSLY,
-
-  // Echo to console. Events are discarded.
-  ECHO_TO_CONSOLE,
-
-  // Record until the trace buffer is full, but with a huge buffer size.
-  RECORD_AS_MUCH_AS_POSSIBLE
-};
-
-struct BASE_EXPORT TraceOptions {
-  TraceOptions()
-      : record_mode(RECORD_UNTIL_FULL),
-        enable_sampling(false),
-        enable_systrace(false),
-        enable_argument_filter(false) {}
-
-  explicit TraceOptions(TraceRecordMode record_mode)
-      : record_mode(record_mode),
-        enable_sampling(false),
-        enable_systrace(false),
-        enable_argument_filter(false) {}
-
-  // |options_string| is a comma-delimited list of trace options.
-  // Possible options are: "record-until-full", "record-continuously",
-  // "trace-to-console", "enable-sampling" and "enable-systrace".
-  // The first 3 options are trace recoding modes and hence
-  // mutually exclusive. If more than one trace recording modes appear in the
-  // options_string, the last one takes precedence. If none of the trace
-  // recording mode is specified, recording mode is RECORD_UNTIL_FULL.
-  //
-  // The trace option will first be reset to the default option
-  // (record_mode set to RECORD_UNTIL_FULL, enable_sampling and enable_systrace
-  // set to false) before options parsed from |options_string| are applied on
-  // it.
-  // If |options_string| is invalid, the final state of trace_options is
-  // undefined.
-  //
-  // Example: trace_options.SetFromString("record-until-full")
-  // Example: trace_options.SetFromString(
-  //              "record-continuously, enable-sampling")
-  // Example: trace_options.SetFromString("record-until-full, trace-to-console")
-  // will set ECHO_TO_CONSOLE as the recording mode.
-  //
-  // Returns true on success.
-  bool SetFromString(const std::string& options_string);
-
-  std::string ToString() const;
-
-  TraceRecordMode record_mode;
-  bool enable_sampling;
-  bool enable_systrace;
-  bool enable_argument_filter;
-};
 
 struct BASE_EXPORT TraceLogStatus {
   TraceLogStatus();
