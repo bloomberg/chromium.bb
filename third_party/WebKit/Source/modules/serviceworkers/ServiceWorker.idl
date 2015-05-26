@@ -45,7 +45,7 @@ enum ServiceWorkerState {
 ] interface ServiceWorker : EventTarget {
 
     // FIXME: Should inherit this from Worker.
-    [Custom, RaisesException] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
+    [PostMessage, RaisesException] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
 
     [RaisesException] void terminate();
 

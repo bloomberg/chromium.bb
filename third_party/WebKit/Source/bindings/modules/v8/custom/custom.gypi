@@ -11,7 +11,6 @@
             'V8CustomSQLStatementErrorCallback.cpp',
             'V8DeviceMotionEventCustom.cpp',
             'V8DeviceOrientationEventCustom.cpp',
-            'V8ServiceWorkerCustom.cpp',
         ],
     },
 }
