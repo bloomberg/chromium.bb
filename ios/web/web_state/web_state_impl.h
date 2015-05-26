@@ -164,6 +164,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   const base::string16& GetTitle() const;
 
   // Gets the HTTP response headers associated with the current page.
+  // NOTE: For a WKWebView-based WebState, these headers are generated via
+  // net::CreateHeadersFromNSHTTPURLResponse(); see comments in
+  // http_response_headers_util.h for limitations.
   net::HttpResponseHeaders* GetHttpResponseHeaders() const;
 
   // Called when HTTP response headers are received.

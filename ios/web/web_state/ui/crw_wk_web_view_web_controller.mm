@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#import "ios/net/http_response_headers_util.h"
 #import "ios/web/crw_network_activity_indicator_manager.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/navigation/web_load_params.h"
@@ -946,6 +947,19 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
     decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse
                       decisionHandler:
                           (void (^)(WKNavigationResponsePolicy))handler {
+  if ([navigationResponse.response isKindOfClass:[NSHTTPURLResponse class]]) {
+    // Create HTTP headers from the response.
+    // TODO(kkhorimoto): Due to the limited interface of NSHTTPURLResponse, some
+    // data in the HttpResponseHeaders generated here is inexact.  Once
+    // UIWebView is no longer supported, update WebState's implementation so
+    // that the Content-Language and the MIME type can be set without using this
+    // imperfect conversion.
+    scoped_refptr<net::HttpResponseHeaders> HTTPHeaders =
+        net::CreateHeadersFromNSHTTPURLResponse(
+            static_cast<NSHTTPURLResponse*>(navigationResponse.response));
+    self.webStateImpl->OnHttpResponseHeadersReceived(
+        HTTPHeaders.get(), net::GURLWithNSURL(navigationResponse.response.URL));
+  }
   if (navigationResponse.isForMainFrame)
     self.documentMIMEType = navigationResponse.response.MIMEType;
   handler(navigationResponse.canShowMIMEType ? WKNavigationResponsePolicyAllow :

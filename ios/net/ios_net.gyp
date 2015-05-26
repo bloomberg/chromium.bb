@@ -44,6 +44,8 @@
         'crn_http_url_response.mm',
         'http_protocol_logging.h',
         'http_protocol_logging.mm',
+        'http_response_headers_util.h',
+        'http_response_headers_util.mm',
         'nsurlrequest_util.h',
         'nsurlrequest_util.mm',
         'protocol_handler_util.h',
