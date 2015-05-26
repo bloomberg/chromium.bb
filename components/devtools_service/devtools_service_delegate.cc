@@ -5,27 +5,59 @@
 #include "components/devtools_service/devtools_service_delegate.h"
 
 #include "base/logging.h"
+#include "components/devtools_service/devtools_coordinator_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/common/url_type_converters.h"
+#include "url/gurl.h"
 
 namespace devtools_service {
 
-DevToolsServiceDelegate::DevToolsServiceDelegate() {}
+namespace {
 
-DevToolsServiceDelegate::~DevToolsServiceDelegate() {}
+bool IsShell(const GURL& requestor_url) {
+  // TODO(yzshen): http://crbug.com/491656 "mojo://shell/" has to be used
+  // instead of "mojo:shell" because "mojo" is not treated as a standard scheme.
+  return requestor_url == GURL("mojo://shell/");
+}
+
+}  // namespace
+
+DevToolsServiceDelegate::DevToolsServiceDelegate() {
+}
+
+DevToolsServiceDelegate::~DevToolsServiceDelegate() {
+}
 
 void DevToolsServiceDelegate::Initialize(mojo::ApplicationImpl* app) {
-  NOTIMPLEMENTED();
+  coordinator_.reset(new DevToolsCoordinatorImpl(app));
 }
 
 bool DevToolsServiceDelegate::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
-  NOTIMPLEMENTED();
-  return false;
+  connection->AddService<DevToolsAgentClient>(this);
+
+  // DevToolsCoordinator is a privileged interface and only allowed for the
+  // shell.
+  if (IsShell(GURL(connection->GetRemoteApplicationURL())))
+    connection->AddService<DevToolsCoordinator>(this);
+  return true;
 }
 
 void DevToolsServiceDelegate::Quit() {
-  NOTIMPLEMENTED();
+  coordinator_.reset();
+}
+
+void DevToolsServiceDelegate::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<DevToolsAgentClient> request) {
+  coordinator_->CreateAgentClient(request.Pass());
+}
+
+void DevToolsServiceDelegate::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<DevToolsCoordinator> request) {
+  coordinator_->BindToCoordinatorRequest(request.Pass());
 }
 
 }  // namespace devtools_service

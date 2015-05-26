@@ -15,10 +15,12 @@
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -170,6 +172,34 @@ void InitNativeOptions(shell::ApplicationManager* manager,
   }
 }
 
+void InitDevToolsServiceIfNeeded(shell::ApplicationManager* manager,
+                                 const base::CommandLine& command_line) {
+  if (!command_line.HasSwitch(switches::kRemoteDebuggingPort))
+    return;
+
+  std::string port_str =
+      command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
+  unsigned port;
+  if (!base::StringToUint(port_str, &port) || port > 65535) {
+    LOG(ERROR) << "Invalid value for switch " << switches::kRemoteDebuggingPort
+               << ": '" << port_str << "' is not a valid port number.";
+    return;
+  }
+
+  ServiceProviderPtr devtools_service_provider;
+  URLRequestPtr request(URLRequest::New());
+  request->url = "mojo:devtools_service";
+  manager->ConnectToApplication(request.Pass(), GURL("mojo:shell"),
+                                GetProxy(&devtools_service_provider), nullptr,
+                                base::Closure());
+
+  devtools_service::DevToolsCoordinatorPtr devtools_coordinator;
+  devtools_service_provider->ConnectToService(
+      devtools_service::DevToolsCoordinator::Name_,
+      GetProxy(&devtools_coordinator).PassMessagePipe());
+  devtools_coordinator->Initialize(static_cast<uint16_t>(port));
+}
+
 class TracingServiceProvider : public ServiceProvider {
  public:
   explicit TracingServiceProvider(InterfaceRequest<ServiceProvider> request)
@@ -277,6 +307,8 @@ bool Context::Init() {
   application_manager_.ConnectToApplication(request.Pass(), GURL(""), nullptr,
                                             tracing_service_provider_ptr.Pass(),
                                             base::Closure());
+
+  InitDevToolsServiceIfNeeded(&application_manager_, command_line);
 
   return true;
 }

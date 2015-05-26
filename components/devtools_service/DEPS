@@ -1,5 +1,6 @@
 include_rules = [
   "+mojo/application",
   "+mojo/common",
+  "+mojo/services/network/public",
   "+third_party/mojo/src/mojo/public",
 ]

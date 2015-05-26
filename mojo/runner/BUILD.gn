@@ -123,6 +123,7 @@ source_set("lib") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//base:base_static",
+    "//components/devtools_service/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common:tracing_impl",
     "//mojo/util:filename_util",
@@ -138,7 +139,10 @@ source_set("lib") {
     ":switches",
   ]
 
-  data_deps = [ "//mojo/services/tracing" ]
+  data_deps = [
+    "//components/devtools_service",
+    "//mojo/services/tracing",
+  ]
 
   if (is_android) {
     sources += [

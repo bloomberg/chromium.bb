@@ -6,22 +6,39 @@
 #define COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_SERVICE_DELEGATE_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 
 namespace devtools_service {
 
-class DevToolsServiceDelegate : public mojo::ApplicationDelegate {
+class DevToolsCoordinatorImpl;
+
+class DevToolsServiceDelegate
+    : public mojo::ApplicationDelegate,
+      public mojo::InterfaceFactory<DevToolsAgentClient>,
+      public mojo::InterfaceFactory<DevToolsCoordinator> {
  public:
   DevToolsServiceDelegate();
   ~DevToolsServiceDelegate() override;
 
  private:
-  // ApplicationDelegate implementation.
+  // mojo::ApplicationDelegate implementation.
   void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
   void Quit() override;
+
+  // mojo::InterfaceFactory<DevToolsAgentClient> implementation.
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<DevToolsAgentClient> request) override;
+
+  // mojo::InterfaceFactory<DevToolsCoordinator> implementation.
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<DevToolsCoordinator> request) override;
+
+  scoped_ptr<DevToolsCoordinatorImpl> coordinator_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsServiceDelegate);
 };
