@@ -369,16 +369,18 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             TabModelBase.startTabSwitchLatencyTiming(type);
         }
         if (mVisibleTab != null && mVisibleTab != tab && !mVisibleTab.needsReload()) {
-            // TODO(dtrainor): Once we figure out why we can't grab a snapshot from the current
-            // tab when we have other tabs loading from external apps remove the checks for
-            // FROM_EXTERNAL_APP/FROM_NEW.
-            if (!mVisibleTab.isClosing()
-                    && (!isFromExternalApp || type != TabSelectionType.FROM_NEW)) {
-                cacheTabBitmap(mVisibleTab);
+            if (mVisibleTab.isInitialized()) {
+                // TODO(dtrainor): Once we figure out why we can't grab a snapshot from the current
+                // tab when we have other tabs loading from external apps remove the checks for
+                // FROM_EXTERNAL_APP/FROM_NEW.
+                if (!mVisibleTab.isClosing()
+                        && (!isFromExternalApp || type != TabSelectionType.FROM_NEW)) {
+                    cacheTabBitmap(mVisibleTab);
+                }
+                mVisibleTab.hide();
+                mVisibleTab.setFullscreenManager(null);
+                mTabSaver.addTabToSaveQueue(mVisibleTab);
             }
-            mVisibleTab.hide();
-            mVisibleTab.setFullscreenManager(null);
-            mTabSaver.addTabToSaveQueue(mVisibleTab);
             mVisibleTab = null;
         }
 

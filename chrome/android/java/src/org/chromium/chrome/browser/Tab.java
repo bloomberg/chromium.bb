@@ -146,6 +146,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /** Gives {@link Tab} a way to interact with the Android window. */
     private final WindowAndroid mWindowAndroid;
 
+    /** Whether or not this {@link Tab} is initialized and should be interacted with. */
+    private boolean mIsInitialized;
+
     /** The current native page (e.g. chrome-native://newtab), or {@code null} if there is none. */
     private NativePage mNativePage;
 
@@ -1556,6 +1559,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     public void initializeNative() {
         if (mNativeTabAndroid == 0) nativeInit();
         assert mNativeTabAndroid != 0;
+        mIsInitialized = true;
     }
 
     /**
@@ -1694,6 +1698,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * this method is called.  Once this call is made this {@link Tab} should no longer be used.
      */
     public void destroy() {
+        mIsInitialized = false;
         // Update the title before destroying the tab. http://b/5783092
         updateTitle();
 
@@ -1735,7 +1740,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return Whether or not this Tab has a live native component.
      */
     public boolean isInitialized() {
-        return mNativeTabAndroid != 0;
+        return mIsInitialized;
     }
 
     /**
