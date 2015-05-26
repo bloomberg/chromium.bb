@@ -54,6 +54,8 @@ DEBIAN_PACKAGES="\
   libgconf-2-4 \
   libgconf2-4 \
   libgconf2-dev \
+  libgcrypt11 \
+  libgcrypt11-dev \
   libgdk-pixbuf2.0-0 \
   libgdk-pixbuf2.0-dev \
   libgl1-mesa-dev \
