@@ -31,6 +31,7 @@
 #include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
+#include "cc/test/fake_resource_provider.h"
 #include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_scrollbar.h"
 #include "cc/test/fake_video_frame_provider.h"
@@ -967,14 +968,8 @@ class LayerTreeHostContextTestDontUseLostResources
     child_output_surface_ = FakeOutputSurface::Create3d();
     child_output_surface_->BindToClient(&output_surface_client_);
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    child_resource_provider_ =
-        ResourceProvider::Create(child_output_surface_.get(),
-                                 shared_bitmap_manager_.get(),
-                                 NULL,
-                                 NULL,
-                                 0,
-                                 false,
-                                 1);
+    child_resource_provider_ = FakeResourceProvider::Create(
+        child_output_surface_.get(), shared_bitmap_manager_.get());
   }
 
   static void EmptyReleaseCallback(unsigned sync_point, bool lost) {}

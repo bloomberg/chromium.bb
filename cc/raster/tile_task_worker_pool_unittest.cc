@@ -28,6 +28,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_pile_impl.h"
+#include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -294,18 +295,16 @@ class TileTaskWorkerPoolTest
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
     context3d->set_support_sync_query(true);
-    resource_provider_ = ResourceProvider::Create(output_surface_.get(), NULL,
-                                                  &gpu_memory_buffer_manager_,
-                                                  NULL, 0, false, 1).Pass();
+    resource_provider_ = FakeResourceProvider::Create(
+        output_surface_.get(), nullptr, &gpu_memory_buffer_manager_);
   }
 
   void CreateSoftwareOutputSurfaceAndResourceProvider() {
     output_surface_ = FakeOutputSurface::CreateSoftware(
         make_scoped_ptr(new SoftwareOutputDevice));
     CHECK(output_surface_->BindToClient(&output_surface_client_));
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), &shared_bitmap_manager_,
-                                 NULL, NULL, 0, false, 1).Pass();
+    resource_provider_ = FakeResourceProvider::Create(
+        output_surface_.get(), &shared_bitmap_manager_, nullptr);
   }
 
   void OnTaskCompleted(scoped_ptr<ScopedResource> resource,

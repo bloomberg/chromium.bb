@@ -7,6 +7,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_renderer_client.h"
+#include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -82,8 +83,8 @@ class RendererTest : public ::testing::Test {
         new MockContextProvider(TestWebGraphicsContext3D::Create());
     output_surface_.reset(new TestOutputSurface(context_provider_));
     output_surface_->BindToClient(&output_surface_client_);
-    resource_provider_ = ResourceProvider::Create(
-        output_surface_.get(), NULL, NULL, NULL, 0, false, 1);
+    resource_provider_ =
+        FakeResourceProvider::Create(output_surface_.get(), nullptr);
     renderer_ = CreateRenderer<T>(&renderer_client_,
                                   &tree_settings_,
                                   output_surface_.get(),

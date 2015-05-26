@@ -8,6 +8,7 @@
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
+#include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/blocking_task_runner.h"
@@ -71,18 +72,11 @@ class VideoResourceUpdaterTest : public testing::Test {
     CHECK(output_surface_software_->BindToClient(&client_));
 
     shared_bitmap_manager_.reset(new SharedBitmapManagerAllocationCounter());
-    resource_provider3d_ =
-        ResourceProvider::Create(output_surface3d_.get(),
-                                 shared_bitmap_manager_.get(),
-                                 NULL,
-                                 NULL,
-                                 0,
-                                 false,
-                                 1);
+    resource_provider3d_ = FakeResourceProvider::Create(
+        output_surface3d_.get(), shared_bitmap_manager_.get());
 
-    resource_provider_software_ = ResourceProvider::Create(
-        output_surface_software_.get(), shared_bitmap_manager_.get(), NULL,
-        NULL, 0, false, 1);
+    resource_provider_software_ = FakeResourceProvider::Create(
+        output_surface_software_.get(), shared_bitmap_manager_.get());
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {

@@ -396,24 +396,12 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
     size_t id_allocation_chunk_size) {
-  ContextProvider* context_provider = output_surface->context_provider();
-  GLES2Interface* gl =
-      context_provider ? context_provider->ContextGL() : nullptr;
-  ResourceType default_resource_type =
-      gl ? RESOURCE_TYPE_GL_TEXTURE : RESOURCE_TYPE_BITMAP;
-
   scoped_ptr<ResourceProvider> resource_provider(new ResourceProvider(
       output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
       blocking_main_thread_task_runner, highp_threshold_min,
-      default_resource_type, use_rgba_4444_texture_format,
-      id_allocation_chunk_size));
-
-  if (gl)
-    resource_provider->InitializeGL();
-  else
-    resource_provider->InitializeSoftware();
-
-  return resource_provider.Pass();
+      use_rgba_4444_texture_format, id_allocation_chunk_size));
+  resource_provider->Initialize();
+  return resource_provider;
 }
 
 ResourceProvider::~ResourceProvider() {
@@ -1193,7 +1181,6 @@ ResourceProvider::ResourceProvider(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
-    ResourceType default_resource_type,
     bool use_rgba_4444_texture_format,
     size_t id_allocation_chunk_size)
     : output_surface_(output_surface),
@@ -1204,7 +1191,7 @@ ResourceProvider::ResourceProvider(
       highp_threshold_min_(highp_threshold_min),
       next_id_(1),
       next_child_(1),
-      default_resource_type_(default_resource_type),
+      default_resource_type_(RESOURCE_TYPE_BITMAP),
       use_texture_storage_ext_(false),
       use_texture_format_bgra_(false),
       use_texture_usage_hint_(false),
@@ -1219,17 +1206,18 @@ ResourceProvider::ResourceProvider(
   DCHECK(id_allocation_chunk_size_);
 }
 
-void ResourceProvider::InitializeSoftware() {
+void ResourceProvider::Initialize() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(default_resource_type_, RESOURCE_TYPE_BITMAP);
-  // Pick an arbitrary limit here similar to what hardware might.
-  max_texture_size_ = 16 * 1024;
-  best_texture_format_ = RGBA_8888;
-}
 
-void ResourceProvider::InitializeGL() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(default_resource_type_, RESOURCE_TYPE_GL_TEXTURE);
+  GLES2Interface* gl = ContextGL();
+  if (!gl) {
+    default_resource_type_ = RESOURCE_TYPE_BITMAP;
+    // Pick an arbitrary limit here similar to what hardware might.
+    max_texture_size_ = 16 * 1024;
+    best_texture_format_ = RGBA_8888;
+    return;
+  }
+
   DCHECK(!texture_uploader_);
   DCHECK(!texture_id_allocator_);
   DCHECK(!buffer_id_allocator_);
@@ -1237,7 +1225,7 @@ void ResourceProvider::InitializeGL() {
   const ContextProvider::Capabilities& caps =
       output_surface_->context_provider()->ContextCapabilities();
 
-  bool use_bgra = caps.gpu.texture_format_bgra8888;
+  default_resource_type_ = RESOURCE_TYPE_GL_TEXTURE;
   use_texture_storage_ext_ = caps.gpu.texture_storage;
   use_texture_format_bgra_ = caps.gpu.texture_format_bgra8888;
   use_texture_usage_hint_ = caps.gpu.texture_usage;
@@ -1245,12 +1233,10 @@ void ResourceProvider::InitializeGL() {
   yuv_resource_format_ = caps.gpu.texture_rg ? RED_8 : LUMINANCE_8;
   use_sync_query_ = caps.gpu.sync_query;
 
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-
   texture_uploader_ = TextureUploader::Create(gl);
   max_texture_size_ = 0;  // Context expects cleared value.
   gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
+  bool use_bgra = caps.gpu.texture_format_bgra8888;
   best_texture_format_ = PlatformColor::BestTextureFormat(use_bgra);
 
   texture_id_allocator_.reset(
