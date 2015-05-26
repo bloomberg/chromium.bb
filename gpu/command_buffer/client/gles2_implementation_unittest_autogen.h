@@ -2874,9 +2874,9 @@ TEST_F(GLES2ImplementationTest, CopySubTextureCHROMIUM) {
     cmds::CopySubTextureCHROMIUM cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1, 2, 3, 4, 5);
+  expected.cmd.Init(1, 2, 3, 4, 5, 6, 7, 8, 9);
 
-  gl_->CopySubTextureCHROMIUM(1, 2, 3, 4, 5);
+  gl_->CopySubTextureCHROMIUM(1, 2, 3, 4, 5, 6, 7, 8, 9);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

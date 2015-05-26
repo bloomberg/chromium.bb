@@ -2477,11 +2477,15 @@ void CopySubTextureCHROMIUM(GLenum target,
                             GLenum source_id,
                             GLenum dest_id,
                             GLint xoffset,
-                            GLint yoffset) {
+                            GLint yoffset,
+                            GLint x,
+                            GLint y,
+                            GLsizei width,
+                            GLsizei height) {
   gles2::cmds::CopySubTextureCHROMIUM* c =
       GetCmdSpace<gles2::cmds::CopySubTextureCHROMIUM>();
   if (c) {
-    c->Init(target, source_id, dest_id, xoffset, yoffset);
+    c->Init(target, source_id, dest_id, xoffset, yoffset, x, y, width, height);
   }
 }
 

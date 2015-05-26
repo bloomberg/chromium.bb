@@ -12221,13 +12221,21 @@ struct CopySubTextureCHROMIUM {
             GLenum _source_id,
             GLenum _dest_id,
             GLint _xoffset,
-            GLint _yoffset) {
+            GLint _yoffset,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
     SetHeader();
     target = _target;
     source_id = _source_id;
     dest_id = _dest_id;
     xoffset = _xoffset;
     yoffset = _yoffset;
+    x = _x;
+    y = _y;
+    width = _width;
+    height = _height;
   }
 
   void* Set(void* cmd,
@@ -12235,9 +12243,13 @@ struct CopySubTextureCHROMIUM {
             GLenum _source_id,
             GLenum _dest_id,
             GLint _xoffset,
-            GLint _yoffset) {
-    static_cast<ValueType*>(cmd)
-        ->Init(_target, _source_id, _dest_id, _xoffset, _yoffset);
+            GLint _yoffset,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)->Init(_target, _source_id, _dest_id, _xoffset,
+                                       _yoffset, _x, _y, _width, _height);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -12247,10 +12259,14 @@ struct CopySubTextureCHROMIUM {
   uint32_t dest_id;
   int32_t xoffset;
   int32_t yoffset;
+  int32_t x;
+  int32_t y;
+  int32_t width;
+  int32_t height;
 };
 
-static_assert(sizeof(CopySubTextureCHROMIUM) == 24,
-              "size of CopySubTextureCHROMIUM should be 24");
+static_assert(sizeof(CopySubTextureCHROMIUM) == 40,
+              "size of CopySubTextureCHROMIUM should be 40");
 static_assert(offsetof(CopySubTextureCHROMIUM, header) == 0,
               "offset of CopySubTextureCHROMIUM header should be 0");
 static_assert(offsetof(CopySubTextureCHROMIUM, target) == 4,
@@ -12263,6 +12279,14 @@ static_assert(offsetof(CopySubTextureCHROMIUM, xoffset) == 16,
               "offset of CopySubTextureCHROMIUM xoffset should be 16");
 static_assert(offsetof(CopySubTextureCHROMIUM, yoffset) == 20,
               "offset of CopySubTextureCHROMIUM yoffset should be 20");
+static_assert(offsetof(CopySubTextureCHROMIUM, x) == 24,
+              "offset of CopySubTextureCHROMIUM x should be 24");
+static_assert(offsetof(CopySubTextureCHROMIUM, y) == 28,
+              "offset of CopySubTextureCHROMIUM y should be 28");
+static_assert(offsetof(CopySubTextureCHROMIUM, width) == 32,
+              "offset of CopySubTextureCHROMIUM width should be 32");
+static_assert(offsetof(CopySubTextureCHROMIUM, height) == 36,
+              "offset of CopySubTextureCHROMIUM height should be 36");
 
 struct DrawArraysInstancedANGLE {
   typedef DrawArraysInstancedANGLE ValueType;

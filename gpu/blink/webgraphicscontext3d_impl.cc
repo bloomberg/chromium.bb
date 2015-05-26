@@ -827,13 +827,17 @@ DELEGATE_TO_GL_5(copyTextureCHROMIUM,
                  WGC3Denum,
                  WGC3Denum);
 
-DELEGATE_TO_GL_5(copySubTextureCHROMIUM,
+DELEGATE_TO_GL_9(copySubTextureCHROMIUM,
                  CopySubTextureCHROMIUM,
                  WGC3Denum,
                  WebGLId,
                  WebGLId,
                  WGC3Dint,
-                 WGC3Dint);
+                 WGC3Dint,
+                 WGC3Dint,
+                 WGC3Dint,
+                 WGC3Dsizei,
+                 WGC3Dsizei);
 
 DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)

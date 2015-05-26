@@ -1013,7 +1013,11 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                 GLuint source_id,
                                 GLuint dest_id,
                                 GLint xoffset,
-                                GLint yoffset);
+                                GLint yoffset,
+                                GLint x,
+                                GLint y,
+                                GLsizei width,
+                                GLsizei height);
 
   // Wrapper for TexStorage2DEXT.
   void DoTexStorage2DEXT(
@@ -11969,7 +11973,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(GLenum target,
 
   ScopedModifyPixels modify(dest_texture_ref);
 
-  // Try using GLImage::CopyTexImage when possible.
+  // Try using GLImage::CopyTexSubImage when possible.
   bool unpack_premultiply_alpha_change =
       unpack_premultiply_alpha_ ^ unpack_unpremultiply_alpha_;
   if (image && !unpack_flip_y_ && !unpack_premultiply_alpha_change) {
@@ -12007,7 +12011,11 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(GLenum target,
                                                 GLuint source_id,
                                                 GLuint dest_id,
                                                 GLint xoffset,
-                                                GLint yoffset) {
+                                                GLint yoffset,
+                                                GLint x,
+                                                GLint y,
+                                                GLsizei width,
+                                                GLsizei height) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCopySubTextureCHROMIUM");
 
   TextureRef* source_texture_ref = GetTexture(source_id);
@@ -12048,6 +12056,13 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(GLenum target,
   GLenum source_internal_format = 0;
   source_texture->GetLevelType(source_texture->target(), 0, &source_type,
                                &source_internal_format);
+  if (!source_texture->ValidForTexture(source_texture->target(), 0, x, y, 0,
+                                       width, height, 1, source_type)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM",
+                       "source texture bad dimensions.");
+    return;
+  }
+
   GLenum dest_type = 0;
   GLenum dest_internal_format = 0;
   bool dest_level_defined = dest_texture->GetLevelType(
@@ -12058,8 +12073,7 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(GLenum target,
     return;
   }
   if (!dest_texture->ValidForTexture(dest_texture->target(), 0, xoffset,
-                                     yoffset, 0, source_width, source_height,
-                                     1, dest_type)) {
+                                     yoffset, 0, width, height, 1, dest_type)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM",
                        "destination texture bad dimensions.");
     return;
@@ -12095,8 +12109,8 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(GLenum target,
   bool ok = dest_texture->GetLevelSize(
       GL_TEXTURE_2D, 0, &dest_width, &dest_height, nullptr);
   DCHECK(ok);
-  if (xoffset != 0 || yoffset != 0 || source_width != dest_width ||
-      source_height != dest_height) {
+  if (xoffset != 0 || yoffset != 0 || width != dest_width ||
+      height != dest_height) {
     if (!texture_manager()->ClearTextureLevel(this, dest_texture_ref, target,
                                               0)) {
       LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopySubTextureCHROMIUM",
@@ -12116,31 +12130,21 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(GLenum target,
   if (image && !unpack_flip_y_ && !unpack_premultiply_alpha_change) {
     glBindTexture(GL_TEXTURE_2D, dest_texture->service_id());
     if (image->CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(xoffset, yoffset),
-                               gfx::Rect(0, 0, source_width, source_height))) {
+                               gfx::Rect(x, y, source_width, source_height))) {
       return;
     }
   }
 
   DoWillUseTexImageIfNeeded(source_texture, source_texture->target());
 
-  // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
-  // before presenting.
-  if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
-    // TODO(hkuang): get the StreamTexture transform matrix in GPU process
-    // instead of using kIdentityMatrix crbug.com/226218.
-    copy_texture_CHROMIUM_->DoCopySubTextureWithTransform(
-        this, source_texture->target(), source_texture->service_id(),
-        dest_texture->service_id(), xoffset, yoffset, dest_width, dest_height,
-        source_width, source_height, unpack_flip_y_, unpack_premultiply_alpha_,
-        unpack_unpremultiply_alpha_, kIdentityMatrix);
-  } else {
-    copy_texture_CHROMIUM_->DoCopySubTexture(
-        this, source_texture->target(), source_texture->service_id(),
-        source_internal_format, dest_texture->service_id(),
-        dest_internal_format, xoffset, yoffset, dest_width, dest_height,
-        source_width, source_height, unpack_flip_y_, unpack_premultiply_alpha_,
-        unpack_unpremultiply_alpha_);
-  }
+  // TODO(hkuang): get the StreamTexture transform matrix in GPU process.
+  // crbug.com/226218.
+  copy_texture_CHROMIUM_->DoCopySubTexture(
+      this, source_texture->target(), source_texture->service_id(),
+      source_internal_format, dest_texture->service_id(), dest_internal_format,
+      xoffset, yoffset, x, y, width, height, dest_width, dest_height,
+      source_width, source_height, unpack_flip_y_, unpack_premultiply_alpha_,
+      unpack_unpremultiply_alpha_);
 
   DoDidUseTexImageIfNeeded(source_texture, source_texture->target());
 }

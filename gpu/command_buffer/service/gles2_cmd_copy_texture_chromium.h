@@ -50,6 +50,10 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
                         GLenum dest_internal_format,
                         GLint xoffset,
                         GLint yoffset,
+                        GLint x,
+                        GLint y,
+                        GLsizei width,
+                        GLsizei height,
                         GLsizei dest_width,
                         GLsizei dest_height,
                         GLsizei source_width,
@@ -70,21 +74,6 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
                                   bool premultiply_alpha,
                                   bool unpremultiply_alpha,
                                   const GLfloat transform_matrix[16]);
-
-  void DoCopySubTextureWithTransform(const gles2::GLES2Decoder* decoder,
-                                     GLenum source_target,
-                                     GLuint source_id,
-                                     GLuint dest_id,
-                                     GLint xoffset,
-                                     GLint yoffset,
-                                     GLsizei dest_width,
-                                     GLsizei dest_height,
-                                     GLsizei source_width,
-                                     GLsizei source_height,
-                                     bool flip_y,
-                                     bool premultiply_alpha,
-                                     bool unpremultiply_alpha,
-                                     const GLfloat transform_matrix[16]);
 
   // The attributes used during invocation of the extension.
   static const GLuint kVertexPositionAttrib = 0;
@@ -116,7 +105,11 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
                              bool flip_y,
                              bool premultiply_alpha,
                              bool unpremultiply_alpha,
-                             const GLfloat transform_matrix[16]);
+                             const GLfloat transform_matrix[16],
+                             GLint scissor_x,
+                             GLint scissor_y,
+                             GLsizei scissor_width,
+                             GLsizei scissor_height);
 
   bool initialized_;
   typedef std::vector<GLuint> ShaderVector;

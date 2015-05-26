@@ -1137,7 +1137,11 @@ void GLES2InterfaceStub::CopySubTextureCHROMIUM(GLenum /* target */,
                                                 GLenum /* source_id */,
                                                 GLenum /* dest_id */,
                                                 GLint /* xoffset */,
-                                                GLint /* yoffset */) {
+                                                GLint /* yoffset */,
+                                                GLint /* x */,
+                                                GLint /* y */,
+                                                GLsizei /* width */,
+                                                GLsizei /* height */) {
 }
 void GLES2InterfaceStub::DrawArraysInstancedANGLE(GLenum /* mode */,
                                                   GLint /* first */,

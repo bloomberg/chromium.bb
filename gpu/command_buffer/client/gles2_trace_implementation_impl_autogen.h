@@ -1925,9 +1925,14 @@ void GLES2TraceImplementation::CopySubTextureCHROMIUM(GLenum target,
                                                       GLenum source_id,
                                                       GLenum dest_id,
                                                       GLint xoffset,
-                                                      GLint yoffset) {
+                                                      GLint yoffset,
+                                                      GLint x,
+                                                      GLint y,
+                                                      GLsizei width,
+                                                      GLsizei height) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::CopySubTextureCHROMIUM");
-  gl_->CopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset);
+  gl_->CopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset, x,
+                              y, width, height);
 }
 
 void GLES2TraceImplementation::DrawArraysInstancedANGLE(GLenum mode,

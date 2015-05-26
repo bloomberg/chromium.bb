@@ -96,7 +96,9 @@ New Procedures and Functions
 
         void glCopySubTextureCHROMIUM (GLenum target, GLenum source_id,
                                        GLenum dest_id,
-                                       GLint xoffset, GLint yoffset)
+                                       GLint xoffset, GLint yoffset,
+                                       GLint x, GLint y,
+                                       GLsizei width, GLsizei height)
 
     Copies the sub contents of texture referred to by <source_id> to <dest_id>
     texture without redefining <dest_id> texture.
@@ -105,6 +107,13 @@ New Procedures and Functions
 
     <xoffset> and <yoffset> specify a texel offset in the x and y direction
     respectively within the destination texture.
+
+    <x> and <y> specify specify a texel offset in the x and y direction
+    respectively within the source texture.
+
+    <width> specifies the width of the texture subimage.
+
+    <height> specifies the width of the texture subimage.
 
     INVALID_OPERATION is generated if source internal_format and destination
     internal_format are not one of the valid formats described above.

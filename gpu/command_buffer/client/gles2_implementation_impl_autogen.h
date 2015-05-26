@@ -3208,14 +3208,28 @@ void GLES2Implementation::CopySubTextureCHROMIUM(GLenum target,
                                                  GLenum source_id,
                                                  GLenum dest_id,
                                                  GLint xoffset,
-                                                 GLint yoffset) {
+                                                 GLint yoffset,
+                                                 GLint x,
+                                                 GLint y,
+                                                 GLsizei width,
+                                                 GLsizei height) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopySubTextureCHROMIUM("
                      << GLES2Util::GetStringEnum(target) << ", "
                      << GLES2Util::GetStringEnum(source_id) << ", "
                      << GLES2Util::GetStringEnum(dest_id) << ", " << xoffset
-                     << ", " << yoffset << ")");
-  helper_->CopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset);
+                     << ", " << yoffset << ", " << x << ", " << y << ", "
+                     << width << ", " << height << ")");
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM", "width < 0");
+    return;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM", "height < 0");
+    return;
+  }
+  helper_->CopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset,
+                                  x, y, width, height);
   CheckGLError();
 }
 

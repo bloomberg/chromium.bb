@@ -4553,7 +4553,22 @@ error::Error GLES2DecoderImpl::HandleCopySubTextureCHROMIUM(
   GLenum dest_id = static_cast<GLenum>(c.dest_id);
   GLint xoffset = static_cast<GLint>(c.xoffset);
   GLint yoffset = static_cast<GLint>(c.yoffset);
-  DoCopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset);
+  GLint x = static_cast<GLint>(c.x);
+  GLint y = static_cast<GLint>(c.y);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  if (width < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM",
+                       "width < 0");
+    return error::kNoError;
+  }
+  if (height < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureCHROMIUM",
+                       "height < 0");
+    return error::kNoError;
+  }
+  DoCopySubTextureCHROMIUM(target, source_id, dest_id, xoffset, yoffset, x, y,
+                           width, height);
   return error::kNoError;
 }
 

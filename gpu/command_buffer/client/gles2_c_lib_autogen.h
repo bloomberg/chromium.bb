@@ -1231,9 +1231,13 @@ void GLES2CopySubTextureCHROMIUM(GLenum target,
                                  GLenum source_id,
                                  GLenum dest_id,
                                  GLint xoffset,
-                                 GLint yoffset) {
-  gles2::GetGLContext()->CopySubTextureCHROMIUM(target, source_id, dest_id,
-                                                xoffset, yoffset);
+                                 GLint yoffset,
+                                 GLint x,
+                                 GLint y,
+                                 GLsizei width,
+                                 GLsizei height) {
+  gles2::GetGLContext()->CopySubTextureCHROMIUM(
+      target, source_id, dest_id, xoffset, yoffset, x, y, width, height);
 }
 void GLES2DrawArraysInstancedANGLE(GLenum mode,
                                    GLint first,

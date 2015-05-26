@@ -686,7 +686,11 @@ virtual void CopySubTextureCHROMIUM(GLenum target,
                                     GLenum source_id,
                                     GLenum dest_id,
                                     GLint xoffset,
-                                    GLint yoffset) = 0;
+                                    GLint yoffset,
+                                    GLint x,
+                                    GLint y,
+                                    GLsizei width,
+                                    GLsizei height) = 0;
 virtual void DrawArraysInstancedANGLE(GLenum mode,
                                       GLint first,
                                       GLsizei count,

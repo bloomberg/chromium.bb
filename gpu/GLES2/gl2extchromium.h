@@ -408,7 +408,11 @@ GL_APICALL void GL_APIENTRY glCopySubTextureCHROMIUM(GLenum target,
                                                      GLenum source_id,
                                                      GLenum dest_id,
                                                      GLint xoffset,
-                                                     GLint yoffset);
+                                                     GLint yoffset,
+                                                     GLint x,
+                                                     GLint y,
+                                                     GLsizei width,
+                                                     GLsizei height);
 #endif
 typedef void(GL_APIENTRYP PFNGLCOPYTEXTURECHROMIUMPROC)(GLenum target,
                                                         GLenum source_id,
@@ -420,7 +424,11 @@ typedef void(GL_APIENTRYP PFNGLCOPYSUBTEXTURECHROMIUMPROC)(GLenum target,
                                                            GLenum source_id,
                                                            GLenum dest_id,
                                                            GLint xoffset,
-                                                           GLint yoffset);
+                                                           GLint yoffset,
+                                                           GLint x,
+                                                           GLint y,
+                                                           GLsizei width,
+                                                           GLsizei height);
 #endif  /* GL_CHROMIUM_copy_texture */
 
 /* GL_CHROMIUM_lose_context */
