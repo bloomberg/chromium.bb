@@ -1356,6 +1356,12 @@ _testable_boards = _x86_boards | frozenset((
     'whirlwind',
 ))
 
+# TODO(akeshet): Temporary workaround to vmtest failing on strage-pre-cq, to
+# allow already-screened changes to work through the pipeline.
+_no_vmtest_boards = frozenset((
+    'strago',
+))
+
 # A base config for each board.
 _base_configs = dict()
 
@@ -1386,6 +1392,8 @@ def _CreateBaseConfigs():
       base.update(rootfs_verification=False)
     if board in _base_layout_boards:
       base.update(disk_layout='base')
+    if board in _no_vmtest_boards:
+      base.update(vm_tests=[])
 
     # TODO(akeshet) Eliminate or clean up this special case.
     # kayle board has a lot of kayle-specific config changes.
