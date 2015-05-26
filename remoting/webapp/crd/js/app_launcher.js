@@ -161,20 +161,19 @@ remoting.V2AppLauncher.prototype.close = function(id) {
 };
 
 /**
- * @return {number} the next available window id.
+ * @return {number} The first available window id. Since Chrome remembers
+ *     properties such as size and position for app windows, it is better
+ *     to reuse window ids rather than allocating new ones.
  */
 function getNextWindowId() {
   var appWindows = chrome.app.window.getAll();
-  var lastId = /** @type(number) */ (0);
-  appWindows.forEach(function(appWindow) {
-    base.debug.assert(Number.isInteger(appWindow.id),
-                      "Window Id should be an integer");
-    var id = parseInt(appWindow.id, 10);
-    if (lastId <= id) {
-      lastId = id;
+  var result = 1;
+  for (; result <= appWindows.length; ++result) {
+    if (!chrome.app.window.get(String(result))) {
+      break;
     }
-  });
-  return ++lastId;
+  }
+  return result;
 }
 
 })();
