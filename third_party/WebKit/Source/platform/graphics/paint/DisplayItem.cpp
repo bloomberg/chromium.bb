@@ -7,6 +7,19 @@
 
 namespace blink {
 
+struct SameSizeAsDisplayItem {
+    virtual ~SameSizeAsDisplayItem() { } // Allocate vtable pointer.
+    void* pointers[2];
+    int m_int; // Make sure m_int and m_type are next to each other so they are packed on 64-bit.
+    DisplayItem::Type m_type;
+#ifndef NDEBUG
+    WTF::String m_debugString;
+#endif
+};
+
+static_assert(sizeof(DisplayItem) == sizeof(SameSizeAsDisplayItem), "DisplayItem should stay small");
+static_assert(sizeof(DisplayItem::Type) <= sizeof(int), "DisplayItem::Type should stay small");
+
 #ifndef NDEBUG
 
 static WTF::String paintPhaseAsDebugString(int paintPhase)
