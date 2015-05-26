@@ -102,7 +102,7 @@
       'browser/ui/autofill/chrome_autofill_client_mac.mm',
       'browser/ui/autofill/country_combobox_model.cc',
       'browser/ui/autofill/country_combobox_model.h',
-      'browser/ui/autofill/create_unmask_prompt_view.h',
+      'browser/ui/autofill/create_card_unmask_prompt_view.h',
       'browser/ui/autofill/credit_card_scanner_controller.cc',
       'browser/ui/autofill/credit_card_scanner_controller.h',
       'browser/ui/autofill/credit_card_scanner_view.cc',
