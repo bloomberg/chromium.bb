@@ -26,11 +26,25 @@ const char kService1[] = "/service/1";
 const char kService2[] = "/service/2";
 const char kService3[] = "/service/3";
 
+// These values come from
+// http://w3c.github.io/netinfo/#underlying-connection-technology. For types
+// that have unknown subtypes (wifi and ethernet) positive infinity is used as
+// per the spec.
+const double kExpectedNoneMaxBandwidth = 0;
+const double kExpectedWifiMaxBandwidth =
+    std::numeric_limits<double>::infinity();
+const double kExpectedEthernetMaxBandwidth =
+    std::numeric_limits<double>::infinity();
+const double kExpectedLteMaxBandwidth = 100;
+const double kExpectedEvdoMaxBandwidth = 2.46;
+const double kExpectedHspaMaxBandwidth = 3.6;
+
 struct NotifierState {
   net::NetworkChangeNotifier::ConnectionType type;
   const char* service_path;
   const char* ip_address;
   const char* dns_servers;
+  double max_bandwidth;
 };
 
 struct DefaultNetworkState {
@@ -50,6 +64,7 @@ struct NotifierUpdateTestCase {
   bool expected_type_changed;
   bool expected_ip_changed;
   bool expected_dns_changed;
+  bool expected_max_bandwidth_changed;
 };
 
 } // namespace
@@ -110,6 +125,7 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
     notifier_.connection_type_ = notifier_state.type;
     notifier_.service_path_ = notifier_state.service_path;
     notifier_.ip_address_ = notifier_state.ip_address;
+    notifier_.max_bandwidth_mbps_ = notifier_state.max_bandwidth;
     std::vector<std::string> dns_servers;
     base::SplitString(notifier_state.dns_servers, ',', &dns_servers);
     notifier_.dns_servers_ = dns_servers;
@@ -119,6 +135,7 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
     EXPECT_EQ(notifier_state.type, notifier_.connection_type_);
     EXPECT_EQ(notifier_state.service_path, notifier_.service_path_);
     EXPECT_EQ(notifier_state.ip_address, notifier_.ip_address_);
+    EXPECT_EQ(notifier_state.max_bandwidth, notifier_.max_bandwidth_mbps_);
     std::vector<std::string> dns_servers;
     base::SplitString(notifier_state.dns_servers, ',', &dns_servers);
     EXPECT_EQ(dns_servers, notifier_.dns_servers_);
@@ -145,9 +162,10 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
   // Process an default network update based on the state of |default_network_|.
   void ProcessDefaultNetworkUpdate(bool* type_changed,
                                    bool* ip_changed,
-                                   bool* dns_changed) {
+                                   bool* dns_changed,
+                                   bool* max_bandwidth_changed) {
     notifier_.UpdateState(&default_network_, type_changed, ip_changed,
-                          dns_changed);
+                          dns_changed, max_bandwidth_changed);
   }
 
  private:
@@ -156,79 +174,192 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
 };
 
 NotifierUpdateTestCase test_cases[] = {
-  { "Online -> Offline",
-    { NetworkChangeNotifier::CONNECTION_ETHERNET, kService1, kIpAddress1,
-      kDnsServers1 },
-    { false, shill::kTypeEthernet, "", kService1, "", "" },
-    { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
-    true, true, true
-  },
-  { "Offline -> Offline",
-    { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
-    { false, shill::kTypeEthernet, "", kService1, kIpAddress1,
-      kDnsServers1 },
-    { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
-    false, false, false
-  },
-  { "Offline -> Online",
-    { NetworkChangeNotifier::CONNECTION_NONE, "", "", "" },
-    { true, shill::kTypeEthernet, "", kService1, kIpAddress1, kDnsServers1 },
-    { NetworkChangeNotifier::CONNECTION_ETHERNET, kService1, kIpAddress1,
-      kDnsServers1 },
-    true, true, true
-  },
-  { "Online -> Online (new default service, different connection type)",
-    { NetworkChangeNotifier::CONNECTION_ETHERNET, kService1, kIpAddress1,
-      kDnsServers1 },
-    { true, shill::kTypeWifi, "", kService2, kIpAddress1, kDnsServers1 },
-    { NetworkChangeNotifier::CONNECTION_WIFI, kService2, kIpAddress1,
-      kDnsServers1 },
-    true, true, true
-  },
-  { "Online -> Online (new default service, same connection type)",
-    { NetworkChangeNotifier::CONNECTION_WIFI, kService2, kIpAddress1,
-      kDnsServers1 },
-    { true, shill::kTypeWifi, "", kService3, kIpAddress1, kDnsServers1 },
-    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress1,
-      kDnsServers1 },
-    false, true, true
-  },
-  { "Online -> Online (same default service, first IP address update)",
-    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, "", kDnsServers1 },
-    { true, shill::kTypeWifi, "", kService3, kIpAddress2, kDnsServers1 },
-    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
-      kDnsServers1 },
-    false, false, false
-  },
-  { "Online -> Online (same default service, new IP address, same DNS)",
-    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress1,
-      kDnsServers1 },
-    { true, shill::kTypeWifi, "", kService3, kIpAddress2, kDnsServers1 },
-    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
-      kDnsServers1 },
-    false, true, false
-  },
-  { "Online -> Online (same default service, same IP address, new DNS)",
-    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
-      kDnsServers1 },
-    { true, shill::kTypeWifi, "", kService3, kIpAddress2, kDnsServers2 },
-    { NetworkChangeNotifier::CONNECTION_WIFI, kService3, kIpAddress2,
-      kDnsServers2 },
-    false, false, true
-  }
-};
+    {"Online -> Offline",
+     {NetworkChangeNotifier::CONNECTION_ETHERNET,
+      kService1,
+      kIpAddress1,
+      kDnsServers1,
+      kExpectedEthernetMaxBandwidth},
+     {false, shill::kTypeEthernet, "", kService1, "", ""},
+     {NetworkChangeNotifier::CONNECTION_NONE,
+      "",
+      "",
+      "",
+      kExpectedNoneMaxBandwidth},
+     true,
+     true,
+     true,
+     true},
+    {"Offline -> Offline",
+     {NetworkChangeNotifier::CONNECTION_NONE,
+      "",
+      "",
+      "",
+      kExpectedNoneMaxBandwidth},
+     {false, shill::kTypeEthernet, "", kService1, kIpAddress1, kDnsServers1},
+     {NetworkChangeNotifier::CONNECTION_NONE,
+      "",
+      "",
+      "",
+      kExpectedNoneMaxBandwidth},
+     false,
+     false,
+     false,
+     false},
+    {"Offline -> Online",
+     {NetworkChangeNotifier::CONNECTION_NONE,
+      "",
+      "",
+      "",
+      kExpectedNoneMaxBandwidth},
+     {true, shill::kTypeEthernet, "", kService1, kIpAddress1, kDnsServers1},
+     {NetworkChangeNotifier::CONNECTION_ETHERNET,
+      kService1,
+      kIpAddress1,
+      kDnsServers1,
+      kExpectedEthernetMaxBandwidth},
+     true,
+     true,
+     true,
+     true},
+    {"Online -> Online (new default service, different connection type)",
+     {NetworkChangeNotifier::CONNECTION_ETHERNET,
+      kService1,
+      kIpAddress1,
+      kDnsServers1,
+      kExpectedEthernetMaxBandwidth},
+     {true, shill::kTypeWifi, "", kService2, kIpAddress1, kDnsServers1},
+     {NetworkChangeNotifier::CONNECTION_WIFI,
+      kService2,
+      kIpAddress1,
+      kDnsServers1,
+      kExpectedWifiMaxBandwidth},
+     true,
+     true,
+     true,
+     false},
+    {"Online -> Online (new default service, same connection type)",
+     {NetworkChangeNotifier::CONNECTION_WIFI,
+      kService2,
+      kIpAddress1,
+      kDnsServers1,
+      kExpectedWifiMaxBandwidth},
+     {true, shill::kTypeWifi, "", kService3, kIpAddress1, kDnsServers1},
+     {NetworkChangeNotifier::CONNECTION_WIFI,
+      kService3,
+      kIpAddress1,
+      kDnsServers1,
+      kExpectedWifiMaxBandwidth},
+     false,
+     true,
+     true,
+     false},
+    {"Online -> Online (same default service, first IP address update)",
+     {NetworkChangeNotifier::CONNECTION_WIFI,
+      kService3,
+      "",
+      kDnsServers1,
+      kExpectedWifiMaxBandwidth},
+     {true, shill::kTypeWifi, "", kService3, kIpAddress2, kDnsServers1},
+     {NetworkChangeNotifier::CONNECTION_WIFI,
+      kService3,
+      kIpAddress2,
+      kDnsServers1,
+      kExpectedWifiMaxBandwidth},
+     false,
+     false,
+     false,
+     false},
+    {"Online -> Online (same default service, new IP address, same DNS)",
+     {NetworkChangeNotifier::CONNECTION_WIFI,
+      kService3,
+      kIpAddress1,
+      kDnsServers1,
+      kExpectedWifiMaxBandwidth},
+     {true, shill::kTypeWifi, "", kService3, kIpAddress2, kDnsServers1},
+     {NetworkChangeNotifier::CONNECTION_WIFI,
+      kService3,
+      kIpAddress2,
+      kDnsServers1,
+      kExpectedWifiMaxBandwidth},
+     false,
+     true,
+     false,
+     false},
+    {"Online -> Online (same default service, same IP address, new DNS)",
+     {NetworkChangeNotifier::CONNECTION_WIFI,
+      kService3,
+      kIpAddress2,
+      kDnsServers1,
+      kExpectedWifiMaxBandwidth},
+     {true, shill::kTypeWifi, "", kService3, kIpAddress2, kDnsServers2},
+     {NetworkChangeNotifier::CONNECTION_WIFI,
+      kService3,
+      kIpAddress2,
+      kDnsServers2,
+      kExpectedWifiMaxBandwidth},
+     false,
+     false,
+     true,
+     false},
+    {"Online -> Online (change of technology but not connection type)",
+     {NetworkChangeNotifier::CONNECTION_3G,
+      kService3,
+      kIpAddress2,
+      kDnsServers1,
+      kExpectedEvdoMaxBandwidth},
+     {true,
+      shill::kTypeCellular,
+      shill::kNetworkTechnologyHspa,
+      kService3,
+      kIpAddress2,
+      kDnsServers1},
+     {NetworkChangeNotifier::CONNECTION_3G,
+      kService3,
+      kIpAddress2,
+      kDnsServers1,
+      kExpectedHspaMaxBandwidth},
+     false,
+     false,
+     false,
+     true},
+    {"Online -> Online (change of technology and connection type)",
+     {NetworkChangeNotifier::CONNECTION_3G,
+      kService3,
+      kIpAddress2,
+      kDnsServers1,
+      kExpectedEvdoMaxBandwidth},
+     {true,
+      shill::kTypeCellular,
+      shill::kNetworkTechnologyLte,
+      kService3,
+      kIpAddress2,
+      kDnsServers1},
+     {NetworkChangeNotifier::CONNECTION_4G,
+      kService3,
+      kIpAddress2,
+      kDnsServers1,
+      kExpectedLteMaxBandwidth},
+     true,
+     false,
+     false,
+     true}};
 
 TEST_F(NetworkChangeNotifierChromeosUpdateTest, UpdateDefaultNetwork) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SCOPED_TRACE(test_cases[i].test_description);
     SetNotifierState(test_cases[i].initial_state);
     SetDefaultNetworkState(test_cases[i].default_network_state);
-    bool type_changed = false, ip_changed = false, dns_changed = false;
-    ProcessDefaultNetworkUpdate(&type_changed, &ip_changed, &dns_changed);
+    bool type_changed = false, ip_changed = false, dns_changed = false,
+         max_bandwidth_changed = false;
+    ProcessDefaultNetworkUpdate(&type_changed, &ip_changed, &dns_changed,
+                                &max_bandwidth_changed);
     VerifyNotifierState(test_cases[i].expected_state);
-    EXPECT_TRUE(type_changed == test_cases[i].expected_type_changed);
-    EXPECT_TRUE(ip_changed == test_cases[i].expected_ip_changed);
-    EXPECT_TRUE(dns_changed == test_cases[i].expected_dns_changed);
+    EXPECT_EQ(test_cases[i].expected_type_changed, type_changed);
+    EXPECT_EQ(test_cases[i].expected_ip_changed, ip_changed);
+    EXPECT_EQ(test_cases[i].expected_dns_changed, dns_changed);
+    EXPECT_EQ(test_cases[i].expected_max_bandwidth_changed,
+              max_bandwidth_changed);
   }
 }
 

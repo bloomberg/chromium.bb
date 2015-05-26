@@ -37,6 +37,7 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   // NetworkChangeNotifier overrides.
   net::NetworkChangeNotifier::ConnectionType GetCurrentConnectionType()
       const override;
+  double GetCurrentMaxBandwidth() const override;
 
   // PowerManagerClient::Observer overrides.
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
@@ -57,10 +58,13 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   // type change.
   // |ip_address_changed| is set to true if we must report an IP address change.
   // |dns_changed| is set to true if we must report a DNS config change.
+  // |max_bandwidth_changed| is set to true if we must report a max bandwidth
+  // change.
   void UpdateState(const chromeos::NetworkState* default_network,
                    bool* connection_type_changed,
                    bool* ip_address_changed,
-                   bool* dns_changed);
+                   bool* dns_changed,
+                   bool* max_bandwidth_changed);
 
   // Proactively retrieves current network state from the network
   // state handler and calls UpdateState with the result.
@@ -71,6 +75,12 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   static net::NetworkChangeNotifier::ConnectionType
       ConnectionTypeFromShill(const std::string& type,
                               const std::string& technology);
+
+  // Maps the shill network type and technology to its NetworkChangeNotifier
+  // subtype equivalent.
+  static net::NetworkChangeNotifier::ConnectionSubtype GetConnectionSubtype(
+      const std::string& type,
+      const std::string& technology);
 
   // Calculates parameters used for network change notifier online/offline
   // signals.
@@ -84,6 +94,10 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   std::vector<std::string> dns_servers_;
   // Service path for the current default network.
   std::string service_path_;
+
+  // The maximum theoretical bandwidth in megabits per second for the current
+  // default network.
+  double max_bandwidth_mbps_;
 
   scoped_ptr<DnsConfigService> dns_config_service_;
 
