@@ -221,6 +221,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic-compile-only-pre-cq",
@@ -286,6 +291,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic-no-vmtest-pre-cq",
@@ -303,6 +313,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal, nowithdebug)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -327,6 +342,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic-paladin",
@@ -354,6 +374,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic-pre-cq",
@@ -480,6 +505,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic_freon-compile-only-pre-cq",
@@ -532,6 +562,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic_freon-no-vmtest-pre-cq",
@@ -550,6 +585,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "manifest_version": true,
         "name": "amd64-generic_freon-paladin",
         "prebuilts": "public",
@@ -574,6 +614,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "amd64-generic_freon-pre-cq",
@@ -645,6 +690,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic-compile-only-pre-cq",
@@ -702,6 +752,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic-no-vmtest-pre-cq",
@@ -722,6 +777,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic-paladin",
@@ -749,6 +809,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic-pre-cq",
@@ -832,6 +897,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic_freon-compile-only-pre-cq",
@@ -888,6 +958,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic_freon-no-vmtest-pre-cq",
@@ -907,6 +982,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "manifest_version": true,
         "name": "arm-generic_freon-paladin",
         "prebuilts": "public",
@@ -933,6 +1013,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm-generic_freon-pre-cq",
@@ -1002,6 +1087,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm64-generic-compile-only-pre-cq",
@@ -1058,6 +1148,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm64-generic-no-vmtest-pre-cq",
@@ -1077,6 +1172,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "manifest_version": true,
         "name": "arm64-generic-paladin",
         "prebuilts": "public",
@@ -1103,6 +1203,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "arm64-generic-pre-cq",
@@ -1525,6 +1630,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -1804,6 +1914,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -1829,6 +1944,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -1877,6 +1997,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -2517,6 +2642,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -2576,6 +2706,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -2600,6 +2735,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -2647,6 +2787,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -3070,6 +3215,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -3129,6 +3279,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -3153,6 +3308,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -3200,6 +3360,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -3623,6 +3788,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -3785,6 +3955,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -3809,6 +3984,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -3856,6 +4036,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -4279,6 +4464,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -4441,6 +4631,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -4465,6 +4660,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -4512,6 +4712,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -4931,6 +5136,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5010,6 +5220,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5036,6 +5251,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5072,6 +5292,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5603,6 +5828,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5666,6 +5896,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -5691,6 +5926,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -5726,6 +5966,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -6710,6 +6955,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -6805,6 +7055,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -6829,6 +7084,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -6876,6 +7136,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7244,6 +7509,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -7317,6 +7587,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7378,6 +7653,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7403,6 +7683,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -7435,6 +7720,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7802,6 +8092,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Used for creating/deleting branches (TPMs only)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7879,6 +8174,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -7974,6 +8274,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8000,6 +8305,11 @@
         "chroot_replace": true,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8048,6 +8358,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8471,6 +8786,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8530,6 +8850,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -8554,6 +8879,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -8601,6 +8931,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9024,6 +9359,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9186,6 +9526,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9210,6 +9555,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -9257,6 +9607,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9709,6 +10064,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9768,6 +10128,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9792,6 +10157,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -9839,6 +10209,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10262,6 +10637,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10424,6 +10804,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10448,6 +10833,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -10495,6 +10885,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10924,6 +11319,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -10988,6 +11388,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11014,6 +11419,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -11064,6 +11474,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11470,6 +11885,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11529,6 +11949,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -11553,6 +11978,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -11600,6 +12030,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -12023,6 +12458,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -12185,6 +12625,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -12209,6 +12654,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -12256,6 +12706,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -12715,6 +13170,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -13338,6 +13798,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -13365,6 +13830,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -13415,6 +13885,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14044,6 +14519,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14107,6 +14587,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14134,6 +14619,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -14183,6 +14673,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14607,6 +15102,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14727,6 +15227,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14790,6 +15295,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -14816,6 +15326,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -14865,6 +15380,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15262,6 +15782,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15291,6 +15816,11 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
         ],
         "important": true,
         "internal": true,
@@ -15342,6 +15872,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15759,6 +16294,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15879,6 +16419,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15942,6 +16487,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15968,6 +16518,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -16017,6 +16572,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -16414,6 +16974,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -16442,6 +17007,11 @@
         "chroot_replace": true,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -16492,6 +17062,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -16912,6 +17487,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -16977,6 +17557,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -17004,6 +17589,11 @@
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "factory": false,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -17054,6 +17644,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -17469,6 +18064,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -17631,6 +18231,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -17655,6 +18260,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -17702,6 +18312,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -18125,6 +18740,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -18287,6 +18907,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -18311,6 +18936,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -18358,6 +18988,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -18747,6 +19382,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "manifest_version": true,
                 "name": "x86-generic-no-vmtest-pre-cq",
@@ -18773,6 +19413,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "manifest_version": true,
                 "name": "amd64-generic-no-vmtest-pre-cq",
@@ -18792,6 +19437,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "external-mixed-pre-cq",
@@ -18867,6 +19517,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -18958,6 +19613,11 @@
         "debug_symbols": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -18991,6 +19651,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19016,6 +19681,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19064,6 +19734,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19487,6 +20162,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19546,6 +20226,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -19570,6 +20255,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -19617,6 +20307,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20040,6 +20735,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20099,6 +20799,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20123,6 +20828,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -20170,6 +20880,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20572,6 +21287,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "gizmo-compile-only-pre-cq",
@@ -20626,6 +21346,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "gizmo-no-vmtest-pre-cq",
@@ -20644,6 +21369,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "gizmo-paladin",
@@ -20670,6 +21400,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "gizmo-pre-cq",
@@ -20815,6 +21550,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -20977,6 +21717,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21001,6 +21746,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -21048,6 +21798,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21471,6 +22226,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21633,6 +22393,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21657,6 +22422,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -21704,6 +22474,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -22127,6 +22902,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -22186,6 +22966,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -22210,6 +22995,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -22257,6 +23047,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -23082,6 +23877,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -23392,6 +24192,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -23416,6 +24221,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23463,6 +24273,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -24177,6 +24992,7 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
         "images": [
             "base"
         ],
@@ -24247,6 +25063,7 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
         "images": [
             "base"
         ],
@@ -24280,6 +25097,7 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "image_test": true,
         "images": [
             "base"
         ],
@@ -24321,6 +25139,7 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
         "images": [
             "base"
         ],
@@ -24706,6 +25525,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "manifest_version": true,
                 "name": "x86-generic-no-vmtest-pre-cq",
@@ -24732,6 +25556,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "manifest_version": true,
                 "name": "arm-generic-no-vmtest-pre-cq",
@@ -24753,6 +25582,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "kernel-3_14-a-pre-cq",
@@ -24787,6 +25621,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -24814,6 +25653,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -24856,6 +25700,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -24891,6 +25740,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -24919,6 +25773,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -24996,6 +25855,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25158,6 +26022,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25182,6 +26051,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -25229,6 +26103,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25657,6 +26536,10 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25742,6 +26625,10 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -25767,6 +26654,10 @@
         "description": "Commit Queue (internal)",
         "disk_layout": "base",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -25816,6 +26707,10 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -26227,6 +27122,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -26389,6 +27289,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -26414,6 +27319,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -26462,6 +27372,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -26885,6 +27800,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27048,6 +27968,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27076,6 +28001,11 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
         ],
         "important": true,
         "internal": true,
@@ -27125,6 +28055,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27498,6 +28433,11 @@
         "description": "Commit Queue (internal)",
         "do_not_apply_cq_patches": true,
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -27571,6 +28511,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27630,6 +28575,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -27654,6 +28604,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -27701,6 +28656,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28160,6 +29120,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28250,6 +29215,11 @@
         "compilecheck": true,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28282,6 +29252,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28309,6 +29284,11 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
         ],
         "important": true,
         "internal": true,
@@ -28358,6 +29338,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28808,6 +29793,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28867,6 +29857,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28891,6 +29886,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -28938,6 +29938,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29349,6 +30354,11 @@
             "tree"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29484,6 +30494,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29543,6 +30558,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -29567,6 +30587,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -29614,6 +30639,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -30019,6 +31049,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n32-generic-compile-only-pre-cq",
@@ -30077,6 +31112,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n32-generic-no-vmtest-pre-cq",
@@ -30097,6 +31137,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "manifest_version": true,
         "name": "mipseb-n32-generic-paladin",
         "prebuilts": "public",
@@ -30124,6 +31169,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n32-generic-pre-cq",
@@ -30196,6 +31246,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n64-generic-compile-only-pre-cq",
@@ -30254,6 +31309,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n64-generic-no-vmtest-pre-cq",
@@ -30274,6 +31334,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "manifest_version": true,
         "name": "mipseb-n64-generic-paladin",
         "prebuilts": "public",
@@ -30301,6 +31366,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-n64-generic-pre-cq",
@@ -30373,6 +31443,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-o32-generic-compile-only-pre-cq",
@@ -30431,6 +31506,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-o32-generic-no-vmtest-pre-cq",
@@ -30451,6 +31531,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "manifest_version": true,
         "name": "mipseb-o32-generic-paladin",
         "prebuilts": "public",
@@ -30478,6 +31563,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipseb-o32-generic-pre-cq",
@@ -30550,6 +31640,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n32-generic-compile-only-pre-cq",
@@ -30608,6 +31703,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n32-generic-no-vmtest-pre-cq",
@@ -30628,6 +31728,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "manifest_version": true,
         "name": "mipsel-n32-generic-paladin",
         "prebuilts": "public",
@@ -30655,6 +31760,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n32-generic-pre-cq",
@@ -30727,6 +31837,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n64-generic-compile-only-pre-cq",
@@ -30785,6 +31900,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n64-generic-no-vmtest-pre-cq",
@@ -30805,6 +31925,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "manifest_version": true,
         "name": "mipsel-n64-generic-paladin",
         "prebuilts": "public",
@@ -30832,6 +31957,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-n64-generic-pre-cq",
@@ -30905,6 +32035,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-o32-generic-compile-only-pre-cq",
@@ -30962,6 +32097,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-o32-generic-no-vmtest-pre-cq",
@@ -30982,6 +32122,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-o32-generic-paladin",
@@ -31025,6 +32170,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "mipsel-o32-generic-pre-cq",
@@ -31124,6 +32274,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -31160,6 +32315,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -31188,6 +32348,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -31232,6 +32397,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -31268,6 +32438,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -31296,6 +32471,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -31340,6 +32520,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -31369,6 +32554,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -31446,6 +32636,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -31541,6 +32736,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -31566,6 +32766,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -31614,6 +32819,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32037,6 +33247,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32199,6 +33414,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32223,6 +33443,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -32270,6 +33495,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32699,6 +33929,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32758,6 +33993,11 @@
         "debug_symbols": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32949,6 +34189,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -32976,6 +34221,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33026,6 +34276,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33712,6 +34967,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33775,6 +35035,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -33801,6 +35066,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -33850,6 +35120,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -34267,6 +35542,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -34330,6 +35610,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -34356,6 +35641,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -34405,6 +35695,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -34822,6 +36117,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -34885,6 +36185,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -34912,6 +36217,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -34961,6 +36271,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -35379,6 +36694,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -35442,6 +36762,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -35468,6 +36793,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -35517,6 +36847,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -35934,6 +37269,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -36059,6 +37399,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -36086,6 +37431,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -36136,6 +37486,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -36654,6 +38009,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -36816,6 +38176,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -36840,6 +38205,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -36887,6 +38257,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37310,6 +38685,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37405,6 +38785,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37430,6 +38815,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37478,6 +38868,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37915,6 +39310,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -37968,6 +39368,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "panther_embedded-minimal-paladin",
@@ -38036,6 +39441,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -38060,6 +39470,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -38108,6 +39523,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -38536,6 +39956,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -38596,6 +40021,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -38621,6 +40051,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -38669,6 +40104,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39106,6 +40546,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39201,6 +40646,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39226,6 +40676,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39276,6 +40731,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39700,6 +41160,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39759,6 +41224,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -39783,6 +41253,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -39830,6 +41305,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40253,6 +41733,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40312,6 +41797,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40336,6 +41826,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -40383,6 +41878,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40806,6 +42306,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40968,6 +42473,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -40992,6 +42502,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -41039,6 +42554,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -41975,6 +43495,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -42095,6 +43620,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -42158,6 +43688,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -42184,6 +43719,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -42233,6 +43773,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -42630,6 +44175,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -42656,6 +44206,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -42705,6 +44260,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43128,6 +44688,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43248,6 +44813,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43311,6 +44881,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43337,6 +44912,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -43386,6 +44966,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43783,6 +45368,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -43812,6 +45402,11 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
         ],
         "important": true,
         "internal": true,
@@ -43863,6 +45458,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -44276,6 +45876,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -44371,6 +45976,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -44398,6 +46008,11 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
         ],
         "important": true,
         "internal": true,
@@ -44447,6 +46062,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -45821,6 +47441,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -45857,6 +47482,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -45892,6 +47522,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -45927,6 +47562,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -45962,6 +47602,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -45997,6 +47642,11 @@
                     "chromeos-infra-eng@grotations.appspotmail.com"
                 ],
                 "health_threshold": 3,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test"
+                ],
                 "important": true,
                 "internal": true,
                 "manifest": "official.xml",
@@ -46025,6 +47675,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46055,6 +47710,11 @@
             "tree"
         ],
         "health_threshold": 1,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46134,6 +47794,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46198,6 +47863,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46224,6 +47894,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -46274,6 +47949,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46679,6 +48359,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46841,6 +48526,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -46865,6 +48555,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -46912,6 +48607,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -47337,6 +49037,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -47396,6 +49101,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -47420,6 +49130,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -47467,6 +49182,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -49144,6 +50864,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -49888,6 +51613,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -49913,6 +51643,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -49963,6 +51698,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -50396,6 +52136,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -50558,6 +52303,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -50582,6 +52332,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -50629,6 +52384,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51058,6 +52818,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51121,6 +52886,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51147,6 +52917,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -51180,6 +52955,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51590,6 +53370,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51653,6 +53438,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51680,6 +53470,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -51714,6 +53509,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -52114,6 +53914,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -52276,6 +54081,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -52301,6 +54111,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -52349,6 +54164,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -53613,6 +55433,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -53886,6 +55711,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -53910,6 +55740,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -53957,6 +55792,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -54708,6 +56548,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -54808,6 +56653,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -54835,6 +56685,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -54884,6 +56739,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -55296,6 +57156,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -55458,6 +57323,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -55482,6 +57352,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -55529,6 +57404,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -55954,6 +57834,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -56051,6 +57936,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -56076,6 +57966,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -56125,6 +58020,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -56524,6 +58424,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -56619,6 +58524,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -56644,6 +58554,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -56694,6 +58609,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -57119,6 +59039,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -57178,6 +59103,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -57202,6 +59132,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -57249,6 +59184,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -57674,6 +59614,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -57925,6 +59870,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -57950,6 +59900,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -57997,6 +59952,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -58565,6 +60525,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -58660,6 +60625,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -58687,6 +60657,11 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
         ],
         "important": true,
         "internal": true,
@@ -58736,6 +60711,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -59171,6 +61151,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -59230,6 +61215,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -59254,6 +61244,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -59301,6 +61296,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -59726,6 +61726,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -59786,6 +61791,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -59813,6 +61823,11 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"cq\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab_quick\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
         ],
         "important": true,
         "internal": true,
@@ -59862,6 +61877,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -60274,6 +62294,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -60436,6 +62461,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -60460,6 +62490,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -60507,6 +62542,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -60930,6 +62970,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -61092,6 +63137,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -61116,6 +63166,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -61163,6 +63218,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -61626,6 +63686,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -61685,6 +63750,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -61709,6 +63779,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -61756,6 +63831,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -62241,6 +64321,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -62300,6 +64385,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -62325,6 +64415,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -62372,6 +64467,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -64240,6 +66340,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -64303,6 +66408,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -64329,6 +66439,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -64378,6 +66493,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -64795,6 +66915,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -64858,6 +66983,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -64884,6 +67014,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -64933,6 +67068,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -65350,6 +67490,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -65413,6 +67558,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -65439,6 +67589,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -65488,6 +67643,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -65905,6 +68065,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -65968,6 +68133,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -65994,6 +68164,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -66043,6 +68218,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -66460,6 +68640,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -66523,6 +68708,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -66549,6 +68739,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -66598,6 +68793,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -67015,6 +69215,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -67078,6 +69283,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -67104,6 +69314,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -67153,6 +69368,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -67563,6 +69783,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -67626,6 +69851,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -67652,6 +69882,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -67701,6 +69936,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -68118,6 +70358,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -68181,6 +70426,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -68207,6 +70457,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -68256,6 +70511,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -68675,6 +70935,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -68738,6 +71003,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -68765,6 +71035,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -68815,6 +71090,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -69232,6 +71512,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -69295,6 +71580,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -69321,6 +71611,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -69370,6 +71665,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -69787,6 +72087,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -69850,6 +72155,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -69876,6 +72186,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -69925,6 +72240,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -70335,6 +72655,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -70398,6 +72723,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -70424,6 +72754,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -70473,6 +72808,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -70890,6 +73230,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -70953,6 +73298,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -70979,6 +73329,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -71028,6 +73383,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -71441,6 +73801,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -71502,6 +73867,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -71527,6 +73897,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -71575,6 +73950,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -71976,6 +74356,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -72138,6 +74523,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -72162,6 +74552,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -72209,6 +74604,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -72632,6 +75032,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -72727,6 +75132,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -72754,6 +75164,11 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
         ],
         "important": true,
         "internal": true,
@@ -72803,6 +75218,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -73182,6 +75602,11 @@
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 10,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 10,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -73235,6 +75660,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x32-generic-compile-only-pre-cq",
@@ -73301,6 +75731,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x32-generic-no-vmtest-pre-cq",
@@ -73319,6 +75754,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "manifest_version": true,
         "name": "x32-generic-paladin",
         "prebuilts": "public",
@@ -73343,6 +75783,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x32-generic-pre-cq",
@@ -73448,6 +75893,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -73507,6 +75957,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -73534,6 +75989,11 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
         ],
         "important": true,
         "internal": true,
@@ -73583,6 +76043,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -74164,6 +76629,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -74223,6 +76693,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -74248,6 +76723,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -74295,6 +76775,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -74718,6 +77203,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -74794,6 +77284,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -74853,6 +77348,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -74877,6 +77377,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -74924,6 +77429,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -75330,6 +77840,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -75354,6 +77869,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -75401,6 +77921,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -75786,6 +78311,11 @@
         "description": "Paladin build with Address Sanitizer (Clang)",
         "disk_layout": "2gb-rootfs",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ChromiumOS-SDK",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "manifest_version": true,
         "name": "x86-generic-asan-paladin",
         "prebuilts": "public",
@@ -75836,6 +78366,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x86-generic-compile-only-pre-cq",
@@ -75900,6 +78435,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x86-generic-no-vmtest-pre-cq",
@@ -75917,6 +78457,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal, nowithdebug)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -75941,6 +78486,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x86-generic-paladin",
@@ -75968,6 +78518,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "manifest_version": true,
         "name": "x86-generic-pre-cq",
@@ -76115,6 +78670,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -76253,6 +78813,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -76278,6 +78843,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal, nowithdebug)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -76303,6 +78873,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -76353,6 +78928,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -76776,6 +79356,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -76835,6 +79420,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -76859,6 +79449,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -76906,6 +79501,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -77329,6 +79929,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -77388,6 +79993,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -77415,6 +80025,11 @@
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
         ],
         "important": true,
         "internal": true,
@@ -77464,6 +80079,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -78043,6 +80663,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -78102,6 +80727,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -78126,6 +80756,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -78173,6 +80808,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -78596,6 +81236,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -78672,6 +81317,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -78731,6 +81381,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -78755,6 +81410,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -78802,6 +81462,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -79208,6 +81873,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -79232,6 +81902,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -79279,6 +81954,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -79695,6 +82375,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -79857,6 +82542,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -79881,6 +82571,11 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -79928,6 +82623,11 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
         "internal": true,
         "manifest": "official.xml",
