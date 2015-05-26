@@ -54240,6 +54240,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="769" label="PushSubscriptionId"/>
   <int value="770" label="EncryptedMediaSecureOrigin"/>
   <int value="771" label="EncryptedMediaInsecureOrigin"/>
+  <int value="772" label="PerformanceFrameTiming"/>
+  <int value="773" label="V8Element_Animate_Method"/>
+  <int value="774"
+      label="V8SVGSVGElement_PixelUnitToMillimeterX_AttributeGetter"/>
+  <int value="775"
+      label="V8SVGSVGElement_PixelUnitToMillimeterY_AttributeGetter"/>
+  <int value="776"
+      label="V8SVGSVGElement_ScreenPixelToMillimeterX_AttributeGetter"/>
+  <int value="777"
+      label="V8SVGSVGElement_ScreenPixelToMillimeterY_AttributeGetter"/>
+  <int value="778" label="V8SVGSVGElement_GetElementById_Method"/>
+  <int value="779" label="ElementCreateShadowRootMultiple"/>
+  <int value="780" label="V8MessageChannel_Constructor"/>
+  <int value="781" label="V8MessagePort_PostMessage_Method"/>
+  <int value="782" label="V8MessagePort_Start_Method"/>
+  <int value="783" label="V8MessagePort_Close_Method"/>
+  <int value="784" label="MessagePortsTransferred"/>
+  <int value="785" label="CSSKeyframesRuleAnonymousIndexedGetter"/>
+  <int value="786" label="V8Screen_AvailLeft_AttributeGetter"/>
+  <int value="787" label="V8Screen_AvailTop_AttributeGetter"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
