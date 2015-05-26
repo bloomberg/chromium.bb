@@ -27,9 +27,6 @@ function postMessageToWorker(worker)
 
 function test()
 {
-    var isContextCreated = false;
-    var isAgentEnabled = false;
-
     startWorkerAndPostMessage(step2, "worker1", "startWorker1");
 
     function step2()
@@ -56,7 +53,6 @@ function test()
 
     function startWorkerAndPostMessage(next, workerName, workerStartFunction)
     {
-        isContextCreated = false;
         InspectorTest.addSniffer(WebInspector.RuntimeModel.prototype, "_executionContextCreated", contextCreated.bind(this, next, workerName));
         InspectorTest.evaluateInPage(workerStartFunction + "()");
     }
