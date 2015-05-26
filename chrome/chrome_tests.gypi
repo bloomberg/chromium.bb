@@ -431,7 +431,7 @@
       'browser/ui/autofill/autofill_dialog_controller_browsertest.cc',
       'browser/ui/autofill/autofill_dialog_view_tester.h',
       'browser/ui/autofill/card_unmask_prompt_view_browsertest.cc',
-      'browser/ui/autofill/card_unmask_view_tester.h',
+      'browser/ui/autofill/card_unmask_prompt_view_tester.h',
       'browser/ui/autofill/mock_address_validator.cc',
       'browser/ui/autofill/mock_address_validator.h',
       'browser/ui/autofill/password_generation_popup_view_browsertest.cc',
