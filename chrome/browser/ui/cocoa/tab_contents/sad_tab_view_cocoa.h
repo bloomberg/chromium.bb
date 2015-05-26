@@ -21,7 +21,6 @@
   base::scoped_nsobject<NSTextField> message_;
   base::scoped_nsobject<HyperlinkTextView> help_;
 
-  base::scoped_nsobject<NSColor> backgroundColor_;
   NSSize messageSize_;
 
   // A weak reference to the parent controller.

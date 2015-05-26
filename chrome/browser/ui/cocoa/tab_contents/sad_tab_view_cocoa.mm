@@ -12,6 +12,7 @@
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
+#import "ui/base/cocoa/nscolor_additions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -63,11 +64,11 @@ static const CGFloat kTabHorzMargin = 13;
   NSImage* image = rb.GetNativeImageNamed(IDR_SAD_TAB).ToNSImage();
   [image_ setImage:image];
 
-
   // Initialize background color.
   NSColor* backgroundColor = [NSColor colorWithCalibratedWhite:247.0f/255.0f
                                                          alpha:1.0];
-  backgroundColor_.reset([backgroundColor retain]);
+  [self setWantsLayer:YES];
+  [[self layer] setBackgroundColor:[backgroundColor cr_CGColor]];
 
   // Set up the title.
   title_.reset([[SadTabTextView alloc]
@@ -87,12 +88,6 @@ static const CGFloat kTabHorzMargin = 13;
 
   DCHECK(controller_);
   [self initializeHelpText];
-}
-
-- (void)drawRect:(NSRect)dirtyRect {
-  // Paint background.
-  [backgroundColor_ set];
-  NSRectFill(dirtyRect);
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldSize {
