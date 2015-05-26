@@ -36,7 +36,7 @@
 
     attribute EventHandler onmessage;
 
-    [Custom, RaisesException] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
+    [PostMessage, RaisesException] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
     void terminate();
 };
 

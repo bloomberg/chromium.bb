@@ -26,7 +26,6 @@
             'V8MutationObserverCustom.cpp',
             'V8PopStateEventCustom.cpp',
             'V8WindowCustom.cpp',
-            'V8WorkerCustom.cpp',
             'V8XMLHttpRequestCustom.cpp',
         ],
     },
