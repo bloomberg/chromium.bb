@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OPEN_FROM_CLIPBOARD_CLIPBOARD_URL_PROVIDER_H_
 #define COMPONENTS_OPEN_FROM_CLIPBOARD_CLIPBOARD_URL_PROVIDER_H_
 
+#include "base/callback.h"
 #include "components/omnibox/autocomplete_provider.h"
 
 class ClipboardRecentContent;
@@ -12,14 +13,23 @@ class ClipboardRecentContent;
 // Autocomplete provider offering content based on the clipboard's content.
 class ClipboardURLProvider : public AutocompleteProvider {
  public:
-  ClipboardURLProvider(ClipboardRecentContent* clipboard_recent_content);
+  typedef base::Callback<AutocompleteMatch(const AutocompleteInput&)>
+      PlaceholderRequestCallback;
+
+  ClipboardURLProvider(
+      ClipboardRecentContent* clipboard_recent_content,
+      const PlaceholderRequestCallback& placeholder_match_getter);
+
+  // AutocompleteProvider implementation.
   void Start(const AutocompleteInput& input,
              bool minimal_changes,
              bool called_due_to_focus) override;
 
  private:
   ~ClipboardURLProvider() override;
+
   ClipboardRecentContent* clipboard_recent_content_;
+  PlaceholderRequestCallback placeholder_match_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardURLProvider);
 };

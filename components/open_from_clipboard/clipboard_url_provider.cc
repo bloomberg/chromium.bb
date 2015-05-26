@@ -18,9 +18,11 @@ const int kClipboardURLProviderRelevance = 1600;
 }  // namespace
 
 ClipboardURLProvider::ClipboardURLProvider(
-    ClipboardRecentContent* clipboard_recent_content)
+    ClipboardRecentContent* clipboard_recent_content,
+    const PlaceholderRequestCallback& placeholder_match_getter)
     : AutocompleteProvider(AutocompleteProvider::TYPE_SHORTCUTS),
-      clipboard_recent_content_(clipboard_recent_content) {
+      clipboard_recent_content_(clipboard_recent_content),
+      placeholder_match_getter_(placeholder_match_getter) {
   DCHECK(clipboard_recent_content_);
 }
 
@@ -37,7 +39,10 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
   // anything in the omnibox.
   if (input.cursor_position() == base::string16::npos) {
     GURL url;
-    if (clipboard_recent_content_->GetRecentURLFromClipboard(&url)) {
+    // Add the suggestion only if the user is not already on the page stored
+    // in the clipboard.
+    if (clipboard_recent_content_->GetRecentURLFromClipboard(&url) &&
+        url != input.current_url()) {
       DCHECK(url.is_valid());
       AutocompleteMatch match(this, kClipboardURLProviderRelevance, false,
                               AutocompleteMatchType::NAVSUGGEST_PERSONALIZED);
@@ -53,6 +58,14 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
       AutocompleteMatch::ClassifyLocationInString(
           base::string16::npos, 0, match.description.length(),
           ACMatchClassification::URL, &match.description_class);
+      // Adds a default match. This match will be opened when the user presses
+      // "Go".
+      AutocompleteMatch current_url_match(placeholder_match_getter_.Run(input));
+      if (current_url_match.destination_url.is_valid()) {
+        // Makes the placeholder match be above the clipboard match.
+        current_url_match.relevance = kClipboardURLProviderRelevance + 1;
+        matches_.push_back(current_url_match);
+      }
 
       matches_.push_back(match);
     }
