@@ -3144,11 +3144,6 @@
               '_SCL_SECURE_NO_DEPRECATE',
             ],
             'msvs_disabled_warnings': [
-              # These are variable shadowing warnings that are new in VS2015.
-              # We should probably work through these at some point for
-              # non-chromium code, but for now, focus on chromium_code==1 code.
-              4456, 4457, 4458, 4459,
-
               4800,
             ],
             'msvs_settings': {
@@ -5620,6 +5615,7 @@
           4510, # Default constructor could not be generated
           4512, # Assignment operator could not be generated
           4610, # Object can never be instantiated
+          4838, # Narrowing conversion. Doesn't seem to be very useful.
           4996, # 'X': was declared deprecated (for GetVersionEx).
 
           # These are variable shadowing warnings that are new in VS2015. We
