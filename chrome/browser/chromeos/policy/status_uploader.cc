@@ -16,6 +16,9 @@
 #include "chromeos/settings/cros_settings_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/media_request_state.h"
+#include "content/public/common/media_stream_request.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace {
@@ -34,8 +37,9 @@ StatusUploader::StatusUploader(
     : client_(client),
       collector_(collector.Pass()),
       task_runner_(task_runner),
-      upload_frequency_(base::TimeDelta::FromMilliseconds(
-          kDefaultUploadDelayMs)),
+      upload_frequency_(
+          base::TimeDelta::FromMilliseconds(kDefaultUploadDelayMs)),
+      has_captured_media_(false),
       weak_factory_(this) {
   // StatusUploader is currently only created for registered clients, and
   // it is currently safe to assume that the client will not unregister while
@@ -46,6 +50,10 @@ StatusUploader::StatusUploader(
   // to skip status uploads for unregistered clients, and to observe the client
   // and kick off an upload when registration happens.
   DCHECK(client->is_registered());
+
+  // Track whether any media capture devices are in use - this changes what
+  // type of information we are allowed to upload.
+  MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
 
   // Listen for changes to the upload delay, and start sending updates to the
   // server.
@@ -65,6 +73,7 @@ StatusUploader::StatusUploader(
 }
 
 StatusUploader::~StatusUploader() {
+  MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
 }
 
 void StatusUploader::ScheduleNextStatusUpload() {
@@ -116,9 +125,22 @@ bool StatusUploader::IsSessionDataUploadAllowed() {
   if (!ui::UserActivityDetector::Get()->last_activity_time().is_null())
     return false;
 
-  // TODO(atwilson): Check if we've captured any audio/video data
-  // (http://crbug.com/487261).
-  return true;
+  // Screenshot is allowed as long as we have not captured media.
+  return !has_captured_media_;
+}
+
+void StatusUploader::OnRequestUpdate(int render_process_id,
+                                     int render_frame_id,
+                                     content::MediaStreamType stream_type,
+                                     const content::MediaRequestState state) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // If a video or audio capture stream is opened, set a flag so we disallow
+  // upload of potentially sensitive data.
+  if (state == content::MEDIA_REQUEST_STATE_OPENING &&
+      (stream_type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+       stream_type == content::MEDIA_DEVICE_VIDEO_CAPTURE)) {
+    has_captured_media_ = true;
+  }
 }
 
 void StatusUploader::UploadStatus() {

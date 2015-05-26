@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
 
@@ -25,7 +26,7 @@ class DeviceStatusCollector;
 
 // Class responsible for periodically uploading device status from the
 // passed DeviceStatusCollector.
-class StatusUploader {
+class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
  public:
   // Refresh constants.
   static const int64 kDefaultUploadDelayMs;
@@ -38,7 +39,7 @@ class StatusUploader {
       scoped_ptr<DeviceStatusCollector> collector,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
-  ~StatusUploader();
+  ~StatusUploader() override;
 
   // Returns the time of the last successful upload, or Time(0) if no upload
   // has ever happened.
@@ -48,6 +49,12 @@ class StatusUploader {
   // This checks to ensure that the current session is a kiosk session, and
   // that no user input (keyboard, mouse, touch, audio/video) has been received.
   bool IsSessionDataUploadAllowed();
+
+  // MediaCaptureDevicesDispatcher::Observer implementation
+  void OnRequestUpdate(int render_process_id,
+                       int render_frame_id,
+                       content::MediaStreamType stream_type,
+                       const content::MediaRequestState state) override;
 
  private:
   // Callback invoked periodically to upload the device status from the
@@ -86,6 +93,9 @@ class StatusUploader {
 
   // Callback invoked via a delay to upload device status.
   base::CancelableClosure upload_callback_;
+
+  // True if there has been any captured media in this session.
+  bool has_captured_media_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

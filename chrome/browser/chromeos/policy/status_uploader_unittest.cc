@@ -5,6 +5,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
@@ -12,12 +13,28 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/user_activity/user_activity_detector.h"
+#include "ui/events/platform/platform_event_source.h"
+#include "ui/events/platform/platform_event_types.h"
+
+#if defined(USE_X11)
+#include "ui/events/devices/x11/device_data_manager_x11.h"
+#include "ui/events/devices/x11/touch_factory_x11.h"
+#include "ui/events/test/events_test_utils_x11.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
+#endif
 
 using ::testing::_;
+using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::WithArgs;
@@ -25,6 +42,20 @@ using ::testing::WithArgs;
 namespace em = enterprise_management;
 
 namespace {
+
+// A test implementation of PlatformEventSource that we can instantiate to make
+// sure that the PlatformEventSource has an instance while in unit tests (X11
+// platforms don't have a PlatformEventSource by default, while Ozone tests do).
+#if defined(USE_X11)
+class TestPlatformEventSource : public ui::PlatformEventSource {
+ public:
+  TestPlatformEventSource() {}
+  ~TestPlatformEventSource() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestPlatformEventSource);
+};
+#endif
 
 class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
@@ -38,6 +69,15 @@ class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
 
   MOCK_METHOD1(GetDeviceStatus, bool(em::DeviceStatusReportRequest*));
   MOCK_METHOD1(GetDeviceSessionStatus, bool(em::SessionStatusReportRequest*));
+
+  // Explicit mock implementation declared here, since gmock::Invoke can't
+  // handle returning non-moveable types like scoped_ptr.
+  scoped_ptr<policy::DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo()
+      override {
+    return make_scoped_ptr(new policy::DeviceLocalAccount(
+        policy::DeviceLocalAccount::TYPE_KIOSK_APP, "account_id", "app_id",
+        "update_url"));
+  }
 };
 
 }  // namespace
@@ -50,6 +90,9 @@ class StatusUploaderTest : public testing::Test {
   }
 
   void SetUp() override {
+#if defined(USE_X11)
+    ui::DeviceDataManagerX11::CreateInstance();
+#endif
     client_.SetDMToken("dm_token");
     collector_.reset(new MockDeviceStatusCollector(&prefs_));
     settings_helper_.ReplaceProvider(chromeos::kReportUploadFrequency);
@@ -94,10 +137,14 @@ class StatusUploaderTest : public testing::Test {
     EXPECT_GE(next_task, uploader.last_upload() + expected_delay);
   }
 
-  base::MessageLoop loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   scoped_ptr<MockDeviceStatusCollector> collector_;
+#if defined(USE_X11)
+  TestPlatformEventSource platform_event_source_;
+#endif
+  ui::UserActivityDetector detector_;
   MockCloudPolicyClient client_;
   MockDeviceManagementService device_management_service_;
   TestingPrefServiceSimple prefs_;
@@ -184,6 +231,46 @@ TEST_F(StatusUploaderTest, ChangeFrequency) {
   const base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(
       new_delay);
   RunPendingUploadTaskAndCheckNext(uploader, expected_delay);
+}
+
+#if defined(USE_X11) || defined(USE_OZONE)
+TEST_F(StatusUploaderTest, NoUploadAfterUserInput) {
+  StatusUploader uploader(&client_, collector_.Pass(), task_runner_);
+  // Should allow data upload before there is user input.
+  EXPECT_TRUE(uploader.IsSessionDataUploadAllowed());
+
+// Now mock user input, and no session data should be allowed.
+#if defined(USE_X11)
+  ui::ScopedXI2Event native_event;
+  const int kPointerDeviceId = 10;
+  std::vector<int> device_list;
+  device_list.push_back(kPointerDeviceId);
+  ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);
+  native_event.InitGenericButtonEvent(
+      kPointerDeviceId, ui::ET_MOUSE_PRESSED, gfx::Point(),
+      ui::EF_LEFT_MOUSE_BUTTON | ui::EF_CONTROL_DOWN);
+#elif defined(USE_OZONE)
+  ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                   ui::EventTimeForNow(), 0, 0);
+  const ui::PlatformEvent& native_event = &e;
+#endif
+  ui::UserActivityDetector::Get()->DidProcessEvent(native_event);
+  EXPECT_FALSE(uploader.IsSessionDataUploadAllowed());
+}
+#endif
+
+TEST_F(StatusUploaderTest, NoUploadAfterVideoCapture) {
+  StatusUploader uploader(&client_, collector_.Pass(), task_runner_);
+  // Should allow data upload before there is video capture.
+  EXPECT_TRUE(uploader.IsSessionDataUploadAllowed());
+
+  // Now mock video capture, and no session data should be allowed.
+  MediaCaptureDevicesDispatcher::GetInstance()->OnMediaRequestStateChanged(
+      0, 0, 0, GURL("http://www.google.com"),
+      content::MEDIA_DEVICE_VIDEO_CAPTURE,
+      content::MEDIA_REQUEST_STATE_OPENING);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(uploader.IsSessionDataUploadAllowed());
 }
 
 }  // namespace policy
