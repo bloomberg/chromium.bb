@@ -38,7 +38,6 @@ namespace update_client {
 
 CrxUpdateItem::CrxUpdateItem()
     : state(State::kNew),
-      unregistered(false),
       on_demand(false),
       diff_update_failed(false),
       error_category(0),
@@ -58,6 +57,12 @@ CrxComponent::CrxComponent() : allow_background_download(true) {
 CrxComponent::~CrxComponent() {
 }
 
+// It is important that an instance of the UpdateClient binds an unretained
+// pointer to itself. Otherwise, a life time circular dependency between this
+// instance and its inner members prevents the destruction of this instance.
+// Using unretained references is allowed in this case since the life time of
+// the UpdateClient instance exceeds the life time of its inner members,
+// including any thread objects that might execute callbacks bound to it.
 UpdateClientImpl::UpdateClientImpl(
     const scoped_refptr<Configurator>& config,
     scoped_ptr<PingManager> ping_manager,
@@ -92,11 +97,15 @@ void UpdateClientImpl::Install(const std::string& id,
   std::vector<std::string> ids;
   ids.push_back(id);
 
-  scoped_ptr<TaskUpdate> task(
-      new TaskUpdate(update_engine_.get(), ids, crx_data_callback));
+  // Partially applies |completion_callback| to OnTaskComplete, so this
+  // argument is available when the task completes, along with the task itself.
+  const auto callback =
+      base::Bind(&UpdateClientImpl::OnTaskComplete, this, completion_callback);
+  scoped_ptr<TaskUpdate> task(new TaskUpdate(update_engine_.get(), true, ids,
+                                             crx_data_callback, callback));
 
   auto it = tasks_.insert(task.release()).first;
-  RunTask(*it, completion_callback);
+  RunTask(*it);
 }
 
 void UpdateClientImpl::Update(const std::vector<std::string>& ids,
@@ -104,24 +113,23 @@ void UpdateClientImpl::Update(const std::vector<std::string>& ids,
                               const CompletionCallback& completion_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_ptr<TaskUpdate> task(
-      new TaskUpdate(update_engine_.get(), ids, crx_data_callback));
+  const auto callback =
+      base::Bind(&UpdateClientImpl::OnTaskComplete, this, completion_callback);
+  scoped_ptr<TaskUpdate> task(new TaskUpdate(update_engine_.get(), false, ids,
+                                             crx_data_callback, callback));
+
   if (tasks_.empty()) {
     auto it = tasks_.insert(task.release()).first;
-    RunTask(*it, completion_callback);
+    RunTask(*it);
   } else {
     task_queue_.push(task.release());
   }
 }
 
-void UpdateClientImpl::RunTask(Task* task,
-                               const CompletionCallback& completion_callback) {
+void UpdateClientImpl::RunTask(Task* task) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&Task::Run, base::Unretained(task),
-                 base::Bind(&UpdateClientImpl::OnTaskComplete,
-                            base::Unretained(this), completion_callback)));
+      FROM_HERE, base::Bind(&Task::Run, base::Unretained(task)));
 }
 
 void UpdateClientImpl::OnTaskComplete(
@@ -138,7 +146,7 @@ void UpdateClientImpl::OnTaskComplete(
   delete task;
 
   if (!task_queue_.empty()) {
-    RunTask(task_queue_.front(), completion_callback);
+    RunTask(task_queue_.front());
     task_queue_.pop();
   }
 }
@@ -168,12 +176,11 @@ bool UpdateClientImpl::IsUpdating(const std::string& id) const {
   return update_engine_->IsUpdating(id);
 }
 
-scoped_ptr<UpdateClient> UpdateClientFactory(
+scoped_refptr<UpdateClient> UpdateClientFactory(
     const scoped_refptr<Configurator>& config) {
   scoped_ptr<PingManager> ping_manager(new PingManager(*config));
-  return scoped_ptr<UpdateClient>(
-      new UpdateClientImpl(config, ping_manager.Pass(), &UpdateChecker::Create,
-                           &CrxDownloader::Create));
+  return new UpdateClientImpl(config, ping_manager.Pass(),
+                              &UpdateChecker::Create, &CrxDownloader::Create);
 }
 
 }  // namespace update_client

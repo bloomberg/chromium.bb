@@ -90,6 +90,10 @@
       'cloud_devices/common/cloud_devices_urls_unittest.cc',
       'cloud_devices/common/printer_description_unittest.cc',
     ],
+    'component_updater_unittest_sources': [
+      'component_updater/component_updater_service_unittest.cc',
+      'component_updater/timer_unittest.cc',
+    ],
     'content_settings_unittest_sources': [
       'content_settings/core/browser/content_settings_mock_provider.cc',
       'content_settings/core/browser/content_settings_mock_provider.h',
@@ -662,6 +666,7 @@
         '<@(browser_watcher_unittest_sources)',
         '<@(captive_portal_unittest_sources)',
         '<@(cloud_devices_unittest_sources)',
+        '<@(component_updater_unittest_sources)',
         '<@(content_settings_unittest_sources)',
         '<@(crash_unittest_sources)',
         '<@(crx_file_unittest_sources)',
@@ -748,6 +753,7 @@
         'components.gyp:bookmarks_test_support',
         'components.gyp:captive_portal_test_support',
         'components.gyp:cloud_devices_common',
+        'components.gyp:component_updater',
         'components.gyp:content_settings_core_browser',
         'components.gyp:content_settings_core_common',
         'components.gyp:content_settings_core_test_support',

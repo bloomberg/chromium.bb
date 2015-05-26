@@ -13,27 +13,29 @@
 namespace update_client {
 
 TaskUpdate::TaskUpdate(UpdateEngine* update_engine,
+                       bool is_foreground,
                        const std::vector<std::string>& ids,
-                       const UpdateClient::CrxDataCallback& crx_data_callback)
+                       const UpdateClient::CrxDataCallback& crx_data_callback,
+                       const Callback& callback)
     : update_engine_(update_engine),
+      is_foreground_(is_foreground),
       ids_(ids),
-      crx_data_callback_(crx_data_callback) {
+      crx_data_callback_(crx_data_callback),
+      callback_(callback) {
 }
 
 TaskUpdate::~TaskUpdate() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void TaskUpdate::Run(const Callback& callback) {
+void TaskUpdate::Run() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  callback_ = callback;
 
   if (ids_.empty())
     RunComplete(-1);
 
   update_engine_->Update(
-      ids_, crx_data_callback_,
+      is_foreground_, ids_, crx_data_callback_,
       base::Bind(&TaskUpdate::RunComplete, base::Unretained(this)));
 }
 

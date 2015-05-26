@@ -71,6 +71,7 @@ void ActionUpdateCheck::Run(UpdateContext* update_context, Callback callback) {
     item->next_version = Version();
     item->previous_fp = crx_component.fingerprint;
     item->next_fp.clear();
+    item->on_demand = update_context->is_foreground;
     item->diff_update_failed = false;
     item->error_category = 0;
     item->error_code = 0;
@@ -80,9 +81,10 @@ void ActionUpdateCheck::Run(UpdateContext* update_context, Callback callback) {
     item->diff_extra_code1 = 0;
     item->download_metrics.clear();
 
-    ChangeItemState(item.get(), CrxUpdateItem::State::kChecking);
+    update_context_->update_items.push_back(item.get());
 
-    update_context_->update_items.push_back(item.release());
+    ChangeItemState(item.get(), CrxUpdateItem::State::kChecking);
+    ignore_result(item.release());
   }
 
   update_checker_->CheckForUpdates(

@@ -267,6 +267,7 @@ test("components_unittests") {
     "//components/bookmarks/managed:unit_tests",
     "//components/captive_portal:unit_tests",
     "//components/cloud_devices/common:unit_tests",
+    "//components/component_updater:unit_tests",
     "//components/content_settings/core/browser:unit_tests",
     "//components/content_settings/core/common:unit_tests",
     "//components/crx_file:unit_tests",

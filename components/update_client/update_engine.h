@@ -61,7 +61,8 @@ class UpdateEngine {
 
   bool GetUpdateState(const std::string& id, CrxUpdateItem* update_state);
 
-  void Update(const std::vector<std::string>& ids,
+  void Update(bool is_foreground,
+              const std::vector<std::string>& ids,
               const UpdateClient::CrxDataCallback& crx_data_callback,
               const CompletionCallback& update_callback);
 
@@ -91,6 +92,7 @@ class UpdateEngine {
 struct UpdateContext {
   UpdateContext(
       const scoped_refptr<Configurator>& config,
+      bool is_foreground,
       const std::vector<std::string>& ids,
       const UpdateClient::CrxDataCallback& crx_data_callback,
       const UpdateEngine::NotifyObserversCallback& notify_observers_callback,
@@ -102,6 +104,9 @@ struct UpdateContext {
   ~UpdateContext();
 
   scoped_refptr<Configurator> config;
+
+  // True if this update has been initiated by the user.
+  bool is_foreground;
 
   // Contains the ids of all CRXs in this context.
   const std::vector<std::string> ids;

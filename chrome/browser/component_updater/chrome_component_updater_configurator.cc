@@ -106,10 +106,8 @@ class ChromeConfigurator : public Configurator {
                      net::URLRequestContextGetter* url_request_getter);
 
   int InitialDelay() const override;
-  int NextCheckDelay() override;
+  int NextCheckDelay() const override;
   int StepDelay() const override;
-  int StepDelayMedium() override;
-  int MinimumReCheckWait() const override;
   int OnDemandDelay() const override;
   int UpdateDelay() const override;
   std::vector<GURL> UpdateUrl() const override;
@@ -183,23 +181,15 @@ ChromeConfigurator::ChromeConfigurator(
 }
 
 int ChromeConfigurator::InitialDelay() const {
-  return fast_update_ ? 1 : (6 * kDelayOneMinute);
+  return fast_update_ ? 10 : (6 * kDelayOneMinute);
 }
 
-int ChromeConfigurator::NextCheckDelay() {
-  return fast_update_ ? 3 : (6 * kDelayOneHour);
-}
-
-int ChromeConfigurator::StepDelayMedium() {
-  return fast_update_ ? 3 : (15 * kDelayOneMinute);
+int ChromeConfigurator::NextCheckDelay() const {
+  return fast_update_ ? 60 : (6 * kDelayOneHour);
 }
 
 int ChromeConfigurator::StepDelay() const {
   return fast_update_ ? 1 : 1;
-}
-
-int ChromeConfigurator::MinimumReCheckWait() const {
-  return fast_update_ ? 30 : (6 * kDelayOneHour);
 }
 
 int ChromeConfigurator::OnDemandDelay() const {
@@ -207,7 +197,7 @@ int ChromeConfigurator::OnDemandDelay() const {
 }
 
 int ChromeConfigurator::UpdateDelay() const {
-  return fast_update_ ? 1 : (15 * kDelayOneMinute);
+  return fast_update_ ? 10 : (15 * kDelayOneMinute);
 }
 
 std::vector<GURL> ChromeConfigurator::UpdateUrl() const {

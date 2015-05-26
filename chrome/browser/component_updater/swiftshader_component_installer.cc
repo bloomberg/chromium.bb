@@ -178,8 +178,7 @@ void FinishSwiftShaderUpdateRegistration(ComponentUpdateService* cus,
   swiftshader.installer = new SwiftShaderComponentInstaller(version);
   swiftshader.version = version;
   swiftshader.pk_hash.assign(kSha2Hash, &kSha2Hash[sizeof(kSha2Hash)]);
-  if (cus->RegisterComponent(swiftshader) !=
-      ComponentUpdateService::Status::kOk) {
+  if (!cus->RegisterComponent(swiftshader)) {
     NOTREACHED() << "SwiftShader component registration fail";
   }
 }

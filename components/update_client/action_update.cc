@@ -88,22 +88,22 @@ void ActionUpdate::Run(UpdateContext* update_context, Callback callback) {
 }
 
 void ActionUpdate::DownloadProgress(
-    const std::string& crx_id,
+    const std::string& id,
     const CrxDownloader::Result& download_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(crx_id == update_context_->queue.front());
+  DCHECK(id == update_context_->queue.front());
 
   using Events = UpdateClient::Observer::Events;
-  NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING, crx_id);
+  NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING, id);
 }
 
 void ActionUpdate::DownloadComplete(
-    const std::string& crx_id,
+    const std::string& id,
     const CrxDownloader::Result& download_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(crx_id == update_context_->queue.front());
+  DCHECK(id == update_context_->queue.front());
 
-  CrxUpdateItem* item = FindUpdateItemById(crx_id);
+  CrxUpdateItem* item = FindUpdateItemById(id);
   DCHECK(item);
 
   AppendDownloadMetrics(update_context_->crx_downloader->download_metrics(),
@@ -115,7 +115,7 @@ void ActionUpdate::DownloadComplete(
     OnDownloadSuccess(item, download_result);
     update_context_->main_task_runner->PostDelayedTask(
         FROM_HERE, base::Bind(&ActionUpdate::Install, base::Unretained(this),
-                              crx_id, download_result.response),
+                              id, download_result.response),
         base::TimeDelta::FromMilliseconds(
             update_context_->config->StepDelay()));
   }
@@ -123,12 +123,12 @@ void ActionUpdate::DownloadComplete(
   update_context_->crx_downloader.reset();
 }
 
-void ActionUpdate::Install(const std::string& crx_id,
+void ActionUpdate::Install(const std::string& id,
                            const base::FilePath& crx_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(crx_id == update_context_->queue.front());
+  DCHECK(id == update_context_->queue.front());
 
-  CrxUpdateItem* item = FindUpdateItemById(crx_id);
+  CrxUpdateItem* item = FindUpdateItemById(id);
   DCHECK(item);
 
   OnInstallStart(item);
@@ -168,13 +168,13 @@ void ActionUpdate::EndUnpackingOnBlockingTaskRunner(
       base::TimeDelta::FromMilliseconds(update_context->config->StepDelay()));
 }
 
-void ActionUpdate::DoneInstalling(const std::string& crx_id,
+void ActionUpdate::DoneInstalling(const std::string& id,
                                   ComponentUnpacker::Error error,
                                   int extended_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(crx_id == update_context_->queue.front());
+  DCHECK(id == update_context_->queue.front());
 
-  CrxUpdateItem* item = FindUpdateItemById(crx_id);
+  CrxUpdateItem* item = FindUpdateItemById(id);
   DCHECK(item);
 
   if (error == ComponentUnpacker::kNone)

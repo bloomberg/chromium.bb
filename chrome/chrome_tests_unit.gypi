@@ -62,7 +62,6 @@
       'browser/command_updater_unittest.cc',
       'browser/component_updater/chrome_component_updater_configurator_unittest.cc',
       'browser/component_updater/cld_component_installer_unittest.cc',
-      'browser/component_updater/component_updater_service_unittest.cc',
       'browser/component_updater/supervised_user_whitelist_installer_unittest.cc',
       'browser/content_settings/content_settings_default_provider_unittest.cc',
       'browser/content_settings/content_settings_mock_observer.cc',

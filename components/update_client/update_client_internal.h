@@ -37,7 +37,6 @@ class UpdateClientImpl : public UpdateClient {
                    scoped_ptr<PingManager> ping_manager,
                    UpdateChecker::Factory update_checker_factory,
                    CrxDownloader::Factory crx_downloader_factory);
-  ~UpdateClientImpl() override;
 
   // Overrides for UpdateClient.
   void AddObserver(Observer* observer) override;
@@ -53,7 +52,9 @@ class UpdateClientImpl : public UpdateClient {
   bool IsUpdating(const std::string& id) const override;
 
  private:
-  void RunTask(Task* task, const CompletionCallback& completion_callback);
+  ~UpdateClientImpl() override;
+
+  void RunTask(Task* task);
   void OnTaskComplete(const CompletionCallback& completion_callback,
                       Task* task,
                       int error);

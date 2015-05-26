@@ -151,10 +151,8 @@ void CRLSetFetcher::RegisterComponent(uint32 sequence_of_loaded_crl) {
     component.version = Version("0");
   }
 
-  if (cus_->RegisterComponent(component) !=
-      ComponentUpdateService::Status::kOk) {
+  if (!cus_->RegisterComponent(component))
     NOTREACHED() << "RegisterComponent returned error";
-  }
 }
 
 void CRLSetFetcher::DoDeleteFromDisk() {

@@ -235,7 +235,7 @@ void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
   recovery.installer = new RecoveryComponentInstaller(version, prefs);
   recovery.version = version;
   recovery.pk_hash.assign(kSha2Hash, &kSha2Hash[sizeof(kSha2Hash)]);
-  if (cus->RegisterComponent(recovery) != ComponentUpdateService::Status::kOk) {
+  if (!cus->RegisterComponent(recovery)) {
     NOTREACHED() << "Recovery component registration failed.";
   }
 }

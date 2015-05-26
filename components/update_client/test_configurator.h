@@ -9,8 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/configurator.h"
@@ -58,10 +56,8 @@ class TestConfigurator : public Configurator {
 
   // Overrrides for Configurator.
   int InitialDelay() const override;
-  int NextCheckDelay() override;
+  int NextCheckDelay() const override;
   int StepDelay() const override;
-  int StepDelayMedium() override;
-  int MinimumReCheckWait() const override;
   int OnDemandDelay() const override;
   int UpdateDelay() const override;
   std::vector<GURL> UpdateUrl() const override;
@@ -81,10 +77,7 @@ class TestConfigurator : public Configurator {
   scoped_refptr<base::SingleThreadTaskRunner> GetSingleThreadTaskRunner()
       const override;
 
-  void SetLoopCount(int times);
-  void SetRecheckTime(int seconds);
   void SetOnDemandTime(int seconds);
-  void SetQuitClosure(const base::Closure& quit_closure);
   void SetInitialDelay(int seconds);
 
  private:
@@ -96,12 +89,9 @@ class TestConfigurator : public Configurator {
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   int initial_time_;
-  int times_;
-  int recheck_time_;
   int ondemand_time_;
 
   scoped_refptr<net::TestURLRequestContextGetter> context_;
-  base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConfigurator);
 };

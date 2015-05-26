@@ -82,8 +82,6 @@ bool DefaultComponentInstaller::InstallHelper(
 
 bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
                                         const base::FilePath& unpack_path) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-
   std::string manifest_version;
   manifest.GetStringASCII("version", &manifest_version);
   base::Version version(manifest_version.c_str());
@@ -127,6 +125,7 @@ bool DefaultComponentInstaller::GetInstalledFile(
 }
 
 bool DefaultComponentInstaller::Uninstall() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DefaultComponentInstaller::UninstallOnTaskRunner, this));
@@ -248,9 +247,7 @@ void DefaultComponentInstaller::FinishRegistration(
     crx.version = current_version_;
     crx.fingerprint = current_fingerprint_;
     installer_traits_->GetHash(&crx.pk_hash);
-    ComponentUpdateService::Status status = cus->RegisterComponent(crx);
-    if (status != ComponentUpdateService::Status::kOk &&
-        status != ComponentUpdateService::Status::kReplaced) {
+    if (!cus->RegisterComponent(crx)) {
       NOTREACHED() << "Component registration failed for "
                    << installer_traits_->GetName();
       return;

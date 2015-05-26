@@ -200,8 +200,11 @@ struct CrxComponent {
   bool allow_background_download;
 };
 
-// All methods are safe to call only from the browser's main thread.
-class UpdateClient {
+// All methods are safe to call only from the browser's main thread. Once an
+// instance of this class is created, the reference to it must be released
+// only after the thread pools of the browser process have been destroyed and
+// the browser process has gone single-threaded.
+class UpdateClient : public base::RefCounted<UpdateClient> {
  public:
   using CrxDataCallback =
       base::Callback<void(const std::vector<std::string>& ids,
@@ -283,12 +286,14 @@ class UpdateClient {
 
   virtual bool IsUpdating(const std::string& id) const = 0;
 
+ protected:
+  friend class base::RefCounted<UpdateClient>;
+
   virtual ~UpdateClient() {}
 };
 
 // Creates an instance of the update client.
-// TODO(sorin): make UpdateClient a ref counted type.
-scoped_ptr<UpdateClient> UpdateClientFactory(
+scoped_refptr<UpdateClient> UpdateClientFactory(
     const scoped_refptr<Configurator>& config);
 
 }  // namespace update_client

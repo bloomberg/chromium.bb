@@ -20,6 +20,8 @@
 
 namespace update_client {
 
+using Events = UpdateClient::Observer::Events;
+
 namespace {
 
 // Returns true if a differential update is available, it has not failed yet,

@@ -19,10 +19,9 @@ class Task;
 // together.
 class Task {
  public:
-  using Callback = base::Callback<void(Task* task, int error)>;
   virtual ~Task() {}
 
-  virtual void Run(const Callback& callback) = 0;
+  virtual void Run() = 0;
 };
 
 }  // namespace update_client

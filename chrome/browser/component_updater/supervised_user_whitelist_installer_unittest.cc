@@ -78,44 +78,34 @@ class MockComponentUpdateService : public ComponentUpdateService,
   void AddObserver(Observer* observer) override { ADD_FAILURE(); }
   void RemoveObserver(Observer* observer) override { ADD_FAILURE(); }
 
-  Status Start() override {
-    ADD_FAILURE();
-    return Status::kError;
-  }
-
-  Status Stop() override {
-    ADD_FAILURE();
-    return Status::kError;
-  }
-
   std::vector<std::string> GetComponentIDs() const override {
     ADD_FAILURE();
     return std::vector<std::string>();
   }
 
-  Status RegisterComponent(const CrxComponent& component) override {
+  bool RegisterComponent(const CrxComponent& component) override {
     EXPECT_EQ(nullptr, component_.get());
     component_.reset(new CrxComponent(component));
     if (!registration_callback_.is_null())
       registration_callback_.Run();
 
-    return Status::kOk;
+    return true;
   }
 
-  Status UnregisterComponent(const std::string& crx_id) override {
+  bool UnregisterComponent(const std::string& crx_id) override {
     if (!component_) {
       ADD_FAILURE();
-      return Status::kError;
+      return false;
     }
 
     EXPECT_EQ(GetCrxComponentID(*component_), crx_id);
     if (!component_->installer->Uninstall()) {
       ADD_FAILURE();
-      return Status::kError;
+      return false;
     }
 
     component_.reset();
-    return Status::kOk;
+    return true;
   }
 
   OnDemandUpdater& GetOnDemandUpdater() override { return *this; }
@@ -136,16 +126,16 @@ class MockComponentUpdateService : public ComponentUpdateService,
   }
 
   // OnDemandUpdater implementation:
-  Status OnDemandUpdate(const std::string& crx_id) override {
+  bool OnDemandUpdate(const std::string& crx_id) override {
     on_demand_update_called_ = true;
 
     if (!component_) {
       ADD_FAILURE() << "Trying to update unregistered component " << crx_id;
-      return Status::kError;
+      return false;
     }
 
     EXPECT_EQ(GetCrxComponentID(*component_), crx_id);
-    return Status::kOk;
+    return true;
   }
 
  private:

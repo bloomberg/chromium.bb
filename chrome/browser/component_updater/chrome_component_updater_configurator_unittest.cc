@@ -31,7 +31,7 @@ TEST(ChromeComponentUpdaterConfiguratorTest, TestFastUpdate) {
 
   const auto config(MakeChromeComponentUpdaterConfigurator(cmdline, NULL));
 
-  ASSERT_EQ(1, config->InitialDelay());
+  ASSERT_EQ(10, config->InitialDelay());
 }
 
 TEST(ChromeComponentUpdaterConfiguratorTest, TestOverrideUrl) {

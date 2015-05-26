@@ -471,8 +471,6 @@ void RegisterComponentsForUpdate() {
   RegisterSwReporterComponent(cus, g_browser_process->local_state());
   RegisterCAPSComponent(cus);
 #endif  // defined(OS_WIN)
-
-  cus->Start();
 }
 
 #if !defined(OS_ANDROID)

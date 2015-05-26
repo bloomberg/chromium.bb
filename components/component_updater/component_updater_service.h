@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/version.h"
+#include "components/update_client/update_client.h"
 #include "url/gurl.h"
 
 class ComponentsUI;
@@ -46,6 +47,10 @@ namespace component_updater {
 
 class OnDemandUpdater;
 
+using Configurator = update_client::Configurator;
+using CrxComponent = update_client::CrxComponent;
+using CrxUpdateItem = update_client::CrxUpdateItem;
+
 // The component update service is in charge of installing or upgrading
 // select parts of chrome. Each part is called a component and managed by
 // instances of CrxComponent registered using RegisterComponent(). On the
@@ -63,47 +68,7 @@ class OnDemandUpdater;
 // All methods are safe to call ONLY from the browser's main thread.
 class ComponentUpdateService {
  public:
-  enum class Status { kOk, kReplaced, kInProgress, kError };
-
-  // Defines an interface to observe ComponentUpdateService. It provides
-  // notifications when state changes occur for the service or for the
-  // registered components.
-  class Observer {
-   public:
-    enum class Events {
-      // Sent when the component updater starts doing update checks.
-      COMPONENT_UPDATER_STARTED,
-
-      // Sent when the component updater is going to take a long nap.
-      COMPONENT_UPDATER_SLEEPING,
-
-      // Sent when there is a new version of a registered component. After
-      // the notification is sent the component will be downloaded.
-      COMPONENT_UPDATE_FOUND,
-
-      // Sent when the new component has been downloaded and an installation
-      // or upgrade is about to be attempted.
-      COMPONENT_UPDATE_READY,
-
-      // Sent when a component has been successfully updated.
-      COMPONENT_UPDATED,
-
-      // Sent when a component has not been updated following an update check:
-      // either there was no update available, or an update failed.
-      COMPONENT_NOT_UPDATED,
-
-      // Sent when component bytes are being downloaded.
-      COMPONENT_UPDATE_DOWNLOADING,
-    };
-
-    virtual ~Observer() {}
-
-    // The component updater service will call this function when an interesting
-    // state change happens. If the |id| is specified, then the event is fired
-    // on behalf of a specific component. The implementors of this interface are
-    // expected to filter the relevant events based on the component id.
-    virtual void OnEvent(Events event, const std::string& id) = 0;
-  };
+  using Observer = update_client::UpdateClient::Observer;
 
   // Adds an observer for this class. An observer should not be added more
   // than once. The caller retains the ownership of the observer object.
@@ -113,26 +78,20 @@ class ComponentUpdateService {
   // the observers are being notified.
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Start doing update checks and installing new versions of registered
-  // components after Configurator::InitialDelay() seconds.
-  virtual Status Start() = 0;
-
-  // Stop doing update checks. In-flight requests and pending installations
-  // will not be canceled.
-  virtual Status Stop() = 0;
-
-  // Add component to be checked for updates. You can call this method
-  // before calling Start().
-  virtual Status RegisterComponent(
-      const update_client::CrxComponent& component) = 0;
+  // Add component to be checked for updates.
+  virtual bool RegisterComponent(const CrxComponent& component) = 0;
 
   // Unregisters the component with the given ID. This means that the component
   // is not going to be included in future update checks. If a download or
   // update operation for the component is currently in progress, it will
   // silently finish without triggering the next step.
   // Note that the installer for the component is responsible for removing any
-  // existing versions of the component from disk.
-  virtual Status UnregisterComponent(const std::string& crx_id) = 0;
+  // existing versions of the component from disk. Returns true if the
+  // uninstall has completed successfully and the component files have been
+  // removed, or if the uninstalled has been deferred because the component
+  // is being updated. Returns false if the component id is not known or the
+  /// uninstall encountered an error.
+  virtual bool UnregisterComponent(const std::string& id) = 0;
 
   // Returns a list of registered components.
   virtual std::vector<std::string> GetComponentIDs() const = 0;
@@ -141,7 +100,7 @@ class ComponentUpdateService {
   // proactively triggered outside the normal component update service schedule.
   virtual OnDemandUpdater& GetOnDemandUpdater() = 0;
 
-  // This method is used to trigger an on-demand update for component |crx_id|.
+  // This method is used to trigger an on-demand update for component |id|.
   // This can be used when loading a resource that depends on this component.
   //
   // |callback| is called on the main thread once the on-demand update is
@@ -153,7 +112,7 @@ class ComponentUpdateService {
   // to be defensive against programming bugs, usually triggered by web fetches,
   // where the on-demand functionality is invoked too often. If this function
   // is called while still on cooldown, |callback| will be called immediately.
-  virtual void MaybeThrottle(const std::string& crx_id,
+  virtual void MaybeThrottle(const std::string& id,
                              const base::Closure& callback) = 0;
 
   // Returns a task runner suitable for use by component installers.
@@ -164,9 +123,8 @@ class ComponentUpdateService {
  private:
   // Returns details about registered component in the |item| parameter. The
   // function returns true in case of success and false in case of errors.
-  virtual bool GetComponentDetails(
-      const std::string& component_id,
-      update_client::CrxUpdateItem* item) const = 0;
+  virtual bool GetComponentDetails(const std::string& id,
+                                   CrxUpdateItem* item) const = 0;
 
   friend class ::ComponentsUI;
 };
@@ -182,19 +140,20 @@ class OnDemandUpdater {
   friend class SupervisedUserWhitelistInstaller;
   friend class ::ComponentsUI;
 
-  // Triggers an update check for a component. |component_id| is a value
+  // Triggers an update check for a component. |id| is a value
   // returned by GetCrxComponentID(). If an update for this component is already
   // in progress, the function returns |kInProgress|. If an update is available,
   // the update will be applied. The caller can subscribe to component update
   // service notifications to get an indication about the outcome of the
   // on-demand update. The function does not implement any cooldown interval.
-  virtual ComponentUpdateService::Status OnDemandUpdate(
-      const std::string& component_id) = 0;
+  // TODO(sorin): improve this API so that the result of this non-blocking
+  // call is provided by a callback.
+  virtual bool OnDemandUpdate(const std::string& id) = 0;
 };
 
 // Creates the component updater.
 scoped_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
-    const scoped_refptr<update_client::Configurator>& config);
+    const scoped_refptr<Configurator>& config);
 
 }  // namespace component_updater
 

@@ -189,9 +189,9 @@ base::RefCountedMemory* ComponentsUI::GetFaviconResourceBytes(
 
 base::string16 ComponentsUI::ComponentEventToString(Events event) {
   switch (event) {
-    case Events::COMPONENT_UPDATER_STARTED:
+    case Events::COMPONENT_CHECKING_FOR_UPDATES:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_STARTED);
-    case Events::COMPONENT_UPDATER_SLEEPING:
+    case Events::COMPONENT_WAIT:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_SLEEPING);
     case Events::COMPONENT_UPDATE_FOUND:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_FOUND);

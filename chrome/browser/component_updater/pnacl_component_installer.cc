@@ -307,12 +307,8 @@ void FinishPnaclUpdateRegistration(
   pci->set_current_fingerprint(current_fingerprint);
   CrxComponent pnacl_component = pci->GetCrxComponent();
 
-  ComponentUpdateService::Status status =
-      pci->cus()->RegisterComponent(pnacl_component);
-  if (status != ComponentUpdateService::Status::kOk &&
-      status != ComponentUpdateService::Status::kReplaced) {
+  if (!pci->cus()->RegisterComponent(pnacl_component))
     NOTREACHED() << "Pnacl component registration failed.";
-  }
 }
 
 // Check if there is an existing version on disk first to know when

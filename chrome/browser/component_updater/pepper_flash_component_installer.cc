@@ -263,9 +263,8 @@ void FinishPepperFlashUpdateRegistration(ComponentUpdateService* cus,
   pepflash.installer = new PepperFlashComponentInstaller(version);
   pepflash.version = version;
   pepflash.pk_hash.assign(kSha2Hash, &kSha2Hash[sizeof(kSha2Hash)]);
-  if (cus->RegisterComponent(pepflash) != ComponentUpdateService::Status::kOk) {
+  if (!cus->RegisterComponent(pepflash))
     NOTREACHED() << "Pepper Flash component registration failed.";
-  }
 }
 
 void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {

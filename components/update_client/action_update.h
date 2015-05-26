@@ -53,14 +53,14 @@ class ActionUpdate : public Action, protected ActionImpl {
   // Called when progress is being made downloading a CRX. The progress may
   // not monotonically increase due to how the CRX downloader switches between
   // different downloaders and fallback urls.
-  void DownloadProgress(const std::string& crx_id,
+  void DownloadProgress(const std::string& id,
                         const CrxDownloader::Result& download_result);
 
   // Called when the CRX package has been downloaded to a temporary location.
-  void DownloadComplete(const std::string& crx_id,
+  void DownloadComplete(const std::string& id,
                         const CrxDownloader::Result& download_result);
 
-  void Install(const std::string& crx_id, const base::FilePath& crx_path);
+  void Install(const std::string& id, const base::FilePath& crx_path);
 
   // TODO(sorin): refactor the public interface of ComponentUnpacker so
   // that these calls can run on the main thread.
@@ -74,7 +74,7 @@ class ActionUpdate : public Action, protected ActionImpl {
                                         ComponentUnpacker::Error error,
                                         int extended_error);
 
-  void DoneInstalling(const std::string& crx_id,
+  void DoneInstalling(const std::string& id,
                       ComponentUnpacker::Error error,
                       int extended_error);
 
