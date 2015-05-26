@@ -181,14 +181,14 @@ public:
     {
         return m_id.client == other.m_id.client
             && m_id.type == overrideType
-            && m_id.scopeContainer == other.m_id.scopeContainer
-            && m_id.scopeId == other.m_id.scopeId;
+            && m_id.scopeId == other.m_id.scopeId
+            && m_id.scopeContainer == other.m_id.scopeContainer;
     }
 
-    void setScope(DisplayItemClient scopeContainer, int scopeId)
+    void setScope(int scopeId, DisplayItemClient scopeContainer)
     {
-        m_id.scopeContainer = scopeContainer;
         m_id.scopeId = scopeId;
+        m_id.scopeContainer = scopeContainer;
     }
 
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const { }
@@ -279,15 +279,15 @@ protected:
 
 private:
     struct Id {
-        Id(DisplayItemClient c, Type t) : client(c), type(t), scopeContainer(nullptr), scopeId(0)
+        Id(DisplayItemClient c, Type t) : client(c), type(t), scopeId(0), scopeContainer(nullptr)
         {
             ASSERT(c);
         }
 
         const DisplayItemClient client;
         const Type type;
-        DisplayItemClient scopeContainer;
         int scopeId;
+        DisplayItemClient scopeContainer;
     } m_id;
 
 #ifndef NDEBUG

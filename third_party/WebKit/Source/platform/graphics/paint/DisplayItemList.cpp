@@ -52,7 +52,7 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
     }
 
     if (!m_scopeStack.isEmpty())
-        displayItem->setScope(m_scopeStack.last().client, m_scopeStack.last().id);
+        displayItem->setScope(m_scopeStack.last().id, m_scopeStack.last().client);
 
 #if ENABLE(ASSERT)
     size_t index = findMatchingItemFromIndex(*displayItem, displayItem->type(), m_newDisplayItemIndicesByClient, m_newDisplayItems);
