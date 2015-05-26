@@ -3081,7 +3081,7 @@
           "comment": "Footnotes and endnotes: Example 9",
           "xfail": false,
           "input": "1 Hvis det er bare én fotnote på siden, forekommer også asterisk (*) som notetegn. I eldre tekster ble også kors brukt. Siffer er å foretrekke.",
-          "output": "⠼⠁ ⠠⠓⠧⠊⠎ ⠙⠑⠞ ⠑⠗ ⠃⠁⠗⠑ ⠿⠝ ⠋⠕⠞⠝⠕⠞⠑ ⠏⠡ ⠎⠊⠙⠑⠝⠂ ⠋⠕⠗⠑⠅⠕⠍⠍⠑⠗ ⠕⠛⠎⠡ ⠁⠎⠞⠑⠗⠊⠎⠅ ⠦⠔⠴ ⠎⠕⠍ ⠝⠕⠞⠑⠞⠑⠛⠝⠄ ⠠⠊ ⠑⠇⠙⠗⠑ ⠞⠑⠅⠎⠞⠑⠗ ⠃⠇⠑ ⠕⠛⠎⠡ ⠅⠕⠗⠎ ⠃⠗⠥⠅⠞⠄ ⠠⠎⠊⠋⠋⠑⠗ ⠑⠗ ⠡ ⠕⠗⠑⠞⠗⠑⠅⠅⠑⠄"
+          "output": "⠼⠁ ⠠⠓⠧⠊⠎ ⠙⠑⠞ ⠑⠗ ⠃⠁⠗⠑ ⠿⠝ ⠋⠕⠞⠝⠕⠞⠑ ⠏⠡ ⠎⠊⠙⠑⠝⠂ ⠋⠕⠗⠑⠅⠕⠍⠍⠑⠗ ⠕⠛⠎⠡ ⠁⠎⠞⠑⠗⠊⠎⠅ ⠦⠔⠴ ⠎⠕⠍ ⠝⠕⠞⠑⠞⠑⠛⠝⠄ ⠠⠊ ⠑⠇⠙⠗⠑ ⠞⠑⠅⠎⠞⠑⠗ ⠃⠇⠑ ⠕⠛⠎⠡ ⠅⠕⠗⠎ ⠃⠗⠥⠅⠞⠄ ⠠⠎⠊⠋⠋⠑⠗ ⠑⠗ ⠡ ⠋⠕⠗⠑⠞⠗⠑⠅⠅⠑⠄"
         }
       ]
     },
