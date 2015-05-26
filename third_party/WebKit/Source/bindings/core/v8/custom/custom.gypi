@@ -23,7 +23,6 @@
             'V8MediaQueryListCustom.cpp',
             'V8MessageChannelCustom.cpp',
             'V8MessageEventCustom.cpp',
-            'V8MessagePortCustom.cpp',
             'V8MutationObserverCustom.cpp',
             'V8PopStateEventCustom.cpp',
             'V8WindowCustom.cpp',
