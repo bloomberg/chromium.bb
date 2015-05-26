@@ -1360,8 +1360,11 @@ blink::WebNavigationPolicy WebTestProxyBase::DecidePolicyForNavigation(
   else
     result = blink::WebNavigationPolicyIgnore;
 
-  if (test_interfaces_->GetTestRunner()->policyDelegateShouldNotifyDone())
+  if (test_interfaces_->GetTestRunner()->policyDelegateShouldNotifyDone()) {
     test_interfaces_->GetTestRunner()->policyDelegateDone();
+    result = blink::WebNavigationPolicyIgnore;
+  }
+
   return result;
 }
 
