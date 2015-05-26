@@ -20,7 +20,7 @@ Diese Richtlinien dienen ausschließlich zur internen Verwendung in Chrome.</tra
 
       Diese Richtlinie betrifft alle Arten von Audioeingaben, nicht nur das eingebaute Mikrofon.</translation>
 <translation id="7267809745244694722">Medientasten standardmäßig als Funktionstasten verwenden</translation>
-<translation id="9150416707757015439">Diese Richtlinie ist veraltet. Bitte verwenden Sie stattdessen &quot;IncognitoModeAvailability&quot;. Aktiviert den Inkognito-Modus in <ph name="PRODUCT_NAME"/>. Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, können Nutzer Webseiten im Inkognito-Modus öffnen. Sollte die Einstellung deaktiviert sein, können Nutzer Webseiten nicht im Inkognito-Modus öffnen. Ist die Richtlinie nicht konfiguriert, so ist die Funktion aktiviert, sodass Nutzer den Inkognito-Modus verwenden können.</translation>
+<translation id="9150416707757015439">Diese Richtlinie ist veraltet. Bitte verwenden Sie stattdessen &quot;IncognitoModeAvailability&quot;. Aktiviert den Inkognitomodus in <ph name="PRODUCT_NAME"/>. Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, können Nutzer Webseiten im Inkognitomodus öffnen. Sollte die Einstellung deaktiviert sein, können Nutzer Webseiten nicht im Inkognitomodus öffnen. Ist die Richtlinie nicht konfiguriert, so ist die Funktion aktiviert, sodass Nutzer den Inkognitomodus verwenden können.</translation>
 <translation id="4203389617541558220">Hiermit kann die Betriebszeit des Geräts durch die Planung automatischer Neustarts begrenzt werden.
 
       Wenn diese Richtlinie konfiguriert ist, wird damit die Dauer der Gerätebetriebszeit angegeben, nach der ein automatischer Neustart geplant ist.
@@ -573,7 +573,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
       In diesem Modus werden die Profildaten nur für die Dauer der Nutzersitzung auf der Festplatte behalten. Elemente wie der Browserverlauf, Erweiterungen und ihre Daten, Webdaten wie Cookies und Webdatenbanken werden nach dem Schließen des Browsers nicht beibehalten. Dies hindert den Nutzer jedoch nicht daran, Daten manuell auf die Festplatte herunterzuladen, Seiten zu speichern oder zu drucken.
 
-      Wenn der Nutzer die Synchronisierung aktiviert hat, werden alle diese Daten wie bei regulären Profilen in seinem Synchronisierungsprofil beibehalten. Der Inkognito-Modus ist ebenfalls verfügbar, sofern er nicht durch die Richtlinie explizit deaktiviert wird.
+      Wenn der Nutzer die Synchronisierung aktiviert hat, werden alle diese Daten wie bei regulären Profilen in seinem Synchronisierungsprofil beibehalten. Der Inkognitomodus ist ebenfalls verfügbar, sofern er nicht durch die Richtlinie explizit deaktiviert wird.
 
       Falls die Richtlinie deaktiviert oder nicht eingestellt wird, werden bei einer Anmeldung reguläre Profile erstellt.</translation>
 <translation id="6997592395211691850">Gibt an, ob für lokale Vertrauensanker Online-OCSP/CRLS-Prüfungen erforderlich sind</translation>
@@ -779,7 +779,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
       Wenn diese Richtlinie nicht festgelegt oder auf &quot;false&quot; gesetzt wurde, wird bei Druckaufträgen die Druckvorschau angezeigt.</translation>
 <translation id="7933141401888114454">Erstellung von betreuten Nutzern aktivieren</translation>
-<translation id="2824715612115726353">Inkognito-Modus aktivieren</translation>
+<translation id="2824715612115726353">Inkognitomodus aktivieren</translation>
 <translation id="1057535219415338480">Aktiviert die Netzwerkvervollständigung in <ph name="PRODUCT_NAME"/> und verhindert, dass diese Einstellung von Nutzern geändert wird.
 
       Hiermit wird nicht nur der DNS-Vorabruf gesteuert, sondern auch die TCP- und SSL-Vorverbindung und das Pre-Rendering von Webseiten. Der Richtlinienname bezieht sich aus historischen Gründen auf den DNS-Vorabruf.
@@ -893,7 +893,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, werden Anfragen für Bi
 <translation id="1349276916170108723">Falls auf &quot;true&quot; gesetzt, wird die Synchronisierung zwischen Google Drive und der App &quot;Dateien&quot; von Chrome OS deaktiviert. Es werden dann keine Daten in Google Drive hochgeladen.
 
 Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, können die Nutzer Dateien an Google Drive übertragen.</translation>
-<translation id="1964634611280150550">Inkognito-Modus deaktiviert</translation>
+<translation id="1964634611280150550">Inkognitomodus deaktiviert</translation>
 <translation id="5971128524642832825">Synchronisierung zwischen Google Drive und der App &quot;Dateien&quot; von Chrome OS deaktivieren</translation>
 <translation id="1847960418907100918">Gibt die Parameter für die Suche im Voraus mit POST an. Sie besteht aus durch Komma getrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie z. B. {searchTerms} im obigen Beispiel ist, wird er durch echte Suchbegriffsdaten ersetzt.
 
@@ -938,7 +938,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="5761030451068906335">Hiermit werden die Proxy-Einstellungen für <ph name="PRODUCT_NAME"/> konfiguriert. Diese Richtlinie ist noch nicht einsatzbereit und sollte daher nicht verwendet werden.</translation>
 <translation id="8344454543174932833">Lesezeichen bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="1019101089073227242">Verzeichnis für Nutzerdaten festlegen</translation>
-<translation id="5826047473100157858">Gibt an, ob der Nutzer Seiten in <ph name="PRODUCT_NAME"/> im Inkognito-Modus öffnen kann. Ist diese Richtlinie aktiviert oder nicht konfiguriert, so können Seiten im Inkognito-Modus geöffnet werden. Wenn sie deaktiviert ist, so können Seiten nicht im Inkognito-Modus geöffnet werden. Mit dem Wert &quot;Forced&quot; können Seiten ausschließlich im Inkognito-Modus geöffnet werden.</translation>
+<translation id="5826047473100157858">Gibt an, ob der Nutzer Seiten in <ph name="PRODUCT_NAME"/> im Inkognitomodus öffnen kann. Ist diese Richtlinie aktiviert oder nicht konfiguriert, so können Seiten im Inkognitomodus geöffnet werden. Wenn sie deaktiviert ist, so können Seiten nicht im Inkognitomodus geöffnet werden. Mit dem Wert &quot;Forced&quot; können Seiten ausschließlich im Inkognitomodus geöffnet werden.</translation>
 <translation id="2988031052053447965">Diese Richtlinie dient dazu, die Chrome Web Store App und den zugehörigen Fußzeilenlink auf der Seite &quot;Neuer Tab&quot; und im App Launcher von Chrome OS auszublenden.
 
       Ist diese Richtlinie auf &quot;true&quot; gesetzt, werden die Symbole ausgeblendet.
@@ -1385,7 +1385,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
           Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird die Suchanfrage mithilfe der GET-Methode gesendet.
 
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie &quot;DefaultSearchProviderEnabled&quot; aktiviert ist.</translation>
-<translation id="5307432759655324440">Inkognito-Modus - Verfügbarkeit</translation>
+<translation id="5307432759655324440">Inkognitomodus - Verfügbarkeit</translation>
 <translation id="4056910949759281379">SPDY-Protokoll deaktivieren</translation>
 <translation id="3808945828600697669">Liste der deaktivierten Plug-ins angeben</translation>
 <translation id="4525521128313814366">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von Bildern nicht gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie &quot;DefaultImagesSetting&quot;, falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
@@ -1495,7 +1495,7 @@ Wenn die Richtlinie auf &quot;FALSE&quot; gesetzt oder nicht festgelegt wird, f�
 <translation id="1310699457130669094">Hier können Sie eine URL zu einer Proxy-PAC-Datei angeben. Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei &quot;Auswählen, wie Proxyserver-Einstellungen angegeben werden&quot; manuelle Proxy-Einstellungen angegeben haben. Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxy-Richtlinien entschieden haben. Ausführliche Beispiele erhalten Sie unter <ph name="PROXY_HELP_URL"/>.</translation>
 <translation id="1509692106376861764">Diese Richtlinie wird ab <ph name="PRODUCT_NAME"/>-Version 29 nicht mehr verwendet.</translation>
 <translation id="5464816904705580310">Konfiguriert Einstellungen für verwaltete Nutzer</translation>
-<translation id="3219421230122020860">Inkognito-Modus verfügbar</translation>
+<translation id="3219421230122020860">Inkognitomodus verfügbar</translation>
 <translation id="7690740696284155549">Konfiguriert das Verzeichnis, das <ph name="PRODUCT_NAME"/> zum Herunterladen von Dateien verwendet.
 
       Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME"/> das angegebene Verzeichnis unabhängig davon, ob der Nutzer selbst eines angegeben oder die Markierung zur Einblendung einer Eingabeaufforderung zur Angabe des Downloadpfads aktiviert hat.
@@ -1627,7 +1627,7 @@ Falls die Richtlinie festgelegt wird, wird der Abfrageparameter &quot;restrict&q
 
 Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unverändert.</translation>
 <translation id="7049373494483449255">Ermöglicht es <ph name="PRODUCT_NAME"/>, Dokumente zum Drucken an <ph name="CLOUD_PRINT_NAME"/> zu senden. Hinweis: Dies wirkt sich nur auf die <ph name="CLOUD_PRINT_NAME"/>-Unterstützung in <ph name="PRODUCT_NAME"/> aus. Die Richtlinie verhindert nicht, dass Nutzer Druckaufträge auf Websites geben. Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, können Nutzer im <ph name="PRODUCT_NAME"/>-Druckdialog über <ph name="CLOUD_PRINT_NAME"/> drucken. Sollte die Einstellung deaktiviert sein, können Nutzer im <ph name="PRODUCT_NAME"/>-Druckdialog über <ph name="CLOUD_PRINT_NAME"/> nicht drucken.</translation>
-<translation id="4088589230932595924">Inkognito-Modus erzwungen</translation>
+<translation id="4088589230932595924">Inkognitomodus erzwungen</translation>
 <translation id="5862253018042179045">Hiermit wird der Standardstatus der Bedienungshilfefunktion für das gesprochene Feedback auf der Anmeldeseite festgelegt.
 
           Ist diese Richtlinie auf &quot;true&quot; gesetzt, ist das gesprochene Feedback aktiviert, wenn die Anmeldeseite angezeigt wird.

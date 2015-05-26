@@ -968,7 +968,6 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="3125649188848276916">Da (ne snimaj nove podatke)</translation>
 <translation id="648927581764831596">Ništa nije dostupno</translation>
 <translation id="6348657800373377022">Kombinirani okvir</translation>
-<translation id="7453382714306901283">Vaše računalo sadrži sigurnosni uređaj Trusted Platform Module (TPM) koji se upotrebljava za primjenu mnogih važnih sigurnosnih značajki u OS-u Chrome. Posjetite centar za pomoć računala Chromebook da biste saznali više: http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="8064671687106936412">Ključ:</translation>
 <translation id="2218515861914035131">Zalijepi kao običan tekst</translation>
 <translation id="1725149567830788547">Prikaži &amp;kontrole</translation>
@@ -1150,7 +1149,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="37613671848467444">Otvori u &amp;anonimnom prozoru</translation>
 <translation id="159359590073980872">Predmemorija slike</translation>
 <translation id="7142571697412577603">Prikaži adrese i kreditne kartice s Google novčanika</translation>
-<translation id="4668711410219362250">https://support.google.com/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=165139&amp;p=settings_sign_in</translation>
 <translation id="3586931643579894722">Sakrij detalje</translation>
 <translation id="7170467426996704624">transliteracija (salam → ሰላም)</translation>
 <translation id="6285395082104474418">Traka statusa prikazuje trenutačno stanje vaše mreže, baterije i ostalog.</translation>
@@ -1469,7 +1467,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="7122169255686960726">Više kopija</translation>
 <translation id="7285011324031710154">Omogućuje okvir u stilu web-aplikacije za hostirane aplikacije.</translation>
 <translation id="1221825588892235038">Samo odabir</translation>
-<translation id="2227939492629426903">Omogućuje novi izbornik avatara. Kada se kombinira s novim upravljanjem profilom, prikazuje samo novi izbornik avatara za upravljanje profilom. U suprotnom prikazuje redizajnirani izbornik avatara koji ima iste funkcije kao i stari te karticu s uputama pri vrhu koja predlaže korisniku da isproba novo korisničko sučelje za upravljanje profilom.</translation>
 <translation id="8713979477561846077">Omogućivanje automatskog ispravljanja za američku tipkovnicu koje može davati prijedloge prilikom pisanja pomoću fizičke tipkovnice.</translation>
 <translation id="7201354769043018523">Desna zagr.</translation>
 <translation id="7517569744831774757">Vraćanje postavki na njihove izvorne zadane vrijednosti.</translation>
@@ -4355,7 +4352,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="1254593899333212300">Izravna internetska veza</translation>
 <translation id="6107012941649240045">Izdano za</translation>
 <translation id="1101112020367325578">Nikada nemoj dopustiti dodatke izvan testnog okruženja na <ph name="HOST"/></translation>
-<translation id="3828373662010953415">Omogući novi izbornik avatara</translation>
 <translation id="6483805311199035658">Otvaranje datoteke <ph name="FILE"/>...</translation>
 <translation id="5465122519792752163">nepalska tipkovnica (InScript)</translation>
 <translation id="940425055435005472">Veličina fonta:</translation>
@@ -4399,7 +4395,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="774465434535803574">Pogreška proširenja paketa</translation>
 <translation id="8200772114523450471">Nastavi</translation>
 <translation id="5750676294091770309">Blokirano proširenjem</translation>
-<translation id="1302191857856401062">Omogućuje brzu izmjenu korisnika u izborniku avatara.</translation>
 <translation id="523299859570409035">Iznimke za obavijesti</translation>
 <translation id="7017480957358237747">dopustiti ili zabraniti određene web-lokacije</translation>
 <translation id="1029595648591494741">Želite li isprobati &quot;<ph name="EXTENSION_NAME"/>?</translation>
@@ -5360,7 +5355,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="8545575359873600875">Nažalost, vaša zaporka nije potvrđena. Upravitelj ovog nadziranog korisnika možda je nedavno promijenio zaporku. U tom slučaju nova zaporka primjenjivat će se od sljedeće prijave. Pokušajte upotrijebiti staru zaporku.</translation>
 <translation id="7549053541268690807">Pretraži rječnik</translation>
 <translation id="8911079125461595075">Google je označio proširenje &quot;<ph name="EXTENSION_NAME"/>&quot; kao zlonamjerno pa je instalacija spriječena.</translation>
-<translation id="4347595254852029221">Omogućivanje brze izmjene korisnika u izborniku avatara</translation>
 <translation id="5870086504539785141">Zatvori izbornik pristupačnosti</translation>
 <translation id="9102800320402283920">Google novčanik zahtijeva barem ime i prezime.</translation>
 <translation id="7005848115657603926">Nevažeći raspon stranica, upotrijebite <ph name="EXAMPLE_PAGE_RANGE"/></translation>

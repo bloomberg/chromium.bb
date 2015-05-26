@@ -7,9 +7,11 @@ trên Chrome</translation>
 <translation id="2676780859508944670">Đang xử lý...</translation>
 <translation id="6062854958530969723">Khởi chạy máy chủ không thành công.</translation>
 <translation id="5843054235973879827">Tại sao thao tác này lại an toàn?</translation>
+<translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5619148062500147964">Tới máy tính này</translation>
 <translation id="4068946408131579958">Tất cả kết nối</translation>
 <translation id="2208514473086078157">Cài đặt chính sách không cho phép chia sẻ máy tính này dưới dạng máy chủ lưu trữ Chrome Remote Desktop. Liên hệ với quản trị viên hệ thống của bạn để được hỗ trợ.</translation>
+<translation id="6381670701864002291">Vấn đề khác.</translation>
 <translation id="6541219117979389420">Nhật ký ứng dụng có thể bao gồm thông tin riêng tư, bao gồm danh tính (địa chỉ email) của bạn và tên cũng như thuộc tính của tệp và thư mục trong Google Drive.</translation>
 <translation id="3931191050278863510">Máy chủ đã dừng lại.</translation>
 <translation id="3905196214175737742">Miền của chủ sở hữu máy chủ không hợp lệ.</translation>
@@ -52,6 +54,7 @@ trên Chrome</translation>
 <translation id="3606997049964069799">Bạn chưa đăng nhập vào Chromium. Vui lòng đăng nhập và thử lại.</translation>
 <translation id="6198252989419008588">Thay đổi mã PIN</translation>
 <translation id="7970576581263377361">Xác thực bị lỗi. Vui lòng đăng nhập lại vào Chromium.</translation>
+<translation id="477305884757156764">Ứng dụng quá chậm.</translation>
 <translation id="6167788864044230298">Phát trực tuyến ứng dụng Chrome</translation>
 <translation id="170207782578677537">Không thể đăng ký máy tính này.</translation>
 <translation id="4804818685124855865">Ngắt kết nối</translation>
@@ -69,6 +72,7 @@ trên Chrome</translation>
 <translation id="2314101195544969792">Phiên <ph name="APPLICATION_NAME"/> của bạn đã không hoạt động một thời gian và sẽ sớm bị ngắt kết nối.</translation>
 <translation id="6001953797859482435">Tùy chọn máy chủ Chrome Remote Desktop</translation>
 <translation id="225614027745146050">Chào mừng</translation>
+<translation id="1770394049404108959">Tôi không thể mở ứng dụng.</translation>
 <translation id="9188433529406846933">Cho phép</translation>
 <translation id="228809120910082333">Vui lòng xác nhận tài khoản và mã PIN của bạn bên dưới để cho phép truy cập theo kết nối từ xa trên Chrome.</translation>
 <translation id="7605995381616883502">Kết nối mới</translation>
@@ -99,6 +103,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="3884839335308961732">Vui lòng xác nhận tài khoản và mã PIN của bạn bên dưới để cho phép Chrome Remote Desktop truy cập.</translation>
 <translation id="327263477022142889">Bạn muốn trợ giúp cải tiến ứng dụng Chrome Remote Desktop? Hãy <ph name="LINK_BEGIN"/>tham gia khảo sát.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Gửi Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">Tôi không thể mở tệp trên Google Drive.</translation>
 <translation id="5702987232842159181">Đã kết nối:</translation>
 <translation id="8509907436388546015">Quá trình tích hợp máy tính để bàn</translation>
 <translation id="4736223761657662401">Lịch sử kết nối</translation>
@@ -190,10 +195,12 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2078880767960296260">Quá trình lưu trữ trên máy chủ</translation>
 <translation id="1643640058022401035">Thoát khỏi trang này sẽ kết thúc phiên Kết nối từ xa trên Chrome của bạn.</translation>
 <translation id="8261506727792406068">Xóa</translation>
+<translation id="1152528166145813711">Chọn…</translation>
 <translation id="2235518894410572517">Chia sẻ máy tính này để người dùng khác xem và kiểm soát.</translation>
 <translation id="6939719207673461467">Hiển thị / ẩn bàn phím.</translation>
 <translation id="1023096696228309145">Yêu cầu người dùng có máy tính mà bạn muốn truy cập nhấp vào ‘Chia sẻ ngay bây giờ’ và cung cấp cho bạn mã truy cập.</translation>
 <translation id="4240294130679914010">Trình gỡ cài đặt máy chủ kết nối từ xa trên Chrome</translation>
+<translation id="8712909229180978490">Tôi không thể xem các tệp đã lưu của mình trực tuyến trong Google Drive.</translation>
 <translation id="80739703311984697">Máy chủ lưu trữ từ xa yêu cầu bạn xác thực với một trang web của bên thứ ba. Để tiếp tục, bạn phải cấp cho Kết nối từ xa trên Chrome thêm quyền truy cập vào địa chỉ sau:</translation>
 <translation id="4006787130661126000">Bạn phải bật kết nối từ xa nếu bạn muốn sử dụng Chrome Remote Desktop để truy cập vào máy tính này.</translation>
 <translation id="177096447311351977">IP kênh dành cho ứng dụng khách: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' kênh='<ph name="CHANNEL_TYPE"/>' kết nối='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ Remote Desktop</translation>
 <translation id="6011539954251327702">Kết nối từ xa trên Chrome cho phép bạn chia sẻ máy tính của bạn một cách an toàn qua Web. Cả hai người dùng đều phải chạy ứng dụng Kết nối từ xa trên Chrome có thể tìm thấy tại <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Bạn hiện đang chia sẻ máy này với một người dùng khác. Bạn có muốn tiếp tục chia sẻ không?</translation>
 <translation id="4207623512727273241">Vui lòng chạy trình cài đặt trước khi tiếp tục.</translation>
+<translation id="492843737083352574">Tôi đang gặp sự cố với bàn phím hoặc chuột.</translation>
 <translation id="1324095856329524885">(tính năng này chưa khả dụng đối với máy tính của bạn)</translation>
 <translation id="6570205395680337606">Đặt lại ứng dụng. Bạn sẽ mất mọi công việc chưa lưu.</translation>
 <translation id="6284412385303060032">Máy chủ chạy trên màn hình logic của bảng điều khiển đã tắt để hỗ trợ chế độ màn bằng cách chuyển sang máy chủ chạy trong phiên dành riêng cho người dùng.</translation>
@@ -260,6 +268,7 @@ Remote Desktop</translation>
 <translation id="1546934824884762070">Đã xảy ra lỗi không mong muốn. Vui lòng báo cáo vấn đề này cho nhà phát triển.</translation>
 <translation id="4795786176190567663">Bạn không có quyền thực hiện thao tác đó.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="3025388528294795783">Để giúp chúng tôi giải quyết sự cố của bạn, vui lòng cho chúng tôi biết vấn đề đã xảy ra:</translation>
 <translation id="7434397035092923453">Truy cập bị từ chối đối với ứng dụng khách: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Cài đặt chính sách không cho phép chia sẻ máy tính này dưới dạng máy chủ lưu trữ Kết nối từ xa trên Chrome. Liên hệ với quản trị viên hệ thống của bạn để được hỗ trợ.</translation>
 <translation id="7312846573060934304">Máy chủ đang ngoại tuyến.</translation>

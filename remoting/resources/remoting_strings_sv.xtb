@@ -7,9 +7,11 @@ Host</translation>
 <translation id="2676780859508944670">Arbetar ...</translation>
 <translation id="6062854958530969723">Värdinitieringen misslyckades.</translation>
 <translation id="5843054235973879827">Varför är det säkert?</translation>
+<translation id="5895138241574237353">Starta om</translation>
 <translation id="5619148062500147964">Till den här datorn</translation>
 <translation id="4068946408131579958">Alla anslutningar</translation>
 <translation id="2208514473086078157">Enligt policyinställningarna får du inte dela den här datorn som en Chrome Remote Desktop-värd. Kontakta systemadministratören om du behöver hjälp.</translation>
+<translation id="6381670701864002291">Något annat.</translation>
 <translation id="6541219117979389420">Programloggar kan innehålla privata uppgifter, som din identitet (e-postadress) och namn på och egenskaper hos filer och mappar på Google Drive.</translation>
 <translation id="3931191050278863510">Värden stoppades.</translation>
 <translation id="3905196214175737742">Ogiltig domän för värdens ägare.</translation>
@@ -52,6 +54,7 @@ Host</translation>
 <translation id="3606997049964069799">Du är inte inloggad i Chromium. Logga in och försök igen.</translation>
 <translation id="6198252989419008588">Byt PIN</translation>
 <translation id="7970576581263377361">Autentiseringen misslyckades. Logga in i Chromium igen.</translation>
+<translation id="477305884757156764">Appen är för långsam.</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">Det gick inte att registrera datorn.</translation>
 <translation id="4804818685124855865">Koppla från</translation>
@@ -69,6 +72,7 @@ Host</translation>
 <translation id="2314101195544969792">Sessionen med <ph name="APPLICATION_NAME"/> har varit inaktiv en stund och kommer snart att kopplas från.</translation>
 <translation id="6001953797859482435">Chrome Remote Desktop Host Preferences</translation>
 <translation id="225614027745146050">Välkommen</translation>
+<translation id="1770394049404108959">Jag kan inte öppna appen.</translation>
 <translation id="9188433529406846933">Auktorisera</translation>
 <translation id="228809120910082333">Bekräfta ditt konto och pinkoden nedan genom att tillåta åtkomst via Chromoting.</translation>
 <translation id="7605995381616883502">Ny anslutning</translation>
@@ -99,6 +103,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="3884839335308961732">Bekräfta ditt konto och pinkoden nedan för att tillåta åtkomst via Chrome Remote Desktop.</translation>
 <translation id="327263477022142889">Vill du hjälpa till att förbättra Chrome Remote Desktop? <ph name="LINK_BEGIN"/>Fyll i enkäten.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Skicka Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">Jag kan inte öppna mina Google Drive-filer.</translation>
 <translation id="5702987232842159181">Ansluten:</translation>
 <translation id="8509907436388546015">Integreringsprocess för Desktop</translation>
 <translation id="4736223761657662401">Anslutningshistorik</translation>
@@ -190,10 +195,12 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="2078880767960296260">Värdprocess</translation>
 <translation id="1643640058022401035">Om du lämnar sidan avslutas sessionen i Chromoting.</translation>
 <translation id="8261506727792406068">Radera</translation>
+<translation id="1152528166145813711">Välj …</translation>
 <translation id="2235518894410572517">Dela den här datorn så att en annan användare kan visa och styra den.</translation>
 <translation id="6939719207673461467">Visa/dölj tangentbordet.</translation>
 <translation id="1023096696228309145">Be användaren vars dator du vill få tillgång till att klicka på länken Dela nu och ge dig åtkomstkoden.</translation>
 <translation id="4240294130679914010">Chromoting Host Uninstaller</translation>
+<translation id="8712909229180978490">Jag ser inte mina sparade filer online på Google Drive.</translation>
 <translation id="80739703311984697">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chromoting ytterligare behörigheter att komma åt den här adressen:</translation>
 <translation id="4006787130661126000">Du måste aktivera fjärranslutningar om du vill använda Chrome Remote Desktop för att få åtkomst till den här datorn.</translation>
 <translation id="177096447311351977">IP-adress för kanal för klient: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ Desktop Host</translation>
 <translation id="6011539954251327702">Med Chromoting kan du säkert dela din dator över internet. Båda användarna måste köra appen Chromoting, som finns här: <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Du delar nu den här datorn med en annan användare. Vill du fortsätta att dela?</translation>
 <translation id="4207623512727273241">Kör installationsprogrammet innan du fortsätter.</translation>
+<translation id="492843737083352574">Jag har problem med tangentbordet eller musen.</translation>
 <translation id="1324095856329524885">(den här funktionen är ännu inte tillgänglig för din dator)</translation>
 <translation id="6570205395680337606">Återställ programmet. Ändringar som inte har sparats går förlorade.</translation>
 <translation id="6284412385303060032">Värden som kördes på konsolens inloggningsskärm har avslutats för att stödja Curtain Mode genom att byta till en värd som körs i en användarspecifik session.</translation>
@@ -260,6 +268,7 @@ Desktop Host</translation>
 <translation id="1546934824884762070">Ett oväntat fel uppstod. Rapportera problemet till utvecklarna.</translation>
 <translation id="4795786176190567663">Du har inte behörighet att utföra den åtgärden.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="3025388528294795783">Hjälp oss att lösa problemet och berätta vad som har gått fel.</translation>
 <translation id="7434397035092923453">Åtkomst nekad för klient: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Enligt policyinställningarna får du inte dela den här datorn som en Chromoting-värd. Kontakta systemadministratören om du behöver hjälp.</translation>
 <translation id="7312846573060934304">Värden är offline.</translation>

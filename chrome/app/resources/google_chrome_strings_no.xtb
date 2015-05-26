@@ -64,6 +64,7 @@
 <translation id="7098166902387133879">Google Chrome bruker mikrofonen din.</translation>
 <translation id="2596415276201385844">Klokken din må være riktig stilt for at du skal kunne opprette en sikker forbindelse. Sertifikatene som nettsteder bruker til å identifisere seg med, er nemlig bare gyldige i en viss tid. Siden enhetens klokke er feil, kan ikke Chrome kontrollere disse sertifikatene.</translation>
 <translation id="4053720452172726777">Tilpass og kontrollér Google Chrome</translation>
+<translation id="5148419164691878332">Chrome lagrer dette i <ph name="SAVED_PASSWORDS_LINK"/> og husker det neste gang du trenger det.</translation>
 <translation id="3197823471738295152">Enheten er oppdatert.</translation>
 <translation id="8286862437124483331">Google Chrome forsøker å vise passord. Skriv inn Windows-passordet ditt for å tillate dette.</translation>
 <translation id="3889417619312448367">Avinstaller Google Chrome</translation>
@@ -75,6 +76,7 @@
 <translation id="3282568296779691940">Logg på Chrome</translation>
 <translation id="3089968997497233615">En ny, sikrere versjon av Google Chrome er tilgjengelig</translation>
 <translation id="5037239767309817516">For at endringen skal tre i kraft, må du lukke alle vinduer og starte Google Chrome på nytt.</translation>
+<translation id="1619887657840448962">For å gjøre Chrome tryggere har vi slått av følgende utvidelse som ikke finnes i <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, og som kan ha blitt lagt til uten at du vet det.</translation>
 <translation id="225614027745146050">Velkommen</translation>
 <translation id="3398288718845740432">Skjul i Chrome-menyen</translation>
 <translation id="7473891865547856676">Nei takk</translation>
@@ -102,6 +104,7 @@
 <translation id="7747138024166251722">Installasjonsprogrammet kunne ikke opprette en midlertidig katalog. Kontroller at du har nok ledig diskplass og tillatelse til å installere programvare.</translation>
 <translation id="5170938038195470297">Profilen din kan ikke brukes fordi den er fra en nyere versjon av Google Chrome. Enkelte funksjoner kan være utilgjengelige. Angi en annen profilkatalog, eller bruk en nyere versjon av Chrome.</translation>
 <translation id="7282192067747128786">Chrome – varsler (<ph name="QUANTITY"/> uleste)</translation>
+<translation id="1475773083554142432">Chrome lagrer dette med <ph name="SAVED_PASSWORD_LINK"/> og husker det neste gang du trenger det.</translation>
 <translation id="6011049234605203654">Gå til
           Chrome-menyen &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -144,6 +147,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="5855036575689098185">Programvaren som kjører på datamaskinen din er ikke kompatibel med Google Chrome.</translation>
 <translation id="7164397146364144019">Du kan bidra til å gjøre Chrome tryggere og enklere å bruke, ved å rapportere detaljer om mulige sikkerhetsbrudd til Google automatisk.</translation>
 <translation id="8008534537613507642">Installer Chrome på nytt</translation>
+<translation id="2689103672227170538">Denne utvidelsen har endret hvilken side som vises når du starter Chrome.</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettighetene for å installere på systemnivå. Prøv å kjøre installasjonsprogrammet som administrator.</translation>
 <translation id="2874156562296220396">Google Chrome er tilgjengelig som følge av prosjektet for åpen kilde, <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>, og annen <ph name="BEGIN_LINK_OSS"/>programvare for åpen kilde<ph name="END_LINK_OSS"/>.</translation>
 <translation id="7191567847629796517">Google Chrome OS støtter ikke oppstart av eksterne apper for behandling av <ph name="SCHEME"/>-linker. Den forespurte linken er <ph name="PROTOLINK"/>.</translation>
@@ -171,6 +175,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="2665296953892887393">Bidra til å gjøre Google Chrome bedre ved å sende programstopprapporter og <ph name="UMA_LINK"/> til Google</translation>
 <translation id="7761834446675418963">Klikk på navnet ditt for å åpne Chrome og starte surfingen.</translation>
 <translation id="2669824781555328029"><ph name="FILE_NAME"/>-filen kan gi deg en dårligere leseopplevelse, så Chrome har blokkert den.</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{En nedlasting pågår for øyeblikket. Vil du avbryte nedlastingen og avslutte Google Chrome?}other{# nedlastinger pågår for øyeblikket. Vil du avbryte nedlastingene og avslutte Google Chrome?}}</translation>
 <translation id="6235018212288296708">Regel om innkommende trafikk for Google Chrome for å tillate mDNS-trafikk.</translation>
 <translation id="7984945080620862648">Du kan ikke gå til <ph name="SITE"/> akkurat nå fordi nettstedet sendte kryptert legitimasjon som Chrome ikke kan behandle. Nettverksfeil og -angrep er som regel kortvarige, så denne siden fungerer nok igjen senere.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -236,6 +241,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="3360895254066713204">Chrome-hjelper</translation>
 <translation id="1877026089748256423">Chrome er utdatert</translation>
 <translation id="7592736734348559088">Google Chrome kunne ikke synkronisere dataene dine. Dette skyldes at påloggingsopplysningene for kontoen din er foreldede.</translation>
+<translation id="3735758079232443276">Utvidelsen «<ph name="EXTENSION_NAME"/>» har endret hvilken side som vises når du starter Chrome.</translation>
 <translation id="6991142834212251086">Koble Chrome-dataene mine til denne kontoen.</translation>
 <translation id="3451115285585441894">Legger til i Chrome …</translation>
 <translation id="3047079729301751317">Hvis du kobler fra <ph name="USERNAME"/>, slettes loggen din, bokmerkene, innstillingene og andre Chrome-data som er lagret på denne enheten. Data som er lagret i Google-kontoen din, blir ikke tømt og kan administreres på <ph name="GOOGLE_DASHBOARD_LINK"/>Google Oversikt<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>

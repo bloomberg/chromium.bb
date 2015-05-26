@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Producte desconegut <ph name="PRODUCT_ID"/> de: <ph name="VENDOR_NAME"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">L'administrador d'aquest ordinador requereix que <ph name="EXTENSION_NAME"/> tingui com a mínim la versió <ph name="EXTENSION_VERSION"/>. No es pot activar fins que no s'hagi actualitzat a aquesta versió (o posterior).</translation>
 <translation id="6075907793831890935">Intercanviar dades amb el dispositiu <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Seleccioneu un dispositiu USB}other{Seleccioneu els dispositius USB}}</translation>
 <translation id="5971037678316050792">Controlar l'estat i l'emparellament de l'adaptador Bluetooth</translation>
 <translation id="677806580227005219">Gestor MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Accedir a informació sobre els dispositius Bluetooth emparellats amb el sistema i descobrir dispositius Bluetooth a prop</translation>
+<translation id="5699534389808783598">Seleccioneu els dispositius HID
+      {NUM_DEVICE,plural, =1{Seleccioneu un dispositiu HID}other{Seleccioneu els dispositius HID}}</translation>
 <translation id="8749863574775030885">Accedir a dispositius USB d'un proveïdor desconegut</translation>
 <translation id="3115238746683532089">Producte desconegut <ph name="PRODUCT_ID"/> del proveïdor <ph name="VENDOR_ID"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> proporcionat per <ph name="VENDOR_NAME"/></translation>

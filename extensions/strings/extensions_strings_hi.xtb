@@ -16,9 +16,12 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME"/> (क्रमांक <ph name="SERIAL_NUMBER"/>) की ओर से अज्ञात <ph name="PRODUCT_ID"/> उत्पाद</translation>
 <translation id="4115165561519362854">इस मशीन का नियंत्रक चाहता है कि <ph name="EXTENSION_NAME"/> के पास <ph name="EXTENSION_VERSION"/> का एक न्‍यूनतम वर्शन हो. इसे तब तक सक्षम नहीं किया जा सकता जब तक कि उसे उस वर्शन (या बाद वाले वर्शन) में अपडेट ना कर दिया गया हो.</translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> नामक डिवाइस से डेटा का आदान-प्रदान करें</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{कोई USB डिवाइस चुनें}one{USB डिवाइस चुनें}other{USB डिवाइस चुनें}}</translation>
 <translation id="5971037678316050792">ब्लूटूथ एडाप्टर स्थिति और युग्मन नियंत्रित करें</translation>
 <translation id="677806580227005219">माइमहैंडलर: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">अपने सिस्टम के साथ युग्मित ब्लूटूथ डिवाइस से संबंधित जानकारी एक्सेस करें और आस-पास के ब्लूटूथ डिवाइस की खोज करें.</translation>
+<translation id="5699534389808783598">HID डिवाइस चुनें
+      {NUM_DEVICE,plural, =1{कोई HID डिवाइस चुनें}one{HID डिवाइस चुनें}other{HID डिवाइस चुनें}}</translation>
 <translation id="8749863574775030885">किसी अज्ञात विक्रेता के USB डिवाइस ऐक्‍सेस करें</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> (क्रमांक <ph name="SERIAL_NUMBER"/>) विक्रेता की ओर से <ph name="PRODUCT_ID"/> अज्ञात उत्पाद</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> की ओर से <ph name="PRODUCT_NAME"/></translation>

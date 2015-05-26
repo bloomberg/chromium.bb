@@ -16,9 +16,12 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME"/> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854"><ph name="EXTENSION_VERSION"/> এর কোনো সর্বনিম্ন সংস্করণ রাখতে, এই মেশিনের প্রশাসকের জন্য <ph name="EXTENSION_NAME"/> প্রয়োজন৷ এটিকে যতক্ষণ না পর্যন্ত সেই সংস্করণে আপডেট করা হচ্ছে (বা উচ্চতর) এটি সক্ষমিত হবে না৷</translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> নামের ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{একটি USB ডিভাইস নির্বাচন করুন}one{USB ডিভাইসগুলি নির্বাচন করুন}other{USB ডিভাইসগুলি নির্বাচন করুন}}</translation>
 <translation id="5971037678316050792">Bluetooth অ্যাডাপ্টারের স্থিতি ও যুক্ত করা নিয়ন্ত্রণ করে</translation>
 <translation id="677806580227005219">মাইমহ্যান্ডলার: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">আপনার সিস্টেমের সঙ্গে যুক্ত করা Bluetooth ডিভাইসগুলির সম্পর্কে তথ্য অ্যাক্সেস করুন এবং কাছাকাছি  Bluetooth ডিভাইসগুলি খুঁজুন।</translation>
+<translation id="5699534389808783598">HID ডিভাইসগুলি নির্বাচন করুন
+      {NUM_DEVICE,plural, =1{একটি HID ডিভাইস নির্বাচন করুন}one{HID ডিভাইসগুলি নির্বাচন করুন}other{HID ডিভাইসগুলি নির্বাচন করুন}}</translation>
 <translation id="8749863574775030885">একটি অজানা বিক্রেতা থেকে USB ডিভাইস অ্যাক্সেস করুন</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> বিক্রেতার থেকেঅজানা পণ্য <ph name="PRODUCT_ID"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> এর <ph name="PRODUCT_NAME"/></translation>

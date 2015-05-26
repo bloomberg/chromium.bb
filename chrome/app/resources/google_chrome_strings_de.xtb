@@ -113,7 +113,7 @@
 <translation id="2346876346033403680">Auf diesem Computer war zuvor ein Nutzer mit dem Konto <ph name="ACCOUNT_EMAIL_LAST"/> in Chrome angemeldet. Falls dies nicht Ihr Konto ist, erstellen Sie einen neuen Chrome-Nutzer, um Ihre Daten getrennt zu verwenden.
 
 Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Verlauf und andere Einstellungen in <ph name="ACCOUNT_EMAIL_NEW"/> zusammengeführt.</translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Achtung:<ph name="END_BOLD"/> Google Chrome kann nicht verhindern, dass Ihr Browserverlauf von Erweiterungen protokolliert wird. Deaktivieren Sie diese Erweiterung für den Inkognito-Modus, indem Sie das entsprechende Kontrollkästchen deaktivieren.</translation>
+<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Achtung:<ph name="END_BOLD"/> Google Chrome kann nicht verhindern, dass Ihr Browserverlauf von Erweiterungen protokolliert wird. Deaktivieren Sie diese Erweiterung für den Inkognitomodus, indem Sie das entsprechende Kontrollkästchen deaktivieren.</translation>
 <translation id="7808348361785373670">Aus Chrome entfernen...</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5563479599352954471">Suchen durch einfaches Tippen</translation>

@@ -981,7 +981,6 @@ Atlicis: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3125649188848276916">Jā (nereģistrēt jaunus datus)</translation>
 <translation id="648927581764831596">Nav pieejama neviena ierīce</translation>
 <translation id="6348657800373377022">Kombinētais lodziņš</translation>
-<translation id="7453382714306901283">Jūsu datorā ir iebūvēta uzticama platformas moduļa (Trusted Platform Module — TPM) drošības ierīce, kas tiek izmantota daudzu būtisku drošības funkciju ieviešanai operētājsistēmā Chrome OS. Lai uzzinātu vairāk, apmeklējiet Chromebook palīdzības centru: http://support.google.com/chromebook/?p=tpm.</translation>
 <translation id="8064671687106936412">Atslēga:</translation>
 <translation id="2218515861914035131">Ielīmēt kā vienkāršu tekstu</translation>
 <translation id="1725149567830788547">Rādīt &amp;vadīklas</translation>
@@ -1163,7 +1162,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY"/>).
 <translation id="37613671848467444">Atvērt &amp;inkognito režīma logā</translation>
 <translation id="159359590073980872">Attēlu kešatmiņa</translation>
 <translation id="7142571697412577603">Rādīt adreses un kredītkartes no pakalpojuma Google maks</translation>
-<translation id="4668711410219362250">https://support.google.com/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=165139&amp;p=settings_sign_in</translation>
 <translation id="3586931643579894722">Slēpt detaļas</translation>
 <translation id="7170467426996704624">Transliterācija (salam → ሰላም)</translation>
 <translation id="6285395082104474418">Statusa teknē tiek rādīts jūsu tīkla, akumulatora un citu vienumu pašreizējais statuss.</translation>
@@ -1483,7 +1481,6 @@ Tiek rēķināts atlikušais laiks</translation>
 <translation id="7122169255686960726">Vairāk kopiju</translation>
 <translation id="7285011324031710154">Iespējo tīmekļa lietotņu stila rāmi mitinātajām lietotnēm.</translation>
 <translation id="1221825588892235038">Tikai atlase</translation>
-<translation id="2227939492629426903">Tiek iespējota jaunā avatāra izvēlne. Ja ir izvēlēta arī jaunā profila pārvaldība, tiek parādīta jaunās profila pārvaldības avatāra izvēlne. Pretējā gadījumā tiek rādīta pārveidota avatāra izvēlne, kurā ir pieejamas tādas pašas funkcijas kā iepriekšējā izvēlnē, un tās augšdaļā tiek parādīta apmācību kartīte, aicinot lietotāju izmēģināt jauno profila pārvaldības lietotāja saskarni.</translation>
 <translation id="8713979477561846077">Iespējot fiziskās tastatūras automātisko koriģēšanu atbilstoši ASV tastatūrai, kuru izmantojot tiks piedāvāti ieteikumi, kad rakstīsiet uz fiziskās tastatūras.</translation>
 <translation id="7201354769043018523">Labā iek.</translation>
 <translation id="7517569744831774757">Atjaunot iestatījumus uz sākotnējiem noklusējuma iestatījumiem</translation>
@@ -4377,7 +4374,6 @@ Vēl jālādē: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="1254593899333212300">Tiešais interneta savienojums</translation>
 <translation id="6107012941649240045">Izsniegts</translation>
 <translation id="1101112020367325578">Nekad neatļaut vietnē <ph name="HOST"/> izmantot spraudņus, kas nav ievietoti smilškastē</translation>
-<translation id="3828373662010953415">Jaunās avatāra izvēlnes iespējošana</translation>
 <translation id="6483805311199035658">Tiek atvērts fails <ph name="FILE"/>...</translation>
 <translation id="5465122519792752163">Nepāliešu tastatūra (InScript)</translation>
 <translation id="940425055435005472">Fonta lielums:</translation>
@@ -4421,7 +4417,6 @@ Vēl jālādē: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="774465434535803574">Paplašinājuma pakošanas kļūda</translation>
 <translation id="8200772114523450471">Kopsavilkums</translation>
 <translation id="5750676294091770309">Bloķēts saskaņā ar paplašinājumu</translation>
-<translation id="1302191857856401062">Iespējo ātru pārslēgšanos starp lietotājiem avatāru izvēlnē.</translation>
 <translation id="523299859570409035">Paziņojumu izņēmumi</translation>
 <translation id="7017480957358237747">ļaut vai aizliegt noteiktas vietnes;</translation>
 <translation id="1029595648591494741">Vai izmēģināsiet “<ph name="EXTENSION_NAME"/>”?</translation>
@@ -5386,7 +5381,6 @@ Tiek rēķināts atlikušais uzlādes laiks</translation>
 <translation id="8545575359873600875">Diemžēl jūsu paroli nevarēja verificēt. Iespējams, šī uzraudzītā lietotāja pārzinis nesen ir mainījis paroli. Šādā gadījumā jaunā parole tiks lietota nākamajā pierakstīšanās reizē. Mēģiniet lietot iepriekšējo paroli.</translation>
 <translation id="7549053541268690807">Meklēt vārdnīcā</translation>
 <translation id="8911079125461595075">Google ir atzīmējis paplašinājumu <ph name="EXTENSION_NAME"/> kā ļaunprātīgu, un instalācija nav notikusi.</translation>
-<translation id="4347595254852029221">Iespējot ātru pārslēgšanos starp lietotājiem avatāru izvēlnē</translation>
 <translation id="5870086504539785141">Aizvērt pieejamības izvēlni</translation>
 <translation id="9102800320402283920">Google makā ir jānorāda vismaz vārds un uzvārds.</translation>
 <translation id="7005848115657603926">Nederīgs lappušu diapazons; izmantojiet <ph name="EXAMPLE_PAGE_RANGE"/></translation>

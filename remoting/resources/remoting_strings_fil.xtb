@@ -7,9 +7,11 @@ Host</translation>
 <translation id="2676780859508944670">Isinasagawa…</translation>
 <translation id="6062854958530969723">Hindi na-initialize ang host.</translation>
 <translation id="5843054235973879827">Bakit ito ligtas?</translation>
+<translation id="5895138241574237353">I-restart</translation>
 <translation id="5619148062500147964">Sa computer na ito</translation>
 <translation id="4068946408131579958">Lahat ng koneksyon</translation>
 <translation id="2208514473086078157">Hindi pinapahintulutan ng mga setting ng patakaran ang pagbabahagi sa computer na ito bilang host ng Remote na Desktop ng Chrome. Makipag-ugnay sa iyong system administrator para sa tulong.</translation>
+<translation id="6381670701864002291">Iba pang bagay.</translation>
 <translation id="6541219117979389420">Maaaring kasama sa mga log ng application ang pribadong impormasyon, kabilang na ang iyong pagkakakilanlan (email address) at ang mga pangalan at property ng mga file at folder sa Google Drive.</translation>
 <translation id="3931191050278863510">Huminto ang host.</translation>
 <translation id="3905196214175737742">Di-wastong domain ng may-ari ng host.</translation>
@@ -52,6 +54,7 @@ Host</translation>
 <translation id="3606997049964069799">Hindi ka naka-sign in sa Chromium. Mangyaring mag-sign in at subukang muli.</translation>
 <translation id="6198252989419008588">Palitan ang PIN</translation>
 <translation id="7970576581263377361">Hindi naisagawa ang pagpapatotoo. Mangyaring muling mag-sign in sa Chromium.</translation>
+<translation id="477305884757156764">Masyadong mabagal ang application.</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">Nabigong irehistro ang computer na ito.</translation>
 <translation id="4804818685124855865">I-disconnect</translation>
@@ -69,6 +72,7 @@ Host</translation>
 <translation id="2314101195544969792">Ilang sandali nang hindi aktibo ang iyong session ng <ph name="APPLICATION_NAME"/> at aalisin na ito sa pagkakakonekta maya-maya.</translation>
 <translation id="6001953797859482435">Mga Kagustuhan sa Host ng Remote na Desktop ng Chrome</translation>
 <translation id="225614027745146050">Maligayang pagdating</translation>
+<translation id="1770394049404108959">Hindi ko mabuksan ang application.</translation>
 <translation id="9188433529406846933">Pahintulutan</translation>
 <translation id="228809120910082333">Pakikumpirma ang iyong account at PIN sa ibaba upang payagan ang pag-access ng Chromoting.</translation>
 <translation id="7605995381616883502">Bagong koneksyon</translation>
@@ -99,6 +103,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="3884839335308961732">Pakikumpirma ang iyong account at PIN sa ibaba upang payagan ang pag-access ng Remote na Desktop ng Chrome.</translation>
 <translation id="327263477022142889">Gustong tulungang mapabuti ang Chrome Remote Desktop? <ph name="LINK_BEGIN"/>Sagutan ang survey.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Magpadala ng Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">Hindi ko mabuksan ang aking mga file sa Google Drive.</translation>
 <translation id="5702987232842159181">Nakakonekta:</translation>
 <translation id="8509907436388546015">Proseso ng Pagsasama ng Desktop</translation>
 <translation id="4736223761657662401">Kasaysayan ng Koneksyon</translation>
@@ -190,10 +195,12 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2078880767960296260">Proseso ng Host</translation>
 <translation id="1643640058022401035">Tatapusin ng pag-alis sa pahinang ito ang iyong session ng Chromoting.</translation>
 <translation id="8261506727792406068">Burahin</translation>
+<translation id="1152528166145813711">Pumili…</translation>
 <translation id="2235518894410572517">Ibahagi ang computer na ito upang makita at makontrol ng isa pang user.</translation>
 <translation id="6939719207673461467">Ipakita/itago ang keyboard.</translation>
 <translation id="1023096696228309145">Hilingin sa user na nagmamay-ari ng computer na nais mong i-access na i-click ang ‘Ibahagi Ngayon’ at ibigay sa iyo ang access code.</translation>
 <translation id="4240294130679914010">Uninstaller ng Chromoting Host</translation>
+<translation id="8712909229180978490">Hindi ko makita ang aking mga naka-save file habang on-line sa Google Drive.</translation>
 <translation id="80739703311984697">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Chromoting upang ma-access ang address na ito:</translation>
 <translation id="4006787130661126000">Dapat mong paganahin ang mga malayuang koneksyon kung nais mong gamitin ang Remote na Desktop ng Chrome upang i-access ang computer na ito.</translation>
 <translation id="177096447311351977">Channel IP para sa client: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' koneksyon='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ Desktop ng Chrome</translation>
 <translation id="6011539954251327702">Binibigyang-daan ka ng Chromoting na maibahagi nang ligtas ang iyong computer sa Web. Dapat na pinapatakbo ng parehong user ang Chromoting app, na matatagpuan sa <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Kasalukuyan mong ibinabahagi ang machine na ito sa isa pang user. Nais mo bang ituloy ang pagbabahagi?</translation>
 <translation id="4207623512727273241">Mangyaring patakbuhin ang installer bago magpatuloy.</translation>
+<translation id="492843737083352574">Nagkakaroon ako ng mga problema sa aking keyboard o mouse.</translation>
 <translation id="1324095856329524885">(hindi pa available ang feature na ito para sa iyong computer)</translation>
 <translation id="6570205395680337606">I-reset ang application. Mawawala ang anumang hindi na-save na gawa.</translation>
 <translation id="6284412385303060032">Nag-shutdown ang host na tumatakbo sa console logic screen upang masuportahan ang curtain mode sa pamamagitan ng paglipat sa isang host na tumatakbo sa isang user-specific session.</translation>
@@ -260,6 +268,7 @@ Desktop ng Chrome</translation>
 <translation id="1546934824884762070">May naganap na hindi inaasahang error. Paki-ulat ang problemang ito sa mga developer.</translation>
 <translation id="4795786176190567663">Wala kang pahintulot na gawin ang pagkilos na iyon.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="3025388528294795783">Upang tulungan kaming lutasin ang iyong problema, pakilahad sa amin kung ano ang maling nangyari:</translation>
 <translation id="7434397035092923453">Tinanggihan ang pag-access para sa client: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Hindi pinapahintulutan ng mga setting ng patakaran ang pagbabahagi sa computer na ito bilang host ng Chromoting. Makipag-ugnay sa iyong system administrator para sa tulong.</translation>
 <translation id="7312846573060934304">Naka-offline ang host.</translation>

@@ -7,9 +7,11 @@
 <translation id="2676780859508944670">運作中…</translation>
 <translation id="6062854958530969723">主機初始化失敗。</translation>
 <translation id="5843054235973879827">為什麼這項操作是安全的？</translation>
+<translation id="5895138241574237353">重新啟動</translation>
 <translation id="5619148062500147964">與這台電腦</translation>
 <translation id="4068946408131579958">所有連線</translation>
 <translation id="2208514473086078157">政策設定不允許以 Chrome 遠端桌面主機的形式共用這台電腦。如需協助，請與您的系統管理員聯絡。</translation>
+<translation id="6381670701864002291">其他。</translation>
 <translation id="6541219117979389420">應用程式紀錄可能含有私人資訊，包括您的身分 (電子郵件地址)，以及 Google 雲端硬碟檔案與資料夾的名稱和屬性。</translation>
 <translation id="3931191050278863510">主機已停止。</translation>
 <translation id="3905196214175737742">主機擁有者網域無效。</translation>
@@ -52,6 +54,7 @@
 <translation id="3606997049964069799">您尚未登入 Chromium，請登入並再試一次。</translation>
 <translation id="6198252989419008588">變更 PIN</translation>
 <translation id="7970576581263377361">驗證失敗，請重新登入 Chromium。</translation>
+<translation id="477305884757156764">應用程式的運作速度過慢。</translation>
 <translation id="6167788864044230298">Chrome 應用程式串流</translation>
 <translation id="170207782578677537">無法註冊這台電腦。</translation>
 <translation id="4804818685124855865">中斷連線</translation>
@@ -69,6 +72,7 @@
 <translation id="2314101195544969792">您的「<ph name="APPLICATION_NAME"/>」工作階段已閒置一段時間，且即將中斷連線。</translation>
 <translation id="6001953797859482435">Chrome 遠端桌面主機偏好設定</translation>
 <translation id="225614027745146050">歡迎使用</translation>
+<translation id="1770394049404108959">我無法開啟應用程式。</translation>
 <translation id="9188433529406846933">授權</translation>
 <translation id="228809120910082333">請在下方確認您的帳戶和 PIN，以便授予 Chromoting 存取權限。</translation>
 <translation id="7605995381616883502">新連線</translation>
@@ -99,6 +103,7 @@
 <translation id="3884839335308961732">請在下方確認您的帳戶和 PIN，以便授予 Chrome 遠端桌面存取權限。</translation>
 <translation id="327263477022142889">想要協助改善 Chrome 遠端桌面嗎？<ph name="LINK_BEGIN"/>請填寫我們的問卷調查<ph name="LINK_END"/>。</translation>
 <translation id="6612717000975622067">傳送 Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">我無法開啟自己的 Google 雲端硬碟檔案。</translation>
 <translation id="5702987232842159181">已連線的電腦：</translation>
 <translation id="8509907436388546015">桌面整合處理序</translation>
 <translation id="4736223761657662401">連線紀錄</translation>
@@ -190,10 +195,12 @@
 <translation id="2078880767960296260">主機處理序</translation>
 <translation id="1643640058022401035">如果離開這個頁面，您的 Chromoting 工作階段也會結束。</translation>
 <translation id="8261506727792406068">刪除</translation>
+<translation id="1152528166145813711">選取…</translation>
 <translation id="2235518894410572517">共用這台電腦，開放給其他使用者瀏覽及操作。</translation>
 <translation id="6939719207673461467">顯示/隱藏鍵盤。</translation>
 <translation id="1023096696228309145">請與您要連線的電腦所屬使用者聯絡，要求對方按一下 [立即共用]，並告知您存取碼。</translation>
 <translation id="4240294130679914010">Chromoting 主機解除安裝程式</translation>
+<translation id="8712909229180978490">我已儲存的檔案未顯示在線上 Google 雲端硬碟中。</translation>
 <translation id="80739703311984697">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chromoting 能夠存取這個位址：</translation>
 <translation id="4006787130661126000">您必須啟用遠端連線，才能透過 Chrome 遠端桌面存取這台電腦。</translation>
 <translation id="177096447311351977">用戶端版本 IP：<ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'。</translation>
@@ -243,6 +250,7 @@
 <translation id="6011539954251327702">Chromoting 提供了安全的連線機制，可讓您透過網路與他人共用自己的電腦。您和共用對象都必須執行 Chromoting 應用程式，請前往 <ph name="URL"/> 安裝。</translation>
 <translation id="2919669478609886916">您目前正與另一位使用者共用這台電腦，您要繼續共用嗎？</translation>
 <translation id="4207623512727273241">請先執行安裝程式，然後再繼續操作。</translation>
+<translation id="492843737083352574">我無法順利使用鍵盤或滑鼠。</translation>
 <translation id="1324095856329524885">(您的電腦目前暫不支援這項功能)</translation>
 <translation id="6570205395680337606">重設應用程式。所有未儲存的變更都會遺失。</translation>
 <translation id="6284412385303060032">在控制台登入畫面執行的主機已關閉。這樣才能切換成在個別使用者工作階段中執行的主機，以支援帷幕模式。</translation>
@@ -260,6 +268,7 @@
 <translation id="1546934824884762070">發生未預期的錯誤，請向開發人員回報這個問題。</translation>
 <translation id="4795786176190567663">您沒有執行這項操作的權限。</translation>
 <translation id="6965382102122355670">確定</translation>
+<translation id="3025388528294795783">請將您遇到的問題告訴我們，以協助我們為您解決問題：</translation>
 <translation id="7434397035092923453">用戶端遭拒絕存取：<ph name="CLIENT_USERNAME"/>。</translation>
 <translation id="3403830762023901068">政策設定不允許以 Chromoting 主機的形式共用這台電腦。如需協助，請與您的系統管理員聯絡。</translation>
 <translation id="7312846573060934304">主機已離線。</translation>

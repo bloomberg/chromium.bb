@@ -7,9 +7,11 @@ Host</translation>
 <translation id="2676780859508944670">กำลังทำงาน…</translation>
 <translation id="6062854958530969723">การเตรียมใช้งานโฮสต์ล้มเหลว</translation>
 <translation id="5843054235973879827">เหตุใดการดำเนินการนี้จึงปลอดภัย</translation>
+<translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
 <translation id="5619148062500147964">กับคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="4068946408131579958">การเชื่อมต่อทั้งหมด</translation>
 <translation id="2208514473086078157">การตั้งค่านโยบายไม่อนุญาตให้แชร์คอมพิวเตอร์นี้เป็นโฮสต์ Chrome Remote Desktop โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
+<translation id="6381670701864002291">มีปัญหาอื่น</translation>
 <translation id="6541219117979389420">บันทึกแอปพลิเชันอาจรวมข้อมูลส่วนตัว รวมถึงข้อมูลประจำตัวของคุณ (ที่อยู่อีเมล) ตลอดจนชื่อและคุณสมบัติของไฟล์และโฟลเดอร์ใน Google ไดรฟ์</translation>
 <translation id="3931191050278863510">หยุดโฮสต์แล้ว</translation>
 <translation id="3905196214175737742">โดเมนเจ้าของโฮสต์ไม่ถูกต้อง</translation>
@@ -52,6 +54,7 @@ Host</translation>
 <translation id="3606997049964069799">คุณยังไม่ได้ลงชื่อเข้าใช้ Chromium โปรดลงชื่อเข้าใช้และลองอีกครั้ง</translation>
 <translation id="6198252989419008588">เปลี่ยน PIN</translation>
 <translation id="7970576581263377361">การตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chromium อีกครั้ง</translation>
+<translation id="477305884757156764">แอปพลิเคชันทำงานช้าเกินไป</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">ไม่สามารถลงทะเบียนคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
@@ -69,6 +72,7 @@ Host</translation>
 <translation id="2314101195544969792">เซสชัน <ph name="APPLICATION_NAME"/> ไม่มีการใช้งานมาระยะหนึ่งแล้ว และระบบจะยกเลิกการเชื่อมต่อเร็วๆ นี้</translation>
 <translation id="6001953797859482435">Chrome Remote Desktop Host Preferences</translation>
 <translation id="225614027745146050">ยินดีต้อนรับ</translation>
+<translation id="1770394049404108959">ฉันไม่สามารถเปิดแอปพลิเคชันนี้</translation>
 <translation id="9188433529406846933">ให้สิทธิ์</translation>
 <translation id="228809120910082333">โปรดยืนยันบัญชีและ PIN ของคุณด้านล่างเพื่อให้สามารถเข้าถึงโดย Chromoting</translation>
 <translation id="7605995381616883502">การเชื่อมต่อใหม่</translation>
@@ -99,6 +103,7 @@ Host</translation>
 <translation id="3884839335308961732">โปรดยืนยันบัญชีและ PIN ของคุณด้านล่างเพื่ออนุญาตให้ Chrome Remote Desktop สามารถเข้าถึง</translation>
 <translation id="327263477022142889">หากต้องการช่วยปรับปรุง Chrome Remote Desktop โปรด<ph name="LINK_BEGIN"/>ตอบแบบสำรวจ<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">ส่ง Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">ฉันไม่สามารถเปิดไฟล์ใน Google ไดรฟ์</translation>
 <translation id="5702987232842159181">เชื่อมต่อแล้ว:</translation>
 <translation id="8509907436388546015">Desktop Integration Process</translation>
 <translation id="4736223761657662401">ประวัติการเชื่อมต่อ</translation>
@@ -190,10 +195,12 @@ Host</translation>
 <translation id="2078880767960296260">Host Process</translation>
 <translation id="1643640058022401035">การออกจากหน้าเว็บนี้จะเป็นการสิ้นสุดเซสชัน Chromoting ของคุณ</translation>
 <translation id="8261506727792406068">ลบ</translation>
+<translation id="1152528166145813711">เลือก…</translation>
 <translation id="2235518894410572517">แชร์คอมพิวเตอร์นี้เพื่อให้ผู้ใช้อื่นเห็นและควบคุมคอมพิวเตอร์ได้</translation>
 <translation id="6939719207673461467">แสดง/ซ่อนแป้นพิมพ์</translation>
 <translation id="1023096696228309145">ขอให้ผู้ใช้ที่คุณต้องการเข้าถึงคอมพิวเตอร์ของเขาคลิกที่ &quot;แชร์เดี๋ยวนี้&quot; และให้รหัสการเข้าถึงแก่คุณ</translation>
 <translation id="4240294130679914010">Chromoting Host Uninstaller</translation>
+<translation id="8712909229180978490">ฉันไม่เห็นไฟล์ที่บันทึกไว้แบบออนไลน์ใน Google ไดรฟ์</translation>
 <translation id="80739703311984697">โฮสต์ระยะไกลกำหนดให้คุณตรวจสอบสิทธิ์กับเว็บไซต์ของบุคคลที่สาม หากต้องการดำเนินการต่อ คุณต้องให้สิทธิ์อนุญาตเพิ่มเติมแก่ Chromoting เพื่อเข้าถึงที่อยู่นี้:</translation>
 <translation id="4006787130661126000">คุณต้องเปิดใช้งานการเชื่อมต่อระยะไกลหากคุณต้องการใช้ Chrome Remote Desktop ในการเข้าถึงคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="177096447311351977">IP ช่องสำหรับไคลเอ็นต์: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ Desktop Host</translation>
 <translation id="6011539954251327702">Chromoting ช่วยให้คุณแชร์คอมพิวเตอร์ผ่านเว็บได้อย่างปลอดภัย ผู้ใช้ทั้งสองฝ่ายจะต้องใช้งานแอปพลิเคชัน Chromoting ซึ่งสามารถรับได้ที่ <ph name="URL"/></translation>
 <translation id="2919669478609886916">ขณะนี้คุณกำลังแชร์คอมพิวเตอร์เครื่องนี้กับผู้ใช้อื่น คุณต้องการแชร์ต่อไปหรือไม่</translation>
 <translation id="4207623512727273241">โปรดเรียกใช้ตัวติดตั้งก่อนดำเนินการต่อ</translation>
+<translation id="492843737083352574">ฉันมีปัญหาเกี่ยวกับแป้นพิมพ์หรือเมาส์</translation>
 <translation id="1324095856329524885">(คุณลักษณะนี้ยังไม่มีให้ใช้งานในคอมพิวเตอร์ของคุณ)</translation>
 <translation id="6570205395680337606">รีเซ็ตแอปพลิเคชัน คุณจะสูญเสียงานที่ไม่ได้บันทึกไว้ทั้งหมด</translation>
 <translation id="6284412385303060032">โฮสต์ที่ทำงานที่หน้าจอตรรกะของคอนโซลได้ปิดตัวลงเพื่อสนับสนุนโหมด Curtain โดยการเปลี่ยนไปเป็นโฮสต์ที่ทำงานในเซสชันเฉพาะผู้ใช้</translation>
@@ -260,6 +268,7 @@ Desktop Host</translation>
 <translation id="1546934824884762070">เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดรายงานปัญหานี้ให้นักพัฒนาซอฟต์แวร์ทราบ</translation>
 <translation id="4795786176190567663">คุณไม่มีสิทธิ์ในการทำงานนี้</translation>
 <translation id="6965382102122355670">ตกลง</translation>
+<translation id="3025388528294795783">เพื่อช่วยเราในการแก้ปัญหา โปรดบอกปัญหาให้เราทราบ:</translation>
 <translation id="7434397035092923453">การเข้าถึงถูกปฏิเสธสำหรับไคลเอ็นต์: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="3403830762023901068">การตั้งค่านโยบายไม่อนุญาตให้แชร์คอมพิวเตอร์นี้เป็นโฮสต์ Chromoting โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
 <translation id="7312846573060934304">โฮสต์ออฟไลน์</translation>

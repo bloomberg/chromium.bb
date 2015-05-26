@@ -16,9 +16,12 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME"/> ಅವರಿಂದ <ph name="PRODUCT_ID"/> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ (ಕ್ರಮ ಸಂಖ್ಯೆ <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">ಈ ಮೆಷಿನ್‌ನ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_VERSION"/> ನ ಕನಿಷ್ಠ ಆವೃತಿಯನ್ನು <ph name="EXTENSION_NAME"/> ಹೊಂದಬೇಕಾದ ಅಗತ್ಯವಿದೆ. ಅದು ಹೊಸ ಆವೃತ್ತಿಗೆ (ಅಥವಾ ಹೆಚ್ಚಿನ) ನವೀಕರಣಗೊಳ್ಳುವವರೆಗೂ ಇದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> ಹೆಸರಿನ ಸಾಧನದೊಂದಿಗೆ ಡೇಟಾ ವಿನಿಮಯ ಮಾಡಿ</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{USB ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ}one{USB ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ}other{USB ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ}}</translation>
 <translation id="5971037678316050792">Bluetooth ಅಡಾಪ್ಟರ್ ಸ್ಥಿತಿ ಮತ್ತು ಜೋಡಿಸುವಿಕೆಯನ್ನು ನಿಯಂತ್ರಿಸು</translation>
 <translation id="677806580227005219">ಮೈಮ್‌ಹ್ಯಾಂಡ್ಲರ್: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">ನಿಮ್ಮ ಸಿಸ್ಟಂ ಜೊತೆಗೆ ಜೋಡಿಯಾಗಿರುವ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳ ಕುರಿತ ಮಾಹಿತಿಯನ್ನು ಪ್ರವೇಶಿಸಿ ಮತ್ತು ಹತ್ತಿರದ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ಪತ್ತೆಹಚ್ಚಿ.</translation>
+<translation id="5699534389808783598">HID ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ
+      {NUM_DEVICE,plural, =1{HID ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ}one{HID ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ}other{HID ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ}}</translation>
 <translation id="8749863574775030885">ಅಜ್ಞಾತ ಮಾರಾಟಗಾರರಿಂದ USB ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> ಮಾರಾಟಗಾರರಿಂದ <ph name="PRODUCT_ID"/> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ (ಕ್ರಮ ಸಂಖ್ಯೆ <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> ರಿಂದ <ph name="PRODUCT_NAME"/></translation>

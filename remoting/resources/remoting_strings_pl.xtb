@@ -7,9 +7,11 @@ Chromoting</translation>
 <translation id="2676780859508944670">Przetwarzam…</translation>
 <translation id="6062854958530969723">Nie udało się zainicjować hosta.</translation>
 <translation id="5843054235973879827">Dlaczego to bezpieczne?</translation>
+<translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5619148062500147964">Z tym komputerem</translation>
 <translation id="4068946408131579958">Wszystkie połączenia</translation>
 <translation id="2208514473086078157">Ustawienia zasad nie zezwalają na udostępnianie tego komputera jako hosta Pulpitu zdalnego Chrome. Aby uzyskać pomoc, skontaktuj się z administratorem systemu.</translation>
+<translation id="6381670701864002291">Inny problem.</translation>
 <translation id="6541219117979389420">Dzienniki aplikacji mogą zawierać informacje prywatne, w tym Twoje dane osobowe (adres e-mail) oraz nazwy i właściwości plików i folderów na Dysku Google.</translation>
 <translation id="3931191050278863510">Host został zatrzymany.</translation>
 <translation id="3905196214175737742">Nieprawidłowa domena właściciela hosta.</translation>
@@ -52,6 +54,7 @@ Chromoting</translation>
 <translation id="3606997049964069799">Nie jesteś zalogowany do Chromium. Zaloguj się i spróbuj ponownie.</translation>
 <translation id="6198252989419008588">Zmień kod PIN</translation>
 <translation id="7970576581263377361">Uwierzytelnianie nie powiodło się. Zaloguj się ponownie do Chromium.</translation>
+<translation id="477305884757156764">Aplikacja działa za wolno.</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">Nie udało się zarejestrować tego komputera.</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
@@ -69,6 +72,7 @@ Chromoting</translation>
 <translation id="2314101195544969792">Sesja aplikacji <ph name="APPLICATION_NAME"/> jest od jakiegoś czasu nieaktywna i zostanie wkrótce zakończona.</translation>
 <translation id="6001953797859482435">Ustawienia hosta Pulpitu zdalnego Chrome</translation>
 <translation id="225614027745146050">Witamy</translation>
+<translation id="1770394049404108959">Nie mogę otworzyć aplikacji.</translation>
 <translation id="9188433529406846933">Autoryzuj</translation>
 <translation id="228809120910082333">Potwierdź poniżej swoje konto i kod PIN, by móc korzystać z funkcji Chromoting.</translation>
 <translation id="7605995381616883502">Nowe połączenie</translation>
@@ -99,6 +103,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="3884839335308961732">Potwierdź poniżej swoje konto i kod PIN, by pozwolić na dostęp przez Pulpit zdalny Chrome.</translation>
 <translation id="327263477022142889">Chcesz pomóc w ulepszeniu Pulpitu zdalnego Chrome? <ph name="LINK_BEGIN"/>Wypełnij ankietę<ph name="LINK_END"/>.</translation>
 <translation id="6612717000975622067">Wyślij Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">Nie mogę otworzyć moich plików na Dysku Google.</translation>
 <translation id="5702987232842159181">Połączono:</translation>
 <translation id="8509907436388546015">Proces integracji pulpitu</translation>
 <translation id="4736223761657662401">Historia połączeń</translation>
@@ -190,10 +195,12 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="2078880767960296260">Proces hosta</translation>
 <translation id="1643640058022401035">Jeśli opuścisz tę stronę, sesja Chromoting zostanie zakończona.</translation>
 <translation id="8261506727792406068">Usuń</translation>
+<translation id="1152528166145813711">Wybierz…</translation>
 <translation id="2235518894410572517">Udostępnij ten komputer innemu użytkownikowi, by mógł go widzieć i kontrolować.</translation>
 <translation id="6939719207673461467">Pokaż/ukryj klawiaturę.</translation>
 <translation id="1023096696228309145">Poproś użytkownika komputera, do którego chcesz uzyskać dostęp, by kliknął „Udostępnij teraz” i przekazał Ci kod dostępu.</translation>
 <translation id="4240294130679914010">Program do odinstalowywania hosta funkcji Chromoting</translation>
+<translation id="8712909229180978490">Nie widzę moich plików zapisanych na Dysku Google, gdy jestem online.</translation>
 <translation id="80739703311984697">Host zdalny wymaga uwierzytelnienia w witrynie innej firmy. Aby kontynuować, musisz udzielić funkcji Chromoting dodatkowych uprawnień dostępu do tego adresu:</translation>
 <translation id="4006787130661126000">Jeśli chcesz korzystać z tego komputera przez Pulpit zdalny Chrome, musisz włączyć połączenia zdalne.</translation>
 <translation id="177096447311351977">Adres IP kanału dla klienta: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ zdalnego Chrome</translation>
 <translation id="6011539954251327702">Chromoting pozwala na bezpieczne udostępnianie komputera przez internet. Obaj użytkownicy muszą mieć uruchomioną aplikację Chromoting, którą można znaleźć na <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Obecnie udostępniasz ten komputer innemu użytkownikowi. Czy chcesz kontynuować udostępnianie?</translation>
 <translation id="4207623512727273241">Najpierw uruchom instalatora.</translation>
+<translation id="492843737083352574">Mam problem z klawiaturą lub myszą.</translation>
 <translation id="1324095856329524885">(ta funkcja nie jest jeszcze dostępna na tym komputerze)</translation>
 <translation id="6570205395680337606">Zresetuj aplikację. Niezapisane dane zostaną utracone.</translation>
 <translation id="6284412385303060032">Host uruchomiony na ekranie logowania konsoli został zamknięty, by umożliwić włączenie trybu kurtyny, przełączając się na hosta uruchomionego w sesji danego użytkownika.</translation>
@@ -260,6 +268,7 @@ zdalnego Chrome</translation>
 <translation id="1546934824884762070">Wystąpił nieoczekiwany błąd. Zgłoś ten problem programistom.</translation>
 <translation id="4795786176190567663">Nie masz uprawnień do wykonywania tej czynności.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="3025388528294795783">Aby pomóc nam w rozwiązaniu problemu, opisz, na czym on polega:</translation>
 <translation id="7434397035092923453">Odmowa dostępu dla klienta: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Ustawienia zasad nie zezwalają na udostępnianie tego komputera jako hosta Chromoting. Aby uzyskać pomoc, skontaktuj się z administratorem systemu.</translation>
 <translation id="7312846573060934304">Host jest offline.</translation>

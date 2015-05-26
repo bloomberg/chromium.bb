@@ -16,9 +16,12 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME"/> 提供的不明產品 <ph name="PRODUCT_ID"/> (序號：<ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">這個裝置的管理員要求的 <ph name="EXTENSION_NAME"/> 最低版本為 <ph name="EXTENSION_VERSION"/>。更新至該版本 (或以上版本) 後，才能啟用這項擴充功能。</translation>
 <translation id="6075907793831890935">與名稱為 <ph name="HOSTNAME"/> 的裝置交換資料</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{選取一個 USB 裝置}other{選取多個 USB 裝置}}</translation>
 <translation id="5971037678316050792">控制藍牙介面卡狀態與連線配對功能</translation>
 <translation id="677806580227005219">MIME 處理常式：<ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">存取與系統配對的藍牙裝置資訊並搜尋附近的藍牙裝置。</translation>
+<translation id="5699534389808783598">選取 HID 裝置
+      {NUM_DEVICE,plural, =1{選取一個 HID 裝置}other{選取多個 HID 裝置}}</translation>
 <translation id="8749863574775030885">存取製造商不明的 USB 裝置</translation>
 <translation id="3115238746683532089">供應商 <ph name="VENDOR_ID"/> 提供的不明產品 <ph name="PRODUCT_ID"/> (序號：<ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> (供應商：<ph name="VENDOR_NAME"/>)</translation>

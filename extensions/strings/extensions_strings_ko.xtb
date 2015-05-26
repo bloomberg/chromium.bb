@@ -16,9 +16,12 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME"/>의 알 수 없는 제품 <ph name="PRODUCT_ID"/>(일련번호 <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">이 시스템의 관리자가 최소 <ph name="EXTENSION_NAME"/> <ph name="EXTENSION_VERSION"/> 버전을 요구합니다. 해당 버전 이상으로 업데이트하지 않으면 사용할 수 없습니다.</translation>
 <translation id="6075907793831890935">이름이 <ph name="HOSTNAME"/>인 기기와 데이터 교환</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{USB 기기 선택}other{USB 기기 선택}}</translation>
 <translation id="5971037678316050792">블루투스 어댑터 상태 및 페어링을 제어합니다.</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">시스템과 페어링된 블루투스 기기 관련 정보에 액세스하고 근처의 블루투스 기기를 검색합니다.</translation>
+<translation id="5699534389808783598">HID 기기 선택
+      {NUM_DEVICE,plural, =1{HID 기기 선택}other{HID 기기 선택}}</translation>
 <translation id="8749863574775030885">알 수 없는 공급업체의 USB 기기에 액세스</translation>
 <translation id="3115238746683532089">공급업체 <ph name="VENDOR_ID"/>의 알 수 없는 제품 <ph name="PRODUCT_ID"/>(일련번호 <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/>의 <ph name="PRODUCT_NAME"/></translation>

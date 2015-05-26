@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_NAME"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Адміністратор цього комп’ютера вимагає встановити розширення <ph name="EXTENSION_NAME"/> принаймні такої версії: <ph name="EXTENSION_VERSION"/>. Ви не зможете ввімкнути це розширення, доки не оновите його до цієї версії (або новішої).</translation>
 <translation id="6075907793831890935">Обмінюватися даними з пристроєм із назвою <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Вибрати пристрій USB}one{Вибрати пристрої USB}few{Вибрати пристрої USB}many{Вибрати пристрої USB}other{Вибрати пристрої USB}}</translation>
 <translation id="5971037678316050792">Керувати станом і під’єднанням адаптера Bluetooth</translation>
 <translation id="677806580227005219">Обробник MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Переглядати інформацію про пристрої Bluetooth, підключені до вашої системи, і знаходити пристрої Bluetooth поблизу.</translation>
+<translation id="5699534389808783598">Вибрати пристрої HID
+      {NUM_DEVICE,plural, =1{Вибрати пристрій HID}one{Вибрати пристрої HID}few{Вибрати пристрої HID}many{Вибрати пристрої HID}other{Вибрати пристрої HID}}</translation>
 <translation id="8749863574775030885">Отримувати доступ до пристроїв USB від невідомого постачальника</translation>
 <translation id="3115238746683532089">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_ID"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_NAME"/></translation>

@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Ismeretlen termék (<ph name="PRODUCT_ID"/>) a következő szolgáltatótól: <ph name="VENDOR_NAME"/> (sorozatszám: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">A gép rendszergazdája előírta, hogy a(z) <ph name="EXTENSION_NAME"/> bővítmény verziója legalább <ph name="EXTENSION_VERSION"/> legyen. Nem kapcsolható be addig, amíg nincs frissítve erre a verzióra (vagy újabbra).</translation>
 <translation id="6075907793831890935">Adatok cseréje a(z) <ph name="HOSTNAME"/> nevű eszközzel</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{USB-eszköz kiválasztása}other{USB-eszközök kiválasztása}}</translation>
 <translation id="5971037678316050792">Bluetooth-adapter állapotának és párosításának vezérlése</translation>
 <translation id="677806580227005219">MIME-kezelő: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">A rendszerrel párosított Bluetooth-eszközökkel kapcsolatos információk elérése és a közeli Bluetooth-eszközök felderítése.</translation>
+<translation id="5699534389808783598">HID-eszközök kiválasztása
+      {NUM_DEVICE,plural, =1{HID-eszköz kiválasztása}other{HID-eszközök kiválasztása}}</translation>
 <translation id="8749863574775030885">Ismeretlen szolgáltatótól származó USB-eszközök elérése</translation>
 <translation id="3115238746683532089">Ismeretlen termék (<ph name="PRODUCT_ID"/>) <ph name="VENDOR_ID"/> szolgáltatótól (sorozatszám: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> (<ph name="VENDOR_NAME"/>)</translation>

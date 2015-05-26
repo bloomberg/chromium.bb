@@ -64,6 +64,7 @@
 <translation id="7098166902387133879">O Google Chrome está a utilizar o microfone.</translation>
 <translation id="2596415276201385844">Para estabelecer uma ligação segura, o relógio tem de ser definido corretamente. Isto deve-se ao facto de os certificados que os Websites utilizam para se identificarem serem apenas válidos para períodos de tempo específicos. Uma vez que o relógio do seu dispositivo está incorreto, o Chrome não consegue validar estes certificados.</translation>
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
+<translation id="5148419164691878332">O Chrome armazena esta informação nas <ph name="SAVED_PASSWORDS_LINK"/> e lembra-a da próxima vez que precisar.</translation>
 <translation id="3197823471738295152">O dispositivo está atualizado.</translation>
 <translation id="8286862437124483331">O Google Chrome está a tentar mostrar palavras-passe. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
@@ -75,6 +76,7 @@
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
 <translation id="3089968997497233615">Está disponível uma versão nova e mais segura do Google Chrome.</translation>
 <translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que esta alteração tenha efeito.</translation>
+<translation id="1619887657840448962">Para tornar o Chrome mais seguro, desativámos a seguinte extensão, que não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, e é possível que tenha sido adicionada sem o seu conhecimento.</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
 <translation id="3398288718845740432">Ocultar no menu do Chrome</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
@@ -102,6 +104,7 @@
 <translation id="7747138024166251722">O programa de instalação não conseguiu criar um directório temporário. Verifique se há espaço livre no disco e permissão para a instalação do software.</translation>
 <translation id="5170938038195470297">O seu perfil não pode ser utilizado pois pertence a uma versão mais recente do Google Chrome. Algumas funcionalidades poderão estar indisponíveis. Especifique um diretório de perfil diferente ou utilize uma versão mais recente do Google Chrome.</translation>
 <translation id="7282192067747128786">Chrome – Notificações (<ph name="QUANTITY"/> não lidas)</translation>
+<translation id="1475773083554142432">O Chrome armazena esta informação com o <ph name="SAVED_PASSWORD_LINK"/> e lembra-a da próxima vez que precisar.</translation>
 <translation id="6011049234605203654">Aceda ao
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -144,6 +147,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="5855036575689098185">O software em execução no seu computador é incompatível com o Google Chrome.</translation>
 <translation id="7164397146364144019">Pode contribuir para tornar o Chrome mais seguro e fácil de utilizar ao comunicar automaticamente os detalhes de possíveis incidentes de segurança à Google.</translation>
 <translation id="8008534537613507642">Reinstalar Chrome</translation>
+<translation id="2689103672227170538">Esta extensão alterou a página apresentada quando inicia o Chrome.</translation>
 <translation id="8862326446509486874">Não tem os direitos adequados para uma instalação ao nível do sistema. Tente executar o programa de instalação novamente como Administrador.</translation>
 <translation id="2874156562296220396">O Google Chrome foi concretizado graças ao projecto open source (código fonte aberto) <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>, assim como a outro <ph name="BEGIN_LINK_OSS"/>software open source<ph name="END_LINK_OSS"/>.</translation>
 <translation id="7191567847629796517">O SO Google Chrome não suporta iniciar uma aplicação externa para processar links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
@@ -171,6 +175,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="2665296953892887393">Ajudar a melhorar o Google Chrome ao enviar relatórios de falhas e <ph name="UMA_LINK"/> à Google</translation>
 <translation id="7761834446675418963">Clique no seu nome para abrir o Chrome e começar a navegar.</translation>
 <translation id="2669824781555328029">O ficheiro <ph name="FILE_NAME"/> pode prejudicar a sua experiência de navegação, pelo que foi bloqueado pelo Chrome.</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Uma transferência está atualmente em curso. Pretende cancelar a transferência e sair do Google Chrome?}other{# transferências estão atualmente em curso. Pretende cancelar as transferências e sair do Google Chrome?}}</translation>
 <translation id="6235018212288296708">Regra de importação para o Google Chrome permitir o tráfego mDNS.</translation>
 <translation id="7984945080620862648">De momento é possível visitar <ph name="SITE"/> porque o Website enviou credenciais codificadas que o Chrome não consegue processar. Os erros de rede e os ataques normalmente são temporários, por isso, esta página voltará provavelmente a funcionar.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -236,6 +241,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="3360895254066713204">Ajudante do Chrome</translation>
 <translation id="1877026089748256423">O Chrome está desatualizado</translation>
 <translation id="7592736734348559088">O Google Chrome não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>
+<translation id="3735758079232443276">A extensão &quot;<ph name="EXTENSION_NAME"/>&quot; alterou a página apresentada quando inicia o Chrome.</translation>
 <translation id="6991142834212251086">Associar os meus dados do Chrome a esta conta</translation>
 <translation id="3451115285585441894">A adicionar ao Chrome...</translation>
 <translation id="3047079729301751317">Desligar <ph name="USERNAME"/> irá limpar o seu histórico, os marcadores, as definições e outros dados do Chrome armazenados neste dispositivo. Os dados armazenados na Conta Google não serão limpos e podem ser geridos no <ph name="GOOGLE_DASHBOARD_LINK"/>Painel de controlo Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>

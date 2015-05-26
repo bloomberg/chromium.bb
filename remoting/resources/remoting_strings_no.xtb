@@ -7,9 +7,11 @@ Vert</translation>
 <translation id="2676780859508944670">Behandler …</translation>
 <translation id="6062854958530969723">Vertsinitialiseringen mislyktes.</translation>
 <translation id="5843054235973879827">Hvorfor er dette trygt?</translation>
+<translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5619148062500147964">Til denne datamaskinen</translation>
 <translation id="4068946408131579958">Alle tilkoblinger</translation>
 <translation id="2208514473086078157">Innstillingene tillater ikke at denne datamaskinen deles som vert for Chrome Eksternt skrivebord. Ta kontakt med systemadministratoren for å få hjelp.</translation>
+<translation id="6381670701864002291">Noe annet.</translation>
 <translation id="6541219117979389420">Programlogger kan inneholde privat informasjon, deriblant identiteten din (e-postadressen) og navnene og egenskapene til filer og mapper i Google Disk.</translation>
 <translation id="3931191050278863510">Verten stoppet.</translation>
 <translation id="3905196214175737742">Ugyldig domene for vertseieren.</translation>
@@ -52,6 +54,7 @@ Vert</translation>
 <translation id="3606997049964069799">Du er ikke logget på Chromium. Logg på, og prøv på nytt.</translation>
 <translation id="6198252989419008588">Endre personlig kode</translation>
 <translation id="7970576581263377361">Autentiseringen mislyktes. Logg på Chromium på nytt.</translation>
+<translation id="477305884757156764">Appen er for langsom.</translation>
 <translation id="6167788864044230298">Chrome-appstrømming</translation>
 <translation id="170207782578677537">Kunne ikke registrere denne datamaskinen.</translation>
 <translation id="4804818685124855865">Koble fra</translation>
@@ -69,6 +72,7 @@ Vert</translation>
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME"/>-økten din har vært inaktiv en stund og kommer snart til å bli koblet fra.</translation>
 <translation id="6001953797859482435">Alternativer for Chrome Eksternt skrivebord-vert</translation>
 <translation id="225614027745146050">Velkommen</translation>
+<translation id="1770394049404108959">Jeg kan ikke åpne appen.</translation>
 <translation id="9188433529406846933">Autoriser</translation>
 <translation id="228809120910082333">Bekreft kontoen og PIN-koden din for å tillate tilgang via Chromoting.</translation>
 <translation id="7605995381616883502">Ny tilkobling</translation>
@@ -99,6 +103,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="3884839335308961732">Bekreft kontoen og PIN-koden din nedenfor for å tillate tilgang via Chrome Eksternt skrivebord.</translation>
 <translation id="327263477022142889">Vil du være med på å forbedre Chrome Eksternt skrivebord? <ph name="LINK_BEGIN"/>Delta i spørreundersøkelsen.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Send Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">Jeg kan ikke åpne Google Disk-filene mine.</translation>
 <translation id="5702987232842159181">Tilkoblet:</translation>
 <translation id="8509907436388546015">Integrasjonsprosess for skrivebord</translation>
 <translation id="4736223761657662401">Tilkoblingslogg</translation>
@@ -190,10 +195,12 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="2078880767960296260">Vertsprosess</translation>
 <translation id="1643640058022401035">Hvis du forlater denne siden, avsluttes Chromoting-økten din.</translation>
 <translation id="8261506727792406068">Slett</translation>
+<translation id="1152528166145813711">Velg</translation>
 <translation id="2235518894410572517">Del denne datamaskinen slik at en annen bruker kan se og kontrollere den.</translation>
 <translation id="6939719207673461467">Vis/skjul tastaturet.</translation>
 <translation id="1023096696228309145">Be brukeren som har datamaskinen du ønsker tilgang til, om å klikke på «Del nå» og gi deg tilgangskoden.</translation>
 <translation id="4240294130679914010">Avinstalleringsprogram for Chromoting-vert</translation>
+<translation id="8712909229180978490">Jeg ser ikke de lagrede filene mine på nettet i Google Disk.</translation>
 <translation id="80739703311984697">Den eksterne verten krever at du godkjenner via et tredjepartsnettsted. For å fortsette må du gi Chromoting ytterligere tillatelser til å åpne denne adressen:</translation>
 <translation id="4006787130661126000">Du må aktivere eksterne tilkoblinger hvis du vil ha tilgang til denne datamaskinen gjennom Chrome Eksternt skrivebord.</translation>
 <translation id="177096447311351977">Kanal-IP for klienten: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ skrivebord-vert</translation>
 <translation id="6011539954251327702">Med Chromoting kan du trygt dele datamaskinen din på nettet. Begge brukerne må kjøre Chromoting-appen, som er å finne på <ph name="URL"/></translation>
 <translation id="2919669478609886916">Du deler denne datamaskinen med en annen bruker. Vil du fortsette å dele?</translation>
 <translation id="4207623512727273241">Kjør installasjonsprogrammet før du fortsetter.</translation>
+<translation id="492843737083352574">Jeg har problemer med tastaturet eller musen.</translation>
 <translation id="1324095856329524885">(Denne funksjonen er ikke tilgjengelig for datamaskinen din ennå.)</translation>
 <translation id="6570205395680337606">Tilbakestill programmet. Du mister alt arbeid som ikke er lagret.</translation>
 <translation id="6284412385303060032">Verten som kjører på skjermen for konsollpålogging, har blitt avsluttet for å støtte gardinmodus ved å bytte til en vert som kjører i en brukerspesifikk økt.</translation>
@@ -260,6 +268,7 @@ skrivebord-vert</translation>
 <translation id="1546934824884762070">Det oppsto en uventet feil. Rapportér dette problemet til utviklerne.</translation>
 <translation id="4795786176190567663">Du har ikke tillatelse til å utføre denne handlingen.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="3025388528294795783">Fortell oss hva som gikk galt, slik at vi kan prøve å løse problemet ditt.</translation>
 <translation id="7434397035092923453">Klienten ble nektet tilgang: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Innstillingene tillater ikke at denne datamaskinen deles som vert for Chromoting. Kontakt systemadministratoren for å få hjelp.</translation>
 <translation id="7312846573060934304">Verten er uten nett.</translation>

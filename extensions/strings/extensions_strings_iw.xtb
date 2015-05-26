@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">מוצר לא ידוע <ph name="PRODUCT_ID"/> מהספק <ph name="VENDOR_NAME"/> (מספר סידורי <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">מנהל המערכת של מחשב זה דורש שהגרסה המינימלית של <ph name="EXTENSION_NAME"/> תהיה <ph name="EXTENSION_VERSION"/>. ההפעלה אינה אפשרית עד לעדכון לגרסה זו (ואילך).</translation>
 <translation id="6075907793831890935">החלפת נתונים עם המכשיר בשם <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{‏בחר התקן USB}two{‏בחר התקני USB}many{‏בחר התקני USB}other{‏בחר התקני USB}}</translation>
 <translation id="5971037678316050792">‏הגדרת מצב ושליטה בהתאמה עבור מתאם Bluetooth</translation>
 <translation id="677806580227005219">‏מטפל MIME:‏ <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">‏פרטי גישה של מכשירי Bluetooth המותאמים למערכת שלך ומגלים מכשירי Bluetooth קרובים.</translation>
+<translation id="5699534389808783598">בחר מכשירי HID
+      {NUM_DEVICE,plural, =1{‏בחר התקן HID}two{‏בחר התקני HID}many{‏בחר התקני HID}other{‏בחר התקני HID}}</translation>
 <translation id="8749863574775030885">‏גש למכשירי USB מספק לא ידוע</translation>
 <translation id="3115238746683532089">מוצר לא ידוע <ph name="PRODUCT_ID"/> מהספק <ph name="VENDOR_ID"/> (מספר סידורי <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> מאת <ph name="VENDOR_NAME"/></translation>

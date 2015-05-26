@@ -7,9 +7,11 @@ Chromoting</translation>
 <translation id="2676780859508944670">Sedang bekerja…</translation>
 <translation id="6062854958530969723">Inisialisasi host gagal.</translation>
 <translation id="5843054235973879827">Mengapa ini aman?</translation>
+<translation id="5895138241574237353">Hidupkan Ulang</translation>
 <translation id="5619148062500147964">Ke komputer ini</translation>
 <translation id="4068946408131579958">Semua sambungan</translation>
 <translation id="2208514473086078157">Setelan kebijakan tidak mengizinkan berbagi komputer ini sebagai inang Chrome Desktop Jarak Jauh. Hubungi administrator sistem Anda untuk mendapatkan bantuan.</translation>
+<translation id="6381670701864002291">Lainnya.</translation>
 <translation id="6541219117979389420">Log aplikasi dapat mencakup informasi pribadi, termasuk identitas Anda (alamat email) serta nama dan properti file dan folder di Google Drive.</translation>
 <translation id="3931191050278863510">Host berhenti.</translation>
 <translation id="3905196214175737742">Domain pemilik host tidak valid.</translation>
@@ -52,6 +54,7 @@ Chromoting</translation>
 <translation id="3606997049964069799">Anda tidak masuk ke Chromium. Masuk dan coba lagi.</translation>
 <translation id="6198252989419008588">Ubah PIN</translation>
 <translation id="7970576581263377361">Autentikasi gagal. Masuk ke Chromium lagi.</translation>
+<translation id="477305884757156764">Aplikasi ini terlalu lambat.</translation>
 <translation id="6167788864044230298">Streaming Aplikasi Chrome</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
 <translation id="4804818685124855865">Putuskan</translation>
@@ -69,6 +72,7 @@ Chromoting</translation>
 <translation id="2314101195544969792">Sesi <ph name="APPLICATION_NAME"/> Anda tidak aktif untuk sementara waktu dan akan diputuskan sementara.</translation>
 <translation id="6001953797859482435">Preferensi Host Chrome Desktop Jarak Jauh</translation>
 <translation id="225614027745146050">Selamat Datang</translation>
+<translation id="1770394049404108959">Saya tidak dapat membuka aplikasi ini.</translation>
 <translation id="9188433529406846933">Beri Otorisasi</translation>
 <translation id="228809120910082333">Konfirmasi akun dan PIN Anda di bawah guna mengizinkan akses oleh Chromoting.</translation>
 <translation id="7605995381616883502">Sambungan baru</translation>
@@ -99,6 +103,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="3884839335308961732">Konfirmasi akun dan PIN Anda di bawah guna mengizinkan akses oleh Chrome Desktop Jarak Jauh</translation>
 <translation id="327263477022142889">Ingin membantu meningkatkan Desktop Jarak Jauh Chrome? <ph name="LINK_BEGIN"/>Isi survei ini.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Kirim Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">Saya tidak dapat membuka file Google Drive.</translation>
 <translation id="5702987232842159181">Tersambung:</translation>
 <translation id="8509907436388546015">Proses Integrasi Desktop</translation>
 <translation id="4736223761657662401">Riwayat Sambungan</translation>
@@ -190,10 +195,12 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2078880767960296260">Proses Host</translation>
 <translation id="1643640058022401035">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chromoting.</translation>
 <translation id="8261506727792406068">Hapus</translation>
+<translation id="1152528166145813711">Pilih…</translation>
 <translation id="2235518894410572517">Membagi komputer ini agar pengguna lain dapat melihat dan mengontrol.</translation>
 <translation id="6939719207673461467">Tunjukkan/sembunyikan keyboard.</translation>
 <translation id="1023096696228309145">Mintalah kepada pengguna yang ingin Anda akses komputernya agar mengeklik 'Bagikan Sekarang' dan memberikan kode aksesnya kepada Anda.</translation>
 <translation id="4240294130679914010">Pencopot Pemasangan Host Chromoting</translation>
+<translation id="8712909229180978490">Saya tidak dapat melihat file saya yang tersimpan secara online di Google Drive.</translation>
 <translation id="80739703311984697">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chromoting untuk mengakses alamat ini:</translation>
 <translation id="4006787130661126000">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chrome Desktop Jarak Jauh untuk mengakses komputer ini.</translation>
 <translation id="177096447311351977">IP saluran untuk klien: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ Desktop Jarak Jauh</translation>
 <translation id="6011539954251327702">Chromoting memungkinkan Anda berbagi komputer melalui Web secara aman. Kedua pengguna harus menjalankan aplikasi Chromoting, yang dapat ditemukan di <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Saat ini Anda sedang berbagi mesin ini dengan pengguna lain. Apakah Anda ingin terus berbagi?</translation>
 <translation id="4207623512727273241">Jalankan pemasang sebelum melanjutkan.</translation>
+<translation id="492843737083352574">Saya mengalami masalah dengan keyboard atau mouse.</translation>
 <translation id="1324095856329524885">(Fitur ini belum tersedia untuk komputer Anda)</translation>
 <translation id="6570205395680337606">Setel ulang aplikasi. Anda akan kehilangan pekerjaan yang belum disimpan.</translation>
 <translation id="6284412385303060032">Host yang berjalan di layar logika konsol telah dinonaktifkan untuk mendukung mode tirai dengan beralih ke host yang berjalan di sesi khusus pengguna.</translation>
@@ -260,6 +268,7 @@ Desktop Jarak Jauh</translation>
 <translation id="1546934824884762070">Terjadi kesalahan yang tidak terduga. Laporkan masalah ini kepada pengembang.</translation>
 <translation id="4795786176190567663">Anda tidak memiliki izin untuk melakukan tindakan tersebut.</translation>
 <translation id="6965382102122355670">Oke</translation>
+<translation id="3025388528294795783">Guna membantu kami menyelesaikan masalah Anda, beri tahu kami apa masalahnya:</translation>
 <translation id="7434397035092923453">Akses ditolak untuk klien: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Setelan kebijakan tidak mengizinkan berbagi komputer ini sebagai inang Chromoting. Hubungi administrator sistem Anda untuk mendapatkan bantuan.</translation>
 <translation id="7312846573060934304">Hosting offline.</translation>

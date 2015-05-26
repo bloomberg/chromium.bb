@@ -7,9 +7,11 @@ Chromoting</translation>
 <translation id="2676780859508944670">Trabajando…</translation>
 <translation id="6062854958530969723">Error al iniciar el host.</translation>
 <translation id="5843054235973879827">¿Por qué es segura esta operación?</translation>
+<translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5619148062500147964">Conexiones con este ordenador</translation>
 <translation id="4068946408131579958">Todas las conexiones</translation>
 <translation id="2208514473086078157">La configuración de la política no permite compartir este ordenador como un host de Escritorio remoto de Chrome. Ponte en contacto con el administrador del sistema para obtener asistencia.</translation>
+<translation id="6381670701864002291">Otro problema.</translation>
 <translation id="6541219117979389420">Los registros de aplicaciones pueden contener información privada, incluidos tu identidad (dirección de correo electrónico) y los nombres y las propiedades de los archivos y de las carpetas de Google Drive.</translation>
 <translation id="3931191050278863510">Host detenido.</translation>
 <translation id="3905196214175737742">Dominio del propietario del host no válido.</translation>
@@ -52,6 +54,7 @@ Chromoting</translation>
 <translation id="3606997049964069799">No has iniciado sesión en Chromium. Inicia sesión y vuelve a intentarlo.</translation>
 <translation id="6198252989419008588">Cambiar PIN</translation>
 <translation id="7970576581263377361">Error de autenticación. Vuelve a iniciar sesión en Chromium.</translation>
+<translation id="477305884757156764">La aplicación es demasiado lenta.</translation>
 <translation id="6167788864044230298">Flujo de aplicaciones de Chrome</translation>
 <translation id="170207782578677537">No se ha podido registrar este ordenador.</translation>
 <translation id="4804818685124855865">Desvincular</translation>
@@ -69,6 +72,7 @@ Chromoting</translation>
 <translation id="2314101195544969792">La sesión de <ph name="APPLICATION_NAME"/> lleva un tiempo inactiva y se desconectará en breve.</translation>
 <translation id="6001953797859482435">Preferencias del host de Escritorio remoto de Chrome</translation>
 <translation id="225614027745146050">Te damos la bienvenida</translation>
+<translation id="1770394049404108959">No puedo abrir la aplicación.</translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="228809120910082333">Confirma la cuenta y el PIN a continuación para permitir el acceso de Chromoting.</translation>
 <translation id="7605995381616883502">Nueva conexión</translation>
@@ -99,6 +103,7 @@ Para obtener información sobre la privacidad, consulta la Política de privacid
 <translation id="3884839335308961732">Confirma la cuenta y el PIN a continuación para permitir el acceso de Escritorio remoto de Chrome.</translation>
 <translation id="327263477022142889">¿Quieres ayudar a mejorar Escritorio remoto de Chrome? <ph name="LINK_BEGIN"/>Rellena nuestra encuesta<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Enviar Ctrl-Alt-Supr</translation>
+<translation id="6173536234069435147">No puedo abrir mis archivos de Google Drive.</translation>
 <translation id="5702987232842159181">Conectado:</translation>
 <translation id="8509907436388546015">Proceso de integración del escritorio</translation>
 <translation id="4736223761657662401">Historial de conexiones</translation>
@@ -190,10 +195,12 @@ Para obtener información sobre la privacidad, consulta la Política de privacid
 <translation id="2078880767960296260">Proceso de host</translation>
 <translation id="1643640058022401035">Si abandonas esta página, finalizará tu sesión en Chromoting.</translation>
 <translation id="8261506727792406068">Eliminar</translation>
+<translation id="1152528166145813711">Seleccionar…</translation>
 <translation id="2235518894410572517">Comparte este ordenador para que otro usuario pueda acceder a él y controlarlo.</translation>
 <translation id="6939719207673461467">Mostrar/ocultar teclado.</translation>
 <translation id="1023096696228309145">Pide al propietario del ordenador al que quieras acceder que haga clic en la opción Compartir ahora y que te facilite el código de acceso.</translation>
 <translation id="4240294130679914010">Programa de desinstalación del host de Chromoting</translation>
+<translation id="8712909229180978490">No puedo ver mis archivos guardados online en Google Drive.</translation>
 <translation id="80739703311984697">El host remoto requiere tu autenticación en un sitio web de terceros. Para continuar, debes conceder a Chromoting permisos adicionales para acceder a la siguiente dirección:</translation>
 <translation id="4006787130661126000">Si quieres utilizar Escritorio remoto de Chrome para acceder a este ordenador, debes habilitar las conexiones remotas.</translation>
 <translation id="177096447311351977">IP de canal de cliente: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ remoto de Chrome</translation>
 <translation id="6011539954251327702">Chromoting permite compartir de forma segura tu ordenador a través de Internet. Ambos usuarios deben estar ejecutando la aplicación Chromoting, que está disponible en la página <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Actualmente estás compartiendo este ordenador con otro usuario. ¿Quieres seguir compartiéndolo?</translation>
 <translation id="4207623512727273241">Ejecuta el archivo de instalación antes de continuar.</translation>
+<translation id="492843737083352574">Tengo problemas con mi teclado o con el ratón.</translation>
 <translation id="1324095856329524885">(esta función aún no está disponible para tu ordenador)</translation>
 <translation id="6570205395680337606">Restablecer la aplicación. Se perderá cualquier trabajo que no hayas guardado.</translation>
 <translation id="6284412385303060032">Se ha cerrado el host que se ejecuta en la pantalla de inicio de sesión de la consola para poder admitir el modo de cortina. Para ello, se ha cambiado a un host que se ejecuta en una sesión específica de usuario.</translation>
@@ -260,6 +268,7 @@ remoto de Chrome</translation>
 <translation id="1546934824884762070">Se ha producido un error inesperado. Comunícaselo a los desarrolladores.</translation>
 <translation id="4795786176190567663">No tienes permiso para realizar esa acción.</translation>
 <translation id="6965382102122355670">Aceptar</translation>
+<translation id="3025388528294795783">Indícanos qué ha ocurrido para que podamos solucionar el problema:</translation>
 <translation id="7434397035092923453">Acceso denegado al cliente: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">La configuración de la política no permite compartir este ordenador como un host de Chromoting. Ponte en contacto con el administrador del sistema para obtener asistencia.</translation>
 <translation id="7312846573060934304">El host no tiene conexión.</translation>

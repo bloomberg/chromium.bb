@@ -7,9 +7,11 @@ isäntä</translation>
 <translation id="2676780859508944670">Käsitellään…</translation>
 <translation id="6062854958530969723">Isännän alustus epäonnistui.</translation>
 <translation id="5843054235973879827">Miksi tämä on turvallista?</translation>
+<translation id="5895138241574237353">Käynnistä uudelleen</translation>
 <translation id="5619148062500147964">Tähän tietokoneeseen</translation>
 <translation id="4068946408131579958">Kaikki yhteydet</translation>
 <translation id="2208514473086078157">Käytäntöasetukset eivät salli tämän tietokoneen jakamista Chrome-etäkäyttöisäntänä. Ota yhteyttä järjestelmänvalvojaan.</translation>
+<translation id="6381670701864002291">Jokin muu syy.</translation>
 <translation id="6541219117979389420">Sovelluslokeissa voi olla yksityisiä tietoja, kuten henkilöllisyytesi (sähköpostiosoite) ja Google Drivessa olevien tiedostojen ja kansioiden nimet ja ominaisuudet.</translation>
 <translation id="3931191050278863510">Isäntä pysähtyi.</translation>
 <translation id="3905196214175737742">Isännän omistajan verkkotunnus on virheellinen.</translation>
@@ -52,6 +54,7 @@ isäntä</translation>
 <translation id="3606997049964069799">Et ole kirjautunut Chromiumiin. Kirjaudu sisään ja yritä uudelleen.</translation>
 <translation id="6198252989419008588">Vaihda PIN-koodi</translation>
 <translation id="7970576581263377361">Todennus epäonnistui. Kirjaudu Chromiumiin uudelleen.</translation>
+<translation id="477305884757156764">Sovellus on liian hidas.</translation>
 <translation id="6167788864044230298">Chrome-sovellusten suoratoisto</translation>
 <translation id="170207782578677537">Tietokoneen rekisteröinti epäonnistui.</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
@@ -69,6 +72,7 @@ isäntä</translation>
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME"/> -istuntosi on ollut epäaktiivinen jonkin aikaa, ja se katkaistaan pian.</translation>
 <translation id="6001953797859482435">Chrome-etäkäytön isäntäasetukset</translation>
 <translation id="225614027745146050">Tervetuloa</translation>
+<translation id="1770394049404108959">Sovellus ei aukea.</translation>
 <translation id="9188433529406846933">Valtuuta</translation>
 <translation id="228809120910082333">Salli käyttö Chromotingin kautta vahvistamalla tilisi ja PIN-koodisi alla.</translation>
 <translation id="7605995381616883502">Uusi yhteys</translation>
@@ -99,6 +103,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="3884839335308961732">Myönnä käyttöoikeus Chrome-etäkäytön kautta vahvistamalla tilisi ja PIN-koodisi alla.</translation>
 <translation id="327263477022142889">Haluatko parantaa Chromen etäkäyttöä? <ph name="LINK_BEGIN"/>Osallistu kyselyyn.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Lähetä Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">Google Drive -tiedostoni eivät aukea.</translation>
 <translation id="5702987232842159181">Yhdistetty:</translation>
 <translation id="8509907436388546015">Tietokoneen integrointiprosessi</translation>
 <translation id="4736223761657662401">Yhteyshistoria</translation>
@@ -190,10 +195,12 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="2078880767960296260">Isäntäprosessi</translation>
 <translation id="1643640058022401035">Vaihtamalla sivua päätät Chromoting-käyttökerran.</translation>
 <translation id="8261506727792406068">Poista</translation>
+<translation id="1152528166145813711">Valitse…</translation>
 <translation id="2235518894410572517">Jaa tämä tietokone toisen käyttäjän nähtäväksi ja hallinnoitavaksi.</translation>
 <translation id="6939719207673461467">Näytä/piilota näppäimistö</translation>
 <translation id="1023096696228309145">Pyydä käyttäjää, jonka tietokonetta haluat käyttää, valitsemaan Jaa nyt ja antamaan sinulle käyttökoodi.</translation>
 <translation id="4240294130679914010">Chromoting-isännän asennuksen poisto</translation>
+<translation id="8712909229180978490">Tallennetut Google Drive -tiedostoni eivät näy verkossa.</translation>
 <translation id="80739703311984697">Etäisäntä edellyttää todennusta kolmannen osapuolen sivustossa. Jos haluat jatkaa, anna Chromotingille lisäkäyttölupia tämän osoitteen avaamiseksi:</translation>
 <translation id="4006787130661126000">Etäyhteydet on otettava käyttöön, jotta tietokonetta voidaan käyttää Chrome-etäkäytön avulla.</translation>
 <translation id="177096447311351977">Asiakkaan kanavan IP-osoite: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ isäntä</translation>
 <translation id="6011539954251327702">Chromotingin avulla voit jakaa tietokoneesi suojatun verkkoyhteyden kautta. Molempien käyttäjien täytyy käyttää osoitteesta <ph name="URL"/> löytyvää Chromoting-sovellusta.</translation>
 <translation id="2919669478609886916">Jaat tällä hetkellä tämän tietokoneen toisen käyttäjän kanssa. Haluatko jatkaa jakamista?</translation>
 <translation id="4207623512727273241">Suorita asennusohjelma ennen kuin jatkat.</translation>
+<translation id="492843737083352574">Näppäimistö tai hiiri tuottaa ongelmia.</translation>
 <translation id="1324095856329524885">(Tämä ominaisuus ei ole vielä saatavilla tietokoneellesi.)</translation>
 <translation id="6570205395680337606">Nollaa sovellus. Menetät kaikki tallentamattomat työt.</translation>
 <translation id="6284412385303060032">Konsolin logiikkaruudussa käynnissä ollut isäntä sulkeutui tukeakseen verhotilaa. Vaihdetaan käyttäjäkohtaisessa istunnossa käynnissä olevaan isäntään.</translation>
@@ -260,6 +268,7 @@ isäntä</translation>
 <translation id="1546934824884762070">Odottamaton virhe. Ilmoita tästä ongelmasta kehittäjille.</translation>
 <translation id="4795786176190567663">Sinulla ei ole lupaa suorittaa tätä toimintoa.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="3025388528294795783">Auta ratkaisemaan ongelma kertomalla, mikä on vialla:</translation>
 <translation id="7434397035092923453">Käyttöoikeus kiellettiin asiakkaalta <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Käytäntöasetukset eivät salli tämän tietokoneen jakamista Chromoting-isäntänä. Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="7312846573060934304">Isäntä on offline-tilassa.</translation>

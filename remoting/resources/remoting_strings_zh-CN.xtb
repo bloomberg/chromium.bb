@@ -7,9 +7,11 @@
 <translation id="2676780859508944670">运行中…</translation>
 <translation id="6062854958530969723">主机初始化失败。</translation>
 <translation id="5843054235973879827">此操作为什么是安全的？</translation>
+<translation id="5895138241574237353">重新启动</translation>
 <translation id="5619148062500147964">指向此计算机</translation>
 <translation id="4068946408131579958">所有连接</translation>
 <translation id="2208514473086078157">策略设置不允许以 Chrome 远程桌面主机的形式共享此计算机。请与您的系统管理员联系寻求帮助。</translation>
+<translation id="6381670701864002291">其他。</translation>
 <translation id="6541219117979389420">应用日志可能包含私人信息，其中包括您的身份信息（电子邮件地址）以及 Google 云端硬盘中的文件和文件夹的名称及属性。</translation>
 <translation id="3931191050278863510">主机已停止运行。</translation>
 <translation id="3905196214175737742">主机所有者所在网域无效。</translation>
@@ -52,6 +54,7 @@
 <translation id="3606997049964069799">您尚未登录 Chromium。请登录，然后重试。</translation>
 <translation id="6198252989419008588">更改 PIN</translation>
 <translation id="7970576581263377361">身份验证失败。请重新登录 Chromium。</translation>
+<translation id="477305884757156764">此应用的运行速度太慢。</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">无法注册此计算机。</translation>
 <translation id="4804818685124855865">断开连接</translation>
@@ -69,6 +72,7 @@
 <translation id="2314101195544969792">您的<ph name="APPLICATION_NAME"/>会话已经有一段时间没有活动了，连接即将断开。</translation>
 <translation id="6001953797859482435">Chrome 远程桌面主机偏好设置</translation>
 <translation id="225614027745146050">欢迎</translation>
+<translation id="1770394049404108959">我无法打开此应用。</translation>
 <translation id="9188433529406846933">授权</translation>
 <translation id="228809120910082333">请在下方确认您的帐户和 PIN，以便允许通过 Chrome 远程访问进行访问。</translation>
 <translation id="7605995381616883502">新连接</translation>
@@ -99,6 +103,7 @@
 <translation id="3884839335308961732">请在下方确认您的帐户和 PIN，以便允许通过 Chrome 远程桌面进行访问。</translation>
 <translation id="327263477022142889">愿意帮忙改进 Chrome 远程桌面吗？<ph name="LINK_BEGIN"/>请参与调查<ph name="LINK_END"/>。</translation>
 <translation id="6612717000975622067">发送Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">我无法打开自己在 Google 云端硬盘中的文件。</translation>
 <translation id="5702987232842159181">已连接：</translation>
 <translation id="8509907436388546015">桌面集成进程</translation>
 <translation id="4736223761657662401">连接历史记录</translation>
@@ -190,10 +195,12 @@
 <translation id="2078880767960296260">主机进程</translation>
 <translation id="1643640058022401035">如果您离开此页，那么您的 Chrome 远程访问会话就会结束。</translation>
 <translation id="8261506727792406068">删除</translation>
+<translation id="1152528166145813711">请选择…</translation>
 <translation id="2235518894410572517">共享此计算机以供其他用户查看和控制。</translation>
 <translation id="6939719207673461467">显示/隐藏键盘。</translation>
 <translation id="1023096696228309145">如果您想要访问某台计算机，请让该计算机的用户点击“立即共享”，然后告诉您访问代码。</translation>
 <translation id="4240294130679914010">Chrome 远程访问主机卸载程序</translation>
+<translation id="8712909229180978490">我无法在 Google 云端硬盘中在线查看自己保存的文件。</translation>
 <translation id="80739703311984697">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
 <translation id="4006787130661126000">如果您想使用 Chrome 远程桌面来访问此计算机，就必须启用远程连接。</translation>
 <translation id="177096447311351977">客户端信道 IP：<ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'。</translation>
@@ -243,6 +250,7 @@
 <translation id="6011539954251327702">Chrome 远程访问可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程访问应用（下载地址为 <ph name="URL"/>）。</translation>
 <translation id="2919669478609886916">您目前正在与其他用户共享此计算机。您希望继续共享吗？</translation>
 <translation id="4207623512727273241">请先运行该安装程序，再继续操作。</translation>
+<translation id="492843737083352574">我的键盘或鼠标无法正常使用。</translation>
 <translation id="1324095856329524885">（您的计算机尚不支持该功能）</translation>
 <translation id="6570205395680337606">重置该应用。所有未保存的工作都将会丢失。</translation>
 <translation id="6284412385303060032">在控制台逻辑屏幕运行的主机已关闭。这是为了切换到在用户特定会话中运行的主机，以便为 Curtain 模式提供支持。</translation>
@@ -260,6 +268,7 @@
 <translation id="1546934824884762070">发生意外错误。请将此问题报告给开发者。</translation>
 <translation id="4795786176190567663">您无权执行该操作。</translation>
 <translation id="6965382102122355670">确定</translation>
+<translation id="3025388528294795783">请将您遇到的问题告诉我们，以便我们为您解决：</translation>
 <translation id="7434397035092923453"><ph name="CLIENT_USERNAME"/> 访问客户端的请求遭拒。</translation>
 <translation id="3403830762023901068">策略设置不允许以 Chrome 远程访问主机的形式共享此计算机。请与您的系统管理员联系寻求帮助。</translation>
 <translation id="7312846573060934304">主机未连接到网络。</translation>

@@ -70,6 +70,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="7098166902387133879">Google Chrome používá váš mikrofon.</translation>
 <translation id="2596415276201385844">Aby bylo možné navázat zabezpečené spojení, hodiny musejí být nastaveny správně. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro pevně daná období. Jelikož hodiny v zařízení nejsou nastaveny správně, prohlížeč Chrome tyto certifikáty nemůže ověřit.</translation>
 <translation id="4053720452172726777">Přizpůsobit a ovládat Google Chrome</translation>
+<translation id="5148419164691878332">Prohlížeč Chrome toto heslo uloží mezi <ph name="SAVED_PASSWORDS_LINK"/> a zapamatuje si jej pro příští použití.</translation>
 <translation id="3197823471738295152">Zařízení bylo aktualizováno.</translation>
 <translation id="8286862437124483331">Aplikace Google Chrome se pokouší zobrazit hesla. Tato akce vyžaduje zadání hesla systému Windows.</translation>
 <translation id="3889417619312448367">Odinstalovat Google Chrome</translation>
@@ -81,6 +82,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3282568296779691940">Přihlášení do Chrome</translation>
 <translation id="3089968997497233615">K dispozici je nová, bezpečnější verze prohlížeče Google Chrome.</translation>
 <translation id="5037239767309817516">Aby se změna projevila, zavřete prosím všechna okna aplikace Google Chrome a spusťte ji znovu.</translation>
+<translation id="1619887657840448962">Aby byl prohlížeč Chrome bezpečnější, deaktivovali jsme následující rozšíření, které není uvedeno na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> a mohlo být přidáno bez vašeho vědomí.</translation>
 <translation id="225614027745146050">Vítejte</translation>
 <translation id="3398288718845740432">Skrýt v nabídce Chrome</translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
@@ -110,6 +112,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 
 Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu, nebo používejte novější verzi aplikace Chrome.</translation>
 <translation id="7282192067747128786">Chrome – oznámení (nepřečtené: <ph name="QUANTITY"/>)</translation>
+<translation id="1475773083554142432">Prohlížeč Chrome toto heslo uloží mezi <ph name="SAVED_PASSWORD_LINK"/> a zapamatuje si jej pro příští použití.</translation>
 <translation id="6011049234605203654">Přejděte do
           nabídky Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -142,6 +145,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="5855036575689098185">Software spuštěný v počítači není kompatibilní s prohlížečem Google Chrome.</translation>
 <translation id="7164397146364144019">Automatickým hlášením podrobností o možných bezpečnostních incidentech do Googlu můžete pomoci zrychlit prohlížeč Chrome a usnadnit jeho používání.</translation>
 <translation id="8008534537613507642">Přeinstalovat Chrome</translation>
+<translation id="2689103672227170538">Toto rozšíření změnilo stránku, která se zobrazí při spuštění prohlížeče Chrome.</translation>
 <translation id="8862326446509486874">Nemáte práva nutná k provádění instalací na úrovni systému. Zkuste spustit instalační program jako správce.</translation>
 <translation id="2874156562296220396">Google Chrome staví na projektu s otevřeným zdrojovým kódem <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> a využívá i další <ph name="BEGIN_LINK_OSS"/>otevřený software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="7191567847629796517">Chrome OS nepodporuje spouštění externích aplikací pro práci s odkazy typu <ph name="SCHEME"/>. Požadovaný odkaz je <ph name="PROTOLINK"/>.</translation>
@@ -169,6 +173,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="2665296953892887393">Pomozte aplikaci Google Chrome zlepšovat tím, že budete společnosti Google zasílat zprávy o selhání a <ph name="UMA_LINK"/>.</translation>
 <translation id="7761834446675418963">Chcete-li otevřít Chrome a začít procházet Internet, klikněte na svoje jméno.</translation>
 <translation id="2669824781555328029">Soubor <ph name="FILE_NAME"/> může narušit prohlížení internetu, Chrome jej proto zablokoval.</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Momentálně probíhá stahování. Chcete stahování zrušit a ukončit prohlížeč Google Chrome?}few{Momentálně probíhají # stahování. Chcete stahování zrušit a ukončit prohlížeč Google Chrome?}many{Momentálně probíhá # stahování. Chcete stahování zrušit a ukončit prohlížeč Google Chrome?}other{Momentálně probíhá # stahování. Chcete stahování zrušit a ukončit prohlížeč Google Chrome?}}</translation>
 <translation id="6235018212288296708">Pravidlo příchozího provozu pro aplikaci Google Chrome, které povolí provoz mDNS.</translation>
 <translation id="7984945080620862648">Web <ph name="SITE"/> nyní nemůžete navštívit, protože webové stránky odeslaly zakódované identifikační údaje, které Chrome nedokáže zpracovat. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -237,6 +242,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome je zastaralý</translation>
 <translation id="7592736734348559088">Google Chrome vaše data nemohl synchronizovat, protože vaše přihlašovací údaje nejsou aktuální.</translation>
+<translation id="3735758079232443276">Rozšíření <ph name="EXTENSION_NAME"/> změnilo stránku, která se zobrazí při spuštění prohlížeče Chrome.</translation>
 <translation id="6991142834212251086">Propojit má data prohlížeče Chrome s tímto účtem</translation>
 <translation id="3451115285585441894">Přidává se do prohlížeče Chrome...</translation>
 <translation id="3047079729301751317">Odpojení uživatele <ph name="USERNAME"/> smaže také historii, záložky, nastavení a další data Chromu uložená v tomto zařízení. Data uložená ve vašem účtu Google nebudou vymazána a lze je spravovat na <ph name="GOOGLE_DASHBOARD_LINK"/>Hlavním panelu Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>

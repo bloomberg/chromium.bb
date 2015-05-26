@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Ukjent produkt, <ph name="PRODUCT_ID"/>, fra <ph name="VENDOR_NAME"/> (serienummer: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Administratoren for denne maskinen krever at <ph name="EXTENSION_NAME"/> har en minimumsversjon på <ph name="EXTENSION_VERSION"/>. Den kan ikke slås på før den er oppdatert til denne versjonen (eller høyere).</translation>
 <translation id="6075907793831890935">utveksle data med enheten <ph name="HOSTNAME"/>.</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Velg en USB-enhet}other{Velg USB-enheter}}</translation>
 <translation id="5971037678316050792">kontrollere statusen og tilkoblingen for Bluetooth-adapteren</translation>
 <translation id="677806580227005219">Mime-behandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">bruke informasjon om Bluetooth-enheter tilkoblet systemet ditt og oppdage Bluetooth-enheter i nærheten.</translation>
+<translation id="5699534389808783598">Velg HID-enheter
+      {NUM_DEVICE,plural, =1{Velg en HID-enhet}other{Velg HID-enheter}}</translation>
 <translation id="8749863574775030885">Les USB-enheter fra en ukjent leverandør</translation>
 <translation id="3115238746683532089">Ukjent produkt, <ph name="PRODUCT_ID"/>, fra leverandøren <ph name="VENDOR_ID"/> (serienummer: <ph name="SERIAL_NUMBER"/> )</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> fra <ph name="VENDOR_NAME"/></translation>

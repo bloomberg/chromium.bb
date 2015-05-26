@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Produto <ph name="PRODUCT_ID"/> desconhecido de <ph name="VENDOR_NAME"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">O administrador desta máquina requer que <ph name="EXTENSION_NAME"/> tenha, no mínimo, a versão <ph name="EXTENSION_VERSION"/> . Ele não pode ser ativado até que tenha sido atualizado para essa versão (ou superior).</translation>
 <translation id="6075907793831890935">Trocar dados com o dispositivo chamado <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Selecionar um dispositivo USB}one{Selecionar dispositivos USB}other{Selecionar dispositivos USB}}</translation>
 <translation id="5971037678316050792">Controlar estado e pareamento do adaptador Bluetooth</translation>
 <translation id="677806580227005219">Gerenciador Mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Acessar informações sobre dispositivos Bluetooth pareados com seu sistema e descobrir dispositivos Bluetooth nas proximidades.</translation>
+<translation id="5699534389808783598">Selecionar dispositivos de interface humana (HID, na sigla em inglês)
+      {NUM_DEVICE,plural, =1{Selecionar um dispositivo de interface humana (HID)}one{Selecionar dispositivos de interface humana (HID)}other{Selecionar dispositivos de interface humana (HID)}}</translation>
 <translation id="8749863574775030885">Acessar dispositivos USB de um fornecedor desconhecido</translation>
 <translation id="3115238746683532089">Produto <ph name="PRODUCT_ID"/> desconhecido do fornecedor <ph name="VENDOR_ID"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/></translation>

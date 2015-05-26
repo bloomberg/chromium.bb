@@ -64,6 +64,7 @@
 <translation id="7098166902387133879">Google Chrome がマイクを使用しています。</translation>
 <translation id="2596415276201385844">安全な接続を確立するには時計が正しく設定されている必要があります。この理由は、本物のウェブサイトであることを示すためにウェブサイトで使用される証明書には、有効期間（発効日時と失効日時）が設定されているためです。デバイスの時計が正しくないため、Chrome ではこれらの証明書を確認できません。</translation>
 <translation id="4053720452172726777">Google Chrome の設定</translation>
+<translation id="5148419164691878332">Chrome ではこのパスワードが <ph name="SAVED_PASSWORDS_LINK"/>に保存され、次回の入力時に使用されます。</translation>
 <translation id="3197823471738295152">お使いの端末は最新の状態です。</translation>
 <translation id="8286862437124483331">Google Chrome でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="3889417619312448367">Google Chrome をアンインストール</translation>
@@ -75,6 +76,7 @@
 <translation id="3282568296779691940">Chrome にログイン</translation>
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
 <translation id="5037239767309817516">この変更を反映するには、すべての Google Chrome ウィンドウを閉じてからもう一度起動してください。</translation>
+<translation id="1619887657840448962">Chrome をより安全にご利用いただくために、<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>で提供していない次の拡張機能を無効にしました。これは知らないうちに追加された可能性があります。</translation>
 <translation id="225614027745146050">ようこそ</translation>
 <translation id="3398288718845740432">Chrome メニューで非表示</translation>
 <translation id="7473891865547856676">スキップ</translation>
@@ -102,6 +104,7 @@
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロフィールは使用できません。一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
 <translation id="7282192067747128786">Chrome - お知らせ（<ph name="QUANTITY"/> 件未読）</translation>
+<translation id="1475773083554142432">Chrome ではこのパスワードが <ph name="SAVED_PASSWORD_LINK"/> で保存され、次回の入力時に使用されます。</translation>
 <translation id="6011049234605203654">このオプションを無効にするには:
           Chrome メニュー &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -143,6 +146,7 @@
 <translation id="5855036575689098185">お使いのパソコンで実行されているソフトウェアは Google Chrome に対応していません。</translation>
 <translation id="7164397146364144019">セキュリティに関する事象についての詳細を Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
+<translation id="2689103672227170538">この拡張機能により、Chrome の起動時に表示されるページが変更されました。</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
 <translation id="2874156562296220396">Google Chrome はオープンソース プロジェクト <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> やその他の<ph name="BEGIN_LINK_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_OSS"/>によって実現しました。</translation>
 <translation id="7191567847629796517">Google Chrome OS では、<ph name="SCHEME"/> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
@@ -170,6 +174,7 @@
 <translation id="2665296953892887393">障害レポートと<ph name="UMA_LINK"/>を Google に自動送信して Google Chrome の機能向上に役立てる</translation>
 <translation id="7761834446675418963">Chrome を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
 <translation id="2669824781555328029"><ph name="FILE_NAME"/> はブラウジング環境に害を及ぼす可能性があるため、Chrome によってブロックされました。</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{ダウンロードが現在進行中です。ダウンロードをキャンセルし、Google Chrome を終了しますか？}other{# 件のダウンロードが現在進行中です。ダウンロードをキャンセルし、Google Chrome を終了しますか？}}</translation>
 <translation id="6235018212288296708">mDNS トラフィックを許可する Google Chrome のインバウンド ルールです。</translation>
 <translation id="7984945080620862648"><ph name="SITE"/> から、Chrome で処理できないスクランブル化された認証情報が返されたため、現在このサイトにはアクセスできません。通常、ネットワーク エラーや不正な操作は一時的なものです。少し時間をおくと、またページにアクセスできるようになる可能性があります。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -238,6 +243,7 @@
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
+<translation id="3735758079232443276">拡張機能「<ph name="EXTENSION_NAME"/>」により、Chrome の起動時に表示されるページが変更されました。</translation>
 <translation id="6991142834212251086">Chrome データをこのアカウントにリンクする</translation>
 <translation id="3451115285585441894">Chrome に追加...</translation>
 <translation id="3047079729301751317"><ph name="USERNAME"/> の接続を解除すると、履歴、ブックマーク、設定、このデバイスに保存されたその他の Chrome データが消去されます。ただし、Google アカウントに保存されたデータは消去されず、引き続き <ph name="GOOGLE_DASHBOARD_LINK"/>Google ダッシュボード<ph name="END_GOOGLE_DASHBOARD_LINK"/>で管理できます。</translation>

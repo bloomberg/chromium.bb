@@ -16,9 +16,12 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME"/> tarafından sağlanan <ph name="PRODUCT_ID"/> ürün kimliğine sahip bilinmeyen ürün (seri numarası: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Bu makinenin yöneticisi, <ph name="EXTENSION_NAME"/> uzantısının en azından <ph name="EXTENSION_VERSION"/> sürümünde olmasını gerektiriyor. Bu sürüme (veya sonraki sürümlere) güncelleninceye kadar uzantı etkinleştirilemez.</translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> adlı cihazla veri alışverişi</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Bir USB cihazı seçin}other{USB cihazları seçin}}</translation>
 <translation id="5971037678316050792">Bluetooth adaptörü durumunu ve eşlemeyi kontrol etme</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Sisteminizle eşlenen Bluetooth cihazlarıyla ilgili bilgilere erişme ve yakındaki Bluetooth cihazlarını keşfetme.</translation>
+<translation id="5699534389808783598">HID cihazları seçin
+      {NUM_DEVICE,plural, =1{Bir HID cihazı seçin}other{HID cihazları seçin}}</translation>
 <translation id="8749863574775030885">Bilinmeyen bir tedarikçinin USB cihazlarına erişim</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> adlı satıcı firma tarafından sağlanan <ph name="PRODUCT_ID"/> ürün kimliğine sahip bilinmeyen ürün (seri numarası: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> adlı firmadan <ph name="PRODUCT_NAME"/></translation>

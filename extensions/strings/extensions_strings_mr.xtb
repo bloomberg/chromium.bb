@@ -16,9 +16,12 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME"/> कडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">या मशीनच्या प्रशासकाला <ph name="EXTENSION_NAME"/> कडे <ph name="EXTENSION_VERSION"/> ची किमान आवृत्ती असणे आवश्यक आहे. ही त्या आवृत्तीवर (किंवा उच्च) अद्यतनित करेपर्यंत हे सक्षम होऊ शकत नाही.</translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> नावाच्या डिव्हाइससह डेटा अदलाबदल करा</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{एक USB डिव्हाइस निवडा}one{USB डिव्हाइस निवडा}other{USB डिव्हाइसेस निवडा}}</translation>
 <translation id="5971037678316050792">Bluetooth अडाप्टर स्थिती आणि जोडणी नियंत्रित करा</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">आपल्या सिस्टीमशी जोडलेल्या Bluetooth डिव्हाइसविषयीच्या माहितीवर प्रवेश करा आणि जवळपासचे Bluetooth डिव्हाइसेस शोधा.</translation>
+<translation id="5699534389808783598">HID डिव्‍हाइसेस निवडा
+      {NUM_DEVICE,plural, =1{एक HID डिव्‍हाइस निवडा}one{HID डिव्हाइस निवडा}other{HID डिव्हाइसेस निवडा}}</translation>
 <translation id="8749863574775030885">अज्ञात विक्रेत्याकडील USB डिव्हाइसेसवर प्रवेश करा</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> विक्रेत्याकडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> कडील <ph name="PRODUCT_NAME"/></translation>

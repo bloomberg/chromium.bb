@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Produs necunoscut <ph name="PRODUCT_ID"/> de la <ph name="VENDOR_NAME"/> (numărul de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Administratorul acestui computer solicită ca versiunea minimă pentru <ph name="EXTENSION_NAME"/> să fie <ph name="EXTENSION_VERSION"/>. Extensia poate fi activată doar după actualizarea la acea versiune (sau una superioară).</translation>
 <translation id="6075907793831890935">Fă schimb de date cu dispozitivul numit <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Selectează dispozitivul USB}few{Selectează dispozitivele USB}other{Selectează dispozitivele USB}}</translation>
 <translation id="5971037678316050792">Controlează starea și conectarea adaptorului Bluetooth</translation>
 <translation id="677806580227005219">Handler MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Accesează informațiile despre dispozitivele Bluetooth conectate cu sistemul dvs. și descoperă dispozitivele Bluetooth din apropiere.</translation>
+<translation id="5699534389808783598">Selectează dispozitivele HID
+      {NUM_DEVICE,plural, =1{Selectează dispozitivul HID}few{Selectează dispozitivele HID}other{Selectează dispozitivele HID}}</translation>
 <translation id="8749863574775030885">Accesează dispozitive USB de la un producător necunoscut</translation>
 <translation id="3115238746683532089">Produs necunoscut <ph name="PRODUCT_ID"/> de la furnizorul <ph name="VENDOR_ID"/> (numărul de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> de la <ph name="VENDOR_NAME"/></translation>

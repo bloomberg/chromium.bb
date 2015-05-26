@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Onbekend product <ph name="PRODUCT_ID"/> van <ph name="VENDOR_NAME"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">De beheerder van dit apparaat vereist dat minimaal versie <ph name="EXTENSION_VERSION"/> van <ph name="EXTENSION_NAME"/> moet zijn geïnstalleerd. De extensie kan pas worden ingeschakeld nadat deze is geüpdatet naar die versie (of hoger).</translation>
 <translation id="6075907793831890935">Gegevens uitwisselen met het apparaat met de naam <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Een USB-apparaat selecteren}other{USB-apparaten selecteren}}</translation>
 <translation id="5971037678316050792">Status van Bluetooth-adapter en Bluetooth-koppeling beheren</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Toegang krijgen tot informatie over Bluetooth-apparaten die zijn gekoppeld met je systeem en Bluetooth-apparaten in de buurt detecteren.</translation>
+<translation id="5699534389808783598">HID-apparaten selecteren
+      {NUM_DEVICE,plural, =1{Een HID-apparaat selecteren}other{HID-apparaten selecteren}}</translation>
 <translation id="8749863574775030885">Toegang verkrijgen tot USB-apparaten van een onbekende leverancier</translation>
 <translation id="3115238746683532089">Onbekend product <ph name="PRODUCT_ID"/> van leverancier <ph name="VENDOR_ID"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> van <ph name="VENDOR_NAME"/></translation>

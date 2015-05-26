@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Sản phẩm không xác định <ph name="PRODUCT_ID"/> từ <ph name="VENDOR_NAME"/> (số sê-ri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Quản trị viên của máy này yêu cầu <ph name="EXTENSION_NAME"/> có phiên bản tối thiểu của <ph name="EXTENSION_VERSION"/>. Không thể kích hoạt phiên bản cho đến khi máy cập nhật lên phiên bản đó (hoặc phiên bản cao hơn).</translation>
 <translation id="6075907793831890935">Trao đổi dữ liệu với thiết bị có tên <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Chọn thiết bị USB}other{Chọn thiết bị USB}}</translation>
 <translation id="5971037678316050792">Kiểm soát ghép nối và trạng thái bộ đổi nguồn Bluetooth</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Truy cập thông tin về thiết bị Bluetooth được ghép nối với hệ thống của bạn và khám phá các thiết bị Bluetooth lân cận.</translation>
+<translation id="5699534389808783598">Chọn thiết bị HID
+      {NUM_DEVICE,plural, =1{Chọn thiết bị HID}other{Chọn thiết bị HID}}</translation>
 <translation id="8749863574775030885">Truy cập thiết bị USB từ nhà cung cấp không xác định</translation>
 <translation id="3115238746683532089">Sản phẩm không xác định <ph name="PRODUCT_ID"/> từ nhà cung cấp <ph name="VENDOR_ID"/> (số sê-ri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> từ <ph name="VENDOR_NAME"/></translation>

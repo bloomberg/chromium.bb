@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Produit inconnu <ph name="PRODUCT_ID"/> fourni par <ph name="VENDOR_NAME"/> (numéro de série : <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">L'administrateur de cette machine exige que <ph name="EXTENSION_NAME"/> dispose, au minimum, de la version <ph name="EXTENSION_VERSION"/>. L'activation sera impossible tant que la mise à jour vers cette version (ou une version ultérieure) n'aura pas été effectuée.</translation>
 <translation id="6075907793831890935">Échanger des données avec l'appareil suivant : &quot;<ph name="HOSTNAME"/>&quot;</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Sélectionner un appareil USB}one{Sélectionner un appareil USB}other{Sélectionner des appareils USB}}</translation>
 <translation id="5971037678316050792">Contrôler l'état et l'association de l'adaptateur Bluetooth</translation>
 <translation id="677806580227005219">Mimehandler : <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Accéder aux informations relatives aux appareils Bluetooth associés à votre système et détecter les appareils Bluetooth à proximité</translation>
+<translation id="5699534389808783598">Sélectionner des appareils HID
+      {NUM_DEVICE,plural, =1{Sélectionner un appareil HID}one{Sélectionner un appareil HID}other{Sélectionner des appareils HID}}</translation>
 <translation id="8749863574775030885">Accéder à des appareils USB d'un fournisseur inconnu</translation>
 <translation id="3115238746683532089">Produit inconnu <ph name="PRODUCT_ID"/> du fournisseur <ph name="VENDOR_ID"/> (numéro de série : <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/></translation>

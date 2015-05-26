@@ -64,6 +64,7 @@
 <translation id="7098166902387133879">Google Chrome आपके माइक्रोफ़ोन का उपयोग कर रहा है.</translation>
 <translation id="2596415276201385844">सुरक्षित कनेक्‍शन स्‍थापित करने के लिए, आपकी घड़ी को सही तरीके से सेट किए जाने की आवश्‍यकता है. ऐसा इसलिए क्‍योंकि वेबसाइटों द्वारा स्‍वयं की पहचान करने के लिए उपयोग किए जाने वाले प्रमाणपत्र केवल विशिष्‍ट समयावधियों के लिए ही मान्‍य होते हैं. चूंकि आपके डिवाइस की घड़ी गलत है, इसलिए Chrome इन प्रमाणपत्रों का सत्‍यापन नहीं कर सकता.</translation>
 <translation id="4053720452172726777">Google Chrome कस्टमाइज़ करें और नियंत्रित करें</translation>
+<translation id="5148419164691878332">Chrome इसे आपके <ph name="SAVED_PASSWORDS_LINK"/> में संग्रहीत कर लेगा और आपको अगली बार आवश्‍यकता होने पर इसे याद रखेगा.</translation>
 <translation id="3197823471738295152">आपका डिवाइस अद्यतित है.</translation>
 <translation id="8286862437124483331">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है. इसकी अनुमति देने के लिए अपना Windows पासवर्ड लिखें.</translation>
 <translation id="3889417619312448367">Google Chrome को विस्थापित करें</translation>
@@ -75,6 +76,7 @@
 <translation id="3282568296779691940">Chrome में प्रवेश करें</translation>
 <translation id="3089968997497233615">Google Chrome का एक नया, सुरक्षित वर्शन उपलब्‍ध है.</translation>
 <translation id="5037239767309817516">यह परिवर्तन लागू करने के लिए कृपया सभी Google Chrome विंडो बंद करें और इसे पुन: लॉन्‍च करें.</translation>
+<translation id="1619887657840448962">Chrome को अधिक सुरक्षित बनाने के लिए, हमने निम्न एक्सटेंशन को अक्षम कर दिया है जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> में सूचीबद्ध नहीं है और आपकी जानकारी के बिना जोड़ा गया हो सकता है.</translation>
 <translation id="225614027745146050">आपका स्वागत है</translation>
 <translation id="3398288718845740432">Chrome मेनू में छिपाएं</translation>
 <translation id="7473891865547856676">जी रहने दें</translation>
@@ -105,6 +107,7 @@
 
 कुछ विशेषताएं अनुपलब्‍ध हो सकती हैं. कृपया कोई भिन्‍न प्रोफ़ाइल निर्देशिका निर्दिष्ट करें या Chrome के किसी नए वर्शन का उपयोग करें.</translation>
 <translation id="7282192067747128786">Chrome - सूचनाएं (<ph name="QUANTITY"/> अपठित)</translation>
+<translation id="1475773083554142432">Chrome इसे <ph name="SAVED_PASSWORD_LINK"/> के साथ संग्रहीत कर लेगा और आपको अगली बार आवश्‍यकता होने पर इसे याद रखेगा.</translation>
 <translation id="6011049234605203654">यहां
           Chrome मेनू &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -147,6 +150,7 @@
 <translation id="5855036575689098185">आपके कंप्यूटर पर चल रहा सॉफ़्टवेयर Google Chrome के साथ असंगत है.</translation>
 <translation id="7164397146364144019">आप Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करके Chrome को अधिक सुरक्षित और आसान बनाने में सहायता कर सकते हैं.</translation>
 <translation id="8008534537613507642">Chrome फिर से इंस्टॉल करें</translation>
+<translation id="2689103672227170538">इस एक्सटेंशन ने यह बदल दिया है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="8862326446509486874">सिस्टम-स्तर स्थापना के लिए आपके पास उचित अधिकार नहीं हैं. इंस्टॉलर को व्यवस्थापक के रूप में फिर से चलाने का प्रयास करें.</translation>
 <translation id="2874156562296220396">Google Chrome को <ph name="BEGIN_LINK_CHROMIUM"/>क्रोमियम<ph name="END_LINK_CHROMIUM"/> ओपन सोर्स प्रोजेक्ट और अन्य <ph name="BEGIN_LINK_OSS"/>ओपन सोर्स सॉफ्टवेयर<ph name="END_LINK_OSS"/> ने संभव बनाया है.</translation>
 <translation id="7191567847629796517">Google Chrome OS <ph name="SCHEME"/> लिंक प्रबंधित करने के लिए बाहरी ऐप्‍लिकेशन लॉन्‍च करने का समर्थन नहीं करता. अनुरोधित लिंक <ph name="PROTOLINK"/> है.</translation>
@@ -174,6 +178,7 @@
 <translation id="2665296953892887393">Google को क्रैश रिपोर्ट और <ph name="UMA_LINK"/> भेजकर Google Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="7761834446675418963">Chrome को खोलने और ब्राउज़ करना प्रारंभ करने के लिए अपना नाम क्लिक करें.</translation>
 <translation id="2669824781555328029"><ph name="FILE_NAME"/> आपके ब्राउज़िंग अनुभव को क्षति पहुंचा सकती है, इसलिए Chrome ने उसे अवरुद्ध कर दिया है.</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{डाउनलोड वर्तमान में चल रहा है. क्या आप डाउनलोड को रोकना और Google Chrome से बाहर निकलना चाहते हैं?}one{# डाउनलोड वर्तमान में चल रहे हैं. क्या आप डाउनलोड को रोकना और Google Chrome से बाहर निकलना चाहते हैं?}other{# डाउनलोड वर्तमान में चल रहे हैं. क्या आप डाउनलोड को रोकना और Google Chrome से बाहर निकलना चाहते हैं?}}</translation>
 <translation id="6235018212288296708">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome के लिए इनबाउंड नियम.</translation>
 <translation id="7984945080620862648">आप इस समय <ph name="SITE"/> पर विज़िट नहीं कर सकते हैं क्योंकि वेबसाइट ने ऐसे अव्यवस्थित प्रमाणिकता भेजे हैं जिन्हें Chrome संसाधित नहीं कर सकता. नेटवर्क की त्रुटियां और हमले आमतौर पर अस्थायी होते हैं, इसलिए संभवत: यह पृष्ठ बाद में काम करेगा.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -242,6 +247,7 @@
 <translation id="3360895254066713204">Chrome सहायक</translation>
 <translation id="1877026089748256423">Chrome पुराना हो गया है</translation>
 <translation id="7592736734348559088">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका क्‍योंकि आपके खाते के प्रवेश विवरण पुराने हैं.</translation>
+<translation id="3735758079232443276">एक्सटेंशन &quot;<ph name="EXTENSION_NAME"/>&quot; ने यह बदल दिया है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="6991142834212251086">मेरे Chrome डेटा को इस खाते से लिंक करें</translation>
 <translation id="3451115285585441894">Chrome में जोड़ा जा रहा है...</translation>
 <translation id="3047079729301751317"><ph name="USERNAME"/> को डिस्कनेक्ट करने से आपका इतिहास, बुकमार्क, सेटिंग, और इस डिवाइस पर संग्रहीत अन्य Chrome डेटा साफ़ हो जाएगा. आपके Google खाते में संग्रहीत डेटा साफ़ नहीं होगा और उसे <ph name="GOOGLE_DASHBOARD_LINK"/>Google डैशबोर्ड<ph name="END_GOOGLE_DASHBOARD_LINK"/> पर प्रबंधित किया जा सकता है.</translation>

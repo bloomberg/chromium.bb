@@ -7,9 +7,11 @@ Chromoting</translation>
 <translation id="2676780859508944670">עובד…</translation>
 <translation id="6062854958530969723">אתחול המארח נכשל.</translation>
 <translation id="5843054235973879827">מדוע פעולה זו בטוחה?</translation>
+<translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5619148062500147964">למחשב זה</translation>
 <translation id="4068946408131579958">כל החיבורים</translation>
 <translation id="2208514473086078157">‏הגדרות המדיניות אינן מאפשרות שיתוף של מחשב זה כמארח שולחן עבודה מרוחק של Chrome. פנה למנהל המערכת שלך לקבלת סיוע.</translation>
+<translation id="6381670701864002291">משהו אחר.</translation>
 <translation id="6541219117979389420">‏יומני יישומים עשויים לכלול פרטים אישיים, כולל הזהות שלך (כתובת אימייל) וגם השמות והתכונות של קבצים ותיקיות ב-Google Drive.</translation>
 <translation id="3931191050278863510">המארח הופסק.</translation>
 <translation id="3905196214175737742">דומיין לא חוקי של בעל המארח.</translation>
@@ -52,6 +54,7 @@ Chromoting</translation>
 <translation id="3606997049964069799">‏אתה לא מחובר ל-Chromium. היכנס ונסה שוב.</translation>
 <translation id="6198252989419008588">‏שנה PIN</translation>
 <translation id="7970576581263377361">‏האימות נכשל. היכנס שוב ל-Chromium.</translation>
+<translation id="477305884757156764">היישום איטי מדי.</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">הרישום של מחשב זה נכשל.</translation>
 <translation id="4804818685124855865">נתק</translation>
@@ -69,6 +72,7 @@ Chromoting</translation>
 <translation id="2314101195544969792">לא הייתה פעילות ב-<ph name="APPLICATION_NAME"/> במשך זמן-מה. אתה תנותק בקרוב.</translation>
 <translation id="6001953797859482435">‏העדפות מארח שולחן העבודה המרוחק של Chrome</translation>
 <translation id="225614027745146050">ברוכים הבאים</translation>
+<translation id="1770394049404108959">איני יכול לפתוח את היישום.</translation>
 <translation id="9188433529406846933">מתן הרשאה</translation>
 <translation id="228809120910082333">‏אשר את החשבון ומספר ה-PIN שלך שמפורטים למטה, כדי לאפשר גישה באמצעות Chromoting.</translation>
 <translation id="7605995381616883502">חיבור חדש</translation>
@@ -99,6 +103,7 @@ Chromoting</translation>
 <translation id="3884839335308961732">‏אשר את החשבון ומספר ה-PIN שלך שמפורטים למטה כדי לאפשר גישה באמצעות שולחן העבודה המרוחק של Chrome.</translation>
 <translation id="327263477022142889">‏רוצה לעזור לשפר את שולחן העבודה המרוחק של Chrome‏? <ph name="LINK_BEGIN"/>השב על הסקר.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">‏שלח Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">‏איני יכול לפתוח את הקבצים שלי ב-Google Drive.</translation>
 <translation id="5702987232842159181">מחובר:</translation>
 <translation id="8509907436388546015">תהליך השילוב של שולחנות עבודה</translation>
 <translation id="4736223761657662401">היסטוריית חיבורים</translation>
@@ -190,10 +195,12 @@ Chromoting</translation>
 <translation id="2078880767960296260">תהליך מארח</translation>
 <translation id="1643640058022401035">‏יציאה מדף זה תגרום לסיום ההפעלה של Chromoting.</translation>
 <translation id="8261506727792406068">מחק</translation>
+<translation id="1152528166145813711">בחר...</translation>
 <translation id="2235518894410572517">שתף מחשב זה ואפשר למשתמש אחר להציג את התוכן שלו ולשלוט בו.</translation>
 <translation id="6939719207673461467">הצג/הסתר מקלדת.</translation>
 <translation id="1023096696228309145">בקש מהמשתמש שברצונך לגשת אל המחשב שלו שילחץ על 'שתף עכשיו' וייתן לך את קוד הגישה.</translation>
 <translation id="4240294130679914010">‏מסיר ההתקנה של מארח Chromoting</translation>
+<translation id="8712909229180978490">‏איני יכול לראות את הקבצים השמורים שלי ב-Google Drive באינטרנט.</translation>
 <translation id="80739703311984697">‏המארח המרוחק דורש שתבצע אימות מול אתר של צד שלישי. כדי להמשיך, עליך להעניק ל-Chromoting הרשאות נוספות כדי לגשת לכתובת זו:</translation>
 <translation id="4006787130661126000">‏אם ברצונך להשתמש ב'שולחן עבודה מרוחק של Chrome' כדי לגשת למחשב זה, עליך להפעיל חיבורים מרוחקים.</translation>
 <translation id="177096447311351977">‏IP הערוץ של הלקוח: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' ערוץ='<ph name="CHANNEL_TYPE"/>' חיבור='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ Chromoting</translation>
 <translation id="6011539954251327702">‏Chromoting מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום Chromoting, שניתן למצוא בכתובת <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">אתה משתף כעת את המחשב הזה עם משתמש אחר. האם ברצונך להמשיך את השיתוף?</translation>
 <translation id="4207623512727273241">הפעל את המתקין לפני שתמשיך.</translation>
+<translation id="492843737083352574">נתקלתי בקשיים עם המקלדת או העכבר.</translation>
 <translation id="1324095856329524885">(התכונה הזו אינה זמינה עדיין בשביל המחשב שלך)</translation>
 <translation id="6570205395680337606">אפס את היישום. תאבד עבודות שלא נשמרו.</translation>
 <translation id="6284412385303060032">המארח הפועל במסך הכניסה למסוף כבה כדי לתמוך במצב הסתרה על ידי מעבר אל מארח הרץ בפעילות באתר שהיא ספציפית למשתמש.</translation>
@@ -260,6 +268,7 @@ Chromoting</translation>
 <translation id="1546934824884762070">אירעה שגיאה לא צפויה. דווח על בעיה זו למפתחים.</translation>
 <translation id="4795786176190567663">אין לך הרשאה לביצוע הפעולה.</translation>
 <translation id="6965382102122355670">אישור</translation>
+<translation id="3025388528294795783">כדי לעזור לנו לפתור את הבעיה שבה נתקלת, ספר לנו מה קרה:</translation>
 <translation id="7434397035092923453">נדחתה גישה עבור לקוח: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">‏הגדרות המדיניות אינן מאפשרות שיתוף של מחשב זה כמארח Chromoting. פנה למנהל המערכת שלך לקבלת סיוע.</translation>
 <translation id="7312846573060934304">המארח אינו מקוון.</translation>

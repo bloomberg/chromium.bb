@@ -64,6 +64,7 @@
 <translation id="7098166902387133879">Google Chrome bruger din mikrofon.</translation>
 <translation id="2596415276201385844">For at kunne oprette en sikker forbindelse skal dit ur skal være indstillet korrekt. Det er vigtigt, da de certifikater, som websites bruger til at identificere sig selv, kun er gyldige i bestemte tidsperioder. Da uret på din enhed går forkert, kan Chrome ikke bekræfte disse certifikater.</translation>
 <translation id="4053720452172726777">Tilpas og kontrollér Google Chrome</translation>
+<translation id="5148419164691878332">Chrome gemmer denne i <ph name="SAVED_PASSWORDS_LINK"/> og husker den, næste gang du skal bruge den.</translation>
 <translation id="3197823471738295152">Din enhed er opdateret.</translation>
 <translation id="8286862437124483331">Google Chrome forsøger at vise adgangskoder. Indtast din Windows-adgangskode for at tillade dette.</translation>
 <translation id="3889417619312448367">Afinstaller Google Chrome</translation>
@@ -75,6 +76,7 @@
 <translation id="3282568296779691940">Log ind på Chrome</translation>
 <translation id="3089968997497233615">Der findes en ny, sikker version af Google Chrome.</translation>
 <translation id="5037239767309817516">Luk alle vinduer i Google Chrome, og genstart, så denne ændring kan træde i kraft.</translation>
+<translation id="1619887657840448962">For at gøre Chrome mere sikker har vi deaktiveret følgende udvidelse, som ikke er anført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> og muligvis er blevet tilføjet, uden at du vidste det.</translation>
 <translation id="225614027745146050">Velkommen</translation>
 <translation id="3398288718845740432">Skjul i Chrome-menuen</translation>
 <translation id="7473891865547856676">Nej tak</translation>
@@ -102,6 +104,7 @@
 <translation id="7747138024166251722">Installationsprogrammet kunne ikke oprette en midlertidig mappe. Kontroller, om der er tilstrækkelig diskplads, og om der er tilladelse til at installere software.</translation>
 <translation id="5170938038195470297">Din profil kan ikke bruges, fordi den stammer fra en nyere version af Google Chrome. Nogle funktioner er muligvis ikke tilgængelige. Angiv en anden profilmappe, eller brug en nyere version af Chrome.</translation>
 <translation id="7282192067747128786">Chrome – Underretninger (<ph name="QUANTITY"/> ulæste)</translation>
+<translation id="1475773083554142432">Chrome gemmer denne med <ph name="SAVED_PASSWORD_LINK"/> og husker den, næste gang du skal bruge den.</translation>
 <translation id="6011049234605203654">Gå til
           Chrome-menuen &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -144,6 +147,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="5855036575689098185">Du har software på din computer, som ikke er kompatibel med Google Chrome.</translation>
 <translation id="7164397146364144019">Du kan hjælpe med at gøre Chrome sikrere og nemmere at bruge ved automatisk at rapportere oplysninger om mulige sikkerhedsproblemer til Google.</translation>
 <translation id="8008534537613507642">Geninstaller Chrome</translation>
+<translation id="2689103672227170538">Denne udvidelse har ændret din startside i Chrome.</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettigheder til en installation på systemniveau. Prøv at køre installationsprogrammet igen som administrator.</translation>
 <translation id="2874156562296220396">Google Chrome er blevet en realitet på grund af <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> open source-projektet og anden <ph name="BEGIN_LINK_OSS"/>open source-software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="7191567847629796517">Google Chrome OS understøtter ikke aktivering af eksterne applikationer, som håndterer <ph name="SCHEME"/>-links. Det anmodede link er <ph name="PROTOLINK"/>.</translation>
@@ -171,6 +175,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="2665296953892887393">Hjælp med at gøre Google Chrome bedre ved at sende fejlrapporter og <ph name="UMA_LINK"/> til Google</translation>
 <translation id="7761834446675418963">Klik på dit navn for at åbne Chrome og gå i gang med at browse.</translation>
 <translation id="2669824781555328029"><ph name="FILE_NAME"/> kan skade din weboplevelse, så Chrome har blokeret det.</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Der er et download i gang i øjeblikket. Vil du at annullere dit download og lukke Google Chrome?}one{Der er # downloads i gang i øjeblikket. Vil du at annullere dine downloads og lukke Google Chrome?}other{Der er # downloads i gang i øjeblikket. Vil du at annullere dine downloads og lukke Google Chrome?}}</translation>
 <translation id="6235018212288296708">Indgående regel for Google Chrome om at tillade mDNS-trafik.</translation>
 <translation id="7984945080620862648">Du kan ikke gå til <ph name="SITE"/> lige nu, da websitet sendte krypterede legitimationsoplysninger, som Chrome ikke kan håndtere. Netværksfejl og angreb er normalt midlertidige, så denne side vil sandsynligvis fungere senere.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -239,6 +244,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="3360895254066713204">Hjælp til Chrome</translation>
 <translation id="1877026089748256423">Chrome er forældet</translation>
 <translation id="7592736734348559088">Google Chrome kunne ikke synkronisere dine data, fordi loginoplysningerne til din konto er forældede.</translation>
+<translation id="3735758079232443276">Udvidelsen &quot;<ph name="EXTENSION_NAME"/>&quot; har ændret din startside i Chrome.</translation>
 <translation id="6991142834212251086">Knyt mine Chrome-data til denne konto</translation>
 <translation id="3451115285585441894">Føjer til Chrome...</translation>
 <translation id="3047079729301751317">Hvis du afbryder forbindelsen for <ph name="USERNAME"/>, slettes din historik, dine bogmærker, dine indstillinger og andre Chrome-data, der er gemt på denne enhed. Data, der er gemt på din Google-konto, slettes ikke og kan administreres i <ph name="GOOGLE_DASHBOARD_LINK"/>Google Betjeningspanel<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>

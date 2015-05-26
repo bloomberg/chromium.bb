@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Άγνωστο προϊόν <ph name="PRODUCT_ID"/> από <ph name="VENDOR_NAME"/> (σειριακός αριθμός <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Ο διαχειριστής αυτού του μηχανήματος απαιτεί από το <ph name="EXTENSION_NAME"/> να διαθέτει τουλάχιστον την έκδοση <ph name="EXTENSION_VERSION"/>. Δεν μπορεί να ενεργοποιηθεί έως ότου ενημερωθεί σε αυτήν την έκδοση (ή σε μεταγενέστερη).</translation>
 <translation id="6075907793831890935">Ανταλλαγή δεδομένων με τη συσκευή με την ονομασία <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Επιλέξτε μία συσκευή USB}other{Επιλέξτε συσκευές USB}}</translation>
 <translation id="5971037678316050792">Έλεγχος κατάστασης προσαρμογέα Bluetooth και σύζευξη</translation>
 <translation id="677806580227005219">Χειρισμός mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Πρόσβαση σε πληροφορίες σχετικά με τις συσκευές Bluetooth που βρίσκονται σε ζεύξη με το σύστημά σας και εντοπισμός κοντινών συσκευών Bluetooth.</translation>
+<translation id="5699534389808783598">Επιλέξτε συσκευές HID
+      {NUM_DEVICE,plural, =1{Επιλέξτε μία συσκευή HID}other{Επιλέξτε συσκευές HID}}</translation>
 <translation id="8749863574775030885">Πρόσβαση σε συσκευές USB από έναν άγνωστο προμηθευτή</translation>
 <translation id="3115238746683532089">Άγνωστο προϊόν <ph name="PRODUCT_ID"/> από τον προμηθευτή <ph name="VENDOR_ID"/> (σειριακός αριθμός <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> της <ph name="VENDOR_NAME"/></translation>

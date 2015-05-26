@@ -91,7 +91,7 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="2060102051813087825">Sie werden mit gespeicherten Anmeldedaten automatisch auf Websites angemeldet. Wenn die Funktion deaktiviert ist, werden Sie jedes Mal aufgefordert, sich manuell auf einer Website anzumelden.</translation>
 <translation id="2498359688066513246">Hilfe und Feedback</translation>
 <translation id="1091134514807961917">Sie sind im folgenden Google-Konto angemeldet.</translation>
-<translation id="7019652137705190998">Im Inkognito-Modus privat surfen oder vorübergehend anmelden</translation>
+<translation id="7019652137705190998">Im Inkognitomodus privat surfen oder vorübergehend anmelden</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, Web-App. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Datei ersetzen</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
@@ -162,7 +162,7 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="5380554235172449987">Nie senden</translation>
 <translation id="5715468759630044318">Konto auswählen</translation>
 <translation id="5000922062037820727">Blockiert (empfohlen)</translation>
-<translation id="544291274896356069">Der Inkognito-Modus wird beendet, wenn dieser Link in einer externen App geöffnet wird. Vorgang fortsetzen?</translation>
+<translation id="544291274896356069">Der Inkognitomodus wird beendet, wenn dieser Link in einer externen App geöffnet wird. Vorgang fortsetzen?</translation>
 <translation id="3917783807003067648">Standort blockiert</translation>
 <translation id="1379156015317873965">Seiten schneller laden</translation>
 <translation id="8481940801237642152">Ihre Verbindung zu dieser Website ist privat, möglicherweise ist jedoch jemand im Netzwerk in der Lage, das Aussehen der Seite zu ändern.</translation>
@@ -216,7 +216,7 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="3489120686474540259">Fügen Sie ein Konto hinzu, um Ihre Tabs, Lesezeichen, Ihren Verlauf und andere Einstellungen auf allen Ihren Geräten abzurufen.</translation>
 <translation id="4278390842282768270">Zugelassen</translation>
 <translation id="4686372254213217147">Originalgröße</translation>
-<translation id="4526792582053123229">Über HTTPS oder den Inkognito-Modus aufgerufene Seiten werden von Google nicht optimiert oder protokolliert.</translation>
+<translation id="4526792582053123229">Über HTTPS oder den Inkognitomodus aufgerufene Seiten werden von Google nicht optimiert oder protokolliert.</translation>
 <translation id="7626032353295482388">Willkommen bei Chrome</translation>
 <translation id="7817177303494746697">Blink-Version</translation>
 <translation id="2532336938189706096">Web-Ansicht</translation>

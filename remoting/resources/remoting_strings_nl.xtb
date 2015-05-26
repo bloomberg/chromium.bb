@@ -7,9 +7,11 @@ host</translation>
 <translation id="2676780859508944670">Bezig…</translation>
 <translation id="6062854958530969723">Initialisatie van host mislukt.</translation>
 <translation id="5843054235973879827">Waarom is dit veilig?</translation>
+<translation id="5895138241574237353">Opnieuw starten</translation>
 <translation id="5619148062500147964">Naar deze computer</translation>
 <translation id="4068946408131579958">Alle verbindingen</translation>
 <translation id="2208514473086078157">De beleidsinstellingen staan het delen van deze computer als host voor Chrome Remote Desktop niet toe. Neem contact op met je systeembeheerder voor hulp.</translation>
+<translation id="6381670701864002291">Iets anders.</translation>
 <translation id="6541219117979389420">App-logboeken bevatten mogelijk privégegevens, inclusief je identiteit (e-mailadres) en de namen en eigenschappen van bestanden en mappen in Google Drive.</translation>
 <translation id="3931191050278863510">Host is gestopt.</translation>
 <translation id="3905196214175737742">Ongeldig domein voor hosteigenaar.</translation>
@@ -52,6 +54,7 @@ host</translation>
 <translation id="3606997049964069799">Je bent niet ingelogd bij Chromium. Log in en probeer het opnieuw.</translation>
 <translation id="6198252989419008588">Pincode wijzigen</translation>
 <translation id="7970576581263377361">Verificatie mislukt. Log opnieuw in bij Chromium.</translation>
+<translation id="477305884757156764">De app is te langzaam.</translation>
 <translation id="6167788864044230298">Streaming via Chrome-app</translation>
 <translation id="170207782578677537">Kan deze computer niet registreren.</translation>
 <translation id="4804818685124855865">Verbinding verbreken</translation>
@@ -69,6 +72,7 @@ host</translation>
 <translation id="2314101195544969792">Je <ph name="APPLICATION_NAME"/>-sessie is al enige tijd inactief. Binnenkort wordt de verbinding verbroken.</translation>
 <translation id="6001953797859482435">Voorkeuren voor Chrome Remote Desktop-host</translation>
 <translation id="225614027745146050">Welkom</translation>
+<translation id="1770394049404108959">Ik kan de app niet openen.</translation>
 <translation id="9188433529406846933">Autoriseren</translation>
 <translation id="228809120910082333">Bevestig je account en pincode hieronder om toegang door Chromoting toe te staan.</translation>
 <translation id="7605995381616883502">Nieuwe verbinding</translation>
@@ -99,6 +103,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="3884839335308961732">Bevestig je account en pincode hieronder om toegang door Chrome Remote Desktop toe te staan.</translation>
 <translation id="327263477022142889">Wil je ons helpen Chrome Remote Desktop te verbeteren? <ph name="LINK_BEGIN"/>Vul de enquête in.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del verzenden</translation>
+<translation id="6173536234069435147">Ik kan mijn Google Drive-bestanden niet openen.</translation>
 <translation id="5702987232842159181">Verbonden:</translation>
 <translation id="8509907436388546015">Desktopintegratieproces</translation>
 <translation id="4736223761657662401">Verbindingsgeschiedenis</translation>
@@ -190,10 +195,12 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2078880767960296260">Hostproces</translation>
 <translation id="1643640058022401035">Als je deze pagina verlaat, wordt je Chromoting-sessie beëindigd.</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
+<translation id="1152528166145813711">Selecteren…</translation>
 <translation id="2235518894410572517">De computer delen zodat een andere gebruiker deze kan bekijken en beheren.</translation>
 <translation id="6939719207673461467">Toetsenbord weergeven/verbergen.</translation>
 <translation id="1023096696228309145">Vraag de gebruiker tot wiens computer je toegang wilt hebben, op 'Nu delen' te klikken en je de toegangscode te geven.</translation>
 <translation id="4240294130679914010">Verwijderprogramma voor Chromoting-host</translation>
+<translation id="8712909229180978490">Ik kan mijn opgeslagen bestanden niet online zien in Google Drive.</translation>
 <translation id="80739703311984697">De externe host vereist dat je op een website van derden wordt geverifieerd. Als je wilt doorgaan, moet je Chromoting aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="4006787130661126000">Je moet externe verbindingen inschakelen als je Chrome Remote Desktop wilt gebruiken voor toegang tot deze computer.</translation>
 <translation id="177096447311351977">Kanaal-IP voor client: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ Desktop-host</translation>
 <translation id="6011539954251327702">Met Chromoting kun je je computer veilig delen via internet. Beide gebruikers moeten de app Chromoting uitvoeren, die beschikbaar is op <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Je deelt deze computer momenteel met een andere gebruiker. Wil je doorgaan met delen?</translation>
 <translation id="4207623512727273241">Voer het installatieprogramma uit voordat je doorgaat.</translation>
+<translation id="492843737083352574">Ik ondervind problemen met mijn toetsenbord of muis.</translation>
 <translation id="1324095856329524885">(deze functie is nog niet beschikbaar voor je computer)</translation>
 <translation id="6570205395680337606">De app opnieuw instellen. Al je niet-opgeslagen werk gaat verloren.</translation>
 <translation id="6284412385303060032">De host die werd uitgevoerd op het console-inlogscherm, is uitgeschakeld om de gordijnmodus te ondersteunen door over te schakelen naar een host die in een gebruikersspecifieke sessie wordt uitgevoerd.</translation>
@@ -260,6 +268,7 @@ Desktop-host</translation>
 <translation id="1546934824884762070">Er is een onverwachte fout opgetreden. Meld dit probleem aan de ontwikkelaars.</translation>
 <translation id="4795786176190567663">Je hebt geen toestemming om die actie uit te voeren.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="3025388528294795783">Vertel ons wat er is misgegaan zodat we je probleem kunnen oplossen:</translation>
 <translation id="7434397035092923453">Toegang geweigerd voor client: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">De beleidsinstellingen staan het delen van deze computer als host voor Chromoting niet toe. Neem contact op met je systeembeheerder voor hulp.</translation>
 <translation id="7312846573060934304">Host is offline.</translation>

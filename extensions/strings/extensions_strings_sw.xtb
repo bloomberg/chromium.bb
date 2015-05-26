@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Bidhaa isiyojulikana <ph name="PRODUCT_ID"/> kutoka kwa <ph name="VENDOR_NAME"/> (nambari tambulishi <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Msimamizi wa mashine hii anahitaji <ph name="EXTENSION_NAME"/> ili kuwa na toleo la chini zaidi la <ph name="EXTENSION_VERSION"/>. Haiwezi kuwashwa mpaka isasishwe hadi toleo hilo (au juu zaidi).</translation>
 <translation id="6075907793831890935">Badilisha data kwa kifaa kiitwacho <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Chagua kifaa cha USB}other{Chagua vifaa vya USB}}</translation>
 <translation id="5971037678316050792">Dhibiti hali na uoanishaji wa adapta ya Bluetooth</translation>
 <translation id="677806580227005219">Kishikilio cha Mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Fikia maelezo kuhusu vifaa vya Bluetooth vilivyooanishwa na mfumo wako na ugundue vifaa vya karibu vya Bluetooth.</translation>
+<translation id="5699534389808783598">Chagua vifaa vya HID
+      {NUM_DEVICE,plural, =1{Chagua kifaa cha HID}other{Chagua vifaa vya HID}}</translation>
 <translation id="8749863574775030885">Fikia vifaa vya USB kutoka kwa mchuuzi asiyejulikana</translation>
 <translation id="3115238746683532089">Bidhaa isiyojulikana <ph name="PRODUCT_ID"/> kutoka kwa mchuuzi <ph name="VENDOR_ID"/> (nambari tambulishi <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> kutoka <ph name="VENDOR_NAME"/></translation>

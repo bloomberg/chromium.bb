@@ -64,6 +64,7 @@
 <translation id="7098166902387133879">‏Google Chrome درحال استفاده از میکروفون شما است.</translation>
 <translation id="2596415276201385844">‏به منظور برقراری یک اتصال امن، لازم است که ساعت شما به درستی تنظیم شود. زیرا گواهینامه‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند تنها برای دوره‌های زمانی خاصی معتبر هستند. از آنجا که ساعت دستگاه نادرست است، Chrome نمی‌تواند این گواهینامه‌ها را تأیید کند.</translation>
 <translation id="4053720452172726777">‏‫سفارشی کردن و کنترل Google Chrome</translation>
+<translation id="5148419164691878332">‏Chrome این مورد را در <ph name="SAVED_PASSWORDS_LINK"/> شما ذخیره می‌کند و دفعه بعد که به آن نیاز داشتید، آن را به خاطر دارد.</translation>
 <translation id="3197823471738295152">دستگاه شما به‌روزرسانی شده است.</translation>
 <translation id="8286862437124483331">‏Google Chrome در حال تلاش برای نشان دادن گذرواژه‌هاست. برای اجازه به این کار، گذرواژه Windows خود را تایپ کنید.</translation>
 <translation id="3889417619312448367">‏حذف نصب Google Chrome</translation>
@@ -75,6 +76,7 @@
 <translation id="3282568296779691940">‏ورود به Chrome</translation>
 <translation id="3089968997497233615">‏نسخه جدید و امن تری از Google Chrome موجود است.</translation>
 <translation id="5037239767309817516">‏لطفاً همه پنجره‌های Google Chrome را ببندید و برای اعمال این تغییر، دوباره آن را راه‌اندازی کنید.</translation>
+<translation id="1619887657840448962">‏برای ایمن‌تر کردن Chrome، افزونه زیر را که در <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> فهرست نشده است و ممکن است بدون اطلاع شما اضافه شده باشد، غیرفعال کردیم.</translation>
 <translation id="225614027745146050">خوش آمدید</translation>
 <translation id="3398288718845740432">‏پنهان در منوی Chrome</translation>
 <translation id="7473891865547856676">خیر سپاسگزارم</translation>
@@ -103,6 +105,7 @@
 <translation id="7747138024166251722">نصب کننده نتوانست دایرکتوری موقت ایجاد کند. لطفاً فضای خالی دیسک و اجازه نصب نرم‌افزار را بررسی کنید.</translation>
 <translation id="5170938038195470297">‏نمایهٔ شما نمی‌تواند استفاده شود زیرا مربوط به یک نسخه جدیدتر از Google Chrome است. بعضی از ویژگی‌ها ممکن است موجود نباشند. لطفاً یک مسیر دیگر برای نمایه تعیین کنید یا از نسخه جدیدتر Chrome استفاده کنید.</translation>
 <translation id="7282192067747128786">‏Chrome -اعلان‌ها (<ph name="QUANTITY"/> خوانده نشده)</translation>
+<translation id="1475773083554142432">‏Chrome این مورد را با <ph name="SAVED_PASSWORD_LINK"/> ذخیره می‌کند و دفعه بعد که به آن نیاز داشتید، آن را به خاطر دارد.</translation>
 <translation id="6011049234605203654">‏به
           منوی Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -145,6 +148,7 @@
 <translation id="5855036575689098185">‏نرم‌افزار در حال اجرا در رایانه شما با Google Chrome سازگار نیست.</translation>
 <translation id="7164397146364144019">‏می‌توانید با گزارش خودکار جزئیات حوادث امنیتی احتمالی به Google به ایمن‌تر شدن Chrome و استفاده آسان‌تر از آن کمک کنید.</translation>
 <translation id="8008534537613507642">‏نصب مجدد Chrome</translation>
+<translation id="2689103672227170538">‏این افزونه، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chrome نشان داده می‌شود.</translation>
 <translation id="8862326446509486874">شما حقوق لازم برای نصب در سطح سیستم را ندارید. دوباره به‌عنوان سرپرست نصب کننده را اجرا کنید.</translation>
 <translation id="2874156562296220396">‏Google Chrome با پروژه منبع باز <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> و دیگر <ph name="BEGIN_LINK_OSS"/>نرم‌افزارهای منبع باز<ph name="END_LINK_OSS"/> کار می‌کند.</translation>
 <translation id="7191567847629796517">‏Google Chrome OS از راه‌اندازی برنامه خارجی برای کار با پیوندهای <ph name="SCHEME"/> پشتیبانی نمی‌کند. پیوند درخواستی <ph name="PROTOLINK"/> است.</translation>
@@ -172,6 +176,7 @@
 <translation id="2665296953892887393">‏با ارسال گزارش‌های خرابی و <ph name="UMA_LINK"/> به Google، به بهبود Google Chrome کمک کنید.</translation>
 <translation id="7761834446675418963">‏برای باز کردن Chrome و شروع به مرور، روی نامتان کلیک کنید.</translation>
 <translation id="2669824781555328029">‏<ph name="FILE_NAME"/> ممکن است اثر نامطلوبی بر تجربه مرور شما بگذارد، بنابراین Chrome آن را مسدود کرده است.</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{‏در حال حاضر یک دانلود در حال انجام است. آیا می‌خواهید دانلود را لغو کنید و از Google Chrome خارج شوید؟}one{‏در حال حاضر # دانلود در حال انجام است. آیا می‌خواهید دانلود را لغو کنید و از Google Chrome خارج شوید؟}other{‏در حال حاضر # دانلود در حال انجام است. آیا می‌خواهید دانلودها را لغو کنید و از Google Chrome خارج شوید؟}}</translation>
 <translation id="6235018212288296708">‏قانون ورودی برای Google Chrome به منظور اجازه به ترافیک mDNS.</translation>
 <translation id="7984945080620862648">‏در حال حاضر نمی‌توانید از <ph name="SITE"/> بازدید کنید زیرا این وب‌سایت اعتبارنامه‌های درهمی ارسال کرده است که Chrome نمی‌تواند پردازش کند. معمولاً خطاهای شبکه و حمله‌ها موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -240,6 +245,7 @@
 <translation id="3360895254066713204">‏راهنمای Chrome</translation>
 <translation id="1877026089748256423">‏نسخه Chrome قدیمی است</translation>
 <translation id="7592736734348559088">‏Google Chrome قادر به همگام‌سازی داده‌های شما نبود زیرا جزئیات ورود به حساب شما به‌روز نیست.</translation>
+<translation id="3735758079232443276">‏افزونه «<ph name="EXTENSION_NAME"/>»، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chrome نشان داده می‌شود.</translation>
 <translation id="6991142834212251086">‏مرتبط کردن داده‌های Chrome من به این حساب</translation>
 <translation id="3451115285585441894">‏افزودن به Chrome...</translation>
 <translation id="3047079729301751317">‏با قطع اتصال <ph name="USERNAME"/>، سابقه، نشانک‌ها، تنظیمات و سایر داده‌های Chrome شما که در این دستگاه ذخیره شده‌اند، پاک می‌شود. داده‌های ذخیره شده در حساب Google شما پاک نمی‌شوند و در <ph name="GOOGLE_DASHBOARD_LINK"/>داشبورد Google<ph name="END_GOOGLE_DASHBOARD_LINK"/> قابل مدیریت هستند.</translation>

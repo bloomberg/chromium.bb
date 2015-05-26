@@ -58,6 +58,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="7064610482057367130">Aucune installation de Chromium à mettre à jour.</translation>
 <translation id="872034308864968620">Laisser Chromium s'exécuter en arrière-plan</translation>
 <translation id="459535195905078186">Applications Chromium</translation>
+<translation id="5942225298871134766">Chromium stockera ce mot de passe avec <ph name="SAVED_PASSWORD_LINK"/> et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
 <translation id="8134284582177628525">Si vous partagez cet ordinateur avec <ph name="PROFILE_NAME"/>, ajoutez-vous en tant qu'utilisateur à Chromium pour naviguer indépendamment. Sinon, déconnectez le compte Google de cette personne.</translation>
 <translation id="1480489203462860648">Essayez-le, il est déjà installé.</translation>
 <translation id="3032787606318309379">Ajout à Chromium en cours…</translation>
@@ -67,6 +68,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="8628626585870903697">Chromium ne comprend pas le lecteur de PDF qui est nécessaire au fonctionnement de l'aperçu avant impression.</translation>
 <translation id="7138853919861947730">Chromium utilise parfois des services Web pour améliorer votre confort de navigation.</translation>
 <translation id="4743926867934016338">Accepter et rechercher</translation>
+<translation id="2347108572062610441">Cette extension a modifié la page qui s'affiche lorsque vous démarrez Chromium.</translation>
 <translation id="3849925841547750267">Malheureusement, les paramètres de votre navigateur Mozilla Firefox ne sont pas disponibles lorsque ce navigateur est en cours d'exécution. Pour importer ces paramètres dans Chromium, enregistrez votre travail et fermez toutes les fenêtres Firefox, puis cliquez sur &quot;Continuer&quot;.</translation>
 <translation id="7027298027173928763">La mise à jour de Chromium a échoué. Vous n'utilisez pas la dernière version, qui vous permet de bénéficier de nouvelles fonctionnalités pratiques et de correctifs de sécurité. Vous devez réinstaller Chromium manuellement.</translation>
 <translation id="8897323336392112261">Elle contrôle également la page qui s'affiche au démarrage de Chromium ou lorsque vous cliquez sur le bouton &quot;Accueil&quot;.</translation>
@@ -151,6 +153,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="8684913864886094367">Chrome n'a pas été arrêté correctement.</translation>
 <translation id="3582788516608077514">Mise à jour de Chromium en cours…</translation>
 <translation id="7223968959479464213">Gestionnaire de tâches – Chromium</translation>
+<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Un téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Chromium ?}one{# téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Chromium ?}other{# téléchargements sont en cours. Voulez-vous annuler ces derniers et quitter Chromium ?}}</translation>
 <translation id="1779356040007214683">Afin de rendre Chrome plus sûr, nous avons désactivé certaines extensions qui ne sont pas répertoriées sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> et qui ont pu être ajoutées à votre insu.</translation>
 <translation id="6883876366448858277">envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des photos et d'autres résultats de recherche.</translation>
 <translation id="6638567566961868659">Retrouvez vos favoris dans le menu Chromium ou dans la barre de favoris.</translation>
@@ -187,6 +190,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="6334986366598267305">Il est désormais plus facile d'utiliser Chromium avec votre compte Google et sur des ordinateurs partagés.</translation>
 <translation id="6212496753309875659">Cet ordinateur dispose déjà d'une version plus récente de Chromium. Si le logiciel ne fonctionne pas, veuillez le désinstaller, puis réessayer.</translation>
 <translation id="1115445892567829615">Impossible de synchroniser vos données dans Chromium. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
+<translation id="2396765026452590966">L'extension <ph name="EXTENSION_NAME"/> a modifié la page qui s'affiche lorsque vous démarrez Chromium.</translation>
 <translation id="1298199220304005244">Obtenir de l'aide sur l'utilisation de Chromium OS</translation>
 <translation id="331951419404882060">Impossible de synchroniser vos données dans Chromium OS, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="8187289872471304532">Sélectionnez
@@ -203,6 +207,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="2158734852934720349">Licences Chromium OS Open Source</translation>
 <translation id="2966088006374919794">Chromium nécessite le lancement d'une application externe pour gérer les liens <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
 <translation id="7205698830395646142">Masquer dans le menu Chromium</translation>
+<translation id="9019929317751753759">Afin de rendre Chromium plus sûr, nous avons désactivé l'extension suivante qui n'est pas répertoriée sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> et qui a pu être ajoutée à votre insu.</translation>
 <translation id="7979877361127045932">Masquer dans le menu Chromium</translation>
 <translation id="6485906693002546646">Vous utilisez le compte <ph name="PROFILE_EMAIL"/> pour synchroniser votre contenu dans Chromium. Pour mettre à jour vos préférences de synchronisation ou pour utiliser Chromium sans compte Google, accédez à la page <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="705851970750939768">Mettre à jour Chromium</translation>
@@ -229,6 +234,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="805745970029938373">Vous pouvez consulter ici toutes les notifications associées aux applications, aux extensions et aux sites Web Chromium.</translation>
 <translation id="2119636228670142020">À propos de &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Une nouvelle version de Chromium encore plus sûre est disponible.</translation>
+<translation id="1644918877723739397">Chromium stockera ce mot de passe dans vos <ph name="SAVED_PASSWORD_LINK"/> et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
 <translation id="378917192836375108">Avec Chromium, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
 <translation id="608189560609172163">Impossible de synchroniser vos données dans Chromium, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="4888717733111232871">Règle de trafic entrant pour Chromium autorisant le trafic mDNS</translation>

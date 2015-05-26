@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Neznámý produkt <ph name="PRODUCT_ID"/> od dodavatele <ph name="VENDOR_NAME"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Správce tohoto zařízení vyžaduje, aby rozšíření <ph name="EXTENSION_NAME"/> mělo verzi alespoň <ph name="EXTENSION_VERSION"/>. Dokud nebude aktualizováno na tuto (nebo vyšší) verzi, nelze jej povolit.</translation>
 <translation id="6075907793831890935">Výměna dat se zařízením <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Výběr zařízení USB}few{Výběr zařízení USB}many{Výběr zařízení USB}other{Výběr zařízení USB}}</translation>
 <translation id="5971037678316050792">Ovládání stavu a párování adaptéru Bluetooth</translation>
 <translation id="677806580227005219">Obslužná rutina typu MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Přístup k informacím o zařízeních Bluetooth spárovaných s vaším systémem a objevování zařízení Bluetooth v okolí</translation>
+<translation id="5699534389808783598">Výběr zařízení HID
+      {NUM_DEVICE,plural, =1{Výběr zařízení HID}few{Výběr zařízení HID}many{Výběr zařízení HID}other{Výběr zařízení HID}}</translation>
 <translation id="8749863574775030885">Přístup k zařízením USB od neznámého dodavatele</translation>
 <translation id="3115238746683532089">Neznámý produkt <ph name="PRODUCT_ID"/> od dodavatele <ph name="VENDOR_ID"/> (sériové číslo <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223">Zařízení <ph name="PRODUCT_NAME"/> od dodavatele <ph name="VENDOR_NAME"/></translation>

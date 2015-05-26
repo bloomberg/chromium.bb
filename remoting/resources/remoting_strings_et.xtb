@@ -7,9 +7,11 @@ Host</translation>
 <translation id="2676780859508944670">Töötab …</translation>
 <translation id="6062854958530969723">Hosti lähtestamine ebaõnnestus.</translation>
 <translation id="5843054235973879827">Miks on see ohutu?</translation>
+<translation id="5895138241574237353">Taaskäivitamine</translation>
 <translation id="5619148062500147964">Selle arvutiga</translation>
 <translation id="4068946408131579958">Kõik ühendused</translation>
 <translation id="2208514473086078157">Reegli seaded ei luba jagada seda arvutit Chrome Remote Desktopi hostina. Abi saamiseks võtke ühendust süsteemiülemaga</translation>
+<translation id="6381670701864002291">Midagi muud.</translation>
 <translation id="6541219117979389420">Rakenduse logid võivad sisaldada privaatset teavet, sh teie identiteeti (e-posti aadress) ja Google Drive'is olevate failide ning kaustade atribuute ja nimesid.</translation>
 <translation id="3931191050278863510">Hostimine peatati.</translation>
 <translation id="3905196214175737742">Sobimatu hosti omaniku domeen.</translation>
@@ -52,6 +54,7 @@ Host</translation>
 <translation id="3606997049964069799">Te ei ole Chromiumi sisse logitud. Logige sisse ja proovige uuesti.</translation>
 <translation id="6198252989419008588">Muuda PIN-koodi</translation>
 <translation id="7970576581263377361">Autentimine ebaõnnestus. Logige uuesti Chromiumi sisse.</translation>
+<translation id="477305884757156764">Rakendus on liiga aeglane.</translation>
 <translation id="6167788864044230298">Chrome'i rakenduste voogesitus</translation>
 <translation id="170207782578677537">Arvuti registreerimine ebaõnnestus.</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
@@ -69,6 +72,7 @@ Host</translation>
 <translation id="2314101195544969792">Teie rakenduse <ph name="APPLICATION_NAME"/> seanss on olnud mõnda aega passiivne ja ühendus katkestatakse peagi.</translation>
 <translation id="6001953797859482435">Chrome Remote Desktopi hosti eelistused</translation>
 <translation id="225614027745146050">Tere tulemast</translation>
+<translation id="1770394049404108959">Ma ei saa seda rakendust avada.</translation>
 <translation id="9188433529406846933">Volita</translation>
 <translation id="228809120910082333">Chromootimise abil juurdepääsu lubamiseks kinnitage allpool oma konto ja PIN-kood.</translation>
 <translation id="7605995381616883502">Uus ühendus</translation>
@@ -99,6 +103,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="3884839335308961732">Chrome Remote Desktopi abil juurdepääsu lubamiseks kinnitage allpool oma konto ja PIN-kood.</translation>
 <translation id="327263477022142889">Kas soovite aidata Chrome'i kaugtöölauda täiustada? <ph name="LINK_BEGIN"/>Vastake küsitlusele.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Saada klahvikombinatsioon Ctrl + Alt + Del</translation>
+<translation id="6173536234069435147">Ma ei saa oma Google Drive'i faile avada.</translation>
 <translation id="5702987232842159181">Ühendatud:</translation>
 <translation id="8509907436388546015">Arvuti integreerimisprotsess</translation>
 <translation id="4736223761657662401">Ühenduse ajalugu</translation>
@@ -190,10 +195,12 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2078880767960296260">Hosti protsess</translation>
 <translation id="1643640058022401035">Lehelt lahkudes katkeb teie rakenduse Chromoting seanss.</translation>
 <translation id="8261506727792406068">Kustuta</translation>
+<translation id="1152528166145813711">Valige ...</translation>
 <translation id="2235518894410572517">Jagage seda arvutit teise kasutajaga, nii et ta näeb ja saab arvutit juhtida.</translation>
 <translation id="6939719207673461467">Kuva/peida klaviatuur.</translation>
 <translation id="1023096696228309145">Paluge kasutajal, kelle arvutisse soovite juurde pääseda, klõpsata valikul „Jaga nüüd” ja anda teile seejärel pääsukood.</translation>
 <translation id="4240294130679914010">Chromootimise hosti desinstaller</translation>
+<translation id="8712909229180978490">Ma ei näe võrgus oma salvestatud faile Google Drive'is.</translation>
 <translation id="80739703311984697">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma chromootimisele täiendavad load juurdepääsuks sellele aadressile:</translation>
 <translation id="4006787130661126000">Kui soovite Chrome Remote Desktopiga arvuti juurde pääseda, peate lubama kaugühendused.</translation>
 <translation id="177096447311351977">Kanali IP kliendi jaoks: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ Desktopi host</translation>
 <translation id="6011539954251327702">Rakendus Chromoting võimaldab teil arvutit turvaliselt veebi kaudu jagada. Mõlemad kasutajad peavad käitama rakendust Chromoting, mille leiate aadressilt <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Jagate seda seadet praegu teise kasutajaga. Kas soovite jagamist jätkata?</translation>
 <translation id="4207623512727273241">Enne jätkamist käitage installerit.</translation>
+<translation id="492843737083352574">Mul on probleeme klaviatuuri või hiirega.</translation>
 <translation id="1324095856329524885">(see funktsioon ei ole veel teie arvutis saadaval)</translation>
 <translation id="6570205395680337606">Rakenduse lähtestamine. Kaotate kogu salvestamata töö.</translation>
 <translation id="6284412385303060032">Konsooli loogikakuval käitatav host on varjatud režiimi toetamiseks välja lülitatud, lülitades hostile, mida käitatakse kasutajapõhises seansis.</translation>
@@ -260,6 +268,7 @@ Desktopi host</translation>
 <translation id="1546934824884762070">Ilmnes ootamatu viga. Teatage sellest probleemist arendajatele.</translation>
 <translation id="4795786176190567663">Teil puudub luba selle toimingu tegemiseks.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="3025388528294795783">Probleemi lahendamisel abistamiseks öelge meile, mis läks valesti:</translation>
 <translation id="7434397035092923453">Järgmisele kliendile on juurdepääs keelatud: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Reegli seaded ei luba jagada seda arvutit Chrome Remote Desktopi hostina. Abi saamiseks võtke ühendust süsteemiülemaga.</translation>
 <translation id="7312846573060934304">Host pole võrgus.</translation>

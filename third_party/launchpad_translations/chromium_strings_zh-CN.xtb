@@ -43,6 +43,7 @@
 <translation id="7064610482057367130">未找到要更新的Chromium安装实例。</translation>
 <translation id="872034308864968620">让 Chromium 在后台运行</translation>
 <translation id="459535195905078186">Chromium 应用</translation>
+<translation id="5942225298871134766">Chromium 将通过<ph name="SAVED_PASSWORD_LINK"/>存储此密码，并会在您下次需要时自动填充此密码。</translation>
 <translation id="8134284582177628525">如果您与<ph name="PROFILE_NAME"/>共用这台计算机，将您的帐户添加到Chromium，即可在单独的环境中浏览。或者，您也可以取消与其Google帐户的关联。</translation>
 <translation id="1480489203462860648">它已经安装完毕了，试试看吧。</translation>
 <translation id="3032787606318309379">正在添加到 Chromium...</translation>
@@ -52,6 +53,7 @@
 <translation id="8628626585870903697">Chromium 未包含运行打印预览所需的 PDF 查看器。</translation>
 <translation id="7138853919861947730">Chromium 可能会使用网络服务改善您的浏览体验。</translation>
 <translation id="4743926867934016338">接受并搜索</translation>
+<translation id="2347108572062610441">此扩展程序更改了 Chromium 启动后系统显示的页面。</translation>
 <translation id="3849925841547750267">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Chromium，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="7027298027173928763">Chromium无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要手动重新安装Chromium。</translation>
 <translation id="8897323336392112261">它还能够控制您启动Chromium或点击“主页”按钮后系统显示的页面。</translation>
@@ -136,6 +138,7 @@
 <translation id="8684913864886094367">Chromium 未正确关闭。</translation>
 <translation id="3582788516608077514">正在更新 Chromium...</translation>
 <translation id="7223968959479464213">任务管理器 - Chromium</translation>
+<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{有 1 项下载任务正在进行。确定要取消下载并退出 Chromium 吗？}other{有 # 项下载任务正在进行。确定要取消下载并退出 Chromium 吗？}}</translation>
 <translation id="1779356040007214683">为了提高 Chromium 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>中、可能是在您不知情的情况下添加的扩展程序。</translation>
 <translation id="6883876366448858277">将某个字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片及其他搜索结果。</translation>
 <translation id="6638567566961868659">在 Chromium 菜单或书签栏中查找您的书签。</translation>
@@ -161,6 +164,7 @@
 <translation id="6334986366598267305">现在，无论是通过Google帐户还是在共用的计算机上，您都可以更轻松地使用Chromium。</translation>
 <translation id="6212496753309875659">此计算机已安装了更高版本的 Chromium。如果软件无法正常运行，请卸载 Chromium 并重试。</translation>
 <translation id="1115445892567829615">Chromium无法同步您的数据。请更新您的同步密码。</translation>
+<translation id="2396765026452590966">“<ph name="EXTENSION_NAME"/>”扩展程序更改了 Chromium 启动后系统显示的页面。</translation>
 <translation id="1298199220304005244">获取 Chromium 操作系统使用帮助</translation>
 <translation id="331951419404882060">登录时出现错误，Chromium操作系统无法同步您的数据。</translation>
 <translation id="8187289872471304532">依次转到“应用”&gt;“系统偏好设置”&gt;“网络”&gt;“高级”&gt;“代理”，然后取消选中所有已选的代理。</translation>
@@ -175,6 +179,7 @@
 <translation id="2158734852934720349">Chromium操作系统开放源代码许可</translation>
 <translation id="2966088006374919794">Chromium 必须启动外部应用才能处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
 <translation id="7205698830395646142">在 Chromium 菜单中隐藏</translation>
+<translation id="9019929317751753759">为了提高 Chromium 的安全性，我们停用了以下扩展程序（该扩展程序未列在<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>中，并且可能是在您不知情的情况下添加的）。</translation>
 <translation id="7979877361127045932">在 Chromium 菜单中隐藏</translation>
 <translation id="6485906693002546646">您在使用<ph name="PROFILE_EMAIL"/>同步自己的Chromium资料和数据。要更新您的同步偏好设置或在不登录Google帐户的情况下使用Chromium，请前往<ph name="SETTINGS_LINK"/>部分。</translation>
 <translation id="705851970750939768">更新 Chromium</translation>
@@ -200,6 +205,7 @@
 <translation id="805745970029938373">您可以在此处查看来自 Chromium 应用、扩展程序和网站的所有通知。</translation>
 <translation id="2119636228670142020">关于 Chromium 操作系统(&amp;C)</translation>
 <translation id="1708666629004767631">Chromium 现已推出更安全的新版本。</translation>
+<translation id="1644918877723739397">Chromium 会将此密码存储在您的<ph name="SAVED_PASSWORD_LINK"/>中，并会在您下次需要时自动填充此密码。</translation>
 <translation id="378917192836375108">您可以在 Chromium 中点击网上的电话号码，然后通过 Skype 拨打！</translation>
 <translation id="608189560609172163">由于在登录时出现错误，Chromium无法同步您的数据。</translation>
 <translation id="4888717733111232871">Chromium的入站规则，允许mDNS流量。</translation>

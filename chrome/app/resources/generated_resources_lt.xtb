@@ -981,7 +981,6 @@ Norint tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="3125649188848276916">Taip (neįrašyti naujų duomenų)</translation>
 <translation id="648927581764831596">Nėra</translation>
 <translation id="6348657800373377022">Išskleidžiamasis laukelis</translation>
-<translation id="7453382714306901283">Jūsų kompiuteryje yra patikimos platformos modulio (TPM) saugos įrenginys, kuris naudojamas „Chrome“ OS įdiegiant daug svarbių saugos funkcijų. Jei reikia daugiau informacijos, apsilankykite „Chromebook“ pagalbos centre adresu http://support.google.com/chromebook/?hl=lt&amp;p=tpm</translation>
 <translation id="8064671687106936412">Raktas:</translation>
 <translation id="2218515861914035131">Įklijuoti kaip grynąjį tekstą</translation>
 <translation id="1725149567830788547">Rodyti valdiklius</translation>
@@ -1164,7 +1163,6 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="37613671848467444">Atidaryti inkognito lange</translation>
 <translation id="159359590073980872">Vaizdų talpykla</translation>
 <translation id="7142571697412577603">Rodyti „Google“ piniginės adresus ir kredito korteles</translation>
-<translation id="4668711410219362250">https://support.google.com/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=165139&amp;p=settings_sign_in</translation>
 <translation id="3586931643579894722">Slėpti išsamią informaciją</translation>
 <translation id="7170467426996704624">Transliteracija (salam → ሰላም)</translation>
 <translation id="6285395082104474418">Būsenos dėkle rodoma dabartinė tinklo, akumuliatoriaus ir kitų elementų būsena.</translation>
@@ -1484,7 +1482,6 @@ likęs akumuliatoriaus laikas</translation>
 <translation id="7122169255686960726">Daugiau kopijų</translation>
 <translation id="7285011324031710154">Įgalinsite žiniatinklio programų stiliaus rėmelius priglobtose programose.</translation>
 <translation id="1221825588892235038">Tik pasirinkimas</translation>
-<translation id="2227939492629426903">Įgalinamas naujas pseudoportreto meniu. Kai derinama su naujo profilio tvarkymo funkcija, tiesiog rodomas naujas profilio tvarkymo pseudoportreto meniu. Kitu atveju rodomas atnaujinto dizaino pseudoportreto meniu, kurio funkcijos tokios pačios kaip ir seno meniu, o viršuje rodoma mokymo programos kortelė, kuri ragina naudotoją išbandyti naują profilio tvarkymo NS.</translation>
 <translation id="8713979477561846077">Įgalinti JAV klaviatūrai skirtą fizinės klaviatūros automatinio taisymo funkciją, kuri gali teikti pasiūlymus vedant tekstą fizine klaviatūra.</translation>
 <translation id="7201354769043018523">Dešinysis skliaust.</translation>
 <translation id="7517569744831774757">Atkurti nustatymus į pirminius numatytuosius.</translation>
@@ -4396,7 +4393,6 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
 <translation id="1254593899333212300">Tiesioginis interneto ryšys</translation>
 <translation id="6107012941649240045">Išduotas</translation>
 <translation id="1101112020367325578">Niekada neleisti ne „smėlio dėžės“ papildinių iš <ph name="HOST"/></translation>
-<translation id="3828373662010953415">Įgalinti naują pseudoportreto meniu</translation>
 <translation id="6483805311199035658">Atidaroma <ph name="FILE"/>...</translation>
 <translation id="5465122519792752163">Nepaliečių klaviatūra („InScript“)</translation>
 <translation id="940425055435005472">Šrifto dydis:</translation>
@@ -4440,7 +4436,6 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite valdyti jo nust
 <translation id="774465434535803574">Paketo plėtinio klaida</translation>
 <translation id="8200772114523450471">Atnaujinti</translation>
 <translation id="5750676294091770309">Užblokuota plėtinio</translation>
-<translation id="1302191857856401062">Leidžiama greitai perjungti naudotojus pseudoportretų meniu.</translation>
 <translation id="523299859570409035">Pranešimų išimtys</translation>
 <translation id="7017480957358237747">leisti arba drausti konkrečias svetaines</translation>
 <translation id="1029595648591494741">Išbandyti „<ph name="EXTENSION_NAME"/>“?</translation>
@@ -5404,7 +5399,6 @@ Skaičiuojamas laikas, kol bus įkrauta</translation>
 <translation id="8545575359873600875">Apgailestaujame, nepavyko patvirtinti jūsų slaptažodžio. Galbūt šio prižiūrimo naudotojo valdytojas neseniai pakeitė slaptažodį. Jei taip, naujas slaptažodis bus pritaikytas, kai kitą kartą prisijungsite. Pabandykite naudoti seną slaptažodį.</translation>
 <translation id="7549053541268690807">Ieškoti žodyne</translation>
 <translation id="8911079125461595075">„Google“ pažymėjo „<ph name="EXTENSION_NAME"/>“ kaip kenkėjišką plėtinį ir neleido jo įdiegti.</translation>
-<translation id="4347595254852029221">Įgalinti greitą naudotojų perjungimą pseudoportretų meniu</translation>
 <translation id="5870086504539785141">Uždaryti pasiekiamumo meniu</translation>
 <translation id="9102800320402283920">Kad būtų galima naudoti „Google“ piniginę, būtina nurodyti bent vardą ir pavardę.</translation>
 <translation id="7005848115657603926">Neteisingas puslapių diapazonas, naudokite <ph name="EXAMPLE_PAGE_RANGE"/></translation>

@@ -57,6 +57,7 @@
 <translation id="7064610482057367130">업데이트할 Chromium 설치가 없습니다.</translation>
 <translation id="872034308864968620">백그라운드에서 Chromium을 실행</translation>
 <translation id="459535195905078186">Chromium 앱</translation>
+<translation id="5942225298871134766">Chromium은 <ph name="SAVED_PASSWORD_LINK"/>을(를) 사용하여 비밀번호를 저장한 후 다음에 필요할 때 제공합니다.</translation>
 <translation id="8134284582177628525"><ph name="PROFILE_NAME"/>님과 컴퓨터를 공유하는 경우 개별적으로 인터넷을 사용하려면 본인을 Chromium에 추가하세요. 아니면 상대방의 Google 계정 연결을 해제하세요.</translation>
 <translation id="1480489203462860648">사용해 보세요. 이미 설치되었습니다.</translation>
 <translation id="3032787606318309379">Chromium에 추가하는 중...</translation>
@@ -66,6 +67,7 @@
 <translation id="8628626585870903697">Chromium은 인쇄 미리보기에 필요한 PDF 뷰어가 포함되어 있지 않습니다.</translation>
 <translation id="7138853919861947730">Chromium은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
 <translation id="4743926867934016338">동의 및 검색</translation>
+<translation id="2347108572062610441">Chromium을 시작하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="3849925841547750267">Mozilla Firefox 브라우저가 실행 중일 때는 설정 기능을 사용할 수 없습니다. 이 설정을 Chromium으로 가져오려면 현재 작업을 저장하고 Firefox 창을 모두 닫습니다. 그런 다음 '계속'을 클릭합니다.</translation>
 <translation id="7027298027173928763">Chromium을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chromium을 직접 다시 설치해야 합니다.</translation>
 <translation id="8897323336392112261">또한 Chromium을 시작하거나 홈 버튼을 클릭할 때 표시되는 페이지를 설정합니다.</translation>
@@ -151,6 +153,7 @@
 <translation id="8684913864886094367">Chromium이 제대로 종료되지 않았습니다.</translation>
 <translation id="3582788516608077514">Chromium 업데이트 중...</translation>
 <translation id="7223968959479464213">작업 관리자 - Chromium</translation>
+<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{현재 다운로드가 진행 중입니다. 다운로드를 취소하고 Chromium을 종료하시겠습니까?}other{현재 #개의 다운로드가 진행 중입니다. 다운로드를 취소하고 Chromium을 종료하시겠습니까?}}</translation>
 <translation id="1779356040007214683">Google에서는 Chromium의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="6883876366448858277">단어와 관련 컨텍스트를 Google 검색에 전송하며 정의, 사진, 기타 검색결과를 표시합니다.</translation>
 <translation id="6638567566961868659">Chromium 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
@@ -186,6 +189,7 @@
 <translation id="6334986366598267305">이제 Google 계정으로 공유 컴퓨터에서 Chromium을 손쉽게 사용할 수 있습니다.</translation>
 <translation id="6212496753309875659">컴퓨터에 이미 최신 버전의 Chromium이 있습니다. 소프트웨어가 작동하지 않으면 Chromium의 설치를 제거한 뒤 다시 시도하세요.</translation>
 <translation id="1115445892567829615">Chromium에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하시기 바랍니다.</translation>
+<translation id="2396765026452590966">Chromium을 시작하면 표시되는 페이지가 '<ph name="EXTENSION_NAME"/>' 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="1298199220304005244">Chromium OS 사용에 대한 도움말</translation>
 <translation id="331951419404882060">로그인 중 오류가 발생하여 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="8187289872471304532">애플리케이션 &gt; 시스템 환경설정 &gt; 네트워크 &gt; 고급 &gt; 프록시로 이동한 다음
@@ -201,6 +205,7 @@
 <translation id="2158734852934720349">Chromium OS 오픈소스 라이선스</translation>
 <translation id="2966088006374919794"><ph name="SCHEME"/> 링크 처리를 위해 Chrome에서 외부 응용 프로그램을 실행해야 합니다. 요청 링크는 <ph name="PROTOLINK"/>입니다.</translation>
 <translation id="7205698830395646142">Chromium 메뉴에서 숨기기</translation>
+<translation id="9019929317751753759">Google에서는 Chromium의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>에 표시되지 않고 사용자가 모르게 추가되었을 수 있는 다음 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="7979877361127045932">Chromium 메뉴에서 숨기기</translation>
 <translation id="6485906693002546646">Chromium 콘텐츠를 동기화하기 위해 <ph name="PROFILE_EMAIL"/>을(를) 사용 중입니다. 동기화 환경설정을 업데이트하거나 Google 계정 없이 Chromium을 사용하려면 <ph name="SETTINGS_LINK"/>(으)로 이동하세요.</translation>
 <translation id="705851970750939768">Chromium 업데이트</translation>
@@ -227,6 +232,7 @@
 <translation id="805745970029938373">Chromium 앱, 확장 프로그램 및 웹사이트의 모든 알림을 여기에서 볼 수 있습니다.</translation>
 <translation id="2119636228670142020">Chromium OS 정보</translation>
 <translation id="1708666629004767631">새롭고 안전한 Chromium의 새 버전을 사용할 수 있습니다.</translation>
+<translation id="1644918877723739397">Chromium은 <ph name="SAVED_PASSWORD_LINK"/>에 비밀번호를 저장한 후 다음에 필요할 때 제공합니다.</translation>
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
 <translation id="608189560609172163">로그인 중 오류가 발생하여 Chromium에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="4888717733111232871">Chromium이 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>

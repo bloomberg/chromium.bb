@@ -59,6 +59,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="7064610482057367130">Walang nakitang pag-install ng Chromium upang i-update.</translation>
 <translation id="872034308864968620">Hayaang Tumakbo ang Chromium sa Background</translation>
 <translation id="459535195905078186">Chromium Apps</translation>
+<translation id="5942225298871134766">Iiimbak ito ng Chromium gamit ang <ph name="SAVED_PASSWORD_LINK"/> at tatandaan ito sa susunod na pagkakataong kailanganin mo ito.</translation>
 <translation id="8134284582177628525">Kung ibabahagi mo ang computer na ito kay <ph name="PROFILE_NAME"/>, idagdag ang iyong sarili sa Chromium upang mag-browse nang hiwalay. Kung hindi naman, idiskonekta ang kanilang Google Account.</translation>
 <translation id="1480489203462860648">Subukan mo ito, naka-install na ito</translation>
 <translation id="3032787606318309379">Idinaragdag sa Chromium...</translation>
@@ -68,6 +69,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="8628626585870903697">Hindi isinasama ng Chromium ang PDF viewer na kinakailangan upang gumana ang Preview ng Pag-print.</translation>
 <translation id="7138853919861947730">Maaaring gumamit ang Chromium ng mga serbisyo sa web upang mapahusay ang iyong karanasan sa pagba-browse.</translation>
 <translation id="4743926867934016338">Tanggapin at Maghanap</translation>
+<translation id="2347108572062610441">Binago ng extension na ito ang ipinapakitang page kapag sinimulan mo ang Chronium.</translation>
 <translation id="3849925841547750267">Sa kasamaang palad, hindi available ang mga setting ng iyong Mozilla Firefox habang tumatakbo ang browser na iyon. Upang i-import sa Chromium ang mga setting na iyon, i-save ang iyong gawa at isara ang lahat ng window sa Firefox. Pagkatapos, i-click ang Magpatuloy.</translation>
 <translation id="7027298027173928763">Hindi ma-update ng Chromium ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong muling i-install ang Chromium nang manu-mano.</translation>
 <translation id="8897323336392112261">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chromium o na-click ang button ng Home.</translation>
@@ -153,6 +155,7 @@ at maling kredensyal. Maaaring sinusubukan ng isang umaatake na magpanggap na <p
 <translation id="8684913864886094367">Hindi nag-shut down nang tama ang Chromium.</translation>
 <translation id="3582788516608077514">Ina-update ang Chromium...</translation>
 <translation id="7223968959479464213">Task Manager - Chromium</translation>
+<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{May nagaganap na pagda-download sa kasalukuyan. Gusto mo bang kanselahin ang pag-download at umalis sa Chromium?}one{# pag-download ang nagaganap sa kasalukuyan. Gusto mo bang kanselahin ang mga pag-download at umalis sa Chromium?}other{# na pag-download ang nagaganap sa kasalukuyan. Gusto mo bang kanselahin ang mga pag-download at umalis sa Chromium?}}</translation>
 <translation id="1779356040007214683">Upang gawing mas ligtas ang Chromium, nag-disable kami ng ilang extension na hindi nakalista sa <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> at maaaring naidagdag nang hindi mo nalalaman.</translation>
 <translation id="6883876366448858277">ipapadala ang isang salita at ang konteksto nito sa Google Search, at magbibigay ng mga pagpapakahulugan, larawan at iba pang mga resulta ng paghahanap.</translation>
 <translation id="6638567566961868659">Hanapin ang iyong mga bookmark sa Chromium menu o sa bookmarks bar.</translation>
@@ -189,6 +192,7 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="6334986366598267305">Ngayon, mas madali nang gamitin ang Chromium sa iyong Google Account at sa mga nakabahaging computer.</translation>
 <translation id="6212496753309875659">May mas bagong bersyon ng Chromium na ang computer na ito. Kung hindi gumagana ang software, mangyaring i-uninstall ang Chromium at subukang muli.</translation>
 <translation id="1115445892567829615">Hindi mai-sync ng Chromium ang iyong data. Paki-update ang iyong passphrase sa Pag-sync.</translation>
+<translation id="2396765026452590966">Binago ng extension na &quot;<ph name="EXTENSION_NAME"/>&quot; ang ipinapakitang page kapag sinimulan mo ang Chromium.</translation>
 <translation id="1298199220304005244">Kumuha ng tulong sa paggamit ng Chromium OS</translation>
 <translation id="331951419404882060">Hindi ma-sync ng Chromium OS ang iyong data dahil sa isang error sa pagsa-sign in.</translation>
 <translation id="8187289872471304532">Pumunta sa
@@ -205,6 +209,7 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="2158734852934720349">Mga lisensya ng open source ng Chromium OS</translation>
 <translation id="2966088006374919794">Kinakailangang maglunsad ng Chromium ng panlabas na application upang mangasiwa ng mga <ph name="SCHEME"/> na link. Ang hiniling na link ay <ph name="PROTOLINK"/>.</translation>
 <translation id="7205698830395646142">Itago sa Menu ng Chromium</translation>
+<translation id="9019929317751753759">Upang mas gawing ligtas ang Chromium, na-disable namin ang sumusunod na extension na hindi nakalista sa <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> na maaaring naidagdag nang hindi mo nalalalaman.</translation>
 <translation id="7979877361127045932">Itago sa menu ng Chromium</translation>
 <translation id="6485906693002546646">Ginagamit mo ang <ph name="PROFILE_EMAIL"/> upang i-sync ang iyong bagay sa Chromium. Upang ma-update ang iyong kagustuhan sa pag-sync o upang magamit ang Chromium nang walang Google account, bisitahin ang <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="705851970750939768">I-update ang Chromium</translation>
@@ -231,6 +236,7 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="805745970029938373">Makikita mo ang lahat ng iyong notification mula sa apps, mga extension, at website ng Chromium dito.</translation>
 <translation id="2119636228670142020">Tungkol sa &amp;Chromium OS</translation>
 <translation id="1708666629004767631">May available na bago at mas ligtas na bersyon ng Chromium.</translation>
+<translation id="1644918877723739397">Iiimbak ito ng Chromium gamit ang <ph name="SAVED_PASSWORD_LINK"/> at tatandaan ito sa susunod na pagkakataong kailanganin mo ito.</translation>
 <translation id="378917192836375108">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
 <translation id="608189560609172163">Hindi mai-sync ng Chromium ang iyong data dahil sa isang error sa pagsa-sign in.</translation>
 <translation id="4888717733111232871">Inbound na panuntunan para sa Chromium upang payagan ang trapiko ng mDNS.</translation>

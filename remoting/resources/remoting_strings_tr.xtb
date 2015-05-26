@@ -7,9 +7,11 @@ Ana Makinesi</translation>
 <translation id="2676780859508944670">Çalışıyor...</translation>
 <translation id="6062854958530969723">Ana makinenin ilk kullanıma hazırlanması başarısız oldu.</translation>
 <translation id="5843054235973879827">Bu işlem neden güvenli?</translation>
+<translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5619148062500147964">Bu bilgisayara</translation>
 <translation id="4068946408131579958">Tüm bağlantılar</translation>
 <translation id="2208514473086078157">Politika ayarları bu bilgisayarın bir Chrome Uzaktan Masaüstü ana bilgisayarı olarak paylaşılmasına izin vermiyor. Yardım için sistem yöneticinizle iletişim kurun.</translation>
+<translation id="6381670701864002291">Başka bir şey.</translation>
 <translation id="6541219117979389420">Uygulama günlükleri, kimliğiniz (e-posta adresi) ve Google Drive'daki dosyalarla klasörlerin adları ve özellikleri dahil olmak üzere, bazı gizli bilgiler içerebilir.</translation>
 <translation id="3931191050278863510">Ana makine durdu.</translation>
 <translation id="3905196214175737742">Ana makinenin sahip alan adı geçersiz.</translation>
@@ -52,6 +54,7 @@ Ana Makinesi</translation>
 <translation id="3606997049964069799">Chromium'da oturum açmadınız. Lütfen oturum açın ve tekrar deneyin.</translation>
 <translation id="6198252989419008588">PIN'i değiştir</translation>
 <translation id="7970576581263377361">Kimlik doğrulama başarısız oldu. Lütfen Chromium'da tekrar oturum açın.</translation>
+<translation id="477305884757156764">Uygulama çok yavaş.</translation>
 <translation id="6167788864044230298">Chrome Uygulama Akışı</translation>
 <translation id="170207782578677537">Bu bilgisayar kaydettirilemedi.</translation>
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
@@ -69,6 +72,7 @@ Ana Makinesi</translation>
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME"/> oturumunuz bir süredir etkin değil ve kısa bir süre sonra bağlantısı kesilecek.</translation>
 <translation id="6001953797859482435">Chrome Uzaktan Masaüstü Ana Makine Tercihleri</translation>
 <translation id="225614027745146050">Hoş Geldiniz</translation>
+<translation id="1770394049404108959">Uygulamayı açamıyorum.</translation>
 <translation id="9188433529406846933">Yetkilendir</translation>
 <translation id="228809120910082333">Chromoting tarafından erişime izin vermek için lütfen aşağıda hesabınızı ve PIN kodunuzu onaylayın.</translation>
 <translation id="7605995381616883502">Yeni bağlantı</translation>
@@ -99,6 +103,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="3884839335308961732">Chrome Uzaktan Masaüstü tarafından erişime izin vermek için lütfen aşağıda hesabınızı ve PIN kodunuzu onaylayın.</translation>
 <translation id="327263477022142889">Chrome Uzaktan Masaüstü'nü daha iyi hale getirmeye yardımcı olmak ister misiniz? <ph name="LINK_BEGIN"/>Ankete katılın.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del Gönder</translation>
+<translation id="6173536234069435147">Google Drive dosyalarımı açamıyorum.</translation>
 <translation id="5702987232842159181">Bağlı:</translation>
 <translation id="8509907436388546015">Masaüstü Entegrasyon İşlemi</translation>
 <translation id="4736223761657662401">Bağlantı Geçmişi</translation>
@@ -190,10 +195,12 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="2078880767960296260">Ana Makine İşlemi</translation>
 <translation id="1643640058022401035">Bu sayfadan ayrılırsanız Chromoting oturumunuz sonlandırılır.</translation>
 <translation id="8261506727792406068">Sil</translation>
+<translation id="1152528166145813711">Seç...</translation>
 <translation id="2235518894410572517">Bu bilgisayarı başka bir kullanıcının görmesi ve kontrol etmesi için paylaşın.</translation>
 <translation id="6939719207673461467">Klavyeyi göster/gizle</translation>
 <translation id="1023096696228309145">Bilgisayarına erişmek istediğiniz kullanıcıdan, 'Şimdi Paylaş' seçeneğini tıklamasını ve size erişim kodunu vermesini isteyin.</translation>
 <translation id="4240294130679914010">Chromoting Ana Makine Yüklemesini Kaldırma Programı</translation>
+<translation id="8712909229180978490">Google Drive'daki kaydedilmiş dosyalarımı çevrimiçi olarak göremiyorum.</translation>
 <translation id="80739703311984697">Uzak ana makine üçüncü taraf bir web sitesine kimlik doğrulama işlemi yapmanızı gerektiriyor. Devam etmek üzere şu adrese erişim için Chromoting'e ek izinler vermelisiniz:</translation>
 <translation id="4006787130661126000">Bu bilgisayara erişmek için Chrome Uzaktan Masaüstü uygulamasını kullanmak istiyorsanız uzaktan bağlantıları etkinleştirmelisiniz.</translation>
 <translation id="177096447311351977">İstemci için kanal IP'si: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip=&quot;<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>&quot; host_ip=&quot;<ph name="HOST_IP_ADDRESS_AND_PORT"/>&quot; channel=&quot;<ph name="CHANNEL_TYPE"/>&quot; connection=&quot;<ph name="CONNECTION_TYPE"/>&quot;.</translation>
@@ -243,6 +250,7 @@ Masaüstü Ana Makinesi</translation>
 <translation id="6011539954251327702">Chromoting, bilgisayarınızı Web üzerinden güvenli şekilde paylaşmanıza olanak verir. Her iki kullanıcının da Chromoting uygulamasını çalıştırıyor olması gerekir; uygulamayı <ph name="URL"/> adresinde bulabilirsiniz.</translation>
 <translation id="2919669478609886916">Bu makineyi şu anda başka bir kullanıcıyla paylaşıyorsunuz. Paylaşmaya devam etmek istiyor musunuz?</translation>
 <translation id="4207623512727273241">Devam etmeden önce lütfen yükleyiciyi çalıştırın.</translation>
+<translation id="492843737083352574">Klavye veya faremle ilgili sorun yaşıyorum.</translation>
 <translation id="1324095856329524885">(bu özellik henüz bilgisayarınız için kullanılamıyor)</translation>
 <translation id="6570205395680337606">Uygulamayı sıfırlayın. Kaydedilmemiş çalışmalarınızın tümünü kaybedeceksiniz.</translation>
 <translation id="6284412385303060032">Konsol mantık ekranında çalışan ana makine, kullanıcı tanımlı oturumda çalışan bir ana makineye geçerek perde modunu desteklemek için kapandı.</translation>
@@ -260,6 +268,7 @@ Masaüstü Ana Makinesi</translation>
 <translation id="1546934824884762070">Beklenmeyen bir hata oluştu. Lütfen bu sorunu geliştiricilere bildirin.</translation>
 <translation id="4795786176190567663">Bu işlemi gerçekleştirmek için izniniz yok.</translation>
 <translation id="6965382102122355670">Tamam</translation>
+<translation id="3025388528294795783">Sorununuzu çözmemize yardımcı olmak için lütfen bize nasıl bir sorun olduğunu bildirin:</translation>
 <translation id="7434397035092923453">Şu istemci için erişim reddedildi: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Politika ayarları bu bilgisayarın bir Chromoting ana bilgisayarı olarak paylaşılmasına izin vermiyor. Yardım için sistem yöneticinizle iletişim kurun.</translation>
 <translation id="7312846573060934304">Ana makine çevrimdışı.</translation>

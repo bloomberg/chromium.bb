@@ -981,7 +981,6 @@
 <translation id="3125649188848276916">Da (ne beleži novih podatkov)</translation>
 <translation id="648927581764831596">Ni na voljo</translation>
 <translation id="6348657800373377022">Kombinirano polje</translation>
-<translation id="7453382714306901283">V računalnik je vgrajen modul TPM (Trusted Platform Module), ki je varnostna naprava, potrebna za številne nujne varnostne funkcije v sistemu Chrome OS. Več o njem lahko preberete v centru za pomoč za Chromebook: http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="8064671687106936412">Ključ:</translation>
 <translation id="2218515861914035131">Prilepi kot navadno besedilo</translation>
 <translation id="1725149567830788547">Pokaži &amp;kontrolnike</translation>
@@ -1163,7 +1162,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY"/> za na
 <translation id="37613671848467444">Odpri v oknu &amp;brez beleženja zgodovine</translation>
 <translation id="159359590073980872">Predpomnilnik za slike</translation>
 <translation id="7142571697412577603">Prikaz naslovov in kreditnih kartic iz Google Denarnice</translation>
-<translation id="4668711410219362250">https://support.google.com/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=165139&amp;p=settings_sign_in</translation>
 <translation id="3586931643579894722">Skrij podrobnosti</translation>
 <translation id="7170467426996704624">Prečrkovanje (salam → ሰላም)</translation>
 <translation id="6285395082104474418">V vrstici stanja je prikazano trenutno stanje omrežja, akumulatorja in drugo.</translation>
@@ -1482,7 +1480,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY"/> za na
 <translation id="7122169255686960726">Več kopij</translation>
 <translation id="7285011324031710154">Omogoči ogrodje v slogu spletnih aplikacij za gostujoče aplikacije.</translation>
 <translation id="1221825588892235038">Samo izbor</translation>
-<translation id="2227939492629426903">Omogoči novi meni za avatar. Pri upravljanju novega profila se prikaže meni za avatar. V nasprotnem primeru se prikaže preurejeni meni za avatar z enakimi funkcijami, kot jih je imel prejšnji, in z dodatno kartico z vadnico na vrhu, ki uporabnika poziva k preskusu novega uporabniškega vmesnika za upravljanje profila.</translation>
 <translation id="8713979477561846077">Omogočanje samodejnega popravljanja za fizično angleško tipkovnico (Združene države), ki ponuja takšne predloge, kot bi tipkali na fizično tipkovnico.</translation>
 <translation id="7201354769043018523">Zaklepaj </translation>
 <translation id="7517569744831774757">Ponastavitev nastavitev na privzete nastavitve.</translation>
@@ -4386,7 +4383,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="1254593899333212300">Neposredna internetna povezava</translation>
 <translation id="6107012941649240045">Izdano za</translation>
 <translation id="1101112020367325578">Nikoli ne dovoli vtičnikov brez varnostnih omejitev na spletnem mestu <ph name="HOST"/></translation>
-<translation id="3828373662010953415">Omogoči novi meni za avatar</translation>
 <translation id="6483805311199035658">Odpiranje datoteke <ph name="FILE"/> ...</translation>
 <translation id="5465122519792752163">Tipkovnica za nepalščino (InScript)</translation>
 <translation id="940425055435005472">Velikost pisave:</translation>
@@ -4430,7 +4426,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="774465434535803574">Napaka pri pakiranju razširitve</translation>
 <translation id="8200772114523450471">Nadaljuj</translation>
 <translation id="5750676294091770309">Blokirano z razširitvijo</translation>
-<translation id="1302191857856401062">Omogoči hitro preklapljanje med uporabniki v meniju z avatarji.</translation>
 <translation id="523299859570409035">Izjeme za obvestila</translation>
 <translation id="7017480957358237747">dovoljevanje ali prepoved nekaterih spletnih mest,</translation>
 <translation id="1029595648591494741">Želite preskusiti razširitev »<ph name="EXTENSION_NAME"/>«?</translation>
@@ -5393,7 +5388,6 @@ izračun časa do napolnjenosti</translation>
 <translation id="8545575359873600875">Vašega gesla žal ni bilo mogoče preveriti. Upravitelj tega zaščitenega uporabnika je morda pred kratkim spremenil geslo. V tem primeru bo novo geslo uporabljeno ob naslednji prijavi. Poskusite uporabiti staro geslo.</translation>
 <translation id="7549053541268690807">Iskanje v slovarju</translation>
 <translation id="8911079125461595075">Google je z zastavico označil razširitev »<ph name="EXTENSION_NAME"/>« kot zlonamerno in preprečil namestitev.</translation>
-<translation id="4347595254852029221">Omogoči hitro preklapljanje med uporabniki v meniju z avatarji</translation>
 <translation id="5870086504539785141">Zapiranje menija s funkcijami za ljudi s posebnimi potrebami</translation>
 <translation id="9102800320402283920">Za Google Denarnico morate vnesti vsaj ime in priimek.</translation>
 <translation id="7005848115657603926">Neveljaven obseg strani, uporabite <ph name="EXAMPLE_PAGE_RANGE"/></translation>

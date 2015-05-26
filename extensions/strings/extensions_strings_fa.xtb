@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">محصول نامشخص <ph name="PRODUCT_ID"/> از <ph name="VENDOR_NAME"/> (شماره سریال <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">طبق دستور سرپرست این دستگاه باید نسخه <ph name="EXTENSION_NAME"/> حداقل <ph name="EXTENSION_VERSION"/> باشد. تا زمانی که به آن نسخه (یا بالاتر) به‌روزرسانی نشود نمی‌توان آن را فعال کرد.</translation>
 <translation id="6075907793831890935">تبادل اطلاعات با دستگاهی به نام <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{‏انتخاب دستگاه USB}one{‏انتخاب دستگاه USB}other{‏انتخاب دستگاه‌های USB}}</translation>
 <translation id="5971037678316050792">کنترل حالت آداپتور بلوتوث و مرتبط‌سازی</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">دسترسی به اطلاعات دستگاه‌های بلوتوث مرتبط شده با سیستم شما و کشف دستگاه‌های بلوتوث در این نزدیکی.</translation>
+<translation id="5699534389808783598">انتخاب دستگاه‌های HID
+      {NUM_DEVICE,plural, =1{‏انتخاب دستگاه HID}one{‏انتخاب دستگاه HID}other{‏انتخاب دستگاه‌های HID}}</translation>
 <translation id="8749863574775030885">‏دسترسی به دستگاه‌های USB از ارائه‌دهنده ناشناس</translation>
 <translation id="3115238746683532089">محصول نامشخص <ph name="PRODUCT_ID"/> از فروشنده <ph name="VENDOR_ID"/> (شماره سریال <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> از <ph name="VENDOR_NAME"/></translation>

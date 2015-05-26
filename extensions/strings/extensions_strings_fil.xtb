@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Hindi kilalang produkto na <ph name="PRODUCT_ID"/> mula sa <ph name="VENDOR_NAME"/> (serial number na <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Iniaatas ng administrator ng computer na ito sa <ph name="EXTENSION_NAME"/> na magkaroon ng minimum na bersyon na <ph name="EXTENSION_VERSION"/>. Hindi ito mae-enable hanggang sa ma-update ito sa bersyong iyon (o mas bago).</translation>
 <translation id="6075907793831890935">Makipagpalit ng data sa device na pinangalanang <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Pumili ng USB device}one{Pumili ng mga USB device}other{Pumili ng mga USB device}}</translation>
 <translation id="5971037678316050792">Kontrolin ang estado at pagpapares ng Bluetooth adapter</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Mag-access ng impormasyon tungkol sa mga Bluetooth device na nakapares sa iyong system at tumuklas ng mga kalapit na Bluetooth device.</translation>
+<translation id="5699534389808783598">Pumili ng mga HID device
+      {NUM_DEVICE,plural, =1{Pumili ng HID device}one{Pumili ng mga HID device}other{Pumili ng mga HID device}}</translation>
 <translation id="8749863574775030885">Mag-access ng mga USB device mula sa isang hindi kilalang vendor</translation>
 <translation id="3115238746683532089">Hindi kilalang produkto na <ph name="PRODUCT_ID"/> mula sa vendor na <ph name="VENDOR_ID"/> (serial number na <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> mula sa <ph name="VENDOR_NAME"/></translation>

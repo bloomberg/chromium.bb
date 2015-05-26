@@ -7,9 +7,11 @@ Chromoting</translation>
 <translation id="2676780859508944670">Se procesează...</translation>
 <translation id="6062854958530969723">Gazda nu a fost inițializată.</translation>
 <translation id="5843054235973879827">De ce este această operație sigură?</translation>
+<translation id="5895138241574237353">Reîncepe</translation>
 <translation id="5619148062500147964">La acest computer</translation>
 <translation id="4068946408131579958">Toate conexiunile</translation>
 <translation id="2208514473086078157">Setările politicii nu acceptă permiterea accesului la acest computer în calitate de gazdă pentru Desktop la distanță Chrome. Contactați administratorul de sistem pentru asistență.</translation>
+<translation id="6381670701864002291">Altă problemă.</translation>
 <translation id="6541219117979389420">Jurnalele aplicațiilor pot să includă informații private, inclusiv identitatea ta (adresa de e-mail) și numele și proprietățile fișierelor și dosarelor din Google Drive.</translation>
 <translation id="3931191050278863510">Gazda s-a oprit.</translation>
 <translation id="3905196214175737742">Domeniu nevalid pentru proprietarul gazdei.</translation>
@@ -52,6 +54,7 @@ Chromoting</translation>
 <translation id="3606997049964069799">Nu te-ai conectat la Chromium. Conectează-te și încearcă din nou.</translation>
 <translation id="6198252989419008588">Schimbă codul PIN</translation>
 <translation id="7970576581263377361">Autentificarea nu a reușit. Conectează-te din nou la Chromium.</translation>
+<translation id="477305884757156764">Aplicația este prea lentă.</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">Înregistrarea acestui computer nu a reușit.</translation>
 <translation id="4804818685124855865">Deconectează-te</translation>
@@ -69,6 +72,7 @@ Chromoting</translation>
 <translation id="2314101195544969792">Sesiunea <ph name="APPLICATION_NAME"/> este inactivă de ceva timp și în curând va fi deconectată.</translation>
 <translation id="6001953797859482435">Preferințe privind gazda pentru Desktop la distanță Chrome</translation>
 <translation id="225614027745146050">Bun venit</translation>
+<translation id="1770394049404108959">Nu pot deschide aplicația.</translation>
 <translation id="9188433529406846933">Autorizați</translation>
 <translation id="228809120910082333">Confirmați mai jos contul și codul PIN pentru a permite accesarea prin intermediul Chromoting.</translation>
 <translation id="7605995381616883502">Conexiune nouă</translation>
@@ -99,6 +103,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="3884839335308961732">Confirmați mai jos contul și codul PIN pentru a permite accesarea prin intermediul aplicației Desktop la distanță Chrome.</translation>
 <translation id="327263477022142889">Doriți să ne ajutați să îmbunătățim Desktop la distanță Chrome? <ph name="LINK_BEGIN"/>Participați la sondaj.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Trimite Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">Nu pot deschide fișierele din Google Drive.</translation>
 <translation id="5702987232842159181">Conectat:</translation>
 <translation id="8509907436388546015">Proces de integrare desktop</translation>
 <translation id="4736223761657662401">Istoricul conexiunilor</translation>
@@ -190,10 +195,12 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="2078880767960296260">Proces gazdă</translation>
 <translation id="1643640058022401035">Părăsind această pagină, veți încheia sesiunea Chromoting.</translation>
 <translation id="8261506727792406068">Șterge</translation>
+<translation id="1152528166145813711">Selectează...</translation>
 <translation id="2235518894410572517">Permiteți accesul la acest computer altui utilizator, pentru ca acesta să îl poată vedea și controla.</translation>
 <translation id="6939719207673461467">Afișați/Ascundeți tastatura.</translation>
 <translation id="1023096696228309145">Cereți-i utilizatorului al cărui computer doriți să îl accesați să dea clic pe „Permiteți accesul acum” și să vă transmită codul de acces.</translation>
 <translation id="4240294130679914010">Program de dezinstalare a gazdei Chromoting</translation>
+<translation id="8712909229180978490">Nu pot vedea fișierele salvate online în Google Drive.</translation>
 <translation id="80739703311984697">Gazda la distanță solicită să vă autentificați pe un site terță parte. Pentru a continua, trebuie să acordați permisiuni suplimentare serviciului Chromoting pentru a accesa această adresă:</translation>
 <translation id="4006787130661126000">Trebuie să activați conexiunile la distanță dacă doriți să utilizați Desktop la distanță Chrome pentru a accesa acest computer.</translation>
 <translation id="177096447311351977">IP canal pentru client: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip=„<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>” host_ip=„<ph name="HOST_IP_ADDRESS_AND_PORT"/>” channel=„<ph name="CHANNEL_TYPE"/>” connection=„<ph name="CONNECTION_TYPE"/>”.</translation>
@@ -243,6 +250,7 @@ la distanță Chrome</translation>
 <translation id="6011539954251327702">Utilizând Chromoting, puteți permite accesul în siguranță la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicația Chromoting, care poate fi găsită la <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">În prezent, permiteți accesul unui alt utilizator la acest computer. Doriți să permiteți în continuare accesul?</translation>
 <translation id="4207623512727273241">Rulați programul de instalare înainte de a continua.</translation>
+<translation id="492843737083352574">Întâmpin probleme cu tastatura sau cu mouse-ul.</translation>
 <translation id="1324095856329524885">(această funcție nu este încă disponibilă pe computerul tău)</translation>
 <translation id="6570205395680337606">Resetează aplicația. Orice conținut nesalvat se va pierde.</translation>
 <translation id="6284412385303060032">Executarea gazdei pe ecranul de conectare al consolei a fost oprită pentru a accepta modul perdea, comutând la o gazdă care rulează într-o sesiune specifică utilizatorului.</translation>
@@ -260,6 +268,7 @@ la distanță Chrome</translation>
 <translation id="1546934824884762070">A apărut o eroare neașteptată. Raportați această problemă dezvoltatorilor.</translation>
 <translation id="4795786176190567663">Nu ai permisiunea de a efectua acțiunea respectivă.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="3025388528294795783">Pentru a remedia problema, spune-ne ce nu este în regulă:</translation>
 <translation id="7434397035092923453">Acces interzis pentru clientul: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Setările politicii nu acceptă permiterea accesului la acest computer în calitate de gazdă pentru Chromoting. Contactați administratorul de sistem pentru asistență.</translation>
 <translation id="7312846573060934304">Gazda este offline.</translation>

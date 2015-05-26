@@ -16,9 +16,12 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME"/> నుండి తెలియని ఉత్పత్తి <ph name="PRODUCT_ID"/> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">ఈ మెషీన్ నిర్వాహకుడికి <ph name="EXTENSION_NAME"/> కనీస సంస్కరణ అయిన <ph name="EXTENSION_VERSION"/> ఉండటం అవసరం. ఇది ఆ సంస్కరణకు (లేదా తదుపరి దానికి) నవీకరించే వరకు ప్రారంభించబడదు.</translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> పేరు గల పరికరంతో డేటాను ఇచ్చిపుచ్చుకోవడానికి అనుమతి</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{USB పరికరాన్ని ఎంచుకోండి}other{USB పరికరాలను ఎంచుకోండి}}</translation>
 <translation id="5971037678316050792">బ్లూటూత్ అడాప్టర్ స్థితిని మరియు జత చేసే విధానాన్ని నియంత్రించడానికి అనుమతి</translation>
 <translation id="677806580227005219">Mime హ్యాండ్లర్: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">మీ సిస్టమ్‌తో జత చేయబడిన బ్లూటూత్ పరికరాలకు సంబంధించిన సమాచారాన్ని ప్రాప్యత చేయడానికి మరియు సమీపంలోని బ్లూటూత్ పరికరాలను కనుగొనడానికి అనుమతి.</translation>
+<translation id="5699534389808783598">HID పరికరాలను ఎంచుకోండి
+      {NUM_DEVICE,plural, =1{HID పరికరాన్ని ఎంచుకోండి}other{HID పరికరాలను ఎంచుకోండి}}</translation>
 <translation id="8749863574775030885">తెలియని విక్రేత అందించిన USB పరికరాలకు ప్రాప్యత</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> విక్రేత నుండి తెలియని ఉత్పత్తి <ph name="PRODUCT_ID"/> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> నుండి <ph name="PRODUCT_NAME"/></translation>

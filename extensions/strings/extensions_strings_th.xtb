@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">ผลิตภัณฑ์ที่ไม่รู้จัก <ph name="PRODUCT_ID"/> จาก <ph name="VENDOR_NAME"/> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">ผู้ดูแลระบบของเครื่องนี้ต้องการ <ph name="EXTENSION_NAME"/> เวอร์ชัน <ph name="EXTENSION_VERSION"/> ซึ่งเป็นเวอร์ชันขั้นต่ำ จะไม่สามารถเปิดใช้ได้จนกว่าจะมีการอัปเดตส่วนขยายนี้เป็นเวอร์ชันดังกล่าว (หรือสูงกว่า)</translation>
 <translation id="6075907793831890935">แลกเปลี่ยนข้อมูลกับอุปกรณ์ชื่อ <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{เลือกอุปกรณ์ USB 1 รายการ}other{เลือกอุปกรณ์ USB หลายรายการ}}</translation>
 <translation id="5971037678316050792">ควบคุมสถานะและการจับคู่อะแดปเตอร์บลูทูธ</translation>
 <translation id="677806580227005219">เครื่องจัดการ MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">เข้าถึงข้อมูลเกี่ยวกับอุปกรณ์บลูทูธที่จับคู่กับระบบของคุณ และสำรวจอุปกรณ์บลูทูธใกล้เคียง</translation>
+<translation id="5699534389808783598">เลือกอุปกรณ์ HID
+      {NUM_DEVICE,plural, =1{เลือกอุปกรณ์ HID 1 รายการ}other{เลือกอุปกรณ์ HID หลายรายการ}}</translation>
 <translation id="8749863574775030885">เข้าถึงอุปกรณ์ USB จากผู้ขายที่ไม่รู้จัก</translation>
 <translation id="3115238746683532089">ผลิตภัณฑ์ที่ไม่รู้จัก <ph name="PRODUCT_ID"/> จากผู้ขาย <ph name="VENDOR_ID"/> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> จาก <ph name="VENDOR_NAME"/></translation>

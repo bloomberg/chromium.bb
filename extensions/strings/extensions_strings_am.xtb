@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">ያልታወቀ ምርት <ph name="PRODUCT_ID"/> ከ<ph name="VENDOR_NAME"/> (ተከታታይ ቁጥር <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">የዚህ ማሽን አስተዳዳሪ <ph name="EXTENSION_NAME"/> ቢያንስ የ<ph name="EXTENSION_VERSION"/> ስሪት እንዲሆን ይፈልጋሉል። ወደዚያ ስሪት (ወይም ከዚያ በላይ) ካልተዘመነ በስተቀር ሊነቃ አይችልም።</translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> ከሚባል መሣሪያ ጋር ውሂብ ተለዋወጥ</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{የዩኤስቢ መሣሪያ ይምረጡ}one{የዩኤስቢ መሣሪያዎችን ይምረጡ}other{የዩኤስቢ መሣሪያዎችን ይምረጡ}}</translation>
 <translation id="5971037678316050792">የብሉቱዝ አስማሚ ሁኔታ እና ማጣመርን ይቆጣጠራል</translation>
 <translation id="677806580227005219">የሚሜ ተቆጣጣሪ፦ <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">ከስርዓትዎ ጋር ስለተጣመሩ የብሉቱዝ መሣሪያዎች ያለ መረጃ ይደርሳልና አቅራቢያ ያሉ የብሉቱዝ መሣሪያዎችን ያገኛል።</translation>
+<translation id="5699534389808783598">HID መሣሪያዎች ይምረጡ
+      {NUM_DEVICE,plural, =1{HID መሣሪያ ይምረጡ}one{HID መሣሪያዎች ይምረጡ}other{HID መሣሪያዎች ይምረጡ}}</translation>
 <translation id="8749863574775030885">ካልታወቀ አቅራቢ የመጡ የዩኤስቢ መሣሪያዎችን ይደርሳል</translation>
 <translation id="3115238746683532089">ያልታወቀ ምርት <ph name="PRODUCT_ID"/> ከ<ph name="VENDOR_ID"/> ሻጭ (ተከታታይ ቁጥር <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> ከ<ph name="VENDOR_NAME"/></translation>

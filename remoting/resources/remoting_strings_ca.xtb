@@ -7,9 +7,11 @@ Host</translation>
 <translation id="2676780859508944670">S'hi està treballant...</translation>
 <translation id="6062854958530969723">S'ha produït un error en iniciar l'amfitrió.</translation>
 <translation id="5843054235973879827">Per què és segur?</translation>
+<translation id="5895138241574237353">Reinicia</translation>
 <translation id="5619148062500147964">A aquest ordinador</translation>
 <translation id="4068946408131579958">Totes les connexions</translation>
 <translation id="2208514473086078157">La configuració de la política no permet compartir aquest ordinador com a amfitrió de l'escriptori remot de Chrome. Contacteu amb l'administrador del sistema per obtenir assistència.</translation>
+<translation id="6381670701864002291">Altres motius.</translation>
 <translation id="6541219117979389420">Els registres de l'aplicació poden incloure informació privada, com ara la vostra identitat (adreça electrònica) i els noms i les propietats dels fitxers i de les carpetes de Google Drive.</translation>
 <translation id="3931191050278863510">S'ha aturat l'amfitrió.</translation>
 <translation id="3905196214175737742">El domini del propietari de l'amfitrió no és vàlid.</translation>
@@ -52,6 +54,7 @@ Host</translation>
 <translation id="3606997049964069799">No heu iniciat la sessió a Chromium. Inicieu-hi la sessió i torneu-ho a provar.</translation>
 <translation id="6198252989419008588">Canvia el PIN</translation>
 <translation id="7970576581263377361">L'autenticació ha fallat. Torneu a iniciar la sessió a Chromium.</translation>
+<translation id="477305884757156764">L'aplicació és massa lenta.</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">No s'ha pogut registrar aquest ordinador.</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
@@ -69,11 +72,12 @@ Host</translation>
 <translation id="2314101195544969792">La vostra sessió de <ph name="APPLICATION_NAME"/> ha estat inactiva durant una estona i es desconnectarà aviat.</translation>
 <translation id="6001953797859482435">Preferències de l'amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="225614027745146050">Benvingut</translation>
+<translation id="1770394049404108959">No puc obrir l'aplicació.</translation>
 <translation id="9188433529406846933">Autoritza</translation>
 <translation id="228809120910082333">Confirmeu el vostre compte i PIN a continuació per permetre l'accés per Chromoting.</translation>
 <translation id="7605995381616883502">Connexió nova</translation>
 <translation id="2038229918502634450">L'amfitrió s'està reiniciant per aplicar un canvi en la política.</translation>
-<translation id="2851674870054673688">Quan hagin introduït el codi, la sessió d'ús compartit començarà.</translation>
+<translation id="2851674870054673688">Quan hagin introduït el codi, la sessió compartida començarà.</translation>
 <translation id="5593560073513909978">El servei està temporalment no disponible. Torneu-ho a provar més tard.</translation>
 <translation id="3908017899227008678">Redueix per ajustar</translation>
 <translation id="8073845705237259513">Per utilitzar l'escriptori remot de Chrome, haureu d'afegir un compte de Google al dispositiu.</translation>
@@ -99,6 +103,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="3884839335308961732">Confirmeu el vostre compte i PIN a continuació per permetre l'accés per l'escriptori remot de Chrome.</translation>
 <translation id="327263477022142889">Voleu ajudar a millorar l'Escriptori remot de Chrome? <ph name="LINK_BEGIN"/>Responeu a l'enquesta.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Envia Ctrl-Alt-Supr</translation>
+<translation id="6173536234069435147">No puc obrir els meus fitxers de Google Drive.</translation>
 <translation id="5702987232842159181">Connectat:</translation>
 <translation id="8509907436388546015">Procés d'integració de l'escriptori</translation>
 <translation id="4736223761657662401">Historial de connexions</translation>
@@ -114,7 +119,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="8513093439376855948">Amfitrió de missatgeria nativa per a la gestió remota de l'amfitrió</translation>
 <translation id="2353140552984634198">Podeu accedir de manera segura a aquest ordinador mitjançant Chromoting.</translation>
 <translation id="4481276415609939789">No teniu cap ordinador registrat. Per activar les connexions remotes a un ordinador, instal·leu-hi Chromoting i feu clic a <ph name="BUTTON_NAME"/>.</translation>
-<translation id="2013884659108657024">Chrome està baixant l'instal·lador de l'amfitrió de l'escriptori remot de Chrome. Quan s'hagi completat la baixada, executeu l'instal·lador abans de continuar.</translation>
+<translation id="2013884659108657024">Chrome està baixant l'instal·lador de l'amfitrió d'Escriptori remot de Chrome. Quan s'hagi completat la baixada, executeu l'instal·lador abans de continuar.</translation>
 <translation id="7149517134817561223">Aplicació que ha d'emetre les ordres per a l'amfitrió de l'escriptori remot de Chrome.</translation>
 <translation id="1742469581923031760">S'està connectant...</translation>
 <translation id="2855866366045322178">sense connexió</translation>
@@ -190,10 +195,12 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2078880767960296260">Procés de l'amfitrió</translation>
 <translation id="1643640058022401035">Si sortiu d'aquesta pàgina, la sessió de Chromoting finalitzarà.</translation>
 <translation id="8261506727792406068">Elimina</translation>
+<translation id="1152528166145813711">Seleccioneu...</translation>
 <translation id="2235518894410572517">Compartiu aquest ordinador perquè un altre usuari el vegi i el controli.</translation>
 <translation id="6939719207673461467">Mostra o amaga el teclat</translation>
 <translation id="1023096696228309145">Demaneu a l'usuari de l'ordinador al qual voleu accedir que faci clic a Comparteix ara i que us doni el codi d'accés.</translation>
 <translation id="4240294130679914010">Programa de desinstal·lació de Chromoting Host</translation>
+<translation id="8712909229180978490">No puc veure els meus fitxers desats en línia a Google Drive.</translation>
 <translation id="80739703311984697">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a Chromoting per accedir a aquesta adreça:</translation>
 <translation id="4006787130661126000">Heu d'activar les connexions remotes si voleu utilitzar l'escriptori remot de Chrome per accedir a aquest ordinador.</translation>
 <translation id="177096447311351977">IP del canal del client: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -243,6 +250,7 @@ remot de Chrome</translation>
 <translation id="6011539954251327702">Chromoting us permet compartir l'ordinador de manera segura al web. Els dos usuaris han d'executar l'aplicació Chromoting, que podeu trobar a la pàgina <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Esteu compartint aquest ordinador amb un altre usuari. Voleu continuar compartint-lo?</translation>
 <translation id="4207623512727273241">Executeu l'instal·lador abans de continuar.</translation>
+<translation id="492843737083352574">Tinc problemes amb el teclat o amb el ratolí.</translation>
 <translation id="1324095856329524885">(aquesta funció encara no està disponible al vostre ordinador)</translation>
 <translation id="6570205395680337606">Restabliu l'aplicació. Els treballs que no s'hagin desat es perdran.</translation>
 <translation id="6284412385303060032">L'amfitrió que s'executa a la pantalla d'inici de la consola s'ha aturat per admetre el mode Curtain, i fa servir un amfitrió que s'executa en una sessió específica de l'usuari.</translation>
@@ -260,6 +268,7 @@ remot de Chrome</translation>
 <translation id="1546934824884762070">S'ha produït un error inesperat. Informeu d'aquest problema als desenvolupadors.</translation>
 <translation id="4795786176190567663">No teniu permís per dur a terme aquesta acció.</translation>
 <translation id="6965382102122355670">D'acord</translation>
+<translation id="3025388528294795783">Per ajudar-nos a resoldre el problema, ens heu de dir què passa:</translation>
 <translation id="7434397035092923453">S'ha rebutjat l'accés del client: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">La configuració de la política no permet compartir aquest ordinador com a amfitrió de Chromoting. Contacteu amb l'administrador del sistema per obtenir assistència.</translation>
 <translation id="7312846573060934304">L'amfitrió no està connectat</translation>

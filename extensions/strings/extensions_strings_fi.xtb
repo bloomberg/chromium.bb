@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Tuntematon laite <ph name="PRODUCT_ID"/> toimittajalta <ph name="VENDOR_NAME"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Tämän laitteen järjestelmänvalvoja edellyttää laajennuksen <ph name="EXTENSION_NAME"/> version olevan vähintään <ph name="EXTENSION_VERSION"/>. Laajennusta ei voida ottaa käyttöön ennen kuin se on päivitetty kyseiseen tai sitä uudempaan versioon.</translation>
 <translation id="6075907793831890935">Vaihtaa tietoja isäntää <ph name="HOSTNAME"/> käyttävän laitteen kanssa.</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Valitse USB-laite}other{Valitse USB-laitteet}}</translation>
 <translation id="5971037678316050792">Hallinnoida Bluetooth-sovittimen tilaa ja laiteparin muodostusta.</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Käyttää järjestelmäsi kanssa laitepariksi liitettyjen Bluetooth-laitteiden tietoja ja löytää lähellä olevia Bluetooth-laitteita.</translation>
+<translation id="5699534389808783598">Valitse HID-laitteet
+      {NUM_DEVICE,plural, =1{Valitse HID-laite}other{Valitse HID-laitteet}}</translation>
 <translation id="8749863574775030885">Käyttää tuntemattoman myyjän USB-laitteita.</translation>
 <translation id="3115238746683532089">Tuntematon tuote <ph name="PRODUCT_ID"/> toimittajalta <ph name="VENDOR_ID"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> myyjältä <ph name="VENDOR_NAME"/></translation>

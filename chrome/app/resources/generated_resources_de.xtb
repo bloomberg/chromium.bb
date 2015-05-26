@@ -976,7 +976,6 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="3125649188848276916">Ja, neue Daten nicht aufzeichnen</translation>
 <translation id="648927581764831596">Keine verfügbar</translation>
 <translation id="6348657800373377022">Kombinationsfeld</translation>
-<translation id="7453382714306901283">Ihr Laptop enthält einen TPM-Sicherheitschip (Trusted Platform Module), über den viele wichtige Sicherheitsfunktionen in Chrome OS implementiert sind. Weitere Informationen dazu finden Sie in der Chromebook-Hilfe unter http://support.google.com/chromebook/?p=tpm.</translation>
 <translation id="8064671687106936412">Schlüssel:</translation>
 <translation id="2218515861914035131">Als unformatierten Text einfügen</translation>
 <translation id="1725149567830788547">&amp;Steuerelemente anzeigen</translation>
@@ -1132,7 +1131,7 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="4037463823853863991">Aktiviert den Tab-Wechsler für Bedienungshilfen in Android</translation>
 <translation id="7394102162464064926">Möchten Sie diese Seiten wirklich aus Ihrem Verlauf löschen?
 
-Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_KEY"/>).</translation>
+Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_KEY"/>).</translation>
 <translation id="1125520545229165057">Dvorak (Hsu)</translation>
 <translation id="6629841649550503054">Alle Daten wurden in <ph name="BEGIN_LINK"/>Google Drive<ph name="END_LINK"/> gesichert.</translation>
 <translation id="7799329977874311193">HTML-Dokument</translation>
@@ -1158,7 +1157,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="37613671848467444">In &amp;Inkognito-Fenster öffnen</translation>
 <translation id="159359590073980872">Bilder-Cache</translation>
 <translation id="7142571697412577603">Adressen und Kreditkarten aus Google Wallet anzeigen</translation>
-<translation id="4668711410219362250">https://support.google.com/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=165139&amp;p=settings_sign_in</translation>
 <translation id="3586931643579894722">Details ausblenden</translation>
 <translation id="7170467426996704624">Transliteration (salam → ሰላም)</translation>
 <translation id="6285395082104474418">In der Statusleiste wird unter anderem der aktuelle Status Ihres Netzwerks und Ihres Akkus angezeigt.</translation>
@@ -1477,7 +1475,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="7122169255686960726">Mehr Kopien</translation>
 <translation id="7285011324031710154">Web-App-Framestil für gehostete Apps aktivieren</translation>
 <translation id="1221825588892235038">Nur Auswahl</translation>
-<translation id="2227939492629426903">Das neue Avatar-Menü wird aktiviert. Wenn auch die neue Profilverwaltung aktiviert ist, wird einfach nur das neue Avatar-Menü für die Profilverwaltung angezeigt. Ansonsten erscheint ein neu gestaltetes Avatar-Menü, das die gleichen Funktionen bietet wie das alte und den Nutzer über eine Anleitungskarte am oberen Rand auffordert, die neue Profilverwaltungsoberfläche auszuprobieren.</translation>
 <translation id="8713979477561846077">Aktiviert die Autokorrektur für physische Tastaturen für Englisch (USA). Damit erhalten Sie Vorschläge bei der Eingabe auf einer physischen Tastatur.</translation>
 <translation id="7201354769043018523">Rechte Klammer</translation>
 <translation id="7517569744831774757">Einstellungen auf ursprüngliche Standardwerte zurücksetzen</translation>
@@ -2255,7 +2252,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="5581211282705227543">Es sind keine Plug-ins installiert.</translation>
 <translation id="3330206034087160972">Präsentationsmodus beenden</translation>
 <translation id="6920653475274831310">Die Webseite unter <ph name="URL"/> hat zu viele Umleitungen erzeugt. Das Löschen Ihrer Cookies für diese Website oder das Zulassen von Drittanbieter-Cookies könnte das Problem möglicherweise beheben. Sollte dies nicht der Fall sein, liegt eventuell ein Serverkonfigurationsfehler und kein Problem mit Ihrem Computer vor.</translation>
-<translation id="5488468185303821006">Im Inkognito-Modus zulassen</translation>
+<translation id="5488468185303821006">Im Inkognitomodus zulassen</translation>
 <translation id="6556866813142980365">Wiederholen</translation>
 <translation id="8824701697284169214">&amp;Seite hinzufügen...</translation>
 <translation id="7063129466199351735">Verknüpfungen werden bearbeitet...</translation>
@@ -3025,7 +3022,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="3857466062686943799">Zu Taskleiste hinzufügen</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME"/> wird beim Systemstart gestartet und auch dann weiter im Hintergrund ausgeführt, wenn Sie alle anderen <ph name="PRODUCT_NAME"/>-Fenster geschlossen haben.</translation>
 <translation id="8539727552378197395">Nein (nur HTTP)</translation>
-<translation id="8728672262656704056">Sie haben den Inkognito-Modus aktiviert</translation>
+<translation id="8728672262656704056">Sie haben den Inkognitomodus aktiviert</translation>
 <translation id="1611704746353331382">Lesezeichen in HTML-Datei exportieren...</translation>
 <translation id="662607201886173483">DSA</translation>
 <translation id="8275863942928500239">Zusätzliches Touch-Feedback für Komponenten der Benutzeroberfläche deaktivieren</translation>
@@ -4347,7 +4344,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="1254593899333212300">Direkte Internetverbindung</translation>
 <translation id="6107012941649240045">Ausgestellt für</translation>
 <translation id="1101112020367325578">Plug-ins ohne Sandbox auf <ph name="HOST"/> nie zulassen</translation>
-<translation id="3828373662010953415">Neues Avatar-Menü aktivieren</translation>
 <translation id="6483805311199035658"><ph name="FILE"/> wird geöffnet...</translation>
 <translation id="5465122519792752163">Nepali-Tastatur (InScript)</translation>
 <translation id="940425055435005472">Schriftgröße:</translation>
@@ -4391,7 +4387,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="774465434535803574">Erweiterung packen: Fehler</translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
 <translation id="5750676294091770309">Durch Erweiterung blockiert</translation>
-<translation id="1302191857856401062">Ermöglicht schnelles Umschalten zwischen Nutzern im Avatar-Menü.</translation>
 <translation id="523299859570409035">Ausnahmen für Benachrichtigungen</translation>
 <translation id="7017480957358237747">bestimmte Websites freigeben oder sperren,</translation>
 <translation id="1029595648591494741">&quot;<ph name="EXTENSION_NAME"/>&quot; testen?</translation>
@@ -4789,7 +4784,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="3082520371031013475">Touchpad- und Mauseinstellungen</translation>
 <translation id="4927301649992043040">Erweiterung packen</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
-<translation id="2326606747676847821">Zum Inkognito-Modus wechseln</translation>
+<translation id="2326606747676847821">Zum Inkognitomodus wechseln</translation>
 <translation id="9049835026521739061">Hangul-Modus</translation>
 <translation id="6458308652667395253">JavaScript-Blockierung verwalten...</translation>
 <translation id="8435334418765210033">Gespeicherte Netzwerke</translation>
@@ -5161,7 +5156,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="1384211230590313258">Handler zur Diensterkennung</translation>
 <translation id="6656103420185847513">Ordner bearbeiten</translation>
 <translation id="1937256809970138538">Sagen Sie &quot;Ok Google&quot;, wenn Ihr Display eingeschaltet und entsperrt ist.</translation>
-<translation id="1949433054743893124">Der Inkognito-Modus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber oder Ihrem Internetanbieter erfasst werden. Zudem verzeichnen auch die Websites, die Sie im Inkognito-Modus aufrufen, weiterhin Ihren Besuch.</translation>
+<translation id="1949433054743893124">Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber oder Ihrem Internetanbieter erfasst werden. Zudem verzeichnen auch die Websites, die Sie im Inkognitomodus aufrufen, weiterhin Ihren Besuch.</translation>
 <translation id="4193154014135846272">Google-Dokument</translation>
 <translation id="4771973620359291008">Ein unbekannter Fehler ist aufgetreten.</translation>
 <translation id="5509914365760201064">Aussteller: <ph name="CERTIFICATE_AUTHORITY"/></translation>
@@ -5352,7 +5347,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="8545575359873600875">Ihr Passwort konnte nicht bestätigt werden. Der Verwalter dieses betreuten Nutzers hat das Passwort möglicherweise vor Kurzem geändert. In diesem Fall wird das neue Passwort bei der nächsten Anmeldung wirksam. Versuchen Sie, sich mit Ihrem alten Passwort anzumelden.</translation>
 <translation id="7549053541268690807">Im Wörterbuch suchen</translation>
 <translation id="8911079125461595075">&quot;<ph name="EXTENSION_NAME"/>&quot; wurde von Google als schädlich eingestuft und die Installation wurde blockiert.</translation>
-<translation id="4347595254852029221">Schnelles Umschalten zwischen Nutzern im Avatar-Menü aktivieren</translation>
 <translation id="5870086504539785141">Bedienungshilfemenü schließen</translation>
 <translation id="9102800320402283920">Es müssen mindestens Vor- und Nachname angegeben werden.</translation>
 <translation id="7005848115657603926">Ungültiger Seitenbereich, verwenden Sie <ph name="EXAMPLE_PAGE_RANGE"/>.</translation>
@@ -5779,7 +5773,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="969892804517981540">Offizieller Build</translation>
 <translation id="1691608011302982743">Sie haben das Gerät zu früh entfernt!</translation>
 <translation id="445923051607553918">Mit WLAN-Netzwerk verbinden</translation>
-<translation id="4215898373199266584">Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="INCOGNITO_MODE_SHORTCUT"/>).</translation>
+<translation id="4215898373199266584">Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="INCOGNITO_MODE_SHORTCUT"/>).</translation>
 <translation id="1048597748939794622">Erzwingt die Einstellung auf allen Ebenen</translation>
 <translation id="9169496697824289689">Tastenkombinationen ansehen</translation>
 <translation id="420676372321767680">Dekodieren ohne Aufbau aktivieren</translation>

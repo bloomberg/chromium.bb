@@ -57,6 +57,7 @@
 <translation id="7064610482057367130">No s'ha trobat cap instal·lació de Chromium pendent d'actualització.</translation>
 <translation id="872034308864968620">Permet que Chromium s'executi en segon pla</translation>
 <translation id="459535195905078186">Aplicacions de Chromium</translation>
+<translation id="5942225298871134766">Chromium desarà la contrasenya amb <ph name="SAVED_PASSWORD_LINK"/> i la recordarà la propera vegada que la necessiteu.</translation>
 <translation id="8134284582177628525">Si compartiu aquest ordinador amb <ph name="PROFILE_NAME"/>, afegiu el vostre usuari a Chromium per navegar per separat. Si no, també podeu desconnectar el seu compte de Google.</translation>
 <translation id="1480489203462860648">Prova'l, ja està instal·lat</translation>
 <translation id="3032787606318309379">S'està afegint a Chromium...</translation>
@@ -66,6 +67,7 @@
 <translation id="8628626585870903697">Chromium no inclou el lector de PDF que és necessari perquè la previsualització funcioni.</translation>
 <translation id="7138853919861947730">Chromium pot utilitzar serveis web per millorar l'experiència de navegació dels usuaris.</translation>
 <translation id="4743926867934016338">Accepta i cerca</translation>
+<translation id="2347108572062610441">Aquesta extensió ha canviat la pàgina que es mostra quan inicieu Chromium.</translation>
 <translation id="3849925841547750267">Lamentablement, la vostra configuració de Mozilla Firefox no està disponible mentre el navegador estigui en funcionament. Per importar la configuració a Chromium, deseu el treball i tanqueu totes les finestres de Firefox. A continuació, feu clic a Continua.</translation>
 <translation id="7027298027173928763">No s'ha pogut fer l'actualització de Chromium a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Heu de tornar a instal·lar Chromium manualment.</translation>
 <translation id="8897323336392112261">També controla la pàgina que es mostra quan inicieu Chromium o quan feu clic al botó Inici.</translation>
@@ -150,6 +152,7 @@
 <translation id="8684913864886094367">Chromium no s'ha tancat correctament.</translation>
 <translation id="3582788516608077514">S'està actualitzant Chromium...</translation>
 <translation id="7223968959479464213">Gestor de tasques: Chromium</translation>
+<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Hi ha una baixada en curs. Voleu cancel·lar-la i sortir de Chromium?}other{Hi ha # baixades en curs. Voleu cancel·lar-les i sortir de Chromium?}}</translation>
 <translation id="1779356040007214683">Perquè Chromium sigui més segur, hem desactivat algunes de les extensions que no apareixen a <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="6883876366448858277">Envia una paraula i el seu context a Cerca de Google i, a continuació, mostra definicions, imatges i altres resultats de la cerca.</translation>
 <translation id="6638567566961868659">Cerqueu les adreces d'interès al menú de Chromium o a la Barra d'adreces d'interès.</translation>
@@ -186,6 +189,7 @@
 <translation id="6334986366598267305">Ara resulta més fàcil utilitzar Chromium amb el vostre compte de Google i en ordinadors compartits.</translation>
 <translation id="6212496753309875659">Aquest equip ja té una versió més recent de Chromium. Si el programari no funciona, desinstal·leu Chromium i torneu-ho a provar.</translation>
 <translation id="1115445892567829615">Chromium no ha pogut sincronitzar les dades. Actualitzeu la frase de contrasenya de sincronització.</translation>
+<translation id="2396765026452590966">L'extensió <ph name="EXTENSION_NAME"/> ha canviat la pàgina que es mostra quan inicieu Chromium.</translation>
 <translation id="1298199220304005244">Obtén ajuda per a l'ús de Chromium OS</translation>
 <translation id="331951419404882060">Chromium OS no ha pogut sincronitzar les vostres dades a causa d'un error amb l'inici de sessió.</translation>
 <translation id="8187289872471304532">Aneu a
@@ -202,6 +206,7 @@
 <translation id="2158734852934720349">Llicències de programari lliure de Chromium OS</translation>
 <translation id="2966088006374919794">Chromium necessita iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME"/>. L'enllaç sol·licitat és <ph name="PROTOLINK"/>.</translation>
 <translation id="7205698830395646142">Amaga al menú de Chromium</translation>
+<translation id="9019929317751753759">Per tal que Chromium sigui més segur, hem desactivat algunes de les extensions que no figuren a <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="7979877361127045932">Amaga al menú de Chromium</translation>
 <translation id="6485906693002546646">Utilitzeu <ph name="PROFILE_EMAIL"/> per sincronitzar el contingut de Chromium. Per modificar la preferència de sincronització o per utilitzar Chromium sense cap compte de Google, dirigiu-vos a <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="705851970750939768">Actualitza Chromium</translation>
@@ -227,6 +232,7 @@
 <translation id="805745970029938373">Podeu veure totes les vostres notificacions des de les aplicacions, les extensions i els llocs web de Chromium aquí.</translation>
 <translation id="2119636228670142020">Quant a &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Hi ha disponible una versió nova més segura de Chromium.</translation>
+<translation id="1644918877723739397">Chromium desarà la contrasenya a <ph name="SAVED_PASSWORD_LINK"/> i la recordarà la propera vegada que la necessiteu.</translation>
 <translation id="378917192836375108">Chromium us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
 <translation id="608189560609172163">Chromium no ha pogut sincronitzar les dades a causa d'un error amb l'inici de sessió.</translation>
 <translation id="4888717733111232871">Regla d'entrada de Chromium per permetre el trànsit de mDNS.</translation>

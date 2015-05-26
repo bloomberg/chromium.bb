@@ -16,9 +16,12 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME"/> എന്നതിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID"/> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854"><ph name="EXTENSION_VERSION"/> എന്നതിന്റെ ഏറ്റവും കുറഞ്ഞ പതിപ്പിനായി ഈ യന്ത്രത്തിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർക്ക് <ph name="EXTENSION_NAME"/> എന്നതാവശ്യമാണ്. അത് ആ പതിപ്പിലേക്ക് (അല്ലെങ്കിൽ അതിനും മുകളിലേക്ക്) അപ്‌ഡേറ്റുചെയ്യുന്നതുവരെ അത് പ്രവർത്തനക്ഷമമാക്കാനാവില്ല.</translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> എന്ന പേരിലുള്ള ഉപകരണം ഉപയോഗിച്ച് ഡാറ്റ എക്‌സ്‌ചേഞ്ചുചെയ്യുക</translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{ഒരു USB ഉപകരണം തിരഞ്ഞെടുക്കുക}other{USB ഉപകരണങ്ങൾ തിരഞ്ഞെടുക്കുക}}</translation>
 <translation id="5971037678316050792">Bluetooth അഡാപ്‌റ്റർ നിലയും ജോടിയാക്കലും നിയന്ത്രിക്കുക</translation>
 <translation id="677806580227005219">മൈംഹാൻഡ്‌ലർ: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">നിങ്ങളുടെ സിസ്റ്റവുമായി ജോടിയാക്കിയ Bluetooth ഉപകരണങ്ങളെക്കുറിച്ചുള്ള വിവരങ്ങൾ ആക്‌സസ്സുചെയ്ത് സമീപമുള്ള Bluetooth ഉപകരണങ്ങൾ കണ്ടെത്തുക.</translation>
+<translation id="5699534389808783598">HID ഉപകരണങ്ങൾ തിരഞ്ഞെടുക്കുക
+      {NUM_DEVICE,plural, =1{ഒരു HID ഉപകരണം തിരഞ്ഞെടുക്കുക}other{ഒരു HID ഉപകരണങ്ങൾ തിരഞ്ഞെടുക്കുക}}</translation>
 <translation id="8749863574775030885">ഒരു അജ്ഞാത വെണ്ടറിൽ നിന്നും USB ഉപകരണങ്ങൾ ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> വെൻഡറിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID"/> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> എന്നതിൽ നിന്നുള്ള <ph name="PRODUCT_NAME"/></translation>

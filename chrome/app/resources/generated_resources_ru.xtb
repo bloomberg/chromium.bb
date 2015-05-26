@@ -975,7 +975,6 @@
 <translation id="3125649188848276916">Да (не записывать новые данные)</translation>
 <translation id="648927581764831596">Отсутствуют</translation>
 <translation id="6348657800373377022">Поле со списком</translation>
-<translation id="7453382714306901283">Компьютер оснащен устройством безопасности модуля доверительной платформы (TPM), используемым для реализации многих критических функций безопасности в Chrome OS. Более подробную информацию можно получить в Справочном центре Chromebook: http://support.google.com/chromebook/?p=tpm.</translation>
 <translation id="8064671687106936412">Ключ:</translation>
 <translation id="2218515861914035131">Вставить как обычный текст</translation>
 <translation id="1725149567830788547">Показать &amp;управление</translation>
@@ -1157,7 +1156,6 @@
 <translation id="37613671848467444">Открыть в режиме &amp;инкогнито</translation>
 <translation id="159359590073980872">Кеш изображений</translation>
 <translation id="7142571697412577603">Показывать адреса и кредитные карты из Google Кошелька</translation>
-<translation id="4668711410219362250">https://support.google.com/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=165139&amp;p=settings_sign_in</translation>
 <translation id="3586931643579894722">Скрыть подробности</translation>
 <translation id="7170467426996704624">Транслитерация (salam → ሰላም)</translation>
 <translation id="6285395082104474418">В строке состояния отображаются статус подключения к сети, уровень заряда батареи и другие сведения.</translation>
@@ -1476,7 +1474,6 @@
 <translation id="7122169255686960726">Ещё</translation>
 <translation id="7285011324031710154">Включить для размещаемых приложений такое же оформление окна, как у веб-приложений</translation>
 <translation id="1221825588892235038">Только выбранные</translation>
-<translation id="2227939492629426903">Включает новое меню аватара. В сочетании с новой системой управления профилями показывает только меню аватара этой новой системы. В противном случае показывает обновленное меню аватара с прежними функциями, а также подсказку вверху с предложением попробовать новый интерфейс управления профилями.</translation>
 <translation id="8713979477561846077">Включает автозамену и предлагает варианты слов во время ввода на аппаратной клавиатуре с раскладкой &quot;США&quot;.</translation>
 <translation id="7201354769043018523">Правая скобка</translation>
 <translation id="7517569744831774757">Восстановление настроек по умолчанию.</translation>
@@ -4365,7 +4362,6 @@
 <translation id="1254593899333212300">Прямое подключение к Интернету</translation>
 <translation id="6107012941649240045">Выдан:</translation>
 <translation id="1101112020367325578">Никогда не запускать плагины вне тестовой среды на сайте <ph name="HOST"/></translation>
-<translation id="3828373662010953415">Использовать новое меню аватара</translation>
 <translation id="6483805311199035658">Открывается <ph name="FILE"/>...</translation>
 <translation id="5465122519792752163">Непальская раскладка (InScript)</translation>
 <translation id="940425055435005472">Размер шрифта:</translation>
@@ -4409,7 +4405,6 @@
 <translation id="774465434535803574">Ошибка в упакованном расширении</translation>
 <translation id="8200772114523450471">Возобновить</translation>
 <translation id="5750676294091770309">Заблокировано расширением</translation>
-<translation id="1302191857856401062">Быстрое переключение между аккаунтами через меню аватара</translation>
 <translation id="523299859570409035">Исключения для оповещений</translation>
 <translation id="7017480957358237747">контроль доступа к сайтам,</translation>
 <translation id="1029595648591494741">Запустить приложение &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
@@ -5370,7 +5365,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8545575359873600875">Не удалось проверить пароль. Возможно, его недавно сменил администратор, управляющий этим профилем. В этом случае новый пароль потребуется при следующем входе. Попробуйте использовать прежний пароль.</translation>
 <translation id="7549053541268690807">Искать в словаре</translation>
 <translation id="8911079125461595075">Google заблокировал установку потенциально опасной программы (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="4347595254852029221">Разрешить быстрое переключение между аккаунтами в меню аватара</translation>
 <translation id="5870086504539785141">Закрыть меню специальных возможностей</translation>
 <translation id="9102800320402283920">В Google Кошельке необходимо указать имя и фамилию.</translation>
 <translation id="7005848115657603926">Недопустимый диапазон страниц. Используйте <ph name="EXAMPLE_PAGE_RANGE"/></translation>

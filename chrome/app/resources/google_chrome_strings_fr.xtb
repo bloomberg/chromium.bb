@@ -69,6 +69,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="7098166902387133879">Votre micro est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="2596415276201385844">Afin d'établir une connexion sécurisée, votre horloge doit être réglée correctement. Les certificats permettant aux sites Web de s'identifier sont en effet valides pendant une période précise. Si l'horloge de votre appareil est incorrecte, Chrome n'est pas en mesure de vérifier la validité des certificats.</translation>
 <translation id="4053720452172726777">Personnaliser et contrôler Google Chrome</translation>
+<translation id="5148419164691878332">Chrome stockera ce mot de passe dans vos <ph name="SAVED_PASSWORDS_LINK"/> et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
 <translation id="3197823471738295152">Votre appareil est à jour.</translation>
 <translation id="8286862437124483331">Google Chrome tente d'afficher les mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
@@ -80,6 +81,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3282568296779691940">Connectez-vous à Chrome</translation>
 <translation id="3089968997497233615">Une nouvelle version de Google Chrome encore plus sûre est disponible.</translation>
 <translation id="5037239767309817516">Fermez toutes les fenêtres et relancez Google Chrome afin que cette modification soit prise en compte.</translation>
+<translation id="1619887657840448962">Afin de rendre Chromium plus sûr, nous avons désactivé l'extension suivante qui n'est pas répertoriée sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> et qui a pu être ajoutée à votre insu.</translation>
 <translation id="225614027745146050">Bienvenue</translation>
 <translation id="3398288718845740432">Masquer dans le menu Chrome</translation>
 <translation id="7473891865547856676">Non, merci</translation>
@@ -111,6 +113,7 @@ au site <ph name="SITE"/>, des identifiants inhabituels et incorrects ont été 
 
 Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un répertoire de profil différent ou utiliser une version plus récente de Google Chrome.</translation>
 <translation id="7282192067747128786">Notifications – Chrome (<ph name="QUANTITY"/> non lues)</translation>
+<translation id="1475773083554142432">Chrome stockera ce mot de passe avec <ph name="SAVED_PASSWORD_LINK"/> et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
 <translation id="6011049234605203654">Accédez au
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -153,6 +156,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="5855036575689098185">Le logiciel exécuté sur votre ordinateur n'est pas compatible avec Google Chrome.</translation>
 <translation id="7164397146364144019">Vous pouvez nous aider à rendre Chrome plus sûr et plus facile à utiliser en nous signalant automatiquement les incidents de sécurité potentiels.</translation>
 <translation id="8008534537613507642">Réinstaller Chrome</translation>
+<translation id="2689103672227170538">Cette extension a modifié la page qui s'affiche lorsque vous démarrez Chrome.</translation>
 <translation id="8862326446509486874">Vous ne disposez pas des droits requis pour installer la version système. Relancez l'installation en vous connectant comme administrateur.</translation>
 <translation id="2874156562296220396">Google Chrome fonctionne grâce au projet Open Source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> et à d'autres <ph name="BEGIN_LINK_OSS"/>logiciels libres<ph name="END_LINK_OSS"/>.</translation>
 <translation id="7191567847629796517">Google Chrome OS ne permet pas le lancement d'une application externe pour gérer les liens <ph name="SCHEME"/>. Le lien demandé est <ph name="PROTOLINK"/>.</translation>
@@ -180,6 +184,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK"/>.</translation>
 <translation id="7761834446675418963">Cliquez sur votre nom pour ouvrir Chrome et commencer à naviguer.</translation>
 <translation id="2669824781555328029"><ph name="FILE_NAME"/> peut nuire à votre confort de navigation, il a donc été bloqué par Chrome.</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Un téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Google Chrome ?}one{# téléchargement est en cours. Voulez-vous annuler ce dernier et quitter Google Chrome ?}other{# téléchargements sont en cours. Voulez-vous annuler ces derniers et quitter Google Chrome ?}}</translation>
 <translation id="6235018212288296708">Règle de trafic entrant pour Google Chrome autorisant le trafic mDNS</translation>
 <translation id="7984945080620862648">Vous ne pouvez pas consulter le site <ph name="SITE"/> pour le moment, car il a envoyé des identifiants brouillés qui ne peuvent être traités par Chrome. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page ultérieurement.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -248,6 +253,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="3360895254066713204">Aide de Chrome</translation>
 <translation id="1877026089748256423">Version de Chrome obsolète</translation>
 <translation id="7592736734348559088">Impossible de synchroniser vos données dans Google Chrome, car les informations de connexion de votre compte ne sont plus à jour.</translation>
+<translation id="3735758079232443276">L'extension <ph name="EXTENSION_NAME"/> a modifié la page qui s'affiche lorsque vous démarrez Chrome.</translation>
 <translation id="6991142834212251086">Lier mes données Google Chrome à ce compte</translation>
 <translation id="3451115285585441894">Ajout à Google Chrome en cours…</translation>
 <translation id="3047079729301751317">La déconnexion de <ph name="USERNAME"/> a pour effet d'effacer votre historique, vos favoris, vos paramètres et les autres données Chrome stockées sur cet appareil. Les données stockées dans votre compte Google ne sont pas effacées ; vous pouvez les gérer dans <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>

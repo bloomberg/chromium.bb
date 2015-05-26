@@ -64,6 +64,7 @@
 <translation id="7098166902387133879">Google Chrome utilizează microfonul.</translation>
 <translation id="2596415276201385844">Pentru a stabili o conexiune securizată, ceasul trebuie să fie setat corect. Aceasta deoarece certificatele pe care site-urile le folosesc pentru a se identifica sunt valabile numai pentru anumite intervale de timp. Din moment ce ora de pe dispozitiv este incorectă, Chrome nu poate verifica aceste certificate.</translation>
 <translation id="4053720452172726777">Personalizați și controlați Google Chrome</translation>
+<translation id="5148419164691878332">Chrome o va stoca în <ph name="SAVED_PASSWORDS_LINK"/> și o va reține pentru data următoare când ai nevoie.</translation>
 <translation id="3197823471738295152">Dispozitivul dvs. este actualizat.</translation>
 <translation id="8286862437124483331">Google Chrome încearcă să afișeze parolele. Pentru a permite acest lucru, introduceți parola pentru Windows.</translation>
 <translation id="3889417619312448367">Dezinstalează Google Chrome</translation>
@@ -75,6 +76,7 @@
 <translation id="3282568296779691940">Conectați-vă la Chrome</translation>
 <translation id="3089968997497233615">Google Chrome este disponibil într-o versiune nouă și mai sigură.</translation>
 <translation id="5037239767309817516">Pentru ca această modificare să aibă efect, închide toate ferestrele Google Chrome și repornește-l.</translation>
+<translation id="1619887657840448962">Pentru mai multă siguranță în Chrome, am dezactivat următoarea extensie care nu este inclusă în <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> și care este posibil să fi fost adăugată fără știrea ta.</translation>
 <translation id="225614027745146050">Bun venit</translation>
 <translation id="3398288718845740432">Ascunde în meniul Chrome</translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
@@ -102,6 +104,7 @@
 <translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verifică dacă există suficient spațiu liber și dacă ai drepturile necesare pentru a instala software-ul.</translation>
 <translation id="5170938038195470297">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune Google Chrome mai recentă. Este posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune Chrome mai nouă.</translation>
 <translation id="7282192067747128786">Chrome – Notificări (<ph name="QUANTITY"/> necitite)</translation>
+<translation id="1475773083554142432">Chrome o va stoca folosind <ph name="SAVED_PASSWORD_LINK"/> și o va reține pentru data următoare când ai nevoie.</translation>
 <translation id="6011049234605203654">Accesați
           meniul Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -144,6 +147,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="5855036575689098185">Software-ul care rulează pe computer este incompatibil cu Google Chrome.</translation>
 <translation id="7164397146364144019">Puteți contribui la un produs Chrome mai sigur și mai ușor de folosit raportând automat la Google detaliile eventualelor incidente privind securitatea.</translation>
 <translation id="8008534537613507642">Reinstalați Chrome</translation>
+<translation id="2689103672227170538">Această extensie a modificat ce pagină se afișează când pornești Chrome.</translation>
 <translation id="8862326446509486874">Nu ai drepturile adecvate pentru instalarea la nivel de sistem. Încearcă să rulezi din nou programul de instalare ca Administrator.</translation>
 <translation id="2874156562296220396">Google Chrome există ca urmare a proiectului open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> și al altor <ph name="BEGIN_LINK_OSS"/>software-uri open source<ph name="END_LINK_OSS"/>.</translation>
 <translation id="7191567847629796517">Sistemul de operare Google Chrome nu acceptă lansarea unei aplicații externe pentru gestionarea linkurilor <ph name="SCHEME"/>. Linkul solicitat este <ph name="PROTOLINK"/>.</translation>
@@ -171,6 +175,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="2665296953892887393">Contribuie la îmbunătățirea browserului Google Chrome trimițând rapoarte de blocare și <ph name="UMA_LINK"/> la Google</translation>
 <translation id="7761834446675418963">Dați clic pe numele dvs. pentru a deschide Chrome și a începe să navigați.</translation>
 <translation id="2669824781555328029">Fișierul <ph name="FILE_NAME"/> poate afecta experiența de navigare. De aceea, Chrome l-a blocat.</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{O descărcare este în desfășurare. Dorești să anulezi descărcarea și să ieși din Google Chrome?}few{# descărcări sunt în desfășurare. Dorești să anulezi descărcările și să ieși din Google Chrome?}other{# de descărcări sunt în desfășurare. Dorești să anulezi descărcările și să ieși din Google Chrome?}}</translation>
 <translation id="6235018212288296708">Regula de intrare pentru Google Chrome pentru a permite traficul mDNS.</translation>
 <translation id="7984945080620862648">Nu puteți accesa acum site-ul <ph name="SITE"/>, deoarece acesta a trimis date de conectare într-un format necunoscut, pe care Chrome nu le poate procesa. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -239,6 +244,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome nu este actualizat</translation>
 <translation id="7592736734348559088">Google Chrome nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
+<translation id="3735758079232443276">Extensia „<ph name="EXTENSION_NAME"/>” a modificat ce pagină se afișează când pornești Chrome.</translation>
 <translation id="6991142834212251086">Conectați-vă datele Chrome cu acest cont</translation>
 <translation id="3451115285585441894">Se adaugă la Chrome...</translation>
 <translation id="3047079729301751317">Dacă deconectați utilizatorul <ph name="USERNAME"/>, vor fi șterse istoricul, marcajele, setările și alte date Chrome salvate pe acest dispozitiv. Datele salvate în Contul Google nu vor fi șterse și pot fi gestionate din <ph name="GOOGLE_DASHBOARD_LINK"/>Tabloul de bord Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>

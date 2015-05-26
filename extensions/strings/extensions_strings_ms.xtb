@@ -16,9 +16,12 @@
 <translation id="6027032947578871493">Produk <ph name="PRODUCT_ID"/> daripada <ph name="VENDOR_NAME"/> tidak diketahui (nombor siri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME"/> untuk mempunyai versi minimum <ph name="EXTENSION_VERSION"/>. Ia tidak dapat didayakan sehingga ia telah dikemas kini kepada versi itu (atau lebih tinggi).</translation>
 <translation id="6075907793831890935">Bertukar data dengan peranti yang bernama <ph name="HOSTNAME"/></translation>
+<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Pilih peranti USB}other{Pilih peranti USB}}</translation>
 <translation id="5971037678316050792">Kawal keadaan dan gandingan penyesuai Bluetooth</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Akses maklumat mengenai peranti Bluetooth yang dipasangkan dengan sistem anda dan temui peranti Bluetooth berhampiran.</translation>
+<translation id="5699534389808783598">Pilih peranti HID
+      {NUM_DEVICE,plural, =1{Pilih peranti HID}other{Pilih peranti HID}}</translation>
 <translation id="8749863574775030885">Akses peranti USB daripada vendor yang tidak diketahui</translation>
 <translation id="3115238746683532089">Produk <ph name="PRODUCT_ID"/> daripada vendor <ph name="VENDOR_ID"/> tidak diketahui (nombor siri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> daripada <ph name="VENDOR_NAME"/></translation>

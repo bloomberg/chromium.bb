@@ -64,6 +64,7 @@
 <translation id="7098166902387133879">Google Chrome використовує ваш мікрофон.</translation>
 <translation id="2596415276201385844">Щоб установити безпечне з’єднання, потрібно правильно вказати час, оскільки сертифікати, які веб-сайти використовують для самоідентифікації дійсні лише протягом певного періоду часу. Час на вашому пристрої неправильний, тому Chrome не може перевірити сертифікати.</translation>
 <translation id="4053720452172726777">Налаштування та керування Google Chrome</translation>
+<translation id="5148419164691878332">Chrome додасть його в <ph name="SAVED_PASSWORDS_LINK"/> і запам’ятає для наступного разу.</translation>
 <translation id="3197823471738295152">Пристрій оновлено.</translation>
 <translation id="8286862437124483331">Google Chrome намагається показати паролі. Щоб дозволити, введіть свій пароль Windows.</translation>
 <translation id="3889417619312448367">Видалити Google Chrome</translation>
@@ -75,6 +76,7 @@
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
 <translation id="5037239767309817516">Щоб зміна почала діяти, закрийте всі вікна Google Chrome і перезапустіть веб-переглядач.</translation>
+<translation id="1619887657840448962">Щоб зробити Chrome безпечнішим, ми вимкнули наведене нижче розширення, установлене не із сайту <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> і, можливо, додане без вашого відома.</translation>
 <translation id="225614027745146050">Вітаємо!</translation>
 <translation id="3398288718845740432">Сховати в меню Chrome</translation>
 <translation id="7473891865547856676">Ні, дякую</translation>
@@ -103,6 +105,7 @@
 <translation id="7747138024166251722">Програмі встановлення не вдалося створити тимчасовий каталог. Перевірте наявність вільного простору на диску та дозволу на встановлення програмного забезпечення.</translation>
 <translation id="5170938038195470297">Ваш профіль не можна використати, оскільки його створено в новішій версії Google Chrome. Деякі функції можуть бути недоступними. Укажіть інший каталог профілю чи скористайтеся новішою версією Chrome.</translation>
 <translation id="7282192067747128786">Chrome – сповіщення (непрочитаних: <ph name="QUANTITY"/>)</translation>
+<translation id="1475773083554142432">Chrome додасть його в <ph name="SAVED_PASSWORD_LINK"/> і запам’ятає для наступного разу.</translation>
 <translation id="6011049234605203654">Перейдіть у
           меню Chrome &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -145,6 +148,7 @@
 <translation id="5855036575689098185">Програмне забезпечення, запущене на вашому комп’ютері, не сумісне з Google Chrome.</translation>
 <translation id="7164397146364144019">Ви можете допомогти зробити Chrome безпечнішим і простішим у користуванні, автоматично повідомляючи Google деталі щодо можливого порушення безпеки.</translation>
 <translation id="8008534537613507642">Перевстановити Chrome</translation>
+<translation id="2689103672227170538">Це розширення змінило сторінку, яка відкривається під час запуску Chrome.</translation>
 <translation id="8862326446509486874">У вас немає відповідних прав для встановлення на рівні системи. Спробуйте запустити програму встановлення, увійшовши з правами адміністратора.</translation>
 <translation id="2874156562296220396">Google Chrome було створено на основі проекту програмного забезпечення з відкритим кодом <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> та іншого <ph name="BEGIN_LINK_OSS"/>програмного забезпечення з відкритим кодом<ph name="END_LINK_OSS"/>.</translation>
 <translation id="7191567847629796517">ОС Google Chrome не підтримує запуск зовнішніх додатків для обробки посилань типу <ph name="SCHEME"/>. Потрібний тип посилання: <ph name="PROTOLINK"/>.</translation>
@@ -172,6 +176,7 @@
 <translation id="2665296953892887393">Допоможіть покращити Google Chrome, надсилаючи звіти про аварійне завершення роботи та <ph name="UMA_LINK"/> в Google</translation>
 <translation id="7761834446675418963">Натисніть своє ім’я, щоб відкрити Chrome і розпочати перегляд сайтів.</translation>
 <translation id="2669824781555328029">Файл <ph name="FILE_NAME"/> може погіршити перегляд веб-сторінок, тому Chrome блокує його.</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Триває завантаження. Скасувати його та вийти з Google Chrome?}one{Триває # завантаження. Скасувати їх і вийти з Google Chrome?}few{Тривають # завантаження. Скасувати їх і вийти з Google Chrome?}many{Тривають # завантажень. Скасувати їх і вийти з Google Chrome?}other{Тривають # завантаження. Скасувати їх і вийти з Google Chrome?}}</translation>
 <translation id="6235018212288296708">Вхідне правило для Google Chrome дозволяє трафік mDNS.</translation>
 <translation id="7984945080620862648">Зараз не можна перейти на сторінку <ph name="SITE"/>, оскільки веб-сайт надіслав зашифровані облікові дані, які Chrome не може обробити. Помилки мережі й атаки зазвичай є тимчасовими, тому ця сторінка може працювати пізніше.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
@@ -240,6 +245,7 @@
 <translation id="3360895254066713204">Помічник Chrome</translation>
 <translation id="1877026089748256423">Версія Chrome застаріла</translation>
 <translation id="7592736734348559088">Google Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
+<translation id="3735758079232443276">Розширення &quot;<ph name="EXTENSION_NAME"/>&quot; змінило сторінку, яка відкривається під час запуску Chrome.</translation>
 <translation id="6991142834212251086">Пов’язати мої дані Chrome із цим обліковим записом</translation>
 <translation id="3451115285585441894">Додавання в Chrome...</translation>
 <translation id="3047079729301751317">Якщо від’єднати користувача <ph name="USERNAME"/>, вашу історію, закладки, налаштування й інші дані Chrome, збережені на цьому пристрої, буде видалено. Дані, які зберігаються в обліковому записі Google, не буде видалено. Ними можна керувати на <ph name="GOOGLE_DASHBOARD_LINK"/>Інформаційній панелі Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>

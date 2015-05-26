@@ -7,9 +7,11 @@
 <translation id="2676780859508944670">処理しています...</translation>
 <translation id="6062854958530969723">ホストを初期化できませんでした。</translation>
 <translation id="5843054235973879827">この操作が安全な理由</translation>
+<translation id="5895138241574237353">再起動</translation>
 <translation id="5619148062500147964">このパソコンへの接続</translation>
 <translation id="4068946408131579958">すべての接続</translation>
 <translation id="2208514473086078157">ポリシー設定により、Chrome リモート デスクトップのホストとしてこのパソコンを共有することはできません。詳しくはシステム管理者にお問い合わせください。</translation>
+<translation id="6381670701864002291">その他の問題。</translation>
 <translation id="6541219117979389420">アプリケーション ログには、メールアドレスのような個人情報をはじめ、Google ドライブのファイルやフォルダの名前、プロパティといったプライバシーにかかわる情報が含まれる可能性があります。</translation>
 <translation id="3931191050278863510">ホストが停止しました。</translation>
 <translation id="3905196214175737742">ホストの所有者ドメインが無効です。</translation>
@@ -52,6 +54,7 @@
 <translation id="3606997049964069799">Chromium にログインしていません。ログインしてもう一度お試しください。</translation>
 <translation id="6198252989419008588">PIN を変更</translation>
 <translation id="7970576581263377361">認証できませんでした。Chromium にもう一度ログインしてください。</translation>
+<translation id="477305884757156764">アプリケーションの動作が遅すぎる。</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
 <translation id="4804818685124855865">切断</translation>
@@ -69,6 +72,7 @@
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME"/> のセッションでしばらく操作がありませんでした。セッションを間もなく切断します。</translation>
 <translation id="6001953797859482435">Chrome リモート デスクトップ ホストの設定</translation>
 <translation id="225614027745146050">ようこそ</translation>
+<translation id="1770394049404108959">アプリケーションを開けない。</translation>
 <translation id="9188433529406846933">承認</translation>
 <translation id="228809120910082333">Chromoting によるアクセスを許可するには、下記でアカウントと PIN の確認を行ってください。</translation>
 <translation id="7605995381616883502">新しい接続</translation>
@@ -99,6 +103,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="3884839335308961732">Chrome リモート デスクトップによるアクセスを許可するには、下記でアカウントと PIN の確認を行ってください。</translation>
 <translation id="327263477022142889">Chrome リモート デスクトップの品質向上にご協力ください。<ph name="LINK_BEGIN"/>アンケートに回答する<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del を送信</translation>
+<translation id="6173536234069435147">Google ドライブのファイルを開けない。</translation>
 <translation id="5702987232842159181">接続済み:</translation>
 <translation id="8509907436388546015">デスクトップ統合プロセス</translation>
 <translation id="4736223761657662401">接続履歴</translation>
@@ -190,10 +195,12 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2078880767960296260">ホスト プロセス</translation>
 <translation id="1643640058022401035">このページを閉じると、Chromoting セッションが終了します。</translation>
 <translation id="8261506727792406068">削除</translation>
+<translation id="1152528166145813711">選択してください…</translation>
 <translation id="2235518894410572517">このパソコンが共有され、他のユーザーがこのパソコンの画面を見ながら操作できるようになります。</translation>
 <translation id="6939719207673461467">キーボードを表示/非表示</translation>
 <translation id="1023096696228309145">アクセス先のパソコンのユーザーに、[今すぐ共有] ボタンをクリックしてアクセス コードを提供するよう依頼してください。</translation>
 <translation id="4240294130679914010">Chromoting ホスト アンインストーラ</translation>
+<translation id="8712909229180978490">Google ドライブに保存したファイルをオンラインで表示できない。</translation>
 <translation id="80739703311984697">リモート ホストで、サードパーティ ウェブサイトへの認証が求められています。続行するには、次のアドレスにアクセスできるように Chromoting に追加の権限を与える必要があります:</translation>
 <translation id="4006787130661126000">Chrome リモート デスクトップを使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
 <translation id="177096447311351977">クライアントのチャンネル IP: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'</translation>
@@ -243,6 +250,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6011539954251327702">Chromoting を使用すると、パソコンをウェブ経由で安全に共有できます。共有するには両方のユーザーが Chromoting アプリを実行している必要があります。このアプリは <ph name="URL"/> から入手できます。</translation>
 <translation id="2919669478609886916">現在このパソコンを別のユーザーと共有しています。共有を継続しますか？</translation>
 <translation id="4207623512727273241">続行する前にインストーラを実行してください。</translation>
+<translation id="492843737083352574">キーボードまたはマウスに関連した問題がある。</translation>
 <translation id="1324095856329524885">（お使いのパソコンはこの機能に未対応です）</translation>
 <translation id="6570205395680337606">アプリケーションをリセットします。保存されていない作業は失われます。</translation>
 <translation id="6284412385303060032">コンソールのログイン画面で実行されるホストは、カーテンモードをサポートするために終了されました（ユーザー固有のセッションで実行されるホストに切り替えられました）。</translation>
@@ -260,6 +268,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="1546934824884762070">予期しないエラーが発生しました。この問題をデベロッパーに報告してください。</translation>
 <translation id="4795786176190567663">この操作を実行する権限がありません。</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="3025388528294795783">どのような問題が起こっているかお知らせください。</translation>
 <translation id="7434397035092923453">次のクライアントのアクセスを拒否しました: <ph name="CLIENT_USERNAME"/>。</translation>
 <translation id="3403830762023901068">ポリシー設定により、Chromoting のホストとしてこのパソコンを共有することはできません。詳しくはシステム管理者にお問い合わせください。</translation>
 <translation id="7312846573060934304">ホストはオフラインです。</translation>
