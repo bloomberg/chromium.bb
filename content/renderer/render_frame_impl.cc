@@ -536,6 +536,11 @@ STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::DOCUMENT_DOMAIN,
                              blink::WebSandboxFlags::DocumentDomain);
 STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::ORIENTATION_LOCK,
                              blink::WebSandboxFlags::OrientationLock);
+STATIC_ASSERT_MATCHING_ENUMS(
+    SandboxFlags::PROPAGATES_TO_AUXILIARY,
+    blink::WebSandboxFlags::PropagatesToAuxiliaryBrowsingContexts);
+STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::MODALS,
+                             blink::WebSandboxFlags::Modals);
 STATIC_ASSERT_MATCHING_ENUMS(SandboxFlags::ALL,
                              blink::WebSandboxFlags::All);
 

@@ -34,6 +34,8 @@ enum class SandboxFlags : int {
   POINTER_LOCK = 1 << 8,
   DOCUMENT_DOMAIN = 1 << 9,
   ORIENTATION_LOCK = 1 << 10,
+  PROPAGATES_TO_AUXILIARY = 1 << 11,
+  MODALS = 1 << 12,
   ALL = -1
 };
 
