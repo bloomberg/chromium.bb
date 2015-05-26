@@ -46,6 +46,7 @@ namespace {
 const char* kKnownInvalidKeyboardDeviceNames[] = {"Power Button",
                                                   "Sleep Button",
                                                   "Video Bus",
+                                                  "gpio-keys.5",
                                                   "gpio-keys.12",
                                                   "ROCKCHIP-I2S Headset Jack"};
 
