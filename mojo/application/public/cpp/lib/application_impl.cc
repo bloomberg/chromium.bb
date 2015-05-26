@@ -4,6 +4,7 @@
 
 #include "mojo/application/public/cpp/application_impl.h"
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/lib/service_registry.h"
@@ -12,10 +13,27 @@
 
 namespace mojo {
 
+namespace {
+
+void DefaultTerminationClosure() {
+  if (base::MessageLoop::current()->is_running())
+    base::MessageLoop::current()->Quit();
+}
+
+}  // namespace
+
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  InterfaceRequest<Application> request)
+    : ApplicationImpl(delegate, request.Pass(),
+                      base::Bind(&DefaultTerminationClosure)) {
+}
+
+ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
+                                 InterfaceRequest<Application> request,
+                                 const base::Closure& termination_closure)
     : delegate_(delegate),
-      binding_(this, request.Pass()) {
+      binding_(this, request.Pass()),
+      termination_closure_(termination_closure) {
 }
 
 void ApplicationImpl::ClearConnections() {
@@ -75,8 +93,7 @@ void ApplicationImpl::UnbindConnections(
 }
 
 void ApplicationImpl::Terminate() {
-  if (base::MessageLoop::current()->is_running())
-    base::MessageLoop::current()->Quit();
+  termination_closure_.Run();
 }
 
 void ApplicationImpl::AcceptConnection(

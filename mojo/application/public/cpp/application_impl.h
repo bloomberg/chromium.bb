@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/lib/service_registry.h"
@@ -56,6 +57,12 @@ class ApplicationImpl : public Application,
   // lifetime of ApplicationImpl.
   ApplicationImpl(ApplicationDelegate* delegate,
                   InterfaceRequest<Application> request);
+  // Constructs an ApplicationImpl with a custom termination closure. This
+  // closure is invoked on Terminate() instead of the default behavior of
+  // quitting the current MessageLoop.
+  ApplicationImpl(ApplicationDelegate* delegate,
+                  InterfaceRequest<Application> request,
+                  const base::Closure& termination_closure);
   ~ApplicationImpl() override;
 
   // The Mojo shell. This will return a valid pointer after Initialize() has
@@ -116,6 +123,7 @@ class ApplicationImpl : public Application,
   Binding<Application> binding_;
   ShellPtr shell_;
   std::string url_;
+  base::Closure termination_closure_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationImpl);
 };
