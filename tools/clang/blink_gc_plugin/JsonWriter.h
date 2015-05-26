@@ -7,24 +7,12 @@
 
 #include "llvm/Support/raw_ostream.h"
 
-// TODO(hans): Remove this #ifdef after Clang is rolled past r234897.
-#ifdef LLVM_FORCE_HEAD_REVISION
-#define JSON_WRITER_STREAM std::unique_ptr<llvm::raw_ostream>
-#else
-#define JSON_WRITER_STREAM llvm::raw_fd_ostream*
-#endif
-
 // Helper to write information for the points-to graph.
 class JsonWriter {
  public:
-  static JsonWriter* from(JSON_WRITER_STREAM os) {
+  static JsonWriter* from(std::unique_ptr<llvm::raw_ostream> os) {
     return os ? new JsonWriter(std::move(os)) : 0;
   }
-#ifndef LLVM_FORCE_HEAD_REVISION
-  ~JsonWriter() {
-    delete os_;
-  }
-#endif
   void OpenList() {
     Separator();
     *os_ << "[";
@@ -65,7 +53,7 @@ class JsonWriter {
     *os_ << "\"" << key << "\":\"" << val << "\"";
   }
  private:
-  JsonWriter(JSON_WRITER_STREAM os) : os_(std::move(os)) {}
+  JsonWriter(std::unique_ptr<llvm::raw_ostream> os) : os_(std::move(os)) {}
   void Separator() {
     if (state_.empty())
       return;
@@ -75,7 +63,7 @@ class JsonWriter {
     }
     state_.top() = true;
   }
-  JSON_WRITER_STREAM os_;
+  std::unique_ptr<llvm::raw_ostream> os_;
   std::stack<bool> state_;
 };
 
