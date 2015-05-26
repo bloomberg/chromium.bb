@@ -539,10 +539,9 @@ bool ThreadState::shouldScheduleIdleGC()
     // Heap::markedObjectSize() may be underestimated if any thread has not
     // finished completeSweep().
     size_t currentObjectSize = allocatedObjectSize + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
-    // Schedule an idle GC if Oilpan has allocated more than 1 MB since
-    // the last GC and the current memory usage is >50% larger than
-    // the estimated live memory usage.
-    return allocatedObjectSize >= 1024 * 1024 && currentObjectSize > estimatedLiveObjectSize * 3 / 2;
+    return Heap::allocatedSpace() >= 1024 * 1024 // Oilpan has allocated >1 MB.
+        && currentObjectSize >= 1024 * 1024 // Oilpan or/and PartitionAlloc have allocated >1 MB since the last GC.
+        && currentObjectSize > estimatedLiveObjectSize * 3 / 2; // The current memory usage is >50% larger than the estimated live memory usage.
 #else
     return false;
 #endif
@@ -565,10 +564,9 @@ bool ThreadState::shouldSchedulePreciseGC()
     // Heap::markedObjectSize() may be underestimated if any thread has not
     // finished completeSweep().
     size_t currentObjectSize = allocatedObjectSize + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
-    // Schedule a precise GC if Oilpan has allocated more than 1 MB since
-    // the last GC and the current memory usage is >50% larger than
-    // the estimated live memory usage.
-    return allocatedObjectSize >= 1024 * 1024 && currentObjectSize > estimatedLiveObjectSize * 3 / 2;
+    return Heap::allocatedSpace() >= 1024 * 1024 // Oilpan has allocated >1 MB.
+        && currentObjectSize >= 1024 * 1024 // Oilpan or/and PartitionAlloc have allocated >1 MB since the last GC.
+        && currentObjectSize > estimatedLiveObjectSize * 3 / 2; // The current memory usage is >50% larger than the estimated live memory usage.
 #endif
 }
 
@@ -592,11 +590,9 @@ bool ThreadState::shouldForceConservativeGC()
         // aggressively. This is a safe guard to avoid OOM.
         return currentObjectSize > estimatedLiveObjectSize * 3 / 2;
     }
-    // Schedule a conservative GC if Oilpan has allocated more than 32 MB since
-    // the last GC and the current memory usage is >400% larger than
-    // the estimated live memory usage.
-    // TODO(haraken): 400% is too large. Lower the heap growing factor.
-    return allocatedObjectSize >= 32 * 1024 * 1024 && currentObjectSize > 5 * estimatedLiveObjectSize;
+    return Heap::allocatedSpace() >= 1024 * 1024 // Oilpan has allocated >1 MB.
+        && currentObjectSize >= 32 * 1024 * 1024 // Oilpan or/and PartitionAlloc have allocated >32 MB since the last GC.
+        && currentObjectSize > estimatedLiveObjectSize * 5; // The current memory usage is >400% larger than the estimated live memory usage. TODO(haraken): 400% is too large. Lower the heap growing factor.
 }
 
 void ThreadState::scheduleGCIfNeeded()
