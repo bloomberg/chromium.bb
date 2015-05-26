@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -11,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/base/hit_test.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -78,6 +80,27 @@ TEST_F(MruWindowTrackerTest, MinimizedWindowsAreLru) {
   EXPECT_EQ(w1.get(), window_list[3]);
   EXPECT_EQ(w4.get(), window_list[4]);
   EXPECT_EQ(w5.get(), window_list[5]);
+}
+
+// Tests that windows being dragged are only in the WindowList once.
+TEST_F(MruWindowTrackerTest, DraggedWindowsInListOnlyOnce) {
+  scoped_ptr<aura::Window> w1(CreateWindow());
+  wm::ActivateWindow(w1.get());
+
+  // Start dragging the window.
+  wm::GetWindowState(w1.get())->CreateDragDetails(
+      w1.get(), gfx::Point(), HTRIGHT, aura::client::WINDOW_MOVE_SOURCE_TOUCH);
+
+  // During a drag the window is reparented by the Docked container.
+  aura::Window* drag_container = Shell::GetContainer(
+      Shell::GetTargetRootWindow(), kShellWindowId_DockedContainer);
+  drag_container->AddChild(w1.get());
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->is_dragged());
+
+  // The dragged window should only be in the list once.
+  MruWindowTracker::WindowList window_list =
+      mru_window_tracker()->BuildWindowListIgnoreModal();
+  EXPECT_EQ(1, std::count(window_list.begin(), window_list.end(), w1.get()));
 }
 
 }  // namespace ash
