@@ -409,7 +409,19 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
 bool GpuProcessTransportFactory::DoesCreateTestContexts() { return false; }
 
 uint32 GpuProcessTransportFactory::GetImageTextureTarget() {
-  return BrowserGpuChannelHostFactory::GetImageTextureTarget();
+  // TODO(reveman): We currently assume that the compositor will use BGRA_8888
+  // if it's able to, and RGBA_8888 otherwise. Since we don't know what it will
+  // use we hardcode BGRA_8888 here for now. We should instead
+  // move decisions about GpuMemoryBuffer format to the browser embedder so we
+  // know it here, and pass that decision to the compositor for each usage.
+  // crbug.com/490362
+  gfx::GpuMemoryBuffer::Format format = gfx::GpuMemoryBuffer::BGRA_8888;
+
+  // TODO(danakj): When one-copy uploads support partial update, change this
+  // usage to PERSISTENT_MAP for one-copy.
+  gfx::GpuMemoryBuffer::Usage usage = gfx::GpuMemoryBuffer::MAP;
+
+  return BrowserGpuChannelHostFactory::GetImageTextureTarget(format, usage);
 }
 
 cc::SharedBitmapManager* GpuProcessTransportFactory::GetSharedBitmapManager() {

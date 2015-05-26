@@ -155,6 +155,8 @@ bool GbmSurfaceFactory::CanCreateNativePixmap(BufferUsage usage) {
   switch (usage) {
     case MAP:
       return false;
+    case PERSISTENT_MAP:
+      return false;
     case SCANOUT:
       return true;
   }

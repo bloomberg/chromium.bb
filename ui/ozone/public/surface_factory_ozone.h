@@ -69,6 +69,7 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
 
   enum BufferUsage {
     MAP,
+    PERSISTENT_MAP,
     SCANOUT,
   };
 

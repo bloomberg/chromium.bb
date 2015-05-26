@@ -24,10 +24,15 @@ void GpuMemoryBufferFactorySharedMemory::
         std::vector<Configuration>* configurations) {
   const Configuration supported_configurations[] = {
       {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP},
+      {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
       {gfx::GpuMemoryBuffer::RGBA_4444, gfx::GpuMemoryBuffer::MAP},
+      {gfx::GpuMemoryBuffer::RGBA_4444, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
       {gfx::GpuMemoryBuffer::RGBA_8888, gfx::GpuMemoryBuffer::MAP},
+      {gfx::GpuMemoryBuffer::RGBA_8888, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
       {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::MAP},
-      {gfx::GpuMemoryBuffer::YUV_420, gfx::GpuMemoryBuffer::MAP}};
+      {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::PERSISTENT_MAP},
+      {gfx::GpuMemoryBuffer::YUV_420, gfx::GpuMemoryBuffer::MAP},
+      {gfx::GpuMemoryBuffer::YUV_420, gfx::GpuMemoryBuffer::PERSISTENT_MAP}};
   configurations->assign(
       supported_configurations,
       supported_configurations + arraysize(supported_configurations));

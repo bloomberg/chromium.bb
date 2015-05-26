@@ -112,6 +112,8 @@ SurfaceFactoryOzone::BufferUsage GetOzoneUsageFor(
   switch (usage) {
     case gfx::GpuMemoryBuffer::MAP:
       return SurfaceFactoryOzone::MAP;
+    case gfx::GpuMemoryBuffer::PERSISTENT_MAP:
+      return SurfaceFactoryOzone::PERSISTENT_MAP;
     case gfx::GpuMemoryBuffer::SCANOUT:
       return SurfaceFactoryOzone::SCANOUT;
   }

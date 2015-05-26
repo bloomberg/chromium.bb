@@ -469,6 +469,8 @@ void BrowserMainLoop::EarlyInitialization() {
   if (parsed_command_line_.HasSwitch(switches::kEnableNativeGpuMemoryBuffers)) {
     BrowserGpuChannelHostFactory::EnableGpuMemoryBufferFactoryUsage(
         gfx::GpuMemoryBuffer::MAP);
+    BrowserGpuChannelHostFactory::EnableGpuMemoryBufferFactoryUsage(
+        gfx::GpuMemoryBuffer::PERSISTENT_MAP);
   }
 
 #if defined(USE_OZONE)

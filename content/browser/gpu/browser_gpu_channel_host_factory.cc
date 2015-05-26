@@ -43,7 +43,37 @@ namespace {
 
 base::LazyInstance<std::set<gfx::GpuMemoryBuffer::Usage>>
     g_enabled_gpu_memory_buffer_usages;
+
+bool IsGpuMemoryBufferFactoryConfigurationSupported(
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage,
+    gfx::GpuMemoryBufferType type) {
+  switch (type) {
+    case gfx::SHARED_MEMORY_BUFFER:
+      // Shared memory buffers must be created in-process.
+      return false;
+#if defined(OS_MACOSX)
+    case gfx::IO_SURFACE_BUFFER:
+      return GpuMemoryBufferFactoryIOSurface::
+          IsGpuMemoryBufferConfigurationSupported(format, usage);
+#endif
+#if defined(OS_ANDROID)
+    case gfx::SURFACE_TEXTURE_BUFFER:
+      return GpuMemoryBufferFactorySurfaceTexture::
+          IsGpuMemoryBufferConfigurationSupported(format, usage);
+#endif
+#if defined(USE_OZONE)
+    case gfx::OZONE_NATIVE_BUFFER:
+      return GpuMemoryBufferFactoryOzoneNativeBuffer::
+          IsGpuMemoryBufferConfigurationSupported(format, usage);
+#endif
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
+
+}  // namespace
 
 BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
 
@@ -254,16 +284,22 @@ bool BrowserGpuChannelHostFactory::IsGpuMemoryBufferFactoryUsageEnabled(
 }
 
 // static
-uint32 BrowserGpuChannelHostFactory::GetImageTextureTarget() {
-  if (!IsGpuMemoryBufferFactoryUsageEnabled(gfx::GpuMemoryBuffer::MAP))
+uint32 BrowserGpuChannelHostFactory::GetImageTextureTarget(
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage) {
+  if (!IsGpuMemoryBufferFactoryUsageEnabled(usage))
     return GL_TEXTURE_2D;
 
   std::vector<gfx::GpuMemoryBufferType> supported_types;
   GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
   DCHECK(!supported_types.empty());
 
-  // The GPU service will always use the preferred type.
+  // The GPU service will always use the preferred type, if the |format| and
+  // |usage| allows.
   gfx::GpuMemoryBufferType type = supported_types[0];
+
+  if (!IsGpuMemoryBufferFactoryConfigurationSupported(format, usage, type))
+    return GL_TEXTURE_2D;
 
   switch (type) {
     case gfx::SURFACE_TEXTURE_BUFFER:
@@ -471,33 +507,15 @@ bool BrowserGpuChannelHostFactory::IsGpuMemoryBufferConfigurationSupported(
   if (!IsGpuMemoryBufferFactoryUsageEnabled(usage))
     return false;
 
-  // Preferred type is always used by factory.
   std::vector<gfx::GpuMemoryBufferType> supported_types;
   GpuMemoryBufferFactory::GetSupportedTypes(&supported_types);
   DCHECK(!supported_types.empty());
-  switch (supported_types[0]) {
-    case gfx::SHARED_MEMORY_BUFFER:
-      // Shared memory buffers must be created in-process.
-      return false;
-#if defined(OS_MACOSX)
-    case gfx::IO_SURFACE_BUFFER:
-      return GpuMemoryBufferFactoryIOSurface::
-          IsGpuMemoryBufferConfigurationSupported(format, usage);
-#endif
-#if defined(OS_ANDROID)
-    case gfx::SURFACE_TEXTURE_BUFFER:
-      return GpuMemoryBufferFactorySurfaceTexture::
-          IsGpuMemoryBufferConfigurationSupported(format, usage);
-#endif
-#if defined(USE_OZONE)
-    case gfx::OZONE_NATIVE_BUFFER:
-      return GpuMemoryBufferFactoryOzoneNativeBuffer::
-          IsGpuMemoryBufferConfigurationSupported(format, usage);
-#endif
-    default:
-      NOTREACHED();
-      return false;
-  }
+
+  // The GPU service will always use the preferred type, if the |format| and
+  // |usage| allows.
+  gfx::GpuMemoryBufferType type = supported_types[0];
+
+  return IsGpuMemoryBufferFactoryConfigurationSupported(format, usage, type);
 }
 
 void BrowserGpuChannelHostFactory::CreateGpuMemoryBuffer(
