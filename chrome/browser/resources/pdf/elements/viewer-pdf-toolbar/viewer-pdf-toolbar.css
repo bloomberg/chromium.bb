@@ -47,7 +47,7 @@ paper-progress::shadow #progressContainer {
   background-color: rgb(100, 181, 246);
 }
 
-core-toolbar {
+paper-toolbar {
   background-color: rgb(27, 168, 243);
   color: rgb(241, 241, 241);
   font-size: 1.5em;
@@ -57,8 +57,12 @@ core-toolbar {
   z-index: 3;
 }
 
-core-toolbar /deep/ ::selection {
+paper-toolbar /deep/ ::selection {
   background: rgb(187, 222, 251);
+}
+
+paper-toolbar /deep/ .toolbar-tools {
+  height: 56px;
 }
 
 .invisible {

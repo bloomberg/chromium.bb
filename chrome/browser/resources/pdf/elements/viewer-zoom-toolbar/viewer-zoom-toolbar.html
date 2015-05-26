@@ -1,20 +1,20 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/core-icons/core-icons.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-icons/iron-icons.html">
 <link rel="import" href="viewer-zoom-button.html">
 
-<polymer-element name="viewer-zoom-toolbar">
-<template>
-  <link rel="stylesheet" href="viewer-zoom-toolbar.css">
+<dom-module id="viewer-zoom-toolbar">
+  <link rel="import" type="css" href="viewer-zoom-toolbar.css">
+  <template>
 
-  <div id="zoom-buttons">
-    <div id="buttons">
-      <!-- TODO(alexandrec): Replace with custom icons. -->
-      <viewer-zoom-button id="fit-to-page-button" icon="fullscreen-exit"
-          on-click="{{fitToPage}}"></viewer-zoom-button>
-      <viewer-zoom-button id="fit-to-width-button" icon="fullscreen"
-          on-click="{{fitToWidth}}"></viewer-zoom-button>
+    <div id="zoom-buttons">
+      <div id="buttons">
+        <!-- TODO(alexandrec): Replace with custom icons. -->
+        <viewer-zoom-button id="fit-to-page-button" icon="fullscreen-exit"
+            on-click="fitToPage"></viewer-zoom-button>
+        <viewer-zoom-button id="fit-to-width-button" icon="fullscreen"
+            on-click="fitToWidth"></viewer-zoom-button>
+      </div>
     </div>
-  </div>
-</template>
+  </template>
+</dom-module>
 <script src="viewer-zoom-toolbar.js"></script>
-</polymer-element>

@@ -1,14 +1,11 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/paper-input/paper-input-decorator.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-input/paper-input.html">
 
-<polymer-element name="viewer-page-selector" attributes="index docLength">
-<template>
-  <link rel="stylesheet" href="viewer-page-selector.css">
-  <paper-input-decorator id="pageselector">
-    <input id="input" is="core-input"
-        value="{{pageNo}}" committedvalue="{{chosenPageNo}}">
-  </paper-input-decorator>
-  <span id="pagelength">/ {{docLength}}</span>
-</template>
+<dom-module id="viewer-page-selector">
+  <link rel="import" type="css" href="viewer-page-selector.css">
+  <template>
+    <paper-input id="pageselector" value="{{pageNo}}" no-label-float></paper-input>
+    <span id="pagelength">/ <span>{{docLength}}</span></span>
+  </template>
+</dom-module>
 <script src="viewer-page-selector.js"></script>
-</polymer-element>

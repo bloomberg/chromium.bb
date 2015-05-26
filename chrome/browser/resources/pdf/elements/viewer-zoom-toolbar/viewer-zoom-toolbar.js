@@ -4,24 +4,18 @@
 
 ANIMATION_INTERVAL = 50;
 
-Polymer('viewer-zoom-toolbar', {
-  /**
-   * @type {number}
-   * The minimum zoom percentage allowed.
-   */
-  zoomMin: 25,
+Polymer({
+  is: 'viewer-zoom-toolbar',
 
-  /**
-   * @type {number}
-   * The maximum zoom percentage allowed.
-   */
-  zoomMax: 500,
-
-  /**
-   * @type {number}
-   * The default zoom percentage.
-   */
-  zoomValue: 100,
+  properties: {
+   /**
+     * The default zoom percentage.
+     */
+    zoomValue: {
+      type: Number,
+      value: 100
+    }
+  },
 
   get visible() {
     return this.visible_;

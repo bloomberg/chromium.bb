@@ -2,36 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 (function() {
-  Polymer('viewer-pdf-toolbar', {
-    /**
-     * @type {string}
-     * The title of the PDF document.
-     */
-    docTitle: '',
+  Polymer({
+    is: 'viewer-pdf-toolbar',
 
-    /**
-     * @type {number}
-     * The current index of the page being viewed (0-based).
-     */
-    pageIndex: 0,
+    properties: {
+      /**
+       * The current loading progress of the PDF document (0 - 100).
+       */
+      loadProgress: {
+        type: Number,
+        observer: 'loadProgressChanged'
+      },
 
-    /**
-     * @type {number}
-     * The current loading progress of the PDF document (0 - 100).
-     */
-    loadProgress: 0,
+      /**
+       * The title of the PDF document.
+       */
+      docTitle: String,
 
-    /**
-     * @type {boolean}
-     * Whether the document has bookmarks.
-     */
-    hasBookmarks: false,
+      /**
+       * The current index of the page being viewed (0-based).
+       */
+      pageIndex: Number,
 
-    /**
-     * @type {number}
-     * The number of pages in the PDF document.
-     */
-    docLength: 1,
+      /**
+       * Whether the document has bookmarks.
+       */
+      hasBookmarks: Boolean,
+
+      /**
+       * The number of pages in the PDF document.
+       */
+      docLength: Number,
+    },
 
     ready: function() {
       /**

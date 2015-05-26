@@ -14,13 +14,6 @@
   display: inline-block;
 }
 
-#slider {
-  display: inline-block;
-  margin-bottom: 0.8em;
-  margin-right: 2em;
-  overflow: visible;
-}
-
 #main-zoom {
   background-color: rgb(27, 168, 243);
   display: block;

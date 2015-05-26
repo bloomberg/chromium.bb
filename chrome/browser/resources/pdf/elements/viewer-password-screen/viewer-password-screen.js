@@ -2,22 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('viewer-password-screen', {
-  text: 'This document is password protected. Please enter a password.',
-  active: false,
+Polymer({
+  is: 'viewer-password-screen',
+
+  properties: {
+    text: {
+      type: String,
+      value: 'This document is password protected. Please enter a password.',
+    },
+
+    active: {
+      type: Boolean,
+      value: false,
+      observer: 'activeChanged'
+    }
+  },
+
   timerId: undefined,
+
   ready: function() {
     this.activeChanged();
   },
+
   accept: function() {
     this.active = false;
   },
+
   deny: function() {
     this.$.password.disabled = false;
     this.$.submit.disabled = false;
     this.$.password.focus();
     this.$.password.select();
   },
+
   submit: function(e) {
     // Prevent the default form submission behavior.
     e.preventDefault();
@@ -27,6 +44,7 @@ Polymer('viewer-password-screen', {
     this.$.submit.disabled = true;
     this.fire('password-submitted', {password: this.$.password.value});
   },
+
   activeChanged: function() {
     clearTimeout(this.timerId);
     this.timerId = undefined;

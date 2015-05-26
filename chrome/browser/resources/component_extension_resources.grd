@@ -167,6 +167,7 @@
         <include name="IDR_PDF_INDEX_MATERIAL_HTML" file="pdf/index-material.html" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PDF_MAIN_JS" file="pdf/main.js" type="BINDATA" />
         <include name="IDR_PDF_PDF_JS" file="pdf/pdf.js" type="BINDATA" />
+        <include name="IDR_PDF_SETTINGS_JS" file="pdf/settings.js" type="BINDATA" />
         <include name="IDR_PDF_UI_MANAGER_JS" file="pdf/ui_manager.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWPORT_JS" file="pdf/viewport.js" type="BINDATA" />
         <include name="IDR_PDF_OPEN_PDF_PARAMS_PARSER_JS" file="pdf/open_pdf_params_parser.js" type="BINDATA" />
@@ -181,6 +182,7 @@
         <include name="IDR_PDF_VIEWER_BOOKMARK_HTML" file="pdf/elements/viewer-bookmark/viewer-bookmark.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_JS" file="pdf/elements/viewer-bookmark/viewer-bookmark.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARKS_CONTENT_HTML" file="pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_BOOKMARKS_CONTENT_JS" file="pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BUTTON_CSS" file="pdf/elements/viewer-button/viewer-button.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BUTTON_HTML" file="pdf/elements/viewer-button/viewer-button.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BUTTON_JS" file="pdf/elements/viewer-button/viewer-button.js" type="BINDATA" />

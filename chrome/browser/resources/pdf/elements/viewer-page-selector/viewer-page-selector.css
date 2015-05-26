@@ -7,24 +7,29 @@
   width: 0.6em;
 }
 
-paper-input-decorator /deep/ ::-webkit-input-placeholder {
+paper-input /deep/ ::-webkit-input-placeholder {
   color: rgb(241, 241, 241);
 }
 
-paper-input-decorator /deep/ .focused-underline {
+paper-input /deep/ .focused-line {
   background-color: rgb(241, 241, 241);
 }
 
-paper-input-decorator /deep/ .unfocused-underline {
+paper-input /deep/ .unfocused-line {
   background-color: transparent;
 }
 
-paper-input-decorator:hover /deep/ .unfocused-underline {
+paper-input:hover /deep/ .unfocused-line {
   background-color: rgb(241, 241, 241);
 }
 
-#input {
-  margin: 0;
+paper-input /deep/ paper-input-container {
+  padding: 0;
+}
+
+paper-input /deep/ paper-input-container /deep/ input#input {
+  color: rgb(241, 241, 241);
+  font-size: 1em;
   text-align: right;
 }
 

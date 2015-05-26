@@ -1,11 +1,11 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/core-icons/core-icons.html">
-<link rel="import" href="chrome://resources/polymer/paper-fab/paper-fab.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-fab/paper-fab.html">
 
-<polymer-element name="viewer-zoom-button" extends="paper-fab" mini>
-<template>
-  <link rel="stylesheet" href="viewer-zoom-button.css">
-  <shadow></shadow>
-</template>
+<dom-module id="viewer-zoom-button">
+  <link rel="import" type="css" href="viewer-zoom-button.css">
+  <template>
+    <paper-fab id="button" mini icon="[[icon]]"></paper-fab>
+  </template>
+</dom-module>
 <script src="viewer-zoom-button.js"></script>
-</polymer-element>

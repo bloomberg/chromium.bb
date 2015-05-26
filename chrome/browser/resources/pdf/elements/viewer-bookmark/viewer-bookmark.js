@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('viewer-bookmark', {
+Polymer({
+  is: 'viewer-bookmark',
 
-  /**
-   * @type {Object}
-   * A bookmark object, each containing a:
-   * - title
-   * - page (optional)
-   * - children (an array of bookmarks)
-   */
-  bookmark: null,
+  properties: {
+    /**
+     * A bookmark object, each containing a:
+     * - title
+     * - page (optional)
+     * - children (an array of bookmarks)
+     */
+    bookmark: Object
+  },
 
   onClick: function() {
     if (this.bookmark.hasOwnProperty('page'))
       this.fire('change-page', {page: this.bookmark.page});
   },
-
 });
