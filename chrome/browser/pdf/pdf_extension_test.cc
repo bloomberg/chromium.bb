@@ -31,6 +31,10 @@ class PDFExtensionTest : public ExtensionApiTest,
  public:
   ~PDFExtensionTest() override {}
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kDisablePdfMaterialUI);
+  }
+
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -188,5 +192,39 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ParamsParser) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ZoomManager) {
+  RunTestsInFile("zoom_manager_test.js", "test.pdf");
+}
+
+class MaterialPDFExtensionTest : public PDFExtensionTest {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kEnablePdfMaterialUI);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Basic) {
+  RunTestsInFile("basic_test_material.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, BasicPlugin) {
+  RunTestsInFile("basic_plugin_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Viewport) {
+  RunTestsInFile("viewport_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Bookmark) {
+  RunTestsInFile("bookmarks_test.js", "test-bookmarks.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, Navigator) {
+  RunTestsInFile("navigator_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, ParamsParser) {
+  RunTestsInFile("params_parser_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(MaterialPDFExtensionTest, ZoomManager) {
   RunTestsInFile("zoom_manager_test.js", "test.pdf");
 }
