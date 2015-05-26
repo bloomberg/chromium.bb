@@ -45,7 +45,7 @@ class StyledMarkupSerializer final {
 public:
     StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const PositionType& start, const PositionType& end, Node* highestNodeToBeSerialized = nullptr);
 
-    String createMarkup(bool convertBlocksToInlines, Node*);
+    String createMarkup(bool convertBlocksToInlines);
 
 private:
     enum class NodeTraversalMode { EmitString, DoNotEmitString };
@@ -63,6 +63,7 @@ private:
     const PositionType m_start;
     const PositionType m_end;
     const EAnnotateForInterchange m_shouldAnnotate;
+    const RefPtrWillBeMember<Node> m_highestNodeToBeSerialized;
     Vector<String> m_reversedPrecedingMarkup;
 };
 

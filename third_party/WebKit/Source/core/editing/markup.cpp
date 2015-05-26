@@ -260,7 +260,7 @@ String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionType& startPo
 
     HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup<Strategy>(startPosition, endPosition, shouldAnnotate, constrainingAncestor);
     StyledMarkupSerializer<Strategy> serializer(shouldResolveURLs, shouldAnnotate, startPosition, endPosition, specialCommonAncestor);
-    return serializer.createMarkup(convertBlocksToInlines, specialCommonAncestor);
+    return serializer.createMarkup(convertBlocksToInlines);
 }
 
 String createMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)

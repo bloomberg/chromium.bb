@@ -81,6 +81,7 @@ StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldRes
     , m_start(start)
     , m_end(end)
     , m_shouldAnnotate(shouldAnnotate)
+    , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
 {
 }
 
@@ -120,7 +121,7 @@ static PassRefPtrWillBeRawPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(c
 }
 
 template<typename Strategy>
-String StyledMarkupSerializer<Strategy>::createMarkup(bool convertBlocksToInlines, Node* specialCommonAncestor)
+String StyledMarkupSerializer<Strategy>::createMarkup(bool convertBlocksToInlines)
 {
     DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, ("<br class=\"" AppleInterchangeNewline "\">"));
 
@@ -144,7 +145,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup(bool convertBlocksToInline
 
     Node* lastClosed = serializeNodes(firstNode, pastEnd);
 
-    if (specialCommonAncestor && lastClosed) {
+    if (m_highestNodeToBeSerialized && lastClosed) {
         // TODO(hajimehoshi): This is calculated at createMarkupInternal too.
         Node* commonAncestor = Strategy::commonAncestor(*m_start.containerNode(), *m_end.containerNode());
         ASSERT(commonAncestor);
@@ -182,7 +183,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup(bool convertBlocksToInline
                 wrapWithNode(*ancestor, convertBlocksToInlines, StyledMarkupAccumulator::DoesNotFullySelectNode);
             }
 
-            if (ancestor == specialCommonAncestor)
+            if (ancestor == m_highestNodeToBeSerialized)
                 break;
         }
     }
