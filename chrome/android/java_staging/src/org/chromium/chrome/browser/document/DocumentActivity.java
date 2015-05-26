@@ -167,7 +167,8 @@ public class DocumentActivity extends CompositorChromeActivity {
                     params.referrer = loadUrlParams.getReferrer();
                 }
 
-                int launchMode = type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
+                // Incognito never opens in the background.
+                int launchMode = type == TabLaunchType.FROM_LONGPRESS_BACKGROUND && !incognito
                         ? ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED
                         : ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND;
                 Activity parentActivity =
