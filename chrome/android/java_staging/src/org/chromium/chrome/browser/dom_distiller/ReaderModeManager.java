@@ -13,7 +13,6 @@ import com.google.android.apps.chrome.R;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ApplicationSwitches;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.CompositorChromeActivity;
@@ -296,12 +295,12 @@ public class ReaderModeManager extends EmptyTabObserver
 
         boolean enabled = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_DOM_DISTILLER)
                 && !CommandLine.getInstance().hasSwitch(
-                        ApplicationSwitches.DISABLE_READER_MODE_BOTTOM_BAR)
+                        ChromeSwitches.DISABLE_READER_MODE_BOTTOM_BAR)
                 && !DeviceFormFactor.isTablet(context);
         if (ChromeVersionInfo.isBetaBuild() || ChromeVersionInfo.isStableBuild()) {
             enabled = enabled
                     && CommandLine.getInstance().hasSwitch(
-                               ApplicationSwitches.ENABLE_READER_MODE_BUTTON);
+                               ChromeSwitches.ENABLE_READER_MODE_BUTTON);
         }
         return enabled;
     }

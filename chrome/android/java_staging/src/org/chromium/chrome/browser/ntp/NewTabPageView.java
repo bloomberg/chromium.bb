@@ -38,7 +38,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ApplicationSwitches;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.LogoBridge.Logo;
 import org.chromium.chrome.browser.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
@@ -210,8 +210,8 @@ public class NewTabPageView extends FrameLayout
         // Query the field trial state first, to ensure that UMA reports the correct group.
         String fieldTrialGroup = FieldTrialList.findFullName(ICON_NTP_FIELD_TRIAL_NAME);
         CommandLine commandLine = CommandLine.getInstance();
-        if (commandLine.hasSwitch(ApplicationSwitches.DISABLE_ICON_NTP)) return false;
-        if (commandLine.hasSwitch(ApplicationSwitches.ENABLE_ICON_NTP)) return true;
+        if (commandLine.hasSwitch(ChromeSwitches.DISABLE_ICON_NTP)) return false;
+        if (commandLine.hasSwitch(ChromeSwitches.ENABLE_ICON_NTP)) return true;
         return fieldTrialGroup.equals(ICON_NTP_ENABLED_GROUP);
     }
 

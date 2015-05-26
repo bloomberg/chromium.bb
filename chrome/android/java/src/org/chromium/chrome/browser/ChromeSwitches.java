@@ -93,6 +93,11 @@ public abstract class ChromeSwitches {
     // (per tab stack)?  These take very low memory but have poor quality.
     public static final String APPROXIMATION_THUMBNAILS = "approximation-thumbnails";
 
+    /**
+     * Disable bottom infobar-like Reader Mode panel.
+     */
+    public static final String DISABLE_READER_MODE_BOTTOM_BAR = "disable-reader-mode-bottom-bar";
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,6 +146,24 @@ public abstract class ChromeSwitches {
      */
     public static final String USE_FAKE_DEVICE_FOR_MEDIA_STREAM =
             "use-fake-device-for-media-stream";
+
+    /**
+     * Disables the new icon-centric NTP design.
+     * Native switch - switches::kDisableIconNtp
+     */
+    public static final String DISABLE_ICON_NTP = "disable-icon-ntp";
+
+    /**
+     * Enables the new icon-centric NTP design.
+     * Native switch - switches::kEnableIconNtp
+     */
+    public static final String ENABLE_ICON_NTP = "enable-icon-ntp";
+
+    /**
+     * Enable Reader Mode button.
+     * Native switch - switches::kEnableReaderModeToolbarIcon
+     */
+    public static final String ENABLE_READER_MODE_BUTTON = "enable-reader-mode-toolbar-icon";
 
     // Prevent instantiation.
     private ChromeSwitches() {}
