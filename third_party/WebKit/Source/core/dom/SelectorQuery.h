@@ -80,7 +80,8 @@ private:
     const CSSSelector* selectorForIdLookup(const CSSSelector&) const;
 
     Vector<const CSSSelector*> m_selectors;
-    bool m_crossesTreeBoundary;
+    bool m_crossesTreeBoundary : 1;
+    bool m_needsUpdatedDistribution : 1;
 };
 
 class SelectorQuery {

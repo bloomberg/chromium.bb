@@ -61,6 +61,9 @@ public:
 
     bool selectorsNeedNamespaceResolution();
 
+    bool selectorNeedsUpdatedDistribution(size_t index) const;
+
+    // TODO(esprehn): These methods are confusing and incorrectly named.
     bool hasShadowDistributedAt(size_t index) const;
     bool selectorCrossesTreeScopes(size_t index) const;
 

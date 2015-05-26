@@ -1,3 +1,0 @@
-crbug.com/489911 blink crashy with shadow DOM
-If this test passes, no crash occurs and "PASS" is shown.
-PASS

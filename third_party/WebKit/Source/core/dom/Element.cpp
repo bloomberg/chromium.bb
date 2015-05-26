@@ -2783,7 +2783,6 @@ LayoutObject* Element::pseudoElementLayoutObject(PseudoId pseudoId) const
 
 bool Element::matches(const String& selectors, ExceptionState& exceptionState)
 {
-    updateDistribution();
     SelectorQuery* selectorQuery = document().selectorQueryCache().add(AtomicString(selectors), document(), exceptionState);
     if (!selectorQuery)
         return false;

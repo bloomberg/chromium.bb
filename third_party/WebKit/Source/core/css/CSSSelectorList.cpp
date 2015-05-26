@@ -195,4 +195,18 @@ bool CSSSelectorList::selectorCrossesTreeScopes(size_t index) const
     return forEachTagSelector(functor, selectorAt(index));
 }
 
+class SelectorNeedsUpdatedDistribution {
+public:
+    bool operator()(const CSSSelector& selector)
+    {
+        return selector.relationIsAffectedByPseudoContent() || selector.pseudoType() == CSSSelector::PseudoHostContext;
+    }
+};
+
+bool CSSSelectorList::selectorNeedsUpdatedDistribution(size_t index) const
+{
+    SelectorNeedsUpdatedDistribution functor;
+    return forEachTagSelector(functor, selectorAt(index));
+}
+
 } // namespace blink

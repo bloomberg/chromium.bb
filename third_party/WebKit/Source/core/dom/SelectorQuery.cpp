@@ -107,11 +107,13 @@ void SelectorDataList::initialize(const CSSSelectorList& selectorList)
         selectorCount++;
 
     m_crossesTreeBoundary = false;
+    m_needsUpdatedDistribution = false;
     m_selectors.reserveInitialCapacity(selectorCount);
     unsigned index = 0;
     for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector), ++index) {
         m_selectors.uncheckedAppend(selector);
         m_crossesTreeBoundary |= selectorList.selectorCrossesTreeScopes(index);
+        m_needsUpdatedDistribution |= selectorList.selectorNeedsUpdatedDistribution(index);
     }
 }
 
@@ -128,6 +130,9 @@ inline bool SelectorDataList::selectorMatches(const CSSSelector& selector, Eleme
 
 bool SelectorDataList::matches(Element& targetElement) const
 {
+    if (m_needsUpdatedDistribution)
+        targetElement.updateDistribution();
+
     unsigned selectorCount = m_selectors.size();
     for (unsigned i = 0; i < selectorCount; ++i) {
         if (selectorMatches(*m_selectors[i], targetElement, targetElement))
@@ -139,6 +144,9 @@ bool SelectorDataList::matches(Element& targetElement) const
 
 Element* SelectorDataList::closest(Element& targetElement) const
 {
+    if (m_needsUpdatedDistribution)
+        targetElement.updateDistribution();
+
     unsigned selectorCount = m_selectors.size();
     for (Element* currentElement = &targetElement; currentElement; currentElement = currentElement->parentElement()) {
         for (unsigned i = 0; i < selectorCount; ++i) {
@@ -207,7 +215,15 @@ void SelectorDataList::collectElementsByTagName(ContainerNode& rootNode, const Q
 
 inline bool SelectorDataList::canUseFastQuery(const ContainerNode& rootNode) const
 {
-    return m_selectors.size() == 1 && !m_crossesTreeBoundary && rootNode.inDocument() && !rootNode.document().inQuirksMode();
+    if (m_crossesTreeBoundary)
+        return false;
+    if (m_needsUpdatedDistribution)
+        return false;
+    if (rootNode.document().inQuirksMode())
+        return false;
+    if (!rootNode.inDocument())
+        return false;
+    return m_selectors.size() == 1;
 }
 
 inline bool ancestorHasClassName(ContainerNode& rootNode, const AtomicString& className)
@@ -439,8 +455,9 @@ template <typename SelectorQueryTrait>
 void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
 {
     if (!canUseFastQuery(rootNode)) {
-        if (m_crossesTreeBoundary) {
+        if (m_needsUpdatedDistribution)
             rootNode.updateDistribution();
+        if (m_crossesTreeBoundary) {
             executeSlowTraversingShadowTree<SelectorQueryTrait>(rootNode, output);
         } else {
             executeSlow<SelectorQueryTrait>(rootNode, output);
