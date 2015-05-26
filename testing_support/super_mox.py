@@ -55,11 +55,6 @@ class TestCaseUtils(object):
     return (self._RANDOM_CHOICE((self._OS_SEP, '')) +
             self._DirElts(max_elt_count, max_elt_length))
 
-  def SvnUrl(self, max_elt_count=4, max_elt_length=8):
-    return ('svn://random_host:port/a' +
-            self._DirElts(max_elt_count, max_elt_length
-                ).replace(self._OS_SEP, '/'))
-
   def RootDir(self, max_elt_count=4, max_elt_length=8):
     return self._OS_SEP + self._DirElts(max_elt_count, max_elt_length)
 

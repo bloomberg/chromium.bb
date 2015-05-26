@@ -59,36 +59,6 @@ def dict_diff(dict1, dict2):
   return diff
 
 
-def commit_svn(repo, usr, pwd):
-  """Commits the changes and returns the new revision number."""
-  to_add = []
-  to_remove = []
-  for status, filepath in scm.SVN.CaptureStatus(None, repo):
-    if status[0] == '?':
-      to_add.append(filepath)
-    elif status[0] == '!':
-      to_remove.append(filepath)
-  if to_add:
-    subprocess2.check_output(
-        ['svn', 'add', '--no-auto-props', '-q'] + to_add, cwd=repo)
-  if to_remove:
-    subprocess2.check_output(['svn', 'remove', '-q'] + to_remove, cwd=repo)
-
-  out = subprocess2.check_output(
-      ['svn', 'commit', repo, '-m', 'foo', '--non-interactive',
-        '--no-auth-cache',
-        '--username', usr, '--password', pwd],
-      cwd=repo)
-  match = re.search(r'(\d+)', out)
-  if not match:
-    raise Exception('Commit failed', out)
-  rev = match.group(1)
-  status = subprocess2.check_output(['svn', 'status'], cwd=repo)
-  assert len(status) == 0, status
-  logging.debug('At revision %s' % rev)
-  return rev
-
-
 def commit_git(repo):
   """Commits the changes and returns the new hash."""
   subprocess2.check_call(['git', 'add', '-A', '-f'], cwd=repo)
@@ -162,14 +132,14 @@ def wait_for_port_to_free(host, port):
 
 
 class FakeReposBase(object):
-  """Generate both svn and git repositories to test gclient functionality.
+  """Generate git repositories to test gclient functionality.
 
   Many DEPS functionalities need to be tested: Var, File, From, deps_os, hooks,
   use_relative_paths.
 
-  And types of dependencies: Relative urls, Full urls, both svn and git.
+  And types of dependencies: Relative urls, Full urls, git.
 
-  populateSvn() and populateGit() need to be implemented by the subclass.
+  populateGit() needs to be implemented by the subclass.
   """
   # Hostname
   NB_GIT_REPOS = 1
@@ -181,25 +151,16 @@ class FakeReposBase(object):
   def __init__(self, host=None):
     self.trial = trial_dir.TrialDir('repos')
     self.host = host or '127.0.0.1'
-    # Format is [ None, tree, tree, ...]
-    # i.e. revisions are 1-based.
-    self.svn_revs = [None]
     # Format is { repo: [ None, (hash, tree), (hash, tree), ... ], ... }
     # so reference looks like self.git_hashes[repo][rev][0] for hash and
     # self.git_hashes[repo][rev][1] for it's tree snapshot.
-    # For consistency with self.svn_revs, it is 1-based too.
+    # It is 1-based too.
     self.git_hashes = {}
-    self.svnserve = None
     self.gitdaemon = None
     self.git_pid_file = None
     self.git_root = None
-    self.svn_checkout = None
-    self.svn_repo = None
     self.git_dirty = False
-    self.svn_dirty = False
-    self.svn_port = None
     self.git_port = None
-    self.svn_base = None
     self.git_base = None
 
   @property
@@ -214,49 +175,22 @@ class FakeReposBase(object):
         # self.root_dir is not set before this call.
         self.trial.set_up()
         self.git_root = join(self.root_dir, 'git')
-        self.svn_checkout = join(self.root_dir, 'svn_checkout')
-        self.svn_repo = join(self.root_dir, 'svn')
       finally:
         # Registers cleanup.
         atexit.register(self.tear_down)
 
   def cleanup_dirt(self):
     """For each dirty repository, destroy it."""
-    if self.svn_dirty:
-      if not self.tear_down_svn():
-        logging.error('Using both leaking checkout and svn dirty checkout')
     if self.git_dirty:
       if not self.tear_down_git():
         logging.error('Using both leaking checkout and git dirty checkout')
 
   def tear_down(self):
     """Kills the servers and delete the directories."""
-    self.tear_down_svn()
     self.tear_down_git()
     # This deletes the directories.
     self.trial.tear_down()
     self.trial = None
-
-  def tear_down_svn(self):
-    if self.svnserve:
-      logging.debug('Killing svnserve pid %s' % self.svnserve.pid)
-      try:
-        self.svnserve.kill()
-      except OSError as e:
-        if e.errno != errno.ESRCH:   # no such process
-          raise
-      wait_for_port_to_free(self.host, self.svn_port)
-      self.svnserve = None
-      self.svn_port = None
-      self.svn_base = None
-      if not self.trial.SHOULD_LEAK:
-        logging.debug('Removing %s' % self.svn_repo)
-        gclient_utils.rmtree(self.svn_repo)
-        logging.debug('Removing %s' % self.svn_checkout)
-        gclient_utils.rmtree(self.svn_checkout)
-      else:
-        return False
-    return True
 
   def tear_down_git(self):
     if self.gitdaemon:
@@ -300,60 +234,6 @@ class FakeReposBase(object):
       else:
         write(join(root, k), v)
 
-  def set_up_svn(self):
-    """Creates subversion repositories and start the servers."""
-    self.set_up()
-    if self.svnserve:
-      return True
-    try:
-      subprocess2.check_call(['svnadmin', 'create', self.svn_repo])
-    except (OSError, subprocess2.CalledProcessError):
-      return False
-    write(join(self.svn_repo, 'conf', 'svnserve.conf'),
-        '[general]\n'
-        'anon-access = read\n'
-        'auth-access = write\n'
-        'password-db = passwd\n')
-    text = '[users]\n'
-    text += ''.join('%s = %s\n' % (usr, pwd) for usr, pwd in self.USERS)
-    write(join(self.svn_repo, 'conf', 'passwd'), text)
-
-    # Necessary to be able to change revision properties
-    revprop_hook_filename = join(self.svn_repo, 'hooks', 'pre-revprop-change')
-    if sys.platform == 'win32':
-      # TODO(kustermann): Test on Windows one day.
-      write("%s.bat" % revprop_hook_filename, "")
-    else:
-      write(revprop_hook_filename,
-          '#!/bin/sh\n'
-          'exit 0\n')
-      os.chmod(revprop_hook_filename, 0755)
-
-    # Mac 10.6 ships with a buggy subversion build and we need this line
-    # to work around the bug.
-    write(join(self.svn_repo, 'db', 'fsfs.conf'),
-        '[rep-sharing]\n'
-        'enable-rep-sharing = false\n')
-
-    # Start the daemon.
-    self.svn_port = find_free_port(self.host, 10000)
-    logging.debug('Using port %d' % self.svn_port)
-    cmd = ['svnserve', '-d', '--foreground', '-r', self.root_dir,
-        '--listen-port=%d' % self.svn_port]
-    if self.host == '127.0.0.1':
-      cmd.append('--listen-host=' + self.host)
-    self.check_port_is_free(self.svn_port)
-    self.svnserve = subprocess2.Popen(
-        cmd,
-        cwd=self.svn_repo,
-        stdout=subprocess2.PIPE,
-        stderr=subprocess2.PIPE)
-    wait_for_port_to_bind(self.host, self.svn_port, self.svnserve)
-    self.svn_base = 'svn://%s:%d/svn/' % (self.host, self.svn_port)
-    self.populateSvn()
-    self.svn_dirty = False
-    return True
-
   def set_up_git(self):
     """Creates git repositories and start the servers."""
     self.set_up()
@@ -390,24 +270,6 @@ class FakeReposBase(object):
     self.git_dirty = False
     return True
 
-  def _commit_svn(self, tree):
-    self._genTree(self.svn_checkout, tree)
-    commit_svn(self.svn_checkout, self.USERS[0][0], self.USERS[0][1])
-    if self.svn_revs and self.svn_revs[-1]:
-      new_tree = self.svn_revs[-1].copy()
-      new_tree.update(tree)
-    else:
-      new_tree = tree.copy()
-    self.svn_revs.append(new_tree)
-
-  def _set_svn_commit_date(self, revision, date):
-    subprocess2.check_output(
-        ['svn', 'propset', 'svn:date', '--revprop', '-r', revision, date,
-         self.svn_base,
-         '--username', self.USERS[0][0],
-         '--password', self.USERS[0][1],
-         '--non-interactive'])
-
   def _commit_git(self, repo, tree):
     repo_root = join(self.git_root, repo)
     self._genTree(repo_root, tree)
@@ -430,132 +292,13 @@ class FakeReposBase(object):
     finally:
       sock.close()
 
-  def populateSvn(self):
-    raise NotImplementedError()
-
   def populateGit(self):
     raise NotImplementedError()
 
 
 class FakeRepos(FakeReposBase):
-  """Implements populateSvn() and populateGit()."""
+  """Implements populateGit()."""
   NB_GIT_REPOS = 5
-
-  def populateSvn(self):
-    """Creates a few revisions of changes including DEPS files."""
-    # Repos
-    subprocess2.check_call(
-        ['svn', 'checkout', self.svn_base, self.svn_checkout,
-         '-q', '--non-interactive', '--no-auth-cache',
-         '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
-    assert os.path.isdir(join(self.svn_checkout, '.svn'))
-    def file_system(rev, DEPS, DEPS_ALT=None):
-      fs = {
-        'origin': 'svn@%(rev)d\n',
-        'trunk/origin': 'svn/trunk@%(rev)d\n',
-        'trunk/src/origin': 'svn/trunk/src@%(rev)d\n',
-        'trunk/src/third_party/origin': 'svn/trunk/src/third_party@%(rev)d\n',
-        'trunk/other/origin': 'src/trunk/other@%(rev)d\n',
-        'trunk/third_party/origin': 'svn/trunk/third_party@%(rev)d\n',
-        'trunk/third_party/foo/origin': 'svn/trunk/third_party/foo@%(rev)d\n',
-        'trunk/third_party/prout/origin': 'svn/trunk/third_party/foo@%(rev)d\n',
-      }
-      for k in fs.iterkeys():
-        fs[k] = fs[k] % { 'rev': rev }
-      fs['trunk/src/DEPS'] = DEPS
-      if DEPS_ALT:
-        fs['trunk/src/DEPS.alt'] = DEPS_ALT
-      return fs
-
-    # Testing:
-    # - dependency disapear
-    # - dependency renamed
-    # - versioned and unversioned reference
-    # - relative and full reference
-    # - deps_os
-    # - var
-    # - hooks
-    # - From
-    # - File
-    # TODO(maruel):
-    # - $matching_files
-    # - use_relative_paths
-    DEPS = """
-vars = {
-  'DummyVariable': 'third_party',
-}
-deps = {
-  'src/other': '%(svn_base)strunk/other@1',
-  'src/third_party/fpp': '/trunk/' + Var('DummyVariable') + '/foo',
-}
-deps_os = {
-  'mac': {
-    'src/third_party/prout': '/trunk/third_party/prout',
-  },
-}""" % { 'svn_base': self.svn_base }
-
-    DEPS_ALT = """
-deps = {
-  'src/other2': '%(svn_base)strunk/other@2'
-}
-""" % { 'svn_base': self.svn_base }
-
-    fs = file_system(1, DEPS, DEPS_ALT)
-    self._commit_svn(fs)
-
-    fs = file_system(2, """
-deps = {
-  'src/other': '%(svn_base)strunk/other',
-  # Load another DEPS and load a dependency from it. That's an example of
-  # WebKit's chromium checkout flow. Verify it works out of order.
-  'src/third_party/foo': From('src/file/other', 'foo/bar'),
-  'src/file/other': File('%(svn_base)strunk/other/DEPS'),
-}
-# I think this is wrong to have the hooks run from the base of the gclient
-# checkout. It's maybe a bit too late to change that behavior.
-hooks = [
-  {
-    'pattern': '.',
-    'action': ['python', '-c',
-               'open(\\'src/svn_hooked1\\', \\'w\\').write(\\'svn_hooked1\\')'],
-  },
-  {
-    # Should not be run.
-    'pattern': 'nonexistent',
-    'action': ['python', '-c',
-               'open(\\'src/svn_hooked2\\', \\'w\\').write(\\'svn_hooked2\\')'],
-  },
-]
-""" % { 'svn_base': self.svn_base })
-    fs['trunk/other/DEPS'] = """
-deps = {
-  'foo/bar': '/trunk/third_party/foo@1',
-  # Only the requested deps should be processed.
-  'invalid': '/does_not_exist',
-}
-"""
-    # WebKit abuses this.
-    fs['trunk/webkit/.gclient'] = """
-solutions = [
-  {
-    'name': './',
-    'url': None,
-  },
-]
-"""
-    fs['trunk/webkit/DEPS'] = """
-deps = {
-  'foo/bar': '%(svn_base)strunk/third_party/foo@1'
-}
-
-hooks = [
-  {
-    'pattern': '.*',
-    'action': ['echo', 'foo'],
-  },
-]
-""" % { 'svn_base': self.svn_base }
-    self._commit_svn(fs)
 
   def populateGit(self):
     # Testing:
@@ -707,61 +450,10 @@ pre_deps_hooks = [
     })
 
 
-class FakeRepoTransitive(FakeReposBase):
-  """Implements populateSvn()"""
-
-  def populateSvn(self):
-    """Creates a few revisions of changes including a DEPS file."""
-    # Repos
-    subprocess2.check_call(
-        ['svn', 'checkout', self.svn_base, self.svn_checkout,
-         '-q', '--non-interactive', '--no-auth-cache',
-         '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
-    assert os.path.isdir(join(self.svn_checkout, '.svn'))
-
-    def file_system(rev):
-      DEPS = """deps = {
-                'src/different_repo': '%(svn_base)strunk/third_party',
-                'src/different_repo_fixed': '%(svn_base)strunk/third_party@1',
-                'src/same_repo': '/trunk/third_party',
-                'src/same_repo_fixed': '/trunk/third_party@1',
-             }""" % { 'svn_base': self.svn_base }
-      return {
-        'trunk/src/DEPS': DEPS,
-        'trunk/src/origin': 'svn/trunk/src@%(rev)d' % { 'rev': rev },
-        'trunk/third_party/origin':
-            'svn/trunk/third_party@%(rev)d' % { 'rev': rev },
-      }
-
-    # We make three commits. We use always the same DEPS contents but
-    # - 'trunk/src/origin' contains 'svn/trunk/src/origin@rX'
-    # - 'trunk/third_party/origin' contains 'svn/trunk/third_party/origin@rX'
-    # where 'X' is the revision number.
-    # So the 'origin' files will change in every commit.
-    self._commit_svn(file_system(1))
-    self._commit_svn(file_system(2))
-    self._commit_svn(file_system(3))
-    # We rewrite the timestamps so we can test that '--transitive' will take the
-    # parent timestamp on different repositories and the parent revision
-    # otherwise.
-    self._set_svn_commit_date('1', '2011-10-01T03:00:00.000000Z')
-    self._set_svn_commit_date('2', '2011-10-09T03:00:00.000000Z')
-    self._set_svn_commit_date('3', '2011-10-02T03:00:00.000000Z')
-
-  def populateGit(self):
-    pass
-
-
 class FakeRepoSkiaDEPS(FakeReposBase):
   """Simulates the Skia DEPS transition in Chrome."""
 
   NB_GIT_REPOS = 5
-
-  DEPS_svn_pre = """deps = {
-  'src/third_party/skia/gyp': '%(svn_base)sskia/gyp',
-  'src/third_party/skia/include': '%(svn_base)sskia/include',
-  'src/third_party/skia/src': '%(svn_base)sskia/src',
-}"""
 
   DEPS_git_pre = """deps = {
   'src/third_party/skia/gyp': '%(git_base)srepo_3',
@@ -772,32 +464,6 @@ class FakeRepoSkiaDEPS(FakeReposBase):
   DEPS_post = """deps = {
   'src/third_party/skia': '%(git_base)srepo_1',
 }"""
-
-  def populateSvn(self):
-    """Create revisions which simulate the Skia DEPS transition in Chrome."""
-    subprocess2.check_call(
-        ['svn', 'checkout', self.svn_base, self.svn_checkout,
-         '-q', '--non-interactive', '--no-auth-cache',
-         '--username', self.USERS[0][0], '--password', self.USERS[0][1]])
-    assert os.path.isdir(join(self.svn_checkout, '.svn'))
-
-    # Skia repo.
-    self._commit_svn({
-        'skia/skia_base_file': 'root-level file.',
-        'skia/gyp/gyp_file': 'file in the gyp directory',
-        'skia/include/include_file': 'file in the include directory',
-        'skia/src/src_file': 'file in the src directory',
-    })
-
-    # Chrome repo.
-    self._commit_svn({
-        'trunk/src/DEPS': self.DEPS_svn_pre % {'svn_base': self.svn_base},
-        'trunk/src/myfile': 'svn/trunk/src@1'
-    })
-    self._commit_svn({
-        'trunk/src/DEPS': self.DEPS_post % {'git_base': self.git_base},
-        'trunk/src/myfile': 'svn/trunk/src@2'
-    })
 
   def populateGit(self):
     # Skia repo.
@@ -820,11 +486,11 @@ class FakeRepoSkiaDEPS(FakeReposBase):
     # Chrome repo.
     self._commit_git('repo_2', {
         'DEPS': self.DEPS_git_pre % {'git_base': self.git_base},
-        'myfile': 'svn/trunk/src@1'
+        'myfile': 'src/trunk/src@1'
     })
     self._commit_git('repo_2', {
         'DEPS': self.DEPS_post % {'git_base': self.git_base},
-        'myfile': 'svn/trunk/src@2'
+        'myfile': 'src/trunk/src@2'
     })
 
 
@@ -880,11 +546,6 @@ class FakeReposTestBase(trial_dir.TestCase):
     # self.FAKE_REPOS is kept across tests.
 
   @property
-  def svn_base(self):
-    """Shortcut."""
-    return self.FAKE_REPOS.svn_base
-
-  @property
   def git_base(self):
     """Shortcut."""
     return self.FAKE_REPOS.git_base
@@ -919,22 +580,6 @@ class FakeReposTestBase(trial_dir.TestCase):
       logging.debug('Diff\n%s' % pprint.pformat(diff))
     self.assertEquals(diff, {})
 
-  def mangle_svn_tree(self, *args):
-    """Creates a 'virtual directory snapshot' to compare with the actual result
-    on disk."""
-    result = {}
-    for item, new_root in args:
-      old_root, rev = item.split('@', 1)
-      tree = self.FAKE_REPOS.svn_revs[int(rev)]
-      for k, v in tree.iteritems():
-        if not k.startswith(old_root):
-          continue
-        item = k[len(old_root) + 1:]
-        if item.startswith('.'):
-          continue
-        result[join(new_root, item).replace(os.sep, '/')] = v
-    return result
-
   def mangle_git_tree(self, *args):
     """Creates a 'virtual directory snapshot' to compare with the actual result
     on disk."""
@@ -959,7 +604,6 @@ def main(argv):
   fake = FakeRepos()
   print 'Using %s' % fake.root_dir
   try:
-    fake.set_up_svn()
     fake.set_up_git()
     print('Fake setup, press enter to quit or Ctrl-C to keep the checkouts.')
     sys.stdin.readline()

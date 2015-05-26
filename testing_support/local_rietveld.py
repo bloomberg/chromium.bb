@@ -81,11 +81,6 @@ class LocalRietveld(object):
       raise Failure(
           'Install google_appengine sdk in %s or higher up' % self.base_dir)
 
-    if os.path.isdir(os.path.join(self.rietveld, '.svn')):
-      # Left over from subversion. Delete it.
-      print('Deleting deprecated subversion rietveld files...')
-      shutil.rmtree(self.rietveld)
-
     if os.path.isdir(os.path.join(self.rietveld, '.hg')):
       # Left over from mercurial. Delete it.
       print('Deleting deprecated mercurial rietveld files...')
