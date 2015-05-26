@@ -56,6 +56,7 @@ AM_CPPFLAGS = 					\
 CLEANFILES = weston.ini				\
 	ivi-shell/weston.ini			\
 	tests/weston-ivi.ini			\
+	internal-screenshot-00.png		\
 	$(BUILT_SOURCES)
 
 bin_PROGRAMS += weston
@@ -1174,7 +1175,11 @@ setbacklight_CFLAGS = $(AM_CFLAGS) $(SETBACKLIGHT_CFLAGS)
 setbacklight_LDADD = $(SETBACKLIGHT_LIBS)
 endif
 
-EXTRA_DIST += tests/weston-tests-env
+EXTRA_DIST +=							\
+	tests/weston-tests-env					\
+	tests/internal-screenshot.ini				\
+	tests/reference/internal-screenshot-bad-00.png		\
+	tests/reference/internal-screenshot-good-00.png
 
 BUILT_SOURCES +=				\
 	protocol/weston-test-protocol.c	\
