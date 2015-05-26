@@ -36,6 +36,15 @@ Polymer({
     },
 
     /**
+     * Set to true to disable editing the input.
+     */
+    disabled: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true
+    },
+
+    /**
      * The current value of the input.
      */
     value: {

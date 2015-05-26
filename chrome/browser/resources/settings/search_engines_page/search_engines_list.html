@@ -1,0 +1,24 @@
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_input/cr_input.html">
+<link rel="import" href="search_engine_entry.html">
+
+<dom-module id="cr-search-engines-list">
+  <link rel="import" type="css" href="search_engines_list.css">
+  <template>
+    <div class="container">
+      <div class="headers">
+        <div class="narrow-label" i18n-content="searchEnginesDomainLabel"></div>
+        <div class="narrow-label" i18n-content="searchEnginesKeywordLabel">
+        </div>
+        <div class="wide-label" i18n-content="searchEnginesQueryURLLabel"></div>
+      </div>
+      <div class="entries">
+        <template is="x-repeat" items="[[engines]]">
+          <cr-search-engine-entry engine="[[item]]"></cr-search-engine-entry>
+        </template>
+      </div>
+    </div>
+  </template>
+  <script src="search_engines_list.js"></script>
+</dom-module>

@@ -1,0 +1,23 @@
+/* Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.container {
+  max-height: 400px;
+  overflow-y: auto;
+  width: 760px;
+}
+
+.headers > div {
+  background-color: #6c6c6c;
+  color: white;
+  display: inline-block;
+}
+
+.narrow-label {
+  width: 140px;
+}
+
+.wide-label {
+  width: 300px;
+}

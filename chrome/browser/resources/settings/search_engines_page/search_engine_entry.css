@@ -1,0 +1,29 @@
+/* Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.icons {
+  display: inline-block;
+  text-align: right;
+  width: 96px;
+}
+
+.inputs {
+  display: inline-block;
+}
+
+.inputs > cr-input {
+  border-bottom: 1px solid gray;
+}
+
+.inputs > cr-input:not(:last-child) {
+  border-right: 1px solid gray;
+}
+
+.narrow-input {
+  width: 140px;
+}
+
+.wide-input {
+  width: 300px;
+}
