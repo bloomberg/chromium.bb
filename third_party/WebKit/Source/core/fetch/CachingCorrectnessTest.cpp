@@ -124,11 +124,21 @@ private:
     // A simple platform that mocks out the clock, for cache freshness testing.
     class ProxyPlatform : public blink::Platform {
     public:
-        ProxyPlatform() : m_elapsedSeconds(0.) { }
+        ProxyPlatform() : m_platform(blink::Platform::current()), m_elapsedSeconds(0.) { }
+
+        ~ProxyPlatform()
+        {
+            blink::Platform::initialize(m_platform);
+        }
 
         void advanceClock(double seconds)
         {
             m_elapsedSeconds += seconds;
+        }
+
+        WebThread* currentThread() override
+        {
+            return m_platform->currentThread();
         }
 
     private:
@@ -145,12 +155,12 @@ private:
             return &kAConstUnsignedCharZero;
         }
 
+        blink::Platform* m_platform; // Not owned.
         double m_elapsedSeconds;
     };
 
     virtual void SetUp()
     {
-        m_savedPlatform = blink::Platform::current();
         blink::Platform::initialize(&m_proxyPlatform);
 
         // Save the global memory cache to restore it upon teardown.
@@ -165,11 +175,8 @@ private:
 
         // Yield the ownership of the global memory cache back.
         replaceMemoryCacheForTesting(m_globalMemoryCache.release());
-
-        blink::Platform::initialize(m_savedPlatform);
     }
 
-    blink::Platform* m_savedPlatform;
     ProxyPlatform m_proxyPlatform;
 
     OwnPtrWillBePersistent<MemoryCache> m_globalMemoryCache;

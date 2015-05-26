@@ -142,7 +142,12 @@ public:
 private:
     class PlatformProxy : public Platform {
     public:
-        PlatformProxy(WebCompositorSupportMock** compositor) : m_compositor(compositor) { }
+        PlatformProxy(WebCompositorSupportMock** compositor) : m_platform(Platform::current()), m_compositor(compositor) { }
+
+        ~PlatformProxy()
+        {
+            blink::Platform::initialize(m_platform);
+        }
 
         virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) { ASSERT_NOT_REACHED(); }
         const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
@@ -151,7 +156,13 @@ private:
             return &tracingIsDisabled;
         }
 
+        WebThread* currentThread() override
+        {
+            return m_platform->currentThread();
+        }
+
     private:
+        blink::Platform* m_platform; // Not owned.
         WebCompositorSupportMock** m_compositor;
         virtual WebCompositorSupport* compositorSupport() override { return *m_compositor; }
     };
@@ -160,18 +171,10 @@ private:
     PlatformProxy m_proxyPlatform;
 
 protected:
-    Platform* m_platform;
-
     virtual void SetUp()
     {
         m_mockCompositor = 0;
-        m_platform = Platform::current();
         Platform::initialize(&m_proxyPlatform);
-    }
-
-    virtual void TearDown()
-    {
-        Platform::initialize(m_platform);
     }
 
     void setCompositorForTesting(WebCompositorSupportMock& mock)
