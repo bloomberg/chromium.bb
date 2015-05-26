@@ -278,6 +278,10 @@ public class AwContents implements SmartClipProvider,
     // through the resourcethrottle. This is only used for popup windows.
     private boolean mDeferredShouldOverrideUrlLoadingIsPendingForPopup;
 
+    // This is a workaround for some qualcomm devices discarding buffer on
+    // Activity restore.
+    private boolean mInvalidateRootViewOnNextDraw;
+
     // The framework may temporarily detach our container view, for example during layout if
     // we are a child of a ListView. This may cause many toggles of View focus, which we suppress
     // when in this state.
@@ -2213,6 +2217,8 @@ public class AwContents implements SmartClipProvider,
     }
 
     private void setWindowVisibilityInternal(boolean visible) {
+        mInvalidateRootViewOnNextDraw |= Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP
+                && visible && !mIsWindowVisible;
         mIsWindowVisible = visible;
         if (!isDestroyed()) nativeSetWindowVisibility(mNativeAwContents, mIsWindowVisible);
     }
@@ -2731,6 +2737,11 @@ public class AwContents implements SmartClipProvider,
                     mScrollOffsetManager.computeMaximumHorizontalScrollOffset(),
                     mScrollOffsetManager.computeMaximumVerticalScrollOffset())) {
                 postInvalidateOnAnimation();
+            }
+
+            if (mInvalidateRootViewOnNextDraw) {
+                mContainerView.getRootView().invalidate();
+                mInvalidateRootViewOnNextDraw = false;
             }
         }
 
