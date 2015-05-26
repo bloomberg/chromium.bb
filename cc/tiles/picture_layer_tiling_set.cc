@@ -139,8 +139,14 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForCommit(
 
   // Invalidate tiles and update them to the new raster source.
   for (PictureLayerTiling* tiling : tilings_) {
+    DCHECK_IMPLIES(tree_ == PENDING_TREE, !tiling->has_tiles());
     tiling->SetRasterSourceAndResize(raster_source);
-    tiling->Invalidate(layer_invalidation);
+
+    // We can commit on either active or pending trees, but only active one can
+    // have tiles at this point.
+    if (tree_ == ACTIVE_TREE)
+      tiling->Invalidate(layer_invalidation);
+
     // This is needed for cases where the live tiles rect didn't change but
     // recordings exist in the raster source that did not exist on the last
     // raster source.

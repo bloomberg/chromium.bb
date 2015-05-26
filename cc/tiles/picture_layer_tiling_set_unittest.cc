@@ -334,6 +334,12 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
     EXPECT_EQ(tile_size1, tile->content_rect().size());
 
   // Update to a new source frame with a new tile size.
+  // Note that setting a new raster source can typically only happen after
+  // activation, since we can't set the raster source twice on the pending tree
+  // without activating. For test, just remove and add a new tiling instead.
+  pending_set->RemoveAllTilings();
+  pending_set->AddTiling(1.f, pile);
+  pending_set->tiling_at(0)->set_resolution(HIGH_RESOLUTION);
   pending_client.SetTileSize(tile_size2);
   pending_set->UpdateTilingsToCurrentRasterSourceForCommit(pile.get(), Region(),
                                                            1.f, 1.f);
