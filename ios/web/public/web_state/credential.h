@@ -42,6 +42,10 @@ struct Credential {
   GURL federation_url;
 };
 
+// Determines whether two credentials are equal.
+bool CredentialsEqual(const web::Credential& credential1,
+                      const web::Credential& credential2);
+
 }  // namespace web
 
 #endif  // IOS_WEB_PUBLIC_WEB_STATE_CREDENTIAL_H_
