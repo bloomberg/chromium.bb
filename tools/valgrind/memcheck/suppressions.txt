@@ -2226,14 +2226,6 @@
    fun:_ZN11jingle_glue17ChromeAsyncSocket7ConnectERKN9talk_base13SocketAddressE
 }
 {
-   bug_251004_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN3net10FileStream7Context14CloseAndDeleteEv
-}
-{
    bug_251034
    Memcheck:Leak
    ...
