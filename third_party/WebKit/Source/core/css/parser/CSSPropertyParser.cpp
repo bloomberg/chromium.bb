@@ -460,9 +460,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
 
     switch (propId) {
-    case CSSPropertySize:                 // <length>{1,2} | auto | [ <page-size> || [ portrait | landscape] ]
-        return parseSize(propId, important);
-
+    case CSSPropertySize: // <length>{1,2} | auto | [ <page-size> || [ portrait | landscape] ]
+        parsedValue = parseSize();
+        break;
     case CSSPropertyQuotes: // [<string> <string>]+ | none
         if (id == CSSValueNone)
             validPrimitive = true;
@@ -478,7 +478,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         if (id == CSSValueAuto)
             validPrimitive = true;
         else if (value->unit == CSSParserValue::Function)
-            return parseClipShape(propId, important);
+            parsedValue = parseClipShape();
         break;
 
     /* Start of supported CSS properties with validation. This is needed for parseShorthand to work
@@ -870,7 +870,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
 
     case CSSPropertyLineHeight:
-        return parseLineHeight(important);
+        parsedValue = parseLineHeight();
+        break;
     case CSSPropertyCounterIncrement:
         if (id == CSSValueNone)
             validPrimitive = true;
@@ -1402,7 +1403,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyInvalid:
         return false;
     case CSSPropertyPage:
-        return parsePage(propId, important);
+        parsedValue = parsePage();
+        break;
     // CSS Text Layout Module Level 3: Vertical writing support
     case CSSPropertyWebkitTextEmphasis:
         return parseShorthand(propId, webkitTextEmphasisShorthand(), important);
@@ -2006,35 +2008,22 @@ bool CSSPropertyParser::parse4Values(CSSPropertyID propId, const CSSPropertyID *
     return true;
 }
 
-// auto | <identifier>
-bool CSSPropertyParser::parsePage(CSSPropertyID propId, bool important)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parsePage()
 {
-    ASSERT(propId == CSSPropertyPage);
-
-    if (m_valueList->size() != 1)
-        return false;
-
     CSSParserValue* value = m_valueList->current();
+    m_valueList->next();
     ASSERT(value);
 
-    if (value->id == CSSValueAuto) {
-        addProperty(propId, cssValuePool().createIdentifierValue(value->id), important);
-        return true;
-    } else if (value->id == 0 && value->unit == CSSPrimitiveValue::CSS_IDENT) {
-        addProperty(propId, createPrimitiveCustomIdentValue(value), important);
-        return true;
-    }
-    return false;
+    if (value->id == CSSValueAuto)
+        return cssValuePool().createIdentifierValue(value->id);
+    if (value->unit == CSSPrimitiveValue::CSS_IDENT)
+        return createPrimitiveCustomIdentValue(value);
+    return nullptr;
 }
 
 // <length>{1,2} | auto | [ <page-size> || [ portrait | landscape] ]
-bool CSSPropertyParser::parseSize(CSSPropertyID propId, bool important)
+PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseSize()
 {
-    ASSERT(propId == CSSPropertySize);
-
-    if (m_valueList->size() > 2)
-        return false;
-
     CSSParserValue* value = m_valueList->current();
     ASSERT(value);
 
@@ -2043,18 +2032,18 @@ bool CSSPropertyParser::parseSize(CSSPropertyID propId, bool important)
     // First parameter.
     SizeParameterType paramType = parseSizeParameter(parsedValues.get(), value, None);
     if (paramType == None)
-        return false;
+        return nullptr;
+    value = m_valueList->next();
 
     // Second parameter, if any.
-    value = m_valueList->next();
     if (value) {
         paramType = parseSizeParameter(parsedValues.get(), value, paramType);
         if (paramType == None)
-            return false;
+            return nullptr;
+        m_valueList->next();
     }
 
-    addProperty(propId, parsedValues.release(), important);
-    return true;
+    return parsedValues.release();
 }
 
 CSSPropertyParser::SizeParameterType CSSPropertyParser::parseSizeParameter(CSSValueList* parsedValues, CSSParserValue* value, SizeParameterType prevParamType)
@@ -3817,23 +3806,23 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounterContent(CSSParse
     return cssValuePool().createValue(Counter::create(identifier.release(), listStyle.release(), separator.release()));
 }
 
-bool CSSPropertyParser::parseClipShape(CSSPropertyID propId, bool important)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseClipShape()
 {
     CSSParserValue* value = m_valueList->current();
     CSSParserValueList* args = value->function->args.get();
 
     if (value->function->id != CSSValueRect || !args)
-        return false;
+        return nullptr;
 
     // rect(t, r, b, l) || rect(t r b l)
     if (args->size() != 4 && args->size() != 7)
-        return false;
+        return nullptr;
     RefPtrWillBeRawPtr<Rect> rect = Rect::create();
     int i = 0;
     CSSParserValue* a = args->current();
     while (a) {
         if (a->id != CSSValueAuto && !validUnit(a, FLength | FUnitlessQuirk))
-            return false;
+            return nullptr;
         RefPtrWillBeRawPtr<CSSPrimitiveValue> length = a->id == CSSValueAuto ?
             cssValuePool().createIdentifierValue(CSSValueAuto) :
             createPrimitiveNumericValue(a);
@@ -3848,14 +3837,13 @@ bool CSSPropertyParser::parseClipShape(CSSPropertyID propId, bool important)
         a = args->next();
         if (a && args->size() == 7) {
             if (!consumeComma(args))
-                return false;
+                return nullptr;
             a = args->current();
         }
         i++;
     }
-    addProperty(propId, cssValuePool().createValue(rect.release()), important);
     m_valueList->next();
-    return true;
+    return cssValuePool().createValue(rect.release());
 }
 
 static void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4])
@@ -4446,10 +4434,13 @@ bool CSSPropertyParser::parseFont(bool important)
         value = m_valueList->next();
         if (!value)
             return false;
-        if (!parseLineHeight(important))
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> lineHeight = parseLineHeight();
+        if (!lineHeight)
             return false;
-    } else
+        addProperty(CSSPropertyLineHeight, lineHeight.release(), important);
+    } else {
         addProperty(CSSPropertyLineHeight, cssValuePool().createIdentifierValue(CSSValueNormal), important, true);
+    }
 
     // Font family must come now.
     RefPtrWillBeRawPtr<CSSValue> parsedFamilyValue = parseFontFamily();
@@ -4598,25 +4589,27 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFamily()
     return list.release();
 }
 
-bool CSSPropertyParser::parseLineHeight(bool important)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseLineHeight()
 {
     CSSParserValue* value = m_valueList->current();
     CSSValueID id = value->id;
-    bool validPrimitive = false;
+
     // normal | <number> | <length> | <percentage> | inherit
-    if (id == CSSValueNormal)
-        validPrimitive = true;
-    else
-        validPrimitive = validUnit(value, FNumber | FLength | FPercent | FNonNeg);
+    if (id == CSSValueNormal) {
+        m_valueList->next();
+        return cssValuePool().createIdentifierValue(id);
+    }
+
+    if (!validUnit(value, FNumber | FLength | FPercent | FNonNeg))
+        return nullptr;
     // The line-height property can accept both percents and numbers but additive opertaions are
     // not permitted on them in calc() expressions.
     if (m_parsedCalculation && m_parsedCalculation->category() == CalcPercentNumber) {
-        validPrimitive = false;
         m_parsedCalculation.release();
+        return nullptr;
     }
-    if (validPrimitive && (!m_valueList->next() || inShorthand()))
-        addProperty(CSSPropertyLineHeight, parseValidPrimitive(id, value), important);
-    return validPrimitive;
+    m_valueList->next();
+    return createPrimitiveNumericValue(value);
 }
 
 bool CSSPropertyParser::parseFontSize(bool important)

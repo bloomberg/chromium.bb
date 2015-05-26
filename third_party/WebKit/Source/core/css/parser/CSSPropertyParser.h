@@ -170,7 +170,7 @@ private:
     void maybeParseGridLineNames(CSSParserValueList&, CSSValueList&, CSSGridLineNamesValue* = 0);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridAutoFlow(CSSParserValueList&);
 
-    bool parseClipShape(CSSPropertyID, bool important);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseClipShape();
 
     bool parseLegacyPosition(CSSPropertyID, bool important);
     bool parseItemPositionOverflowPosition(CSSPropertyID, bool important);
@@ -198,7 +198,7 @@ private:
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseColor(CSSParserValue* = 0, bool acceptQuirkyColors = false);
     bool parseColorFromValue(CSSParserValue*, RGBA32&, bool acceptQuirkyColors = false);
 
-    bool parseLineHeight(bool important);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseLineHeight();
     bool parseFontSize(bool important);
     bool parseFontVariant(bool important);
     bool parseFontWeight(bool important);
@@ -288,8 +288,8 @@ private:
         Orientation,
     };
 
-    bool parsePage(CSSPropertyID propId, bool important);
-    bool parseSize(CSSPropertyID propId, bool important);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parsePage();
+    PassRefPtrWillBeRawPtr<CSSValueList> parseSize();
     SizeParameterType parseSizeParameter(CSSValueList* parsedValues, CSSParserValue*, SizeParameterType prevParamType);
 
     bool parseFontFaceSrcURI(CSSValueList*);
