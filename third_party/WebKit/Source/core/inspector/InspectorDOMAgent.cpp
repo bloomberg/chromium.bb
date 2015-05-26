@@ -32,7 +32,6 @@
 #include "core/inspector/InspectorDOMAgent.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptEventListener.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CharacterData.h"
@@ -64,7 +63,6 @@
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/inspector/DOMEditor.h"
 #include "core/inspector/DOMPatchSupport.h"
-#include "core/inspector/EventListenerInfo.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -933,25 +931,6 @@ void InspectorDOMAgent::setNodeValue(ErrorString* errorString, int nodeId, const
     m_domEditor->replaceWholeText(toText(node), value, errorString);
 }
 
-void InspectorDOMAgent::getEventListenersForNode(ErrorString* errorString, int nodeId, const String* objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOM::EventListener> >& listenersArray)
-{
-    listenersArray = TypeBuilder::Array<TypeBuilder::DOM::EventListener>::create();
-    Node* node = assertNode(errorString, nodeId);
-    if (!node)
-        return;
-    Vector<EventListenerInfo> eventInformation;
-    EventListenerInfo::getEventListeners(node, eventInformation, true);
-    if (!eventInformation.size())
-        return;
-    RegisteredEventListenerIterator iterator(eventInformation);
-    while (const RegisteredEventListener* listener = iterator.nextRegisteredEventListener()) {
-        const EventListenerInfo& info = iterator.currentEventListenerInfo();
-        RefPtr<TypeBuilder::DOM::EventListener> listenerObject = buildObjectForEventListener(*listener, info.eventType, info.eventTarget->toNode(), objectGroup);
-        if (listenerObject)
-            listenersArray->addItem(listenerObject);
-    }
-}
-
 static Node* nextNodeWithShadowDOMInMind(const Node& current, const Node* stayWithin, bool includeUserAgentShadowDOM)
 {
     // At first traverse the subtree.
@@ -1705,31 +1684,6 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > InspectorDOMAgent::build
         child = innerNextSibling(child);
     }
     return children.release();
-}
-
-PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEventListener(const RegisteredEventListener& registeredEventListener, const AtomicString& eventType, Node* node, const String* objectGroupId)
-{
-    RefPtr<EventListener> eventListener = registeredEventListener.listener;
-    String scriptId;
-    int lineNumber;
-    int columnNumber;
-    if (!eventListenerHandlerLocation(&node->document(), eventListener.get(), scriptId, lineNumber, columnNumber))
-        return nullptr;
-
-    Document& document = node->document();
-    RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
-        .setScriptId(scriptId)
-        .setLineNumber(lineNumber);
-    location->setColumnNumber(columnNumber);
-    RefPtr<TypeBuilder::DOM::EventListener> value = TypeBuilder::DOM::EventListener::create()
-        .setType(eventType)
-        .setUseCapture(registeredEventListener.useCapture)
-        .setIsAttribute(eventListener->isAttribute())
-        .setNodeId(pushNodePathToFrontend(node))
-        .setLocation(location);
-    if (objectGroupId)
-        value->setHandler(eventHandlerObject(&document, eventListener.get(), m_injectedScriptManager, objectGroupId));
-    return value.release();
 }
 
 PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > InspectorDOMAgent::buildArrayForPseudoElements(Element* element, NodeToIdMap* nodesMap)
