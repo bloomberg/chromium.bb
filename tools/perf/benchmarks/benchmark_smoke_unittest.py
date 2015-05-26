@@ -22,6 +22,7 @@ from telemetry.unittest_util import progress_reporter
 from benchmarks import dom_perf
 from benchmarks import indexeddb_perf
 from benchmarks import image_decoding
+from benchmarks import octane
 from benchmarks import rasterize_and_record_micro
 from benchmarks import spaceport
 from benchmarks import speedometer
@@ -81,6 +82,7 @@ _BLACK_LIST_TEST_MODULES = {
     dom_perf,   # Always fails on cq bot.
     image_decoding, # Always fails on Mac10.9 Tests builder.
     indexeddb_perf,  # Always fails on Win7 & Android Tests builder.
+    octane,  # Often fails & take long time to timeout on cq bot.
     rasterize_and_record_micro,  # Always fails on cq bot.
     spaceport,  # Takes 451 seconds.
     speedometer,  # Takes 101 seconds.
