@@ -20,6 +20,7 @@
 #include "content/browser/compositor/resize_lock.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
+#include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
@@ -3232,6 +3233,10 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_TRUE(ScrollStateIsUnknown());
   EXPECT_EQ(0U, sink_->message_count());
 
+  // Dropped flings should neither propagate *nor* indicate that they were
+  // consumed and have triggered a fling animation (as tracked by the router).
+  EXPECT_FALSE(parent_host_->input_router()->HasPendingEvents());
+
   SimulateWheelEvent(-5, 0, 0, true);    // sent directly
   SimulateWheelEvent(-60, 0, 0, true);   // enqueued
   SimulateWheelEvent(-100, 0, 0, true);  // coalesced into previous event
@@ -3256,6 +3261,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(OVERSCROLL_WEST, overscroll_delegate()->completed_mode());
   EXPECT_TRUE(ScrollStateIsUnknown());
   EXPECT_EQ(0U, sink_->message_count());
+  EXPECT_FALSE(parent_host_->input_router()->HasPendingEvents());
 }
 
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {

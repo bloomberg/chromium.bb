@@ -601,8 +601,7 @@ void InputRouterImpl::ProcessGestureAck(WebInputEvent::Type type,
                                         InputEventAckState ack_result,
                                         const ui::LatencyInfo& latency) {
   if (type == blink::WebInputEvent::GestureFlingStart &&
-      ack_result == INPUT_EVENT_ACK_STATE_CONSUMED &&
-      current_ack_source_ == RENDERER) {
+      ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
     ++active_renderer_fling_count_;
   }
 

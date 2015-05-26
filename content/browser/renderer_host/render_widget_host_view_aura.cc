@@ -1346,9 +1346,19 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
   if (overscroll_controller_)
     consumed |= overscroll_controller_->WillHandleEvent(input_event);
 
-  return consumed && !WebTouchEvent::isTouchEventType(input_event.type)
-             ? INPUT_EVENT_ACK_STATE_CONSUMED
-             : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  // Touch events should always propagate to the renderer.
+  if (WebTouchEvent::isTouchEventType(input_event.type))
+    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+
+  // Reporting consumed for a fling suggests that there's now an *active* fling
+  // that requires both animation and a fling-end notification. However, the
+  // OverscrollController consumes a fling to stop its propagation; it doesn't
+  // actually tick a fling animation. Report no consumer to convey this.
+  if (consumed && input_event.type == blink::WebInputEvent::GestureFlingStart)
+    return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+
+  return consumed ? INPUT_EVENT_ACK_STATE_CONSUMED
+                  : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
 BrowserAccessibilityManager*

@@ -1680,6 +1680,18 @@ TEST_F(InputRouterImplTest, InputFlushAfterFling) {
   // The fling end notification should signal that the router is flushed.
   input_router()->OnMessageReceived(InputHostMsg_DidStopFlinging(0));
   EXPECT_EQ(1U, GetAndResetDidFlushCount());
+
+  // Even flings consumed by the client require a fling-end notification.
+  client_->set_filter_state(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       blink::WebGestureDeviceTouchscreen);
+  SimulateGestureEvent(WebInputEvent::GestureFlingStart,
+                       blink::WebGestureDeviceTouchscreen);
+  ASSERT_TRUE(HasPendingEvents());
+  RequestNotificationWhenFlushed();
+  EXPECT_EQ(0U, GetAndResetDidFlushCount());
+  input_router()->OnMessageReceived(InputHostMsg_DidStopFlinging(0));
+  EXPECT_EQ(1U, GetAndResetDidFlushCount());
 }
 
 // Test that GesturePinchUpdate is handled specially for trackpad
