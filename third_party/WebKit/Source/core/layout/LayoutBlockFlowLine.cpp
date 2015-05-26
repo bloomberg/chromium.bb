@@ -1681,15 +1681,8 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
             setShouldDoFullPaintInvalidation();
         }
 
-        // FIXME: This should just call deleteLineBoxTree, but that causes
-        // crashes for fast/repaint tests.
-        curr = firstRootBox();
-        while (curr) {
-            // Note: This uses nextRootBox() insted of nextLineBox() like deleteLineBoxTree does.
-            RootInlineBox* next = curr->nextRootBox();
-            curr->deleteLine();
-            curr = next;
-        }
+        deleteLineBoxTree();
+        curr = 0;
         ASSERT(!firstLineBox() && !lastLineBox());
     } else {
         if (curr) {
