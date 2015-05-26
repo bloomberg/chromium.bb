@@ -11,7 +11,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
@@ -22,21 +24,28 @@ const CGFloat kVerticalPaddingBetweenLabels = 2.0f;
 }  // namespace
 
 @interface CredentialItemView()
-@property(nonatomic, readonly) NSTextField* nameLabel;
-@property(nonatomic, readonly) NSTextField* usernameLabel;
++ (NSString*)upperLabelTextForForm:(const autofill::PasswordForm&)passwordForm
+                             style:(password_manager_mac::CredentialItemStyle)
+                                       style;
++ (NSString*)lowerLabelTextForForm:
+        (const autofill::PasswordForm&)passwordForm;
++ (NSTextField*)labelWithText:(NSString*)title;
+@property(nonatomic, readonly) NSTextField* upperLabel;
+@property(nonatomic, readonly) NSTextField* lowerLabel;
 @property(nonatomic, readonly) NSImageView* avatarView;
 @end
 
 @implementation CredentialItemView
 
-@synthesize nameLabel = nameLabel_;
-@synthesize usernameLabel = usernameLabel_;
+@synthesize upperLabel = upperLabel_;
+@synthesize lowerLabel = lowerLabel_;
 @synthesize avatarView = avatarView_;
 @synthesize passwordForm = passwordForm_;
 @synthesize credentialType = credentialType_;
 
 - (id)initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
             credentialType:(password_manager::CredentialType)credentialType
+                     style:(password_manager_mac::CredentialItemStyle)style
                   delegate:(id<CredentialItemDelegate>)delegate {
   if ((self = [super init])) {
     passwordForm_ = passwordForm;
@@ -56,42 +65,27 @@ const CGFloat kVerticalPaddingBetweenLabels = 2.0f;
     [[avatarView_ layer] setMasksToBounds:YES];
     [self addSubview:avatarView_];
 
-    if (!passwordForm_.display_name.empty()) {
-      nameLabel_ = [[[NSTextField alloc] initWithFrame:NSZeroRect] autorelease];
-      [self addSubview:nameLabel_];
-      [nameLabel_ setBezeled:NO];
-      [nameLabel_ setDrawsBackground:NO];
-      [nameLabel_ setEditable:NO];
-      [nameLabel_ setSelectable:NO];
-      [nameLabel_
-          setStringValue:base::SysUTF16ToNSString(passwordForm_.display_name)];
-      [nameLabel_ setAlignment:base::i18n::IsRTL() ? NSRightTextAlignment
-                                                   : NSLeftTextAlignment];
-      [nameLabel_ sizeToFit];
-    }
+    NSString* upperLabelText =
+        [[self class] upperLabelTextForForm:passwordForm_ style:style];
+    upperLabel_ = [[self class] labelWithText:upperLabelText];
+    [self addSubview:upperLabel_];
 
-    usernameLabel_ =
-        [[[NSTextField alloc] initWithFrame:NSZeroRect] autorelease];
-    [self addSubview:usernameLabel_];
-    [usernameLabel_ setBezeled:NO];
-    [usernameLabel_ setDrawsBackground:NO];
-    [usernameLabel_ setEditable:NO];
-    [usernameLabel_ setSelectable:NO];
-    [usernameLabel_
-        setStringValue:base::SysUTF16ToNSString(passwordForm_.username_value)];
-    [usernameLabel_ setAlignment:base::i18n::IsRTL() ? NSRightTextAlignment
-                                                     : NSLeftTextAlignment];
-    [usernameLabel_ sizeToFit];
+    NSString* lowerLabelText =
+        [[self class] lowerLabelTextForForm:passwordForm_];
+    if (lowerLabelText) {
+      lowerLabel_ = [[self class] labelWithText:lowerLabelText];
+      [self addSubview:lowerLabel_];
+    }
 
     // Compute the heights and widths of everything, as the layout depends on
     // these measurements.
-    const CGFloat labelsHeight = NSHeight([nameLabel_ frame]) +
-                                 NSHeight([usernameLabel_ frame]) +
+    const CGFloat labelsHeight = NSHeight([upperLabel_ frame]) +
+                                 NSHeight([lowerLabel_ frame]) +
                                  kVerticalPaddingBetweenLabels;
     const CGFloat height = std::max(labelsHeight, CGFloat(kAvatarImageSize));
     const CGFloat width =
         kAvatarImageSize + kHorizontalPaddingBetweenAvatarAndLabels +
-        std::max(NSWidth([nameLabel_ frame]), NSWidth([usernameLabel_ frame]));
+        std::max(NSWidth([upperLabel_ frame]), NSWidth([lowerLabel_ frame]));
     self.frame = NSMakeRect(0, 0, width, height);
 
     // Lay out the views (RTL reverses the order horizontally).
@@ -102,30 +96,30 @@ const CGFloat kVerticalPaddingBetweenLabels = 2.0f;
     [avatarView_ setFrame:NSMakeRect(avatarX, avatarY, kAvatarImageSize,
                                      kAvatarImageSize)];
 
-    const CGFloat usernameX =
+    const CGFloat lowerX =
         base::i18n::IsRTL()
             ? NSMinX([avatarView_ frame]) -
                   kHorizontalPaddingBetweenAvatarAndLabels -
-                  NSWidth([usernameLabel_ frame])
+                  NSWidth([lowerLabel_ frame])
             : NSMaxX([avatarView_ frame]) +
                   kHorizontalPaddingBetweenAvatarAndLabels;
-    const CGFloat usernameLabelY =
+    const CGFloat lowerLabelY =
         (labelsHeight > height) ? 0 : (height - labelsHeight) / 2.0f;
-    NSRect usernameFrame = [usernameLabel_ frame];
-    usernameFrame.origin = NSMakePoint(usernameX, usernameLabelY);
-    [usernameLabel_ setFrame:usernameFrame];
+    NSRect lowerFrame = [lowerLabel_ frame];
+    lowerFrame.origin = NSMakePoint(lowerX, lowerLabelY);
+    [lowerLabel_ setFrame:lowerFrame];
 
-    const CGFloat nameX = base::i18n::IsRTL()
+    const CGFloat upperX = base::i18n::IsRTL()
                               ? NSMinX([avatarView_ frame]) -
                                     kHorizontalPaddingBetweenAvatarAndLabels -
-                                    NSWidth([nameLabel_ frame])
+                                    NSWidth([upperLabel_ frame])
                               : NSMaxX([avatarView_ frame]) +
                                     kHorizontalPaddingBetweenAvatarAndLabels;
-    const CGFloat nameLabelY =
-        NSMaxY(usernameFrame) + kVerticalPaddingBetweenLabels;
-    NSRect nameFrame = [nameLabel_ frame];
-    nameFrame.origin = NSMakePoint(nameX, nameLabelY);
-    [nameLabel_ setFrame:nameFrame];
+    const CGFloat upperLabelY =
+        NSMaxY(lowerFrame) + kVerticalPaddingBetweenLabels;
+    NSRect upperFrame = [upperLabel_ frame];
+    upperFrame.origin = NSMakePoint(upperX, upperLabelY);
+    [upperLabel_ setFrame:upperFrame];
 
     // Use a default avatar and fetch the custom one, if it exists.
     [self updateAvatar:[[self class] defaultAvatar]];
@@ -136,8 +130,8 @@ const CGFloat kVerticalPaddingBetweenLabels = 2.0f;
     const NSUInteger autoresizingMask =
         (base::i18n::IsRTL() ? NSViewMinXMargin : NSViewMaxXMargin);
     [avatarView_ setAutoresizingMask:autoresizingMask];
-    [usernameLabel_ setAutoresizingMask:autoresizingMask];
-    [nameLabel_ setAutoresizingMask:autoresizingMask];
+    [lowerLabel_ setAutoresizingMask:autoresizingMask];
+    [upperLabel_ setAutoresizingMask:autoresizingMask];
     [self setAutoresizingMask:NSViewWidthSizable];
   }
 
@@ -153,6 +147,44 @@ const CGFloat kVerticalPaddingBetweenLabels = 2.0f;
       *ResourceBundle::GetSharedInstance()
            .GetImageNamed(IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE)
            .ToImageSkia()));
+}
+
++ (NSString*)upperLabelTextForForm:(const autofill::PasswordForm&)passwordForm
+                             style:(password_manager_mac::CredentialItemStyle)
+                                       style {
+  base::string16 name = passwordForm.display_name.empty()
+                            ? passwordForm.username_value
+                            : passwordForm.display_name;
+  switch (style) {
+    case password_manager_mac::CredentialItemStyle::ACCOUNT_CHOOSER:
+      return base::SysUTF16ToNSString(name);
+    case password_manager_mac::CredentialItemStyle::AUTO_SIGNIN:
+      return l10n_util::GetNSStringF(IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE,
+                                     name);
+  }
+  NOTREACHED();
+  return nil;
+}
+
++ (NSString*)lowerLabelTextForForm:
+        (const autofill::PasswordForm&)passwordForm {
+  return passwordForm.display_name.empty()
+             ? nil
+             : base::SysUTF16ToNSString(passwordForm.username_value);
+}
+
++ (NSTextField*)labelWithText:(NSString*)title {
+  NSTextField* label =
+      [[[NSTextField alloc] initWithFrame:NSZeroRect] autorelease];
+  [label setBezeled:NO];
+  [label setDrawsBackground:NO];
+  [label setEditable:NO];
+  [label setSelectable:NO];
+  [label setStringValue:title];
+  [label setAlignment:base::i18n::IsRTL() ? NSRightTextAlignment
+                                          : NSLeftTextAlignment];
+  [label sizeToFit];
+  return label;
 }
 
 @end

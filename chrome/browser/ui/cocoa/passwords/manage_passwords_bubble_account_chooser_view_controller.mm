@@ -225,6 +225,8 @@
         initWithPasswordForm:*form
               credentialType:password_manager::CredentialType::
                                  CREDENTIAL_TYPE_LOCAL
+                       style:password_manager_mac::CredentialItemStyle::
+                                 ACCOUNT_CHOOSER
                     delegate:delegate]);
     [items addObject:item];
   }
@@ -233,6 +235,8 @@
         initWithPasswordForm:*form
               credentialType:password_manager::CredentialType::
                                  CREDENTIAL_TYPE_FEDERATED
+                       style:password_manager_mac::CredentialItemStyle::
+                                 ACCOUNT_CHOOSER
                     delegate:delegate]);
     [items addObject:item];
   }

@@ -30,7 +30,7 @@
 @end
 
 @interface CredentialItemView(Testing)
-@property(nonatomic, readonly) NSTextField* usernameLabel;
+@property(nonatomic, readonly) NSTextField* upperLabel;
 @end
 
 // Helper delegate for testing the account chooser view of the password
@@ -139,13 +139,13 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest, ConfiguresViews) {
       base::mac::ObjCCastStrict<CredentialItemView>(
           base::mac::ObjCCastStrict<CredentialItemCell>(
               [view.delegate tableView:view dataCellForTableColumn:nil row:0])
-              .view).usernameLabel.stringValue);
+              .view).upperLabel.stringValue);
   EXPECT_NSEQ(
       @"taco",
       base::mac::ObjCCastStrict<CredentialItemView>(
           base::mac::ObjCCastStrict<CredentialItemCell>(
               [view.delegate tableView:view dataCellForTableColumn:nil row:1])
-              .view).usernameLabel.stringValue);
+              .view).upperLabel.stringValue);
   EXPECT_TRUE(avatar_manager().fetchedAvatars.empty());
 }
 

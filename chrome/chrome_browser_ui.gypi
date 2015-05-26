@@ -1161,6 +1161,8 @@
       'browser/ui/cocoa/passwords/manage_password_item_view_controller.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_account_chooser_view_controller.h',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_account_chooser_view_controller.mm',
+      'browser/ui/cocoa/passwords/manage_passwords_bubble_auto_signin_view_controller.h',
+      'browser/ui/cocoa/passwords/manage_passwords_bubble_auto_signin_view_controller.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_blacklist_view_controller.h',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_blacklist_view_controller.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_cocoa.h',

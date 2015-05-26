@@ -14,6 +14,16 @@
 @class CredentialItemView;
 class GURL;
 
+namespace password_manager_mac {
+// The style of the credential item.
+enum CredentialItemStyle {
+  // Shows the credential details next to the avatar.
+  ACCOUNT_CHOOSER,
+  // Shows an auto-signin message next to the avatar.
+  AUTO_SIGNIN,
+};
+}  // namespace password_manager
+
 // Handles user interaction with and image fetching for a CredentialItemView.
 @protocol CredentialItemDelegate<NSObject>
 
@@ -27,8 +37,8 @@ class GURL;
 @interface CredentialItemView : NSView {
   autofill::PasswordForm passwordForm_;
   password_manager::CredentialType credentialType_;
-  NSTextField* nameLabel_;
-  NSTextField* usernameLabel_;
+  NSTextField* upperLabel_;
+  NSTextField* lowerLabel_;
   NSImageView* avatarView_;
   id<CredentialItemDelegate> delegate_;  // Weak.
 }
@@ -40,6 +50,7 @@ class GURL;
 // |delegate| to asynchronously fetch the avatar image.
 - (id)initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
             credentialType:(password_manager::CredentialType)credentialType
+                     style:(password_manager_mac::CredentialItemStyle)style
                   delegate:(id<CredentialItemDelegate>)delegate;
 
 // Sets a custom avatar for this item. The image should be scaled and cropped

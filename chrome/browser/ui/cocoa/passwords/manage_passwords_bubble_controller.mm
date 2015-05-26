@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_account_chooser_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_auto_signin_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_blacklist_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_confirmation_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.h"
@@ -81,6 +82,11 @@
   } else if (model_->state() == password_manager::ui::BLACKLIST_STATE) {
     currentController_.reset(
         [[ManagePasswordsBubbleBlacklistViewController alloc]
+            initWithModel:model_
+                 delegate:self]);
+  } else if (model_->state() == password_manager::ui::AUTO_SIGNIN_STATE) {
+    currentController_.reset(
+        [[ManagePasswordsBubbleAutoSigninViewController alloc]
             initWithModel:model_
                  delegate:self]);
   } else if (model_->state() ==

@@ -13,8 +13,8 @@
 #include "ui/gfx/image/image.h"
 
 @interface CredentialItemView(Testing)
-@property(nonatomic, readonly) NSTextField* nameLabel;
-@property(nonatomic, readonly) NSTextField* usernameLabel;
+@property(nonatomic, readonly) NSTextField* upperLabel;
+@property(nonatomic, readonly) NSTextField* lowerLabel;
 @property(nonatomic, readonly) NSImageView* avatarView;
 @end
 
@@ -114,6 +114,8 @@ class CredentialItemViewTest : public CocoaTest {
         initWithPasswordForm:form
               credentialType:password_manager::CredentialType::
                                  CREDENTIAL_TYPE_LOCAL
+                       style:password_manager_mac::CredentialItemStyle::
+                                 ACCOUNT_CHOOSER
                     delegate:delegate()] autorelease];
   }
 
@@ -126,8 +128,8 @@ TEST_F(CredentialItemViewTest, BasicCredential) {
   CredentialItemView* item = view(form);
 
   EXPECT_NSEQ(base::SysUTF16ToNSString(form.username_value),
-              [item usernameLabel].stringValue);
-  EXPECT_EQ(nil, [item nameLabel]);
+              [item upperLabel].stringValue);
+  EXPECT_EQ(nil, [item lowerLabel]);
   EXPECT_FALSE([delegate() didFetchAvatar]);
   EXPECT_TRUE(
       ImagesEqual([CredentialItemView defaultAvatar], [item avatarView].image));
@@ -137,10 +139,10 @@ TEST_F(CredentialItemViewTest, CredentialWithName) {
   autofill::PasswordForm form(CredentialWithName());
   CredentialItemView* item = view(form);
 
-  EXPECT_NSEQ(base::SysUTF16ToNSString(form.username_value),
-              [item usernameLabel].stringValue);
   EXPECT_NSEQ(base::SysUTF16ToNSString(form.display_name),
-              [item nameLabel].stringValue);
+              [item upperLabel].stringValue);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(form.username_value),
+              [item lowerLabel].stringValue);
   EXPECT_FALSE([delegate() didFetchAvatar]);
   EXPECT_TRUE(
       ImagesEqual([CredentialItemView defaultAvatar], [item avatarView].image));
@@ -151,8 +153,8 @@ TEST_F(CredentialItemViewTest, CredentialWithAvatar) {
   CredentialItemView* item = view(form);
 
   EXPECT_NSEQ(base::SysUTF16ToNSString(form.username_value),
-              [item usernameLabel].stringValue);
-  EXPECT_EQ(nil, [item nameLabel]);
+              [item upperLabel].stringValue);
+  EXPECT_EQ(nil, [item lowerLabel]);
   EXPECT_TRUE([delegate() didFetchAvatar]);
   EXPECT_EQ(form.avatar_url, [delegate() fetchedAvatarURL]);
   EXPECT_EQ(item, [delegate() viewForFetchedAvatar]);
@@ -167,10 +169,10 @@ TEST_F(CredentialItemViewTest, CredentialWithNameAndAvatar) {
   autofill::PasswordForm form(CredentialWithNameAndAvatar());
   CredentialItemView* item = view(form);
 
-  EXPECT_NSEQ(base::SysUTF16ToNSString(form.username_value),
-              [item usernameLabel].stringValue);
   EXPECT_NSEQ(base::SysUTF16ToNSString(form.display_name),
-              [item nameLabel].stringValue);
+              [item upperLabel].stringValue);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(form.username_value),
+              [item lowerLabel].stringValue);
   EXPECT_TRUE([delegate() didFetchAvatar]);
   EXPECT_EQ(form.avatar_url, [delegate() fetchedAvatarURL]);
   EXPECT_EQ(item, [delegate() viewForFetchedAvatar]);
