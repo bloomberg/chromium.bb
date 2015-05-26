@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
+
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -16,10 +17,6 @@
 namespace content {
 
 namespace {
-
-RenderFrameHostImpl* ToRFHI(RenderFrameHost* render_frame_host) {
-  return static_cast<RenderFrameHostImpl*>(render_frame_host);
-}
 
 // Implementation of ContentBrowserClient that overrides
 // OverridePageVisibilityState() and allows consumers to set a value.
@@ -53,24 +50,26 @@ class PrerenderTestContentBrowserClient : public TestContentBrowserClient {
 
 }  // anonymous namespace
 
+// TODO(mlamouri): part of these tests were removed because they were dependent
+// on an environment were focus is guaranteed. This is only for
+// interactive_ui_tests so these bits need to move there.
+// See https://crbug.com/491535
 using RenderFrameHostImplBrowserTest = ContentBrowserTest;
 
 // Test that when creating a new window, the main frame is correctly focused.
-// flaky http://crbug.com/452631
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       DISABLED_IsFocused_AtLoad) {
+                       IsFocused_AtLoad) {
   EXPECT_TRUE(
       NavigateToURL(shell(), GetTestUrl("render_frame_host", "focus.html")));
 
   // The main frame should be focused.
   WebContents* web_contents = shell()->web_contents();
-  EXPECT_TRUE(ToRFHI(web_contents->GetMainFrame())->IsFocused());
+  EXPECT_EQ(web_contents->GetMainFrame(), web_contents->GetFocusedFrame());
 }
 
 // Test that if the content changes the focused frame, it is correctly exposed.
-// Disabled to to flaky failures: crbug.com/452631
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       DISABLED_IsFocused_Change) {
+                       IsFocused_Change) {
   EXPECT_TRUE(
       NavigateToURL(shell(), GetTestUrl("render_frame_host", "focus.html")));
 
@@ -83,9 +82,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
     // The main frame is not the focused frame in the frame tree but the main
     // frame is focused per RFHI rules because one of its descendant is focused.
+    // TODO(mlamouri): we should check the frame focus state per RFHI, see the
+    // general comment at the beginning of this test file.
     EXPECT_NE(web_contents->GetMainFrame(), web_contents->GetFocusedFrame());
-    EXPECT_TRUE(ToRFHI(web_contents->GetFocusedFrame())->IsFocused());
-    EXPECT_TRUE(ToRFHI(web_contents->GetMainFrame())->IsFocused());
     EXPECT_EQ(frame, web_contents->GetFocusedFrame()->GetFrameName());
   }
 }
@@ -100,8 +99,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, RemoveFocusedFrame) {
 
   ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "focusframe4()");
 
-  // TODO(nick,mlamouri): Add calls to RFHI::IsFocused here once they're not
-  // flaky. See http://crbug.com/452631, http://crbug.com/464033, etc.
   EXPECT_NE(web_contents->GetMainFrame(), web_contents->GetFocusedFrame());
   EXPECT_EQ("frame4", web_contents->GetFocusedFrame()->GetFrameName());
   EXPECT_EQ("frame3",
@@ -120,33 +117,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, RemoveFocusedFrame) {
   ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "detachframe(2)");
   EXPECT_EQ(nullptr, web_contents->GetFocusedFrame());
   EXPECT_EQ(-1, web_contents->GetFrameTree()->focused_frame_tree_node_id_);
-}
-
-// Test that even if the frame is focused in the frame tree but its
-// RenderWidgetHost is not focused, it is not considered as focused.
-// flaky http://crbug.com/452631
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       DISABLED_IsFocused_Widget) {
-  EXPECT_TRUE(
-      NavigateToURL(shell(), GetTestUrl("render_frame_host", "focus.html")));
-  WebContents* web_contents = shell()->web_contents();
-
-  // A second window is created and navigated. It takes the focus.
-  Shell* new_shell = CreateBrowser();
-  EXPECT_TRUE(
-      NavigateToURL(new_shell, GetTestUrl("render_frame_host", "focus.html")));
-  EXPECT_TRUE(ToRFHI(new_shell->web_contents()->GetMainFrame())->IsFocused());
-
-  // The first opened window is no longer focused. The main frame is still the
-  // focused frame in the frame tree but as far as RFH is concerned, the frame
-  // is not focused.
-  EXPECT_EQ(web_contents->GetMainFrame(), web_contents->GetFocusedFrame());
-
-#if defined(OS_MACOSX)
-  EXPECT_TRUE(ToRFHI(web_contents->GetMainFrame())->IsFocused());
-#else
-  EXPECT_FALSE(ToRFHI(web_contents->GetMainFrame())->IsFocused());
-#endif
 }
 
 // Test that a frame is visible/hidden depending on its WebContents visibility
