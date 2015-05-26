@@ -49,7 +49,8 @@ namespace mojo {
 // app.AddService<BarImpl>(&context);
 //
 //
-class ApplicationImpl : public Application {
+class ApplicationImpl : public Application,
+                        public ErrorHandler {
  public:
   // Does not take ownership of |delegate|, which must remain valid for the
   // lifetime of ApplicationImpl.
@@ -94,26 +95,18 @@ class ApplicationImpl : public Application {
   // Quits the main run loop for this application.
   void Terminate();
 
- protected:
+ private:
   // Application implementation.
   void AcceptConnection(const String& requestor_url,
                         InterfaceRequest<ServiceProvider> services,
                         ServiceProviderPtr exposed_services,
                         const String& url) override;
+  void RequestQuit() override;
 
- private:
-  class ShellPtrWatcher;
+  // ErrorHandler implementation.
+  void OnConnectionError() override;
 
   void ClearConnections();
-
-  void OnShellError() {
-    delegate_->Quit();
-    ClearConnections();
-    Terminate();
-  }
-
-  // Application implementation.
-  void RequestQuit() override;
 
   typedef std::vector<internal::ServiceRegistry*> ServiceRegistryList;
 
@@ -122,7 +115,6 @@ class ApplicationImpl : public Application {
   ApplicationDelegate* delegate_;
   Binding<Application> binding_;
   ShellPtr shell_;
-  ShellPtrWatcher* shell_watch_;
   std::string url_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationImpl);

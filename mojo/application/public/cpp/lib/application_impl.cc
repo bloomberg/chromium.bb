@@ -12,24 +12,10 @@
 
 namespace mojo {
 
-class ApplicationImpl::ShellPtrWatcher : public ErrorHandler {
- public:
-  ShellPtrWatcher(ApplicationImpl* impl) : impl_(impl) {}
-
-  ~ShellPtrWatcher() override {}
-
-  void OnConnectionError() override { impl_->OnShellError(); }
-
- private:
-  ApplicationImpl* impl_;
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ShellPtrWatcher);
-};
-
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  InterfaceRequest<Application> request)
     : delegate_(delegate),
-      binding_(this, request.Pass()),
-      shell_watch_(nullptr) {
+      binding_(this, request.Pass()) {
 }
 
 void ApplicationImpl::ClearConnections() {
@@ -47,7 +33,6 @@ void ApplicationImpl::ClearConnections() {
 
 ApplicationImpl::~ApplicationImpl() {
   ClearConnections();
-  delete shell_watch_;
 }
 
 ApplicationConnection* ApplicationImpl::ConnectToApplication(
@@ -72,8 +57,7 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
 
 void ApplicationImpl::Initialize(ShellPtr shell, const mojo::String& url) {
   shell_ = shell.Pass();
-  shell_watch_ = new ShellPtrWatcher(this);
-  shell_.set_error_handler(shell_watch_);
+  shell_.set_error_handler(this);
   url_ = url;
   delegate_->Initialize(this);
 }
@@ -111,6 +95,12 @@ void ApplicationImpl::AcceptConnection(
 
 void ApplicationImpl::RequestQuit() {
   delegate_->Quit();
+  Terminate();
+}
+
+void ApplicationImpl::OnConnectionError() {
+  delegate_->Quit();
+  ClearConnections();
   Terminate();
 }
 
