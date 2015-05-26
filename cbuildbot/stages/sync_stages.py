@@ -1545,6 +1545,7 @@ class PreCQLauncherStage(SyncStage):
 
     is_tree_open = tree_status.IsTreeOpen(throttled_ok=True)
     launch_count = 0
+    cl_launch_count = 0
     launch_count_limit = (self.last_cycle_launch_count +
                           self.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE)
     launches = {}
@@ -1564,9 +1565,12 @@ class PreCQLauncherStage(SyncStage):
       else:
         self.LaunchTrybot(plan, configs)
         launch_count += len(configs)
+        cl_launch_count += len(configs) * len(plan)
 
-    graphite.StatsFactory.GetInstance().Counter('precq').increment(
-        subname='launch_count', delta=launch_count)
+    graphite.StatsFactory.GetInstance().Counter('pre-cq').increment(
+        'launch_count', launch_count)
+    graphite.StatsFactory.GetInstance().Counter('pre-cq').increment(
+        'cl_launch_count', cl_launch_count)
 
     self.last_cycle_launch_count = launch_count
 

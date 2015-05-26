@@ -138,8 +138,8 @@ class BuildStartStage(generic_stages.BuilderStage):
                    d['build_id'])
       return
 
-    counter_name = '.'.join([self._run.config['name'], 'build_started'])
-    graphite.StatsFactory.GetInstance().Counter(counter_name).increment()
+    graphite.StatsFactory.GetInstance().Counter('build_started').increment(
+        self._run.config['name'] or 'NO_CONFIG')
 
     # Note: In other build stages we use self._run.GetCIDBHandle to fetch
     # a cidb handle. However, since we don't yet have a build_id, we can't
