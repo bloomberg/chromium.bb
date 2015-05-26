@@ -424,8 +424,10 @@ class CC_EXPORT ResourceProvider {
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(ResourceId id);
 
-  // Copy pixels from source to destination.
-  void CopyResource(ResourceId source_id, ResourceId dest_id);
+  // Copy |rect| pixels from source to destination.
+  void CopyResource(ResourceId source_id,
+                    ResourceId dest_id,
+                    const gfx::Rect& rect);
 
   void WaitSyncPointIfNeeded(ResourceId id);
 

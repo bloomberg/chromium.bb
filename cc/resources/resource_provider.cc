@@ -1942,7 +1942,9 @@ void ResourceProvider::BindImageForSampling(Resource* resource) {
   resource->dirty_image = false;
 }
 
-void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
+void ResourceProvider::CopyResource(ResourceId source_id,
+                                    ResourceId dest_id,
+                                    const gfx::Rect& rect) {
   TRACE_EVENT0("cc", "ResourceProvider::CopyResource");
 
   Resource* source_resource = GetResource(source_id);
@@ -1964,6 +1966,7 @@ void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
   DCHECK_EQ(source_resource->type, dest_resource->type);
   DCHECK_EQ(source_resource->format, dest_resource->format);
   DCHECK(source_resource->size == dest_resource->size);
+  DCHECK(gfx::Rect(dest_resource->size).Contains(rect));
 
   GLES2Interface* gl = ContextGL();
   DCHECK(gl);
@@ -1987,9 +1990,9 @@ void ResourceProvider::CopyResource(ResourceId source_id, ResourceId dest_id) {
   }
   DCHECK(!dest_resource->image_id);
   dest_resource->allocated = true;
-  gl->CopySubTextureCHROMIUM(
-      dest_resource->target, source_resource->gl_id, dest_resource->gl_id, 0, 0,
-      0, 0, dest_resource->size.width(), dest_resource->size.height());
+  gl->CopySubTextureCHROMIUM(dest_resource->target, source_resource->gl_id,
+                             dest_resource->gl_id, rect.x(), rect.y(), rect.x(),
+                             rect.y(), rect.width(), rect.height());
   if (source_resource->gl_read_lock_query_id) {
     // End query and create a read lock fence that will prevent access to
 // source resource until CopySubTextureCHROMIUM command has completed.

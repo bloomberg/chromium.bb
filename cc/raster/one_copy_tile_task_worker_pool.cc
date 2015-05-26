@@ -58,7 +58,7 @@ class RasterBufferImpl : public RasterBuffer {
                 const gfx::Rect& rect,
                 float scale) override {
     sequence_ = worker_pool_->PlaybackAndScheduleCopyOnWorkerThread(
-        lock_.Pass(), raster_resource_.Pass(), resource_, raster_source, rect,
+        lock_.Pass(), raster_resource_.get(), resource_, raster_source, rect,
         scale);
   }
 
@@ -80,6 +80,10 @@ const int kCopyFlushPeriod = 4;
 // Number of in-flight copy operations to allow.
 const int kMaxCopyOperations = 32;
 
+// Minimum number of rows per copy operation. 4 or greater is required to
+// support compressed texture formats.
+const size_t kMinRowsPerCopyOperation = 4;
+
 // Delay been checking for copy operations to complete.
 const int kCheckForCompletedCopyOperationsTickRateMs = 1;
 
@@ -91,9 +95,10 @@ const int kFailedAttemptsBeforeWaitIfNeeded = 256;
 
 OneCopyTileTaskWorkerPool::CopyOperation::CopyOperation(
     scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
-    scoped_ptr<ScopedResource> src,
-    const Resource* dst)
-    : write_lock(write_lock.Pass()), src(src.Pass()), dst(dst) {
+    const Resource* src,
+    const Resource* dst,
+    const gfx::Rect& rect)
+    : write_lock(write_lock.Pass()), src(src), dst(dst), rect(rect) {
 }
 
 OneCopyTileTaskWorkerPool::CopyOperation::~CopyOperation() {
@@ -105,10 +110,11 @@ scoped_ptr<TileTaskWorkerPool> OneCopyTileTaskWorkerPool::Create(
     TaskGraphRunner* task_graph_runner,
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
-    ResourcePool* resource_pool) {
+    ResourcePool* resource_pool,
+    size_t max_bytes_per_copy_operation) {
   return make_scoped_ptr<TileTaskWorkerPool>(new OneCopyTileTaskWorkerPool(
       task_runner, task_graph_runner, context_provider, resource_provider,
-      resource_pool));
+      resource_pool, max_bytes_per_copy_operation));
 }
 
 OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
@@ -116,18 +122,19 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
     TaskGraphRunner* task_graph_runner,
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
-    ResourcePool* resource_pool)
+    ResourcePool* resource_pool,
+    size_t max_bytes_per_copy_operation)
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner->GetNamespaceToken()),
       context_provider_(context_provider),
       resource_provider_(resource_provider),
       resource_pool_(resource_pool),
+      max_bytes_per_copy_operation_(max_bytes_per_copy_operation),
       last_issued_copy_operation_(0),
       last_flushed_copy_operation_(0),
       lock_(),
       copy_operation_count_cv_(&lock_),
-      scheduled_copy_operation_count_(0),
       issued_copy_operation_count_(0),
       next_copy_operation_sequence_(1),
       check_for_completed_copy_operations_pending_(false),
@@ -138,7 +145,7 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
 }
 
 OneCopyTileTaskWorkerPool::~OneCopyTileTaskWorkerPool() {
-  DCHECK_EQ(scheduled_copy_operation_count_, 0u);
+  DCHECK_EQ(pending_copy_operations_.size(), 0u);
 }
 
 TileTaskRunner* OneCopyTileTaskWorkerPool::AsTileTaskRunner() {
@@ -278,73 +285,83 @@ void OneCopyTileTaskWorkerPool::ReleaseBufferForRaster(
 CopySequenceNumber
 OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
-    scoped_ptr<ScopedResource> src,
+    const Resource* src,
     const Resource* dst,
     const RasterSource* raster_source,
     const gfx::Rect& rect,
     float scale) {
+  gfx::GpuMemoryBuffer* gpu_memory_buffer = write_lock->GetGpuMemoryBuffer();
+  if (gpu_memory_buffer) {
+    void* data = NULL;
+    bool rv = gpu_memory_buffer->Map(&data);
+    DCHECK(rv);
+    int stride;
+    gpu_memory_buffer->GetStride(&stride);
+    TileTaskWorkerPool::PlaybackToMemory(data, src->format(), src->size(),
+                                         stride, raster_source, rect, scale);
+    gpu_memory_buffer->Unmap();
+  }
+
   base::AutoLock lock(lock_);
 
-  int failed_attempts = 0;
-  while ((scheduled_copy_operation_count_ + issued_copy_operation_count_) >=
-         kMaxCopyOperations) {
-    // Ignore limit when shutdown is set.
-    if (shutdown_)
-      break;
+  CopySequenceNumber sequence = 0;
+  size_t bytes_per_row =
+      (BitsPerPixel(src->format()) * src->size().width()) / 8;
+  size_t chunk_size_in_rows = std::max(
+      kMinRowsPerCopyOperation, max_bytes_per_copy_operation_ / bytes_per_row);
+  size_t y = 0;
+  size_t height = src->size().height();
+  while (y < height) {
+    int failed_attempts = 0;
+    while ((pending_copy_operations_.size() + issued_copy_operation_count_) >=
+           kMaxCopyOperations) {
+      // Ignore limit when shutdown is set.
+      if (shutdown_)
+        break;
 
-    ++failed_attempts;
+      ++failed_attempts;
 
-    // Schedule a check that will also wait for operations to complete
-    // after too many failed attempts.
-    bool wait_if_needed = failed_attempts > kFailedAttemptsBeforeWaitIfNeeded;
+      // Schedule a check that will also wait for operations to complete
+      // after too many failed attempts.
+      bool wait_if_needed = failed_attempts > kFailedAttemptsBeforeWaitIfNeeded;
 
-    // Schedule a check for completed copy operations if too many operations
-    // are currently in-flight.
-    ScheduleCheckForCompletedCopyOperationsWithLockAcquired(wait_if_needed);
+      // Schedule a check for completed copy operations if too many operations
+      // are currently in-flight.
+      ScheduleCheckForCompletedCopyOperationsWithLockAcquired(wait_if_needed);
 
-    {
-      TRACE_EVENT0("cc", "WaitingForCopyOperationsToComplete");
+      {
+        TRACE_EVENT0("cc", "WaitingForCopyOperationsToComplete");
 
-      // Wait for in-flight copy operations to drop below limit.
-      copy_operation_count_cv_.Wait();
+        // Wait for in-flight copy operations to drop below limit.
+        copy_operation_count_cv_.Wait();
+      }
     }
-  }
 
-  // Increment |scheduled_copy_operation_count_| before releasing |lock_|.
-  ++scheduled_copy_operation_count_;
+    // There may be more work available, so wake up another worker thread.
+    copy_operation_count_cv_.Signal();
 
-  // There may be more work available, so wake up another worker thread.
-  copy_operation_count_cv_.Signal();
+    // Copy at most |chunk_size_in_rows|.
+    size_t rows_to_copy = std::min(chunk_size_in_rows, height - y);
 
-  {
-    base::AutoUnlock unlock(lock_);
+    // |write_lock| is passed to the first copy operation as it needs to be
+    // released before we can issue a copy.
+    pending_copy_operations_.push_back(make_scoped_ptr(
+        new CopyOperation(write_lock.Pass(), src, dst,
+                          gfx::Rect(0, y, src->size().width(), rows_to_copy))));
 
-    gfx::GpuMemoryBuffer* gpu_memory_buffer = write_lock->GetGpuMemoryBuffer();
-    if (gpu_memory_buffer) {
-      void* data = NULL;
-      bool rv = gpu_memory_buffer->Map(&data);
-      DCHECK(rv);
-      int stride;
-      gpu_memory_buffer->GetStride(&stride);
-      TileTaskWorkerPool::PlaybackToMemory(data, src->format(), src->size(),
-                                           stride, raster_source, rect, scale);
-      gpu_memory_buffer->Unmap();
+    y += rows_to_copy;
+
+    // Acquire a sequence number for this copy operation.
+    sequence = next_copy_operation_sequence_++;
+
+    // Post task that will advance last flushed copy operation to |sequence|
+    // if we have reached the flush period.
+    if ((sequence % kCopyFlushPeriod) == 0) {
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&OneCopyTileTaskWorkerPool::AdvanceLastFlushedCopyTo,
+                     weak_ptr_factory_.GetWeakPtr(), sequence));
     }
-  }
-
-  pending_copy_operations_.push_back(
-      make_scoped_ptr(new CopyOperation(write_lock.Pass(), src.Pass(), dst)));
-
-  // Acquire a sequence number for this copy operation.
-  CopySequenceNumber sequence = next_copy_operation_sequence_++;
-
-  // Post task that will advance last flushed copy operation to |sequence|
-  // if we have reached the flush period.
-  if ((sequence % kCopyFlushPeriod) == 0) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&OneCopyTileTaskWorkerPool::AdvanceLastFlushedCopyTo,
-                   weak_ptr_factory_.GetWeakPtr(), sequence));
   }
 
   return sequence;
@@ -400,11 +417,8 @@ void OneCopyTileTaskWorkerPool::IssueCopyOperations(int64 count) {
       copy_operations.push_back(pending_copy_operations_.take_front());
     }
 
-    // Decrement |scheduled_copy_operation_count_| and increment
-    // |issued_copy_operation_count_| to reflect the transition of copy
-    // operations from "pending" to "issued" state.
-    DCHECK_GE(scheduled_copy_operation_count_, copy_operations.size());
-    scheduled_copy_operation_count_ -= copy_operations.size();
+    // Increment |issued_copy_operation_count_| to reflect the transition of
+    // copy operations from "pending" to "issued" state.
     issued_copy_operation_count_ += copy_operations.size();
   }
 
@@ -416,11 +430,8 @@ void OneCopyTileTaskWorkerPool::IssueCopyOperations(int64 count) {
 
     // Copy contents of source resource to destination resource.
     resource_provider_->CopyResource(copy_operation->src->id(),
-                                     copy_operation->dst->id());
-
-    // Return source resource to pool where it can be reused once copy
-    // operation has completed and resource is no longer busy.
-    resource_pool_->ReleaseResource(copy_operation->src.Pass());
+                                     copy_operation->dst->id(),
+                                     copy_operation->rect);
   }
 }
 

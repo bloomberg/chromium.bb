@@ -2139,7 +2139,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
 
     *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
         task_runner, task_graph_runner, context_provider,
-        resource_provider_.get(), staging_resource_pool_.get());
+        resource_provider_.get(), staging_resource_pool_.get(),
+        settings_.max_bytes_per_copy_operation);
     return;
   }
 

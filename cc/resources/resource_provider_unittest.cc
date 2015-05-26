@@ -3638,7 +3638,7 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
       .Times(1)
       .RetiresOnSaturation();
-  resource_provider->CopyResource(source_id, dest_id);
+  resource_provider->CopyResource(source_id, dest_id, gfx::Rect(size));
   Mock::VerifyAndClearExpectations(context);
 
   EXPECT_CALL(*context, destroyImageCHROMIUM(kImageId))

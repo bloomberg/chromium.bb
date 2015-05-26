@@ -39,6 +39,8 @@ namespace cc {
 namespace {
 
 const size_t kMaxTransferBufferUsageBytes = 10000U;
+const size_t kMaxBytesPerCopyOperation = 1000U;
+
 // A resource of this dimension^2 * 4 must be greater than the above transfer
 // buffer constant.
 const size_t kLargeResourceDimension = 1000U;
@@ -163,7 +165,7 @@ class TileTaskWorkerPoolTest
         tile_task_worker_pool_ = OneCopyTileTaskWorkerPool::Create(
             base::ThreadTaskRunnerHandle::Get().get(), &task_graph_runner_,
             context_provider_.get(), resource_provider_.get(),
-            staging_resource_pool_.get());
+            staging_resource_pool_.get(), kMaxBytesPerCopyOperation);
         break;
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();

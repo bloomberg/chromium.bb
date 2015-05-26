@@ -38,7 +38,8 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
       TaskGraphRunner* task_graph_runner,
       ContextProvider* context_provider,
       ResourceProvider* resource_provider,
-      ResourcePool* resource_pool);
+      ResourcePool* resource_pool,
+      size_t max_bytes_per_copy_operation);
 
   // Overridden from TileTaskWorkerPool:
   TileTaskRunner* AsTileTaskRunner() override;
@@ -59,7 +60,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   // resource. Returns a non-zero sequence number for this copy operation.
   CopySequenceNumber PlaybackAndScheduleCopyOnWorkerThread(
       scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
-      scoped_ptr<ScopedResource> src,
+      const Resource* src,
       const Resource* dst,
       const RasterSource* raster_source,
       const gfx::Rect& rect,
@@ -74,7 +75,8 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
                             TaskGraphRunner* task_graph_runner,
                             ContextProvider* context_provider,
                             ResourceProvider* resource_provider,
-                            ResourcePool* resource_pool);
+                            ResourcePool* resource_pool,
+                            size_t max_bytes_per_copy_operation);
 
  private:
   struct CopyOperation {
@@ -82,13 +84,15 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
 
     CopyOperation(
         scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
-        scoped_ptr<ScopedResource> src,
-        const Resource* dst);
+        const Resource* src,
+        const Resource* dst,
+        const gfx::Rect& rect);
     ~CopyOperation();
 
     scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock;
-    scoped_ptr<ScopedResource> src;
+    const Resource* src;
     const Resource* dst;
+    const gfx::Rect rect;
   };
 
   void OnTaskSetFinished(TaskSet task_set);
@@ -109,6 +113,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
   ResourcePool* resource_pool_;
+  const size_t max_bytes_per_copy_operation_;
   TaskSetCollection tasks_pending_;
   scoped_refptr<TileTask> task_set_finished_tasks_[kNumberOfTaskSets];
   CopySequenceNumber last_issued_copy_operation_;
@@ -122,7 +127,6 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   base::Lock lock_;
   // |lock_| must be acquired when accessing the following members.
   base::ConditionVariable copy_operation_count_cv_;
-  size_t scheduled_copy_operation_count_;
   size_t issued_copy_operation_count_;
   CopyOperation::Deque pending_copy_operations_;
   CopySequenceNumber next_copy_operation_sequence_;
