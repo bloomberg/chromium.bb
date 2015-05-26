@@ -12,6 +12,7 @@
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/menu_item_builder.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 
 namespace content {
@@ -44,6 +45,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   params.frame_charset = data.frameEncoding.utf8();
   params.referrer_policy = data.referrerPolicy;
   params.suggested_filename = data.suggestedFilename;
+  params.input_field_type = data.inputFieldType;
 
   if (!data.imageResponse.isNull()) {
     GetContentClient()->renderer()->AddImageContextMenuProperties(

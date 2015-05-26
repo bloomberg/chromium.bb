@@ -161,6 +161,10 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
       return false;
 #endif
 
+    case ITEM_GROUP_PASSWORD:
+      return params_.input_field_type ==
+          blink::WebContextMenuData::InputFieldTypePassword;
+
     default:
       NOTREACHED();
       return false;

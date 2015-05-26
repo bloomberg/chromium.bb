@@ -66,6 +66,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_match.h"
+#include "components/password_manager/core/common/experiments.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -222,9 +223,10 @@ const struct UmaEnumCommandIdPair {
     {64, IDC_WRITING_DIRECTION_LTR},
     {65, IDC_WRITING_DIRECTION_RTL},
     {66, IDC_CONTENT_CONTEXT_SHOW_ORIGINAL_IMAGE},
+    {67, IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
-    {67, 0},  // Must be the last. Increment |enum_id| when new IDC was added.
+    {68, 0},  // Must be the last. Increment |enum_id| when new IDC was added.
 };
 
 // Collapses large ranges of ids before looking for UMA enum.
@@ -628,6 +630,11 @@ void RenderViewContextMenu::InitMenu() {
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_PRINT_PREVIEW)) {
     AppendPrintPreviewItems();
+  }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_PASSWORD)) {
+    AppendPasswordItems();
   }
 }
 
@@ -1038,6 +1045,15 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
       &protocol_handler_submenu_model_);
 }
 
+void RenderViewContextMenu::AppendPasswordItems() {
+  if (!password_manager::ForceSavingExperimentEnabled())
+    return;
+
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD,
+                                  IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD);
+}
+
 // Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
@@ -1338,6 +1354,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return true;
 
     case IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS:
+      return true;
+
+    case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
       return true;
 
     default:
@@ -1779,6 +1798,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       }
       break;
     }
+
+    case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
+      // TODO(msramek): Force-save the password.
+      break;
 
     default:
       NOTREACHED();

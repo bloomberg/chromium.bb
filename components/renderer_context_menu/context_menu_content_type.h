@@ -43,7 +43,8 @@ class ContextMenuContentType {
     ITEM_GROUP_CURRENT_EXTENSION,
     ITEM_GROUP_DEVELOPER,
     ITEM_GROUP_DEVTOOLS_UNPACKED_EXT,
-    ITEM_GROUP_PRINT_PREVIEW
+    ITEM_GROUP_PRINT_PREVIEW,
+    ITEM_GROUP_PASSWORD
   };
 
   typedef base::Callback<bool (const GURL& url)>

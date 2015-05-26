@@ -165,6 +165,9 @@ struct CONTENT_EXPORT ContextMenuParams {
   gfx::Point selection_start;
   gfx::Point selection_end;
 #endif
+
+  // If this node is an input field, the type of that field.
+  blink::WebContextMenuData::InputFieldType input_field_type;
 };
 
 }  // namespace content

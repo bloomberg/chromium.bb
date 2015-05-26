@@ -31,7 +31,8 @@ ContextMenuParams::ContextMenuParams()
           blink::WebContextMenuData::CheckableMenuItemEnabled),
       edit_flags(0),
       referrer_policy(blink::WebReferrerPolicyDefault),
-      source_type(ui::MENU_SOURCE_NONE) {
+      source_type(ui::MENU_SOURCE_NONE),
+      input_field_type(blink::WebContextMenuData::InputFieldTypeNone) {
 }
 
 ContextMenuParams::~ContextMenuParams() {
