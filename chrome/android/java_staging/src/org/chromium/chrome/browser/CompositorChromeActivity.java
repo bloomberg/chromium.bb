@@ -580,6 +580,7 @@ public abstract class CompositorChromeActivity extends ChromeActivity
         } else if (id == R.id.open_history_menu_id) {
             currentTab.loadUrl(
                     new LoadUrlParams(UrlConstants.HISTORY_URL, PageTransition.AUTO_TOPLEVEL));
+            RecordUserAction.record("MobileMenuHistory");
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             onShareMenuItemSelected(currentTab, getWindowAndroid(),
                     id == R.id.direct_share_menu_id, getCurrentTabModel().isIncognito());
