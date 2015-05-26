@@ -868,19 +868,13 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, Layo
         if (maxExtent != -1 && contentSize > maxExtent)
             contentSize = maxExtent;
 
-        bool hasClampedSize = !childFlexBaseSizeRequiresLayout(child);
-        if (hasClampedSize) {
-            const Length& flexBasis = flexBasisForChild(child);
-            bool flexBasisIsDefinite = flexBasis.isFixed() || (flexBasis.hasPercent() && mainAxisExtentIsDefinite());
-            if (flexBasisIsDefinite) {
-                LayoutUnit resolvedFlexBasis = computeMainAxisExtentForChild(child, MainOrPreferredSize, flexBasis);
-                ASSERT(resolvedFlexBasis >= 0);
-                LayoutUnit clampedSize = maxExtent != -1 ? std::min(resolvedFlexBasis, maxExtent) : resolvedFlexBasis;
+        Length mainSize = isHorizontalFlow() ? child.styleRef().width() : child.styleRef().height();
+        if (!mainAxisLengthIsIndefinite(mainSize)) {
+            LayoutUnit resolvedMainSize = computeMainAxisExtentForChild(child, MainOrPreferredSize, mainSize);
+            ASSERT(resolvedMainSize >= 0);
+            LayoutUnit specifiedSize = maxExtent != -1 ? std::min(resolvedMainSize, maxExtent) : resolvedMainSize;
 
-                minExtent = std::min(clampedSize, contentSize);
-            } else {
-                minExtent = contentSize;
-            }
+            minExtent = std::min(specifiedSize, contentSize);
         } else {
             minExtent = contentSize;
         }
