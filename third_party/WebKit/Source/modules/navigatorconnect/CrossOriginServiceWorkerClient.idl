@@ -11,6 +11,6 @@
     readonly attribute DOMString origin;
     readonly attribute DOMString targetUrl;
 
-    [Custom, RaisesException, CallWith=ExecutionContext]
+    [PostMessage, RaisesException, CallWith=ExecutionContext]
     void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
 };
