@@ -14,6 +14,10 @@
 #include "components/ownership/owner_key_util.h"
 #include "components/ownership/ownership_export.h"
 
+namespace crypto {
+class RSAPrivateKey;
+}
+
 namespace ownership {
 
 // Implementation of OwnerKeyUtil which should be used only for
@@ -24,10 +28,9 @@ class OWNERSHIP_EXPORT MockOwnerKeyUtil : public OwnerKeyUtil {
 
   // OwnerKeyUtil implementation:
   bool ImportPublicKey(std::vector<uint8>* output) override;
-#if defined(USE_NSS_CERTS)
-  crypto::RSAPrivateKey* FindPrivateKeyInSlot(const std::vector<uint8>& key,
-                                              PK11SlotInfo* slot) override;
-#endif  // defined(USE_NSS_CERTS)
+  crypto::ScopedSECKEYPrivateKey FindPrivateKeyInSlot(
+      const std::vector<uint8>& key,
+      PK11SlotInfo* slot) override;
   bool IsPublicKeyPresent() override;
 
   // Clears the public and private keys.
@@ -47,7 +50,7 @@ class OWNERSHIP_EXPORT MockOwnerKeyUtil : public OwnerKeyUtil {
   ~MockOwnerKeyUtil() override;
 
   std::vector<uint8> public_key_;
-  scoped_ptr<crypto::RSAPrivateKey> private_key_;
+  crypto::ScopedSECKEYPrivateKey private_key_;
 
   DISALLOW_COPY_AND_ASSIGN(MockOwnerKeyUtil);
 };

@@ -4,8 +4,6 @@
 
 #include "components/ownership/owner_key_util.h"
 
-#include "crypto/rsa_private_key.h"
-
 namespace ownership {
 
 ///////////////////////////////////////////////////////////////////////////
@@ -20,7 +18,7 @@ PublicKey::~PublicKey() {
 ///////////////////////////////////////////////////////////////////////////
 // PrivateKey
 
-PrivateKey::PrivateKey(crypto::RSAPrivateKey* key) : key_(key) {
+PrivateKey::PrivateKey(crypto::ScopedSECKEYPrivateKey key) : key_(key.Pass()) {
 }
 
 PrivateKey::~PrivateKey() {

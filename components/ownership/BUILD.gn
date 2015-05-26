@@ -5,47 +5,51 @@
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 
-component("ownership") {
-  sources = [
-    "mock_owner_key_util.cc",
-    "mock_owner_key_util.h",
-    "owner_key_util.cc",
-    "owner_key_util.h",
-    "owner_key_util_impl.cc",
-    "owner_key_util_impl.h",
-    "owner_settings_service.cc",
-    "owner_settings_service.h",
-  ]
+if (is_chromeos) {
+  component("ownership") {
+    sources = [
+      "mock_owner_key_util.cc",
+      "mock_owner_key_util.h",
+      "owner_key_util.cc",
+      "owner_key_util.h",
+      "owner_key_util_impl.cc",
+      "owner_key_util_impl.h",
+      "owner_settings_service.cc",
+      "owner_settings_service.h",
+    ]
 
-  defines = [ "OWNERSHIP_IMPLEMENTATION" ]
+    defines = [ "OWNERSHIP_IMPLEMENTATION" ]
 
-  deps = [
-    "//base",
-    "//components/keyed_service/core",
-    "//components/policy/proto",
-    "//components/policy:policy_component_common",
-    "//crypto",
-  ]
+    deps = [
+      "//base",
+      "//components/keyed_service/core",
+      "//components/policy/proto",
+      "//components/policy:policy_component_common",
+      "//crypto",
+    ]
 
-  if (enable_configuration_policy) {
-    deps += [ "//components/policy" ]
+    if (enable_configuration_policy) {
+      deps += [ "//components/policy" ]
+    }
+
+    if (use_nss_certs) {
+      public_deps = [
+        "//crypto:platform",
+      ]
+    }
   }
 
-  if (use_nss_certs) {
-    deps += [ "//crypto:platform" ]
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "owner_key_util_impl_unittest.cc",
+    ]
+
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+    deps = [
+      ":ownership",
+      "//testing/gtest",
+    ]
   }
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "owner_key_util_impl_unittest.cc",
-  ]
-
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-  deps = [
-    ":ownership",
-    "//testing/gtest",
-  ]
 }

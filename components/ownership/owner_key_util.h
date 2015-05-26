@@ -14,15 +14,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "components/ownership/ownership_export.h"
+#include "crypto/scoped_nss_types.h"
 
-#if defined(USE_NSS_CERTS)
 struct PK11SlotInfoStr;
 typedef struct PK11SlotInfoStr PK11SlotInfo;
-#endif  // defined(USE_NSS_CERTS)
-
-namespace crypto {
-class RSAPrivateKey;
-}
 
 namespace ownership {
 
@@ -53,21 +48,21 @@ class OWNERSHIP_EXPORT PublicKey
   DISALLOW_COPY_AND_ASSIGN(PublicKey);
 };
 
-// This class is a ref-counted wrapper around a crypto::RSAPrivateKey
+// This class is a ref-counted wrapper around a SECKEYPrivateKey
 // instance.
 class OWNERSHIP_EXPORT PrivateKey
     : public base::RefCountedThreadSafe<PrivateKey> {
  public:
-  explicit PrivateKey(crypto::RSAPrivateKey* key);
+  explicit PrivateKey(crypto::ScopedSECKEYPrivateKey key);
 
-  crypto::RSAPrivateKey* key() { return key_.get(); }
+  SECKEYPrivateKey* key() { return key_.get(); }
 
  private:
   friend class base::RefCountedThreadSafe<PrivateKey>;
 
   virtual ~PrivateKey();
 
-  scoped_ptr<crypto::RSAPrivateKey> key_;
+  crypto::ScopedSECKEYPrivateKey key_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivateKey);
 };
@@ -81,14 +76,12 @@ class OWNERSHIP_EXPORT OwnerKeyUtil
   // returns true and populates |output|.  False on failure.
   virtual bool ImportPublicKey(std::vector<uint8>* output) = 0;
 
-#if defined(USE_NSS_CERTS)
   // Looks for the private key associated with |key| in the |slot|
   // and returns it if it can be found.  Returns NULL otherwise.
   // Caller takes ownership.
-  virtual crypto::RSAPrivateKey* FindPrivateKeyInSlot(
+  virtual crypto::ScopedSECKEYPrivateKey FindPrivateKeyInSlot(
       const std::vector<uint8>& key,
       PK11SlotInfo* slot) = 0;
-#endif  // defined(USE_NSS_CERTS)
 
   // Checks whether the public key is present in the file system.
   virtual bool IsPublicKeyPresent() = 0;

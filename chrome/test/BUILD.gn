@@ -101,7 +101,6 @@ source_set("test_support") {
     "//components/history/core/test:test",
     "//components/metrics:test_support",
     "//components/omnibox:test_support",
-    "//components/ownership",
     "//components/password_manager/core/browser:test_support",
     "//components/pref_registry:test_support",
     "//components/rappor:test_support",
@@ -171,6 +170,9 @@ source_set("test_support") {
         "//win8:test_support_win8",
       ]
     }
+  }
+  if (is_chromeos) {
+    deps += [ "//components/ownership" ]
   }
 
   if (enable_plugins) {

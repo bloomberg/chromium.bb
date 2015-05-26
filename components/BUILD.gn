@@ -285,7 +285,6 @@ test("components_unittests") {
     "//components/metrics:unit_tests",
     "//components/mime_util:unit_tests",
     "//components/omnibox:unit_tests",
-    "//components/ownership:unit_tests",
     "//components/packed_ct_ev_whitelist:unit_tests",
     "//components/undo:unit_tests",
     "//components/update_client:unit_tests",
@@ -306,6 +305,10 @@ test("components_unittests") {
 
   if (!is_android && !is_ios) {
     deps += [ "//components/proximity_auth:unit_tests" ]
+  }
+
+  if (is_chromeos) {
+    deps += [ "//components/ownership:unit_tests" ]
   }
 
   # TODO(GYP) need this target.

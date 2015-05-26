@@ -1626,7 +1626,6 @@
         '../components/components.gyp:invalidation_test_support',
         '../components/components.gyp:metrics_test_support',
         '../components/components.gyp:omnibox_test_support',
-        '../components/components.gyp:ownership',
         '../components/components.gyp:password_manager_core_browser_test_support',
         '../components/components.gyp:pref_registry_test_support',
         '../components/components.gyp:rappor_test_support',
@@ -2020,6 +2019,11 @@
           'sources!': [
             'browser/ui/views/toolbar/browser_action_test_util_views.cc',
           ]
+        }],
+        ['chromeos==1', {
+          'dependencies': [
+            '../components/components.gyp:ownership',
+          ],
         }],
         ['enable_mdns==1', {
           'sources': [

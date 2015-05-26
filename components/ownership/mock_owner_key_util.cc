@@ -4,7 +4,11 @@
 
 #include "components/ownership/mock_owner_key_util.h"
 
+#include <pk11pub.h>
+
 #include "base/files/file_path.h"
+#include "base/logging.h"
+#include "crypto/nss_key_util.h"
 #include "crypto/rsa_private_key.h"
 
 namespace ownership {
@@ -20,13 +24,14 @@ bool MockOwnerKeyUtil::ImportPublicKey(std::vector<uint8>* output) {
   return !public_key_.empty();
 }
 
-#if defined(USE_NSS_CERTS)
-crypto::RSAPrivateKey* MockOwnerKeyUtil::FindPrivateKeyInSlot(
+crypto::ScopedSECKEYPrivateKey MockOwnerKeyUtil::FindPrivateKeyInSlot(
     const std::vector<uint8>& key,
     PK11SlotInfo* slot) {
-  return private_key_.get() ? private_key_->Copy() : NULL;
+  if (!private_key_)
+    return nullptr;
+  return crypto::ScopedSECKEYPrivateKey(
+      SECKEY_CopyPrivateKey(private_key_.get()));
 }
-#endif  // defined(USE_NSS_CERTS)
 
 bool MockOwnerKeyUtil::IsPublicKeyPresent() {
   return !public_key_.empty();
@@ -43,12 +48,20 @@ void MockOwnerKeyUtil::SetPublicKey(const std::vector<uint8>& key) {
 
 void MockOwnerKeyUtil::SetPublicKeyFromPrivateKey(
     const crypto::RSAPrivateKey& key) {
-  key.ExportPublicKey(&public_key_);
+  CHECK(key.ExportPublicKey(&public_key_));
 }
 
 void MockOwnerKeyUtil::SetPrivateKey(scoped_ptr<crypto::RSAPrivateKey> key) {
-  private_key_ = key.Pass();
-  private_key_->ExportPublicKey(&public_key_);
+  CHECK(key->ExportPublicKey(&public_key_));
+
+  std::vector<uint8_t> key_exported;
+  CHECK(key->ExportPrivateKey(&key_exported));
+
+  crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());
+  CHECK(slot);
+  private_key_ = crypto::ImportNSSKeyFromPrivateKeyInfo(
+      slot.get(), key_exported, false /* not permanent */);
+  CHECK(private_key_);
 }
 
 }  // namespace ownership
