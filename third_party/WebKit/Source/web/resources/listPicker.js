@@ -43,9 +43,9 @@ function ListPicker(element, config) {
     Picker.call(this, element, config);
     window.pagePopupController.selectFontsFromOwnerDocument(document);
     this._selectElement = createElement("select");
+    this._selectElement.size = 20;
     this._element.appendChild(this._selectElement);
     this._layout();
-    this._selectElement.focus();
     this._selectElement.addEventListener("mouseup", this._handleMouseUp.bind(this), false);
     this._selectElement.addEventListener("touchstart", this._handleTouchStart.bind(this), false);
     this._selectElement.addEventListener("keydown", this._handleKeyDown.bind(this), false);
@@ -61,6 +61,8 @@ function ListPicker(element, config) {
     this._trackingTouchId = null;
 
     this._handleWindowDidHide();
+    this._selectElement.focus();
+    this._selectElement.value = this._config.selectedIndex;
 }
 ListPicker.prototype = Object.create(Picker.prototype);
 
@@ -176,10 +178,10 @@ ListPicker.prototype._handleKeyDown = function(event) {
 
 ListPicker.prototype._fixWindowSize = function() {
     this._selectElement.style.height = "";
-    this._selectElement.size = 20;
     var maxHeight = this._selectElement.offsetHeight;
-    this._selectElement.style.height = "0";
-    var heightOutsideOfContent = this._selectElement.offsetHeight - this._selectElement.clientHeight;
+    // heightOutsideOfContent should be matched to border widths of the listbox
+    // SELECT. See listPicker.css and html.css.
+    var heightOutsideOfContent = 2;
     var noScrollHeight = Math.round(this._calculateScrollHeight() + heightOutsideOfContent);
     var desiredWindowHeight = noScrollHeight;
     var desiredWindowWidth = this._selectElement.offsetWidth;
@@ -229,13 +231,13 @@ ListPicker.prototype._layout = function() {
         this._element.classList.add("rtl");
     this._selectElement.style.backgroundColor = this._config.backgroundColor;
     this._updateChildren(this._selectElement, this._config);
-    this._selectElement.value = this._config.selectedIndex;
 };
 
 ListPicker.prototype._update = function() {
     var scrollPosition = this._selectElement.scrollTop;
     var oldValue = this._selectElement.value;
     this._layout();
+    this._selectElement.value = this._config.selectedIndex;
     this._selectElement.scrollTop = scrollPosition;
     var optionUnderMouse = null;
     if (this._selectionSetByMouseHover) {
@@ -256,15 +258,24 @@ ListPicker.prototype._update = function() {
  */
 ListPicker.prototype._updateChildren = function(parent, config) {
     var outOfDateIndex = 0;
+    var fragment = null;
+    var inGroup = parent.tagName === "OPTGROUP";
     for (var i = 0; i < config.children.length; ++i) {
         var childConfig = config.children[i];
         var item = this._findReusableItem(parent, childConfig, outOfDateIndex) || this._createItemElement(childConfig);
-        this._configureItem(item, childConfig, parent.tagName === "OPTGROUP");
-        if (outOfDateIndex < parent.children.length)
+        this._configureItem(item, childConfig, inGroup);
+        if (outOfDateIndex < parent.children.length) {
             parent.insertBefore(item, parent.children[outOfDateIndex]);
-        else
-            parent.appendChild(item);
+        } else {
+            if (!fragment)
+                fragment = document.createDocumentFragment();
+            fragment.appendChild(item);
+        }
         outOfDateIndex++;
+    }
+    if (fragment) {
+        parent.appendChild(fragment);
+        return;
     }
     var unused = parent.children.length - outOfDateIndex;
     for (var i = 0; i < unused; i++) {
@@ -301,17 +312,22 @@ ListPicker.prototype._createItemElement = function(config) {
 };
 
 ListPicker.prototype._applyItemStyle = function(element, styleConfig) {
-    element.style.color = styleConfig.color;
-    element.style.backgroundColor = styleConfig.backgroundColor;
-    element.style.fontSize = styleConfig.fontSize + "px";
-    element.style.fontWeight = styleConfig.fontWeight;
-    element.style.fontFamily = styleConfig.fontFamily.join(",");
-    element.style.fontStyle = styleConfig.fontStyle;
-    element.style.fontVariant = styleConfig.fontVariant;
-    element.style.visibility = styleConfig.visibility;
-    element.style.display = styleConfig.display;
-    element.style.direction = styleConfig.direction;
-    element.style.unicodeBidi = styleConfig.unicodeBidi;
+    if (!styleConfig)
+        return;
+    var style = element.style;
+    style.visibility = styleConfig.visibility;
+    style.display = styleConfig.display;
+    style.direction = styleConfig.direction;
+    style.unicodeBidi = styleConfig.unicodeBidi;
+    if (!styleConfig.color)
+        return;
+    style.color = styleConfig.color;
+    style.backgroundColor = styleConfig.backgroundColor;
+    style.fontSize = styleConfig.fontSize + "px";
+    style.fontWeight = styleConfig.fontWeight;
+    style.fontFamily = styleConfig.fontFamily.join(",");
+    style.fontStyle = styleConfig.fontStyle;
+    style.fontVariant = styleConfig.fontVariant;
 };
 
 ListPicker.prototype._configureItem = function(element, config, inGroup) {

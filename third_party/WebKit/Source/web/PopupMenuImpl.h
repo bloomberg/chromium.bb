@@ -30,10 +30,10 @@ public:
 private:
     PopupMenuImpl(ChromeClientImpl*, PopupMenuClient*);
 
-    void addOption(HTMLOptionElement&, SharedBuffer*);
-    void addOptGroup(HTMLOptGroupElement&, SharedBuffer*);
-    void addSeparator(HTMLHRElement&, SharedBuffer*);
-    void addElementStyle(HTMLElement&, SharedBuffer*);
+    void addOption(HTMLOptionElement&, bool enableExtraStyling, SharedBuffer*);
+    void addOptGroup(HTMLOptGroupElement&, bool enableExtraStyling, SharedBuffer*);
+    void addSeparator(HTMLHRElement&, bool enableExtraStyling, SharedBuffer*);
+    void addElementStyle(HTMLElement&, bool enableExtraStyling, SharedBuffer*);
 
     // PopupMenu functions:
     void show(const FloatQuad& controlPosition, const IntSize& controlSize, int index) override;
