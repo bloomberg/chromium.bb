@@ -13,6 +13,7 @@ namespace blink {
 struct WebBluetoothDevice;
 struct WebBluetoothError;
 struct WebBluetoothGATTRemoteServer;
+struct WebBluetoothGATTService;
 
 // Success and failure callbacks for requestDevice.
 // WebBluetoothDevice and WebBluetoothError object ownership is transfered.
@@ -20,6 +21,9 @@ typedef WebCallbacks<WebBluetoothDevice, WebBluetoothError> WebBluetoothRequestD
 
 // Success and failure callbacks for connectGATT.
 typedef WebCallbacks<WebBluetoothGATTRemoteServer, WebBluetoothError> WebBluetoothConnectGATTCallbacks;
+
+// Success and failure callbacks for getPrimaryService.
+typedef WebCallbacks<WebBluetoothGATTService, WebBluetoothError> WebBluetoothGetPrimaryServiceCallbacks;
 
 class WebBluetooth {
 public:
@@ -39,9 +43,9 @@ public:
     // BluetoothGATTRemoteServer methods:
     // See https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothgattremoteserver
     virtual void disconnect() { }
-    // TODO(ortuno): Properly define these methods once WebBluetoothServiceUuid
-    // and WebBluetoothGATTService are defined.
-    // virtual void getPrimaryService() { }
+    virtual void getPrimaryService(const WebString& deviceInstanceID,
+        const WebString& serviceUUID,
+        WebBluetoothGetPrimaryServiceCallbacks*) { }
     // virtual void getPrimaryServices() { }
 };
 
