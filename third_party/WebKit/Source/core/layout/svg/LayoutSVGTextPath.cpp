@@ -22,7 +22,6 @@
 #include "core/layout/svg/LayoutSVGTextPath.h"
 
 #include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/layout/svg/SVGPathData.h"
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGTextPathElement.h"
 
@@ -49,9 +48,7 @@ Path LayoutSVGTextPath::layoutPath() const
         return Path();
 
     SVGPathElement& pathElement = toSVGPathElement(*targetElement);
-
-    Path pathData;
-    updatePathFromGraphicsElement(&pathElement, pathData);
+    Path pathData = pathElement.asPath();
 
     // Spec:  The transform attribute on the referenced 'path' element represents a
     // supplemental transformation relative to the current user coordinate system for

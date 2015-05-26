@@ -34,6 +34,8 @@ class SVGEllipseElement final : public SVGGeometryElement {
 public:
     DECLARE_NODE_FACTORY(SVGEllipseElement);
 
+    Path asPath() const override;
+
     SVGAnimatedLength* cx() const { return m_cx.get(); }
     SVGAnimatedLength* cy() const { return m_cy.get(); }
     SVGAnimatedLength* rx() const { return m_rx.get(); }

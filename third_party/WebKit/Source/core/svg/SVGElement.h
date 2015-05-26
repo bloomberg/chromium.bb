@@ -83,6 +83,7 @@ public:
 
     SVGDocumentExtensions& accessDocumentSVGExtensions();
 
+    virtual bool isSVGGeometryElement() const { return false; }
     virtual bool isSVGGraphicsElement() const { return false; }
     virtual bool isFilterEffect() const { return false; }
     virtual bool isTextContent() const { return false; }

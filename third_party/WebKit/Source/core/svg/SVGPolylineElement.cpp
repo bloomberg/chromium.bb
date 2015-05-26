@@ -19,8 +19,9 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGPolylineElement.h"
+
+#include "platform/graphics/Path.h"
 
 namespace blink {
 
@@ -30,5 +31,10 @@ SVGPolylineElement::SVGPolylineElement(Document& document)
 }
 
 DEFINE_NODE_FACTORY(SVGPolylineElement)
+
+Path SVGPolylineElement::asPath() const
+{
+    return asPathFromPoints();
+}
 
 }

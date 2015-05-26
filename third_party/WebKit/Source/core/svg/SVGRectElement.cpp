@@ -56,6 +56,44 @@ DEFINE_TRACE(SVGRectElement)
 
 DEFINE_NODE_FACTORY(SVGRectElement)
 
+Path SVGRectElement::asPath() const
+{
+    Path path;
+
+    SVGLengthContext lengthContext(this);
+    ASSERT(layoutObject());
+    const ComputedStyle& style = layoutObject()->styleRef();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
+
+    float width = lengthContext.valueForLength(style.width(), style, SVGLengthMode::Width);
+    if (width < 0)
+        return path;
+    float height = lengthContext.valueForLength(style.height(), style, SVGLengthMode::Height);
+    if (height < 0)
+        return path;
+    if (!width && !height)
+        return path;
+
+    float x = lengthContext.valueForLength(svgStyle.x(), style, SVGLengthMode::Width);
+    float y = lengthContext.valueForLength(svgStyle.y(), style, SVGLengthMode::Height);
+    float rx = lengthContext.valueForLength(svgStyle.rx(), style, SVGLengthMode::Width);
+    float ry = lengthContext.valueForLength(svgStyle.ry(), style, SVGLengthMode::Height);
+    bool hasRx = rx > 0;
+    bool hasRy = ry > 0;
+    if (hasRx || hasRy) {
+        if (!hasRx)
+            rx = ry;
+        else if (!hasRy)
+            ry = rx;
+
+        path.addRoundedRect(FloatRect(x, y, width, height), FloatSize(rx, ry));
+        return path;
+    }
+
+    path.addRect(FloatRect(x, y, width, height));
+    return path;
+}
+
 bool SVGRectElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
     if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr

@@ -89,6 +89,13 @@ DEFINE_TRACE(SVGPathElement)
 
 DEFINE_NODE_FACTORY(SVGPathElement)
 
+Path SVGPathElement::asPath() const
+{
+    Path path;
+    buildPathFromByteStream(*pathByteStream(), path);
+    return path;
+}
+
 float SVGPathElement::getTotalLength()
 {
     return getTotalLengthOfSVGPathByteStream(*pathByteStream());

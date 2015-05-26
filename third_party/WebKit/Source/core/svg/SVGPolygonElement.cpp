@@ -19,8 +19,9 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGPolygonElement.h"
+
+#include "platform/graphics/Path.h"
 
 namespace blink {
 
@@ -30,5 +31,12 @@ inline SVGPolygonElement::SVGPolygonElement(Document& document)
 }
 
 DEFINE_NODE_FACTORY(SVGPolygonElement)
+
+Path SVGPolygonElement::asPath() const
+{
+    Path path = asPathFromPoints();
+    path.closeSubpath();
+    return path;
+}
 
 }

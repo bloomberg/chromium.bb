@@ -33,11 +33,10 @@
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/layout/svg/SVGPathData.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGShapePainter.h"
-#include "core/svg/SVGGraphicsElement.h"
+#include "core/svg/SVGGeometryElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/StrokeData.h"
@@ -45,11 +44,11 @@
 
 namespace blink {
 
-LayoutSVGShape::LayoutSVGShape(SVGGraphicsElement* node)
+LayoutSVGShape::LayoutSVGShape(SVGGeometryElement* node)
     : LayoutSVGModelObject(node)
     , m_needsBoundariesUpdate(false) // Default is false, the cached rects are empty from the beginning.
-    , m_needsShapeUpdate(true) // Default is true, so we grab a Path object once from SVGGraphicsElement.
-    , m_needsTransformUpdate(true) // Default is true, so we grab a AffineTransform object once from SVGGraphicsElement.
+    , m_needsShapeUpdate(true) // Default is true, so we grab a Path object once from SVGGeometryElement.
+    , m_needsTransformUpdate(true) // Default is true, so we grab a AffineTransform object once from SVGGeometryElement.
 {
 }
 
@@ -59,11 +58,9 @@ LayoutSVGShape::~LayoutSVGShape()
 
 void LayoutSVGShape::createPath()
 {
-    clearPath();
-    m_path = adoptPtr(new Path);
-    ASSERT(LayoutSVGShape::isShapeEmpty());
-
-    updatePathFromGraphicsElement(toSVGGraphicsElement(element()), path());
+    if (!m_path)
+        m_path = adoptPtr(new Path());
+    *m_path = toSVGGeometryElement(element())->asPath();
 }
 
 void LayoutSVGShape::updateShapeFromElement()

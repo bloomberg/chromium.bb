@@ -56,6 +56,8 @@ class SVGPathElement final : public SVGGeometryElement {
 public:
     DECLARE_NODE_FACTORY(SVGPathElement);
 
+    Path asPath() const override;
+
     float getTotalLength();
     PassRefPtrWillBeRawPtr<SVGPointTearOff> getPointAtLength(float distance);
     unsigned getPathSegAtLength(float distance);

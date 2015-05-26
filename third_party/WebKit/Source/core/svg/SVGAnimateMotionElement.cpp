@@ -25,7 +25,6 @@
 #include "core/SVGNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/svg/SVGPathData.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGPathElement.h"
@@ -119,7 +118,7 @@ void SVGAnimateMotionElement::updateAnimationPath()
 
     for (SVGMPathElement* mpath = Traversal<SVGMPathElement>::firstChild(*this); mpath; mpath = Traversal<SVGMPathElement>::nextSibling(*mpath)) {
         if (SVGPathElement* pathElement = mpath->pathElement()) {
-            updatePathFromGraphicsElement(pathElement, m_animationPath);
+            m_animationPath = pathElement->asPath();
             foundMPath = true;
             break;
         }

@@ -33,7 +33,7 @@ namespace blink {
 
 class LayoutSVGEllipse final : public LayoutSVGShape {
 public:
-    explicit LayoutSVGEllipse(SVGGraphicsElement*);
+    explicit LayoutSVGEllipse(SVGGeometryElement*);
     virtual ~LayoutSVGEllipse();
 
     virtual ShapeGeometryCodePath geometryCodePath() const override { return m_usePathFallback ? PathGeometry : EllipseGeometryFastPath; }

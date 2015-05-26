@@ -60,9 +60,8 @@ public:
     virtual FloatRect getBBox();
     PassRefPtrWillBeRawPtr<SVGRectTearOff> getBBoxFromJavascript();
 
-    // "base class" methods for all the elements which render as paths
-    virtual void toClipPath(Path&);
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    // FIXME: This should only be defined on SVGGeometryElement.
+    virtual void toClipPath(Path&) { }
 
     virtual bool isValid() const override final { return SVGTests::isValid(document()); }
 

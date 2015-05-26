@@ -32,7 +32,7 @@ namespace blink {
 
 class LayoutSVGPath final : public LayoutSVGShape {
 public:
-    explicit LayoutSVGPath(SVGGraphicsElement*);
+    explicit LayoutSVGPath(SVGGeometryElement*);
     virtual ~LayoutSVGPath();
 
     virtual const Vector<MarkerPosition>* markerPositions() const override { return &m_markerPositions; }

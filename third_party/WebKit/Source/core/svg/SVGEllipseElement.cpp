@@ -50,6 +50,32 @@ DEFINE_TRACE(SVGEllipseElement)
 
 DEFINE_NODE_FACTORY(SVGEllipseElement)
 
+Path SVGEllipseElement::asPath() const
+{
+    Path path;
+
+    SVGLengthContext lengthContext(this);
+    ASSERT(layoutObject());
+    const ComputedStyle& style = layoutObject()->styleRef();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
+
+    float rx = lengthContext.valueForLength(svgStyle.rx(), style, SVGLengthMode::Width);
+    if (rx < 0)
+        return path;
+    float ry = lengthContext.valueForLength(svgStyle.ry(), style, SVGLengthMode::Height);
+    if (ry < 0)
+        return path;
+    if (!rx && !ry)
+        return path;
+
+    path.addEllipse(FloatRect(
+        lengthContext.valueForLength(svgStyle.cx(), style, SVGLengthMode::Width) - rx,
+        lengthContext.valueForLength(svgStyle.cy(), style, SVGLengthMode::Height) - ry,
+        rx * 2, ry * 2));
+
+    return path;
+}
+
 bool SVGEllipseElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
     if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr

@@ -34,6 +34,8 @@ class SVGCircleElement final : public SVGGeometryElement {
 public:
     DECLARE_NODE_FACTORY(SVGCircleElement);
 
+    Path asPath() const override;
+
     SVGAnimatedLength* cx() const { return m_cx.get(); }
     SVGAnimatedLength* cy() const { return m_cy.get(); }
     SVGAnimatedLength* r() const { return m_r.get(); }

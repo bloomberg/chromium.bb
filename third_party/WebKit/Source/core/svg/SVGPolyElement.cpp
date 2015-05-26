@@ -40,6 +40,26 @@ DEFINE_TRACE(SVGPolyElement)
     SVGGeometryElement::trace(visitor);
 }
 
+Path SVGPolyElement::asPathFromPoints() const
+{
+    Path path;
+
+    RefPtrWillBeRawPtr<SVGPointList> pointsValue = points()->currentValue();
+    if (pointsValue->isEmpty())
+        return path;
+
+    SVGPointList::ConstIterator it = pointsValue->begin();
+    SVGPointList::ConstIterator itEnd = pointsValue->end();
+    ASSERT(it != itEnd);
+    path.moveTo(it->value());
+    ++it;
+
+    for (; it != itEnd; ++it)
+        path.addLineTo(it->value());
+
+    return path;
+}
+
 void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (attrName == SVGNames::pointsAttr) {

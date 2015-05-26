@@ -3211,8 +3211,6 @@
             'layout/svg/SVGLayoutTreeAsText.cpp',
             'layout/svg/SVGLayoutTreeAsText.h',
             'layout/svg/SVGMarkerData.h',
-            'layout/svg/SVGPathData.cpp',
-            'layout/svg/SVGPathData.h',
             'layout/svg/SVGResources.cpp',
             'layout/svg/SVGResources.h',
             'layout/svg/SVGResourcesCache.cpp',

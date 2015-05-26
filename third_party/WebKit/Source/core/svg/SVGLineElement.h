@@ -34,6 +34,8 @@ class SVGLineElement final : public SVGGeometryElement {
 public:
     DECLARE_NODE_FACTORY(SVGLineElement);
 
+    Path asPath() const override;
+
     SVGAnimatedLength* x1() const { return m_x1.get(); }
     SVGAnimatedLength* y1() const { return m_y1.get(); }
     SVGAnimatedLength* x2() const { return m_x2.get(); }

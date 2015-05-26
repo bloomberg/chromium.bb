@@ -31,7 +31,7 @@ namespace blink {
 
 class SVGPolyElement : public SVGGeometryElement {
 public:
-    SVGAnimatedPointList* points() { return m_points.get(); }
+    SVGAnimatedPointList* points() const { return m_points.get(); }
 
     PassRefPtrWillBeRawPtr<SVGPointListTearOff> pointsFromJavascript() { return m_points->baseVal(); }
     PassRefPtrWillBeRawPtr<SVGPointListTearOff> animatedPoints() { return m_points->animVal(); }
@@ -40,6 +40,8 @@ public:
 
 protected:
     SVGPolyElement(const QualifiedName&, Document&);
+
+    Path asPathFromPoints() const;
 
 private:
     virtual void svgAttributeChanged(const QualifiedName&) override final;

@@ -34,6 +34,7 @@
 #include "core/SVGNames.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/PointerEventsHitRules.h"
+#include "core/layout/svg/LayoutSVGPath.h"
 #include "core/layout/svg/LayoutSVGShape.h"
 #include "core/svg/SVGPointTearOff.h"
 
@@ -70,6 +71,22 @@ bool SVGGeometryElement::isPointInStroke(PassRefPtrWillBeRawPtr<SVGPointTearOff>
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, layoutObject()->style()->pointerEvents());
     hitRules.canHitFill = false;
     return toLayoutSVGShape(layoutObject())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
+}
+
+void SVGGeometryElement::toClipPath(Path& path)
+{
+    path = asPath();
+    path.transform(calculateAnimatedLocalTransform());
+
+    ASSERT(layoutObject());
+    ASSERT(layoutObject()->style());
+    path.setWindRule(layoutObject()->style()->svgStyle().clipRule());
+}
+
+LayoutObject* SVGGeometryElement::createLayoutObject(const ComputedStyle&)
+{
+    // By default, any subclass is expected to do path-based drawing.
+    return new LayoutSVGPath(this);
 }
 
 }

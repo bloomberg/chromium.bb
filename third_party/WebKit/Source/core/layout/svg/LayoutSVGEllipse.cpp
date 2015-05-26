@@ -35,7 +35,7 @@
 
 namespace blink {
 
-LayoutSVGEllipse::LayoutSVGEllipse(SVGGraphicsElement* node)
+LayoutSVGEllipse::LayoutSVGEllipse(SVGGeometryElement* node)
     : LayoutSVGShape(node)
     , m_usePathFallback(false)
 {

@@ -47,6 +47,26 @@ DEFINE_TRACE(SVGCircleElement)
 
 DEFINE_NODE_FACTORY(SVGCircleElement)
 
+Path SVGCircleElement::asPath() const
+{
+    Path path;
+
+    SVGLengthContext lengthContext(this);
+    ASSERT(layoutObject());
+    const ComputedStyle& style = layoutObject()->styleRef();
+    const SVGComputedStyle& svgStyle = style.svgStyle();
+
+    float r = lengthContext.valueForLength(svgStyle.r(), style, SVGLengthMode::Other);
+    if (r > 0) {
+        path.addEllipse(FloatRect(
+            lengthContext.valueForLength(svgStyle.cx(), style, SVGLengthMode::Width) - r,
+            lengthContext.valueForLength(svgStyle.cy(), style, SVGLengthMode::Height) - r,
+            r * 2, r * 2));
+    }
+
+    return path;
+}
+
 bool SVGCircleElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
     if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr

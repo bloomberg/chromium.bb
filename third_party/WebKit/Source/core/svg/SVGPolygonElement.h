@@ -31,6 +31,8 @@ class SVGPolygonElement final : public SVGPolyElement {
 public:
     DECLARE_NODE_FACTORY(SVGPolygonElement);
 
+    Path asPath() const override;
+
 private:
     explicit SVGPolygonElement(Document&);
 };

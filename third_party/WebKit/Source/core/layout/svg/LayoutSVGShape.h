@@ -37,7 +37,7 @@ namespace blink {
 
 class FloatPoint;
 class PointerEventsHitRules;
-class SVGGraphicsElement;
+class SVGGeometryElement;
 
 enum ShapeGeometryCodePath {
     PathGeometry,
@@ -47,7 +47,7 @@ enum ShapeGeometryCodePath {
 
 class LayoutSVGShape : public LayoutSVGModelObject {
 public:
-    explicit LayoutSVGShape(SVGGraphicsElement*);
+    explicit LayoutSVGShape(SVGGeometryElement*);
     virtual ~LayoutSVGShape();
 
     void setNeedsShapeUpdate() { m_needsShapeUpdate = true; }

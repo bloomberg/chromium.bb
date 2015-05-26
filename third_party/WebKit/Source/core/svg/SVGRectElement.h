@@ -34,6 +34,8 @@ class SVGRectElement final : public SVGGeometryElement {
 public:
     DECLARE_NODE_FACTORY(SVGRectElement);
 
+    Path asPath() const override;
+
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }
     SVGAnimatedLength* width() const { return m_width.get(); }

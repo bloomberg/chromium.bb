@@ -26,7 +26,6 @@
 #include "core/SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/layout/svg/LayoutSVGPath.h"
-#include "core/layout/svg/SVGPathData.h"
 #include "core/svg/SVGElementRareData.h"
 #include "platform/transforms/AffineTransform.h"
 
@@ -244,22 +243,6 @@ FloatRect SVGGraphicsElement::getBBox()
 PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGGraphicsElement::getBBoxFromJavascript()
 {
     return SVGRectTearOff::create(SVGRect::create(getBBox()), 0, PropertyIsNotAnimVal);
-}
-
-LayoutObject* SVGGraphicsElement::createLayoutObject(const ComputedStyle&)
-{
-    // By default, any subclass is expected to do path-based drawing
-    return new LayoutSVGPath(this);
-}
-
-void SVGGraphicsElement::toClipPath(Path& path)
-{
-    updatePathFromGraphicsElement(this, path);
-    path.transform(calculateAnimatedLocalTransform());
-
-    ASSERT(layoutObject());
-    ASSERT(layoutObject()->style());
-    path.setWindRule(layoutObject()->style()->svgStyle().clipRule());
 }
 
 }

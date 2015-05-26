@@ -40,13 +40,28 @@ class SVGPointTearOff;
 class SVGGeometryElement : public SVGGraphicsElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    virtual Path asPath() const = 0;
     bool isPointInFill(PassRefPtrWillBeRawPtr<SVGPointTearOff>) const;
     bool isPointInStroke(PassRefPtrWillBeRawPtr<SVGPointTearOff>) const;
 
+    void toClipPath(Path&) override;
+
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+
 protected:
     SVGGeometryElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
+
+private:
+    bool isSVGGeometryElement() const override final { return true; }
 };
+
+inline bool isSVGGeometryElement(const SVGElement& element)
+{
+    return element.isSVGGeometryElement();
+}
+
+DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGeometryElement);
 
 } // namespace blink
 
-#endif // SVGGraphicsElement_h
+#endif // SVGGeometryElement_h

@@ -50,6 +50,17 @@ DEFINE_TRACE(SVGLineElement)
 
 DEFINE_NODE_FACTORY(SVGLineElement)
 
+Path SVGLineElement::asPath() const
+{
+    Path path;
+
+    SVGLengthContext lengthContext(this);
+    path.moveTo(FloatPoint(x1()->currentValue()->value(lengthContext), y1()->currentValue()->value(lengthContext)));
+    path.addLineTo(FloatPoint(x2()->currentValue()->value(lengthContext), y2()->currentValue()->value(lengthContext)));
+
+    return path;
+}
+
 void SVGLineElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (attrName == SVGNames::x1Attr

@@ -33,12 +33,12 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/SVGSubpathData.h"
-#include "core/svg/SVGGraphicsElement.h"
+#include "core/svg/SVGGeometryElement.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
 
-LayoutSVGPath::LayoutSVGPath(SVGGraphicsElement* node)
+LayoutSVGPath::LayoutSVGPath(SVGGeometryElement* node)
     : LayoutSVGShape(node)
 {
 }
