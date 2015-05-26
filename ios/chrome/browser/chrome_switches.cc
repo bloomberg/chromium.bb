@@ -15,9 +15,6 @@ namespace switches {
 // Disables the use of WKWebView instead of UIWebView.
 const char kDisableIOSWKWebView[] = "disable-wkwebview";
 
-// Enables Open from Clipboard.
-const char kEnableIOSOpenFromClipboard[] = "enable-ios-open-from-clipboard";
-
 // Enables the use of WKWebView instead of UIWebView.
 const char kEnableIOSWKWebView[] = "enable-wkwebview";
 

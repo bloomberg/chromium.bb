@@ -29,14 +29,6 @@ bool IsAlertOnBackgroundUploadEnabled() {
       boolForKey:kEnableAlertOnBackgroundUpload];
 }
 
-bool IsOpenFromClipboardEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableIOSOpenFromClipboard))
-    return true;
-  return base::FieldTrialList::FindFullName("IOSOpenFromClipboard") ==
-         "Enabled";
-}
-
 bool IsWKWebViewEnabled() {
   // If WKWebView isn't supported, don't activate the experiment at all. This
   // avoids someone being slotted into the WKWebView bucket (and thus reporting
