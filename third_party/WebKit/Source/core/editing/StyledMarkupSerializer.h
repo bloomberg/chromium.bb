@@ -47,11 +47,11 @@ public:
 
     String createMarkup(bool convertBlocksToInlines, Node*);
 
+private:
+    enum class NodeTraversalMode { EmitString, DoNotEmitString };
+
     Node* serializeNodes(Node* startNode, Node* pastEnd);
     String takeResults();
-
-private:
-    enum NodeTraversalMode { EmitString, DoNotEmitString };
 
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode);
 

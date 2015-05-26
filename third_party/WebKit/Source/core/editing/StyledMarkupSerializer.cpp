@@ -235,7 +235,7 @@ template<typename Strategy>
 Node* StyledMarkupSerializer<Strategy>::serializeNodes(Node* startNode, Node* pastEnd)
 {
     if (!m_markupAccumulator.highestNodeToBeSerialized()) {
-        Node* lastClosed = traverseNodesForSerialization(startNode, pastEnd, DoNotEmitString);
+        Node* lastClosed = traverseNodesForSerialization(startNode, pastEnd, NodeTraversalMode::DoNotEmitString);
         m_markupAccumulator.setHighestNodeToBeSerialized(lastClosed);
     }
 
@@ -245,13 +245,13 @@ Node* StyledMarkupSerializer<Strategy>::serializeNodes(Node* startNode, Node* pa
         RefPtrWillBeRawPtr<EditingStyle> wrappingStyle = EditingStyle::wrappingStyleForSerialization(Strategy::parent(*highestNodeToBeSerialized), shouldAnnotate);
         m_markupAccumulator.setWrappingStyle(wrappingStyle.release());
     }
-    return traverseNodesForSerialization(startNode, pastEnd, EmitString);
+    return traverseNodesForSerialization(startNode, pastEnd, NodeTraversalMode::EmitString);
 }
 
 template<typename Strategy>
 Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode traversalMode)
 {
-    const bool shouldEmit = traversalMode == EmitString;
+    const bool shouldEmit = traversalMode == NodeTraversalMode::EmitString;
     WillBeHeapVector<RawPtrWillBeMember<ContainerNode>> ancestorsToClose;
     Node* next;
     Node* lastClosed = nullptr;
