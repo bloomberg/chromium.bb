@@ -407,10 +407,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                    blink::WebDataSource* datasource);
   virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame,
                                        double triggering_event_time);
-  // TODO(dglazkov): Remove once Navigation Transitions are gone from Blink.
-  virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame,
-                                       bool is_transition_navigation,
-                                       double triggering_event_time);
   virtual void didReceiveServerRedirectForProvisionalLoad(
       blink::WebLocalFrame* frame);
   virtual void didFailProvisionalLoad(

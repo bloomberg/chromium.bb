@@ -2490,12 +2490,6 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
-                                              bool is_transition_navigation,
-                                              double triggering_event_time) {
-  didStartProvisionalLoad(frame, triggering_event_time);
-}
-
-void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
                                               double triggering_event_time) {
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->provisionalDataSource();
