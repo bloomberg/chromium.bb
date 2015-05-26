@@ -12130,7 +12130,7 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(GLenum target,
   if (image && !unpack_flip_y_ && !unpack_premultiply_alpha_change) {
     glBindTexture(GL_TEXTURE_2D, dest_texture->service_id());
     if (image->CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(xoffset, yoffset),
-                               gfx::Rect(x, y, source_width, source_height))) {
+                               gfx::Rect(x, y, width, height))) {
       return;
     }
   }
