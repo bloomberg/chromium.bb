@@ -9,6 +9,10 @@
     'success_stamp': '<(PRODUCT_DIR)/<(_target_name)_jscompile.stamp',
     'success_stamp_bt': '<(PRODUCT_DIR)/<(_target_name)_bt_jscompile.stamp',
     'success_stamp_ut': '<(PRODUCT_DIR)/<(_target_name)_ut_jscompile.stamp',
+    'compiler_flags': [
+      '--strict',
+      '--no-single-file',
+    ],
   },
   'actions': [
     {
@@ -24,8 +28,7 @@
       ],
       'action': [
         'python', '<(DEPTH)/third_party/closure_compiler/compile.py',
-        '--strict',
-        '--no-single-file',
+        '<@(compiler_flags)',
         '--success-stamp', '<(success_stamp)',
         '<@(remoting_webapp_crd_js_files)',
         '<@(remoting_webapp_js_proto_files)',
@@ -45,8 +48,7 @@
       ],
       'action': [
         'python', '<(DEPTH)/third_party/closure_compiler/compile.py',
-        '--strict',
-        '--no-single-file',
+        '<@(compiler_flags)',
         '--success-stamp', '<(success_stamp_bt)',
         '<@(remoting_webapp_crd_js_files)',
         '<@(remoting_webapp_browsertest_all_js_files)',
@@ -67,8 +69,7 @@
       ],
       'action': [
         'python', '<(DEPTH)/third_party/closure_compiler/compile.py',
-        '--strict',
-        '--no-single-file',
+        '<@(compiler_flags)',
         '--success-stamp', '<(success_stamp_ut)',
         '<@(remoting_webapp_crd_js_files)',
         '<@(remoting_webapp_unittests_all_js_files)',

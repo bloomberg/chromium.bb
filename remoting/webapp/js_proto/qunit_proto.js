@@ -25,6 +25,8 @@ QUnit.Clock.prototype.tick = function(ticks) {};
 /** @param {Function} f */
 QUnit.testStart = function(f) {};
 
+/** @param {Function} f */
+QUnit.testDone = function(f) {};
 /**
  * @interface
  */
@@ -101,3 +103,9 @@ QUnit.module = function(desc, opt_args) {};
  * @param {function(!QUnit.Assert)} f
  */
 QUnit.test = function(desc, f) {};
+
+/**
+ * @param {string} desc
+ * @param {function(!QUnit.Assert)} f
+ */
+QUnit.skip = function(desc, f) {};

@@ -25,7 +25,6 @@ SessionListener.prototype.onError = function(error) {};
 
 QUnit.module('ClientSessionFactory', {
   beforeEach: function() {
-    chromeMocks.activate(['identity']);
     chromeMocks.identity.mock$setToken('fake_token');
 
     mockConnection = new remoting.MockConnection();
@@ -36,7 +35,6 @@ QUnit.module('ClientSessionFactory', {
   },
   afterEach: function() {
     mockConnection.restore();
-    chromeMocks.restore();
   }
 });
 

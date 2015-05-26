@@ -5,8 +5,6 @@
 // This file contains various mock objects for the chrome platform to make
 // unit testing easier.
 
-Entry = function() {};
-
 var chromeMocks = {};
 
 /** @constructor */
@@ -20,6 +18,8 @@ chrome.Event.prototype.removeListener = function(callback) {};
 
 
 (function(){
+
+'use strict'
 
 /**
  * @constructor
@@ -232,28 +232,59 @@ chromeMocks.Identity.prototype.mock$clearToken = function() {
 };
 
 /** @type {chromeMocks.Identity} */
-chromeMocks.identity = new chromeMocks.Identity();
+chromeMocks.identity;
 
+
+/** @constructor */
+chromeMocks.I18n = function() {};
+
+/**
+ * @param {string} messageName
+ * @param {(string|Array<string>)=} opt_args
+ * @return {string}
+ */
+chromeMocks.I18n.prototype.getMessage = function(messageName, opt_args) {};
+
+/**
+ * @return {string}
+ */
+chromeMocks.I18n.prototype.getUILanguage = function() {};
+
+/** @constructor */
+chromeMocks.WindowManager = function() {};
+
+chromeMocks.WindowManager.prototype.current = function() {
+  return new chromeMocks.AppWindow();
+};
+
+/** @constructor */
+chromeMocks.AppWindow = function() {};
 
 var originals_ = null;
 
 /**
  * Activates a list of Chrome components to mock
- * @param {Array<string>} components
  */
-chromeMocks.activate = function(components) {
+chromeMocks.activate = function() {
   if (originals_) {
     throw new Error('chromeMocks.activate() can only be called once.');
   }
   originals_ = {};
   nativePorts = {};
-  components.forEach(function(component) {
-    if (!chromeMocks[component]) {
-      throw new Error('No mocks defined for chrome.' + component);
-    }
-    originals_[component] = chrome[component];
-    chrome[component] = chromeMocks[component];
-  });
+
+  chromeMocks.i18n = new chromeMocks.I18n();
+  chromeMocks.identity = new chromeMocks.Identity();
+
+  ['identity', 'i18n', 'runtime', 'storage'].forEach(
+    function(/** string */ component) {
+      if (!chromeMocks[component]) {
+        throw new Error('No mocks defined for chrome.' + component);
+      }
+      originals_[component] = chrome[component];
+      chrome[component] = chromeMocks[component];
+    });
+
+  chrome.app.window = new chromeMocks.WindowManager();
 };
 
 chromeMocks.restore = function() {

@@ -41,7 +41,6 @@ QUnit.module('gcd_client with mock_xhr', {
   beforeEach: function() {
     remoting.MockXhr.activate();
     remoting.identity = new remoting.Identity();
-    chromeMocks.activate(['identity']);
     chromeMocks.identity.mock$setToken('fake_token');
     client = new remoting.gcd.Client({
       apiBaseUrl: 'https://fake.api',
@@ -49,7 +48,6 @@ QUnit.module('gcd_client with mock_xhr', {
     });
   },
   afterEach: function() {
-    chromeMocks.restore();
     remoting.identity = null;
     remoting.MockXhr.restore();
   }

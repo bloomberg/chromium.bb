@@ -24,7 +24,6 @@ var it;
 
 QUnit.module('host_daemon_facade', {
   beforeEach: function(/** QUnit.Assert */ assert) {
-    chromeMocks.activate(['runtime']);
     chromeMocks.identity.mock$setToken('my_token');
     nativePortMock =
         chromeMocks.runtime.connectNative('com.google.chrome.remote_desktop');
@@ -38,7 +37,6 @@ QUnit.module('host_daemon_facade', {
     }
     mockHostResponses = null;
     postMessageStub.restore();
-    chromeMocks.restore();
     it = null;
   }
 });

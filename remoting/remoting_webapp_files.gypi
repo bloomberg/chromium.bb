@@ -109,14 +109,11 @@
       'webapp/crd/js/mock_xhr_unittest.js',
     ],
     'remoting_webapp_unittests_js_mock_files': [
-      # Some proto files can be repurposed as simple mocks for the unittests.
-      # Note that some defs in chrome_proto are overwritten by chrome_mocks.
       'webapp/crd/js/mock_client_plugin.js',
       'webapp/crd/js/mock_host_daemon_facade.js',
       'webapp/crd/js/mock_host_list_api.js',
       'webapp/crd/js/mock_identity.js',
       'webapp/crd/js/mock_signal_strategy.js',
-      'webapp/js_proto/chrome_proto.js',
       'webapp/js_proto/chrome_mocks.js',
       'webapp/unittests/sinon_helpers.js',
       'webapp/crd/js/mock_xhr.js',
@@ -124,6 +121,7 @@
     # Prototypes for objects that are not mocked.
     'remoting_webapp_unittests_js_proto_files': [
       'webapp/js_proto/chrome_cast_proto.js',
+      'webapp/js_proto/chrome_proto.js',
       'webapp/js_proto/dom_proto.js',
       'webapp/js_proto/remoting_proto.js',
       'webapp/js_proto/qunit_proto.js',
@@ -132,6 +130,7 @@
     'remoting_webapp_unittests_all_js_files': [
       '<@(remoting_webapp_unittests_js_files)',
       '<@(remoting_webapp_unittests_js_mock_files)',
+      'webapp/unittests/qunit_callbacks.js',
     ],
     # All the files needed to run the unittests.
     'remoting_webapp_unittests_all_files': [

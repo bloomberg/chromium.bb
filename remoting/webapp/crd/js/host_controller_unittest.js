@@ -76,7 +76,6 @@ var mockHostListApi;
 
 QUnit.module('host_controller', {
   beforeEach: function(/** QUnit.Assert */ assert) {
-    chromeMocks.activate(['identity', 'runtime']);
     chromeMocks.identity.mock$setToken(FAKE_IDENTITY_TOKEN);
     remoting.settings = new remoting.Settings();
     remoting.identity = new remoting.Identity();
@@ -173,7 +172,6 @@ QUnit.module('host_controller', {
     signalStrategyCreateStub.restore();
     remoting.hostList = null;
     remoting.oauth2 = null;
-    chromeMocks.restore();
     remoting.HostListApi.setInstance(null);
     remoting.identity = null;
   }

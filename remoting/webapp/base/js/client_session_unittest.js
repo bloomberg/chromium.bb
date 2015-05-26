@@ -60,7 +60,6 @@ function connect(opt_error) {
 
 QUnit.module('ClientSession', {
   beforeEach: function() {
-    chromeMocks.activate(['identity']);
     chromeMocks.identity.mock$setToken('fake_token');
 
     mockConnection = new remoting.MockConnection();
@@ -78,7 +77,6 @@ QUnit.module('ClientSession', {
   afterEach: function() {
     session.dispose();
     mockConnection.restore();
-    chromeMocks.restore();
   }
 });
 

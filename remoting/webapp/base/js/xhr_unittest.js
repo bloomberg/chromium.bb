@@ -25,11 +25,9 @@ QUnit.module('xhr', {
           fakeXhr = xhr;
         };
     remoting.identity = new remoting.Identity();
-    chromeMocks.activate(['identity']);
     chromeMocks.identity.mock$setToken('my_token');
   },
   afterEach: function() {
-    chromeMocks.restore();
     remoting.identity = null;
   }
 });

@@ -55,7 +55,6 @@ QUnit.module('gcd_client', {
           });
         };
     remoting.identity = new remoting.Identity();
-    chromeMocks.activate(['identity']);
     chromeMocks.identity.mock$setToken('fake_token');
     client = new remoting.gcd.Client({
       apiBaseUrl: 'https://fake.api',
@@ -63,7 +62,6 @@ QUnit.module('gcd_client', {
     });
   },
   teardown: function() {
-    chromeMocks.restore();
     fakeXhr = null;
     queuedResponse = null;
     remoting.identity = null;

@@ -45,14 +45,12 @@ MockConsent.prototype.show = function() {
 QUnit.module('Identity', {
   beforeEach: function(/** QUnit.Assert*/ assert) {
     chromeMocks.identity.mock$clearToken();
-    chromeMocks.activate(['identity', 'runtime']);
     consentDialog = new MockConsent(assert);
     promptForConsent = sinon.spy(consentDialog, 'show');
     identity = new remoting.Identity(consentDialog);
     getAuthToken = sinon.spy(chromeMocks.identity, 'getAuthToken');
   },
   afterEach: function() {
-    chromeMocks.restore();
     getAuthToken.restore();
   }
 });

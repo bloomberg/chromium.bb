@@ -11,13 +11,11 @@ var ipc_;
 
 QUnit.module('base.Ipc', {
   beforeEach: function() {
-    chromeMocks.activate(['runtime']);
     ipc_ = base.Ipc.getInstance();
   },
   afterEach: function() {
     base.Ipc.deleteInstance();
     ipc_ = null;
-    chromeMocks.restore();
   }
 });
 

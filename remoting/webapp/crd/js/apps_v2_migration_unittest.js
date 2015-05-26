@@ -47,12 +47,10 @@ function setMigrationData_(v1UserName, v1UserEmail, v1HasHosts) {
 
 QUnit.module('AppsV2Migration', {
   beforeEach: function() {
-    chromeMocks.activate(['storage']);
     mockIsAppsV2 = sinon.stub(base, 'isAppsV2');
     remoting.identity = new remoting.Identity();
   },
   afterEach: function() {
-    chromeMocks.restore();
     mockIsAppsV2.restore();
     remoting.identity = null;
   }
@@ -82,18 +80,6 @@ QUnit.test('hasHostsInV1App() should reject the promise in v1',
   setMigrationData_('v1userName', 'v1user@gmail.com', true);
   mockIsAppsV2.returns(false);
   return base.Promise.negate(remoting.AppsV2Migration.hasHostsInV1App());
-});
-
-QUnit.test(
-  'hasHostsInV1App() should return v1 identity if v1 user has hosts',
-  function(assert) {
-    setMigrationData_('v1userName', 'v1user@gmail.com', true);
-    mockIsAppsV2.returns(true);
-    return remoting.AppsV2Migration.hasHostsInV1App().then(
-      function(/** {email:string, fullName:string} */ result) {
-        assert.equal(result.email, 'v1user@gmail.com');
-        assert.equal(result.fullName, 'v1userName');
-    });
 });
 
 QUnit.test(
