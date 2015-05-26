@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 
 #include "base/stl_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -110,6 +111,9 @@ content::WebUIDataSource* CreateUberFrameHTMLSource(
   source->AddString("overridesHistory", overridesHistory ? "yes" : "no");
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyFrameSrc("frame-src chrome:;");
+
+  source->AddBoolean("profileIsGuest",
+      Profile::FromBrowserContext(browser_context)->IsGuestSession());
 
   return source;
 }

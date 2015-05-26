@@ -1,5 +1,6 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language" id="uber">
+<html i18n-values="dir:textdirection;lang:language;guestMode:profileIsGuest"
+    id="uber">
 <head>
 <meta charset="utf-8">
 
@@ -18,12 +19,12 @@
 <h1 i18n-content="shortProductName"></h1>
 <ul role="tablist">
   <li i18n-values="controls:historyHost;override:overridesHistory;
-                   group:historyGroup" role="tab" hidden>
+                   group:historyGroup" role="tab" class="hide-in-guest" hidden>
     <button class="custom-appearance"
         i18n-content="historyDisplayName"></button>
   </li>
-  <li i18n-values="controls:extensionsHost;group:extensionsGroup" role="tab"
-      hidden>
+  <li i18n-values="controls:extensionsHost;group:extensionsGroup"
+      class="hide-in-guest" role="tab" hidden>
     <button class="custom-appearance"
         i18n-content="extensionsDisplayName"></button>
   </li>
