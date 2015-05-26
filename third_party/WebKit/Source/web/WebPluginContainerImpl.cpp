@@ -413,6 +413,12 @@ void WebPluginContainerImpl::scrollRect(const WebRect& rect)
     invalidateRect(rect);
 }
 
+void WebPluginContainerImpl::setNeedsLayout()
+{
+    if (m_element->layoutObject())
+        m_element->layoutObject()->setNeedsLayout("Plugin needs layout");
+}
+
 void WebPluginContainerImpl::reportGeometry()
 {
     // We cannot compute geometry without a parent or layoutObject.

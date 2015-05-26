@@ -102,6 +102,7 @@ public:
     virtual void invalidate() override;
     virtual void invalidateRect(const WebRect&) override;
     virtual void scrollRect(const WebRect&) override;
+    virtual void setNeedsLayout() override;
     virtual void reportGeometry() override;
     virtual void allowScriptObjects() override;
     virtual void clearScriptObjects() override;
