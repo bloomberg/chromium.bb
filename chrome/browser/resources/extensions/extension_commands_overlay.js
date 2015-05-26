@@ -31,12 +31,14 @@ cr.define('extensions', function() {
       cr.ui.overlay.globalInitialization();
       overlay.addEventListener('cancelOverlay', this.handleDismiss_.bind(this));
 
+      this.extensionCommandList_ = new ExtensionCommandList(
+          /**@type {HTMLDivElement} */($('extension-command-list')));
+
       $('extension-commands-dismiss').addEventListener('click',
           this.handleDismiss_.bind(this));
 
-      // This will request the data to show on the page and will get a response
-      // back in returnExtensionsData.
-      chrome.send('extensionCommandsRequestExtensionsData');
+      // The ExtensionList will update us with its data, so we don't need to
+      // handle that here.
     },
 
     /**
@@ -51,25 +53,28 @@ cr.define('extensions', function() {
   /**
    * Called by the dom_ui_ to re-populate the page with data representing
    * the current state of extension commands.
-   * @param {!{commands: Array<{name: string, id: string, commands: ?Array}>}}
-   *     extensionsData
+   * @param {!Array<ExtensionInfo>} extensionsData
    */
-  ExtensionCommandsOverlay.returnExtensionsData = function(extensionsData) {
-    ExtensionCommandList.prototype.data_ = extensionsData;
-    var extensionCommandList = $('extension-command-list');
-    ExtensionCommandList.decorate(extensionCommandList);
+  ExtensionCommandsOverlay.updateExtensionsData = function(extensionsData) {
+    var overlay = ExtensionCommandsOverlay.getInstance();
+    overlay.extensionCommandList_.setData(extensionsData);
+
+    var hasAnyCommands = false;
+    for (var i = 0; i < extensionsData.length; ++i) {
+      if (extensionsData[i].commands.length > 0) {
+        hasAnyCommands = true;
+        break;
+      }
+    }
 
     // Make sure the config link is visible, since there are commands to show
     // and potentially configure.
     document.querySelector('.extension-commands-config').hidden =
-        extensionsData.commands.length == 0;
+        !hasAnyCommands;
 
-    $('no-commands').hidden = extensionsData.commands.length > 0;
-    var list = $('extension-command-list');
-    if (extensionsData.commands.length == 0)
-      list.classList.add('empty-extension-commands-list');
-    else
-      list.classList.remove('empty-extension-commands-list');
+    $('no-commands').hidden = hasAnyCommands;
+    overlay.extensionCommandList_.classList.toggle(
+        'empty-extension-commands-list', !hasAnyCommands);
   };
 
   // Export

@@ -53,11 +53,6 @@ class Command {
              int index,
              base::string16* error);
 
-  // Convert a Command object from |extension| to a DictionaryValue.
-  // |active| specifies whether the command is active or not.
-  base::DictionaryValue* ToValue(
-      const Extension* extension, bool active) const;
-
   // Accessors:
   const std::string& command_name() const { return command_name_; }
   const ui::Accelerator& accelerator() const { return accelerator_; }

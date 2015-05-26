@@ -67,6 +67,11 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   void AddExtensionId(const std::string& extension_id);
   void RemoveExtensionId(const std::string& extension_id);
 
+  // Notifies the event router that an extension's command has been updated.
+  // Since this presently only happens through this API, this doesn't need to
+  // be an observer method. If that changes, we should revisit it.
+  void NotifyExtensionCommandUpdated(const std::string& extension_id);
+
  private:
   // ExtensionRegistryObserver:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -180,6 +185,10 @@ class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
   // EventRouter::Observer implementation.
   void OnListenerAdded(const EventListenerInfo& details) override;
   void OnListenerRemoved(const EventListenerInfo& details) override;
+
+  DeveloperPrivateEventRouter* developer_private_event_router() {
+    return developer_private_event_router_.get();
+  }
 
  private:
   friend class BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>;
@@ -568,6 +577,28 @@ class DeveloperPrivateShowPathFunction : public DeveloperPrivateAPIFunction {
 
  protected:
   ~DeveloperPrivateShowPathFunction() override;
+  ResponseAction Run() override;
+};
+
+class DeveloperPrivateSetShortcutHandlingSuspendedFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.setShortcutHandlingSuspended",
+                             DEVELOPERPRIVATE_SETSHORTCUTHANDLINGSUSPENDED);
+
+ protected:
+  ~DeveloperPrivateSetShortcutHandlingSuspendedFunction() override;
+  ResponseAction Run() override;
+};
+
+class DeveloperPrivateUpdateExtensionCommandFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.updateExtensionCommand",
+                             DEVELOPERPRIVATE_UPDATEEXTENSIONCOMMAND);
+
+ protected:
+  ~DeveloperPrivateUpdateExtensionCommandFunction() override;
   ResponseAction Run() override;
 };
 

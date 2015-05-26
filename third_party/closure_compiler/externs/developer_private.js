@@ -122,6 +122,15 @@ chrome.developerPrivate.ExtensionState = {
 };
 
 /**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/developerPrivate#type-CommandScope
+ */
+chrome.developerPrivate.CommandScope = {
+  GLOBAL: 'GLOBAL',
+  CHROME: 'CHROME',
+};
+
+/**
  * @typedef {{
  *   isEnabled: boolean,
  *   isActive: boolean
@@ -235,8 +244,22 @@ var ControlledInfo;
 
 /**
  * @typedef {{
+ *   description: string,
+ *   keybinding: string,
+ *   name: string,
+ *   isActive: boolean,
+ *   scope: !chrome.developerPrivate.CommandScope,
+ *   isExtensionAction: boolean
+ * }}
+ * @see https://developer.chrome.com/extensions/developerPrivate#type-Command
+ */
+var Command;
+
+/**
+ * @typedef {{
  *   actionButtonHidden: boolean,
  *   blacklistText: (string|undefined),
+ *   commands: !Array<Command>,
  *   controlledInfo: (ControlledInfo|undefined),
  *   dependentExtensions: !Array<string>,
  *   description: string,
@@ -347,6 +370,17 @@ var ExtensionConfigurationUpdate;
  * @see https://developer.chrome.com/extensions/developerPrivate#type-ProfileConfigurationUpdate
  */
 var ProfileConfigurationUpdate;
+
+/**
+ * @typedef {{
+ *   extensionId: string,
+ *   commandName: string,
+ *   scope: (!chrome.developerPrivate.CommandScope|undefined),
+ *   keybinding: (string|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/developerPrivate#type-ExtensionCommandUpdate
+ */
+var ExtensionCommandUpdate;
 
 /**
  * @typedef {{
@@ -664,6 +698,24 @@ chrome.developerPrivate.showOptions = function(extensionId, callback) {};
  * @see https://developer.chrome.com/extensions/developerPrivate#method-showPath
  */
 chrome.developerPrivate.showPath = function(extensionId, callback) {};
+
+/**
+ * (Un)suspends global shortcut handling.
+ * @param {boolean} isSuspended Whether or not shortcut handling should be
+ *     suspended.
+ * @param {function():void=} callback
+ * @see https://developer.chrome.com/extensions/developerPrivate#method-setShortcutHandlingSuspended
+ */
+chrome.developerPrivate.setShortcutHandlingSuspended = function(isSuspended, callback) {};
+
+/**
+ * Updates an extension command.
+ * @param {ExtensionCommandUpdate} update The parameters for updating the
+ *     extension command.
+ * @param {function():void=} callback
+ * @see https://developer.chrome.com/extensions/developerPrivate#method-updateExtensionCommand
+ */
+chrome.developerPrivate.updateExtensionCommand = function(update, callback) {};
 
 /**
  * @param {string} id

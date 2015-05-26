@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_mangle.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/devtools_util.h"
+#include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -233,6 +235,12 @@ void DeveloperPrivateEventRouter::AddExtensionId(
 void DeveloperPrivateEventRouter::RemoveExtensionId(
     const std::string& extension_id) {
   extension_ids_.erase(extension_id);
+}
+
+void DeveloperPrivateEventRouter::NotifyExtensionCommandUpdated(
+    const std::string& extension_id) {
+  BroadcastItemStateChanged(developer::EVENT_TYPE_PREFS_CHANGED,
+                            extension_id);
 }
 
 void DeveloperPrivateEventRouter::OnExtensionLoaded(
@@ -1378,6 +1386,48 @@ ExtensionFunction::ResponseAction DeveloperPrivateShowPathFunction::Run() {
                                   extension->path().Append(kManifestFilename));
   return RespondNow(NoArguments());
 }
+
+DeveloperPrivateSetShortcutHandlingSuspendedFunction::
+~DeveloperPrivateSetShortcutHandlingSuspendedFunction() {}
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateSetShortcutHandlingSuspendedFunction::Run() {
+  scoped_ptr<developer::SetShortcutHandlingSuspended::Params> params(
+      developer::SetShortcutHandlingSuspended::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  ExtensionCommandsGlobalRegistry::Get(GetProfile())->
+      SetShortcutHandlingSuspended(params->is_suspended);
+  return RespondNow(NoArguments());
+}
+
+DeveloperPrivateUpdateExtensionCommandFunction::
+~DeveloperPrivateUpdateExtensionCommandFunction() {}
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateUpdateExtensionCommandFunction::Run() {
+  scoped_ptr<developer::UpdateExtensionCommand::Params> params(
+      developer::UpdateExtensionCommand::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  const developer::ExtensionCommandUpdate& update = params->update;
+
+  CommandService* command_service = CommandService::Get(GetProfile());
+
+  if (update.scope != developer::COMMAND_SCOPE_NONE) {
+    command_service->SetScope(update.extension_id, update.command_name,
+                              update.scope == developer::COMMAND_SCOPE_GLOBAL);
+  }
+
+  if (update.keybinding) {
+    command_service->UpdateKeybindingPrefs(
+        update.extension_id, update.command_name, *update.keybinding);
+  }
+
+  DeveloperPrivateAPI::Get(browser_context())->
+      developer_private_event_router()->
+          NotifyExtensionCommandUpdated(update.extension_id);
+  return RespondNow(NoArguments());
+}
+
 
 }  // namespace api
 

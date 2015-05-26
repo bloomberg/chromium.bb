@@ -19,6 +19,7 @@ class Image;
 }
 
 namespace extensions {
+class CommandService;
 class ErrorConsole;
 class Extension;
 class ExtensionActionAPI;
@@ -70,6 +71,7 @@ class ExtensionInfoGenerator {
 
   // Various systems, cached for convenience.
   content::BrowserContext* browser_context_;
+  CommandService* command_service_;
   ExtensionSystem* extension_system_;
   ExtensionPrefs* extension_prefs_;
   ExtensionActionAPI* extension_action_api_;

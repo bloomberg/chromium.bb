@@ -147,6 +147,8 @@ ExtensionFocusRow.prototype = {
 cr.define('extensions', function() {
   'use strict';
 
+  var ExtensionCommandsOverlay = extensions.ExtensionCommandsOverlay;
+
   /**
    * Compares two extensions for the order they should appear in the list.
    * @param {ExtensionInfo} a The first extension.
@@ -294,6 +296,14 @@ cr.define('extensions', function() {
             eventData.event_type == EventType.UNINSTALLED) {
           this.delegate_.onExtensionCountChanged();
         }
+
+        if (eventData.event_type == EventType.INSTALLED ||
+            eventData.event_type == EventType.UNINSTALLED ||
+            eventData.event_type == EventType.PREFS_CHANGED) {
+          // We update the commands overlay whenever an extension is added or
+          // removed (other updates wouldn't affect command-ly things).
+          ExtensionCommandsOverlay.updateExtensionsData(this.extensions_);
+        }
       }.bind(this));
     },
 
@@ -320,6 +330,11 @@ cr.define('extensions', function() {
           extensions.sort(compareExtensions);
           this.extensions_ = extensions;
           this.showExtensionNodes_();
+
+          // We keep the commands overlay's extension info in sync, so that we
+          // don't duplicate the same querying logic there.
+          ExtensionCommandsOverlay.updateExtensionsData(this.extensions_);
+
           resolve();
 
           // |resolve| is async so it's necessary to use |then| here in order to

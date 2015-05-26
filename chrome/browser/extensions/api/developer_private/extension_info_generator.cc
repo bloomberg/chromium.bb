@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_view_host.h"
@@ -143,11 +145,66 @@ linked_ptr<developer::RuntimeError> ConstructRuntimeError(
   return result;
 }
 
+// Constructs any commands for the extension with the given |id|, and adds them
+// to the list of |commands|.
+void ConstructCommands(CommandService* command_service,
+                       const std::string& extension_id,
+                       std::vector<linked_ptr<developer::Command>>* commands) {
+  auto construct_command = [](const Command& command,
+                              bool active,
+                              bool is_extension_action) {
+    developer::Command* command_value = new developer::Command();
+    command_value->description = is_extension_action ?
+        l10n_util::GetStringUTF8(IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE) :
+        base::UTF16ToUTF8(command.description());
+    command_value->keybinding =
+        base::UTF16ToUTF8(command.accelerator().GetShortcutText());
+    command_value->name = command.command_name();
+    command_value->is_active = active;
+    command_value->scope = command.global() ? developer::COMMAND_SCOPE_GLOBAL :
+        developer::COMMAND_SCOPE_CHROME;
+    command_value->is_extension_action = is_extension_action;
+    return command_value;
+  };
+  bool active = false;
+  Command browser_action;
+  if (command_service->GetBrowserActionCommand(extension_id,
+                                               CommandService::ALL,
+                                               &browser_action,
+                                               &active)) {
+    commands->push_back(
+        make_linked_ptr(construct_command(browser_action, active, true)));
+  }
+
+  Command page_action;
+  if (command_service->GetPageActionCommand(extension_id,
+                                            CommandService::ALL,
+                                            &page_action,
+                                            &active)) {
+    commands->push_back(
+        make_linked_ptr(construct_command(page_action, active, true)));
+  }
+
+  CommandMap named_commands;
+  if (command_service->GetNamedCommands(extension_id,
+                                        CommandService::ALL,
+                                        CommandService::ANY_SCOPE,
+                                        &named_commands)) {
+    for (const auto& pair : named_commands) {
+      const Command& command = pair.second;
+      bool active = command.accelerator().key_code() != ui::VKEY_UNKNOWN;
+      commands->push_back(
+          make_linked_ptr(construct_command(command, active, false)));
+    }
+  }
+}
+
 }  // namespace
 
 ExtensionInfoGenerator::ExtensionInfoGenerator(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context),
+      command_service_(CommandService::Get(browser_context)),
       extension_system_(ExtensionSystem::Get(browser_context)),
       extension_prefs_(ExtensionPrefs::Get(browser_context)),
       extension_action_api_(ExtensionActionAPI::Get(browser_context)),
@@ -259,6 +316,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
 
+  // ControlledInfo.
   bool is_policy_location = Manifest::IsPolicyLocation(extension.location());
   if (is_policy_location || util::IsExtensionSupervised(&extension, profile)) {
     info->controlled_info.reset(new developer::ControlledInfo());
@@ -277,6 +335,12 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
           IDS_EXTENSIONS_INSTALLED_BY_SUPERVISED_USER_CUSTODIAN);
     }
   }
+
+  bool is_enabled = state == developer::EXTENSION_STATE_ENABLED;
+
+  // Commands.
+  if (is_enabled)
+    ConstructCommands(command_service_, extension.id(), &info->commands);
 
   // Dependent extensions.
   if (extension.is_shared_module()) {
@@ -436,7 +500,6 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   info->version = extension.GetVersionForDisplay();
 
-  bool is_enabled = state == developer::EXTENSION_STATE_ENABLED;
   if (state != developer::EXTENSION_STATE_TERMINATED) {
     info->views = InspectableViewsFinder(profile).
                       GetViewsForExtension(extension, is_enabled);

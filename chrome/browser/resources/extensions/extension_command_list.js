@@ -15,14 +15,6 @@ var ExtensionCommand;
 cr.define('options', function() {
   'use strict';
 
-  /**
-   * Creates a new list of extension commands.
-   * @param {Object=} opt_propertyBag Optional properties.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var ExtensionCommandList = cr.ui.define('div');
-
   /** @const */ var keyComma = 188;
   /** @const */ var keyDel = 46;
   /** @const */ var keyDown = 40;
@@ -184,6 +176,17 @@ cr.define('options', function() {
            (countShiftAsModifier && event.shiftKey);
   }
 
+  /**
+   * Creates a new list of extension commands.
+   * @param {HTMLDivElement} div
+   * @constructor
+   * @extends {HTMLDivElement}
+   */
+  function ExtensionCommandList(div) {
+    div.__proto__ = ExtensionCommandList.prototype;
+    return div;
+  }
+
   ExtensionCommandList.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -212,20 +215,30 @@ cr.define('options', function() {
      */
     capturingElement_: null,
 
-    decorate: function() {
+    /**
+     * Updates the extensions data for the overlay.
+     * @param {!Array<ExtensionInfo>} data The extension data.
+     */
+    setData: function(data) {
+      /** @private {!Array<ExtensionInfo>} */
+      this.data_ = data;
+
       this.textContent = '';
 
       // Iterate over the extension data and add each item to the list.
-      this.data_.commands.forEach(this.createNodeForExtension_.bind(this));
+      this.data_.forEach(this.createNodeForExtension_.bind(this));
     },
 
     /**
      * Synthesizes and initializes an HTML element for the extension command
      * metadata given in |extension|.
-     * @param {Object} extension A dictionary of extension metadata.
+     * @param {ExtensionInfo} extension A dictionary of extension metadata.
      * @private
      */
     createNodeForExtension_: function(extension) {
+      if (extension.commands.length == 0)
+        return;
+
       var template = $('template-collection-extension-commands').querySelector(
           '.extension-command-list-extension-item-wrapper');
       var node = template.cloneNode(true);
@@ -237,22 +250,22 @@ cr.define('options', function() {
 
       // Iterate over the commands data within the extension and add each item
       // to the list.
-      extension.commands.forEach(this.createNodeForCommand_.bind(this));
+      extension.commands.forEach(
+          this.createNodeForCommand_.bind(this, extension.id));
     },
 
     /**
      * Synthesizes and initializes an HTML element for the extension command
      * metadata given in |command|.
-     * @param {ExtensionCommand} command A dictionary of extension command
-     *     metadata.
+     * @param {string} extensionId The associated extension's id.
+     * @param {Command} command A dictionary of extension command metadata.
      * @private
      */
-    createNodeForCommand_: function(command) {
+    createNodeForCommand_: function(extensionId, command) {
       var template = $('template-collection-extension-commands').querySelector(
           '.extension-command-list-command-item-wrapper');
       var node = template.cloneNode(true);
-      node.id = this.createElementId_(
-          'command', command.extension_id, command.command_name);
+      node.id = this.createElementId_('command', extensionId, command.name);
 
       var description = node.querySelector('.command-description');
       description.textContent = command.description;
@@ -264,7 +277,7 @@ cr.define('options', function() {
       shortcutNode.addEventListener('blur', this.handleBlur_.bind(this));
       shortcutNode.addEventListener('keydown', this.handleKeyDown_.bind(this));
       shortcutNode.addEventListener('keyup', this.handleKeyUp_.bind(this));
-      if (!command.active) {
+      if (!command.isActive) {
         shortcutNode.textContent =
             loadTimeData.getString('extensionCommandsInactive');
 
@@ -276,19 +289,19 @@ cr.define('options', function() {
 
       var commandClear = node.querySelector('.command-clear');
       commandClear.id = this.createElementId_(
-          'clear', command.extension_id, command.command_name);
+          'clear', extensionId, command.name);
       commandClear.title = loadTimeData.getString('extensionCommandsDelete');
       commandClear.addEventListener('click', this.handleClear_.bind(this));
 
       var select = node.querySelector('.command-scope');
       select.id = this.createElementId_(
-          'setCommandScope', command.extension_id, command.command_name);
+          'setCommandScope', extensionId, command.name);
       select.hidden = false;
       // Add the 'In Chrome' option.
       var option = document.createElement('option');
       option.textContent = loadTimeData.getString('extensionCommandsRegular');
       select.appendChild(option);
-      if (command.extension_action) {
+      if (command.isExtensionAction) {
         // Extension actions cannot be global, so we might as well disable the
         // combo box, to signify that.
         select.disabled = true;
@@ -297,7 +310,7 @@ cr.define('options', function() {
         option = document.createElement('option');
         option.textContent = loadTimeData.getString('extensionCommandsGlobal');
         select.appendChild(option);
-        select.selectedIndex = command.global ? 1 : 0;
+        select.selectedIndex = command.isGlobal ? 1 : 0;
 
         select.addEventListener(
             'change', this.handleSetCommandScope_.bind(this));
@@ -316,7 +329,7 @@ cr.define('options', function() {
       if (this.capturingElement_)
         return;  // Already capturing.
 
-      chrome.send('setShortcutHandlingSuspended', [true]);
+      chrome.developerPrivate.setShortcutHandlingSuspended(true);
 
       var shortcutNode = event.target;
       this.oldValue_ = shortcutNode.textContent;
@@ -341,7 +354,7 @@ cr.define('options', function() {
       if (!this.capturingElement_)
         return;  // Not capturing.
 
-      chrome.send('setShortcutHandlingSuspended', [false]);
+      chrome.developerPrivate.setShortcutHandlingSuspended(false);
 
       var shortcutNode = this.capturingElement_;
       var commandShortcut = shortcutNode.parentElement;
@@ -406,8 +419,11 @@ cr.define('options', function() {
         this.endCapture_(event);
         var parsed = this.parseElementId_('clear',
             event.target.parentElement.querySelector('.command-clear').id);
-        chrome.send('setExtensionCommandShortcut',
-            [parsed.extensionId, parsed.commandName, '']);
+        chrome.developerPrivate.updateExtensionCommand({
+          extensionId: parsed.extensionId,
+          commandName: parsed.commandName,
+          keybinding: ''
+        });
         event.preventDefault();
         event.stopPropagation();
         return;
@@ -496,8 +512,10 @@ cr.define('options', function() {
         // Ending the capture must occur before calling
         // setExtensionCommandShortcut to ensure the shortcut is set.
         this.endCapture_(event);
-        chrome.send('setExtensionCommandShortcut',
-                    [parsed.extensionId, parsed.commandName, keystroke]);
+        chrome.developerPrivate.updateExtensionCommand(
+            {extensionId: parsed.extensionId,
+             commandName: parsed.commandName,
+             keybinding: keystroke});
       }
     },
 
@@ -508,8 +526,10 @@ cr.define('options', function() {
      */
     handleClear_: function(event) {
       var parsed = this.parseElementId_('clear', event.target.id);
-      chrome.send('setExtensionCommandShortcut',
-          [parsed.extensionId, parsed.commandName, '']);
+      chrome.developerPrivate.updateExtensionCommand(
+          {extensionId: parsed.extensionId,
+           commandName: parsed.commandName,
+           keybinding: ''});
     },
 
     /**
@@ -521,8 +541,13 @@ cr.define('options', function() {
       var parsed = this.parseElementId_('setCommandScope', event.target.id);
       var element = document.getElementById(
           'setCommandScope-' + parsed.extensionId + '-' + parsed.commandName);
-      chrome.send('setCommandScope',
-          [parsed.extensionId, parsed.commandName, element.selectedIndex == 1]);
+      var scope = element.selectedIndex == 1 ?
+          chrome.developerPrivate.CommandScope.GLOBAL :
+          chrome.developerPrivate.CommandScope.CHROME;
+      chrome.developerPrivate.updateExtensionCommand(
+          {extensionId: parsed.extensionId,
+           commandName: parsed.commandName,
+           scope: scope});
     },
 
     /**

@@ -552,28 +552,4 @@ bool Command::Parse(const base::DictionaryValue* command,
   return true;
 }
 
-base::DictionaryValue* Command::ToValue(const Extension* extension,
-                                        bool active) const {
-  base::DictionaryValue* extension_data = new base::DictionaryValue();
-
-  base::string16 command_description;
-  bool extension_action = false;
-  if (command_name() == values::kBrowserActionCommandEvent ||
-      command_name() == values::kPageActionCommandEvent) {
-    command_description =
-        l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE);
-    extension_action = true;
-  } else {
-    command_description = description();
-  }
-  extension_data->SetString("description", command_description);
-  extension_data->SetBoolean("active", active);
-  extension_data->SetString("keybinding", accelerator().GetShortcutText());
-  extension_data->SetString("command_name", command_name());
-  extension_data->SetString("extension_id", extension->id());
-  extension_data->SetBoolean("global", global());
-  extension_data->SetBoolean("extension_action", extension_action);
-  return extension_data;
-}
-
 }  // namespace extensions

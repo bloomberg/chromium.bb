@@ -238,6 +238,23 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   source->AddString(
       "extensionErrorOverlayNoCodeToDisplay",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_NO_CODE_TO_DISPLAY));
+
+  // Extension Commands Overlay:
+  source->AddString("extensionCommandsOverlay",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_DIALOG_TITLE));
+  source->AddString("extensionCommandsEmpty",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_EMPTY));
+  source->AddString("extensionCommandsInactive",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_INACTIVE));
+  source->AddString("extensionCommandsStartTyping",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_TYPE_SHORTCUT));
+  source->AddString("extensionCommandsDelete",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_DELETE_SHORTCUT));
+  source->AddString("extensionCommandsGlobal",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_GLOBAL));
+  source->AddString("extensionCommandsRegular",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_NOT_GLOBAL));
+  source->AddString("ok", l10n_util::GetStringUTF16(IDS_OK));
 }
 
 void ExtensionSettingsHandler::DidStartNavigationToPendingEntry(
