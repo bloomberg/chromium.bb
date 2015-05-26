@@ -384,6 +384,7 @@ component("media") {
   }
 
   if (is_win) {
+    deps += [ "//media/base/win" ]
     libs += [
       "mf.lib",
       "mfplat.lib",
