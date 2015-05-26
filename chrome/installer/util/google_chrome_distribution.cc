@@ -53,7 +53,7 @@ base::string16 LocalizeUrl(const wchar_t* url) {
 
 base::string16 GetUninstallSurveyUrl() {
   const wchar_t kSurveyUrl[] = L"https://support.google.com/chrome/"
-                               L"request.py?hl=$1&contact_type=uninstall";
+                               L"contact/chromeuninstall3?hl=$1";
   return LocalizeUrl(kSurveyUrl);
 }
 
