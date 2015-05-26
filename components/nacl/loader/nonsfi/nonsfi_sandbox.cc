@@ -113,9 +113,16 @@ ResultExpr RestrictPrctl() {
 ResultExpr RestrictSocketcall() {
   // We only allow socketpair, sendmsg, and recvmsg.
   const Arg<int> call(0);
-  return If(call == SYS_SOCKETPAIR || call == SYS_SHUTDOWN ||
-                call == SYS_SENDMSG || call == SYS_RECVMSG,
-            Allow()).Else(CrashSIGSYS());
+  return If(
+#if !defined(OS_NACL_NONSFI)
+      // nacl_helper in Non-SFI mode still uses socketpair() internally
+      // via libevent.
+      // TODO(hidehiko): Remove this when the switching to nacl_helper_nonsfi
+      // is completed.
+      call == SYS_SOCKETPAIR ||
+#endif
+      call == SYS_SHUTDOWN || call == SYS_SENDMSG || call == SYS_RECVMSG,
+      Allow()).Else(CrashSIGSYS());
 }
 #endif
 
@@ -139,13 +146,10 @@ ResultExpr RestrictMmap() {
             Allow()).Else(CrashSIGSYS());
 }
 
-#if defined(__x86_64__) || defined(__arm__)
+#if !defined(OS_NACL_NONSFI) && (defined(__x86_64__) || defined(__arm__))
 ResultExpr RestrictSocketpair() {
   // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
-  // Note: PNaCl toolchain does not define PF_UNIX.
-#if !defined(OS_NACL_NONSFI)
   static_assert(AF_UNIX == PF_UNIX, "AF_UNIX must equal PF_UNIX.");
-#endif
   const Arg<int> domain(0);
   return If(domain == AF_UNIX, Allow()).Else(CrashSIGSYS());
 }
@@ -290,8 +294,14 @@ ResultExpr NaClNonSfiBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
     case __NR_sendmsg:
     case __NR_shutdown:
       return Allow();
+#if !defined(OS_NACL_NONSFI)
+    // nacl_helper in Non-SFI mode still uses socketpair() internally
+    // via libevent.
+    // TODO(hidehiko): Remove this when the switching to nacl_helper_nonsfi
+    // is completed.
     case __NR_socketpair:
       return RestrictSocketpair();
+#endif
 #endif
 
     case __NR_brk:

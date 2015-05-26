@@ -200,6 +200,15 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
   syscall(__NR_prctl, PR_SET_DUMPABLE, 1UL);
 }
 
+#if defined(OS_NACL_NONSFI)
+BPF_DEATH_TEST_C(NaClNonsfiSandboxTest,
+                 socketpair,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+  int tmp_fds[2];
+  socketpair(AF_UNIX, SOCK_STREAM, 0, tmp_fds);
+}
+#else
 BPF_TEST_C(NaClNonSfiSandboxTest,
            socketcall_allowed,
            nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
@@ -218,6 +227,7 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
                 HANDLE_EINTR(recvmsg(fds[0].get(), &msg, 0)));
   BPF_ASSERT_EQ(0, shutdown(fds[0].get(), SHUT_RDWR));
 }
+#endif
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  accept,
@@ -397,7 +407,7 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
            fcntl_SETFD_allowed,
            nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   base::ScopedFD fds[2];
-  DoSocketpair(fds);
+  DoPipe(fds);
   BPF_ASSERT_EQ(0, fcntl(fds[0].get(), F_SETFD, FD_CLOEXEC));
 }
 
@@ -406,7 +416,7 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   base::ScopedFD fds[2];
-  DoSocketpair(fds);
+  DoPipe(fds);
   fcntl(fds[0].get(), F_SETFD, 99);
 }
 
@@ -426,7 +436,7 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   base::ScopedFD fds[2];
-  DoSocketpair(fds);
+  DoPipe(fds);
   fcntl(fds[0].get(), F_SETFL, O_APPEND);
 }
 
