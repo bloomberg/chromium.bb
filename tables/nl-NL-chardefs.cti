@@ -256,12 +256,8 @@ sign        \x0099        5-2345-134          ™                   <control> - 
 sign        \x00A9        5-14                ©                   COPYRIGHT SIGN
 sign        \x00AE        5-1235              ®                   REGISTERED SIGN
 sign        \x00B0        4-356               °                   DEGREE SIGN
-
-# (!) FIXME: SUPERSCRIPT TWO should be dots "34-3456-12"
-math        \x00B2        3456-12             ²                   SUPERSCRIPT TWO
-
-# (!) FIXME: SUPERSCRIPT THREE should be dots "34-3456-14"
-math        \x00B3        3456-14             ³                   SUPERSCRIPT THREE
+math        \x00B2        34-3456-12          ²                   SUPERSCRIPT TWO
+math        \x00B3        34-3456-14          ³                   SUPERSCRIPT THREE
 
 # (!) FIXME: MICRO SIGN should be dots "56-134"
 sign        \x00B5        136                 µ                   MICRO SIGN
@@ -273,9 +269,7 @@ sign        \x00B7        56                  ·                   MIDDLE DOT
 # (!) FIXME: CEDILLA missing from braille specification [1]
 # BE does not define CEDILLA
 sign        \x00B8        45                  ¸                   CEDILLA
-
-# (!) FIXME: SUPERSCRIPT ONE should be dots "34-3456-1"
-sign        \x00B9        3456-1              ¹                   SUPERSCRIPT ONE
+sign        \x00B9        34-3456-1           ¹                   SUPERSCRIPT ONE
 sign        \x00BA        4-356               º                   MASCULINE ORDINAL INDICATOR
 math        \x00BC        3456-1-34-3456-145  ¼                   VULGAR FRACTION ONE QUARTER
 math        \x00BD        3456-1-34-3456-12   ½                   VULGAR FRACTION ONE HALF
