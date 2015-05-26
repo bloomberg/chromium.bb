@@ -230,6 +230,7 @@ const SuddenMotionSensor::SensorDescriptor
   // - MacBookPro11,1 (13" MacBook Pro with Retina display)
   // - MacBookPro11,2 (15" MacBook Pro with Retina display)
   // - MacBookPro11,3 (15" MacBook Pro with Retina display)
+  // - MacBookPro11,4 (15" MacBook Pro with Retina display)
   // - MacBookPro12,1 (13" MacBook Pro with Retina display)
   // have no accelerometer sensors.
 
