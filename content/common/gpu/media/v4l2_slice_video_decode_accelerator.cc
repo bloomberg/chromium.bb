@@ -533,6 +533,11 @@ void V4L2SliceVideoDecodeAccelerator::Destroy() {
         FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::DestroyTask,
                               base::Unretained(this)));
 
+    // Wake up decoder thread in case we are waiting in CreateOutputBuffers
+    // for client to provide pictures. Since this is Destroy, we won't be
+    // getting them anymore (AssignPictureBuffers won't be called).
+    pictures_assigned_.Signal();
+
     // Wait for tasks to finish/early-exit.
     decoder_thread_.Stop();
   }
