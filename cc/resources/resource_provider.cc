@@ -118,11 +118,11 @@ GrPixelConfig ToGrPixelConfig(ResourceFormat format) {
 gfx::GpuMemoryBuffer::Format ToGpuMemoryBufferFormat(ResourceFormat format) {
   switch (format) {
     case RGBA_8888:
-      return gfx::GpuMemoryBuffer::Format::RGBA_8888;
+      return gfx::GpuMemoryBuffer::RGBA_8888;
     case BGRA_8888:
-      return gfx::GpuMemoryBuffer::Format::BGRA_8888;
+      return gfx::GpuMemoryBuffer::BGRA_8888;
     case RGBA_4444:
-      return gfx::GpuMemoryBuffer::Format::RGBA_4444;
+      return gfx::GpuMemoryBuffer::RGBA_4444;
     case ALPHA_8:
     case LUMINANCE_8:
     case RGB_565:
@@ -131,7 +131,7 @@ gfx::GpuMemoryBuffer::Format ToGpuMemoryBufferFormat(ResourceFormat format) {
       break;
   }
   NOTREACHED();
-  return gfx::GpuMemoryBuffer::Format::RGBA_8888;
+  return gfx::GpuMemoryBuffer::RGBA_8888;
 }
 
 class ScopedSetActiveTexture {
