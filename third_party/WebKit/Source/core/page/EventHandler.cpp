@@ -2889,8 +2889,6 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
 
     GestureEventWithHitTestResults eventWithHitTestResults = hitTestResultForGestureEvent(gestureEvent, hitType);
     // Now apply hover/active state to the final target.
-    // FIXME: This is supposed to send mouseenter/mouseleave events, but doesn't because we
-    // aren't passing a PlatformMouseEvent.
     HitTestRequest request(hitType | HitTestRequest::AllowChildFrameContent);
     if (!request.readOnly())
         updateGestureHoverActiveState(request, eventWithHitTestResults.hitTestResult().innerElement());
