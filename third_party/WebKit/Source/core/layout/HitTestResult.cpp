@@ -166,7 +166,7 @@ HTMLAreaElement* HitTestResult::imageAreaForImage() const
         }
     }
 
-    if (!imageElement || !imageElement->layoutObject())
+    if (!imageElement || !imageElement->layoutObject() || !imageElement->layoutObject()->isBox())
         return nullptr;
 
     HTMLMapElement* map = imageElement->treeScope().getImageMap(imageElement->fastGetAttribute(usemapAttr));
