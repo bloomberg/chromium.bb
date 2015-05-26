@@ -20,55 +20,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-class BlacklistRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  explicit BlacklistRequestContextGetter(
-      net::URLRequestContextGetter* parent_context_getter) :
-          network_task_runner_(
-              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    url_request_context_.reset(new net::URLRequestContext());
-    url_request_context_->CopyFrom(
-        parent_context_getter->GetURLRequestContext());
-  }
-
-  static void Create(
-      scoped_refptr<net::URLRequestContextGetter> parent_context_getter,
-      base::Callback<void(scoped_refptr<net::URLRequestContextGetter>)>
-          callback) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-    scoped_refptr<net::URLRequestContextGetter> context_getter =
-        new BlacklistRequestContextGetter(parent_context_getter.get());
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(callback, context_getter));
-  }
-
-  net::URLRequestContext* GetURLRequestContext() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    return url_request_context_.get();
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override {
-    return network_task_runner_;
-  }
-
- protected:
-  ~BlacklistRequestContextGetter() override {
-    url_request_context_->AssertNoURLRequests();
-  }
-
- private:
-  scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-};
-
-}  // namespace
-
 namespace extensions {
 
 BlacklistStateFetcher::BlacklistStateFetcher()
@@ -100,34 +51,12 @@ void BlacklistStateFetcher::Request(const std::string& id,
   if (request_already_sent)
     return;
 
-  if (url_request_context_getter_.get() || !g_browser_process ||
-      !g_browser_process->safe_browsing_service()) {
-    SendRequest(id);
-  } else {
-    scoped_refptr<net::URLRequestContextGetter> parent_request_context;
-    if (g_browser_process && g_browser_process->safe_browsing_service()) {
-      parent_request_context = g_browser_process->safe_browsing_service()
-                                                ->url_request_context();
-    } else {
-      parent_request_context = parent_request_context_for_test_;
-    }
-
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&BlacklistRequestContextGetter::Create,
-                   parent_request_context,
-                   base::Bind(&BlacklistStateFetcher::SaveRequestContext,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              id)));
+  if (!url_request_context_getter_ && g_browser_process &&
+      g_browser_process->safe_browsing_service()) {
+    url_request_context_getter_ =
+        g_browser_process->safe_browsing_service()->url_request_context();
   }
-}
 
-void BlacklistStateFetcher::SaveRequestContext(
-    const std::string& id,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!url_request_context_getter_.get())
-    url_request_context_getter_ = request_context_getter;
   SendRequest(id);
 }
 
@@ -156,8 +85,8 @@ void BlacklistStateFetcher::SetSafeBrowsingConfig(
 }
 
 void BlacklistStateFetcher::SetURLRequestContextForTest(
-      net::URLRequestContextGetter* parent_request_context) {
-  parent_request_context_for_test_ = parent_request_context;
+      net::URLRequestContextGetter* request_context) {
+  url_request_context_getter_ = request_context;
 }
 
 GURL BlacklistStateFetcher::RequestUrl() const {

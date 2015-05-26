@@ -226,7 +226,7 @@ class SafeBrowsingService
 
   // The SafeBrowsingURLRequestContextGetter used to access
   // |url_request_context_|. Accessed on UI thread.
-  scoped_refptr<net::URLRequestContextGetter>
+  scoped_refptr<SafeBrowsingURLRequestContextGetter>
       url_request_context_getter_;
 
   // The SafeBrowsingURLRequestContext. Accessed on IO thread.

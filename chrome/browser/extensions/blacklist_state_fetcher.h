@@ -35,7 +35,7 @@ class BlacklistStateFetcher : public net::URLFetcherDelegate {
   void SetSafeBrowsingConfig(const SafeBrowsingProtocolConfig& config);
 
   void SetURLRequestContextForTest(
-      net::URLRequestContextGetter* parent_request_context);
+      net::URLRequestContextGetter* request_context);
 
  protected:
   // net::URLFetcherDelegate interface.
@@ -45,10 +45,6 @@ class BlacklistStateFetcher : public net::URLFetcherDelegate {
   typedef std::multimap<std::string, RequestCallback> CallbackMultiMap;
 
   GURL RequestUrl() const;
-
-  void SaveRequestContext(
-    const std::string& id,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter);
 
   void SendRequest(const std::string& id);
 
