@@ -145,13 +145,31 @@ ShareDialog.prototype.initDom_ = function() {
  * @override
  */
 ShareDialog.prototype.onResized = function(width, height, callback) {
-  if (width && height) {
-    this.webViewWrapper_.style.width = width + 'px';
-    this.webViewWrapper_.style.height = height + 'px';
-    this.webView_.style.width = width + 'px';
-    this.webView_.style.height = height + 'px';
-  }
-  setTimeout(callback, 0);
+  if (!width || !height)
+    return;
+
+  this.webViewWrapper_.style.width = width + 'px';
+  this.webViewWrapper_.style.height = height + 'px';
+  this.webView_.style.width = width + 'px';
+  this.webView_.style.height = height + 'px';
+
+  // Wait sending 'resizeComplete' event until the latest size can be obtained
+  // in the WebView.
+  var checkSize = function() {
+    this.webView_.executeScript({
+      code: "[document.documentElement.clientWidth," +
+            " document.documentElement.clientHeight];"
+    }, function(results) {
+      if (results[0][0] === parseInt(this.webView_.style.width, 10) &&
+          results[0][1] === parseInt(this.webView_.style.height, 10)) {
+        callback();
+      } else {
+        setTimeout(checkSize, 50);
+      }
+    }.bind(this));
+  }.bind(this);
+
+  setTimeout(checkSize, 0);
 };
 
 /**
