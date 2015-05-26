@@ -34,7 +34,13 @@
             android:id="@+id/link"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="21dp" />
+            android:layout_marginBottom="-12dp"
+            android:layout_marginEnd="21dp"
+            android:layout_marginTop="-12dp"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:paddingBottom="12dp"
+            android:paddingTop="12dp" />
     </LinearLayout>
 
 </LinearLayout>
