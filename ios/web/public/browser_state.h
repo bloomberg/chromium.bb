@@ -16,6 +16,8 @@ class URLRequestContextGetter;
 }
 
 namespace web {
+class ActiveStateManager;
+class BrowsingDataPartition;
 class CertificatePolicyCache;
 class URLDataManagerIOS;
 class URLDataManagerIOSBackend;
@@ -30,6 +32,19 @@ class BrowserState : public base::SupportsUserData {
 
   // static
   static scoped_refptr<CertificatePolicyCache> GetCertificatePolicyCache(
+      BrowserState* browser_state);
+
+  // Returns the ActiveStateManager associated with |browser_state.|
+  // Lazily creates one if an ActiveStateManager is not already associated with
+  // the |browser_state|. |browser_state| cannot be a nullptr.  Must be accessed
+  // only from the main thread.
+  static ActiveStateManager* GetActiveStateManager(BrowserState* browser_state);
+
+  // Returns the BrowsingDataPartition associated with this browser_state.
+  // Lazily creates one if a BrowsingDataPartition is not already associated
+  // with the |browser_state|. |browser_state| cannot be a nullptr.  Must be
+  // accessed only from the main thread.
+  static BrowsingDataPartition* GetBrowsingDataPartition(
       BrowserState* browser_state);
 
   // Returns whether this BrowserState is incognito. Default is false.

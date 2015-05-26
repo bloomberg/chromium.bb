@@ -6,6 +6,8 @@
 
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "ios/web/active_state_manager_impl.h"
+#import "ios/web/browsing_data_partition_impl.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/webui/url_data_manager_ios_backend.h"
@@ -18,6 +20,8 @@ const char kBrowserStateIdentifierKey[] = "BrowserStateIdentifierKey";
 
 // Data key names.
 const char kCertificatePolicyCacheKeyName[] = "cert_policy_cache";
+const char kActiveStateManagerKeyName[] = "active_state_manager";
+const char kBrowsingDataPartitionKeyName[] = "browsing_data_partition";
 
 // Wraps a CertificatePolicyCache as a SupportsUserData::Data; this is necessary
 // since reference counted objects can't be user data.
@@ -45,6 +49,40 @@ scoped_refptr<CertificatePolicyCache> BrowserState::GetCertificatePolicyCache(
       static_cast<CertificatePolicyCacheHandle*>(
           browser_state->GetUserData(kCertificatePolicyCacheKeyName));
   return handle->policy_cache;
+}
+
+// static
+ActiveStateManager* BrowserState::GetActiveStateManager(
+    BrowserState* browser_state) {
+  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK(browser_state);
+
+  ActiveStateManagerImpl* active_state_manager =
+      static_cast<ActiveStateManagerImpl*>(
+          browser_state->GetUserData(kActiveStateManagerKeyName));
+  if (!active_state_manager) {
+    active_state_manager = new ActiveStateManagerImpl(browser_state);
+    browser_state->SetUserData(kActiveStateManagerKeyName,
+                               active_state_manager);
+  }
+  return active_state_manager;
+}
+
+// static
+BrowsingDataPartition* BrowserState::GetBrowsingDataPartition(
+    BrowserState* browser_state) {
+  DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
+  DCHECK(browser_state);
+
+  BrowsingDataPartitionImpl* browsing_data_partition =
+      static_cast<BrowsingDataPartitionImpl*>(
+          browser_state->GetUserData(kBrowsingDataPartitionKeyName));
+  if (!browsing_data_partition) {
+    browsing_data_partition = new BrowsingDataPartitionImpl(browser_state);
+    browser_state->SetUserData(kBrowsingDataPartitionKeyName,
+                               browsing_data_partition);
+  }
+  return browsing_data_partition;
 }
 
 BrowserState::BrowserState() : url_data_manager_ios_backend_(nullptr) {
