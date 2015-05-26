@@ -18,19 +18,15 @@ extern NSString* kAuthenticationErrorDomain;
 // code.
 extern NSString* kGoogleServiceAuthErrorState;
 
-enum AuthenticationErrorCode {
+typedef enum {
   // The error is wrapping a GoogleServiceAuthError.
-  kGoogleServiceAuthError = -200,
-  kNoAuthenticatedUser = -201,
-  kClientIdMissmatch = -203,
-  kClientSecretMissmatch = -204,
-  kUnexpectedSSOBehavior = -205,
-  kAuthenticationFlowError = -206,
-  kAccountReconcilorError = -207,
-  kTimedOutCheckPolicy = -208,
-  kTimedOutMergeSession = -209,
-  kTimedOutFetchPolicy = -210,
-};
+  GOOGLE_SERVICE_AUTH_ERROR = -200,
+  NO_AUTHENTICATED_USER = -201,
+  CLIENT_ID_MISMATCH = -203,
+  CLIENT_SECRET_MISMATCH = -204,
+  AUTHENTICATION_FLOW_ERROR = -206,
+  TIMED_OUT_FETCH_POLICY = -210,
+} AuthenticationErrorCode;
 
 // Enum is used to count the various sign in sources in the histogram
 // |Signin.IOSSignInSource|.
