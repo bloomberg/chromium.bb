@@ -90,7 +90,7 @@ SVGTextMetrics SVGTextMetrics::measureCharacterRange(LayoutSVGInlineText* text, 
     return SVGTextMetrics(text, constructTextRun(text, position, length, textDirection));
 }
 
-SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* text, unsigned position, unsigned length, float width)
+SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* text, unsigned length, float width)
 {
     ASSERT(text);
 

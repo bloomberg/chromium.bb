@@ -35,7 +35,7 @@ public:
 
     SVGTextMetrics();
     SVGTextMetrics(MetricsType);
-    SVGTextMetrics(LayoutSVGInlineText*, unsigned position, unsigned length, float width);
+    SVGTextMetrics(LayoutSVGInlineText*, unsigned length, float width);
 
     static SVGTextMetrics measureCharacterRange(LayoutSVGInlineText*, unsigned position, unsigned length, TextDirection);
     static TextRun constructTextRun(LayoutSVGInlineText*, unsigned position, unsigned length, TextDirection);

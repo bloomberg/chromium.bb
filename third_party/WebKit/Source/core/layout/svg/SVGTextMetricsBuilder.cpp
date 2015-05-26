@@ -123,7 +123,7 @@ SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterSimple(unsign
     float currentWidth = m_simpleShaper->runWidthSoFar() - m_totalWidth;
     m_totalWidth = m_simpleShaper->runWidthSoFar();
 
-    return SVGTextMetrics(m_text, textPosition, metricsLength, currentWidth);
+    return SVGTextMetrics(m_text, metricsLength, currentWidth);
 }
 
 SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacterComplex(unsigned textPosition)
