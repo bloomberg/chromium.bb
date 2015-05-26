@@ -2582,9 +2582,8 @@ TEST_F(GestureRecognizerTest, TwoFingerTap) {
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(131, 202),
                        kTouchId2, tes.Now());
   DispatchEventUsingWindowDispatcher(&move2);
-  EXPECT_2_EVENTS(delegate->events(),
-                  ui::ET_GESTURE_SCROLL_BEGIN,
-                  ui::ET_GESTURE_SCROLL_UPDATE);
+  EXPECT_3_EVENTS(delegate->events(), ui::ET_GESTURE_SCROLL_BEGIN,
+                  ui::ET_GESTURE_SCROLL_UPDATE, ui::ET_GESTURE_SCROLL_UPDATE);
 
   // Make sure there is enough delay before the touch is released so that it is
   // recognized as a tap.

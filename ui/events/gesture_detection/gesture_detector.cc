@@ -295,6 +295,9 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
             always_in_bigger_tap_region_ = false;
         } else if (std::abs(scroll_x) > kScrollEpsilon ||
                    std::abs(scroll_y) > kScrollEpsilon) {
+          // We should eventually apply touch slop for multi-finger
+          // scrolls as well as single finger scrolls. See
+          // crbug.com/492185 for details.
           handled =
               listener_->OnScroll(*current_down_event_, ev, scroll_x, scroll_y);
           last_focus_x_ = focus_x;

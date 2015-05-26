@@ -281,9 +281,10 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                 float raw_distance_y) override {
     float distance_x = raw_distance_x;
     float distance_y = raw_distance_y;
-    if (!scroll_event_sent_) {
-      // Remove the touch slop region from the first scroll event to avoid a
-      // jump.
+    if (!scroll_event_sent_ && e2.GetPointerCount() == 1) {
+      // Remove the touch slop region from the first scroll event to
+      // avoid a jump. Touch slop isn't used for multi-finger
+      // gestures, so in those cases we don't subtract the slop.
       float distance =
           std::sqrt(distance_x * distance_x + distance_y * distance_y);
       float epsilon = 1e-3f;
@@ -295,26 +296,6 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
         distance_x *= ratio;
         distance_y *= ratio;
       }
-
-      // Note that scroll start hints are in distance traveled, where
-      // scroll deltas are in the opposite direction.
-      GestureEventDetails scroll_details(
-          ET_GESTURE_SCROLL_BEGIN, -raw_distance_x, -raw_distance_y);
-
-      // Use the co-ordinates from the touch down, as these co-ordinates are
-      // used to determine which layer the scroll should affect.
-      Send(CreateGesture(scroll_details,
-                         e2.GetPointerId(),
-                         e2.GetToolType(),
-                         e2.GetEventTime(),
-                         e1.GetX(),
-                         e1.GetY(),
-                         e1.GetRawX(),
-                         e1.GetRawY(),
-                         e2.GetPointerCount(),
-                         GetBoundingBox(e2, scroll_details.type()),
-                         e2.GetFlags()));
-      DCHECK(scroll_event_sent_);
     }
 
     snap_scroll_controller_.UpdateSnapScrollMode(distance_x, distance_y);
@@ -325,25 +306,35 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
         distance_x = 0;
     }
 
-    if (distance_x || distance_y) {
+    if (!distance_x && !distance_y)
+      return true;
+
+    if (!scroll_event_sent_) {
+      // Note that scroll start hints are in distance traveled, where
+      // scroll deltas are in the opposite direction.
       GestureEventDetails scroll_details(
-          ET_GESTURE_SCROLL_UPDATE, -distance_x, -distance_y);
-      const gfx::RectF bounding_box = GetBoundingBox(e2, scroll_details.type());
-      const gfx::PointF center = bounding_box.CenterPoint();
-      const gfx::PointF raw_center =
-          center + gfx::Vector2dF(e2.GetRawOffsetX(), e2.GetRawOffsetY());
-      Send(CreateGesture(scroll_details,
-                         e2.GetPointerId(),
-                         e2.GetToolType(),
-                         e2.GetEventTime(),
-                         center.x(),
-                         center.y(),
-                         raw_center.x(),
-                         raw_center.y(),
-                         e2.GetPointerCount(),
-                         bounding_box,
+          ET_GESTURE_SCROLL_BEGIN, -raw_distance_x, -raw_distance_y);
+
+      // Use the co-ordinates from the touch down, as these co-ordinates are
+      // used to determine which layer the scroll should affect.
+      Send(CreateGesture(scroll_details, e2.GetPointerId(), e2.GetToolType(),
+                         e2.GetEventTime(), e1.GetX(), e1.GetY(), e1.GetRawX(),
+                         e1.GetRawY(), e2.GetPointerCount(),
+                         GetBoundingBox(e2, scroll_details.type()),
                          e2.GetFlags()));
+      DCHECK(scroll_event_sent_);
     }
+
+    GestureEventDetails scroll_details(ET_GESTURE_SCROLL_UPDATE, -distance_x,
+                                       -distance_y);
+    const gfx::RectF bounding_box = GetBoundingBox(e2, scroll_details.type());
+    const gfx::PointF center = bounding_box.CenterPoint();
+    const gfx::PointF raw_center =
+        center + gfx::Vector2dF(e2.GetRawOffsetX(), e2.GetRawOffsetY());
+    Send(CreateGesture(scroll_details, e2.GetPointerId(), e2.GetToolType(),
+                       e2.GetEventTime(), center.x(), center.y(),
+                       raw_center.x(), raw_center.y(), e2.GetPointerCount(),
+                       bounding_box, e2.GetFlags()));
 
     return true;
   }

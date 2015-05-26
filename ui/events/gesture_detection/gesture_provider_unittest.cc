@@ -2153,13 +2153,14 @@ TEST_F(GestureProviderTest, TwoFingerTap) {
 
   EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetReceivedGesture(0).type());
   EXPECT_EQ(ET_GESTURE_SCROLL_BEGIN, GetReceivedGesture(1).type());
-  EXPECT_EQ(ET_GESTURE_TWO_FINGER_TAP, GetReceivedGesture(2).type());
-  EXPECT_EQ(3U, GetReceivedGestureCount());
+  EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetReceivedGesture(2).type());
+  EXPECT_EQ(ET_GESTURE_TWO_FINGER_TAP, GetReceivedGesture(3).type());
+  EXPECT_EQ(4U, GetReceivedGestureCount());
 
   EXPECT_EQ(kMockTouchRadius * 2,
-            GetReceivedGesture(2).details.first_finger_width());
+            GetReceivedGesture(3).details.first_finger_width());
   EXPECT_EQ(kMockTouchRadius * 2,
-            GetReceivedGesture(2).details.first_finger_height());
+            GetReceivedGesture(3).details.first_finger_height());
 }
 
 // Test preventing a two finger tap via finger movement.
@@ -2198,7 +2199,11 @@ TEST_F(GestureProviderTest, TwoFingerTapCancelledByFingerMovement) {
 
   EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetReceivedGesture(0).type());
   EXPECT_EQ(ET_GESTURE_SCROLL_BEGIN, GetReceivedGesture(1).type());
-  EXPECT_EQ(2U, GetReceivedGestureCount());
+  EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetReceivedGesture(2).type());
+  EXPECT_FLOAT_EQ((scaled_touch_slop + 0.1) / 2,
+                  GetReceivedGesture(2).details.scroll_x());
+  EXPECT_EQ(0, GetReceivedGesture(2).details.scroll_y());
+  EXPECT_EQ(3U, GetReceivedGestureCount());
 }
 
 // Test preventing a two finger tap by waiting too long before releasing the
