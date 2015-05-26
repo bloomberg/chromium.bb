@@ -105,6 +105,8 @@ public:
 
     virtual WebCompositorAnimationTimeline* createAnimationTimeline() { return 0; }
 
+    virtual WebDisplayItemList* createDisplayItemList() { return nullptr; }
+
 protected:
     virtual ~WebCompositorSupport() { }
 };
