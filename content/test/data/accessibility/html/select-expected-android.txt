@@ -1,9 +1,11 @@
-#<skip - Needs to be rebaselined>
 android.webkit.WebView focusable focused scrollable
 ++android.view.View
 ++++android.widget.Spinner clickable focusable name='Placeholder option'
 ++++android.widget.Spinner clickable focusable name='Option 2'
 ++++android.widget.Spinner clickable focusable name='Option 1'
 ++++android.widget.Spinner clickable focusable name='0 selected'
-++++android.widget.Spinner clickable focusable name='
-'
+++++android.widget.Spinner focusable
+++++++android.view.View invisible
+++++++++android.view.View clickable invisible name='Option 1'
+++++++++android.view.View clickable invisible name='Option 2'
+++++++++android.view.View clickable invisible name='Option 3'
