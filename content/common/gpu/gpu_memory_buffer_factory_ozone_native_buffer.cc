@@ -12,7 +12,7 @@ namespace content {
 namespace {
 
 const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
-  { gfx::GpuMemoryBuffer::RGBA_8888, gfx::GpuMemoryBuffer::SCANOUT },
+  { gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::SCANOUT },
   { gfx::GpuMemoryBuffer::RGBX_8888, gfx::GpuMemoryBuffer::SCANOUT }
 };
 
