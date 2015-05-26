@@ -744,7 +744,7 @@ ucnv_io_getConverterName(const char *alias, UBool *containsOption, UErrorCode *p
              * the name begins with 'x-'. If it does, strip it off and try
              * again.  This behaviour is similar to how ICU4J does it.
              */
-            if (aliasTmp[0] == 'x' || aliasTmp[1] == '-') {
+            if (aliasTmp[0] == 'x' && aliasTmp[1] == '-') {
                 aliasTmp = aliasTmp+2;
             } else {
                 break;

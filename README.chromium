@@ -283,4 +283,10 @@ This directory contains the source code of ICU 54.1 for C/C++.
      http://bugs.icu-project.org/trac/ticket/11358
      http://bugs.icu-project.org/trac/ticket/11623
 
+16. Properly handle a converter name starting with 'x-'.
+   - patches/ucnv_name.patch
+   - upstream bug
+     http://bugs.icu-project.org/trac/ticket/11696
+ 
+
 
