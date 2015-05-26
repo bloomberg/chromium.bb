@@ -84,7 +84,25 @@ class ExtensionUninstallDialog
   // dialog.
   void HandleReportAbuse();
 
-  // TODO(sashab): Remove protected members: crbug.com/397395
+  // Accessors for members
+  const Profile* profile() const { return profile_; }
+  Delegate* delegate() const { return delegate_; }
+  const Extension* extension() const { return extension_.get(); }
+  const Extension* triggering_extension() const {
+      return triggering_extension_.get(); }
+  const gfx::ImageSkia& icon() const { return icon_; }
+
+ private:
+  // Sets the icon that will be used in the dialog. If |icon| contains an empty
+  // image, then we use a default icon instead.
+  void SetIcon(const gfx::Image& image);
+
+  void OnImageLoaded(const std::string& extension_id, const gfx::Image& image);
+
+  // Displays the prompt. This should only be called after loading the icon.
+  // The implementations of this method are platform-specific.
+  virtual void Show() = 0;
+
   Profile* const profile_;
 
   // The delegate we will call Accepted/Canceled on after confirmation dialog.
@@ -99,17 +117,6 @@ class ExtensionUninstallDialog
 
   // The extensions icon.
   gfx::ImageSkia icon_;
-
- private:
-  // Sets the icon that will be used in the dialog. If |icon| contains an empty
-  // image, then we use a default icon instead.
-  void SetIcon(const gfx::Image& image);
-
-  void OnImageLoaded(const std::string& extension_id, const gfx::Image& image);
-
-  // Displays the prompt. This should only be called after loading the icon.
-  // The implementations of this method are platform-specific.
-  virtual void Show() = 0;
 
   base::MessageLoop* ui_loop_;
 

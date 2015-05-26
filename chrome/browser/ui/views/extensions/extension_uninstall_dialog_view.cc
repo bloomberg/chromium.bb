@@ -70,7 +70,7 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
   ExtensionUninstallDialogDelegateView(
       ExtensionUninstallDialogViews* dialog_view,
       bool triggered_by_extension,
-      gfx::ImageSkia* image);
+      const gfx::ImageSkia* image);
   ~ExtensionUninstallDialogDelegateView() override;
 
   // Called when the ExtensionUninstallDialog has been destroyed to make sure
@@ -130,12 +130,12 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 
 void ExtensionUninstallDialogViews::Show() {
   if (parent_ && parent_window_tracker_->WasNativeWindowClosed()) {
-    delegate_->ExtensionUninstallCanceled();
+    delegate()->ExtensionUninstallCanceled();
     return;
   }
 
   view_ = new ExtensionUninstallDialogDelegateView(
-      this, triggering_extension_.get() != nullptr, &icon_);
+      this, triggering_extension() != nullptr, &icon());
   constrained_window::CreateBrowserModalDialogViews(view_, parent_)->Show();
 }
 
@@ -149,7 +149,7 @@ void ExtensionUninstallDialogViews::ExtensionUninstallAccepted(
   OnDialogClosed(report_abuse_checked ?
       CLOSE_ACTION_UNINSTALL_AND_REPORT_ABUSE : CLOSE_ACTION_UNINSTALL);
 
-  delegate_->ExtensionUninstallAccepted();
+  delegate()->ExtensionUninstallAccepted();
 }
 
 void ExtensionUninstallDialogViews::ExtensionUninstallCanceled() {
@@ -157,13 +157,13 @@ void ExtensionUninstallDialogViews::ExtensionUninstallCanceled() {
   view_->DialogDestroyed();
   view_ = nullptr;
   OnDialogClosed(CLOSE_ACTION_CANCELED);
-  delegate_->ExtensionUninstallCanceled();
+  delegate()->ExtensionUninstallCanceled();
 }
 
 ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     ExtensionUninstallDialogViews* dialog_view,
     bool triggered_by_extension,
-    gfx::ImageSkia* image)
+    const gfx::ImageSkia* image)
     : dialog_(dialog_view),
       triggered_by_extension_(triggered_by_extension),
       report_abuse_checkbox_(nullptr) {
