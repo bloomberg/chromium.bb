@@ -35,9 +35,22 @@ MemoryAllocatorDump* ProcessMemoryDump::GetAllocatorDump(
   return it == allocator_dumps_.end() ? nullptr : it->second;
 }
 
+void ProcessMemoryDump::Clear() {
+  if (has_process_totals_) {
+    process_totals_.Clear();
+    has_process_totals_ = false;
+  }
+
+  if (has_process_mmaps_) {
+    process_mmaps_.Clear();
+    has_process_mmaps_ = false;
+  }
+
+  allocator_dumps_storage_.clear();
+  allocator_dumps_.clear();
+}
+
 void ProcessMemoryDump::TakeAllDumpsFrom(ProcessMemoryDump* other) {
-  // We support only merging of MemoryAllocatorDumps. The special process_totals
-  // and mmaps cases are not relevant, let's just prevent clients from doing it.
   DCHECK(!other->has_process_totals() && !other->has_process_mmaps());
 
   // Moves the ownership of all MemoryAllocatorDump(s) contained in |other|

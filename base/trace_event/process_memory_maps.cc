@@ -49,5 +49,9 @@ void ProcessMemoryMaps::AsValueInto(TracedValue* value) const {
   value->EndArray();
 }
 
+void ProcessMemoryMaps::Clear() {
+  vm_regions_.clear();
+}
+
 }  // namespace trace_event
 }  // namespace base

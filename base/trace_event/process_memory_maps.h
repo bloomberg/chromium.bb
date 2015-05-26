@@ -46,6 +46,9 @@ class BASE_EXPORT ProcessMemoryMaps {
   // Called at trace generation time to populate the TracedValue.
   void AsValueInto(TracedValue* value) const;
 
+  // Clears up all the VMRegion(s) stored.
+  void Clear();
+
  private:
   std::vector<VMRegion> vm_regions_;
 

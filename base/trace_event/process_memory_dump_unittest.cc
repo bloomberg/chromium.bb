@@ -11,6 +11,46 @@
 namespace base {
 namespace trace_event {
 
+TEST(ProcessMemoryDumpTest, Clear) {
+  scoped_ptr<ProcessMemoryDump> pmd1(new ProcessMemoryDump(nullptr));
+  pmd1->CreateAllocatorDump("mad1");
+  pmd1->CreateAllocatorDump("mad2");
+  ASSERT_FALSE(pmd1->allocator_dumps().empty());
+
+  pmd1->process_totals()->set_resident_set_bytes(42);
+  pmd1->set_has_process_totals();
+
+  pmd1->process_mmaps()->AddVMRegion({0});
+  pmd1->set_has_process_mmaps();
+
+  pmd1->Clear();
+  ASSERT_TRUE(pmd1->allocator_dumps().empty());
+  ASSERT_EQ(nullptr, pmd1->GetAllocatorDump("mad1"));
+  ASSERT_EQ(nullptr, pmd1->GetAllocatorDump("mad2"));
+  ASSERT_FALSE(pmd1->has_process_totals());
+  ASSERT_FALSE(pmd1->has_process_mmaps());
+  ASSERT_TRUE(pmd1->process_mmaps()->vm_regions().empty());
+
+  // Check that calling AsValueInto() doesn't cause a crash.
+  scoped_refptr<TracedValue> traced_value(new TracedValue());
+  pmd1->AsValueInto(traced_value.get());
+
+  // Check that the pmd can be reused and behaves as expected.
+  pmd1->CreateAllocatorDump("mad1");
+  pmd1->CreateAllocatorDump("mad3");
+  ASSERT_EQ(2u, pmd1->allocator_dumps().size());
+  ASSERT_NE(static_cast<MemoryAllocatorDump*>(nullptr),
+            pmd1->GetAllocatorDump("mad1"));
+  ASSERT_EQ(nullptr, pmd1->GetAllocatorDump("mad2"));
+  ASSERT_NE(static_cast<MemoryAllocatorDump*>(nullptr),
+            pmd1->GetAllocatorDump("mad3"));
+
+  traced_value = new TracedValue();
+  pmd1->AsValueInto(traced_value.get());
+
+  pmd1.reset();
+}
+
 TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   scoped_refptr<TracedValue> traced_value(new TracedValue());
 
@@ -30,7 +70,7 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   ASSERT_EQ(1u, pmd2->allocator_dumps().size());
   ASSERT_EQ(1u, pmd2->allocator_dumps().count("pmd2/this_mad_stays_with_pmd2"));
 
-  // Check that the AsValueInto doesn't cause a crash.
+  // Check that calling AsValueInto() doesn't cause a crash.
   pmd2->AsValueInto(traced_value.get());
 
   // Free the |pmd2| to check that the memory ownership of the two MAD(s)
@@ -44,7 +84,7 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd2/mad1"));
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd1/mad2"));
 
-  // Check that the AsValueInto doesn't cause a crash.
+  // Check that calling AsValueInto() doesn't cause a crash.
   traced_value = new TracedValue();
   pmd1->AsValueInto(traced_value.get());
 

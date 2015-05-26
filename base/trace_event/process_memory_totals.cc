@@ -16,5 +16,9 @@ void ProcessMemoryTotals::AsValueInto(TracedValue* value) const {
                    StringPrintf("%" PRIx64, resident_set_bytes_));
 }
 
+void ProcessMemoryTotals::Clear() {
+  resident_set_bytes_ = 0;
+}
+
 }  // namespace trace_event
 }  // namespace base

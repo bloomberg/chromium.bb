@@ -21,6 +21,9 @@ class BASE_EXPORT ProcessMemoryTotals {
   // Called at trace generation time to populate the TracedValue.
   void AsValueInto(TracedValue* value) const;
 
+  // Clears up all the data collected.
+  void Clear();
+
   uint64 resident_set_bytes() const { return resident_set_bytes_; }
   void set_resident_set_bytes(uint64 value) { resident_set_bytes_ = value; }
 

@@ -41,6 +41,10 @@ class BASE_EXPORT ProcessMemoryDump {
   // Called at trace generation time to populate the TracedValue.
   void AsValueInto(TracedValue* value) const;
 
+  // Removes all the MemoryAllocatorDump(s) contained in this instance. This
+  // ProcessMemoryDump can be safely reused as if it was new once this returns.
+  void Clear();
+
   // Merges all MemoryAllocatorDump(s) contained in |other| inside this
   // ProcessMemoryDump, transferring their ownership to this instance.
   // |other| will be an empty ProcessMemoryDump after this method returns.
