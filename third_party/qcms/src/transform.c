@@ -1405,7 +1405,7 @@ qcms_transform* qcms_transform_create(
  * of the attribute but is currently only supported by clang */
 #if defined(__has_attribute)
 #define HAS_FORCE_ALIGN_ARG_POINTER __has_attribute(__force_align_arg_pointer__)
-#elif defined(__GNUC__) && !defined(__x86_64__) && !defined(__amd64__) && !defined(__arm__) && !defined(__mips__)
+#elif defined(__GNUC__) && defined(__i386__)
 #define HAS_FORCE_ALIGN_ARG_POINTER 1
 #else
 #define HAS_FORCE_ALIGN_ARG_POINTER 0

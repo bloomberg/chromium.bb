@@ -27,7 +27,8 @@ The following changes have been made since qcms was imported:
  - Do not short-circuit bogus profile check for A2B0 or B2A0 unless v4 enabled.
  - Only reference code from transform-sse1.c and transform-sse2.c when SSE is
    enabled.
- - Do not use an x86-only attribute on ARM or MIPS.
+ - Limit the use an x86-only attribute to 32-bit x86 builds.
+   - https://code.google.com/p/chromium/issues/detail?id=490016
  - Fix integer truncation warning/errors on Win64 build.
  - Apply upstream thread safety (fix) patch from
    - https://bugzilla.mozilla.org/show_bug.cgi?id=853169
