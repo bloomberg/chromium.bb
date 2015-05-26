@@ -457,7 +457,11 @@ AutofillType AutofillField::Type() const {
     // which may obviate the need for this logic.
     bool believe_server =
         !(server_type_ == NAME_FULL && heuristic_type_ == CREDIT_CARD_NAME) &&
-        !(server_type_ == CREDIT_CARD_NAME && heuristic_type_ == NAME_FULL);
+        !(server_type_ == CREDIT_CARD_NAME && heuristic_type_ == NAME_FULL) &&
+        // CVC is sometimes type="password", which tricks the server.
+        // See http://crbug.com/469007
+        !(AutofillType(server_type_).group() == PASSWORD_FIELD &&
+              heuristic_type_ == CREDIT_CARD_VERIFICATION_CODE);
     if (believe_server)
       return AutofillType(server_type_);
   }
