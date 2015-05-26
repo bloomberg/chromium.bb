@@ -22,7 +22,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -46,6 +45,7 @@ import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkSalientImag
 import org.chromium.chrome.browser.widget.CustomShapeDrawable.CircularDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkMatch;
+import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -178,10 +178,9 @@ public class EnhancedBookmarkSearchView extends LinearLayout implements View.OnC
         super.onVisibilityChanged(changedView, visibility);
         // This method might be called very early. Null check on bookmark model here.
         if (mEnhancedBookmarksModel == null) return;
-        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(
-                Context.INPUT_METHOD_SERVICE);
+
         if (visibility != View.VISIBLE) {
-            imm.hideSoftInputFromWindow(mSearchText.getWindowToken(), 0);
+            UiUtils.hideKeyboard(mSearchText);
             mEnhancedBookmarksModel.removeFiltersObserver(this);
             mEnhancedBookmarksModel.removeModelObserver(mModelObserver);
             resetUI();
@@ -191,7 +190,7 @@ public class EnhancedBookmarkSearchView extends LinearLayout implements View.OnC
             mEnhancedBookmarksModel.addFiltersObserver(this);
             onFiltersChanged();
             mSearchText.requestFocus();
-            imm.showSoftInput(mSearchText, 0);
+            UiUtils.showKeyboard(mSearchText);
         }
     }
 

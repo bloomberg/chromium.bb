@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +79,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
         public void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node,
                 boolean isDoingExtensiveChanges) {
             if (!node.getId().equals(mFolderId)) return;
-            finish();
+            dismiss();
         }
     };
 
@@ -185,9 +186,9 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
             } else {
                 mModel.setBookmarkTitle(mFolderId, folderTitle);
             }
-            finish();
+            dismiss();
         } else if (v == mBackButton) {
-            finish();
+            dismiss();
         } else if (v == mDeleteButton) {
             // When deleting, wait till the model has done its job and notify us via model observer,
             // and then we finish this activity.
@@ -212,6 +213,11 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
         mModel.removeModelObserver(mBookmarkModelObserver);
         mModel.destroy();
         mModel = null;
+    }
+
+    private void dismiss() {
+        UiUtils.hideKeyboard(mFolderTitle);
+        finish();
     }
 
     private void updateParent(BookmarkId newParent) {

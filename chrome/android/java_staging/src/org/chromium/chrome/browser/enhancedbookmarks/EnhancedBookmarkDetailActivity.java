@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.FlowLayout;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -180,10 +181,8 @@ public class EnhancedBookmarkDetailActivity extends EnhancedBookmarkActivityBase
      * Hides soft keyboard and finishes Activity.
      */
     private void dismiss() {
-        InputMethodManager imm = (InputMethodManager) getSystemService(
-                Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
-        ApiCompatibilityUtils.finishAfterTransition(EnhancedBookmarkDetailActivity.this);
+        UiUtils.hideKeyboard(mContentLayout);
+        ApiCompatibilityUtils.finishAfterTransition(this);
     }
 
     @Override
