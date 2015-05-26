@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/android/browser_media_player_manager.h"
+#include "content/public/browser/android/browser_media_player_manager_register.h"
 
 #include "content/browser/media/android/browser_media_player_manager.h"
 
