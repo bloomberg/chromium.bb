@@ -175,6 +175,7 @@
         'web_state/crw_web_view_scroll_view_proxy.mm',
         'web_state/error_translation_util.h',
         'web_state/error_translation_util.mm',
+        'web_state/frame_info.h',
         'web_state/js/credential_util.h',
         'web_state/js/credential_util.mm',
         'web_state/js/crw_js_early_script_manager.h',

@@ -12,6 +12,9 @@
 #include "ios/web/public/web_state/page_scroll_state.h"
 
 @class CRWSessionController;
+namespace web {
+struct FrameInfo;
+}  // namespace web
 
 namespace web {
 // Separator between window href and name.
@@ -292,10 +295,12 @@ struct NewWindowInfo {
 - (void)handleWebInvokeURL:(const GURL&)url request:(NSURLRequest*)request;
 
 // Returns YES if the given load request should be allowed to continue. If this
-// returns NO, the load should be cancelled.
-// |isLinkClick| should indicate whether the navigation is the result of a link
-// click (either directly, or via JS triggered by a link).
+// returns NO, the load should be cancelled. |targetFrame| contains information
+// about the frame to which navigation is targeted, can be null.
+// |isLinkClick| should indicate whether the navigation is the
+// result of a link click (either directly, or via JS triggered by a link).
 - (BOOL)shouldAllowLoadWithRequest:(NSURLRequest*)request
+                       targetFrame:(const web::FrameInfo*)targetFrame
                        isLinkClick:(BOOL)isLinkClick;
 
 // Prepares web controller and delegates for anticipated page change.

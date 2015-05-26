@@ -25,6 +25,7 @@
 #include "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/ui_web_view_util.h"
+#include "ios/web/web_state/frame_info.h"
 #import "ios/web/web_state/js/crw_js_invoke_parameter_queue.h"
 #import "ios/web/web_state/ui/crw_context_menu_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller+protected.h"
@@ -1391,9 +1392,11 @@ const size_t kMaxMessageQueueSize = 262144;
   // Do not add new code above this line unless you're certain about what you're
   // doing with respect to JS re-entry.
   ScopedReentryGuard javaScriptReentryGuard(&_inJavaScriptContext);
-
+  web::FrameInfo* targetFrame = nullptr;  // No reliable way to get this info.
   BOOL isLinkClick = [self isLinkNavigation:navigationType];
-  return [self shouldAllowLoadWithRequest:request isLinkClick:isLinkClick];
+  return [self shouldAllowLoadWithRequest:request
+                              targetFrame:targetFrame
+                              isLinkClick:isLinkClick];
 }
 
 // Called at multiple points during a load, such as at the start of loading a

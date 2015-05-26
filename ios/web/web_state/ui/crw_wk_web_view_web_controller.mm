@@ -21,6 +21,7 @@
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/ui_web_view_util.h"
 #include "ios/web/web_state/blocked_popup_info.h"
+#include "ios/web/web_state/frame_info.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_web_controller+protected.h"
@@ -935,12 +936,14 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
   if (navigationAction.sourceFrame.isMainFrame)
     self.documentMIMEType = nil;
+
+  web::FrameInfo targetFrame(navigationAction.targetFrame.isMainFrame);
   BOOL isLinkClick = [self isLinkNavigation:navigationAction.navigationType];
-  WKNavigationActionPolicy policy =
-      [self shouldAllowLoadWithRequest:request
-                           isLinkClick:isLinkClick] ?
-      WKNavigationActionPolicyAllow : WKNavigationActionPolicyCancel;
-  decisionHandler(policy);
+  BOOL allowLoad = [self shouldAllowLoadWithRequest:request
+                                        targetFrame:&targetFrame
+                                        isLinkClick:isLinkClick];
+  decisionHandler(allowLoad ? WKNavigationActionPolicyAllow
+                            : WKNavigationActionPolicyCancel);
 }
 
 - (void)webView:(WKWebView *)webView
