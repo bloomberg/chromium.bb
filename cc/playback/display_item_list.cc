@@ -64,6 +64,11 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect, bool use_cached_picture)
                       !use_cached_picture || PictureTracingEnabled()) {
 }
 
+scoped_refptr<DisplayItemList> DisplayItemList::CreateWithoutCachedPicture() {
+  bool use_cached_picture = false;
+  return Create(gfx::Rect(), use_cached_picture);
+}
+
 scoped_refptr<DisplayItemList> DisplayItemList::Create(
     gfx::Rect layer_rect,
     bool use_cached_picture) {
@@ -190,18 +195,20 @@ DisplayItemList::AsValue() const {
   state->EndArray();
   state->SetValue("params.layer_rect", MathUtil::AsValue(layer_rect_));
 
-  SkPictureRecorder recorder;
-  SkCanvas* canvas =
-      recorder.beginRecording(layer_rect_.width(), layer_rect_.height());
-  canvas->translate(-layer_rect_.x(), -layer_rect_.y());
-  canvas->clipRect(gfx::RectToSkRect(layer_rect_));
-  Raster(canvas, NULL, 1.f);
-  skia::RefPtr<SkPicture> picture =
-      skia::AdoptRef(recorder.endRecordingAsPicture());
+  if (!layer_rect_.IsEmpty()) {
+    SkPictureRecorder recorder;
+    SkCanvas* canvas =
+        recorder.beginRecording(layer_rect_.width(), layer_rect_.height());
+    canvas->translate(-layer_rect_.x(), -layer_rect_.y());
+    canvas->clipRect(gfx::RectToSkRect(layer_rect_));
+    Raster(canvas, NULL, 1.f);
+    skia::RefPtr<SkPicture> picture =
+        skia::AdoptRef(recorder.endRecordingAsPicture());
 
-  std::string b64_picture;
-  PictureDebugUtil::SerializeAsBase64(picture.get(), &b64_picture);
-  state->SetString("skp64", b64_picture);
+    std::string b64_picture;
+    PictureDebugUtil::SerializeAsBase64(picture.get(), &b64_picture);
+    state->SetString("skp64", b64_picture);
+  }
 
   return state;
 }

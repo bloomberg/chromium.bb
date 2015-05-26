@@ -130,4 +130,8 @@ WebFilterOperations* WebCompositorSupportImpl::createFilterOperations() {
   return new WebFilterOperationsImpl();
 }
 
+WebDisplayItemList* WebCompositorSupportImpl::createDisplayItemList() {
+  return new WebDisplayItemListImpl();
+}
+
 }  // namespace cc_blink

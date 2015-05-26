@@ -27,6 +27,8 @@ namespace cc {
 class CC_EXPORT DisplayItemList
     : public base::RefCountedThreadSafe<DisplayItemList> {
  public:
+  static scoped_refptr<DisplayItemList> CreateWithoutCachedPicture();
+
   static scoped_refptr<DisplayItemList> Create(gfx::Rect layer_rect,
                                                bool use_cached_picture);
 

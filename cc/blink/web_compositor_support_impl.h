@@ -57,6 +57,7 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
   virtual blink::WebTransformAnimationCurve* createTransformAnimationCurve();
   virtual blink::WebTransformOperations* createTransformOperations();
   virtual blink::WebFilterOperations* createFilterOperations();
+  virtual blink::WebDisplayItemList* createDisplayItemList();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCompositorSupportImpl);

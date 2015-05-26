@@ -25,6 +25,10 @@
 
 namespace cc_blink {
 
+WebDisplayItemListImpl::WebDisplayItemListImpl()
+    : display_item_list_(cc::DisplayItemList::CreateWithoutCachedPicture()) {
+}
+
 WebDisplayItemListImpl::WebDisplayItemListImpl(
     cc::DisplayItemList* display_list)
     : display_item_list_(display_list) {
