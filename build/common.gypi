@@ -5497,6 +5497,19 @@
                     },
                   },
                 ],
+                # This config is used to avoid a problem in ffmpeg, see
+                # http://crbug.com/264459.
+                ['optimize=="size_no_ltcg"', {
+                    'msvs_settings': {
+                      'VCCLCompilerTool': {
+                        # 1, optimizeMinSpace, Minimize Size (/O1)
+                        'Optimization': '1',
+                        # 2, favorSize - Favor small code (/Os)
+                        'FavorSizeOrSpeed': '2',
+                      },
+                    },
+                  },
+                ],
                 ['optimize=="speed"', {
                     'msvs_settings': {
                       'VCCLCompilerTool': {
