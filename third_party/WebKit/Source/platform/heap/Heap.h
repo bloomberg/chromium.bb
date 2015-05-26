@@ -1158,7 +1158,8 @@ size_t HeapObjectHeader::size() const
 NO_SANITIZE_ADDRESS inline
 void HeapObjectHeader::checkHeader() const
 {
-    ASSERT(pageFromObject(this)->orphaned() || m_magic == magic);
+    ASSERT(!pageFromObject(this)->orphaned());
+    ASSERT(m_magic == magic);
 }
 
 inline Address HeapObjectHeader::payload()

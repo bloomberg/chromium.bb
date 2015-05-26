@@ -399,6 +399,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
 
         T* array = reinterpret_cast<T*>(self);
         blink::HeapObjectHeader* header = blink::HeapObjectHeader::fromPayload(self);
+        header->checkHeader();
         // Use the payload size as recorded by the heap to determine how many
         // elements to trace.
         size_t length = header->payloadSize() / sizeof(T);
@@ -434,6 +435,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
 
         Value* array = reinterpret_cast<Value*>(self);
         blink::HeapObjectHeader* header = blink::HeapObjectHeader::fromPayload(self);
+        header->checkHeader();
         // Use the payload size as recorded by the heap to determine how many
         // elements to trace.
         size_t length = header->payloadSize() / sizeof(Value);
@@ -460,6 +462,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
     {
         Node** array = reinterpret_cast<Node**>(self);
         blink::HeapObjectHeader* header = blink::HeapObjectHeader::fromPayload(self);
+        header->checkHeader();
         size_t length = header->payloadSize() / sizeof(Node*);
         for (size_t i = 0; i < length; ++i) {
             if (!HashTableHelper<Node*, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i])) {
