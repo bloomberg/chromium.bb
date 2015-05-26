@@ -38,9 +38,8 @@ class InstanceHandle;
 ///   it. Any pending callbacks will abort before the encoder is destroyed.
 ///
 /// Available video codecs vary by platform.
-/// All: theora, vorbis, vp8.
-/// Chrome and ChromeOS: h264.
-/// ChromeOS: mpeg4.
+/// All: vp8 (software).
+/// ChromeOS, depending on your device: h264 (hardware), vp8 (hardware)
 class VideoEncoder : public Resource {
  public:
   /// Default constructor for creating an is_null() <code>VideoEncoder</code>
