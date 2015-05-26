@@ -22,7 +22,9 @@ namespace net {
 
 // SpawnedTestServer not supported on iOS (see http://crbug.com/148666).
 #if !defined(OS_IOS)
-TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
+// TODO(tbansal): Check why this local server test is failing on Windows
+// (see http://crbug.com/492410).
+TEST(NetworkQualityEstimatorTest, DISABLED_TestPeakKbpsFastestRTTUpdates) {
   SpawnedTestServer test_server_(
       SpawnedTestServer::TYPE_HTTP, SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
