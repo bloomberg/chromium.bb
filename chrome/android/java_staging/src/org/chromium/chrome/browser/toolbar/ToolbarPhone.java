@@ -1618,7 +1618,7 @@ public class ToolbarPhone extends ToolbarLayout
         if (mBrandColorTransitionActive) mBrandColorTransitionAnimation.cancel();
         final int initialColor = mToolbarBackground.getColor();
         final int finalColor = getToolbarDataProvider().getPrimaryColor();
-        if (initialColor == finalColor) return;
+        if (mInTabSwitcherMode || initialColor == finalColor) return;
         boolean shouldUseOpaque = BrandColorUtils.shouldUseOpaqueTextboxBackground(finalColor);
         final int initialAlpha = mUrlBackgroundAlpha;
         final int finalAlpha =
@@ -1801,7 +1801,6 @@ public class ToolbarPhone extends ToolbarLayout
 
         mToggleTabStackButton.setImageDrawable(mUseLightToolbarDrawables
                 ? mTabSwitcherButtonDrawableLight : mTabSwitcherButtonDrawable);
-
 
         ColorStateList dark = getResources().getColorStateList(R.color.dark_mode_tint);
         ColorStateList white = getResources().getColorStateList(R.color.light_mode_tint);
