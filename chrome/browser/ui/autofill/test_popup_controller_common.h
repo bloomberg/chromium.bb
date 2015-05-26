@@ -13,7 +13,8 @@ namespace autofill {
 
 class TestPopupControllerCommon : public PopupControllerCommon {
  public:
-  explicit TestPopupControllerCommon(const gfx::RectF& element_bounds);
+  TestPopupControllerCommon(const gfx::RectF& element_bounds,
+                            base::i18n::TextDirection direction);
   ~TestPopupControllerCommon() override;
 
   void set_display(const gfx::Display& display) { display_ = display; }

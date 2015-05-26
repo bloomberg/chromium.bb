@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_POPUP_CONTROLLER_COMMON_H_
 #define CHROME_BROWSER_UI_AUTOFILL_POPUP_CONTROLLER_COMMON_H_
 
+#include "base/i18n/rtl.h"
 #include "content/public/browser/render_widget_host.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -28,11 +29,13 @@ namespace autofill {
 class PopupControllerCommon {
  public:
   PopupControllerCommon(const gfx::RectF& element_bounds,
+                        base::i18n::TextDirection text_direction,
                         gfx::NativeView container_view,
                         content::WebContents* web_contents);
   virtual ~PopupControllerCommon();
 
   const gfx::RectF& element_bounds() const { return element_bounds_; }
+  bool is_rtl() const { return text_direction_ == base::i18n::RIGHT_TO_LEFT; }
   gfx::NativeView container_view() { return container_view_; }
   content::WebContents* web_contents() { return web_contents_; }
 
@@ -65,8 +68,6 @@ class PopupControllerCommon {
   virtual gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const;
 
  private:
-  // Calculates the width of the popup and the x position of it. These values
-  // will stay on the screen.
   std::pair<int, int> CalculatePopupXAndWidth(
       const gfx::Display& left_display,
       const gfx::Display& right_display,
@@ -82,6 +83,9 @@ class PopupControllerCommon {
   // The bounds of the text element that is the focus of the popup.
   // These coordinates are in screen space.
   gfx::RectF element_bounds_;
+
+  // The direction of the <input>.
+  base::i18n::TextDirection text_direction_;
 
   // Weak reference
   gfx::NativeView container_view_;

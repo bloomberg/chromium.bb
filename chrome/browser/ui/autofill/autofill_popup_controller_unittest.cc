@@ -74,10 +74,14 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   explicit TestAutofillPopupController(
       base::WeakPtr<AutofillExternalDelegate> external_delegate,
       const gfx::RectF& element_bounds)
-      : AutofillPopupControllerImpl(
-            external_delegate, NULL, NULL, element_bounds,
-            base::i18n::UNKNOWN_DIRECTION),
-        test_controller_common_(new TestPopupControllerCommon(element_bounds)) {
+      : AutofillPopupControllerImpl(external_delegate,
+                                    NULL,
+                                    NULL,
+                                    element_bounds,
+                                    base::i18n::UNKNOWN_DIRECTION),
+        test_controller_common_(
+            new TestPopupControllerCommon(element_bounds,
+                                          base::i18n::LEFT_TO_RIGHT)) {
     controller_common_.reset(test_controller_common_);
   }
   ~TestAutofillPopupController() override {}

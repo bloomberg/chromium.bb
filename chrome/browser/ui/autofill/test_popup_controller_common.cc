@@ -7,8 +7,10 @@
 namespace autofill {
 
 TestPopupControllerCommon::TestPopupControllerCommon(
-    const gfx::RectF& element_bounds)
-    : PopupControllerCommon(element_bounds, NULL, NULL) {}
+    const gfx::RectF& element_bounds,
+    base::i18n::TextDirection direction)
+    : PopupControllerCommon(element_bounds, direction, NULL, NULL) {
+}
 TestPopupControllerCommon::~TestPopupControllerCommon() {}
 
 gfx::Display TestPopupControllerCommon::GetDisplayNearestPoint(

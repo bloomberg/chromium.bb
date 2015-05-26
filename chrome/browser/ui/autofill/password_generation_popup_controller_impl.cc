@@ -83,7 +83,11 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
       driver_(driver),
       observer_(observer),
       generator_(new PasswordGenerator(max_length)),
-      controller_common_(bounds, container_view, web_contents),
+      // TODO(estade): use correct text direction.
+      controller_common_(bounds,
+                         base::i18n::LEFT_TO_RIGHT,
+                         container_view,
+                         web_contents),
       password_selected_(false),
       display_password_(false),
       weak_ptr_factory_(this) {

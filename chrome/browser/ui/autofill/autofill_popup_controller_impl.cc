@@ -101,11 +101,11 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction)
     : controller_common_(new PopupControllerCommon(element_bounds,
+                                                   text_direction,
                                                    container_view,
                                                    web_contents)),
       view_(NULL),
       delegate_(delegate),
-      text_direction_(text_direction),
       weak_ptr_factory_(this) {
   ClearState();
   controller_common_->SetKeyPressCallback(
@@ -395,7 +395,7 @@ const gfx::RectF& AutofillPopupControllerImpl::element_bounds() const {
 }
 
 bool AutofillPopupControllerImpl::IsRTL() const {
-  return text_direction_ == base::i18n::RIGHT_TO_LEFT;
+  return controller_common_->is_rtl();
 }
 
 size_t AutofillPopupControllerImpl::GetLineCount() const {
