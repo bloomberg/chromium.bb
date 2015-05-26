@@ -9,7 +9,6 @@
             'V8CustomEventCustom.cpp',
             'V8CustomXPathNSResolver.cpp',
             'V8CustomXPathNSResolver.h',
-            'V8DedicatedWorkerGlobalScopeCustom.cpp',
             'V8DevToolsHostCustom.cpp',
             'V8ErrorEventCustom.cpp',
             'V8EventTargetCustom.cpp',

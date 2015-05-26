@@ -11,7 +11,7 @@ PASS worker.postMessage("notASequence", [{length: 3}]) threw exception TypeError
 PASS successfullyParsed is true
 
 TEST COMPLETE
-PASS postMessage() threw exception: TypeError: Failed to execute 'postMessage' on 'WorkerGlobalScope': 1 argument required, but only 0 present.
+PASS postMessage() threw exception: TypeError: Failed to execute 'postMessage' on 'DedicatedWorkerGlobalScope': 1 argument required, but only 0 present.
 PASS event.ports is non-null and zero length when no port sent
 PASS event.ports is non-null and zero length when empty array sent
 PASS event.ports contains two ports when two ports sent
