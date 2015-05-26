@@ -1128,10 +1128,12 @@ _arm_internal_release_boards = frozenset([
   'veyron_gus',
   'veyron_jaq',
   'veyron_jerry',
+  'veyron_mickey',
   'veyron_mighty',
   'veyron_minnie',
   'veyron_pinky',
   'veyron_rialto',
+  'veyron_romy',
   'veyron_speedy',
   'veyron_thea',
   'whirlwind',
@@ -2517,6 +2519,18 @@ _CONFIG.AddConfig(_release, 'rush_ryu-release',
   hw_tests=[],
 )
 
+_CONFIG.AddConfig(_release, 'veyron_mickey-release',
+  _base_configs['veyron_mickey'],
+  hw_tests=[],
+  vm_tests=[],
+)
+
+_CONFIG.AddConfig(_release, 'veyron_romy-release',
+  _base_configs['veyron_romy'],
+  hw_tests=[],
+  vm_tests=[],
+)
+
 _CONFIG.AddConfig(_release, 'whirlwind-release',
   _base_configs['whirlwind'],
   important=True,
@@ -2727,6 +2741,12 @@ _AddGroupConfig('veyron-b', 'veyron_gus', (
 _AddGroupConfig('veyron-c', 'veyron_brain', (
     'veyron_danger',
     'veyron_thea',
+    ),
+    important=False,
+)
+
+_AddGroupConfig('veyron-d', 'veyron_mickey', (
+    'veyron_romy',
     ),
     important=False,
 )
@@ -3056,6 +3076,7 @@ _waterfall_config_map = {
       'strago-release-group',
       'veyron-b-release-group',
       'veyron-c-release-group',
+      'veyron-d-release-group',
 
       # Experimental Canaries
       'bobcat-release',
