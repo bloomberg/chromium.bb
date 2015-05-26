@@ -1872,8 +1872,7 @@ class SimpleFinalizedEagerObjectBase : public GarbageCollectedFinalized<SimpleFi
 public:
     virtual ~SimpleFinalizedEagerObjectBase() { }
     DEFINE_INLINE_TRACE() { }
-
-    EAGERLY_SWEEP();
+    EAGERLY_FINALIZE();
 protected:
     SimpleFinalizedEagerObjectBase() { }
 };
@@ -1898,7 +1897,7 @@ private:
 template<typename T>
 class ParameterizedButEmpty {
 public:
-    EAGERLY_SWEEP();
+    EAGERLY_FINALIZE();
 };
 
 class SimpleFinalizedObjectInstanceOfTemplate final : public GarbageCollectedFinalized<SimpleFinalizedObjectInstanceOfTemplate>, public ParameterizedButEmpty<SimpleFinalizedObjectInstanceOfTemplate> {

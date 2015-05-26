@@ -44,9 +44,7 @@ public:
     }
 #endif
 
-    // TODO(Oilpan): remove eager sweeping once LifecycleObserver is
-    // always on the heap.
-    EAGERLY_SWEEP();
+    EAGERLY_FINALIZE_WILL_BE_REMOVED();
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_lifecycleContext);
