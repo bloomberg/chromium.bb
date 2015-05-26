@@ -18,6 +18,11 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import user_db
 
+KEY_ANNOTATIONS_LIST = 'annotations'
+KEY_ANNOTATION_NAME = 'name'
+KEY_ANNOTATION_VALUE = 'value'
+SERVICE_NAME_ANNOTATION_PREFIX = 'bruteus-service-'
+
 KEY_APPS_LIST = 'apps'
 KEY_APP_NAME = 'name'
 KEY_APP_IMAGE = 'image'
@@ -95,6 +100,10 @@ class ContainerSpecWrapper(object):
       else:
         listen_ports.allow_all = False
         listen_ports.ports.extend(ports.port_list)
+
+  def AddServiceName(self, service_name):
+    """Adds the name of an service that'll run inside this container."""
+    self.container_spec.service_names.append(service_name)
 
 
 def _CheckType(instance, expected_type, description):
@@ -198,6 +207,36 @@ class ContainerSpecGenerator(object):
           path_to_binary)
     return True
 
+  def _FillInServiceNamesFromAnnotations(self, wrapper, annotations):
+    """Fill in the ContainerSpec service_names field from |annotations|.
+
+    An appc pod specification can contain a list of (mostly) arbitrary
+    annotations that projects can use to add their own metadata fields.
+    |annotations| is a list of dicts that each contain a name and value field,
+    and this method looks for 'name' fields that are prefixed with
+    SERVICE_NAME_ANNOTATION_PREFIX and treats the associated 'value' as the
+    name of an service that psyched will expect to be registered from within
+    this sandbox.
+
+    Args:
+      wrapper: instance of ContainerSpecWrapper.
+      annotations: list of dicts, each with a name and value field.
+    """
+    for annotation in annotations:
+      _CheckType(annotation, dict, 'a single annotation')
+      name = _GetValueOfType(annotation, KEY_ANNOTATION_NAME, unicode,
+                             'annotation name')
+      if not IsValidAcName(name):
+        raise ValueError('Annotation name "%s" contains illegal characters.' %
+                         name)
+      if name.startswith(SERVICE_NAME_ANNOTATION_PREFIX):
+        service_name = _GetValueOfType(annotation, KEY_ANNOTATION_VALUE,
+                                       unicode, 'service name value')
+        if not IsValidAcName(name):
+          raise ValueError('Service name "%s" contains illegal characters.' %
+                           service_name)
+        wrapper.AddServiceName(service_name)
+
   def _FillInExecutableFromApp(self, wrapper, app):
     """Fill in the fields of a ContainerSpec.Executable object from |app|.
 
@@ -272,6 +311,10 @@ class ContainerSpecGenerator(object):
     if not service_bundle_name:
       raise ValueError('Service bundles must declare at least one app')
 
+    self._FillInServiceNamesFromAnnotations(
+        wrapper,
+        _GetValueOfType(appc_contents, KEY_ANNOTATIONS_LIST, list,
+                        'list of all annotations'))
     wrapper.SetName(container_spec_name)
     return wrapper.container_spec
 

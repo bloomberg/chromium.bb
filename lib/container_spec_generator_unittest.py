@@ -22,6 +22,8 @@ CONTAINER_NAME = 'container-name'
 SIMPLE_MANIFEST_IMAGE_NAME = u'image-name'
 SIMPLE_MANIFEST_TCP_PORT = 4000
 SIMPLE_MANIFEST_EXEC_VALUE = [u'/bin/true', u'--quiet']
+SIMPLE_MANIFEST_SERVICE_NAME1 = u'com.foo.yay'
+SIMPLE_MANIFEST_SERVICE_NAME2 = u'com.foo.boo'
 
 # Calls to set information in the wrapper that corresponds to SIMPLE_MANIFEST.
 SIMPLE_MANIFEST_MOCK_WRAPPER_CALLS = [
@@ -30,6 +32,8 @@ SIMPLE_MANIFEST_MOCK_WRAPPER_CALLS = [
         SIMPLE_MANIFEST_EXEC_VALUE,
         container_spec_generator.PortSpec(False, [SIMPLE_MANIFEST_TCP_PORT]),
         container_spec_generator.PortSpec(False, [])),
+    mock.call.AddServiceName(SIMPLE_MANIFEST_SERVICE_NAME1),
+    mock.call.AddServiceName(SIMPLE_MANIFEST_SERVICE_NAME2),
     mock.call.SetName(CONTAINER_NAME),
 ]
 
@@ -56,6 +60,16 @@ SIMPLE_MANIFEST = {
             },
         },
     ],
+    'annotations': [
+        {
+            'name': u'bruteus-service-0',
+            'value': SIMPLE_MANIFEST_SERVICE_NAME1
+        },
+        {
+            'name': u'bruteus-service-1',
+            'value': SIMPLE_MANIFEST_SERVICE_NAME2
+        }
+    ]
 }
 
 
