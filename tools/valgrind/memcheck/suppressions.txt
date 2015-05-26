@@ -1353,12 +1353,6 @@
    fun:*base*PlatformThread*SetName*
 }
 {
-   bug_111669
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8appcache17AppCacheDiskCache10ActiveCall17OnAsyncCompletionEi
-}
-{
    bug_112278
    Memcheck:Uninitialized
    fun:fetch_texel_2d_f_rgba8888
