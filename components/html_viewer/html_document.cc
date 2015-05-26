@@ -223,22 +223,16 @@ void HTMLDocument::initializeLayerTreeView() {
     return;
   }
 
-  ServiceProviderPtr surfaces_service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:surfaces_service");
-  shell_->ConnectToApplication(request.Pass(),
-                               GetProxy(&surfaces_service_provider), nullptr);
   mojo::SurfacePtr surface;
-  ConnectToService(surfaces_service_provider.get(), &surface);
+  setup_->app()->ConnectToService(request.Pass(), &surface);
 
-  ServiceProviderPtr gpu_service_provider;
   // TODO(jamesr): Should be mojo:gpu_service
   mojo::URLRequestPtr request2(mojo::URLRequest::New());
   request2->url = mojo::String::From("mojo:view_manager");
-  shell_->ConnectToApplication(request2.Pass(),
-                               GetProxy(&gpu_service_provider), nullptr);
   mojo::GpuPtr gpu_service;
-  ConnectToService(gpu_service_provider.get(), &gpu_service);
+  setup_->app()->ConnectToService(request2.Pass(), &gpu_service);
   web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
       setup_->compositor_thread(), surface.Pass(), gpu_service.Pass()));
 }

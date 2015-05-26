@@ -46,7 +46,6 @@ namespace html_viewer {
 class AxProviderImpl;
 class Setup;
 class WebLayerTreeViewImpl;
-class WebMediaPlayerFactory;
 
 // A view for a single HTML document.
 class HTMLDocument : public blink::WebViewClient,
@@ -153,7 +152,6 @@ class HTMLDocument : public blink::WebViewClient,
   mojo::ViewManagerClientFactory view_manager_client_factory_;
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
   scoped_refptr<base::MessageLoopProxy> compositor_thread_;
-  WebMediaPlayerFactory* web_media_player_factory_;
 
   // EncryptedMediaClient attached to this frame; lazily initialized.
   scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
