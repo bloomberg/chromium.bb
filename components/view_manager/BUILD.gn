@@ -66,6 +66,8 @@ if (is_android) {
       "//ui/events/platform",
       "//ui/gl",
     ]
+
+    data_deps = [ "//components/view_manager/surfaces" ]
   }
 }
 

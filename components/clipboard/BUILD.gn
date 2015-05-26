@@ -47,5 +47,5 @@ mojo_native_application("apptests") {
     "//mojo/application/public/cpp:test_support",
   ]
 
-  data_deps = [ ":clipboard($default_toolchain)" ]
+  data_deps = [ ":clipboard" ]
 }
