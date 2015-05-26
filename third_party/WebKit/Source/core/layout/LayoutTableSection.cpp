@@ -723,8 +723,14 @@ int LayoutTableSection::calcRowLogicalHeight()
         m_grid[r].baseline = -1;
         LayoutUnit baselineDescent = 0;
 
-        // Our base size is the biggest logical height from our cells' styles (excluding row spanning cells).
-        m_rowPos[r + 1] = std::max(m_rowPos[r] + minimumValueForLength(m_grid[r].logicalHeight, 0).round(), 0);
+        if (m_grid[r].logicalHeight.isSpecified()) {
+            // Our base size is the biggest logical height from our cells' styles (excluding row spanning cells).
+            m_rowPos[r + 1] = std::max(m_rowPos[r] + minimumValueForLength(m_grid[r].logicalHeight, 0).round(), 0);
+        } else {
+            // Non-specified lengths are ignored because the row already accounts for the cells
+            // intrinsic logical height.
+            m_rowPos[r + 1] = std::max(m_rowPos[r], 0);
+        }
 
         Row& row = m_grid[r].row;
         unsigned totalCols = row.size();
