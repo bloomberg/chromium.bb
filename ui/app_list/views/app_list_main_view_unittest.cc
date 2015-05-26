@@ -358,6 +358,14 @@ TEST_F(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
   // Single item folder should be auto removed.
   EXPECT_EQ(NULL,
             delegate_->GetTestModel()->FindFolderItem("single_item_folder"));
+
+  // Ensure keyboard selection works on the root grid view after a reparent.
+  // This is a regression test for https://crbug.com/466058.
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RIGHT, ui::EF_NONE);
+  GetContentsView()->apps_container_view()->OnKeyPressed(key_event);
+
+  EXPECT_TRUE(RootGridView()->has_selected_view());
+  EXPECT_FALSE(FolderGridView()->has_selected_view());
 }
 
 // Tests dragging an item out of a single item folder and dropping it onto the

@@ -108,6 +108,11 @@ bool AppsContainerView::IsInFolderView() const {
   return show_state_ == SHOW_ACTIVE_FOLDER;
 }
 
+void AppsContainerView::ReparentDragEnded() {
+  DCHECK_EQ(SHOW_ITEM_REPARENT, show_state_);
+  show_state_ = AppsContainerView::SHOW_APPS;
+}
+
 gfx::Size AppsContainerView::GetPreferredSize() const {
   const gfx::Size grid_size = apps_grid_view_->GetPreferredSize();
   const gfx::Size folder_view_size = app_list_folder_view_->GetPreferredSize();

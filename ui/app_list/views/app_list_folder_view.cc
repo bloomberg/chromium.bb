@@ -298,6 +298,7 @@ void AppListFolderView::DispatchEndDragEventForReparent(
     bool cancel_drag) {
   container_view_->apps_grid_view()->EndDragFromReparentItemInRootLevel(
       events_forwarded_to_drag_drop_host, cancel_drag);
+  container_view_->ReparentDragEnded();
 }
 
 void AppListFolderView::HideViewImmediately() {

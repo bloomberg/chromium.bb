@@ -60,6 +60,9 @@ class AppsContainerView : public AppListPage, public TopIconAnimationObserver {
   // Returns true if it is currently showing an active folder page.
   bool IsInFolderView() const;
 
+  // Called to notify the AppsContainerView that a reparent drag has completed.
+  void ReparentDragEnded();
+
   // views::View overrides:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
