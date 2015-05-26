@@ -8,6 +8,7 @@
 #include <mferror.h>
 
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -16,7 +17,6 @@
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "media/base/media_switches.h"
-#include "media/base/win/mf_initializer.h"
 #include "media/video/capture/win/video_capture_device_mf_win.h"
 #include "media/video/capture/win/video_capture_device_win.h"
 
@@ -39,6 +39,16 @@ enum BlacklistedCameraNames {
   BLACKLISTED_CAMERA_MAX = BLACKLISTED_CAMERA_CYBERLINK_WEBCAM_SPLITTER
 };
 
+// Lazy Instance to initialize the MediaFoundation Library.
+class MFInitializerSingleton {
+ public:
+  MFInitializerSingleton() { MFStartup(MF_VERSION, MFSTARTUP_LITE); }
+  ~MFInitializerSingleton() { MFShutdown(); }
+};
+
+static base::LazyInstance<MFInitializerSingleton> g_mf_initialize =
+    LAZY_INSTANCE_INITIALIZER;
+
 // Blacklisted devices are identified by a characteristic prefix of the name.
 // This prefix is used case-insensitively. This list must be kept in sync with
 // |BlacklistedCameraNames|.
@@ -49,6 +59,10 @@ static const char* const kBlacklistedCameraNames[] = {
   "IP Camera [JPEG/MJPEG]",
   "CyberLink Webcam Splitter",
 };
+
+static void EnsureMediaFoundationInit() {
+  g_mf_initialize.Get();
+}
 
 static bool LoadMediaFoundationDlls() {
   static const wchar_t* const kMfDLLs[] = {
@@ -69,7 +83,7 @@ static bool LoadMediaFoundationDlls() {
 static bool PrepareVideoCaptureAttributesMediaFoundation(
     IMFAttributes** attributes,
     int count) {
-  InitializeMediaFoundation();
+  EnsureMediaFoundationInit();
 
   if (FAILED(MFCreateAttributes(attributes, count)))
     return false;
