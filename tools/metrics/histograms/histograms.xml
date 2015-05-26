@@ -52393,7 +52393,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="556" label="ECHOPRIVATE_SETOFFERINFO"/>
   <int value="557" label="ECHOPRIVATE_GETOFFERINFO"/>
   <int value="558" label="DEVELOPERPRIVATE_ISPROFILEMANAGED"/>
-  <int value="559" label="FILEMANAGERPRIVATE_INSTALLWEBSTOREITEM"/>
+  <int value="559" label="DELETED_FILEMANAGERPRIVATE_INSTALLWEBSTOREITEM"/>
   <int value="560" label="FILEMANAGERPRIVATE_STARTCOPY"/>
   <int value="561" label="FILEMANAGERPRIVATE_CANCELCOPY"/>
   <int value="562" label="NETWORKINGPRIVATE_CREATENETWORK"/>

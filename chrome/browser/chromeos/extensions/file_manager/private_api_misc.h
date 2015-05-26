@@ -101,20 +101,6 @@ class FileManagerPrivateZoomFunction : public ChromeSyncExtensionFunction {
   bool RunSync() override;
 };
 
-// Implements the chrome.fileManagerPrivate.installWebstoreItem method.
-class FileManagerPrivateInstallWebstoreItemFunction
-    : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.installWebstoreItem",
-                             FILEMANAGERPRIVATE_INSTALLWEBSTOREITEM);
-
- protected:
-  ~FileManagerPrivateInstallWebstoreItemFunction() override {}
-
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
-};
-
 class FileManagerPrivateRequestWebStoreAccessTokenFunction
     : public LoggedAsyncExtensionFunction {
  public:

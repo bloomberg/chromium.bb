@@ -249,15 +249,6 @@ bool FileManagerPrivateZoomFunction::RunSync() {
   return true;
 }
 
-bool FileManagerPrivateInstallWebstoreItemFunction::RunAsync() {
-  using extensions::api::file_manager_private::InstallWebstoreItem::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  SetError("Deleted, use chrome.webstoreWidgetPrivate API instead.");
-  return false;
-}
-
 FileManagerPrivateRequestWebStoreAccessTokenFunction::
     FileManagerPrivateRequestWebStoreAccessTokenFunction() {
 }
