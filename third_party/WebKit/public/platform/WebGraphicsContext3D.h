@@ -401,10 +401,6 @@ public:
     virtual void copySubTextureCHROMIUM(WGC3Denum target, WGC3Duint sourceId,
         WGC3Duint destId, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint x,
         WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
-    // TODO(reveman): Remove method without |x|, |y|, |width|, |height|.
-    // crbug.com/490889
-    virtual void copySubTextureCHROMIUM(WGC3Denum target, WGC3Duint sourceId,
-        WGC3Duint destId, WGC3Dint xoffset, WGC3Dint yoffset) { }
 
     // GL_CHROMIUM_shallow_flush
     virtual void shallowFlushCHROMIUM() { }
