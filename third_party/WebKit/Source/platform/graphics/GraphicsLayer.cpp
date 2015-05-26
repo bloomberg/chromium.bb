@@ -701,11 +701,12 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
             json->setBoolean("hasClipParent", true);
     }
 
-    if (flags & LayerTreeIncludesDebugInfo) {
+    if (flags & (LayerTreeIncludesDebugInfo | LayerTreeIncludesCompositingReasons)) {
+        bool debug = flags & LayerTreeIncludesDebugInfo;
         RefPtr<JSONArray> compositingReasonsJSON = adoptRef(new JSONArray);
         for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
             if (m_debugInfo.compositingReasons() & kCompositingReasonStringMap[i].reason)
-                compositingReasonsJSON->pushString(kCompositingReasonStringMap[i].description);
+                compositingReasonsJSON->pushString(debug ? kCompositingReasonStringMap[i].description : kCompositingReasonStringMap[i].shortName);
         }
         json->setArray("compositingReasons", compositingReasonsJSON);
     }
