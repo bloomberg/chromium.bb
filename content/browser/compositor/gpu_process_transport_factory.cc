@@ -453,7 +453,8 @@ scoped_ptr<cc::SurfaceIdAllocator>
 GpuProcessTransportFactory::CreateSurfaceIdAllocator() {
   scoped_ptr<cc::SurfaceIdAllocator> allocator =
       make_scoped_ptr(new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
-  allocator->RegisterSurfaceIdNamespace(GetSurfaceManager());
+  if (GetSurfaceManager())
+    allocator->RegisterSurfaceIdNamespace(GetSurfaceManager());
   return allocator;
 }
 
