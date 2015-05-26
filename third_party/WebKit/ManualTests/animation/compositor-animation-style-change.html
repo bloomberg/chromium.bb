@@ -81,14 +81,14 @@ setTimeout(function() {
 }, 2000);
 
 setTimeout(function() {
-    var animation = new Animation(test2_reattach, reverseTranslateKeyframes,
-        5000);
+    var animation = new KeyframeEffect(test2_reattach,
+        reverseTranslateKeyframes, 5000);
     player2_reattach.source = animation;
 }, 3000);
 
 setTimeout(function() {
-    var animation = new Animation(test2_target, reverseTranslateKeyframes,
-        5000);
+    var animation = new KeyframeEffect(test2_target,
+        reverseTranslateKeyframes, 5000);
     player2_reattach.source = animation;
 }, 4000);
 
