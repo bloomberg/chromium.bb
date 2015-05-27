@@ -750,12 +750,10 @@ def append_useflags(useflags):
 
 # Arch-specific mixins.
 
-# Config parameters for builders that do not run tests on the builder. Anything
-# non-x86 tests will fall under this category.
-non_testable_builder = config_lib.BuildConfig(
+# Config parameters for builders that do not run tests on the builder.
+no_unittest_builder = config_lib.BuildConfig(
   tests_supported=False,
   unittests=False,
-  vm_tests=[],
 )
 
 
@@ -887,7 +885,7 @@ _project_sdk_boards = frozenset([
     'gizmo',
 ])
 
-beaglebone = brillo.derive(non_testable_builder, rootfs_verification=False)
+beaglebone = brillo.derive(rootfs_verification=False)
 
 # This adds Chrome branding.
 official_chrome = config_lib.BuildConfig(
@@ -1264,14 +1262,12 @@ _base_layout_boards = frozenset([
     'lakitu',
 ])
 
-_testable_boards = _x86_boards | frozenset((
-    'storm',
-    'whirlwind',
+_no_unittest_boards = frozenset((
 ))
 
 # TODO(akeshet): Temporary workaround to vmtest failing on strage-pre-cq, to
 # allow already-screened changes to work through the pipeline.
-_no_vmtest_boards = frozenset((
+_no_vmtest_boards = _arm_boards | _mips_boards | frozenset((
     'strago',
 ))
 
@@ -1285,8 +1281,6 @@ def _CreateBaseConfigs():
       base.update(internal)
       base.update(official_chrome)
       base.update(manifest=constants.OFFICIAL_MANIFEST)
-    if board not in _testable_boards:
-      base.update(non_testable_builder)
     if board in _brillo_boards:
       base.update(brillo)
     if board in _moblab_boards:
@@ -1307,6 +1301,8 @@ def _CreateBaseConfigs():
       base.update(rootfs_verification=False)
     if board in _base_layout_boards:
       base.update(disk_layout='base')
+    if board in _no_unittest_boards:
+      base.update(no_unittest_builder)
     if board in _no_vmtest_boards:
       base.update(vm_tests=[])
 
@@ -1562,7 +1558,7 @@ _CONFIG.AddConfig(chromium_info, 'x86-generic-tot-chrome-pfq-informational',
 
 chromium_info_daisy = \
 _CONFIG.AddConfig(chromium_info, 'daisy-tot-chrome-pfq-informational',
-  non_testable_builder,
+  vm_tests=[],
   boards=['daisy'],
 )
 
@@ -2198,10 +2194,12 @@ release_afdo = _release.derive(
 # want to measure performance changes caused by their changes.
 def _AddAFDOConfigs():
   for board in _all_release_boards:
-    if board in _x86_release_boards:
-      base = {}
-    else:
-      base = non_testable_builder
+    base = {}
+    if board in _no_unittest_boards:
+      base.update(no_unittest_builder)
+    if board in _no_vmtest_boards:
+      base.update(vm_tests=[])
+
     generate_config = config_lib.BuildConfig(
         base,
         boards=[board],
@@ -2832,17 +2830,10 @@ def _AddFirmwareConfigs():
 _AddFirmwareConfigs()
 
 
-# This is an example factory branch configuration for x86.
+# This is an example factory branch configuration.
 # Modify it to match your factory branch.
 _CONFIG.AddConfig(_factory_release, 'x86-mario-factory',
   boards=['x86-mario'],
-)
-
-# This is an example factory branch configuration for arm.
-# Modify it to match your factory branch.
-_CONFIG.AddConfig(_factory_release, 'daisy-factory',
-  non_testable_builder,
-  boards=['daisy'],
 )
 
 _payloads = internal.derive(
