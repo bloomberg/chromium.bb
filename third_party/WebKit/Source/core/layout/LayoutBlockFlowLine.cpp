@@ -1545,6 +1545,9 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
             if (!layoutState.hasInlineChild() && o->isInline())
                 layoutState.setHasInlineChild(true);
 
+            if (o->isBR() && o->style()->clear() != CNONE)
+                layoutState.setContainsBRWithClear(true);
+
             if (o->isReplaced() || o->isFloating() || o->isOutOfFlowPositioned()) {
                 LayoutBox* box = toLayoutBox(o);
 
@@ -1832,6 +1835,12 @@ bool LayoutBlockFlow::matchedEndLine(LineLayoutState& layoutState, const InlineB
 {
     if (resolver.position() == endLineStart) {
         if (resolver.status() != endLineStatus)
+            return false;
+
+        // A trailing BR can be collapsed as it usually doesn't contribute to the height,
+        // but if it has a clear style we need to force it to layout in the context of floats
+        // to honor that style.
+        if (layoutState.containsBRWithClear() && containsFloats())
             return false;
         return checkPaginationAndFloatsAtEndLine(layoutState);
     }
