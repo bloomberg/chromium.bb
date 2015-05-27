@@ -395,3 +395,12 @@ class SmoothnessToughAnimatedImageCases(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'smoothness.tough_animated_image_cases'
+
+
+class SmoothnessToughTextureUploadCases(perf_benchmark.PerfBenchmark):
+  test = smoothness.Smoothness
+  page_set = page_sets.ToughTextureUploadCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.tough_texture_upload_cases'
