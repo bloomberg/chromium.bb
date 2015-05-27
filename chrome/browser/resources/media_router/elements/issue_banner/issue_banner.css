@@ -8,20 +8,24 @@
   color: white;
 }
 
-.blocking-issue-header {
+#blocking-issue-buttons {
+  display: flex;
+}
+
+#blocking-issue-header {
   display: flex;
   overflow: hidden;
   padding-top: 10px;
 }
 
-.blocking-issue-message {
+#blocking-issue-message {
   -webkit-padding-start: 8px;
   color: rgb(125, 125, 125);
   line-height: 1.125em;
   vertical-align: middle;
 }
 
-.blocking-issue-title {
+#blocking-issue-title {
   -webkit-padding-start: 8px;
   font-weight: bold;
   line-height: 1.125em;
@@ -34,11 +38,7 @@
   text-decoration: underline;
 }
 
-#issue-buttons {
-  display: flex;
-}
-
-.non-blocking-issue {
+#non-blocking-issue {
   -webkit-padding-start: 12px;
   background-color: rgb(249, 236, 191);
   line-height: 1.25em;
@@ -46,7 +46,7 @@
   padding-top: 6px;
 }
 
-.sad-face {
+#sad-face {
   -webkit-margin-start: 20px;
   background-image: -webkit-image-set(
     url(../icon/sad-face.png) 1x,

@@ -4,31 +4,81 @@
 
 // This Polymer element is used to show information about issues related
 // to casting.
-Polymer('issue-banner', {
-  publish: {
+Polymer({
+  is: 'issue-banner',
+
+  properties: {
     /**
      * The issue to show.
-     *
-     * @attribute issue
-     * @type {media_router.Issue}
-     * @default null
+     * @type {?media_router.Issue}
      */
-    issue: null,
+    issue: {
+      type: Object,
+      value: null,
+    },
   },
 
   /**
-   * Fires an issue-action-click event. This is called when an issue action
-   * is clicked.
+   * Returns true to hide the blocking issue UI, false to show it.
    *
-   * @param {!Event} event The event object.
-   * @param {Object} detail The details of the event.
-   * @param {!Element} sender Reference to clicked node.
+   * @param {?media_router.Issue} issue
+   * @private
    */
-  onClickAction: function(event, detail, sender) {
+  computeIsBlockingIssueHidden_: function(issue) {
+    return !issue || !issue.isBlocking;
+  },
+
+  /**
+   * Returns true to hide the non-blocking issue UI, false to show it.
+   *
+   * @param {?media_router.Issue} issue
+   * @private
+   */
+  computeIsNonBlockingIssueHidden_: function(issue) {
+    return !issue || issue.isBlocking;
+  },
+
+  /**
+   * Returns true to hide |issue|'s optional action, false to show it.
+   *
+   * @param {?media_router.Issue} issue
+   * @private
+   */
+  computeOptionalActionHidden_: function(issue) {
+    return !issue || !issue.optActionText;
+  },
+
+  /**
+   * Fires an issue-action-click event.
+   *
+   * @param {number} actionType The type of issue action.
+   * @private
+   */
+  fireIssueActionClick_: function(actionType) {
     this.fire('issue-action-click', {
       id: this.issue.id,
-      actionType: parseInt(sender.title),
-      helpURL: this.issue.helpURL
+      actionType: actionType,
+      helpURL: this.issue.helpURL,
     });
+  },
+
+  /**
+   * Called when a default issue action is clicked.
+   *
+   * @param {!Event} event The event object.
+   * @private
+   */
+  onClickDefaultAction_: function(event) {
+    this.fireIssueActionClick_(this.issue.defaultActionType);
+  },
+
+  /**
+   * Called when an optional issue action is clicked.
+   *
+   * @param {!Event} event The event object.
+   * @private
+   */
+  onClickOptAction_: function(event) {
+    this.fireIssueActionClick_(this.issue.optActionType);
   },
 });
