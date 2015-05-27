@@ -29,6 +29,13 @@ public:
         return nullptr;
     }
 
+    // Removes all the WebMemoryAllocatorDump(s) contained in this instance.
+    // This WebProcessMemoryDump can be safely reused as if it was new once this
+    // method returns.
+    virtual void clear()
+    {
+    }
+
     // Merges all WebMemoryAllocatorDump(s) contained in |other| inside this
     // WebProcessMemoryDump, transferring their ownership to this instance.
     // |other| will be an empty WebProcessMemoryDump after this method returns

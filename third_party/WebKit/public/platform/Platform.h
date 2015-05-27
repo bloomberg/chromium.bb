@@ -575,7 +575,7 @@ public:
     // Must be called on the thread that called registerMemoryDumpProvider().
     virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*) { }
 
-    // Returns a newly allocated WebprocessMemoryDump instance.
+    // Returns a newly allocated WebProcessMemoryDump instance.
     virtual blink::WebProcessMemoryDump* createProcessMemoryDump() { return nullptr; }
 
     // GPU ----------------------------------------------------------------
