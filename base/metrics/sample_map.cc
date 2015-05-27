@@ -57,7 +57,9 @@ bool SampleMap::AddSubtractImpl(SampleCountIterator* iter,
 
 SampleMapIterator::SampleMapIterator(const SampleToCountMap& sample_counts)
     : iter_(sample_counts.begin()),
-      end_(sample_counts.end()) {}
+      end_(sample_counts.end()) {
+  SkipEmptyBuckets();
+}
 
 SampleMapIterator::~SampleMapIterator() {}
 
@@ -67,7 +69,8 @@ bool SampleMapIterator::Done() const {
 
 void SampleMapIterator::Next() {
   DCHECK(!Done());
-  iter_++;
+  ++iter_;
+  SkipEmptyBuckets();
 }
 
 void SampleMapIterator::Get(Sample* min, Sample* max, Count* count) const {
@@ -78,6 +81,12 @@ void SampleMapIterator::Get(Sample* min, Sample* max, Count* count) const {
     *max = iter_->first + 1;
   if (count != NULL)
     *count = iter_->second;
+}
+
+void SampleMapIterator::SkipEmptyBuckets() {
+  while (!Done() && iter_->second == 0) {
+    ++iter_;
+  }
 }
 
 }  // namespace base

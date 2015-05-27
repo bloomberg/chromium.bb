@@ -87,10 +87,43 @@ TEST(SampleMapIteratorTest, IterateTest) {
   EXPECT_EQ(-300, count);
 
   it->Next();
+  EXPECT_TRUE(it->Done());
+}
+
+TEST(SampleMapIteratorTest, SkipEmptyRanges) {
+  SampleMap samples;
+  samples.Accumulate(5, 1);
+  samples.Accumulate(10, 2);
+  samples.Accumulate(15, 3);
+  samples.Accumulate(20, 4);
+  samples.Accumulate(25, 5);
+
+  SampleMap samples2;
+  samples2.Accumulate(5, 1);
+  samples2.Accumulate(20, 4);
+  samples2.Accumulate(25, 5);
+
+  samples.Subtract(samples2);
+
+  scoped_ptr<SampleCountIterator> it = samples.Iterator();
+  EXPECT_FALSE(it->Done());
+
+  HistogramBase::Sample min;
+  HistogramBase::Sample max;
+  HistogramBase::Count count;
+
   it->Get(&min, &max, &count);
-  EXPECT_EQ(5, min);
-  EXPECT_EQ(6, max);
-  EXPECT_EQ(0, count);
+  EXPECT_EQ(10, min);
+  EXPECT_EQ(11, max);
+  EXPECT_EQ(2, count);
+
+  it->Next();
+  EXPECT_FALSE(it->Done());
+
+  it->Get(&min, &max, &count);
+  EXPECT_EQ(15, min);
+  EXPECT_EQ(16, max);
+  EXPECT_EQ(3, count);
 
   it->Next();
   EXPECT_TRUE(it->Done());
