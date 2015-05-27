@@ -31,11 +31,6 @@ SVGTextChunkBuilder::SVGTextChunkBuilder()
 {
 }
 
-AffineTransform SVGTextChunkBuilder::transformationForTextBox(SVGInlineTextBox* textBox) const
-{
-    return m_textBoxTransformations.get(textBox);
-}
-
 void SVGTextChunkBuilder::buildTextChunks(Vector<SVGInlineTextBox*>& lineLayoutBoxes)
 {
     if (lineLayoutBoxes.isEmpty())
@@ -250,6 +245,20 @@ void SVGTextChunkBuilder::processTextAnchorCorrection(bool isVerticalText, float
             fragment.y += textAnchorShift;
         else
             fragment.x += textAnchorShift;
+    }
+}
+
+void SVGTextChunkBuilder::finalizeTransformMatrices(const Vector<SVGInlineTextBox*>& boxes) const
+{
+    for (SVGInlineTextBox* textBox : boxes) {
+        AffineTransform textBoxTransformation = m_textBoxTransformations.get(textBox);
+        if (textBoxTransformation.isIdentity())
+            continue;
+
+        for (SVGTextFragment& fragment : textBox->textFragments()) {
+            ASSERT(fragment.lengthAdjustTransform.isIdentity());
+            fragment.lengthAdjustTransform = textBoxTransformation;
+        }
     }
 }
 

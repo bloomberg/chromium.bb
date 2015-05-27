@@ -22,15 +22,13 @@
 
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGTextPath.h"
+#include "core/layout/svg/SVGTextChunkBuilder.h"
 #include "core/layout/svg/SVGTextLayoutEngineBaseline.h"
 #include "core/layout/svg/SVGTextLayoutEngineSpacing.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGTextContentElement.h"
-
-// Set to a value > 0 to dump the text fragments
-#define DUMP_TEXT_FRAGMENTS 0
 
 namespace blink {
 
@@ -182,8 +180,9 @@ void SVGTextLayoutEngine::beginTextPathLayout(LayoutObject* object, SVGTextLayou
     float totalLength = 0;
     unsigned totalCharacters = 0;
 
-    lineLayout.m_chunkLayoutBuilder.buildTextChunks(lineLayout.m_lineLayoutBoxes);
-    const Vector<SVGTextChunk>& textChunks = lineLayout.m_chunkLayoutBuilder.textChunks();
+    SVGTextChunkBuilder textPathChunkLayoutBuilder;
+    textPathChunkLayoutBuilder.buildTextChunks(lineLayout.m_lineLayoutBoxes);
+    const Vector<SVGTextChunk>& textChunks = textPathChunkLayoutBuilder.textChunks();
 
     unsigned size = textChunks.size();
     for (unsigned i = 0; i < size; ++i) {
@@ -259,78 +258,22 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox)
     m_lineLayoutBoxes.append(textBox);
 }
 
-#if DUMP_TEXT_FRAGMENTS > 0
-static inline void dumpTextBoxes(Vector<SVGInlineTextBox*>& boxes)
-{
-    unsigned boxCount = boxes.size();
-    fprintf(stderr, "Dumping all text fragments in text sub tree, %i boxes\n", boxCount);
-
-    for (unsigned boxPosition = 0; boxPosition < boxCount; ++boxPosition) {
-        SVGInlineTextBox* textBox = boxes.at(boxPosition);
-        Vector<SVGTextFragment>& fragments = textBox->textFragments();
-        fprintf(stderr, "-> Box %i: Dumping text fragments for SVGInlineTextBox, textBox=%p, textLayoutObject=%p\n", boxPosition, textBox, textBox->textLayoutObject());
-        fprintf(stderr, "        textBox properties, start=%i, len=%i, box direction=%i\n", textBox->start(), textBox->len(), textBox->direction());
-        fprintf(stderr, "   textLayoutObject properties, textLength=%i\n", textBox->textLayoutObject()->textLength());
-
-        String characters = textBox->textLayoutObject()->text();
-
-        unsigned fragmentCount = fragments.size();
-        for (unsigned i = 0; i < fragmentCount; ++i) {
-            SVGTextFragment& fragment = fragments.at(i);
-            String fragmentString = characters.substring(fragment.characterOffset, fragment.length);
-            fprintf(stderr, "    -> Fragment %i, x=%lf, y=%lf, width=%lf, height=%lf, characterOffset=%i, length=%i, characters='%s'\n",
-                i, fragment.x, fragment.y, fragment.width, fragment.height, fragment.characterOffset, fragment.length, fragmentString.utf8().data());
-        }
-    }
-}
-#endif
-
-void SVGTextLayoutEngine::finalizeTransformMatrices(Vector<SVGInlineTextBox*>& boxes)
-{
-    unsigned boxCount = boxes.size();
-    if (!boxCount)
-        return;
-
-    for (unsigned boxPosition = 0; boxPosition < boxCount; ++boxPosition) {
-        SVGInlineTextBox* textBox = boxes.at(boxPosition);
-        AffineTransform textBoxTransformation = m_chunkLayoutBuilder.transformationForTextBox(textBox);
-        if (textBoxTransformation.isIdentity())
-            continue;
-
-        Vector<SVGTextFragment>& fragments = textBox->textFragments();
-        unsigned fragmentCount = fragments.size();
-        for (unsigned i = 0; i < fragmentCount; ++i) {
-            ASSERT(fragments[i].lengthAdjustTransform.isIdentity());
-            fragments[i].lengthAdjustTransform = textBoxTransformation;
-        }
-    }
-
-    boxes.clear();
-}
-
 void SVGTextLayoutEngine::finishLayout()
 {
     // After all text fragments are stored in their correpsonding SVGInlineTextBoxes, we can layout individual text chunks.
     // Chunk layouting is only performed for line layout boxes, not for path layout, where it has already been done.
-    m_chunkLayoutBuilder.layoutTextChunks(m_lineLayoutBoxes);
+    SVGTextChunkBuilder chunkLayoutBuilder;
+    chunkLayoutBuilder.layoutTextChunks(m_lineLayoutBoxes);
 
     // Finalize transform matrices, after the chunk layout corrections have been applied, and all fragment x/y positions are finalized.
     if (!m_lineLayoutBoxes.isEmpty()) {
-#if DUMP_TEXT_FRAGMENTS > 0
-        fprintf(stderr, "Line layout: ");
-        dumpTextBoxes(m_lineLayoutBoxes);
-#endif
-
-        finalizeTransformMatrices(m_lineLayoutBoxes);
+        chunkLayoutBuilder.finalizeTransformMatrices(m_lineLayoutBoxes);
+        m_lineLayoutBoxes.clear();
     }
 
     if (!m_pathLayoutBoxes.isEmpty()) {
-#if DUMP_TEXT_FRAGMENTS > 0
-        fprintf(stderr, "Path layout: ");
-        dumpTextBoxes(m_pathLayoutBoxes);
-#endif
-
-        finalizeTransformMatrices(m_pathLayoutBoxes);
+        chunkLayoutBuilder.finalizeTransformMatrices(m_pathLayoutBoxes);
+        m_pathLayoutBoxes.clear();
     }
 }
 

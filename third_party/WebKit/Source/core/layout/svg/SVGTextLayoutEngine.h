@@ -20,7 +20,6 @@
 #ifndef SVGTextLayoutEngine_h
 #define SVGTextLayoutEngine_h
 
-#include "core/layout/svg/SVGTextChunkBuilder.h"
 #include "core/layout/svg/SVGTextFragment.h"
 #include "core/layout/svg/SVGTextLayoutAttributes.h"
 #include "core/layout/svg/SVGTextMetrics.h"
@@ -64,7 +63,6 @@ private:
     bool parentDefinesTextLength(LayoutObject*) const;
 
     void layoutTextOnLineOrPath(SVGInlineTextBox*, const LayoutSVGInlineText&, const ComputedStyle&);
-    void finalizeTransformMatrices(Vector<SVGInlineTextBox*>&);
 
     bool currentLogicalCharacterAttributes(SVGTextLayoutAttributes*&);
     bool currentLogicalCharacterMetrics(SVGTextLayoutAttributes*&, SVGTextMetrics&);
@@ -78,7 +76,6 @@ private:
 
     Vector<SVGInlineTextBox*> m_lineLayoutBoxes;
     Vector<SVGInlineTextBox*> m_pathLayoutBoxes;
-    SVGTextChunkBuilder m_chunkLayoutBuilder;
 
     SVGTextFragment m_currentTextFragment;
     unsigned m_layoutAttributesPosition;

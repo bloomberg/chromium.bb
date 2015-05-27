@@ -42,7 +42,8 @@ public:
     SVGTextChunkBuilder();
 
     const Vector<SVGTextChunk>& textChunks() const { return m_textChunks; }
-    AffineTransform transformationForTextBox(SVGInlineTextBox*) const;
+    void processTextChunks(const Vector<SVGInlineTextBox*>&);
+    void finalizeTransformMatrices(const Vector<SVGInlineTextBox*>&) const;
 
     void buildTextChunks(Vector<SVGInlineTextBox*>& lineLayoutBoxes);
     void layoutTextChunks(Vector<SVGInlineTextBox*>& lineLayoutBoxes);
