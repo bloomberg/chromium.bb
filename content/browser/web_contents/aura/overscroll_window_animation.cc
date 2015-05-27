@@ -39,8 +39,10 @@ OverscrollWindowAnimation::~OverscrollWindowAnimation() {
 
 void OverscrollWindowAnimation::CancelSlide() {
   overscroll_cancelled_ = true;
-  AnimateTranslation(GetBackLayer(), 0, false);
-  AnimateTranslation(GetFrontLayer(), 0, true);
+  // Listen to the animation of the main window.
+  bool main_window_is_front = direction_ == SLIDE_BACK;
+  AnimateTranslation(GetBackLayer(), 0, !main_window_is_front);
+  AnimateTranslation(GetFrontLayer(), 0, main_window_is_front);
 }
 
 float OverscrollWindowAnimation::GetTranslationForOverscroll(float delta_x) {
@@ -133,8 +135,10 @@ void OverscrollWindowAnimation::OnOverscrollComplete(
   } else {
     translate_x = -content_width;
   }
-  AnimateTranslation(GetBackLayer(), translate_x / 2, false);
-  AnimateTranslation(GetFrontLayer(), translate_x, true);
+  // Listen to the animation of the main window.
+  bool main_window_is_front = direction_ == SLIDE_BACK;
+  AnimateTranslation(GetBackLayer(), translate_x / 2, !main_window_is_front);
+  AnimateTranslation(GetFrontLayer(), translate_x, main_window_is_front);
 }
 
 void OverscrollWindowAnimation::AnimateTranslation(ui::Layer* layer,

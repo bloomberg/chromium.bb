@@ -59,6 +59,8 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
                            CancelAfterSuccessfulNavigation);
   FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest, OverlayWindowSwap);
+  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
+                           CloseDuringAnimation);
 
   // Resets state and starts observing |web_contents_| for page load/paint
   // updates. This function makes sure that the screenshot window is stacked

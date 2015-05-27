@@ -224,7 +224,14 @@ aura::Window* OverscrollNavigationOverlay::GetMainWindow() const {
 }
 
 void OverscrollNavigationOverlay::OnOverscrollCompleting() {
-  GetMainWindow()->ReleaseCapture();
+  aura::Window* main_window = GetMainWindow();
+  if (!main_window) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Overscroll.Cancelled", direction_, NAVIGATION_COUNT);
+    return;
+  }
+
+  main_window->ReleaseCapture();
   // We start the navigation as soon as we know the overscroll gesture is
   // completing.
   DCHECK(direction_ != NONE);
@@ -258,21 +265,30 @@ void OverscrollNavigationOverlay::OnOverscrollCompleting() {
 
 void OverscrollNavigationOverlay::OnOverscrollCompleted(
     scoped_ptr<aura::Window> window) {
-  GetMainWindow()->SetTransform(gfx::Transform());
-  window_ = window.Pass();
-  // Make sure the window is in its default position.
-  window_->SetBounds(gfx::Rect(web_contents_window_->bounds().size()));
-  window_->SetTransform(gfx::Transform());
-  // Make sure the overlay window is on top.
-  web_contents_window_->StackChildAtTop(window_.get());
-  direction_ = NONE;
-  StopObservingIfDone();
+  aura::Window* main_window = GetMainWindow();
+  if (main_window) {
+    main_window->SetTransform(gfx::Transform());
+    window_ = window.Pass();
+    // Make sure the window is in its default position.
+    window_->SetBounds(gfx::Rect(web_contents_window_->bounds().size()));
+    window_->SetTransform(gfx::Transform());
+    // Make sure the overlay window is on top.
+    web_contents_window_->StackChildAtTop(window_.get());
+    direction_ = NONE;
+    StopObservingIfDone();
+  }
+  // Restore layer clipping.
+  contents_layer_settings_.reset();
+  contents_layer_parent_settings_.reset();
 }
 
 void OverscrollNavigationOverlay::OnOverscrollCancelled() {
   UMA_HISTOGRAM_ENUMERATION(
       "Overscroll.Cancelled", direction_, NAVIGATION_COUNT);
-  GetMainWindow()->ReleaseCapture();
+  aura::Window* main_window = GetMainWindow();
+  if (!main_window)
+    return;
+  main_window->ReleaseCapture();
   direction_ = NONE;
   StopObservingIfDone();
 }
