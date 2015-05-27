@@ -15,8 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/component_updater_service_internal.h"
@@ -112,7 +112,7 @@ class ComponentUpdaterTest : public testing::Test {
   base::RunLoop runloop_;
   base::Closure quit_closure_;
 
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+  scoped_ptr<base::SequencedWorkerPoolOwner> worker_pool_;
 
   scoped_refptr<TestConfigurator> config_;
   scoped_refptr<MockUpdateClient> update_client_;
@@ -157,11 +157,13 @@ scoped_ptr<ComponentUpdateService> TestComponentUpdateServiceFactory(
 }
 
 ComponentUpdaterTest::ComponentUpdaterTest()
-    : worker_pool_(new base::SequencedWorkerPool(kNumWorkerThreads_, "test")) {
+    : worker_pool_(
+          new base::SequencedWorkerPoolOwner(kNumWorkerThreads_, "test")) {
   quit_closure_ = runloop_.QuitClosure();
 
+  auto pool = worker_pool_->pool();
   config_ = new TestConfigurator(
-      worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
+      pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
       message_loop_.task_runner());
 
   update_client_ = new MockUpdateClient();
@@ -171,7 +173,7 @@ ComponentUpdaterTest::ComponentUpdaterTest()
 
 ComponentUpdaterTest::~ComponentUpdaterTest() {
   EXPECT_CALL(update_client(), RemoveObserver(_)).Times(1);
-  worker_pool_->Shutdown();
+  worker_pool_->pool()->Shutdown();
   component_updater_.reset();
 }
 

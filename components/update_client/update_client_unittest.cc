@@ -12,8 +12,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "components/update_client/crx_update_item.h"
@@ -153,7 +153,7 @@ class UpdateClientTest : public testing::Test {
   base::RunLoop runloop_;
   base::Closure quit_closure_;
 
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
+  scoped_ptr<base::SequencedWorkerPoolOwner> worker_pool_;
 
   scoped_refptr<update_client::Configurator> config_;
 
@@ -161,11 +161,13 @@ class UpdateClientTest : public testing::Test {
 };
 
 UpdateClientTest::UpdateClientTest()
-    : worker_pool_(new base::SequencedWorkerPool(kNumWorkerThreads_, "test")) {
+    : worker_pool_(
+          new base::SequencedWorkerPoolOwner(kNumWorkerThreads_, "test")) {
   quit_closure_ = runloop_.QuitClosure();
 
+  auto pool = worker_pool_->pool();
   config_ = new TestConfigurator(
-      worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
+      pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
       message_loop_.task_runner());
 }
 
@@ -177,7 +179,7 @@ void UpdateClientTest::RunThreads() {
 }
 
 void UpdateClientTest::StopWorkerPool() {
-  worker_pool_->Shutdown();
+  worker_pool_->pool()->Shutdown();
 }
 
 base::FilePath UpdateClientTest::TestFilePath(const char* file) {
