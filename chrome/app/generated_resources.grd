@@ -14393,12 +14393,6 @@ After you create a new supervised user, you can manage their settings at any tim
         When enabled, the browser manages signing in and out of Google accounts.
       </message>
 
-      <message name="IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_NAME" desc="Title for the flag to enable iframe-based sign-in flows.">
-        Enables iframe-based Chrome sign-in flows. This flag overrides --enable-web-based-signin.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_DESCRIPTION" desc="Description for the flag to enable iframe-based sign-in flows">
-        When enabled, will use an iframe-based Chrome sign-in flow; otherwise uses a webview-based flow.
-      </message>
       <message name="IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_NAME" desc="Title for the flag to enable the google profile information">
         Enable Google profile name and icon
       </message>
@@ -14601,14 +14595,6 @@ After you create a new supervised user, you can manage their settings at any tim
 
       <!-- Windows 8 Metro mode. -->
       <if expr="is_win">
-        <message name="IDS_METRO_FLOW_TAB_TITLE"
-                 desc="The dialog window title.">
-          Welcome to Chrome
-        </message>
-        <message name="IDS_METRO_FLOW_TITLE_SHORT"
-                 desc="The title at the top of the window guiding user through making Chrome default in Metro.">
-          Chrome is almost ready.
-        </message>
         <message name="IDS_METRO_FLOW_DESCRIPTION"
                  desc="Wordy description of what the set-Chrome-as-Metro flow is all about.">
           Click next to choose your default browser.
@@ -14616,10 +14602,6 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_METRO_FLOW_SET_DEFAULT"
                  desc="The label of the button invoking Windows8 default app settings window.">
           Next
-        </message>
-        <message name="IDS_METRO_FLOW_LOGO_STRING_ALT"
-                 desc="Alt text for the faded Chrome logo image.">
-            Chrome logo
         </message>
         <message name="IDS_METRO_MISSING_PLUGIN_PROMPT"
                  desc="Info Bar message to let user do something about the missing plugin">
@@ -14636,34 +14618,6 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION_TITLE"
                 desc="Title for notification displayed when a download request is completed">
           Download complete notification
-        </message>
-        <message name="IDS_WIN_DESKTOP_OPEN"
-                 desc="Text for the infobar button to open Chrome in desktop mode.">
-          Open Chrome on the desktop
-        </message>
-        <message name="IDS_WIN_DESKTOP_RESTART"
-                 desc="Text for the menu item to restart Chrome in desktop mode. Applies to Windows 8 only">
-          Relaunch Chrome on the desktop
-        </message>
-        <message name="IDS_WIN8_METRO_RESTART"
-                 desc="Text for the menu item to restart Chrome in metro. Applies to Windows 8 only">
-          Relaunch Chrome in Windows 8 mode
-        </message>
-        <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_METRO"
-                 desc="Modal message box prompt shown to the user after requesting to relaunch in Windows 8 mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
-          Relaunching in Windows 8 mode will close and relaunch your Chrome apps.
-        </message>
-        <message name="IDS_WIN_CHROMEOS_RESTART"
-                 desc="Text for the menu item to restart chrome in chrome os. Aplies to Windows 7 only">
-          Relaunch in Chrome immersive mode
-        </message>
-        <message name="IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_CHROMEOS"
-                 desc="Modal message box prompt shown to the user after requesting to relaunch in Windows Chrome OS mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
-          Relaunching in Chrome immersive mode will close and relaunch your Chrome apps.
-        </message>
-        <message name="IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_DESKTOP"
-                 desc="Modal message box prompt shown to the user after requesting to relaunch in Desktop mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
-          Relaunching in Desktop mode will close and relaunch your Chrome apps.
         </message>
       </if>
 

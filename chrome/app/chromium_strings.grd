@@ -654,6 +654,12 @@ Chromium is unable to recover your settings.
       </if>
 
       <!-- about:flags -->
+      <message name="IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_NAME" desc="Title for the flag to enable iframe-based sign-in flows.">
+        Enables iframe-based Chromium sign-in flows. This flag overrides --enable-web-based-signin.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_DESCRIPTION" desc="Description for the flag to enable iframe-based sign-in flows">
+        When enabled, will use an iframe-based Chromium sign-in flow; otherwise uses a webview-based flow.
+      </message>
       <if expr="not chromeos">
         <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to relaunch Chromium. Shown next to a button that says 'Relaunch Now'.">
           Your changes will take effect the next time you relaunch Chromium.
@@ -1350,6 +1356,50 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
         </message>
         <message name="IDS_EULA_SCREEN_ACCESSIBLE_TITLE" desc="Title to be spoken on opening the OOBE EULA screen">
           Chromium OS terms
+        </message>
+      </if>
+
+      <!-- Windows 8 Metro mode. -->
+      <if expr="is_win">
+        <message name="IDS_METRO_FLOW_TAB_TITLE"
+                 desc="The dialog window title.">
+          Welcome to Chromium
+        </message>
+        <message name="IDS_METRO_FLOW_TITLE_SHORT"
+                 desc="The title at the top of the window guiding user through making Chrome default in Metro.">
+          Chromium is almost ready.
+        </message>
+        <message name="IDS_METRO_FLOW_LOGO_STRING_ALT"
+                 desc="Alt text for the faded Chrome logo image.">
+          Chromium logo
+        </message>
+        <message name="IDS_WIN_DESKTOP_OPEN"
+                 desc="Text for the infobar button to open Chrome in desktop mode.">
+          Open Chromium on the desktop
+        </message>
+        <message name="IDS_WIN_DESKTOP_RESTART"
+                 desc="Text for the menu item to restart Chrome in desktop mode. Applies to Windows 8 only">
+          Relaunch Chromium on the desktop
+        </message>
+        <message name="IDS_WIN8_METRO_RESTART"
+                 desc="Text for the menu item to restart Chrome in metro. Applies to Windows 8 only">
+          Relaunch Chromium in Windows 8 mode
+        </message>
+        <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_METRO"
+                 desc="Modal message box prompt shown to the user after requesting to relaunch in Windows 8 mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
+          Relaunching in Windows 8 mode will close and relaunch your Chromium apps.
+        </message>
+        <message name="IDS_WIN_CHROMEOS_RESTART"
+                 desc="Text for the menu item to restart chrome in chrome os. Aplies to Windows 7 only">
+          Relaunch in Chromium immersive mode
+        </message>
+        <message name="IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_CHROMEOS"
+                 desc="Modal message box prompt shown to the user after requesting to relaunch in Windows Chrome OS mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
+          Relaunching in Chromium immersive mode will close and relaunch your Chromium apps.
+        </message>
+        <message name="IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_DESKTOP"
+                 desc="Modal message box prompt shown to the user after requesting to relaunch in Desktop mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
+          Relaunching in Desktop mode will close and relaunch your Chromium apps.
         </message>
       </if>
 
