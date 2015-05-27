@@ -238,9 +238,6 @@ class V8GCTimesTests(page_test_test_case.PageTestTestCase):
           'Result for [' + key + '] - expected ' + str(expected[key]) +
           ' but got ' + str(actual[key]))
 
-  def testCleanUpTrace(self):
-    self.TestTracingCleanedUp(v8_gc_times.V8GCTimes, self._options)
-
 
 def _ActualValues(results):
   return dict(list(
