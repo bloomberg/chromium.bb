@@ -161,15 +161,18 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
       scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
       const EmbeddedWorkerInstance::StatusCallback& callback,
       ServiceWorkerStatusCode status,
-      int process_id);
+      int process_id,
+      bool is_new_process);
   void ProcessAllocated(scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
                         const StatusCallback& callback,
                         int process_id,
+                        bool is_new_process,
                         ServiceWorkerStatusCode status);
   // Called back after ProcessAllocated() passes control to the UI thread to
   // register to WorkerDevToolsManager.
   void SendStartWorker(scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
                        const StatusCallback& callback,
+                       bool is_new_process,
                        int worker_devtools_agent_route_id,
                        bool wait_for_debugger);
 

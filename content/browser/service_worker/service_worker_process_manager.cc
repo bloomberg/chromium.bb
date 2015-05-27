@@ -135,8 +135,9 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     int embedded_worker_id,
     const GURL& pattern,
     const GURL& script_url,
-    const base::Callback<void(ServiceWorkerStatusCode, int process_id)>&
-        callback) {
+    const base::Callback<void(ServiceWorkerStatusCode,
+                              int process_id,
+                              bool is_new_process)>& callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -154,9 +155,9 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     // Let tests specify the returned process ID. Note: We may need to be able
     // to specify the error code too.
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(callback, SERVICE_WORKER_OK, process_id_for_test_));
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(callback, SERVICE_WORKER_OK, process_id_for_test_,
+                   false /* is_new_process */));
     return;
   }
 
@@ -171,17 +172,17 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
       continue;
     instance_info_.insert(
         std::make_pair(embedded_worker_id, ProcessInfo(*it)));
-    BrowserThread::PostTask(BrowserThread::IO,
-                            FROM_HERE,
-                            base::Bind(callback, SERVICE_WORKER_OK, *it));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback, SERVICE_WORKER_OK, *it,
+                                       false /* is_new_process */));
     return;
   }
 
   if (!browser_context_) {
     // Shutdown has started.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(callback, SERVICE_WORKER_ERROR_ABORT, -1));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback, SERVICE_WORKER_ERROR_ABORT, -1,
+                                       false /* is_new_process */));
     return;
   }
   // No existing processes available; start a new one.
@@ -195,7 +196,8 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     LOG(ERROR) << "Couldn't start a new process!";
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(callback, SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND, -1));
+        base::Bind(callback, SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND, -1,
+                   false /* is_new_process */));
     return;
   }
 
@@ -203,10 +205,9 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
       std::make_pair(embedded_worker_id, ProcessInfo(site_instance)));
 
   static_cast<RenderProcessHostImpl*>(rph)->IncrementWorkerRefCount();
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(callback, SERVICE_WORKER_OK, rph->GetID()));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback, SERVICE_WORKER_OK, rph->GetID(),
+                                     true /* is_new_process */));
 }
 
 void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {

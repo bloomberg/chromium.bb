@@ -48,8 +48,9 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
       int embedded_worker_id,
       const GURL& pattern,
       const GURL& script_url,
-      const base::Callback<void(ServiceWorkerStatusCode, int process_id)>&
-          callback);
+      const base::Callback<void(ServiceWorkerStatusCode,
+                                int process_id,
+                                bool is_new_process)>& callback);
 
   // Drops a reference to a process that was running a Service Worker, and its
   // SiteInstance.  This must match a call to AllocateWorkerProcess.

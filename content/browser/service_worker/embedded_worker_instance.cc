@@ -233,7 +233,8 @@ void EmbeddedWorkerInstance::RunProcessAllocated(
     scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
     const EmbeddedWorkerInstance::StatusCallback& callback,
     ServiceWorkerStatusCode status,
-    int process_id) {
+    int process_id,
+    bool is_new_process) {
   if (!context) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     return;
@@ -247,13 +248,15 @@ void EmbeddedWorkerInstance::RunProcessAllocated(
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     return;
   }
-  instance->ProcessAllocated(params.Pass(), callback, process_id, status);
+  instance->ProcessAllocated(params.Pass(), callback, process_id,
+                             is_new_process, status);
 }
 
 void EmbeddedWorkerInstance::ProcessAllocated(
     scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
     const StatusCallback& callback,
     int process_id,
+    bool is_new_process,
     ServiceWorkerStatusCode status) {
   DCHECK_EQ(process_id_, -1);
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
@@ -275,23 +278,19 @@ void EmbeddedWorkerInstance::ProcessAllocated(
   // call SendStartWorker on IO thread.
   starting_phase_ = REGISTERING_TO_DEVTOOLS;
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(RegisterToWorkerDevToolsManagerOnUI,
-                 process_id_,
-                 context_.get(),
-                 context_,
-                 service_worker_version_id,
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(RegisterToWorkerDevToolsManagerOnUI, process_id_,
+                 context_.get(), context_, service_worker_version_id,
                  script_url,
                  base::Bind(&EmbeddedWorkerInstance::SendStartWorker,
-                            weak_factory_.GetWeakPtr(),
-                            base::Passed(&params),
-                            callback)));
+                            weak_factory_.GetWeakPtr(), base::Passed(&params),
+                            callback, is_new_process)));
 }
 
 void EmbeddedWorkerInstance::SendStartWorker(
     scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
     const StatusCallback& callback,
+    bool is_new_process,
     int worker_devtools_agent_route_id,
     bool wait_for_debugger) {
   if (worker_devtools_agent_route_id != MSG_ROUTING_NONE) {
@@ -307,8 +306,15 @@ void EmbeddedWorkerInstance::SendStartWorker(
     start_timing_ = base::TimeTicks();
   } else {
     DCHECK(!start_timing_.is_null());
-    UMA_HISTOGRAM_TIMES("EmbeddedWorkerInstance.ProcessAllocation",
-                        base::TimeTicks::Now() - start_timing_);
+    if (is_new_process) {
+      UMA_HISTOGRAM_TIMES("EmbeddedWorkerInstance.NewProcessAllocation",
+                          base::TimeTicks::Now() - start_timing_);
+    } else {
+      UMA_HISTOGRAM_TIMES("EmbeddedWorkerInstance.ExistingProcessAllocation",
+                          base::TimeTicks::Now() - start_timing_);
+    }
+    UMA_HISTOGRAM_BOOLEAN("EmbeddedWorkerInstance.ProcessCreated",
+                          is_new_process);
     // Reset |start_timing_| to measure the time excluding the process
     // allocation time.
     start_timing_ = base::TimeTicks::Now();
