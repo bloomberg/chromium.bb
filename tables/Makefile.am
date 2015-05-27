@@ -202,6 +202,7 @@ table_files = \
 	or-in-g1.utb \
 	oriya.cti \
 	pi.ctb \
+	pl-pl-comp8.ctb \
 	Pl-Pl-g1.utb \
 	printables.cti \
 	pt-pt-comp8.ctb \
@@ -252,6 +253,7 @@ table_files = \
 	uni-text.dis \
 	us-table.dis \
 	vi.ctb \
+	vi-g1.ctb \
 	wiskunde-chardefs.cti \
 	wiskunde.ctb \
 	wiskunde-translation.cti \
