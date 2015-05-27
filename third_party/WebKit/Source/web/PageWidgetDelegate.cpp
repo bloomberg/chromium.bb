@@ -42,8 +42,8 @@
 #include "platform/Logging.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/transforms/AffineTransform.h"
 #include "public/web/WebInputEvent.h"
 #include "web/PageOverlayList.h"
@@ -72,34 +72,33 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
     if (rect.isEmpty())
         return;
 
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    {
-        DisplayItemListContextRecorder contextRecorder(*context);
-        GraphicsContext& paintContext = contextRecorder.context();
+    IntRect intRect(rect);
+    SkPictureBuilder builder(intRect);
+    GraphicsContext* context = &builder.context();
 
-        // FIXME: device scale factor settings are layering violations and should not
-        // be used within Blink paint code.
-        float scaleFactor = page.deviceScaleFactor();
-        paintContext.setDeviceScaleFactor(scaleFactor);
+    // FIXME: device scale factor settings are layering violations and should not
+    // be used within Blink paint code.
+    float scaleFactor = page.deviceScaleFactor();
+    context->setDeviceScaleFactor(scaleFactor);
 
-        AffineTransform scale;
-        scale.scale(scaleFactor);
-        TransformRecorder scaleRecorder(paintContext, root, scale);
+    AffineTransform scale;
+    scale.scale(scaleFactor);
+    TransformRecorder scaleRecorder(*context, root, scale);
 
-        IntRect dirtyRect(rect);
-        FrameView* view = root.view();
-        if (view) {
-            ClipRecorder clipRecorder(paintContext, root, DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
+    IntRect dirtyRect(rect);
+    FrameView* view = root.view();
+    if (view) {
+        ClipRecorder clipRecorder(*context, root, DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
 
-            view->paint(&paintContext, dirtyRect);
-            if (overlays)
-                overlays->paintWebFrame(paintContext);
-        } else {
-            DrawingRecorder drawingRecorder(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
-            if (!drawingRecorder.canUseCachedDrawing())
-                paintContext.fillRect(dirtyRect, Color::white);
-        }
+        view->paint(context, dirtyRect);
+        if (overlays)
+            overlays->paintWebFrame(*context);
+    } else {
+        DrawingRecorder drawingRecorder(*context, root, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
+        if (!drawingRecorder.canUseCachedDrawing())
+            context->fillRect(dirtyRect, Color::white);
     }
+    builder.endRecording()->playback(canvas);
 }
 
 bool PageWidgetDelegate::handleInputEvent(PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* root)
