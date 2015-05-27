@@ -23,6 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG2/types.html#InterfaceSVGStringList
+
 [
     TypeChecking=Interface,
     SetWrapperReferenceTo(SVGElement contextElement),
@@ -34,11 +36,11 @@
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;
 
     [RaisesException] void clear();
-    [RaisesException] DOMString initialize(DOMString item);
+    [RaisesException] DOMString initialize(DOMString newItem);
     [RaisesException] getter DOMString getItem(unsigned long index);
-    [RaisesException] setter DOMString (unsigned long index, DOMString value);
     [RaisesException] DOMString insertItemBefore(DOMString item, unsigned long index);
-    [RaisesException] DOMString replaceItem(DOMString item, unsigned long index);
+    [RaisesException] DOMString replaceItem(DOMString newItem, unsigned long index);
     [RaisesException] DOMString removeItem(unsigned long index);
-    [RaisesException] DOMString appendItem(DOMString item);
+    [RaisesException] DOMString appendItem(DOMString newItem);
+    [RaisesException] setter void (unsigned long index, DOMString newItem);
 };

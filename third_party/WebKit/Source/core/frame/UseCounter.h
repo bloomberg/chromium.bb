@@ -699,6 +699,17 @@ public:
         V8Screen_AvailLeft_AttributeGetter = 786,
         V8Screen_AvailTop_AttributeGetter = 787,
         ObjectObserve = 788,
+        V8SVGAnimationElement_HasExtension_Method = 789,
+        V8SVGCursorElement_HasExtension_Method = 790,
+        V8SVGFEConvolveMatrixElement_PreserveAlpha_AttributeGetter = 791,
+        V8SVGFilterElement_FilterResX_AttributeGetter = 792,
+        V8SVGFilterElement_FilterResY_AttributeGetter = 793,
+        V8SVGFilterElement_SetFilterRes_Method = 794,
+        V8SVGGraphicsElement_HasExtension_Method = 795,
+        V8SVGMaskElement_HasExtension_Method = 796,
+        V8SVGPatternElement_HasExtension_Method = 797,
+        V8SVGStyleElement_Disabled_AttributeGetter = 798,
+        V8SVGStyleElement_Disabled_AttributeSetter = 799,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

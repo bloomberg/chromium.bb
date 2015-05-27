@@ -19,9 +19,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// http://www.w3.org/TR/SVG2/struct.html#InterfaceSVGDocument
+
 [
     ImplementedAs=SVGDocumentExtensions
 ] partial interface Document {
-    [MeasureAs=SVGDocumentRootElement] readonly attribute SVGSVGElement        rootElement;
+    [MeasureAs=SVGDocumentRootElement] readonly attribute SVGSVGElement rootElement;
 };
-

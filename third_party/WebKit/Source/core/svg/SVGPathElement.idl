@@ -24,12 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG2/paths.html#InterfaceSVGPathElement
+
 [
     TypeChecking=Interface,
 ] interface SVGPathElement : SVGGeometryElement {
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGAnimatedNumber pathLength;
 
     float getTotalLength();
+    // TODO(philipj): SVGPoint should be DOMPoint.
     SVGPoint getPointAtLength(float distance);
     unsigned long getPathSegAtLength(float distance);
 
@@ -72,8 +75,14 @@
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVGPathSegDOM] SVGPathSegCurvetoQuadraticSmoothAbs createSVGPathSegCurvetoQuadraticSmoothAbs(float x, float y);
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVGPathSegDOM] SVGPathSegCurvetoQuadraticSmoothRel createSVGPathSegCurvetoQuadraticSmoothRel(float x, float y);
 
+    // TODO(philipj): pathSegList and animatedPathSegList should be on the
+    // SVGAnimatedPathData interface which SVGPathElement should implement:
+    // http://www.w3.org/TR/SVG2/paths.html#InterfaceSVGAnimatedPathData
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVGPathSegDOM] readonly attribute SVGPathSegList pathSegList;
-    [RuntimeEnabled=SVG1DOM, MeasureAs=SVGPathSegDOM] readonly attribute SVGPathSegList normalizedPathSegList;
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVGPathSegDOM] readonly attribute SVGPathSegList animatedPathSegList;
+
+    // TODO(philipj): The following was part of SVG 1.1:
+    // http://www.w3.org/TR/SVG11/paths.html#InterfaceSVGAnimatedPathData
+    [RuntimeEnabled=SVG1DOM, MeasureAs=SVGPathSegDOM] readonly attribute SVGPathSegList normalizedPathSegList;
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVGPathSegDOM] readonly attribute SVGPathSegList animatedNormalizedPathSegList;
 };

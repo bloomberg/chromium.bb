@@ -24,6 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG2/types.html#InterfaceSVGLengthList
+
 [
     ImplementedAs=SVGLengthListTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
@@ -36,11 +38,11 @@
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;
 
     [RaisesException] void clear();
-    [RaisesException] SVGLength initialize(SVGLength item);
+    [RaisesException] SVGLength initialize(SVGLength newItem);
     [RaisesException] getter SVGLength getItem(unsigned long index);
-    [RaisesException] setter SVGLength (unsigned long index, SVGLength value);
-    [RaisesException] SVGLength insertItemBefore(SVGLength item, unsigned long index);
-    [RaisesException] SVGLength replaceItem(SVGLength item, unsigned long index);
+    [RaisesException] SVGLength insertItemBefore(SVGLength newItem, unsigned long index);
+    [RaisesException] SVGLength replaceItem(SVGLength newItem, unsigned long index);
     [RaisesException] SVGLength removeItem(unsigned long index);
-    [RaisesException] SVGLength appendItem(SVGLength item);
+    [RaisesException] SVGLength appendItem(SVGLength newItem);
+    [RaisesException] setter void (unsigned long index, SVGLength newItem);
 };

@@ -23,7 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/SVG11/pservers.html#InterfaceSVGPatternElement
 // http://www.w3.org/TR/SVG2/pservers.html#InterfaceSVGPatternElement
 
 interface SVGPatternElement : SVGElement {
@@ -37,5 +36,9 @@ interface SVGPatternElement : SVGElement {
 };
 
 SVGPatternElement implements SVGFitToViewBox;
-SVGPatternElement implements SVGTests; // in SVG 1.1 but not SVG 2
 SVGPatternElement implements SVGURIReference;
+// SVGPatternElement implements SVGUnitTypes;
+
+// TODO(philipj): The following was part of SVG 1.1:
+// http://www.w3.org/TR/SVG11/pservers.html#InterfaceSVGPatternElement
+SVGPatternElement implements SVGTests;

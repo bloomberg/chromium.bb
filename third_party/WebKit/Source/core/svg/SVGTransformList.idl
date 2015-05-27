@@ -24,6 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG2/coords.html#InterfaceSVGTransformList
+
 [
     ImplementedAs=SVGTransformListTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
@@ -36,15 +38,14 @@
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;
 
     [RaisesException] void clear();
-    [RaisesException] SVGTransform initialize(SVGTransform item);
+    [RaisesException] SVGTransform initialize(SVGTransform newItem);
     [RaisesException] getter SVGTransform getItem(unsigned long index);
-    [RaisesException] setter SVGTransform (unsigned long index, SVGTransform value);
-    [RaisesException] SVGTransform insertItemBefore(SVGTransform item, unsigned long index);
-    [RaisesException] SVGTransform replaceItem(SVGTransform item, unsigned long index);
+    [RaisesException] SVGTransform insertItemBefore(SVGTransform newItem, unsigned long index);
+    [RaisesException] SVGTransform replaceItem(SVGTransform newItem, unsigned long index);
     [RaisesException] SVGTransform removeItem(unsigned long index);
-    [RaisesException] SVGTransform appendItem(SVGTransform item);
-
+    [RaisesException] SVGTransform appendItem(SVGTransform newItem);
+    // TODO(philipj): SVGMatrix should be DOMMatrix.
     SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
-
-    [RaisesException, MeasureAs=SVGTransformListConsolidate] SVGTransform consolidate();
+    [RaisesException, MeasureAs=SVGTransformListConsolidate] SVGTransform? consolidate();
+    [RaisesException] setter void (unsigned long index, SVGTransform newItem);
 };

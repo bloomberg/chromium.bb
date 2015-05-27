@@ -23,6 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG2/coords.html#InterfaceSVGPreserveAspectRatio
+
 [
     TypeChecking=Interface,
     ImplementedAs=SVGPreserveAspectRatioTearOff,
@@ -50,6 +52,5 @@
     const unsigned short SVG_MEETORSLICE_SLICE = 2;
 
     [RaisesException=Setter] attribute unsigned short align;
-
     [RaisesException=Setter] attribute unsigned short meetOrSlice;
 };

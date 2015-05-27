@@ -23,6 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG11/types.html#InterfaceSVGRenderingIntent
+
+// TODO(philipj): SVGRenderingIntent is gone from SVG 2 and is never used.
 [
     DependentLifetime,
     WillBeGarbageCollected,

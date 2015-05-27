@@ -24,6 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG2/paths.html#InterfaceSVGPathSegList
+
 [
     TypeChecking=Interface,
     SetWrapperReferenceTo(SVGElement contextElement),
@@ -38,9 +40,9 @@
     [RaisesException] void clear();
     [RaisesException] SVGPathSeg initialize(SVGPathSeg newItem);
     [RaisesException] getter SVGPathSeg getItem(unsigned long index);
-    [RaisesException] setter SVGPathSeg (unsigned long index, SVGPathSeg value);
     [RaisesException] SVGPathSeg insertItemBefore(SVGPathSeg newItem, unsigned long index);
     [RaisesException] SVGPathSeg replaceItem(SVGPathSeg newItem, unsigned long index);
     [RaisesException] SVGPathSeg removeItem(unsigned long index);
     [RaisesException] SVGPathSeg appendItem(SVGPathSeg newItem);
+    [RaisesException] setter void (unsigned long index, SVGPathSeg newItem);
 };

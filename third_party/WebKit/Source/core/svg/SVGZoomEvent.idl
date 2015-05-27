@@ -23,9 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/SVG2/script.html#InterfaceSVGZoomEvent
+
 [
     DependentLifetime,
 ] interface SVGZoomEvent : UIEvent {
+    // TODO(philipj): SVGRect/SVGPoint should be DOMRectReadOnly/DOMPointReadOnly.
     readonly attribute SVGRect zoomRectScreen;
     readonly attribute float previousScale;
     readonly attribute SVGPoint previousTranslate;

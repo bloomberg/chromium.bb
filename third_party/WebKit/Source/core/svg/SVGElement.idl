@@ -20,15 +20,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// http://www.w3.org/TR/SVG2/types.html#InterfaceSVGElement
+
 interface SVGElement : Element {
-    readonly attribute SVGSVGElement? ownerSVGElement;
-    readonly attribute SVGElement? viewportElement;
-
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVGClassName] readonly attribute SVGAnimatedString className;
-
     readonly attribute CSSStyleDeclaration style;
 
+    readonly attribute SVGSVGElement? ownerSVGElement;
+    readonly attribute SVGElement? viewportElement;
     [CustomElementCallbacks] attribute long tabIndex;
+    // TODO(philipj): focus() and blur() are on Element.
 };
 
 SVGElement implements GlobalEventHandlers;
