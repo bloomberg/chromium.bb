@@ -10,7 +10,7 @@
 namespace nacl {
 
 // For the moment, choose an arbitrary cache size.
-const size_t kValidationCacheCacheSize = 200;
+const size_t kValidationCacheCacheSize = 500;
 // Key size is equal to the block size (not the digest size) of SHA256.
 const size_t kValidationCacheKeySize = 64;
 // Entry size is equal to the digest size of SHA256.
