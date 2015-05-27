@@ -255,7 +255,17 @@ void WindowSelector::Init(const WindowList& windows) {
   if (restore_focus_window_)
     restore_focus_window_->AddObserver(this);
 
-  const aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  std::sort(root_windows.begin(), root_windows.end(),
+            [](const aura::Window* a, const aura::Window* b) {
+              // Since we don't know if windows are vertically or horizontally
+              // oriented we use both x and y position. This may be confusing
+              // if you have 3 or more monitors which are not strictly
+              // horizontal or vertical but that case is not yet supported.
+              return (a->GetBoundsInScreen().x() + a->GetBoundsInScreen().y()) <
+                     (b->GetBoundsInScreen().x() + b->GetBoundsInScreen().y());
+            });
+
   for (aura::Window::Windows::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); iter++) {
     // Observed switchable containers for newly created windows on all root
@@ -387,9 +397,15 @@ void WindowSelector::OnGridEmpty(WindowGrid* grid) {
   ScopedVector<WindowGrid>::iterator iter =
       std::find(grid_list_.begin(), grid_list_.end(), grid);
   DCHECK(iter != grid_list_.end());
+  size_t index = iter - grid_list_.begin();
   grid_list_.erase(iter);
-  // TODO(flackr): Use the previous index for more than two displays.
-  selected_grid_index_ = 0;
+  if (index > 0 && selected_grid_index_ >= index) {
+    selected_grid_index_--;
+    // If the grid which became empty was the one with the selected window, we
+    // need to select a window on the newly selected grid.
+    if (selected_grid_index_ == index - 1)
+      Move(LEFT, true);
+  }
   if (grid_list_.empty())
     CancelSelection();
 }
@@ -584,14 +600,24 @@ void WindowSelector::ResetFocusRestoreWindow(bool focus) {
 }
 
 void WindowSelector::Move(Direction direction, bool animate) {
+  // Direction to move if moving past the end of a display.
+  int display_direction = (direction == RIGHT || direction == DOWN) ? 1 : -1;
+
+  // If this is the first move and it's going backwards, start on the last
+  // display.
+  if (display_direction == -1 && !grid_list_.empty() &&
+      !grid_list_[selected_grid_index_]->is_selecting()) {
+    selected_grid_index_ = grid_list_.size() - 1;
+  }
+
   // Keep calling Move() on the grids until one of them reports no overflow or
   // we made a full cycle on all the grids.
   for (size_t i = 0;
       i <= grid_list_.size() &&
       grid_list_[selected_grid_index_]->Move(direction, animate); i++) {
-    // TODO(flackr): If there are more than two monitors, move between grids
-    // in the requested direction.
-    selected_grid_index_ = (selected_grid_index_ + 1) % grid_list_.size();
+    selected_grid_index_ =
+        (selected_grid_index_ + display_direction + grid_list_.size()) %
+        grid_list_.size();
   }
 }
 

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "ash/accessibility_delegate.h"
+#include "ash/display/display_layout.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -1179,6 +1180,82 @@ TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
   EXPECT_EQ(GetSelectedWindow(), window3.get());
   SendKey(ui::VKEY_RIGHT);
   EXPECT_EQ(GetSelectedWindow(), window4.get());
+}
+
+// Tests first monitor when display order doesn't match left to right screen
+// positions.
+TEST_F(WindowSelectorTest, MultiMonitorReversedOrder) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x400,400x400");
+  DisplayLayout layout(DisplayLayout::LEFT, 0);
+  Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(layout);
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  gfx::Rect bounds1(-350, 0, 100, 100);
+  gfx::Rect bounds2(0, 0, 100, 100);
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds2));
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds1));
+  EXPECT_EQ(root_windows[1], window1->GetRootWindow());
+  EXPECT_EQ(root_windows[0], window2->GetRootWindow());
+
+  ToggleOverview();
+
+  // Coming from the left to right, we should select window1 first being on the
+  // display to the left.
+  SendKey(ui::VKEY_RIGHT);
+  EXPECT_EQ(GetSelectedWindow(), window1.get());
+
+  ToggleOverview();
+  ToggleOverview();
+
+  // Coming from right to left, we should select window2 first being on the
+  // display on the right.
+  SendKey(ui::VKEY_LEFT);
+  EXPECT_EQ(GetSelectedWindow(), window2.get());
+}
+
+// Tests three monitors where the grid becomes empty on one of the monitors.
+TEST_F(WindowSelectorTest, ThreeMonitor) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x400,400x400,400x400");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  gfx::Rect bounds1(0, 0, 100, 100);
+  gfx::Rect bounds2(400, 0, 100, 100);
+  gfx::Rect bounds3(800, 0, 100, 100);
+  scoped_ptr<aura::Window> window3(CreateWindow(bounds3));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds2));
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds1));
+  EXPECT_EQ(root_windows[0], window1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], window2->GetRootWindow());
+  EXPECT_EQ(root_windows[2], window3->GetRootWindow());
+
+  ToggleOverview();
+
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_RIGHT);
+  EXPECT_EQ(GetSelectedWindow(), window3.get());
+
+  // If the last window on a display closes it should select the previous
+  // display's window.
+  window3.reset();
+  EXPECT_EQ(GetSelectedWindow(), window2.get());
+  ToggleOverview();
+
+  window3.reset(CreateWindow(bounds3));
+  ToggleOverview();
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_RIGHT);
+
+  // If the window on the second display is removed, the selected window should
+  // remain window3.
+  EXPECT_EQ(GetSelectedWindow(), window3.get());
+  window2.reset();
+  EXPECT_EQ(GetSelectedWindow(), window3.get());
 }
 
 // Tests selecting a window in overview mode with the return key.
