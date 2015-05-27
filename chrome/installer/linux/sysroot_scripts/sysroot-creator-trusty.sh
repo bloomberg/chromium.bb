@@ -5,6 +5,7 @@
 
 SCRIPT_DIR=$(dirname $0)
 
+DISTRO=ubuntu
 DIST=trusty
 
 # This is where we get all the debian packages from.

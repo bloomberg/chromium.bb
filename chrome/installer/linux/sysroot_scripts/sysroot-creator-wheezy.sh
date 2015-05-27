@@ -5,6 +5,7 @@
 
 SCRIPT_DIR=$(dirname $0)
 
+DISTRO=debian
 DIST=wheezy
 APT_REPO=http://http.us.debian.org/debian
 REPO_BASEDIR="${APT_REPO}/dists/${DIST}"

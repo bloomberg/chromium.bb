@@ -5,6 +5,7 @@
 # This script should not be run directly but sourced by the other
 # scripts (e.g. sysroot-creator-trusty.sh).  Its up to the parent scripts
 # to define certain environment variables: e.g.
+#  DISTRO=ubuntu
 #  DIST=trusty
 #  APT_REPO=http://archive.ubuntu.com/ubuntu
 #  KEYRING_FILE=/usr/share/keyrings/ubuntu-archive-keyring.gpg
@@ -48,11 +49,6 @@ if [ -z "${DEBIAN_PACKAGES:-}" ]; then
 fi
 
 readonly REPO_BASEDIR="${APT_REPO}/dists/${DIST}"
-
-# This is where the staging sysroot is.
-readonly INSTALL_ROOT_AMD64=$(pwd)/${DIST}_amd64_staging
-readonly INSTALL_ROOT_I386=$(pwd)/${DIST}_i386_staging
-readonly INSTALL_ROOT_ARM=$(pwd)/${DIST}_arm_staging
 
 readonly REQUIRED_TOOLS="wget"
 
@@ -126,21 +122,11 @@ SetEnvironmentVariables() {
   if [ -z "$ARCH" ]; then
     echo $1 | grep -qs ARM$ && ARCH=ARM
   fi
-  case "$ARCH" in
-    ARM)
-      INSTALL_ROOT="$INSTALL_ROOT_ARM";
-      ;;
-    AMD64)
-      INSTALL_ROOT="$INSTALL_ROOT_AMD64";
-      ;;
-    I386)
-      INSTALL_ROOT="$INSTALL_ROOT_I386";
-      ;;
-    *)
-      echo "ERROR: Unexpected bad architecture."
-      exit 1
-      ;;
-  esac
+  if [ -z "${ARCH}" ]; then
+    echo "ERROR: Unable to determine architecture based on: $1"
+    exit 1
+  fi
+  ARCH_LOWER=$(echo $ARCH | tr '[:upper:]' '[:lower:]')
 }
 
 
@@ -149,13 +135,8 @@ SetEnvironmentVariables() {
 SanityCheck() {
   Banner "Sanity Checks"
 
-  if ! mkdir -p "${INSTALL_ROOT}" ; then
-     echo "ERROR: ${INSTALL_ROOT} can't be created."
-    exit 1
-  fi
-
-  CHROME_DIR=$(cd "${SCRIPT_DIR}/../../.." && pwd)
-  BUILD_DIR=${CHROME_DIR}/out/sysroot-build/${DIST}
+  local chrome_dir=$(cd "${SCRIPT_DIR}/../../../.." && pwd)
+  BUILD_DIR="${chrome_dir}/out/sysroot-build/${DIST}"
   mkdir -p ${BUILD_DIR}
   echo "Using build directory: ${BUILD_DIR}"
 
@@ -166,6 +147,15 @@ SanityCheck() {
       exit 1
     fi
   done
+
+  # This is where the staging sysroot is.
+  INSTALL_ROOT="${BUILD_DIR}/${DIST}_${ARCH_LOWER}_staging"
+  TARBALL="${BUILD_DIR}/${DISTRO}_${DIST}_${ARCH_LOWER}_sysroot.tgz"
+
+  if ! mkdir -p "${INSTALL_ROOT}" ; then
+    echo "ERROR: ${INSTALL_ROOT} can't be created."
+    exit 1
+  fi
 }
 
 
@@ -182,21 +172,8 @@ ClearInstallDir() {
 
 
 CreateTarBall() {
-  local tarball=$1
-  Banner "Creating tar ball ${tarball}"
-  tar zcf ${tarball} -C ${INSTALL_ROOT} .
-}
-
-CheckBuildSysrootArgs() {
-  if [ "$#" -ne "1" ]; then
-    echo "ERROR: BuildSysroot commands only take 1 argument"
-    exit 1
-  fi
-
-  if [ -z "$1" ]; then
-    echo "ERROR: tarball name required"
-    exit 1
-  fi
+  Banner "Creating tarball ${TARBALL}"
+  tar zcf ${TARBALL} -C ${INSTALL_ROOT} .
 }
 
 ExtractPackageBz2() {
@@ -397,11 +374,10 @@ CleanupJailSymlinks() {
 }
 
 #@
-#@ BuildSysrootAmd64 <tarball-name>
+#@ BuildSysrootAmd64
 #@
 #@    Build everything and package it
 BuildSysrootAmd64() {
-  CheckBuildSysrootArgs $@
   ClearInstallDir
   local package_file="$BUILD_DIR/package_with_sha256sum_amd64"
   GeneratePackageListAmd64 "$package_file"
@@ -411,15 +387,14 @@ BuildSysrootAmd64() {
   InstallIntoSysroot ${files_and_sha256sums}
   CleanupJailSymlinks
   HacksAndPatchesAmd64
-  CreateTarBall "$1"
+  CreateTarBall
 }
 
 #@
-#@ BuildSysrootI386 <tarball-name>
+#@ BuildSysrootI386
 #@
 #@    Build everything and package it
 BuildSysrootI386() {
-  CheckBuildSysrootArgs $@
   ClearInstallDir
   local package_file="$BUILD_DIR/package_with_sha256sum_i386"
   GeneratePackageListI386 "$package_file"
@@ -429,15 +404,14 @@ BuildSysrootI386() {
   InstallIntoSysroot ${files_and_sha256sums}
   CleanupJailSymlinks
   HacksAndPatchesI386
-  CreateTarBall "$1"
+  CreateTarBall
 }
 
 #@
-#@ BuildSysrootARM <tarball-name>
+#@ BuildSysrootARM
 #@
 #@    Build everything and package it
 BuildSysrootARM() {
-  CheckBuildSysrootArgs $@
   ClearInstallDir
   local package_file="$BUILD_DIR/package_with_sha256sum_arm"
   GeneratePackageListARM "$package_file"
@@ -448,7 +422,60 @@ BuildSysrootARM() {
   InstallIntoSysroot ${files_and_sha256sums}
   CleanupJailSymlinks
   HacksAndPatchesARM
-  CreateTarBall "$1"
+  CreateTarBall
+}
+
+#@
+#@ BuildSysrootAll
+#@
+#@    Build sysroot images for all architectures
+BuildSysrootAll() {
+  RunCommand BuildSysrootAmd64
+  RunCommand BuildSysrootI386
+  RunCommand BuildSysrootARM
+}
+
+UploadSysroot() {
+  local rev=$1
+  if [ -z "${rev}" ]; then
+    echo "Please specify a revision to upload at."
+    exit 1
+  fi
+  set -x
+  gsutil cp -a public-read "${TARBALL}" \
+      "gs://chrome-linux-sysroot/toolchain/$rev/"
+  set +x
+}
+
+#@
+#@ UploadSysrootAmd64 <revision>
+#@
+UploadSysrootAmd64() {
+  UploadSysroot "$@"
+}
+
+#@
+#@ UploadSysrootI386 <revision>
+#@
+UploadSysrootI386() {
+  UploadSysroot "$@"
+}
+
+#@
+#@ UploadSysrootARM <revision>
+#@
+UploadSysrootARM() {
+  UploadSysroot "$@"
+}
+
+#@
+#@ UploadSysrootAll <revision>
+#@
+#@    Upload sysroot image for all architectures
+UploadSysrootAll() {
+  RunCommand UploadSysrootAmd64 "$@"
+  RunCommand UploadSysrootI386 "$@"
+  RunCommand UploadSysrootARM "$@"
 }
 
 #
@@ -559,6 +586,22 @@ UpdatePackageListsARM() {
   StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_ARM"
 }
 
+#@
+#@ UpdatePackageListsAll
+#@
+#@    Regenerate the package lists for all architectures.
+UpdatePackageListsAll() {
+  RunCommand UpdatePackageListsAmd64
+  RunCommand UpdatePackageListsI386
+  RunCommand UpdatePackageListsARM
+}
+
+RunCommand() {
+  SetEnvironmentVariables "$1"
+  SanityCheck
+  "$@"
+}
+
 if [ $# -eq 0 ] ; then
   echo "ERROR: you must specify a mode on the commandline"
   echo
@@ -571,7 +614,9 @@ elif [ "$(type -t $1)" != "function" ]; then
   exit 1
 else
   ChangeDirectory
-  SetEnvironmentVariables "$1"
-  SanityCheck
-  "$@"
+  if echo $1 | grep -qs "All$"; then
+    "$@"
+  else
+    RunCommand "$@"
+  fi
 fi
