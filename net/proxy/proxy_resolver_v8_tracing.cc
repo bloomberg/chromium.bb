@@ -593,28 +593,19 @@ int Job::ExecuteProxyResolver() {
 
   switch (operation_) {
     case CREATE_V8_RESOLVER: {
-      scoped_ptr<ProxyResolverV8> resolver(new ProxyResolverV8);
-      resolver->set_js_bindings(this);
-      result = resolver->SetPacScript(script_data_, CompletionCallback());
-      resolver->set_js_bindings(nullptr);
+      scoped_ptr<ProxyResolverV8> resolver;
+      result = ProxyResolverV8::Create(script_data_, this, &resolver);
       if (result == OK)
         *resolver_out_ = resolver.Pass();
       break;
     }
     case GET_PROXY_FOR_URL: {
-      JSBindings* prev_bindings = v8_resolver()->js_bindings();
-      v8_resolver()->set_js_bindings(this);
-
       result = v8_resolver()->GetProxyForURL(
-        url_,
-        // Important: Do not write directly into |user_results_|, since if the
-        // request were to be cancelled from the origin thread, must guarantee
-        // that |user_results_| is not accessed anymore.
-        &results_,
-        CompletionCallback(),
-        NULL,
-        bound_net_log_);
-      v8_resolver()->set_js_bindings(prev_bindings);
+          url_,
+          // Important: Do not write directly into |user_results_|, since if the
+          // request were to be cancelled from the origin thread, must guarantee
+          // that |user_results_| is not accessed anymore.
+          &results_, this);
       break;
     }
   }

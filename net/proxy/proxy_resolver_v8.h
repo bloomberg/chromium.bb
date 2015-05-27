@@ -6,14 +6,19 @@
 #define NET_PROXY_PROXY_RESOLVER_V8_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "net/base/net_export.h"
-#include "net/proxy/proxy_resolver.h"
+
+class GURL;
 
 namespace net {
+class ProxyInfo;
+class ProxyResolverScriptData;
 
-// Implementation of ProxyResolver that uses V8 to evaluate PAC scripts.
-class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
+// A synchronous ProxyResolver-like that uses V8 to evaluate PAC scripts.
+class NET_EXPORT_PRIVATE ProxyResolverV8 {
  public:
   // Interface for the javascript bindings.
   class NET_EXPORT_PRIVATE JSBindings {
@@ -48,24 +53,13 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
   };
 
   // Constructs a ProxyResolverV8.
-  ProxyResolverV8();
+  static int Create(const scoped_refptr<ProxyResolverScriptData>& script_data,
+                    JSBindings* bindings,
+                    scoped_ptr<ProxyResolverV8>* resolver);
 
-  ~ProxyResolverV8() override;
+  ~ProxyResolverV8();
 
-  JSBindings* js_bindings() const { return js_bindings_; }
-  void set_js_bindings(JSBindings* js_bindings) { js_bindings_ = js_bindings; }
-
-  // ProxyResolver implementation:
-  int GetProxyForURL(const GURL& url,
-                     ProxyInfo* results,
-                     const CompletionCallback& /*callback*/,
-                     RequestHandle* /*request*/,
-                     const BoundNetLog& net_log) override;
-  void CancelRequest(RequestHandle request) override;
-  LoadState GetLoadState(RequestHandle request) const override;
-  void CancelSetPacScript() override;
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& /*callback*/) override;
+  int GetProxyForURL(const GURL& url, ProxyInfo* results, JSBindings* bindings);
 
   // Get total/ued heap memory usage of all v8 instances used by the proxy
   // resolver.
@@ -73,14 +67,12 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
   static size_t GetUsedHeapSize();
 
  private:
-  // Context holds the Javascript state for the most recently loaded PAC
-  // script. It corresponds with the data from the last call to
-  // SetPacScript().
+  // Context holds the Javascript state for the PAC script.
   class Context;
 
-  scoped_ptr<Context> context_;
+  explicit ProxyResolverV8(scoped_ptr<Context> context);
 
-  JSBindings* js_bindings_;
+  scoped_ptr<Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8);
 };

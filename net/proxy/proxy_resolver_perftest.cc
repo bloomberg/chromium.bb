@@ -11,6 +11,7 @@
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_resolver_factory.h"
 #include "net/proxy/proxy_resolver_v8.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -223,20 +224,69 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
   }
 };
 
-class ProxyResolverV8Factory : public LegacyProxyResolverFactory {
+class ProxyResolverV8Wrapper : public ProxyResolver {
  public:
-  ProxyResolverV8Factory() : LegacyProxyResolverFactory(true) {}
-  scoped_ptr<ProxyResolver> CreateProxyResolver() override {
-    scoped_ptr<ProxyResolverV8> resolver(new ProxyResolverV8);
-    resolver->set_js_bindings(&js_bindings_);
-    return resolver.Pass();
+  ProxyResolverV8Wrapper(scoped_ptr<ProxyResolverV8> resolver,
+                         scoped_ptr<MockJSBindings> bindings)
+      : ProxyResolver(true),
+        resolver_(resolver.Pass()),
+        bindings_(bindings.Pass()) {}
+
+  int GetProxyForURL(const GURL& url,
+                     ProxyInfo* results,
+                     const CompletionCallback& /*callback*/,
+                     RequestHandle* /*request*/,
+                     const BoundNetLog& net_log) override {
+    return resolver_->GetProxyForURL(url, results, bindings_.get());
+  }
+
+  void CancelRequest(RequestHandle request) override { NOTREACHED(); }
+
+  LoadState GetLoadState(RequestHandle request) const override {
+    NOTREACHED();
+    return LOAD_STATE_IDLE;
+  }
+
+  void CancelSetPacScript() override { NOTREACHED(); }
+
+  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
+                   const CompletionCallback& /*callback*/) override {
+    NOTREACHED();
+    return ERR_NOT_IMPLEMENTED;
   }
 
  private:
-  MockJSBindings js_bindings_;
+  scoped_ptr<ProxyResolverV8> resolver_;
+  scoped_ptr<MockJSBindings> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8Wrapper);
+};
+
+class ProxyResolverV8Factory : public ProxyResolverFactory {
+ public:
+  ProxyResolverV8Factory() : ProxyResolverFactory(true) {}
+  int CreateProxyResolver(
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      scoped_ptr<ProxyResolver>* resolver,
+      const net::CompletionCallback& callback,
+      scoped_ptr<Request>* request) override {
+    scoped_ptr<ProxyResolverV8> v8_resolver;
+    scoped_ptr<MockJSBindings> js_bindings_(new MockJSBindings);
+    int result =
+        ProxyResolverV8::Create(pac_script, js_bindings_.get(), &v8_resolver);
+    if (result == OK) {
+      resolver->reset(
+          new ProxyResolverV8Wrapper(v8_resolver.Pass(), js_bindings_.Pass()));
+    }
+    return result;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8Factory);
 };
 
 TEST(ProxyResolverPerfTest, ProxyResolverV8) {
+  base::MessageLoop message_loop;
   ProxyResolverV8Factory factory;
   PacPerfSuiteRunner runner(&factory, "ProxyResolverV8");
   runner.RunAllTests();
