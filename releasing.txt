@@ -46,6 +46,12 @@ To make a release of Weston and/or Wayland, follow these steps.
 
 	  $ release.sh .
 
+	  For wayland, also publish the publican documentation to
+	  wayland.freedesktop.org:
+
+  	  $ ./publish-doc
+
+
   4.  Compose the release announcements.  The script will generate
       *.x.y.0.announce files with a list of changes and tags, one for
       wayland, one for weston.  Prepend these with a human-readable
@@ -68,12 +74,11 @@ To make a release of Weston and/or Wayland, follow these steps.
 
 	  Once satisfied:
 
-      $ git commit releases.html -m "Add ${RELEASE_NUMBER} release"
+      $ git commit ./releases.html -m "Add ${RELEASE_NUMBER} release"
       $ git push
-      $ rsync -avz * wayland.freedesktop.org:/srv/wayland.freedesktop.org/www/
+      $ ./deploy
 
   8.  Update topic in #wayland to point to the release announcement URL
-
 
 For x.y.0 releases, also create the release series x.y branch.  The x.y
 branch is for bug fixes and conservative changes to the x.y.0 release,
