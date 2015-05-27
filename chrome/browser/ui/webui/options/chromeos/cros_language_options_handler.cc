@@ -160,12 +160,15 @@ base::ListValue* CrosLanguageOptionsHandler::GetInputMethodList() {
 base::ListValue*
     CrosLanguageOptionsHandler::ConvertInputMethodDescriptorsToIMEList(
         const input_method::InputMethodDescriptors& descriptors) {
+  input_method::InputMethodUtil* util =
+      input_method::InputMethodManager::Get()->GetInputMethodUtil();
   scoped_ptr<base::ListValue> ime_ids_list(new base::ListValue());
   for (size_t i = 0; i < descriptors.size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor = descriptors[i];
     scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
     dictionary->SetString("id", descriptor.id());
-    dictionary->SetString("displayName", descriptor.name());
+    dictionary->SetString(
+        "displayName", util->GetLocalizedDisplayName(descriptor));
     dictionary->SetString("optionsPage", descriptor.options_page_url().spec());
     scoped_ptr<base::DictionaryValue> language_codes(
         new base::DictionaryValue());

@@ -134,6 +134,10 @@ class InputMethodUtil {
   // fallback keyboard.
   const std::vector<std::string>& GetHardwareLoginInputMethodIds();
 
+  // Returns the localized display name for the given input method.
+  std::string GetLocalizedDisplayName(
+      const InputMethodDescriptor& descriptor) const;
+
   // Returns true if given input method can be used to input login data.
   bool IsLoginKeyboard(const std::string& input_method_id) const;
 
