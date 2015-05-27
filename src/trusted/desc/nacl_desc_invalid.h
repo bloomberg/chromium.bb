@@ -28,8 +28,7 @@ struct NaClDescInvalid {
 };
 
 int NaClDescInvalidInternalize(struct NaClDesc               **baseptr,
-                               struct NaClDescXferState      *xfer,
-                               struct NaClDescQuotaInterface *quota_interface)
+                               struct NaClDescXferState      *xfer)
     NACL_WUR;
 
 /* Initialize and tear down the state for maintaining the singleton. */

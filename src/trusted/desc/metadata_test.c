@@ -191,8 +191,7 @@ void receiver_thread(void) {
     header.iov_length = 0;
     header.ndescv = desc_buf;
     header.ndesc_length = NACL_ARRAY_SIZE(desc_buf);
-    bytes_received = ((*NACL_VTBL(NaClDesc, conn)->RecvMsg)
-                      (conn, &header, 0, NULL));
+    bytes_received = (*NACL_VTBL(NaClDesc, conn)->RecvMsg)(conn, &header, 0);
     if (0 != bytes_received) {
       fprintf(stderr,
               "ix %"NACL_PRIdS" RecvMsg failed NaCl errno %"NACL_PRIdS"\n",

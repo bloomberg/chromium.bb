@@ -22,8 +22,7 @@ struct NaClDescNull {
 int NaClDescNullCtor(struct NaClDescNull *self);
 
 int NaClDescNullInternalize(struct NaClDesc **out_desc,
-                            struct NaClDescXferState *xfer,
-                            struct NaClDescQuotaInterface *quota_interface)
+                            struct NaClDescXferState *xfer)
     NACL_WUR;
 
 EXTERN_C_END

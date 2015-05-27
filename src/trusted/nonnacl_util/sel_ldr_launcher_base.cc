@@ -61,7 +61,7 @@ bool SelLdrLauncherBase::RetrieveSockAddr() {
   header.ndescv_length = NACL_ARRAY_SIZE(descs);
   header.flags = 0;
   // Receive the message.
-  ssize_t received = bootstrap_socket_->RecvMsg(&header, 0, NULL);
+  ssize_t received = bootstrap_socket_->RecvMsg(&header, 0);
   if (0 != received) {
     NaClLog(LOG_ERROR, "SelLdrLauncherBase::RetrieveSockAddr: "
             "RecvMsg() returned %d\n", static_cast<int>(received));

@@ -42,8 +42,7 @@ struct NaClDescImcShm {
 };
 
 int NaClDescImcShmInternalize(struct NaClDesc               **baseptr,
-                              struct NaClDescXferState      *xfer,
-                              struct NaClDescQuotaInterface *quota_interface)
+                              struct NaClDescXferState      *xfer)
     NACL_WUR;
 
 /*

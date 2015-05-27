@@ -498,12 +498,10 @@ static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
 
 int NaClDescXferableDataDescInternalize(
     struct NaClDesc               **baseptr,
-    struct NaClDescXferState      *xfer,
-    struct NaClDescQuotaInterface *quota_interface) {
+    struct NaClDescXferState      *xfer) {
   int                             rv;
   struct NaClDescXferableDataDesc *ndxdp;
 
-  UNREFERENCED_PARAMETER(quota_interface);
   NaClLog(4, "Entered NaClDescXferableDataDescInternalize\n");
 
   ndxdp = malloc(sizeof *ndxdp);

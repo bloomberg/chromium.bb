@@ -35,8 +35,7 @@ struct NaClDescSyncSocket {
 
 int NaClDescSyncSocketInternalize(
     struct NaClDesc               **baseptr,
-    struct NaClDescXferState      *xfer,
-    struct NaClDescQuotaInterface *quota_interface)
+    struct NaClDescXferState      *xfer)
     NACL_WUR;
 
 static const size_t kMaxSyncSocketMessageLength = (size_t) INT_MAX;

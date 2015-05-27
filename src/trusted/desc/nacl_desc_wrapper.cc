@@ -409,8 +409,7 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   return ret;
 }
 
-ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags,
-                             struct NaClDescQuotaInterface *quota_interface) {
+ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   struct NaClImcTypedMsgHdr header;
   ssize_t ret = -NACL_ABI_ENOMEM;
   nacl_abi_size_t diov_length = dgram->iov_length;
@@ -452,8 +451,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags,
   }
   header.ndesc_length = ddescv_length;
   // Receive the message.
-  ret = NACL_VTBL(NaClDesc, desc_)->RecvMsg(desc_, &header, flags,
-                                            quota_interface);
+  ret = NACL_VTBL(NaClDesc, desc_)->RecvMsg(desc_, &header, flags);
   if (ret < 0) {
     goto cleanup;
   }

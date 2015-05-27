@@ -76,8 +76,7 @@ void NaClNrdXferWriteTypeTag(struct NaClDescXferState *xferp,
  */
 int NaClDescInternalizeFromXferBuffer(
     struct NaClDesc               **out_desc,
-    struct NaClDescXferState      *xferp,
-    struct NaClDescQuotaInterface *quota_interface) {
+    struct NaClDescXferState      *xferp) {
   int xfer_status;
   size_t type_tag;
 
@@ -91,8 +90,7 @@ int NaClDescInternalizeFromXferBuffer(
             type_tag, type_tag);
     return -NACL_ABI_EIO;
   }
-  if ((int (*)(struct NaClDesc **, struct NaClDescXferState *,
-               struct NaClDescQuotaInterface *)) NULL ==
+  if ((int (*)(struct NaClDesc **, struct NaClDescXferState *)) NULL ==
       NaClDescInternalize[type_tag]) {
     NaClLog(LOG_FATAL,
             "No internalization function for type %"NACL_PRIuS"\n",
@@ -100,8 +98,7 @@ int NaClDescInternalizeFromXferBuffer(
     /* fatal, but in case we change it later */
     return -NACL_ABI_EIO;
   }
-  xfer_status = (*NaClDescInternalize[type_tag])(out_desc, xferp,
-                                                 quota_interface);
+  xfer_status = (*NaClDescInternalize[type_tag])(out_desc, xferp);
   /* constructs new_desc, transferring ownership of any handles consumed */
 
   if (xfer_status != 0) {
@@ -414,8 +411,7 @@ cleanup:
 ssize_t NaClImcRecvTypedMessage(
     struct NaClDesc               *channel,
     struct NaClImcTypedMsgHdr     *nitmhp,
-    int                           flags,
-    struct NaClDescQuotaInterface *quota_interface) {
+    int                           flags) {
   int                       supported_flags;
   ssize_t                   retval;
   char                      *recv_buf;
@@ -653,8 +649,7 @@ ssize_t NaClImcRecvTypedMessage(
   while (xfer.next_byte < xfer.byte_buffer_end) {
     struct NaClDesc *out;
 
-    xfer_status = NaClDescInternalizeFromXferBuffer(&out, &xfer,
-                                                    quota_interface);
+    xfer_status = NaClDescInternalizeFromXferBuffer(&out, &xfer);
     NaClLog(4, "NaClDescInternalizeFromXferBuffer: returned %d\n", xfer_status);
     if (0 == xfer_status) {
       /* end of descriptors reached */

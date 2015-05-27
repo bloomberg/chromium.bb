@@ -35,7 +35,6 @@ struct NaClDesc;
 struct nacl_abi_stat;
 struct nacl_abi_timespec;
 struct NaClDescEffector;
-struct NaClDescQuotaInterface;
 struct NaClImcTypedMsgHdr;
 struct NaClMessageHeader;
 
@@ -147,8 +146,7 @@ struct NaClInternalHeader {
  */
 extern int
 (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
-                                           struct NaClDescXferState *,
-                                           struct NaClDescQuotaInterface *);
+                                           struct NaClDescXferState *);
 
 extern char const *NaClDescTypeString(enum NaClDescTypeTag type_tag);
 
@@ -282,8 +280,7 @@ struct NaClDescVtbl {
 
   ssize_t (*RecvMsg)(struct NaClDesc               *vself,
                      struct NaClImcTypedMsgHdr     *nitmhp,
-                     int                           flags,
-                     struct NaClDescQuotaInterface *quota_interface) NACL_WUR;
+                     int                           flags) NACL_WUR;
 
   ssize_t (*LowLevelSendMsg)(struct NaClDesc                *vself,
                              struct NaClMessageHeader const *dgram,
@@ -628,8 +625,7 @@ ssize_t NaClDescSendMsgNotImplemented(
 ssize_t NaClDescRecvMsgNotImplemented(
     struct NaClDesc               *vself,
     struct NaClImcTypedMsgHdr     *nitmhp,
-    int                           flags,
-    struct NaClDescQuotaInterface *quota_interface);
+    int                           flags);
 
 ssize_t NaClDescLowLevelSendMsgNotImplemented(
     struct NaClDesc                *vself,
@@ -655,8 +651,7 @@ int NaClDescGetValueNotImplemented(struct NaClDesc  *vself);
 
 int NaClDescInternalizeNotImplemented(
     struct NaClDesc                **out_desc,
-    struct NaClDescXferState       *xfer,
-    struct NaClDescQuotaInterface  *quota_interface);
+    struct NaClDescXferState       *xfer);
 
 
 int NaClSafeCloseNaClHandle(NaClHandle h);

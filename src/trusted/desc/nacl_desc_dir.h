@@ -30,11 +30,6 @@ struct NaClDescDirDesc {
   struct NaClHostDir        *hd;
 };
 
-int NaClDescDirInternalize(struct NaClDesc               **baseptr,
-                           struct NaClDescXferState      *xfer,
-                           struct NaClDescQuotaInterface *quota_interface)
-    NACL_WUR;
-
 int NaClDescDirDescCtor(struct NaClDescDirDesc  *self,
                         struct NaClHostDir      *hd)
     NACL_WUR;

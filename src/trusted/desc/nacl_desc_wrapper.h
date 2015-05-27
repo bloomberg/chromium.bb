@@ -148,8 +148,7 @@ class DescWrapper {
 
   // Receive a message.
   // Returns bytes received on success, negative NaCl ABI errno on failure.
-  ssize_t RecvMsg(MsgHeader* dgram, int flags,
-                  struct NaClDescQuotaInterface *quota_interface);
+  ssize_t RecvMsg(MsgHeader* dgram, int flags);
 
   // Connect to a socket address.
   // Returns a valid DescWrapper on success, NULL on failure.

@@ -188,8 +188,7 @@ int NaClDescInternalizeCtor(struct NaClDesc *vself,
 
 int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(
     struct NaClDesc **,
-    struct NaClDescXferState *,
-    struct NaClDescQuotaInterface *) = {
+    struct NaClDescXferState *) = {
   NaClDescInvalidInternalize,
   NaClDescInternalizeNotImplemented,
   NaClDescIoInternalize,
@@ -480,11 +479,9 @@ ssize_t NaClDescSendMsgNotImplemented(
 ssize_t NaClDescRecvMsgNotImplemented(
     struct NaClDesc                 *vself,
     struct NaClImcTypedMsgHdr       *nitmhp,
-    int                             flags,
-    struct NaClDescQuotaInterface   *quota_interface) {
+    int                             flags) {
   UNREFERENCED_PARAMETER(nitmhp);
   UNREFERENCED_PARAMETER(flags);
-  UNREFERENCED_PARAMETER(quota_interface);
 
   NaClLog(LOG_ERROR,
           "RecvMsg method is not implemented for object of type %s\n",
@@ -569,11 +566,9 @@ int NaClDescGetValueNotImplemented(struct NaClDesc  *vself) {
 
 int NaClDescInternalizeNotImplemented(
     struct NaClDesc                **out_desc,
-    struct NaClDescXferState       *xfer,
-    struct NaClDescQuotaInterface  *quota_interface) {
+    struct NaClDescXferState       *xfer) {
   UNREFERENCED_PARAMETER(out_desc);
   UNREFERENCED_PARAMETER(xfer);
-  UNREFERENCED_PARAMETER(quota_interface);
 
   NaClLog(LOG_ERROR,
           "Attempted transfer of non-transferable descriptor\n");

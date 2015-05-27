@@ -143,10 +143,8 @@ struct NaClDescInvalid const *NaClDescInvalidMake(void) {
 }
 
 int NaClDescInvalidInternalize(struct NaClDesc               **baseptr,
-                               struct NaClDescXferState      *xfer,
-                               struct NaClDescQuotaInterface *quota_interface) {
+                               struct NaClDescXferState      *xfer) {
   UNREFERENCED_PARAMETER(xfer);
-  UNREFERENCED_PARAMETER(quota_interface);
 
   *baseptr = (struct NaClDesc *) NaClDescInvalidMake();
 

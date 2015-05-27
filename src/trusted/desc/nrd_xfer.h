@@ -44,7 +44,6 @@
 EXTERN_C_BEGIN
 
 struct NaClDescEffector;
-struct NaClDescQuotaInterface;
 struct NaClImcTypedMsgHdr;
 
 
@@ -65,8 +64,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
  */
 ssize_t NaClImcRecvTypedMessage(struct NaClDesc               *channel,
                                 struct NaClImcTypedMsgHdr     *nitmhp,
-                                int32_t                       flags,
-                                struct NaClDescQuotaInterface *quota_interface);
+                                int32_t                       flags);
 
 /**
  * Create a bound socket and corresponding socket address as a pair.

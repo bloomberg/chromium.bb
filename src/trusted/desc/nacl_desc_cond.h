@@ -31,10 +31,6 @@ struct NaClDescCondVar {
   struct NaClIntrCondVar cv;
 };
 
-int NaClDescCondVarInternalize(struct NaClDesc          **baseptr,
-                               struct NaClDescXferState *xfer)
-    NACL_WUR;
-
 int NaClDescCondVarCtor(struct NaClDescCondVar  *self)
     NACL_WUR;
 

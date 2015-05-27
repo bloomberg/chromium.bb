@@ -58,10 +58,8 @@ static ssize_t NaClDescCustomSendMsg(struct NaClDesc                 *vself,
 static ssize_t NaClDescCustomRecvMsg(
     struct NaClDesc               *vself,
     struct NaClImcTypedMsgHdr     *msg,
-    int                           flags,
-    struct NaClDescQuotaInterface *quota_interface) {
+    int                           flags) {
   struct NaClDescCustom *self = (struct NaClDescCustom *) vself;
-  UNREFERENCED_PARAMETER(quota_interface);
 
   return (*self->funcs.RecvMsg)(self->handle, msg, flags);
 }

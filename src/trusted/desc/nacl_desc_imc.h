@@ -57,8 +57,7 @@ struct NaClDescXferableDataDesc {
 
 int NaClDescXferableDataDescInternalize(
     struct NaClDesc               **baseptr,
-    struct NaClDescXferState      *xfer,
-    struct NaClDescQuotaInterface *quota_interface)
+    struct NaClDescXferState      *xfer)
     NACL_WUR;
 
 int NaClDescImcConnectedDescCtor(struct NaClDescImcConnectedDesc  *self,

@@ -27,11 +27,6 @@ struct NaClDescSemaphore {
   struct NaClSemaphore sem;
 };
 
-int NaClDescSemaphoreInternalize(struct NaClDesc               **baseptr,
-                                 struct NaClDescXferState      *xfer,
-                                 struct NaClDescQuotaInterface *quota_interface)
-    NACL_WUR;
-
 int NaClDescSemaphoreCtor(struct NaClDescSemaphore  *self, int value)
     NACL_WUR;
 

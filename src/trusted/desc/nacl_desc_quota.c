@@ -330,12 +330,10 @@ ssize_t NaClDescQuotaSendMsg(struct NaClDesc                 *vself,
 
 ssize_t NaClDescQuotaRecvMsg(struct NaClDesc               *vself,
                              struct NaClImcTypedMsgHdr     *nitmhp,
-                             int                           flags,
-                             struct NaClDescQuotaInterface *quota_interface) {
+                             int                           flags) {
   struct NaClDescQuota  *self = (struct NaClDescQuota *) vself;
 
-  return (*NACL_VTBL(NaClDesc, self->desc)->RecvMsg)(self->desc, nitmhp, flags,
-                                                     quota_interface);
+  return (*NACL_VTBL(NaClDesc, self->desc)->RecvMsg)(self->desc, nitmhp, flags);
 }
 
 ssize_t NaClDescQuotaLowLevelSendMsg(struct NaClDesc                *vself,
