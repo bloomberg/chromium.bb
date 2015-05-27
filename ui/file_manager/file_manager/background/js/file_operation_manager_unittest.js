@@ -173,7 +173,7 @@ var DIRECTORY_SIZE = -1;
 /**
  * Creates test file system.
  * @param {string} id File system ID.
- * @param {Object.<string, number>} entries Map of entries' paths and their
+ * @param {Object<string, number>} entries Map of entries' paths and their
  *     size. If the size is equals to DIRECTORY_SIZE, the entry is derectory.
  */
 function createTestFileSystem(id, entries) {

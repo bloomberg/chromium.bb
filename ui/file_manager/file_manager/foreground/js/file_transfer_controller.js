@@ -115,7 +115,7 @@ function FileTransferController(doc,
 
   /**
    * The array of pending task ID.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.pendingTaskIds = [];
 
@@ -130,7 +130,7 @@ function FileTransferController(doc,
   /**
    * File objects for selected files.
    *
-   * @type {Object.<string, FileAsyncData>}
+   * @type {Object<string, FileAsyncData>}
    * @private
    */
   this.selectedAsyncData_ = {};
@@ -330,7 +330,7 @@ FileTransferController.prototype.cutOrCopy_ =
 };
 
 /**
- * @return {Object.<string, string>} Drag and drop global data object.
+ * @return {Object<string, string>} Drag and drop global data object.
  * @private
  */
 FileTransferController.prototype.getDragAndDropGlobalData_ = function() {
@@ -387,7 +387,7 @@ FileTransferController.prototype.isMissingFileContents_ =
 /**
  * Obtains entries that need to share with me.
  * The method also observers child entries of the given entries.
- * @param {Array.<Entry>} entries Entries.
+ * @param {Array<Entry>} entries Entries.
  * @return {Promise} Promise to be fulfilled with the entries that need to
  *     share.
  * @private

@@ -14,8 +14,8 @@ var AsyncUtil = {};
  * The callback can be an asynchronous function, but the execution is
  * sequentially done.
  *
- * @param {Array.<T>} array The array to be iterated.
- * @param {function(function(), T, number, Array.<T>)} callback The iteration
+ * @param {Array<T>} array The array to be iterated.
+ * @param {function(function(), T, number, Array<T>)} callback The iteration
  *     callback. The first argument is a callback to notify the completion of
  *     the iteration.
  * @param {function()} completionCallback Called when all iterations are
@@ -178,7 +178,7 @@ AsyncUtil.Queue.prototype = {
  *
  * @param {!function(function())} closure Closure with a completion callback to
  *     be executed.
- * @param {!Array.<string>} dependencies Array of dependencies.
+ * @param {!Array<string>} dependencies Array of dependencies.
  * @param {!string} name Task identifier. Specify to use in dependencies.
  *
  * @constructor
@@ -214,7 +214,7 @@ AsyncUtil.Group = function() {
 
 AsyncUtil.Group.prototype = {
   /**
-   * @return {!Object.<string, AsyncUtil.GroupTask>} Pending tasks
+   * @return {!Object<string, AsyncUtil.GroupTask>} Pending tasks
    */
   get pendingTasks() {
     return this.pendingTasks_;
@@ -226,7 +226,7 @@ AsyncUtil.Group.prototype = {
  *
  * @param {function(function())} closure Closure with a completion callback to
  *     be executed.
- * @param {Array.<string>=} opt_dependencies Array of dependencies. If no
+ * @param {Array<string>=} opt_dependencies Array of dependencies. If no
  *     dependencies, then the the closure will be executed immediately.
  * @param {string=} opt_name Task identifier. Specify to use in dependencies.
  */

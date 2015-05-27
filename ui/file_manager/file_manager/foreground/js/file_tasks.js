@@ -30,7 +30,7 @@ function FileTasks(fileManager) {
   /**
    * List of invocations to be called once tasks are available.
    *
-   * @private {Array.<Object>}
+   * @private {Array<Object>}
    */
   this.pendingInvocations_ = [];
 }
@@ -107,8 +107,8 @@ FileTasks.createWebStoreLink = function(extension, mimeType) {
 /**
  * Complete the initialization.
  *
- * @param {Array.<Entry>} entries List of file entries.
- * @param {Array.<string>=} opt_mimeTypes Mime-type specified for each entries.
+ * @param {Array<Entry>} entries List of file entries.
+ * @param {Array<string>=} opt_mimeTypes Mime-type specified for each entries.
  * @return {!Promise} Promise to be fulfilled when the initialization completes.
  */
 FileTasks.prototype.init = function(entries, opt_mimeTypes) {
@@ -132,7 +132,7 @@ FileTasks.prototype.init = function(entries, opt_mimeTypes) {
 
 /**
  * Obtains the task items.
- * @return {Array.<!Object>}
+ * @return {Array<!Object>}
  */
 FileTasks.prototype.getTaskItems = function() {
   return this.tasks_;
@@ -150,7 +150,7 @@ FileTasks.prototype.size = function() {
 /**
  * Callback when tasks found.
  *
- * @param {Array.<Object>} tasks The tasks.
+ * @param {Array<Object>} tasks The tasks.
  * @private
  */
 FileTasks.prototype.onTasks_ = function(tasks) {
@@ -169,7 +169,7 @@ FileTasks.prototype.onTasks_ = function(tasks) {
  * inserted.
  *
  * @const
- * @type {Array.<string>}
+ * @type {Array<string>}
  * @private
  */
 FileTasks.UMA_INDEX_KNOWN_EXTENSIONS_ = Object.freeze([
@@ -186,7 +186,7 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS_ = Object.freeze([
  * The list of executable file extensions.
  *
  * @const
- * @type {Array.<string>}
+ * @type {Array<string>}
  */
 FileTasks.EXECUTABLE_EXTENSIONS = Object.freeze([
   '.exe', '.lnk', '.deb', '.dmg', '.jar', '.msi',
@@ -195,7 +195,7 @@ FileTasks.EXECUTABLE_EXTENSIONS = Object.freeze([
 /**
  * The list of extensions to skip the suggest app dialog.
  * @const
- * @type {Array.<string>}
+ * @type {Array<string>}
  * @private
  */
 FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_ = Object.freeze([
@@ -205,7 +205,7 @@ FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_ = Object.freeze([
 /**
  * Records trial of opening file grouped by extensions.
  *
- * @param {Array.<Entry>} entries The entries to be opened.
+ * @param {Array<Entry>} entries The entries to be opened.
  * @private
  */
 FileTasks.recordViewingFileTypeUMA_ = function(entries) {
@@ -242,7 +242,7 @@ FileTasks.isInternalTask_ = function(taskId) {
 /**
  * Processes internal tasks.
  *
- * @param {Array.<Object>} tasks The tasks.
+ * @param {Array<Object>} tasks The tasks.
  * @private
  */
 FileTasks.prototype.processTasks_ = function(tasks) {
@@ -326,7 +326,7 @@ FileTasks.prototype.processTasks_ = function(tasks) {
 /**
  * Executes default task.
  *
- * @param {function(boolean, Array.<Entry>)=} opt_callback Called when the
+ * @param {function(boolean, Array<Entry>)=} opt_callback Called when the
  *     default task is executed, or the error is occurred.
  * @private
  */
@@ -338,8 +338,8 @@ FileTasks.prototype.executeDefault_ = function(opt_callback) {
 /**
  * Executes default task.
  *
- * @param {Array.<Entry>} entries Entries to execute.
- * @param {function(boolean, Array.<Entry>)=} opt_callback Called when the
+ * @param {Array<Entry>} entries Entries to execute.
+ * @param {function(boolean, Array<Entry>)=} opt_callback Called when the
  *     default task is executed, or the error is occurred.
  * @private
  */
@@ -447,7 +447,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
  * Executes a single task.
  *
  * @param {string} taskId Task identifier.
- * @param {Array.<Entry>=} opt_entries Entries to xecute on instead of
+ * @param {Array<Entry>=} opt_entries Entries to xecute on instead of
  *     this.entries_|.
  * @private
  */
@@ -461,7 +461,7 @@ FileTasks.prototype.execute_ = function(taskId, opt_entries) {
  * The core implementation to execute a single task.
  *
  * @param {string} taskId Task identifier.
- * @param {Array.<Entry>} entries Entries to execute.
+ * @param {Array<Entry>} entries Entries to execute.
  * @private
  */
 FileTasks.prototype.executeInternal_ = function(taskId, entries) {
@@ -569,7 +569,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
  * Executes an internal task.
  *
  * @param {string} id The short task id.
- * @param {Array.<Entry>} entries The entries to execute on.
+ * @param {Array<Entry>} entries The entries to execute on.
  * @private
  */
 FileTasks.prototype.executeInternalTask_ = function(id, entries) {
@@ -586,7 +586,7 @@ FileTasks.prototype.executeInternalTask_ = function(id, entries) {
 /**
  * Mounts archives.
  *
- * @param {Array.<Entry>} entries Mount file entries list.
+ * @param {Array<Entry>} entries Mount file entries list.
  */
 FileTasks.prototype.mountArchives = function(entries) {
   FileTasks.recordViewingFileTypeUMA_(entries);
@@ -596,7 +596,7 @@ FileTasks.prototype.mountArchives = function(entries) {
 /**
  * The core implementation of mounts archives.
  *
- * @param {Array.<Entry>} entries Mount file entries list.
+ * @param {Array<Entry>} entries Mount file entries list.
  * @private
  */
 FileTasks.prototype.mountArchivesInternal_ = function(entries) {
@@ -804,7 +804,7 @@ FileTasks.prototype.display = function(combobutton) {
  * Executes a single task.
  *
  * @param {string} taskId Task identifier.
- * @param {Array.<Entry>=} opt_entries Entries to xecute on instead of
+ * @param {Array<Entry>=} opt_entries Entries to xecute on instead of
  *     this.entries_|.
  */
 FileTasks.prototype.execute = function(taskId, opt_entries) {
@@ -817,7 +817,7 @@ FileTasks.prototype.execute = function(taskId, opt_entries) {
 /**
  * Executes default task.
  *
- * @param {function(boolean, Array.<Entry>)=} opt_callback Called when the
+ * @param {function(boolean, Array<Entry>)=} opt_callback Called when the
  *     default task is executed, or the error is occurred.
  */
 FileTasks.prototype.executeDefault = function(opt_callback) {

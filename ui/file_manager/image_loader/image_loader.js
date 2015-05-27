@@ -79,7 +79,7 @@ function ImageLoader() {
  * List of extensions allowed to perform image requests.
  *
  * @const
- * @type {Array.<string>}
+ * @type {Array<string>}
  */
 ImageLoader.ALLOWED_CLIENTS = [
   'hhaomjibdihmijegdhdafkllkbggdgoj',  // File Manager's extension id.

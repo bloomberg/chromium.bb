@@ -11,7 +11,7 @@ var GalleryUtil = {};
  *
  * The function also filters non-image items and hidden items.
  *
- * @param {!Array.<!FileEntry>} originalEntries Entries passed from onLaunched
+ * @param {!Array<!FileEntry>} originalEntries Entries passed from onLaunched
  *     events.
  * @return {!Promise} Promise to be fulfilled with entry array.
  */

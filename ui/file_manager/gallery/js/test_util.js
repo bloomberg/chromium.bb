@@ -16,7 +16,7 @@ window.onerror = function() { window.JSErrorCount++; };
 /**
  * Opens the gallery window and waits until it is ready.
  *
- * @param {Array.<string>} urls URLs to be opened.
+ * @param {Array<string>} urls URLs to be opened.
  * @param {function(string)} callback Completion callback with the new window's
  *     App ID.
  */

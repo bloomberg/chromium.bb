@@ -153,7 +153,7 @@ SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {
     },
 
     /**
-     * @param {function(?Array.<!string>)} callback Callback
+     * @param {function(?Array<!string>)} callback Callback
      *     argument is a list of installed item ids (null on error).
      */
     getInstalledItems: function(callback) {

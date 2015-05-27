@@ -324,7 +324,7 @@ TaskController.prototype.onSelectionChangeThrottled_ = function() {
 /**
  * Updates action menu item to match passed task items.
  *
- * @param {!Array.<!Object>} items List of items.
+ * @param {!Array<!Object>} items List of items.
  * @private
  */
 TaskController.prototype.updateContextMenuActionItems_ = function(items) {

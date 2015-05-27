@@ -903,7 +903,7 @@ importer.ScanManager.prototype.isActiveScan = function(scan) {
  * Returns the existing selection scan or a new one for the supplied
  * selection.
  *
- * @param {!Array.<!FileEntry>} entries
+ * @param {!Array<!FileEntry>} entries
  *
  * @return {!importer.ScanResult}
  */
@@ -942,7 +942,7 @@ importer.ControllerEnvironment = function() {};
 
 /**
  * Returns the current file selection, if any. May be empty.
- * @return {!Array.<!Entry>}
+ * @return {!Array<!Entry>}
  */
 importer.ControllerEnvironment.prototype.getSelection;
 

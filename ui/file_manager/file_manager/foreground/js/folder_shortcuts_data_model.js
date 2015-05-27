@@ -81,7 +81,7 @@ FolderShortcutsDataModel.prototype = {
 
   /**
    * Resolves Entries from a list of stored virtual paths. Runs within a queue.
-   * @param {Array.<string>} list List of virtual paths.
+   * @param {Array<string>} list List of virtual paths.
    * @private
    */
   processEntries_: function(list) {
@@ -224,7 +224,7 @@ FolderShortcutsDataModel.prototype = {
    *
    * @param {number} begin Where to start the selection.
    * @param {number=} opt_end Where to end the selection.
-   * @return {Array.<Entry>} Entries in the selected range.
+   * @return {Array<Entry>} Entries in the selected range.
    */
   slice: function(begin, opt_end) {
     return this.array_.slice(begin, opt_end);
@@ -409,9 +409,9 @@ FolderShortcutsDataModel.prototype = {
    * Creates a permutation array for 'permuted' event, which is compatible with
    * a permutation array used in cr/ui/array_data_model.js.
    *
-   * @param {Array.<Entry>} oldArray Previous array before changing.
-   * @param {Array.<Entry>} newArray New array after changing.
-   * @return {Array.<number>} Created permutation array.
+   * @param {Array<Entry>} oldArray Previous array before changing.
+   * @param {Array<Entry>} newArray New array after changing.
+   * @return {Array<number>} Created permutation array.
    * @private
    */
   calculatePermutation_: function(oldArray, newArray) {
@@ -452,7 +452,7 @@ FolderShortcutsDataModel.prototype = {
 
   /**
    * Fires a 'permuted' event, which is compatible with cr.ui.ArrayDataModel.
-   * @param {Array.<number>} permutation Permutation array.
+   * @param {Array<number>} permutation Permutation array.
    */
   firePermutedEvent_: function(permutation) {
     var permutedEvent = new Event('permuted');

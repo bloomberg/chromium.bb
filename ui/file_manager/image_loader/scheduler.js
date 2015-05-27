@@ -14,21 +14,21 @@ function Scheduler() {
    * However, if they have to be downloaded, then these requests are moved
    * to pendingRequests_.
    *
-   * @type {Array.<Request>}
+   * @type {Array<Request>}
    * @private
    */
   this.newRequests_ = [];
 
   /**
    * List of pending requests for images to be downloaded.
-   * @type {Array.<Request>}
+   * @type {Array<Request>}
    * @private
    */
   this.pendingRequests_ = [];
 
   /**
    * List of requests being processed.
-   * @type {Array.<Request>}
+   * @type {Array<Request>}
    * @private
    */
   this.activeRequests_ = [];

@@ -41,7 +41,7 @@ function selectFirstListItem(windowId) {
  * Creates new folder.
  * @param {string} windowId ID of the target window.
  * @param {string} path Initial path.
- * @param {Array.<TestEntryInfo>} initialEntrySet Initial set of entries.
+ * @param {Array<TestEntryInfo>} initialEntrySet Initial set of entries.
  * @return {Promise} Promise to be fulfilled on success.
  */
 function createNewFolder(windowId, path, initialEntrySet) {

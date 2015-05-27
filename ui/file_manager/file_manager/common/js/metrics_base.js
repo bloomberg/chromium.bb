@@ -23,7 +23,7 @@ metricsBase.intervals = {};
  * <p>Values mut be provided by base classes. Values should correspond exactly
  * with values from histograms.xml.
  *
- * @private {!Object.<string, !Array.<*>|number>}
+ * @private {!Object<string, !Array<*>|number>}
  */
 metricsBase.validEnumValues_ = {};
 
@@ -52,7 +52,7 @@ metricsBase.convertName_ = function(name) {
 /**
  * Wrapper method for calling chrome.fileManagerPrivate safely.
  * @param {string} methodName Method name.
- * @param {Array.<Object>} args Arguments.
+ * @param {Array<Object>} args Arguments.
  * @private
  */
 metricsBase.call_ = function(methodName, args) {
@@ -130,7 +130,7 @@ metricsBase.recordInterval = function(name) {
  *
  * @param {string} name Metric name.
  * @param {*} value Enum value.
- * @param {Array.<*>|number=} opt_validValues Array of valid values
+ * @param {Array<*>|number=} opt_validValues Array of valid values
  *     or a boundary number (one-past-the-end) value.
  */
 metricsBase.recordEnum = function(name, value, opt_validValues) {

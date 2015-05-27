@@ -11,7 +11,7 @@
  * @param {!ImageEditor.Prompt} prompt Prompt instance.
  * @param {!Object} DOMContainers Various DOM containers required for the
  *     editor.
- * @param {!Array.<!ImageEditor.Mode>} modes Available editor modes.
+ * @param {!Array<!ImageEditor.Mode>} modes Available editor modes.
  * @param {function(string, ...string)} displayStringFunction String
  *     formatting function.
  * @param {function()} onToolsVisibilityChanged Callback to be called, when
@@ -71,7 +71,7 @@ function ImageEditor(
   // Populate the toolbar.
 
   /**
-   * @type {!Array.<string>}
+   * @type {!Array<string>}
    * @private
    */
   this.actionNames_ = [];

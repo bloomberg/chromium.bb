@@ -148,7 +148,7 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
   this.sequenceLength_ = 0;
 
   /**
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @private
    */
   this.savedSelection_ = null;
@@ -458,7 +458,7 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
 
 /**
  * List of available editor modes.
- * @type {!Array.<ImageEditor.Mode>}
+ * @type {!Array<ImageEditor.Mode>}
  * @const
  */
 SlideMode.EDITOR_MODES = [
@@ -473,7 +473,7 @@ SlideMode.EDITOR_MODES = [
 
 /**
  * Map of the key identifier and offset delta.
- * @enum {!Array.<number>})
+ * @enum {!Array<number>})
  * @const
  */
 SlideMode.KEY_OFFSET_MAP = {

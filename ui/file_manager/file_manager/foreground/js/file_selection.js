@@ -6,7 +6,7 @@
  * The current selection object.
  *
  * @param {!FileManager} fileManager FileManager instance.
- * @param {!Array.<number>} indexes Selected indexes.
+ * @param {!Array<number>} indexes Selected indexes.
  * @constructor
  * @struct
  */
@@ -19,13 +19,13 @@ function FileSelection(fileManager, indexes) {
   this.fileManager_ = fileManager;
 
   /**
-   * @type {!Array.<number>}
+   * @type {!Array<number>}
    * @const
    */
   this.indexes = indexes;
 
   /**
-   * @type {!Array.<!Entry>}
+   * @type {!Array<!Entry>}
    * @const
    */
   this.entries = [];
@@ -62,7 +62,7 @@ function FileSelection(fileManager, indexes) {
   this.mustBeHidden_ = false;
 
   /**
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   this.mimeTypes = null;
 

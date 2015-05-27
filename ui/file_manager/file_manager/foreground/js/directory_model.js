@@ -313,7 +313,7 @@ DirectoryModel.prototype.getCurrentDirEntry = function() {
 };
 
 /**
- * @return {Array.<Entry>} Array of selected entries.
+ * @return {Array<Entry>} Array of selected entries.
  * @private
  */
 DirectoryModel.prototype.getSelectedEntries_ = function() {
@@ -328,7 +328,7 @@ DirectoryModel.prototype.getSelectedEntries_ = function() {
 };
 
 /**
- * @param {Array.<Entry>} value List of selected entries.
+ * @param {Array<Entry>} value List of selected entries.
  * @private
  */
 DirectoryModel.prototype.setSelectedEntries_ = function(value) {
@@ -541,8 +541,8 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
 
 /**
  * Adds/removes/updates items of file list.
- * @param {Array.<Entry>} changedEntries Entries of updated/added files.
- * @param {Array.<string>} removedUrls URLs of removed files.
+ * @param {Array<Entry>} changedEntries Entries of updated/added files.
+ * @param {Array<string>} removedUrls URLs of removed files.
  * @private
  */
 DirectoryModel.prototype.partialUpdate_ =
@@ -1128,7 +1128,7 @@ DirectoryModel.prototype.selectEntry = function(entry) {
 };
 
 /**
- * @param {Array.<Entry>} entries Array of entries.
+ * @param {Array<Entry>} entries Array of entries.
  */
 DirectoryModel.prototype.selectEntries = function(entries) {
   // URLs are needed here, since we are comparing Entries by URLs.

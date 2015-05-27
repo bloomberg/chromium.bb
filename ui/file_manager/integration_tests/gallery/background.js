@@ -19,9 +19,9 @@ var gallery = new RemoteCallGallery(GALLERY_APP_ID);
  * @param {string} testVolumeName Test volume name passed to the addEntries
  *     function. Either 'drive' or 'local'.
  * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
- * @param {Array.<TestEntryInfo>} entries Entries to be parepared and passed to
+ * @param {Array<TestEntryInfo>} entries Entries to be parepared and passed to
  *     the application.
- * @param {Array.<TestEntryInfo>=} opt_selected Entries to be selected. Should
+ * @param {Array<TestEntryInfo>=} opt_selected Entries to be selected. Should
  *     be a sub-set of the entries argument.
  * @return {Promise} Promise to be fulfilled with the data of the main element
  *     in the allery.

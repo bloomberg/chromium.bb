@@ -172,9 +172,9 @@ function testDispositionChecker_Original(callback) {
 };
 
 /**
- * @param {!Array.<string>} filePaths
- * @param {!Array.<string>} fileHashes
- * @return {!Array.<!FileEntry>} Created files.
+ * @param {!Array<string>} filePaths
+ * @param {!Array<string>} fileHashes
+ * @return {!Array<!FileEntry>} Created files.
  */
 function setupHashes(filePaths, fileHashes) {
   // Set up a filesystem with some files.

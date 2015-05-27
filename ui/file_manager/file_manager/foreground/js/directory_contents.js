@@ -15,7 +15,7 @@ function ContentScanner() {
  * directory, or starts to search with some query on a file system.
  * Derived classes must override this method.
  *
- * @param {function(Array.<Entry>)} entriesCallback Called when some chunk of
+ * @param {function(Array<Entry>)} entriesCallback Called when some chunk of
  *     entries are read. This can be called a couple of times until the
  *     completion.
  * @param {function()} successCallback Called when the scan is completed
@@ -324,7 +324,7 @@ DriveMetadataSearchContentScanner.prototype.scan = function(
  */
 function FileFilter(showHidden) {
   /**
-   * @type {Object.<string, Function>}
+   * @type {Object<string, Function>}
    * @private
    */
   this.filters_ = {};
@@ -894,8 +894,8 @@ DirectoryContents.prototype.scan = function(refresh) {
 
 /**
  * Adds/removes/updates items of file list.
- * @param {Array.<Entry>} updatedEntries Entries of updated/added files.
- * @param {Array.<string>} removedUrls URLs of removed files.
+ * @param {Array<Entry>} updatedEntries Entries of updated/added files.
+ * @param {Array<string>} removedUrls URLs of removed files.
  */
 DirectoryContents.prototype.update = function(updatedEntries, removedUrls) {
   var removedMap = {};
@@ -1014,7 +1014,7 @@ DirectoryContents.prototype.onScanError_ = function() {
  *
  * @param {boolean} refresh True to refresh metadata, or false to use cached
  *     one.
- * @param {Array.<Entry>} entries The list of the scanned entries.
+ * @param {Array<Entry>} entries The list of the scanned entries.
  * @private
  */
 DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {

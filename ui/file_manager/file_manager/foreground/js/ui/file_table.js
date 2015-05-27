@@ -10,7 +10,7 @@ var filelist = {};
 /**
  * Custom column model for advanced auto-resizing.
  *
- * @param {!Array.<cr.ui.table.TableColumn>} tableColumns Table columns.
+ * @param {!Array<cr.ui.table.TableColumn>} tableColumns Table columns.
  * @extends {cr.ui.table.TableColumnModel}
  * @constructor
  */
@@ -37,7 +37,7 @@ FileTableColumnModel.MIN_WIDTH_ = 10;
  * than MIN_WIDTH_.
  *
  * @private
- * @param {Array.<number>} newPos Positions of each column dividers.
+ * @param {Array<number>} newPos Positions of each column dividers.
  */
 FileTableColumnModel.prototype.applyColumnPositions_ = function(newPos) {
   // Check the minimum width and adjust the positions.
@@ -465,7 +465,7 @@ FileTable.decorate = function(
    * @param {number} y Y coordinate value.
    * @param {number=} opt_width Width of the coordinate.
    * @param {number=} opt_height Height of the coordinate.
-   * @return {Array.<number>} Index list of hit elements.
+   * @return {Array<number>} Index list of hit elements.
    * @this {cr.ui.List}
    */
   self.list.getHitElements = function(x, y, opt_width, opt_height) {
@@ -908,7 +908,7 @@ FileTable.prototype.updateFileMetadata = function(item, entry) {
 /**
  * Updates list items 'in place' on metadata change.
  * @param {string} type Type of metadata change.
- * @param {Array.<Entry>} entries Entries to update.
+ * @param {Array<Entry>} entries Entries to update.
  */
 FileTable.prototype.updateListItemsMetadata = function(type, entries) {
   var urls = util.entriesToURLs(entries);

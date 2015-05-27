@@ -159,7 +159,7 @@ function renameFile(windowId, oldName, newName) {
 /**
  * Test for renaming a new directory.
  * @param {string} path Initial path.
- * @param {Array.<TestEntryInfo>} initialEntrySet Initial set of entries.
+ * @param {Array<TestEntryInfo>} initialEntrySet Initial set of entries.
  * @param {string} pathInBreadcrumb Initial path which is shown in breadcrumb.
  * @return {Promise} Promise to be fulfilled on success.
  */
@@ -209,7 +209,7 @@ function testRenameNewDirectory(path, initialEntrySet, pathInBreadcrumb) {
 /**
  * Test for renaming a file.
  * @param {string} path Initial path.
- * @param {Array.<TestEntryInfo>} initialEntrySet Initial set of entries.
+ * @param {Array<TestEntryInfo>} initialEntrySet Initial set of entries.
  * @return {Promise} Promise to be fulfilled on success.
  */
 function testRenameFile(path, initialEntrySet) {

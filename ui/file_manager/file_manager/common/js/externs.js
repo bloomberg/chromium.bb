@@ -52,7 +52,7 @@ var EntriesChangedEvent = function() {};
 /** @type {util.EntryChangedKind} */
 EntriesChangedEvent.prototype.kind;
 
-/** @type {Array.<!Entry>} */
+/** @type {Array<!Entry>} */
 EntriesChangedEvent.prototype.entries;
 
 /**

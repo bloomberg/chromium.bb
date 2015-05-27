@@ -493,8 +493,8 @@ function testImportWithErrors(callback) {
 }
 
 /**
- * @param {!Array.<string>} fileNames
- * @return {!Array.<!Entry>}
+ * @param {!Array<string>} fileNames
+ * @return {!Array<!Entry>}
  */
 function setupFileSystem(fileNames) {
   // Set up a filesystem with some files.

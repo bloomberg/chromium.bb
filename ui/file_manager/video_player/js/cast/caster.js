@@ -172,7 +172,7 @@ function initializeApi() {
  * initialization is completed.
  *
  * @param {chrome.cast.ReceiverAvailability} availability Availability of casts.
- * @param {Array.<Object>} receivers List of casts.
+ * @param {Array<Object>} receivers List of casts.
  */
 function onReceiver(availability, receivers) {
   if (availability === chrome.cast.ReceiverAvailability.AVAILABLE) {

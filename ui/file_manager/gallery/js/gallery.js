@@ -280,7 +280,7 @@ Gallery.prototype.initToolbarButton_ = function(className, title) {
 /**
  * Loads the content.
  *
- * @param {!Array.<!Entry>} selectedEntries Array of selected entries.
+ * @param {!Array<!Entry>} selectedEntries Array of selected entries.
  */
 Gallery.prototype.load = function(selectedEntries) {
   GalleryUtil.createEntrySet(selectedEntries).then(function(allEntries) {
@@ -291,8 +291,8 @@ Gallery.prototype.load = function(selectedEntries) {
 /**
  * Loads the content.
  *
- * @param {!Array.<!FileEntry>} entries Array of entries.
- * @param {!Array.<!FileEntry>} selectedEntries Array of selected entries.
+ * @param {!Array<!FileEntry>} entries Array of entries.
+ * @param {!Array<!FileEntry>} selectedEntries Array of selected entries.
  * @private
  */
 Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
@@ -600,7 +600,7 @@ Gallery.prototype.delete_ = function() {
 };
 
 /**
- * @return {!Array.<Gallery.Item>} Current selection.
+ * @return {!Array<Gallery.Item>} Current selection.
  */
 Gallery.prototype.getSelectedItems = function() {
   return this.selectionModel_.selectedIndexes.map(
@@ -608,7 +608,7 @@ Gallery.prototype.getSelectedItems = function() {
 };
 
 /**
- * @return {!Array.<Entry>} Array of currently selected entries.
+ * @return {!Array<Entry>} Array of currently selected entries.
  */
 Gallery.prototype.getSelectedEntries = function() {
   return this.selectionModel_.selectedIndexes.map(function(index) {

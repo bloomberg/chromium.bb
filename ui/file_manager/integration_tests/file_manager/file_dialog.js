@@ -9,7 +9,7 @@
  *
  * @param {string} volumeName Volume name passed to the selectVolume remote
  *     funciton.
- * @param {Array.<TestEntryInfo>} expectedSet Expected set of the entries.
+ * @param {Array<TestEntryInfo>} expectedSet Expected set of the entries.
  * @return {Promsie} Promise to be fulfilled/rejected depending on the test
  *     result.
  */

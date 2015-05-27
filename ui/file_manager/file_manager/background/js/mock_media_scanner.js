@@ -16,13 +16,13 @@ function TestMediaScanner() {
 
   /**
    * List of file entries found while scanning.
-   * @type {!Array.<!FileEntry>}
+   * @type {!Array<!FileEntry>}
    */
   this.fileEntries = [];
 
   /**
    * List of file entries found while scanning.
-   * @type {!Array.<!FileEntry>}
+   * @type {!Array<!FileEntry>}
    */
   this.duplicateFileEntries = [];
 
@@ -32,7 +32,7 @@ function TestMediaScanner() {
   /** @type {number} */
   this.scanDuration = 100;
 
-  /** @private {!Array.<!importer.ScanObserver>} */
+  /** @private {!Array<!importer.ScanObserver>} */
   this.observers = [];
 }
 
@@ -124,7 +124,7 @@ TestMediaScanner.prototype.assertLastScanCanceled = function() {
  * @struct
  * @implements {importer.ScanResult}
  *
- * @param {!Array.<!FileEntry>} fileEntries
+ * @param {!Array<!FileEntry>} fileEntries
  */
 function TestScanResult(fileEntries) {
   /** @private {number} */
@@ -132,13 +132,13 @@ function TestScanResult(fileEntries) {
 
   /**
    * List of file entries found while scanning.
-   * @type {!Array.<!FileEntry>}
+   * @type {!Array<!FileEntry>}
    */
   this.fileEntries = fileEntries.slice();
 
   /**
    * List of file entries found while scanning.
-   * @type {!Array.<!FileEntry>}
+   * @type {!Array<!FileEntry>}
    */
   this.duplicateFileEntries = [];
 

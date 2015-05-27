@@ -38,7 +38,7 @@ test.util.sync.loadMockCastExtension = function(contentWindow) {
 /**
  * Opens the main Files.app's window and waits until it is ready.
  *
- * @param {Array.<string>} urls URLs to be opened.
+ * @param {Array<string>} urls URLs to be opened.
  * @param {number} pos Indes in the |urls| to be played at first
  * @param {function(string)} callback Completion callback with the new window's
  *     App ID.

@@ -132,7 +132,7 @@ MetadataDispatcher.prototype.vlog = function(var_args) {
 /**
  * Post a properly formatted message to the caller.
  * @param {string} verb Message type descriptor.
- * @param {Array.<Object>} args Arguments array.
+ * @param {Array<Object>} args Arguments array.
  */
 MetadataDispatcher.prototype.postMessage = function(verb, args) {
   this.port_.postMessage({verb: verb, arguments: args});

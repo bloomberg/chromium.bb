@@ -120,7 +120,7 @@ DialogFooter.getOKButtonLabel_ = function(dialogType) {
 
 /**
  * Fills the file type list or hides it.
- * @param {!Array.<{extensions: Array.<string>, description: string}>} fileTypes
+ * @param {!Array<{extensions: Array<string>, description: string}>} fileTypes
  *     List of file type.
  * @param {boolean} includeAllFiles Whether the filter includes the 'all files'
  *     item or not.

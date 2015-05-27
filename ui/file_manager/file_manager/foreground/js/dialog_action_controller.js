@@ -87,7 +87,7 @@ function DialogActionController(
 
   /**
    * List of acceptable file types for open dialog.
-   * @type {!Array.<Object>}
+   * @type {!Array<Object>}
    * @const
    * @private
    */

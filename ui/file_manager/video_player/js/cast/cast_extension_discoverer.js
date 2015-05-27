@@ -11,7 +11,7 @@ function CastExtensionDiscoverer() {}
 
 /**
  * Tentatice IDs to try.
- * @type {!Array.<string>}
+ * @type {!Array<string>}
  * @const
  */
 CastExtensionDiscoverer.CAST_EXTENSION_IDS = [

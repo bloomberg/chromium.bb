@@ -83,7 +83,7 @@ cr.define('cr.filebrowser', function() {
    *
    * @param {string} title Title in dialog caption.
    * @param {string} message Message in dialog caption.
-   * @param {Array.<Object>} items Items to render in the list.
+   * @param {Array<Object>} items Items to render in the list.
    * @param {number} defaultIndex Item to select by default.
    * @param {function(Object)} onSelectedItem Callback which is called when an
    *     item is selected.

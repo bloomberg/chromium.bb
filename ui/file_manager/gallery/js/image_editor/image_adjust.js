@@ -168,7 +168,7 @@ ImageEditor.Mode.ColorFilter.prototype =
 
 /**
  * Gets a histogram from a thumbnail.
- * @return {{r: !Array.<number>, g: !Array.<number>, b: !Array.<number>}}
+ * @return {{r: !Array<number>, g: !Array<number>, b: !Array<number>}}
  *    histogram.
  */
 ImageEditor.Mode.ColorFilter.prototype.getHistogram = function() {

@@ -263,7 +263,7 @@ var CommandHandler = function(fileManager) {
 
   /**
    * Command elements.
-   * @type {Object.<string, cr.ui.Command>}
+   * @type {Object<string, cr.ui.Command>}
    * @private
    */
   this.commands_ = {};
@@ -340,7 +340,7 @@ CommandHandler.prototype.onCanExecute_ = function(event) {
 
 /**
  * Commands.
- * @type {Object.<string, Command>}
+ * @type {Object<string, Command>}
  * @const
  * @private
  */

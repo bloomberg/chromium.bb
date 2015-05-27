@@ -10,13 +10,13 @@
 function BackgroundBase() {
   /**
    * Map of all currently open app windows. The key is an app ID.
-   * @type {Object.<string, chrome.app.window.AppWindow>}
+   * @type {Object<string, chrome.app.window.AppWindow>}
    */
   this.appWindows = {};
 
   /**
    * Map of all currently open file dialogs. The key is an app ID.
-   * @type {!Object.<string, !Window>}
+   * @type {!Object<string, !Window>}
    */
   this.dialogs = {};
 }
@@ -24,7 +24,7 @@ function BackgroundBase() {
 /**
  * Gets similar windows, it means with the same initial url.
  * @param {string} url URL that the obtained windows have.
- * @return {Array.<chrome.app.window.AppWindow>} List of similar windows.
+ * @return {Array<chrome.app.window.AppWindow>} List of similar windows.
  */
 BackgroundBase.prototype.getSimilarWindows = function(url) {
   var result = [];

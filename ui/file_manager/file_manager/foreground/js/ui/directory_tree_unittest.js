@@ -38,7 +38,7 @@ function setUp() {
  * Returns item labels of a directory tree as a list.
  *
  * @param {DirectoryTree} directoryTree A directory tree.
- * @return {Array.<string>} List of labels.
+ * @return {Array<string>} List of labels.
  */
 function getDirectoryTreeItemLabelsAsAList(directoryTree) {
   var result = [];

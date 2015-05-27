@@ -12,7 +12,7 @@ function DeviceHandler() {
 
   /**
    * Map of device path and mount status of devices.
-   * @private {Object.<string, DeviceHandler.MountStatus>}
+   * @private {Object<string, DeviceHandler.MountStatus>}
    */
   this.mountStatus_ = {};
 
@@ -440,7 +440,7 @@ DeviceHandler.prototype.onMount_ = function(event) {
       .then(
           /**
            * @param {!DirectoryEntry} root
-           * @return {!Promise<!Array.<DirectoryEntry>>}
+           * @return {!Promise<!Array<DirectoryEntry>>}
            */
           function(root) {
             return Promise.all([
@@ -460,7 +460,7 @@ DeviceHandler.prototype.onMount_ = function(event) {
           })
       .then(
           /**
-           * @param {!Array.<DirectoryEntry>} results where index 0 is for
+           * @param {!Array<DirectoryEntry>} results where index 0 is for
            *     'DCIM' and 1 is for 'dcim'.
            * @this {DeviceHandler}
            */

@@ -97,7 +97,7 @@ LocationLine.prototype.getComponents_ = function(entry) {
 
 /**
  * Updates the breadcrumb display.
- * @param {!Array.<!LocationLine.PathComponent>} components Components to the
+ * @param {!Array<!LocationLine.PathComponent>} components Components to the
  *     target path.
  * @private
  */

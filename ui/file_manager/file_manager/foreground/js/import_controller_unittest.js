@@ -404,7 +404,7 @@ TestImportTask.prototype.requestCancel = function() {
  * @constructor
  */
 function TestImportRunner() {
-  /** @public {!Array.<!importer.ScanResult>} */
+  /** @public {!Array<!importer.ScanResult>} */
   this.imported = [];
 
   /**
@@ -413,7 +413,7 @@ function TestImportRunner() {
    */
   this.importResolver = new importer.Resolver();
 
-  /** @private {!Array.<!TestImportTask>} */
+  /** @private {!Array<!TestImportTask>} */
   this.tasks_ = [];
 }
 
@@ -658,7 +658,7 @@ importer.TestCommandWidget.prototype.setDetailsBannerVisible =
 /**
  * @param {!VolumeManagerCommon.VolumeType} volumeType
  * @param {string} volumeId
- * @param {!Array.<string>} fileNames
+ * @param {!Array<string>} fileNames
  * @param {string} currentDirectory
  * @return {!importer.ImportControler}
  */
@@ -683,7 +683,7 @@ function createController(volumeType, volumeId, fileNames, currentDirectory) {
 /**
  * @param {!VolumeManagerCommon.VolumeType} volumeType
  * @param {string} volumeId
- * @param {!Array.<string>} fileNames
+ * @param {!Array<string>} fileNames
  * @return {!VolumeInfo}
  */
 function setupFileSystem(volumeType, volumeId, fileNames) {

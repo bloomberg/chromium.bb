@@ -285,7 +285,7 @@ ExifEncoder.prototype.encode = function() {
 /**
  * Write the contents of an IFD directory.
  * @param {!ByteWriter} bw ByteWriter to use.
- * @param {!Object.<!Exif.Tag, ExifEntry>} directory A directory map as created
+ * @param {!Object<!Exif.Tag, ExifEntry>} directory A directory map as created
  *     by ExifParser.
  * @param {Array=} opt_resolveLater An array of tag ids for which the values
  *     will be resolved later.
@@ -414,7 +414,7 @@ ExifEncoder.writeValue = function(bw, tag) {
 /**
  * Finds a tag. If not exist, creates a tag.
  *
- * @param {!Object.<!Exif.Tag, ExifEntry>} directory EXIF directory.
+ * @param {!Object<!Exif.Tag, ExifEntry>} directory EXIF directory.
  * @param {!Exif.Tag} id Tag id.
  * @param {number=} opt_format Tag format
  *     (used in {@link ExifEncoder#getComponentWidth}).

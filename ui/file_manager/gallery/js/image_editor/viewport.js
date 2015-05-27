@@ -107,7 +107,7 @@ function Viewport() {
 /**
  * Zoom ratios.
  *
- * @type {Array.<number>}
+ * @type {Array<number>}
  * @const
  */
 Viewport.ZOOM_RATIOS = [1, 1.5, 2, 3];

@@ -61,7 +61,7 @@ MockFileSystem.prototype.populate = function(paths) {
 /**
  * Returns all children of the supplied directoryEntry.
  * @param  {!DirectoryEntry} directoryEntry
- * @return {!Array.<!Entry>}
+ * @return {!Array<!Entry>}
  * @private
  */
 MockFileSystem.prototype.findChildren_ = function(directory) {
@@ -268,7 +268,7 @@ MockDirectoryEntry.prototype.clone = function(path, opt_filesystem) {
 
 /**
  * Returns all children of the supplied directoryEntry.
- * @return {!Array.<!Entry>}
+ * @return {!Array<!Entry>}
  */
 MockDirectoryEntry.prototype.getAllChildren = function() {
   return this.filesystem.findChildren_(this);
@@ -333,7 +333,7 @@ MockDirectoryEntry.prototype.createReader = function() {
 
 /**
  * Mock class for DirectoryReader.
- * @param {!Array.<!Entry>} entries
+ * @param {!Array<!Entry>} entries
  */
 function MockDirectoryReader(entries) {
   this.entries_ = entries;

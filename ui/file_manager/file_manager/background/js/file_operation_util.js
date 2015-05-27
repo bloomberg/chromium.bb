@@ -113,7 +113,7 @@ fileOperationUtil.deduplicatePath = function(
  * include the entry itself.
  *
  * @param {Entry} entry The root Entry for traversing.
- * @param {function(Array.<Entry>)} successCallback Called when the traverse
+ * @param {function(Array<Entry>)} successCallback Called when the traverse
  *     is successfully done with the array of the entries.
  * @param {function(DOMError)} errorCallback Called on error with the first
  *     occurred error (i.e. following errors will just be discarded).
@@ -193,10 +193,10 @@ fileOperationUtil.resolveRecursively_ = function(
  * <p>For real-time (as you scan) results use {@code findFilesRecursively}.
  *
  * @param {!DirectoryEntry} entry The DirectoryEntry to scan.
- * @return {!Promise.<!Array.<!Entry>>} Resolves when scanning is complete.
+ * @return {!Promise.<!Array<!Entry>>} Resolves when scanning is complete.
  */
 fileOperationUtil.gatherEntriesRecursively = function(entry) {
-  /** @type {!Array.<!Entry>} */
+  /** @type {!Array<!Entry>} */
   var gatheredFiles = [];
 
   return fileOperationUtil.findEntriesRecursively(
@@ -492,7 +492,7 @@ fileOperationUtil.copyTo = function(
  * Thin wrapper of chrome.fileManagerPrivate.zipSelection to adapt its
  * interface similar to copyTo().
  *
- * @param {Array.<Entry>} sources The array of entries to be archived.
+ * @param {Array<Entry>} sources The array of entries to be archived.
  * @param {DirectoryEntry} parent The entry of the destination directory.
  * @param {string} newName The name of the archive to be created.
  * @param {function(FileEntry)} successCallback Callback invoked when the
@@ -530,7 +530,7 @@ fileOperationUtil.zipSelection = function(
  *
  * @param {string} taskId A unique ID for identifying this task.
  * @param {util.FileOperationType} operationType The type of this operation.
- * @param {Array.<Entry>} sourceEntries Array of source entries.
+ * @param {Array<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @constructor
  * @struct
@@ -543,7 +543,7 @@ fileOperationUtil.Task = function(
   /** @type {util.FileOperationType} */
   this.operationType = operationType;
 
-  /** @type {Array.<Entry>} */
+  /** @type {Array<Entry>} */
   this.sourceEntries = sourceEntries;
 
   /** @type {DirectoryEntry} */
@@ -551,7 +551,7 @@ fileOperationUtil.Task = function(
 
   /**
    * An array of map from url to Entry being processed.
-   * @type {Array.<Object<string, Entry>>}
+   * @type {Array<Object<string, Entry>>}
    */
   this.processingEntries = null;
 
@@ -668,7 +668,7 @@ fileOperationUtil.Task.prototype.calcProcessedBytes_ = function() {
  * Task to copy entries.
  *
  * @param {string} taskId A unique ID for identifying this task.
- * @param {Array.<Entry>} sourceEntries Array of source entries.
+ * @param {Array<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {boolean} deleteAfterCopy Whether the delete original files after
  *     copy.
@@ -914,7 +914,7 @@ fileOperationUtil.CopyTask.prototype.processEntry_ = function(
  * Task to move entries.
  *
  * @param {string} taskId A unique ID for identifying this task.
- * @param {Array.<Entry>} sourceEntries Array of source entries.
+ * @param {Array<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @constructor
  * @extends {fileOperationUtil.Task}
@@ -1044,7 +1044,7 @@ fileOperationUtil.MoveTask.processEntry_ = function(
  * Task to create a zip archive.
  *
  * @param {string} taskId A unique ID for identifying this task.
- * @param {Array.<Entry>} sourceEntries Array of source entries.
+ * @param {Array<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {DirectoryEntry} zipBaseDirEntry Base directory dealt as a root
  *     in ZIP archive.

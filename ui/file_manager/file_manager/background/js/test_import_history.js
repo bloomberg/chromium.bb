@@ -15,16 +15,16 @@ var importer = importer || {};
  * @implements {importer.ImportHistory}
  */
 importer.TestImportHistory = function() {
-  /** @type {!Object.<string, !Object.<!importer.Destination, string>>} */
+  /** @type {!Object<string, !Object<!importer.Destination, string>>} */
   this.copiedPaths = {};
 
-  /** @type {!Object.<string, Array.<string>>} */
+  /** @type {!Object<string, Array<string>>} */
   this.importedPaths = {};
 
   /**
    * If null, history has been loaded and listeners notified.
    *
-   * @private {Array.<!importer.ImportHistory>}
+   * @private {Array<!importer.ImportHistory>}
    */
   this.loadListeners_ = [];
 };
@@ -37,7 +37,7 @@ importer.TestImportHistory.prototype.getHistory =
       function() {
         if (this.loadListeners_) {
           this.loadListeners_.forEach(
-              /** @param {!Array.<!importer.ImportHistory>} listener */
+              /** @param {!Array<!importer.ImportHistory>} listener */
               function(listener) {
                 listener(this);
               }.bind(this));

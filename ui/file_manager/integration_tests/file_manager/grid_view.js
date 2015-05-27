@@ -9,7 +9,7 @@
  *
  * @param {string} rootPath Root path to be used as a default current directory
  *     during initialization. Can be null, for no default path.
- * @param {Array.<TestEntryInfo>} expectedSet Set of entries that are expected
+ * @param {Array<TestEntryInfo>} expectedSet Set of entries that are expected
  *     to appear in the grid view.
  * @return {Promise} Promise to be fulfilled or rejected depending on the test
  *     result.

@@ -63,7 +63,7 @@ function getMockFileManager() {
  * Returns a promise which is resolved when showHtml of alert dialog is called
  * with expected title and text.
  *
- * @param {!Array.<!Entry>} entries Entries.
+ * @param {!Array<!Entry>} entries Entries.
  * @param {string} expectedTitle An expected title.
  * @param {string} expectedText An expected text.
  * @return {!Promise}
@@ -89,7 +89,7 @@ function showHtmlOfAlertDialogIsCalled(
 /**
  * Returns a promise which is resolved when openSuggestAppsDialog is called.
  *
- * @param {!Array.<!Entry>} entries Entries.
+ * @param {!Array<!Entry>} entries Entries.
  * @return {!Promise}
  */
 function openSuggestAppsDialogIsCalled(entries) {

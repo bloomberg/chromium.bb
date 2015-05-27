@@ -4,7 +4,7 @@
 
 /**
  * Stub out the metrics package.
- * @type {!Object.<!string, !Function>}
+ * @type {!Object<!string, !Function>}
  */
 var metrics = {
   recordTime: function() {},
@@ -393,7 +393,7 @@ function testInvalidation(callback) {
 
 /**
  * Verifies the results of the media scan are as expected.
- * @param {!Array.<string>} expected
+ * @param {!Array<string>} expected
  * @param {!importer.ScanResults} results
  */
 function assertFilesFound(expected, results) {
@@ -403,7 +403,7 @@ function assertFilesFound(expected, results) {
 
 /**
  * Verifies the results of the media scan are as expected.
- * @param {!Array.<string>} expected
+ * @param {!Array<string>} expected
  * @param {!importer.ScanResults} results
  */
 function assertDuplicatesFound(expected, results) {

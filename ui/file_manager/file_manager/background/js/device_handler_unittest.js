@@ -10,7 +10,7 @@ var chrome;
 
 /**
  * Callbacks registered by setTimeout.
- * @type {Array.<function>}
+ * @type {Array<function>}
  */
 var timeoutCallbacks;
 
@@ -550,7 +550,7 @@ function testDeviceHardUnplugged() {
 /**
  * @param {!VolumeManagerCommon.VolumeType} volumeType
  * @param {string} volumeId
- * @param {!Array.<string>} fileNames
+ * @param {!Array<string>} fileNames
  * @return {!VolumeInfo}
  */
 function setupFileSystem(volumeType, volumeId, fileNames) {

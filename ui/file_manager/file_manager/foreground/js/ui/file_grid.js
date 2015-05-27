@@ -462,7 +462,7 @@ FileGrid.prototype.createSelectionController = function(sm) {
 /**
  * Updates items to reflect metadata changes.
  * @param {string} type Type of metadata changed.
- * @param {Array.<Entry>} entries Entries whose metadata changed.
+ * @param {Array<Entry>} entries Entries whose metadata changed.
  */
 FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
   var urls = util.entriesToURLs(entries);
@@ -816,7 +816,7 @@ FileGrid.prototype.getHitColumnIndex_ = function(x, reverse) {
  * @param {number} y Y coordinate value.
  * @param {number=} opt_width Width of the coordinate.
  * @param {number=} opt_height Height of the coordinate.
- * @return {Array.<number>} Index list of hit elements.
+ * @return {Array<number>} Index list of hit elements.
  */
 FileGrid.prototype.getHitElements = function(x, y, opt_width, opt_height) {
   var currentSelection = [];

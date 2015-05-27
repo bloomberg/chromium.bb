@@ -31,7 +31,7 @@ RemoteCall.isStepByStepEnabled = function() {
  * @param {string} func Function name.
  * @param {?string} appId Target window's App ID or null for functions
  *     not requiring a window.
- * @param {Array.<*>} args Array of arguments.
+ * @param {Array<*>} args Array of arguments.
  * @param {function(*)=} opt_callback Callback handling the function's result.
  * @return {Promise} Promise to be fulfilled with the result of the remote
  *     utility.
@@ -222,7 +222,7 @@ RemoteCall.prototype.fakeKeyDown =
  * Gets file entries just under the volume.
  *
  * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
- * @param {Array.<string>} names File name list.
+ * @param {Array<string>} names File name list.
  * @return {Promise} Promise to be fulfilled with file entries or rejected
  *     depending on the result.
  */
@@ -247,7 +247,7 @@ RemoteCallFilesApp.prototype.__proto__ = RemoteCall.prototype;
 /**
  * Waits for the file list turns to the given contents.
  * @param {string} windowId Target window ID.
- * @param {Array.<Array.<string>>} expected Expected contents of file list.
+ * @param {Array<Array<string>>} expected Expected contents of file list.
  * @param {{orderCheck:boolean=, ignoreLastModifiedTime:boolean=}=} opt_options
  *     Options of the comparison. If orderCheck is true, it also compares the
  *     order of files. If ignoreLastModifiedTime is true, it compares the file

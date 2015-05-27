@@ -27,7 +27,7 @@ function FakeTask(isDefault, taskId, title, opt_isGenericFileHandler) {
 /**
  * Fake tasks for a local volume.
  *
- * @type {Array.<FakeTask>}
+ * @type {Array<FakeTask>}
  * @const
  */
 var DOWNLOADS_FAKE_TASKS = [
@@ -38,7 +38,7 @@ var DOWNLOADS_FAKE_TASKS = [
 /**
  * Fake tasks for a drive volume.
  *
- * @type {Array.<FakeTask>}
+ * @type {Array<FakeTask>}
  * @const
  */
 var DRIVE_FAKE_TASKS = [
@@ -50,7 +50,7 @@ var DRIVE_FAKE_TASKS = [
  * Sets up task tests.
  *
  * @param {string} rootPath Root path.
- * @param {Array.<FakeTask>} fakeTasks Fake tasks.
+ * @param {Array<FakeTask>} fakeTasks Fake tasks.
  */
 function setupTaskTest(rootPath, fakeTasks) {
   return setupAndWaitUntilReady(null, rootPath).then(function(windowId) {

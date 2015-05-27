@@ -266,7 +266,7 @@ ExifParser.prototype.readMarkLength = function(br) {
 
 /**
  * @param {ByteReader} br Byte reader to be used for reading.
- * @param {Array.<Object>} tags Array of tags to be written to.
+ * @param {Array<Object>} tags Array of tags to be written to.
  * @return {number} Directory offset.
  */
 ExifParser.prototype.readDirectory = function(br, tags) {
@@ -420,21 +420,21 @@ ExifParser.prototype.validateAndFixStringTag_ = function(tag) {
 /**
  * Map from the exif orientation value to the horizontal scale value.
  * @const
- * @type {Array.<number>}
+ * @type {Array<number>}
  */
 ExifParser.SCALEX = [1, -1, -1, 1, 1, 1, -1, -1];
 
 /**
  * Map from the exif orientation value to the vertical scale value.
  * @const
- * @type {Array.<number>}
+ * @type {Array<number>}
  */
 ExifParser.SCALEY = [1, 1, -1, -1, -1, 1, 1, -1];
 
 /**
  * Map from the exit orientation value to the rotation value.
  * @const
- * @type {Array.<number>}
+ * @type {Array<number>}
  */
 ExifParser.ROTATE90 = [0, 0, 0, 0, 1, 1, 1, 1];
 

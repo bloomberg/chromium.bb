@@ -85,7 +85,7 @@ filter.applyByStrips = function(
  * Return a color histogram for an image.
  *
  * @param {!(HTMLCanvasElement|ImageData)} source Image data to analyze.
- * @return {{r: !Array.<number>, g: !Array.<number>, b: !Array.<number>}}
+ * @return {{r: !Array<number>, g: !Array<number>, b: !Array<number>}}
  *     histogram.
  */
 filter.getHistogram = function(source) {
@@ -209,7 +209,7 @@ filter.floatToFixedPoint = function(x) {
  *  0 w2 w1 w2  0
  *  0  0 w3  0  0
  *
- * @param {!Array.<number>} weights See the picture above.
+ * @param {!Array<number>} weights See the picture above.
  * @param {!ImageData} dst Destination image data. Can be smaller than the
  *     source, must completely fit inside the source.
  * @param {!ImageData} src Source image data.
@@ -355,7 +355,7 @@ filter.getWeightedAverageColor = function(imageData) {
  * The copied part of src should completely fit into dst (there is no clipping
  * on either side).
  *
- * @param {!Array.<number>} matrix 3x3 color matrix.
+ * @param {!Array<number>} matrix 3x3 color matrix.
  * @param {!ImageData} dst Destination image data.
  * @param {!ImageData} src Source image data.
  * @param {number} offsetX X offset in source to start processing.
@@ -434,7 +434,7 @@ filter.colorMatrix3x3 = function(matrix, dst, src, offsetX, offsetY) {
 /**
  * Return a convolution filter function bound to specific weights.
  *
- * @param {!Array.<number>} weights Weights for the convolution matrix
+ * @param {!Array<number>} weights Weights for the convolution matrix
  *     (not normalized).
  * @return {function(!ImageData,!ImageData,number,number)} Convolution filter.
  */
@@ -466,7 +466,7 @@ filter.createConvolutionFilter = function(weights) {
 
 /**
  * Creates matrix filter.
- * @param {!Array.<number>} matrix Color transformation matrix.
+ * @param {!Array<number>} matrix Color transformation matrix.
  * @return {function(!ImageData,!ImageData,number,number)} Matrix filter.
  */
 filter.createColorMatrixFilter = function(matrix) {
@@ -540,7 +540,7 @@ filter.exposure = function(options) {
 /**
  * Return a color autofix filter.
  * @param {{histogram:
- *     {r: !Array.<number>, g: !Array.<number>, b: !Array.<number>}}} options
+ *     {r: !Array<number>, g: !Array<number>, b: !Array<number>}}} options
  *     Histogram for autofix.
  * @return {function(!ImageData,!ImageData,number,number)} Autofix filter.
  */
@@ -554,7 +554,7 @@ filter.autofix = function(options) {
 /**
  * Return a conversion table that stretches the range of colors used
  * in the image to 0..255.
- * @param {!Array.<number>} channelHistogram Histogram to calculate range.
+ * @param {!Array<number>} channelHistogram Histogram to calculate range.
  * @return {!Uint8Array} Color mapping array.
  */
 filter.autofix.stretchColors = function(channelHistogram) {
@@ -569,7 +569,7 @@ filter.autofix.stretchColors = function(channelHistogram) {
 
 /**
  * Return a range that encloses non-zero elements values in a histogram array.
- * @param {!Array.<number>} channelHistogram Histogram to analyze.
+ * @param {!Array<number>} channelHistogram Histogram to analyze.
  * @return {{first: number, last: number}} Channel range in histogram.
  */
 filter.autofix.getRange = function(channelHistogram) {
@@ -597,7 +597,7 @@ filter.autofix.getRange = function(channelHistogram) {
 filter.autofix.SENSITIVITY = 8;
 
 /**
- * @param {!Array.<number>} channelHistogram Histogram to analyze.
+ * @param {!Array<number>} channelHistogram Histogram to analyze.
  * @return {boolean} True if stretching this range to 0..255 would make
  *                   a visible difference.
  */
@@ -608,7 +608,7 @@ filter.autofix.needsStretching = function(channelHistogram) {
 };
 
 /**
- * @param {{r: !Array.<number>, g: !Array.<number>, b: !Array.<number>}}
+ * @param {{r: !Array<number>, g: !Array<number>, b: !Array<number>}}
  *     histogram
  * @return {boolean} True if the autofix would make a visible difference.
  */

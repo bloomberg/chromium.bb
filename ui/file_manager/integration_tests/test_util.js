@@ -44,7 +44,7 @@ var LOG_INTERVAL = 3000;
  * Returns a pending marker. See also the repeatUntil function.
  * @param {string} message Pending reason including %s, %d, or %j markers. %j
  *     format an object as JSON.
- * @param {Array.<*>} var_args Values to be assigined to %x markers.
+ * @param {Array<*>} var_args Values to be assigined to %x markers.
  * @return {Object} Object which returns true for the expression: obj instanceof
  *     pending.
  */
@@ -93,8 +93,8 @@ function repeatUntil(checkFunction) {
 
 /**
  * Adds the givin entries to the target volume(s).
- * @param {Array.<string>} volumeNames Names of target volumes.
- * @param {Array.<TestEntryInfo>} entries List of entries to be added.
+ * @param {Array<string>} volumeNames Names of target volumes.
+ * @param {Array<TestEntryInfo>} entries List of entries to be added.
  * @param {function(boolean)=} opt_callback Callback function to be passed the
  *     result of function. The argument is true on success.
  * @return {Promise} Promise to be fulfilled when the entries are added.
@@ -194,7 +194,7 @@ TestEntryInfo.prototype.getExpectedRow = function() {
 
 /**
  * Filesystem entries used by the test cases.
- * @type {Object.<string, TestEntryInfo>}
+ * @type {Object<string, TestEntryInfo>}
  * @const
  */
 var ENTRIES = {

@@ -777,8 +777,8 @@ util.entriesToURLs = function(entries) {
 /**
  * Converts array of URLs to an array of corresponding Entries.
  *
- * @param {Array.<string>} urls Input array of URLs.
- * @param {function(!Array.<!Entry>, !Array.<!URL>)=} opt_callback Completion
+ * @param {Array<string>} urls Input array of URLs.
+ * @param {function(!Array<!Entry>, !Array<!URL>)=} opt_callback Completion
  *     callback with array of success Entries and failure URLs.
  * @return {Promise} Promise fulfilled with the object that has entries property
  *     and failureUrls property. The promise is never rejected.
@@ -858,7 +858,7 @@ util.isTeleported = function(window) {
  *
  * TODO(hirono): Move the function from the util namespace.
  * @param {cr.ui.dialogs.AlertDialog} alertDialog Alert dialog to be shown.
- * @param {Array.<Entry>} entries List of opened entries.
+ * @param {Array<Entry>} entries List of opened entries.
  */
 util.showOpenInOtherDesktopAlert = function(alertDialog, entries) {
   if (!entries.length)
@@ -914,7 +914,7 @@ util.testSendMessage = function(message) {
  * util.splitExtension('a/b.backup/hoge') -> ['a/b.backup/hoge', '']
  *
  * @param {string} path Path to be extracted.
- * @return {Array.<string>} Filename and extension of the given path.
+ * @return {Array<string>} Filename and extension of the given path.
  */
 util.splitExtension = function(path) {
   var dotPosition = path.lastIndexOf('.');

@@ -21,7 +21,7 @@ test.util.async.openMainWindow = function(appState, callback) {
  * TODO(hirono): Integrate the method into getFileList method.
  *
  * @param {Window} contentWindow Window to be tested.
- * @return {Array.<string>} Array of selected files.
+ * @return {Array<string>} Array of selected files.
  */
 test.util.sync.getSelectedFiles = function(contentWindow) {
   var table = contentWindow.document.querySelector('#detail-table');
@@ -40,7 +40,7 @@ test.util.sync.getSelectedFiles = function(contentWindow) {
  * Returns an array with the files on the file manager's file list.
  *
  * @param {Window} contentWindow Window to be tested.
- * @return {Array.<Array.<string>>} Array of rows.
+ * @return {Array<Array<string>>} Array of rows.
  */
 test.util.sync.getFileList = function(contentWindow) {
   var table = contentWindow.document.querySelector('#detail-table');
@@ -237,7 +237,7 @@ test.util.sync.overrideInstallWebstoreItemApi =
  * Override the task-related methods in private api for test.
  *
  * @param {Window} contentWindow Window to be tested.
- * @param {Array.<Object>} taskList List of tasks to be returned in
+ * @param {Array<Object>} taskList List of tasks to be returned in
  *     fileManagerPrivate.getFileTasks().
  * @return {boolean} Always return true.
  */
@@ -269,7 +269,7 @@ test.util.sync.overrideTasks = function(contentWindow, taskList) {
 /**
  * Obtains the list of executed tasks.
  * @param {Window} contentWindow Window to be tested.
- * @return {Array.<string>} List of executed task ID.
+ * @return {Array<string>} List of executed task ID.
  */
 test.util.sync.getExecutedTasks = function(contentWindow) {
   if (!test.util.executedTasks_) {

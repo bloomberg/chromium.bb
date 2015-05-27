@@ -321,7 +321,7 @@ AudioPlayerElement.prototype = {
    * When it changed, current operation including playback is stopped and
    * restarts playback with new tracks if necessary.
    *
-   * @type {Array.<AudioPlayer.TrackInfo>}
+   * @type {Array<AudioPlayer.TrackInfo>}
    */
   get tracks() {
     return this.trackList ? this.trackList.tracks : null;

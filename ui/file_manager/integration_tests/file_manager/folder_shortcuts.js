@@ -20,7 +20,7 @@ var EXPANDED_SUBTREE = '> .tree-children[expanded]';
 
 /**
  * Entry set which is used for this test.
- * @type {Array.<TestEntryInfo>}
+ * @type {Array<TestEntryInfo>}
  * @const
  */
 var ENTRY_SET = [
@@ -34,7 +34,7 @@ var ENTRY_SET = [
 
 /**
  * Constants for each folders.
- * @type {Array.<Object>}
+ * @type {Array<Object>}
  * @const
  */
 var DIRECTORY = {

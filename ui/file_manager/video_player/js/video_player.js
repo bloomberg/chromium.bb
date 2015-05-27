@@ -169,7 +169,7 @@ function VideoPlayer() {
   this.videoElement_ = null;
 
   /**
-   * @type {Array.<!FileEntry>}
+   * @type {Array<!FileEntry>}
    * @private
    */
   this.videos_ = null;
@@ -196,7 +196,7 @@ VideoPlayer.prototype = /** @struct */ {
 /**
  * Initializes the video player window. This method must be called after DOM
  * initialization.
- * @param {!Array.<!FileEntry>} videos List of videos.
+ * @param {!Array<!FileEntry>} videos List of videos.
  */
 VideoPlayer.prototype.prepare = function(videos) {
   this.videos_ = videos;
@@ -561,7 +561,7 @@ VideoPlayer.prototype.onCastSelected_ = function(cast) {
 
 /**
  * Set the list of casts.
- * @param {Array.<Object>} casts List of casts.
+ * @param {Array<Object>} casts List of casts.
  */
 VideoPlayer.prototype.setCastList = function(casts) {
   var videoPlayerElement = queryRequiredElement(document, '#video-player');

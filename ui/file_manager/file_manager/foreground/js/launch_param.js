@@ -49,7 +49,7 @@ function LaunchParam(unformatted) {
   this.targetName = unformatted['targetName'] ? unformatted['targetName'] : '';
 
   /**
-   * @type {!Array.<!Object>}
+   * @type {!Array<!Object>}
    * @const
    */
   this.typeList = unformatted['typeList'] ? unformatted['typeList'] : [];

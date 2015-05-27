@@ -10,14 +10,14 @@
 var ProgressCenter = function() {
   /**
    * Current items managed by the progress center.
-   * @type {Array.<!ProgressCenterItem>}
+   * @type {Array<!ProgressCenterItem>}
    * @private
    */
   this.items_ = [];
 
   /**
    * Map of progress ID and notification ID.
-   * @type {Object.<string, string>}
+   * @type {Object<string, string>}
    * @private
    */
   this.notifications_ = new ProgressCenter.Notifications_(
@@ -25,7 +25,7 @@ var ProgressCenter = function() {
 
   /**
    * List of panel UI managed by the progress center.
-   * @type {Array.<ProgressCenterPanel>}
+   * @type {Array<ProgressCenterPanel>}
    * @private
    */
   this.panels_ = [];
@@ -42,7 +42,7 @@ var ProgressCenter = function() {
 ProgressCenter.Notifications_ = function(cancelCallback) {
   /**
    * ID set of notifications that is progressing now.
-   * @type {Object.<string, ProgressCenter.Notifications_.NotificationState_>}
+   * @type {Object<string, ProgressCenter.Notifications_.NotificationState_>}
    * @private
    */
   this.ids_ = {};

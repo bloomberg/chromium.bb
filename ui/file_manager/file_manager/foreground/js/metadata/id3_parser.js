@@ -453,7 +453,7 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
 
 /**
  * Metadata order to use for metadata generation
- * @type {Array.<string>}
+ * @type {Array<string>}
  * @const
  */
 Id3Parser.METADATA_ORDER = [
@@ -482,7 +482,7 @@ Id3Parser.METADATA_ORDER = [
 
 /**
  * Id3v1 constants.
- * @type {Object.<*>}
+ * @type {Object<*>}
  */
 Id3Parser.v1 = {
   /**
@@ -645,7 +645,7 @@ Id3Parser.v1 = {
 
 /**
  * Id3v2 constants.
- * @type {Object.<*>}
+ * @type {Object<*>}
  */
 Id3Parser.v2 = {
   FLAG_EXTENDED_HEADER: 1 << 5,

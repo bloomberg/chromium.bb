@@ -52,13 +52,13 @@
 
     /**
      * List of tracks.
-     * @type {Array.<AudioPlayer.TrackInfo>}
+     * @type {Array<AudioPlayer.TrackInfo>}
      */
     tracks: [],
 
     /**
      * Play order of the tracks. Each value is the index of 'this.tracks'.
-     * @type {Array.<number>}
+     * @type {Array<number>}
      */
     playOrder: [],
 
@@ -112,8 +112,8 @@
 
     /**
      * Invoked when 'tracks' property is changed.
-     * @param {Array.<AudioPlayer.TrackInfo>} oldValue Old value.
-     * @param {Array.<AudioPlayer.TrackInfo>} newValue New value.
+     * @param {Array<AudioPlayer.TrackInfo>} oldValue Old value.
+     * @param {Array<AudioPlayer.TrackInfo>} newValue New value.
      */
     tracksChanged: function(oldValue, newValue) {
       // Note: Sometimes both oldValue and newValue are null though the actual
@@ -139,7 +139,7 @@
 
     /**
      * Invoked when the value in the 'tracks' is changed.
-     * @param {Array.<Object>} changes The detail of the change.
+     * @param {Array<Object>} changes The detail of the change.
      */
     tracksValueChanged_: function(changes) {
       if (this.tracks.length === 0)

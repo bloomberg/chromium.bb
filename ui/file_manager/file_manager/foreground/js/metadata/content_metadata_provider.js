@@ -226,7 +226,7 @@ ContentMetadataProvider.prototype.onError_ = function(
 
 /**
  * Handles the 'log' message from the worker.
- * @param {Array.<*>} arglist Log arguments.
+ * @param {Array<*>} arglist Log arguments.
  * @private
  */
 ContentMetadataProvider.prototype.onLog_ = function(arglist) {

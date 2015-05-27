@@ -334,7 +334,7 @@ chrome.cast.Volume.prototype.muted;
 /**
  * @param {!chrome.cast.SessionRequest} sessionRequest
  * @param {function(!chrome.cast.Session)} sessionListener
- * @param {function(!chrome.cast.ReceiverAvailability,Array.<Object>)}
+ * @param {function(!chrome.cast.ReceiverAvailability,Array<Object>)}
  *     receiverListener
  * @param {chrome.cast.AutoJoinPolicy=} opt_autoJoinPolicy
  * @param {chrome.cast.DefaultActionPolicy=} opt_defaultActionPolicy
@@ -362,7 +362,7 @@ chrome.cast.ApiConfig.prototype.defaultActionPolicy;
 
 /**
  * @param {string} appId
- * @param {!Array.<chrome.cast.Capability>=} opt_capabilities
+ * @param {!Array<chrome.cast.Capability>=} opt_capabilities
  * @param {number=} opt_timeout
  * @constructor
  * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.SessionRequest
@@ -372,7 +372,7 @@ chrome.cast.SessionRequest = function(appId, opt_capabilities, opt_timeout) {};
 /** @type {string} */
 chrome.cast.SessionRequest.prototype.appId;
 
-/** @type {!Array.<chrome.cast.Capability>} */
+/** @type {!Array<chrome.cast.Capability>} */
 chrome.cast.SessionRequest.prototype.capabilities;
 
 /** @type {number} */
@@ -385,7 +385,7 @@ chrome.cast.SessionRequest.prototype.language;
 /**
  * @param {string} label
  * @param {string} friendlyName
- * @param {Array.<chrome.cast.Capability>=} opt_capabilities
+ * @param {Array<chrome.cast.Capability>=} opt_capabilities
  * @param {chrome.cast.Volume=} opt_volume
  * @constructor
  * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.Receiver
@@ -399,7 +399,7 @@ chrome.cast.Receiver.prototype.label;
 /** @type {string} */
 chrome.cast.Receiver.prototype.friendlyName;
 
-/** @type {!Array.<!chrome.cast.Capability>} */
+/** @type {!Array<!chrome.cast.Capability>} */
 chrome.cast.Receiver.prototype.capabilities;
 
 /** @type {chrome.cast.Volume} */
@@ -414,7 +414,7 @@ chrome.cast.Receiver.prototype.displayStatus;
 
 /**
  * @param {string} statusText
- * @param {!Array.<chrome.cast.Image>} appImages
+ * @param {!Array<chrome.cast.Image>} appImages
  * @constructor
  * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.ReceiverDisplayStatus
  */
@@ -423,7 +423,7 @@ chrome.cast.ReceiverDisplayStatus = function(statusText, appImages) {};
 /** @type {string} */
 chrome.cast.ReceiverDisplayStatus.prototype.statusText;
 
-/** @type {!Array.<chrome.cast.Image>} */
+/** @type {!Array<chrome.cast.Image>} */
 chrome.cast.ReceiverDisplayStatus.prototype.appImages;
 
 
@@ -431,7 +431,7 @@ chrome.cast.ReceiverDisplayStatus.prototype.appImages;
  * @param {string} sessionId
  * @param {string} appId
  * @param {string} displayName
- * @param {!Array.<chrome.cast.Image>} appImages
+ * @param {!Array<chrome.cast.Image>} appImages
  * @param {!chrome.cast.Receiver} receiver
  * @constructor
  * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.Session
@@ -451,19 +451,19 @@ chrome.cast.Session.prototype.displayName;
 /** @type {?string} */
 chrome.cast.Session.prototype.statusText;
 
-/** @type {!Array.<chrome.cast.Image>} */
+/** @type {!Array<chrome.cast.Image>} */
 chrome.cast.Session.prototype.appImages;
 
 /** @type {!chrome.cast.Receiver} */
 chrome.cast.Session.prototype.receiver;
 
-/** @type {!Array.<!chrome.cast.SenderApplication>} The applications. */
+/** @type {!Array<!chrome.cast.SenderApplication>} The applications. */
 chrome.cast.Session.prototype.senderApps;
 
-/** @type {!Array.<!{name: string}>} The namespaces. */
+/** @type {!Array<!{name: string}>} The namespaces. */
 chrome.cast.Session.prototype.namespaces;
 
-/** @type {!Array.<!chrome.cast.media.Media>} */
+/** @type {!Array<!chrome.cast.media.Media>} */
 chrome.cast.Session.prototype.media;
 
 /** @type {!chrome.cast.SessionStatus} */
@@ -559,7 +559,7 @@ chrome.cast.timeout = {};
 
 
 /**
- * @const {!Array.<number>}
+ * @const {!Array<number>}
  * @see https://developers.google.com/cast/docs/reference/chrome/
  */
 chrome.cast.VERSION;
@@ -620,7 +620,7 @@ chrome.cast.logMessage = function(message) {};
 
 
 /**
- * @param {!Array.<chrome.cast.Receiver>} receivers
+ * @param {!Array<chrome.cast.Receiver>} receivers
  * @param {function()} successCallback
  * @param {function(chrome.cast.Error)} errorCallback
  */
@@ -714,7 +714,7 @@ chrome.cast.media.VolumeRequest.prototype.customData;
  */
 chrome.cast.media.LoadRequest = function(mediaInfo) {};
 
-/** @type {Array.<number>} */
+/** @type {Array<number>} */
 chrome.cast.media.LoadRequest.prototype.activeTrackIds;
 
 /** @type {boolean} */
@@ -731,7 +731,7 @@ chrome.cast.media.LoadRequest.prototype.media;
 
 
 /**
- * @param {Array.<number>=} opt_activeTrackIds
+ * @param {Array<number>=} opt_activeTrackIds
  * @param {chrome.cast.media.TextTrackStyle=} opt_textTrackStyle
  * @constructor
  * @see https://developers.google.com/cast/docs/reference/chrome/chrome.cast.media.EditTracksInfoRequest
@@ -739,7 +739,7 @@ chrome.cast.media.LoadRequest.prototype.media;
 chrome.cast.media.EditTracksInfoRequest =
     function(opt_activeTrackIds, opt_textTrackStyle) {};
 
-/** @type {Array.<number>} */
+/** @type {Array<number>} */
 chrome.cast.media.EditTracksInfoRequest.prototype.activeTrackIds;
 
 /** @type {?chrome.cast.media.TextTrackStyle} */
@@ -761,7 +761,7 @@ chrome.cast.media.GenericMediaMetadata.prototype.title;
 /** @type {?string} */
 chrome.cast.media.GenericMediaMetadata.prototype.subtitle;
 
-/** @type {Array.<chrome.cast.Image>} */
+/** @type {Array<chrome.cast.Image>} */
 chrome.cast.media.GenericMediaMetadata.prototype.images;
 
 /** @type {?string} */
@@ -798,7 +798,7 @@ chrome.cast.media.MovieMediaMetadata.prototype.studio;
 /** @type {?string} */
 chrome.cast.media.MovieMediaMetadata.prototype.subtitle;
 
-/** @type {Array.<chrome.cast.Image>} */
+/** @type {Array<chrome.cast.Image>} */
 chrome.cast.media.MovieMediaMetadata.prototype.images;
 
 /** @type {?string} */
@@ -838,7 +838,7 @@ chrome.cast.media.TvShowMediaMetadata.prototype.season;
 /** @type {?number} */
 chrome.cast.media.TvShowMediaMetadata.prototype.episode;
 
-/** @type {Array.<chrome.cast.Image>} */
+/** @type {Array<chrome.cast.Image>} */
 chrome.cast.media.TvShowMediaMetadata.prototype.images;
 
 /** @type {?string} */
@@ -909,7 +909,7 @@ chrome.cast.media.MusicTrackMediaMetadata.prototype.trackNumber;
 /** @type {?number} */
 chrome.cast.media.MusicTrackMediaMetadata.prototype.discNumber;
 
-/** @type {Array.<chrome.cast.Image>} */
+/** @type {Array<chrome.cast.Image>} */
 chrome.cast.media.MusicTrackMediaMetadata.prototype.images;
 
 /**
@@ -954,7 +954,7 @@ chrome.cast.media.PhotoMediaMetadata.prototype.artist;
 /** @type {?string} */
 chrome.cast.media.PhotoMediaMetadata.prototype.location;
 
-/** @type {Array.<chrome.cast.Image>} */
+/** @type {Array<chrome.cast.Image>} */
 chrome.cast.media.PhotoMediaMetadata.prototype.images;
 
 /** @type {?number} */
@@ -1002,7 +1002,7 @@ chrome.cast.media.MediaInfo.prototype.metadata;
 /** @type {?number} */
 chrome.cast.media.MediaInfo.prototype.duration;
 
-/** @type {Array.<!chrome.cast.media.Track>} */
+/** @type {Array<!chrome.cast.media.Track>} */
 chrome.cast.media.MediaInfo.prototype.tracks;
 
 /** @type {?chrome.cast.media.TextTrackStyle} */
@@ -1035,7 +1035,7 @@ chrome.cast.media.Media.prototype.playbackRate;
 /** @type {!chrome.cast.media.PlayerState} */
 chrome.cast.media.Media.prototype.playerState;
 
-/** @type {!Array.<!chrome.cast.media.MediaCommand>} */
+/** @type {!Array<!chrome.cast.media.MediaCommand>} */
 chrome.cast.media.Media.prototype.supportedMediaCommands;
 
 /** @type {!chrome.cast.Volume} */
@@ -1044,7 +1044,7 @@ chrome.cast.media.Media.prototype.volume;
 /** @type {?chrome.cast.media.IdleReason} */
 chrome.cast.media.Media.prototype.idleReason;
 
-/** @type {Array.<number>} */
+/** @type {Array<number>} */
 chrome.cast.media.Media.prototype.activeTrackIds;
 
 /** @type {Object} */

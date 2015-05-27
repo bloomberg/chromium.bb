@@ -83,7 +83,7 @@ function onLaunched(launchData) {
 
 /**
  * Opens gallery window.
- * @param {!Array.<string>} urls List of URL to show.
+ * @param {!Array<string>} urls List of URL to show.
  * @param {boolean} reopen True if reopen, false otherwise.
  * @return {!Promise} Promise to be fulfilled on success, or rejected on error.
  */

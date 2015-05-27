@@ -43,8 +43,8 @@ function waitUntil(testFunction) {
  * Asserts that two lists contain the same set of Entries.  Entries are deemed
  * to be the same if they point to the same full path.
  *
- * @param {!Array.<!FileEntry>} expected
- * @param {!Array.<!FileEntry>} actual
+ * @param {!Array<!FileEntry>} expected
+ * @param {!Array<!FileEntry>} actual
  */
 function assertFileEntryListEquals(expected, actual) {
 
@@ -59,8 +59,8 @@ function assertFileEntryListEquals(expected, actual) {
 /**
  * Asserts that a list of FileEntry instances point to the expected paths.
  *
- * @param {!Array.<string>} expectedPaths
- * @param {!Array.<!FileEntry>} fileEntries
+ * @param {!Array<string>} expectedPaths
+ * @param {!Array<!FileEntry>} fileEntries
  */
 function assertFileEntryPathsEqual(expectedPaths, fileEntries) {
   assertEquals(expectedPaths.length, fileEntries.length);
@@ -95,7 +95,7 @@ function assertFileEntryPathsEqual(expectedPaths, fileEntries) {
  * @constructor
  */
 function TestCallRecorder() {
-  /** @private {!Array.<!Argument>} */
+  /** @private {!Array<!Argument>} */
   this.calls_ = [];
 
   /**
@@ -154,7 +154,7 @@ TestCallRecorder.prototype.getArguments = function(index) {
  */
 function MockAPIEvent() {
   /**
-   * @type {!Array.<!Function>}
+   * @type {!Array<!Function>}
    * @const
    */
   this.listeners_ = [];
@@ -207,7 +207,7 @@ function MockChromeStorageAPI() {
 
 /**
  * @param {Array<string>|string} keys
- * @param {function(Object.<string, ?>)} callback
+ * @param {function(Object<string, ?>)} callback
  * @private
  */
 MockChromeStorageAPI.prototype.get_ = function(keys, callback) {
@@ -222,7 +222,7 @@ MockChromeStorageAPI.prototype.get_ = function(keys, callback) {
 };
 
 /**
- * @param {Object.<string, ?>} values
+ * @param {Object<string, ?>} values
  * @param {function()=} opt_callback
  * @private
  */

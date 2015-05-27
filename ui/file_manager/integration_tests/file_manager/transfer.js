@@ -9,10 +9,10 @@
  * @param {TestEntryInfo} targetFile TestEntryInfo of target file to be copied.
  * @param {string} srcName Type of source volume. e.g. downloads, drive,
  *     drive_recent, drive_shared_with_me, drive_offline.
- * @param {Array.<TestEntryInfo>} srcEntries Expected initial contents in the
+ * @param {Array<TestEntryInfo>} srcEntries Expected initial contents in the
  *     source volume.
  * @param {string} dstName Type of destination volume.
- * @param {Array.<TestEntryInfo>} dstEntries Expected initial contents in the
+ * @param {Array<TestEntryInfo>} dstEntries Expected initial contents in the
  *     destination volume.
  */
 function copyBetweenVolumes(targetFile,

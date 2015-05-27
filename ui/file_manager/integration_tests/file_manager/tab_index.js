@@ -218,14 +218,14 @@ testcase.tabindexFocusDirectorySelected = function() {
  *     chrome.fileSystem.chooseEntry.
  * @param {string} volumeName Volume name passed to the selectVolume remote
  *     function.
- * @param {!Array.<TestEntryInfo>} expectedSet Expected set of the entries.
+ * @param {!Array<TestEntryInfo>} expectedSet Expected set of the entries.
  * @param {?function(string):(!Promise|Object)} initialize Initialization before
  *     test runs. The window ID is passed as an argument. If null, do nothing as
  *     initialization.
- * @param {!Array.<string>} initialElements Selectors of the elements which
+ * @param {!Array<string>} initialElements Selectors of the elements which
  *     shows the Files.app is ready. After all the elements show up, the
  *     tabfocus tests starts.
- * @param {Array.<string>} expectedTabOrder Array with the IDs of the element
+ * @param {Array<string>} expectedTabOrder Array with the IDs of the element
  *     with the corresponding order of expected tab-indexes.
  */
 function tabindexFocus(dialogParams, volumeName, expectedSet, initialize,

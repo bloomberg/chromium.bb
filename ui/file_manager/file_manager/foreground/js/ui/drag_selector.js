@@ -39,14 +39,14 @@ function DragSelector() {
 
   /**
    * Indexes of selected items by dragging at the last update.
-   * @type {Array.<number>!}
+   * @type {Array<number>!}
    * @private
    */
   this.lastSelection_ = [];
 
   /**
    * Indexes of selected items at the start of dragging.
-   * @type {Array.<number>!}
+   * @type {Array<number>!}
    * @private
    */
   this.originalSelection_ = [];

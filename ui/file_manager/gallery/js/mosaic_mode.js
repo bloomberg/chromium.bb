@@ -131,7 +131,7 @@ function Mosaic(document, errorBanner, dataModel, selectionModel,
   this.errorBanner_ = errorBanner;
 
   /**
-   * @type {Array.<!Mosaic.Tile>}
+   * @type {Array<!Mosaic.Tile>}
    * @private
    */
   this.tiles_ = null;
@@ -364,7 +364,7 @@ Mosaic.prototype.scrollIntoViewByIndex = function(index) {
 /**
  * Initializes multiple tiles.
  *
- * @param {!Array.<!Mosaic.Tile>} tiles Array of tiles.
+ * @param {!Array<!Mosaic.Tile>} tiles Array of tiles.
  * @private
  */
 Mosaic.prototype.initTiles_ = function(tiles) {
@@ -811,7 +811,7 @@ Mosaic.Layout = function(opt_mode, opt_maxDensity) {
   this.maxDensity_ = opt_maxDensity || Mosaic.Density.createHighest();
 
   /**
-   * @type {!Array.<!Mosaic.Column>}
+   * @type {!Array<!Mosaic.Column>}
    * @private
    */
   this.columns_ = [];
@@ -928,7 +928,7 @@ Mosaic.Layout.prototype.getHeight = function() {
 };
 
 /**
- * @return {!Array.<!Mosaic.Tile>} All tiles in the layout.
+ * @return {!Array<!Mosaic.Tile>} All tiles in the layout.
  */
 Mosaic.Layout.prototype.getTiles = function() {
   return Array.prototype.concat.apply([],
@@ -1231,7 +1231,7 @@ Mosaic.Layout.prototype.getColumnIndexByTile_ = function(index) {
  * 3. The relative proportions of the sizes should be as close to the original
  *    as possible.
  *
- * @param {!Array.<number>} sizes Array of sizes.
+ * @param {!Array<number>} sizes Array of sizes.
  * @param {number} newTotal New total size.
  */
 Mosaic.Layout.rescaleSizesToNewTotal = function(sizes, newTotal) {
@@ -1390,13 +1390,13 @@ Mosaic.Column = function(index, firstRowIndex, firstTileIndex, left, maxHeight,
   this.width_ = 0;
 
   /**
-   * @type {!Array.<!Mosaic.Tile>}
+   * @type {!Array<!Mosaic.Tile>}
    * @private
    */
   this.tiles_ = [];
 
   /**
-   * @type {!Array.<!Mosaic.Row>}
+   * @type {!Array<!Mosaic.Row>}
    * @private
    */
   this.rows_ = [];
@@ -1408,7 +1408,7 @@ Mosaic.Column = function(index, firstRowIndex, firstTileIndex, left, maxHeight,
   this.newRow_ = null;
 
   /**
-   * @type {!Array.<number>}
+   * @type {!Array<number>}
    * @private
    */
   this.rowHeights_ = [];
@@ -1452,7 +1452,7 @@ Mosaic.Column.prototype.getNextRowIndex = function() {
 };
 
 /**
- * @return {!Array.<!Mosaic.Tile>} Array of tiles in the column.
+ * @return {!Array<!Mosaic.Tile>} Array of tiles in the column.
  */
 Mosaic.Column.prototype.getTiles = function() { return this.tiles_ };
 
@@ -1667,7 +1667,7 @@ Mosaic.Row.prototype.add = function(tile) {
 };
 
 /**
- * @return {!Array.<!Mosaic.Tile>} Array of tiles in the row.
+ * @return {!Array<!Mosaic.Tile>} Array of tiles in the row.
  */
 Mosaic.Row.prototype.getTiles = function() { return this.tiles_ };
 
