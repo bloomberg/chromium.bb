@@ -281,6 +281,13 @@ struct PartitionSuperPageExtentEntry {
     PartitionSuperPageExtentEntry* next;
 };
 
+struct PartitionDirectMapExtent {
+    PartitionDirectMapExtent* nextExtent;
+    PartitionDirectMapExtent* prevExtent;
+    PartitionBucket* bucket;
+    size_t mapSize; // Mapped size, not including guard pages and meta-data.
+};
+
 struct WTF_EXPORT PartitionRootBase {
     size_t totalSizeOfCommittedPages;
     size_t totalSizeOfSuperPages;
@@ -294,6 +301,7 @@ struct WTF_EXPORT PartitionRootBase {
     char* nextPartitionPageEnd;
     PartitionSuperPageExtentEntry* currentExtent;
     PartitionSuperPageExtentEntry* firstExtent;
+    PartitionDirectMapExtent* directMapList;
     PartitionPage* globalEmptyPageRing[kMaxFreeableSpans];
     int16_t globalEmptyPageRingIndex;
     uintptr_t invertedSelf;

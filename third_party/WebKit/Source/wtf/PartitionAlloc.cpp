@@ -121,6 +121,7 @@ static void parititonAllocBaseInit(PartitionRootBase* root)
     root->nextPartitionPageEnd = 0;
     root->firstExtent = 0;
     root->currentExtent = 0;
+    root->directMapList = 0;
 
     memset(&root->globalEmptyPageRing, '\0', sizeof(root->globalEmptyPageRing));
     root->globalEmptyPageRingIndex = 0;
@@ -249,7 +250,7 @@ static bool partitionAllocShutdownBucket(PartitionBucket* bucket)
     return noLeaks;
 }
 
-static void partitionAllocBaseShutdown(PartitionRootBase* root)
+static bool partitionAllocBaseShutdown(PartitionRootBase* root)
 {
     ASSERT(root->initialized);
     root->initialized = false;
@@ -269,6 +270,7 @@ static void partitionAllocBaseShutdown(PartitionRootBase* root)
         }
         entry = nextEntry;
     }
+    return !root->directMapList;
 }
 
 bool partitionAllocShutdown(PartitionRoot* root)
@@ -281,7 +283,8 @@ bool partitionAllocShutdown(PartitionRoot* root)
             noLeaks = false;
     }
 
-    partitionAllocBaseShutdown(root);
+    if (!partitionAllocBaseShutdown(root))
+        noLeaks = false;
     return noLeaks;
 }
 
@@ -294,7 +297,8 @@ bool partitionAllocGenericShutdown(PartitionRootGeneric* root)
         if (!partitionAllocShutdownBucket(bucket))
             noLeaks = false;
     }
-    partitionAllocBaseShutdown(root);
+    if (!partitionAllocBaseShutdown(root))
+        noLeaks = false;
     return noLeaks;
 }
 
@@ -600,10 +604,6 @@ static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionPage* page)
     return false;
 }
 
-struct PartitionDirectMapExtent {
-    size_t mapSize; // Mapped size, not including guard pages and meta-data.
-};
-
 static ALWAYS_INLINE PartitionDirectMapExtent* partitionPageToDirectMapExtent(PartitionPage* page)
 {
     ASSERT(partitionBucketIsDirectMapped(page->bucket));
@@ -677,19 +677,40 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
 
     PartitionDirectMapExtent* mapExtent = partitionPageToDirectMapExtent(page);
     mapExtent->mapSize = mapSize - kPartitionPageSize - kSystemPageSize;
+    mapExtent->bucket = bucket;
+
+    // Maintain the doubly-linked list of all direct mappings.
+    mapExtent->nextExtent = root->directMapList;
+    if (mapExtent->nextExtent)
+        mapExtent->nextExtent->prevExtent = mapExtent;
+    mapExtent->prevExtent = nullptr;
+    root->directMapList = mapExtent;
 
     return ret;
 }
 
 static ALWAYS_INLINE void partitionDirectUnmap(PartitionPage* page)
 {
-    size_t unmapSize = partitionPageToDirectMapExtent(page)->mapSize;
+    PartitionRootBase* root = partitionPageToRoot(page);
+    const PartitionDirectMapExtent* extent = partitionPageToDirectMapExtent(page);
+    size_t unmapSize = extent->mapSize;
+
+    // Maintain the doubly-linked list of all direct mappings.
+    if (extent->prevExtent) {
+        ASSERT(extent->prevExtent->nextExtent == extent);
+        extent->prevExtent->nextExtent = extent->nextExtent;
+    } else {
+        root->directMapList = extent->nextExtent;
+    }
+    if (extent->nextExtent) {
+        ASSERT(extent->nextExtent->prevExtent == extent);
+        extent->nextExtent->prevExtent = extent->prevExtent;
+    }
 
     // Add on the size of the trailing guard page and preceeding partition
     // page.
     unmapSize += kPartitionPageSize + kSystemPageSize;
 
-    PartitionRootBase* root = partitionPageToRoot(page);
     size_t uncommittedPageSize = page->bucket->slotSize + kSystemPageSize;
     partitionDecreaseCommittedPages(root, uncommittedPageSize);
     ASSERT(root->totalSizeOfDirectMappedPages >= uncommittedPageSize);
