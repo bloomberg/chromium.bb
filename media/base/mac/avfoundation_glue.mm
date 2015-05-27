@@ -119,7 +119,7 @@ class AVFoundationInternal {
 
 // This contains the logic of checking whether AVFoundation is supported.
 // It's called only once and the results are cached in a static bool.
-bool IsAVFoundationSupportedHelper() {
+bool LoadAVFoundationInternal() {
   // AVFoundation is only available on OS Lion and above.
   if (!base::mac::IsOSLionOrLater()) {
     LogCaptureApi(CAPTURE_API_QTKIT_DUE_TO_OS_PREVIOUS_TO_LION);
@@ -149,11 +149,23 @@ bool IsAVFoundationSupportedHelper() {
 static base::LazyInstance<AVFoundationInternal>::Leaky g_avfoundation_handle =
     LAZY_INSTANCE_INITIALIZER;
 
+enum {
+  INITIALIZE_NOT_CALLED = 0,
+  AVFOUNDATION_IS_SUPPORTED,
+  AVFOUNDATION_NOT_SUPPORTED
+} static g_avfoundation_initialization = INITIALIZE_NOT_CALLED;
+
+void AVFoundationGlue::InitializeAVFoundation() {
+  CHECK([NSThread isMainThread]);
+  if (g_avfoundation_initialization != INITIALIZE_NOT_CALLED)
+    return;
+  g_avfoundation_initialization = LoadAVFoundationInternal() ?
+      AVFOUNDATION_IS_SUPPORTED : AVFOUNDATION_NOT_SUPPORTED;
+}
+
 bool AVFoundationGlue::IsAVFoundationSupported() {
-  // DeviceMonitorMac will initialize this static bool from the main UI thread
-  // once, during Chrome startup so this construction is thread safe.
-  static const bool is_supported = IsAVFoundationSupportedHelper();
-  return is_supported;
+  CHECK_NE(g_avfoundation_initialization, INITIALIZE_NOT_CALLED);
+  return g_avfoundation_initialization == AVFOUNDATION_IS_SUPPORTED;
 }
 
 NSBundle const* AVFoundationGlue::AVFoundationBundle() {

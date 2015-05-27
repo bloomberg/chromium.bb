@@ -90,6 +90,10 @@
 #include "ui/gl/gl_surface.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "media/base/mac/avfoundation_glue.h"
+#endif
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/memory/memory_pressure_monitor_mac.h"
 #include "content/browser/bootstrap_sandbox_mac.h"
@@ -644,6 +648,15 @@ int BrowserMainLoop::PreCreateThreads() {
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::CreateThreads:PluginService");
     PluginService::GetInstance()->Init();
+  }
+#endif
+
+#if defined(OS_MACOSX)
+  {
+    // Initialize AVFoundation if supported, for audio and video.
+    TRACE_EVENT0("startup",
+                 "BrowserMainLoop::CreateThreads:InitializeAVFoundation");
+    AVFoundationGlue::InitializeAVFoundation();
   }
 #endif
 

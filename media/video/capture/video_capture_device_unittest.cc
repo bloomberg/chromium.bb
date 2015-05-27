@@ -23,6 +23,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "media/base/mac/avfoundation_glue.h"
 #include "media/video/capture/mac/video_capture_device_factory_mac.h"
 #endif
 
@@ -58,7 +59,6 @@ using ::testing::_;
 using ::testing::SaveArg;
 
 namespace media {
-
 namespace {
 
 static const gfx::Size kCaptureSizes[] = {
@@ -155,6 +155,9 @@ class VideoCaptureDeviceTest :
 #if defined(OS_ANDROID)
     VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(
         base::android::AttachCurrentThread());
+#endif
+#if defined(OS_MACOSX)
+    AVFoundationGlue::InitializeAVFoundation();
 #endif
     EXPECT_CALL(*client_, OnIncomingCapturedYuvData(_,_,_,_,_,_,_,_,_))
                .Times(0);

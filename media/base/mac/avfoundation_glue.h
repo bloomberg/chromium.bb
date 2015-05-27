@@ -12,7 +12,9 @@
 #ifndef MEDIA_BASE_MAC_AVFOUNDATION_GLUE_H_
 #define MEDIA_BASE_MAC_AVFOUNDATION_GLUE_H_
 
+#if defined(__OBJC__)
 #import <Foundation/Foundation.h>
+#endif  // defined(__OBJC__)
 
 #include "base/basictypes.h"
 #include "media/base/mac/coremedia_glue.h"
@@ -20,10 +22,15 @@
 
 class MEDIA_EXPORT AVFoundationGlue {
  public:
+  // Must be called on the UI thread prior to attempting to use any other
+  // AVFoundation methods.
+  static void InitializeAVFoundation();
+
   // This method returns true if the OS version supports AVFoundation and the
   // AVFoundation bundle could be loaded correctly, or false otherwise.
   static bool IsAVFoundationSupported();
 
+#if defined(__OBJC__)
   static NSBundle const* AVFoundationBundle();
 
   // Originally coming from AVCaptureDevice.h but in global namespace.
@@ -46,10 +53,13 @@ class MEDIA_EXPORT AVFoundationGlue {
 
   static Class AVCaptureSessionClass();
   static Class AVCaptureVideoDataOutputClass();
+#endif  // defined(__OBJC__)
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AVFoundationGlue);
 };
+
+#if defined(__OBJC__)
 
 // Originally AVCaptureDevice and coming from AVCaptureDevice.h
 MEDIA_EXPORT
@@ -166,5 +176,7 @@ MEDIA_EXPORT
                                            error:(NSError**)outError;
 
 @end
+
+#endif  // defined(__OBJC__)
 
 #endif  // MEDIA_BASE_MAC_AVFOUNDATION_GLUE_H_

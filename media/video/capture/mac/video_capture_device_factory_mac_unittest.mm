@@ -15,6 +15,7 @@ namespace media {
 
 class VideoCaptureDeviceFactoryMacTest : public testing::Test {
   void SetUp() override {
+    AVFoundationGlue::InitializeAVFoundation();
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableAVFoundation);
   }
