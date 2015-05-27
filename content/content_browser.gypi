@@ -1466,7 +1466,6 @@
       'browser/tracing/tracing_controller_impl.cc',
       'browser/tracing/tracing_controller_impl.h',
       'browser/tracing/tracing_controller_impl_data_sinks.cc',
-      'browser/tracing/tracing_controller_impl_data_sinks.h',
       'browser/tracing/tracing_ui.cc',
       'browser/tracing/tracing_ui.h',
       'browser/udev_linux.cc',
