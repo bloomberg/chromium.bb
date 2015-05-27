@@ -277,7 +277,7 @@ void WindowSelector::Init(const WindowList& windows) {
     if (grid->empty())
       continue;
     num_items_ += grid->size();
-    grid_list_.push_back(grid.release());
+    grid_list_.push_back(grid.Pass());
   }
 
   {
