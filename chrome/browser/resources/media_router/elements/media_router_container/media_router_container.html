@@ -1,70 +1,71 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/core-icon/core-icon.html">
-<link rel="import" href="chrome://resources/polymer/core-icons/hardware-icons.html">
-<link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
-<link rel="import" href="chrome://resources/polymer/core-toolbar/core-toolbar.html">
-<link rel="import" href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-icons/hardware-icons.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../issue_banner/issue_banner.html">
 <link rel="import" href="../route_details/route_details.html">
-<polymer-element name="media-router-container">
-<template>
-  <link rel="stylesheet" href="media_router_container.css">
-  <core-toolbar id="container-header"
-      hidden?="{{ {state: currentView_, castModeHidden: castModeHidden_} | isHeaderHidden}}">
-    <div id="header-text">
-      <span hidden?="{{ {state: currentView_, castModeHidden: castModeHidden_} | isSinkPickerHidden}}">
-        {{headerText}}
-      </span>
-      <span i18n-content="selectCastModeHeader"
-          hidden?="{{ {castModeHidden: castModeHidden_} | isCastModeHidden }}">
-      </span>
-    </div>
-    <paper-icon-button on-click="{{toggleCastMode}}"
-        icon="{{ {castModeHidden: castModeHidden_} | getDropDownIcon}}">
-    </paper-icon-button>
-    <paper-icon-button icon="close" on-click="{{closeButtonClicked}}">
-    </paper-icon-button>
-  </core-toolbar>
-  <issue-banner id="issue-banner" issue="{{issue}}"
-      hidden?="{{ {state: currentView_, issue: issue, castModeHidden: castModeHidden_ } | isIssueBannerHidden}}">
-  </issue-banner>
-  <!-- TODO(apacible): selectedAttribute here is a workaround for
-  https://github.com/Polymer/polymer/issues/946. Remove here and elsewhere when
-  core-menu is updated. -->
-  <core-menu id="cast-mode-list" selectedAttribute=""
-      hidden?="{{ {castModeHidden: castModeHidden_} | isCastModeHidden }}">
-    <template repeat="{{mode in castModeList}}">
-      <paper-item class="cast-mode" on-click="{{onCastModeSelected}}">
-        {{mode.description}}
-      </paper-item>
-    </template>
-  </core-menu>
-  <route-details id="route-details"
-      hidden?="{{ {state: currentView_} | isRouteDetailsHidden}}"
-      route="{{currentRoute_}}" sink="{{sinkMap_[[currentRoute_.sinkId]]}}"
-      on-back-click="{{showSinkPickerView}}"
-      on-close-route-click="{{showSinkPickerView}}">
-  </route-details>
-  <core-menu id="sink-list" selectedAttribute=""
-      hidden?="{{ {state: currentView_, castModeHidden: castModeHidden_} | isSinkPickerHidden}}">
-    <template repeat="{{sink in sinkList}}">
-      <paper-item class="sink" on-click="{{onSinkClick}}">
-        <!-- TODO(apacible): Show device icon based on device type. -->
-        <core-icon class="sink-icon" icon="hardware:chromecast"></core-icon>
-        <div>
-          {{sink.name}}
-          <template bind="{{sinkToRouteMap_[sink.id] as route}}">
-            <template if="{{route}}">
-              <div class="route">
-                {{route.title}}
-              </div>
-            </template>
-          </template>
-        </div>
-      </paper-item>
-    </template>
-  </core-menu>
-</template>
-<script src="media_router_container.js"></script>
-</polymer-element>
+<dom-module id="media-router-container">
+  <link rel="import" type="css" href="media_router_container.css">
+  <template>
+    <paper-toolbar id="container-header"
+        hidden$="[[computeHeaderHidden_(currentView_, issue)]]">
+      <div id="header-text">
+        <!-- TODO(apacible): The second <span> is a workaround for
+        https://github.com/Polymer/polymer/issues/1571. Remove here and
+        elsewhere once this is fixed. -->
+        <span hidden$="[[computeSinkListHidden_(currentView_, issue)]]">
+          <span>[[headerText]]</span>
+        </span>
+        <span hidden$="[[computeCastModeHidden_(currentView_)]]">
+          <span>[[selectCastModeHeaderText_]]</span>
+        </span>
+      </div>
+      <paper-icon-button icon="[[computeArrowDropIcon_(currentView_)]]"
+          on-click="toggleCastModeHidden_">
+      </paper-icon-button>
+      <paper-icon-button icon="close" on-click="onCloseButtonClick_">
+      </paper-icon-button>
+    </paper-toolbar>
+    <issue-banner id="issue-banner" issue="[[issue]]"
+        hidden$="[[computeIssueBannerHidden_(currentView_, issue)]]">
+    </issue-banner>
+    <paper-menu id="cast-mode-list"
+        hidden$="[[computeCastModeHidden_(currentView_)]]">
+      <template is="x-repeat" id="castModeList" items="[[castModeList]]">
+        <paper-item class="cast-mode" on-click="onCastModeClick_">
+          <span>[[item.description]]</span>
+        </paper-item>
+      </template>
+    </paper-menu>
+    <route-details id="route-details" route="[[currentRoute_]]"
+        sink="[[computeSinkForCurrentRoute_(currentRoute_)]]"
+        on-back-click="showSinkList_"
+        on-close-route-click="showSinkList_"
+        hidden$="[[computerRouteDetailsHidden_(currentView_, issue)]]">
+    </route-details>
+    <!-- TODO(apacible): Fix menu jumping to the top of the list when scrolled
+    down and then a paper-item is selected.
+    https://github.com/PolymerElements/paper-menu/issues/17 -->
+    <paper-menu id="sink-list"
+        hidden$="[[computeSinkListHidden_(currentView_, issue)]]">
+      <template is="x-repeat" id="sinkList" items="[[sinkList]]">
+        <paper-item class="sink" on-click="onSinkClick_">
+          <!-- TODO(apacible): Show device icon based on device type. -->
+          <iron-icon class="sink-icon" icon="hardware:tv"></iron-icon>
+          <div>
+            <span>[[item.name]]</span>
+            <div class="route"
+                hidden$="[[computeRouteInSinkListHidden_(item.id)]]">
+              <span>[[computeRouteInSinkListValue_(item.id)]]</span>
+            </div>
+          </div>
+        </paper-item>
+      </template>
+    </paper-menu>
+  </template>
+  <script src="media_router_container.js"></script>
+</dom-module>
