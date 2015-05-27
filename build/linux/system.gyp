@@ -4,14 +4,6 @@
 
 {
   'variables': {
-    'conditions': [
-      ['sysroot!=""', {
-        'pkg-config': '<(chroot_cmd) ./pkg-config-wrapper "<(sysroot)" "<(target_arch)" "<(system_libdir)"',
-      }, {
-        'pkg-config': 'pkg-config',
-      }],
-    ],
-
     # If any of the linux_link_FOO below are set to 1, then the corresponding
     # target will be linked against the FOO library (either dynamically or
     # statically, depending on the pkg-config files), as opposed to loading the
