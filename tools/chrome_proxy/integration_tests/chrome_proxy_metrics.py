@@ -375,30 +375,37 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
 
   def AddResultsForBlockOnce(self, tab, results):
     eligible_response_count = 0
-    bypass_count = 0
+    via_proxy = 0
 
     for resp in self.IterResponses(tab):
-      if resp.ShouldHaveChromeProxyViaHeader():
+      # Block-once test URLs (Data Reduction Proxy always returns
+      # block-once) should not have the Chrome-Compression-Proxy Via header.
+      if (IsTestUrlForBlockOnce(resp.response.url)):
         eligible_response_count += 1
+        if resp.HasChromeProxyViaHeader():
+          raise ChromeProxyMetricException, (
+              'Response has a Chrome-Compression-Proxy Via header: ' +
+              resp.response.url)
+      elif resp.ShouldHaveChromeProxyViaHeader():
+        via_proxy += 1
         if not resp.HasChromeProxyViaHeader():
-          bypass_count += 1
+          # For all other URLs, confirm that via header is present if expected.
+          raise ChromeProxyMetricException, (
+              'Missing Chrome-Compression-Proxy Via header.' +
+              resp.response.url)
 
-    if eligible_response_count <= 1:
+    if via_proxy == 0:
       raise ChromeProxyMetricException, (
-          'There should be more than one DRP eligible response '
-          '(eligible_response_count=%d, bypass_count=%d)\n' % (
-              eligible_response_count, bypass_count))
-    elif bypass_count != 1:
+          'None of the requests went via data reduction proxy')
+
+    if (eligible_response_count != 2):
       raise ChromeProxyMetricException, (
-          'Exactly one response should be bypassed. '
-          '(eligible_response_count=%d, bypass_count=%d)\n' % (
-              eligible_response_count, bypass_count))
-    else:
-      results.AddValue(scalar.ScalarValue(
-          results.current_page, 'eligible_responses', 'count',
-          eligible_response_count))
-      results.AddValue(scalar.ScalarValue(
-          results.current_page, 'bypass', 'count', bypass_count))
+          'Did not make expected number of requests to whitelisted block-once'
+          ' test URLs. Expected: 2, Actual: ' + str(eligible_response_count))
+
+    results.AddValue(scalar.ScalarValue(results.current_page,
+        'BlockOnce_success', 'num_eligible_response', 2))
+
 
   def AddResultsForSafebrowsingOn(self, tab, results):
     results.AddValue(scalar.ScalarValue(
@@ -672,3 +679,10 @@ class ChromeProxyVideoMetric(network_metrics.NetworkMetric):
     for (k,v) in self.videoMetrics.iteritems():
       k = "%s_%s" % (k, kind)
       results.AddValue(scalar.ScalarValue(results.current_page, k, "", v))
+
+# Returns whether |url| is a block-once test URL. Data Reduction Proxy has been
+# configured to always return block-once for these URLs.
+def IsTestUrlForBlockOnce(url):
+  return (url == 'http://check.googlezip.net/blocksingle/' or
+      url == 'http://chromeproxy-test.appspot.com/default?respBody=T0s=&respStatus=200&flywheelAction=block-once')
+
