@@ -9,8 +9,8 @@
     NoInterfaceObject,
     RuntimeEnabled=WebBluetooth,
 ] interface Bluetooth {
+    [CallWith=ScriptState] Promise<BluetoothDevice> requestDevice (
+        // Implement requestDevice: http://crbug.com/420284
+        // RequestDeviceOptions options
+        );
 };
-
-Bluetooth implements BluetoothDiscovery;
-
-Bluetooth implements BluetoothInteraction;

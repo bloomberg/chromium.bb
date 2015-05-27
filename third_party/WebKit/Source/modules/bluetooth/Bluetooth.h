@@ -7,8 +7,6 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/bluetooth/BluetoothDiscovery.h"
-#include "modules/bluetooth/BluetoothInteraction.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -30,20 +28,8 @@ public:
     // BluetoothDiscovery interface
     ScriptPromise requestDevice(ScriptState*);
 
-    // BluetoothInteraction interface
-    BluetoothUUIDs* uuids();
+    DEFINE_INLINE_TRACE() { }
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_bluetoothDiscovery);
-        visitor->trace(m_bluetoothInteraction);
-    }
-
-private:
-    Member<BluetoothDiscovery> m_bluetoothDiscovery;
-    Member<BluetoothInteraction> m_bluetoothInteraction;
-    BluetoothDiscovery* bluetoothDiscovery();
-    BluetoothInteraction* bluetoothInteraction();
 };
 
 } // namespace blink

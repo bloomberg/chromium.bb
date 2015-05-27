@@ -5,33 +5,29 @@
 #include "config.h"
 #include "modules/bluetooth/Bluetooth.h"
 
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "modules/bluetooth/BluetoothUUIDs.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
+#include "modules/bluetooth/BluetoothDevice.h"
+#include "modules/bluetooth/BluetoothError.h"
+#include "public/platform/Platform.h"
+#include "public/platform/modules/bluetooth/WebBluetooth.h"
 
 namespace blink {
 
-ScriptPromise Bluetooth::requestDevice(ScriptState* s)
+ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState)
 {
-    return bluetoothDiscovery()->requestDevice(s);
-}
+    WebBluetooth* webbluetooth = Platform::current()->bluetooth();
+    if (!webbluetooth)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 
-BluetoothUUIDs* Bluetooth::uuids()
-{
-    return bluetoothInteraction()->uuids();
-}
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    webbluetooth->requestDevice(new CallbackPromiseAdapter<BluetoothDevice, BluetoothError>(resolver));
+    return promise;
 
-BluetoothDiscovery* Bluetooth::bluetoothDiscovery()
-{
-    if (!m_bluetoothDiscovery)
-        m_bluetoothDiscovery = new BluetoothDiscovery;
-    return m_bluetoothDiscovery.get();
-}
-
-BluetoothInteraction* Bluetooth::bluetoothInteraction()
-{
-    if (!m_bluetoothInteraction)
-        m_bluetoothInteraction = new BluetoothInteraction;
-    return m_bluetoothInteraction.get();
 }
 
 }; // blink
