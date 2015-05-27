@@ -197,6 +197,7 @@ def member_impl_context(member, interfaces_info, header_includes):
         'getter_expression': getter_expression(),
         'has_method_expression': has_method_expression(),
         'has_method_name': has_method_name_for_dictionary_member(member),
+        'is_nullable': idl_type.is_nullable,
         'is_traceable': idl_type.is_traceable,
         'member_cpp_type': member_cpp_type(),
         'null_setter_name': null_setter_name_for_dictionary_member(member),
