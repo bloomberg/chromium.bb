@@ -1,1 +1,6 @@
-#<skip - Time element is not supported>
+AXWebArea AXRoleDescription='HTML content'
+++AXGroup AXRoleDescription='group'
+++++AXGroup AXRoleDescription='group'
+++++++AXStaticText AXRoleDescription='text' AXValue='10:00'
+++++AXGroup AXRoleDescription='group'
+++++++AXStaticText AXRoleDescription='text' AXValue='Valentines day'

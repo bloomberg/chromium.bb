@@ -101,6 +101,7 @@
     imageMap,
     image,
     inlineTextBox,
+    inputTime,
     labelText,
     legend,
     lineBreak,

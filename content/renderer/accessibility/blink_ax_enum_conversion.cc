@@ -181,6 +181,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_IMAGE_MAP_LINK;
     case blink::WebAXRoleInlineTextBox:
       return ui::AX_ROLE_INLINE_TEXT_BOX;
+    case blink::WebAXRoleInputTime:
+      return ui::AX_ROLE_INPUT_TIME;
     case blink::WebAXRoleLabel:
       return ui::AX_ROLE_LABEL_TEXT;
     case blink::WebAXRoleLegend:

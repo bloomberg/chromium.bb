@@ -191,8 +191,7 @@ TEST_F('OutputE2ETest', 'Input', function() {
       '<input type="password"></input>' +
       '<input type="tel"></input>'          +
       '<input type="number"></input>' +
-      // temporarily disabled to handle time role. crbug.com/480861
-      // '<input type="time"></input>' +
+      '<input type="time"></input>' +
       '<input type="date"></input>',
     function(root) {
       var expected = {string_: '', 'spans_': [
@@ -217,10 +216,9 @@ TEST_F('OutputE2ETest', 'Input', function() {
             {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
             {value: 'value', start: 1, end: 1},
             {value: 'role', start: 2, end: 13}]},
-        // temporarily disabled to handle time role. crbug.com/480861
-        // {string_: '||Time', spans_: [{value: 'name', start: 0, end: 0},
-        //     {value: 'value', start: 1, end: 1},
-        //     {value: 'role', start: 2, end: 6}]},
+        {string_: '||inputTime', spans_: [{value: 'name', start: 0, end: 0},
+            {value: 'value', start: 1, end: 1},
+            {value: 'role', start: 2, end: 11}]},
         {string_: '||Date control', spans_: [{value: 'name', start: 0, end: 0},
             {value: 'value', start: 1, end: 1},
             {value: 'role', start: 2, end: 14}]}

@@ -112,6 +112,7 @@
     image_map,
     image,
     inline_text_box,
+    input_time,
     label_text,
     legend,
     line_break,

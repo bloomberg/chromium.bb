@@ -1,1 +1,6 @@
-#<skip - Time element is not supported>
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+++IA2_ROLE_SECTION
+++++IA2_ROLE_TEXT_FRAME
+++++++ROLE_SYSTEM_STATICTEXT name='10:00'
+++++IA2_ROLE_TEXT_FRAME
+++++++ROLE_SYSTEM_STATICTEXT name='Valentines day'

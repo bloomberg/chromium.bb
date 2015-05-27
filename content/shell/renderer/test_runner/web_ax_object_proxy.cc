@@ -110,6 +110,8 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Image");
     case blink::WebAXRoleInlineTextBox:
       return result.append("InlineTextBox");
+    case blink::WebAXRoleInputTime:
+      return result.append("InputTime");
     case blink::WebAXRoleLabel:
       return result.append("Label");
     case blink::WebAXRoleLegend:

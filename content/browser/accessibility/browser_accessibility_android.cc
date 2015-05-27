@@ -78,7 +78,7 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
     return false;
 
   // Date and time controls should drop their children.
-  if (GetRole() == ui::AX_ROLE_DATE || GetRole() == ui::AX_ROLE_TIME)
+  if (GetRole() == ui::AX_ROLE_DATE || GetRole() == ui::AX_ROLE_INPUT_TIME)
     return true;
 
   // Headings with text can drop their children.
@@ -266,7 +266,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
     case ui::AX_ROLE_COMBO_BOX:
     case ui::AX_ROLE_DATE:
     case ui::AX_ROLE_POP_UP_BUTTON:
-    case ui::AX_ROLE_TIME:
+    case ui::AX_ROLE_INPUT_TIME:
       class_name = "android.widget.Spinner";
       break;
     case ui::AX_ROLE_BUTTON:
@@ -379,8 +379,8 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   base::string16 placeholder;
   switch (GetRole()) {
     case ui::AX_ROLE_DATE:
+    case ui::AX_ROLE_INPUT_TIME:
     case ui::AX_ROLE_TEXT_FIELD:
-    case ui::AX_ROLE_TIME:
       GetHtmlAttribute("placeholder", &placeholder);
   }
 

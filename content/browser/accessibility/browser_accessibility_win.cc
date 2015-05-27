@@ -4068,6 +4068,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state |= STATE_SYSTEM_LINKED;
       ia_state |= STATE_SYSTEM_READONLY;
       break;
+    case ui::AX_ROLE_INPUT_TIME:
+      ia_role = ROLE_SYSTEM_GROUPING;
+      break;
     case ui::AX_ROLE_LABEL_TEXT:
     case ui::AX_ROLE_LEGEND:
       ia_role = ROLE_SYSTEM_TEXT;
@@ -4282,7 +4285,8 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_state |= IA2_STATE_SELECTABLE_TEXT;
       break;
     case ui::AX_ROLE_TIME:
-      ia_role = ROLE_SYSTEM_SPINBUTTON;
+      ia_role = ROLE_SYSTEM_TEXT;
+      ia2_role = IA2_ROLE_TEXT_FRAME;
       break;
     case ui::AX_ROLE_TIMER:
       ia_role = ROLE_SYSTEM_CLOCK;
