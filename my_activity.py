@@ -37,6 +37,7 @@ import urllib
 import urllib2
 
 import auth
+import fix_encoding
 import gerrit_util
 import rietveld
 from third_party import upload
@@ -611,7 +612,7 @@ class MyActivity(object):
       values = dict(required_values.items() + optional_values.items())
     else:
       values = required_values
-    print output_format.format(**values)
+    print output_format.format(**values).encode(sys.getdefaultencoding())
 
 
   def filter_issue(self, issue, should_filter_by_user=True):
@@ -861,6 +862,9 @@ def main():
 
 
 if __name__ == '__main__':
+  # Fix encoding to support non-ascii issue titles.
+  fix_encoding.fix_encoding()
+
   try:
     sys.exit(main())
   except KeyboardInterrupt:
