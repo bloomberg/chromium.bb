@@ -147,7 +147,8 @@ bool ScreenManager::ActualConfigureDisplayController(
     }
 
     // Just re-enable the controller to re-use the current state.
-    return EnableController(controller);
+    return EnableController(controller, controller->origin(),
+                            controller->get_mode());
   }
 
   // Either the mode or the location of the display changed, so exit mirror
@@ -167,7 +168,7 @@ bool ScreenManager::ActualConfigureDisplayController(
   if (mirror != controllers_.end() && it != mirror)
     return HandleMirrorMode(it, mirror, drm, crtc, connector);
 
-  return ModesetDisplayController(controller, origin, mode, true);
+  return EnableController(controller, origin, mode);
 }
 
 bool ScreenManager::DisableDisplayController(
@@ -250,35 +251,6 @@ ScreenManager::FindActiveDisplayControllerByLocation(const gfx::Rect& bounds) {
   return controllers_.end();
 }
 
-bool ScreenManager::ModesetDisplayController(
-    HardwareDisplayController* controller,
-    const gfx::Point& origin,
-    const drmModeModeInfo& mode,
-    bool fill_modeset_buffer) {
-  DCHECK(!controller->crtc_controllers().empty());
-  scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
-  controller->set_origin(origin);
-
-  // Create a surface suitable for the current controller.
-  scoped_refptr<ScanoutBuffer> buffer =
-      buffer_generator_->Create(drm, gfx::Size(mode.hdisplay, mode.vdisplay));
-
-  if (!buffer.get()) {
-    LOG(ERROR) << "Failed to create scanout buffer";
-    return false;
-  }
-
-  if (fill_modeset_buffer)
-    FillModesetBuffer(drm, controller, buffer.get());
-
-  if (!controller->Modeset(OverlayPlane(buffer), mode)) {
-    LOG(ERROR) << "Failed to modeset controller";
-    return false;
-  }
-
-  return true;
-}
-
 bool ScreenManager::HandleMirrorMode(
     HardwareDisplayControllers::iterator original,
     HardwareDisplayControllers::iterator mirror,
@@ -286,7 +258,7 @@ bool ScreenManager::HandleMirrorMode(
     uint32_t crtc,
     uint32_t connector) {
   (*mirror)->AddCrtc((*original)->RemoveCrtc(drm, crtc));
-  if (EnableController(*mirror)) {
+  if (EnableController(*mirror, (*mirror)->origin(), (*mirror)->get_mode())) {
     controllers_.erase(original);
     return true;
   }
@@ -297,7 +269,7 @@ bool ScreenManager::HandleMirrorMode(
   // it is expected that the configuration would not have changed if
   // things fail.
   (*original)->AddCrtc((*mirror)->RemoveCrtc(drm, crtc));
-  EnableController(*original);
+  EnableController(*original, (*original)->origin(), (*original)->get_mode());
   return false;
 }
 
@@ -327,22 +299,41 @@ void ScreenManager::UpdateControllerToWindowMapping() {
   }
 }
 
-bool ScreenManager::EnableController(HardwareDisplayController* controller) {
-  DrmWindow* window =
-      FindWindowAt(gfx::Rect(controller->origin(), controller->GetModeSize()));
-  if (!window) {
-    return ModesetDisplayController(controller, controller->origin(),
-                                    controller->get_mode(), false);
+bool ScreenManager::EnableController(HardwareDisplayController* controller,
+                                     const gfx::Point& origin,
+                                     const drmModeModeInfo& mode) {
+  DCHECK(!controller->crtc_controllers().empty());
+  gfx::Rect rect(origin, gfx::Size(mode.hdisplay, mode.vdisplay));
+  controller->set_origin(origin);
+
+  DrmWindow* window = FindWindowAt(rect);
+  if (window) {
+    const OverlayPlane* primary = window->GetLastModesetBuffer();
+    if (primary) {
+      if (!controller->Modeset(*primary, mode)) {
+        LOG(ERROR) << "Failed to modeset controller";
+        return false;
+      }
+
+      return true;
+    }
   }
 
-  const OverlayPlane* primary = window->GetLastModesetBuffer();
-  if (primary)
-    return controller->Modeset(*primary, controller->get_mode());
+  scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
+  scoped_refptr<ScanoutBuffer> buffer =
+      buffer_generator_->Create(drm, rect.size());
+  if (!buffer) {
+    LOG(ERROR) << "Failed to create scanout buffer";
+    return false;
+  }
 
-  // No window, but we were previously modeset, reuse stored buffer's contents
-  // to avoid black flickers.
-  return ModesetDisplayController(controller, controller->origin(),
-                                  controller->get_mode(), true);
+  FillModesetBuffer(drm, controller, buffer.get());
+  if (!controller->Modeset(OverlayPlane(buffer), mode)) {
+    LOG(ERROR) << "Failed to modeset controller";
+    return false;
+  }
+
+  return true;
 }
 
 DrmWindow* ScreenManager::FindWindowAt(const gfx::Rect& bounds) const {

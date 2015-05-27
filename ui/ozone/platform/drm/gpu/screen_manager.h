@@ -101,12 +101,6 @@ class OZONE_EXPORT ScreenManager {
   HardwareDisplayControllers::iterator FindActiveDisplayControllerByLocation(
       const gfx::Rect& bounds);
 
-  // Perform modesetting in |controller| using |origin| and |mode|.
-  bool ModesetDisplayController(HardwareDisplayController* controller,
-                                const gfx::Point& origin,
-                                const drmModeModeInfo& mode,
-                                bool fill_mode_set_buffer);
-
   // Tries to set the controller identified by (|crtc|, |connector|) to mirror
   // those in |mirror|. |original| is an iterator to the HDC where the
   // controller is currently present.
@@ -116,8 +110,11 @@ class OZONE_EXPORT ScreenManager {
                         uint32_t crtc,
                         uint32_t connector);
 
-  // Aquire pending frames from the time the controller was disabled.
-  bool EnableController(HardwareDisplayController* controller);
+  // Modeset the |controller| using |origin| and |mode|. If there is a window at
+  // the controller location, then we'll re-use the current buffer.
+  bool EnableController(HardwareDisplayController* controller,
+                        const gfx::Point& origin,
+                        const drmModeModeInfo& mode);
 
   DrmWindow* FindWindowAt(const gfx::Rect& bounds) const;
 

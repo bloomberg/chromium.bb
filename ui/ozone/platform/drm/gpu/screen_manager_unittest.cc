@@ -450,3 +450,25 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasNoBuffer) {
   window = screen_manager_->RemoveWindow(1);
   window->Shutdown();
 }
+
+TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
+  scoped_ptr<ui::DrmWindow> window(
+      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  window->Initialize();
+  window->OnBoundsChanged(GetPrimaryBounds());
+  scoped_refptr<ui::ScanoutBuffer> buffer =
+      buffer_generator_->Create(drm_, GetPrimaryBounds().size());
+  window->QueueOverlayPlane(ui::OverlayPlane(buffer));
+  window->SchedulePageFlip(false /* is_sync */, base::Bind(&base::DoNothing));
+  screen_manager_->AddWindow(1, window.Pass());
+
+  screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
+  screen_manager_->ConfigureDisplayController(
+      drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+
+  EXPECT_EQ(buffer->GetFramebufferId(), drm_->current_framebuffer());
+
+  window = screen_manager_->RemoveWindow(1);
+  window->Shutdown();
+}
