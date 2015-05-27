@@ -383,6 +383,7 @@ TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataPassedToFetcher) {
   expected_pairs["delete"] = "true";
   expected_pairs["appid"] = kInstanceId;
   expected_pairs["sender"] = kDeveloperId;
+  expected_pairs["X-subtype"] = kDeveloperId;
   expected_pairs["scope"] = kScope;
 
   // Verify data was formatted properly.

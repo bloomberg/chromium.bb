@@ -524,6 +524,7 @@ TEST_F(InstanceIDGetTokenRequestTest, RequestDataAndURL) {
   expected_pairs["gmsv"] = base::IntToString(kGCMVersion);
   expected_pairs["app"] = kAppId;
   expected_pairs["sender"] = kDeveloperId;
+  expected_pairs["X-subtype"] = kDeveloperId;
   expected_pairs["device"] = base::Uint64ToString(kAndroidId);
   expected_pairs["appid"] = kInstanceId;
   expected_pairs["scope"] = kScope;
