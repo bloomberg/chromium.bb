@@ -399,6 +399,8 @@
         'base/video_util.h',
         'base/wall_clock_time_source.cc',
         'base/wall_clock_time_source.h',
+        'base/win/mf_initializer.cc',
+        'base/win/mf_initializer.h',
         'base/yuv_convert.cc',
         'base/yuv_convert.h',
         'blink/skcanvas_video_renderer.cc',

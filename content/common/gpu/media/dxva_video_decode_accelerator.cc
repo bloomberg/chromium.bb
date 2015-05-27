@@ -29,6 +29,7 @@
 #include "base/path_service.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
+#include "media/base/win/mf_initializer.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -598,9 +599,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   RETURN_AND_NOTIFY_ON_FAILURE((state == kUninitialized),
       "Initialize: invalid state: " << state, ILLEGAL_STATE, false);
 
-  HRESULT hr = MFStartup(MF_VERSION, MFSTARTUP_FULL);
-  RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "MFStartup failed.", PLATFORM_FAILURE,
-      false);
+  media::InitializeMediaFoundation();
 
   RETURN_AND_NOTIFY_ON_FAILURE(InitDecoder(profile),
       "Failed to initialize decoder", PLATFORM_FAILURE, false);
@@ -1447,7 +1446,6 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
     query_.Release();
   }
 
-  MFShutdown();
   SetState(kUninitialized);
 }
 
