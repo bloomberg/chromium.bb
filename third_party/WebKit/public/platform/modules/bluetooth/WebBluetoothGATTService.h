@@ -10,7 +10,8 @@
 namespace blink {
 
 struct WebBluetoothGATTService {
-    WebBluetoothGATTService(const WebString& uuid,
+    WebBluetoothGATTService(const WebString& serviceInstanceID,
+        const WebString& uuid,
         bool isPrimary,
         const WebString& deviceInstanceID)
         : uuid(uuid)
@@ -21,6 +22,7 @@ struct WebBluetoothGATTService {
 
     // Members corresponding to BluetoothGATTService attributes as
     // specified in the IDL.
+    const WebString serviceInstanceID;
     const WebString uuid;
     const bool isPrimary;
     const WebString deviceInstanceID;
