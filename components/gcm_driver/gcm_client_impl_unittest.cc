@@ -44,6 +44,7 @@ enum LastEvent {
   MESSAGES_DELETED,
 };
 
+const char kChromeVersion[] = "45.0.0.1";
 const uint64 kDeviceAndroidId = 54321;
 const uint64 kDeviceSecurityToken = 12345;
 const uint64 kDeviceAndroidId2 = 11111;
@@ -55,6 +56,10 @@ const char kSender2[] = "project_id2";
 const char kSender3[] = "project_id3";
 const char kRegistrationResponsePrefix[] = "token=";
 const char kUnregistrationResponsePrefix[] = "deleted=";
+
+const char kInstanceID[] = "iid_1";
+const char kScope[] = "GCM";
+const char kDeleteTokenResponse[] = "token=foo";
 
 // Helper for building arbitrary data messages.
 MCSMessage BuildDownstreamMessage(
@@ -357,6 +362,9 @@ class GCMClientImplTest : public testing::Test,
   AutoAdvancingTestClock* clock() const {
     return reinterpret_cast<AutoAdvancingTestClock*>(gcm_client_->clock_.get());
   }
+  net::TestURLFetcherFactory* url_fetcher_factory() {
+    return &url_fetcher_factory_;
+  }
 
  private:
   // Variables used for verification.
@@ -516,6 +524,7 @@ void GCMClientImplTest::InitializeGCMClient() {
 
   // Actual initialization.
   GCMClient::ChromeBuildInfo chrome_build_info;
+  chrome_build_info.version = kChromeVersion;
   gcm_client_->Initialize(chrome_build_info,
                           temp_directory_.path(),
                           message_loop_.message_loop_proxy(),
@@ -1220,6 +1229,201 @@ TEST_F(GCMClientImplStartAndStopTest, OnGCMReadyAccountsAndTokenFetchingTime) {
   EXPECT_EQ(expected_mapping.status, actual_mapping.status);
   EXPECT_EQ(expected_mapping.status_change_timestamp,
             actual_mapping.status_change_timestamp);
+}
+
+
+class GCMClientInstanceIDTest : public GCMClientImplTest {
+ public:
+  GCMClientInstanceIDTest();
+  ~GCMClientInstanceIDTest() override;
+
+  void AddInstanceID(const std::string& app_id,
+                     const std::string& instance_id);
+  void RemoveInstanceID(const std::string& app_id);
+  void GetToken(const std::string& app_id,
+                const std::string& authorized_entity,
+                const std::string& scope);
+  void DeleteToken(const std::string& app_id,
+                   const std::string& authorized_entity,
+                   const std::string& scope);
+  void CompleteDeleteToken();
+  bool ExistsToken(const std::string& app_id,
+                   const std::string& authorized_entity,
+                   const std::string& scope) const;
+};
+
+GCMClientInstanceIDTest::GCMClientInstanceIDTest() {
+}
+
+GCMClientInstanceIDTest::~GCMClientInstanceIDTest() {
+}
+
+void GCMClientInstanceIDTest::AddInstanceID(const std::string& app_id,
+                                            const std::string& instance_id) {
+  gcm_client()->AddInstanceIDData(app_id, instance_id, "123");
+}
+
+void GCMClientInstanceIDTest::RemoveInstanceID(const std::string& app_id) {
+  gcm_client()->RemoveInstanceIDData(app_id);
+}
+
+void GCMClientInstanceIDTest::GetToken(const std::string& app_id,
+                                       const std::string& authorized_entity,
+                                       const std::string& scope) {
+  scoped_ptr<InstanceIDTokenInfo> instance_id_info(new InstanceIDTokenInfo);
+  instance_id_info->app_id = app_id;
+  instance_id_info->authorized_entity = authorized_entity;
+  instance_id_info->scope = scope;
+  gcm_client()->Register(
+      make_linked_ptr<RegistrationInfo>(instance_id_info.release()));
+}
+
+void GCMClientInstanceIDTest::DeleteToken(const std::string& app_id,
+                                          const std::string& authorized_entity,
+                                          const std::string& scope) {
+  scoped_ptr<InstanceIDTokenInfo> instance_id_info(new InstanceIDTokenInfo);
+  instance_id_info->app_id = app_id;
+  instance_id_info->authorized_entity = authorized_entity;
+  instance_id_info->scope = scope;
+  gcm_client()->Unregister(
+      make_linked_ptr<RegistrationInfo>(instance_id_info.release()));
+}
+
+void GCMClientInstanceIDTest::CompleteDeleteToken() {
+  std::string response(kDeleteTokenResponse);
+  net::TestURLFetcher* fetcher = url_fetcher_factory()->GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(response);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
+bool GCMClientInstanceIDTest::ExistsToken(const std::string& app_id,
+                                          const std::string& authorized_entity,
+                                          const std::string& scope) const {
+  scoped_ptr<InstanceIDTokenInfo> instance_id_info(new InstanceIDTokenInfo);
+  instance_id_info->app_id = app_id;
+  instance_id_info->authorized_entity = authorized_entity;
+  instance_id_info->scope = scope;
+  return gcm_client()->registrations_.count(
+      make_linked_ptr<RegistrationInfo>(instance_id_info.release())) > 0;
+}
+
+TEST_F(GCMClientInstanceIDTest, GetToken) {
+  AddInstanceID(kAppId, kInstanceID);
+
+  // Get a token.
+  EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
+  GetToken(kAppId, kSender, kScope);
+  CompleteRegistration("token1");
+
+  EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ("token1", last_registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
+
+  // Get another token.
+  EXPECT_FALSE(ExistsToken(kAppId, kSender2, kScope));
+  GetToken(kAppId, kSender2, kScope);
+  CompleteRegistration("token2");
+
+  EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ("token2", last_registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_TRUE(ExistsToken(kAppId, kSender2, kScope));
+  // The 1st token still exists.
+  EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
+}
+
+TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
+  AddInstanceID(kAppId, kInstanceID);
+
+  // Get a token.
+  EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
+  GetToken(kAppId, kSender, kScope);
+  CompleteRegistration("token1");
+
+  EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ("token1", last_registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
+
+  // Get another token.
+  EXPECT_FALSE(ExistsToken(kAppId, kSender2, kScope));
+  GetToken(kAppId, kSender2, kScope);
+  CompleteRegistration("token2");
+
+  EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ("token2", last_registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_TRUE(ExistsToken(kAppId, kSender2, kScope));
+  // The 1st token still exists.
+  EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
+
+  // Delete the 2nd token.
+  DeleteToken(kAppId, kSender2, kScope);
+  CompleteDeleteToken();
+
+  EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  // The 2nd token is gone while the 1st token still exists.
+  EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
+  EXPECT_FALSE(ExistsToken(kAppId, kSender2, kScope));
+
+  // Delete the 1st token.
+  DeleteToken(kAppId, kSender, kScope);
+  CompleteDeleteToken();
+
+  EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  // Both tokens are gone now.
+  EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
+  EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
+}
+
+TEST_F(GCMClientInstanceIDTest, DeleteMultiTokens) {
+  AddInstanceID(kAppId, kInstanceID);
+
+  // Get a token.
+  EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
+  GetToken(kAppId, kSender, kScope);
+  CompleteRegistration("token1");
+
+  EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ("token1", last_registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
+
+  // Get another token.
+  EXPECT_FALSE(ExistsToken(kAppId, kSender2, kScope));
+  GetToken(kAppId, kSender2, kScope);
+  CompleteRegistration("token2");
+
+  EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ("token2", last_registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  EXPECT_TRUE(ExistsToken(kAppId, kSender2, kScope));
+  // The 1st token still exists.
+  EXPECT_TRUE(ExistsToken(kAppId, kSender, kScope));
+
+  // Delete all tokens.
+  DeleteToken(kAppId, "*", "*");
+  CompleteDeleteToken();
+
+  EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
+  EXPECT_EQ(kAppId, last_app_id());
+  EXPECT_EQ(GCMClient::SUCCESS, last_result());
+  // All tokens are gone now.
+  EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
+  EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
 }
 
 }  // namespace gcm

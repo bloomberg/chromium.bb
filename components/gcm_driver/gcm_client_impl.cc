@@ -943,9 +943,32 @@ void GCMClientImpl::Unregister(
   if (instance_id_token_info) {
     auto instance_id_iter = instance_id_data_.find(registration_info->app_id);
     DCHECK(instance_id_iter != instance_id_data_.end());
+    std::string instance_id = instance_id_iter->second.first;
+    std::string app_id = instance_id_token_info->app_id;
+
+    // Removes all tokens associated with the app id when authorized_entity
+    // and scope are set to '*'.
+    if (instance_id_token_info->authorized_entity == "*" &&
+        instance_id_token_info->scope == "*") {
+      for (auto iter = registrations_.begin();
+           iter != registrations_.end();) {
+        InstanceIDTokenInfo* cached_instance_id_token_info =
+            InstanceIDTokenInfo::FromRegistrationInfo(iter->first.get());
+        if (cached_instance_id_token_info &&
+            cached_instance_id_token_info->app_id == app_id) {
+          gcm_store_->RemoveRegistration(
+              cached_instance_id_token_info->GetSerializedKey(),
+              base::Bind(&GCMClientImpl::UpdateRegistrationCallback,
+                         weak_ptr_factory_.GetWeakPtr()));
+          registrations_.erase(iter++);
+        } else {
+          ++iter;
+        }
+      }
+    }
 
     request_handler.reset(new InstanceIDDeleteTokenRequestHandler(
-        instance_id_iter->second.first,
+        instance_id,
         instance_id_token_info->authorized_entity,
         instance_id_token_info->scope,
         ConstructGCMVersion(chrome_build_info_.version)));

@@ -184,6 +184,7 @@ class GCMClientImpl
                    RegistrationInfoComparer> PendingUnregistrationRequests;
 
   friend class GCMClientImplTest;
+  friend class GCMClientInstanceIDTest;
 
   // Returns text representation of the enum State.
   std::string GetStateString() const;
