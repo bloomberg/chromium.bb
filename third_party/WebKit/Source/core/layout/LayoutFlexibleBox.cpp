@@ -109,6 +109,8 @@ void LayoutFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
             minPreferredLogicalWidth = child->minPreferredLogicalWidth();
             maxPreferredLogicalWidth = child->maxPreferredLogicalWidth();
         }
+        ASSERT(minPreferredLogicalWidth >= 0);
+        ASSERT(maxPreferredLogicalWidth >= 0);
         minPreferredLogicalWidth += margin;
         maxPreferredLogicalWidth += margin;
         if (!isColumnFlow()) {
