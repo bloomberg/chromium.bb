@@ -71,6 +71,8 @@ if (use_system_harfbuzz) {
       "src/hb-object-private.hh",
       "src/hb-open-file-private.hh",
       "src/hb-open-type-private.hh",
+      "src/hb-ot-font.cc",
+      "src/hb-ot-font.h",
       "src/hb-ot-head-table.hh",
       "src/hb-ot-hhea-table.hh",
       "src/hb-ot-hmtx-table.hh",

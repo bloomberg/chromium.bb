@@ -79,6 +79,8 @@
             'src/hb-open-file-private.hh',
             'src/hb-open-type-private.hh',
             'src/hb-ot.h',
+            'src/hb-ot-font.cc',
+            'src/hb-ot-font.h',
             'src/hb-ot-head-table.hh',
             'src/hb-ot-hhea-table.hh',
             'src/hb-ot-hmtx-table.hh',
