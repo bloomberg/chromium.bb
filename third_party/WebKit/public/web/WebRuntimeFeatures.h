@@ -104,8 +104,6 @@ public:
 
     BLINK_EXPORT static void enablePermissionsAPI(bool);
 
-    BLINK_EXPORT static void enablePermissionsAPI(bool);
-
     BLINK_EXPORT static void enableRequestAutocomplete(bool);
 
     BLINK_EXPORT static void enableScreenOrientation(bool);
