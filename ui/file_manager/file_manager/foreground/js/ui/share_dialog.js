@@ -274,7 +274,6 @@ ShareDialog.prototype.showEntry = function(entry, callback) {
   // fixed. See: crbug.com/260622.
   this.webView_ = /** @type {WebView} */ (util.createChild(
       this.webViewWrapper_, 'share-dialog-webview', 'webview'));
-  this.webView_.setAttribute('tabIndex', '-1');
   this.webViewAuthorizer_ = new ShareDialog.WebViewAuthorizer(
       !window.IN_TEST ? (ShareClient.SHARE_TARGET + '/*') : '<all_urls>',
       this.webView_);
@@ -283,7 +282,6 @@ ShareDialog.prototype.showEntry = function(entry, callback) {
     // Discard the window object and reopen in an external window.
     e.window.discard();
     util.visitURL(e.targetUrl);
-    e.preventDefault();
   });
   var show = FileManagerDialogBase.prototype.showBlankDialog.call(this);
   if (!show) {
