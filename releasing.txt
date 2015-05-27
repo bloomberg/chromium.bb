@@ -68,21 +68,21 @@ To make a release of Weston and/or Wayland, follow these steps.
 
 	  Once satisfied:
 
-      $ git commit releases.html -m "Add x.y.z release"
+      $ git commit releases.html -m "Add ${RELEASE_NUMBER} release"
       $ git push
       $ rsync -avz * wayland.freedesktop.org:/srv/wayland.freedesktop.org/www/
 
   8.  Update topic in #wayland to point to the release announcement URL
 
 
-For x.y.0 releases, also create the x.y branch.  The x.y branch is for
-bug fixes and conservative changes to the x.y.0 release, and is where
-we release x.y.z releases from.  Creating the x.y branch opens up
-master for new development and lets new development move on.  We've
-done this both after the x.y.0 release (to focus development on bug
-fixing for the x.y.1 release for a little longer) or before the x.y.0
-release (like we did with the 1.5.0 release, to unblock master
-development early). 
+For x.y.0 releases, also create the release series x.y branch.  The x.y
+branch is for bug fixes and conservative changes to the x.y.0 release,
+and is where we release x.y.z releases from.  Creating the x.y branch
+opens up master for new development and lets new development move on.
+We've done this both after the x.y.0 release (to focus development on
+bug fixing for the x.y.1 release for a little longer) or before the
+x.y.0 release (like we did with the 1.5.0 release, to unblock master
+development early).
 
     $ git branch x.y
     $ git push origin x.y
