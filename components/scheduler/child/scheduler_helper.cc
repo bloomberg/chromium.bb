@@ -41,6 +41,9 @@ SchedulerHelper::SchedulerHelper(
   task_queue_selector_->SetQueuePriority(
       QueueId::CONTROL_TASK_QUEUE,
       PrioritizingTaskQueueSelector::CONTROL_PRIORITY);
+  task_queue_manager_->SetWakeupPolicy(
+      QueueId::CONTROL_TASK_QUEUE,
+      TaskQueueManager::WakeupPolicy::DONT_WAKE_OTHER_QUEUES);
 
   task_queue_selector_->SetQueuePriority(
       QueueId::CONTROL_TASK_AFTER_WAKEUP_QUEUE,
@@ -48,6 +51,9 @@ SchedulerHelper::SchedulerHelper(
   task_queue_manager_->SetPumpPolicy(
       QueueId::CONTROL_TASK_AFTER_WAKEUP_QUEUE,
       TaskQueueManager::PumpPolicy::AFTER_WAKEUP);
+  task_queue_manager_->SetWakeupPolicy(
+      QueueId::CONTROL_TASK_AFTER_WAKEUP_QUEUE,
+      TaskQueueManager::WakeupPolicy::DONT_WAKE_OTHER_QUEUES);
 
   for (size_t i = 0; i < TASK_QUEUE_COUNT; i++) {
     task_queue_manager_->SetQueueName(
@@ -151,6 +157,13 @@ void SchedulerHelper::SetPumpPolicy(size_t queue_index,
                                     TaskQueueManager::PumpPolicy pump_policy) {
   CheckOnValidThread();
   return task_queue_manager_->SetPumpPolicy(queue_index, pump_policy);
+}
+
+void SchedulerHelper::SetWakeupPolicy(
+    size_t queue_index,
+    TaskQueueManager::WakeupPolicy wakeup_policy) {
+  CheckOnValidThread();
+  return task_queue_manager_->SetWakeupPolicy(queue_index, wakeup_policy);
 }
 
 void SchedulerHelper::PumpQueue(size_t queue_index) {

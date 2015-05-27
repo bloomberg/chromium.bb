@@ -72,6 +72,7 @@ class TaskQueue : public base::SingleThreadTaskRunner {
       base::TimeTicks* next_pending_delayed_task);
 
   bool UpdateWorkQueue(LazyNow* lazy_now,
+                       bool should_trigger_wakeup,
                        const base::PendingTask* previous_task);
   base::PendingTask TakeTaskFromWorkQueue();
 
@@ -80,6 +81,16 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   base::TaskQueue& work_queue() { return work_queue_; }
 
   void set_name(const char* name) { name_ = name; }
+
+  TaskQueueManager::WakeupPolicy wakeup_policy() const {
+    DCHECK(main_thread_checker_.CalledOnValidThread());
+    return wakeup_policy_;
+  }
+
+  void set_wakeup_policy(TaskQueueManager::WakeupPolicy wakeup_policy) {
+    DCHECK(main_thread_checker_.CalledOnValidThread());
+    wakeup_policy_ = wakeup_policy;
+  }
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -112,12 +123,11 @@ class TaskQueue : public base::SingleThreadTaskRunner {
 
   void PumpQueueLocked();
   bool TaskIsOlderThanQueuedTasks(const base::PendingTask* task);
-  bool ShouldAutoPumpQueueLocked(const base::PendingTask* previous_task);
+  bool ShouldAutoPumpQueueLocked(bool should_trigger_wakeup,
+                                 const base::PendingTask* previous_task);
   void EnqueueTaskLocked(const base::PendingTask& pending_task);
 
   void TraceQueueSize(bool is_locked) const;
-  static const char* PumpPolicyToString(
-      TaskQueueManager::PumpPolicy pump_policy);
   static void QueueAsValueInto(const base::TaskQueue& queue,
                                base::trace_event::TracedValue* state);
   static void QueueAsValueInto(const base::DelayedTaskQueue& queue,
@@ -125,8 +135,8 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   static void TaskAsValueInto(const base::PendingTask& task,
                               base::trace_event::TracedValue* state);
 
-  // This lock protects all members except the work queue and the
-  // main_thread_checker_.
+  // This lock protects all members except the work queue, the
+  // main_thread_checker_ and wakeup_policy_.
   mutable base::Lock lock_;
   base::PlatformThreadId thread_id_;
   TaskQueueManager* task_queue_manager_;
@@ -139,6 +149,7 @@ class TaskQueue : public base::SingleThreadTaskRunner {
 
   base::ThreadChecker main_thread_checker_;
   base::TaskQueue work_queue_;
+  TaskQueueManager::WakeupPolicy wakeup_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueue);
 };
@@ -150,7 +161,8 @@ TaskQueue::TaskQueue(TaskQueueManager* task_queue_manager,
       pump_policy_(TaskQueueManager::PumpPolicy::AUTO),
       name_(nullptr),
       disabled_by_default_tracing_category_(
-          disabled_by_default_tracing_category) {
+          disabled_by_default_tracing_category),
+      wakeup_policy_(TaskQueueManager::WakeupPolicy::CAN_WAKE_OTHER_QUEUES) {
 }
 
 TaskQueue::~TaskQueue() {
@@ -275,12 +287,13 @@ bool TaskQueue::TaskIsOlderThanQueuedTasks(const base::PendingTask* task) {
 }
 
 bool TaskQueue::ShouldAutoPumpQueueLocked(
+    bool should_trigger_wakeup,
     const base::PendingTask* previous_task) {
   lock_.AssertAcquired();
   if (pump_policy_ == TaskQueueManager::PumpPolicy::MANUAL)
     return false;
   if (pump_policy_ == TaskQueueManager::PumpPolicy::AFTER_WAKEUP &&
-      TaskIsOlderThanQueuedTasks(previous_task))
+      (!should_trigger_wakeup || TaskIsOlderThanQueuedTasks(previous_task)))
     return false;
   if (incoming_queue_.empty())
     return false;
@@ -297,13 +310,14 @@ bool TaskQueue::NextPendingDelayedTaskRunTime(
 }
 
 bool TaskQueue::UpdateWorkQueue(LazyNow* lazy_now,
+                                bool should_trigger_wakeup,
                                 const base::PendingTask* previous_task) {
   if (!work_queue_.empty())
     return true;
 
   {
     base::AutoLock lock(lock_);
-    if (!ShouldAutoPumpQueueLocked(previous_task))
+    if (!ShouldAutoPumpQueueLocked(should_trigger_wakeup, previous_task))
       return false;
     MoveReadyDelayedTasksToIncomingQueueLocked(lazy_now);
     work_queue_.Swap(&incoming_queue_);
@@ -386,7 +400,10 @@ void TaskQueue::AsValueInto(base::trace_event::TracedValue* state) const {
   state->BeginDictionary();
   if (name_)
     state->SetString("name", name_);
-  state->SetString("pump_policy", PumpPolicyToString(pump_policy_));
+  state->SetString("pump_policy",
+                   TaskQueueManager::PumpPolicyToString(pump_policy_));
+  state->SetString("wakeup_policy",
+                   TaskQueueManager::WakeupPolicyToString(wakeup_policy_));
   state->BeginArray("incoming_queue");
   QueueAsValueInto(incoming_queue_, state);
   state->EndArray();
@@ -397,22 +414,6 @@ void TaskQueue::AsValueInto(base::trace_event::TracedValue* state) const {
   QueueAsValueInto(delayed_task_queue_, state);
   state->EndArray();
   state->EndDictionary();
-}
-
-// static
-const char* TaskQueue::PumpPolicyToString(
-    TaskQueueManager::PumpPolicy pump_policy) {
-  switch (pump_policy) {
-    case TaskQueueManager::PumpPolicy::AUTO:
-      return "auto";
-    case TaskQueueManager::PumpPolicy::AFTER_WAKEUP:
-      return "after_wakeup";
-    case TaskQueueManager::PumpPolicy::MANUAL:
-      return "manual";
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
 }
 
 // static
@@ -543,6 +544,13 @@ void TaskQueueManager::SetPumpPolicy(size_t queue_index,
   queue->SetPumpPolicy(pump_policy);
 }
 
+void TaskQueueManager::SetWakeupPolicy(size_t queue_index,
+                                       WakeupPolicy wakeup_policy) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  internal::TaskQueue* queue = Queue(queue_index);
+  queue->set_wakeup_policy(wakeup_policy);
+}
+
 void TaskQueueManager::PumpQueue(size_t queue_index) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   internal::TaskQueue* queue = Queue(queue_index);
@@ -550,6 +558,7 @@ void TaskQueueManager::PumpQueue(size_t queue_index) {
 }
 
 bool TaskQueueManager::UpdateWorkQueues(
+    bool should_trigger_wakeup,
     const base::PendingTask* previous_task) {
   // TODO(skyostil): This is not efficient when the number of queues grows very
   // large due to the number of locks taken. Consider optimizing when we get
@@ -558,7 +567,8 @@ bool TaskQueueManager::UpdateWorkQueues(
   internal::LazyNow lazy_now(this);
   bool has_work = false;
   for (auto& queue : queues_) {
-    has_work |= queue->UpdateWorkQueue(&lazy_now, previous_task);
+    has_work |=
+        queue->UpdateWorkQueue(&lazy_now, should_trigger_wakeup, previous_task);
     if (!queue->work_queue().empty()) {
       // Currently we should not be getting tasks with delayed run times in any
       // of the work queues.
@@ -590,9 +600,9 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
   }
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  // Pass nullptr to UpdateWorkQueues here to prevent waking up a
+  // Pass false and nullptr to UpdateWorkQueues here to prevent waking up a
   // pump-after-wakeup queue.
-  if (!UpdateWorkQueues(nullptr))
+  if (!UpdateWorkQueues(false, nullptr))
     return;
 
   base::PendingTask previous_task((tracked_objects::Location()),
@@ -608,7 +618,9 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
     if (ProcessTaskFromWorkQueue(queue_index, i > 0, &previous_task))
       return;  // The TaskQueueManager got deleted, we must bail out.
 
-    if (!UpdateWorkQueues(&previous_task))
+    bool should_trigger_wakeup = Queue(queue_index)->wakeup_policy() ==
+                                 WakeupPolicy::CAN_WAKE_OTHER_QUEUES;
+    if (!UpdateWorkQueues(should_trigger_wakeup, &previous_task))
       return;
   }
 }
@@ -734,6 +746,36 @@ TaskQueueManager::AsValueWithSelectorResult(bool should_run,
   if (should_run)
     state->SetInteger("selected_queue", selected_queue);
   return state;
+}
+
+// static
+const char* TaskQueueManager::PumpPolicyToString(
+    TaskQueueManager::PumpPolicy pump_policy) {
+  switch (pump_policy) {
+    case TaskQueueManager::PumpPolicy::AUTO:
+      return "auto";
+    case TaskQueueManager::PumpPolicy::AFTER_WAKEUP:
+      return "after_wakeup";
+    case TaskQueueManager::PumpPolicy::MANUAL:
+      return "manual";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+// static
+const char* TaskQueueManager::WakeupPolicyToString(
+    TaskQueueManager::WakeupPolicy wakeup_policy) {
+  switch (wakeup_policy) {
+    case TaskQueueManager::WakeupPolicy::CAN_WAKE_OTHER_QUEUES:
+      return "can_wake_other_queues";
+    case TaskQueueManager::WakeupPolicy::DONT_WAKE_OTHER_QUEUES:
+      return "dont_wake_other_queues";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 void TaskQueueManager::OnTaskQueueEnabled() {

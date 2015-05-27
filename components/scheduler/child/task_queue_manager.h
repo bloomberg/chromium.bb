@@ -62,7 +62,23 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
     // automatically scheduled for execution or transferred to the work queue.
     // Instead, the selector should call PumpQueue() when necessary to bring
     // in new tasks for execution.
-    MANUAL
+    MANUAL,
+    // Must be last entry.
+    PUMP_POLICY_COUNT,
+    FIRST_PUMP_POLICY = AUTO,
+  };
+
+  // Keep TaskQueue::WakeupPolicyToString in sync with this enum.
+  enum class WakeupPolicy {
+    // Tasks run on a queue with CAN_WAKE_OTHER_QUEUES wakeup policy can
+    // cause queues with the AFTER_WAKEUP PumpPolicy to be woken up.
+    CAN_WAKE_OTHER_QUEUES,
+    // Tasks run on a queue with DONT_WAKE_OTHER_QUEUES won't cause queues
+    // with the AFTER_WAKEUP PumpPolicy to be woken up.
+    DONT_WAKE_OTHER_QUEUES,
+    // Must be last entry.
+    WAKEUP_POLICY_COUNT,
+    FIRST_WAKEUP_POLICY = CAN_WAKE_OTHER_QUEUES,
   };
 
   // Create a task queue manager with |task_queue_count| task queues.
@@ -84,6 +100,10 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
   // Sets the pump policy for the |queue_index| to |pump_policy|. By
   // default queues are created with AUTO_PUMP_POLICY.
   void SetPumpPolicy(size_t queue_index, PumpPolicy pump_policy);
+
+  // Sets the wakeup policy for the |queue_index| to |wakeup_policy|. By
+  // default queues are created with CAN_WAKE_OTHER_QUEUES.
+  void SetWakeupPolicy(size_t queue_index, WakeupPolicy wakeup_policy);
 
   // Reloads new tasks from the incoming queue for |queue_index| into the work
   // queue, regardless of whether the work queue is empty or not. After this,
@@ -133,6 +153,7 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
 
   friend class internal::LazyNow;
   friend class internal::TaskQueue;
+  friend class TaskQueueManagerTest;
 
   class DeletionSentinel : public base::RefCounted<DeletionSentinel> {
    private:
@@ -155,11 +176,11 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
   // Delayed Tasks with run_times <= Now() are enqueued onto the work queue.
   // Reloads any empty work queues which have automatic pumping enabled and
   // which are eligible to be auto pumped based on the |previous_task| which was
-  // run. Call with an empty |previous_task| if no task was just run. Returns
-  // true if any work queue has tasks after doing this.
-  // |next_pending_delayed_task| should be the time of the next known delayed
-  // task. It is updated if any task is found which should run earlier.
-  bool UpdateWorkQueues(const base::PendingTask* previous_task);
+  // run and |should_trigger_wakeup| . Call with an empty |previous_task| if no
+  // task was just run. Returns true if any work queue has tasks after doing
+  // this.
+  bool UpdateWorkQueues(bool should_trigger_wakeup,
+                        const base::PendingTask* previous_task);
 
   // Chooses the next work queue to service. Returns true if |out_queue_index|
   // indicates the queue from which the next task should be run, false to
@@ -188,6 +209,8 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run, size_t selected_queue) const;
+  static const char* PumpPolicyToString(PumpPolicy pump_policy);
+  static const char* WakeupPolicyToString(WakeupPolicy wakeup_policy);
 
   std::vector<scoped_refptr<internal::TaskQueue>> queues_;
   base::AtomicSequenceNumber task_sequence_num_;

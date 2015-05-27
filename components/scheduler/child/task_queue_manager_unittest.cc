@@ -102,6 +102,8 @@ class ExplicitSelectorForTest : public SelectorForTest {
   DISALLOW_COPY_AND_ASSIGN(ExplicitSelectorForTest);
 };
 
+}  // namespace
+
 class TaskQueueManagerTest : public testing::Test {
  public:
   void DeleteTaskQueueManager() { manager_.reset(); }
@@ -145,6 +147,30 @@ class TaskQueueManagerTest : public testing::Test {
     }
 
     return nullptr;
+  }
+
+  template <typename E>
+  static void CallForEachEnumValue(E first,
+                                   E last,
+                                   const char* (*function)(E)) {
+    for (E val = first; val < last;
+         val = static_cast<E>(static_cast<int>(val) + 1)) {
+      (*function)(val);
+    }
+  }
+
+  static void CheckAllPumpPolicyToString() {
+    CallForEachEnumValue<TaskQueueManager::PumpPolicy>(
+        TaskQueueManager::PumpPolicy::FIRST_PUMP_POLICY,
+        TaskQueueManager::PumpPolicy::PUMP_POLICY_COUNT,
+        &TaskQueueManager::PumpPolicyToString);
+  }
+
+  static void CheckAllWakeupPolicyToString() {
+    CallForEachEnumValue<TaskQueueManager::WakeupPolicy>(
+        TaskQueueManager::WakeupPolicy::FIRST_WAKEUP_POLICY,
+        TaskQueueManager::WakeupPolicy::WAKEUP_POLICY_COUNT,
+        &TaskQueueManager::WakeupPolicyToString);
   }
 
   scoped_refptr<cc::TestNowSource> now_src_;
@@ -907,6 +933,35 @@ TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupBecomesQuiescent) {
   EXPECT_EQ(2, run_count);
 }
 
+TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupWithDontWakeQueue) {
+  Initialize(3u, SelectorType::Explicit);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AFTER_WAKEUP);
+  manager_->SetWakeupPolicy(1,
+      TaskQueueManager::WakeupPolicy::DONT_WAKE_OTHER_QUEUES);
+
+  std::vector<int> run_order;
+  scoped_refptr<base::SingleThreadTaskRunner> runners[3] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1),
+      manager_->TaskRunnerForQueue(2)};
+
+  selector_->AppendQueueToService(1);
+  selector_->AppendQueueToService(2);
+  selector_->AppendQueueToService(0);
+
+  runners[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runners[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  test_task_runner_->RunUntilIdle();
+  // Executing a DONT_WAKE_OTHER_QUEUES queue shouldn't wake the autopump after
+  // wakeup queue.
+  EXPECT_THAT(run_order, ElementsAre(2));
+
+  runners[2]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
+  test_task_runner_->RunUntilIdle();
+  // Executing a CAN_WAKE_OTHER_QUEUES queue should wake the autopump after
+  // wakeup queue.
+  EXPECT_THAT(run_order, ElementsAre(2, 3, 1));
+}
+
 class MockTaskObserver : public base::MessageLoop::TaskObserver {
  public:
   MOCK_METHOD1(DidProcessTask, void(const base::PendingTask& task));
@@ -1098,5 +1153,12 @@ TEST_F(TaskQueueManagerTest, GetAndClearTaskWasRunBitmap_ManyQueues) {
   EXPECT_EQ(1ull << 63, manager_->GetAndClearTaskWasRunOnQueueBitmap());
 }
 
-}  // namespace
+TEST_F(TaskQueueManagerTest, PumpPolicyToString) {
+  CheckAllPumpPolicyToString();
+}
+
+TEST_F(TaskQueueManagerTest, WakeupPolicyToString) {
+  CheckAllWakeupPolicyToString();
+}
+
 }  // namespace scheduler

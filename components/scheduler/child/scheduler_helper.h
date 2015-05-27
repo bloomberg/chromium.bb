@@ -85,6 +85,8 @@ class SCHEDULER_EXPORT SchedulerHelper {
   bool IsQueueEnabled(size_t queue_index) const;
   void SetPumpPolicy(size_t queue_index,
                      TaskQueueManager::PumpPolicy pump_policy);
+  void SetWakeupPolicy(size_t queue_index,
+                       TaskQueueManager::WakeupPolicy wakeup_policy);
   void PumpQueue(size_t queue_index);
   uint64 GetQuiescenceMonitoredTaskQueueMask() const;
   uint64 GetAndClearTaskWasRunOnQueueBitmap();
