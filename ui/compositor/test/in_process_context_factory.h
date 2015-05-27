@@ -46,7 +46,8 @@ class InProcessContextFactory : public ContextFactory {
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
   void RemoveCompositor(Compositor* compositor) override;
   bool DoesCreateTestContexts() override;
-  uint32 GetImageTextureTarget() override;
+  uint32 GetImageTextureTarget(gfx::GpuMemoryBuffer::Format format,
+                               gfx::GpuMemoryBuffer::Usage usage) override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;

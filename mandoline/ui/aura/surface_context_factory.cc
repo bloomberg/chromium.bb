@@ -67,7 +67,10 @@ bool SurfaceContextFactory::DoesCreateTestContexts() {
   return false;
 }
 
-uint32 SurfaceContextFactory::GetImageTextureTarget() {
+uint32 SurfaceContextFactory::GetImageTextureTarget(
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage) {
+  // No GpuMemoryBuffer support, so just return GL_TEXTURE_2D.
   return GL_TEXTURE_2D;
 }
 

@@ -25,6 +25,7 @@
 #include "ui/compositor/layer_animator_collection.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -95,7 +96,8 @@ class COMPOSITOR_EXPORT ContextFactory {
   virtual bool DoesCreateTestContexts() = 0;
 
   // Returns the OpenGL target to use for image textures.
-  virtual uint32 GetImageTextureTarget() = 0;
+  virtual uint32 GetImageTextureTarget(gfx::GpuMemoryBuffer::Format format,
+                                       gfx::GpuMemoryBuffer::Usage usage) = 0;
 
   // Gets the shared bitmap manager for software mode.
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
