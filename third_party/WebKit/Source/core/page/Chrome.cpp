@@ -361,7 +361,6 @@ Cursor Chrome::getLastSetCursorForTesting() const
 
 void Chrome::scheduleAnimation()
 {
-    m_page->animator().setAnimationFramePending();
     m_client->scheduleAnimation();
 }
 
@@ -369,7 +368,6 @@ void Chrome::scheduleAnimation()
 
 void Chrome::scheduleAnimationForFrame(LocalFrame* localRoot)
 {
-    m_page->animator().setAnimationFramePending();
     m_client->scheduleAnimationForFrame(localRoot);
 }
 

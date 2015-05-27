@@ -20,7 +20,6 @@ public:
     void scheduleVisualUpdate(LocalFrame* = 0);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
-    void setAnimationFramePending() { m_animationFramePending = true; }
     bool isServicingAnimations() const { return m_servicingAnimations; }
     void updateLayoutAndStyleForPainting(LocalFrame* rootFrame);
 
@@ -28,7 +27,6 @@ private:
     explicit PageAnimator(Page&);
 
     RawPtrWillBeMember<Page> m_page;
-    bool m_animationFramePending;
     bool m_servicingAnimations;
     bool m_updatingLayoutAndStyleForPainting;
 };

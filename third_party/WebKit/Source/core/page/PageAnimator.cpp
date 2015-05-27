@@ -18,7 +18,6 @@ namespace blink {
 
 PageAnimator::PageAnimator(Page& page)
     : m_page(page)
-    , m_animationFramePending(false)
     , m_servicingAnimations(false)
     , m_updatingLayoutAndStyleForPainting(false)
 {
@@ -37,7 +36,6 @@ DEFINE_TRACE(PageAnimator)
 void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
     RefPtrWillBeRawPtr<PageAnimator> protector(this);
-    m_animationFramePending = false;
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
 
     WillBeHeapVector<RefPtrWillBeMember<Document>> documents;
@@ -76,7 +74,6 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 
 void PageAnimator::scheduleVisualUpdate(LocalFrame* frame)
 {
-    // FIXME: also include m_animationFramePending here. It is currently not there due to crbug.com/353756.
     if (m_servicingAnimations || m_updatingLayoutAndStyleForPainting)
         return;
     // FIXME: The frame-specific version of scheduleAnimation() is for
