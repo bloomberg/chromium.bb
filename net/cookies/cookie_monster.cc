@@ -1251,10 +1251,6 @@ CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
 }
 
 int CookieMonster::DeleteAll(bool sync_to_store) {
-  // TODO(xiyuan): Remove the log after http://crbug.com/449816.
-  VLOG(kVlogSetCookies) << "CookieMonster::DeleteAll, sync_to_store="
-                        << sync_to_store;
-
   base::AutoLock autolock(lock_);
 
   int num_deleted = 0;
@@ -1273,9 +1269,6 @@ int CookieMonster::DeleteAll(bool sync_to_store) {
 
 int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
                                            const Time& delete_end) {
-  // TODO(xiyuan): Remove the log after http://crbug.com/449816.
-  VLOG(kVlogSetCookies) << "CookieMonster::DeleteAllCreatedBetween";
-
   base::AutoLock autolock(lock_);
 
   int num_deleted = 0;
@@ -1298,9 +1291,6 @@ int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
 int CookieMonster::DeleteAllCreatedBetweenForHost(const Time delete_begin,
                                                   const Time delete_end,
                                                   const GURL& url) {
-  // TODO(xiyuan): Remove the log after http://crbug.com/449816.
-  VLOG(kVlogSetCookies) << "CookieMonster::DeleteAllCreatedBetweenForHost";
-
   base::AutoLock autolock(lock_);
 
   if (!HasCookieableScheme(url))
@@ -1338,9 +1328,6 @@ int CookieMonster::DeleteAllForHost(const GURL& url) {
 }
 
 bool CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
-  // TODO(xiyuan): Remove the log after http://crbug.com/449816.
-  VLOG(kVlogSetCookies) << "CookieMonster::DeleteCanonicalCookie";
-
   base::AutoLock autolock(lock_);
 
   for (CookieMapItPair its = cookies_.equal_range(GetKey(cookie.Domain()));
@@ -1410,9 +1397,6 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
 
 void CookieMonster::DeleteCookie(const GURL& url,
                                  const std::string& cookie_name) {
-  // TODO(xiyuan): Remove the log after http://crbug.com/449816.
-  VLOG(kVlogSetCookies) << "CookieMonster::DeleteCookie";
-
   base::AutoLock autolock(lock_);
 
   if (!HasCookieableScheme(url))
@@ -1445,9 +1429,6 @@ void CookieMonster::DeleteCookie(const GURL& url,
 }
 
 int CookieMonster::DeleteSessionCookies() {
-  // TODO(xiyuan): Remove the log after http://crbug.com/449816.
-  VLOG(kVlogSetCookies) << "CookieMonster::DeleteSessionCookies";
-
   base::AutoLock autolock(lock_);
 
   int num_deleted = 0;
@@ -2159,9 +2140,6 @@ int CookieMonster::GarbageCollect(const Time& current, const std::string& key) {
 int CookieMonster::GarbageCollectExpired(const Time& current,
                                          const CookieMapItPair& itpair,
                                          CookieItVector* cookie_its) {
-  // TODO(xiyuan): Remove the log after http://crbug.com/449816.
-  VLOG(kVlogSetCookies) << "CookieMonster::GarbageCollectExpired";
-
   if (keep_expired_cookies_)
     return 0;
 
@@ -2187,9 +2165,6 @@ int CookieMonster::GarbageCollectDeleteRange(const Time& current,
                                              DeletionCause cause,
                                              CookieItVector::iterator it_begin,
                                              CookieItVector::iterator it_end) {
-  // TODO(xiyuan): Remove the log after http://crbug.com/449816.
-  VLOG(kVlogSetCookies) << "CookieMonster::GarbageCollectDeleteRange";
-
   for (CookieItVector::iterator it = it_begin; it != it_end; it++) {
     histogram_evicted_last_access_minutes_->Add(
         (current - (*it)->second->LastAccessDate()).InMinutes());
