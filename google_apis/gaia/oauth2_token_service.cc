@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -291,6 +292,8 @@ void OAuth2TokenService::Fetcher::OnGetTokenFailure(
     base::TimeDelta backoff = base::TimeDelta::FromMilliseconds(
         ComputeExponentialBackOffMilliseconds(retry_number_));
     ++retry_number_;
+    UMA_HISTOGRAM_ENUMERATION("Signin.OAuth2TokenGetRetry",
+        error.state(), GoogleServiceAuthError::NUM_STATES);
     retry_timer_.Stop();
     retry_timer_.Start(FROM_HERE,
                        backoff,
@@ -299,6 +302,8 @@ void OAuth2TokenService::Fetcher::OnGetTokenFailure(
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION("Signin.OAuth2TokenGetFailure",
+      error.state(), GoogleServiceAuthError::NUM_STATES);
   error_ = error;
   InformWaitingRequestsAndDelete();
 }

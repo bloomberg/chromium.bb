@@ -25667,30 +25667,40 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="OAuth2Login.ListAccountsFailure" enum="GoogleServiceAuthError">
+  <obsolete>
+    Deprecated 2015-05-22. Replaced by Signin.ListAccountsFailure.
+  </obsolete>
   <owner>zelidrag@chromium.org</owner>
   <summary>
     Failure reason of final ListAccounts call failure during Chrome OS login.
+    This data is now included in Signin.ListAccountsFailure.
   </summary>
 </histogram>
 
 <histogram name="OAuth2Login.ListAccountsRetry" enum="GoogleServiceAuthError">
   <owner>zelidrag@chromium.org</owner>
+  <obsolete>
+    Deprecated 2015-05-22. Replaced by Signin.ListAccountsRetry.
+  </obsolete>
   <summary>
-    Retry reason of failed ListAccounts call during Chrome OS login.
+    Retry reason of failed ListAccounts call during Chrome OS login. This data
+    is now included in Signin.ListAccountsRetry.
   </summary>
 </histogram>
 
 <histogram name="OAuth2Login.MergeSessionFailure" enum="GoogleServiceAuthError">
   <owner>zelidrag@chromium.org</owner>
   <summary>
-    Failure reason of final MergeSession call during Chrome OS login.
+    Failure reason of MergeSession call during Chrome OS login, Chrome Signin or
+    account addition. On all OSes as of M44 (previously CrOS only).
   </summary>
 </histogram>
 
 <histogram name="OAuth2Login.MergeSessionRetry" enum="GoogleServiceAuthError">
   <owner>zelidrag@chromium.org</owner>
   <summary>
-    Retry reason of failed MergeSession call during Chrome OS login.
+    Retry reason of failed MergeSession call during Chrome OS login, Chrome
+    Signin or account addition. On all OSes as of M44 (previously CrOS only).
   </summary>
 </histogram>
 
@@ -25714,19 +25724,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="OAuth2Login.OAuthLoginUberTokenFailure"
     enum="GoogleServiceAuthError">
+  <obsolete>
+    Deprecated 2015-05-22
+  </obsolete>
   <owner>zelidrag@chromium.org</owner>
   <summary>
     Failure reason of final OAuthLogin (with uber token) call during Chrome OS
-    login.
+    login. This data is now (M44+) included in Signin.UberTokenFailure.
   </summary>
 </histogram>
 
 <histogram name="OAuth2Login.OAuthLoginUberTokenRetry"
     enum="GoogleServiceAuthError">
+  <obsolete>
+    Deprecated 2015-05-22
+  </obsolete>
   <owner>zelidrag@chromium.org</owner>
   <summary>
     Retry reason of failed OAuthLogin (with uber token) call during Chrome OS
-    login.
+    login. This data is now (M44+) included in Signin.UberTokenRetry.
   </summary>
 </histogram>
 
@@ -37185,6 +37201,36 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Signin.ListAccountsFailure" enum="GoogleServiceAuthError">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Failure reason of ListAccounts call failure during account reconciliation,
+    ChromeOS login, or signin internals queries.
+  </summary>
+</histogram>
+
+<histogram name="Signin.ListAccountsRetry" enum="GoogleServiceAuthError">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Retry reason of failed ListAccounts call during Chrome OS login during
+    account reconciliation, ChromeOS login, or signin internals queries.
+  </summary>
+</histogram>
+
+<histogram name="Signin.OAuth2TokenGetFailure" enum="GoogleServiceAuthError">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Reason fetching an OAuth2 Token failed. Available on all OSes.
+  </summary>
+</histogram>
+
+<histogram name="Signin.OAuth2TokenGetRetry" enum="GoogleServiceAuthError">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Reason fetching an OAuth2 Token is being retried. Available on all OSes.
+  </summary>
+</histogram>
+
 <histogram name="Signin.OneClickConfirmation" enum="SigninFlowConfirmations">
   <owner>noms@chromium.org</owner>
   <summary>
@@ -37289,6 +37335,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Signin.SignoutProfile" enum="SigninSignoutProfile">
   <owner>mlerman@chromium.org</owner>
   <summary>Track how a profile gets signed out.</summary>
+</histogram>
+
+<histogram name="Signin.UberTokenFailure" enum="GoogleServiceAuthError">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Reason of failure to acquiring an ubertoken based on an already-minted
+    access token. Available on all OSes.
+  </summary>
+</histogram>
+
+<histogram name="Signin.UberTokenRetry" enum="GoogleServiceAuthError">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Retry reason of failure to acquire an ubertoken based on an already-minted
+    access token. Available on all OSes.
+  </summary>
 </histogram>
 
 <histogram name="Signin.XDevicePromo.BrowsingSessionDuration" units="minutes">

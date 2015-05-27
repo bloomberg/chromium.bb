@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
@@ -166,6 +167,7 @@ TEST_F(GaiaCookieManagerServiceTest, Success) {
 TEST_F(GaiaCookieManagerServiceTest, FailedMergeSession) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
+  base::HistogramTester histograms;
 
   EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
@@ -175,6 +177,8 @@ TEST_F(GaiaCookieManagerServiceTest, FailedMergeSession) {
   SimulateMergeSessionFailure(&helper, error());
   // Persistent error incurs no further retries.
   DCHECK(!helper.is_running());
+  histograms.ExpectUniqueSample("OAuth2Login.MergeSessionFailure",
+      GoogleServiceAuthError::SERVICE_ERROR, 1);
 }
 
 TEST_F(GaiaCookieManagerServiceTest, AddAccountCookiesDisabled) {
@@ -213,6 +217,7 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
 TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
+  base::HistogramTester histograms;
 
   EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(helper, StartFetchingMergeSession()).Times(2);
@@ -238,6 +243,8 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   base::MessageLoop::current()->Run();
   SimulateMergeSessionSuccess(&helper, "token");
   DCHECK(!helper.is_running());
+  histograms.ExpectUniqueSample("OAuth2Login.MergeSessionRetry",
+      GoogleServiceAuthError::REQUEST_CANCELED, 2);
 }
 
 TEST_F(GaiaCookieManagerServiceTest, FailedUbertoken) {

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -525,6 +526,8 @@ void GaiaCookieManagerService::OnMergeSessionFailure(
           << " error=" << error.ToString();
   if (++fetcher_retries_ < kMaxFetcherRetries && error.IsTransientError()) {
     fetcher_backoff_.InformOfRequest(false);
+    UMA_HISTOGRAM_ENUMERATION("OAuth2Login.MergeSessionRetry",
+        error.state(), GoogleServiceAuthError::NUM_STATES);
     fetcher_timer_.Start(
         FROM_HERE, fetcher_backoff_.GetTimeUntilRelease(),
         base::Bind(&SigninClient::DelayNetworkCall,
@@ -537,6 +540,9 @@ void GaiaCookieManagerService::OnMergeSessionFailure(
 
   uber_token_ = std::string();
   const std::string account_id = requests_.front().account_id();
+
+  UMA_HISTOGRAM_ENUMERATION("OAuth2Login.MergeSessionFailure",
+      error.state(), GoogleServiceAuthError::NUM_STATES);
   HandleNextRequest();
   SignalComplete(account_id, error);
 }
@@ -573,6 +579,8 @@ void GaiaCookieManagerService::OnListAccountsFailure(
          GaiaCookieRequestType::LIST_ACCOUNTS);
   if (++fetcher_retries_ < kMaxFetcherRetries && error.IsTransientError()) {
     fetcher_backoff_.InformOfRequest(false);
+    UMA_HISTOGRAM_ENUMERATION("Signin.ListAccountsRetry",
+        error.state(), GoogleServiceAuthError::NUM_STATES);
     fetcher_timer_.Start(
         FROM_HERE, fetcher_backoff_.GetTimeUntilRelease(),
         base::Bind(&SigninClient::DelayNetworkCall,
@@ -583,6 +591,8 @@ void GaiaCookieManagerService::OnListAccountsFailure(
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION("Signin.ListAccountsFailure",
+      error.state(), GoogleServiceAuthError::NUM_STATES);
   FOR_EACH_OBSERVER(Observer, observer_list_,
       OnGaiaAccountsInCookieUpdated(listed_accounts_, error));
   HandleNextRequest();
