@@ -12242,6 +12242,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GPU.ANGLE.DisplayInitializeMS" units="milliseconds">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    Time ANGLE spends in eglInitialize, where it spins up a Renderer. This can
+    gives us insight into how much time we're spending initializing the GPU.
+  </summary>
+</histogram>
+
 <histogram name="GPU.ANGLE.SupportsDXGI1_2" enum="BooleanSupported">
   <owner>jmadill@chromium.org</owner>
   <summary>
