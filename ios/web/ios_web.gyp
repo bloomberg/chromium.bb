@@ -7,6 +7,35 @@
     'chromium_code': 1,
    },
   'targets': [
+    {
+      'target_name': 'ios_web_app',
+      'type': 'static_library',
+      'include_dirs': [
+        '../..',
+      ],
+      'dependencies': [
+        'ios_web',
+        'ios_web_thread',
+        '../../base/base.gyp:base',
+        '../../base/base.gyp:base_i18n',
+        '../../crypto/crypto.gyp:crypto',
+        '../../net/net.gyp:net',
+        '../../ui/base/ui_base.gyp:ui_base',
+        '../../ui/gfx/gfx.gyp:gfx',
+        '../../ui/gfx/gfx.gyp:gfx_geometry',
+      ],
+      'sources': [
+        'app/web_main.mm',
+        'app/web_main_loop.h',
+        'app/web_main_loop.mm',
+        'app/web_main_runner.h',
+        'app/web_main_runner.mm',
+        'public/app/web_main.h',
+        'public/app/web_main_delegate.h',
+        'public/app/web_main_parts.h',
+        'public/app/web_main_parts.mm',
+      ],
+    },
     # Note: any embedder using ios_web will for now need to include either
     # ios_web_thread (any new embedder) or ios_web_content_thread_shim (Chrome).
     # This will become unnecessary once Chrome switches to using ios_web_thread,
