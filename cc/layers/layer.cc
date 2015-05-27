@@ -1309,7 +1309,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
       layer->layer_animation_controller());
 
   if (frame_timing_requests_dirty_) {
-    layer->PassFrameTimingRequests(&frame_timing_requests_);
+    layer->SetFrameTimingRequests(frame_timing_requests_);
     frame_timing_requests_dirty_ = false;
   }
 
@@ -1588,6 +1588,9 @@ bool Layer::HasDelegatedContent() const {
 
 void Layer::SetFrameTimingRequests(
     const std::vector<FrameTimingRequest>& requests) {
+  // TODO(vmpstr): Early out if there are no changes earlier in the call stack.
+  if (requests == frame_timing_requests_)
+    return;
   frame_timing_requests_ = requests;
   frame_timing_requests_dirty_ = true;
   SetNeedsCommit();

@@ -25,6 +25,10 @@ class CC_EXPORT FrameTimingRequest {
   // Return the layer space rect for this request.
   const gfx::Rect& rect() const { return rect_; }
 
+  bool operator==(const FrameTimingRequest& other) const {
+    return (id_ == other.id_) && (rect_ == other.rect_);
+  }
+
  private:
   int64_t id_;
   gfx::Rect rect_;

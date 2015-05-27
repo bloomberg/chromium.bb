@@ -631,8 +631,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void Set3dSortingContextId(int id);
   int sorting_context_id() { return sorting_context_id_; }
 
-  void PassFrameTimingRequests(
-      std::vector<FrameTimingRequest>* frame_timing_requests);
+  void SetFrameTimingRequests(
+      const std::vector<FrameTimingRequest>& frame_timing_requests);
   const std::vector<FrameTimingRequest>& frame_timing_requests() const {
     return frame_timing_requests_;
   }

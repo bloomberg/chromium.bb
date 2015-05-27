@@ -629,7 +629,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetDebugInfo(debug_info_);
 
   if (frame_timing_requests_dirty_) {
-    layer->PassFrameTimingRequests(&frame_timing_requests_);
+    layer->SetFrameTimingRequests(frame_timing_requests_);
     frame_timing_requests_dirty_ = false;
   }
 
@@ -1108,9 +1108,9 @@ void LayerImpl::Set3dSortingContextId(int id) {
   NoteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::PassFrameTimingRequests(
-    std::vector<FrameTimingRequest>* requests) {
-  frame_timing_requests_.swap(*requests);
+void LayerImpl::SetFrameTimingRequests(
+    const std::vector<FrameTimingRequest>& requests) {
+  frame_timing_requests_ = requests;
   frame_timing_requests_dirty_ = true;
   SetNeedsPushProperties();
 }
