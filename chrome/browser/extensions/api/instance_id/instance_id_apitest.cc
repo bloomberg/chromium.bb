@@ -10,6 +10,7 @@
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/services/gcm/instance_id/instance_id_profile_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
@@ -36,6 +37,7 @@ class InstanceIDApiTest : public ExtensionApiTest {
 
  protected:
   void SetUpOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
   extensions::ScopedCurrentChannel current_channel_;
@@ -52,6 +54,14 @@ void InstanceIDApiTest::SetUpOnMainThread() {
       browser()->profile(), &BuildFakeGCMProfileService);
 
   ExtensionApiTest::SetUpOnMainThread();
+}
+
+void InstanceIDApiTest::SetUpCommandLine(base::CommandLine* command_line) {
+  ExtensionApiTest::SetUpCommandLine(command_line);
+
+  // Makes sure InstanceID is enabled for testing.
+  command_line->AppendSwitchASCII(
+       switches::kForceFieldTrials, "InstanceID/Enabled/");
 }
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, GetID) {
