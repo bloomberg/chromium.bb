@@ -40,6 +40,10 @@ class JSChecker(object):
       return self.RegexCheck(i, line, regex, msg)
     return _check(r'^\s*(\*\*/)\s*$') or _check(r'/\*\* @[a-zA-Z]+.* (\*\*/)')
 
+  def ExtraDotInGenericCheck(self, i, line):
+    return self.RegexCheck(i, line, r"((?:Array|Object|Promise)\.<)",
+        "Don't use a dot after generics (Object.<T> should be Object<T>).")
+
   def GetElementByIdCheck(self, i, line):
     """Checks for use of 'document.getElementById' instead of '$'."""
     return self.RegexCheck(i, line, r"(document\.getElementById)\('",
@@ -212,6 +216,8 @@ class JSChecker(object):
             self.ChromeSendCheck(i, line),
             self.ConstCheck(i, line),
             self.GetElementByIdCheck(i, line),
+            self.EndJsDocCommentCheck(i, line),
+            self.ExtraDotInGenericCheck(i, line),
             self.InheritDocCheck(i, line),
             self.WrapperTypeCheck(i, line),
             self.VarNameCheck(i, line),

@@ -248,6 +248,21 @@ class JsStyleGuideTest(SuperMoxTestBase):
     for line in lines:
       self.ShouldPassEndJsDocCommentCheck(line)
 
+  def ShouldFailExtraDotInGenericCheck(self, line):
+    """Checks that Array.< or Object.< is flagged as a style nit."""
+    error = self.checker.ExtraDotInGenericCheck(1, line)
+    self.assertNotEqual('', error)
+    self.assertTrue(GetHighlight(line, error).endswith(".<"))
+
+  def testExtraDotInGenericFails(self):
+    lines = [
+        "/** @private {!Array.<!Frobber>} */",
+        "var a = /** @type {Object.<number>} */({});",
+        "* @return {!Promise.<Change>}"
+    ]
+    for line in lines:
+      self.ShouldFailExtraDotInGenericCheck(line)
+
   def ShouldFailGetElementByIdCheck(self, line):
     """Checks that the 'getElementById' checker flags |line| as a style
        error.
