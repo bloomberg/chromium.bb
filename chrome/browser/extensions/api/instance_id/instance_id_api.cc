@@ -119,18 +119,8 @@ ExtensionFunction::ResponseAction InstanceIDGetTokenFunction::DoWork() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::map<std::string, std::string> options;
-  if (params->get_token_params.options.get()) {
-    base::DictionaryValue::Iterator iter(
-        params->get_token_params.options->additional_properties);
-    for (; !iter.IsAtEnd(); iter.Advance()) {
-      const base::StringValue* string_value = NULL;
-      if (!iter.value().GetAsString(&string_value)) {
-        return RespondNow(Error(InstanceIDResultToError(
-            instance_id::InstanceID::INVALID_PARAMETER)));
-      }
-      options[iter.key()] = string_value->GetString();
-    }
-  }
+  if (params->get_token_params.options.get())
+    options = params->get_token_params.options->additional_properties;
 
   GetInstanceID()->GetToken(
       params->get_token_params.authorized_entity,

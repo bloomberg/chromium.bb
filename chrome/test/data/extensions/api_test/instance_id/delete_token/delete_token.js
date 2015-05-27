@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function dummyGetTokenCompleted(token) {
+function deleteTokenShouldFail() {
+  chrome.test.fail("deleteToken should fail due to parameter validation.");
 }
 
 function deleteTokenWithoutParameters() {
@@ -27,9 +28,18 @@ function deleteTokenWithoutCallback() {
 
 function deleteTokenWithoutAuthorizedEntity() {
   try {
-    chrome.instanceID.deleteToken({"scope": "GCM"}, dummyGetTokenCompleted);
-    chrome.test.fail(
-        "Calling deleteToken without authorizedEntity parameter should fail.");
+    chrome.instanceID.deleteToken({"scope": "GCM"}, deleteTokenShouldFail);
+    deleteTokenShouldFail();
+  } catch (e) {
+    chrome.test.succeed();
+  };
+}
+
+function deleteTokenWithEmptyAuthorizedEntity() {
+  try {
+    chrome.instanceID.deleteToken(
+        {"authorizedEntity": "", "scope": "GCM"}, deleteTokenShouldFail);
+    deleteTokenShouldFail();
   } catch (e) {
     chrome.test.succeed();
   };
@@ -38,11 +48,8 @@ function deleteTokenWithoutAuthorizedEntity() {
 function deleteTokenWithInvalidAuthorizedEntity() {
   try {
     chrome.instanceID.deleteToken(
-        {"authorizedEntity": 1, "scope": "GCM"},
-        dummyGetTokenCompleted);
-    chrome.test.fail(
-        "Calling deleteToken with invalid authorizedEntity parameter " +
-        "should fail.");
+        {"authorizedEntity": 1, "scope": "GCM"}, deleteTokenShouldFail);
+    deleteTokenShouldFail();
   } catch (e) {
     chrome.test.succeed();
   };
@@ -51,9 +58,18 @@ function deleteTokenWithInvalidAuthorizedEntity() {
 function deleteTokenWithoutScope() {
   try {
     chrome.instanceID.deleteToken(
-        {"authorizedEntity": "1"}, dummyGetTokenCompleted);
-    chrome.test.fail(
-        "Calling deleteToken without scope parameter should fail.");
+        {"authorizedEntity": "1"}, deleteTokenShouldFail);
+    deleteTokenShouldFail();
+  } catch (e) {
+    chrome.test.succeed();
+  };
+}
+
+function deleteTokenWithEmptyScope() {
+  try {
+    chrome.instanceID.deleteToken(
+        {"authorizedEntity": "1", "scope": ""}, deleteTokenShouldFail);
+    deleteTokenShouldFail();
   } catch (e) {
     chrome.test.succeed();
   };
@@ -62,9 +78,8 @@ function deleteTokenWithoutScope() {
 function deleteTokenWithInvalidScope() {
   try {
     chrome.instanceID.deleteToken(
-        {"authorizedEntity": "1", "scope": 1}, dummyGetTokenCompleted);
-    chrome.test.fail(
-        "Calling deleteToken with invalid scope parameter should fail.");
+        {"authorizedEntity": "1", "scope": 1}, deleteTokenShouldFail);
+    deleteTokenShouldFail();
   } catch (e) {
     chrome.test.succeed();
   };
@@ -151,8 +166,10 @@ chrome.test.runTests([
   deleteTokenWithoutParameters,
   deleteTokenWithoutCallback,
   deleteTokenWithoutAuthorizedEntity,
+  deleteTokenWithEmptyAuthorizedEntity,
   deleteTokenWithInvalidAuthorizedEntity,
   deleteTokenWithoutScope,
+  deleteTokenWithEmptyScope,
   deleteTokenWithInvalidScope,
   deleteTokenBeforeGetToken,
   deleteTokenAfterGetToken,

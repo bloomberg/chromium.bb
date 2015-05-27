@@ -52,7 +52,7 @@
       'identity_private.idl',
       'image_writer_private.idl',
       'inline_install_private.idl',
-      'instance_id.idl',
+      'instance_id.json',
       'launcher_page.idl',
       'location.idl',
       'manifest_types.json',

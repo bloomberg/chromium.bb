@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+function getTokenShouldFail() {
+  chrome.test.fail("getToken should fail due to parameter validation.");
+}
+
 function getTokenWithoutParameters() {
   try {
     chrome.instanceID.getToken();
@@ -24,9 +28,8 @@ function getTokenWithoutCallback() {
 
 function getTokenWithoutAuthorizedEntity() {
   try {
-    chrome.instanceID.getToken({"scope": "GCM"});
-    chrome.test.fail(
-        "Calling getToken without authorizedEntity parameter should fail.");
+    chrome.instanceID.getToken({"scope": "GCM"}, getTokenShouldFail);
+    getTokenShouldFail();
   } catch (e) {
     chrome.test.succeed();
   };
@@ -34,10 +37,9 @@ function getTokenWithoutAuthorizedEntity() {
 
 function getTokenWithInvalidAuthorizedEntity() {
   try {
-    chrome.instanceID.getToken({"authorizedEntity": 1, "scope": "GCM"});
-    chrome.test.fail(
-        "Calling getToken with invalid authorizedEntity parameter " +
-        "should fail.");
+    chrome.instanceID.getToken(
+        {"authorizedEntity": 1, "scope": "GCM"}, getTokenShouldFail);
+    getTokenShouldFail();
   } catch (e) {
     chrome.test.succeed();
   };
@@ -45,9 +47,8 @@ function getTokenWithInvalidAuthorizedEntity() {
 
 function getTokenWithoutScope() {
   try {
-    chrome.instanceID.getToken({"authorizedEntity": "1"});
-    chrome.test.fail(
-        "Calling getToken without scope parameter should fail.");
+    chrome.instanceID.getToken({"authorizedEntity": "1"}, getTokenShouldFail);
+    getTokenShouldFail();
   } catch (e) {
     chrome.test.succeed();
   };
@@ -55,9 +56,9 @@ function getTokenWithoutScope() {
 
 function getTokenWithInvalidScope() {
   try {
-    chrome.instanceID.getToken({"authorizedEntity": "1", "scope": 1});
-    chrome.test.fail(
-        "Calling getToken with invalid scope parameter should fail.");
+    chrome.instanceID.getToken(
+      {"authorizedEntity": "1", "scope": 1}, getTokenShouldFail);
+    getTokenShouldFail();
   } catch (e) {
     chrome.test.succeed();
   };
@@ -67,15 +68,9 @@ function getTokenWithInvalidOptionValue() {
   try {
     chrome.instanceID.getToken(
       {"authorizedEntity": "1", "scope": "GCM", "options": {"foo": 1}},
-      function(token) {
-        if (chrome.runtime.lastError) {
-          chrome.test.succeed();
-          return;
-        }
-        chrome.test.fail(
-            "Calling getToken with invalid option value should fail.");
-      }
+      getTokenShouldFail
     );
+    getTokenShouldFail()
   } catch (e) {
     chrome.test.succeed();
   };
