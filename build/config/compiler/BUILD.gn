@@ -638,12 +638,25 @@ config("runtime_library") {
       android_libcpp_library = "c++_static"
     }
 
-    libs += [
-      "$android_libcpp_library",
+    libs += [ "$android_libcpp_library" ]
 
-      # Manually link the libgcc.a that the cross compiler uses. This is
-      # absolute because the linker will look inside the sysroot if it's not.
-      rebase_path(android_libgcc_file),
+    if (current_cpu == "mipsel") {
+      libs += [
+        # ld linker is used for mips Android, and ld does not accept library
+        # absolute path prefixed by "-l"; Since libgcc does not exist in mips
+        # sysroot the proper library will be linked.
+        # TODO(gordanac): Remove once gold linker is used for mips Android.
+        "gcc",
+      ]
+    } else {
+      libs += [
+        # Manually link the libgcc.a that the cross compiler uses. This is
+        # absolute because the linker will look inside the sysroot if it's not.
+        rebase_path(android_libgcc_file),
+      ]
+    }
+
+    libs += [
       "c",
       "dl",
       "m",
