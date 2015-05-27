@@ -68,18 +68,6 @@ SelectorChecker::SelectorChecker(Mode mode)
 {
 }
 
-static bool matchesCustomPseudoElement(const Element* element, const CSSSelector& selector)
-{
-    ShadowRoot* root = element->containingShadowRoot();
-    if (!root || root->type() != ShadowRoot::UserAgentShadowRoot)
-        return false;
-
-    if (element->shadowPseudoId() != selector.value())
-        return false;
-
-    return true;
-}
-
 static bool isFrameFocused(const Element& element)
 {
     return element.document().frame() && element.document().frame()->selection().isFocusedAndActive();
@@ -247,35 +235,16 @@ bool SelectorChecker::match(const SelectorCheckingContext& context) const
 // * SelectorFailsCompletely  - the selector fails for e and any sibling or ancestor of e
 SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingContext& context, MatchResult& result) const
 {
-    // first selector has to match
-    unsigned specificity = 0;
-    if (!checkOne(context, &specificity))
+    MatchResult subResult;
+    if (!checkOne(context, subResult))
         return SelectorFailsLocally;
 
-    if (context.selector->match() == CSSSelector::PseudoElement) {
-        if (context.selector->pseudoType() == CSSSelector::PseudoWebKitCustomElement) {
-            if (!matchesCustomPseudoElement(context.element, *context.selector))
-                return SelectorFailsLocally;
-        } else if (context.selector->pseudoType() == CSSSelector::PseudoContent) {
-            if (!context.element->isInShadowTree() || !context.element->isInsertionPoint())
-                return SelectorFailsLocally;
-        } else if (context.selector->pseudoType() == CSSSelector::PseudoShadow) {
-            if (!context.element->isInShadowTree() || !context.previousElement)
-                return SelectorFailsCompletely;
-        } else {
-            if ((!context.inRightmostCompound && m_mode == ResolvingStyle) || m_mode == QueryingRules)
-                return SelectorFailsLocally;
+    if (subResult.dynamicPseudo != NOPSEUDO)
+        result.dynamicPseudo = subResult.dynamicPseudo;
 
-            PseudoId pseudoId = CSSSelector::pseudoId(context.selector->pseudoType());
-            if (pseudoId != NOPSEUDO && m_mode != SharingRules)
-                result.dynamicPseudo = pseudoId;
-        }
-    }
-
-    // Prepare next selector
     if (context.selector->isLastInTagHistory()) {
         if (scopeContainsLastMatchedElement(context)) {
-            result.specificity += specificity;
+            result.specificity += subResult.specificity;
             return SelectorMatches;
         }
         return SelectorFailsLocally;
@@ -283,11 +252,9 @@ SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingCont
 
     Match match;
     if (context.selector->relation() != CSSSelector::SubSelector) {
-        // Abort if the next selector would exceed the scope.
         if (nextSelectorExceedsScope(context))
             return SelectorFailsCompletely;
 
-        // Bail-out if this selector is irrelevant for the pseudoId
         if (context.pseudoId != NOPSEUDO && context.pseudoId != result.dynamicPseudo)
             return SelectorFailsCompletely;
 
@@ -297,7 +264,7 @@ SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingCont
         match = matchForSubSelector(context, result);
     }
     if (match == SelectorMatches)
-        result.specificity += specificity;
+        result.specificity += subResult.specificity;
     return match;
 }
 
@@ -307,11 +274,6 @@ static inline SelectorChecker::SelectorCheckingContext prepareNextContextForRela
     ASSERT(context.selector->tagHistory());
     nextContext.selector = context.selector->tagHistory();
     return nextContext;
-}
-
-static inline bool isOpenShadowRoot(const Node* node)
-{
-    return node && node->isShadowRoot() && toShadowRoot(node)->type() == ShadowRoot::OpenShadowRoot;
 }
 
 SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorCheckingContext& context, MatchResult& result) const
@@ -345,9 +307,16 @@ static inline Element* parentOrShadowHostButDisallowEscapingUserAgentShadowTree(
     return toElement(parent);
 }
 
+static inline bool isOpenShadowRoot(const Node* node)
+{
+    return node && node->isShadowRoot() && toShadowRoot(node)->type() == ShadowRoot::OpenShadowRoot;
+}
+
 SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const SelectorCheckingContext& context, const ContainerNode* node, MatchResult& result) const
 {
     if (!isOpenShadowRoot(node))
+        return SelectorFailsCompletely;
+    if (!context.previousElement)
         return SelectorFailsCompletely;
     return matchSelector(context, result);
 }
@@ -627,7 +596,7 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
     return false;
 }
 
-bool SelectorChecker::checkOne(const SelectorCheckingContext& context, unsigned* specificity) const
+bool SelectorChecker::checkOne(const SelectorCheckingContext& context, MatchResult& result) const
 {
     ASSERT(context.element);
     Element& element = *context.element;
@@ -659,9 +628,9 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, unsigned*
         return anyAttributeMatches(element, selector.match(), selector);
 
     case CSSSelector::PseudoClass:
-        return checkPseudoClass(context, specificity);
+        return checkPseudoClass(context, result);
     case CSSSelector::PseudoElement:
-        return checkPseudoElement(context);
+        return checkPseudoElement(context, result);
 
     case CSSSelector::PagePseudoClass:
         // FIXME: what?
@@ -674,7 +643,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, unsigned*
     return true;
 }
 
-bool SelectorChecker::checkPseudoNot(const SelectorCheckingContext& context) const
+bool SelectorChecker::checkPseudoNot(const SelectorCheckingContext& context, MatchResult& result) const
 {
     const CSSSelector& selector = *context.selector;
 
@@ -693,13 +662,13 @@ bool SelectorChecker::checkPseudoNot(const SelectorCheckingContext& context) con
         // We cannot determine whether :host or :scope matches a given element or not.
         if (m_mode == SharingRules && (subContext.selector->isHostPseudoClass() || subContext.selector->pseudoType() == CSSSelector::PseudoScope))
             return true;
-        if (!checkOne(subContext))
+        if (!checkOne(subContext, result))
             return true;
     }
     return false;
 }
 
-bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, unsigned* specificity) const
+bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, MatchResult& result) const
 {
     Element& element = *context.element;
     const CSSSelector& selector = *context.selector;
@@ -707,12 +676,12 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
     if (context.hasScrollbarPseudo) {
         // CSS scrollbars match a specific subset of pseudo classes, and they have specialized rules for each
         // (since there are no elements involved).
-        return checkScrollbarPseudoClass(context);
+        return checkScrollbarPseudoClass(context, result);
     }
 
     switch (selector.pseudoType()) {
     case CSSSelector::PseudoNot:
-        return checkPseudoNot(context);
+        return checkPseudoNot(context, result);
     case CSSSelector::PseudoEmpty:
         {
             bool result = true;
@@ -992,7 +961,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         return element.isUnresolvedCustomElement();
     case CSSSelector::PseudoHost:
     case CSSSelector::PseudoHostContext:
-        return checkPseudoHost(context, specificity);
+        return checkPseudoHost(context, result);
     case CSSSelector::PseudoSpatialNavigationFocus:
         return context.isUARule && matchesSpatialNavigationFocusPseudoClass(element);
     case CSSSelector::PseudoListBox:
@@ -1020,30 +989,54 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
     return false;
 }
 
-bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context) const
+bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context, MatchResult& result) const
 {
     const CSSSelector& selector = *context.selector;
+    Element& element = *context.element;
 
-    if (selector.pseudoType() == CSSSelector::PseudoCue) {
-        SelectorCheckingContext subContext(context);
-        subContext.isSubSelector = true;
-        subContext.scopeContainsLastMatchedElement = false;
-        subContext.treatShadowHostAsNormalScope = false;
+    switch (selector.pseudoType()) {
+    case CSSSelector::PseudoCue:
+        {
+            SelectorCheckingContext subContext(context);
+            subContext.isSubSelector = true;
+            subContext.scopeContainsLastMatchedElement = false;
+            subContext.treatShadowHostAsNormalScope = false;
 
-        const CSSSelector* contextSelector = context.selector;
-        ASSERT(contextSelector);
-        for (subContext.selector = contextSelector->selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
-            if (match(subContext))
-                return true;
+            for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
+                if (match(subContext))
+                    return true;
+            }
+            return false;
         }
-        return false;
+    case CSSSelector::PseudoWebKitCustomElement:
+        {
+            if (ShadowRoot* root = element.containingShadowRoot())
+                return root->type() == ShadowRoot::UserAgentShadowRoot && element.shadowPseudoId() == selector.value();
+            return false;
+        }
+    case CSSSelector::PseudoContent:
+        return element.isInShadowTree() && element.isInsertionPoint();
+    case CSSSelector::PseudoShadow:
+        return element.isInShadowTree() && context.previousElement;
+    default:
+        break;
     }
 
-    // FIXME: this used to be a fallthrough condition.
+    if (!context.inRightmostCompound && m_mode == ResolvingStyle)
+        return false;
+
+    if (m_mode == QueryingRules)
+        return false;
+
+    PseudoId pseudoId = CSSSelector::pseudoId(selector.pseudoType());
+    if (pseudoId != NOPSEUDO && m_mode != SharingRules)
+        result.dynamicPseudo = pseudoId;
+
+    // ::before, ::after, etc.
     return true;
 }
 
-bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, unsigned* specificity) const
+bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, MatchResult& result) const
 {
     const CSSSelector& selector = *context.selector;
     Element& element = *context.element;
@@ -1096,8 +1089,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, un
         } while (nextElement);
     }
     if (matched) {
-        if (specificity)
-            *specificity = maxSpecificity;
+        result.specificity += maxSpecificity;
         return true;
     }
 
@@ -1105,14 +1097,14 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, un
     return false;
 }
 
-bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& context) const
+bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& context, MatchResult& result) const
 {
     const CSSSelector& selector = *context.selector;
     LayoutScrollbar* scrollbar = context.scrollbar;
     ScrollbarPart part = context.scrollbarPart;
 
     if (selector.pseudoType() == CSSSelector::PseudoNot)
-        return checkPseudoNot(context);
+        return checkPseudoNot(context, result);
 
     // FIXME: This is a temporary hack for resizers and scrollbar corners. Eventually :window-inactive should become a real
     // pseudo class and just apply to everything.

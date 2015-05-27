@@ -105,7 +105,7 @@ public:
     static bool matchesFocusPseudoClass(const Element&);
 
 private:
-    bool checkOne(const SelectorCheckingContext&, unsigned* specificity = 0) const;
+    bool checkOne(const SelectorCheckingContext&, MatchResult&) const;
 
     enum Match { SelectorMatches, SelectorFailsLocally, SelectorFailsAllSiblings, SelectorFailsCompletely };
 
@@ -114,11 +114,11 @@ private:
     Match matchForRelation(const SelectorCheckingContext&, MatchResult&) const;
     Match matchForShadowDistributed(const SelectorCheckingContext&, const Element&, MatchResult&) const;
     Match matchForPseudoShadow(const SelectorCheckingContext&, const ContainerNode*, MatchResult&) const;
-    bool checkPseudoClass(const SelectorCheckingContext&, unsigned* specificity) const;
-    bool checkPseudoElement(const SelectorCheckingContext&) const;
-    bool checkScrollbarPseudoClass(const SelectorCheckingContext&) const;
-    bool checkPseudoHost(const SelectorCheckingContext&, unsigned*) const;
-    bool checkPseudoNot(const SelectorCheckingContext&) const;
+    bool checkPseudoClass(const SelectorCheckingContext&, MatchResult&) const;
+    bool checkPseudoElement(const SelectorCheckingContext&, MatchResult&) const;
+    bool checkScrollbarPseudoClass(const SelectorCheckingContext&, MatchResult&) const;
+    bool checkPseudoHost(const SelectorCheckingContext&, MatchResult&) const;
+    bool checkPseudoNot(const SelectorCheckingContext&, MatchResult&) const;
 
     Mode m_mode;
 };
