@@ -40,7 +40,8 @@ void PartitionStatsDumperImpl::partitionsDumpBucketStats(const char* partitionNa
     allocatorDump->AddScalar("freeable_size", "bytes", memoryStats->freeableBytes);
     allocatorDump->AddScalar("full_partition_pages", "objects", memoryStats->numFullPages);
     allocatorDump->AddScalar("active_partition_pages", "objects", memoryStats->numActivePages);
-    allocatorDump->AddScalar("free_partition_pages", "objects", memoryStats->numFreePages);
+    allocatorDump->AddScalar("empty_partition_pages", "objects", memoryStats->numEmptyPages);
+    allocatorDump->AddScalar("decommitted_partition_pages", "objects", memoryStats->numDecommittedPages);
 }
 
 } // namespace

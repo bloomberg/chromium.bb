@@ -344,11 +344,11 @@ struct PartitionBucketMemoryStats {
     size_t pageWasteSize; // The bytes allocated from the system but can't be used in any slot in a partition page.
     size_t activeBytes; // Total active bytes used in the bucket.
     size_t residentBytes; // Total bytes provisioned in the bucket.
-    size_t freeableBytes; // Total bytes that could be decomitted (non-resident).
+    size_t freeableBytes; // Total bytes that could be decommitted.
     size_t numFullPages; // Number of pages with all slots allocated.
     size_t numActivePages; // Number of pages that have at least one provisioned slot.
-    // TODO(cevans): Split this into empty and decommitted pages, or get rid of it.
-    size_t numFreePages; // Number of pages in freelist + free pages in active list but are not freed.
+    size_t numEmptyPages; // Number of pages that areempty but not decommitted.
+    size_t numDecommittedPages; // Number of pages that are empty and decommitted.
 };
 
 // Interface that is passed to partitionDumpStats and

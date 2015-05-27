@@ -35,6 +35,7 @@
 #include "wtf/CPU.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 #include <gtest/gtest.h>
 #include <stdlib.h>
 #include <string.h>
@@ -197,8 +198,10 @@ public:
         : m_totalResidentBytes(0)
         , m_totalActiveBytes(0) { }
 
-    void partitionsDumpBucketStats(const char* partitionName, const WTF::PartitionBucketMemoryStats* memoryStats) override
+    virtual void partitionsDumpBucketStats(const char* partitionName, const WTF::PartitionBucketMemoryStats* memoryStats) override
     {
+        (void) partitionName;
+        m_bucketStats.append(*memoryStats);
         m_totalResidentBytes += memoryStats->residentBytes;
         m_totalActiveBytes += memoryStats->activeBytes;
     }
@@ -208,9 +211,20 @@ public:
         return m_totalResidentBytes != 0 && m_totalActiveBytes != 0;
     }
 
+    const WTF::PartitionBucketMemoryStats* GetBucketStats(size_t bucketSize)
+    {
+        for (size_t i = 0; i < m_bucketStats.size(); ++i) {
+            if (m_bucketStats[i].bucketSlotSize == bucketSize)
+                return &m_bucketStats[i];
+        }
+        return 0;
+    }
+
 private:
     size_t m_totalResidentBytes;
     size_t m_totalActiveBytes;
+
+    Vector<WTF::PartitionBucketMemoryStats> m_bucketStats;
 };
 
 // Check that the most basic of allocate / free pairs work.
@@ -1283,19 +1297,109 @@ TEST(PartitionAllocDeathTest, GuardPages)
 TEST(PartitionAllocTest, DumpMemoryStats)
 {
     TestSetup();
-    void* ptr = partitionAlloc(allocator.root(), kTestAllocSize);
-    void* genericPtr = partitionAllocGeneric(genericAllocator.root(), 1);
+    {
+        void* ptr = partitionAlloc(allocator.root(), kTestAllocSize);
+        MockPartitionStatsDumper mockStatsDumper;
+        partitionDumpStats(allocator.root(), "mock_allocator", &mockStatsDumper);
+        EXPECT_TRUE(mockStatsDumper.IsMemoryAllocationRecorded());
 
-    MockPartitionStatsDumper mockStatsDumperGeneric;
-    partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
-    EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+        partitionFree(ptr);
+    }
 
-    MockPartitionStatsDumper mockStatsDumper;
-    partitionDumpStats(allocator.root(), "mock_allocator", &mockStatsDumper);
-    EXPECT_TRUE(mockStatsDumper.IsMemoryAllocationRecorded());
+    // This series of tests checks the active -> empty -> decommitted states.
+    {
+        void* genericPtr = partitionAllocGeneric(genericAllocator.root(), 2048 - kExtraAllocSize);
+        {
+            MockPartitionStatsDumper mockStatsDumperGeneric;
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
 
-    partitionFree(ptr);
-    partitionFreeGeneric(genericAllocator.root(), genericPtr);
+            const WTF::PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_EQ(2048u, stats->bucketSlotSize);
+            EXPECT_EQ(2048u, stats->activeBytes);
+            EXPECT_EQ(WTF::kSystemPageSize, stats->residentBytes);
+            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(0u, stats->numFullPages);
+            EXPECT_EQ(1u, stats->numActivePages);
+            EXPECT_EQ(0u, stats->numEmptyPages);
+            EXPECT_EQ(0u, stats->numDecommittedPages);
+        }
+
+        partitionFreeGeneric(genericAllocator.root(), genericPtr);
+
+        {
+            MockPartitionStatsDumper mockStatsDumperGeneric;
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            EXPECT_FALSE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+            const WTF::PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_EQ(2048u, stats->bucketSlotSize);
+            EXPECT_EQ(0u, stats->activeBytes);
+            EXPECT_EQ(WTF::kSystemPageSize, stats->residentBytes);
+            EXPECT_EQ(WTF::kSystemPageSize, stats->freeableBytes);
+            EXPECT_EQ(0u, stats->numFullPages);
+            EXPECT_EQ(0u, stats->numActivePages);
+            EXPECT_EQ(1u, stats->numEmptyPages);
+            EXPECT_EQ(0u, stats->numDecommittedPages);
+        }
+
+        CycleGenericFreeCache(kTestAllocSize);
+
+        {
+            MockPartitionStatsDumper mockStatsDumperGeneric;
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            EXPECT_FALSE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+            const WTF::PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_EQ(2048u, stats->bucketSlotSize);
+            EXPECT_EQ(0u, stats->activeBytes);
+            EXPECT_EQ(0u, stats->residentBytes);
+            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(0u, stats->numFullPages);
+            EXPECT_EQ(0u, stats->numActivePages);
+            EXPECT_EQ(0u, stats->numEmptyPages);
+            EXPECT_EQ(1u, stats->numDecommittedPages);
+        }
+    }
+
+    // This test checks for correct empty page list accounting.
+    {
+        size_t size = WTF::kPartitionPageSize - kExtraAllocSize;
+        void* ptr1 = partitionAllocGeneric(genericAllocator.root(), size);
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), size);
+        partitionFreeGeneric(genericAllocator.root(), ptr1);
+        partitionFreeGeneric(genericAllocator.root(), ptr2);
+
+        CycleGenericFreeCache(kTestAllocSize);
+
+        ptr1 = partitionAllocGeneric(genericAllocator.root(), size);
+
+        {
+            MockPartitionStatsDumper mockStatsDumperGeneric;
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+            const WTF::PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(WTF::kPartitionPageSize);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_EQ(WTF::kPartitionPageSize, stats->bucketSlotSize);
+            EXPECT_EQ(WTF::kPartitionPageSize, stats->activeBytes);
+            EXPECT_EQ(WTF::kPartitionPageSize, stats->residentBytes);
+            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(1u, stats->numFullPages);
+            EXPECT_EQ(0u, stats->numActivePages);
+            EXPECT_EQ(0u, stats->numEmptyPages);
+            EXPECT_EQ(1u, stats->numDecommittedPages);
+        }
+        partitionFreeGeneric(genericAllocator.root(), ptr1);
+    }
+
     TestShutdown();
 }
 
