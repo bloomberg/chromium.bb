@@ -852,6 +852,10 @@ grit("resources") {
   deps = [
     ":about_credits",
     ":chrome_internal_resources_gen",
+
+    # Depend only on the generated mojo bindings since we read the .mojom.js
+    # file, rather than the whole mojo target which will link the C++ bindings.
+    "//chrome/browser/ui/webui/omnibox:mojo_bindings__generator",
   ]
   inputs = [
     omnibox_mojom_file,
