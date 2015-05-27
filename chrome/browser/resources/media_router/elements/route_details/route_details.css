@@ -18,17 +18,17 @@ hr {
   margin: 0;
 }
 
-.route {
+#route-information {
   -webkit-padding-start: 10px;
   line-height: 1.125em;
 }
 
-.route-status {
+#route-status {
   color: rgb(125, 125, 125);
   margin: 8px 0;
 }
 
-.route-title {
+#route-title {
   font-weight: bold;
   margin: 8px 0;
   overflow: hidden;

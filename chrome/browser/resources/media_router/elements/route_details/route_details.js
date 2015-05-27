@@ -4,57 +4,86 @@
 
 // This Polymer element shows information from media that is currently cast
 // to a device. It is assumed that |route| and |sink| correspond to each other.
-Polymer('route-details', {
-  publish: {
+Polymer({
+  is: 'route-details',
+
+  properties: {
+    /**
+     * The text for the current casting activity status.
+     * @private {string}
+     */
+    activityStatus_: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * The text for the button to switch to the sink picker view.
+     * @private {string}
+     */
+    backToSinkPickerText_: {
+      type: String,
+      value: function() {
+        return loadTimeData.getString('backToSinkPicker');
+      },
+    },
+
     /**
      * The route to show.
-     *
-     * @attribute route
-     * @type {media_router.Route}
-     * @default null
+     * @type {?media_router.Route}
      */
-    route: null,
+    route: {
+      type: Object,
+      value: null,
+    },
 
     /**
      * The sink to show.
-     *
-     * @attribute sink
-     * @type {media_router.Sink}
-     * @default null
+     * @type {?media_router.Sink}
      */
-    sink: null,
-  },
+    sink: {
+      type: Object,
+      value: null,
+      observer: 'updateActivityStatus_',
+    },
 
-  observe: {
-    sink: 'updateActivityStatus',
+    /**
+     * The text for the stop casting button.
+     * @private {string}
+     */
+    stopCastingButtonText_: {
+      type: String,
+      value: function() {
+        return loadTimeData.getString('stopCastingButton');
+      },
+    },
   },
-
-  /**
-   * The current casting activity status.
-   * @private {string}
-   * @default ''
-   */
-  activityStatus_: '',
 
   /**
    * Fires a back-click event. This is called when the back link is clicked.
+   *
+   * @private
    */
-  back: function() {
+  back_: function() {
     this.fire('back-click');
   },
 
   /**
    * Fires a close-route-click event. This is called when the button to close
    * the current route is clicked.
+   *
+   * @private
    */
-  closeRoute: function() {
+  closeRoute_: function() {
     this.fire('close-route-click', {route: this.route});
   },
 
   /**
    * Updates |activityStatus_| with the name of |sink|.
+   *
+   * @private
    */
-  updateActivityStatus: function() {
+  updateActivityStatus_: function() {
     this.activityStatus_ = this.sink ?
         loadTimeData.getStringF('castingActivityStatus', this.sink.name) : '';
   }
