@@ -48,6 +48,13 @@ WebGL2RenderingContextBase::~WebGL2RenderingContextBase()
 {
 #if !ENABLE(OILPAN)
     m_readFramebufferBinding = nullptr;
+
+    m_boundCopyReadBuffer = nullptr;
+    m_boundCopyWriteBuffer = nullptr;
+    m_boundPixelPackBuffer = nullptr;
+    m_boundPixelUnpackBuffer = nullptr;
+    m_boundTransformFeedbackBuffer = nullptr;
+    m_boundUniformBuffer = nullptr;
 #endif
 }
 
@@ -57,6 +64,13 @@ void WebGL2RenderingContextBase::initializeNewContext()
     ASSERT(drawingBuffer());
 
     m_readFramebufferBinding = nullptr;
+
+    m_boundCopyReadBuffer = nullptr;
+    m_boundCopyWriteBuffer = nullptr;
+    m_boundPixelPackBuffer = nullptr;
+    m_boundPixelUnpackBuffer = nullptr;
+    m_boundTransformFeedbackBuffer = nullptr;
+    m_boundUniformBuffer = nullptr;
 
     m_max3DTextureSize = 0;
     webContext()->getIntegerv(GL_MAX_3D_TEXTURE_SIZE, &m_max3DTextureSize);
@@ -1462,8 +1476,10 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, G
     case GL_VERSION:
         return WebGLAny(scriptState, "WebGL 2.0 (" + String(webContext()->getString(GL_VERSION)) + ")");
 
-    // case GL_COPY_READ_BUFFER_BINDING    WebGLBuffer
-    // case GL_COPY_WRITE_BUFFER_BINDING   WebGLBuffer
+    case GL_COPY_READ_BUFFER_BINDING:
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundCopyReadBuffer.get()));
+    case GL_COPY_WRITE_BUFFER_BINDING:
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundCopyWriteBuffer.get()));
     case GL_DRAW_FRAMEBUFFER_BINDING:
         return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_framebufferBinding.get()));
     case GL_FRAGMENT_SHADER_DERIVATIVE_HINT:
@@ -1530,8 +1546,10 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, G
         return getIntParameter(scriptState, pname);
     case GL_PACK_SKIP_ROWS:
         return getIntParameter(scriptState, pname);
-    // case GL_PIXEL_PACK_BUFFER_BINDING   WebGLBuffer
-    // case GL_PIXEL_UNPACK_BUFFER_BINDING WebGLBuffer
+    case GL_PIXEL_PACK_BUFFER_BINDING:
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundPixelPackBuffer.get()));
+    case GL_PIXEL_UNPACK_BUFFER_BINDING:
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundPixelUnpackBuffer.get()));
     case GL_RASTERIZER_DISCARD:
         return getBooleanParameter(scriptState, pname);
     case GL_READ_BUFFER:
@@ -1549,8 +1567,12 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, G
         return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_textureUnits[m_activeTextureUnit].m_texture3DBinding.get()));
     case GL_TRANSFORM_FEEDBACK_ACTIVE:
         return getBooleanParameter(scriptState, pname);
+    case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundTransformFeedbackBuffer.get()));
     case GL_TRANSFORM_FEEDBACK_PAUSED:
         return getBooleanParameter(scriptState, pname);
+    case GL_UNIFORM_BUFFER_BINDING:
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundUniformBuffer.get()));
     case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT:
         return getIntParameter(scriptState, pname);
     case GL_UNPACK_IMAGE_HEIGHT:
@@ -1607,31 +1629,93 @@ bool WebGL2RenderingContextBase::validateBufferTarget(const char* functionName, 
 
 bool WebGL2RenderingContextBase::validateAndUpdateBufferBindTarget(const char* functionName, GLenum target, WebGLBuffer* buffer)
 {
-    if (buffer && buffer->getTarget() && (buffer->getTarget() == GL_ELEMENT_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER) && buffer->getTarget() != target) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName, "element array buffers can not be bound to a different target");
+    if (!validateBufferTarget(functionName, target))
         return false;
+
+    if (buffer) {
+        switch (buffer->getInitialTarget()) {
+        case GL_ELEMENT_ARRAY_BUFFER:
+            switch (target) {
+            case GL_ARRAY_BUFFER:
+            case GL_PIXEL_PACK_BUFFER:
+            case GL_PIXEL_UNPACK_BUFFER:
+            case GL_TRANSFORM_FEEDBACK_BUFFER:
+            case GL_UNIFORM_BUFFER:
+                synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                    "element array buffers can not be bound to a different target");
+
+                return false;
+            default:
+                break;
+            }
+            break;
+        case GL_ARRAY_BUFFER:
+        case GL_COPY_READ_BUFFER:
+        case GL_COPY_WRITE_BUFFER:
+        case GL_PIXEL_PACK_BUFFER:
+        case GL_PIXEL_UNPACK_BUFFER:
+        case GL_UNIFORM_BUFFER:
+        case GL_TRANSFORM_FEEDBACK_BUFFER:
+            if (target == GL_ELEMENT_ARRAY_BUFFER) {
+                synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                    "buffers bound to non ELEMENT_ARRAY_BUFFER targets can not be bound to ELEMENT_ARRAY_BUFFER target");
+                return false;
+            }
+            break;
+        default:
+            break;
+        }
+        if (target == GL_TRANSFORM_FEEDBACK_BUFFER) {
+            if (m_boundArrayBuffer == buffer
+                || m_boundVertexArrayObject->boundElementArrayBuffer() == buffer
+                || m_boundCopyReadBuffer == buffer
+                || m_boundCopyWriteBuffer == buffer
+                || m_boundPixelPackBuffer == buffer
+                || m_boundPixelUnpackBuffer == buffer
+                || m_boundUniformBuffer == buffer) {
+                synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                    "a buffer bound to TRANSFORM_FEEDBACK_BUFFER can not be bound to any other targets");
+                return false;
+            }
+        } else if (m_boundTransformFeedbackBuffer == buffer) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                "a buffer bound to TRANSFORM_FEEDBACK_BUFFER can not be bound to any other targets");
+            return false;
+        }
     }
 
     switch (target) {
     case GL_ARRAY_BUFFER:
         m_boundArrayBuffer = buffer;
         break;
+    case GL_COPY_READ_BUFFER:
+        m_boundCopyReadBuffer = buffer;
+        break;
+    case GL_COPY_WRITE_BUFFER:
+        m_boundCopyWriteBuffer = buffer;
+        break;
     case GL_ELEMENT_ARRAY_BUFFER:
         m_boundVertexArrayObject->setElementArrayBuffer(buffer);
         break;
-    case GL_TRANSFORM_FEEDBACK_BUFFER:
-    case GL_COPY_READ_BUFFER:
-    case GL_COPY_WRITE_BUFFER:
     case GL_PIXEL_PACK_BUFFER:
+        m_boundPixelPackBuffer = buffer;
+        break;
     case GL_PIXEL_UNPACK_BUFFER:
+        m_boundPixelUnpackBuffer = buffer;
+        break;
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+        m_boundTransformFeedbackBuffer = buffer;
+        break;
     case GL_UNIFORM_BUFFER:
-        // FIXME: Some of these ES3 buffer targets may require additional state tracking.
+        m_boundUniformBuffer = buffer;
         break;
     default:
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
-        return false;
+        ASSERT_NOT_REACHED();
+        break;
     }
 
+    if (buffer && !buffer->getInitialTarget())
+        buffer->setInitialTarget(target);
     return true;
 }
 
@@ -1837,6 +1921,63 @@ ScriptValue WebGL2RenderingContextBase::getTexParameter(ScriptState* scriptState
     default:
         return WebGLRenderingContextBase::getTexParameter(scriptState, target, pname);
     }
+}
+
+WebGLBuffer* WebGL2RenderingContextBase::validateBufferDataTarget(const char* functionName, GLenum target)
+{
+    WebGLBuffer* buffer = nullptr;
+    switch (target) {
+    case GL_ELEMENT_ARRAY_BUFFER:
+        buffer = m_boundVertexArrayObject->boundElementArrayBuffer().get();
+        break;
+    case GL_ARRAY_BUFFER:
+        buffer = m_boundArrayBuffer.get();
+        break;
+    case GL_COPY_READ_BUFFER:
+        buffer = m_boundCopyReadBuffer.get();
+        break;
+    case GL_COPY_WRITE_BUFFER:
+        buffer = m_boundCopyWriteBuffer.get();
+        break;
+    case GL_PIXEL_PACK_BUFFER:
+        buffer = m_boundPixelPackBuffer.get();
+        break;
+    case GL_PIXEL_UNPACK_BUFFER:
+        buffer = m_boundPixelUnpackBuffer.get();
+        break;
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+        buffer = m_boundTransformFeedbackBuffer.get();
+        break;
+    case GL_UNIFORM_BUFFER:
+        buffer = m_boundUniformBuffer.get();
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        return nullptr;
+    }
+    if (!buffer) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "no buffer");
+        return nullptr;
+    }
+    return buffer;
+}
+
+void WebGL2RenderingContextBase::removeBoundBuffer(WebGLBuffer* buffer)
+{
+    if (m_boundCopyReadBuffer == buffer)
+        m_boundCopyReadBuffer = nullptr;
+    if (m_boundCopyWriteBuffer == buffer)
+        m_boundCopyWriteBuffer = nullptr;
+    if (m_boundPixelPackBuffer == buffer)
+        m_boundPixelPackBuffer = nullptr;
+    if (m_boundPixelUnpackBuffer == buffer)
+        m_boundPixelUnpackBuffer = nullptr;
+    if (m_boundTransformFeedbackBuffer == buffer)
+        m_boundTransformFeedbackBuffer = nullptr;
+    if (m_boundUniformBuffer == buffer)
+        m_boundUniformBuffer = nullptr;
+
+    WebGLRenderingContextBase::removeBoundBuffer(buffer);
 }
 
 } // namespace blink

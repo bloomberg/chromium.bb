@@ -39,10 +39,10 @@ public:
 
     static PassRefPtrWillBeRawPtr<WebGLBuffer> create(WebGLRenderingContextBase*);
 
-    GLenum getTarget() const { return m_target; }
-    void setTarget(GLenum);
+    GLenum getInitialTarget() const { return m_initialTarget; }
+    void setInitialTarget(GLenum);
 
-    bool hasEverBeenBound() const { return object() && m_target; }
+    bool hasEverBeenBound() const { return object() && m_initialTarget; }
 
 protected:
     explicit WebGLBuffer(WebGLRenderingContextBase*);
@@ -52,7 +52,7 @@ protected:
 private:
     bool isBuffer() const override { return true; }
 
-    GLenum m_target;
+    GLenum m_initialTarget;
 };
 
 } // namespace blink

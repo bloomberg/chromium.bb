@@ -38,7 +38,7 @@ PassRefPtrWillBeRawPtr<WebGLBuffer> WebGLBuffer::create(WebGLRenderingContextBas
 
 WebGLBuffer::WebGLBuffer(WebGLRenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx)
-    , m_target(0)
+    , m_initialTarget(0)
 {
     setObject(ctx->webContext()->createBuffer());
 }
@@ -63,13 +63,12 @@ void WebGLBuffer::deleteObjectImpl(WebGraphicsContext3D* context3d)
     m_object = 0;
 }
 
-void WebGLBuffer::setTarget(GLenum target)
+void WebGLBuffer::setInitialTarget(GLenum target)
 {
-    // In WebGL, a buffer is bound to one target in its lifetime
-    if (m_target)
-        return;
-    if (target == GL_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER)
-        m_target = target;
+    // WebGL restricts the ability to bind buffers to multiple targets based on
+    // it's initial bind point.
+    ASSERT(!m_initialTarget);
+    m_initialTarget = target;
 }
 
 } // namespace blink

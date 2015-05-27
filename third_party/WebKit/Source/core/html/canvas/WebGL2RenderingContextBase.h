@@ -197,9 +197,20 @@ protected:
     WebGLFramebuffer* getFramebufferBinding(GLenum target) override;
     GLint getMaxTextureLevelForTarget(GLenum target) override;
 
+    WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target) override;
+
+    void removeBoundBuffer(WebGLBuffer*) override;
+
     RefPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
     GLint m_max3DTextureSize;
     GLint m_max3DTextureLevel;
+
+    RefPtrWillBeMember<WebGLBuffer> m_boundCopyReadBuffer;
+    RefPtrWillBeMember<WebGLBuffer> m_boundCopyWriteBuffer;
+    RefPtrWillBeMember<WebGLBuffer> m_boundPixelPackBuffer;
+    RefPtrWillBeMember<WebGLBuffer> m_boundPixelUnpackBuffer;
+    RefPtrWillBeMember<WebGLBuffer> m_boundTransformFeedbackBuffer;
+    RefPtrWillBeMember<WebGLBuffer> m_boundUniformBuffer;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase, CanvasRenderingContext, context,

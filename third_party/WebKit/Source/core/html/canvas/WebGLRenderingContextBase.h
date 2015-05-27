@@ -916,9 +916,11 @@ protected:
 
     // Helper function to validate the target for bufferData.
     // Return the current bound buffer to target, or 0 if the target is invalid.
-    WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target);
+    virtual WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target);
 
     virtual bool validateAndUpdateBufferBindTarget(const char* functionName, GLenum target, WebGLBuffer*);
+
+    virtual void removeBoundBuffer(WebGLBuffer*);
 
     // Helper function for tex{Sub}Image2D to make sure image is ready and wouldn't taint Origin.
     bool validateHTMLImageElement(const char* functionName, HTMLImageElement*, ExceptionState&);

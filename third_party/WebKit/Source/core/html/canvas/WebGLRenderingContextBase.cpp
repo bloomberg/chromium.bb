@@ -1127,7 +1127,10 @@ bool WebGLRenderingContextBase::checkObjectToBeBound(const char* functionName, W
 
 bool WebGLRenderingContextBase::validateAndUpdateBufferBindTarget(const char* functionName, GLenum target, WebGLBuffer* buffer)
 {
-    if (buffer && buffer->getTarget() && buffer->getTarget() != target) {
+    if (!validateBufferTarget(functionName, target))
+        return false;
+
+    if (buffer && buffer->getInitialTarget() && buffer->getInitialTarget() != target) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "buffers can not be used with multiple targets");
         return false;
     }
@@ -1140,10 +1143,12 @@ bool WebGLRenderingContextBase::validateAndUpdateBufferBindTarget(const char* fu
         m_boundVertexArrayObject->setElementArrayBuffer(buffer);
         break;
     default:
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        ASSERT_NOT_REACHED();
         return false;
     }
 
+    if (buffer && !buffer->getInitialTarget())
+        buffer->setInitialTarget(target);
     return true;
 }
 
@@ -1158,8 +1163,6 @@ void WebGLRenderingContextBase::bindBuffer(GLenum target, WebGLBuffer* buffer)
         return;
 
     webContext()->bindBuffer(target, objectOrZero(buffer));
-    if (buffer)
-        buffer->setTarget(target);
 }
 
 void WebGLRenderingContextBase::bindFramebuffer(GLenum target, WebGLFramebuffer* buffer)
@@ -1729,10 +1732,7 @@ void WebGLRenderingContextBase::deleteBuffer(WebGLBuffer* buffer)
 {
     if (!deleteObject(buffer))
         return;
-    if (m_boundArrayBuffer == buffer)
-        m_boundArrayBuffer = nullptr;
-
-    m_boundVertexArrayObject->unbindBuffer(buffer);
+    removeBoundBuffer(buffer);
 }
 
 void WebGLRenderingContextBase::deleteFramebuffer(WebGLFramebuffer* framebuffer)
@@ -5653,6 +5653,14 @@ WebGLBuffer* WebGLRenderingContextBase::validateBufferDataTarget(const char* fun
         return nullptr;
     }
     return buffer;
+}
+
+void WebGLRenderingContextBase::removeBoundBuffer(WebGLBuffer* buffer)
+{
+    if (m_boundArrayBuffer == buffer)
+        m_boundArrayBuffer = nullptr;
+
+    m_boundVertexArrayObject->unbindBuffer(buffer);
 }
 
 bool WebGLRenderingContextBase::validateHTMLImageElement(const char* functionName, HTMLImageElement* image, ExceptionState& exceptionState)
