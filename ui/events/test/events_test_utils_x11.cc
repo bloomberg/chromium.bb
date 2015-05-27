@@ -291,13 +291,22 @@ void SetUpTouchPadForTest(int deviceid) {
 
   TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);
   ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
-  manager->SetDeviceListForTest(std::vector<int>(), device_list);
+  manager->SetDeviceListForTest(std::vector<int>(), device_list,
+                                std::vector<int>());
 }
 
 void SetUpTouchDevicesForTest(const std::vector<int>& devices) {
   TouchFactory::GetInstance()->SetTouchDeviceForTest(devices);
   ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
-  manager->SetDeviceListForTest(devices, std::vector<int>());
+  manager->SetDeviceListForTest(devices, std::vector<int>(),
+                                std::vector<int>());
+}
+
+void SetUpPointerDevicesForTest(const std::vector<int>& devices) {
+  TouchFactory::GetInstance()->SetPointerDeviceForTest(devices);
+  ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
+  manager->SetDeviceListForTest(std::vector<int>(), std::vector<int>(),
+                                devices);
 }
 
 }  // namespace ui

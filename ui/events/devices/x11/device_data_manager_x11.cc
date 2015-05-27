@@ -418,6 +418,11 @@ bool DeviceDataManagerX11::IsCMTGestureEvent(
 
 bool DeviceDataManagerX11::HasEventData(
     const XIDeviceEvent* xiev, const DataType type) const {
+  CHECK(xiev->sourceid >= 0);
+  if (xiev->sourceid >= kMaxDeviceNum)
+    return false;
+  if (type >= valuator_lookup_[xiev->sourceid].size())
+    return false;
   const int idx = valuator_lookup_[xiev->sourceid][type];
   return (idx >= 0) && XIMaskIsSet(xiev->valuators.mask, idx);
 }
@@ -606,7 +611,8 @@ bool DeviceDataManagerX11::GetDataRange(int deviceid,
 
 void DeviceDataManagerX11::SetDeviceListForTest(
     const std::vector<int>& touchscreen,
-    const std::vector<int>& cmt_devices) {
+    const std::vector<int>& cmt_devices,
+    const std::vector<int>& other_devices) {
   for (int i = 0; i < kMaxDeviceNum; ++i) {
     valuator_count_[i] = 0;
     valuator_lookup_[i].clear();
@@ -617,17 +623,20 @@ void DeviceDataManagerX11::SetDeviceListForTest(
       last_seen_valuator_[i][j].clear();
   }
 
-  for (size_t i = 0; i < touchscreen.size(); i++) {
-    int deviceid = touchscreen[i];
+  for (int deviceid : touchscreen) {
     InitializeValuatorsForTest(deviceid, kTouchDataTypeStart, kTouchDataTypeEnd,
                                0, 1000);
   }
 
   cmt_devices_.reset();
-  for (size_t i = 0; i < cmt_devices.size(); ++i) {
-    int deviceid = cmt_devices[i];
+  for (int deviceid : cmt_devices) {
     cmt_devices_[deviceid] = true;
     touchpads_[deviceid] = true;
+    InitializeValuatorsForTest(deviceid, kCMTDataTypeStart, kCMTDataTypeEnd,
+                               -1000, 1000);
+  }
+
+  for (int deviceid : other_devices) {
     InitializeValuatorsForTest(deviceid, kCMTDataTypeStart, kCMTDataTypeEnd,
                                -1000, 1000);
   }

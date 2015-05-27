@@ -125,6 +125,9 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // no slot can be found.
   bool GetSlotNumber(const XIDeviceEvent* xiev, int* slot);
 
+  // Check if an XI event contains data of the specified type.
+  bool HasEventData(const XIDeviceEvent* xiev, const DataType type) const;
+
   // Get all event data in one pass. We extract only data types that we know
   // about (defined in enum DataType). The data is not processed (e.g. not
   // filled in by cached values) as in GetEventData.
@@ -220,7 +223,8 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   // the actual device info, but rather inits the relevant valuator structures
   // to have safe default values for testing.
   void SetDeviceListForTest(const std::vector<int>& touchscreen,
-                            const std::vector<int>& cmt_devices);
+                            const std::vector<int>& cmt_devices,
+                            const std::vector<int>& other_devices);
 
   void SetValuatorDataForTest(XIDeviceEvent* xievent,
                               DataType type,
@@ -254,9 +258,6 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
 
   // Initialize the XInput related system information.
   bool InitializeXInputInternal();
-
-  // Check if an XI event contains data of the specified type.
-  bool HasEventData(const XIDeviceEvent* xiev, const DataType type) const;
 
   void InitializeValuatorsForTest(int deviceid,
                                   int start_valuator,

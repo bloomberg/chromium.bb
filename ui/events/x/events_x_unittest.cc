@@ -493,4 +493,17 @@ TEST_F(EventsXTest, ImeFabricatedKeyEvents) {
 }
 #endif
 
+TEST_F(EventsXTest, IgnoresMotionEventForMouseWheelScroll) {
+  int device_id = 1;
+  std::vector<int> devices;
+  devices.push_back(device_id);
+  ui::SetUpPointerDevicesForTest(devices);
+
+  ScopedXI2Event xev;
+  xev.InitScrollEvent(device_id, 1, 2, 3, 4, 1);
+  // We shouldn't produce a mouse move event on a mouse wheel
+  // scroll. These events are only produced for some mice.
+  EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(xev));
+}
+
 }  // namespace ui

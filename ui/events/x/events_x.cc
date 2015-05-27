@@ -442,6 +442,14 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
             return ET_UMA_DATA;
           if (GetButtonMaskForX2Event(xievent))
             return ET_MOUSE_DRAGGED;
+          if (DeviceDataManagerX11::GetInstance()->HasEventData(
+                  xievent, DeviceDataManagerX11::DT_CMT_SCROLL_X) ||
+              DeviceDataManagerX11::GetInstance()->HasEventData(
+                  xievent, DeviceDataManagerX11::DT_CMT_SCROLL_Y)) {
+            // Don't produce mouse move events for mousewheel scrolls.
+            return ET_UNKNOWN;
+          }
+
           return ET_MOUSE_MOVED;
         }
         case XI_KeyPress:

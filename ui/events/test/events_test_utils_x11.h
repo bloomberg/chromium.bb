@@ -95,6 +95,9 @@ void SetUpTouchPadForTest(int deviceid);
 // Initializes a list of touchscreen devices for touch events.
 void SetUpTouchDevicesForTest(const std::vector<int>& devices);
 
+// Initializes a list of non-touch, non-cmt pointer devices.
+void SetUpPointerDevicesForTest(const std::vector<int>& devices);
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_TEST_EVENTS_TEST_UTILS_X11_H_
