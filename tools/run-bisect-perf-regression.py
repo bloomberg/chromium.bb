@@ -41,6 +41,10 @@ PERF_MEASUREMENTS_PATH = 'tools/perf/measurements'
 BUILDBOT_BUILDERNAME = 'BUILDBOT_BUILDERNAME'
 BENCHMARKS_JSON_FILE = 'benchmarks.json'
 
+# This is used to identify tryjobs triggered by the commit queue.
+_COMMIT_QUEUE_USER = ('5071639625-1lppvbtck1morgivc6sq4dul7klu27sd'
+                      '@developer.gserviceaccount.com')
+
 class Goma(object):
 
   def __init__(self, path_to_goma):
@@ -851,9 +855,9 @@ def main():
       return _SetupAndRunPerformanceTest(config, opts.path_to_goma)
 
   # If there are no changes to config file, then check if the request is
-  # from commit-bot, if so then run the modified Telemetry benchmarks for the
-  # patch.
-  if opts.build_properties.get('requester') == 'commit-bot@chromium.org':
+  # from the commit queue, if so then run the modified Telemetry benchmarks for
+  # the patch.
+  if opts.build_properties.get('requester') == _COMMIT_QUEUE_USER:
     return _SetupAndRunPerformanceTest(
         config={}, path_to_goma=opts.path_to_goma, is_cq_tryjob=True)
 
