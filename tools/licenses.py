@@ -28,6 +28,9 @@ PRUNE_PATHS = set([
     # Placeholder directory only, not third-party code.
     os.path.join('third_party','adobe'),
 
+    # Apache 2.0 license. See crbug.com/140478
+    os.path.join('third_party','bidichecker'),
+
     # Build files only, not third-party code.
     os.path.join('third_party','widevine'),
 
@@ -39,6 +42,7 @@ PRUNE_PATHS = set([
     os.path.join('third_party','bison'),
     os.path.join('third_party','blanketjs'),
     os.path.join('third_party','cygwin'),
+    os.path.join('third_party','gles2_conform'),
     os.path.join('third_party','gnu_binutils'),
     os.path.join('third_party','gold'),
     os.path.join('third_party','gperf'),
@@ -68,11 +72,18 @@ PRUNE_PATHS = set([
     os.path.join('third_party', 'pcre'),
     os.path.join('third_party', 'psutils'),
     os.path.join('third_party', 'sawbuck'),
+    # See crbug.com/350472
+    os.path.join('chrome', 'browser', 'resources', 'chromeos', 'quickoffice'),
+    # Chrome for Android proprietary code.
+    os.path.join('clank'),
 
     # Redistribution does not require attribution in documentation.
     os.path.join('third_party','directxsdk'),
     os.path.join('third_party','platformsdk_win2008_6_1'),
     os.path.join('third_party','platformsdk_win7'),
+
+    # For testing only, presents on some bots.
+    os.path.join('isolate_deps_dir'),
 ])
 
 # Directories we don't scan through.
