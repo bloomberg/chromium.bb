@@ -357,9 +357,11 @@ void TrayBubbleView::InitializeAndShowBubble() {
 }
 
 void TrayBubbleView::UpdateBubble() {
-  SizeToContents();
-  bubble_content_mask_->layer()->SetBounds(layer()->bounds());
-  GetWidget()->GetRootView()->SchedulePaint();
+  if (GetWidget()) {
+    SizeToContents();
+    bubble_content_mask_->layer()->SetBounds(layer()->bounds());
+    GetWidget()->GetRootView()->SchedulePaint();
+  }
 }
 
 void TrayBubbleView::SetMaxHeight(int height) {

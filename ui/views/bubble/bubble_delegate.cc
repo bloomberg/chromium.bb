@@ -178,7 +178,7 @@ void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
 
 void BubbleDelegateView::OnWidgetBoundsChanged(Widget* widget,
                                                const gfx::Rect& new_bounds) {
-  if (anchor_widget() == widget)
+  if (GetBubbleFrameView() && anchor_widget() == widget)
     SizeToContents();
 }
 

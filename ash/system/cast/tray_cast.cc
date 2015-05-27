@@ -326,16 +326,12 @@ class CastTrayView : public TrayItemView {
   // itself.
   void UpdateAlignment(ShelfAlignment alignment);
 
-  // Returns a weak pointer to this instance.
-  base::WeakPtr<CastTrayView> AsWeakPtr();
-
  private:
-  base::WeakPtrFactory<CastTrayView> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(CastTrayView);
 };
 
 CastTrayView::CastTrayView(SystemTrayItem* tray_item)
-    : TrayItemView(tray_item), weak_ptr_factory_(this) {
+    : TrayItemView(tray_item) {
   CreateImageView();
 
   image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
@@ -361,10 +357,6 @@ void CastTrayView::UpdateAlignment(ShelfAlignment alignment) {
   }
   SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));
   Layout();
-}
-
-base::WeakPtr<CastTrayView> CastTrayView::AsWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 // This view displays a list of cast receivers that can be clicked on and casted
@@ -582,11 +574,8 @@ void TrayCast::UpdatePrimaryView() {
   if (HasCastExtension() == false) {
     if (default_)
       default_->SetVisible(false);
-    if (tray_) {
-      base::MessageLoopForUI::current()->PostTask(
-          FROM_HERE, base::Bind(&tray::CastTrayView::SetVisible,
-                                tray_->AsWeakPtr(), false));
-    }
+    if (tray_)
+      tray_->SetVisible(false);
   } else {
     if (default_) {
       if (is_casting_) {
