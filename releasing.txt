@@ -61,6 +61,13 @@ To make a release of Weston and/or Wayland, follow these steps.
   7.  Update releases.html in wayland-web with links to tarballs and
       the release email URL.
 
+	  The register_release script in wayland-web will generate an HTML
+	  snippet that can be pasted into releases.html (or e.g. in emacs
+	  insert it via "C-u M-! register_release x.y.z RC2") and
+	  customized.
+
+	  Once satisfied:
+
       $ git commit releases.html -m "Add x.y.z release"
       $ git push
       $ rsync -avz * wayland.freedesktop.org:/srv/wayland.freedesktop.org/www/
