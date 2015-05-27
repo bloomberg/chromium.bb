@@ -5,25 +5,19 @@
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
-group("browser") {
-  deps = [
-    "//mandoline/ui/browser:window_manager",
-  ]
-}
-
-mojo_native_application("window_manager") {
+mojo_native_application("browser") {
   sources = [
     "main.cc",
   ]
 
   deps = [
-    ":kiosk_wm_lib",
+    ":lib",
     "//mandoline/services/navigation/public/interfaces",
     "//mojo/application/public/cpp",
   ]
 }
 
-source_set("kiosk_wm_lib") {
+source_set("lib") {
   sources = [
     "browser.cc",
     "browser.h",

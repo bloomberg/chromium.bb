@@ -173,7 +173,7 @@ void CoreServicesApplicationDelegate::StartApplication(
     delegate.reset(new tracing::TracingApp);
   else if (url == "mojo://view_manager/")
     delegate.reset(new view_manager::ViewManagerApp);
-  else if (url == "mojo://window_manager/")
+  else if (url == "mojo://browser/")
     delegate.reset(new mandoline::Browser);
   else
     NOTREACHED() << "This application package does not support " << url;

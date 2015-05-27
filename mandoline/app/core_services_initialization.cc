@@ -31,7 +31,7 @@ void InitCoreServicesForContext(mojo::runner::Context* context) {
       GURL("mojo:surfaces_service"), GURL("mojo:core_services"), "Surfaces");
   manager->RegisterApplicationPackageAlias(GURL("mojo:tracing"),
                                            GURL("mojo:core_services"), "Core");
-  manager->RegisterApplicationPackageAlias(GURL("mojo:window_manager"),
+  manager->RegisterApplicationPackageAlias(GURL("mojo:browser"),
                                            GURL("mojo:core_services"), "Core");
 }
 

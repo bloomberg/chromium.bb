@@ -166,11 +166,15 @@ static void Init(JNIEnv* env,
   Context* shell_context = new Context();
   shell_context->SetShellFileRoot(base::FilePath(
       base::android::ConvertJavaStringToUTF8(env, j_local_apps_directory)));
-  InitContext(shell_context);
   g_context.Get().reset(shell_context);
 
   g_java_message_loop.Get().reset(new base::MessageLoopForUI);
   base::MessageLoopForUI::current()->Start();
+
+  // This is done after the main message loop is started since it may post
+  // tasks. This is consistent with the ordering from the desktop version of
+  // this file (../desktop/launcher_process.cc).
+  InitContext(shell_context);
 
   // TODO(abarth): At which point should we switch to cross-platform
   // initialization?
