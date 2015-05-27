@@ -6,6 +6,8 @@
 #include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/common/geolocation_service.mojom.h"
 #include "content/public/common/mojo_geoposition.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_GEOLOCATION_GEOLOCATION_SERVICE_IMPL_H_
@@ -16,12 +18,14 @@ class GeolocationProvider;
 class GeolocationServiceContext;
 
 // Implements the GeolocationService Mojo interface.
-class GeolocationServiceImpl : public mojo::InterfaceImpl<GeolocationService> {
+class GeolocationServiceImpl : public GeolocationService,
+                               public mojo::ErrorHandler {
  public:
   // |context| must outlive this object. |update_callback| will be called when
   // location updates are sent, allowing the client to know when the service
   // is being used.
-  GeolocationServiceImpl(GeolocationServiceContext* context,
+  GeolocationServiceImpl(mojo::InterfaceRequest<GeolocationService> request,
+                         GeolocationServiceContext* context,
                          const base::Closure& update_callback);
   ~GeolocationServiceImpl() override;
 
@@ -43,11 +47,14 @@ class GeolocationServiceImpl : public mojo::InterfaceImpl<GeolocationService> {
   void SetHighAccuracy(bool high_accuracy) override;
   void QueryNextPosition(const PositionCallback& callback) override;
 
-  // mojo::InterfaceImpl:
+  // mojo::ErrorHandler:
   void OnConnectionError() override;
 
   void OnLocationUpdate(const Geoposition& position);
   void ReportCurrentPosition();
+
+  // The binding between this object and the other end of the pipe.
+  mojo::Binding<GeolocationService> binding_;
 
   // Owns this object.
   GeolocationServiceContext* context_;

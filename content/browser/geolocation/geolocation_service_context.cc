@@ -16,9 +16,8 @@ void GeolocationServiceContext::CreateService(
     const base::Closure& update_callback,
     mojo::InterfaceRequest<GeolocationService> request) {
   GeolocationServiceImpl* service =
-      new GeolocationServiceImpl(this, update_callback);
+      new GeolocationServiceImpl(request.Pass(), this, update_callback);
   services_.push_back(service);
-  mojo::WeakBindToRequest(service, &request);
   if (geoposition_override_)
     service->SetOverride(*geoposition_override_.get());
   else
