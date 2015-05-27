@@ -30,9 +30,6 @@ class Extension;
 }  // namespace extensions
 
 namespace hotword_internal {
-// Constants for the hotword field trial.
-extern const char kHotwordFieldTrialName[];
-extern const char kHotwordFieldTrialDisabledGroupName[];
 // String passed to indicate the training state has changed.
 extern const char kHotwordTrainingEnabled[];
 }  // namespace hotword_internal

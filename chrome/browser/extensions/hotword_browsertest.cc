@@ -31,10 +31,6 @@ class HotwordBrowserTest : public ExtensionBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
 
-    // Force the VoiceTrigger field trial on to enable the hotword_helper
-    // extension.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kForceFieldTrials, "VoiceTrigger/Install/");
     // Load the hotword_helper extension.
     ComponentLoader::EnableBackgroundExtensionsForTesting();
 

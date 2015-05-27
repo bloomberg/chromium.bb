@@ -320,10 +320,6 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
       audio_logging_enabled = "Yes";
     AddPair(list, "Hotword Audio Logging Enabled", audio_logging_enabled);
 
-    std::string group = base::FieldTrialList::FindFullName(
-        hotword_internal::kHotwordFieldTrialName);
-    AddPair(list, "Field trial", group);
-
     AddLineBreak(list);
   }
 

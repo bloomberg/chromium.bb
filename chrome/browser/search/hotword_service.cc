@@ -205,9 +205,6 @@ std::string GetCurrentLocale(Profile* profile) {
 }  // namespace
 
 namespace hotword_internal {
-// Constants for the hotword field trial.
-const char kHotwordFieldTrialName[] = "VoiceTrigger";
-const char kHotwordFieldTrialDisabledGroupName[] = "Disabled";
 // String passed to indicate the training state has changed.
 const char kHotwordTrainingEnabled[] = "hotword_training_enabled";
 // Id of the hotword notification.
@@ -642,13 +639,6 @@ bool HotwordService::IsServiceAvailable() {
 }
 
 bool HotwordService::IsHotwordAllowed() {
-  std::string group = base::FieldTrialList::FindFullName(
-      hotword_internal::kHotwordFieldTrialName);
-  // Allow hotwording by default, and only disable if the field trial has been
-  // set.
-  if (group == hotword_internal::kHotwordFieldTrialDisabledGroupName)
-    return false;
-
   return DoesHotwordSupportLanguage(profile_);
 }
 

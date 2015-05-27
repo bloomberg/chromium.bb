@@ -119,7 +119,7 @@ class HotwordServiceTest :
   public extensions::ExtensionServiceTestBase,
   public ::testing::WithParamInterface<const char*> {
  protected:
-  HotwordServiceTest() : field_trial_list_(NULL) {}
+  HotwordServiceTest() {}
   virtual ~HotwordServiceTest() {}
 
   void SetApplicationLocale(Profile* profile, const std::string& new_locale) {
@@ -148,7 +148,6 @@ class HotwordServiceTest :
 #endif
   }
 
-  base::FieldTrialList field_trial_list_;
   std::string extension_id_;
 };
 
@@ -156,64 +155,6 @@ INSTANTIATE_TEST_CASE_P(HotwordServiceTests,
                         HotwordServiceTest,
                         ::testing::Values(
                             extension_misc::kHotwordSharedModuleId));
-
-TEST_P(HotwordServiceTest, IsHotwordAllowedDisabledFieldTrial) {
-  TestingProfile::Builder profile_builder;
-  scoped_ptr<TestingProfile> profile = profile_builder.Build();
-
-  // Check that the service exists so that a NULL service be ruled out in
-  // following tests.
-  HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(profile.get());
-  EXPECT_TRUE(hotword_service != NULL);
-
-  // When the field trial is empty, it should be allowed.
-  std::string group = base::FieldTrialList::FindFullName(
-      hotword_internal::kHotwordFieldTrialName);
-  EXPECT_TRUE(group.empty());
-  EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
-
-  // When the field trial is 'Disabled', it should not be allowed.
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-     hotword_internal::kHotwordFieldTrialName,
-     hotword_internal::kHotwordFieldTrialDisabledGroupName));
-  group = base::FieldTrialList::FindFullName(
-      hotword_internal::kHotwordFieldTrialName);
-  EXPECT_TRUE(group == hotword_internal::kHotwordFieldTrialDisabledGroupName);
-  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
-
-  // Set a valid locale with invalid field trial to be sure it is
-  // still false.
-  SetApplicationLocale(static_cast<Profile*>(profile.get()), "en");
-  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
-
-  // Test that incognito returns false as well.
-  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(
-      profile->GetOffTheRecordProfile()));
-}
-
-TEST_P(HotwordServiceTest, IsHotwordAllowedInvalidFieldTrial) {
-  TestingProfile::Builder profile_builder;
-  scoped_ptr<TestingProfile> profile = profile_builder.Build();
-
-  // Check that the service exists so that a NULL service be ruled out in
-  // following tests.
-  HotwordService* hotword_service =
-      HotwordServiceFactory::GetForProfile(profile.get());
-  EXPECT_TRUE(hotword_service != NULL);
-
-  // When the field trial is set, but not 'Disabled', it should be allowed.
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-     hotword_internal::kHotwordFieldTrialName, "foo"));
-  std::string group = base::FieldTrialList::FindFullName(
-      hotword_internal::kHotwordFieldTrialName);
-  EXPECT_TRUE(group == "foo");
-  EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile.get()));
-
-  // Test that incognito returns false as well.
-  EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(
-      profile->GetOffTheRecordProfile()));
-}
 
 TEST_P(HotwordServiceTest, IsHotwordAllowedLocale) {
   TestingProfile::Builder profile_builder;
