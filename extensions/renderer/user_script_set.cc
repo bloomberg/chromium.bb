@@ -82,7 +82,7 @@ void UserScriptSet::GetInjections(
         document_url,
         false /* is_declarative */);
     if (injection.get())
-      injections->push_back(injection.release());
+      injections->push_back(injection.Pass());
   }
 }
 
@@ -149,7 +149,7 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
       continue;
     }
 
-    scripts_.push_back(script.release());
+    scripts_.push_back(script.Pass());
   }
 
   FOR_EACH_OBSERVER(Observer,

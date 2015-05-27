@@ -379,10 +379,10 @@ void ScriptInjectionManager::TryToInject(
       scripts_run_info,
       this)) {
     case ScriptInjection::INJECTION_WAITING:
-      pending_injections_.push_back(injection.release());
+      pending_injections_.push_back(injection.Pass());
       break;
     case ScriptInjection::INJECTION_BLOCKED:
-      running_injections_.push_back(injection.release());
+      running_injections_.push_back(injection.Pass());
       break;
     case ScriptInjection::INJECTION_FINISHED:
       break;
