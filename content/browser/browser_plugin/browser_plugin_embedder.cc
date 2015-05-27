@@ -64,6 +64,20 @@ void BrowserPluginEmbedder::ScreenInfoChanged() {
       &BrowserPluginEmbedder::NotifyScreenInfoChanged));
 }
 
+// static
+bool BrowserPluginEmbedder::CancelDialogs(WebContents* guest_web_contents) {
+  static_cast<WebContentsImpl*>(guest_web_contents)
+      ->CancelActiveAndPendingDialogs();
+
+  // Returns false to iterate over all guests.
+  return false;
+}
+
+void BrowserPluginEmbedder::CancelGuestDialogs() {
+  GetBrowserPluginGuestManager()->ForEachGuest(
+      web_contents(), base::Bind(&BrowserPluginEmbedder::CancelDialogs));
+}
+
 void BrowserPluginEmbedder::StartDrag(BrowserPluginGuest* guest) {
   guest_started_drag_ = guest->AsWeakPtr();
   guest_drag_ending_ = false;

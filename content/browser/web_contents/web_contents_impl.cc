@@ -678,6 +678,13 @@ int WebContentsImpl::GetRoutingID() const {
   return GetRenderViewHost()->GetRoutingID();
 }
 
+void WebContentsImpl::CancelActiveAndPendingDialogs() {
+  if (dialog_manager_)
+    dialog_manager_->CancelActiveAndPendingDialogs(this);
+  if (browser_plugin_embedder_)
+    browser_plugin_embedder_->CancelGuestDialogs();
+}
+
 int WebContentsImpl::GetFullscreenWidgetRoutingID() const {
   return fullscreen_widget_routing_id_;
 }
@@ -1995,8 +2002,7 @@ void WebContentsImpl::AttachInterstitialPage(
 
   // Cancel any visible dialogs so that they don't interfere with the
   // interstitial.
-  if (dialog_manager_)
-    dialog_manager_->CancelActiveAndPendingDialogs(this);
+  CancelActiveAndPendingDialogs();
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidAttachInterstitialPage());
@@ -2752,8 +2758,8 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
   has_accessed_initial_document_ = false;
 
   // If we navigate off the page, close all JavaScript dialogs.
-  if (dialog_manager_ && !details.is_in_page)
-    dialog_manager_->CancelActiveAndPendingDialogs(this);
+  if (!details.is_in_page)
+    CancelActiveAndPendingDialogs();
 
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
@@ -3604,8 +3610,7 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
     ExitFullscreenMode();
 
   // Cancel any visible dialogs so they are not left dangling over the sad tab.
-  if (dialog_manager_)
-    dialog_manager_->CancelActiveAndPendingDialogs(this);
+  CancelActiveAndPendingDialogs();
 
   if (delegate_)
     delegate_->HideValidationMessage(this);
@@ -4054,6 +4059,10 @@ void WebContentsImpl::CancelModalDialogsForRenderManager() {
   // deferrer would prevent us from swapping out. We also clear the state
   // because this is a cross-process navigation, which means that it's a new
   // site that should not have to pay for the sins of its predecessor.
+  //
+  // Note that we don't bother telling browser_plugin_embedder_ because the
+  // cross-process navigation will either destroy the browser plugins or not
+  // require their dialogs to close.
   if (dialog_manager_)
     dialog_manager_->ResetDialogState(this);
 }

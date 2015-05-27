@@ -586,6 +586,32 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
   ui_test_utils::NavigateToURL(browser(), url2);
 }
 
+// Make sure modal dialogs within a guestview are closed when an interstitial
+// page is showing. See crbug.com/482380.
+IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCancelsGuestViewDialogs) {
+  // Navigate to a PDF, which is loaded within a guestview.
+  ASSERT_TRUE(test_server()->Start());
+  GURL pdf_with_dialog(test_server()->GetURL("files/alert_dialog.pdf"));
+  ui_test_utils::NavigateToURL(browser(), pdf_with_dialog);
+
+  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  EXPECT_TRUE(alert->IsValid());
+  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
+  EXPECT_TRUE(dialog_queue->HasActiveDialog());
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  TestInterstitialPage* interstitial =
+      new TestInterstitialPage(contents, false, GURL());
+  content::WaitForInterstitialAttach(contents);
+
+  // The interstitial should have closed the dialog.
+  EXPECT_TRUE(contents->ShowingInterstitialPage());
+  EXPECT_FALSE(dialog_queue->HasActiveDialog());
+
+  interstitial->DontProceed();
+}
+
 // Test for crbug.com/22004.  Reloading a page with a before unload handler and
 // then canceling the dialog should not leave the throbber spinning.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {

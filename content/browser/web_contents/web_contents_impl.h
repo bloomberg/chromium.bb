@@ -158,6 +158,10 @@ class CONTENT_EXPORT WebContentsImpl
   // already exist.
   void CreateBrowserPluginEmbedderIfNecessary();
 
+  // Cancels modal dialogs in this WebContents, as well as in any browser
+  // plugins it is hosting.
+  void CancelActiveAndPendingDialogs();
+
   // Gets the current fullscreen render widget's routing ID. Returns
   // MSG_ROUTING_NONE when there is no fullscreen render widget.
   int GetFullscreenWidgetRoutingID() const;

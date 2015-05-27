@@ -56,6 +56,9 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   // Called when the screen info has changed.
   void ScreenInfoChanged();
 
+  // Closes modal dialogs in all of the guests.
+  void CancelGuestDialogs();
+
   // Called by WebContentsViewGuest when a drag operation is started within
   // |guest|. This |guest| will be signaled at the end of the drag operation.
   void StartDrag(BrowserPluginGuest* guest);
@@ -83,6 +86,9 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   // Notifies a guest that the embedder's screen info has changed.
   static bool NotifyScreenInfoChanged(WebContents* guest_web_contents);
+
+  // Closes modal dialogs in |guest_web_contents|.
+  static bool CancelDialogs(WebContents* guest_web_contents);
 
   static bool UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
                                              WebContents* guest);
