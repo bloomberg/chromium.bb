@@ -119,15 +119,11 @@ class SafeBrowsingURLRequestContextGetter
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
 
-  // Shuts down any pending requests using the getter, and nulls out
-  // |sb_service_|.
-  void SafeBrowsingServiceShuttingDown();
-
  protected:
   ~SafeBrowsingURLRequestContextGetter() override;
 
  private:
-  SafeBrowsingService* sb_service_;  // Owned by BrowserProcess.
+  SafeBrowsingService* const sb_service_;  // Owned by BrowserProcess.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   base::debug::LeakTracker<SafeBrowsingURLRequestContextGetter> leak_tracker_;
@@ -140,15 +136,13 @@ SafeBrowsingURLRequestContextGetter::SafeBrowsingURLRequestContextGetter(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)) {
 }
 
+SafeBrowsingURLRequestContextGetter::~SafeBrowsingURLRequestContextGetter() {}
+
 net::URLRequestContext*
 SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // Check if the service has been shut down.
-  if (!sb_service_)
-    return nullptr;
-
   DCHECK(sb_service_->url_request_context_.get());
+
   return sb_service_->url_request_context_.get();
 }
 
@@ -156,13 +150,6 @@ scoped_refptr<base::SingleThreadTaskRunner>
 SafeBrowsingURLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
 }
-
-void SafeBrowsingURLRequestContextGetter::SafeBrowsingServiceShuttingDown() {
-  sb_service_ = nullptr;
-  URLRequestContextGetter::NotifyContextShuttingDown();
-}
-
-SafeBrowsingURLRequestContextGetter::~SafeBrowsingURLRequestContextGetter() {}
 
 // static
 SafeBrowsingServiceFactory* SafeBrowsingService::factory_ = NULL;
@@ -311,6 +298,7 @@ void SafeBrowsingService::ShutDown() {
 
   download_service_.reset();
 
+  url_request_context_getter_ = NULL;
   BrowserThread::PostNonNestableTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SafeBrowsingService::DestroyURLRequestContextOnIOThread,
@@ -440,7 +428,6 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
 void SafeBrowsingService::DestroyURLRequestContextOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  url_request_context_getter_->SafeBrowsingServiceShuttingDown();
   url_request_context_->AssertNoURLRequests();
 
   // Need to do the CheckForLeaks on IOThread instead of in ShutDown where
