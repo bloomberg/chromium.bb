@@ -77,11 +77,19 @@ private:
     Platform3DObject m_oldTextureUnitZeroId;
 };
 
+static bool shouldFailDrawingBufferCreationForTesting = false;
+
 } // namespace
 
 PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D> context, const IntSize& size, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
 {
     ASSERT(context);
+
+    if (shouldFailDrawingBufferCreationForTesting) {
+        shouldFailDrawingBufferCreationForTesting = false;
+        return nullptr;
+    }
+
     OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
     if (!extensionsUtil) {
         // This might be the first time we notice that the WebGraphicsContext3D is lost.
@@ -110,6 +118,11 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D>
         return PassRefPtr<DrawingBuffer>();
     }
     return drawingBuffer.release();
+}
+
+void DrawingBuffer::forceNextDrawingBufferCreationToFail()
+{
+    shouldFailDrawingBufferCreationForTesting = true;
 }
 
 DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,

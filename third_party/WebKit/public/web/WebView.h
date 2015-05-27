@@ -470,6 +470,10 @@ public:
     // event gets generated/tested.
     virtual void forceNextWebGLContextCreationToFail() = 0;
 
+    // Force the drawing buffer used by webgl contexts to fail so that the webgl
+    // context's ability to deal with that failure gracefully can be tested.
+    virtual void forceNextDrawingBufferCreationToFail() = 0;
+
 protected:
     ~WebView() {}
 };

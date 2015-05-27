@@ -54,6 +54,7 @@ WebGL2RenderingContextBase::~WebGL2RenderingContextBase()
 void WebGL2RenderingContextBase::initializeNewContext()
 {
     ASSERT(!isContextLost());
+    ASSERT(drawingBuffer());
 
     m_readFramebufferBinding = nullptr;
 

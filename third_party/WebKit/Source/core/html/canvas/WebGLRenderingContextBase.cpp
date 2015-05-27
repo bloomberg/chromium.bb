@@ -671,6 +671,8 @@ PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwn
 void WebGLRenderingContextBase::initializeNewContext()
 {
     ASSERT(!isContextLost());
+    ASSERT(drawingBuffer());
+
     m_markedCanvasDirty = false;
     m_activeTextureUnit = 0;
     m_packAlignment = 4;

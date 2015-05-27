@@ -531,6 +531,7 @@ public:
     void didUpdateTopControls();
 
     virtual void forceNextWebGLContextCreationToFail() override;
+    virtual void forceNextDrawingBufferCreationToFail() override;
 
     IntSize mainFrameSize();
     WebDisplayMode displayMode() const { return m_displayMode; }

@@ -93,6 +93,7 @@ public:
     };
 
     static PassRefPtr<DrawingBuffer> create(PassOwnPtr<WebGraphicsContext3D>, const IntSize&, PreserveDrawingBuffer, WebGraphicsContext3D::Attributes requestedAttributes);
+    static void forceNextDrawingBufferCreationToFail();
 
     virtual ~DrawingBuffer();
 

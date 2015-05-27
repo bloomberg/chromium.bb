@@ -113,6 +113,7 @@
 #include "platform/graphics/FirstPaintInvalidationTracking.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
@@ -4533,6 +4534,11 @@ bool WebViewImpl::shouldDisableDesktopWorkarounds()
 void WebViewImpl::forceNextWebGLContextCreationToFail()
 {
     WebGLRenderingContext::forceNextWebGLContextCreationToFail();
+}
+
+void WebViewImpl::forceNextDrawingBufferCreationToFail()
+{
+    DrawingBuffer::forceNextDrawingBufferCreationToFail();
 }
 
 } // namespace blink

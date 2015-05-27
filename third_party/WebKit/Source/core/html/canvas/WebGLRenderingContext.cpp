@@ -77,13 +77,14 @@ PassOwnPtrWillBeRawPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTML
     }
 
     OwnPtrWillBeRawPtr<WebGLRenderingContext> renderingContext = adoptPtrWillBeNoop(new WebGLRenderingContext(canvas, context.release(), attributes));
-    renderingContext->initializeNewContext();
-    renderingContext->registerContextExtensions();
 
     if (!renderingContext->drawingBuffer()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
         return nullptr;
     }
+
+    renderingContext->initializeNewContext();
+    renderingContext->registerContextExtensions();
 
     return renderingContext.release();
 }
