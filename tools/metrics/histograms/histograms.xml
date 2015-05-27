@@ -12965,6 +12965,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="IncognitoModePrefs.WindowsParentalControlsInitThread"
+    enum="ThreadType">
+  <owner>robliao@chromium.org</owner>
+  <summary>
+    The thread used to initialize the Windows parental controls.
+  </summary>
+</histogram>
+
+<histogram name="IncognitoModePrefs.WindowsParentalControlsInitTime"
+    units="milliseconds">
+  <owner>robliao@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during a run of
+    PlatformParentalControlsValue::IsParentalControlActivityLoggingOnImpl on
+    Windows 7 and above.
+  </summary>
+</histogram>
+
 <histogram name="InertialSensor.AccelerometerAndroidAvailable"
     enum="BooleanAvailable">
   <owner>timvolodine@chromium.org</owner>
@@ -65518,6 +65536,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Writing"/>
   <int value="4" label="Renaming"/>
   <int value="5" label="Flushing"/>
+</enum>
+
+<enum name="ThreadType" type="int">
+  <int value="0" label="UI"/>
+  <int value="1" label="Blocking"/>
 </enum>
 
 <enum name="TileMemoryBudget" type="int">

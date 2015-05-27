@@ -76,6 +76,7 @@
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_metrics_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -1148,6 +1149,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   SCOPED_UMA_HISTOGRAM_LONG_TIMER("Startup.PreMainMessageLoopRunImplLongTime");
   const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
+
+#if defined(OS_WIN)
+  // Windows parental controls calls can be slow, so we do an early init here
+  // that calculates this value off of the UI thread.
+  IncognitoModePrefs::InitializePlatformParentalControls();
+#endif
 
 #if defined(ENABLE_EXTENSIONS)
   if (!variations::GetVariationParamValue(
