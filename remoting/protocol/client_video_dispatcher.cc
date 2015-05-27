@@ -28,7 +28,8 @@ ClientVideoDispatcher::ClientVideoDispatcher(VideoStub* video_stub)
       video_stub_(video_stub),
       parser_(base::Bind(&ClientVideoDispatcher::ProcessVideoPacket,
                          base::Unretained(this)),
-              reader()) {
+              reader()),
+      weak_factory_(this) {
 }
 
 ClientVideoDispatcher::~ClientVideoDispatcher() {
@@ -50,9 +51,9 @@ void ClientVideoDispatcher::ProcessVideoPacket(
       pending_frames_.insert(pending_frames_.end(), PendingFrame(frame_id));
 
   video_stub_->ProcessVideoPacket(
-      video_packet.Pass(), base::Bind(&ClientVideoDispatcher::OnPacketDone,
-                                      base::Unretained(this), pending_frame));
-
+      video_packet.Pass(),
+      base::Bind(&ClientVideoDispatcher::OnPacketDone,
+                 weak_factory_.GetWeakPtr(), pending_frame));
 }
 
 void ClientVideoDispatcher::OnPacketDone(
