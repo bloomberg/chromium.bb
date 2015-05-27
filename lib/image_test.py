@@ -330,12 +330,18 @@ class LinkageTest(NonForgivingImageTestCase):
 
   def _IsPackageMerged(self, package_name):
     cmd = [
-        'portageq-%s' % self._board,
+        'portageq',
         'has_version',
         ROOT_A,
         package_name
     ]
-    ret = cros_build_lib.RunCommand(cmd, error_code_ok=True)
+    ret = cros_build_lib.RunCommand(cmd, error_code_ok=True,
+                                    combine_stdout_stderr=True,
+                                    extra_env={'ROOT': ROOT_A})
+    if ret.returncode == 0:
+      logging.info('Package is available: %s', package_name)
+    else:
+      logging.info('Package is not available: %s', package_name)
     return ret.returncode == 0
 
   def TestLinkage(self):
