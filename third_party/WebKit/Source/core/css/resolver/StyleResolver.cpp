@@ -328,24 +328,12 @@ void StyleResolver::clearStyleSharingList()
 
 void StyleResolver::pushParentElement(Element& parent)
 {
-    const ContainerNode* parentsParent = parent.parentOrShadowHostElement();
-
-    // We are not always invoked consistently. For example, script execution can cause us to enter
-    // style recalc in the middle of tree building. We may also be invoked from somewhere within the tree.
-    // Reset the stack in this case, or if we see a new root element.
-    // Otherwise just push the new parent.
-    if (!parentsParent || m_selectorFilter.parentStackIsEmpty())
-        m_selectorFilter.setupParentStack(parent);
-    else
-        m_selectorFilter.pushParent(parent);
+    m_selectorFilter.pushParent(parent);
 }
 
 void StyleResolver::popParentElement(Element& parent)
 {
-    // Note that we may get invoked for some random elements in some wacky cases during style resolve.
-    // Pause maintaining the stack in this case.
-    if (m_selectorFilter.parentStackIsConsistent(&parent))
-        m_selectorFilter.popParent();
+    m_selectorFilter.popParent(parent);
 }
 
 StyleResolver::~StyleResolver()

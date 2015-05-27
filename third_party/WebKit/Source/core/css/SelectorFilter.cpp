@@ -101,12 +101,32 @@ void SelectorFilter::setupParentStack(Element& parent)
 
 void SelectorFilter::pushParent(Element& parent)
 {
+    const Element* parentsParent = parent.parentOrShadowHostElement();
+
+    // We are not always invoked consistently. For example, script execution can cause us to enter
+    // style recalc in the middle of tree building. We may also be invoked from somewhere within the tree.
+    // Reset the stack in this case, or if we see a new root element.
+    // Otherwise just push the new parent.
+    if (!parentsParent || m_parentStack.isEmpty()) {
+        setupParentStack(parent);
+        return;
+    }
+
     ASSERT(m_ancestorIdentifierFilter);
     // We may get invoked for some random elements in some wacky cases during style resolve.
     // Pause maintaining the stack in this case.
     if (m_parentStack.last().element != parent.parentOrShadowHostElement())
         return;
     pushParentStackFrame(parent);
+}
+
+void SelectorFilter::popParent(Element& parent)
+{
+    // Note that we may get invoked for some random elements in some wacky cases during style resolve.
+    // Pause maintaining the stack in this case.
+    if (!parentStackIsConsistent(&parent))
+        return;
+    popParentStackFrame();
 }
 
 static inline void collectDescendantSelectorIdentifierHashes(const CSSSelector& selector, unsigned*& hash)

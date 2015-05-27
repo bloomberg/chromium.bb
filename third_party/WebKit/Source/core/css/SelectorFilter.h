@@ -52,13 +52,9 @@ public:
         Vector<unsigned, 4> identifierHashes;
     };
 
-    void pushParentStackFrame(Element& parent);
-    void popParentStackFrame();
-
-    void setupParentStack(Element& parent);
     void pushParent(Element& parent);
-    void popParent() { popParentStackFrame(); }
-    bool parentStackIsEmpty() const { return m_parentStack.isEmpty(); }
+    void popParent(Element& parent);
+
     bool parentStackIsConsistent(const ContainerNode* parentNode) const { return !m_parentStack.isEmpty() && m_parentStack.last().element == parentNode; }
 
     template <unsigned maximumIdentifierCount>
@@ -68,6 +64,10 @@ public:
     DECLARE_TRACE();
 
 private:
+    void pushParentStackFrame(Element& parent);
+    void popParentStackFrame();
+    void setupParentStack(Element& parent);
+
     WillBeHeapVector<ParentStackFrame> m_parentStack;
 
     // With 100 unique strings in the filter, 2^12 slot table has false positive rate of ~0.2%.
