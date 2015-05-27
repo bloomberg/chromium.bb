@@ -92,13 +92,8 @@ def WriteFile(path, content, mode='w', atomic=False, makedirs=False,
     makedirs: If True, create missing leading directories in the path.
     sudo: If True, write the file as root.
   """
-  if sudo:
-    if 'a' in mode or '+' in mode:
-      raise ValueError('append mode does not work in sudo mode')
-
-    if atomic:
-      raise ValueError('atomic is not supported in sudo mode')
-
+  if sudo and ('a' in mode or '+' in mode):
+    raise ValueError('append mode does not work in sudo mode')
 
   if makedirs:
     SafeMakedirs(os.path.dirname(path), sudo=sudo)
@@ -112,12 +107,18 @@ def WriteFile(path, content, mode='w', atomic=False, makedirs=False,
     os.chmod(write_path, 0o644)
 
     try:
-      cros_build_lib.SudoRunCommand(['mv', write_path, path],
+      mv_target = path if not atomic else path + '.tmp'
+      cros_build_lib.SudoRunCommand(['mv', write_path, mv_target],
                                     print_cmd=False, redirect_stderr=True)
-      cros_build_lib.SudoRunCommand(['chown', 'root:root', path],
+      cros_build_lib.SudoRunCommand(['chown', 'root:root', mv_target],
                                     print_cmd=False, redirect_stderr=True)
+      if atomic:
+        cros_build_lib.SudoRunCommand(['mv', mv_target, path],
+                                      print_cmd=False, redirect_stderr=True)
+
     except cros_build_lib.RunCommandError:
       SafeUnlink(write_path)
+      SafeUnlink(mv_target)
       raise
 
   else:

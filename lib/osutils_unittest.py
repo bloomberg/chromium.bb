@@ -31,19 +31,20 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
   def testSudoWrite(self):
     """Verify that we can write a file as sudo."""
     with osutils.TempDir(sudo_rm=True) as tempdir:
-      filename = os.path.join(tempdir, 'foo', 'bar')
-      self.assertTrue(osutils.SafeMakedirs(os.path.dirname(filename),
-                                           sudo=True))
-      self.assertRaises(IOError, osutils.WriteFile, filename, 'data')
+      root_owned_dir = os.path.join(tempdir, 'foo')
+      self.assertTrue(osutils.SafeMakedirs(root_owned_dir, sudo=True))
+      for atomic in (True, False):
+        filename = os.path.join(root_owned_dir,
+                                'bar.atomic' if atomic else 'bar')
+        self.assertRaises(IOError, osutils.WriteFile, filename, 'data')
 
-      osutils.WriteFile(filename, 'test', sudo=True)
-      self.assertEqual('test', osutils.ReadFile(filename))
-      self.assertEqual(0, os.stat(filename).st_uid)
+        osutils.WriteFile(filename, 'test', atomic=atomic, sudo=True)
+        self.assertEqual('test', osutils.ReadFile(filename))
+        self.assertEqual(0, os.stat(filename).st_uid)
 
-      # Appending to a file or atomic modifications are not supported with sudo.
-      self.assertRaises(ValueError, osutils.WriteFile, filename, 'data',
-                        sudo=True, atomic=True)
-      self.assertRaises(ValueError, osutils.WriteFile, filename, 'data',
+      # Appending to a file is not supported with sudo.
+      self.assertRaises(ValueError, osutils.WriteFile,
+                        os.path.join(root_owned_dir, 'nope'), 'data',
                         sudo=True, mode='a')
 
   def testSafeSymlink(self):
