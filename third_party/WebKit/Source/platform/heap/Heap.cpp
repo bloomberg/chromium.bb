@@ -271,10 +271,15 @@ void BaseHeap::incrementMarkedObjectsAge()
 }
 #endif
 
-void BaseHeap::makeConsistentForSweeping()
+void BaseHeap::makeConsistentForSweeping(ThreadState::GCType gcType)
 {
-    clearFreeLists();
-    ASSERT(isConsistentForSweeping());
+    // We don't want to clear free lists when taking a snapshot.
+    // This is fine because we don't sweep anything when taking a snapshot.
+    if (gcType != ThreadState::TakeSnapshot) {
+        clearFreeLists();
+        ASSERT(isConsistentForSweeping());
+    }
+
     for (BasePage* page = m_firstPage; page; page = page->next())
         page->markAsUnswept();
 
@@ -320,7 +325,7 @@ void BaseHeap::prepareHeapForTermination()
 
 void BaseHeap::prepareForSweep()
 {
-    ASSERT(!threadState()->isInGC());
+    ASSERT(threadState()->isInGC());
     ASSERT(!m_firstUnsweptPage);
 
     // Move all pages to a list of unswept pages.
@@ -1841,11 +1846,11 @@ bool Heap::weakTableRegistered(const void* table)
 }
 #endif
 
-void Heap::preGC()
+void Heap::preGC(ThreadState::GCType gcType)
 {
     ASSERT(!ThreadState::current()->isInGC());
     for (ThreadState* state : ThreadState::attachedThreads())
-        state->preGC();
+        state->preGC(gcType);
 }
 
 void Heap::postGC(ThreadState::GCType gcType)
@@ -1904,7 +1909,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     // finalization that happens when the gcScope is torn down).
     ThreadState::NoAllocationScope noAllocationScope(state);
 
-    preGC();
+    preGC(gcType);
 
     StackFrameDepthScope stackDepthScope;
 
@@ -1965,7 +1970,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         MarkingVisitor<Visitor::ThreadLocalMarking> markingVisitor;
         ThreadState::NoAllocationScope noAllocationScope(state);
 
-        state->preGC();
+        state->preGC(ThreadState::GCWithSweep);
         StackFrameDepthScope stackDepthScope;
 
         // 1. Trace the thread local persistent roots. For thread local GCs we
@@ -2100,7 +2105,7 @@ size_t Heap::objectPayloadSizeForTesting()
     size_t objectPayloadSize = 0;
     for (ThreadState* state : ThreadState::attachedThreads()) {
         state->setGCState(ThreadState::GCRunning);
-        state->makeConsistentForSweeping();
+        state->makeConsistentForSweeping(ThreadState::GCWithSweep);
         objectPayloadSize += state->objectPayloadSizeForTesting();
         state->setGCState(ThreadState::EagerSweepScheduled);
         state->setGCState(ThreadState::Sweeping);

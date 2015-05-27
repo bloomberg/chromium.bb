@@ -838,19 +838,19 @@ void ThreadState::flushHeapDoesNotContainCacheIfNeeded()
     }
 }
 
-void ThreadState::makeConsistentForSweeping()
+void ThreadState::makeConsistentForSweeping(GCType gcType)
 {
     ASSERT(isInGC());
     TRACE_EVENT0("blink_gc", "ThreadState::makeConsistentForSweeping");
     for (int i = 0; i < NumberOfHeaps; ++i)
-        m_heaps[i]->makeConsistentForSweeping();
+        m_heaps[i]->makeConsistentForSweeping(gcType);
 }
 
-void ThreadState::preGC()
+void ThreadState::preGC(GCType gcType)
 {
     ASSERT(!isInGC());
     setGCState(GCRunning);
-    makeConsistentForSweeping();
+    makeConsistentForSweeping(gcType);
     prepareRegionTree();
     flushHeapDoesNotContainCacheIfNeeded();
     clearHeapAges();
@@ -878,9 +878,21 @@ void ThreadState::postGC(GCType gcType)
     }
 #endif
 
-    setGCState(gcType == GCWithSweep ? EagerSweepScheduled : LazySweepScheduled);
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->prepareForSweep();
+
+    if (gcType == GCWithSweep) {
+        setGCState(EagerSweepScheduled);
+    } else if (gcType == GCWithoutSweep) {
+        setGCState(LazySweepScheduled);
+    } else {
+        takeSnapshot();
+        // This unmarks all marked objects and marks all unmarked objects dead.
+        makeConsistentForSweeping(gcType);
+        // Force setting NoGCScheduled to circumvent checkThread()
+        // in setGCState().
+        m_gcState = NoGCScheduled;
+    }
 }
 
 void ThreadState::preSweep()
@@ -1263,6 +1275,12 @@ void ThreadState::promptlyFreed(size_t gcInfoIndex)
     size_t entryIndex = gcInfoIndex & likelyToBePromptlyFreedArrayMask;
     // See the comment in vectorBackingHeap() for why this is +3.
     m_likelyToBePromptlyFreed[entryIndex] += 3;
+}
+
+void ThreadState::takeSnapshot()
+{
+    ASSERT(isInGC());
+    // TODO(ssid): Implement this.
 }
 
 #if ENABLE(GC_PROFILING)

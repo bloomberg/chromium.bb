@@ -230,7 +230,7 @@ public:
     {
         m_state->checkThread();
         if (LIKELY(ThreadState::stopThreads())) {
-            Heap::preGC();
+            Heap::preGC(ThreadState::GCWithSweep);
             m_parkedAllThreads = true;
         }
     }
@@ -517,11 +517,15 @@ protected:
                 }
 
                 if (gcCount < gcPerThread) {
+                    // Taking snapshot shouldn't have any bad side effect.
+                    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::TakeSnapshot, Heap::ForcedGC);
                     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
                     gcCount++;
                     atomicIncrement(&m_gcCount);
                 }
 
+                // Taking snapshot shouldn't have any bad side effect.
+                Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::TakeSnapshot, Heap::ForcedGC);
                 Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
                 EXPECT_EQ(wrapper->value(), 0x0bbac0de);
                 EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);

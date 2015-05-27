@@ -178,8 +178,14 @@ public:
     };
 
     enum GCType {
-        GCWithSweep, // Sweeping is completed in Heap::collectGarbage().
-        GCWithoutSweep, // Lazy sweeping is scheduled.
+        // Run a marking task and a sweeping task in Heap::collectGarbage().
+        GCWithSweep,
+        // Run only a marking task in Heap::collectGarbage(). A sweeping task
+        // is split into chunks and scheduled lazily.
+        GCWithoutSweep,
+        // Run a marking task just to take a heap snapshot. A sweeping task
+        // doesn't run and the marks are just dropped.
+        TakeSnapshot,
     };
 
     // See setGCState() for possible state transitions.
@@ -334,8 +340,8 @@ public:
     //   In this case, the next GC just cancels the remaining lazy sweeping.
     //   Specifically, preGC() of the next GC calls makeConsistentForSweeping()
     //   and it marks all not-yet-swept objets as dead.
-    void makeConsistentForSweeping();
-    void preGC();
+    void makeConsistentForSweeping(GCType);
+    void preGC(GCType);
     void postGC(GCType);
     void preSweep();
     void completeSweep();
@@ -650,6 +656,7 @@ private:
     void unregisterPreFinalizerInternal(void*);
     void invokePreFinalizers(Visitor&);
 
+    void takeSnapshot();
 #if ENABLE(GC_PROFILING)
     void snapshotFreeList();
 #endif

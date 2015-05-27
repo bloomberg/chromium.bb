@@ -430,7 +430,6 @@ public:
 
     void markAsUnswept()
     {
-        ASSERT(m_swept);
         m_swept = false;
     }
 
@@ -692,7 +691,7 @@ public:
 #endif
 
     virtual void clearFreeLists() { }
-    void makeConsistentForSweeping();
+    void makeConsistentForSweeping(ThreadState::GCType);
 #if ENABLE(ASSERT)
     virtual bool isConsistentForSweeping() = 0;
 #endif
@@ -924,7 +923,7 @@ public:
     static void globalWeakProcessing(Visitor*);
     static void setForcePreciseGCForTesting();
 
-    static void preGC();
+    static void preGC(ThreadState::GCType);
     static void postGC(ThreadState::GCType);
 
     // Conservatively checks whether an address is a pointer in any of the
