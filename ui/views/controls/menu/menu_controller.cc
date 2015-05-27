@@ -532,9 +532,13 @@ void MenuController::OnMouseReleased(SubmenuView* source,
       menu = part.parent;
     }
 
-    if (menu != NULL && ShowContextMenu(menu, source, event,
-                                        ui::MENU_SOURCE_MOUSE))
-      return;
+    if (menu != NULL) {
+      gfx::Point screen_location(event.location());
+      View::ConvertPointToScreen(source->GetScrollViewContainer(),
+                                 &screen_location);
+      if (ShowContextMenu(menu, screen_location, ui::MENU_SOURCE_MOUSE))
+        return;
+    }
   }
 
   // We can use Ctrl+click or the middle mouse button to recursively open urls
@@ -608,7 +612,10 @@ void MenuController::OnGestureEvent(SubmenuView* source,
     event->StopPropagation();
   } else if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
     if (part.type == MenuPart::MENU_ITEM && part.menu) {
-      if (ShowContextMenu(part.menu, source, *event, ui::MENU_SOURCE_TOUCH))
+      gfx::Point screen_location(event->location());
+      View::ConvertPointToScreen(source->GetScrollViewContainer(),
+                                 &screen_location);
+      if (ShowContextMenu(part.menu, screen_location, ui::MENU_SOURCE_TOUCH))
         event->StopPropagation();
     }
   } else if (event->type() == ui::ET_GESTURE_TAP) {
@@ -1092,6 +1099,19 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
       CloseSubmenu();
       break;
 
+    case ui::VKEY_APPS: {
+      CustomButton* hot_view = GetFirstHotTrackedView(pending_state_.item);
+      if (hot_view) {
+        hot_view->ShowContextMenu(hot_view->GetKeyboardContextMenuLocation(),
+                                  ui::MENU_SOURCE_KEYBOARD);
+      } else if (pending_state_.item->enabled()) {
+        ShowContextMenu(pending_state_.item,
+                        pending_state_.item->GetKeyboardContextMenuLocation(),
+                        ui::MENU_SOURCE_KEYBOARD);
+      }
+      break;
+    }
+
     default:
       break;
   }
@@ -1269,8 +1289,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
 }
 
 bool MenuController::ShowContextMenu(MenuItemView* menu_item,
-                                     SubmenuView* source,
-                                     const ui::LocatedEvent& event,
+                                     const gfx::Point& screen_location,
                                      ui::MenuSourceType source_type) {
   // Set the selection immediately, making sure the submenu is only open
   // if it already was.
@@ -1278,11 +1297,9 @@ bool MenuController::ShowContextMenu(MenuItemView* menu_item,
   if (state_.item == pending_state_.item && state_.submenu_open)
     selection_types |= SELECTION_OPEN_SUBMENU;
   SetSelection(pending_state_.item, selection_types);
-  gfx::Point loc(event.location());
-  View::ConvertPointToScreen(source->GetScrollViewContainer(), &loc);
 
   if (menu_item->GetDelegate()->ShowContextMenu(
-          menu_item, menu_item->GetCommand(), loc, source_type)) {
+          menu_item, menu_item->GetCommand(), screen_location, source_type)) {
     SendMouseCaptureLostToActiveView();
     return true;
   }

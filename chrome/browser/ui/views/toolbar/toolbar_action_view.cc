@@ -77,6 +77,11 @@ ToolbarActionView::ToolbarActionView(
   wants_to_run_border_ = CreateDefaultBorder();
   DecorateWantsToRunBorder(wants_to_run_border_.get());
 
+  // If the button is within a menu, we need to make it focusable in order to
+  // have it accessible via keyboard navigation.
+  if (delegate_->ShownInsideMenu())
+    SetFocusable(true);
+
   UpdateState();
 }
 
@@ -99,10 +104,6 @@ void ToolbarActionView::DecorateWantsToRunBorder(
 gfx::Size ToolbarActionView::GetPreferredSize() const {
   return gfx::Size(ToolbarActionsBar::IconWidth(false),
                    ToolbarActionsBar::IconHeight());
-}
-
-const char* ToolbarActionView::GetClassName() const {
-  return "ToolbarActionView";
 }
 
 void ToolbarActionView::OnDragDone() {

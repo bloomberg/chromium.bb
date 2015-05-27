@@ -1222,6 +1222,14 @@ bool View::ShouldShowContextMenuOnMousePress() {
   return kContextMenuOnMousePress;
 }
 
+gfx::Point View::GetKeyboardContextMenuLocation() {
+  gfx::Rect vis_bounds = GetVisibleBounds();
+  gfx::Point screen_point(vis_bounds.x() + vis_bounds.width() / 2,
+                          vis_bounds.y() + vis_bounds.height() / 2);
+  ConvertPointToScreen(this, &screen_point);
+  return screen_point;
+}
+
 // Drag and drop ---------------------------------------------------------------
 
 bool View::GetDropFormats(
@@ -1566,16 +1574,6 @@ void View::TooltipTextChanged() {
   // TooltipManager may be null if there is a problem creating it.
   if (widget && widget->GetTooltipManager())
     widget->GetTooltipManager()->TooltipTextChanged(this);
-}
-
-// Context menus ---------------------------------------------------------------
-
-gfx::Point View::GetKeyboardContextMenuLocation() {
-  gfx::Rect vis_bounds = GetVisibleBounds();
-  gfx::Point screen_point(vis_bounds.x() + vis_bounds.width() / 2,
-                          vis_bounds.y() + vis_bounds.height() / 2);
-  ConvertPointToScreen(this, &screen_point);
-  return screen_point;
 }
 
 // Drag and drop ---------------------------------------------------------------

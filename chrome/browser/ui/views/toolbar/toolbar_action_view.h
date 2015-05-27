@@ -114,7 +114,6 @@ class ToolbarActionView : public views::MenuButton,
  private:
   // views::MenuButton:
   gfx::Size GetPreferredSize() const override;
-  const char* GetClassName() const override;
   void OnDragDone() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;

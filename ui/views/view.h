@@ -866,6 +866,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // This method returns true for those platforms.
   static bool ShouldShowContextMenuOnMousePress();
 
+  // Returns the location, in screen coordinates, to show the context menu at
+  // when the context menu is shown from the keyboard. This implementation
+  // returns the middle of the visible region of this view.
+  //
+  // This method is invoked when the context menu is shown by way of the
+  // keyboard.
+  virtual gfx::Point GetKeyboardContextMenuLocation();
+
   // Drag and drop -------------------------------------------------------------
 
   DragController* drag_controller() { return drag_controller_; }
@@ -1165,16 +1173,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Views must invoke this when the tooltip text they are to display changes.
   void TooltipTextChanged();
-
-  // Context menus -------------------------------------------------------------
-
-  // Returns the location, in screen coordinates, to show the context menu at
-  // when the context menu is shown from the keyboard. This implementation
-  // returns the middle of the visible region of this view.
-  //
-  // This method is invoked when the context menu is shown by way of the
-  // keyboard.
-  virtual gfx::Point GetKeyboardContextMenuLocation();
 
   // Drag and drop -------------------------------------------------------------
 
