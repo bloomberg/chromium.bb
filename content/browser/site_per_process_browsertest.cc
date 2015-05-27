@@ -1031,8 +1031,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL site_c_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
   EXPECT_EQ(site_c_url, node4->current_url());
 
-  // |site_instance_c| is expected to go away once we kill |child_process_b|
-  // below; refcount it to extend the lifetime.
+  // |site_instance_c|'s frames and proxies are expected to go away once we kill
+  // |child_process_b| below.
   scoped_refptr<SiteInstanceImpl> site_instance_c =
       node4->current_frame_host()->GetSiteInstance();
 
@@ -1046,6 +1046,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "      B = http://bar.com/\n"
       "      C = http://baz.com/",
       DepictFrameTree(root));
+
+  EXPECT_GT(site_instance_c->active_frame_count(), 0U);
+
   // Kill process B.
   RenderProcessHost* child_process_b =
       root->child_at(0)->current_frame_host()->GetProcess();
@@ -1065,7 +1068,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "      B = http://bar.com/ (no process)",
       DepictFrameTree(root));
 
-  EXPECT_TRUE(site_instance_c->HasOneRef());
+  EXPECT_EQ(0U, site_instance_c->active_frame_count());
 }
 
 // Crash a subframe and ensures its children are cleared from the FrameTree.
