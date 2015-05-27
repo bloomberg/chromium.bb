@@ -44,9 +44,8 @@ class MemoryTop7StressWithSlimmingPaint(perf_benchmark.PerfBenchmark):
     return 'memory.top_7_stress_slimming_paint'
 
 
-# @benchmark.Enabled('has tabs')
-# @benchmark.Disabled('android')  # Benchmark uses > 700MB of memory.
-@benchmark.Disabled  # crbug.com/490841
+@benchmark.Enabled('has tabs')
+@benchmark.Disabled('android')  # Benchmark uses > 700MB of memory.
 class MemoryIdleMultiTab(perf_benchmark.PerfBenchmark):
   """Use (recorded) real world web sites and measure memory consumption
   with many tabs and idle times. """

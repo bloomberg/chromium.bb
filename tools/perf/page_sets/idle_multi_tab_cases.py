@@ -60,7 +60,6 @@ class IdleMultiTabCasesPageSet(page_set_module.PageSet):
       base_js = f.read()
     pages = [
       top_pages.GoogleDocPage,
-      top_7_stress.GmailPage,
       top_7_stress.GooglePlusPage,
     ]
     for page in pages:
