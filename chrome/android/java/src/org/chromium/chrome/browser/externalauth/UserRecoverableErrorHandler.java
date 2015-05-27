@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.externalauth;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface.OnCancelListener;
 
@@ -79,7 +78,8 @@ public abstract class UserRecoverableErrorHandler {
     /**
      * A handler that displays a System Notification. To avoid repeatedly
      * nagging the user, this is done at most one time per application
-     * lifecycle.
+     * lifecycle. The system notification is shown by calling
+     * {@link ExternalAuthUtils#showErrorNotification(int, Context)}.
      * @see GooglePlayServicesUtil#showErrorNotification(int, Context)
      */
     public static final class SystemNotification extends UserRecoverableErrorHandler {
@@ -95,7 +95,7 @@ public abstract class UserRecoverableErrorHandler {
             if (!sNotificationShown.getAndSet(true)) {
                 return;
             }
-            GooglePlayServicesUtil.showErrorNotification(errorCode, context);
+            ExternalAuthUtils.getInstance().showErrorNotification(errorCode, context);
         }
     }
 
@@ -198,16 +198,16 @@ public abstract class UserRecoverableErrorHandler {
          * Invokes {@link #prepareToHandle(Activity, Context, int)}, gathers
          * the request code and cancel listener from {@link #getRequestCode()}
          * and {@link #getOnCancelListener()} respectively, and displays the
-         * dialog in a modal manner.
+         * dialog in a modal manner using
+         * {@link ExternalAuthUtils#showErrorDialog(int, Activity, int, OnCancelListener)}.
          * @param context the context in which the error was encountered
          * @param errorCode the error code from Google Play Services
          */
         @Override
         protected final void handle(final Context context, final int errorCode) {
             prepareToHandle(getActivity(), context, errorCode);
-            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(
+            ExternalAuthUtils.getInstance().showErrorDialog(
                     errorCode, getActivity(), getRequestCode(), getOnCancelListener());
-            dialog.show();
         }
     }
 }
