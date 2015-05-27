@@ -243,8 +243,6 @@ class Builder(CommandRunner):
         self.compile_options.extend(['--pnacl-allow-translate',
                                      '--pnacl-allow-native',
                                      '-arch', self.arch])
-        # Also use fast translation because we are still translating libc/libc++
-        self.link_options.append('-Wt,-O0')
 
     self.irt_linker = options.irt_linker
     self.Log('Compile options: %s' % self.compile_options)
