@@ -33,6 +33,7 @@
 #include "core/css/resolver/CSSPropertyPriority.h"
 #include "core/css/resolver/MatchedPropertiesCache.h"
 #include "core/css/resolver/StyleBuilder.h"
+#include "core/css/resolver/StyleResolverStats.h"
 #include "core/css/resolver/StyleResourceLoader.h"
 #include "core/style/AuthorStyleInfo.h"
 #include "core/style/CachedUAStyle.h"
@@ -58,7 +59,6 @@ class MediaQueryEvaluator;
 class RuleData;
 class ScopedStyleResolver;
 class StylePropertySet;
-class StyleResolverStats;
 class StyleRule;
 class StyleRuleKeyframe;
 class StyleRulePage;
@@ -173,11 +173,7 @@ public:
     void clearStyleSharingList();
 
     StyleResolverStats* stats() { return m_styleResolverStats.get(); }
-    StyleResolverStats* statsTotals() { return m_styleResolverStatsTotals.get(); }
-    enum StatsReportType { ReportDefaultStats, ReportSlowStats };
-    void enableStats(StatsReportType = ReportDefaultStats);
-    void disableStats();
-    void printStats();
+    void setStatsEnabled(bool);
 
     unsigned accessCount() const { return m_accessCount; }
     void didAccess() { ++m_accessCount; }
@@ -278,8 +274,6 @@ private:
     WillBeHeapVector<OwnPtrWillBeMember<StyleSharingList>, styleSharingMaxDepth> m_styleSharingLists;
 
     OwnPtr<StyleResolverStats> m_styleResolverStats;
-    OwnPtr<StyleResolverStats> m_styleResolverStatsTotals;
-    unsigned m_styleResolverStatsSequence;
 
     // Use only for Internals::updateStyleAndReturnAffectedElementCount.
     unsigned m_accessCount;
