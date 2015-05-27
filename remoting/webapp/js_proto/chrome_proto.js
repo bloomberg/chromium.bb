@@ -7,9 +7,6 @@
 // JSCompiler to verify the type-correctness of our code.
 
 /** @type {Object} */
-chrome.app = {};
-
-/** @type {Object} */
 chrome.app.runtime = {
   /** @type {chrome.Event} */
   onLaunched: null
@@ -40,52 +37,37 @@ chrome.app.window = {
 };
 
 
-/** @type {Object} */
-chrome.runtime = {
-  /** @type {Object} */
-  lastError: {
-    /** @type {string} */
-    message: ''
-  },
-  /** @type {string} */
-  id: '',
-  /** @return {{name: string, version: string, app: {background: Object}}} */
-  getManifest: function() {},
-  /** @param {function(Window):void} callback */
-  getBackgroundPage: function(callback) {},
-  /** @type {chrome.Event} */
-  onSuspend: null,
-  /** @type {chrome.Event} */
-  onSuspendCanceled: null,
-  /** @type {chrome.Event} */
-  onConnect: null,
-  /** @type {chrome.Event} */
-  onConnectExternal: null,
-  /** @type {chrome.Event} */
-  onMessage: null,
-  /** @type {chrome.Event} */
-  onMessageExternal: null
-};
+/** @type {string} */
+chrome.runtime.id;
+
+/** @return {{name: string, version: string, app: {background: Object}}} */
+chrome.runtime.getManifest = function() {};
+
+/** @param {function(Window):void} callback */
+chrome.runtime.getBackgroundPage = function(callback) {};
+
+/** @type {chrome.Event} */
+chrome.runtime.onSuspend;
+
+/** @type {chrome.Event} */
+chrome.runtime.onSuspendCanceled;
+
+/** @type {chrome.Event} */
+chrome.runtime.onConnect;
+
+/** @type {chrome.Event} */
+chrome.runtime.onConnectExternal;
+
+/** @type {chrome.Event} */
+chrome.runtime.onMessage;
+
+/** @type {chrome.Event} */
+chrome.runtime.onMessageExternal;
 
 /**
  * @type {?function(string):chrome.runtime.Port}
  */
 chrome.runtime.connectNative = function(name) {};
-
-/**
- * @param {{ name: string}} config
- * @return {chrome.runtime.Port}
- */
-chrome.runtime.connect = function(config) {};
-
-/**
- * @param {string?} extensionId
- * @param {*} message
- * @param {Object=} opt_options
- * @param {function(*)=} opt_callback
- */
-chrome.runtime.sendMessage = function(
-    extensionId, message, opt_options, opt_callback) {};
 
 /** @constructor */
 chrome.runtime.MessageSender = function(){

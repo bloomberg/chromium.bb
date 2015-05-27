@@ -108,12 +108,12 @@ importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
 /**
  * Finds files with content hashes matching the given hash.
  * @param {string} hash The content hash of the file to find.
- * @return {!Promise<Array<string>>} The URLs of the found files.  If there are
+ * @return {!Promise<!Array<string>>} The URLs of the found files.  If there are
  *     no matches, the list will be empty.
  * @private
  */
 importer.DriveDuplicateFinder.prototype.findByHash_ = function(hash) {
-  return /** @type {!Promise<Array<string>>} */ (
+  return /** @type {!Promise<!Array<string>>} */ (
       this.getDriveId_()
           .then(this.searchFilesByHash_.bind(this, hash)));
 };
@@ -142,7 +142,7 @@ importer.DriveDuplicateFinder.prototype.getDriveId_ = function() {
  * A promise-based wrapper for chrome.fileManagerPrivate.searchFilesByHashes.
  * @param {string} hash The content hash to search for.
  * @param {string} volumeId The volume to search.
- * @return {!Promise<Array<string>>} A list of file URLs.
+ * @return {!Promise<!Array<string>>} A list of file URLs.
  * @private
  */
 importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
@@ -155,7 +155,7 @@ importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
             volumeId,
             [hash],
             /**
-             * @param {!Object<string, Array<string>>} urls
+             * @param {!Object<string, !Array<string>>} urls
              * @this {importer.DriveDuplicateFinder}
              */
             function(urls) {

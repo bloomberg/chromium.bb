@@ -423,7 +423,7 @@ DeviceHandler.prototype.onMount_ = function(event) {
       .then(
           /**
            * @param {!VolumeInfo} volumeInfo
-           * @return {Promise<DirectoryEntry>} The root directory
+           * @return {!Promise<!DirectoryEntry>} The root directory
            *     of the volume.
            */
           function(volumeInfo) {

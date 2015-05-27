@@ -6,7 +6,7 @@
  * Persistent cache storing images in an indexed database on the hard disk.
  * @constructor
  */
-function Cache() {
+function ImageCache() {
   /**
    * IndexedDB database handle.
    * @type {IDBDatabase}
@@ -20,14 +20,14 @@ function Cache() {
  * @type {string}
  * @const
  */
-Cache.DB_NAME = 'image-loader';
+ImageCache.DB_NAME = 'image-loader';
 
 /**
  * Cache database version.
  * @type {number}
  * @const
  */
-Cache.DB_VERSION = 12;
+ImageCache.DB_VERSION = 12;
 
 /**
  * Memory limit for images data in bytes.
@@ -35,7 +35,7 @@ Cache.DB_VERSION = 12;
  * @const
  * @type {number}
  */
-Cache.MEMORY_LIMIT = 250 * 1024 * 1024;  // 250 MB.
+ImageCache.MEMORY_LIMIT = 250 * 1024 * 1024;  // 250 MB.
 
 /**
  * Minimal amount of memory freed per eviction. Used to limit number of
@@ -44,7 +44,7 @@ Cache.MEMORY_LIMIT = 250 * 1024 * 1024;  // 250 MB.
  * @const
  * @type {number}
  */
-Cache.EVICTION_CHUNK_SIZE = 50 * 1024 * 1024;  // 50 MB.
+ImageCache.EVICTION_CHUNK_SIZE = 50 * 1024 * 1024;  // 50 MB.
 
 /**
  * Creates a cache key.
@@ -53,7 +53,7 @@ Cache.EVICTION_CHUNK_SIZE = 50 * 1024 * 1024;  // 50 MB.
  * @return {?string} Cache key. It may be null if the cache does not support
  *     |request|. e.g. Data URI.
  */
-Cache.createKey = function(request) {
+ImageCache.createKey = function(request) {
   if (/^data:/i.test(request.url))
     return null;
   return JSON.stringify({
@@ -69,11 +69,12 @@ Cache.createKey = function(request) {
  * Initializes the cache database.
  * @param {function()} callback Completion callback.
  */
-Cache.prototype.initialize = function(callback) {
+ImageCache.prototype.initialize = function(callback) {
   // Establish a connection to the database or (re)create it if not available
   // or not up to date. After changing the database's schema, increment
-  // Cache.DB_VERSION to force database recreating.
-  var openRequest = window.indexedDB.open(Cache.DB_NAME, Cache.DB_VERSION);
+  // ImageCache.DB_VERSION to force database recreating.
+  var openRequest = window.indexedDB.open(
+      ImageCache.DB_NAME, ImageCache.DB_VERSION);
 
   openRequest.onsuccess = function(e) {
     this.db_ = e.target.result;
@@ -105,7 +106,7 @@ Cache.prototype.initialize = function(callback) {
  *     provided, then a new one is created.
  * @private
  */
-Cache.prototype.setCacheSize_ = function(size, opt_transaction) {
+ImageCache.prototype.setCacheSize_ = function(size, opt_transaction) {
   var transaction = opt_transaction ||
       this.db_.transaction(['settings'], 'readwrite');
   var settingsStore = transaction.objectStore('settings');
@@ -122,7 +123,7 @@ Cache.prototype.setCacheSize_ = function(size, opt_transaction) {
  *     provided, then a new one is created.
  * @private
  */
-Cache.prototype.fetchCacheSize_ = function(
+ImageCache.prototype.fetchCacheSize_ = function(
     onSuccess, onFailure, opt_transaction) {
   var transaction = opt_transaction ||
       this.db_.transaction(['settings', 'metadata', 'data'], 'readwrite');
@@ -153,26 +154,26 @@ Cache.prototype.fetchCacheSize_ = function(
  *     provided, then a new one is created.
  * @private
  */
-Cache.prototype.evictCache_ = function(
+ImageCache.prototype.evictCache_ = function(
     size, onSuccess, onFailure, opt_transaction) {
   var transaction = opt_transaction ||
       this.db_.transaction(['settings', 'metadata', 'data'], 'readwrite');
 
   // Check if the requested size is smaller than the cache size.
-  if (size > Cache.MEMORY_LIMIT) {
+  if (size > ImageCache.MEMORY_LIMIT) {
     onFailure();
     return;
   }
 
   var onCacheSize = function(cacheSize) {
-    if (size < Cache.MEMORY_LIMIT - cacheSize) {
+    if (size < ImageCache.MEMORY_LIMIT - cacheSize) {
       // Enough space, no need to evict.
       this.setCacheSize_(cacheSize + size, transaction);
       onSuccess();
       return;
     }
 
-    var bytesToEvict = Math.max(size, Cache.EVICTION_CHUNK_SIZE);
+    var bytesToEvict = Math.max(size, ImageCache.EVICTION_CHUNK_SIZE);
 
     // Fetch all metadata.
     var metadataEntries = [];
@@ -220,7 +221,7 @@ Cache.prototype.evictCache_ = function(
  * @param {number} timestamp Last modification timestamp. Used to detect
  *     if the cache entry becomes out of date.
  */
-Cache.prototype.saveImage = function(key, data, width, height, timestamp) {
+ImageCache.prototype.saveImage = function(key, data, width, height, timestamp) {
   if (!this.db_) {
     console.warn('Cache database not available.');
     return;
@@ -264,7 +265,8 @@ Cache.prototype.saveImage = function(key, data, width, height, timestamp) {
  *     the image's data, width, height.
  * @param {function()} onFailure Failure callback.
  */
-Cache.prototype.loadImage = function(key, timestamp, onSuccess, onFailure) {
+ImageCache.prototype.loadImage = function(
+    key, timestamp, onSuccess, onFailure) {
   if (!this.db_) {
     console.warn('Cache database not available.');
     onFailure();
@@ -348,7 +350,7 @@ Cache.prototype.loadImage = function(key, timestamp, onSuccess, onFailure) {
  * @param {IDBTransaction=} opt_transaction Transaction to be reused. If not
  *     provided, then a new one is created.
  */
-Cache.prototype.removeImage = function(
+ImageCache.prototype.removeImage = function(
     key, opt_onSuccess, opt_onFailure, opt_transaction) {
   if (!this.db_) {
     console.warn('Cache database not available.');

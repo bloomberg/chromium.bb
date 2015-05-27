@@ -20,13 +20,13 @@ var LoadImageRequest;
  * returns the image using the callback.
  *
  * @param {string} id Request ID.
- * @param {Cache} cache Cache object.
+ * @param {ImageCache} cache Cache object.
  * @param {!PiexLoader} piexLoader Piex loader for RAW file.
  * @param {LoadImageRequest} request Request message as a hash array.
  * @param {function(Object)} callback Callback used to send the response.
  * @constructor
  */
-function Request(id, cache, piexLoader, request, callback) {
+function ImageRequest(id, cache, piexLoader, request, callback) {
   /**
    * @type {string}
    * @private
@@ -34,7 +34,7 @@ function Request(id, cache, piexLoader, request, callback) {
   this.id_ = id;
 
   /**
-   * @type {Cache}
+   * @type {ImageCache}
    * @private
    */
   this.cache_ = cache;
@@ -105,7 +105,7 @@ function Request(id, cache, piexLoader, request, callback) {
  * Returns ID of the request.
  * @return {string} Request ID.
  */
-Request.prototype.getId = function() {
+ImageRequest.prototype.getId = function() {
   return this.id_;
 };
 
@@ -115,7 +115,7 @@ Request.prototype.getId = function() {
  *
  * @return {number} Priority.
  */
-Request.prototype.getPriority = function() {
+ImageRequest.prototype.getPriority = function() {
   return (this.request_.priority !== undefined) ? this.request_.priority : 2;
 };
 
@@ -125,7 +125,8 @@ Request.prototype.getPriority = function() {
  * @param {function()} onSuccess Success callback.
  * @param {function()} onFailure Failure callback.
  */
-Request.prototype.loadFromCacheAndProcess = function(onSuccess, onFailure) {
+ImageRequest.prototype.loadFromCacheAndProcess = function(
+    onSuccess, onFailure) {
   this.loadFromCache_(
       function(data, width, height) {  // Found in cache.
         this.sendImageData_(data, width, height);
@@ -138,7 +139,7 @@ Request.prototype.loadFromCacheAndProcess = function(onSuccess, onFailure) {
  * Tries to download the image, resizes and sends the response.
  * @param {function()} callback Completion callback.
  */
-Request.prototype.downloadAndProcess = function(callback) {
+ImageRequest.prototype.downloadAndProcess = function(callback) {
   if (this.downloadCallback_)
     throw new Error('Downloading already started.');
 
@@ -154,8 +155,8 @@ Request.prototype.downloadAndProcess = function(callback) {
  * @param {function()} onFailure Failure callback.
  * @private
  */
-Request.prototype.loadFromCache_ = function(onSuccess, onFailure) {
-  var cacheKey = Cache.createKey(this.request_);
+ImageRequest.prototype.loadFromCache_ = function(onSuccess, onFailure) {
+  var cacheKey = ImageCache.createKey(this.request_);
 
   if (!cacheKey) {
     // Cache key is not provided for the request.
@@ -191,13 +192,13 @@ Request.prototype.loadFromCache_ = function(onSuccess, onFailure) {
  * @param {number} height Image height.
  * @private
  */
-Request.prototype.saveToCache_ = function(data, width, height) {
+ImageRequest.prototype.saveToCache_ = function(data, width, height) {
   if (!this.request_.cache || !this.request_.timestamp) {
     // Persistent cache is available only when a timestamp is provided.
     return;
   }
 
-  var cacheKey = Cache.createKey(this.request_);
+  var cacheKey = ImageCache.createKey(this.request_);
   if (!cacheKey) {
     // Cache key is not provided for the request.
     return;
@@ -217,7 +218,7 @@ Request.prototype.saveToCache_ = function(data, width, height) {
  * @param {function()} onFailure Failure callback.
  * @private
  */
-Request.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
+ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
   this.image_.onload = function() {
     URL.revokeObjectURL(this.image_.src);
     onSuccess();
@@ -427,7 +428,7 @@ AuthorizedXHR.load_ = function(token, url, onSuccess, onFailure) {
  * @param {boolean} imageChanged Whether the image has been changed.
  * @private
  */
-Request.prototype.sendImage_ = function(imageChanged) {
+ImageRequest.prototype.sendImage_ = function(imageChanged) {
   var imageData;
   var width;
   var height;
@@ -468,7 +469,7 @@ Request.prototype.sendImage_ = function(imageChanged) {
  * @param {number} height Height.
  * @private
  */
-Request.prototype.sendImageData_ = function(data, width, height) {
+ImageRequest.prototype.sendImageData_ = function(data, width, height) {
   this.sendResponse_({
     status: 'success', data: data, width: width, height: height,
     taskId: this.request_.taskId
@@ -480,7 +481,7 @@ Request.prototype.sendImageData_ = function(data, width, height) {
  * and finalizes the request process.
  * @private
  */
-Request.prototype.onImageLoad_ = function() {
+ImageRequest.prototype.onImageLoad_ = function() {
   // Perform processing if the url is not a data url, or if there are some
   // operations requested.
   if (!this.request_.url.match(/^data/) ||
@@ -503,7 +504,7 @@ Request.prototype.onImageLoad_ = function() {
  * finalizes the request process.
  * @private
  */
-Request.prototype.onImageError_ = function() {
+ImageRequest.prototype.onImageError_ = function() {
   this.sendResponse_(
       {status: 'error', taskId: this.request_.taskId});
   this.cleanup_();
@@ -513,7 +514,7 @@ Request.prototype.onImageError_ = function() {
 /**
  * Cancels the request.
  */
-Request.prototype.cancel = function() {
+ImageRequest.prototype.cancel = function() {
   this.cleanup_();
 
   // If downloading has started, then call the callback.
@@ -525,7 +526,7 @@ Request.prototype.cancel = function() {
  * Cleans up memory used by this request.
  * @private
  */
-Request.prototype.cleanup_ = function() {
+ImageRequest.prototype.cleanup_ = function() {
   this.image_.onerror = function() {};
   this.image_.onload = function() {};
 

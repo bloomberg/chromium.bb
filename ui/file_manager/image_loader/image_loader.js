@@ -9,10 +9,10 @@
 function ImageLoader() {
   /**
    * Persistent cache object.
-   * @type {Cache}
+   * @type {ImageCache}
    * @private
    */
-  this.cache_ = new Cache();
+  this.cache_ = new ImageCache();
 
   /**
    * Manages pending requests and runs them in order of priorities.
@@ -105,7 +105,7 @@ ImageLoader.prototype.onMessage_ = function(senderId, request, callback) {
     return false;  // No callback calls.
   } else {
     // Create a request task and add it to the scheduler (queue).
-    var requestTask = new Request(
+    var requestTask = new ImageRequest(
         requestId, this.cache_, this.piexLoader_, request, callback);
     this.scheduler_.add(requestTask);
     return true;  // Request will call the callback.

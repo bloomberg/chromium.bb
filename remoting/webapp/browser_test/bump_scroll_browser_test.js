@@ -119,7 +119,7 @@ browserTest.Bump_Scroll.prototype.run = function(data) {
   ).then(
     function(value) {
       cleanup();
-      return browserTest.pass(value);
+      return browserTest.pass();
     },
     function(error) {
       cleanup();

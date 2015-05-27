@@ -14,21 +14,21 @@ function Scheduler() {
    * However, if they have to be downloaded, then these requests are moved
    * to pendingRequests_.
    *
-   * @type {Array<Request>}
+   * @type {Array<ImageRequest>}
    * @private
    */
   this.newRequests_ = [];
 
   /**
    * List of pending requests for images to be downloaded.
-   * @type {Array<Request>}
+   * @type {Array<ImageRequest>}
    * @private
    */
   this.pendingRequests_ = [];
 
   /**
    * List of requests being processed.
-   * @type {Array<Request>}
+   * @type {Array<ImageRequest>}
    * @private
    */
   this.activeRequests_ = [];
@@ -60,7 +60,7 @@ Scheduler.MAXIMUM_IN_PARALLEL = 5;
  * with higher priorities are finished. If the result is cached, then it is
  * processed immediately once the scheduler is started.
  *
- * @param {Request} request Request object.
+ * @param {ImageRequest} request Request object.
  */
 Scheduler.prototype.add = function(request) {
   if (!this.started_) {
@@ -149,7 +149,7 @@ Scheduler.prototype.continue_ = function() {
 /**
  * Handles finished requests.
  *
- * @param {Request} request Finished request.
+ * @param {ImageRequest} request Finished request.
  * @private
  */
 Scheduler.prototype.finish_ = function(request) {
