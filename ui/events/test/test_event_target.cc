@@ -23,7 +23,7 @@ void TestEventTarget::AddChild(scoped_ptr<TestEventTarget> child) {
   if (child->parent()) {
     AddChild(child->parent()->RemoveChild(child.release()));
   } else {
-    children_.push_back(child.release());
+    children_.push_back(child.Pass());
   }
   child_r->set_parent(this);
 }

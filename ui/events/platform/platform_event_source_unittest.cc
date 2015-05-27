@@ -601,9 +601,9 @@ class DestroyedNestedOverriddenDispatcherQuitsNestedLoopIteration
                   TestPlatformEventDispatcher* dispatcher) {
     ScopedVector<PlatformEvent> events;
     scoped_ptr<PlatformEvent> event(CreatePlatformEvent());
-    events.push_back(event.release());
+    events.push_back(event.Pass());
     event = CreatePlatformEvent();
-    events.push_back(event.release());
+    events.push_back(event.Pass());
 
     // Attempt to dispatch a couple of events. Dispatching the first event will
     // have terminated the ScopedEventDispatcher object, which will terminate

@@ -261,7 +261,7 @@ void MotionEventBuffer::OnMotionEvent(const MotionEvent& event) {
 
   scoped_ptr<MotionEventGeneric> clone = MotionEventGeneric::CloneEvent(event);
   if (buffered_events_.empty()) {
-    buffered_events_.push_back(clone.release());
+    buffered_events_.push_back(clone.Pass());
     client_->SetNeedsFlush();
     return;
   }
@@ -272,7 +272,7 @@ void MotionEventBuffer::OnMotionEvent(const MotionEvent& event) {
     FlushWithoutResampling(buffered_events_.Pass());
   }
 
-  buffered_events_.push_back(clone.release());
+  buffered_events_.push_back(clone.Pass());
   // No need to request another flush as the first event will have requested it.
 }
 

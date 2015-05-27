@@ -217,7 +217,7 @@ void MotionEventGeneric::PushHistoricalEvent(scoped_ptr<MotionEvent> event) {
   DCHECK_EQ(event->GetAction(), GetAction());
   DCHECK_LE(event->GetEventTime().ToInternalValue(),
             GetEventTime().ToInternalValue());
-  historical_events_.push_back(event.release());
+  historical_events_.push_back(event.Pass());
 }
 
 MotionEventGeneric::MotionEventGeneric()

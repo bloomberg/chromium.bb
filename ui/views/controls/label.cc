@@ -451,7 +451,7 @@ void Label::MaybeBuildRenderTextLines() {
     render_text->SetDisplayRect(rect);
     render_text->SetMultiline(multi_line());
     render_text->SetWordWrapBehavior(render_text_->word_wrap_behavior());
-    lines_.push_back(render_text.release());
+    lines_.push_back(render_text.Pass());
   } else {
     std::vector<base::string16> lines = GetLinesForWidth(rect.width());
     if (lines.size() > 1)
@@ -462,7 +462,7 @@ void Label::MaybeBuildRenderTextLines() {
       scoped_ptr<gfx::RenderText> line =
           CreateRenderText(lines[i], alignment, directionality, elide_behavior);
       line->SetDisplayRect(rect);
-      lines_.push_back(line.release());
+      lines_.push_back(line.Pass());
       rect.set_y(rect.y() + rect.height());
     }
     // Append the remaining text to the last visible line.

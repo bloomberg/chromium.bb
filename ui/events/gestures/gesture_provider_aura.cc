@@ -76,7 +76,7 @@ void GestureProviderAura::OnGestureEvent(
     client_->OnGestureEvent(event.get());
   } else {
     // Memory managed by ScopedVector pending_gestures_.
-    pending_gestures_.push_back(event.release());
+    pending_gestures_.push_back(event.Pass());
   }
 }
 
