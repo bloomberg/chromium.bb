@@ -149,28 +149,6 @@
             "smoke_suite"
         ]
     },
-    "alex-webrtc-chrome-pfq-informational": {
-        "boards": [
-            "x86-alex"
-        ],
-        "build_type": "chrome",
-        "chrome_rev": "tot",
-        "chromeos_official": true,
-        "chroot_replace": true,
-        "description": "Informational Chrome Uprev & Build (internal)",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "name": "alex-webrtc-chrome-pfq-informational",
-        "overlays": "both",
-        "uprev": false,
-        "use_lkgm": true,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
-    },
     "amd64-generic-asan": {
         "active_waterfall": "chromiumos",
         "boards": [
@@ -620,22 +598,6 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
-    },
-    "amd64-webrtc-chromium-pfq-informational": {
-        "archive_build_debug": true,
-        "boards": [
-            "amd64-generic"
-        ],
-        "build_type": "chrome",
-        "chrome_rev": "tot",
-        "chroot_replace": true,
-        "description": "Informational Chromium Uprev & Build (public)",
-        "name": "amd64-webrtc-chromium-pfq-informational",
-        "uprev": false,
-        "use_lkgm": true,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -14012,44 +13974,6 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
-    },
-    "daisy-webrtc-chrome-pfq-informational": {
-        "boards": [
-            "daisy"
-        ],
-        "build_type": "chrome",
-        "chrome_rev": "tot",
-        "chromeos_official": true,
-        "chroot_replace": true,
-        "description": "Informational Chrome Uprev & Build (internal)",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "name": "daisy-webrtc-chrome-pfq-informational",
-        "overlays": "both",
-        "tests_supported": false,
-        "unittests": false,
-        "uprev": false,
-        "use_lkgm": true,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "daisy-webrtc-chromium-pfq-informational": {
-        "archive_build_debug": true,
-        "boards": [
-            "daisy"
-        ],
-        "build_type": "chrome",
-        "chrome_rev": "tot",
-        "chroot_replace": true,
-        "description": "Informational Chromium Uprev & Build (public)",
-        "name": "daisy-webrtc-chromium-pfq-informational",
-        "tests_supported": false,
-        "unittests": false,
-        "uprev": false,
-        "use_lkgm": true,
         "vm_tests": []
     },
     "daisy_freon-chrome-pfq": {
@@ -28830,28 +28754,6 @@
         "use_lkgm": true,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
-    },
-    "lumpy-webrtc-chrome-pfq-informational": {
-        "boards": [
-            "lumpy"
-        ],
-        "build_type": "chrome",
-        "chrome_rev": "tot",
-        "chromeos_official": true,
-        "chroot_replace": true,
-        "description": "Informational Chrome Uprev & Build (internal)",
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "name": "lumpy-webrtc-chrome-pfq-informational",
-        "overlays": "both",
-        "uprev": false,
-        "use_lkgm": true,
-        "useflags": [
-            "chrome_internal"
         ],
         "vm_tests": [
             "smoke_suite"
@@ -77374,22 +77276,6 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
-    },
-    "x86-webrtc-chromium-pfq-informational": {
-        "archive_build_debug": true,
-        "boards": [
-            "x86-generic"
-        ],
-        "build_type": "chrome",
-        "chrome_rev": "tot",
-        "chroot_replace": true,
-        "description": "Informational Chromium Uprev & Build (public)",
-        "name": "x86-webrtc-chromium-pfq-informational",
-        "uprev": false,
-        "use_lkgm": true,
         "vm_tests": [
             "smoke_suite"
         ]

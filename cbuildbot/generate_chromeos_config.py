@@ -1665,29 +1665,6 @@ _CONFIG.AddConfig(chrome_info, 'lumpy-tot-chrome-pfq-informational',
   boards=['lumpy'],
 )
 
-# WebRTC configurations.
-_CONFIG.AddConfig(chrome_info, 'alex-webrtc-chrome-pfq-informational',
-  boards=['x86-alex'],
-)
-_CONFIG.AddConfig(chrome_info, 'lumpy-webrtc-chrome-pfq-informational',
-  boards=['lumpy'],
-)
-_CONFIG.AddConfig(chrome_info, 'daisy-webrtc-chrome-pfq-informational',
-  non_testable_builder,
-  boards=['daisy'],
-)
-_CONFIG.AddConfig(chromium_info_x86, 'x86-webrtc-chromium-pfq-informational',
-  archive_build_debug=True,
-)
-_CONFIG.AddConfig(chromium_info_amd64,
-                   'amd64-webrtc-chromium-pfq-informational',
-  archive_build_debug=True,
-)
-_CONFIG.AddConfig(chromium_info_daisy,
-                   'daisy-webrtc-chromium-pfq-informational',
-  archive_build_debug=True,
-)
-
 
 #
 # Internal Builds
