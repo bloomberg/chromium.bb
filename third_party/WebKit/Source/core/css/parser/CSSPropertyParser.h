@@ -103,7 +103,7 @@ private:
 
     bool parseShorthand(CSSPropertyID, const StylePropertyShorthand&, bool important);
     bool parse4Values(CSSPropertyID, const CSSPropertyID* properties, bool important);
-    bool parseContent(CSSPropertyID, bool important);
+    PassRefPtrWillBeRawPtr<CSSValueList> parseContent();
     PassRefPtrWillBeRawPtr<CSSValue> parseQuotes();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseAttr(CSSParserValueList* args);

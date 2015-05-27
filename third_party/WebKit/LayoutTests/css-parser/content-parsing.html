@@ -1,0 +1,14 @@
+<!doctype html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/property-parsing-test.js"></script>
+<script>
+assert_valid_value("content", '"a"');
+assert_valid_value("content", "open-quote");
+assert_invalid_value("content", "not valid content");
+assert_invalid_value("content", "open-quote invalid content");
+assert_invalid_value("content", '"a" still not valid');
+assert_invalid_value("content", 'bla &@#$&^');
+assert_invalid_value("content", "'foo' *(&^");
+assert_invalid_value("content", "open-quote 1+2+3=6");
+</script>

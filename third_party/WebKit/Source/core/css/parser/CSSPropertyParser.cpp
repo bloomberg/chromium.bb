@@ -472,8 +472,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 
     case CSSPropertyContent:              // [ <string> | <uri> | <counter> | attr(X) | open-quote |
         // close-quote | no-open-quote | no-close-quote ]+ | inherit
-        return parseContent(propId, important);
-
+        parsedValue = parseContent();
+        break;
     case CSSPropertyClip:                 // <shape> | auto | inherit
         if (id == CSSValueAuto)
             validPrimitive = true;
@@ -2107,7 +2107,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseQuotes()
 // [ <string> | <uri> | <counter> | attr(X) | open-quote | close-quote | no-open-quote | no-close-quote ]+ | inherit
 // in CSS 2.1 this got somewhat reduced:
 // [ <string> | attr(X) | open-quote | close-quote | no-open-quote | no-close-quote ]+ | inherit
-bool CSSPropertyParser::parseContent(CSSPropertyID propId, bool important)
+PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseContent()
 {
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
 
@@ -2120,28 +2120,19 @@ bool CSSPropertyParser::parseContent(CSSPropertyID propId, bool important)
             // attr(X) | counter(X [,Y]) | counters(X, Y, [,Z]) | -webkit-gradient(...)
             CSSParserValueList* args = val->function->args.get();
             if (!args)
-                return false;
+                return nullptr;
             if (val->function->id == CSSValueAttr) {
                 parsedValue = parseAttr(args);
-                if (!parsedValue)
-                    return false;
             } else if (val->function->id == CSSValueCounter) {
                 parsedValue = parseCounterContent(args, false);
-                if (!parsedValue)
-                    return false;
             } else if (val->function->id == CSSValueCounters) {
                 parsedValue = parseCounterContent(args, true);
-                if (!parsedValue)
-                    return false;
             } else if (val->function->id == CSSValueWebkitImageSet) {
                 parsedValue = parseImageSet(m_valueList);
-                if (!parsedValue)
-                    return false;
             } else if (isGeneratedImageValue(val)) {
                 if (!parseGeneratedImage(m_valueList, parsedValue))
-                    return false;
-            } else
-                return false;
+                    return nullptr;
+            }
         } else if (val->unit == CSSPrimitiveValue::CSS_IDENT) {
             switch (val->id) {
             case CSSValueOpenQuote:
@@ -2158,18 +2149,12 @@ bool CSSPropertyParser::parseContent(CSSPropertyID propId, bool important)
             parsedValue = createPrimitiveStringValue(val);
         }
         if (!parsedValue)
-            break;
+            return nullptr;
         values->append(parsedValue.release());
         m_valueList->next();
     }
 
-    if (values->length()) {
-        addProperty(propId, values.release(), important);
-        m_valueList->next();
-        return true;
-    }
-
-    return false;
+    return values.release();
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAttr(CSSParserValueList* args)
