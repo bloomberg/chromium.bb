@@ -142,8 +142,8 @@ private:
     bool fillGlyphBuffer(GlyphBuffer*);
     float fillGlyphBufferFromHarfBuzzRun(GlyphBuffer*, HarfBuzzRun*, float initialAdvance);
     float fillGlyphBufferForTextEmphasis(GlyphBuffer*, HarfBuzzRun*, float initialAdvance);
-    void setGlyphPositionsForHarfBuzzRun(HarfBuzzRun*, hb_buffer_t*, HarfBuzzRun* previousRun);
-    float adjustSpacing(HarfBuzzRun*, size_t glyphIndex, unsigned currentCharacterIndex, HarfBuzzRun* previousRun, float& offsetX, float& totalAdvance);
+    void setGlyphPositionsForHarfBuzzRun(HarfBuzzRun*, hb_buffer_t*);
+    float adjustSpacing(HarfBuzzRun*, size_t glyphIndex, unsigned currentCharacterIndex, float& offsetX, float& totalAdvance);
     void addHarfBuzzRun(unsigned startCharacter, unsigned endCharacter, const SimpleFontData*, UScriptCode);
 
     OwnPtr<UChar[]> m_normalizedBuffer;
