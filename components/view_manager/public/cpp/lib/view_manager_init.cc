@@ -55,6 +55,7 @@ void ViewManagerInit::OnCreate(InterfaceRequest<ViewManagerClient> request) {
   const bool delete_on_error = false;
   ViewManagerClientImpl* client = new ViewManagerClientImpl(
       delegate_, app_->shell(), request.Pass(), delete_on_error);
+  service_.set_error_handler(nullptr);
   client->SetViewManagerService(service_.Pass());
 }
 
