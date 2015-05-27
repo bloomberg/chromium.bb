@@ -5,13 +5,11 @@ var promise_tests = Promise.resolve();
 function sequential_promise_test(func, name) {
   var test = async_test(name);
   promise_tests = promise_tests.then(function() {
-    return Promise.resolve(test.step(func, test, test))
-      .then(function() {
-        test.done();
-      })
-      .catch(test.step_func(
-        function(value) {
-          throw value;
-        }));
-  });
+    return test.step(func, test, test);
+  }).then(function() {
+    test.done();
+  }).catch(test.step_func(function(value) {
+    // step_func catches the error again so the error doesn't propagate.
+    throw value;
+  }));
 }

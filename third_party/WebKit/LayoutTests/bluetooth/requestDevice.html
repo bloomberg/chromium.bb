@@ -6,22 +6,19 @@
 test(function(t) { assert_exists(window, "testRunner"); t.done(); },
      "window.testRunner is required for the following tests.");
 
-sequential_promise_test(function(t) {
+sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('EmptyAdapter');
-  return navigator.bluetooth.requestDevice()
-    .then(function() {
-      assert_unreached('Expected no devices but one was returned.');
-    },
-      function(e) {
-        assert_equals(e.name, 'NotFoundError');
-      });
+  return navigator.bluetooth.requestDevice().then(function() {
+    assert_unreached('Expected no devices but one was returned.');
+  }, function(e) {
+    assert_equals(e.name, 'NotFoundError');
+  });
 }, 'Reject with NotFoundError.');
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
-  return navigator.bluetooth.requestDevice()
-    .then(function(device) {
-      assert_equals(device.constructor.name, "BluetoothDevice");
-    });
+  return navigator.bluetooth.requestDevice().then(function(device) {
+    assert_equals(device.constructor.name, "BluetoothDevice");
+  });
 }, 'Mock will resolve.');
 </script>

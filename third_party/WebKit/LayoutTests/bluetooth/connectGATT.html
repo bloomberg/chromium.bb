@@ -6,41 +6,35 @@
 test(function(t) { assert_exists(window, "testRunner"); t.done(); },
      "window.testRunner is required for the following tests.");
 
-sequential_promise_test(function(t) {
-  testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(
-    function(device) {
-      testRunner.setBluetoothMockDataSet('EmptyAdapter');
-      return device.connectGATT().then(
-        function() {
-          assert_unreached('Should return error if device not in adapter.');
-        },
-        function(e) {
-          assert_equals(e.name, 'NetworkError');
-        })});
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return navigator.bluetooth.requestDevice().then(function(device) {
+    testRunner.setBluetoothMockDataSet('EmptyAdapter');
+    return device.connectGATT().then(function() {
+      assert_unreached('Should return error if device not in adapter.');
+    }, function(e) {
+      assert_equals(e.name, 'NetworkError');
+    });
+  });
 }, 'Device goes out of range. Reject with NetworkError.');
 
-sequential_promise_test(function(t) {
+sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('UnconnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(
-    function(device) {
-      return device.connectGATT().then(
-        function() {
-          assert_unreached(
-            'Should return error since device failed to connect');
-        },
-        function(e) {
-          assert_equals(e.name, 'NetworkError');
-        })});
+  return navigator.bluetooth.requestDevice().then(function(device) {
+    return device.connectGATT().then(function() {
+      assert_unreached('Should return error since device failed to connect.');
+    }, function(e) {
+      assert_equals(e.name, 'NetworkError');
+    });
+  });
 }, 'Device failed to connect. Reject with NetworkError.');
 
-sequential_promise_test(function(t) {
+sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice().then(
-    function(device) {
-      return device.connectGATT().then(
-        function(gattConnection) {
-          assert_true(gattConnection.connected);
-        })});
+  return navigator.bluetooth.requestDevice().then(function(device) {
+    return device.connectGATT();
+  }).then(function(gattConnection) {
+    assert_true(gattConnection.connected);
+  });
 }, 'Device will connect');
 </script>
