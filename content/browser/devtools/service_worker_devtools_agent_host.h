@@ -25,16 +25,15 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
 
   void UnregisterWorker();
 
-  // DevToolsAgentHost override.
+  // DevToolsAgentHost overrides.
   Type GetType() override;
   std::string GetTitle() override;
   GURL GetURL() override;
   bool Activate() override;
   bool Close() override;
 
-  // IPCDevToolsAgentHost override.
-  void OnClientAttached(bool reattached) override;
-  void OnClientDetached() override;
+  // WorkerDevToolsAgentHost overrides.
+  void OnAttachedStateChanged(bool attached) override;
 
   bool Matches(const ServiceWorkerIdentifier& other);
 

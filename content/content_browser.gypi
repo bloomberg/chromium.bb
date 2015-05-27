@@ -548,8 +548,6 @@
       'browser/devtools/devtools_netlog_observer.h',
       'browser/devtools/forwarding_agent_host.cc',
       'browser/devtools/forwarding_agent_host.h',
-      'browser/devtools/ipc_devtools_agent_host.cc',
-      'browser/devtools/ipc_devtools_agent_host.h',
       'browser/devtools/protocol/color_picker.cc',
       'browser/devtools/protocol/color_picker.h',
       'browser/devtools/protocol/devtools_protocol_client.cc',

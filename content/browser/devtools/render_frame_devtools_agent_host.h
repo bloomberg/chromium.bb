@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/devtools/ipc_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -42,7 +42,7 @@ namespace tracing { class TracingHandler; }
 }
 
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
-    : public IPCDevToolsAgentHost,
+    : public DevToolsAgentHostImpl,
       private WebContentsObserver {
  public:
   static void AddAllAgentHosts(DevToolsAgentHost::List* result);
@@ -76,10 +76,11 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       DevToolsAgentHost::List* result,
       RenderFrameHost* host);
 
-  // IPCDevToolsAgentHost overrides.
-  void SendMessageToAgent(IPC::Message* msg) override;
-  void OnClientAttached(bool reattached) override;
-  void OnClientDetached() override;
+  // DevToolsAgentHostImpl overrides.
+  void Attach() override;
+  void Detach() override;
+  void InspectElement(int x, int y) override;
+  bool DispatchProtocolMessage(const std::string& message) override;
 
   // WebContentsObserver overrides.
   void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
@@ -97,6 +98,9 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override;
+
+  void OnClientAttached();
+  void OnClientDetached();
 
   void DisconnectRenderFrameHost();
   void ConnectRenderFrameHost(RenderFrameHost* rvh);

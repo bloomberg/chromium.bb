@@ -4,7 +4,6 @@
 
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 
-#include "content/browser/devtools/ipc_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"

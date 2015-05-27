@@ -82,7 +82,8 @@ DevToolsAgentHostImpl::DevToolsAgentHostImpl()
                      base::Unretained(this)))),
       id_(base::GenerateGUID()),
       client_(NULL),
-      handle_all_commands_(false) {
+      handle_all_commands_(false),
+      message_buffer_size_(0) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   g_instances.Get()[id_] = this;
 }
@@ -168,6 +169,35 @@ void DevToolsAgentHostImpl::SendMessageToClient(const std::string& message) {
   if (!client_)
     return;
   client_->DispatchProtocolMessage(this, message);
+}
+
+void DevToolsAgentHostImpl::ProcessChunkedMessageFromAgent(
+    const DevToolsMessageChunk& chunk) {
+  if (chunk.is_last && !chunk.post_state.empty())
+    state_cookie_ = chunk.post_state;
+
+  if (chunk.is_first && chunk.is_last) {
+    CHECK(message_buffer_size_ == 0);
+    SendMessageToClient(chunk.data);
+    return;
+  }
+
+  if (chunk.is_first) {
+    message_buffer_ = std::string();
+    message_buffer_.reserve(chunk.message_size);
+    message_buffer_size_ = chunk.message_size;
+  }
+
+  CHECK(message_buffer_.size() + chunk.data.size() <=
+      message_buffer_size_);
+  message_buffer_.append(chunk.data);
+
+  if (chunk.is_last) {
+    CHECK(message_buffer_.size() == message_buffer_size_);
+    SendMessageToClient(message_buffer_);
+    message_buffer_ = std::string();
+    message_buffer_size_ = 0;
+  }
 }
 
 // static

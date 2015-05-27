@@ -92,22 +92,12 @@ void ServiceWorkerDevToolsAgentHost::UnregisterWorker() {
                   service_worker_->version_id()));
 }
 
-void ServiceWorkerDevToolsAgentHost::OnClientAttached(bool reattached) {
-  WorkerDevToolsAgentHost::OnClientAttached(reattached);
+void ServiceWorkerDevToolsAgentHost::OnAttachedStateChanged(bool attached) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&SetDevToolsAttachedOnIO,
                   service_worker_->context_weak(),
                   service_worker_->version_id(),
-                  true));
-}
-
-void ServiceWorkerDevToolsAgentHost::OnClientDetached() {
-  WorkerDevToolsAgentHost::OnClientDetached();
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetDevToolsAttachedOnIO,
-                  service_worker_->context_weak(),
-                  service_worker_->version_id(),
-                  false));
+                  attached));
 }
 
 bool ServiceWorkerDevToolsAgentHost::Matches(

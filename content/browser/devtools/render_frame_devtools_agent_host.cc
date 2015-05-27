@@ -177,14 +177,42 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
   return web_contents();
 }
 
-void RenderFrameDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
-  if (!render_frame_host_)
-    return;
-  msg->set_routing_id(render_frame_host_->GetRoutingID());
-  render_frame_host_->Send(msg);
+void RenderFrameDevToolsAgentHost::Attach() {
+  if (render_frame_host_) {
+    render_frame_host_->Send(new DevToolsAgentMsg_Attach(
+        render_frame_host_->GetRoutingID(), GetId()));
+  }
+  OnClientAttached();
 }
 
-void RenderFrameDevToolsAgentHost::OnClientAttached(bool reattached) {
+void RenderFrameDevToolsAgentHost::Detach() {
+  if (render_frame_host_) {
+    render_frame_host_->Send(new DevToolsAgentMsg_Detach(
+        render_frame_host_->GetRoutingID()));
+  }
+  OnClientDetached();
+}
+
+bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
+    const std::string& message) {
+  if (DevToolsAgentHostImpl::DispatchProtocolMessage(message))
+    return true;
+
+  if (render_frame_host_) {
+    render_frame_host_->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
+        render_frame_host_->GetRoutingID(), message));
+  }
+  return true;
+}
+
+void RenderFrameDevToolsAgentHost::InspectElement(int x, int y) {
+  if (render_frame_host_) {
+    render_frame_host_->Send(new DevToolsAgentMsg_InspectElement(
+        render_frame_host_->GetRoutingID(), GetId(), x, y));
+  }
+}
+
+void RenderFrameDevToolsAgentHost::OnClientAttached() {
   if (!render_frame_host_)
     return;
 
@@ -476,8 +504,11 @@ bool RenderFrameDevToolsAgentHost::Close() {
 void RenderFrameDevToolsAgentHost::ConnectRenderFrameHost(
     RenderFrameHost* rfh) {
   SetRenderFrameHost(rfh);
-  if (IsAttached())
-    Reattach();
+  if (IsAttached() && render_frame_host_) {
+    render_frame_host_->Send(new DevToolsAgentMsg_Reattach(
+        render_frame_host_->GetRoutingID(), GetId(), state_cookie_));
+    OnClientAttached();
+  }
 }
 
 void RenderFrameDevToolsAgentHost::DisconnectRenderFrameHost() {
