@@ -248,11 +248,11 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertTrue(pcdf.isResumed());
         assertNotNull(confirmPassphrase.getError());
 
-        // Error if text doesn't match without button press.
+        // No error if text doesn't match without button press.
         setText(enterPassphrase, "foo");
         clearError(confirmPassphrase);
         setText(confirmPassphrase, "bar");
-        assertNotNull(confirmPassphrase.getError());
+        assertNull(confirmPassphrase.getError());
 
         // Error if you try to submit unmatching text.
         clearError(confirmPassphrase);
