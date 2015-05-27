@@ -7,7 +7,7 @@
 namespace translate {
 
 LanguageDetectionDetails::LanguageDetectionDetails()
-    : is_cld_reliable(false) {
+    : is_cld_reliable(false), has_notranslate(false) {
 }
 
 LanguageDetectionDetails::~LanguageDetectionDetails() {}
