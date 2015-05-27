@@ -11,7 +11,10 @@ from telemetry.core import util
 from telemetry import page as page_module
 from telemetry.page import page_set
 from telemetry.page import page_test
+from telemetry.page import shared_page_state
 from telemetry.value import list_of_scalar_values
+
+from page_sets import webgl_supported_shared_state
 
 
 BLINK_PERF_BASE_DIR = os.path.join(util.GetChromiumSrcDir(),
@@ -19,7 +22,9 @@ BLINK_PERF_BASE_DIR = os.path.join(util.GetChromiumSrcDir(),
 SKIPPED_FILE = os.path.join(BLINK_PERF_BASE_DIR, 'Skipped')
 
 
-def CreatePageSetFromPath(path, skipped_file):
+def CreatePageSetFromPath(path, skipped_file,
+                          shared_page_state_class=(
+                            shared_page_state.SharedPageState)):
   assert os.path.exists(path)
 
   page_urls = []
@@ -59,7 +64,9 @@ def CreatePageSetFromPath(path, skipped_file):
   ps = page_set.PageSet(file_path=os.getcwd()+os.sep,
                         serving_dirs=serving_dirs)
   for url in page_urls:
-    ps.AddUserStory(page_module.Page(url, ps, ps.base_dir))
+    ps.AddUserStory(page_module.Page(
+      url, ps, ps.base_dir,
+      shared_page_state_class=shared_page_state_class))
   return ps
 
 
@@ -169,8 +176,7 @@ class BlinkPerfCSS(perf_benchmark.PerfBenchmark):
     return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Disabled('linux', # http://crbug.com/488059
-                    'xp')  # http://crbug.com/488059
+@benchmark.Disabled('xp')  # http://crbug.com/488059
 class BlinkPerfCanvas(perf_benchmark.PerfBenchmark):
   tag = 'canvas'
   test = _BlinkPerfMeasurement
@@ -181,7 +187,10 @@ class BlinkPerfCanvas(perf_benchmark.PerfBenchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Canvas')
-    return CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(
+      path, SKIPPED_FILE,
+      shared_page_state_class=(
+        webgl_supported_shared_state.WebGLSupportedSharedState))
 
 
 class BlinkPerfDOM(perf_benchmark.PerfBenchmark):
