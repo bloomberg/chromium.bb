@@ -19,10 +19,6 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace content {
 
 // MediaStreamDispatcher is a delegate for the Media Stream API messages.

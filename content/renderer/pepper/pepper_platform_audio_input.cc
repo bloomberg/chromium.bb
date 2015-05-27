@@ -5,8 +5,10 @@
 #include "content/renderer/pepper/pepper_platform_audio_input.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/audio_input_message_filter.h"
@@ -46,7 +48,7 @@ PepperPlatformAudioInput* PepperPlatformAudioInput::Create(
 }
 
 void PepperPlatformAudioInput::StartCapture() {
-  DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   io_task_runner_->PostTask(
       FROM_HERE,
@@ -54,7 +56,7 @@ void PepperPlatformAudioInput::StartCapture() {
 }
 
 void PepperPlatformAudioInput::StopCapture() {
-  DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   io_task_runner_->PostTask(
       FROM_HERE,
@@ -62,7 +64,7 @@ void PepperPlatformAudioInput::StopCapture() {
 }
 
 void PepperPlatformAudioInput::ShutDown() {
-  DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Make sure we don't call shutdown more than once.
   if (!client_)
@@ -92,18 +94,12 @@ void PepperPlatformAudioInput::OnStreamCreated(
   // TODO(yzshen): Make use of circular buffer scheme. crbug.com/181449.
   DCHECK_EQ(1, total_segments);
 
-  if (base::MessageLoopProxy::current().get() !=
-      main_message_loop_proxy_.get()) {
+  if (base::ThreadTaskRunnerHandle::Get().get() != main_task_runner_.get()) {
     // If shutdown has occurred, |client_| will be NULL and the handles will be
     // cleaned up on the main thread.
-    main_message_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&PepperPlatformAudioInput::OnStreamCreated,
-                   this,
-                   handle,
-                   socket_handle,
-                   length,
-                   total_segments));
+    main_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PepperPlatformAudioInput::OnStreamCreated, this,
+                              handle, socket_handle, length, total_segments));
   } else {
     // Must dereference the client only on the main thread. Shutdown may have
     // occurred while the request was in-flight, so we need to NULL check.
@@ -138,7 +134,7 @@ PepperPlatformAudioInput::~PepperPlatformAudioInput() {
 
 PepperPlatformAudioInput::PepperPlatformAudioInput()
     : client_(NULL),
-      main_message_loop_proxy_(base::MessageLoopProxy::current()),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(ChildProcess::current()->io_task_runner()),
       render_frame_id_(MSG_ROUTING_NONE),
       create_stream_sent_(false),
@@ -153,7 +149,7 @@ bool PepperPlatformAudioInput::Initialize(
     int sample_rate,
     int frames_per_buffer,
     PepperAudioInputHost* client) {
-  DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   RenderFrameImpl* const render_frame =
       RenderFrameImpl::FromRoutingID(render_frame_id);
@@ -222,7 +218,7 @@ void PepperPlatformAudioInput::ShutDownOnIOThread() {
 
   StopCaptureOnIOThread();
 
-  main_message_loop_proxy_->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PepperPlatformAudioInput::CloseDevice, this));
 
   Release();  // Release for the delegate, balances out the reference taken in
@@ -232,7 +228,7 @@ void PepperPlatformAudioInput::ShutDownOnIOThread() {
 void PepperPlatformAudioInput::OnDeviceOpened(int request_id,
                                               bool succeeded,
                                               const std::string& label) {
-  DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   pending_open_device_ = false;
   pending_open_device_id_ = -1;
@@ -258,7 +254,7 @@ void PepperPlatformAudioInput::OnDeviceOpened(int request_id,
 }
 
 void PepperPlatformAudioInput::CloseDevice() {
-  DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (!label_.empty()) {
     PepperMediaDeviceManager* const device_manager = GetMediaDeviceManager();
@@ -276,14 +272,14 @@ void PepperPlatformAudioInput::CloseDevice() {
 }
 
 void PepperPlatformAudioInput::NotifyStreamCreationFailed() {
-  DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (client_)
     client_->StreamCreationFailed();
 }
 
 PepperMediaDeviceManager* PepperPlatformAudioInput::GetMediaDeviceManager() {
-  DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   RenderFrameImpl* const render_frame =
       RenderFrameImpl::FromRoutingID(render_frame_id_);

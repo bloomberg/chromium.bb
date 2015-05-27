@@ -14,8 +14,10 @@
 #endif
 
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -566,7 +568,7 @@ void V8SamplingThread::Stop() {
 V8SamplingProfiler::V8SamplingProfiler(bool underTest)
     : sampling_thread_(nullptr),
       render_thread_sampler_(Sampler::CreateForCurrentThread()),
-      message_loop_proxy_(base::MessageLoopProxy::current()) {
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(underTest || RenderThreadImpl::current());
   // Force the "v8.cpu_profile" category to show up in the trace viewer.
   TraceLog::GetCategoryGroupEnabled(
@@ -601,9 +603,9 @@ void V8SamplingProfiler::OnTraceLogEnabled() {
   if (record_mode == base::trace_event::TraceRecordMode::RECORD_CONTINUOUSLY)
     return;
 
-  message_loop_proxy_->PostTask(
-      FROM_HERE, base::Bind(&V8SamplingProfiler::StartSamplingThread,
-                            base::Unretained(this)));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&V8SamplingProfiler::StartSamplingThread,
+                                    base::Unretained(this)));
 }
 
 void V8SamplingProfiler::OnTraceLogDisabled() {

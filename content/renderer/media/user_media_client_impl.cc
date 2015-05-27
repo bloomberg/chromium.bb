@@ -7,11 +7,14 @@
 #include <utility>
 
 #include "base/hash.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
@@ -722,7 +725,7 @@ void UserMediaClientImpl::GetUserMediaRequestSucceeded(
   // the UserMediaClientImpl is destroyed if the JavaScript code request the
   // frame to be destroyed within the scope of the callback. Therefore,
   // post a task to complete the request with a clean stack.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&UserMediaClientImpl::DelayedGetUserMediaRequestSucceeded,
                  weak_factory_.GetWeakPtr(), stream, request_info));
@@ -744,7 +747,7 @@ void UserMediaClientImpl::GetUserMediaRequestFailed(
   // the UserMediaClientImpl is destroyed if the JavaScript code request the
   // frame to be destroyed within the scope of the callback. Therefore,
   // post a task to complete the request with a clean stack.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&UserMediaClientImpl::DelayedGetUserMediaRequestFailed,
                  weak_factory_.GetWeakPtr(), request_info, result,

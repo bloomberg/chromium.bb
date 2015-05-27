@@ -5,8 +5,10 @@
 #include "content/renderer/pepper/ppb_scrollbar_impl.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/renderer/pepper/event_conversion.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -204,10 +206,9 @@ void PPB_Scrollbar_Impl::invalidateScrollbarRect(
   // Note: we use a WeakPtrFactory here so that a lingering callback can not
   // modify the lifetime of this object. Otherwise, blink::WebPluginScrollbar
   // could outlive blink::WebPluginContainer, which is against its contract.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PPB_Scrollbar_Impl::NotifyInvalidate,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PPB_Scrollbar_Impl::NotifyInvalidate,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PPB_Scrollbar_Impl::getTickmarks(

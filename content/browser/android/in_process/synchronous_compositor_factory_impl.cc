@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/observer_list.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/android/in_process/context_provider_in_process.h"
 #include "content/browser/android/in_process/synchronous_compositor_external_begin_frame_source.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
@@ -128,8 +129,8 @@ SynchronousCompositorFactoryImpl::SynchronousCompositorFactoryImpl()
 
 SynchronousCompositorFactoryImpl::~SynchronousCompositorFactoryImpl() {}
 
-scoped_refptr<base::MessageLoopProxy>
-SynchronousCompositorFactoryImpl::GetCompositorMessageLoop() {
+scoped_refptr<base::SingleThreadTaskRunner>
+SynchronousCompositorFactoryImpl::GetCompositorTaskRunner() {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
 }
 
@@ -209,8 +210,8 @@ SynchronousCompositorFactoryImpl::CreateOffscreenGraphicsContext3D(
 void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw() {
   base::AutoLock lock(num_hardware_compositor_lock_);
   num_hardware_compositors_++;
-  if (num_hardware_compositors_ == 1 && main_thread_proxy_.get()) {
-    main_thread_proxy_->PostTask(
+  if (num_hardware_compositors_ == 1 && main_thread_task_runner_.get()) {
+    main_thread_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(
             &SynchronousCompositorFactoryImpl::RestoreContextOnMainThread,
@@ -238,7 +239,7 @@ scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
 SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
   {
     base::AutoLock lock(num_hardware_compositor_lock_);
-    main_thread_proxy_ = base::MessageLoopProxy::current();
+    main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
   // Always fail creation even if |video_context_provider_| is not NULL.

@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/single_thread_task_runner.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/media_stream_audio_renderer.h"
@@ -87,11 +88,11 @@ class WebRtcAudioRendererTest : public testing::Test {
         mock_ipc_(new MockAudioOutputIPC()),
         mock_output_device_(new FakeAudioOutputDevice(
             scoped_ptr<media::AudioOutputIPC>(mock_ipc_),
-            message_loop_->message_loop_proxy())),
+            message_loop_->task_runner())),
         factory_(new MockAudioDeviceFactory()),
         source_(new MockAudioRendererSource()),
         stream_(new rtc::RefCountedObject<MockMediaStream>("label")),
-        renderer_(new WebRtcAudioRenderer(message_loop_->message_loop_proxy(),
+        renderer_(new WebRtcAudioRenderer(message_loop_->task_runner(),
                                           stream_,
                                           1,
                                           1,

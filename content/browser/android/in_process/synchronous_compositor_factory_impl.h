@@ -28,7 +28,8 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   ~SynchronousCompositorFactoryImpl() override;
 
   // SynchronousCompositorFactory
-  scoped_refptr<base::MessageLoopProxy> GetCompositorMessageLoop() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner()
+      override;
   bool RecordFullLayer() override;
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
@@ -78,7 +79,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   // read on renderer main thread.
   base::Lock num_hardware_compositor_lock_;
   unsigned int num_hardware_compositors_;
-  scoped_refptr<base::MessageLoopProxy> main_thread_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 };
 
 }  // namespace content

@@ -62,7 +62,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // Return true if |name| is a constraint supported by MediaStreamVideoSource.
   static bool IsConstraintSupported(const std::string& name);
 
-  // Returns the MessageLoopProxy where video frames will be delivered on.
+  // Returns the task runner where video frames will be delivered on.
   base::SingleThreadTaskRunner* io_task_runner() const;
 
   // Constraint keys used by a video source.

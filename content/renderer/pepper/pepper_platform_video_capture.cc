@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"

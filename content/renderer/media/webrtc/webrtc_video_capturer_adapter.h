@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/base/video_capture_types.h"

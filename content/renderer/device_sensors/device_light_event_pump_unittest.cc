@@ -4,7 +4,9 @@
 
 #include "device_light_event_pump.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/device_sensors/device_light_hardware_buffer.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -146,10 +148,9 @@ TEST_F(DeviceLightEventPumpTest, DidStartPollingValuesEqual) {
   // Reset the pump's listener.
   light_pump()->Start(listener());
 
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DeviceLightEventPumpForTesting::FireEvent,
-                 base::Unretained(light_pump())));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&DeviceLightEventPumpForTesting::FireEvent,
+                            base::Unretained(light_pump())));
   base::MessageLoop::current()->Run();
 
   // No change in device light as present value is same as previous value.

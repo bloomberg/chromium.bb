@@ -17,6 +17,7 @@
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/base/switches.h"
 #include "content/child/appcache/appcache_dispatcher.h"
@@ -1649,7 +1650,7 @@ void RenderFrameImpl::OnPostMessageEvent(
   blink::WebMessagePortChannelArray channels =
       WebMessagePortChannelImpl::CreatePorts(
           params.message_ports, params.new_routing_ids,
-          base::MessageLoopProxy::current().get());
+          base::ThreadTaskRunnerHandle::Get().get());
 
   WebSerializedScriptValue serialized_script_value;
   if (params.is_data_raw_string) {
@@ -2005,7 +2006,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
                  static_cast<RenderFrame*>(this)),
       render_thread->GetAudioRendererMixerManager()->CreateInput(routing_id_),
       media_log, render_thread->GetMediaThreadTaskRunner(),
-      render_thread->compositor_message_loop_proxy(),
+      render_thread->compositor_task_runner(),
       base::Bind(&GetSharedMainThreadContext3D), GetMediaPermission(),
       initial_cdm);
 

@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/bind_to_current_loop.h"
@@ -57,7 +57,7 @@ MediaSourceDelegate::MediaSourceDelegate(
       browser_seek_time_(media::kNoTimestamp()),
       expecting_regular_seek_(false),
       access_unit_size_(0),
-      main_task_runner_(base::MessageLoopProxy::current()),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       media_task_runner_(media_task_runner),
       main_weak_factory_(this),
       media_weak_factory_(this) {

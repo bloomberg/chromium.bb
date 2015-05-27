@@ -7,8 +7,10 @@
 #include <queue>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -193,7 +195,7 @@ void RendererAccessibility::HandleAXEvent(
     // When no accessibility events are in-flight post a task to send
     // the events to the browser. We use PostTask so that we can queue
     // up additional events.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&RendererAccessibility::SendPendingAccessibilityEvents,
                    weak_factory_.GetWeakPtr()));

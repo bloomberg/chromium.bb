@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_process_observer.h"
@@ -124,8 +124,8 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
-  scoped_refptr<base::MessageLoopProxy> GetWebRtcWorkerThread() const;
-  scoped_refptr<base::MessageLoopProxy> GetWebRtcSignalingThread() const;
+  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() const;
+  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingThread() const;
 
  protected:
   // Asks the PeerConnection factory to create a Local Audio Source.

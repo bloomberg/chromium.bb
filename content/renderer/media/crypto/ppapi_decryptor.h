@@ -21,7 +21,7 @@
 class GURL;
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -147,7 +147,7 @@ class PpapiDecryptor : public media::MediaKeys,
   media::SessionKeysChangeCB session_keys_change_cb_;
   media::SessionExpirationUpdateCB session_expiration_update_cb_;
 
-  scoped_refptr<base::MessageLoopProxy> render_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> render_task_runner_;
 
   DecoderInitCB audio_decoder_init_cb_;
   DecoderInitCB video_decoder_init_cb_;

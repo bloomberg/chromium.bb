@@ -5,8 +5,10 @@
 #include "content/renderer/pepper/pepper_platform_audio_output.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/common/media/audio_messages.h"
@@ -83,20 +85,15 @@ void PepperPlatformAudioOutput::OnStreamCreated(
 #endif
   DCHECK(length);
 
-  if (base::MessageLoopProxy::current().get() ==
-      main_message_loop_proxy_.get()) {
+  if (base::ThreadTaskRunnerHandle::Get().get() == main_task_runner_.get()) {
     // Must dereference the client only on the main thread. Shutdown may have
     // occurred while the request was in-flight, so we need to NULL check.
     if (client_)
       client_->StreamCreated(handle, length, socket_handle);
   } else {
-    main_message_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&PepperPlatformAudioOutput::OnStreamCreated,
-                   this,
-                   handle,
-                   socket_handle,
-                   length));
+    main_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PepperPlatformAudioOutput::OnStreamCreated, this,
+                              handle, socket_handle, length));
   }
 }
 
@@ -111,7 +108,7 @@ PepperPlatformAudioOutput::~PepperPlatformAudioOutput() {
 
 PepperPlatformAudioOutput::PepperPlatformAudioOutput()
     : client_(NULL),
-      main_message_loop_proxy_(base::MessageLoopProxy::current()),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(ChildProcess::current()->io_task_runner()) {
 }
 

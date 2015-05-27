@@ -12,6 +12,7 @@
 #include "base/allocator/allocator_extension.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/shared_memory.h"
@@ -24,6 +25,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
@@ -540,9 +542,8 @@ void RenderThreadImpl::Init() {
 
   webrtc_identity_service_.reset(new WebRTCIdentityService());
 
-  aec_dump_message_filter_ =
-      new AecDumpMessageFilter(GetIOMessageLoopProxy(),
-                               message_loop()->message_loop_proxy());
+  aec_dump_message_filter_ = new AecDumpMessageFilter(
+      GetIOMessageLoopProxy(), message_loop()->task_runner());
   AddFilter(aec_dump_message_filter_.get());
 
   peer_connection_factory_.reset(new PeerConnectionDependencyFactory(
@@ -1044,18 +1045,16 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 #if defined(OS_ANDROID)
     if (SynchronousCompositorFactory* factory =
         SynchronousCompositorFactory::GetInstance())
-      compositor_message_loop_proxy_ =
-          factory->GetCompositorMessageLoop();
+      compositor_task_runner_ = factory->GetCompositorTaskRunner();
 #endif
-    if (!compositor_message_loop_proxy_.get()) {
+    if (!compositor_task_runner_.get()) {
       compositor_thread_.reset(new base::Thread("Compositor"));
       compositor_thread_->Start();
 #if defined(OS_ANDROID)
       compositor_thread_->SetPriority(base::ThreadPriority::DISPLAY);
 #endif
-      compositor_message_loop_proxy_ =
-          compositor_thread_->message_loop_proxy();
-      compositor_message_loop_proxy_->PostTask(
+      compositor_task_runner_ = compositor_thread_->task_runner();
+      compositor_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),
                      false));
@@ -1072,12 +1071,12 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       scoped_refptr<InputEventFilter> compositor_input_event_filter(
           new InputEventFilter(main_input_callback_.callback(),
                                main_thread_compositor_task_runner_,
-                               compositor_message_loop_proxy_));
+                               compositor_task_runner_));
       input_handler_manager_client = compositor_input_event_filter.get();
       input_event_filter_ = compositor_input_event_filter;
     }
     input_handler_manager_.reset(new InputHandlerManager(
-        compositor_message_loop_proxy_, input_handler_manager_client,
+        compositor_task_runner_, input_handler_manager_client,
         renderer_scheduler_.get()));
   }
 
@@ -1091,14 +1090,14 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   }
   AddFilter(input_event_filter_.get());
 
-  scoped_refptr<base::MessageLoopProxy> compositor_impl_side_loop;
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_impl_side_task_runner;
   if (enable)
-    compositor_impl_side_loop = compositor_message_loop_proxy_;
+    compositor_impl_side_task_runner = compositor_task_runner_;
   else
-    compositor_impl_side_loop = base::MessageLoopProxy::current();
+    compositor_impl_side_task_runner = base::ThreadTaskRunnerHandle::Get();
 
   compositor_message_filter_ = new CompositorForwardingMessageFilter(
-      compositor_impl_side_loop.get());
+      compositor_impl_side_task_runner.get());
   AddFilter(compositor_message_filter_.get());
 
   RenderThreadImpl::RegisterSchemes();
@@ -1444,7 +1443,7 @@ RenderThreadImpl::GetCompositorMainThreadTaskRunner() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::GetCompositorImplThreadTaskRunner() {
-  return compositor_message_loop_proxy_;
+  return compositor_task_runner_;
 }
 
 gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {
@@ -1798,14 +1797,14 @@ void RenderThreadImpl::OnMemoryPressure(
   }
 }
 
-scoped_refptr<base::MessageLoopProxy>
+scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::GetFileThreadMessageLoopProxy() {
   DCHECK(message_loop() == base::MessageLoop::current());
   if (!file_thread_) {
     file_thread_.reset(new base::Thread("Renderer::FILE"));
     file_thread_->Start();
   }
-  return file_thread_->message_loop_proxy();
+  return file_thread_->task_runner();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -1820,7 +1819,7 @@ RenderThreadImpl::GetMediaThreadTaskRunner() {
     AddFilter(renderer_demuxer_.get());
 #endif
   }
-  return media_thread_->message_loop_proxy();
+  return media_thread_->task_runner();
 }
 
 void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {

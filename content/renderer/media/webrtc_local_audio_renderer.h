@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
@@ -113,7 +113,7 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
 
   // MessageLoop associated with the single thread that performs all control
   // tasks.  Set to the MessageLoop that invoked the ctor.
-  const scoped_refptr<base::MessageLoopProxy> message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // The sink (destination) for rendered audio.
   scoped_refptr<media::AudioOutputDevice> sink_;

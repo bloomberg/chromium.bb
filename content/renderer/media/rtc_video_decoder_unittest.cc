@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "content/renderer/media/rtc_video_decoder.h"
 #include "media/base/gmock_callback_support.h"
@@ -33,7 +35,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
 
   void SetUp() override {
     ASSERT_TRUE(vda_thread_.Start());
-    vda_task_runner_ = vda_thread_.message_loop_proxy();
+    vda_task_runner_ = vda_thread_.task_runner();
     mock_vda_ = new media::MockVideoDecodeAccelerator;
 
     media::VideoDecodeAccelerator::SupportedProfile supported_profile;
@@ -69,7 +71,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
 
   int32_t Decoded(webrtc::I420VideoFrame& decoded_image) override {
     DVLOG(2) << "Decoded";
-    EXPECT_EQ(vda_task_runner_, base::MessageLoopProxy::current());
+    EXPECT_EQ(vda_task_runner_, base::ThreadTaskRunnerHandle::Get());
     return WEBRTC_VIDEO_CODEC_OK;
   }
 

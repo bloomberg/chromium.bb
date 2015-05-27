@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -1036,10 +1037,9 @@ bool RTCPeerConnectionHandler::addICECandidate(
   // TODO(tommi): Instead of calling addICECandidate here, we can do a
   // PostTaskAndReply kind of a thing.
   bool result = addICECandidate(candidate);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&RTCPeerConnectionHandler::OnaddICECandidateResult,
-                 weak_factory_.GetWeakPtr(), request, result));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&RTCPeerConnectionHandler::OnaddICECandidateResult,
+                            weak_factory_.GetWeakPtr(), request, result));
   // On failure callback will be triggered.
   return true;
 }

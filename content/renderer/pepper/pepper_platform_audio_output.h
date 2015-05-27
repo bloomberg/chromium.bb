@@ -15,7 +15,6 @@ class AudioParameters;
 }
 
 namespace base {
-class MessageLoopProxy;
 class SingleThreadTaskRunner;
 }
 
@@ -81,7 +80,7 @@ class PepperPlatformAudioOutput
   // I/O thread except to send messages and get the message loop.
   scoped_ptr<media::AudioOutputIPC> ipc_;
 
-  scoped_refptr<base::MessageLoopProxy> main_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioOutput);

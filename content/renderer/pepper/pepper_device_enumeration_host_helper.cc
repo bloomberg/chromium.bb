@@ -5,9 +5,11 @@
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -67,12 +69,9 @@ class PepperDeviceEnumerationHostHelper::ScopedRequest
       int request_id,
       const std::vector<ppapi::DeviceRefData>& devices) {
     if (sync_call_) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&ScopedRequest::EnumerateDevicesCallbackBody,
-                     AsWeakPtr(),
-                     request_id,
-                     devices));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&ScopedRequest::EnumerateDevicesCallbackBody,
+                                AsWeakPtr(), request_id, devices));
     } else {
       DCHECK_EQ(request_id_, request_id);
       callback_.Run(request_id, devices);

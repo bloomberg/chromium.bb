@@ -17,10 +17,6 @@
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBFactory.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace cc {
 class ContextProvider;
 }

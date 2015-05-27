@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

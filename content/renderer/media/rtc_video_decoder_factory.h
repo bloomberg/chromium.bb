@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_MEDIA_RTC_VIDEO_DECODER_FACTORY_H_
 #define CONTENT_RENDERER_MEDIA_RTC_VIDEO_DECODER_FACTORY_H_
 
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideodecoderfactory.h"

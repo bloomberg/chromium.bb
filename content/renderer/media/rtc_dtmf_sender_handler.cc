@@ -9,8 +9,9 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 
 using webrtc::DtmfSenderInterface;
@@ -22,7 +23,7 @@ class RtcDtmfSenderHandler::Observer :
     public webrtc::DtmfSenderObserverInterface {
  public:
   explicit Observer(const base::WeakPtr<RtcDtmfSenderHandler>& handler)
-     : main_thread_(base::MessageLoopProxy::current()), handler_(handler) {}
+      : main_thread_(base::ThreadTaskRunnerHandle::Get()), handler_(handler) {}
 
  private:
   friend class base::RefCountedThreadSafe<Observer>;

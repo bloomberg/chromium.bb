@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/media/video_capture.h"
 #include "content/renderer/media/media_stream_video_source.h"

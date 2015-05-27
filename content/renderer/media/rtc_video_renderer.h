@@ -15,7 +15,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -66,7 +66,7 @@ class CONTENT_EXPORT RTCVideoRenderer
 
   const base::Closure error_cb_;
   const RepaintCB repaint_cb_;
-  const scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   State state_;
   gfx::Size frame_size_;
   const blink::WebMediaStreamTrack video_track_;

@@ -4,10 +4,11 @@
 
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
 
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
@@ -84,10 +85,9 @@ void WebRtcLocalAudioRenderer::OnSetFormat(
 
   // Post a task on the main render thread to reconfigure the |sink_| with the
   // new format.
-  message_loop_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&WebRtcLocalAudioRenderer::ReconfigureSink, this,
-                 params));
+      base::Bind(&WebRtcLocalAudioRenderer::ReconfigureSink, this, params));
 }
 
 // WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer implementation.
@@ -99,7 +99,7 @@ WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
     : audio_track_(audio_track),
       source_render_frame_id_(source_render_frame_id),
       session_id_(session_id),
-      message_loop_(base::MessageLoopProxy::current()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       playing_(false),
       frames_per_buffer_(frames_per_buffer),
       volume_(0.0),
@@ -108,14 +108,14 @@ WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
 }
 
 WebRtcLocalAudioRenderer::~WebRtcLocalAudioRenderer() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!sink_.get());
   DVLOG(1) << "WebRtcLocalAudioRenderer::~WebRtcLocalAudioRenderer()";
 }
 
 void WebRtcLocalAudioRenderer::Start() {
   DVLOG(1) << "WebRtcLocalAudioRenderer::Start()";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // We get audio data from |audio_track_|...
   MediaStreamAudioSink::AddToAudioTrack(this, audio_track_);
@@ -130,7 +130,7 @@ void WebRtcLocalAudioRenderer::Start() {
 
 void WebRtcLocalAudioRenderer::Stop() {
   DVLOG(1) << "WebRtcLocalAudioRenderer::Stop()";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   {
     base::AutoLock auto_lock(thread_lock_);
@@ -158,7 +158,7 @@ void WebRtcLocalAudioRenderer::Stop() {
 
 void WebRtcLocalAudioRenderer::Play() {
   DVLOG(1) << "WebRtcLocalAudioRenderer::Play()";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!sink_.get())
     return;
@@ -177,7 +177,7 @@ void WebRtcLocalAudioRenderer::Play() {
 
 void WebRtcLocalAudioRenderer::Pause() {
   DVLOG(1) << "WebRtcLocalAudioRenderer::Pause()";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!sink_.get())
     return;
@@ -191,7 +191,7 @@ void WebRtcLocalAudioRenderer::Pause() {
 
 void WebRtcLocalAudioRenderer::SetVolume(float volume) {
   DVLOG(1) << "WebRtcLocalAudioRenderer::SetVolume(" << volume << ")";
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   {
     base::AutoLock auto_lock(thread_lock_);
@@ -208,7 +208,7 @@ void WebRtcLocalAudioRenderer::SetVolume(float volume) {
 }
 
 base::TimeDelta WebRtcLocalAudioRenderer::GetCurrentRenderTime() const {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(thread_lock_);
   if (!sink_.get())
     return base::TimeDelta();
@@ -220,7 +220,7 @@ bool WebRtcLocalAudioRenderer::IsLocalRenderer() const {
 }
 
 void WebRtcLocalAudioRenderer::MaybeStartSink() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "WebRtcLocalAudioRenderer::MaybeStartSink()";
 
   if (!sink_.get() || !source_params_.IsValid())
@@ -245,7 +245,7 @@ void WebRtcLocalAudioRenderer::MaybeStartSink() {
 
 void WebRtcLocalAudioRenderer::ReconfigureSink(
     const media::AudioParameters& params) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   DVLOG(1) << "WebRtcLocalAudioRenderer::ReconfigureSink()";
 

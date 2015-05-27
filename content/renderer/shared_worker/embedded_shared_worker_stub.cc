@@ -4,7 +4,7 @@
 
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
 #include "content/child/request_extra_data.h"
@@ -276,10 +276,8 @@ void EmbeddedSharedWorkerStub::OnConnect(int sent_message_port_id,
                                          int routing_id) {
   TransferredMessagePort port;
   port.id = sent_message_port_id;
-  WebMessagePortChannelImpl* channel =
-      new WebMessagePortChannelImpl(routing_id,
-                                    port,
-                                    base::MessageLoopProxy::current().get());
+  WebMessagePortChannelImpl* channel = new WebMessagePortChannelImpl(
+      routing_id, port, base::ThreadTaskRunnerHandle::Get().get());
   if (runing_) {
     ConnectToChannel(channel);
   } else {

@@ -15,7 +15,6 @@
 
 namespace base {
 class MessageLoop;
-class MessageLoopProxy;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -58,7 +57,7 @@ class P2PAsyncAddressResolver
 
   P2PSocketDispatcher* dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
-  scoped_refptr<base::MessageLoopProxy> delegate_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
 
   // State must be accessed from delegate thread only.
   State state_;

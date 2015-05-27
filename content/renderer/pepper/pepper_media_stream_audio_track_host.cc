@@ -10,8 +10,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/numerics/safe_math.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "media/base/audio_bus.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio_buffer.h"
@@ -71,19 +72,20 @@ PepperMediaStreamAudioTrackHost::AudioSink::AudioSink(
       active_buffers_generation_(0),
       active_buffer_frame_offset_(0),
       buffers_generation_(0),
-      main_message_loop_proxy_(base::MessageLoopProxy::current()),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       number_of_buffers_(kDefaultNumberOfBuffers),
       bytes_per_second_(0),
       bytes_per_frame_(0),
       user_buffer_duration_(kDefaultDuration),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 PepperMediaStreamAudioTrackHost::AudioSink::~AudioSink() {
-  DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK_EQ(main_task_runner_, base::ThreadTaskRunnerHandle::Get());
 }
 
 void PepperMediaStreamAudioTrackHost::AudioSink::EnqueueBuffer(int32_t index) {
-  DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK_EQ(main_task_runner_, base::ThreadTaskRunnerHandle::Get());
   DCHECK_GE(index, 0);
   DCHECK_LT(index, host_->buffer_manager()->number_of_buffers());
   base::AutoLock lock(lock_);
@@ -93,7 +95,7 @@ void PepperMediaStreamAudioTrackHost::AudioSink::EnqueueBuffer(int32_t index) {
 int32_t PepperMediaStreamAudioTrackHost::AudioSink::Configure(
     int32_t number_of_buffers, int32_t duration,
     const ppapi::host::ReplyMessageContext& context) {
-  DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK_EQ(main_task_runner_, base::ThreadTaskRunnerHandle::Get());
 
   if (pending_configure_reply_.is_valid()) {
     return PP_ERROR_INPROGRESS;
@@ -138,7 +140,7 @@ void PepperMediaStreamAudioTrackHost::AudioSink::SetFormatOnMainThread(
 }
 
 void PepperMediaStreamAudioTrackHost::AudioSink::InitBuffers() {
-  DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK_EQ(main_task_runner_, base::ThreadTaskRunnerHandle::Get());
   {
     base::AutoLock lock(lock_);
     // Clear |buffers_|, so the audio thread will drop all incoming audio data.
@@ -185,7 +187,7 @@ void PepperMediaStreamAudioTrackHost::AudioSink::InitBuffers() {
 void PepperMediaStreamAudioTrackHost::AudioSink::
     SendEnqueueBufferMessageOnMainThread(int32_t index,
                                          int32_t buffers_generation) {
-  DCHECK_EQ(main_message_loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK_EQ(main_task_runner_, base::ThreadTaskRunnerHandle::Get());
   // If |InitBuffers()| is called after this task being posted from the audio
   // thread, the buffer should become invalid already. We should ignore it.
   // And because only the main thread modifies the |buffers_generation_|,
@@ -266,11 +268,10 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnData(
 
     DCHECK_LE(active_buffer_frame_offset_, frames_per_buffer);
     if (active_buffer_frame_offset_ == frames_per_buffer) {
-      main_message_loop_proxy_->PostTask(
+      main_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&AudioSink::SendEnqueueBufferMessageOnMainThread,
-                     weak_factory_.GetWeakPtr(),
-                     active_buffer_index_,
+                     weak_factory_.GetWeakPtr(), active_buffer_index_,
                      buffers_generation_));
       active_buffer_index_ = -1;
     }
@@ -299,11 +300,10 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnSetFormat(
     audio_thread_checker_.DetachFromThread();
     audio_params_ = params;
 
-    main_message_loop_proxy_->PostTask(
+    main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&AudioSink::SetFormatOnMainThread,
-                   weak_factory_.GetWeakPtr(),
-                   params.GetBytesPerSecond(),
+                   weak_factory_.GetWeakPtr(), params.GetBytesPerSecond(),
                    params.GetBytesPerFrame()));
   }
 }

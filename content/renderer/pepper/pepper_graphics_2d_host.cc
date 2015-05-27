@@ -5,8 +5,10 @@
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/resources/texture_mailbox.h"
@@ -783,7 +785,7 @@ void PepperGraphics2DHost::SendOffscreenFlushAck() {
 
 void PepperGraphics2DHost::ScheduleOffscreenFlushAck() {
   offscreen_flush_pending_ = true;
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PepperGraphics2DHost::SendOffscreenFlushAck, AsWeakPtr()),
       base::TimeDelta::FromMilliseconds(kOffscreenCallbackDelayMs));

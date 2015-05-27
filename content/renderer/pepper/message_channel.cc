@@ -8,8 +8,10 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/renderer/pepper/host_array_buffer_var.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_try_catch.h"
@@ -25,8 +27,8 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebDOMMessageEvent.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
@@ -456,10 +458,9 @@ void MessageChannel::DrainJSMessageQueue() {
 }
 
 void MessageChannel::DrainJSMessageQueueSoon() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MessageChannel::DrainJSMessageQueue,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&MessageChannel::DrainJSMessageQueue,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MessageChannel::UnregisterSyncMessageStatusObserver() {

@@ -6,14 +6,16 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/blink/web_layer_impl.h"
@@ -1620,10 +1622,9 @@ bool PepperPluginInstanceImpl::IsAcceptingWheelEvents() const {
 void PepperPluginInstanceImpl::ScheduleAsyncDidChangeView() {
   if (view_change_weak_ptr_factory_.HasWeakPtrs())
     return;  // Already scheduled.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PepperPluginInstanceImpl::SendAsyncDidChangeView,
-                 view_change_weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PepperPluginInstanceImpl::SendAsyncDidChangeView,
+                            view_change_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PepperPluginInstanceImpl::SendAsyncDidChangeView() {
@@ -2836,11 +2837,10 @@ void PepperPluginInstanceImpl::SelectionChanged(PP_Instance instance) {
   // uses a weak pointer rather than exploiting the fact that this class is
   // refcounted because we don't actually want this operation to affect the
   // lifetime of the instance.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PepperPluginInstanceImpl::RequestSurroundingText,
-                 weak_factory_.GetWeakPtr(),
-                 static_cast<size_t>(kExtraCharsForTextInput)));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PepperPluginInstanceImpl::RequestSurroundingText,
+                            weak_factory_.GetWeakPtr(),
+                            static_cast<size_t>(kExtraCharsForTextInput)));
 }
 
 void PepperPluginInstanceImpl::UpdateSurroundingText(PP_Instance instance,
@@ -3137,7 +3137,7 @@ bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
     if (!delay_report) {
       ReportGeometry();
     } else {
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&PepperPluginInstanceImpl::ReportGeometry, this));
     }

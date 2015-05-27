@@ -8,10 +8,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -174,7 +175,7 @@ class RTCVideoEncoder::Impl
   const base::WeakPtr<RTCVideoEncoder> weak_encoder_;
 
   // The message loop on which to post callbacks to |weak_encoder_|.
-  const scoped_refptr<base::MessageLoopProxy> encoder_message_loop_proxy_;
+  const scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner_;
 
   // Factory for creating VEAs, shared memory buffers, etc.
   const scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
@@ -222,7 +223,7 @@ RTCVideoEncoder::Impl::Impl(
     const base::WeakPtr<RTCVideoEncoder>& weak_encoder,
     const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
     : weak_encoder_(weak_encoder),
-      encoder_message_loop_proxy_(base::MessageLoopProxy::current()),
+      encoder_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       gpu_factories_(gpu_factories),
       async_waiter_(NULL),
       async_retval_(NULL),
@@ -435,13 +436,10 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
   image->_frameType = (key_frame ? webrtc::kKeyFrame : webrtc::kDeltaFrame);
   image->_completeFrame = true;
 
-  encoder_message_loop_proxy_->PostTask(
+  encoder_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RTCVideoEncoder::ReturnEncodedImage,
-                 weak_encoder_,
-                 base::Passed(&image),
-                 bitstream_buffer_id,
-                 picture_id_));
+      base::Bind(&RTCVideoEncoder::ReturnEncodedImage, weak_encoder_,
+                 base::Passed(&image), bitstream_buffer_id, picture_id_));
   // Picture ID must wrap after reaching the maximum.
   picture_id_ = (picture_id_ + 1) & 0x7FFF;
 }
@@ -464,7 +462,7 @@ void RTCVideoEncoder::Impl::NotifyError(
   if (async_waiter_) {
     SignalAsyncWaiter(retval);
   } else {
-    encoder_message_loop_proxy_->PostTask(
+    encoder_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&RTCVideoEncoder::NotifyError, weak_encoder_, retval));
   }

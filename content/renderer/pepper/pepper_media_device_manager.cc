@@ -4,7 +4,10 @@
 
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
@@ -76,11 +79,10 @@ void PepperMediaDeviceManager::StopEnumerateDevices(int request_id) {
 #if defined(ENABLE_WEBRTC)
   // Need to post task since this function might be called inside the callback
   // of EnumerateDevices.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&PepperMediaDeviceManager::StopEnumerateDevicesDelayed,
-                 AsWeakPtr(),
-                 request_id));
+                 AsWeakPtr(), request_id));
 #endif
 }
 

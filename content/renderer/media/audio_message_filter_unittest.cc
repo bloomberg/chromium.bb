@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "media/audio/audio_output_ipc.h"
@@ -72,8 +71,8 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 TEST(AudioMessageFilterTest, Basic) {
   base::MessageLoopForIO message_loop;
 
-  scoped_refptr<AudioMessageFilter> filter(new AudioMessageFilter(
-      message_loop.message_loop_proxy()));
+  scoped_refptr<AudioMessageFilter> filter(
+      new AudioMessageFilter(message_loop.task_runner()));
 
   MockAudioDelegate delegate;
   const scoped_ptr<media::AudioOutputIPC> ipc =
@@ -113,8 +112,8 @@ TEST(AudioMessageFilterTest, Basic) {
 TEST(AudioMessageFilterTest, Delegates) {
   base::MessageLoopForIO message_loop;
 
-  scoped_refptr<AudioMessageFilter> filter(new AudioMessageFilter(
-      message_loop.message_loop_proxy()));
+  scoped_refptr<AudioMessageFilter> filter(
+      new AudioMessageFilter(message_loop.task_runner()));
 
   MockAudioDelegate delegate1;
   MockAudioDelegate delegate2;

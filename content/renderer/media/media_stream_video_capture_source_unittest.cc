@@ -4,8 +4,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
 #include "content/public/renderer/media_stream_video_sink.h"
@@ -321,7 +322,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   const scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2));
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE, 30.0);
-  child_process_->io_message_loop()->PostTask(
+  child_process_->io_task_runner()->PostTask(
       FROM_HERE, base::Bind(deliver_frame_cb, frame, reference_capture_time));
   run_loop.Run();
   FakeMediaStreamVideoSink::RemoveFromVideoTrack(&fake_sink, track);

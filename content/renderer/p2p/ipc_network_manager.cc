@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 #include "content/renderer/p2p/ipc_network_manager.h"
+
 #include <string>
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
 
@@ -51,10 +55,9 @@ IpcNetworkManager::~IpcNetworkManager() {
 void IpcNetworkManager::StartUpdating() {
   if (network_list_received_) {
     // Post a task to avoid reentrancy.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&IpcNetworkManager::SendNetworksChangedSignal,
-                   weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&IpcNetworkManager::SendNetworksChangedSignal,
+                              weak_factory_.GetWeakPtr()));
   }
   ++start_count_;
 }

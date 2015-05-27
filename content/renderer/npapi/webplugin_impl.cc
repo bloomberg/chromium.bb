@@ -7,13 +7,15 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/io_surface_layer.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
@@ -364,10 +366,9 @@ void WebPluginImpl::updateGeometry(const WebRect& window_rect,
       // geometry received by a call to setFrameRect in the Webkit
       // layout code path. To workaround this issue we download the
       // plugin source url on a timer.
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&WebPluginImpl::OnDownloadPluginSrcUrl,
-                     weak_factory_.GetWeakPtr()));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&WebPluginImpl::OnDownloadPluginSrcUrl,
+                                weak_factory_.GetWeakPtr()));
     }
   }
 

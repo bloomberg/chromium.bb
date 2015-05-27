@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
 #include "content/common/android/surface_texture_peer.h"
@@ -36,7 +36,7 @@ class StreamTextureProxyImpl
   // StreamTextureProxy implementation:
   void BindToLoop(int32 stream_id,
                   cc::VideoFrameProvider::Client* client,
-                  scoped_refptr<base::MessageLoopProxy> loop) override;
+                  scoped_refptr<base::SingleThreadTaskRunner> loop) override;
   void Release() override;
 
  private:
@@ -46,7 +46,7 @@ class StreamTextureProxyImpl
   // Protects access to |client_| and |loop_|.
   base::Lock lock_;
   cc::VideoFrameProvider::Client* client_;
-  scoped_refptr<base::MessageLoopProxy> loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> loop_;
 
   // Accessed on the |loop_| thread only.
   base::Closure callback_;
@@ -86,7 +86,7 @@ void StreamTextureProxyImpl::Release() {
 void StreamTextureProxyImpl::BindToLoop(
     int32 stream_id,
     cc::VideoFrameProvider::Client* client,
-    scoped_refptr<base::MessageLoopProxy> loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> loop) {
   DCHECK(loop.get());
 
   {

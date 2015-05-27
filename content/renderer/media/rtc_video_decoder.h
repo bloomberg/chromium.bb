@@ -25,7 +25,6 @@
 
 namespace base {
 class WaitableEvent;
-class MessageLoopProxy;
 };
 
 namespace media {

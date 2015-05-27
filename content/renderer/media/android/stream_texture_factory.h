@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/layers/video_frame_provider.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/geometry/size.h"
@@ -31,7 +31,7 @@ class StreamTextureProxy {
   // on any thread, but must be called with the same loop every time.
   virtual void BindToLoop(int32 stream_id,
                           cc::VideoFrameProvider::Client* client,
-                          scoped_refptr<base::MessageLoopProxy> loop) = 0;
+                          scoped_refptr<base::SingleThreadTaskRunner> loop) = 0;
 
   // Causes this instance to be deleted on the thread it is bound to.
   virtual void Release() = 0;

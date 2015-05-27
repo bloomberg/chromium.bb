@@ -17,10 +17,6 @@
 #include "third_party/webrtc/modules/video_coding/codecs/interface/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace base {
-class MessageLoopProxy;
-}  // namespace base
-
 namespace media {
 class GpuVideoAcceleratorFactories;
 }  // namespace media

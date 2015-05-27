@@ -10,9 +10,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/renderer/pepper/pepper_video_encoder_host.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
@@ -99,7 +101,7 @@ class VideoEncoderShim::EncoderImpl {
 VideoEncoderShim::EncoderImpl::EncoderImpl(
     const base::WeakPtr<VideoEncoderShim>& shim)
     : shim_(shim),
-      renderer_task_runner_(base::MessageLoopProxy::current()),
+      renderer_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       initialized_(false) {
 }
 

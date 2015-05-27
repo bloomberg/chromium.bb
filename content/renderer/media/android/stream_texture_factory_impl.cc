@@ -24,7 +24,7 @@ class StreamTextureProxyImpl : public StreamTextureProxy,
   // StreamTextureProxy implementation:
   void BindToLoop(int32 stream_id,
                   cc::VideoFrameProvider::Client* client,
-                  scoped_refptr<base::MessageLoopProxy> loop) override;
+                  scoped_refptr<base::SingleThreadTaskRunner> loop) override;
   void Release() override;
 
   // StreamTextureHost::Listener implementation:
@@ -39,7 +39,7 @@ class StreamTextureProxyImpl : public StreamTextureProxy,
   // Protects access to |client_| and |loop_|.
   base::Lock lock_;
   cc::VideoFrameProvider::Client* client_;
-  scoped_refptr<base::MessageLoopProxy> loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> loop_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureProxyImpl);
 };
@@ -68,7 +68,7 @@ void StreamTextureProxyImpl::Release() {
 void StreamTextureProxyImpl::BindToLoop(
     int32 stream_id,
     cc::VideoFrameProvider::Client* client,
-    scoped_refptr<base::MessageLoopProxy> loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> loop) {
   DCHECK(loop.get());
 
   {

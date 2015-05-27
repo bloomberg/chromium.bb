@@ -4,6 +4,9 @@
 
 #include "content/renderer/gpu/render_widget_compositor.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/failure_output_surface.h"
 #include "cc/trees/layer_tree_host.h"
@@ -173,7 +176,7 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
       RenderWidgetCompositor::DidInitializeOutputSurface();
       // Post the synchronous composite task so that it is not called
       // reentrantly as a part of RequestNewOutputSurface.
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&RenderWidgetCompositorOutputSurface::SynchronousComposite,
                      base::Unretained(this)));
@@ -246,7 +249,7 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
         use_null_output_surface, num_failures_before_success,
         expected_successes, expected_fallback_succeses);
     render_widget_compositor_->StartCompositor();
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&RenderWidgetCompositorOutputSurface::SynchronousComposite,
                    base::Unretained(render_widget_compositor_.get())));

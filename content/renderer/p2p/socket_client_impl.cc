@@ -5,7 +5,9 @@
 #include "content/renderer/p2p/socket_client_impl.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/common/p2p_messages.h"
 #include "content/renderer/p2p/socket_client_delegate.h"
@@ -29,7 +31,7 @@ namespace content {
 P2PSocketClientImpl::P2PSocketClientImpl(P2PSocketDispatcher* dispatcher)
     : dispatcher_(dispatcher),
       ipc_task_runner_(dispatcher->task_runner()),
-      delegate_message_loop_(base::MessageLoopProxy::current()),
+      delegate_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       socket_id_(0),
       delegate_(NULL),
       state_(STATE_UNINITIALIZED),
@@ -47,7 +49,7 @@ void P2PSocketClientImpl::Init(
     const net::IPEndPoint& local_address,
     const P2PHostAndIPEndPoint& remote_address,
     P2PSocketClientDelegate* delegate) {
-  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   DCHECK(delegate);
   // |delegate_| is only accessesed on |delegate_message_loop_|.
   delegate_ = delegate;
@@ -113,7 +115,7 @@ void P2PSocketClientImpl::SetOption(P2PSocketOption option,
 }
 
 void P2PSocketClientImpl::Close() {
-  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
   delegate_ = NULL;
 
@@ -139,7 +141,7 @@ int P2PSocketClientImpl::GetSocketID() const {
 }
 
 void P2PSocketClientImpl::SetDelegate(P2PSocketClientDelegate* delegate) {
-  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   delegate_ = delegate;
 }
 
@@ -150,16 +152,15 @@ void P2PSocketClientImpl::OnSocketCreated(
   DCHECK_EQ(state_, STATE_OPENING);
   state_ = STATE_OPEN;
 
-  delegate_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&P2PSocketClientImpl::DeliverOnSocketCreated, this,
-                 local_address, remote_address));
+  delegate_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&P2PSocketClientImpl::DeliverOnSocketCreated, this,
+                            local_address, remote_address));
 }
 
 void P2PSocketClientImpl::DeliverOnSocketCreated(
     const net::IPEndPoint& local_address,
     const net::IPEndPoint& remote_address) {
-  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnOpen(local_address, remote_address);
 }
@@ -173,21 +174,21 @@ void P2PSocketClientImpl::OnIncomingTcpConnection(
       new P2PSocketClientImpl(dispatcher_);
   new_client->socket_id_ = dispatcher_->RegisterClient(new_client.get());
   new_client->state_ = STATE_OPEN;
-  new_client->delegate_message_loop_ = delegate_message_loop_;
+  new_client->delegate_task_runner_ = delegate_task_runner_;
 
   dispatcher_->SendP2PMessage(new P2PHostMsg_AcceptIncomingTcpConnection(
       socket_id_, address, new_client->socket_id_));
 
-  delegate_message_loop_->PostTask(
-      FROM_HERE, base::Bind(
-          &P2PSocketClientImpl::DeliverOnIncomingTcpConnection,
-          this, address, new_client));
+  delegate_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&P2PSocketClientImpl::DeliverOnIncomingTcpConnection, this,
+                 address, new_client));
 }
 
 void P2PSocketClientImpl::DeliverOnIncomingTcpConnection(
     const net::IPEndPoint& address,
     scoped_refptr<P2PSocketClient> new_client) {
-  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   if (delegate_) {
     delegate_->OnIncomingTcpConnection(address, new_client.get());
   } else {
@@ -200,14 +201,14 @@ void P2PSocketClientImpl::OnSendComplete(
     const P2PSendPacketMetrics& send_metrics) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
-  delegate_message_loop_->PostTask(
+  delegate_task_runner_->PostTask(
       FROM_HERE, base::Bind(&P2PSocketClientImpl::DeliverOnSendComplete, this,
                             send_metrics));
 }
 
 void P2PSocketClientImpl::DeliverOnSendComplete(
     const P2PSendPacketMetrics& send_metrics) {
-  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnSendComplete(send_metrics);
 }
@@ -216,12 +217,12 @@ void P2PSocketClientImpl::OnError() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   state_ = STATE_ERROR;
 
-  delegate_message_loop_->PostTask(
+  delegate_task_runner_->PostTask(
       FROM_HERE, base::Bind(&P2PSocketClientImpl::DeliverOnError, this));
 }
 
 void P2PSocketClientImpl::DeliverOnError() {
-  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnError();
 }
@@ -231,19 +232,15 @@ void P2PSocketClientImpl::OnDataReceived(const net::IPEndPoint& address,
                                          const base::TimeTicks& timestamp) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(STATE_OPEN, state_);
-  delegate_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&P2PSocketClientImpl::DeliverOnDataReceived,
-                 this,
-                 address,
-                 data,
-                 timestamp));
+  delegate_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&P2PSocketClientImpl::DeliverOnDataReceived, this,
+                            address, data, timestamp));
 }
 
 void P2PSocketClientImpl::DeliverOnDataReceived(
   const net::IPEndPoint& address, const std::vector<char>& data,
   const base::TimeTicks& timestamp) {
-  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnDataReceived(address, data, timestamp);
 }

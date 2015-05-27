@@ -17,7 +17,7 @@
 #include "media/base/video_capture_types.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace gpu {
@@ -170,7 +170,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   VideoCaptureState state_;
 
   // IO message loop reference for checking correct class operation.
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // WeakPtrFactory pointing back to |this| object, for use with
   // media::VideoFrames constructed in OnBufferReceived() from buffers cached

@@ -7,9 +7,10 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/renderer/media/crypto/cdm_initialized_promise.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -41,7 +42,7 @@ void PpapiDecryptor::Create(
       create_pepper_cdm_cb.Run(plugin_type, security_origin);
   if (!pepper_cdm_wrapper) {
     DLOG(ERROR) << "Plugin instance creation failed.";
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(cdm_created_cb, nullptr,
                               "Plugin instance creation failed."));
     return;
@@ -74,7 +75,7 @@ PpapiDecryptor::PpapiDecryptor(
       legacy_session_error_cb_(legacy_session_error_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
-      render_loop_proxy_(base::MessageLoopProxy::current()),
+      render_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   DCHECK(pepper_cdm_wrapper_.get());
   DCHECK(!session_message_cb_.is_null());
@@ -109,7 +110,7 @@ void PpapiDecryptor::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     scoped_ptr<media::SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
     promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
@@ -125,7 +126,7 @@ void PpapiDecryptor::CreateSessionAndGenerateRequest(
     const std::vector<uint8_t>& init_data,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
     promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
@@ -141,7 +142,7 @@ void PpapiDecryptor::LoadSession(
     const std::string& session_id,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
     promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
@@ -154,7 +155,7 @@ void PpapiDecryptor::UpdateSession(
     const std::string& session_id,
     const std::vector<uint8_t>& response,
     scoped_ptr<media::SimpleCdmPromise> promise) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
     promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
@@ -165,7 +166,7 @@ void PpapiDecryptor::UpdateSession(
 
 void PpapiDecryptor::CloseSession(const std::string& session_id,
                                   scoped_ptr<media::SimpleCdmPromise> promise) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
     promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
@@ -178,7 +179,7 @@ void PpapiDecryptor::CloseSession(const std::string& session_id,
 void PpapiDecryptor::RemoveSession(
     const std::string& session_id,
     scoped_ptr<media::SimpleCdmPromise> promise) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   if (!CdmDelegate()) {
     promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
@@ -202,12 +203,11 @@ int PpapiDecryptor::GetCdmId() const {
 
 void PpapiDecryptor::RegisterNewKeyCB(StreamType stream_type,
                                       const NewKeyCB& new_key_cb) {
-  if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE,
-                                 base::Bind(&PpapiDecryptor::RegisterNewKeyCB,
-                                            weak_ptr_factory_.GetWeakPtr(),
-                                            stream_type,
-                                            new_key_cb));
+  if (!render_task_runner_->BelongsToCurrentThread()) {
+    render_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&PpapiDecryptor::RegisterNewKeyCB,
+                   weak_ptr_factory_.GetWeakPtr(), stream_type, new_key_cb));
     return;
   }
 
@@ -228,13 +228,11 @@ void PpapiDecryptor::Decrypt(
     StreamType stream_type,
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const DecryptCB& decrypt_cb) {
-  if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE,
-                                 base::Bind(&PpapiDecryptor::Decrypt,
-                                            weak_ptr_factory_.GetWeakPtr(),
-                                            stream_type,
-                                            encrypted,
-                                            decrypt_cb));
+  if (!render_task_runner_->BelongsToCurrentThread()) {
+    render_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&PpapiDecryptor::Decrypt, weak_ptr_factory_.GetWeakPtr(),
+                   stream_type, encrypted, decrypt_cb));
     return;
   }
 
@@ -246,11 +244,10 @@ void PpapiDecryptor::Decrypt(
 }
 
 void PpapiDecryptor::CancelDecrypt(StreamType stream_type) {
-  if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE,
-                                 base::Bind(&PpapiDecryptor::CancelDecrypt,
-                                            weak_ptr_factory_.GetWeakPtr(),
-                                            stream_type));
+  if (!render_task_runner_->BelongsToCurrentThread()) {
+    render_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PpapiDecryptor::CancelDecrypt,
+                              weak_ptr_factory_.GetWeakPtr(), stream_type));
     return;
   }
 
@@ -262,13 +259,10 @@ void PpapiDecryptor::CancelDecrypt(StreamType stream_type) {
 void PpapiDecryptor::InitializeAudioDecoder(
       const media::AudioDecoderConfig& config,
       const DecoderInitCB& init_cb) {
-  if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&PpapiDecryptor::InitializeAudioDecoder,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   config,
-                   init_cb));
+  if (!render_task_runner_->BelongsToCurrentThread()) {
+    render_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PpapiDecryptor::InitializeAudioDecoder,
+                              weak_ptr_factory_.GetWeakPtr(), config, init_cb));
     return;
   }
 
@@ -290,13 +284,10 @@ void PpapiDecryptor::InitializeAudioDecoder(
 void PpapiDecryptor::InitializeVideoDecoder(
     const media::VideoDecoderConfig& config,
     const DecoderInitCB& init_cb) {
-  if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&PpapiDecryptor::InitializeVideoDecoder,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   config,
-                   init_cb));
+  if (!render_task_runner_->BelongsToCurrentThread()) {
+    render_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PpapiDecryptor::InitializeVideoDecoder,
+                              weak_ptr_factory_.GetWeakPtr(), config, init_cb));
     return;
   }
 
@@ -318,13 +309,11 @@ void PpapiDecryptor::InitializeVideoDecoder(
 void PpapiDecryptor::DecryptAndDecodeAudio(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const AudioDecodeCB& audio_decode_cb) {
-  if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(
+  if (!render_task_runner_->BelongsToCurrentThread()) {
+    render_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&PpapiDecryptor::DecryptAndDecodeAudio,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   encrypted,
-                   audio_decode_cb));
+                   weak_ptr_factory_.GetWeakPtr(), encrypted, audio_decode_cb));
     return;
   }
 
@@ -338,13 +327,11 @@ void PpapiDecryptor::DecryptAndDecodeAudio(
 void PpapiDecryptor::DecryptAndDecodeVideo(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const VideoDecodeCB& video_decode_cb) {
-  if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(
+  if (!render_task_runner_->BelongsToCurrentThread()) {
+    render_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&PpapiDecryptor::DecryptAndDecodeVideo,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   encrypted,
-                   video_decode_cb));
+                   weak_ptr_factory_.GetWeakPtr(), encrypted, video_decode_cb));
     return;
   }
 
@@ -356,11 +343,10 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
 }
 
 void PpapiDecryptor::ResetDecoder(StreamType stream_type) {
-  if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE,
-                                 base::Bind(&PpapiDecryptor::ResetDecoder,
-                                            weak_ptr_factory_.GetWeakPtr(),
-                                            stream_type));
+  if (!render_task_runner_->BelongsToCurrentThread()) {
+    render_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PpapiDecryptor::ResetDecoder,
+                              weak_ptr_factory_.GetWeakPtr(), stream_type));
     return;
   }
 
@@ -370,12 +356,10 @@ void PpapiDecryptor::ResetDecoder(StreamType stream_type) {
 }
 
 void PpapiDecryptor::DeinitializeDecoder(StreamType stream_type) {
-  if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&PpapiDecryptor::DeinitializeDecoder,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   stream_type));
+  if (!render_task_runner_->BelongsToCurrentThread()) {
+    render_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PpapiDecryptor::DeinitializeDecoder,
+                              weak_ptr_factory_.GetWeakPtr(), stream_type));
     return;
   }
 
@@ -386,7 +370,7 @@ void PpapiDecryptor::DeinitializeDecoder(StreamType stream_type) {
 
 void PpapiDecryptor::OnDecoderInitialized(StreamType stream_type,
                                           bool success) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
   switch (stream_type) {
     case kAudio:
       DCHECK(!audio_decoder_init_cb_.is_null());
@@ -405,7 +389,7 @@ void PpapiDecryptor::OnSessionMessage(const std::string& session_id,
                                       MessageType message_type,
                                       const std::vector<uint8_t>& message,
                                       const GURL& legacy_destination_url) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
   session_message_cb_.Run(session_id, message_type, message,
                           legacy_destination_url);
 }
@@ -413,7 +397,7 @@ void PpapiDecryptor::OnSessionMessage(const std::string& session_id,
 void PpapiDecryptor::OnSessionKeysChange(const std::string& session_id,
                                          bool has_additional_usable_key,
                                          media::CdmKeysInfo keys_info) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
 
   // TODO(jrummell): Handling resume playback should be done in the media
   // player, not in the Decryptors. http://crbug.com/413413.
@@ -427,12 +411,12 @@ void PpapiDecryptor::OnSessionKeysChange(const std::string& session_id,
 void PpapiDecryptor::OnSessionExpirationUpdate(
     const std::string& session_id,
     const base::Time& new_expiry_time) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
   session_expiration_update_cb_.Run(session_id, new_expiry_time);
 }
 
 void PpapiDecryptor::OnSessionClosed(const std::string& session_id) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
   session_closed_cb_.Run(session_id);
 }
 
@@ -441,7 +425,7 @@ void PpapiDecryptor::OnLegacySessionError(
     MediaKeys::Exception exception_code,
     uint32_t system_code,
     const std::string& error_description) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
   legacy_session_error_cb_.Run(session_id, exception_code, system_code,
                                error_description);
 }
@@ -455,12 +439,12 @@ void PpapiDecryptor::AttemptToResumePlayback() {
 }
 
 void PpapiDecryptor::OnFatalPluginError() {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
   pepper_cdm_wrapper_.reset();
 }
 
 ContentDecryptorDelegate* PpapiDecryptor::CdmDelegate() {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
   return (pepper_cdm_wrapper_) ? pepper_cdm_wrapper_->GetCdmDelegate() : NULL;
 }
 

@@ -8,7 +8,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/key_systems.h"
@@ -56,7 +57,7 @@ void RenderCdmFactory::Create(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!security_origin.is_valid()) {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(cdm_created_cb, nullptr, "Invalid origin."));
     return;
   }
@@ -69,7 +70,7 @@ void RenderCdmFactory::Create(
     scoped_ptr<media::MediaKeys> cdm(
         new media::AesDecryptor(security_origin, session_message_cb,
                                 session_closed_cb, session_keys_change_cb));
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(cdm_created_cb, base::Passed(&cdm), ""));
     return;
   }
@@ -90,7 +91,7 @@ void RenderCdmFactory::Create(
       session_keys_change_cb, session_expiration_update_cb, cdm_created_cb);
 #else
   // No possible CDM to create, so fail the request.
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(cdm_created_cb, nullptr, "Key system not supported."));
 #endif  // defined(ENABLE_PEPPER_CDMS)

@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"

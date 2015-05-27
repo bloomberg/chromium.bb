@@ -7,8 +7,8 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/input/input_handler.h"
 #include "content/common/input/did_overscroll_params.h"
@@ -42,13 +42,13 @@ namespace content {
 InputEventFilter::InputEventFilter(
     const base::Callback<void(const IPC::Message&)>& main_listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-    const scoped_refptr<base::MessageLoopProxy>& target_loop)
+    const scoped_refptr<base::SingleThreadTaskRunner>& target_task_runner)
     : main_task_runner_(main_task_runner),
       main_listener_(main_listener),
       sender_(NULL),
-      target_loop_(target_loop),
+      target_task_runner_(target_task_runner),
       current_overscroll_params_(NULL) {
-  DCHECK(target_loop_.get());
+  DCHECK(target_task_runner_.get());
 }
 
 void InputEventFilter::SetBoundHandler(const Handler& handler) {
@@ -83,7 +83,7 @@ void InputEventFilter::DidStopFlinging(int routing_id) {
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Sender* sender) {
-  io_loop_ = base::MessageLoopProxy::current();
+  io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   sender_ = sender;
 }
 
@@ -116,7 +116,7 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
       return false;
   }
 
-  target_loop_->PostTask(
+  target_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&InputEventFilter::ForwardToHandler, this, message));
   return true;
@@ -128,7 +128,7 @@ InputEventFilter::~InputEventFilter() {
 
 void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   DCHECK(!handler_.is_null());
-  DCHECK(target_loop_->BelongsToCurrentThread());
+  DCHECK(target_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("input", "InputEventFilter::ForwardToHandler",
                "message_type", GetInputMessageTypeName(message));
 
@@ -184,16 +184,15 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
 }
 
 void InputEventFilter::SendMessage(scoped_ptr<IPC::Message> message) {
-  DCHECK(target_loop_->BelongsToCurrentThread());
+  DCHECK(target_task_runner_->BelongsToCurrentThread());
 
-  io_loop_->PostTask(FROM_HERE,
-                     base::Bind(&InputEventFilter::SendMessageOnIOThread,
-                                this,
-                                base::Passed(&message)));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&InputEventFilter::SendMessageOnIOThread, this,
+                            base::Passed(&message)));
 }
 
 void InputEventFilter::SendMessageOnIOThread(scoped_ptr<IPC::Message> message) {
-  DCHECK(io_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!sender_)
     return;  // Filter was removed.

@@ -5,9 +5,11 @@
 #include "content/renderer/browser_plugin/browser_plugin.h"
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/view_messages.h"
@@ -202,10 +204,9 @@ void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {
   // to fire their listeners and potentially overlay the webview with custom
   // behavior. If the BrowserPlugin is destroyed in the meantime, then the
   // task will not be executed.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserPlugin::ShowSadGraphic,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BrowserPlugin::ShowSadGraphic,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BrowserPlugin::OnSetContentsOpaque(int browser_plugin_instance_id,
@@ -302,10 +303,9 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
 
   // Defer attach call so that if there's any pending browser plugin
   // destruction, then it can progress first.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&BrowserPlugin::UpdateInternalInstanceId,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BrowserPlugin::UpdateInternalInstanceId,
+                            weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 

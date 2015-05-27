@@ -438,7 +438,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Whether the video size info is available.
   bool has_size_info_;
 
-  const scoped_refptr<base::MessageLoopProxy> compositor_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> compositor_loop_;
 
   // Object for allocating stream textures.
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;

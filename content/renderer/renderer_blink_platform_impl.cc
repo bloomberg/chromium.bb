@@ -7,13 +7,15 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/blink/context_provider_web_context.h"
 #include "components/scheduler/child/web_scheduler_impl.h"
@@ -639,7 +641,7 @@ bool RendererBlinkPlatformImpl::canAccelerate2dCanvas() {
 bool RendererBlinkPlatformImpl::isThreadedCompositingEnabled() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   // thread can be NULL in tests.
-  return thread && thread->compositor_message_loop_proxy().get();
+  return thread && thread->compositor_task_runner().get();
 }
 
 double RendererBlinkPlatformImpl::audioHardwareSampleRate() {
@@ -1189,10 +1191,9 @@ void RendererBlinkPlatformImpl::SendFakeDeviceEventDataForTesting(
   if (!data)
     return;
 
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PlatformEventObserverBase::SendFakeDataForTesting,
-                 base::Unretained(observer), data));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PlatformEventObserverBase::SendFakeDataForTesting,
+                            base::Unretained(observer), data));
 }
 
 void RendererBlinkPlatformImpl::stopListening(

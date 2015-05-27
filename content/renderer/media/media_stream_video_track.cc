@@ -7,6 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
 namespace content {
@@ -115,7 +118,7 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallback(VideoSinkId id) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&FrameDeliverer::RemoveCallbackOnIO, this, id,
-                            base::MessageLoopProxy::current()));
+                            base::ThreadTaskRunnerHandle::Get()));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(

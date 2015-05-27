@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -129,7 +129,7 @@ class InputEventFilterTest : public testing::Test {
     filter_ = new InputEventFilter(
         base::Bind(base::IgnoreResult(&IPCMessageRecorder::OnMessageReceived),
                    base::Unretained(&message_recorder_)),
-        base::MessageLoopProxy::current(), message_loop_.message_loop_proxy());
+        base::ThreadTaskRunnerHandle::Get(), message_loop_.task_runner());
     filter_->SetBoundHandler(base::Bind(&InputEventRecorder::HandleInputEvent,
                                         base::Unretained(&event_recorder_)));
 

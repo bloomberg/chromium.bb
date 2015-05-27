@@ -9,6 +9,8 @@
 #include <GLES2/gl2extchromium.h>
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #ifndef NDEBUG
 #include "base/logging.h"
 #endif
@@ -669,7 +671,7 @@ class VideoDecoderShim::DecoderImpl {
   // WeakPtr is bound to main_message_loop_. Use only in shim callbacks.
   base::WeakPtr<VideoDecoderShim> shim_;
   scoped_ptr<media::VideoDecoder> decoder_;
-  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   // Queue of decodes waiting for the decoder.
   typedef std::queue<PendingDecode> PendingDecodeQueue;
   PendingDecodeQueue pending_decodes_;
@@ -685,7 +687,7 @@ class VideoDecoderShim::DecoderImpl {
 VideoDecoderShim::DecoderImpl::DecoderImpl(
     const base::WeakPtr<VideoDecoderShim>& proxy)
     : shim_(proxy),
-      main_message_loop_(base::MessageLoopProxy::current()),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       awaiting_decoder_(false),
       decode_id_(0) {
 }
@@ -700,12 +702,12 @@ void VideoDecoderShim::DecoderImpl::Initialize(
 #if !defined(MEDIA_DISABLE_LIBVPX)
   if (config.codec() == media::kCodecVP9) {
     decoder_.reset(
-        new media::VpxVideoDecoder(base::MessageLoopProxy::current()));
+        new media::VpxVideoDecoder(base::ThreadTaskRunnerHandle::Get()));
   } else
 #endif
   {
     scoped_ptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder(
-        new media::FFmpegVideoDecoder(base::MessageLoopProxy::current()));
+        new media::FFmpegVideoDecoder(base::ThreadTaskRunnerHandle::Get()));
     ffmpeg_video_decoder->set_decode_nalus(true);
     decoder_ = ffmpeg_video_decoder.Pass();
   }
@@ -740,11 +742,9 @@ void VideoDecoderShim::DecoderImpl::Reset() {
   while (!pending_decodes_.empty()) {
     const PendingDecode& decode = pending_decodes_.front();
     scoped_ptr<PendingFrame> pending_frame(new PendingFrame(decode.decode_id));
-    main_message_loop_->PostTask(FROM_HERE,
-                                 base::Bind(&VideoDecoderShim::OnDecodeComplete,
-                                            shim_,
-                                            media::VideoDecoder::kAborted,
-                                            decode.decode_id));
+    main_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoDecoderShim::OnDecodeComplete, shim_,
+                              media::VideoDecoder::kAborted, decode.decode_id));
     pending_decodes_.pop();
   }
   decoder_->Reset(base::Bind(&VideoDecoderShim::DecoderImpl::OnResetComplete,
@@ -778,12 +778,9 @@ void VideoDecoderShim::DecoderImpl::OnPipelineStatus(
 
   // Calculate how many textures the shim should create.
   uint32_t shim_texture_pool_size = media::limits::kMaxVideoFrames + 1;
-  main_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoDecoderShim::OnInitializeComplete,
-                 shim_,
-                 result,
-                 shim_texture_pool_size));
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoDecoderShim::OnInitializeComplete, shim_,
+                            result, shim_texture_pool_size));
 }
 
 void VideoDecoderShim::DecoderImpl::DoDecode() {
@@ -819,10 +816,9 @@ void VideoDecoderShim::DecoderImpl::OnDecodeComplete(
       break;
   }
 
-  main_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &VideoDecoderShim::OnDecodeComplete, shim_, result, decode_id_));
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoDecoderShim::OnDecodeComplete, shim_, result,
+                            decode_id_));
 
   DoDecode();
 }
@@ -840,14 +836,13 @@ void VideoDecoderShim::DecoderImpl::OnOutputComplete(
     pending_frame.reset(new PendingFrame(decode_id_));
   }
 
-  main_message_loop_->PostTask(FROM_HERE,
-                               base::Bind(&VideoDecoderShim::OnOutputComplete,
-                                          shim_,
-                                          base::Passed(&pending_frame)));
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoDecoderShim::OnOutputComplete, shim_,
+                            base::Passed(&pending_frame)));
 }
 
 void VideoDecoderShim::DecoderImpl::OnResetComplete() {
-  main_message_loop_->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoDecoderShim::OnResetComplete, shim_));
 }
 

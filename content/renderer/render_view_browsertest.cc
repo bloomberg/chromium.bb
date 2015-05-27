@@ -5,9 +5,12 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/memory/shared_memory.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "content/child/request_extra_data.h"
@@ -2425,8 +2428,9 @@ TEST_F(DevToolsAgentTest, DevToolsResumeOnClose) {
 
   // Executing javascript will pause the thread and create nested message loop.
   // Posting task simulates message coming from browser.
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &DevToolsAgentTest::CloseWhilePaused, base::Unretained(this)));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&DevToolsAgentTest::CloseWhilePaused, base::Unretained(this)));
   ExecuteJavaScript("debugger;");
 
   // CloseWhilePaused should resume execution and continue here.

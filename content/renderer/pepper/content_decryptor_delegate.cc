@@ -5,7 +5,6 @@
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"

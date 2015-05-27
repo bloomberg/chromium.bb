@@ -17,7 +17,6 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace base {
-class MessageLoopProxy;
 class SingleThreadTaskRunner;
 }
 
@@ -42,7 +41,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   InputEventFilter(
       const base::Callback<void(const IPC::Message&)>& main_listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-      const scoped_refptr<base::MessageLoopProxy>& target_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& target_task_runner);
 
   // The |handler| is invoked on the thread associated with |target_loop| to
   // handle input events matching the filtered routes.
@@ -79,11 +78,11 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   base::Callback<void(const IPC::Message&)> main_listener_;
 
   // The sender_ only gets invoked on the thread corresponding to io_loop_.
-  scoped_refptr<base::MessageLoopProxy> io_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   IPC::Sender* sender_;
 
   // The handler_ only gets Run on the thread corresponding to target_loop_.
-  scoped_refptr<base::MessageLoopProxy> target_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> target_task_runner_;
   Handler handler_;
 
   // Protects access to routes_.

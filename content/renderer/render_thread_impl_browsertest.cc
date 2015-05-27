@@ -4,8 +4,10 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_vector.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/in_process_child_thread_params.h"
@@ -121,7 +123,8 @@ class QuitOnTestMsgFilter : public IPC::MessageFilter {
 
   // IPC::MessageFilter overrides:
   bool OnMessageReceived(const IPC::Message& message) override {
-    message_loop_->PostTask(FROM_HERE, base::Bind(&QuitTask, message_loop_));
+    message_loop_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&QuitTask, message_loop_));
     return true;
   }
 
@@ -195,7 +198,7 @@ TEST_F(RenderThreadImplBrowserTest,
        WILL_LEAK(InputHandlerManagerDestroyedAfterCompositorThread)) {
   ASSERT_TRUE(thread_->input_handler_manager());
 
-  thread_->compositor_message_loop_proxy()->PostTask(
+  thread_->compositor_task_runner()->PostTask(
       FROM_HERE, base::Bind(&CheckRenderThreadInputHandlerManager, thread_));
 }
 

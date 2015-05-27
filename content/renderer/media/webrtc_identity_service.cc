@@ -4,6 +4,9 @@
 
 #include "content/renderer/media/webrtc_identity_service.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/media/webrtc_identity_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "net/base/net_errors.h"
@@ -128,12 +131,10 @@ void WebRTCIdentityService::SendRequest(const RequestInfo& request_info) {
                                                   request_info.origin,
                                                   request_info.identity_name,
                                                   request_info.common_name))) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&WebRTCIdentityService::OnRequestFailed,
-                   base::Unretained(this),
-                   request_info.request_id,
-                   net::ERR_UNEXPECTED));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&WebRTCIdentityService::OnRequestFailed,
+                              base::Unretained(this), request_info.request_id,
+                              net::ERR_UNEXPECTED));
   }
 }
 

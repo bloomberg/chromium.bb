@@ -4,7 +4,7 @@
 
 #include "content/renderer/input/input_handler_wrapper.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -14,13 +14,13 @@ namespace content {
 InputHandlerWrapper::InputHandlerWrapper(
     InputHandlerManager* input_handler_manager,
     int routing_id,
-    const scoped_refptr<base::MessageLoopProxy>& main_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
     const base::WeakPtr<cc::InputHandler>& input_handler,
     const base::WeakPtr<RenderViewImpl>& render_view_impl)
     : input_handler_manager_(input_handler_manager),
       routing_id_(routing_id),
       input_handler_proxy_(input_handler.get(), this),
-      main_loop_(main_loop),
+      main_task_runner_(main_task_runner),
       render_view_impl_(render_view_impl) {
   DCHECK(input_handler);
 }
@@ -30,11 +30,9 @@ InputHandlerWrapper::~InputHandlerWrapper() {
 
 void InputHandlerWrapper::TransferActiveWheelFlingAnimation(
     const blink::WebActiveWheelFlingParameters& params) {
-  main_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&RenderViewImpl::TransferActiveWheelFlingAnimation,
-                 render_view_impl_,
-                 params));
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&RenderViewImpl::TransferActiveWheelFlingAnimation,
+                            render_view_impl_, params));
 }
 
 void InputHandlerWrapper::WillShutdown() {

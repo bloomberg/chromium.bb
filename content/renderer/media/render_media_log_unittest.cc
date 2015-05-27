@@ -50,6 +50,7 @@ class RenderMediaLogTest : public testing::Test {
   }
 
  private:
+  base::MessageLoop message_loop_;
   MockRenderThread render_thread_;
   scoped_refptr<RenderMediaLog> log_;
   base::SimpleTestTickClock* tick_clock_;  // Owned by |log_|.

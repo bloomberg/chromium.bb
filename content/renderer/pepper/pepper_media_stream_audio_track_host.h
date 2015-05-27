@@ -20,7 +20,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace content {
@@ -114,7 +114,7 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     // Intended size of each output buffer.
     int32_t output_buffer_size_;
 
-    scoped_refptr<base::MessageLoopProxy> main_message_loop_proxy_;
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
     base::ThreadChecker audio_thread_checker_;
 

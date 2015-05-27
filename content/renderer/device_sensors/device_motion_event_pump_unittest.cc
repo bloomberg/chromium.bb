@@ -4,9 +4,11 @@
 
 #include "device_motion_event_pump.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/device_sensors/device_motion_hardware_buffer.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -191,7 +193,7 @@ TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
   motion_pump()->Start(listener());
   motion_pump()->OnDidStart(handle());
 
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(100));
   base::MessageLoop::current()->Run();

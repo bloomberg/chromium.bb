@@ -111,7 +111,7 @@ class P2PSocketClientImpl : public P2PSocketClient {
 
   P2PSocketDispatcher* dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
-  scoped_refptr<base::MessageLoopProxy> delegate_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
   int socket_id_;
   P2PSocketClientDelegate* delegate_;
   State state_;

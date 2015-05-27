@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
@@ -106,8 +108,8 @@ void DataFromWebURLResponse(RendererPpapiHostImpl* host_impl,
                                                      renderer_pending_host_id,
                                                      callback));
   } else {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, data));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, data));
   }
 }
 

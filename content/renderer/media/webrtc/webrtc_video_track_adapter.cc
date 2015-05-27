@@ -4,8 +4,11 @@
 
 #include "content/renderer/media/webrtc/webrtc_video_track_adapter.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
@@ -31,7 +34,8 @@ class WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter
     : public base::RefCountedThreadSafe<WebRtcVideoSourceAdapter> {
  public:
   WebRtcVideoSourceAdapter(
-      const scoped_refptr<base::MessageLoopProxy>& libjingle_worker_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>&
+          libjingle_worker_thread,
       const scoped_refptr<webrtc::VideoSourceInterface>& source,
       WebRtcVideoCapturerAdapter* capture_adapter);
 
@@ -52,7 +56,7 @@ class WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter
   friend class base::RefCountedThreadSafe<WebRtcVideoSourceAdapter>;
   virtual ~WebRtcVideoSourceAdapter();
 
-  scoped_refptr<base::MessageLoopProxy> render_thread_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner_;
 
   // |render_thread_checker_| is bound to the main render thread.
   base::ThreadChecker render_thread_checker_;
@@ -61,7 +65,7 @@ class WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter
 
   // Used for posting frames to libjingle's worker thread. Accessed on the
   // IO-thread.
-  scoped_refptr<base::MessageLoopProxy> libjingle_worker_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> libjingle_worker_thread_;
 
   scoped_refptr<webrtc::VideoSourceInterface> video_source_;
 
@@ -75,10 +79,10 @@ class WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter
 };
 
 WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter::WebRtcVideoSourceAdapter(
-    const scoped_refptr<base::MessageLoopProxy>& libjingle_worker_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& libjingle_worker_thread,
     const scoped_refptr<webrtc::VideoSourceInterface>& source,
     WebRtcVideoCapturerAdapter* capture_adapter)
-    : render_thread_message_loop_(base::MessageLoopProxy::current()),
+    : render_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       libjingle_worker_thread_(libjingle_worker_thread),
       video_source_(source),
       capture_adapter_(capture_adapter) {

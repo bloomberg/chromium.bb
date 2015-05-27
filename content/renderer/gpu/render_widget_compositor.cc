@@ -8,11 +8,14 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
@@ -742,7 +745,7 @@ bool RenderWidgetCompositor::CommitIsSynchronous() const {
 
 void RenderWidgetCompositor::ScheduleCommit() {
   if (CommitIsSynchronous()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&RenderWidgetCompositor::SynchronousCommit,
                               weak_factory_.GetWeakPtr()));
   } else {
@@ -912,7 +915,7 @@ void RenderWidgetCompositor::DidFailToInitializeOutputSurface() {
   LOG_IF(FATAL, (num_failed_recreate_attempts_ >= MAX_OUTPUT_SURFACE_RETRIES))
       << "Failed to create a fallback OutputSurface.";
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RenderWidgetCompositor::RequestNewOutputSurface,
                             weak_factory_.GetWeakPtr()));
 }

@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
@@ -22,7 +23,7 @@ WebRtcLocalAudioTrackAdapter::Create(
     webrtc::AudioSourceInterface* track_source) {
   // TODO(tommi): Change this so that the signaling thread is one of the
   // parameters to this method.
-  scoped_refptr<base::MessageLoopProxy> signaling_thread;
+  scoped_refptr<base::SingleThreadTaskRunner> signaling_thread;
   RenderThreadImpl* current = RenderThreadImpl::current();
   if (current) {
     PeerConnectionDependencyFactory* pc_factory =
