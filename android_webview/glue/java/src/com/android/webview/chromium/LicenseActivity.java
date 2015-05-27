@@ -9,7 +9,8 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+
+import org.chromium.base.Log;
 
 /**
  * Activity for displaying WebView OSS licenses.
@@ -18,19 +19,15 @@ public class LicenseActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        final String packageName = getPackageName();
         final Intent intent = new Intent(Intent.ACTION_VIEW);
+        final String licenseUri = String.format("content://%s.%s",
+                packageName, LicenseContentProvider.LICENSES_URI_SUFFIX);
         intent.setDataAndType(
-                Uri.parse(LicenseContentProvider.LICENSES_URI),
-                LicenseContentProvider.LICENSES_CONTENT_TYPE);
+                Uri.parse(licenseUri), LicenseContentProvider.LICENSES_CONTENT_TYPE);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
-        // Try both AOSP and WebView Google package names, as we don't know which one is used.
-        int titleId = getResources().getIdentifier(
-                "license_activity_title", "string", "com.android.webview");
-        if (titleId == 0) {
-            titleId = getResources().getIdentifier(
-                    "license_activity_title", "string", "com.google.android.webview");
-        }
+        final int titleId = getResources().getIdentifier(
+                "license_activity_title", "string", packageName);
         if (titleId != 0) {
             intent.putExtra(Intent.EXTRA_TITLE, getString(titleId));
         }
@@ -38,10 +35,9 @@ public class LicenseActivity extends Activity {
 
         try {
             startActivity(intent);
-            finish();
         } catch (ActivityNotFoundException e) {
             Log.e("WebView", "Failed to find viewer", e);
-            finish();
         }
+        finish();
     }
 }

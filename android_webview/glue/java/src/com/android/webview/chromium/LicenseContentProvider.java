@@ -23,8 +23,7 @@ import java.io.OutputStream;
  * Content provider for the OSS licenses file.
  */
 public class LicenseContentProvider extends ContentProvider {
-    public static final String LICENSES_URI =
-            "content://com.android.webview.chromium.LicenseContentProvider/webview_licenses";
+    public static final String LICENSES_URI_SUFFIX = "LicenseContentProvider/webview_licenses";
     public static final String LICENSES_CONTENT_TYPE = "text/html";
 
     @Override
@@ -34,7 +33,7 @@ public class LicenseContentProvider extends ContentProvider {
 
     @Override
     public AssetFileDescriptor openAssetFile(Uri uri, String mode) {
-        if (uri != null && LICENSES_URI.compareTo(uri.toString()) == 0) {
+        if (uri != null && uri.toString().endsWith(LICENSES_URI_SUFFIX)) {
             try {
                 return extractAsset("webview_licenses.notice");
             } catch (IOException e) {
@@ -79,7 +78,7 @@ public class LicenseContentProvider extends ContentProvider {
 
     @Override
     public String getType(Uri uri) {
-        if (uri != null && LICENSES_URI.compareTo(uri.toString()) == 0) {
+        if (uri != null && uri.toString().endsWith(LICENSES_URI_SUFFIX)) {
             return LICENSES_CONTENT_TYPE;
         }
         return null;
