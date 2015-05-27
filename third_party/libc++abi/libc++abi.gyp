@@ -33,8 +33,10 @@
         '../libc++/trunk/include'
       ],
       'cflags': [
+        '-fPIC',
         '-fstrict-aliasing',
         '-nostdinc++',
+        '-pthread',
         '-std=c++11',
       ],
       'cflags_cc!': [
@@ -44,18 +46,6 @@
       'cflags!': [
         '-fvisibility=hidden',
       ],
-      'ldflags': [
-        '-nodefaultlibs',
-      ],
-      'ldflags!': [
-        '-pthread',
-      ],
-      'libraries': [
-        '-lc',
-        '-lgcc_s',
-        '-lpthread',
-        '-lrt',
-      ]
     },
   ]
 }

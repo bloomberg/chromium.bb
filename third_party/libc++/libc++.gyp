@@ -88,8 +88,10 @@
         '../libc++abi/trunk/include',
       ],
       'cflags': [
+        '-fPIC',
         '-fstrict-aliasing',
         '-nostdinc++',
+        '-pthread',
         '-std=c++11',
       ],
       'cflags_cc!': [
@@ -103,14 +105,14 @@
         '-nodefaultlibs',
       ],
       'ldflags!': [
-        # This somehow causes a warning from clang about an unused compilation
-        # option. Use '-lpthread' instead.
-        # TODO(earthdok): find out what's causing the warning.
+        # -nodefaultlibs turns -pthread into a no-op, causing an unused argument
+        # warning. Explicitly link with -lpthread instead.
         '-pthread',
       ],
       'libraries': [
         '-lc',
         '-lgcc_s',
+        '-lm',
         '-lpthread',
         '-lrt',
       ],
