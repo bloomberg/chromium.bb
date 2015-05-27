@@ -20,7 +20,14 @@ using mojo::String;
 
 namespace html_viewer {
 
-AxProviderImpl::AxProviderImpl(WebView* web_view) : web_view_(web_view) {
+AxProviderImpl::AxProviderImpl(
+    WebView* web_view,
+    mojo::InterfaceRequest<mojo::AxProvider> request)
+    : web_view_(web_view),
+      binding_(this, request.Pass()) {
+}
+
+AxProviderImpl::~AxProviderImpl() {
 }
 
 void AxProviderImpl::GetTree(

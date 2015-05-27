@@ -179,8 +179,10 @@ void WebSocketEventHandler::DidWriteToReceiveStream(
 
 WebSocketImpl::WebSocketImpl(
     NetworkContext* context,
-    scoped_ptr<mojo::AppRefCount> app_refcount)
-    : context_(context), app_refcount_(app_refcount.Pass()) {
+    scoped_ptr<mojo::AppRefCount> app_refcount,
+    InterfaceRequest<WebSocket> request)
+    : context_(context), app_refcount_(app_refcount.Pass()),
+      binding_(this, request.Pass()) {
 }
 
 WebSocketImpl::~WebSocketImpl() {

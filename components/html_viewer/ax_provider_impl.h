@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_AX_PROVIDER_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_AX_PROVIDER_IMPL_H_
 
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo_services/src/accessibility/public/interfaces/accessibility.mojom.h"
 
 namespace blink {
@@ -16,9 +16,11 @@ class WebView;
 namespace html_viewer {
 
 // Caller must ensure that |web_view| outlives AxProviderImpl.
-class AxProviderImpl : public mojo::InterfaceImpl<mojo::AxProvider> {
+class AxProviderImpl : public mojo::AxProvider {
  public:
-  explicit AxProviderImpl(blink::WebView* web_view);
+  AxProviderImpl(blink::WebView* web_view,
+                 mojo::InterfaceRequest<mojo::AxProvider> request);
+  ~AxProviderImpl() override;
   void GetTree(const mojo::Callback<void(mojo::Array<mojo::AxNodePtr> nodes)>&
                    callback) override;
 
@@ -32,6 +34,7 @@ class AxProviderImpl : public mojo::InterfaceImpl<mojo::AxProvider> {
                                 int next_sibling_id);
 
   blink::WebView* web_view_;
+  mojo::Binding<mojo::AxProvider> binding_;
 };
 
 }  // namespace html_viewer

@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/services/network/public/interfaces/web_socket.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace net {
 class WebSocketChannel;
@@ -20,10 +20,11 @@ class WebSocketReadQueue;
 
 // Forms a bridge between the WebSocket mojo interface and the net::WebSocket
 // implementation.
-class WebSocketImpl : public InterfaceImpl<WebSocket> {
+class WebSocketImpl : public WebSocket {
  public:
   WebSocketImpl(NetworkContext* context,
-                scoped_ptr<mojo::AppRefCount> app_refcount);
+                scoped_ptr<mojo::AppRefCount> app_refcount,
+                InterfaceRequest<WebSocket> request);
   ~WebSocketImpl() override;
 
  private:
@@ -49,6 +50,7 @@ class WebSocketImpl : public InterfaceImpl<WebSocket> {
   scoped_ptr<WebSocketReadQueue> read_queue_;
   NetworkContext* context_;
   scoped_ptr<mojo::AppRefCount> app_refcount_;
+  StrongBinding<WebSocket> binding_;
 };
 
 }  // namespace mojo

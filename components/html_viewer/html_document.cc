@@ -162,7 +162,7 @@ void HTMLDocument::Create(mojo::ApplicationConnection* connection,
     ax_provider_requests_.insert(cached_request);
   } else {
     ax_providers_.insert(
-        WeakBindToRequest(new AxProviderImpl(web_view_), &request));
+        new AxProviderImpl(web_view_, request.Pass()));
   }
 }
 
@@ -320,7 +320,7 @@ void HTMLDocument::didFinishLoad(blink::WebLocalFrame* frame) {
   did_finish_load_ = true;
   // Bind any pending AxProviderImpl interface requests.
   for (auto it : ax_provider_requests_)
-    ax_providers_.insert(WeakBindToRequest(new AxProviderImpl(web_view_), it));
+    ax_providers_.insert(new AxProviderImpl(web_view_, it->Pass()));
   STLDeleteElements(&ax_provider_requests_);
 }
 

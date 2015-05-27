@@ -13,8 +13,10 @@ namespace mojo {
 
 TCPServerSocketImpl::TCPServerSocketImpl(
     scoped_ptr<net::TCPSocket> socket,
-    scoped_ptr<mojo::AppRefCount> app_refcount)
-    : socket_(socket.Pass()), app_refcount_(app_refcount.Pass()) {
+    scoped_ptr<mojo::AppRefCount> app_refcount,
+    InterfaceRequest<TCPServerSocket> request)
+    : socket_(socket.Pass()), app_refcount_(app_refcount.Pass()),
+      binding_(this, request.Pass()) {
 }
 
 TCPServerSocketImpl::~TCPServerSocketImpl() {

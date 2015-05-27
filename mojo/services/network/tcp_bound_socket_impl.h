@@ -9,13 +9,14 @@
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/services/network/public/interfaces/tcp_bound_socket.mojom.h"
 #include "net/socket/tcp_socket.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
 
-class TCPBoundSocketImpl : public InterfaceImpl<TCPBoundSocket> {
+class TCPBoundSocketImpl : public TCPBoundSocket {
  public:
-  explicit TCPBoundSocketImpl(scoped_ptr<mojo::AppRefCount> app_refcount);
+  TCPBoundSocketImpl(scoped_ptr<mojo::AppRefCount> app_refcount,
+                     InterfaceRequest<TCPBoundSocket> request);
   ~TCPBoundSocketImpl() override;
 
   // Does the actual binding. Returns a net error code. On net::OK, the bound
@@ -47,6 +48,7 @@ class TCPBoundSocketImpl : public InterfaceImpl<TCPBoundSocket> {
   InterfaceRequest<TCPConnectedSocket> pending_connect_socket_;
   Callback<void(NetworkErrorPtr)> pending_connect_callback_;
   scoped_ptr<mojo::AppRefCount> app_refcount_;
+  StrongBinding<TCPBoundSocket> binding_;
 };
 
 }  // namespace mojo

@@ -104,9 +104,12 @@ class HTMLViewerApplication : public mojo::Application {
   DISALLOW_COPY_AND_ASSIGN(HTMLViewerApplication);
 };
 
-class ContentHandlerImpl : public mojo::InterfaceImpl<ContentHandler> {
+class ContentHandlerImpl : public mojo::ContentHandler {
  public:
-  explicit ContentHandlerImpl(Setup* setup) : setup_(setup) {}
+  ContentHandlerImpl(Setup* setup,
+                     mojo::InterfaceRequest<ContentHandler> request)
+      : setup_(setup),
+        binding_(this, request.Pass()) {}
   ~ContentHandlerImpl() override {}
 
  private:
@@ -118,6 +121,7 @@ class ContentHandlerImpl : public mojo::InterfaceImpl<ContentHandler> {
   }
 
   Setup* setup_;
+  mojo::StrongBinding<mojo::ContentHandler> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerImpl);
 };
@@ -149,7 +153,7 @@ class HTMLViewer : public mojo::ApplicationDelegate,
   // Overridden from InterfaceFactory<ContentHandler>
   void Create(ApplicationConnection* connection,
               mojo::InterfaceRequest<ContentHandler> request) override {
-    BindToRequest(new ContentHandlerImpl(setup_.get()), &request);
+    new ContentHandlerImpl(setup_.get(), request.Pass());
   }
 
   scoped_ptr<Setup> setup_;

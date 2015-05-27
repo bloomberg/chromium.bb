@@ -112,7 +112,9 @@ TEST_F(AxProviderImplTest, MAYBE_Basic) {
       WebURL(GURL("http://someplace.net")));
   base::MessageLoop::current()->Run();
 
-  html_viewer::AxProviderImpl ax_provider_impl(view);
+  mojo::AxProviderPtr service_ptr;
+  html_viewer::AxProviderImpl ax_provider_impl(view,
+                                               mojo::GetProxy(&service_ptr));
   NodeCatcher catcher;
   ax_provider_impl.GetTree(
       base::Bind(&NodeCatcher::OnNodes, base::Unretained(&catcher)));

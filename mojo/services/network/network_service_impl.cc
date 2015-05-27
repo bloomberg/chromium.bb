@@ -18,10 +18,12 @@ namespace mojo {
 NetworkServiceImpl::NetworkServiceImpl(
     ApplicationConnection* connection,
     NetworkContext* context,
-    scoped_ptr<mojo::AppRefCount> app_refcount)
+    scoped_ptr<mojo::AppRefCount> app_refcount,
+    InterfaceRequest<NetworkService> request)
     : context_(context),
       app_refcount_(app_refcount.Pass()),
-      origin_(GURL(connection->GetRemoteApplicationURL()).GetOrigin()) {
+      origin_(GURL(connection->GetRemoteApplicationURL()).GetOrigin()),
+      binding_(this, request.Pass()) {
 }
 
 NetworkServiceImpl::~NetworkServiceImpl() {
@@ -36,12 +38,11 @@ void NetworkServiceImpl::CreateURLLoader(InterfaceRequest<URLLoader> loader) {
 }
 
 void NetworkServiceImpl::GetCookieStore(InterfaceRequest<CookieStore> store) {
-  BindToRequest(new CookieStoreImpl(context_, origin_, app_refcount_->Clone()),
-                &store);
+  new CookieStoreImpl(context_, origin_, app_refcount_->Clone(), store.Pass());
 }
 
 void NetworkServiceImpl::CreateWebSocket(InterfaceRequest<WebSocket> socket) {
-  BindToRequest(new WebSocketImpl(context_, app_refcount_->Clone()), &socket);
+  new WebSocketImpl(context_, app_refcount_->Clone(), socket.Pass());
 }
 
 void NetworkServiceImpl::CreateTCPBoundSocket(
@@ -49,14 +50,14 @@ void NetworkServiceImpl::CreateTCPBoundSocket(
     InterfaceRequest<TCPBoundSocket> bound_socket,
     const CreateTCPBoundSocketCallback& callback) {
   scoped_ptr<TCPBoundSocketImpl> bound(new TCPBoundSocketImpl(
-      app_refcount_->Clone()));
+      app_refcount_->Clone(), bound_socket.Pass()));
   int net_error = bound->Bind(local_address.Pass());
   if (net_error != net::OK) {
     callback.Run(MakeNetworkError(net_error), NetAddressPtr());
     return;
   }
+  ignore_result(bound.release());  // Strongly owned by the message pipe.
   NetAddressPtr resulting_local_address(bound->GetLocalAddress());
-  BindToRequest(bound.release(), &bound_socket);
   callback.Run(MakeNetworkError(net::OK), resulting_local_address.Pass());
 }
 

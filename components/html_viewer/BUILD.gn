@@ -131,7 +131,6 @@ source_set("lib") {
     "//mojo/services/network/public/interfaces",
     "//net",
     "//skia",
-    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
     "//third_party/mojo_services/src/accessibility/public/interfaces",
     "//ui/mojo/events:interfaces",
     "//ui/events",
@@ -177,6 +176,7 @@ mojo_application_package("html_viewer") {
     "//mojo/common",
     "//mojo/platform_handle",
     "//third_party/icu:icudata",
+    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
     "//ui/resources:ui_test_pak",
   ]
   data_deps = [ "//mojo/services/network:network" ]
@@ -199,10 +199,12 @@ test("tests") {
   sources = [
     "ax_provider_impl_unittest.cc",
     "discardable_memory_allocator_unittest.cc",
+    "run_all_unittests.cc",
   ]
   deps = [
     ":lib",
-    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//third_party/mojo/src/mojo/edk/system",
   ]
 }
 
@@ -220,6 +222,7 @@ mojo_native_application("apptests") {
     "//net:test_support",
     "//testing/gtest",
     "//third_party/mojo_services/src/accessibility/public/interfaces",
+    "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
   ]
 
   data_deps = [ ":html_viewer" ]

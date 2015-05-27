@@ -7,16 +7,18 @@
 
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "url/gurl.h"
 
 namespace mojo {
 class NetworkContext;
 
-class CookieStoreImpl : public InterfaceImpl<CookieStore> {
+class CookieStoreImpl : public CookieStore {
  public:
   CookieStoreImpl(NetworkContext* context,
                   const GURL& origin,
-                  scoped_ptr<mojo::AppRefCount> app_refcount);
+                  scoped_ptr<mojo::AppRefCount> app_refcount,
+                  InterfaceRequest<CookieStore> request);
   ~CookieStoreImpl() override;
 
  private:
@@ -29,6 +31,7 @@ class CookieStoreImpl : public InterfaceImpl<CookieStore> {
   NetworkContext* context_;
   GURL origin_;
   scoped_ptr<mojo::AppRefCount> app_refcount_;
+  StrongBinding<CookieStore> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieStoreImpl);
 };

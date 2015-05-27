@@ -72,11 +72,12 @@ namespace html_viewer {
 
 // This class forms a bridge from the mojo WebSocketClient interface and the
 // Blink WebSocketHandleClient interface.
-class WebSocketClientImpl : public mojo::InterfaceImpl<mojo::WebSocketClient> {
+class WebSocketClientImpl : public mojo::WebSocketClient {
  public:
-  explicit WebSocketClientImpl(WebSocketHandleImpl* handle,
-                               blink::WebSocketHandleClient* client)
-      : handle_(handle), client_(client) {}
+  WebSocketClientImpl(WebSocketHandleImpl* handle,
+                      blink::WebSocketHandleClient* client,
+                      mojo::InterfaceRequest<mojo::WebSocketClient> request)
+      : handle_(handle), client_(client), binding_(this, request.Pass()) {}
   ~WebSocketClientImpl() override {}
 
  private:
@@ -141,6 +142,7 @@ class WebSocketClientImpl : public mojo::InterfaceImpl<mojo::WebSocketClient> {
   blink::WebSocketHandleClient* client_;
   mojo::ScopedDataPipeConsumerHandle receive_stream_;
   scoped_ptr<WebSocketReadQueue> read_queue_;
+  mojo::Binding<mojo::WebSocketClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketClientImpl);
 };
@@ -162,11 +164,15 @@ void WebSocketHandleImpl::connect(const WebURL& url,
                                   const WebVector<WebString>& protocols,
                                   const WebSerializedOrigin& origin,
                                   WebSocketHandleClient* client) {
-  client_.reset(new WebSocketClientImpl(this, client));
-  mojo::WebSocketClientPtr client_ptr;
   // TODO(mpcomplete): Is this the right ownership model? Or should mojo own
   // |client_|?
-  WeakBindToProxy(client_.get(), &client_ptr);
+  mojo::WebSocketClientPtr client_ptr;
+  mojo::MessagePipe pipe;
+  client_ptr.Bind(
+      mojo::InterfacePtrInfo<mojo::WebSocketClient>(pipe.handle0.Pass(), 0u));
+  mojo::InterfaceRequest<mojo::WebSocketClient> request;
+  request.Bind(pipe.handle1.Pass());
+  client_.reset(new WebSocketClientImpl(this, client, request.Pass()));
 
   mojo::DataPipe data_pipe;
   send_stream_ = data_pipe.producer_handle.Pass();
