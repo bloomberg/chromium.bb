@@ -4,6 +4,7 @@
 
 #include "components/search_provider_logos/logo_tracker.h"
 
+#include <stdint.h>
 #include <vector>
 
 #include "base/base64.h"
@@ -313,7 +314,7 @@ class LogoTrackerTest : public ::testing::Test {
         test_clock_(new base::SimpleTestClock()),
         logo_cache_(new NiceMock<MockLogoCache>()),
         fake_url_fetcher_factory_(NULL) {
-    test_clock_->SetNow(base::Time::FromJsTime(GG_INT64_C(1388686828000)));
+    test_clock_->SetNow(base::Time::FromJsTime(INT64_C(1388686828000)));
     logo_tracker_ = new LogoTracker(
         base::FilePath(),
         base::MessageLoopProxy::current(),

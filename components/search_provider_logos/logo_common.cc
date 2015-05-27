@@ -4,9 +4,11 @@
 
 #include "components/search_provider_logos/logo_common.h"
 
+#include <stdint.h>
+
 namespace search_provider_logos {
 
-const int64 kMaxTimeToLiveMS = GG_INT64_C(30 * 24 * 60 * 60 * 1000);  // 30 days
+const int64_t kMaxTimeToLiveMS = INT64_C(30 * 24 * 60 * 60 * 1000);  // 30 days
 
 LogoMetadata::LogoMetadata() : can_show_after_expiration(false) {}
 LogoMetadata::~LogoMetadata() {}

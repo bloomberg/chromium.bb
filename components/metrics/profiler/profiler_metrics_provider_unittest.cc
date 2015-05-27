@@ -4,6 +4,8 @@
 
 #include "components/metrics/profiler/profiler_metrics_provider.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/tracked_objects.h"
 #include "components/metrics/metrics_hashes.h"
@@ -19,7 +21,7 @@ TEST(ProfilerMetricsProviderTest, RecordData) {
   // WARNING: If you broke the below check, you've modified how
   // HashMetricName works. Please also modify all server-side code that
   // relies on the existing way of hashing.
-  EXPECT_EQ(GG_UINT64_C(1518842999910132863), HashMetricName("birth_thread*"));
+  EXPECT_EQ(UINT64_C(1518842999910132863), HashMetricName("birth_thread*"));
 
   ProfilerMetricsProvider profiler_metrics_provider;
 

@@ -4,9 +4,10 @@
 
 #include "components/autofill/content/browser/risk/fingerprint.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/port.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -28,7 +29,7 @@ namespace internal {
 
 // Defined in the implementation file corresponding to this test.
 void GetFingerprintInternal(
-    uint64 obfuscated_gaia_id,
+    uint64_t obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
     const blink::WebScreenInfo& screen_info,
@@ -45,7 +46,7 @@ void GetFingerprintInternal(
 
 // Constants that are passed verbatim to the fingerprinter code and should be
 // serialized into the resulting protocol buffer.
-const uint64 kObfuscatedGaiaId = GG_UINT64_C(16571487432910023183);
+const uint64_t kObfuscatedGaiaId = UINT64_C(16571487432910023183);
 const char kCharset[] = "UTF-8";
 const char kAcceptLanguages[] = "en-US,en";
 const int kScreenColorDepth = 53;
