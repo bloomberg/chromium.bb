@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.externalnav;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_TABLET;
+
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
@@ -13,7 +15,7 @@ import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
@@ -110,10 +112,8 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     }
 
     private void loadUrlAndWaitForIntentUrl(final String url, boolean needClick,
-            boolean shouldLaunchExternalIntent, final String expectedFinalUrl, boolean isMainFrame)
-            throws InterruptedException {
-        loadUrlAndWaitForIntentUrl(
-                url, needClick, 0, shouldLaunchExternalIntent, expectedFinalUrl, isMainFrame);
+            boolean shouldLaunchExternalIntent, boolean isMainFrame) throws InterruptedException {
+        loadUrlAndWaitForIntentUrl(url, needClick, 0, shouldLaunchExternalIntent, url, isMainFrame);
     }
 
     private void loadUrlAndWaitForIntentUrl(final String url, boolean needClick,
@@ -191,32 +191,29 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                                         == tab.getLastOverrideUrlLoadingResultForTests())) {
                             return false;
                         }
-                        if (expectedFinalUrl == null) {
-                            return TextUtils.equals(url, tab.getUrl());
-                        } else {
-                            return TextUtils.equals(expectedFinalUrl, tab.getUrl());
-                        }
+                        return expectedFinalUrl == null
+                                || TextUtils.equals(expectedFinalUrl, tab.getUrl());
                     }
                 }));
     }
 
     @SmallTest
     public void testNavigationFromTimer() throws InterruptedException {
-        loadUrlAndWaitForIntentUrl(TestHttpServerClient.getUrl(NAVIGATION_FROM_TIMEOUT_PAGE), false,
-                false, null, true);
+        loadUrlAndWaitForIntentUrl(
+                TestHttpServerClient.getUrl(NAVIGATION_FROM_TIMEOUT_PAGE), false, false, true);
     }
 
     @SmallTest
     public void testNavigationFromTimerInSubFrame() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 TestHttpServerClient.getUrl(NAVIGATION_FROM_TIMEOUT_PARENT_FRAME_PAGE), false,
-                false, null, false);
+                false, false);
     }
 
     @SmallTest
     public void testNavigationFromUserGesture() throws InterruptedException {
-        loadUrlAndWaitForIntentUrl(TestHttpServerClient.getUrl(NAVIGATION_FROM_USER_GESTURE_PAGE),
-                true, true, null, true);
+        loadUrlAndWaitForIntentUrl(
+                TestHttpServerClient.getUrl(NAVIGATION_FROM_USER_GESTURE_PAGE), true, true, true);
     }
 
     /*
@@ -227,13 +224,13 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     public void testNavigationFromUserGestureInSubFrame() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 TestHttpServerClient.getUrl(NAVIGATION_FROM_USER_GESTURE_PARENT_FRAME_PAGE), true,
-                true, null, false);
+                true, false);
     }
 
     @SmallTest
     public void testNavigationFromXHRCallback() throws InterruptedException {
-        loadUrlAndWaitForIntentUrl(TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_PAGE),
-                true, true, null, true);
+        loadUrlAndWaitForIntentUrl(
+                TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_PAGE), true, true, true);
     }
 
     /*
@@ -244,27 +241,27 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
     public void testNavigationFromXHRCallbackInSubFrame() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_PARENT_FRAME_PAGE), true,
-                true, null, false);
+                true, false);
     }
 
     @SmallTest
     public void testNavigationFromXHRCallbackAndShortTimeout() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_AND_SHORT_TIMEOUT_PAGE),
-                true, true, null, true);
+                true, true, true);
     }
 
     @SmallTest
     public void testNavigationFromXHRCallbackAndLongTimeout() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(
                 TestHttpServerClient.getUrl(NAVIGATION_FROM_XHR_CALLBACK_AND_LONG_TIMEOUT_PAGE),
-                true, false, null, true);
+                true, false, true);
     }
 
     @SmallTest
     public void testNavigationWithFallbackURL() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(TestHttpServerClient.getUrl(NAVIGATION_WITH_FALLBACK_URL_PAGE),
-                true, false, TestHttpServerClient.getUrl(FALLBACK_LANDING_URL), true);
+                true, 0, false, TestHttpServerClient.getUrl(FALLBACK_LANDING_URL), true);
     }
 
     @SmallTest
@@ -272,15 +269,11 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         // Fallback URL from a subframe will not trigger main or sub frame navigation.
         loadUrlAndWaitForIntentUrl(
                 TestHttpServerClient.getUrl(NAVIGATION_WITH_FALLBACK_URL_PARENT_FRAME_PAGE), true,
-                false, null, false);
+                false, false);
     }
 
-    /**
-     * crbug.com/477260.
-     * @SmallTest
-     * @Restriction(RESTRICTION_TYPE_TABLET)
-     */
-    @DisabledTest
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_TABLET)
     public void testOpenWindowFromUserGesture() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(TestHttpServerClient.getUrl(OPEN_WINDOW_FROM_USER_GESTURE_PAGE),
                 true, 1, true, null, true);
