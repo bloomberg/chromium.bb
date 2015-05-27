@@ -69,10 +69,18 @@ void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
     std::string data;
     source->GetResponseAsString(&data);
     // Calls EndFetch() on completion.
-    ParseJSON(data, base::Bind(&WebResourceService::OnUnpackFinished,
-                               weak_ptr_factory_.GetWeakPtr()),
-              base::Bind(&WebResourceService::OnUnpackError,
-                         weak_ptr_factory_.GetWeakPtr()));
+    // Full JSON parsing might spawn a utility process (for security).
+    // To limit the the number of simultaneously active processes
+    // (on Android in particular) we short-cut the full parsing in the case of
+    // trivially "empty" JSONs.
+    if (data.empty() || data == "{}") {
+      OnUnpackFinished(make_scoped_ptr(new base::DictionaryValue()).Pass());
+    } else {
+      ParseJSON(data, base::Bind(&WebResourceService::OnUnpackFinished,
+                                 weak_ptr_factory_.GetWeakPtr()),
+                base::Bind(&WebResourceService::OnUnpackError,
+                           weak_ptr_factory_.GetWeakPtr()));
+    }
   } else {
     // Don't parse data if attempt to download was unsuccessful.
     // Stop loading new web resource data, and silently exit.
