@@ -146,6 +146,7 @@ StyleResolver::StyleResolver(Document& document)
     , m_printMediaType(false)
     , m_styleResourceLoader(&document)
     , m_styleSharingDepth(0)
+    , m_styleResolverStatsSequence(0)
     , m_accessCount(0)
 {
     FrameView* view = document.view();
@@ -300,7 +301,7 @@ void StyleResolver::addToStyleSharingList(Element& element)
     // otherwise we could leave stale pointers in there.
     if (!document().inStyleRecalc())
         return;
-    INCREMENT_STYLE_STATS_COUNTER(*this, sharedStyleCandidates, 1);
+    INCREMENT_STYLE_STATS_COUNTER(*this, sharedStyleCandidates);
     StyleSharingList& list = styleSharingList();
     if (list.size() >= styleSharingListSize)
         list.removeLast();
@@ -1315,21 +1316,21 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     const Element* element = state.element();
     ASSERT(element);
 
-    INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyApply, 1);
+    INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyApply);
 
     unsigned cacheHash = matchResult.isCacheable ? computeMatchedPropertiesHash(matchResult.matchedProperties.data(), matchResult.matchedProperties.size()) : 0;
     bool applyInheritedOnly = false;
     const CachedMatchedProperties* cachedMatchedProperties = cacheHash ? m_matchedPropertiesCache.find(cacheHash, state, matchResult) : 0;
 
     if (cachedMatchedProperties && MatchedPropertiesCache::isCacheable(element, *state.style(), *state.parentStyle())) {
-        INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheHit, 1);
+        INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheHit);
         // We can build up the style by copying non-inherited properties from an earlier style object built using the same exact
         // style declarations. We then only need to apply the inherited properties, if any, as their values can depend on the
         // element context. This is fast and saves memory by reusing the style data structures.
         state.style()->copyNonInheritedFromCached(*cachedMatchedProperties->computedStyle);
         if (state.parentStyle()->inheritedDataShared(*cachedMatchedProperties->parentComputedStyle) && !isAtShadowBoundary(element)
             && (!state.distributedToInsertionPoint() || state.style()->userModify() == READ_ONLY)) {
-            INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheInheritedHit, 1);
+            INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheInheritedHit);
 
             EInsideLink linkStatus = state.style()->insideLink();
             // If the cache item parent style has identical inherited properties to the current parent style then the
@@ -1391,7 +1392,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     loadPendingResources(state);
 
     if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(element, *state.style(), *state.parentStyle())) {
-        INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded, 1);
+        INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded);
         m_matchedPropertiesCache.add(*state.style(), *state.parentStyle(), cacheHash, matchResult);
     }
 
@@ -1418,17 +1419,33 @@ void StyleResolver::applyCallbackSelectors(StyleResolverState& state)
         state.style()->addCallbackSelector(rules->m_list[i]->selectorList().selectorsText());
 }
 
-void StyleResolver::setStatsEnabled(bool enabled)
+void StyleResolver::enableStats(StatsReportType reportType)
 {
-    if (enabled) {
-        if (!m_styleResolverStats) {
-            m_styleResolverStats = StyleResolverStats::create();
-        } else {
-            m_styleResolverStats->reset();
-        }
-    } else {
-        m_styleResolverStats = nullptr;
+    if (m_styleResolverStats)
+        return;
+    m_styleResolverStats = StyleResolverStats::create();
+    m_styleResolverStatsTotals = StyleResolverStats::create();
+    if (reportType == ReportSlowStats) {
+        m_styleResolverStats->printMissedCandidateCount = true;
+        m_styleResolverStatsTotals->printMissedCandidateCount = true;
     }
+}
+
+void StyleResolver::disableStats()
+{
+    m_styleResolverStatsSequence = 0;
+    m_styleResolverStats.clear();
+    m_styleResolverStatsTotals.clear();
+}
+
+void StyleResolver::printStats()
+{
+    if (!m_styleResolverStats)
+        return;
+    fprintf(stderr, "=== Style Resolver Stats (resolve #%u) (%s) ===\n", ++m_styleResolverStatsSequence, document().url().string().utf8().data());
+    fprintf(stderr, "%s\n", m_styleResolverStats->report().utf8().data());
+    fprintf(stderr, "== Totals ==\n");
+    fprintf(stderr, "%s\n", m_styleResolverStatsTotals->report().utf8().data());
 }
 
 void StyleResolver::computeFont(ComputedStyle* style, const StylePropertySet& propertySet)

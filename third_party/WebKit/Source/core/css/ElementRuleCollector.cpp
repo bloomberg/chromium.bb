@@ -39,7 +39,6 @@
 #include "core/css/CSSSupportsRule.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/css/resolver/StyleResolverStats.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/style/StyleInheritedData.h"
 
@@ -141,15 +140,9 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* r
     checkerContext.isUARule = m_matchingUARules;
     checkerContext.scopeContainsLastMatchedElement = m_scopeContainsLastMatchedElement;
 
-    unsigned rejected = 0;
-    unsigned fastRejected = 0;
-    unsigned matched = 0;
-
     for (const auto& ruleData : *rules) {
-        if (m_canUseFastReject && m_selectorFilter.fastRejectSelector<RuleData::maximumIdentifierCount>(ruleData.descendantSelectorIdentifierHashes())) {
-            fastRejected++;
+        if (m_canUseFastReject && m_selectorFilter.fastRejectSelector<RuleData::maximumIdentifierCount>(ruleData.descendantSelectorIdentifierHashes()))
             continue;
-        }
 
         // FIXME: Exposing the non-standard getMatchedCSSRules API to web is the only reason this is needed.
         if (m_sameOriginOnly && !ruleData.hasDocumentSecurityOrigin())
@@ -164,23 +157,12 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* r
 
         SelectorChecker::MatchResult result;
         checkerContext.selector = &ruleData.selector();
-        if (!checker.match(checkerContext, result)) {
-            rejected++;
+        if (!checker.match(checkerContext, result))
             continue;
-        }
-        if (m_pseudoStyleRequest.pseudoId != NOPSEUDO && m_pseudoStyleRequest.pseudoId != result.dynamicPseudo) {
-            rejected++;
+        if (m_pseudoStyleRequest.pseudoId != NOPSEUDO && m_pseudoStyleRequest.pseudoId != result.dynamicPseudo)
             continue;
-        }
 
-        matched++;
         didMatchRule(ruleData, result, cascadeOrder, matchRequest, ruleRange);
-    }
-
-    if (StyleResolver* resolver = m_context.element()->document().styleResolver()) {
-        INCREMENT_STYLE_STATS_COUNTER(*resolver, rulesRejected, rejected);
-        INCREMENT_STYLE_STATS_COUNTER(*resolver, rulesFastRejected, fastRejected);
-        INCREMENT_STYLE_STATS_COUNTER(*resolver, rulesMatched, matched);
     }
 }
 
