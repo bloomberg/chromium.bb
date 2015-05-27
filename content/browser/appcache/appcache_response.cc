@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/numerics/safe_math.h"
 #include "base/pickle.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
@@ -272,8 +273,8 @@ void AppCacheResponseReader::OnIOComplete(int result) {
       int64 metadata_size = entry_->GetSize(kResponseMetadataIndex);
       if (metadata_size > 0) {
         reading_metadata_size_ = metadata_size;
-        info_buffer_->http_info->metadata =
-            new net::IOBufferWithSize(metadata_size);
+        info_buffer_->http_info->metadata = new net::IOBufferWithSize(
+            base::CheckedNumeric<size_t>(metadata_size).ValueOrDie());
         ReadRaw(kResponseMetadataIndex, 0,
                 info_buffer_->http_info->metadata.get(), metadata_size);
         return;

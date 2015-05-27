@@ -97,10 +97,11 @@ void WebSocketDeflater::PushSyncMark() {
 }
 
 scoped_refptr<IOBufferWithSize> WebSocketDeflater::GetOutput(size_t size) {
+  size_t length_to_copy = std::min(size, buffer_.size());
   std::deque<char>::iterator begin = buffer_.begin();
-  std::deque<char>::iterator end = begin + std::min(size, buffer_.size());
+  std::deque<char>::iterator end = begin + length_to_copy;
 
-  scoped_refptr<IOBufferWithSize> result = new IOBufferWithSize(end - begin);
+  scoped_refptr<IOBufferWithSize> result = new IOBufferWithSize(length_to_copy);
   std::copy(begin, end, result->data());
   buffer_.erase(begin, end);
   return result;

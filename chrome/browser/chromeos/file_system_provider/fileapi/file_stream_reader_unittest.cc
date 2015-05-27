@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/safe_math.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
@@ -140,8 +141,8 @@ TEST_F(FileSystemProviderFileStreamReader, Read_AllAtOnce) {
   const int64 initial_offset = 0;
   FileStreamReader reader(
       NULL, file_url_, initial_offset, fake_file_->metadata->modification_time);
-  scoped_refptr<net::IOBuffer> io_buffer(
-      new net::IOBuffer(fake_file_->metadata->size));
+  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(
+      base::CheckedNumeric<size_t>(fake_file_->metadata->size).ValueOrDie()));
 
   const int result =
       reader.Read(io_buffer.get(),
@@ -166,8 +167,8 @@ TEST_F(FileSystemProviderFileStreamReader, Read_WrongFile) {
                           wrong_file_url_,
                           initial_offset,
                           fake_file_->metadata->modification_time);
-  scoped_refptr<net::IOBuffer> io_buffer(
-      new net::IOBuffer(fake_file_->metadata->size));
+  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(
+      base::CheckedNumeric<size_t>(fake_file_->metadata->size).ValueOrDie()));
 
   const int result =
       reader.Read(io_buffer.get(),
@@ -262,8 +263,8 @@ TEST_F(FileSystemProviderFileStreamReader, Read_ModifiedFile) {
   const int64 initial_offset = 0;
   FileStreamReader reader(NULL, file_url_, initial_offset, base::Time::Max());
 
-  scoped_refptr<net::IOBuffer> io_buffer(
-      new net::IOBuffer(fake_file_->metadata->size));
+  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(
+      base::CheckedNumeric<size_t>(fake_file_->metadata->size).ValueOrDie()));
   const int result =
       reader.Read(io_buffer.get(),
                   fake_file_->metadata->size,
@@ -282,8 +283,8 @@ TEST_F(FileSystemProviderFileStreamReader, Read_ExpectedModificationTimeNull) {
   const int64 initial_offset = 0;
   FileStreamReader reader(NULL, file_url_, initial_offset, base::Time());
 
-  scoped_refptr<net::IOBuffer> io_buffer(
-      new net::IOBuffer(fake_file_->metadata->size));
+  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(
+      base::CheckedNumeric<size_t>(fake_file_->metadata->size).ValueOrDie()));
   const int result =
       reader.Read(io_buffer.get(),
                   fake_file_->metadata->size,

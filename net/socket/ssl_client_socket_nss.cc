@@ -1762,7 +1762,7 @@ int SSLClientSocketNSS::Core::BufferSend() {
     // return ERR_ABORTED. See https://crbug.com/381160.
     return ERR_ABORTED;
   }
-  const unsigned int len = len1 + len2;
+  const size_t len = len1 + len2;
 
   int rv = 0;
   if (len) {

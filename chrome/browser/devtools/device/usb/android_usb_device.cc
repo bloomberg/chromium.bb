@@ -526,7 +526,8 @@ void AndroidUsbDevice::ReadBody(scoped_ptr<AdbMessage> message,
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(data_length);
+  scoped_refptr<net::IOBuffer> buffer =
+      new net::IOBuffer(static_cast<size_t>(data_length));
   usb_handle_->BulkTransfer(
       device::USB_DIRECTION_INBOUND, inbound_address_, buffer, data_length,
       kUsbTimeout,

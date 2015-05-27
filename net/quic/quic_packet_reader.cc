@@ -16,7 +16,7 @@ QuicPacketReader::QuicPacketReader(DatagramClientSocket* socket,
       visitor_(visitor),
       read_pending_(false),
       num_packets_read_(0),
-      read_buffer_(new IOBufferWithSize(kMaxPacketSize)),
+      read_buffer_(new IOBufferWithSize(static_cast<size_t>(kMaxPacketSize))),
       net_log_(net_log),
       weak_factory_(this) {
 }

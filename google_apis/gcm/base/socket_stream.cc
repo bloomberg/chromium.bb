@@ -15,7 +15,7 @@ namespace {
 
 // TODO(zea): consider having dynamically-sized buffers if this becomes too
 // expensive.
-const uint32 kDefaultBufferSize = 8*1024;
+const size_t kDefaultBufferSize = 8*1024;
 
 }  // namespace
 

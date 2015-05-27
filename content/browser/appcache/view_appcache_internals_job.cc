@@ -13,6 +13,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -596,7 +597,8 @@ class ViewEntryJob : public BaseInternalsJob,
     const int64 kLimit = 100 * 1000;
     int64 amount_to_read =
         std::min(kLimit, response_info->response_data_size());
-    response_data_ = new net::IOBuffer(amount_to_read);
+    response_data_ = new net::IOBuffer(
+        base::CheckedNumeric<size_t>(amount_to_read).ValueOrDie());
 
     reader_.reset(appcache_storage_->CreateResponseReader(
         manifest_url_, group_id_, response_id_));

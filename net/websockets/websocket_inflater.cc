@@ -18,11 +18,11 @@ namespace {
 
 class ShrinkableIOBufferWithSize : public IOBufferWithSize {
  public:
-  explicit ShrinkableIOBufferWithSize(int size)
-      : IOBufferWithSize(size) {}
+  explicit ShrinkableIOBufferWithSize(size_t size) : IOBufferWithSize(size) {}
 
   void Shrink(int new_size) {
-    DCHECK_LE(new_size, size_);
+    CHECK_GE(new_size, 0);
+    CHECK_LE(new_size, size_);
     size_ = new_size;
   }
 
