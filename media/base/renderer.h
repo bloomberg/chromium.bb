@@ -20,9 +20,6 @@ class VideoFrame;
 
 class MEDIA_EXPORT Renderer {
  public:
-  typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> PaintCB;
-  typedef base::Callback<base::TimeDelta()> TimeDeltaCB;
-
   Renderer();
 
   // Stops rendering and fires any pending callbacks.
