@@ -1334,20 +1334,6 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     value = driver.ExecuteScript('return arguments[0].value;', text)
     self.assertEquals('0123456789+-*/ Hi, there!', value)
 
-  def testHoverOverElement(self):
-    driver = self.CreateDriver(
-        mobile_emulation = {'deviceName': 'Google Nexus 5'})
-    driver.Load('about:blank')
-    div = driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'var div = document.getElementsByTagName("div")[0];'
-        'div.addEventListener("mouseover", function() {'
-        '  document.body.appendChild(document.createElement("br"));'
-        '});'
-        'return div;')
-    div.HoverOver()
-    self.assertEquals(1, len(driver.FindElements('tag name', 'br')))
-
   def testClickElement(self):
     driver = self.CreateDriver(
         mobile_emulation = {'deviceName': 'Google Nexus 5'})
