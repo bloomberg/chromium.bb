@@ -20,6 +20,7 @@
 
 namespace ui {
 
+class KeyEvent;
 class PlatformAccelerator;
 
 // This is a cross-platform class for accelerator keys used in menus.
@@ -28,6 +29,7 @@ class UI_BASE_EXPORT Accelerator {
  public:
   Accelerator();
   Accelerator(ui::KeyboardCode keycode, int modifiers);
+  explicit Accelerator(const KeyEvent& key_event);
   Accelerator(const Accelerator& accelerator);
   ~Accelerator();
 

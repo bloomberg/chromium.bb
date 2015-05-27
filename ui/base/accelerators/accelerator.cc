@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/event.h"
 #include "ui/strings/grit/ui_strings.h"
 
 #if !defined(OS_WIN) && (defined(USE_AURA) || defined(OS_MACOSX))
@@ -20,6 +21,13 @@
 #endif
 
 namespace ui {
+
+namespace {
+
+const int kEventFlagsMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                            ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN;
+
+}  // namespace
 
 Accelerator::Accelerator()
     : key_code_(ui::VKEY_UNKNOWN),
@@ -33,6 +41,13 @@ Accelerator::Accelerator(KeyboardCode keycode, int modifiers)
       type_(ui::ET_KEY_PRESSED),
       modifiers_(modifiers),
       is_repeat_(false) {
+}
+
+Accelerator::Accelerator(const KeyEvent& key_event)
+    : key_code_(key_event.key_code()),
+      type_(key_event.type()),
+      modifiers_(key_event.flags() & kEventFlagsMask),
+      is_repeat_(key_event.IsRepeat()) {
 }
 
 Accelerator::Accelerator(const Accelerator& accelerator) {

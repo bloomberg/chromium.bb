@@ -28,22 +28,6 @@
 
 namespace views {
 
-namespace {
-
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-static const int kEventFlagsMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                                   ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN;
-#else
-static const int kEventFlagsMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                                   ui::EF_ALT_DOWN;
-#endif
-
-static inline int CalculateModifiers(const ui::KeyEvent& event) {
-  return event.flags() & kEventFlagsMask;
-}
-
-}  // namespace
-
 bool FocusManager::arrow_key_traversal_enabled_ = false;
 
 FocusManager::FocusManager(Widget* widget, FocusManagerDelegate* delegate)
@@ -71,10 +55,7 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
   if (shortcut_handling_suspended())
     return true;
 
-  int modifiers = CalculateModifiers(event);
-  ui::Accelerator accelerator(event.key_code(), modifiers);
-  accelerator.set_type(event.type());
-  accelerator.set_is_repeat(event.IsRepeat());
+  ui::Accelerator accelerator(event);
 
   if (event.type() == ui::ET_KEY_PRESSED) {
     // If the focused view wants to process the key event as is, let it be.

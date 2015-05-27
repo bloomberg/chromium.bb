@@ -65,8 +65,7 @@ class NestedAcceleratorDispatcherLinux : public NestedAcceleratorDispatcher,
 
   uint32_t DispatchEvent(const ui::PlatformEvent& event) override {
     if (IsKeyEvent(event)) {
-      ui::KeyEvent key_event(event);
-      ui::Accelerator accelerator = CreateAcceleratorFromKeyEvent(key_event);
+      ui::Accelerator accelerator((ui::KeyEvent(event)));
 
       switch (delegate_->ProcessAccelerator(accelerator)) {
         case NestedAcceleratorDelegate::RESULT_PROCESS_LATER:

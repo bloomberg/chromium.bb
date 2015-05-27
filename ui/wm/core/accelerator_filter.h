@@ -39,8 +39,6 @@ class WM_EXPORT AcceleratorFilter : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(AcceleratorFilter);
 };
 
-ui::Accelerator CreateAcceleratorFromKeyEvent(const ui::KeyEvent& key_event);
-
 }  // namespace wm
 
 #endif  // UI_WM_CORE_ACCELERATOR_FILTER_H_
