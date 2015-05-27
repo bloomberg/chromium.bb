@@ -81,6 +81,19 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
     FIRST_WAKEUP_POLICY = CAN_WAKE_OTHER_QUEUES,
   };
 
+  enum class QueueState {
+    // A queue in the EMPTY state is empty and has no tasks in either the
+    // work or incoming task queue.
+    EMPTY,
+    // A queue in the NEEDS_PUMPING state has no tasks in the work task queue,
+    // but has tasks in the incoming task queue which can be pumped to make them
+    // runnable.
+    NEEDS_PUMPING,
+    // A queue in the HAS_WORK state has tasks in the work task queue which
+    // are runnable.
+    HAS_WORK,
+  };
+
   // Create a task queue manager with |task_queue_count| task queues.
   // |main_task_runner| identifies the thread on which where the tasks are
   // eventually run. |selector| is used to choose which task queue to service.
@@ -119,6 +132,10 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
   // identified by |queue_index|. Note that this function involves taking a
   // lock, so calling it has some overhead.
   bool IsQueueEmpty(size_t queue_index) const;
+
+  // Returns the QueueState of the queue identified by |queue_index|. Note that
+  // this function involves taking a lock, so calling it has some overhead.
+  QueueState GetQueueState(size_t queue_index) const;
 
   // Returns the time of the next pending delayed task in any queue.  Ignores
   // any delayed tasks whose delay has expired. Returns a null TimeTicks object

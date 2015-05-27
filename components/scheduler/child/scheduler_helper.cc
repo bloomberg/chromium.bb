@@ -129,6 +129,12 @@ bool SchedulerHelper::IsQueueEmpty(size_t queue_index) const {
   return task_queue_manager_->IsQueueEmpty(queue_index);
 }
 
+TaskQueueManager::QueueState SchedulerHelper::GetQueueState(size_t queue_index)
+    const {
+  CheckOnValidThread();
+  return task_queue_manager_->GetQueueState(queue_index);
+}
+
 void SchedulerHelper::SetQueuePriority(
     size_t queue_index,
     PrioritizingTaskQueueSelector::QueuePriority priority) {

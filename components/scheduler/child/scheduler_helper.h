@@ -77,6 +77,7 @@ class SCHEDULER_EXPORT SchedulerHelper {
   base::TimeTicks NextPendingDelayedTaskRunTime() const;
   void SetQueueName(size_t queue_index, const char* name);
   bool IsQueueEmpty(size_t queue_index) const;
+  TaskQueueManager::QueueState GetQueueState(size_t queue_index) const;
   void SetQueuePriority(size_t queue_index,
                         PrioritizingTaskQueueSelector::QueuePriority priority);
   void EnableQueue(size_t queue_index,

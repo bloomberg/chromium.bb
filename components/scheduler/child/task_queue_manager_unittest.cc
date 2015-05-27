@@ -194,6 +194,9 @@ void PostFromNestedRunloop(base::MessageLoop* message_loop,
   message_loop->RunUntilIdle();
 }
 
+void NullTask() {
+}
+
 void TestTask(int value, std::vector<int>* out_result) {
   out_result->push_back(value);
 }
@@ -1159,6 +1162,81 @@ TEST_F(TaskQueueManagerTest, PumpPolicyToString) {
 
 TEST_F(TaskQueueManagerTest, WakeupPolicyToString) {
   CheckAllWakeupPolicyToString();
+}
+
+TEST_F(TaskQueueManagerTest, IsQueueEmpty) {
+  Initialize(2u, SelectorType::Automatic);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AUTO);
+  manager_->SetPumpPolicy(1, TaskQueueManager::PumpPolicy::MANUAL);
+
+  scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
+
+  EXPECT_TRUE(manager_->IsQueueEmpty(0));
+  EXPECT_TRUE(manager_->IsQueueEmpty(1));
+
+  runners[0]->PostTask(FROM_HERE, base::Bind(NullTask));
+  runners[1]->PostTask(FROM_HERE, base::Bind(NullTask));
+  EXPECT_FALSE(manager_->IsQueueEmpty(0));
+  EXPECT_FALSE(manager_->IsQueueEmpty(1));
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(manager_->IsQueueEmpty(0));
+  EXPECT_FALSE(manager_->IsQueueEmpty(1));
+
+  manager_->PumpQueue(1);
+  EXPECT_TRUE(manager_->IsQueueEmpty(0));
+  EXPECT_FALSE(manager_->IsQueueEmpty(1));
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(manager_->IsQueueEmpty(0));
+  EXPECT_TRUE(manager_->IsQueueEmpty(1));
+}
+
+TEST_F(TaskQueueManagerTest, GetQueueState) {
+  Initialize(2u, SelectorType::Automatic);
+  manager_->SetPumpPolicy(0, TaskQueueManager::PumpPolicy::AUTO);
+  manager_->SetPumpPolicy(1, TaskQueueManager::PumpPolicy::MANUAL);
+
+  scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
+
+  EXPECT_EQ(TaskQueueManager::QueueState::EMPTY, manager_->GetQueueState(0));
+  EXPECT_EQ(TaskQueueManager::QueueState::EMPTY, manager_->GetQueueState(1));
+
+  runners[0]->PostTask(FROM_HERE, base::Bind(NullTask));
+  runners[0]->PostTask(FROM_HERE, base::Bind(NullTask));
+  runners[1]->PostTask(FROM_HERE, base::Bind(NullTask));
+  EXPECT_EQ(TaskQueueManager::QueueState::NEEDS_PUMPING,
+            manager_->GetQueueState(0));
+  EXPECT_EQ(TaskQueueManager::QueueState::NEEDS_PUMPING,
+            manager_->GetQueueState(1));
+
+  test_task_runner_->SetRunTaskLimit(1);
+  test_task_runner_->RunPendingTasks();
+  EXPECT_EQ(TaskQueueManager::QueueState::HAS_WORK,
+            manager_->GetQueueState(0));
+  EXPECT_EQ(TaskQueueManager::QueueState::NEEDS_PUMPING,
+            manager_->GetQueueState(1));
+
+  test_task_runner_->ClearRunTaskLimit();
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(TaskQueueManager::QueueState::EMPTY,
+            manager_->GetQueueState(0));
+  EXPECT_EQ(TaskQueueManager::QueueState::NEEDS_PUMPING,
+            manager_->GetQueueState(1));
+
+  manager_->PumpQueue(1);
+  EXPECT_EQ(TaskQueueManager::QueueState::EMPTY,
+            manager_->GetQueueState(0));
+  EXPECT_EQ(TaskQueueManager::QueueState::HAS_WORK,
+            manager_->GetQueueState(1));
+
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(TaskQueueManager::QueueState::EMPTY,
+            manager_->GetQueueState(0));
+  EXPECT_EQ(TaskQueueManager::QueueState::EMPTY,
+            manager_->GetQueueState(1));
 }
 
 }  // namespace scheduler

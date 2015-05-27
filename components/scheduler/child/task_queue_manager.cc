@@ -63,7 +63,7 @@ class TaskQueue : public base::SingleThreadTaskRunner {
     return PostDelayedTaskImpl(from_here, task, delay, TaskType::NON_NESTABLE);
   }
 
-  bool IsQueueEmpty() const;
+  TaskQueueManager::QueueState GetQueueState() const;
 
   void SetPumpPolicy(TaskQueueManager::PumpPolicy pump_policy);
   void PumpQueue();
@@ -254,13 +254,18 @@ void TaskQueue::ScheduleDelayedWorkLocked(LazyNow* lazy_now) {
   }
 }
 
-bool TaskQueue::IsQueueEmpty() const {
+TaskQueueManager::QueueState TaskQueue::GetQueueState() const {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   if (!work_queue_.empty())
-    return false;
+    return TaskQueueManager::QueueState::HAS_WORK;
 
   {
     base::AutoLock lock(lock_);
-    return incoming_queue_.empty();
+    if (incoming_queue_.empty()) {
+      return TaskQueueManager::QueueState::EMPTY;
+    } else {
+      return TaskQueueManager::QueueState::NEEDS_PUMPING;
+    }
   }
 }
 
@@ -510,8 +515,12 @@ TaskQueueManager::TaskRunnerForQueue(size_t queue_index) const {
 }
 
 bool TaskQueueManager::IsQueueEmpty(size_t queue_index) const {
-  internal::TaskQueue* queue = Queue(queue_index);
-  return queue->IsQueueEmpty();
+  return Queue(queue_index)->GetQueueState() == QueueState::EMPTY;
+}
+
+TaskQueueManager::QueueState TaskQueueManager::GetQueueState(size_t queue_index)
+    const {
+  return Queue(queue_index)->GetQueueState();
 }
 
 base::TimeTicks TaskQueueManager::NextPendingDelayedTaskRunTime() {
