@@ -3021,6 +3021,7 @@ interface IDBTransaction
     getter db
     getter error
     getter mode
+    getter objectStoreNames
     getter onabort
     getter oncomplete
     getter onerror
@@ -6679,6 +6680,7 @@ interface webkitIDBTransaction
     getter db
     getter error
     getter mode
+    getter objectStoreNames
     getter onabort
     getter oncomplete
     getter onerror

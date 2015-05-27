@@ -270,17 +270,21 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringO
     IDB_TRACE("IDBDatabase::transaction");
     Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
 
-    Vector<String> scope;
-    if (storeNames.isString())
-        scope.append(storeNames.getAsString());
-    else if (storeNames.isStringSequence())
-        scope = storeNames.getAsStringSequence();
-    else if (storeNames.isDOMStringList())
-        scope = *storeNames.getAsDOMStringList();
-    else
+    HashSet<String> scope;
+    if (storeNames.isString()) {
+        scope.add(storeNames.getAsString());
+    } else if (storeNames.isStringSequence()) {
+        for (const String& name : storeNames.getAsStringSequence())
+            scope.add(name);
+    } else if (storeNames.isDOMStringList()) {
+        const Vector<String>& list = *storeNames.getAsDOMStringList();
+        for (const String& name : list)
+            scope.add(name);
+    } else {
         ASSERT_NOT_REACHED();
+    }
 
-    if (!scope.size()) {
+    if (scope.isEmpty()) {
         exceptionState.throwDOMException(InvalidAccessError, "The storeNames parameter was empty.");
         return 0;
     }
@@ -300,8 +304,8 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringO
     }
 
     Vector<int64_t> objectStoreIds;
-    for (size_t i = 0; i < scope.size(); ++i) {
-        int64_t objectStoreId = findObjectStoreId(scope[i]);
+    for (const String& name : scope) {
+        int64_t objectStoreId = findObjectStoreId(name);
         if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
             exceptionState.throwDOMException(NotFoundError, "One of the specified object stores was not found.");
             return 0;

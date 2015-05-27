@@ -44,6 +44,8 @@ enum IDBTransactionMode {
     readonly attribute IDBTransactionMode mode;
     readonly attribute IDBDatabase db;
     readonly attribute DOMError error;
+    // TODO(jsbell): Draft: https://w3c.github.io/IndexedDB/#widl-IDBTransaction-objectStoreNames
+    [RuntimeEnabled=IndexedDBExperimental] readonly attribute DOMStringList objectStoreNames;
 
     // Methods
     [RaisesException] IDBObjectStore objectStore (DOMString name);

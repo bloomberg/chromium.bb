@@ -106,7 +106,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
     Persistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
 
     const int64_t transactionId = 1234;
-    const Vector<String> transactionScope;
+    const HashSet<String> transactionScope = HashSet<String>();
     Persistent<IDBTransaction> transaction = IDBTransaction::create(scriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());
     PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
     set.add(transaction);
@@ -136,7 +136,7 @@ TEST_F(IDBTransactionTest, TransactionFinish)
     Persistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
 
     const int64_t transactionId = 1234;
-    const Vector<String> transactionScope;
+    const HashSet<String> transactionScope = HashSet<String>();
     Persistent<IDBTransaction> transaction = IDBTransaction::create(scriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());
     PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
     set.add(transaction);

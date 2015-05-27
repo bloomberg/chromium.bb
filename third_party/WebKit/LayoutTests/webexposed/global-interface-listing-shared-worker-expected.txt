@@ -466,6 +466,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode
+[Worker]     getter objectStoreNames
 [Worker]     getter onabort
 [Worker]     getter oncomplete
 [Worker]     getter onerror
@@ -1079,6 +1080,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode
+[Worker]     getter objectStoreNames
 [Worker]     getter onabort
 [Worker]     getter oncomplete
 [Worker]     getter onerror
