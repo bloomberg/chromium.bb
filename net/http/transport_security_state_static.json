@@ -2243,7 +2243,6 @@
     { "name": "walnutgaming.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "webrebels.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "widememory.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "wideup.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "withustrading.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "wvr-law.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "wzyboy.org", "include_subdomains": true, "mode": "force-https" },
