@@ -47,7 +47,7 @@ class DnsSocketData {
       writes_.push_back(MockWrite(mode,
                                   reinterpret_cast<const char*>(length.get()),
                                   sizeof(uint16), num_reads_and_writes()));
-      lengths_.push_back(length.release());
+      lengths_.push_back(length.Pass());
     }
     writes_.push_back(MockWrite(mode, query_->io_buffer()->data(),
                                 query_->io_buffer()->size(),
@@ -67,12 +67,12 @@ class DnsSocketData {
       reads_.push_back(MockRead(mode,
                                 reinterpret_cast<const char*>(length.get()),
                                 sizeof(uint16), num_reads_and_writes()));
-      lengths_.push_back(length.release());
+      lengths_.push_back(length.Pass());
     }
     reads_.push_back(MockRead(mode, response->io_buffer()->data(),
                               response->io_buffer()->size(),
                               num_reads_and_writes()));
-    responses_.push_back(response.release());
+    responses_.push_back(response.Pass());
   }
 
   // Adds pre-built DnsResponse.
@@ -359,7 +359,7 @@ class DnsTransactionTest : public testing::Test {
     CHECK(socket_factory_.get());
     transaction_ids_.push_back(data->query_id());
     socket_factory_->AddSocketDataProvider(data->GetProvider());
-    socket_data_.push_back(data.release());
+    socket_data_.push_back(data.Pass());
   }
 
   // Add expected query for |dotted_name| and |qtype| with |id| and response

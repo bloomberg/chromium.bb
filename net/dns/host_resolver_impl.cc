@@ -1336,7 +1336,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         proc_task_->set_had_non_speculative_request();
     }
 
-    requests_.push_back(req.release());
+    requests_.push_back(req.Pass());
 
     UpdatePriority();
   }

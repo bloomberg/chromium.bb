@@ -133,7 +133,7 @@ void MockMojoHostResolver::OnConnectionError() {
 }
 
 void MockMojoHostResolver::AddAction(scoped_ptr<HostResolverAction> action) {
-  actions_.push_back(action.release());
+  actions_.push_back(action.Pass());
 }
 
 void MockMojoHostResolver::Resolve(

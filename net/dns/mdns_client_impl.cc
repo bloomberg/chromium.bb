@@ -50,7 +50,7 @@ void MDnsSocketFactoryImpl::CreateSockets(
     scoped_ptr<DatagramServerSocket> socket(
         CreateAndBindMDnsSocket(interfaces[i].second, interfaces[i].first));
     if (socket)
-      sockets->push_back(socket.release());
+      sockets->push_back(socket.Pass());
   }
 }
 

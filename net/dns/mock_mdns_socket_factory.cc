@@ -82,7 +82,7 @@ void MockMDnsSocketFactory::CreateSocket(
           this,
           &MockMDnsSocketFactory::RecvFromInternal));
 
-  sockets->push_back(new_socket.release());
+  sockets->push_back(new_socket.Pass());
 }
 
 void MockMDnsSocketFactory::SimulateReceive(const uint8* packet, int size) {

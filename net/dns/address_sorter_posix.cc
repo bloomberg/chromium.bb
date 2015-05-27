@@ -303,7 +303,7 @@ void AddressSorterPosix::Sort(const AddressList& list,
           CommonPrefixLength(info->address, src.address()),
           info->src->prefix_length);
     }
-    sort_list.push_back(info.release());
+    sort_list.push_back(info.Pass());
   }
 
   std::stable_sort(sort_list.begin(), sort_list.end(), CompareDestinations);
