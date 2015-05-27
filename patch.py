@@ -54,10 +54,15 @@ class FilePatchBase(object):
       if i in filename:
         raise UnsupportedPatchFormat(
             filename, 'Can\'t use \'%s\' in filename.' % i)
-    for i in ('/', 'CON', 'COM'):
-      if filename.startswith(i):
-        raise UnsupportedPatchFormat(
-            filename, 'Filename can\'t start with \'%s\'.' % i)
+    if filename.startswith('/'):
+      raise UnsupportedPatchFormat(
+          filename, 'Filename can\'t start with \'/\'.')
+    if filename == 'CON':
+      raise UnsupportedPatchFormat(
+          filename, 'Filename can\'t be \'CON\'.')
+    if re.match('COM\d', filename):
+      raise UnsupportedPatchFormat(
+          filename, 'Filename can\'t be \'%s\'.' % filename)
     return filename
 
   def set_relpath(self, relpath):
