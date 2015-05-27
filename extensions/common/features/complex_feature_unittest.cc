@@ -27,7 +27,7 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
       .Set("extension_types", ListBuilder()
           .Append("extension")).Build());
   simple_feature->Parse(rule.get());
-  features->push_back(simple_feature.release());
+  features->push_back(simple_feature.Pass());
 
   // Rule: "legacy_packaged_app", whitelist "bar".
   simple_feature.reset(new SimpleFeature);
@@ -36,7 +36,7 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
       .Set("extension_types", ListBuilder()
           .Append("legacy_packaged_app")).Build();
   simple_feature->Parse(rule.get());
-  features->push_back(simple_feature.release());
+  features->push_back(simple_feature.Pass());
 
   scoped_ptr<ComplexFeature> feature(new ComplexFeature(features.Pass()));
 
@@ -88,7 +88,7 @@ TEST(ComplexFeatureTest, Dependencies) {
                ListBuilder().Append("manifest:content_security_policy"))
           .Build();
   simple_feature->Parse(rule.get());
-  features->push_back(simple_feature.release());
+  features->push_back(simple_feature.Pass());
 
   // Rule which depends on an platform-app-only feature (serial).
   simple_feature.reset(new SimpleFeature);
@@ -96,7 +96,7 @@ TEST(ComplexFeatureTest, Dependencies) {
              .Set("dependencies", ListBuilder().Append("permission:serial"))
              .Build();
   simple_feature->Parse(rule.get());
-  features->push_back(simple_feature.release());
+  features->push_back(simple_feature.Pass());
 
   scoped_ptr<ComplexFeature> feature(new ComplexFeature(features.Pass()));
 

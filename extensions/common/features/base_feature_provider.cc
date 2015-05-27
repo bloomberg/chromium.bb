@@ -128,7 +128,7 @@ BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
                           feature.get()))
           continue;
 
-        features->push_back(feature.release());
+        features->push_back(feature.Pass());
       }
 
       linked_ptr<ComplexFeature> feature(new ComplexFeature(features.Pass()));

@@ -297,7 +297,7 @@ bool SimpleFeature::HasDependencies() const {
 }
 
 void SimpleFeature::AddFilter(scoped_ptr<SimpleFeatureFilter> filter) {
-  filters_.push_back(filter.release());
+  filters_.push_back(filter.Pass());
 }
 
 std::string SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
