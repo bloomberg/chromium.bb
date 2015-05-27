@@ -7,3 +7,6 @@ matrix-test
 setbacklight
 test-client
 test-text-client
+headers-protocol-core-test.c
+headers-protocol-test.c
+headers-test.c
