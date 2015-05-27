@@ -197,7 +197,6 @@ const char page_action[] = "obcimlgaoabeegjmmpldobjndiealpln";
 const char theme_crx[] = "iamefpfkojoapidjnbafmgkgncegbkad";
 const char theme2_crx[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
 const char permissions_crx[] = "eagpmdpfmaekmmcejjbmjoecnejeiiin";
-const char unpacked[] = "cbcdidchbppangcjoddlpdjlenngjldk";
 const char updates_from_webstore[] = "akjooamlhcgeopfifcmlggaebeocgokj";
 const char permissions_blocklist[] = "noffkehfcaggllbcojjbopcmlhcnhcdn";
 
@@ -2332,49 +2331,6 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   base::FilePath theme_file = extension_path.Append(chrome::kThemePackFilename);
   ASSERT_TRUE(base::PathExists(theme_file));
   ASSERT_TRUE(base::DeleteFile(theme_file, false));  // Not recursive.
-}
-
-// Tests that we can change the ID of an unpacked extension by adding a key
-// to its manifest.
-TEST_F(ExtensionServiceTest, UnpackedExtensionCanChangeID) {
-  InitializeEmptyExtensionService();
-
-  base::ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-
-  base::FilePath extension_path = temp.path();
-  base::FilePath manifest_path =
-      extension_path.Append(extensions::kManifestFilename);
-  base::FilePath manifest_no_key =
-      data_dir().AppendASCII("unpacked").AppendASCII("manifest_no_key.json");
-
-  base::FilePath manifest_with_key =
-      data_dir().AppendASCII("unpacked").AppendASCII("manifest_with_key.json");
-
-  ASSERT_TRUE(base::PathExists(manifest_no_key));
-  ASSERT_TRUE(base::PathExists(manifest_with_key));
-
-  // Load the unpacked extension with no key.
-  base::CopyFile(manifest_no_key, manifest_path);
-  extensions::UnpackedInstaller::Create(service())->Load(extension_path);
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0u, GetErrors().size());
-  ASSERT_EQ(1u, loaded_.size());
-  EXPECT_EQ(1u, registry()->enabled_extensions().size());
-
-  // Add the key to the manifest.
-  base::CopyFile(manifest_with_key, manifest_path);
-  loaded_.clear();
-
-  // Reload the extensions.
-  service()->ReloadExtensionsForTest();
-  const Extension* extension = service()->GetExtensionById(unpacked, false);
-  EXPECT_EQ(unpacked, extension->id());
-  ASSERT_EQ(1u, loaded_.size());
-
-  // TODO(jstritar): Right now this just makes sure we don't crash and burn, but
-  // we should also test that preferences are preserved.
 }
 
 #if defined(OS_POSIX)

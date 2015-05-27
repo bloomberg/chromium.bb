@@ -169,6 +169,12 @@ InstalledLoader::~InstalledLoader() {
 }
 
 void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
+  // TODO(asargent): add a test to confirm that we can't load extensions if
+  // their ID in preferences does not match the extension's actual ID.
+  if (invalid_extensions_.find(info.extension_path) !=
+      invalid_extensions_.end())
+    return;
+
   std::string error;
   scoped_refptr<const Extension> extension(NULL);
   if (info.extension_manifest) {
@@ -269,7 +275,8 @@ void InstalledLoader::LoadAllExtensions() {
                                    GetCreationFlags(info),
                                    &error));
 
-      if (!extension.get()) {
+      if (!extension.get() || extension->id() != info->extension_id) {
+        invalid_extensions_.insert(info->extension_path);
         ExtensionErrorReporter::GetInstance()->ReportLoadError(
             info->extension_path,
             error,
