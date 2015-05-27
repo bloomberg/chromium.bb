@@ -416,6 +416,7 @@ Tab::Tab(TabController* controller)
       dragging_(false),
       detached_(false),
       favicon_hiding_offset_(0),
+      waiting_animation_frame_(0),
       loading_animation_frame_(0),
       immersive_loading_step_(0),
       should_display_crashed_favicon_(false),
@@ -1336,12 +1337,14 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     if (data().network_state == TabRendererData::NETWORK_STATE_WAITING) {
       gfx::PaintThrobberWaitingForFrame(
           canvas, bounds, tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING),
-          loading_animation_frame_);
+          waiting_animation_frame_);
     } else {
-      gfx::PaintThrobberSpinningForFrame(
+      gfx::PaintThrobberSpinningForFrameAfterWaiting(
           canvas, bounds,
           tp->GetColor(ThemeProperties::COLOR_THROBBER_SPINNING),
-          loading_animation_frame_);
+          loading_animation_frame_,
+          tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING),
+          waiting_animation_frame_);
     }
   } else if (should_display_crashed_favicon_) {
     // Paint crash favicon.
@@ -1364,16 +1367,18 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
 void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
                                   TabRendererData::NetworkState state) {
   if (state == TabRendererData::NETWORK_STATE_WAITING) {
-    ++loading_animation_frame_;
+    ++waiting_animation_frame_;
     // Waiting steps backwards.
     immersive_loading_step_ =
         (immersive_loading_step_ - 1 + kImmersiveLoadingStepCount) %
             kImmersiveLoadingStepCount;
   } else if (state == TabRendererData::NETWORK_STATE_LOADING) {
-    ++loading_animation_frame_;
+    if (old_state == state)
+      ++loading_animation_frame_;
     immersive_loading_step_ = (immersive_loading_step_ + 1) %
         kImmersiveLoadingStepCount;
   } else {
+    waiting_animation_frame_ = 0;
     loading_animation_frame_ = 0;
     immersive_loading_step_ = 0;
   }

@@ -320,6 +320,7 @@ class Tab : public gfx::AnimationDelegate,
 
   // The current index of the loading animation. The range varies depending on
   // whether the tab is loading or waiting, see AdvanceLoadingAnimation().
+  int waiting_animation_frame_;
   int loading_animation_frame_;
 
   // Step in the immersive loading progress indicator.

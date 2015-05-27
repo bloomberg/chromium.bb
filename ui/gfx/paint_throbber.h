@@ -33,6 +33,16 @@ GFX_EXPORT void PaintThrobberWaiting(Canvas* canvas,
 GFX_EXPORT void PaintThrobberWaitingForFrame(Canvas* canvas,
     const Rect& bounds, SkColor color, uint32_t frame);
 
+// Paint a throbber in the "spinning" state, smoothly transitioning from a
+// previous "waiting" state described by |final_waiting_frame|.
+GFX_EXPORT void PaintThrobberSpinningForFrameAfterWaiting(
+    Canvas* canvas,
+    const Rect& bounds,
+    SkColor color,
+    uint32_t frame,
+    SkColor waiting_color,
+    uint32_t final_waiting_frame);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_PAINT_THROBBER_H_
