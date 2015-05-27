@@ -685,7 +685,7 @@
       'browser/image_loader_factory.h',
       'browser/info_map.cc',
       'browser/info_map.h',
-      'browser/install/crx_installer_error.h',
+      'browser/install/crx_install_error.h',
       'browser/install/extension_install_ui.cc',
       'browser/install/extension_install_ui.h',
       'browser/install_flag.h',
