@@ -241,7 +241,18 @@ class ToughAnimationCasesPageSet(page_set_module.PageSet):
       # Why: Tests various transitions.
       'file://tough_animation_cases/transform_transitions.html',
       # Why: JS execution blocks CSS transition unless initial transform is set.
-      'file://tough_animation_cases/transform_transition_js_block.html'
+      'file://tough_animation_cases/transform_transition_js_block.html',
+      # Why: Tests animating elements having mix-blend-mode: difference (a
+      # separable popular blend mode).
+      'file://tough_animation_cases/mix_blend_mode_animation_difference.html',
+      # Why: Tests animating elements having mix-blend-mode: hue (a
+      # non-separable blend mode).
+      'file://tough_animation_cases/mix_blend_mode_animation_hue.html',
+      # Why: Tests animating elements having mix-blend-mode: screen.
+      'file://tough_animation_cases/mix_blend_mode_animation_screen.html',
+      # Why: Tests software-animating a deep DOM subtree having one blending
+      # leaf.
+      'file://tough_animation_cases/mix_blend_mode_propagating_isolation.html',
 
       # Disabled: crbug.com/350692
       # Why: Login page is slow because of ineffecient transform operations.
