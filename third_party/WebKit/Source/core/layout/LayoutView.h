@@ -70,14 +70,18 @@ public:
 
     virtual LayoutUnit availableLogicalHeight(AvailableLogicalHeightType) const override;
 
-    // The same as the FrameView's layoutHeight/layoutWidth but with null check guards.
-    int viewHeight(IncludeScrollbarsInRect = ExcludeScrollbars) const;
-    int viewWidth(IncludeScrollbarsInRect = ExcludeScrollbars) const;
-    int viewLogicalWidth() const
-    {
-        return style()->isHorizontalWritingMode() ? viewWidth(ExcludeScrollbars) : viewHeight(ExcludeScrollbars);
-    }
-    int viewLogicalHeight() const;
+    // Based on FrameView::layoutSize, but:
+    // - checks for null FrameView
+    // - returns 0x0 if using printing layout
+    // - scrollbar exclusion is compatible with root layer scrolling
+    IntSize layoutSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
+
+    int viewHeight(IncludeScrollbarsInRect scrollbarInclusion = ExcludeScrollbars) const { return layoutSize(scrollbarInclusion).height(); }
+    int viewWidth(IncludeScrollbarsInRect scrollbarInclusion = ExcludeScrollbars) const { return layoutSize(scrollbarInclusion).width(); }
+
+    int viewLogicalWidth(IncludeScrollbarsInRect = ExcludeScrollbars) const;
+    int viewLogicalHeight(IncludeScrollbarsInRect = ExcludeScrollbars) const;
+
     LayoutUnit viewLogicalHeightForPercentages() const;
 
     float zoomFactor() const;
@@ -187,6 +191,9 @@ private:
     bool shouldUsePrintingLayout() const;
 
     LayoutObject* backgroundLayoutObject() const;
+
+    int viewLogicalWidthForBoxSizing() const;
+    int viewLogicalHeightForBoxSizing() const;
 
     FrameView* m_frameView;
 

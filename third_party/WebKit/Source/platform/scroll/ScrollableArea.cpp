@@ -586,4 +586,19 @@ float ScrollableArea::pixelStep(ScrollbarOrientation) const
     return 1;
 }
 
+IntSize ScrollableArea::excludeScrollbars(const IntSize& size) const
+{
+    int verticalScrollbarWidth = 0;
+    int horizontalScrollbarHeight = 0;
+
+    if (Scrollbar* verticalBar = verticalScrollbar())
+        verticalScrollbarWidth = !verticalBar->isOverlayScrollbar() ? verticalBar->width() : 0;
+    if (Scrollbar* horizontalBar = horizontalScrollbar())
+        horizontalScrollbarHeight = !horizontalBar->isOverlayScrollbar() ? horizontalBar->height() : 0;
+
+    return IntSize(std::max(0, size.width() - verticalScrollbarWidth),
+        std::max(0, size.height() - horizontalScrollbarHeight));
+
+}
+
 } // namespace blink

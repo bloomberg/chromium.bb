@@ -1535,7 +1535,9 @@ void LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, L
 {
     // FIXME: Technically percentage height objects only need a relayout if their percentage isn't going to be turned into
     // an auto value. Add a method to determine this, so that we can avoid the relayout.
-    bool hasRelativeLogicalHeight = child.hasRelativeLogicalHeight() || (child.isAnonymous() && this->hasRelativeLogicalHeight());
+    bool hasRelativeLogicalHeight = child.hasRelativeLogicalHeight()
+        || (child.isAnonymous() && this->hasRelativeLogicalHeight())
+        || child.stretchesToViewport();
     if (relayoutChildren || (hasRelativeLogicalHeight && !isLayoutView()))
         child.setChildNeedsLayout(MarkOnlyThis);
 

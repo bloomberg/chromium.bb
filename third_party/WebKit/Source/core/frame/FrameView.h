@@ -120,6 +120,8 @@ public:
     void setNeedsUpdateWidgetPositions() { m_needsUpdateWidgetPositions = true; }
 
     // Methods for getting/setting the size Blink should use to layout the contents.
+    // NOTE: Scrollbar exclusion is based on the FrameView's scrollbars. To exclude
+    // scrollbars on the root DeprecatedPaintLayer, use LayoutView::layoutSize.
     IntSize layoutSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
     void setLayoutSize(const IntSize&);
 
@@ -607,8 +609,6 @@ protected:
 
     // Called to update the scrollbars to accurately reflect the state of the view.
     void updateScrollbars(const DoubleSize& desiredOffset);
-
-    IntSize excludeScrollbars(const IntSize&) const;
 
     class InUpdateScrollbarsScope {
     public:

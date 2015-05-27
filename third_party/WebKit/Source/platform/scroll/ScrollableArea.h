@@ -299,6 +299,10 @@ public:
     // semantics for now but it should be cleaned up at the source.
     virtual bool isProgrammaticallyScrollable() { return true; }
 
+    // Subtracts space occupied by this ScrollableArea's scrollbars.
+    // Does nothing if overlay scrollbars are enabled.
+    IntSize excludeScrollbars(const IntSize&) const;
+
 protected:
     ScrollableArea();
 

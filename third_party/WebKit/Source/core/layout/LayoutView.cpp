@@ -25,6 +25,7 @@
 #include "core/dom/Element.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/layout/ColumnInfo.h"
@@ -142,13 +143,13 @@ bool LayoutView::hitTest(const HitTestRequest& request, const HitTestLocation& l
 
 void LayoutView::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit, LogicalExtentComputedValues& computedValues) const
 {
-    computedValues.m_extent = (!shouldUsePrintingLayout() && m_frameView) ? LayoutUnit(viewLogicalHeight()) : logicalHeight;
+    computedValues.m_extent = (!shouldUsePrintingLayout() && m_frameView) ? LayoutUnit(viewLogicalHeightForBoxSizing()) : logicalHeight;
 }
 
 void LayoutView::updateLogicalWidth()
 {
     if (!shouldUsePrintingLayout() && m_frameView)
-        setLogicalWidth(viewLogicalWidth());
+        setLogicalWidth(viewLogicalWidthForBoxSizing());
 }
 
 LayoutUnit LayoutView::availableLogicalHeight(AvailableLogicalHeightType heightType) const
@@ -193,10 +194,16 @@ bool LayoutView::shouldDoFullPaintInvalidationForNextLayout() const
     if (shouldUsePrintingLayout())
         return true;
 
-    if (!style()->isHorizontalWritingMode() || size().width() != viewWidth())
+    if (!style()->isHorizontalWritingMode())
         return true;
 
-    if (size().height() != viewHeight()) {
+    // The width/height checks below assume horizontal writing mode.
+    ASSERT(style()->isHorizontalWritingMode());
+
+    if (size().width() != viewLogicalWidthForBoxSizing())
+        return true;
+
+    if (size().height() != viewLogicalHeightForBoxSizing()) {
         if (LayoutObject* backgroundLayoutObject = this->backgroundLayoutObject()) {
             // When background-attachment is 'fixed', we treat the viewport (instead of the 'root'
             // i.e. html or body) as the background positioning area, and we should full paint invalidation
@@ -226,7 +233,9 @@ void LayoutView::layout()
     LayoutRect oldLayoutOverflowRect = layoutOverflowRect();
 
     // Use calcWidth/Height to get the new width/height, since this will take the full page zoom factor into account.
-    bool relayoutChildren = !shouldUsePrintingLayout() && (!m_frameView || size().width() != viewWidth() || size().height() != viewHeight());
+    bool relayoutChildren = !shouldUsePrintingLayout() && (!m_frameView
+        || logicalWidth() != viewLogicalWidthForBoxSizing()
+        || logicalHeight() != viewLogicalHeightForBoxSizing());
     if (relayoutChildren) {
         layoutScope.setChildNeedsLayout(this);
         for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
@@ -880,27 +889,35 @@ IntRect LayoutView::documentRect() const
     return IntRect(overflowRect);
 }
 
-int LayoutView::viewHeight(IncludeScrollbarsInRect scrollbarInclusion) const
+IntSize LayoutView::layoutSize(IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    int height = 0;
-    if (!shouldUsePrintingLayout() && m_frameView)
-        height = m_frameView->layoutSize(scrollbarInclusion).height();
+    if (!m_frameView || shouldUsePrintingLayout())
+        return IntSize();
 
-    return height;
+    IntSize result = m_frameView->layoutSize(IncludeScrollbars);
+    if (scrollbarInclusion == ExcludeScrollbars)
+        result = m_frameView->layoutViewportScrollableArea()->excludeScrollbars(result);
+    return result;
 }
 
-int LayoutView::viewWidth(IncludeScrollbarsInRect scrollbarInclusion) const
+int LayoutView::viewLogicalWidth(IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    int width = 0;
-    if (!shouldUsePrintingLayout() && m_frameView)
-        width = m_frameView->layoutSize(scrollbarInclusion).width();
-
-    return width;
+    return style()->isHorizontalWritingMode() ? viewWidth(scrollbarInclusion) : viewHeight(scrollbarInclusion);
 }
 
-int LayoutView::viewLogicalHeight() const
+int LayoutView::viewLogicalHeight(IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    return style()->isHorizontalWritingMode() ? viewHeight(ExcludeScrollbars) : viewWidth(ExcludeScrollbars);
+    return style()->isHorizontalWritingMode() ? viewHeight(scrollbarInclusion) : viewWidth(scrollbarInclusion);
+}
+
+int LayoutView::viewLogicalWidthForBoxSizing() const
+{
+    return viewLogicalWidth(document().settings() && document().settings()->rootLayerScrolls() ? IncludeScrollbars : ExcludeScrollbars);
+}
+
+int LayoutView::viewLogicalHeightForBoxSizing() const
+{
+    return viewLogicalHeight(document().settings() && document().settings()->rootLayerScrolls() ? IncludeScrollbars : ExcludeScrollbars);
 }
 
 LayoutUnit LayoutView::viewLogicalHeightForPercentages() const
