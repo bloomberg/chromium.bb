@@ -597,7 +597,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
 
   void TimeoutWorkerOnIOThread() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    version_->SimulatePingTimeoutForTesting();
+    version_->PingWorker();
+    version_->OnPingTimeout();
   }
 
   void AddControlleeOnIOThread() {
