@@ -57,8 +57,8 @@ qcms_bool compute_precache(struct curveType *trc, uint8_t *output);
 
 static inline unsigned short float_to_half_float(float f)
 {
-	extern const unsigned short qcms_half_float_base_table[];
-	extern const unsigned char qcms_half_float_shift_table[];
+	extern const unsigned short qcms_half_float_base_table[512];
+	extern const unsigned char qcms_half_float_shift_table[512];
 
 	// See Blink::Source/platform/graphics/gpu/WebGLImageConversion.cpp::convertFloatToHalfFloat()
 	// and http://crbug.com/491784
