@@ -354,7 +354,7 @@ void DataTransfer::writeRange(Range* selectedRange, LocalFrame* frame)
     if (!m_dataObject)
         return;
 
-    m_dataObject->setHTMLAndBaseURL(createMarkup(selectedRange, AnnotateForInterchange, false, ResolveNonLocalURLs), frame->document()->url());
+    m_dataObject->setHTMLAndBaseURL(createMarkup(selectedRange, AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs), frame->document()->url());
 
     String str = frame->selectedTextForClipboard();
 #if OS(WIN)

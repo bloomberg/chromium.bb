@@ -1232,7 +1232,7 @@ WebString WebLocalFrameImpl::selectionAsMarkup() const
     if (!range)
         return WebString();
 
-    return createMarkup(range.get(), AnnotateForInterchange, false, ResolveNonLocalURLs);
+    return createMarkup(range.get(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
 }
 
 void WebLocalFrameImpl::selectWordAroundPosition(LocalFrame* frame, VisiblePosition position)

@@ -76,12 +76,13 @@ static Position toPositionInDOMTree(const Position& position)
 }
 
 template<typename Strategy>
-StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const PositionType& start, const PositionType& end, Node* highestNodeToBeSerialized)
+StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const PositionType& start, const PositionType& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines convertBlocksToInlines)
     : m_markupAccumulator(shouldResolveURLs, toTextOffset(start.parentAnchoredEquivalent()), toTextOffset(end.parentAnchoredEquivalent()), start.document(), shouldAnnotate, highestNodeToBeSerialized)
     , m_start(start)
     , m_end(end)
     , m_shouldAnnotate(shouldAnnotate)
     , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
+    , m_convertBlocksToInlines(convertBlocksToInlines)
 {
 }
 
@@ -121,7 +122,7 @@ static PassRefPtrWillBeRawPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(c
 }
 
 template<typename Strategy>
-String StyledMarkupSerializer<Strategy>::createMarkup(bool convertBlocksToInlines)
+String StyledMarkupSerializer<Strategy>::createMarkup()
 {
     DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, ("<br class=\"" AppleInterchangeNewline "\">"));
 
@@ -158,7 +159,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup(bool convertBlocksToInline
         // Also include all of the ancestors of lastClosed up to this special ancestor.
         // FIXME: What is ancestor?
         for (ContainerNode* ancestor = Strategy::parent(*lastClosed); ancestor; ancestor = Strategy::parent(*ancestor)) {
-            if (ancestor == fullySelectedRoot && !convertBlocksToInlines) {
+            if (ancestor == fullySelectedRoot && !convertBlocksToInlines()) {
                 RefPtrWillBeRawPtr<EditingStyle> fullySelectedRootStyle = styleFromMatchedRulesAndInlineDecl(fullySelectedRoot);
 
                 // Bring the background attribute over, but not as an attribute because a background attribute on a div
@@ -180,7 +181,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup(bool convertBlocksToInline
             } else {
                 // Since this node and all the other ancestors are not in the selection we want to set RangeFullySelectsNode to DoesNotFullySelectNode
                 // so that styles that affect the exterior of the node are not included.
-                wrapWithNode(*ancestor, convertBlocksToInlines, StyledMarkupAccumulator::DoesNotFullySelectNode);
+                wrapWithNode(*ancestor, StyledMarkupAccumulator::DoesNotFullySelectNode);
             }
 
             if (ancestor == m_highestNodeToBeSerialized)
@@ -196,11 +197,11 @@ String StyledMarkupSerializer<Strategy>::createMarkup(bool convertBlocksToInline
 }
 
 template<typename Strategy>
-void StyledMarkupSerializer<Strategy>::wrapWithNode(ContainerNode& node, bool convertBlocksToInlines, typename StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
+void StyledMarkupSerializer<Strategy>::wrapWithNode(ContainerNode& node, typename StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
 {
     StringBuilder markup;
     if (node.isElementNode())
-        m_markupAccumulator.appendElement(markup, toElement(node), convertBlocksToInlines && isBlock(&node), rangeFullySelectsNode);
+        m_markupAccumulator.appendElement(markup, toElement(node), convertBlocksToInlines() && isBlock(&node), rangeFullySelectsNode);
     else
         m_markupAccumulator.appendStartMarkup(markup, node, 0);
     m_reversedPrecedingMarkup.append(markup.toString());

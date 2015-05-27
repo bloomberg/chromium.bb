@@ -242,7 +242,7 @@ static HTMLElement* highestAncestorToWrapMarkup(const typename Strategy::Positio
 // FIXME: At least, annotation and style info should probably not be included in range.markupString()
 template <typename Strategy>
 String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionType& startPosition, const PositionType& endPosition,
-    EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
+    EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
     ASSERT(startPosition.isNotNull());
     ASSERT(endPosition.isNotNull());
@@ -259,11 +259,11 @@ String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionType& startPo
     document->updateLayoutIgnorePendingStylesheets();
 
     HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup<Strategy>(startPosition, endPosition, shouldAnnotate, constrainingAncestor);
-    StyledMarkupSerializer<Strategy> serializer(shouldResolveURLs, shouldAnnotate, startPosition, endPosition, specialCommonAncestor);
-    return serializer.createMarkup(convertBlocksToInlines);
+    StyledMarkupSerializer<Strategy> serializer(shouldResolveURLs, shouldAnnotate, startPosition, endPosition, specialCommonAncestor, convertBlocksToInlines);
+    return serializer.createMarkup();
 }
 
-String createMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, bool convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
+String createMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
     if (!range)
         return emptyString();

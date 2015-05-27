@@ -3874,7 +3874,7 @@ void WebViewImpl::extractSmartClipData(WebRect rectInViewport, WebString& clipTe
     if (!range)
         return;
 
-    clipHtml = createMarkup(range.get(), AnnotateForInterchange, false, ResolveNonLocalURLs);
+    clipHtml = createMarkup(range.get(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
 }
 
 void WebViewImpl::hidePopups()

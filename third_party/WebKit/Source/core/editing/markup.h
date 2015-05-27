@@ -48,6 +48,7 @@ class StylePropertySet;
 
 enum EChildrenOnly { IncludeNode, ChildrenOnly };
 enum EAbsoluteURLs { DoNotResolveURLs, ResolveAllURLs, ResolveNonLocalURLs };
+enum class ConvertBlocksToInlines { NotConvert, Convert };
 
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(Range* context, const String& text);
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document&, const String& markup, const String& baseURL, ParserContentPolicy = AllowScriptingContent);
@@ -68,12 +69,12 @@ class CORE_TEMPLATE_CLASS_EXPORT CreateMarkupAlgorithm {
 public:
     using PositionType = typename Strategy::PositionType;
 
-    static String createMarkup(const PositionType& startPosition, const PositionType& endPosition, EAnnotateForInterchange shouldAnnotate = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs shouldResolveURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
+    static String createMarkup(const PositionType& startPosition, const PositionType& endPosition, EAnnotateForInterchange shouldAnnotate = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs shouldResolveURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
 
-CORE_EXPORT String createMarkup(const Range*, EAnnotateForInterchange = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
+CORE_EXPORT String createMarkup(const Range*, EAnnotateForInterchange = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
 CORE_EXPORT String createMarkup(const Node*, EChildrenOnly = IncludeNode, EAbsoluteURLs = DoNotResolveURLs);
 
 String urlToMarkup(const KURL&, const String& title);

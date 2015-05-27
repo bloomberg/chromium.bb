@@ -1671,7 +1671,7 @@ static String extractSelectedText(const FrameSelection& selection, TextIteratorB
 
 String FrameSelection::selectedHTMLForClipboard() const
 {
-    return createMarkup(m_selection.toNormalizedRange().get(), AnnotateForInterchange, false, ResolveNonLocalURLs);
+    return createMarkup(m_selection.toNormalizedRange().get(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
 }
 
 String FrameSelection::selectedText() const
