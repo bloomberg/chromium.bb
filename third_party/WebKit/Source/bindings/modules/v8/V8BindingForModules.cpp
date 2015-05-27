@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
+#include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
@@ -42,6 +43,8 @@
 #include "bindings/modules/v8/V8IDBIndex.h"
 #include "bindings/modules/v8/V8IDBKeyRange.h"
 #include "bindings/modules/v8/V8IDBObjectStore.h"
+#include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMArrayBufferView.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBKeyRange.h"
@@ -97,7 +100,9 @@ v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationConte
     case IDBKey::StringType:
         return v8String(isolate, key->string());
     case IDBKey::BinaryType:
-        return toV8(DOMUint8Array::create(reinterpret_cast<const unsigned char*>(key->binary()->data()), key->binary()->size()), creationContext, isolate);
+        // Experimental feature: binary keys
+        // https://w3c.github.io/IndexedDB/#steps-to-convert-a-key-to-a-value
+        return toV8(DOMArrayBuffer::create(reinterpret_cast<const unsigned char*>(key->binary()->data()), key->binary()->size()), creationContext, isolate);
     case IDBKey::DateType:
         return v8::Date::New(context, key->date()).ToLocalChecked();
     case IDBKey::ArrayType:
@@ -190,13 +195,21 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> 
         return IDBKey::createString(toCoreString(value.As<v8::String>()));
     if (value->IsDate() && !std::isnan(value.As<v8::Date>()->ValueOf()))
         return IDBKey::createDate(value.As<v8::Date>()->ValueOf());
-    if (value->IsUint8Array() && (allowExperimentalTypes || RuntimeEnabledFeatures::indexedDBExperimentalEnabled())) {
-        // Per discussion in https://www.w3.org/Bugs/Public/show_bug.cgi?id=23332 the
-        // input type is constrained to Uint8Array to match the output type.
-        DOMArrayBufferView* view = V8ArrayBufferView::toImpl(value.As<v8::Object>());
-        const char* start = static_cast<const char*>(view->baseAddress());
-        size_t length = view->byteLength();
-        return IDBKey::createBinary(SharedBuffer::create(start, length));
+    if (allowExperimentalTypes || RuntimeEnabledFeatures::indexedDBExperimentalEnabled()) {
+        // Experimental feature: binary keys
+        // https://w3c.github.io/IndexedDB/#dfn-convert-a-value-to-a-key
+        if (value->IsArrayBuffer()) {
+            DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
+            const char* start = static_cast<const char*>(buffer->data());
+            size_t length = buffer->byteLength();
+            return IDBKey::createBinary(SharedBuffer::create(start, length));
+        }
+        if (value->IsArrayBufferView()) {
+            DOMArrayBufferView* view = V8ArrayBufferView::toImpl(value.As<v8::Object>());
+            const char* start = static_cast<const char*>(view->baseAddress());
+            size_t length = view->byteLength();
+            return IDBKey::createBinary(SharedBuffer::create(start, length));
+        }
     }
     if (value->IsArray()) {
         v8::Local<v8::Array> array = value.As<v8::Array>();
