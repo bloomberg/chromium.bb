@@ -673,6 +673,12 @@ void HotwordService::SpeakerModelExistsComplete(bool exists) {
 
 void HotwordService::OptIntoHotwording(
     const LaunchMode& launch_mode) {
+  // If the notification is in the notification tray, remove it (since the user
+  // is manually opting in to hotwording, they do not need the promotion).
+  g_browser_process->notification_ui_manager()->CancelById(
+      hotword_internal::kHotwordNotificationId,
+      NotificationUIManager::GetProfileID(profile_));
+
   // First determine if we actually need to launch the app, or can just enable
   // the pref. If Audio History has already been enabled, and we already have
   // a speaker model, then we don't need to launch the app at all.
