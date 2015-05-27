@@ -743,3 +743,8 @@ body:not(.connected) #session-mode {
   position: absolute;
   pointer-events: none;
 }
+
+#connection-dropped-dialog .restart-timer {
+  color: rgb(0, 0, 0);
+  font-weight: bold;
+}

@@ -196,6 +196,9 @@ remoting.Html5ModalDialog = function(params) {
 };
 
 remoting.Html5ModalDialog.prototype.dispose = function() {
+  if (this.dialog_.open) {
+    this.close(remoting.MessageDialog.Result.CANCEL);
+  }
   base.dispose(this.eventHooks_);
   this.eventHookes_ = null;
 };

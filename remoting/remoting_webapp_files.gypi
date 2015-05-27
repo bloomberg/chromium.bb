@@ -209,6 +209,7 @@
     ],
     # Shared UI JavaScript files.
     'remoting_webapp_shared_js_ui_files': [
+      'webapp/base/js/connection_dropped_dialog.js',
       'webapp/base/js/connection_stats.js',
       'webapp/base/js/l10n.js',
       'webapp/base/js/ui_mode.js',

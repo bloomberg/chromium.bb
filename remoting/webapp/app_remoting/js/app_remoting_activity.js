@@ -206,25 +206,18 @@ remoting.AppRemotingActivity.prototype.onConnectionDropped_ = function() {
 
   var rootElement = /** @type {HTMLDialogElement} */ (
       document.getElementById('connection-dropped-dialog'));
-
-  var dialog = new remoting.Html5ModalDialog({
-    dialog: rootElement,
-    primaryButton: rootElement.querySelector('.restart-button'),
-    secondaryButton: rootElement.querySelector('.close-button'),
-    closeOnEscape: false
-  });
-
+  var dialog = new remoting.ConnectionDroppedDialog(rootElement);
   var that = this;
-  dialog.show().then(function(/** remoting.MessageDialog.Result */ result) {
-    if (result === remoting.MessageDialog.Result.PRIMARY) {
-      // Hide the windows of the remote application with setDesktopRects([])
-      // before tearing down the plugin.
-      remoting.windowShape.setDesktopRects([]);
-      that.cleanup_();
-      that.start();
-    } else {
-      chrome.app.window.current().close();
-    }
+  dialog.show().then(function(){
+    dialog.dispose();
+    // Hide the windows of the remote application with setDesktopRects([])
+    // before tearing down the plugin.
+    remoting.windowShape.setDesktopRects([]);
+    that.cleanup_();
+    that.start();
+  }).catch(function(){
+    dialog.dispose();
+    chrome.app.window.current().close();
   });
 };
 

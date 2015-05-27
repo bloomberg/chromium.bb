@@ -208,6 +208,7 @@ remoting_webapp_shared_js_signaling_files = [
 
 # UI JavaScript files.
 remoting_webapp_shared_js_ui_files = [
+  "base/js/connection_dropped_dialog.js",
   "base/js/connection_stats.js",
   "base/js/l10n.js",
   "base/js/ui_mode.js",
