@@ -142,7 +142,8 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
         }
 
         @Override
-        protected HttpResponse handleGet(HttpRequest request) throws HttpException {
+        protected void handleGet(HttpRequest request, HttpResponseCallback callback)
+                throws HttpException {
             RequestLine requestLine = request.getRequestLine();
 
             String requestPath = requestLine.getUri();
@@ -188,7 +189,7 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
             if (entity != null) {
                 response.setEntity(entity);
             }
-            return response;
+            callback.onResponse(response);
         }
     }
 

@@ -10,7 +10,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
 import org.apache.http.RequestLine;
@@ -74,10 +73,10 @@ public class TestServerSpawner extends BaseHttpTestServer {
      * This handles the /kill and /ping commands. It returns 403s for anything else.
      *
      * @param request The GET request to handle.
-     * @return The response to |request|.
+     * @param callback The callback to give the response to |request|.
      */
     @Override
-    protected HttpResponse handleGet(HttpRequest request) {
+    protected void handleGet(HttpRequest request, HttpResponseCallback callback) {
         RequestLine requestLine = request.getRequestLine();
         String uri = requestLine.getUri();
 
@@ -120,7 +119,7 @@ public class TestServerSpawner extends BaseHttpTestServer {
 
         BasicHttpResponse response = new BasicHttpResponse(HttpVersion.HTTP_1_0, status, reason);
         response.setEntity(entity);
-        return response;
+        callback.onResponse(response);
     }
 
     /**
@@ -129,10 +128,11 @@ public class TestServerSpawner extends BaseHttpTestServer {
      * This handles the /start command. It returns 403s for anything else.
      *
      * @param request The POST request to handle.
-     * @return The response to |request|.
+     * @param callback The callback to give the response to |request|.
      */
     @Override
-    protected HttpResponse handlePost(HttpEntityEnclosingRequest request) throws HttpException {
+    protected void handlePost(HttpEntityEnclosingRequest request, HttpResponseCallback callback)
+            throws HttpException {
         RequestLine requestLine = request.getRequestLine();
         String uri = requestLine.getUri();
 
@@ -190,6 +190,6 @@ public class TestServerSpawner extends BaseHttpTestServer {
 
         BasicHttpResponse response = new BasicHttpResponse(HttpVersion.HTTP_1_0, status, reason);
         response.setEntity(responseEntity);
-        return response;
+        callback.onResponse(response);
     }
 }

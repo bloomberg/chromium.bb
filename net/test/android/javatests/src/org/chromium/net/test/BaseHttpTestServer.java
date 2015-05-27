@@ -4,8 +4,6 @@
 
 package org.chromium.net.test;
 
-import android.util.Log;
-
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
@@ -18,6 +16,7 @@ import org.apache.http.impl.DefaultHttpServerConnection;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.chromium.base.Log;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -25,6 +24,50 @@ import java.net.Socket;
 /** A base class for simple HTTP test servers. */
 public abstract class BaseHttpTestServer extends BaseTcpTestServer {
     private static final String TAG = "BaseHttpTestServer";
+
+    /**
+     * HttpResponseCallback owns the {@link DefaultHttpServerConnection} from a connection and
+     * is responsible to send a response back over that connection when the
+     * {@link #onResponse(HttpResponse)} callback is invoked.
+     */
+    public static class HttpResponseCallback {
+        /**
+         * The connection to the client.
+         */
+        private final DefaultHttpServerConnection mConn;
+
+        /**
+         * Creates a callback for the given connection.
+         *
+         * When the server is finished handling the request, it should invoke
+         * {@link #onResponse(HttpResponse)} with the result.
+         *
+         * @param conn The connection to create a callback for.
+         */
+        public HttpResponseCallback(DefaultHttpServerConnection conn) {
+            mConn = conn;
+        }
+
+        /**
+         * Triggers sending the given response to the connected client.
+         *
+         * @param response the response to send over the connection.
+         */
+        public final void onResponse(HttpResponse response) {
+            try {
+                mConn.sendResponseHeader(response);
+                mConn.sendResponseEntity(response);
+            } catch (HttpException | IOException e) {
+                Log.e(TAG, "Error while handling HTTP request", e);
+            } finally {
+                try {
+                    mConn.close();
+                } catch (IOException e) {
+                    Log.e(TAG, "Error while closing socket for HTTP request", e);
+                }
+            }
+        }
+    }
 
     /**
      * Create an HTTP test server on the given port.
@@ -53,31 +96,45 @@ public abstract class BaseHttpTestServer extends BaseTcpTestServer {
         DefaultHttpServerConnection conn = new DefaultHttpServerConnection();
         conn.bind(sock, httpParams);
 
+        HttpRequest request;
         try {
-            HttpRequest request = conn.receiveRequestHeader();
+            request = conn.receiveRequestHeader();
             if (request instanceof HttpEntityEnclosingRequest) {
                 conn.receiveRequestEntity((HttpEntityEnclosingRequest) request);
             }
-
-            HttpResponse response = null;
-            switch (request.getRequestLine().getMethod()) {
-                case HttpGet.METHOD_NAME:
-                    response = handleGet(request);
-                    break;
-                case HttpPost.METHOD_NAME:
-                    response = handlePost((HttpEntityEnclosingRequest) request);
-                    break;
-                default:
-                    response = handleUnsupported(request);
-                    break;
-            }
-
-            conn.sendResponseHeader(response);
-            conn.sendResponseEntity(response);
         } catch (HttpException e) {
             Log.e(TAG, "Error while handling HTTP request", e);
-        } finally {
-            conn.close();
+            try {
+                conn.close();
+            } catch (IOException ioe) {
+                Log.e(TAG, "Error while closing socket for HTTP request", ioe);
+            }
+            return;
+        }
+        handleRequest(conn, request);
+    }
+
+    private void handleRequest(DefaultHttpServerConnection conn, HttpRequest request) {
+        HttpResponseCallback callback = new HttpResponseCallback(conn);
+        try {
+            switch (request.getRequestLine().getMethod()) {
+                case HttpGet.METHOD_NAME:
+                    handleGet(request, callback);
+                    return;
+                case HttpPost.METHOD_NAME:
+                    handlePost((HttpEntityEnclosingRequest) request, callback);
+                    return;
+                default:
+                    handleUnsupported(request, callback);
+                    return;
+            }
+        } catch (HttpException e) {
+            Log.e(TAG, "Error while handling HTTP request. Closing connection.", e);
+            try {
+                conn.close();
+            } catch (IOException ioe) {
+                Log.e(TAG, "Error while closing socket for HTTP request", ioe);
+            }
         }
     }
 
@@ -98,11 +155,15 @@ public abstract class BaseHttpTestServer extends BaseTcpTestServer {
      * The default implementation returns a 405. Override this function if you want to support
      * GET.
      *
+     * Classes overriding this method must not call
+     * {@link HttpResponseCallback#onResponse(HttpResponse)} before throwing the exception.
+     *
      * @param request The GET request to handle.
-     * @return The response to the GET request.
+     * @param callback The callback to give the response to the GET request.
      */
-    protected HttpResponse handleGet(HttpRequest request) throws HttpException {
-        return handleUnsupported(request);
+    protected void handleGet(HttpRequest request, HttpResponseCallback callback)
+            throws HttpException {
+        handleUnsupported(request, callback);
     }
 
     /**
@@ -111,19 +172,24 @@ public abstract class BaseHttpTestServer extends BaseTcpTestServer {
      * The default implementation returns a 405. Override this function if you want to support
      * POST.
      *
+     * Classes overriding this method must not call
+     * {@link HttpResponseCallback#onResponse(HttpResponse)} before throwing the exception.
+     *
      * @param request The POST request to handle.
-     * @return The response to the POST request.
+     * @param callback The callback to give the response to the POST request.
      */
-    protected HttpResponse handlePost(HttpEntityEnclosingRequest request) throws HttpException {
-        return handleUnsupported(request);
+    protected void handlePost(HttpEntityEnclosingRequest request, HttpResponseCallback callback)
+            throws HttpException {
+        handleUnsupported(request, callback);
     }
 
     /** Handle an unsupported HTTP request.
      *
      * @param request The unsupported HTTP request.
-     * @return A 405 Method Not Allowed response.
+     * @param callback The callback to give a 405 Method Not Allowed response.
      */
-    protected HttpResponse handleUnsupported(HttpRequest request) {
-        return new BasicHttpResponse(HttpVersion.HTTP_1_1, HttpStatus.SC_METHOD_NOT_ALLOWED, "");
+    protected void handleUnsupported(HttpRequest request, HttpResponseCallback callback) {
+        callback.onResponse(
+                new BasicHttpResponse(HttpVersion.HTTP_1_1, HttpStatus.SC_METHOD_NOT_ALLOWED, ""));
     }
 }

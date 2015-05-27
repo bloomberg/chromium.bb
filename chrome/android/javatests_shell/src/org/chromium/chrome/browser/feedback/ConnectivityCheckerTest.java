@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.feedback;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
 import org.apache.http.message.BasicHttpResponse;
@@ -54,10 +55,65 @@ public class ConnectivityCheckerTest extends ChromeShellTestBase {
 
     private static class ConnectivityTestServer extends BaseHttpTestServer {
         /**
+         * The lock object used when inspecting and manipulating {@link #mHasStarted},
+         * {@link #mHasStopped}, {@link #mHandlerThread} and {@link #mHandler}.
+         */
+        private final Object mLock = new Object();
+
+        /**
+         * Flag for whether the server has started yet. This field must only be accessed when
+         * the thread has synchronized on {@link #mLock}.
+         */
+        private boolean mHasStarted;
+
+        /**
+         * Flag for whether the server has stopped yet. This field must only be accessed when
+         * the thread has synchronized on {@link #mLock}.
+         */
+        private boolean mHasStopped;
+
+        /**
+         * A {@link HandlerThread} for {@link #mHandler}. This field must only be accessed when
+         * the thread has synchronized on {@link #mLock}.
+         */
+        private HandlerThread mHandlerThread;
+
+        /**
+         * A Handler used for posting delayed callbacks. This field must only be accessed when
+         * the thread has synchronized on {@link #mLock}.
+         */
+        private Handler mHandler;
+
+        /**
          * Create an HTTP test server.
          */
         public ConnectivityTestServer() throws IOException {
             super(DUMMY_PORT, TIMEOUT_MS);
+        }
+
+        @Override
+        public void run() {
+            synchronized (mLock) {
+                if (mHasStarted) return;
+                mHasStarted = true;
+
+                mHandlerThread = new HandlerThread("ConnectivityTestServerHandler");
+                mHandlerThread.start();
+                mHandler = new Handler(mHandlerThread.getLooper());
+            }
+            super.run();
+        }
+
+        @Override
+        public void stop() {
+            synchronized (mLock) {
+                if (!mHasStarted || mHasStopped) return;
+                mHasStopped = true;
+
+                mHandler = null;
+                mHandlerThread.quit();
+            }
+            super.stop();
         }
 
         @Override
@@ -73,26 +129,41 @@ public class ConnectivityCheckerTest extends ChromeShellTestBase {
         }
 
         @Override
-        protected HttpResponse handleGet(HttpRequest request) throws HttpException {
+        protected void handleGet(HttpRequest request, HttpResponseCallback callback)
+                throws HttpException {
             String requestPath = request.getRequestLine().getUri();
+            if (GENERATE_204_SLOW_PATH.equals(requestPath)) {
+                sendDelayedResponse(callback, requestPath);
+            } else {
+                sendResponse(callback, requestPath);
+            }
+        }
+
+        private void sendDelayedResponse(
+                final HttpResponseCallback callback, final String requestPath) {
+            synchronized (mLock) {
+                if (mHandler == null) throw new IllegalStateException("Handler not created.");
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        sendResponse(callback, requestPath);
+                    }
+                }, TIMEOUT_MS);
+            }
+        }
+
+        private void sendResponse(HttpResponseCallback callback, String requestPath) {
             int httpStatus = getStatusCodeFromRequestPath(requestPath);
             String reason = String.valueOf(httpStatus);
-            return new BasicHttpResponse(HttpVersion.HTTP_1_1, httpStatus, reason);
+            callback.onResponse(new BasicHttpResponse(HttpVersion.HTTP_1_1, httpStatus, reason));
         }
 
         private int getStatusCodeFromRequestPath(String requestPath) {
             switch (requestPath) {
                 case GENERATE_200_PATH:
                     return HttpStatus.SC_OK;
-                case GENERATE_204_PATH:
-                    return HttpStatus.SC_NO_CONTENT;
+                case GENERATE_204_PATH: // Intentional fall through.
                 case GENERATE_204_SLOW_PATH:
-                    // Forcefully delay the response.
-                    try {
-                        Thread.sleep(TIMEOUT_MS);
-                    } catch (InterruptedException e) {
-                        // Intentionally ignored.
-                    }
                     return HttpStatus.SC_NO_CONTENT;
                 case GENERATE_302_PATH:
                     return HttpStatus.SC_MOVED_TEMPORARILY;
@@ -106,7 +177,7 @@ public class ConnectivityCheckerTest extends ChromeShellTestBase {
 
     private static class Callback implements ConnectivityChecker.ConnectivityCheckerCallback {
         private final Semaphore mSemaphore;
-        private AtomicBoolean mConnected = new AtomicBoolean();
+        private final AtomicBoolean mConnected = new AtomicBoolean();
 
         Callback(Semaphore semaphore) {
             mSemaphore = semaphore;
@@ -209,7 +280,7 @@ public class ConnectivityCheckerTest extends ChromeShellTestBase {
             public void run() {
                 if (useSystemStack) {
                     ConnectivityChecker.checkConnectivitySystemNetworkStack(
-                            getURLNoException(url), ((int) timeoutMs), callback);
+                            getURLNoException(url), (int) timeoutMs, callback);
                 } else {
                     ConnectivityChecker.checkConnectivityChromeNetworkStack(
                             Profile.getLastUsedProfile(), url, timeoutMs, callback);
