@@ -82,10 +82,6 @@ public abstract class ChromeSwitches {
      */
     public static final String ENABLE_HOSTED_MODE = "enable-hosted-mode";
 
-    // TODO(ianwen): remove this after rolling.
-    @Deprecated
-    public static final String ENABLE_EMBEDDED_MODE = "enable-hosted-mode";
-
     // How many thumbnails should we allow in the cache (per tab stack)?
     public static final String THUMBNAILS = "thumbnails";
 

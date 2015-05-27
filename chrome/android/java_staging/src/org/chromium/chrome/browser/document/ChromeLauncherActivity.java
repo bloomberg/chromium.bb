@@ -258,7 +258,7 @@ public class ChromeLauncherActivity extends Activity
     private boolean handleHostedActivityIntent() {
         if (getIntent() == null) return false;
 
-        boolean enabled = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_EMBEDDED_MODE);
+        boolean enabled = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_HOSTED_MODE);
         boolean hosted = getIntent().getBooleanExtra(
                 HostedIntentDataProvider.EXTRA_HOSTED_MODE, false);
         if (!hosted || !enabled) return false;
