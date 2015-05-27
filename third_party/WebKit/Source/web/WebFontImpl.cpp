@@ -34,6 +34,8 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/text/TextRun.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
@@ -92,13 +94,21 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
     TextRun textRun(run);
     TextRunPaintInfo runInfo(textRun);
     runInfo.bounds = textClipRect;
-    OwnPtr<GraphicsContext> gc = GraphicsContext::deprecatedCreateWithCanvas(canvas);
 
-    gc->save();
-    gc->setFillColor(color);
-    gc->clip(textClipRect);
-    gc->drawText(m_font, runInfo, leftBaseline);
-    gc->restore();
+    IntRect intRect(clip);
+    SkPictureBuilder pictureBuilder(intRect);
+    GraphicsContext* context = &pictureBuilder.context();
+
+    {
+        DrawingRecorder drawingRecorder(*context, *this, DisplayItem::WebFont, intRect);
+        context->save();
+        context->setFillColor(color);
+        context->clip(textClipRect);
+        context->drawText(m_font, runInfo, leftBaseline);
+        context->restore();
+    }
+
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 int WebFontImpl::calculateWidth(const WebTextRun& run) const

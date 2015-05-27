@@ -89,7 +89,8 @@ public:
         TableCellBackgroundFromSelfPaintingRow, // FIXME: To be deprecated.
         VideoBitmap,
         WebPlugin,
-        DrawingLast = WebPlugin,
+        WebFont,
+        DrawingLast = WebFont,
 
         CachedFirst,
         CachedLast = CachedFirst + DrawingLast - DrawingFirst,

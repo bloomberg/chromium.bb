@@ -32,6 +32,7 @@
 #define WebFontImpl_h
 
 #include "platform/fonts/Font.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "public/web/WebFont.h"
 
 namespace blink {
@@ -57,6 +58,9 @@ public:
     virtual int offsetForPosition(const WebTextRun&, float position) const override;
     virtual WebFloatRect selectionRectForText(const WebTextRun&, const WebFloatPoint& leftBaseline,
         int height, int from = 0, int to = -1) const override;
+
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return "WebFontImpl"; }
 
 private:
     Font m_font;

@@ -91,6 +91,7 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(TableCellBackgroundFromSelfPaintingRow);
         DEBUG_STRING_CASE(VideoBitmap);
         DEBUG_STRING_CASE(WebPlugin);
+        DEBUG_STRING_CASE(WebFont);
         DEFAULT_CASE;
     }
 }
