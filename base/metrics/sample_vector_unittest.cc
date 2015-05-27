@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/metrics/sample_vector.h"
+
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/sample_vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using std::vector;
 
 namespace base {
 namespace {
@@ -179,7 +178,7 @@ TEST(SampleVectorIteratorTest, IterateTest) {
   ranges.set_range(3, 3);
   ranges.set_range(4, 4);
 
-  vector<HistogramBase::Count> counts(3);
+  std::vector<HistogramBase::Count> counts(3);
   counts[0] = 1;
   counts[1] = 0;  // Iterator will bypass this empty bucket.
   counts[2] = 2;

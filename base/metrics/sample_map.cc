@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 
-using std::map;
-
 namespace base {
 
 typedef HistogramBase::Count Count;
@@ -24,7 +22,7 @@ void SampleMap::Accumulate(Sample value, Count count) {
 }
 
 Count SampleMap::GetCount(Sample value) const {
-  map<Sample, Count>::const_iterator it = sample_counts_.find(value);
+  std::map<Sample, Count>::const_iterator it = sample_counts_.find(value);
   if (it == sample_counts_.end())
     return 0;
   return it->second;
@@ -32,10 +30,8 @@ Count SampleMap::GetCount(Sample value) const {
 
 Count SampleMap::TotalCount() const {
   Count count = 0;
-  for (map<Sample, Count>::const_iterator it = sample_counts_.begin();
-       it != sample_counts_.end();
-       ++it) {
-    count += it->second;
+  for (const auto& entry : sample_counts_) {
+    count += entry.second;
   }
   return count;
 }
@@ -53,7 +49,8 @@ bool SampleMap::AddSubtractImpl(SampleCountIterator* iter,
     iter->Get(&min, &max, &count);
     if (min + 1 != max)
       return false;  // SparseHistogram only supports bucket with size 1.
-    sample_counts_[min] += (op ==  HistogramSamples::ADD) ? count : -count;
+
+    sample_counts_[min] += (op == HistogramSamples::ADD) ? count : -count;
   }
   return true;
 }

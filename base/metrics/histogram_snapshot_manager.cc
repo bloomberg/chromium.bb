@@ -10,9 +10,6 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/stl_util.h"
 
-using std::map;
-using std::string;
-
 namespace base {
 
 HistogramSnapshotManager::HistogramSnapshotManager(
@@ -78,7 +75,7 @@ void HistogramSnapshotManager::PrepareDelta(const HistogramBase& histogram) {
   }
 
   HistogramSamples* to_log;
-  map<string, HistogramSamples*>::iterator it =
+  std::map<std::string, HistogramSamples*>::iterator it =
       logged_samples_.find(histogram_name);
   if (it == logged_samples_.end()) {
     to_log = snapshot.release();
