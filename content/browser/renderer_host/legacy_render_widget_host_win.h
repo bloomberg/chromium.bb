@@ -110,7 +110,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   void OnFinalMessage(HWND hwnd) override;
 
  private:
-  LegacyRenderWidgetHostHWND(HWND parent);
+  explicit LegacyRenderWidgetHostHWND(HWND parent);
   ~LegacyRenderWidgetHostHWND() override;
 
   bool Init();

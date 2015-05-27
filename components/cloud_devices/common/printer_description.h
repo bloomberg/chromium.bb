@@ -313,7 +313,7 @@ struct Media {
 struct Interval {
   Interval();
   Interval(int32 start, int32 end);
-  Interval(int32 start);
+  explicit Interval(int32 start);
 
   bool operator==(const Interval& other) const;
   bool operator!=(const Interval& other) const { return !(*this == other); }

@@ -23,7 +23,7 @@ namespace content {
 class PeerConnectionTrackerHost : public BrowserMessageFilter,
                                   public base::PowerObserver {
  public:
-  PeerConnectionTrackerHost(int render_process_id);
+  explicit PeerConnectionTrackerHost(int render_process_id);
 
   // content::BrowserMessageFilter override.
   bool OnMessageReceived(const IPC::Message& message) override;

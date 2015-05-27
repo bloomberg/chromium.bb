@@ -20,7 +20,7 @@ namespace content {
 // will behave as if the platform does not support geofencing.
 class MockGeofencingService : public GeofencingService {
  public:
-  MockGeofencingService(bool service_available);
+  explicit MockGeofencingService(bool service_available);
   ~MockGeofencingService() override;
 
   void SetMockPosition(double latitude, double longitude);

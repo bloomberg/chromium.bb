@@ -24,7 +24,7 @@ class View : public Resource {
 
   /// Creates a View resource, taking and holding an additional reference to
   /// the given resource handle.
-  View(PP_Resource view_resource);
+  explicit View(PP_Resource view_resource);
 
   /// GetRect() retrieves the rectangle of the module instance associated
   /// with a view changed notification relative to the upper-left of the browser

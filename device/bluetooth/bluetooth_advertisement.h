@@ -53,7 +53,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
   // Structure that holds the data for an advertisement.
   class DEVICE_BLUETOOTH_EXPORT Data {
    public:
-    Data(AdvertisementType type);
+    explicit Data(AdvertisementType type);
     ~Data();
 
     AdvertisementType type() { return type_; }

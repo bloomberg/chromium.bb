@@ -36,7 +36,7 @@ struct CONTENT_EXPORT BackgroundTracingConfig {
                        base::DictionaryValue* dict);
 
  protected:
-  BackgroundTracingConfig(Mode mode);
+  explicit BackgroundTracingConfig(Mode mode);
 };
 
 }  // namespace content

@@ -13,7 +13,7 @@ namespace android_webview {
 // renderer process on the IPC thread.
 class AwPrintingMessageFilter : public content::BrowserMessageFilter {
  public:
-  AwPrintingMessageFilter(int render_process_id);
+  explicit AwPrintingMessageFilter(int render_process_id);
 
   // content::BrowserMessageFilter methods.
   void OverrideThreadForMessage(const IPC::Message& message,

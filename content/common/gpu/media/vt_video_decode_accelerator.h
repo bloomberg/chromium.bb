@@ -85,7 +85,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   };
 
   struct Frame {
-    Frame(int32_t bitstream_id);
+    explicit Frame(int32_t bitstream_id);
     ~Frame();
 
     // ID of the bitstream buffer this Frame will be decoded from.

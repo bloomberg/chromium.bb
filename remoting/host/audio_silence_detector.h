@@ -15,7 +15,7 @@ class AudioSilenceDetector {
  public:
   // |threshold| is used to specify maximum absolute sample value that should
   // still be considered as silence.
-  AudioSilenceDetector(int threshold);
+  explicit AudioSilenceDetector(int threshold);
   ~AudioSilenceDetector();
 
   void Reset(int sampling_rate, int channels);

@@ -38,7 +38,7 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   bool IsTerminated();
 
  protected:
-  WorkerDevToolsAgentHost(WorkerId worker_id);
+  explicit WorkerDevToolsAgentHost(WorkerId worker_id);
   ~WorkerDevToolsAgentHost() override;
 
   enum WorkerState {

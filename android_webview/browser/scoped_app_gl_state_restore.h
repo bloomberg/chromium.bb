@@ -25,7 +25,7 @@ class ScopedAppGLStateRestore {
     MODE_RESOURCE_MANAGEMENT,
   };
 
-  ScopedAppGLStateRestore(CallMode mode);
+  explicit ScopedAppGLStateRestore(CallMode mode);
   ~ScopedAppGLStateRestore();
 
   bool stencil_enabled() const;

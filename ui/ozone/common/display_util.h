@@ -22,7 +22,7 @@ class DisplaySnapshot;
 // find a display with |display_id| in std:: containers (ie: std::vector).
 class FindDisplayById {
  public:
-  FindDisplayById(int64_t display_id);
+  explicit FindDisplayById(int64_t display_id);
 
   bool operator()(const DisplaySnapshot_Params& display) const;
 

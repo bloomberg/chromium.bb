@@ -22,7 +22,7 @@ typedef sdk_util::ScopedRef<PipeEventEmitter> ScopedPipeEventEmitter;
 
 class PipeEventEmitter : public StreamEventEmitter {
  public:
-  PipeEventEmitter(size_t size);
+  explicit PipeEventEmitter(size_t size);
 
   Error Read_Locked(char* data, size_t len, int* out_bytes);
   Error Write_Locked(const char* data, size_t len, int* out_bytes);

@@ -71,7 +71,7 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   // Sets an value to override the result for GetContentLength().
   // Used for tests.
   struct NET_EXPORT_PRIVATE ScopedOverridingContentLengthForTests {
-    ScopedOverridingContentLengthForTests(uint64 value);
+    explicit ScopedOverridingContentLengthForTests(uint64 value);
     ~ScopedOverridingContentLengthForTests();
   };
 

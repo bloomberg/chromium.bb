@@ -45,7 +45,7 @@ class CONTENT_EXPORT SyntheticSmoothMoveGestureParams {
 // to compensate for the touch slop.
 class CONTENT_EXPORT SyntheticSmoothMoveGesture : public SyntheticGesture {
  public:
-  SyntheticSmoothMoveGesture(SyntheticSmoothMoveGestureParams params);
+  explicit SyntheticSmoothMoveGesture(SyntheticSmoothMoveGestureParams params);
   ~SyntheticSmoothMoveGesture() override;
 
   // SyntheticGesture implementation:
