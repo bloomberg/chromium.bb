@@ -104,6 +104,14 @@ class WebThread {
                               const tracked_objects::Location& from_here,
                               const base::Closure& task,
                               base::TimeDelta delay);
+  static bool PostNonNestableTask(ID identifier,
+                                  const tracked_objects::Location& from_here,
+                                  const base::Closure& task);
+  static bool PostNonNestableDelayedTask(
+      ID identifier,
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      base::TimeDelta delay);
 
   static bool PostTaskAndReply(ID identifier,
                                const tracked_objects::Location& from_here,
@@ -153,6 +161,10 @@ class WebThread {
   // runner.
   static bool PostBlockingPoolTask(const tracked_objects::Location& from_here,
                                    const base::Closure& task);
+  static bool PostBlockingPoolTaskAndReply(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      const base::Closure& reply);
   static bool PostBlockingPoolSequencedTask(
       const std::string& sequence_token_name,
       const tracked_objects::Location& from_here,
@@ -172,10 +184,23 @@ class WebThread {
   // delete the pointer.
   static base::MessageLoop* UnsafeGetMessageLoopForThread(ID identifier);
 
+  // Callable on any thread.  Returns whether the given well-known thread is
+  // initialized.
+  static bool IsThreadInitialized(ID identifier) WARN_UNUSED_RESULT;
+
   // Callable on any thread.  Returns whether execution is currently on the
   // given thread.  To DCHECK this, use the DCHECK_CURRENTLY_ON_WEB_THREAD()
   // macro above.
   static bool CurrentlyOn(ID identifier) WARN_UNUSED_RESULT;
+
+  // Callable on any thread.  Returns whether the threads message loop is valid.
+  // If this returns false it means the thread is in the process of shutting
+  // down.
+  static bool IsMessageLoopValid(ID identifier) WARN_UNUSED_RESULT;
+
+  // If the current message loop is one of the known threads, returns true and
+  // sets identifier to its ID.
+  static bool GetCurrentThreadIdentifier(ID* identifier) WARN_UNUSED_RESULT;
 
   // Callers can hold on to a refcounted MessageLoopProxy beyond the lifetime
   // of the thread.
@@ -187,6 +212,8 @@ class WebThread {
   static std::string GetDCheckCurrentlyOnErrorMessage(ID expected);
 
  private:
+  friend class WebThreadImpl;
+
   WebThread() {}
   DISALLOW_COPY_AND_ASSIGN(WebThread);
 };

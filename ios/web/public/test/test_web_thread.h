@@ -17,11 +17,8 @@ namespace web {
 
 class TestWebThreadImpl;
 
-// TODO(ios): once WebThread is no longer implemented in term of BrowserThread,
-// introduces TestWebThreadBundle and deprecate TestWebThread
-// http://crbug.com/272091
-//
-// A WebThread for unit tests; this lets unit tests in ios/chrome create
+// DEPRECATED: use TestWebThreadBundle instead.
+// A WebThread for unit tests; this lets unit tests outside of web create
 // WebThread instances.
 class TestWebThread {
  public:
@@ -34,7 +31,7 @@ class TestWebThread {
   // certain unit tests. To avoid a stronger dependency of the internals of
   // WebThread, do no provide the full Thread interface.
 
-  // Starts the thread with a generci message loop.
+  // Starts the thread with a generic message loop.
   bool Start();
 
   // Starts the thread with an IOThread message loop.

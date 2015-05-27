@@ -4,21 +4,34 @@
 
 #include "ios/web/public/test/test_web_thread.h"
 
-#include "ios/web/web_thread_impl.h"
+#include "content/public/test/test_browser_thread.h"
+#include "ios/web/web_thread_adapter.h"
 
 namespace web {
 
-class TestWebThreadImpl : public WebThreadImpl {
+// TestWebThreadImpl delegates to content::TestBrowserThread until WebThread
+// implementation is indenpendent of content::BrowserThread.
+class TestWebThreadImpl {
  public:
-  TestWebThreadImpl(WebThread::ID identifier) : WebThreadImpl(identifier) {}
+  TestWebThreadImpl(WebThread::ID identifier)
+      : test_browser_thread_(BrowserThreadIDFromWebThreadID(identifier)) {}
 
   TestWebThreadImpl(WebThread::ID identifier, base::MessageLoop* message_loop)
-      : WebThreadImpl(identifier, message_loop) {}
+      : test_browser_thread_(BrowserThreadIDFromWebThreadID(identifier),
+                             message_loop) {}
 
-  ~TestWebThreadImpl() override { Stop(); }
+  ~TestWebThreadImpl() { Stop(); }
+
+  bool Start() { return test_browser_thread_.Start(); }
+
+  bool StartIOThread() { return test_browser_thread_.StartIOThread(); }
+
+  void Stop() { test_browser_thread_.Stop(); }
+
+  bool IsRunning() { return test_browser_thread_.IsRunning(); }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestWebThreadImpl);
+  content::TestBrowserThread test_browser_thread_;
 };
 
 TestWebThread::TestWebThread(WebThread::ID identifier)
@@ -31,7 +44,6 @@ TestWebThread::TestWebThread(WebThread::ID identifier,
 }
 
 TestWebThread::~TestWebThread() {
-  Stop();
 }
 
 bool TestWebThread::Start() {
@@ -39,9 +51,7 @@ bool TestWebThread::Start() {
 }
 
 bool TestWebThread::StartIOThread() {
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  return impl_->StartWithOptions(options);
+  return impl_->StartIOThread();
 }
 
 void TestWebThread::Stop() {

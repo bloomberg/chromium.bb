@@ -14,10 +14,10 @@ include_rules = [
 specific_include_rules = {
   # Allow browser_thread.h and test_browser_thread.h until a web/ replacement is
   # built out. Note that headers in public/ are not subject to this exception.
-  "^web_thread(\.cc|_impl\.(cc|h))$": [
+  "^web_thread(\.cc|(_impl|_adapter)\.(cc|h))$": [
     "+content/public/browser/browser_thread.h",
   ],
-  "^test_web_thread(_bundle)?\.cc$": [
+  "^test_web_thread(_bundle)?(_adapter)?\.cc$": [
     "+content/public/test/test_browser_thread.h",
     "+content/public/test/test_browser_thread_bundle.h",
   ],
