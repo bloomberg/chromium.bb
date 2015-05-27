@@ -233,3 +233,30 @@ class LockingTest(cros_test_lib.TempDirTestCase):
     self.assertEquals(p.exitcode, LOCK_ACQUIRED)
     q.join()
     self.assertEquals(p.exitcode, LOCK_ACQUIRED)
+
+
+class PortableLinkLockTest(cros_test_lib.TempDirTestCase):
+  """Test locking.PortableLinkLock class."""
+
+  def tearDown(self):
+    """Looks for leaked files from the locking process."""
+    leaked_files = os.listdir(self.tempdir)
+    self.assertFalse(leaked_files,
+                     'Found unexpected leaked files from locking: %r' %
+                     leaked_files)
+
+  def testLockExclusivity(self):
+    """Test that when we have a lock, someone else can't grab it."""
+    lock_path = os.path.join(self.tempdir, 'locked_file')
+    with locking.PortableLinkLock(lock_path, max_retry=0):
+      with self.assertRaises(locking.LockNotAcquiredError):
+        with locking.PortableLinkLock(lock_path, max_retry=5, sleep=0.1):
+          self.fail('We acquired a lock twice?')
+
+  def testCanUnlock(self):
+    """Test that we release locks correctly."""
+    lock_path = os.path.join(self.tempdir, 'locked_file')
+    with locking.PortableLinkLock(lock_path, max_retry=0):
+      pass
+    with locking.PortableLinkLock(lock_path, max_retry=0):
+      pass

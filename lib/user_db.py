@@ -10,12 +10,15 @@ import collections
 import os
 
 from chromite.lib import cros_logging as logging
+from chromite.lib import locking
 from chromite.lib import osutils
 
 
+# These fields must be in the order expected in /etc/passwd entries.
 User = collections.namedtuple(
     'User', ('user', 'password', 'uid', 'gid', 'gecos', 'home', 'shell'))
 
+# These fields must be in the order expected in /etc/group entries.
 Group = collections.namedtuple(
     'Group', ('group', 'password', 'gid', 'users'))
 
@@ -23,10 +26,25 @@ Group = collections.namedtuple(
 class UserDB(object):
   """An object that understands the users and groups installed on a system."""
 
+  # Number of times to attempt to acquire the write lock on a database.
+  # The max wait time for the lock is the nth triangular number of seconds.
+  # So in this case, T(24) * 1 second = 300 seconds.
+  _DB_LOCK_RETRIES = 24
+
   def __init__(self, sysroot):
     self._sysroot = sysroot
     self._user_cache = None
     self._group_cache = None
+
+  @property
+  def _user_db_file(self):
+    """Returns path to user database (aka /etc/passwd in the sysroot)."""
+    return os.path.join(self._sysroot, 'etc', 'passwd')
+
+  @property
+  def _group_db_file(self):
+    """Returns path to group database (aka /etc/group in the sysroot)."""
+    return os.path.join(self._sysroot, 'etc', 'group')
 
   @property
   def _users(self):
@@ -35,8 +53,7 @@ class UserDB(object):
       return self._user_cache
 
     self._user_cache = {}
-    passwd_contents = osutils.ReadFile(
-        os.path.join(self._sysroot, 'etc', 'passwd'))
+    passwd_contents = osutils.ReadFile(self._user_db_file)
 
     for line in passwd_contents.splitlines():
       pieces = line.split(':')
@@ -69,8 +86,7 @@ class UserDB(object):
       return self._group_cache
 
     self._group_cache = {}
-    group_contents = osutils.ReadFile(
-        os.path.join(self._sysroot, 'etc', 'group'))
+    group_contents = osutils.ReadFile(self._group_db_file)
 
     for line in group_contents.splitlines():
       pieces = line.split(':')
@@ -146,3 +162,60 @@ class UserDB(object):
       return group.gid
 
     raise ValueError('Could not resolve unknown group "%s" to gid.' % groupname)
+
+  def AddUser(self, user):
+    """Atomically add a user to the database.
+
+    If a user named |user.user| already exists, this method will simply return.
+
+    Args:
+      user: user_db.User object to add to database.
+    """
+    # Try to avoid grabbing the lock in the common case that a user already
+    # exists.
+    if self.UserExists(user.user):
+      return
+
+    # Clear the user cache to force ourselves to reparse.
+    self._user_cache = None
+
+    with locking.PortableLinkLock(self._user_db_file + '.lock',
+                                  max_retry=self._DB_LOCK_RETRIES):
+      # Check that |user| exists under the lock in case we're racing to create
+      # this user.
+      if self.UserExists(user.user):
+        return
+
+      self._users[user.user] = user
+      new_users = sorted(self._users.itervalues(), key=lambda u: u.uid)
+      contents = '\n'.join([':'.join(map(str, u)) for u in new_users])
+      osutils.WriteFile(self._user_db_file, contents, atomic=True, sudo=True)
+
+  def AddGroup(self, group):
+    """Atomically add a group to the database.
+
+    If a group named |group.group| already exists, this method will simply
+    return.
+
+    Args:
+      group: user_db.Group object to add to database.
+    """
+    # Try to avoid grabbing the lock in the common case that a group already
+    # exists.
+    if self.GroupExists(group.group):
+      return
+
+    # Clear the group cache to force ourselves to reparse.
+    self._group_cache = None
+
+    with locking.PortableLinkLock(self._group_db_file + '.lock',
+                                  max_retry=self._DB_LOCK_RETRIES):
+      # Check that |group| exists under the lock in case we're racing to create
+      # this group.
+      if self.GroupExists(group.group):
+        return
+
+      self._groups[group.group] = group
+      new_groups = sorted(self._groups.itervalues(), key=lambda g: g.gid)
+      contents = '\n'.join([':'.join(map(str, g)) for g in new_groups])
+      osutils.WriteFile(self._group_db_file, contents, atomic=True, sudo=True)

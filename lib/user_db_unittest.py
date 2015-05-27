@@ -18,7 +18,7 @@ MOCK_PASSWD_CONTENTS = 'root:x:0:0:root:/root:/bin/bash'
 MOCK_GROUP_CONTENTS = 'root:x:0:'
 
 
-class UserDBTest(cros_test_lib.TempDirTestCase):
+class UserDBTest(cros_test_lib.MockTempDirTestCase):
   """Tests for chromite.lib.user_db."""
 
   def _SetupDatabases(self, passwd_contents, group_contents):
@@ -31,6 +31,7 @@ class UserDBTest(cros_test_lib.TempDirTestCase):
     """Set up a test environment."""
     self._SetupDatabases(MOCK_PASSWD_CONTENTS, MOCK_GROUP_CONTENTS)
     self._user_db = user_db.UserDB(self.tempdir)
+    self.PatchObject(os, 'getuid', return_value=0)
 
   def testAcceptsKnownUser(self):
     """Check that we do appropriate things with valid users."""
@@ -73,3 +74,26 @@ class UserDBTest(cros_test_lib.TempDirTestCase):
     self.assertTrue(db.GroupExists('bar'))
     self.assertFalse(db.UserExists('root'))
     self.assertFalse(db.GroupExists('root'))
+
+  def testCanAddUser(self):
+    """Test that we can correctly add a user to a database."""
+    new_user = user_db.User(user='foo', password='!', uid=1000, gid=1000,
+                            gecos='test', home='/dev/null', shell='/bin/false')
+    self.assertFalse(self._user_db.UserExists(new_user.user))
+    self._user_db.AddUser(new_user)
+    self.assertTrue(self._user_db.UserExists(new_user.user))
+
+    # New instances should just see the new user.
+    new_db = user_db.UserDB(self.tempdir)
+    self.assertTrue(new_db.UserExists(new_user.user))
+
+  def testCanAddGroup(self):
+    """Test that we can correctly add a group to a database."""
+    new_group = user_db.Group(group='foo', password='!', gid=1000, users=[])
+    self.assertFalse(self._user_db.GroupExists(new_group.group))
+    self._user_db.AddGroup(new_group)
+    self.assertTrue(self._user_db.GroupExists(new_group.group))
+
+    # New instances should just see the new group.
+    new_db = user_db.UserDB(self.tempdir)
+    self.assertTrue(new_db.GroupExists(new_group.group))

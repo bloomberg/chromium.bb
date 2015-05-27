@@ -14,6 +14,7 @@ import tempfile
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import retry_util
 from chromite.lib import osutils
 
 
@@ -23,6 +24,10 @@ FLOCK = 'flock'
 
 class LockNotAcquiredError(Exception):
   """Signals that the lock was not acquired."""
+
+
+class LockingError(Exception):
+  """Signals miscellaneous problems in the locking process."""
 
 
 class _Lock(cros_build_lib.MasterPidContextManager):
@@ -270,3 +275,49 @@ class ProcessLock(_Lock):
       # dupe the fd so we retain a copy, while the original TemporaryFile
       # goes away.
       return os.dup(f.fileno())
+
+
+class PortableLinkLock(object):
+  """A more primitive lock that relies on the atomicity of creating hardlinks.
+
+  Use this lock if you need to be compatible with shadow utils like groupadd
+  or useradd.
+  """
+
+  def __init__(self, path, max_retry=0, sleep=1):
+    """Construct an instance.
+
+    Args:
+      path: path to file to lock on.  Multiple processes attempting to lock the
+        same path will compete for a system wide lock.
+      max_retry: maximum number of times to attempt to acquire the lock.
+      sleep: See retry_util.GenericRetry's sleep parameter.
+    """
+    self._path = path
+    self._target_path = None
+    # These two poorly named variables are just passed straight through to
+    # retry_util.RetryException.
+    self._max_retry = max_retry
+    self._sleep = sleep
+
+  def __enter__(self):
+    fd, self._target_path = tempfile.mkstemp(
+        prefix=self._path + '.chromite.portablelock.')
+    os.close(fd)
+    try:
+      retry_util.RetryException(OSError, self._max_retry,
+                                os.link, self._target_path, self._path,
+                                sleep=self._sleep)
+    except OSError:
+      raise LockNotAcquiredError('Timeout while trying to lock %s' % self._path)
+    finally:
+      osutils.SafeUnlink(self._target_path)
+
+    return self
+
+  def __exit__(self, exc_type, exc_val, exc_tb):
+    try:
+      if self._target_path:
+        osutils.SafeUnlink(self._target_path)
+    finally:
+      osutils.SafeUnlink(self._path)
