@@ -60,6 +60,8 @@ public:
         virtual bool undo(ExceptionState&) = 0;
         virtual bool redo(ExceptionState&) = 0;
 
+        virtual bool isNoop() { return false; }
+
         virtual bool isUndoableStateMark();
     private:
         String m_name;

@@ -92,9 +92,12 @@ bool InspectorHistory::perform(PassRefPtrWillBeRawPtr<Action> action, ExceptionS
     if (!action->perform(exceptionState))
         return false;
 
-    if (!action->mergeId().isEmpty() && m_afterLastActionIndex > 0 && action->mergeId() == m_history[m_afterLastActionIndex - 1]->mergeId())
+    if (!action->mergeId().isEmpty() && m_afterLastActionIndex > 0 && action->mergeId() == m_history[m_afterLastActionIndex - 1]->mergeId()) {
         m_history[m_afterLastActionIndex - 1]->merge(action);
-    else {
+        if (m_history[m_afterLastActionIndex - 1]->isNoop())
+            --m_afterLastActionIndex;
+        m_history.resize(m_afterLastActionIndex);
+    } else {
         m_history.resize(m_afterLastActionIndex);
         m_history.append(action);
         ++m_afterLastActionIndex;

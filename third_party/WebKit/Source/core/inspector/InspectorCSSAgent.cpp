@@ -248,6 +248,7 @@ public:
         if (!m_styleSheet->getStyleText(m_cssId, &m_oldStyleText))
             return false;
         bool result = m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_text, m_overwrite, exceptionState);
+        m_styleSheet->getStyleText(m_cssId, &m_newStyleText);
         return result;
     }
 
@@ -262,6 +263,12 @@ public:
 
         SetPropertyTextAction* other = static_cast<SetPropertyTextAction*>(action.get());
         m_text = other->m_text;
+        m_newStyleText = other->m_newStyleText;
+    }
+
+    virtual bool isNoop() override
+    {
+        return m_newStyleText == m_oldStyleText;
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -276,6 +283,7 @@ private:
     unsigned m_propertyIndex;
     String m_text;
     String m_oldStyleText;
+    String m_newStyleText;
     bool m_overwrite;
 };
 
