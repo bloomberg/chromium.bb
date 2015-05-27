@@ -11,8 +11,10 @@ To make a release of Weston and/or Wayland, follow these steps.
       configure.ac which typically need updated as well.  Then commit
       your changes:
 
+	  $ export RELEASE_NUMBER="x.y.z"
+	  $ export RELEASE_NAME="[alpha|RC1|RC2|official|point]"
       $ git status
-      $ git commit configure.ac -m "configure.ac: bump to version x.y.z for the xxx release"
+      $ git commit configure.ac -m "configure.ac: bump to version $RELEASE_NUMBER for the $RELEASE_NAME release"
       $ git push
 
   2.  For Weston releases, install Xwayland, either from your distro or
@@ -41,6 +43,8 @@ To make a release of Weston and/or Wayland, follow these steps.
       a testsuite error that can't be fixed for some reason, you can
       skip testsuite by specifying the --dist argument.  Pass --help to
       see other supported options.
+
+	  $ release.sh .
 
   4.  Compose the release announcements.  The script will generate
       *.x.y.0.announce files with a list of changes and tags, one for
