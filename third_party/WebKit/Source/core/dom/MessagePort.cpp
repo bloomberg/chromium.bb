@@ -259,10 +259,8 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(ExecutionConte
 
 PassOwnPtrWillBeRawPtr<MessagePortArray> MessagePort::entanglePorts(ExecutionContext& context, PassOwnPtr<MessagePortChannelArray> channels)
 {
-    // https://html.spec.whatwg.org/multipage/comms.html#message-ports
-    // |ports| should be an empty array, not null even when there is no ports.
     if (!channels || !channels->size())
-        return adoptPtrWillBeNoop(new MessagePortArray());
+        return nullptr;
 
     OwnPtrWillBeRawPtr<MessagePortArray> portArray = adoptPtrWillBeNoop(new MessagePortArray(channels->size()));
     for (unsigned i = 0; i < channels->size(); ++i) {

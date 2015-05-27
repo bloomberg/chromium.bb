@@ -25,18 +25,16 @@
  *
  */
 
-// https://html.spec.whatwg.org/multipage/comms.html#the-messageevent-interfaces
-
 [
-    Constructor(DOMString type, optional MessageEventInit eventInitDict),
+    EventConstructor,
     Exposed=(Window,Worker),
     RaisesException=Constructor,
 ] interface MessageEvent : Event {
-    readonly attribute DOMString origin;
-    readonly attribute DOMString lastEventId;
-    readonly attribute EventTarget? source; // May be a Window or a MessagePort
-    [Custom=Getter] readonly attribute any data;
-    readonly attribute MessagePort[]? ports;
+    [InitializedByEventConstructor] readonly attribute DOMString origin;
+    [InitializedByEventConstructor] readonly attribute DOMString lastEventId;
+    [InitializedByEventConstructor] readonly attribute EventTarget? source; // May be a Window or a MessagePort
+    [InitializedByEventConstructor, Custom=Getter] readonly attribute any data;
+    [InitializedByEventConstructor] readonly attribute MessagePort[] ports;
     [Custom, MeasureAs=InitMessageEvent] void initMessageEvent([Default=Undefined] optional DOMString typeArg,
                                    [Default=Undefined] optional boolean canBubbleArg,
                                    [Default=Undefined] optional boolean cancelableArg,
