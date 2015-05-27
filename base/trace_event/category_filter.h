@@ -10,9 +10,13 @@
 
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/trace_event/trace_config.h"
 
 namespace base {
 namespace trace_event {
+
+class TraceConfig;
 
 class BASE_EXPORT CategoryFilter {
  public:
@@ -81,6 +85,7 @@ class BASE_EXPORT CategoryFilter {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CategoryFilterTest, CategoryFilter);
+  friend class TraceConfig;
 
   // Returns true if category is enable according to this filter.
   bool IsCategoryEnabled(const char* category_name) const;
@@ -89,16 +94,9 @@ class BASE_EXPORT CategoryFilter {
       const std::string& str);
 
   void Initialize(const std::string& filter_string);
-  void WriteString(const StringList& values,
-                   std::string* out,
-                   bool included) const;
-  void WriteString(const StringList& delays, std::string* out) const;
   bool HasIncludedPatterns() const;
 
-  StringList included_;
-  StringList disabled_;
-  StringList excluded_;
-  StringList delays_;
+  scoped_ptr<TraceConfig> config_;
 };
 
 }  // namespace trace_event
