@@ -178,8 +178,8 @@ private:
 
     virtual void setToolTip(const String& tooltipText, TextDirection dir) override
     {
-        if (m_popup->m_webView->client())
-            m_popup->m_webView->client()->setToolTipText(tooltipText, toWebTextDirection(dir));
+        if (m_popup->widgetClient())
+            m_popup->widgetClient()->setToolTipText(tooltipText, toWebTextDirection(dir));
     }
 
     WebPagePopupImpl* m_popup;
