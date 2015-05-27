@@ -390,8 +390,9 @@ def runtime_enabled_function_name(definition_or_member):
 
 # [Unforgeable]
 def is_unforgeable(interface, member):
-    return ('Unforgeable' in interface.extended_attributes or
-            'Unforgeable' in member.extended_attributes)
+    return (('Unforgeable' in interface.extended_attributes or
+             'Unforgeable' in member.extended_attributes) and
+            not member.is_static)
 
 
 # [TypeChecking=Interface] / [LegacyInterfaceTypeChecking]

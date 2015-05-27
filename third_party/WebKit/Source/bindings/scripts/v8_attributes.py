@@ -513,7 +513,7 @@ def is_expose_js_accessors(interface, attribute):
     # These attributes must not be accessors on prototype chains.
     if (is_constructor_attribute(attribute) or
             attribute.is_static or
-            'Unforgeable' in attribute.extended_attributes or
+            is_unforgeable(interface, attribute) or
             'OverrideBuiltins' in interface.extended_attributes):
         return False
 

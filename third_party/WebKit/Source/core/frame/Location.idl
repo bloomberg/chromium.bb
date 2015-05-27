@@ -28,6 +28,7 @@
 
 [
     CheckSecurity=Frame,
+    Unforgeable,
     WillBeGarbageCollected,
 ] interface Location {
     // |assign|, |replace|, and *writing* |href| do not require a security
@@ -35,11 +36,11 @@
     // property of an *existing* document at a different origin.
     // However, *reading* |href|, or accessing any component, is a security
     // problem, since that allows tracking navigation.
-    [SetterCallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity=Setter, Unforgeable] attribute DOMString href;
+    [SetterCallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity=Setter] attribute DOMString href;
 
-    [CallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity, Unforgeable] void assign(DOMString url);
-    [CallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity, Unforgeable] void replace(DOMString url);
-    [CallWith=ActiveWindow, Unforgeable] void reload();
+    [CallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity] void assign(DOMString url);
+    [CallWith=(ActiveWindow,FirstWindow), DoNotCheckSecurity] void replace(DOMString url);
+    [CallWith=ActiveWindow] void reload();
 
     // URI decomposition attributes
     [SetterCallWith=(ActiveWindow,FirstWindow), RaisesException=Setter] attribute DOMString protocol;
@@ -52,8 +53,8 @@
 
     readonly attribute DOMString origin;
 
-    [Unforgeable] readonly attribute DOMStringList ancestorOrigins;
+    readonly attribute DOMStringList ancestorOrigins;
 
-    [NotEnumerable, Unforgeable, ImplementedAs=href] DOMString toString();
-    [NotEnumerable, CallWith=ThisValue, Unforgeable] any valueOf();
+    [NotEnumerable, ImplementedAs=href] DOMString toString();
+    [NotEnumerable, CallWith=ThisValue] any valueOf();
 };
