@@ -31,7 +31,7 @@ scoped_ptr<UploadDataStream> ElementsUploadDataStream::CreateWithReader(
     scoped_ptr<UploadElementReader> reader,
     int64 identifier) {
   ScopedVector<UploadElementReader> readers;
-  readers.push_back(reader.release());
+  readers.push_back(reader.Pass());
   return scoped_ptr<UploadDataStream>(
       new ElementsUploadDataStream(readers.Pass(), identifier));
 }
