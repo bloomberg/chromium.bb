@@ -96,8 +96,6 @@
         'permission/permission_request_handler_client.h',
         'permission/simple_permission_request.cc',
         'permission/simple_permission_request.h',
-        'public/aw_assets.cc',
-        'public/aw_assets.h',
         'state_serializer.cc',
         'state_serializer.h',
       ],
@@ -123,7 +121,6 @@
       'type': 'none',
       'sources': [
           '../java/src/org/chromium/android_webview/AndroidProtocolHandler.java',
-          '../java/src/org/chromium/android_webview/AwAssets.java',
           '../java/src/org/chromium/android_webview/AwAutofillClient.java',
           '../java/src/org/chromium/android_webview/AwContents.java',
           '../java/src/org/chromium/android_webview/AwContentsClientBridge.java',

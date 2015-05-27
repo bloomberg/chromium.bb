@@ -14,8 +14,8 @@
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
 #include "android_webview/native/aw_web_preferences_populater_impl.h"
-#include "android_webview/native/public/aw_assets.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
+#include "base/android/apk_assets.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/i18n/icu_util.h"
@@ -115,12 +115,12 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // TODO(gsennton) we should use
   // gin::IsolateHolder::kNativesFileName/kSnapshotFileName
   // here when those files have arch specific names http://crbug.com/455699
-  CHECK(AwAssets::RegisterAssetWithGlobalDescriptors(
+  CHECK(base::android::RegisterApkAssetWithGlobalDescriptors(
       kV8NativesDataDescriptor, kNativesFileName));
-  CHECK(AwAssets::RegisterAssetWithGlobalDescriptors(
+  CHECK(base::android::RegisterApkAssetWithGlobalDescriptors(
       kV8SnapshotDataDescriptor, kSnapshotFileName));
 #endif
-  CHECK(AwAssets::RegisterAssetWithGlobalDescriptors(
+  CHECK(base::android::RegisterApkAssetWithGlobalDescriptors(
       kAndroidICUDataDescriptor, base::i18n::kIcuDataFileName));
 
   return false;

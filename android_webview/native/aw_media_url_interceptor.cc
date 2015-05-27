@@ -6,7 +6,7 @@
 
 #include "android_webview/common/url_constants.h"
 #include "android_webview/native/aw_media_url_interceptor.h"
-#include "android_webview/native/public/aw_assets.h"
+#include "base/android/apk_assets.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/url_constants.h"
 
@@ -22,11 +22,15 @@ bool AwMediaUrlInterceptor::Intercept(const std::string& url,
   if (StartsWithASCII(url, asset_file_prefix, true)) {
     std::string filename(url);
     ReplaceFirstSubstringAfterOffset(&filename, 0, asset_file_prefix, "");
-    return AwAssets::OpenAsset(filename, fd, offset, size);
+    base::MemoryMappedFile::Region region =
+        base::MemoryMappedFile::Region::kWholeFile;
+    *fd = base::android::OpenApkAsset(filename, &region);
+    *offset = region.offset;
+    *size = region.size;
+    return *fd != -1;
   }
 
   return false;
 }
 
 }  // namespace android_webview
-

@@ -9,7 +9,7 @@
 #include "android_webview/browser/aw_media_client_android.h"
 #include "android_webview/browser/aw_result_codes.h"
 #include "android_webview/common/aw_resource.h"
-#include "android_webview/native/public/aw_assets.h"
+#include "base/android/apk_assets.h"
 #include "base/android/build_info.h"
 #include "base/android/locale_utils.h"
 #include "base/android/memory_pressure_listener_android.h"
@@ -49,9 +49,8 @@ void AwBrowserMainParts::PreEarlyInitialization() {
 }
 
 int AwBrowserMainParts::PreCreateThreads() {
-  int pak_fd = 0;
-  int64 pak_off = 0;
-  int64 pak_len = 0;
+  base::MemoryMappedFile::Region pak_region =
+      base::MemoryMappedFile::Region::kWholeFile;
 
   // TODO(primiano, mkosiba): GetApplicationLocale requires a ResourceBundle
   // instance to be present to work correctly so we call this (knowing it will
@@ -63,10 +62,11 @@ int AwBrowserMainParts::PreCreateThreads() {
       NULL,
       ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   std::string locale = l10n_util::GetApplicationLocale(std::string()) + ".pak";
-  if (AwAssets::OpenAsset(locale, &pak_fd, &pak_off, &pak_len)) {
+  int pak_fd = base::android::OpenApkAsset(locale, &pak_region);
+  if (pak_fd != -1) {
     ui::ResourceBundle::CleanupSharedInstance();
     ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-        base::File(pak_fd), base::MemoryMappedFile::Region(pak_off, pak_len));
+        base::File(pak_fd), pak_region);
   } else {
     LOG(WARNING) << "Failed to load " << locale << ".pak from the apk too. "
                     "Bringing up WebView without any locale";
@@ -74,11 +74,10 @@ int AwBrowserMainParts::PreCreateThreads() {
 
   // Try to directly mmap the webviewchromium.pak from the apk. Fall back to
   // load from file, using PATH_SERVICE, otherwise.
-  if (AwAssets::OpenAsset("webviewchromium.pak", &pak_fd, &pak_off, &pak_len)) {
+  pak_fd = base::android::OpenApkAsset("webviewchromium.pak", &pak_region);
+  if (pak_fd != -1) {
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
-        base::File(pak_fd),
-        base::MemoryMappedFile::Region(pak_off, pak_len),
-        ui::SCALE_FACTOR_NONE);
+        base::File(pak_fd), pak_region, ui::SCALE_FACTOR_NONE);
   } else {
     base::FilePath pak_path;
     PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);

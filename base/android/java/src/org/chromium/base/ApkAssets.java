@@ -2,25 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview;
+package org.chromium.base;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.util.Log;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.base.JNINamespace;
-
 import java.io.IOException;
 
 /**
  * A utility class to retrieve references to uncompressed assets insides the apk. A reference is
  * defined as tuple (file descriptor, offset, size) enabling direct mapping without deflation.
+ * This can be used even within the renderer process, since it just dup's the apk's fd.
  */
-@JNINamespace("android_webview")
-public class AwAssets {
-    private static final String LOGTAG = "AwAssets";
+@JNINamespace("base::android")
+public class ApkAssets {
+    private static final String LOGTAG = "ApkAssets";
 
     @CalledByNative
     public static long[] openAsset(Context context, String fileName) {

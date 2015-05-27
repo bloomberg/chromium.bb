@@ -5,6 +5,7 @@
 #include "base/android/base_jni_registrar.h"
 
 #include "base/android/animation_frame_time_histogram.h"
+#include "base/android/apk_assets.h"
 #include "base/android/application_status_listener.h"
 #include "base/android/build_info.h"
 #include "base/android/command_line_android.h"
@@ -38,6 +39,8 @@ namespace android {
 static RegistrationMethod kBaseRegisteredMethods[] = {
     {"AnimationFrameTimeHistogram",
      base::android::RegisterAnimationFrameTimeHistogram},
+    {"ApkAssets",
+     base::android::RegisterApkAssets},
     {"ApplicationStatusListener",
      base::android::ApplicationStatusListener::RegisterBindings},
     {"BuildInfo", base::android::BuildInfo::RegisterBindings},

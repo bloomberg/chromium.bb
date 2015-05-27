@@ -25,7 +25,6 @@
 #include "android_webview/native/input_stream_impl.h"
 #include "android_webview/native/java_browser_view_renderer_helper.h"
 #include "android_webview/native/permission/aw_permission_request.h"
-#include "android_webview/native/public/aw_assets.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/trace_event/trace_event.h"
@@ -36,7 +35,6 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   // Register JNI for android_webview classes.
   { "AndroidProtocolHandler", RegisterAndroidProtocolHandler },
   { "AwAutofillClient", RegisterAwAutofillClient },
-  { "AwAssets", RegisterAwAssets },
   { "AwContents", RegisterAwContents },
   { "AwContentsClientBridge", RegisterAwContentsClientBridge },
   { "AwContentsIoThreadClientImpl", RegisterAwContentsIoThreadClientImpl },

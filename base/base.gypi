@@ -22,6 +22,8 @@
           'allocator/type_profiler_control.h',
           'android/animation_frame_time_histogram.cc',
           'android/animation_frame_time_histogram.h',
+          'android/apk_assets.cc',
+          'android/apk_assets.h',
           'android/application_status_listener.cc',
           'android/application_status_listener.h',
           'android/base_jni_onload.cc',
