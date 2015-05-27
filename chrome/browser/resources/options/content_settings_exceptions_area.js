@@ -480,6 +480,9 @@ cr.define('options.contentSettings', function() {
         }
       }
 
+      if (!this.isEditable())
+        this.tabIndex = 0;
+
       this.mode = this.getAttribute('mode');
       this.autoExpands = true;
       this.reset();
