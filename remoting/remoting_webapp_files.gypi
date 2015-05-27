@@ -179,6 +179,7 @@
       'webapp/base/js/protocol_extension.js',
       'webapp/base/js/error.js',
       'webapp/base/js/plugin_settings.js',
+      'webapp/base/js/suspend_detector.js',
       'webapp/base/js/typecheck.js',
       'webapp/base/js/xhr.js',
     ],

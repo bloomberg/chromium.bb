@@ -329,6 +329,29 @@ remoting.ClientSession.prototype.getError = function() {
 };
 
 /**
+ * Drop the session when the computer is suspended for more than
+ * |suspendDurationInMS|.
+ *
+ * @param {number} suspendDurationInMS maximum duration of suspension allowed
+ *     before the session will be dropped.
+ */
+remoting.ClientSession.prototype.dropSessionOnSuspend = function(
+    suspendDurationInMS) {
+  if (this.state_ !== remoting.ClientSession.State.CONNECTED) {
+    console.error('The session is not connected.');
+    return;
+  }
+
+  var suspendDetector = new remoting.SuspendDetector(suspendDurationInMS);
+  this.connectedDisposables_.add(
+      suspendDetector,
+      new base.EventHook(
+          suspendDetector, remoting.SuspendDetector.Events.resume,
+          this.disconnect.bind(
+              this, new remoting.Error(remoting.Error.Tag.CLIENT_SUSPENDED))));
+};
+
+/**
  * Called when the client receives its first frame.
  *
  * @return {void} Nothing.
@@ -492,6 +515,11 @@ remoting.ClientSession.prototype.isFinished = function() {
  * @private
  */
 remoting.ClientSession.prototype.setState_ = function(newState) {
+  // If we are at a finished state, ignore further state changes.
+  if (this.isFinished()) {
+    return;
+  }
+
   var oldState = this.state_;
   this.state_ = this.translateState_(oldState, newState);
 

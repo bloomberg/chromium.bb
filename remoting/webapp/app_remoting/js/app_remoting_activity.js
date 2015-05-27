@@ -31,9 +31,6 @@ remoting.AppHostResponse;
  * @implements {remoting.Activity}
  */
 remoting.AppRemotingActivity = function(appCapabilities) {
-  /** @private {remoting.AppConnectedView} */
-  this.connectedView_ = null;
-
   /** @private */
   this.sessionFactory_ = new remoting.ClientSessionFactory(
       document.querySelector('#client-container .client-plugin-container'),
@@ -41,11 +38,13 @@ remoting.AppRemotingActivity = function(appCapabilities) {
 
   /** @private {remoting.ClientSession} */
   this.session_ = null;
+
+  /** @private {base.Disposables} */
+  this.connectedDisposables_ = null;
 };
 
 remoting.AppRemotingActivity.prototype.dispose = function() {
-  base.dispose(this.connectedView_);
-  this.connectedView_ = null;
+  this.cleanup_();
   remoting.LoadingWindow.close();
 };
 
@@ -67,8 +66,8 @@ remoting.AppRemotingActivity.prototype.stop = function() {
 
 /** @private */
 remoting.AppRemotingActivity.prototype.cleanup_ = function() {
-  base.dispose(this.connectedView_);
-  this.connectedView_ = null;
+  base.dispose(this.connectedDisposables_);
+  this.connectedDisposables_ = null;
   base.dispose(this.session_);
   this.session_ = null;
 };
@@ -160,7 +159,7 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
  * @param {remoting.ConnectionInfo} connectionInfo
  */
 remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
-  this.connectedView_ = new remoting.AppConnectedView(
+  var connectedView = new remoting.AppConnectedView(
       document.getElementById('client-container'), connectionInfo);
 
   var idleDetector = new remoting.IdleDetector(
@@ -171,6 +170,11 @@ remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
   if (remoting.platformIsMac()) {
     connectionInfo.plugin().setRemapKeys('0x0700e3>0x0700e0,0x0700e7>0x0700e4');
   }
+
+  // Drop the session after 30s of suspension as we cannot recover from a
+  // connectivity loss longer than 30s anyways.
+  this.session_.dropSessionOnSuspend(30 * 1000);
+  this.connectedDisposables_ = new base.Disposables(connectedView);
 };
 
 /**
@@ -195,6 +199,11 @@ remoting.AppRemotingActivity.prototype.onConnectionFailed = function(error) {
 
 /** @private */
 remoting.AppRemotingActivity.prototype.onConnectionDropped_ = function() {
+  // Don't dispose the session here to keep the plugin alive so that we can show
+  // the last frame of the remote application window.
+  base.dispose(this.connectedDisposables_);
+  this.connectedDisposables_ = null;
+
   var rootElement = /** @type {HTMLDialogElement} */ (
       document.getElementById('connection-dropped-dialog'));
 

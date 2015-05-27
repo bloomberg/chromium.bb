@@ -99,26 +99,30 @@ remoting.Error.Tag = {
   // not normally cause the error text to be shown to the user, so the
   // i18n-content prefix is not needed in this case.
   CANCELLED: '__CANCELLED__',
+  // Used to signify that the local computer was suspended for long enough that
+  // the connection is expected to drop, allowing a reconnect attempt to be
+  // scheduled sooner. This is not shownThis is not shown to the user so
+  // i18n-content prefix is not needed in this case.
+  CLIENT_SUSPENDED: '__CLIENT_SUSPENDED__',
 
-  INVALID_ACCESS_CODE: /*i18n-content*/'ERROR_INVALID_ACCESS_CODE',
-  MISSING_PLUGIN: /*i18n-content*/'ERROR_MISSING_PLUGIN',
-  AUTHENTICATION_FAILED: /*i18n-content*/'ERROR_AUTHENTICATION_FAILED',
-  HOST_IS_OFFLINE: /*i18n-content*/'ERROR_HOST_IS_OFFLINE',
-  INCOMPATIBLE_PROTOCOL: /*i18n-content*/'ERROR_INCOMPATIBLE_PROTOCOL',
-  BAD_PLUGIN_VERSION: /*i18n-content*/'ERROR_BAD_PLUGIN_VERSION',
-  NETWORK_FAILURE: /*i18n-content*/'ERROR_NETWORK_FAILURE',
-  HOST_OVERLOAD: /*i18n-content*/'ERROR_HOST_OVERLOAD',
-  UNEXPECTED: /*i18n-content*/'ERROR_UNEXPECTED',
-  SERVICE_UNAVAILABLE: /*i18n-content*/'ERROR_SERVICE_UNAVAILABLE',
-  NOT_AUTHENTICATED: /*i18n-content*/'ERROR_NOT_AUTHENTICATED',
-  NOT_FOUND: /*i18n-content*/'ERROR_NOT_FOUND',
-  INVALID_HOST_DOMAIN: /*i18n-content*/'ERROR_INVALID_HOST_DOMAIN',
-  P2P_FAILURE: /*i18n-content*/'ERROR_P2P_FAILURE',
-  REGISTRATION_FAILED: /*i18n-content*/'ERROR_HOST_REGISTRATION_FAILED',
-  NOT_AUTHORIZED: /*i18n-content*/'ERROR_NOT_AUTHORIZED',
-
+  INVALID_ACCESS_CODE: /*i18n-content*/ 'ERROR_INVALID_ACCESS_CODE',
+  MISSING_PLUGIN: /*i18n-content*/ 'ERROR_MISSING_PLUGIN',
+  AUTHENTICATION_FAILED: /*i18n-content*/ 'ERROR_AUTHENTICATION_FAILED',
+  HOST_IS_OFFLINE: /*i18n-content*/ 'ERROR_HOST_IS_OFFLINE',
+  INCOMPATIBLE_PROTOCOL: /*i18n-content*/ 'ERROR_INCOMPATIBLE_PROTOCOL',
+  BAD_PLUGIN_VERSION: /*i18n-content*/ 'ERROR_BAD_PLUGIN_VERSION',
+  NETWORK_FAILURE: /*i18n-content*/ 'ERROR_NETWORK_FAILURE',
+  HOST_OVERLOAD: /*i18n-content*/ 'ERROR_HOST_OVERLOAD',
+  UNEXPECTED: /*i18n-content*/ 'ERROR_UNEXPECTED',
+  SERVICE_UNAVAILABLE: /*i18n-content*/ 'ERROR_SERVICE_UNAVAILABLE',
+  NOT_AUTHENTICATED: /*i18n-content*/ 'ERROR_NOT_AUTHENTICATED',
+  NOT_FOUND: /*i18n-content*/ 'ERROR_NOT_FOUND',
+  INVALID_HOST_DOMAIN: /*i18n-content*/ 'ERROR_INVALID_HOST_DOMAIN',
+  P2P_FAILURE: /*i18n-content*/ 'ERROR_P2P_FAILURE',
+  REGISTRATION_FAILED: /*i18n-content*/ 'ERROR_HOST_REGISTRATION_FAILED',
+  NOT_AUTHORIZED: /*i18n-content*/ 'ERROR_NOT_AUTHORIZED',
   // TODO(garykac): Move app-specific errors into separate location.
-  APP_NOT_AUTHORIZED: /*i18n-content*/'ERROR_APP_NOT_AUTHORIZED'
+  APP_NOT_AUTHORIZED: /*i18n-content*/ 'ERROR_APP_NOT_AUTHORIZED'
 };
 
 // A whole bunch of semi-redundant constants, mostly to reduce to size

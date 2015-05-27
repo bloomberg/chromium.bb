@@ -112,6 +112,8 @@ remoting.ServerLogEntry.getValueForError_ = function(connectionError) {
       return 'host-overload';
     case remoting.Error.Tag.P2P_FAILURE:
       return 'p2p-failure';
+    case remoting.Error.Tag.CLIENT_SUSPENDED:
+      return 'client-suspended';
     case remoting.Error.Tag.UNEXPECTED:
       return 'unexpected';
     default:
