@@ -5582,7 +5582,7 @@ public:
 
     inline bool isDeleted() const { return m_value == reinterpret_cast<IntWrapper*>(-1); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_value);
     }
