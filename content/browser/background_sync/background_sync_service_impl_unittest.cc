@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -75,6 +77,12 @@ void ErrorAndRegistrationListCallback(
     *out_array_size = registrations.size();
 }
 
+class MockPowerMonitorSource : public base::PowerMonitorSource {
+ private:
+  // PowerMonitorSource overrides.
+  bool IsOnBatteryPowerImpl() final { return false; }
+};
+
 }  // namespace
 
 class BackgroundSyncServiceImplTest : public testing::Test {
@@ -106,6 +114,9 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   }
 
   void CreateBackgroundSyncContext() {
+    power_monitor_.reset(
+        new base::PowerMonitor(make_scoped_ptr(new MockPowerMonitorSource())));
+
     background_sync_context_ = new BackgroundSyncContextImpl();
     background_sync_context_->Init(embedded_worker_helper_->context_wrapper());
     base::RunLoop().RunUntilIdle();
@@ -173,6 +184,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
   scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
   scoped_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
+  scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   int64 sw_registration_id_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_;
