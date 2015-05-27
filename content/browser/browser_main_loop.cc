@@ -226,6 +226,8 @@ static void GLibLogHandler(const gchar* log_domain,
     LOG(ERROR) << message << " (http://bugs.chromium.org/161366)";
   } else if (strstr(message, "drawable is not a native X11 window")) {
     LOG(ERROR) << message << " (http://bugs.chromium.org/329991)";
+  } else if (strstr(message, "Cannot do system-bus activation with no user")) {
+    LOG(ERROR) << message << " (http://crbug.com/431005)";
   } else {
     LOG(DFATAL) << log_domain << ": " << message;
   }
