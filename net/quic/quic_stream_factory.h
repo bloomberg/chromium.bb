@@ -162,7 +162,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Closes all current sessions.
   void CloseAllSessions(int error);
 
-  base::Value* QuicStreamFactoryInfoToValue() const;
+  scoped_ptr<base::Value> QuicStreamFactoryInfoToValue() const;
 
   // Delete all cached state objects in |crypto_config_|.
   void ClearCachedStatesInCryptoConfig();

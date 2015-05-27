@@ -192,8 +192,8 @@ class NET_EXPORT HttpNetworkSession
   base::Value* SpdySessionPoolInfoToValue() const;
 
   // Creates a Value summary of the state of the QUIC sessions and
-  // configuration. The caller is responsible for deleting the returned value.
-  base::Value* QuicInfoToValue() const;
+  // configuration.
+  scoped_ptr<base::Value> QuicInfoToValue() const;
 
   void CloseAllConnections();
   void CloseIdleConnections();

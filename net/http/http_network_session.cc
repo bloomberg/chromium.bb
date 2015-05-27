@@ -259,25 +259,25 @@ base::Value* HttpNetworkSession::SpdySessionPoolInfoToValue() const {
   return spdy_session_pool_.SpdySessionPoolInfoToValue();
 }
 
-base::Value* HttpNetworkSession::QuicInfoToValue() const {
+scoped_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("sessions", quic_stream_factory_.QuicStreamFactoryInfoToValue());
   dict->SetBoolean("quic_enabled", params_.enable_quic);
   dict->SetBoolean("quic_enabled_for_proxies", params_.enable_quic_for_proxies);
   dict->SetBoolean("enable_quic_port_selection",
                    params_.enable_quic_port_selection);
-  base::ListValue* connection_options = new base::ListValue;
+  scoped_ptr<base::ListValue> connection_options(new base::ListValue);
   for (QuicTagVector::const_iterator it =
            params_.quic_connection_options.begin();
        it != params_.quic_connection_options.end(); ++it) {
     connection_options->AppendString("'" + QuicUtils::TagToString(*it) + "'");
   }
-  dict->Set("connection_options", connection_options);
+  dict->Set("connection_options", connection_options.Pass());
   dict->SetString("origin_to_force_quic_on",
                   params_.origin_to_force_quic_on.ToString());
   dict->SetDouble("alternative_service_probability_threshold",
                   params_.alternative_service_probability_threshold);
-  return dict.release();
+  return dict.Pass();
 }
 
 void HttpNetworkSession::CloseAllConnections() {

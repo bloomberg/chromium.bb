@@ -830,12 +830,12 @@ void QuicClientSession::CloseAllObservers(int net_error) {
   }
 }
 
-base::Value* QuicClientSession::GetInfoAsValue(
+scoped_ptr<base::Value> QuicClientSession::GetInfoAsValue(
     const std::set<HostPortPair>& aliases) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("version", QuicVersionToString(connection()->version()));
   dict->SetInteger("open_streams", GetNumOpenStreams());
-  base::ListValue* stream_list = new base::ListValue();
+  scoped_ptr<base::ListValue> stream_list(new base::ListValue());
   for (base::hash_map<QuicStreamId, QuicDataStream*>::const_iterator it
            = streams()->begin();
        it != streams()->end();
@@ -843,7 +843,7 @@ base::Value* QuicClientSession::GetInfoAsValue(
     stream_list->Append(new base::StringValue(
         base::Uint64ToString(it->second->id())));
   }
-  dict->Set("active_streams", stream_list);
+  dict->Set("active_streams", stream_list.Pass());
 
   dict->SetInteger("total_streams", num_total_streams_);
   dict->SetString("peer_address", peer_address().ToString());
@@ -856,14 +856,14 @@ base::Value* QuicClientSession::GetInfoAsValue(
   SSLInfo ssl_info;
   dict->SetBoolean("secure", GetSSLInfo(&ssl_info) && ssl_info.cert.get());
 
-  base::ListValue* alias_list = new base::ListValue();
+  scoped_ptr<base::ListValue> alias_list(new base::ListValue());
   for (std::set<HostPortPair>::const_iterator it = aliases.begin();
        it != aliases.end(); it++) {
     alias_list->Append(new base::StringValue(it->ToString()));
   }
-  dict->Set("aliases", alias_list);
+  dict->Set("aliases", alias_list.Pass());
 
-  return dict.release();
+  return dict.Pass();
 }
 
 base::WeakPtr<QuicClientSession> QuicClientSession::GetWeakPtr() {

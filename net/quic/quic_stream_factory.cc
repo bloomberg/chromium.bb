@@ -925,8 +925,9 @@ void QuicStreamFactory::CloseAllSessions(int error) {
   DCHECK(all_sessions_.empty());
 }
 
-base::Value* QuicStreamFactory::QuicStreamFactoryInfoToValue() const {
-  base::ListValue* list = new base::ListValue();
+scoped_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
+    const {
+  scoped_ptr<base::ListValue> list(new base::ListValue());
 
   for (SessionMap::const_iterator it = active_sessions_.begin();
        it != active_sessions_.end(); ++it) {
@@ -943,7 +944,7 @@ base::Value* QuicStreamFactory::QuicStreamFactoryInfoToValue() const {
       list->Append(session->GetInfoAsValue(hosts));
     }
   }
-  return list;
+  return list.Pass();
 }
 
 void QuicStreamFactory::ClearCachedStatesInCryptoConfig() {

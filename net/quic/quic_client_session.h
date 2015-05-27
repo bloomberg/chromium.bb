@@ -178,7 +178,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
   void CloseSessionOnErrorAndNotifyFactoryLater(int error,
                                                 QuicErrorCode quic_error);
 
-  base::Value* GetInfoAsValue(const std::set<HostPortPair>& aliases);
+  scoped_ptr<base::Value> GetInfoAsValue(const std::set<HostPortPair>& aliases);
 
   const BoundNetLog& net_log() const { return net_log_; }
 
