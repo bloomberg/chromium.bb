@@ -177,20 +177,6 @@ Response InputHandler::DispatchKeyEvent(
   if (!SetKeyboardEventText(event.unmodifiedText, unmodified_text))
     return Response::InvalidParams("Invalid 'unmodifiedText' parameter");
 
-  if (key_identifier) {
-    if (key_identifier->size() >
-        blink::WebKeyboardEvent::keyIdentifierLengthCap) {
-      return Response::InvalidParams("Invalid 'keyIdentifier' parameter");
-    }
-    for (size_t i = 0; i < key_identifier->size(); ++i)
-      event.keyIdentifier[i] = (*key_identifier)[i];
-  }
-
-  if (code) {
-    event.domCode = static_cast<int>(
-        ui::KeycodeConverter::CodeStringToDomCode(code->c_str()));
-  }
-
   if (windows_virtual_key_code)
     event.windowsKeyCode = *windows_virtual_key_code;
   if (native_virtual_key_code)
@@ -201,6 +187,22 @@ Response InputHandler::DispatchKeyEvent(
     event.modifiers |= blink::WebInputEvent::IsKeyPad;
   if (is_system_key)
     event.isSystemKey = *is_system_key;
+
+  if (key_identifier) {
+    if (key_identifier->size() >
+        blink::WebKeyboardEvent::keyIdentifierLengthCap) {
+      return Response::InvalidParams("Invalid 'keyIdentifier' parameter");
+    }
+    for (size_t i = 0; i < key_identifier->size(); ++i)
+      event.keyIdentifier[i] = (*key_identifier)[i];
+  } else if (event.type != blink::WebInputEvent::Char) {
+    event.setKeyIdentifierFromWindowsKeyCode();
+  }
+
+  if (code) {
+    event.domCode = static_cast<int>(
+        ui::KeycodeConverter::CodeStringToDomCode(code->c_str()));
+  }
 
   if (!host_)
     return Response::ServerError("Could not connect to view");

@@ -29,10 +29,14 @@ const char kParamsParam[] = "params";
 
 class DevToolsProtocolTest : public ContentBrowserTest,
                              public DevToolsAgentHostClient {
+ public:
+  DevToolsProtocolTest() : has_dispatched_command(false) {}
+
  protected:
   void SendCommand(const std::string& method,
                    scoped_ptr<base::DictionaryValue> params) {
     base::DictionaryValue command;
+    has_dispatched_command = false;
     command.SetInteger(kIdParam, 1);
     command.SetString(kMethodParam, method);
     if (params)
@@ -41,7 +45,10 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     std::string json_command;
     base::JSONWriter::Write(command, &json_command);
     agent_host_->DispatchProtocolMessage(json_command);
-    base::MessageLoop::current()->Run();
+    // Some messages are dispatched synchronously.
+    // Only run loop if we are not finished yet.
+    if (!has_dispatched_command)
+      base::MessageLoop::current()->Run();
   }
 
   bool HasValue(const std::string& path) {
@@ -90,13 +97,65 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     base::DictionaryValue* result;
     EXPECT_TRUE(root->GetDictionary("result", &result));
     result_.reset(result->DeepCopy());
-    base::MessageLoop::current()->QuitNow();
+    if (base::MessageLoop::current()->is_running())
+      base::MessageLoop::current()->QuitNow();
+    has_dispatched_command = true;
   }
 
   void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override {
     EXPECT_TRUE(false);
   }
+
+  bool has_dispatched_command;
 };
+
+class SyntheticKeyEventTest : public DevToolsProtocolTest {
+ protected:
+  void SendKeyEvent(const std::string& type,
+                    int modifier,
+                    int windowsKeyCode,
+                    int nativeKeyCode) {
+    scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+    params->SetString("type", type);
+    params->SetInteger("modifiers", modifier);
+    params->SetInteger("windowsVirtualKeyCode", windowsKeyCode);
+    params->SetInteger("nativeVirtualKeyCode", nativeKeyCode);
+    SendCommand("Input.dispatchKeyEvent", params.Pass());
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKeyIdentifier) {
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  ASSERT_TRUE(content::ExecuteScript(
+      shell()->web_contents()->GetRenderViewHost(),
+      "function handleKeyEvent(event) {"
+        "domAutomationController.setAutomationId(0);"
+        "domAutomationController.send(event.keyIdentifier);"
+      "}"
+      "document.body.addEventListener('keydown', handleKeyEvent);"
+      "document.body.addEventListener('keyup', handleKeyEvent);"));
+
+  DOMMessageQueue dom_message_queue;
+
+  // Send enter (keycode 13).
+  SendKeyEvent("rawKeyDown", 0, 13, 13);
+  SendKeyEvent("keyUp", 0, 13, 13);
+
+  std::string key_identifier;
+  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key_identifier));
+  EXPECT_EQ("\"Enter\"", key_identifier);
+  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key_identifier));
+  EXPECT_EQ("\"Enter\"", key_identifier);
+
+  // Send escape (keycode 27).
+  SendKeyEvent("rawKeyDown", 0, 27, 27);
+  SendKeyEvent("keyUp", 0, 27, 27);
+
+  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key_identifier));
+  EXPECT_EQ("\"U+001B\"", key_identifier);
+  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key_identifier));
+  EXPECT_EQ("\"U+001B\"", key_identifier);
+}
 
 class CaptureScreenshotTest : public DevToolsProtocolTest {
  private:
