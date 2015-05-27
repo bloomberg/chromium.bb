@@ -352,9 +352,6 @@ class ProxyResolverV8Tracing : public ProxyResolver,
                      const BoundNetLog& net_log) override;
   void CancelRequest(RequestHandle request) override;
   LoadState GetLoadState(RequestHandle request) const override;
-  void CancelSetPacScript() override;
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& callback) override;
 
  private:
   // The worker thread on which the ProxyResolverV8 will be run.
@@ -1003,8 +1000,7 @@ ProxyResolverV8Tracing::ProxyResolverV8Tracing(
     scoped_ptr<base::Thread> thread,
     scoped_ptr<ProxyResolverV8> resolver,
     scoped_ptr<Job::Params> job_params)
-    : ProxyResolver(true /*expects_pac_bytes*/),
-      thread_(thread.Pass()),
+    : thread_(thread.Pass()),
       v8_resolver_(resolver.Pass()),
       error_observer_(error_observer.Pass()),
       job_params_(job_params.Pass()),
@@ -1046,17 +1042,6 @@ void ProxyResolverV8Tracing::CancelRequest(RequestHandle request) {
 LoadState ProxyResolverV8Tracing::GetLoadState(RequestHandle request) const {
   Job* job = reinterpret_cast<Job*>(request);
   return job->GetLoadState();
-}
-
-void ProxyResolverV8Tracing::CancelSetPacScript() {
-  NOTREACHED();
-}
-
-int ProxyResolverV8Tracing::SetPacScript(
-    const scoped_refptr<ProxyResolverScriptData>& script_data,
-    const CompletionCallback& callback) {
-  NOTREACHED();
-  return ERR_NOT_IMPLEMENTED;
 }
 
 }  // namespace

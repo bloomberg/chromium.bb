@@ -92,12 +92,12 @@ void TestRequestClient::OnConnectionError() {
   event_waiter_.NotifyEvent(CONNECTION_ERROR);
 }
 
-class CallbackMockProxyResolver : public MockAsyncProxyResolverExpectsBytes {
+class CallbackMockProxyResolver : public MockAsyncProxyResolver {
  public:
   CallbackMockProxyResolver() {}
   ~CallbackMockProxyResolver() override;
 
-  // MockAsyncProxyResolverExpectsBytes overrides.
+  // MockAsyncProxyResolver overrides.
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
                      const CompletionCallback& callback,
@@ -131,12 +131,12 @@ int CallbackMockProxyResolver::GetProxyForURL(
     sync_result_.reset();
     return OK;
   }
-  return MockAsyncProxyResolverExpectsBytes::GetProxyForURL(
-      url, results, callback, request_handle, net_log);
+  return MockAsyncProxyResolver::GetProxyForURL(url, results, callback,
+                                                request_handle, net_log);
 }
 
 void CallbackMockProxyResolver::CancelRequest(RequestHandle request_handle) {
-  MockAsyncProxyResolverExpectsBytes::CancelRequest(request_handle);
+  MockAsyncProxyResolver::CancelRequest(request_handle);
   if (!cancel_callback_.is_null()) {
     cancel_callback_.Run();
     cancel_callback_.Reset();
@@ -191,7 +191,7 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
 
   resolver_->GetProxyForUrl("http://example.com", client_ptr.Pass());
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_requests().size());
-  scoped_refptr<MockAsyncProxyResolverBase::Request> request =
+  scoped_refptr<MockAsyncProxyResolver::Request> request =
       mock_proxy_resolver_->pending_requests()[0];
   EXPECT_EQ(GURL("http://example.com"), request->url());
 
@@ -263,7 +263,7 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlFailure) {
 
   resolver_->GetProxyForUrl("http://example.com", client_ptr.Pass());
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_requests().size());
-  scoped_refptr<MockAsyncProxyResolverBase::Request> request =
+  scoped_refptr<MockAsyncProxyResolver::Request> request =
       mock_proxy_resolver_->pending_requests()[0];
   EXPECT_EQ(GURL("http://example.com"), request->url());
   request->CompleteNow(ERR_FAILED);
@@ -284,10 +284,10 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlMultiple) {
   resolver_->GetProxyForUrl("http://example.com", client_ptr1.Pass());
   resolver_->GetProxyForUrl("https://example.com", client_ptr2.Pass());
   ASSERT_EQ(2u, mock_proxy_resolver_->pending_requests().size());
-  scoped_refptr<MockAsyncProxyResolverBase::Request> request1 =
+  scoped_refptr<MockAsyncProxyResolver::Request> request1 =
       mock_proxy_resolver_->pending_requests()[0];
   EXPECT_EQ(GURL("http://example.com"), request1->url());
-  scoped_refptr<MockAsyncProxyResolverBase::Request> request2 =
+  scoped_refptr<MockAsyncProxyResolver::Request> request2 =
       mock_proxy_resolver_->pending_requests()[1];
   EXPECT_EQ(GURL("https://example.com"), request2->url());
   request1->results()->UsePacString("HTTPS proxy.example.com:12345");
@@ -323,7 +323,7 @@ TEST_F(MojoProxyResolverImplTest, DestroyClient) {
 
   resolver_->GetProxyForUrl("http://example.com", client_ptr.Pass());
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_requests().size());
-  scoped_refptr<MockAsyncProxyResolverBase::Request> request =
+  scoped_refptr<MockAsyncProxyResolver::Request> request =
       mock_proxy_resolver_->pending_requests()[0];
   EXPECT_EQ(GURL("http://example.com"), request->url());
   request->results()->UsePacString("PROXY proxy.example.com:8080");
@@ -337,7 +337,7 @@ TEST_F(MojoProxyResolverImplTest, DestroyService) {
 
   resolver_->GetProxyForUrl("http://example.com", client_ptr.Pass());
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_requests().size());
-  scoped_refptr<MockAsyncProxyResolverBase::Request> request =
+  scoped_refptr<MockAsyncProxyResolver::Request> request =
       mock_proxy_resolver_->pending_requests()[0];
   resolver_impl_.reset();
   client.event_waiter().WaitForEvent(TestRequestClient::CONNECTION_ERROR);

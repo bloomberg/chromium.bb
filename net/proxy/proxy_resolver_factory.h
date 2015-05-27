@@ -55,28 +55,6 @@ class NET_EXPORT ProxyResolverFactory {
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactory);
 };
 
-class NET_EXPORT LegacyProxyResolverFactory : public ProxyResolverFactory {
- public:
-  explicit LegacyProxyResolverFactory(bool expects_pac_bytes);
-
-  ~LegacyProxyResolverFactory() override;
-
-  int CreateProxyResolver(
-      const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      scoped_ptr<ProxyResolver>* resolver,
-      const net::CompletionCallback& callback,
-      scoped_ptr<Request>* request) override;
-
-  virtual scoped_ptr<ProxyResolver> CreateProxyResolver() = 0;
-
- private:
-  class Job;
-
-  void RemoveJob(Job* job);
-
-  std::set<Job*> jobs_;
-};
-
 }  // namespace net
 
 #endif  // NET_PROXY_PROXY_RESOLVER_FACTORY_H_

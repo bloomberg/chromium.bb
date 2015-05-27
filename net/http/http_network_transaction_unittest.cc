@@ -9511,7 +9511,7 @@ TEST_P(HttpNetworkTransactionTest, StallAlternateProtocolForNpnSpdy) {
 
 class CapturingProxyResolver : public ProxyResolver {
  public:
-  CapturingProxyResolver() : ProxyResolver(false /* expects_pac_bytes */) {}
+  CapturingProxyResolver() {}
   ~CapturingProxyResolver() override {}
 
   int GetProxyForURL(const GURL& url,
@@ -9531,13 +9531,6 @@ class CapturingProxyResolver : public ProxyResolver {
   LoadState GetLoadState(RequestHandle request) const override {
     NOTREACHED();
     return LOAD_STATE_IDLE;
-  }
-
-  void CancelSetPacScript() override { NOTREACHED(); }
-
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>&,
-                   const CompletionCallback& /*callback*/) override {
-    return OK;
   }
 
   const std::vector<GURL>& resolved() const { return resolved_; }

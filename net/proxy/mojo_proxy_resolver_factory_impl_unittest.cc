@@ -18,7 +18,7 @@ namespace {
 
 const char kScriptData[] = "FooBarBaz";
 
-class FakeProxyResolver : public MockAsyncProxyResolverExpectsBytes {
+class FakeProxyResolver : public MockAsyncProxyResolver {
  public:
   explicit FakeProxyResolver(const base::Closure& on_destruction)
       : on_destruction_(on_destruction) {}

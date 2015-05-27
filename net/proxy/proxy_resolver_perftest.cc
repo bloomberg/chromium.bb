@@ -228,9 +228,7 @@ class ProxyResolverV8Wrapper : public ProxyResolver {
  public:
   ProxyResolverV8Wrapper(scoped_ptr<ProxyResolverV8> resolver,
                          scoped_ptr<MockJSBindings> bindings)
-      : ProxyResolver(true),
-        resolver_(resolver.Pass()),
-        bindings_(bindings.Pass()) {}
+      : resolver_(resolver.Pass()), bindings_(bindings.Pass()) {}
 
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
@@ -245,14 +243,6 @@ class ProxyResolverV8Wrapper : public ProxyResolver {
   LoadState GetLoadState(RequestHandle request) const override {
     NOTREACHED();
     return LOAD_STATE_IDLE;
-  }
-
-  void CancelSetPacScript() override { NOTREACHED(); }
-
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& /*callback*/) override {
-    NOTREACHED();
-    return ERR_NOT_IMPLEMENTED;
   }
 
  private:

@@ -91,9 +91,6 @@ class ProxyResolverMojo : public ProxyResolver, public mojo::ErrorHandler {
                      const BoundNetLog& net_log) override;
   void CancelRequest(RequestHandle request) override;
   LoadState GetLoadState(RequestHandle request) const override;
-  void CancelSetPacScript() override;
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& pac_script,
-                   const net::CompletionCallback& callback) override;
 
  private:
   class Job;
@@ -219,8 +216,7 @@ ProxyResolverMojo::ProxyResolverMojo(
     scoped_ptr<mojo::Binding<interfaces::HostResolver>> host_resolver_binding,
     scoped_ptr<base::ScopedClosureRunner> on_delete_callback_runner,
     scoped_ptr<ErrorObserverHolder> error_observer)
-    : ProxyResolver(true),
-      mojo_proxy_resolver_ptr_(resolver_ptr.Pass()),
+    : mojo_proxy_resolver_ptr_(resolver_ptr.Pass()),
       mojo_host_resolver_(host_resolver.Pass()),
       mojo_host_resolver_binding_(host_resolver_binding.Pass()),
       error_observer_(error_observer.Pass()),
@@ -232,17 +228,6 @@ ProxyResolverMojo::~ProxyResolverMojo() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // All pending requests should have been cancelled.
   DCHECK(pending_jobs_.empty());
-}
-
-void ProxyResolverMojo::CancelSetPacScript() {
-  NOTREACHED();
-}
-
-int ProxyResolverMojo::SetPacScript(
-    const scoped_refptr<ProxyResolverScriptData>& pac_script,
-    const CompletionCallback& callback) {
-  NOTREACHED();
-  return ERR_NOT_IMPLEMENTED;
 }
 
 void ProxyResolverMojo::OnConnectionError() {

@@ -46,11 +46,6 @@ class ProxyResolverWinHttp : public ProxyResolver {
 
   LoadState GetLoadState(RequestHandle request) const override;
 
-  void CancelSetPacScript() override;
-
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& /*callback*/) override;
-
  private:
   bool OpenWinHttpSession();
   void CloseWinHttpSession();
@@ -65,8 +60,7 @@ class ProxyResolverWinHttp : public ProxyResolver {
 
 ProxyResolverWinHttp::ProxyResolverWinHttp(
     const scoped_refptr<ProxyResolverScriptData>& script_data)
-    : ProxyResolver(false /*expects_pac_bytes*/),
-      session_handle_(NULL),
+    : session_handle_(NULL),
       pac_url_(script_data->type() == ProxyResolverScriptData::TYPE_AUTO_DETECT
                    ? GURL("http://wpad/wpad.dat")
                    : script_data->url()) {
@@ -167,17 +161,6 @@ void ProxyResolverWinHttp::CancelRequest(RequestHandle request) {
 LoadState ProxyResolverWinHttp::GetLoadState(RequestHandle request) const {
   NOTREACHED();
   return LOAD_STATE_IDLE;
-}
-
-void ProxyResolverWinHttp::CancelSetPacScript() {
-  NOTREACHED();
-}
-
-int ProxyResolverWinHttp::SetPacScript(
-    const scoped_refptr<ProxyResolverScriptData>& script_data,
-    const CompletionCallback& /*callback*/) {
-  NOTREACHED();
-  return ERR_NOT_IMPLEMENTED;
 }
 
 bool ProxyResolverWinHttp::OpenWinHttpSession() {

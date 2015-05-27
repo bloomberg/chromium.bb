@@ -1852,7 +1852,7 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
   MockProxyConfigService* config_service =
       new MockProxyConfigService("http://foopy/proxy.pac");
 
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
@@ -1959,7 +1959,7 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
   MockProxyConfigService* config_service =
       new MockProxyConfigService("http://foopy/proxy.pac");
 
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
@@ -2020,7 +2020,7 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
   MockProxyConfigService* config_service =
       new MockProxyConfigService("http://foopy/proxy.pac");
 
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
@@ -2116,7 +2116,7 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac) {
   config.proxy_rules().ParseFromString("http=foopy:80");  // Won't be used.
 
   MockProxyConfigService* config_service = new MockProxyConfigService(config);
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
@@ -2196,7 +2196,7 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac2) {
   config.proxy_rules().ParseFromString("http=foopy:80");  // Won't be used.
 
   MockProxyConfigService* config_service = new MockProxyConfigService(config);
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
@@ -2332,7 +2332,7 @@ TEST_F(ProxyServiceTest, BypassDoesntApplyToPac) {
   config.proxy_rules().bypass_rules.ParseFromString("www.google.com");
 
   MockProxyConfigService* config_service = new MockProxyConfigService(config);
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
@@ -2533,7 +2533,7 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
   MockProxyConfigService* config_service =
       new MockProxyConfigService("http://foopy/proxy.pac");
 
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
@@ -2655,7 +2655,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterFailure) {
   MockProxyConfigService* config_service =
       new MockProxyConfigService("http://foopy/proxy.pac");
 
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
@@ -2760,7 +2760,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
   MockProxyConfigService* config_service =
       new MockProxyConfigService("http://foopy/proxy.pac");
 
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
@@ -2871,7 +2871,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
   MockProxyConfigService* config_service =
       new MockProxyConfigService("http://foopy/proxy.pac");
 
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
@@ -2979,7 +2979,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
   MockProxyConfigService* config_service =
       new MockProxyConfigService("http://foopy/proxy.pac");
 
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 
@@ -3132,7 +3132,7 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
   MockProxyConfigService* config_service =
       new MockProxyConfigService("http://foopy/proxy.pac");
 
-  MockAsyncProxyResolverExpectsBytes resolver;
+  MockAsyncProxyResolver resolver;
   MockAsyncProxyResolverFactory* factory =
       new MockAsyncProxyResolverFactory(true);
 

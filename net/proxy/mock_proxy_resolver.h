@@ -21,11 +21,11 @@ namespace net {
 
 // Asynchronous mock proxy resolver. All requests complete asynchronously,
 // user must call Request::CompleteNow() on a pending request to signal it.
-class MockAsyncProxyResolverBase : public ProxyResolver {
+class MockAsyncProxyResolver : public ProxyResolver {
  public:
   class Request : public base::RefCounted<Request> {
    public:
-    Request(MockAsyncProxyResolverBase* resolver,
+    Request(MockAsyncProxyResolver* resolver,
             const GURL& url,
             ProxyInfo* results,
             const CompletionCallback& callback);
@@ -41,37 +41,17 @@ class MockAsyncProxyResolverBase : public ProxyResolver {
 
     virtual ~Request();
 
-    MockAsyncProxyResolverBase* resolver_;
+    MockAsyncProxyResolver* resolver_;
     const GURL url_;
     ProxyInfo* results_;
     CompletionCallback callback_;
     base::MessageLoop* origin_loop_;
   };
 
-  class SetPacScriptRequest {
-   public:
-    SetPacScriptRequest(
-        MockAsyncProxyResolverBase* resolver,
-        const scoped_refptr<ProxyResolverScriptData>& script_data,
-        const CompletionCallback& callback);
-    ~SetPacScriptRequest();
-
-    const ProxyResolverScriptData* script_data() const {
-      return script_data_.get();
-    }
-
-    void CompleteNow(int rv);
-
-   private:
-    MockAsyncProxyResolverBase* resolver_;
-    const scoped_refptr<ProxyResolverScriptData> script_data_;
-    CompletionCallback callback_;
-    base::MessageLoop* origin_loop_;
-  };
-
   typedef std::vector<scoped_refptr<Request> > RequestsList;
 
-  ~MockAsyncProxyResolverBase() override;
+  MockAsyncProxyResolver();
+  ~MockAsyncProxyResolver() override;
 
   // ProxyResolver implementation.
   int GetProxyForURL(const GURL& url,
@@ -81,10 +61,6 @@ class MockAsyncProxyResolverBase : public ProxyResolver {
                      const BoundNetLog& /*net_log*/) override;
   void CancelRequest(RequestHandle request_handle) override;
   LoadState GetLoadState(RequestHandle request_handle) const override;
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& callback) override;
-  void CancelSetPacScript() override;
-
   const RequestsList& pending_requests() const {
     return pending_requests_;
   }
@@ -93,35 +69,11 @@ class MockAsyncProxyResolverBase : public ProxyResolver {
     return cancelled_requests_;
   }
 
-  SetPacScriptRequest* pending_set_pac_script_request() const;
-
-  bool has_pending_set_pac_script_request() const {
-    return pending_set_pac_script_request_.get() != NULL;
-  }
-
   void RemovePendingRequest(Request* request);
-
-  void RemovePendingSetPacScriptRequest(SetPacScriptRequest* request);
-
- protected:
-  explicit MockAsyncProxyResolverBase(bool expects_pac_bytes);
 
  private:
   RequestsList pending_requests_;
   RequestsList cancelled_requests_;
-  scoped_ptr<SetPacScriptRequest> pending_set_pac_script_request_;
-};
-
-class MockAsyncProxyResolver : public MockAsyncProxyResolverBase {
- public:
-  MockAsyncProxyResolver()
-      : MockAsyncProxyResolverBase(false /*expects_pac_bytes*/) {}
-};
-
-class MockAsyncProxyResolverExpectsBytes : public MockAsyncProxyResolverBase {
- public:
-  MockAsyncProxyResolverExpectsBytes()
-      : MockAsyncProxyResolverBase(true /*expects_pac_bytes*/) {}
 };
 
 // Asynchronous mock proxy resolver factory . All requests complete
@@ -202,9 +154,6 @@ class ForwardingProxyResolver : public ProxyResolver {
                      const BoundNetLog& net_log) override;
   void CancelRequest(RequestHandle request) override;
   LoadState GetLoadState(RequestHandle request) const override;
-  void CancelSetPacScript() override;
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& callback) override;
 
  private:
   ProxyResolver* impl_;

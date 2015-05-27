@@ -39,9 +39,7 @@ namespace {
 class MockProxyResolver : public ProxyResolver {
  public:
   MockProxyResolver()
-      : ProxyResolver(true /*expects_pac_bytes*/),
-        worker_loop_(base::MessageLoop::current()),
-        request_count_(0) {}
+      : worker_loop_(base::MessageLoop::current()), request_count_(0) {}
 
   // ProxyResolver implementation.
   int GetProxyForURL(const GURL& query_url,
@@ -71,13 +69,6 @@ class MockProxyResolver : public ProxyResolver {
   LoadState GetLoadState(RequestHandle request) const override {
     NOTREACHED();
     return LOAD_STATE_IDLE;
-  }
-
-  void CancelSetPacScript() override { NOTREACHED(); }
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& callback) override {
-    NOTREACHED();
-    return ERR_NOT_IMPLEMENTED;
   }
 
   int request_count() const { return request_count_; }

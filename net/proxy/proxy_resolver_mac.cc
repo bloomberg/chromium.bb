@@ -80,18 +80,13 @@ class ProxyResolverMac : public ProxyResolver {
 
   LoadState GetLoadState(RequestHandle request) const override;
 
-  void CancelSetPacScript() override;
-
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& /*callback*/) override;
-
  private:
   const scoped_refptr<ProxyResolverScriptData> script_data_;
 };
 
 ProxyResolverMac::ProxyResolverMac(
     const scoped_refptr<ProxyResolverScriptData>& script_data)
-    : ProxyResolver(false /*expects_pac_bytes*/), script_data_(script_data) {
+    : script_data_(script_data) {
 }
 
 ProxyResolverMac::~ProxyResolverMac() {}
@@ -213,17 +208,6 @@ void ProxyResolverMac::CancelRequest(RequestHandle request) {
 LoadState ProxyResolverMac::GetLoadState(RequestHandle request) const {
   NOTREACHED();
   return LOAD_STATE_IDLE;
-}
-
-void ProxyResolverMac::CancelSetPacScript() {
-  NOTREACHED();
-}
-
-int ProxyResolverMac::SetPacScript(
-    const scoped_refptr<ProxyResolverScriptData>& script_data,
-    const CompletionCallback& /*callback*/) {
-  NOTREACHED();
-  return ERR_NOT_IMPLEMENTED;
 }
 
 }  // namespace

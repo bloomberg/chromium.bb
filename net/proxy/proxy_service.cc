@@ -175,7 +175,7 @@ class ProxyConfigServiceDirect : public ProxyConfigService {
 // Proxy resolver that fails every time.
 class ProxyResolverNull : public ProxyResolver {
  public:
-  ProxyResolverNull() : ProxyResolver(false /*expects_pac_bytes*/) {}
+  ProxyResolverNull() {}
 
   // ProxyResolver implementation.
   int GetProxyForURL(const GURL& url,
@@ -193,13 +193,6 @@ class ProxyResolverNull : public ProxyResolver {
     return LOAD_STATE_IDLE;
   }
 
-  void CancelSetPacScript() override { NOTREACHED(); }
-
-  int SetPacScript(
-      const scoped_refptr<ProxyResolverScriptData>& /*script_data*/,
-      const CompletionCallback& /*callback*/) override {
-    return ERR_NOT_IMPLEMENTED;
-  }
 };
 
 // ProxyResolver that simulates a PAC script which returns
@@ -207,8 +200,7 @@ class ProxyResolverNull : public ProxyResolver {
 class ProxyResolverFromPacString : public ProxyResolver {
  public:
   explicit ProxyResolverFromPacString(const std::string& pac_string)
-      : ProxyResolver(false /*expects_pac_bytes*/),
-        pac_string_(pac_string) {}
+      : pac_string_(pac_string) {}
 
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
@@ -224,13 +216,6 @@ class ProxyResolverFromPacString : public ProxyResolver {
   LoadState GetLoadState(RequestHandle request) const override {
     NOTREACHED();
     return LOAD_STATE_IDLE;
-  }
-
-  void CancelSetPacScript() override { NOTREACHED(); }
-
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& pac_script,
-                   const CompletionCallback& callback) override {
-    return OK;
   }
 
  private:
