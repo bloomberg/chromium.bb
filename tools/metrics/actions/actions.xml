@@ -7476,6 +7476,7 @@ should be able to be added at any place in this file.
 <action name="MobileBreakpadUploadFailure">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
 <action name="MobileBreakpadUploadSuccess">
@@ -7561,6 +7562,7 @@ should be able to be added at any place in this file.
 <action name="MobileContextMenuShareLink">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuText">
@@ -7609,16 +7611,19 @@ should be able to be added at any place in this file.
 <action name="MobileFreAttemptSignIn">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
 <action name="MobileFreSignInSuccessful">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
 <action name="MobileFreSkipSignIn">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
 <action name="MobileMWSession">
@@ -7647,6 +7652,7 @@ should be able to be added at any place in this file.
 <action name="MobileMenuBack">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed the back icon in the app menu.</description>
+  <obsolete>Obsolete as of 5/2015</obsolete>
 </action>
 
 <action name="MobileMenuCloseAllTabs">
@@ -7776,11 +7782,13 @@ should be able to be added at any place in this file.
 <action name="MobileNTPSwitchToIncognito">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
 <action name="MobileNTPSwitchToMostVisited">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
 <action name="MobileNTPSwitchToOpenTabs">
@@ -7892,6 +7900,7 @@ should be able to be added at any place in this file.
 <action name="MobileShortcutAllBookmarks">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
 <action name="MobileShortcutFindInPage">
@@ -7902,11 +7911,13 @@ should be able to be added at any place in this file.
 <action name="MobileShortcutNewIncognitoTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Replaced with MobileMenuNewIncognitoTab</obsolete>
 </action>
 
 <action name="MobileShortcutNewTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Replaced with MobileMenuNewtab</obsolete>
 </action>
 
 <action name="MobileSideSwipeFinished">
@@ -7937,11 +7948,13 @@ should be able to be added at any place in this file.
 <action name="MobileTabStripCloseTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
 <action name="MobileTabStripNewTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
 <action name="MobileTabSwitched">
@@ -7962,6 +7975,7 @@ should be able to be added at any place in this file.
 <action name="MobileToolbarNewTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 5/2015</obsolete>
 </action>
 
 <action name="MobileToolbarReload">
