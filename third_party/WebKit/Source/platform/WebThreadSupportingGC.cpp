@@ -52,9 +52,6 @@ void WebThreadSupportingGC::shutdown()
     ThreadState::detach();
     m_pendingGCRunner = nullptr;
     m_messageLoopInterruptor = nullptr;
-
-    // Ensure no posted tasks will run from this point on.
-    platformThread().scheduler()->shutdown();
 }
 
 } // namespace blink
