@@ -250,6 +250,9 @@ void SVGTextChunkBuilder::processTextAnchorCorrection(bool isVerticalText, float
 
 void SVGTextChunkBuilder::finalizeTransformMatrices(const Vector<SVGInlineTextBox*>& boxes) const
 {
+    if (m_textBoxTransformations.isEmpty())
+        return;
+
     for (SVGInlineTextBox* textBox : boxes) {
         AffineTransform textBoxTransformation = m_textBoxTransformations.get(textBox);
         if (textBoxTransformation.isIdentity())
