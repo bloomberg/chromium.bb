@@ -30,6 +30,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/property_tree_builder.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -690,6 +691,13 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
   DCHECK(!needs_update_draw_properties_) <<
       "CalcDrawProperties should not set_needs_update_draw_properties()";
   return true;
+}
+
+void LayerTreeImpl::BuildPropertyTreesForTesting() {
+  PropertyTreeBuilder::BuildPropertyTrees(
+      root_layer_.get(), page_scale_layer_, current_page_scale_factor(),
+      device_scale_factor(), gfx::Rect(DrawViewportSize()),
+      layer_tree_host_impl_->DrawTransform(), &property_trees_);
 }
 
 const LayerImplList& LayerTreeImpl::RenderSurfaceLayerList() const {

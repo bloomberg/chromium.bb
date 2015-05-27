@@ -113,6 +113,8 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
   layer_impl->AddChild(video_layer_impl.Pass());
   active_tree->SetRootLayer(layer_impl.Pass());
 
+  active_tree->BuildPropertyTreesForTesting();
+
   active_tree->UpdateDrawProperties(false);
 
   // We don't have a frame yet, so the video doesn't occlude the layer below it.
