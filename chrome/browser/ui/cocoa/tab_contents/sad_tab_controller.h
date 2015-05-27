@@ -45,10 +45,6 @@ class SadTabCocoa : public SadTab {
 // Designated initializer.
 - (id)initWithWebContents:(content::WebContents*)webContents;
 
-// This action just calls the NSApp sendAction to get it into the standard
-// Cocoa action processing.
-- (IBAction)openLearnMoreAboutCrashLink:(id)sender;
-
 // Returns a weak reference to the WebContents whose WebContentsView created
 // this SadTabController.
 - (content::WebContents*)webContents;

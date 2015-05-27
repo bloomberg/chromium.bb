@@ -6,25 +6,20 @@
 #define CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_SAD_TAB_VIEW_COCOA_H_
 
 #include "base/mac/scoped_nsobject.h"
-#include "ui/base/cocoa/base_view.h"
 
 #import <Cocoa/Cocoa.h>
 
-@class SadTabController;
 @class HyperlinkTextView;
 
 // A view that displays the "sad tab" (aka crash page).
-@interface SadTabView : BaseView<NSTextViewDelegate> {
+@interface SadTabView : NSView<NSTextViewDelegate> {
  @private
-  IBOutlet NSImageView* image_;
+  base::scoped_nsobject<NSImageView> image_;
   base::scoped_nsobject<NSTextField> title_;
   base::scoped_nsobject<NSTextField> message_;
   base::scoped_nsobject<HyperlinkTextView> help_;
 
   NSSize messageSize_;
-
-  // A weak reference to the parent controller.
-  IBOutlet SadTabController* controller_;
 }
 
 // Designated initializer is -initWithFrame: .

@@ -59,7 +59,6 @@
       'app/nibs/HungRendererDialog.xib',
       'app/nibs/InfoBar.xib',
       'app/nibs/Panel.xib',
-      'app/nibs/SadTab.xib',
     ],  # mac_untranslated_xibs
     'mac_all_xibs': [
       '<@(mac_translated_xibs)',

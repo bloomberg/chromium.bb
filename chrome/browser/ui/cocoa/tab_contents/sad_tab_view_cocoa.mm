@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -28,6 +27,8 @@ static const CGFloat kTitleMessageSpacing = 15;
 static const CGFloat kMessageLinkSpacing = 15;
 // Paddings on left and right of page.
 static const CGFloat kTabHorzMargin = 13;
+// The width and height of the icon image view.
+static const CGFloat kIconViewSize = 66;
 
 @interface SadTabTextView : NSTextField
 
@@ -58,36 +59,40 @@ static const CGFloat kTabHorzMargin = 13;
 
 @implementation SadTabView
 
-- (void)awakeFromNib {
-  // Load resource for image and set it.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNativeImageNamed(IDR_SAD_TAB).ToNSImage();
-  [image_ setImage:image];
+- (instancetype)initWithFrame:(NSRect)frame {
+  if ((self = [super initWithFrame:frame])) {
+    // Load resource for image and set it.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    image_.reset([[NSImageView alloc]
+        initWithFrame:NSMakeRect(0, 0, kIconViewSize, kIconViewSize)]);
+    [image_ setImage:rb.GetNativeImageNamed(IDR_SAD_TAB).ToNSImage()];
+    [self addSubview:image_];
 
-  // Initialize background color.
-  NSColor* backgroundColor = [NSColor colorWithCalibratedWhite:247.0f/255.0f
-                                                         alpha:1.0];
-  [self setWantsLayer:YES];
-  [[self layer] setBackgroundColor:[backgroundColor cr_CGColor]];
+    // Initialize background color.
+    NSColor* backgroundColor = [NSColor colorWithCalibratedWhite:247.0f/255.0f
+                                                           alpha:1.0];
+    [self setWantsLayer:YES];
+    [[self layer] setBackgroundColor:[backgroundColor cr_CGColor]];
 
-  // Set up the title.
-  title_.reset([[SadTabTextView alloc]
-      initWithView:self withText:IDS_SAD_TAB_TITLE]);
-  [title_ setFont:[NSFont systemFontOfSize:24]];
-  [title_ setBackgroundColor:backgroundColor];
-  [title_ setTextColor:[NSColor colorWithCalibratedWhite:51.0f/255.0f
-                                                   alpha:1.0]];
-
-  // Set up the message.
-  message_.reset([[SadTabTextView alloc]
-      initWithView:self withText:IDS_SAD_TAB_MESSAGE]);
-  [message_ setFont:[NSFont systemFontOfSize:15]];
-  [message_ setBackgroundColor:backgroundColor];
-  [message_ setTextColor:[NSColor colorWithCalibratedWhite:100.0f/255.0f
+    // Set up the title.
+    title_.reset([[SadTabTextView alloc]
+        initWithView:self withText:IDS_SAD_TAB_TITLE]);
+    [title_ setFont:[NSFont systemFontOfSize:24]];
+    [title_ setBackgroundColor:backgroundColor];
+    [title_ setTextColor:[NSColor colorWithCalibratedWhite:51.0f/255.0f
                                                      alpha:1.0]];
 
-  DCHECK(controller_);
-  [self initializeHelpText];
+    // Set up the message.
+    message_.reset([[SadTabTextView alloc]
+        initWithView:self withText:IDS_SAD_TAB_MESSAGE]);
+    [message_ setFont:[NSFont systemFontOfSize:15]];
+    [message_ setBackgroundColor:backgroundColor];
+    [message_ setTextColor:[NSColor colorWithCalibratedWhite:100.0f/255.0f
+                                                       alpha:1.0]];
+
+    [self initializeHelpText];
+  }
+  return self;
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldSize {
@@ -192,8 +197,7 @@ static const CGFloat kTabHorzMargin = 13;
 - (BOOL)textView:(NSTextView*)textView
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
-  if (controller_)
-    [controller_ openLearnMoreAboutCrashLink:nil];
+  [NSApp sendAction:@selector(openLearnMoreAboutCrashLink:) to:nil from:self];
   return YES;
 }
 
