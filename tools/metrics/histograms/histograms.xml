@@ -71175,6 +71175,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="V8SpecialApps" separator=".">
   <suffix name="docs" label="Custom histogram for Google Docs and Drive"/>
   <suffix name="gmail" label="Custom histogram for GMail"/>
+  <suffix name="inbox" label="Custom histogram for Inbox"/>
   <suffix name="plus" label="Custom histogram for Google+"/>
   <affected-histogram name="V8.MemoryExternalFragmentationTotal"/>
   <affected-histogram name="V8.MemoryHeapSampleTotalCommitted"/>
