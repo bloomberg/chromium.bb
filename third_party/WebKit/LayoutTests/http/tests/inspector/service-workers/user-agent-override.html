@@ -59,6 +59,9 @@ function test()
             InspectorTest.addResult("Overriden user agent: " + msg.messageText);
             InspectorTest.addResult("Disable emulation");
             WebInspector.overridesSupport.setEmulationEnabled(false);
+            return InspectorTest.unregisterServiceWorker(scope);
+        })
+        .then(function() {
             return InspectorTest.registerServiceWorker(scriptURL + '?2', scope);
         })
         .then(waitForTarget)
