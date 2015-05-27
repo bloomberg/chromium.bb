@@ -26,6 +26,8 @@ void AddMainWebResources(content::WebUIDataSource* html_source) {
                                IDR_MEDIA_ROUTER_DATA_JS);
   html_source->AddResourcePath("media_router_ui_interface.js",
                                IDR_MEDIA_ROUTER_UI_INTERFACE_JS);
+  html_source->AddResourcePath("polymer_config.js",
+                               IDR_MEDIA_ROUTER_POLYMER_CONFIG_JS);
 }
 
 void AddPolymerElements(content::WebUIDataSource* html_source) {
