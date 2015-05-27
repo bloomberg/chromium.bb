@@ -75,7 +75,6 @@ private:
     Vector<SVGTextLayoutAttributes*>& m_layoutAttributes;
 
     Vector<SVGInlineTextBox*> m_lineLayoutBoxes;
-    Vector<SVGInlineTextBox*> m_pathLayoutBoxes;
 
     SVGTextFragment m_currentTextFragment;
     unsigned m_layoutAttributesPosition;

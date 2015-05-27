@@ -250,10 +250,8 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox)
     m_isVerticalText = style.svgStyle().isVerticalWritingMode();
     layoutTextOnLineOrPath(textBox, text, style);
 
-    if (m_inPathLayout) {
-        m_pathLayoutBoxes.append(textBox);
+    if (m_inPathLayout)
         return;
-    }
 
     m_lineLayoutBoxes.append(textBox);
 }
@@ -269,11 +267,6 @@ void SVGTextLayoutEngine::finishLayout()
     if (!m_lineLayoutBoxes.isEmpty()) {
         chunkLayoutBuilder.finalizeTransformMatrices(m_lineLayoutBoxes);
         m_lineLayoutBoxes.clear();
-    }
-
-    if (!m_pathLayoutBoxes.isEmpty()) {
-        chunkLayoutBuilder.finalizeTransformMatrices(m_pathLayoutBoxes);
-        m_pathLayoutBoxes.clear();
     }
 }
 
