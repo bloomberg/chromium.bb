@@ -19,7 +19,6 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
-#include "cc/trees/blocking_task_runner.h"
 
 namespace cc {
 
@@ -35,8 +34,6 @@ Display::Display(DisplayClient* client,
       settings_(settings),
       device_scale_factor_(1.f),
       scheduler_(nullptr),
-      blocking_main_thread_task_runner_(
-          BlockingTaskRunner::Create(base::ThreadTaskRunnerHandle::Get())),
       texture_mailbox_deleter_(
           new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get())) {
   manager_->AddObserver(this);
@@ -90,8 +87,7 @@ void Display::InitializeRenderer() {
 
   scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
       output_surface_.get(), bitmap_manager_, gpu_memory_buffer_manager_,
-      blocking_main_thread_task_runner_.get(), settings_.highp_threshold_min,
-      settings_.use_rgba_4444_textures,
+      nullptr, settings_.highp_threshold_min, settings_.use_rgba_4444_textures,
       settings_.texture_id_allocation_chunk_size);
   if (!resource_provider)
     return;
@@ -136,8 +132,6 @@ bool Display::DrawAndSwap() {
   if (!output_surface_)
     return false;
 
-  // TODO(skyostil): We should hold a BlockingTaskRunner::CapturePostTasks
-  // while Aggregate is called to immediately run release callbacks afterward.
   scoped_ptr<CompositorFrame> frame =
       aggregator_->Aggregate(current_surface_id_);
   if (!frame)
