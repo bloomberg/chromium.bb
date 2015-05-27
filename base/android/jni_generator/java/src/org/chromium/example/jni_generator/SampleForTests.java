@@ -92,7 +92,7 @@ import java.util.List;
 @JNINamespace("base::android")
 class SampleForTests {
     // Classes can store their C++ pointer counter part as an int that is normally initialized by
-    // calling out a nativeInit() function.
+    // calling out a nativeInit() function. Replace "CPPClass" with your particular class name!
     long mNativeCPPObject;
 
     // You can define methods and attributes on the java class just like any other.
@@ -187,10 +187,11 @@ class SampleForTests {
 
     // This defines a function binding to the associated C++ class member function. The name is
     // derived from |nativeDestroy| and |nativeCPPClass| to arrive at CPPClass::Destroy() (i.e.
-    // native
-    // prefixes stripped).
-    // The |nativeCPPClass| is automatically cast to type CPPClass* in order to obtain the object on
-    // which to invoke the member function.
+    // native prefixes stripped).
+    //
+    // The |nativeCPPClass| is automatically cast to type CPPClass*, in order to obtain the object
+    // on
+    // which to invoke the member function. Replace "CPPClass" with your particular class name!
     private native void nativeDestroy(long nativeCPPClass);
 
     // This declares a C++ function which the application code must implement:
@@ -203,8 +204,7 @@ class SampleForTests {
     private static native float nativeGetFloatFunction();
 
     // This function takes a non-POD datatype. We have a list mapping them to their full classpath
-    // in
-    // jni_generator.py JavaParamToJni. If you require a new datatype, make sure you add to that
+    // in jni_generator.py JavaParamToJni. If you require a new datatype, make sure you add to that
     // function.
     private native void nativeSetNonPODDatatype(Rect rect);
 
@@ -216,8 +216,7 @@ class SampleForTests {
     private native Object nativeGetNonPODDatatype();
 
     // Similar to nativeDestroy above, this will cast nativeCPPClass into pointer of CPPClass type
-    // and
-    // call its Method member function.
+    // and call its Method member function. Replace "CPPClass" with your particular class name!
     private native int nativeMethod(long nativeCPPClass);
 
     // Similar to nativeMethod above, but here the C++ fully qualified class name is taken from the
