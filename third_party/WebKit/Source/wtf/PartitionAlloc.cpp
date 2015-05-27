@@ -625,10 +625,6 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     mapSize += kPageAllocationGranularityOffsetMask;
     mapSize &= kPageAllocationGranularityBaseMask;
 
-    size_t committedPageSize = size + kSystemPageSize;
-    root->totalSizeOfDirectMappedPages += committedPageSize;
-    partitionIncreaseCommittedPages(root, committedPageSize);
-
     // TODO: we may want to let the operating system place these allocations
     // where it pleases. On 32-bit, this might limit address space
     // fragmentation and on 64-bit, this might have useful savings for TLB
@@ -642,6 +638,11 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     char* ptr = reinterpret_cast<char*>(allocPages(0, mapSize, kSuperPageSize, PageAccessible));
     if (UNLIKELY(!ptr))
         return 0;
+
+    size_t committedPageSize = size + kSystemPageSize;
+    root->totalSizeOfDirectMappedPages += committedPageSize;
+    partitionIncreaseCommittedPages(root, committedPageSize);
+
     char* ret = ptr + kPartitionPageSize;
     // TODO: due to all the guard paging, this arrangement creates 4 mappings.
     // We could get it down to three by using read-only for the metadata page,
