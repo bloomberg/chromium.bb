@@ -23,8 +23,6 @@
 #include "core/loader/ImageLoader.h"
 
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
@@ -92,11 +90,6 @@ public:
     virtual void run() override
     {
         if (m_loader) {
-            v8::Local<v8::Context> context = toV8Context(&m_loader->element()->document(), DOMWrapperWorld::mainWorld());
-            if (context.IsEmpty())
-                return;
-
-            ScriptState::Scope scope(ScriptState::from(context));
 #if ENABLE(OILPAN)
             // Oilpan: this WebThread::Task microtask may run after the
             // loader has been GCed, but not yet lazily swept & finalized
