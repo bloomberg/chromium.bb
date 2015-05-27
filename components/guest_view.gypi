@@ -30,7 +30,7 @@
         'guest_view/common/guest_view_constants.cc',
         'guest_view/common/guest_view_constants.h',
         'guest_view/common/guest_view_message_generator.cc',
-        'guest_view/common/guest_view_message_generator.h'
+        'guest_view/common/guest_view_message_generator.h',
         'guest_view/common/guest_view_messages.h',
       ],
     },
