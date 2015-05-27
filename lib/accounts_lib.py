@@ -171,3 +171,71 @@ class AccountDatabase(object):
     self.groups[name] = Group(name=name, password=password, gid=gid,
                               users=users, is_fixed_id=is_fixed_id,
                               is_defunct=is_defunct)
+
+  def InstallUser(self, username, sysroot_user_db,
+                  uid=None, shell=None, homedir=None, primary_group=None):
+    """Install a user in |sysroot_user_db|.
+
+    Args:
+      username: name of user to install.
+      sysroot_user_db: user_db.UserDB instance representing the installed users
+          of a particular sysroot.
+      uid: ebuild specified uid.
+      shell: ebuild specified shell.
+      homedir: ebuild specified home directory.
+      primary_group: ebuild specified primary group for user.
+    """
+    if not username in self.users:
+      raise ValueError('Cannot add unknown user "%s"' % username)
+    user = self.users[username]
+
+    if user.is_defunct:
+      raise ValueError('Refusing to install defunct user: "%s"' % username)
+
+    def RaiseIfNotCompatible(user_specified, db_specified, fieldname):
+      if user_specified is not None and user_specified != db_specified:
+        raise ValueError('Accounts database %s (%s) for user %s differs from '
+                         'requested %s (%s)' %
+                         (fieldname, db_specified, user.name, fieldname,
+                          user_specified))
+
+    RaiseIfNotCompatible(uid, user.uid, 'UID')
+    RaiseIfNotCompatible(shell, user.shell, 'shell')
+    RaiseIfNotCompatible(homedir, user.home, 'homedir')
+    RaiseIfNotCompatible(primary_group, user.group_name, 'group')
+
+    if not user.group_name in self.groups:
+      raise ValueError('Refusing to install user %s with unknown group %s' %
+                       (user.name, user.group_name))
+
+    installable_user = user_db.User(
+        user=user.name, password=user.password, uid=user.uid,
+        gid=self.groups[user.group_name].gid, gecos=user.description,
+        home=user.home, shell=user.shell)
+    sysroot_user_db.AddUser(installable_user)
+
+  def InstallGroup(self, groupname, sysroot_user_db, gid=None):
+    """Install a group in |sysroot_user_db|.
+
+    Args:
+      groupname: name of group to install.
+      sysroot_user_db: user_db.UserDB instance representing the installed
+          groups.
+      gid: ebuild specified gid.
+    """
+    if not groupname in self.groups:
+      raise ValueError('Cannot add unknown group "%s"' % groupname)
+    group = self.groups[groupname]
+
+    if group.is_defunct:
+      raise ValueError('Refusing to install defunct group: "%s"' % groupname)
+
+    if gid and gid != group.gid:
+      raise ValueError('Refusing to install group %s with gid=%d while account '
+                       'database indicates gid=%d' %
+                       (groupname, gid, group.gid))
+
+    installable_group = user_db.Group(
+        group=group.name, password=group.password,
+        gid=group.gid, users=group.users)
+    sysroot_user_db.AddGroup(installable_group)

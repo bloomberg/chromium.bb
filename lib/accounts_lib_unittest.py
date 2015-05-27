@@ -7,10 +7,12 @@
 from __future__ import print_function
 
 import json
+import mock
 
 from chromite.lib import accounts_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import user_db
 
 
 EMPTY_ACCOUNTS_DB_WITH_COMMENTS = """
@@ -195,3 +197,27 @@ class AccountDatabaseTest(cros_test_lib.MockTestCase):
     self.assertEqual(OVERRIDE_ID, db.groups[OVERRIDE_NAME].gid)
     self.assertEqual(sorted([OVERRIDE_NAME, EXTRA_USER]),
                      sorted(db.groups[OVERRIDE_NAME].users))
+
+  def testInstallUser(self):
+    """Test that we can install a user correctly."""
+    db = self._ParseSpec(MINIMAL_ACCOUNTS_DB)
+    mock_user_db = mock.MagicMock()
+    db.InstallUser(MINIMAL_DB_USER.name, mock_user_db)
+    installed_user = user_db.User(
+        user=MINIMAL_DB_USER.name, password=MINIMAL_DB_USER.password,
+        uid=MINIMAL_DB_USER.uid, gid=MINIMAL_DB_GROUP.gid,
+        gecos=MINIMAL_DB_USER.description, home=MINIMAL_DB_USER.home,
+        shell=MINIMAL_DB_USER.shell)
+    self.assertEqual([mock.call.AddUser(installed_user)],
+                     mock_user_db.mock_calls)
+
+  def testInstallGroup(self):
+    """Test that we can install a group correctly."""
+    db = self._ParseSpec(MINIMAL_ACCOUNTS_DB)
+    mock_user_db = mock.MagicMock()
+    db.InstallGroup(MINIMAL_DB_GROUP.name, mock_user_db)
+    installed_group = user_db.Group(
+        group=MINIMAL_DB_GROUP.name, password=MINIMAL_DB_GROUP.password,
+        gid=MINIMAL_DB_GROUP.gid, users=MINIMAL_DB_GROUP.users)
+    self.assertEqual([mock.call.AddGroup(installed_group)],
+                     mock_user_db.mock_calls)
