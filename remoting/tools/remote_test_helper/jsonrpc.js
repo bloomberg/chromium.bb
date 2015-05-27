@@ -27,7 +27,7 @@ jsonRpc.clearLastEvent = function() {
  * @param {list} params The method parameters to pass.
  * @param {number=} opt_ident The request id.
  * @return The JSON-RPC request object
- **/
+ */
 jsonRpc.generateJsonRpcRequest = function(methodname, params, opt_ident) {
   ident = opt_ident == undefined ? 0 : opt_ident;
   var request = {
@@ -42,7 +42,7 @@ jsonRpc.generateJsonRpcRequest = function(methodname, params, opt_ident) {
 /**
  * Method to POST the request to the RPC server.
  * @param {object} json_request The JSON request object.
- **/
+ */
 jsonRpc.sendRpcRequest = function(json_request) {
   jsonRpc.responseObject = null;
   var xhr = new XMLHttpRequest();

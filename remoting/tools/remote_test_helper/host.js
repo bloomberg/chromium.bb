@@ -16,7 +16,7 @@ var Action = {
 /**
  * Method to handle sending keypress events to the server.
  * @param {Event} event The event handler event.
- **/
+ */
 function handleKeyPress(event) {
   jsonRpc.setLastEvent(Action.Keydown, event.keyCode, 0);
 }
@@ -24,7 +24,7 @@ function handleKeyPress(event) {
 /**
  * Method to handle sending mouse down events to the server.
  * @param {Event} event The event handler event.
- **/
+ */
 function handleMouseDown(event) {
   jsonRpc.setLastEvent(Action.Buttonpress, event.button, 0);
 }
@@ -32,7 +32,7 @@ function handleMouseDown(event) {
 /**
  * Method to handle sending mouse move events to the server.
  * @param {Event} event The event handler event.
- **/
+ */
 function handleMouseMove(event) {
   jsonRpc.setLastEvent(Action.Mousemove, event.keyCode, 0);
 }
@@ -40,7 +40,7 @@ function handleMouseMove(event) {
 /**
  * Method to handle sending mouse wheel events to the server.
  * @param {Event} event The event handler event.
- **/
+ */
 function handleMouseWheel(event) {
   jsonRpc.setLastEvent(Action.Mousewheel, 0, 0);
 }
@@ -48,7 +48,7 @@ function handleMouseWheel(event) {
 /**
  * Method to handle sending drag events to the server.
  * @param {Event} event The event handler event.
- **/
+ */
 function handleDrag(event) {
   jsonRpc.setLastEvent(Action.Drag, 0, 0);
 }

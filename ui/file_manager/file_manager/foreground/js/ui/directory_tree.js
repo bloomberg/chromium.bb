@@ -200,7 +200,7 @@ DirectoryItem.prototype.remove = function(child) {
  * Invoked when the item is being expanded.
  * @param {!Event} e Event.
  * @private
- **/
+ */
 DirectoryItem.prototype.onExpand_ = function(e) {
   this.updateSubDirectories(
       true /* recursive */,

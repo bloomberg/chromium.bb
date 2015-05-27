@@ -125,7 +125,7 @@ var countLoad = function() {
 /**
  * Handles postMessages coming from the host page to the iframe.
  * Mostly, it dispatches every command to handleCommand.
- **/
+ */
 var handlePostMessage = function(event) {
   if (event.data instanceof Array) {
     for (var i = 0; i < event.data.length; ++i) {
@@ -141,7 +141,7 @@ var handlePostMessage = function(event) {
  * Handles a single command coming from the host page to the iframe.
  * We try to keep the logic here to a minimum and just dispatch to the relevant
  * functions.
- **/
+ */
 var handleCommand = function(data) {
   var cmd = data.cmd;
 

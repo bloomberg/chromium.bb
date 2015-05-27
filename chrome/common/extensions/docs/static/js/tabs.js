@@ -5,7 +5,7 @@
 /**
  * Add support for tab pannels on custom elements (tabs, header and content)
  *
- **/
+ */
 (function() {
 
 function registerEvent(target, eventType, handler) {
