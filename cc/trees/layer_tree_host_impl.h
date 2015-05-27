@@ -32,6 +32,7 @@
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/ui_resource_client.h"
+#include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/video_frame_controller.h"
@@ -451,12 +452,12 @@ class CC_EXPORT LayerTreeHostImpl
   void SetTreePriority(TreePriority priority);
   TreePriority GetTreePriority() const;
 
+  // TODO(mithro): Remove this methods which exposes the internal
+  // BeginFrameArgs to external callers.
   virtual BeginFrameArgs CurrentBeginFrameArgs() const;
 
   // Expected time between two begin impl frame calls.
-  base::TimeDelta begin_impl_frame_interval() const {
-    return begin_impl_frame_interval_;
-  }
+  base::TimeDelta CurrentBeginFrameInterval() const;
 
   void AsValueWithFrameInto(FrameData* frame,
                             base::trace_event::TracedValue* value) const;
@@ -560,6 +561,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   LayerTreeHostImplClient* client_;
   Proxy* proxy_;
+
+  BeginFrameTracker current_begin_frame_tracker_;
 
  private:
   gfx::Vector2dF ScrollLayerWithViewportSpaceDelta(
@@ -735,11 +738,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool resourceless_software_draw_;
 
   gfx::Rect viewport_damage_rect_;
-
-  BeginFrameArgs current_begin_frame_args_;
-
-  // Expected time between two begin impl frame calls.
-  base::TimeDelta begin_impl_frame_interval_;
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
   std::set<ScrollbarAnimationController*> scrollbar_animation_controllers_;

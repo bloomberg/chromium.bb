@@ -446,6 +446,8 @@ component("cc") {
     "resources/video_resource_updater.h",
     "scheduler/begin_frame_source.cc",
     "scheduler/begin_frame_source.h",
+    "scheduler/begin_frame_tracker.cc",
+    "scheduler/begin_frame_tracker.h",
     "scheduler/commit_earlyout_reason.h",
     "scheduler/delay_based_time_source.cc",
     "scheduler/delay_based_time_source.h",
