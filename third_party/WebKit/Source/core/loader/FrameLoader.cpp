@@ -961,30 +961,30 @@ void FrameLoader::commitProvisionalLoad()
         pdl->timing().setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_frame->document()->url()));
     }
 
-    // The call to dispatchUnloadEvent() can execute arbitrary JavaScript.
-    // If the script initiates a new load, we need to abandon the current load,
-    // or the two will stomp each other.
-    // detachChildren will similarly trigger child frame unload event handlers.
     if (m_documentLoader) {
         client()->dispatchWillClose();
         dispatchUnloadEvent();
     }
+    m_frame->detachChildren();
+    // The previous calls to dispatchUnloadEvent() and detachChildren() can
+    // execute arbitrary script via things like unload events. If the executed
+    // script intiates a new load or causes the current frame to be detached,
+    // we need to abandon the current load.
     if (pdl != m_provisionalDocumentLoader)
         return;
     if (m_documentLoader)
         m_documentLoader->detachFromFrame();
-    m_documentLoader = m_provisionalDocumentLoader.release();
-    if (m_frame->document()) {
-        // Note that calling detachChildren() shouldn't be needed if there's no
-        // Document, since no child frames should be attached. The assert below
-        // enforces this invariant.
-        m_frame->detachChildren();
-        // If detachChildren() detaches this frame, abandon the current load.
-        if (!client())
-            return;
+    // detachFromFrame() will abort XHRs that haven't completed, which can
+    // trigger event listeners for 'abort'. These event listeners might detach
+    // the frame.
+    // TODO(dcheng): Investigate if this can be moved above the check that
+    // m_provisionalDocumentLoader hasn't changed.
+    if (!m_frame->client())
+        return;
+    // No more events will be dispatched so detach the Document.
+    if (m_frame->document())
         m_frame->document()->detach();
-    }
-    ASSERT(m_frame->tree().childCount() == 0);
+    m_documentLoader = m_provisionalDocumentLoader.release();
 
     if (isLoadingMainFrame())
         m_frame->page()->chrome().client().needTouchEvents(false);
