@@ -56,7 +56,6 @@ public:
     enum ReadType {
         ReadAsArrayBuffer,
         ReadAsBinaryString,
-        ReadAsBlob,
         ReadAsText,
         ReadAsDataURL,
         ReadByClient

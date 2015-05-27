@@ -320,7 +320,7 @@ PassRefPtr<DOMArrayBuffer> FileReaderLoader::arrayBufferResult() const
 
 String FileReaderLoader::stringResult()
 {
-    ASSERT(m_readType != ReadAsArrayBuffer && m_readType != ReadAsBlob && m_readType != ReadByClient);
+    ASSERT(m_readType != ReadAsArrayBuffer && m_readType != ReadByClient);
 
     // If the loading is not started or an error occurs, return an empty result.
     if (!m_rawData || m_errorCode)
