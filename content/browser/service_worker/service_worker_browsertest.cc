@@ -1315,8 +1315,8 @@ static int CountRenderProcessHosts() {
   return result;
 }
 
-// Flaky timeouts on CrOS and crash on Android: http://crbug.com/387045
-#if defined(OS_CHROMEOS) || defined(ANDROID)
+// Flaky timeouts on CrOS: http://crbug.com/387045
+#if defined(OS_CHROMEOS)
 #define MAYBE_Registration DISABLED_Registration
 #else
 #define MAYBE_Registration Registration
