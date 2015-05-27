@@ -227,6 +227,8 @@ class SDKPackageBoardToolchainsStageTest(
     # Check that a tarball was created correctly for all boards.
     for board in self._boards:
       overlay_tarball = os.path.join(self.build_root,
+                                     constants.DEFAULT_CHROOT_DIR,
+                                     constants.SDK_BOARD_OVERLAYS_OUTPUT,
                                      'built-sdk-overlay-%s.tar.xz' % board)
       output = cros_build_lib.RunCommand(
           ['tar', '-I', 'xz', '-tvf', overlay_tarball],

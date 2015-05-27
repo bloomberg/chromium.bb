@@ -201,12 +201,16 @@ class SDKPackageBoardToolchainsStage(generic_stages.BuilderStage):
     super(SDKPackageBoardToolchainsStage, self).__init__(builder_run, **kwargs)
 
   def PerformStage(self):
-    overlay_tarball_template = os.path.join(
-        self._build_root, BOARD_OVERLAY_TARBALL_TEMPLATE)
     chroot_dir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     sdk_dir = os.path.join(chroot_dir, 'build/amd64-host')
     tmp_dir = os.path.join(chroot_dir, 'tmp')
     osutils.SafeMakedirs(tmp_dir, mode=0o777, sudo=True)
+    overlay_output_dir = os.path.join(chroot_dir,
+                                      constants.SDK_BOARD_OVERLAYS_OUTPUT)
+    osutils.RmDir(overlay_output_dir, ignore_missing=True, sudo=True)
+    osutils.SafeMakedirs(overlay_output_dir, mode=0o777, sudo=True)
+    overlay_tarball_template = os.path.join(overlay_output_dir,
+                                            BOARD_OVERLAY_TARBALL_TEMPLATE)
 
     for board in self._boards:
       overlay_tarball_path = overlay_tarball_template % {'board': board}
