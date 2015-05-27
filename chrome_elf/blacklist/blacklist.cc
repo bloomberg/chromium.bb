@@ -54,6 +54,7 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   L"lmrn.dll",                          // Unknown.
   L"minisp.dll",                        // Unknown (suspected malware).
   L"minisp32.dll",                      // Unknown (suspected malware).
+  L"offerswizarddll.dll",               // Unknown (suspected adware).
   L"safetynut.dll",                     // Unknown (suspected adware).
   L"smdmf.dll",                         // Unknown (suspected adware).
   L"spappsv32.dll",                     // Unknown (suspected adware).
