@@ -167,7 +167,7 @@ Compositor::~Compositor() {
   DCHECK(begin_frame_observer_list_.empty());
 
   if (root_layer_)
-    root_layer_->SetCompositor(NULL);
+    root_layer_->ResetCompositor();
 
   // Stop all outstanding draws before telling the ContextFactory to tear
   // down any contexts that the |host_| may rely upon.
@@ -189,13 +189,11 @@ void Compositor::SetRootLayer(Layer* root_layer) {
   if (root_layer_ == root_layer)
     return;
   if (root_layer_)
-    root_layer_->SetCompositor(NULL);
+    root_layer_->ResetCompositor();
   root_layer_ = root_layer;
-  if (root_layer_ && !root_layer_->GetCompositor())
-    root_layer_->SetCompositor(this);
   root_web_layer_->RemoveAllChildren();
   if (root_layer_)
-    root_web_layer_->AddChild(root_layer_->cc_layer());
+    root_layer_->SetCompositor(this, root_web_layer_);
 }
 
 void Compositor::SetHostHasTransparentBackground(

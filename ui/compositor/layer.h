@@ -91,7 +91,9 @@ class COMPOSITOR_EXPORT Layer
 
   // Called by the compositor when the Layer is set as its root Layer. This can
   // only ever be called on the root layer.
-  void SetCompositor(Compositor* compositor);
+  void SetCompositor(Compositor* compositor,
+                     scoped_refptr<cc::Layer> root_layer);
+  void ResetCompositor();
 
   LayerDelegate* delegate() { return delegate_; }
   void set_delegate(LayerDelegate* delegate) { delegate_ = delegate; }
@@ -143,6 +145,8 @@ class COMPOSITOR_EXPORT Layer
   // The transform, relative to the parent.
   void SetTransform(const gfx::Transform& transform);
   gfx::Transform transform() const;
+
+  gfx::PointF position() const { return cc_layer_->position(); }
 
   // Return the target transform if animator is running, or the current
   // transform otherwise.
@@ -355,7 +359,7 @@ class COMPOSITOR_EXPORT Layer
       ContentLayerClient::PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;
 
-  cc::Layer* cc_layer() { return cc_layer_; }
+  cc::Layer* cc_layer_for_testing() { return cc_layer_; }
 
   // TextureLayerClient
   bool PrepareTextureMailbox(

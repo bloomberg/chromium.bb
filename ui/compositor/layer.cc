@@ -128,6 +128,7 @@ Layer::~Layer() {
     layer_mask_back_link_->SetMaskLayer(NULL);
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->parent_ = NULL;
+
   cc_layer_->RemoveLayerAnimationEventObserver(this);
   cc_layer_->RemoveFromParent();
 }
@@ -157,22 +158,29 @@ float Layer::opacity() const {
   return cc_layer_->opacity();
 }
 
-void Layer::SetCompositor(Compositor* compositor) {
-  // This function must only be called to set the compositor on the root layer,
-  // or to reset it.
-  DCHECK(!compositor || !compositor_);
-  DCHECK(!compositor || compositor->root_layer() == this);
+void Layer::SetCompositor(Compositor* compositor,
+                          scoped_refptr<cc::Layer> root_layer) {
+  // This function must only be called to set the compositor on the root ui
+  // layer.
+  DCHECK(compositor);
+  DCHECK(!compositor_);
+  DCHECK(compositor->root_layer() == this);
   DCHECK(!parent_);
-  if (compositor_) {
+
+  compositor_ = compositor;
+  OnDeviceScaleFactorChanged(compositor->device_scale_factor());
+  AddAnimatorsInTreeToCollection(compositor_->layer_animator_collection());
+
+  root_layer->AddChild(cc_layer_);
+  SendPendingThreadedAnimations();
+}
+
+void Layer::ResetCompositor() {
+  DCHECK(!parent_);
+  if (compositor_)
     RemoveAnimatorsInTreeFromCollection(
         compositor_->layer_animator_collection());
-  }
-  compositor_ = compositor;
-  if (compositor) {
-    OnDeviceScaleFactorChanged(compositor->device_scale_factor());
-    SendPendingThreadedAnimations();
-    AddAnimatorsInTreeToCollection(compositor_->layer_animator_collection());
-  }
+  compositor_ = nullptr;
 }
 
 void Layer::Add(Layer* child) {
@@ -353,8 +361,7 @@ void Layer::SetMaskLayer(Layer* layer_mask) {
   if (layer_mask_)
     layer_mask_->layer_mask_back_link_ = NULL;
   layer_mask_ = layer_mask;
-  cc_layer_->SetMaskLayer(
-      layer_mask ? layer_mask->cc_layer() : NULL);
+  cc_layer_->SetMaskLayer(layer_mask ? layer_mask->cc_layer_ : NULL);
   // We need to reference the linked object so that it can properly break the
   // link to us when it gets deleted.
   if (layer_mask) {

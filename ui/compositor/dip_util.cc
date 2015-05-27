@@ -103,8 +103,7 @@ void SnapLayerToPhysicalPixelBoundary(ui::Layer* snapped_layer,
     origin = layer_to_snap->GetTargetBounds().origin() +
              layer_to_snap->subpixel_position_offset();
   } else {
-    cc::Layer* cc_layer = layer_to_snap->cc_layer();
-    origin = cc_layer->position();
+    origin = layer_to_snap->position();
   }
   CheckSnapped((layer_offset.x() + origin.x()) * scale_factor);
   CheckSnapped((layer_offset.y() + origin.y()) * scale_factor);

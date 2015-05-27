@@ -340,7 +340,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
     if (t < 1.0)
       return false;
 
-    if (Started()) {
+    if (Started() && IsThreaded()) {
       delegate->RemoveThreadedAnimation(animation_id());
     }
 
@@ -349,14 +349,14 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
   }
 
   void OnAbort(LayerAnimationDelegate* delegate) override {
-    if (delegate && Started()) {
+    if (delegate && Started() && IsThreaded()) {
       delegate->RemoveThreadedAnimation(animation_id());
     }
   }
 
   void RequestEffectiveStart(LayerAnimationDelegate* delegate) override {
     DCHECK(animation_group_id());
-    if (duration() == base::TimeDelta()) {
+    if (!IsThreaded()) {
       set_effective_start_time(requested_start_time());
       return;
     }

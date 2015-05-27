@@ -669,14 +669,14 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   l1->SetVisible(false);
   l1->SetBounds(gfx::Rect(4, 5));
 
-  EXPECT_EQ(gfx::Point3F(), l1->cc_layer()->transform_origin());
-  EXPECT_TRUE(l1->cc_layer()->DrawsContent());
-  EXPECT_TRUE(l1->cc_layer()->contents_opaque());
-  EXPECT_TRUE(l1->cc_layer()->force_render_surface());
-  EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
-  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer()->bounds());
+  EXPECT_EQ(gfx::Point3F(), l1->cc_layer_for_testing()->transform_origin());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->DrawsContent());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->contents_opaque());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->force_render_surface());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer_for_testing()->bounds());
 
-  cc::Layer* before_layer = l1->cc_layer();
+  cc::Layer* before_layer = l1->cc_layer_for_testing();
 
   bool callback1_run = false;
   cc::TextureMailbox mailbox(gpu::Mailbox::Generate(), 0, 0);
@@ -684,14 +684,14 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
                                      base::Bind(ReturnMailbox, &callback1_run)),
                         gfx::Size(10, 10));
 
-  EXPECT_NE(before_layer, l1->cc_layer());
+  EXPECT_NE(before_layer, l1->cc_layer_for_testing());
 
-  EXPECT_EQ(gfx::Point3F(), l1->cc_layer()->transform_origin());
-  EXPECT_TRUE(l1->cc_layer()->DrawsContent());
-  EXPECT_TRUE(l1->cc_layer()->contents_opaque());
-  EXPECT_TRUE(l1->cc_layer()->force_render_surface());
-  EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
-  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer()->bounds());
+  EXPECT_EQ(gfx::Point3F(), l1->cc_layer_for_testing()->transform_origin());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->DrawsContent());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->contents_opaque());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->force_render_surface());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer_for_testing()->bounds());
   EXPECT_FALSE(callback1_run);
 
   bool callback2_run = false;
@@ -704,15 +704,15 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
 
   // Show solid color instead.
   l1->SetShowSolidColorContent();
-  EXPECT_EQ(gfx::Point3F(), l1->cc_layer()->transform_origin());
-  EXPECT_TRUE(l1->cc_layer()->DrawsContent());
-  EXPECT_TRUE(l1->cc_layer()->contents_opaque());
-  EXPECT_TRUE(l1->cc_layer()->force_render_surface());
-  EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
-  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer()->bounds());
+  EXPECT_EQ(gfx::Point3F(), l1->cc_layer_for_testing()->transform_origin());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->DrawsContent());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->contents_opaque());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->force_render_surface());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer_for_testing()->bounds());
   EXPECT_TRUE(callback2_run);
 
-  before_layer = l1->cc_layer();
+  before_layer = l1->cc_layer_for_testing();
 
   // Back to a texture, without changing the bounds of the layer or the texture.
   bool callback3_run = false;
@@ -721,14 +721,14 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
                                      base::Bind(ReturnMailbox, &callback3_run)),
                         gfx::Size(10, 10));
 
-  EXPECT_NE(before_layer, l1->cc_layer());
+  EXPECT_NE(before_layer, l1->cc_layer_for_testing());
 
-  EXPECT_EQ(gfx::Point3F(), l1->cc_layer()->transform_origin());
-  EXPECT_TRUE(l1->cc_layer()->DrawsContent());
-  EXPECT_TRUE(l1->cc_layer()->contents_opaque());
-  EXPECT_TRUE(l1->cc_layer()->force_render_surface());
-  EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
-  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer()->bounds());
+  EXPECT_EQ(gfx::Point3F(), l1->cc_layer_for_testing()->transform_origin());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->DrawsContent());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->contents_opaque());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->force_render_surface());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer_for_testing()->bounds());
   EXPECT_FALSE(callback3_run);
 
   // Release the on |l1| mailbox to clean up the test.
@@ -752,9 +752,9 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
   EXPECT_TRUE(l1->IsDrawn());
   EXPECT_TRUE(l2->IsDrawn());
   EXPECT_TRUE(l3->IsDrawn());
-  EXPECT_FALSE(l1->cc_layer()->hide_layer_and_subtree());
-  EXPECT_FALSE(l2->cc_layer()->hide_layer_and_subtree());
-  EXPECT_FALSE(l3->cc_layer()->hide_layer_and_subtree());
+  EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l3->cc_layer_for_testing()->hide_layer_and_subtree());
 
   compositor()->SetRootLayer(l1.get());
 
@@ -764,25 +764,25 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
   EXPECT_FALSE(l1->IsDrawn());
   EXPECT_FALSE(l2->IsDrawn());
   EXPECT_FALSE(l3->IsDrawn());
-  EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
-  EXPECT_FALSE(l2->cc_layer()->hide_layer_and_subtree());
-  EXPECT_FALSE(l3->cc_layer()->hide_layer_and_subtree());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l3->cc_layer_for_testing()->hide_layer_and_subtree());
 
   l3->SetVisible(false);
   EXPECT_FALSE(l1->IsDrawn());
   EXPECT_FALSE(l2->IsDrawn());
   EXPECT_FALSE(l3->IsDrawn());
-  EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
-  EXPECT_FALSE(l2->cc_layer()->hide_layer_and_subtree());
-  EXPECT_TRUE(l3->cc_layer()->hide_layer_and_subtree());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_TRUE(l3->cc_layer_for_testing()->hide_layer_and_subtree());
 
   l1->SetVisible(true);
   EXPECT_TRUE(l1->IsDrawn());
   EXPECT_TRUE(l2->IsDrawn());
   EXPECT_FALSE(l3->IsDrawn());
-  EXPECT_FALSE(l1->cc_layer()->hide_layer_and_subtree());
-  EXPECT_FALSE(l2->cc_layer()->hide_layer_and_subtree());
-  EXPECT_TRUE(l3->cc_layer()->hide_layer_and_subtree());
+  EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
+  EXPECT_TRUE(l3->cc_layer_for_testing()->hide_layer_and_subtree());
 }
 
 // Checks that stacking-related methods behave as advertised.
@@ -1294,9 +1294,9 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
 
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
-  gfx::Size cc_bounds_size = root->cc_layer()->bounds();
+  gfx::Size cc_bounds_size = root->cc_layer_for_testing()->bounds();
   EXPECT_EQ("200x220", cc_bounds_size.ToString());
-  cc_bounds_size = l1->cc_layer()->bounds();
+  cc_bounds_size = l1->cc_layer_for_testing()->bounds();
   EXPECT_EQ("140x180", cc_bounds_size.ToString());
   // No scale change, so no scale notification.
   EXPECT_EQ(0.0f, root_delegate.device_scale_factor());
@@ -1307,9 +1307,9 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
   // CC layer should still match the UI layer bounds.
-  cc_bounds_size = root->cc_layer()->bounds();
+  cc_bounds_size = root->cc_layer_for_testing()->bounds();
   EXPECT_EQ("200x220", cc_bounds_size.ToString());
-  cc_bounds_size = l1->cc_layer()->bounds();
+  cc_bounds_size = l1->cc_layer_for_testing()->bounds();
   EXPECT_EQ("140x180", cc_bounds_size.ToString());
   // New scale factor must have been notified. Make sure painting happens at
   // right scale.
@@ -1321,9 +1321,9 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
   // CC layer should still match the UI layer bounds.
-  cc_bounds_size = root->cc_layer()->bounds();
+  cc_bounds_size = root->cc_layer_for_testing()->bounds();
   EXPECT_EQ("200x220", cc_bounds_size.ToString());
-  cc_bounds_size = l1->cc_layer()->bounds();
+  cc_bounds_size = l1->cc_layer_for_testing()->bounds();
   EXPECT_EQ("140x180", cc_bounds_size.ToString());
   // New scale factor must have been notified. Make sure painting happens at
   // right scale.
@@ -1354,7 +1354,7 @@ TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
 
   root->Add(l1.get());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
-  gfx::Size cc_bounds_size = l1->cc_layer()->bounds();
+  gfx::Size cc_bounds_size = l1->cc_layer_for_testing()->bounds();
   EXPECT_EQ("140x180", cc_bounds_size.ToString());
   EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
 
@@ -1365,12 +1365,12 @@ TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
   GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500));
   // Sanity check on root and l1.
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
-  cc_bounds_size = l1->cc_layer()->bounds();
+  cc_bounds_size = l1->cc_layer_for_testing()->bounds();
   EXPECT_EQ("140x180", cc_bounds_size.ToString());
 
   root->Add(l1.get());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
-  cc_bounds_size = l1->cc_layer()->bounds();
+  cc_bounds_size = l1->cc_layer_for_testing()->bounds();
   EXPECT_EQ("140x180", cc_bounds_size.ToString());
   EXPECT_EQ(2.0f, l1_delegate.device_scale_factor());
 }
@@ -1442,12 +1442,12 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
   frame_provider = new cc::DelegatedFrameProvider(
       resource_collection.get(), MakeFrameData(gfx::Size(10, 10)));
   child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
-  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
+  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
             gfx::Size(10, 10).ToString());
 
   // Content larger than layer.
   child->SetBounds(gfx::Rect(0, 0, 5, 5));
-  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
+  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
             gfx::Size(5, 5).ToString());
 
   // Content smaller than layer.
@@ -1455,25 +1455,26 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
   frame_provider = new cc::DelegatedFrameProvider(
       resource_collection.get(), MakeFrameData(gfx::Size(5, 5)));
   child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(5, 5));
-  EXPECT_EQ(child->cc_layer()->bounds().ToString(), gfx::Size(5, 5).ToString());
+  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
+            gfx::Size(5, 5).ToString());
 
   // Hi-DPI content on low-DPI layer.
   frame_provider = new cc::DelegatedFrameProvider(
       resource_collection.get(), MakeFrameData(gfx::Size(20, 20)));
   child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
-  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
+  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
             gfx::Size(10, 10).ToString());
 
   // Hi-DPI content on hi-DPI layer.
   compositor()->SetScaleAndSize(2.f, gfx::Size(1000, 1000));
-  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
+  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
             gfx::Size(10, 10).ToString());
 
   // Low-DPI content on hi-DPI layer.
   frame_provider = new cc::DelegatedFrameProvider(
       resource_collection.get(), MakeFrameData(gfx::Size(10, 10)));
   child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
-  EXPECT_EQ(child->cc_layer()->bounds().ToString(),
+  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
             gfx::Size(10, 10).ToString());
 }
 
@@ -1487,10 +1488,10 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
 
   // The layer is already showing solid color content, so the cc layer won't
   // change.
-  scoped_refptr<cc::Layer> before = child->cc_layer();
+  scoped_refptr<cc::Layer> before = child->cc_layer_for_testing();
   child->SetShowSolidColorContent();
-  EXPECT_TRUE(child->cc_layer());
-  EXPECT_EQ(before.get(), child->cc_layer());
+  EXPECT_TRUE(child->cc_layer_for_testing());
+  EXPECT_EQ(before.get(), child->cc_layer_for_testing());
 
   scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection =
       new cc::DelegatedFrameResourceCollection;
@@ -1499,16 +1500,16 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
                                      MakeFrameData(gfx::Size(10, 10)));
 
   // Showing delegated content changes the underlying cc layer.
-  before = child->cc_layer();
+  before = child->cc_layer_for_testing();
   child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
-  EXPECT_TRUE(child->cc_layer());
-  EXPECT_NE(before.get(), child->cc_layer());
+  EXPECT_TRUE(child->cc_layer_for_testing());
+  EXPECT_NE(before.get(), child->cc_layer_for_testing());
 
   // Changing to painted content should change the underlying cc layer.
-  before = child->cc_layer();
+  before = child->cc_layer_for_testing();
   child->SetShowSolidColorContent();
-  EXPECT_TRUE(child->cc_layer());
-  EXPECT_NE(before.get(), child->cc_layer());
+  EXPECT_TRUE(child->cc_layer_for_testing());
+  EXPECT_NE(before.get(), child->cc_layer_for_testing());
 }
 
 // Verifies that layer filters still attached after changing implementation
@@ -1516,12 +1517,12 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
 TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
   scoped_ptr<Layer> layer(CreateLayer(LAYER_TEXTURED));
   layer->SetBounds(gfx::Rect(0, 0, 10, 10));
-  EXPECT_TRUE(layer->cc_layer());
-  EXPECT_EQ(0u, layer->cc_layer()->filters().size());
+  EXPECT_TRUE(layer->cc_layer_for_testing());
+  EXPECT_EQ(0u, layer->cc_layer_for_testing()->filters().size());
 
   layer->SetLayerGrayscale(0.5f);
   EXPECT_EQ(layer->layer_grayscale(), 0.5f);
-  EXPECT_EQ(1u, layer->cc_layer()->filters().size());
+  EXPECT_EQ(1u, layer->cc_layer_for_testing()->filters().size());
 
   scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection =
       new cc::DelegatedFrameResourceCollection;
@@ -1530,12 +1531,12 @@ TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
                                      MakeFrameData(gfx::Size(10, 10)));
 
   // Showing delegated content changes the underlying cc layer.
-  scoped_refptr<cc::Layer> before = layer->cc_layer();
+  scoped_refptr<cc::Layer> before = layer->cc_layer_for_testing();
   layer->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
   EXPECT_EQ(layer->layer_grayscale(), 0.5f);
-  EXPECT_TRUE(layer->cc_layer());
-  EXPECT_NE(before.get(), layer->cc_layer());
-  EXPECT_EQ(1u, layer->cc_layer()->filters().size());
+  EXPECT_TRUE(layer->cc_layer_for_testing());
+  EXPECT_NE(before.get(), layer->cc_layer_for_testing());
+  EXPECT_EQ(1u, layer->cc_layer_for_testing()->filters().size());
 }
 
 // Tests Layer::AddThreadedAnimation and Layer::RemoveThreadedAnimation.
