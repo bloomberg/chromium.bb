@@ -177,7 +177,7 @@ __gCrWeb.autofill.lastActiveElement = null;
  * @param {Array<AutofillFormFieldData>} formFields The extracted form fields.
  * @param {Array<boolean>} fieldsExtracted Indicates whether the fields were
  *     extracted.
- * @param {Object<string, AutofillFormFieldData>} nameMap Map of field names to
+ * @param {Object<AutofillFormFieldData>} nameMap Map of field names to
  *     fields.
  * @return {boolean} Whether there are fields and not too many fields in the
  *     form.
@@ -236,7 +236,7 @@ function extractFieldsFromControlElements_(controlElements, requirements,
  *
  * @param {NodeList} labels The labels to match.
  * @param {HTMLFormElement} formElement The form element being processed.
- * @param {Object<string, AutofillFormFieldData>} nameMap Map of field names to
+ * @param {Object<AutofillFormFieldData>} nameMap Map of field names to
  *     fields.
  */
 function matchLabelsAndFields_(labels, formElement, nameMap) {
@@ -365,7 +365,7 @@ function formOrFieldsetsToFormData_(formElement, formControlElement,
           __gCrWeb.autofill.inferLabelForElement(controlElement);
     }
     if (controlElement === formControlElement)
-      field = formField;
+      field = formFields[fieldIdx];
     ++fieldIdx;
   }
 
@@ -449,7 +449,7 @@ __gCrWeb.autofill['fillActiveFormField'] = function(data) {
 /**
  * Fills a number of fields in the same named form.
  *
- * @param {Object} data The data to fill in.
+ * @param {Object<AutofillFormData>} data The data to fill in.
  */
 __gCrWeb.autofill['fillForm'] = function(data) {
   var form = __gCrWeb.common.getFormElementFromIdentifier(data.formName);
@@ -1611,11 +1611,11 @@ __gCrWeb.autofill.webFormControlElementToFormField = function(
  * For debugging purposes, annotate forms on the page with prediction data using
  * the placeholder attribute.
  *
- * @param {Object} data The form and field identifiers with their prection data.
+ * @param {Object<AutofillFormData>} data The form and field identifiers with
+ *     their prediction data.
  */
 __gCrWeb.autofill['fillPredictionData'] = function(data) {
-
-  for (formName in data) {
+  for (var formName in data) {
     var form = __gCrWeb.common.getFormElementFromIdentifier(formName);
     var formData = data[formName];
     var controlElements = __gCrWeb.common.getFormControlElements(form);
