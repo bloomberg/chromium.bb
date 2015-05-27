@@ -6,8 +6,8 @@
   'variables': {
     'lastchange_path': '../build/util/LASTCHANGE',
     'libpeer_target_type%': 'static_library',
-    'branding_dir': 'app/theme/<(branding_path_component)',
-    'branding_dir_100': 'app/theme/default_100_percent/<(branding_path_component)',
+    'branding_dir%': 'app/theme/<(branding_path_component)',
+    'branding_dir_100%': 'app/theme/default_100_percent/<(branding_path_component)',
   },
   'conditions': [
     ['OS=="win"', {
@@ -393,8 +393,8 @@
     ['OS=="linux" and branding=="Chrome"', {
       'variables': {
         # Always google_chrome since this only applies to branding==Chrome.
-        'branding_dir': 'app/theme/google_chrome',
-        'branding_dir_100': 'app/theme/default_100_percent/google_chrome',
+        'branding_dir': '<(branding_dir)',
+        'branding_dir_100': '<(branding_dir_100)',
         'version' : '<!(python <(version_py_path) -f ../chrome/VERSION -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
         'revision' : '<!(python ../build/util/lastchange.py --revision-only)',
         'packaging_files_common': [
