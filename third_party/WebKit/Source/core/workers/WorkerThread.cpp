@@ -76,7 +76,7 @@ public:
 
     virtual void didProcessTask() override
     {
-        Microtask::performCheckpoint();
+        Microtask::performCheckpoint(m_workerThread->isolate());
         if (WorkerGlobalScope* globalScope = m_workerThread->workerGlobalScope()) {
             if (WorkerScriptController* scriptController = globalScope->script())
                 scriptController->rejectedPromises()->processQueue();

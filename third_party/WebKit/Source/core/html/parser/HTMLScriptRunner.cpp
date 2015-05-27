@@ -27,6 +27,7 @@
 #include "core/html/parser/HTMLScriptRunner.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
@@ -133,7 +134,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
     pendingScript.stopWatchingForLoad(this);
 
     if (!isExecutingScript()) {
-        Microtask::performCheckpoint();
+        Microtask::performCheckpoint(V8PerIsolateData::mainThreadIsolate());
         if (pendingScriptType == PendingScript::ParsingBlocking) {
             m_hasScriptsWaitingForResources = !m_document->isScriptExecutionReady();
             // The parser cannot be unblocked as a microtask requested another resource
@@ -337,7 +338,7 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
         ASSERT(scriptLoader->isParserInserted());
 
         if (!isExecutingScript())
-            Microtask::performCheckpoint();
+            Microtask::performCheckpoint(V8PerIsolateData::mainThreadIsolate());
 
         InsertionPointRecord insertionPointRecord(m_host->inputStream());
         NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);

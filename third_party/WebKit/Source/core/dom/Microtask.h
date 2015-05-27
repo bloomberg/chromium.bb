@@ -31,6 +31,7 @@
 #ifndef Microtask_h
 #define Microtask_h
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
@@ -41,7 +42,7 @@ namespace blink {
 
 class CORE_EXPORT Microtask {
 public:
-    static void performCheckpoint();
+    static void performCheckpoint(v8::Isolate*);
     static bool performingCheckpoint(v8::Isolate*);
 
     // TODO(jochen): Make all microtasks pass in the ScriptState they want to be
