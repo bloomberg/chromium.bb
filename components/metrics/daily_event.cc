@@ -58,7 +58,7 @@ void DailyEvent::RegisterPref(PrefRegistrySimple* registry,
 void DailyEvent::AddObserver(scoped_ptr<DailyEvent::Observer> observer) {
   DVLOG(2) << "DailyEvent observer added.";
   DCHECK(last_fired_.is_null());
-  observers_.push_back(observer.release());
+  observers_.push_back(observer.Pass());
 }
 
 void DailyEvent::CheckInterval() {

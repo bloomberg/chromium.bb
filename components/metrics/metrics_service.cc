@@ -1045,7 +1045,7 @@ void MetricsService::RegisterSyntheticFieldTrial(
 void MetricsService::RegisterMetricsProvider(
     scoped_ptr<MetricsProvider> provider) {
   DCHECK_EQ(INITIALIZED, state_);
-  metrics_providers_.push_back(provider.release());
+  metrics_providers_.push_back(provider.Pass());
 }
 
 void MetricsService::CheckForClonedInstall(

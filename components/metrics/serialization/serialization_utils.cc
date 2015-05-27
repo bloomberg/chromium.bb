@@ -152,7 +152,7 @@ void SerializationUtils::ReadAndTruncateMetricsFromFile(
 
     scoped_ptr<MetricSample> sample = ParseSample(message);
     if (sample)
-      metrics->push_back(sample.release());
+      metrics->push_back(sample.Pass());
   }
 
   result = ftruncate(fd.get(), 0);
