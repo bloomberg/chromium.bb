@@ -28,7 +28,7 @@ INITIAL_ENV = {
   'BUILD_ARCH'      : '${@GetBuildArch}',      # "x86_64" or "i686" or "i386"
 
   # Directories
-  'CLANG_VER'       : '3.6.0', # Included in path to compiler-owned libs/headers
+  'CLANG_VER'       : '3.7.0', # Included in path to compiler-owned libs/headers
   'BPREFIXES'       : '', # Prefixes specified using the -B flag.
   'BASE_LLVM'       : '${@FindBaseHost:clang}',
   'BASE_BINUTILS'   : '${@FindBaseHost:le32-nacl-ar}',

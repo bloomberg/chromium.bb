@@ -343,6 +343,7 @@ llvm-sb-configure() {
         --enable-targets=${targets} \
         --enable-subzero-targets=${subzero_targets} \
         --disable-assertions \
+        --disable-doxygen \
         --enable-pic=no \
         --enable-static \
         --enable-shared=no \

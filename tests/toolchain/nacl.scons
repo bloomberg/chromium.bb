@@ -106,7 +106,10 @@ if env.Bit('bitcode') or env.Bit('nacl_clang'):
     AddIntrinsicTest(cpp11_env, 'overflow.cc', '0',
                      test_suffix='inline' if should_inline else 'noinline',
                      golden_file=env.File('overflow.stdout'),
-                     EXTRA_CCFLAGS='-DSHOULD_INLINE=' + str(should_inline))
+                     EXTRA_CCFLAGS='-DSHOULD_INLINE=' + str(should_inline),
+  # inline case is currently broken:
+  # https://code.google.com/p/nativeclient/issues/detail?id=4170
+                     is_broken=should_inline)
   # The test depends on the llvm.fabs intrinsic which was only allowed
   # with feature version 12.
   if env['TOOLCHAIN_FEATURE_VERSION'] >= 12:
@@ -364,7 +367,9 @@ if exc_env.Bit('bitcode') and exc_env.SetNonStableBitcodeIfAllowed():
                                        nexe,
                                        exit_status='55')
   env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                         'run_eh_separate_files_bc_test')
+                         'run_eh_separate_files_bc_test',
+  # https://code.google.com/p/nativeclient/issues/detail?id=4171
+                         is_broken=env.Bit('build_arm'))
 
   # Test that vararg functions which get double arguments work in
   # allow-exceptions mode.
@@ -413,7 +418,9 @@ if exc_env.Bit('bitcode') and exc_env.SetNonStableBitcodeIfAllowed():
                                             exit_status='55')
     env.AddNodeToTestSuite(node,
                            testsuite,
-                           'run_eh_separate_files_mixed2_test')
+                           'run_eh_separate_files_mixed2_test',
+    # https://code.google.com/p/nativeclient/issues/detail?id=4171
+                            is_broken=env.Bit('build_arm'))
 
 
 

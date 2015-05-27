@@ -188,7 +188,7 @@ int NaClMain(const char* fn)
 
   fflush(0);
   fprintf(stderr, "# Hello is at address 0x%08lx\n", (long) hello);
-  fprintf(stderr, "# Hello is at address %p\n", hello);
+  fprintf(stderr, "# Hello is at address %p\n", (void *) hello);
   {
     short s = -1;
     unsigned short us = (unsigned short) -1;

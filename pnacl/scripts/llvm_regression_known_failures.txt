@@ -52,3 +52,4 @@ LLVM::Feature/load_module.ll win
 
 # Failure on mac introduced by the update to clang for the host build
 LLVM::ExecutionEngine/MCJIT/eh-sm-pic.ll mac
+LLVM::ExecutionEngine/OrcMCJIT/eh-sm-pic.ll mac

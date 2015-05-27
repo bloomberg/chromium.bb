@@ -19,7 +19,7 @@ import pnacl_commands
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
-CLANG_VER = '3.6.0'
+CLANG_VER = '3.7.0'
 
 # Return the path to a tool to build target libraries
 # msys should be false if the path will be called directly rather than passed to

@@ -736,6 +736,9 @@ def HostTools(host, options):
                    '--enable-targets=x86,arm,mips,js',
                    '--enable-subzero-targets=X8632,ARM32',
                    '--enable-werror=' + ('yes' if llvm_do_werror else 'no'),
+                   # Backtraces require TLS, which is missing on OSX 10.6
+                   '--enable-backtraces=' + ('no' if TripleIsMac(host)
+                                             else 'yes'),
                    '--prefix=/',
                    '--program-prefix=',
                    '--with-binutils-include=%(abs_binutils_pnacl_src)s/include',
