@@ -840,7 +840,6 @@
       'text/LocaleToScriptMapping.h',
       'text/LocaleWin.cpp',
       'text/LocaleWin.h',
-      'text/NonCJKGlyphOrientation.h',
       'text/ParserUtilities.h',
       'text/PlatformLocale.cpp',
       'text/PlatformLocale.h',
