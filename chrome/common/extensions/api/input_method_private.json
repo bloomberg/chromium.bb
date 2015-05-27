@@ -137,6 +137,26 @@
             "parameters": []
           }
         ]
+      }, {
+        "name": "getEncryptSyncEnabled",
+        "type": "function",
+        "description": "Gets whether the encrypt sync is enabled.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "Callback which is called to provide the result.",
+            "parameters": [
+              {
+                "name": "enabled",
+                "type": "boolean",
+                "optional": false,
+                "description": "The result of whether enabled."
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

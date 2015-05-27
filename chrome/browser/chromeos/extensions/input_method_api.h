@@ -114,6 +114,22 @@ class AddWordToDictionaryFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(AddWordToDictionaryFunction);
 };
 
+// Implements the inputMethodPrivate.getEncryptSyncEnabled method.
+class GetEncryptSyncEnabledFunction : public UIThreadExtensionFunction {
+ public:
+  GetEncryptSyncEnabledFunction() {}
+
+ protected:
+  ~GetEncryptSyncEnabledFunction() override {}
+
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getEncryptSyncEnabled",
+                             INPUTMETHODPRIVATE_GETENCRYPTSYNCENABLED)
+  DISALLOW_COPY_AND_ASSIGN(GetEncryptSyncEnabledFunction);
+};
+
 class InputMethodAPI : public BrowserContextKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:

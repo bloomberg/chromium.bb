@@ -52894,6 +52894,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1041" label="PLATFORMKEYS_VERIFYTLSSERVERCERTIFICATE"/>
   <int value="1042" label="DEVELOPERPRIVATE_SETSHORTCUTHANDLINGSUSPENDED"/>
   <int value="1043" label="DEVELOPERPRIVATE_UPDATEEXTENSIONCOMMAND"/>
+  <int value="1044" label="INPUTMETHODPRIVATE_GETENCRYPTSYNCENABLED"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

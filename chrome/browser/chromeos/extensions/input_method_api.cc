@@ -13,6 +13,8 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chromeos/chromeos_switches.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -155,6 +157,21 @@ ExtensionFunction::ResponseAction AddWordToDictionaryFunction::Run() {
 #endif
 }
 
+ExtensionFunction::ResponseAction GetEncryptSyncEnabledFunction::Run() {
+#if !defined(OS_CHROMEOS)
+  EXTENSION_FUNCTION_VALIDATE(false);
+#else
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context()));
+  if (!profile_sync_service)
+    return RespondNow(Error("Sync service is not ready for current profile."));
+  scoped_ptr<base::Value> ret(new base::FundamentalValue(
+      profile_sync_service->EncryptEverythingEnabled()));
+  return RespondNow(OneArgument(ret.Pass()));
+#endif
+}
+
 // static
 const char InputMethodAPI::kOnDictionaryChanged[] =
     "inputMethodPrivate.onDictionaryChanged";
@@ -180,6 +197,7 @@ InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
   registry->RegisterFunction<GetInputMethodsFunction>();
   registry->RegisterFunction<FetchAllDictionaryWordsFunction>();
   registry->RegisterFunction<AddWordToDictionaryFunction>();
+  registry->RegisterFunction<GetEncryptSyncEnabledFunction>();
 }
 
 InputMethodAPI::~InputMethodAPI() {
