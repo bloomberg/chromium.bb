@@ -347,6 +347,14 @@ source_set("ui") {
       "//third_party/isimpledom",
       "//ui/app_list",
     ]
+    if (!is_chrome_branded) {
+      deps -= [ "//google_update" ]
+      sources -= [ "webui/help/version_updater_win.cc" ]
+      sources += [
+        "webui/help/version_updater_basic.cc",
+        "webui/help/version_updater_basic.h",
+      ]
+    }
   } else {  # 'OS!="win"
     if (toolkit_views) {
       public_deps += [

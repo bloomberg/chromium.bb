@@ -2547,6 +2547,11 @@
                 '<(allocator_target)',
               ],
             }],
+            ['branding!="Chrome"', {
+              'sources!': [
+                'browser/google/google_update_win_unittest.cc',
+              ],
+            }],
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',

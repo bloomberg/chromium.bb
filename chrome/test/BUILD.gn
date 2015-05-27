@@ -1677,6 +1677,9 @@ if (!is_android) {
         "urlmon.lib",
         "winmm.lib",
       ]
+      if (!is_chrome_branded) {
+        sources -= [ "../browser/google/google_update_win_unittest.cc" ]
+      }
     }
     if (is_android || is_ios) {
       sources -= [

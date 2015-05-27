@@ -77,6 +77,11 @@
             '../win8.gyp:metro_viewer_constants',
           ],
         }],
+        ['branding!="Chrome"', {
+          'dependencies!': [
+            '../../google_update/google_update.gyp:google_update',
+          ],
+        }],
       ],
     },
     {

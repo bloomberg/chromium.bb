@@ -67,9 +67,6 @@ const HRESULT GOOPDATEINSTALL_E_INSTALLER_FAILED = 0x80040902;
 GoogleUpdateErrorCode CanUpdateCurrentChrome(
     const base::FilePath& chrome_exe_path,
     bool system_level_install) {
-#if !defined(GOOGLE_CHROME_BUILD)
-  return CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY;
-#else
   DCHECK_NE(InstallUtil::IsPerUserInstall(chrome_exe_path),
             system_level_install);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
@@ -83,7 +80,6 @@ GoogleUpdateErrorCode CanUpdateCurrentChrome(
   }
 
   return GOOGLE_UPDATE_NO_ERROR;
-#endif
 }
 
 // Creates an instance of a COM Local Server class using either plain vanilla

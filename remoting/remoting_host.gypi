@@ -220,7 +220,6 @@
           'conditions': [
             ['OS=="win"', {
               'dependencies': [
-                '../google_update/google_update.gyp:google_update',
                 'remoting_lib_idl',
               ],
               # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

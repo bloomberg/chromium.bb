@@ -663,8 +663,6 @@ TEST_P(GoogleUpdateWinTest, InvalidInstallDirectory) {
   task_runner_->RunUntilIdle();
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
-
 // Test the case where the GoogleUpdate class can't be created for an update
 // check.
 TEST_P(GoogleUpdateWinTest, NoGoogleUpdateForCheck) {
@@ -827,8 +825,6 @@ TEST_P(GoogleUpdateWinTest, UpdateFailed) {
                    mock_update_check_delegate_.AsWeakPtr());
   task_runner_->RunUntilIdle();
 }
-
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 INSTANTIATE_TEST_CASE_P(UserLevel, GoogleUpdateWinTest, Values(false));
 

@@ -46,9 +46,7 @@ class VersionUpdaterWin : public VersionUpdater, public UpdateCheckDelegate {
                const base::string16& new_version) override;
 
  private:
-#if defined(GOOGLE_CHROME_BUILD)
   void BeginUpdateCheckOnFileThread(bool install_update_if_possible);
-#endif  // GOOGLE_CHROME_BUILD
 
   // A task run on the UI thread with the result of checking for a pending
   // restart.
@@ -75,7 +73,6 @@ VersionUpdaterWin::~VersionUpdaterWin() {
 
 void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback) {
   // There is no supported integration with Google Update for Chromium.
-#if defined(GOOGLE_CHROME_BUILD)
   callback_ = callback;
 
   // On-demand updates for Chrome don't work in Vista RTM when UAC is turned
@@ -89,7 +86,6 @@ void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback) {
     callback_.Run(CHECKING, 0, base::string16());
     BeginUpdateCheckOnFileThread(false /* !install_update_if_possible */);
   }
-#endif
 }
 
 void VersionUpdaterWin::RelaunchBrowser() const {
@@ -98,7 +94,6 @@ void VersionUpdaterWin::RelaunchBrowser() const {
 
 void VersionUpdaterWin::OnUpdateCheckComplete(
     const base::string16& new_version) {
-#if defined(GOOGLE_CHROME_BUILD)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   Status status = CHECKING;
   if (new_version.empty()) {
@@ -123,28 +118,22 @@ void VersionUpdaterWin::OnUpdateCheckComplete(
     BeginUpdateCheckOnFileThread(true /* install_update_if_possible */);
   }
   callback_.Run(status, 0, base::string16());
-#endif  // GOOGLE_CHROME_BUILD
 }
 
 void VersionUpdaterWin::OnUpgradeProgress(int progress,
                                           const base::string16& new_version) {
-#if defined(GOOGLE_CHROME_BUILD)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   callback_.Run(UPDATING, progress, base::string16());
-#endif  // GOOGLE_CHROME_BUILD
 }
 
 void VersionUpdaterWin::OnUpgradeComplete(const base::string16& new_version) {
-#if defined(GOOGLE_CHROME_BUILD)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   callback_.Run(NEARLY_UPDATED, 0, base::string16());
-#endif  // GOOGLE_CHROME_BUILD
 }
 
 void VersionUpdaterWin::OnError(GoogleUpdateErrorCode error_code,
                                 const base::string16& error_message,
                                 const base::string16& new_version) {
-#if defined(GOOGLE_CHROME_BUILD)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::string16 message;
 
@@ -159,10 +148,8 @@ void VersionUpdaterWin::OnError(GoogleUpdateErrorCode error_code,
         IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK, error_message);
   }
   callback_.Run(FAILED, 0, message);
-#endif  // GOOGLE_CHROME_BUILD
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
 void VersionUpdaterWin::BeginUpdateCheckOnFileThread(
     bool install_update_if_possible) {
   BeginUpdateCheck(content::BrowserThread::GetMessageLoopProxyForThread(
@@ -171,7 +158,6 @@ void VersionUpdaterWin::BeginUpdateCheckOnFileThread(
                    install_update_if_possible, owner_widget_,
                    weak_factory_.GetWeakPtr());
 }
-#endif  // GOOGLE_CHROME_BUILD
 
 void VersionUpdaterWin::OnPendingRestartCheck(bool is_update_pending_restart) {
   callback_.Run(is_update_pending_restart ? NEARLY_UPDATED : UPDATED, 0,

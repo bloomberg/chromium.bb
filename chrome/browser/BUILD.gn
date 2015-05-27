@@ -679,12 +679,6 @@ source_set("browser") {
   if (is_win) {
     sources +=
         rebase_path(gypi_values.chrome_browser_win_sources, ".", "//chrome")
-    if (!is_chrome_branded) {
-      sources -= [
-        "google/did_run_updater_win.cc",
-        "google/did_run_updater_win.h",
-      ]
-    }
     public_deps += [
       "//ui/views",
       "//ui/views/controls/webview",
@@ -709,6 +703,15 @@ source_set("browser") {
       "credui.lib",
       "netapi32.lib",
     ]
+    if (!is_chrome_branded) {
+      deps -= [ "//google_update" ]
+      sources -= [
+        "google/did_run_updater_win.cc",
+        "google/did_run_updater_win.h",
+        "google/google_update_win.cc",
+        "google/google_update_win.h",
+      ]
+    }
   } else {
     # Non-Windows.
     sources +=

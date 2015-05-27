@@ -27,7 +27,10 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
+
+#if defined(GOOGLE_CHROME_BUILD)
 #include "google_update/google_update_idl.h"
+#endif
 
 namespace {
 

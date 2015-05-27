@@ -24,9 +24,6 @@ source_set("setup") {
   ]
 
   if (is_win) {
-    deps += [
-      "//google_update",
-      "//remoting/host:remoting_lib_idl",
-    ]
+    deps += [ "//remoting/host:remoting_lib_idl" ]
   }
 }

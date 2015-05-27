@@ -51,7 +51,6 @@
             '../../chrome/common_constants.gyp:common_constants',
             '../../chrome/chrome.gyp:installer_util',
             '../../crypto/crypto.gyp:crypto',
-            '../../google_update/google_update.gyp:google_update',
             '../../ipc/ipc.gyp:ipc',
             '../../sandbox/sandbox.gyp:sandbox',
             '../../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',

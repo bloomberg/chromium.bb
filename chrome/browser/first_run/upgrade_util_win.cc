@@ -39,8 +39,11 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
-#include "google_update/google_update_idl.h"
 #include "ui/base/ui_base_switches.h"
+
+#if defined(GOOGLE_CHROME_BUILD)
+#include "google_update/google_update_idl.h"
+#endif
 
 namespace {
 
@@ -52,6 +55,7 @@ bool GetNewerChromeFile(base::FilePath* path) {
 }
 
 bool InvokeGoogleUpdateForRename() {
+#if defined(GOOGLE_CHROME_BUILD)
   base::win::ScopedComPtr<IProcessLauncher> ipl;
   if (!FAILED(ipl.CreateInstance(__uuidof(ProcessLauncherClass)))) {
     ULONG_PTR phandle = NULL;
@@ -70,6 +74,7 @@ bool InvokeGoogleUpdateForRename() {
         return true;
     }
   }
+#endif  // GOOGLE_CHROME_BUILD
   return false;
 }
 

@@ -3061,6 +3061,18 @@
                 '<(allocator_target)',
               ],
             }],
+            ['branding!="Chrome"', {
+              'dependencies!': [
+                '../google_update/google_update.gyp:google_update',
+              ],
+              'sources!': [
+                'browser/ui/webui/help/version_updater_win.cc',
+              ],
+              'sources': [
+                'browser/ui/webui/help/version_updater_basic.cc',
+                'browser/ui/webui/help/version_updater_basic.h',
+              ],
+            }],
           ],
         }, {  # 'OS!="win"
           'conditions': [

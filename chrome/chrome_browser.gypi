@@ -3645,9 +3645,14 @@
               ],
             }],
             ['branding!="Chrome"', {
+              'dependencies!': [
+                '../google_update/google_update.gyp:google_update',
+              ],
               'sources!': [
                 'browser/google/did_run_updater_win.cc',
                 'browser/google/did_run_updater_win.h',
+                'browser/google/google_update_win.cc',
+                'browser/google/google_update_win.h',
               ],
             }],
           ],
