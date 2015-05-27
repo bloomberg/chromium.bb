@@ -107,19 +107,21 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     // offset -1  on layer_delegate_.
     scoped_ptr<aura::Window> window(
         GetOverlay()->CreateBackWindow(GetBackSlideWindowBounds()));
+    bool window_created = window;
     // Performs BACK navigation, sets image from layer_delegate_ on
     // image_delegate_.
     GetOverlay()->OnOverscrollCompleting();
-    main_test_rfh()->PrepareForCommit();
-    if (window) {
-      EXPECT_TRUE(contents()->CrossProcessNavigationPending());
+    if (window_created)
       EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::BACK);
-    } else {
-      EXPECT_FALSE(contents()->CrossProcessNavigationPending());
+    else
       EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::NONE);
-    }
     window->SetBounds(gfx::Rect(root_window()->bounds().size()));
     GetOverlay()->OnOverscrollCompleted(window.Pass());
+    main_test_rfh()->PrepareForCommit();
+    if (window_created)
+      EXPECT_TRUE(contents()->CrossProcessNavigationPending());
+    else
+      EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   }
 
   gfx::Rect GetFrontSlideWindowBounds() {
@@ -314,7 +316,6 @@ TEST_F(OverscrollNavigationOverlayTest, CloseDuringAnimation) {
   GetOverlay()->owa_->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST);
   GetOverlay()->owa_->OnOverscrollComplete(OVERSCROLL_EAST);
   EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::BACK);
-  EXPECT_TRUE(GetOverlay()->web_contents());
   OverscrollTestWebContents* test_web_contents =
       static_cast<OverscrollTestWebContents*>(web_contents());
   test_web_contents->set_is_being_destroyed(true);
