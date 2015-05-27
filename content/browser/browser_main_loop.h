@@ -75,10 +75,14 @@ class CONTENT_EXPORT BrowserMainLoop {
   void Init();
 
   void EarlyInitialization();
+
   // Initializes the toolkit. Returns whether the toolkit initialization was
   // successful or not.
   bool InitializeToolkit();
+
+  void PreMainMessageLoopStart();
   void MainMessageLoopStart();
+  void PostMainMessageLoopStart();
 
   // Create and start running the tasks we need to complete startup. Note that
   // this can be called more than once (currently only on Android) if we get a
@@ -145,78 +149,107 @@ class CONTENT_EXPORT BrowserMainLoop {
   void EndStartupTracing();
 
   bool UsingInProcessGpu() const;
-  void InitializeGpuDataManager();
+
+  // Quick reference for initialization order:
+  // Constructor
+  // Init()
+  // EarlyInitialization()
+  // InitializeToolkit()
+  // PreMainMessageLoopStart()
+  // MainMessageLoopStart()
+  //   InitializeMainThread()
+  // PostMainMessageLoopStart()
+  //   InitStartupTracing()
+  // CreateStartupTasks()
+  //   PreCreateThreads()
+  //   CreateThreads()
+  //   BrowserThreadsStarted()
 
   // Members initialized on construction ---------------------------------------
   const MainFunctionParams& parameters_;
   const base::CommandLine& parsed_command_line_;
   int result_code_;
-  // True if the non-UI threads were created.
-  bool created_threads_;
+  bool created_threads_;  // True if the non-UI threads were created.
+  bool is_tracing_startup_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
   scoped_ptr<base::MessageLoop> main_message_loop_;
+
+  // Members initialized in |PostMainMessageLoopStart()| -----------------------
   scoped_ptr<base::SystemMonitor> system_monitor_;
   scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_ptr<base::HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  // user_input_monitor_ has to outlive audio_manager_, so declared first.
-  scoped_ptr<media::UserInputMonitor> user_input_monitor_;
-  scoped_ptr<media::AudioManager> audio_manager_;
-  scoped_ptr<media::midi::MidiManager> midi_manager_;
-  scoped_ptr<MediaStreamManager> media_stream_manager_;
+
   // Per-process listener for online state changes.
   scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
+
+  scoped_ptr<base::trace_event::TraceEventSystemStatsMonitor>
+      system_stats_monitor_;
+
 #if defined(OS_WIN)
   scoped_ptr<SystemMessageWindowWin> system_message_window_;
-#elif defined(USE_UDEV)
-  scoped_ptr<DeviceMonitorLinux> device_monitor_linux_;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-  scoped_ptr<DeviceMonitorMac> device_monitor_mac_;
 #endif
+
 #if defined(OS_ANDROID)
   // Android implementation of ScreenOrientationDelegate
   scoped_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
 #endif
 
-  // Memory pressure monitor. Created in PreCreateThreads and torn down in
-  // ShutdownThreadsAndCleanUp.
-  scoped_ptr<base::MemoryPressureMonitor> memory_pressure_monitor_;
+  scoped_ptr<MemoryObserver> memory_observer_;
+  scoped_ptr<base::trace_event::TraceMemoryController> trace_memory_controller_;
 
-  // The startup task runner is created by CreateStartupTasks()
-  scoped_ptr<StartupTaskRunner> startup_task_runner_;
+  // Members initialized in |InitStartupTracing()| -----------------------------
+  base::FilePath startup_trace_file_;
 
-  // Destroy parts_ before main_message_loop_ (required) and before other
-  // classes constructed in content (but after main_thread_).
+  // This timer initiates trace file saving.
+  base::OneShotTimer<BrowserMainLoop> startup_trace_timer_;
+
+  // Members initialized in |Init()| -------------------------------------------
+  // Destroy |parts_| before |main_message_loop_| (required) and before other
+  // classes constructed in content (but after |main_thread_|).
   scoped_ptr<BrowserMainParts> parts_;
 
   // Members initialized in |InitializeMainThread()| ---------------------------
-  // This must get destroyed before other threads that are created in parts_.
+  // This must get destroyed before other threads that are created in |parts_|.
   scoped_ptr<BrowserThreadImpl> main_thread_;
 
-  // Members initialized in |BrowserThreadsStarted()| --------------------------
-  scoped_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
-  scoped_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
-  scoped_ptr<TimeZoneMonitor> time_zone_monitor_;
+  // Members initialized in |CreateStartupTasks()| -----------------------------
+  scoped_ptr<StartupTaskRunner> startup_task_runner_;
 
-  // Members initialized in |RunMainMessageLoopParts()| ------------------------
+  // Members initialized in |PreCreateThreads()| -------------------------------
+  // Torn down in ShutdownThreadsAndCleanUp.
+  scoped_ptr<base::MemoryPressureMonitor> memory_pressure_monitor_;
+
+  // Members initialized in |CreateThreads()| ----------------------------------
   scoped_ptr<BrowserProcessSubThread> db_thread_;
   scoped_ptr<BrowserProcessSubThread> file_user_blocking_thread_;
   scoped_ptr<BrowserProcessSubThread> file_thread_;
   scoped_ptr<BrowserProcessSubThread> process_launcher_thread_;
   scoped_ptr<BrowserProcessSubThread> cache_thread_;
   scoped_ptr<BrowserProcessSubThread> io_thread_;
+
+  // Members initialized in |BrowserThreadsStarted()| --------------------------
   scoped_ptr<base::Thread> indexed_db_thread_;
-  scoped_ptr<MemoryObserver> memory_observer_;
-  scoped_ptr<base::trace_event::TraceMemoryController> trace_memory_controller_;
-  scoped_ptr<base::trace_event::TraceEventSystemStatsMonitor>
-      system_stats_monitor_;
 
-  bool is_tracing_startup_;
-  base::FilePath startup_trace_file_;
+  // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
+  scoped_ptr<media::UserInputMonitor> user_input_monitor_;
+  scoped_ptr<media::AudioManager> audio_manager_;
 
-  // This timer initiates trace file saving.
-  base::OneShotTimer<BrowserMainLoop> startup_trace_timer_;
+  scoped_ptr<media::midi::MidiManager> midi_manager_;
+
+#if defined(USE_UDEV)
+  scoped_ptr<DeviceMonitorLinux> device_monitor_linux_;
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  scoped_ptr<DeviceMonitorMac> device_monitor_mac_;
+#endif
+
+  scoped_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
+  scoped_ptr<MediaStreamManager> media_stream_manager_;
+  scoped_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
+  scoped_ptr<TimeZoneMonitor> time_zone_monitor_;
+
+  // DO NOT add members here. Add them to the right categories above.
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
 };

@@ -186,7 +186,9 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
       if (!main_loop_->InitializeToolkit())
         return 1;
 
+      main_loop_->PreMainMessageLoopStart();
       main_loop_->MainMessageLoopStart();
+      main_loop_->PostMainMessageLoopStart();
 
 // WARNING: If we get a WM_ENDSESSION, objects created on the stack here
 // are NOT deleted. If you need something to run during WM_ENDSESSION add it

@@ -491,10 +491,7 @@ void BrowserMainLoop::EarlyInitialization() {
     parts_->PostEarlyInitialization();
 }
 
-void BrowserMainLoop::MainMessageLoopStart() {
-  TRACE_EVENT0("startup", "BrowserMainLoop::MainMessageLoopStart");
-  TRACK_SCOPED_REGION("Startup", "BrowserMainLoop::MainMessageLoopStart");
-
+void BrowserMainLoop::PreMainMessageLoopStart() {
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::MainMessageLoopStart:PreMainMessageLoopStart");
@@ -509,13 +506,23 @@ void BrowserMainLoop::MainMessageLoopStart() {
     l10n_util::OverrideLocaleWithUILanguageList();
   }
 #endif
+}
+
+void BrowserMainLoop::MainMessageLoopStart() {
+  // DO NOT add more code here. Use PreMainMessageLoopStart() above or
+  // PostMainMessageLoopStart() below.
+
+  TRACE_EVENT0("startup", "BrowserMainLoop::MainMessageLoopStart");
+  TRACK_SCOPED_REGION("Startup", "BrowserMainLoop::MainMessageLoopStart");
 
   // Create a MessageLoop if one does not already exist for the current thread.
   if (!base::MessageLoop::current())
     main_message_loop_.reset(new base::MessageLoopForUI);
 
   InitializeMainThread();
+}
 
+void BrowserMainLoop::PostMainMessageLoopStart() {
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SystemMonitor");
     system_monitor_.reset(new base::SystemMonitor);
@@ -1068,7 +1075,7 @@ void BrowserMainLoop::StopStartupTracingTimer() {
 
 void BrowserMainLoop::InitializeMainThread() {
   TRACE_EVENT0("startup", "BrowserMainLoop::InitializeMainThread");
-  const char* kThreadName = "CrBrowserMain";
+  static const char kThreadName[] = "CrBrowserMain";
   base::PlatformThread::SetName(kThreadName);
   if (main_message_loop_)
     main_message_loop_->set_thread_name(kThreadName);
@@ -1117,7 +1124,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/439322): This should be set to |true|.
+  established_gpu_channel = false;
+  BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
+#elif defined(USE_AURA) || defined(OS_MACOSX)
   established_gpu_channel = true;
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor() ||
       parsed_command_line_.HasSwitch(switches::kDisableGpuEarlyInit)) {
@@ -1129,12 +1140,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   if (aura::Env::GetInstance()) {
     aura::Env::GetInstance()->set_context_factory(GetContextFactory());
   }
-#endif
-#elif defined(OS_ANDROID)
-  // TODO(crbug.com/439322): This should be set to |true|.
-  established_gpu_channel = false;
-  BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-#endif
+#endif  // defined(USE_AURA)
+#endif  // defined(OS_ANDROID)
 
   // Enable the GpuMemoryBuffer dump provider with IO thread affinity. Note that
   // unregistration happens on the IO thread (See
@@ -1204,7 +1211,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // The current thread is the UI thread.
   allowed_clipboard_threads.push_back(base::PlatformThread::CurrentId());
 #if defined(OS_WIN)
-  // On Windows, clipboards are also used on the File or IO threads.
+  // On Windows, clipboards are also used on the FILE or IO threads.
   allowed_clipboard_threads.push_back(file_thread_->thread_id());
   allowed_clipboard_threads.push_back(io_thread_->thread_id());
 #endif
@@ -1220,10 +1227,10 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
                          TRACE_EVENT_SCOPE_THREAD);
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(
-            base::IgnoreResult(&GpuProcessHost::Get),
-            GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-            CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP));
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(base::IgnoreResult(&GpuProcessHost::Get),
+                   GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                   CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP));
   }
 
 #if defined(OS_MACOSX)
@@ -1231,7 +1238,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   SystemHotkeyHelperMac::GetInstance()->DeferredLoadSystemHotkeys();
   if (ShouldEnableBootstrapSandbox()) {
     TRACE_EVENT0("startup",
-        "BrowserMainLoop::BrowserThreadsStarted:BootstrapSandbox");
+                 "BrowserMainLoop::BrowserThreadsStarted:BootstrapSandbox");
     CHECK(GetBootstrapSandbox());
   }
 #endif  // defined(OS_MACOSX)
@@ -1290,9 +1297,10 @@ void BrowserMainLoop::MainMessageLoopRun() {
   NOTREACHED();
 #else
   DCHECK(base::MessageLoopForUI::IsCurrent());
-  if (parameters_.ui_task)
+  if (parameters_.ui_task) {
     base::MessageLoopForUI::current()->PostTask(FROM_HERE,
                                                 *parameters_.ui_task);
+  }
 
   base::RunLoop run_loop;
   run_loop.Run();
@@ -1343,6 +1351,8 @@ void BrowserMainLoop::InitStartupTracing(
 }
 
 void BrowserMainLoop::EndStartupTracing() {
+  DCHECK(is_tracing_startup_);
+
   is_tracing_startup_ = false;
   TracingController::GetInstance()->DisableRecording(
       TracingController::CreateFileSink(
