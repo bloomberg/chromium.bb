@@ -10,6 +10,8 @@
       'trace_event/java_heap_dump_provider_android.h',
       'trace_event/memory_allocator_dump.cc',
       'trace_event/memory_allocator_dump.h',
+      'trace_event/memory_allocator_dump_guid.cc',
+      'trace_event/memory_allocator_dump_guid.h',
       'trace_event/memory_dump_manager.cc',
       'trace_event/memory_dump_manager.h',
       'trace_event/memory_dump_provider.h',
