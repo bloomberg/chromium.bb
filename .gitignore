@@ -46,6 +46,7 @@ event-loop-test
 exec-fd-leak-checker
 fixed-benchmark
 fixed-test
+headers-test
 list-test
 map-test
 message-test
