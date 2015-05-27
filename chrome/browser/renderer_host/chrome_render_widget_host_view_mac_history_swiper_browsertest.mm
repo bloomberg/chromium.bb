@@ -366,7 +366,7 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
 // The ordering, timing, and parameters of the events was determined by
 // recording a real swipe.
 IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
-                       TestBackwardsHistoryNavigationRealData) {
+                       DISABLED_TestBackwardsHistoryNavigationRealData) {
   if (!IsHistorySwipingSupported())
     return;
 
@@ -664,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
 // The movement events are mostly in the horizontal direction, which should
 // trigger a history swipe. This should trigger history navigation.
 IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
-                       TestMostlyHorizontal) {
+                       DISABLED_TestMostlyHorizontal) {
   if (!IsHistorySwipingSupported())
     return;
 
@@ -727,7 +727,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
 
 // The gesture ends before the touchesEndedWithEvent: method gets called.
 IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
-                       TestGestureEndTiming) {
+                       DISABLED_TestGestureEndTiming) {
   if (!IsHistorySwipingSupported())
     return;
 
