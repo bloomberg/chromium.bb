@@ -297,11 +297,15 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
     if (state_machine_.BeginFrameNeeded()) {
       // Call SetNeedsBeginFrames(true) as soon as possible.
       frame_source_->SetNeedsBeginFrames(true);
+      devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
+                                                       true);
     } else if (state_machine_.begin_impl_frame_state() ==
                SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE) {
       // Call SetNeedsBeginFrames(false) in between frames only.
       frame_source_->SetNeedsBeginFrames(false);
       client_->SendBeginMainFrameNotExpectedSoon();
+      devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
+                                                       false);
     }
   }
 

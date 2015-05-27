@@ -23,6 +23,7 @@ const char kPixelRefId[] = "pixelRefId";
 
 const char kImageDecodeTask[] = "ImageDecodeTask";
 const char kBeginFrame[] = "BeginFrame";
+const char kNeedsBeginFrameChanged[] = "NeedsBeginFrameChanged";
 const char kActivateLayerTree[] = "ActivateLayerTree";
 const char kRequestMainThreadFrame[] = "RequestMainThreadFrame";
 const char kBeginMainThreadFrame[] = "BeginMainThreadFrame";
@@ -155,6 +156,21 @@ inline void WillBeginMainThreadFrame(int layer_tree_host_id, int frame_id) {
       internal::kCategoryFrame, internal::kBeginMainThreadFrame,
       TRACE_EVENT_SCOPE_THREAD, internal::kLayerTreeId, layer_tree_host_id,
       internal::kData, BeginMainThreadFrameData(frame_id));
+}
+
+inline scoped_refptr<base::trace_event::ConvertableToTraceFormat>
+NeedsBeginFrameData(bool needs_begin_frame) {
+  scoped_refptr<base::trace_event::TracedValue> value =
+      new base::trace_event::TracedValue();
+  value->SetInteger("needsBeginFrame", needs_begin_frame);
+  return value;
+}
+
+inline void NeedsBeginFrameChanged(int layer_tree_host_id, bool new_value) {
+  TRACE_EVENT_INSTANT2(
+      internal::kCategoryFrame, internal::kNeedsBeginFrameChanged,
+      TRACE_EVENT_SCOPE_THREAD, internal::kLayerTreeId, layer_tree_host_id,
+      internal::kData, NeedsBeginFrameData(new_value));
 }
 
 }  // namespace devtools_instrumentation
