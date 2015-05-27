@@ -546,13 +546,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DisownSubframeOpener) {
                             "window.frames[0].opener = null;"));
 }
 
-// This test currently fails on Android, see http://crbug.com/492649.
-#if defined(OS_ANDROID)
-#define MAYBE_SupportCrossProcessPostMessage \
-    DISABLED_SupportCrossProcessPostMessage
-#else
-#define MAYBE_SupportCrossProcessPostMessage SupportCrossProcessPostMessage
-#endif
 // Test for crbug.com/99202.  PostMessage calls should still work after
 // navigating the source and target windows to different sites.
 // Specifically:
@@ -563,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DisownSubframeOpener) {
 // 5) Post a message from "foo" to a subframe of opener, which replies back.
 // 6) Post a message from _blank to a subframe of "foo".
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       MAYBE_SupportCrossProcessPostMessage) {
+                       SupportCrossProcessPostMessage) {
   StartServer();
 
   // Load a page with links that open in a new window.

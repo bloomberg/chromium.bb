@@ -54,7 +54,7 @@
       domAutomationController.setAutomationId(0);
       domAutomationController.send("done-" + window.name);
     }
-    if (event.ports.length > 0) {
+    if (event.ports && event.ports.length > 0) {
       receivedMessagesWithPort++;
       var port = event.ports[0];
       port.start();
