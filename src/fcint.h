@@ -361,7 +361,7 @@ typedef struct _FcStrBuf {
 
 struct _FcCache {
     unsigned int magic;              /* FC_CACHE_MAGIC_MMAP or FC_CACHE_ALLOC */
-    int		version;	    /* FC_CACHE_CONTENT_VERSION */
+    int		version;	    /* FC_CACHE_VERSION_NUMBER */
     intptr_t	size;		    /* size of file */
     intptr_t	dir;		    /* offset to dir name */
     intptr_t	dirs;		    /* offset to subdirs */
@@ -453,7 +453,6 @@ typedef struct _FcCaseFold {
 
 #define FC_CACHE_MAGIC_MMAP	    0xFC02FC04
 #define FC_CACHE_MAGIC_ALLOC	    0xFC02FC05
-#define FC_CACHE_CONTENT_VERSION    5
 
 struct _FcAtomic {
     FcChar8	*file;		/* original file name */
