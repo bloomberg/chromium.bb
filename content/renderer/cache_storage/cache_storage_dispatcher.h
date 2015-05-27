@@ -40,8 +40,6 @@ class CacheStorageDispatcher : public WorkerTaskRunner::Observer {
   void OnWorkerRunLoopStopped() override;
 
   bool Send(IPC::Message* msg);
-
-  // ServiceWorkerScriptContext calls our OnMessageReceived directly.
   bool OnMessageReceived(const IPC::Message& message);
 
   // Message handlers for CacheStorage messages from the browser process.

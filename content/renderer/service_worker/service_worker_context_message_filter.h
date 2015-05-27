@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_CONTEXT_MESSAGE_FILTER_H_
-#define CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_CONTEXT_MESSAGE_FILTER_H_
+#ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_MESSAGE_FILTER_H_
+#define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_MESSAGE_FILTER_H_
 
 #include "content/child/worker_thread_message_filter.h"
 
 namespace content {
 
-class EmbeddedWorkerContextMessageFilter : public WorkerThreadMessageFilter {
+class ServiceWorkerContextMessageFilter : public WorkerThreadMessageFilter {
  public:
-  EmbeddedWorkerContextMessageFilter();
+  ServiceWorkerContextMessageFilter();
 
  protected:
-  ~EmbeddedWorkerContextMessageFilter() override;
+  ~ServiceWorkerContextMessageFilter() override;
 
   // WorkerThreadMessageFilter:
   bool ShouldHandleMessage(const IPC::Message& msg) const override;
@@ -23,9 +23,9 @@ class EmbeddedWorkerContextMessageFilter : public WorkerThreadMessageFilter {
                                    int* ipc_thread_id) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerContextMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextMessageFilter);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_CONTEXT_MESSAGE_FILTER_H_
+#endif  // CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_MESSAGE_FILTER_H_
