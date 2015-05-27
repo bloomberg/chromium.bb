@@ -92,25 +92,57 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
     tarball_location = os.path.join(buildroot, 'built-sdk.tar.xz')
     extra_args.extend(['--prepackaged-tarball', tarball_location])
 
-    # The local tarballs will be simply "<tuple>.tar.xz".  We need
-    # them to be "<tuple>-<version>.tar.xz" to avoid collisions.
+    # Remaining artifacts get uploaded into <year>/<month>/ subdirs so we don't
+    # start dumping even more stuff into the top level. Also, the following
+    # code handles any tarball suffix (.tar.*). For each of the artifact types
+    # below, we also generate a single upload path template to be filled by the
+    # uploading script. This has placeholders for the version (substituted
+    # first) and another qualifier (either board or target, substituted second
+    # and therefore uses a quoted %% modifier).
+    # TODO(garnold) Using a mix of quoted/unquoted set of template variables is
+    # confusing and error-prone, we should get rid of it.
+    # TODO(garnold) Be specific about matching file suffixes, like making sure
+    # there's nothing past the compression suffix (for example, .tar.xz.log).
+    subdir_prefix = os.path.join(*version.split('.')[0:2])
+
+    # Find board overlay tarballs of the form built-sdk-overlay-<board>.tar.*
+    # and create an upload specification for each of them. The upload path
+    # template has the form cros-sdk-overlay-<board>-<version>.tar.*.
+    board_overlay_prefix = 'built-sdk-overlay-'
+    for tarball in glob.glob(os.path.join(
+        buildroot, constants.DEFAULT_CHROOT_DIR,
+        constants.SDK_BOARD_OVERLAYS_OUTPUT, board_overlay_prefix + '*.tar.*')):
+      tarball_name, tarball_suffix = os.path.basename(tarball).split('.', 1)
+
+      # Only add the upload path arg when processing the first tarball.
+      if '--board-overlay-upload-path' not in extra_args:
+        subdir = os.path.join(
+            subdir_prefix,
+            'cros-sdk-overlay-%%(board)s-%(version)s.' + tarball_suffix)
+        extra_args.extend(['--board-overlay-upload-path', subdir])
+
+      tarball_board = tarball_name[len(board_overlay_prefix):]
+      extra_args.extend(['--board-overlay-tarball',
+                         '%s:%s' % (tarball_board, tarball)])
+
+    # Find toolchain package tarballs of the form <target>.tar.* and create an
+    # upload specificion for each fo them. The upload path template has the
+    # form <target>-<version>.tar.*.
     for tarball in glob.glob(os.path.join(
         buildroot, constants.DEFAULT_CHROOT_DIR,
         constants.SDK_TOOLCHAINS_OUTPUT, '*.tar.*')):
-      tarball_components = os.path.basename(tarball).split('.', 1)
+      tarball_target, tarball_suffix = os.path.basename(tarball).split('.', 1)
 
       # Only add the path arg when processing the first tarball.  We do
       # this to get access to the tarball suffix dynamically (so it can
       # change and this code will still work).
       if '--toolchain-upload-path' not in extra_args:
-        # Stick the toolchain tarballs into <year>/<month>/ subdirs so
-        # we don't start dumping even more stuff into the top level.
-        subdir = ('/'.join(version.split('.')[0:2]) + '/' +
-                  '%%(target)s-%(version)s.' + tarball_components[1])
+        subdir = os.path.join(subdir_prefix,
+                              '%%(target)s-%(version)s.' + tarball_suffix)
         extra_args.extend(['--toolchain-upload-path', subdir])
 
-      arg = '%s:%s' % (tarball_components[0], tarball)
-      extra_args.extend(['--toolchain-tarball', arg])
+      extra_args.extend(['--toolchain-tarball',
+                         '%s:%s' % (tarball_target, tarball)])
 
   if category == constants.CHROME_PFQ_TYPE:
     assert chrome_rev

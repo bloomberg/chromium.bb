@@ -48,24 +48,41 @@ class PrebuiltTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     # A magical date for a magical time.
     version = '1994.04.02.000000'
 
+    # Fake out board overlay tarballs.
+    tarball_dir = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
+                               constants.SDK_BOARD_OVERLAYS_OUTPUT)
+    osutils.SafeMakedirs(tarball_dir)
+
+    board_overlay_tarball_args = []
+    for tarball_board in ('x86-alex', 'daisy'):
+      tarball = 'built-sdk-overlay-%s.tar.xz' % tarball_board
+      tarball_path = os.path.join(tarball_dir, tarball)
+      osutils.Touch(tarball_path)
+      tarball_arg = '%s:%s' % (tarball_board, tarball_path)
+      board_overlay_tarball_args.append(['--board-overlay-tarball',
+                                         tarball_arg])
+
     # Fake out toolchain tarballs.
     tarball_dir = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                                constants.SDK_TOOLCHAINS_OUTPUT)
     osutils.SafeMakedirs(tarball_dir)
 
-    tarball_args = []
+    toolchain_tarball_args = []
     for tarball_base in ('i686', 'arm-none-eabi'):
       tarball = '%s.tar.xz' % tarball_base
       tarball_path = os.path.join(tarball_dir, tarball)
       osutils.Touch(tarball_path)
       tarball_arg = '%s:%s' % (tarball_base, tarball_path)
-      tarball_args.append(['--toolchain-tarball', tarball_arg])
+      toolchain_tarball_args.append(['--toolchain-tarball', tarball_arg])
 
     self.testUploadPrebuilts(builder_type=constants.CHROOT_BUILDER_TYPE,
                              version=version)
+    self.assertCommandContains([
+        '--board-overlay-upload-path',
+        '1994/04/cros-sdk-overlay-%%(board)s-%(version)s.tar.xz'])
     self.assertCommandContains(['--toolchain-upload-path',
                                 '1994/04/%%(target)s-%(version)s.tar.xz'])
-    for args in tarball_args:
+    for args in board_overlay_tarball_args + toolchain_tarball_args:
       self.assertCommandContains(args)
     self.assertCommandContains(['--set-version', version])
     self.assertCommandContains(['--prepackaged-tarball',

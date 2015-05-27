@@ -393,7 +393,8 @@ class TestSyncPrebuilts(cros_test_lib.MockTestCase):
           self.upload_location, 'public-read', self.binhost, [],
           self.build_path, [], False, 'foo', False, target, slave_targets,
           self.version)
-      uploader.SyncBoardPrebuilts(self.key, True, True, True, None, None, None)
+      uploader.SyncBoardPrebuilts(self.key, True, True, True, None, None, None,
+                                  None, None)
     determine_mock.assert_has_calls([
         mock.call(self.build_path, slave_targets[0]),
         mock.call(self.build_path, target),
@@ -428,6 +429,8 @@ class TestMain(cros_test_lib.MockTestCase):
     options.git_sync = True
     options.upload_board_tarball = True
     options.prepackaged_tarball = None
+    options.board_overlay_tarballs = []
+    options.board_overlay_upload_path = ''
     options.toolchain_tarballs = []
     options.toolchain_upload_path = ''
     options.upload = 'gs://upload/'
@@ -464,7 +467,8 @@ class TestMain(cros_test_lib.MockTestCase):
                                       mock.ANY)
     board_mock.assert_called_once_with(
         options.key, options.git_sync,
-        options.sync_binhost_conf, options.upload_board_tarball, None, [], '')
+        options.sync_binhost_conf, options.upload_board_tarball, None,
+        [], '', [], '')
     host_mock.assert_called_once_with(
         options.key, options.git_sync, options.sync_binhost_conf)
 
@@ -486,7 +490,8 @@ class TestSdk(cros_test_lib.MockTestCase):
         'gs://foo', self.acl, 'prebuilt', [], '/', [],
         False, 'foo', False, 'x86-foo', [], 'chroot-1234')
 
-  def testSdkUpload(self, tc_tarballs=(), tc_upload_path=None):
+  def testSdkUpload(self, bo_tarballs=(), bo_upload_path=None,
+                    tc_tarballs=(), tc_upload_path=None):
     """Make sure we can upload just an SDK tarball"""
     tar = 'sdk.tar.xz'
     ver = '1234'
@@ -497,6 +502,10 @@ class TestSdk(cros_test_lib.MockTestCase):
                   'gs://chromiumos-sdk/%s.Manifest' % vtar),
         mock.call(tar, 'gs://chromiumos-sdk/%s' % vtar),
     ]
+    for bo in bo_tarballs:
+      bo = bo.split(':')
+      calls.append(mock.call(
+          bo[1], ('gs://chromiumos-sdk/' + bo_upload_path) % {'board': bo[0]}))
     for tc in tc_tarballs:
       tc = tc.split(':')
       calls.append(mock.call(
@@ -505,14 +514,24 @@ class TestSdk(cros_test_lib.MockTestCase):
         mock.ANY, 'gs://chromiumos-sdk/cros-sdk-latest.conf'))
 
     self.uploader._UploadSdkTarball('amd64-host', '',
-                                    tar, tc_tarballs, tc_upload_path)
+                                    tar, bo_tarballs, bo_upload_path,
+                                    tc_tarballs, tc_upload_path)
     self.upload_mock.assert_has_calls(calls)
 
-  def testTarballUpload(self):
-    """Make sure processing of toolchain tarballs works"""
+  def testBoardOverlayTarballUpload(self):
+    """Make sure processing of board-specific overlay tarballs works."""
+    bo_tarballs = (
+        'x86-alex:/some/built-sdk-overlay-x86-alex.tar.xz',
+        'daisy:/some/built-sdk-overlay-daisy.tar.xz',
+    )
+    bo_upload_path = '1994/04/cros-sdk-overlay-%(board)s-1994.04.02.tar.xz'
+    self.testSdkUpload(bo_tarballs=bo_tarballs, bo_upload_path=bo_upload_path)
+
+  def testToolchainTarballUpload(self):
+    """Make sure processing of toolchain tarballs works."""
     tc_tarballs = (
         'i686:/some/i686.tar.xz',
         'arm-none:/some/arm.tar.xz',
     )
     tc_upload_path = '1994/04/%(target)s-1994.04.02.tar.xz'
-    self.testSdkUpload(tc_tarballs, tc_upload_path)
+    self.testSdkUpload(tc_tarballs=tc_tarballs, tc_upload_path=tc_upload_path)

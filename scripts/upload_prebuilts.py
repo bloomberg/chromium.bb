@@ -475,6 +475,7 @@ class PrebuiltUploader(object):
       cros_build_lib.PrintBuildbotLink(link_name, url)
 
   def _UploadSdkTarball(self, board_path, url_suffix, prepackaged,
+                        board_overlay_tarballs, board_overlay_upload_path,
                         toolchain_tarballs, toolchain_upload_path):
     """Upload a tarball of the sdk at the specified path to Google Storage.
 
@@ -483,6 +484,10 @@ class PrebuiltUploader(object):
       url_suffix: The remote subdirectory where we should upload the packages.
       prepackaged: If given, a tarball that has been packaged outside of this
                    script and should be used.
+      board_overlay_tarballs: List of board-specific overlay tarball
+        specifications to upload. Items take the form "board:/path/to/tarball".
+      board_overlay_upload_path: Path template under the bucket to place
+        board-specific overlay tarballs.
       toolchain_tarballs: List of toolchain tarballs to upload.
       toolchain_upload_path: Path under the bucket to place toolchain tarballs.
     """
@@ -501,12 +506,15 @@ class PrebuiltUploader(object):
     self._Upload(prepackaged + '.Manifest', remote_tarfile + '.Manifest')
     self._Upload(prepackaged, remote_tarfile)
 
-    # Post the toolchain tarballs too.
-    for tarball in toolchain_tarballs:
-      target, local_path = tarball.split(':')
-      suburl = toolchain_upload_path % {'target': target}
-      remote_path = toolchain.GetSdkURL(for_gsutil=True, suburl=suburl)
-      self._Upload(local_path, remote_path)
+    # Upload board-specific SDK overlays and toolchain tarballs, if given.
+    for tarball_list, upload_path, qualifier_name in (
+        (board_overlay_tarballs, board_overlay_upload_path, 'board'),
+        (toolchain_tarballs, toolchain_upload_path, 'target')):
+      for tarball in tarball_list:
+        qualifier_val, local_path = tarball.split(':')
+        suburl = upload_path % {qualifier_name: qualifier_val}
+        remote_path = toolchain.GetSdkURL(for_gsutil=True, suburl=suburl)
+        self._Upload(local_path, remote_path)
 
     # Finally, also update the pointer to the latest SDK on which polling
     # scripts rely.
@@ -573,6 +581,7 @@ class PrebuiltUploader(object):
 
   def SyncBoardPrebuilts(self, key, git_sync, sync_binhost_conf,
                          upload_board_tarball, prepackaged_board,
+                         board_overlay_tarballs, board_overlay_upload_path,
                          toolchain_tarballs, toolchain_upload_path):
     """Synchronize board prebuilt files.
 
@@ -584,6 +593,10 @@ class PrebuiltUploader(object):
           chromiumos-overlay for the current board.
       upload_board_tarball: Include a tarball of the board in our upload.
       prepackaged_board: A tarball of the board built outside of this script.
+      board_overlay_tarballs: List of board-specific overlay tarball
+        specifications to upload. Items take the form "board:/path/to/tarball".
+      board_overlay_upload_path: Path template under the bucket to place
+        board-specific overlay tarballs.
       toolchain_tarballs: A list of toolchain tarballs to upload.
       toolchain_upload_path: Path under the bucket to place toolchain tarballs.
     """
@@ -607,9 +620,12 @@ class PrebuiltUploader(object):
         if upload_board_tarball:
           if toolchain_upload_path:
             toolchain_upload_path %= {'version': version_str}
+          if board_overlay_upload_path:
+            board_overlay_upload_path %= {'version': version_str}
           tar_process = multiprocessing.Process(
               target=self._UploadSdkTarball,
               args=(board_path, url_suffix, prepackaged_board,
+                    board_overlay_tarballs, board_overlay_upload_path,
                     toolchain_tarballs, toolchain_upload_path))
           tar_process.start()
 
@@ -690,6 +706,12 @@ def ParseOptions(argv):
   parser.add_option('-B', '--prepackaged-tarball', dest='prepackaged_tarball',
                     default=None,
                     help='Board tarball prebuilt outside of this script.')
+  parser.add_option('--board-overlay-tarball', dest='board_overlay_tarballs',
+                    action='append', default=[],
+                    help='Board-specific toolchain overlay tarball to upload. '
+                    'Takes the form "board:/path/to/tarball".')
+  parser.add_option('--board-overlay-upload-path', default='',
+                    help='Path template for uploading board overlays.')
   parser.add_option('--toolchain-tarball', dest='toolchain_tarballs',
                     action='append', default=[],
                     help='Redistributable toolchain tarball.')
@@ -808,6 +830,9 @@ def ParseOptions(argv):
   if options.sync_binhost_conf and not options.binhost_conf_dir:
     parser.error('--sync-binhost-conf requires --binhost-conf-dir')
 
+  if options.board_overlay_tarballs and not options.board_overlay_upload_path:
+    parser.error('--board-overlay-tarball requires --board-overlay-upload-path')
+
   return options, target
 
 
@@ -864,5 +889,7 @@ def main(argv):
                                 options.sync_binhost_conf,
                                 options.upload_board_tarball,
                                 options.prepackaged_tarball,
+                                options.board_overlay_tarballs,
+                                options.board_overlay_upload_path,
                                 options.toolchain_tarballs,
                                 options.toolchain_upload_path)
