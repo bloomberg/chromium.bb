@@ -48,7 +48,6 @@
             'Nullable.h',
             'OnStackObjectChecker.cpp',
             'OnStackObjectChecker.h',
-            'PostMessage.h',
             'PrivateScriptRunner.cpp',
             'PrivateScriptRunner.h',
             'RejectedPromises.cpp',

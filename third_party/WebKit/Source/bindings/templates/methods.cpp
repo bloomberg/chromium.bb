@@ -444,6 +444,35 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
 
 
 {##############################################################################}
+{% macro generate_post_message_impl() %}
+void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", interfaceName, info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    OwnPtrWillBeRawPtr<MessagePortArray> ports = adoptPtrWillBeNoop(new MessagePortArray);
+    ArrayBufferArray arrayBuffers;
+    if (info.Length() > 1) {
+        const int transferablesArgIndex = 1;
+        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, *ports, arrayBuffers, exceptionState)) {
+            exceptionState.throwIfNeeded();
+            return;
+        }
+    }
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], ports.get(), &arrayBuffers, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    // FIXME: Only pass context/exceptionState if instance really requires it.
+    ExecutionContext* context = currentExecutionContext(info.GetIsolate());
+    instance->postMessage(context, message.release(), ports.get(), exceptionState);
+    exceptionState.throwIfNeeded();
+}
+{% endmacro %}
+
+{##############################################################################}
 {% macro method_callback(method, world_suffix) %}
 {% filter conditional(method.conditional_string) %}
 static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -473,7 +502,7 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     {% if method.is_custom %}
     {{v8_class}}::{{method.name}}MethodCustom(info);
     {% elif method.is_post_message %}
-    postMessageMethodCommon("{{interface_name}}", {{v8_class}}::toImpl(info.Holder()), info);
+    postMessageImpl("{{interface_name}}", {{v8_class}}::toImpl(info.Holder()), info);
     {% else %}
     {{cpp_class_or_partial}}V8Internal::{{method.name}}Method{{world_suffix}}(info);
     {% endif %}

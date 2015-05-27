@@ -10,7 +10,6 @@
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/PostMessage.h"
 #include "bindings/core/v8/PrivateScriptRunner.h"
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -56,7 +55,9 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ClassCollection.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
+#include "core/dom/MessagePort.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/custom/CustomElementProcessingStack.h"
 #include "core/frame/LocalFrame.h"
@@ -10864,10 +10865,36 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMain
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+void postMessageImpl(const char* interfaceName, TestObject* instance, const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", interfaceName, info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    OwnPtrWillBeRawPtr<MessagePortArray> ports = adoptPtrWillBeNoop(new MessagePortArray);
+    ArrayBufferArray arrayBuffers;
+    if (info.Length() > 1) {
+        const int transferablesArgIndex = 1;
+        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, *ports, arrayBuffers, exceptionState)) {
+            exceptionState.throwIfNeeded();
+            return;
+        }
+    }
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], ports.get(), &arrayBuffers, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    // FIXME: Only pass context/exceptionState if instance really requires it.
+    ExecutionContext* context = currentExecutionContext(info.GetIsolate());
+    instance->postMessage(context, message.release(), ports.get(), exceptionState);
+    exceptionState.throwIfNeeded();
+}
+
 static void postMessageMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    postMessageMethodCommon("TestObject", V8TestObject::toImpl(info.Holder()), info);
+    postMessageImpl("TestObject", V8TestObject::toImpl(info.Holder()), info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 

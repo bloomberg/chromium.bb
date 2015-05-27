@@ -120,7 +120,10 @@ def method_context(interface, method, is_visible=True):
     is_custom_call_epilogue = has_extended_attribute_value(method, 'Custom', 'CallEpilogue')
     is_post_message = 'PostMessage' in extended_attributes
     if is_post_message:
-        includes.add('bindings/core/v8/PostMessage.h')
+        includes.add('bindings/core/v8/SerializedScriptValueFactory.h')
+        includes.add('core/dom/DOMArrayBuffer.h')
+        includes.add('core/dom/MessagePort.h')
+
 
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
