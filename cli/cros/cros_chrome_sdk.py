@@ -657,6 +657,7 @@ class ChromeSDKCommand(command.CliCommand):
     gyp_dict = chrome_util.ProcessGypDefines(env['GYP_DEFINES'])
     gyp_dict['sysroot'] = sysroot
     gyp_dict.pop('order_text_section', None)
+    gyp_dict.pop('pkg-config', None)
     gyp_dict['host_clang'] = 1
     if options.clang:
       gyp_dict['clang'] = 1
