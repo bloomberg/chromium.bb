@@ -740,7 +740,8 @@ x11_output_init_shm(struct x11_compositor *c, struct x11_output *output,
 	cookie = xcb_shm_attach_checked(c->conn, output->segment, output->shm_id, 1);
 	err = xcb_request_check(c->conn, cookie);
 	if (err) {
-		weston_log("x11shm: xcb_shm_attach error %d\n", err->error_code);
+		weston_log("x11shm: xcb_shm_attach error %d, op code %d, resource id %d\n",
+			   err->error_code, err->major_code, err->minor_code);
 		free(err);
 		return -1;
 	}
@@ -801,8 +802,10 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			XCB_EVENT_MASK_FOCUS_CHANGE;
 
 	output = zalloc(sizeof *output);
-	if (output == NULL)
+	if (output == NULL) {
+		perror("zalloc");
 		return NULL;
+	}
 
 	output->mode.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
@@ -895,9 +898,12 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	if (c->use_pixman) {
 		if (x11_output_init_shm(c, output,
 					output->mode.width,
-					output->mode.height) < 0)
+					output->mode.height) < 0) {
+			weston_log("Failed to initialize SHM for the X11 output\n");
 			return NULL;
+		}
 		if (pixman_renderer_output_create(&output->base) < 0) {
+			weston_log("Failed to create pixman renderer for output\n");
 			x11_output_deinit_shm(c, output);
 			return NULL;
 		}
@@ -1558,8 +1564,10 @@ x11_compositor_create(struct wl_display *display,
 	c->base.wl_display = display;
 	c->use_pixman = use_pixman;
 	if (c->use_pixman) {
-		if (pixman_renderer_init(&c->base) < 0)
+		if (pixman_renderer_init(&c->base) < 0) {
+			weston_log("Failed to initialize pixman renderer for X11 backend\n");
 			goto err_xdisplay;
+		}
 	}
 	else if (init_gl_renderer(c) < 0) {
 		goto err_xdisplay;
@@ -1569,8 +1577,10 @@ x11_compositor_create(struct wl_display *display,
 	c->base.destroy = x11_destroy;
 	c->base.restore = x11_restore;
 
-	if (x11_input_create(c, no_input) < 0)
+	if (x11_input_create(c, no_input) < 0) {
+		weston_log("Failed to create X11 input\n");
 		goto err_renderer;
+	}
 
 	width = option_width ? option_width : 1024;
 	height = option_height ? option_height : 640;
@@ -1619,8 +1629,10 @@ x11_compositor_create(struct wl_display *display,
 						      fullscreen, no_input,
 						      name, transform, scale);
 		free(name);
-		if (output == NULL)
+		if (output == NULL) {
+			weston_log("Failed to create configured x11 output\n");
 			goto err_x11_input;
+		}
 
 		x = pixman_region32_extents(&output->base.region)->x2;
 
@@ -1633,8 +1645,10 @@ x11_compositor_create(struct wl_display *display,
 		output = x11_compositor_create_output(c, x, 0, width, height,
 						      fullscreen, no_input, NULL,
 						      WL_OUTPUT_TRANSFORM_NORMAL, scale);
-		if (output == NULL)
+		if (output == NULL) {
+			weston_log("Failed to create x11 output #%d\n", i);
 			goto err_x11_input;
+		}
 		x = pixman_region32_extents(&output->base.region)->x2;
 	}
 
