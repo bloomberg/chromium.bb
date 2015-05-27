@@ -79,6 +79,13 @@ public:
     }
 
 private:
+    struct HarfBuzzRunGlyphData {
+        uint16_t glyph;
+        uint16_t characterIndex;
+        float advance;
+        FloatSize offset;
+    };
+
     class PLATFORM_EXPORT HarfBuzzRun {
     public:
         HarfBuzzRun(const HarfBuzzRun&);
@@ -101,14 +108,9 @@ private:
         unsigned startIndex() const { return m_startIndex; }
         unsigned numCharacters() const { return m_numCharacters; }
         unsigned numGlyphs() const { return m_numGlyphs; }
-        uint16_t* glyphs() { ASSERT(m_numGlyphs); return &m_glyphs[0]; }
-        float* advances() { ASSERT(m_numGlyphs); return &m_advances[0]; }
-        FloatSize* offsets() { ASSERT(m_numGlyphs); return &m_offsets[0]; }
-        uint16_t* glyphToCharacterIndexes()
-        {
-            ASSERT(m_numGlyphs);
-            return &m_glyphToCharacterIndexes[0];
-        }
+        Vector<HarfBuzzRunGlyphData, 256>& glyphData() { return m_glyphData; }
+        HarfBuzzRunGlyphData& glyphData(size_t glyphIndex) { return m_glyphData[glyphIndex]; }
+        size_t glyphToCharacterIndex(size_t i) const { return m_startIndex + m_glyphData[i].characterIndex; }
         float width() { return m_width; }
         hb_direction_t direction() { return m_direction; }
         bool rtl() { return m_direction == HB_DIRECTION_RTL; }
@@ -123,10 +125,7 @@ private:
         unsigned m_numGlyphs;
         hb_direction_t m_direction;
         hb_script_t m_script;
-        Vector<uint16_t, 256> m_glyphs;
-        Vector<float, 256> m_advances;
-        Vector<uint16_t, 256> m_glyphToCharacterIndexes;
-        Vector<FloatSize, 256> m_offsets;
+        Vector<HarfBuzzRunGlyphData, 256> m_glyphData;
         float m_width;
     };
 
