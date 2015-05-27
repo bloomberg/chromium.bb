@@ -34,10 +34,9 @@ class TestExtensionUninstallDialogDelegate
   bool canceled() { return canceled_; }
 
  private:
-  void ExtensionUninstallAccepted() override { quit_closure_.Run(); }
-
-  void ExtensionUninstallCanceled() override {
-    canceled_ = true;
+  void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
+                                        const base::string16& error) override {
+    canceled_ = !did_start_uninstall;
     quit_closure_.Run();
   }
 
@@ -70,7 +69,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
   browser()->window()->Close();
   content::RunAllPendingInMessageLoop();
 
-  dialog->ConfirmUninstall(extension.get());
+  dialog->ConfirmUninstall(extension.get(),
+                           extensions::UNINSTALL_REASON_FOR_TESTING);
   run_loop.Run();
   EXPECT_TRUE(delegate.canceled());
 }

@@ -556,9 +556,14 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
   bool dont_confirm = false;
   if (args->GetBoolean(1, &dont_confirm) && dont_confirm) {
     base::AutoReset<bool> auto_reset(&ignore_changes_, true);
-    ExtensionUninstallAccepted();
+    // Do the uninstall work here.
+    extension_service_->UninstallExtension(
+        extension_id_prompting_, extensions::UNINSTALL_REASON_USER_INITIATED,
+        base::Bind(&base::DoNothing), nullptr);
+    CleanupAfterUninstall();
   } else {
-    GetExtensionUninstallDialog()->ConfirmUninstall(extension);
+    GetExtensionUninstallDialog()->ConfirmUninstall(
+        extension, extensions::UNINSTALL_REASON_USER_INITIATED);
   }
 }
 
@@ -768,26 +773,9 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
   extension_enable_flow_->StartForWebContents(web_ui()->GetWebContents());
 }
 
-void AppLauncherHandler::ExtensionUninstallAccepted() {
-  // Do the uninstall work here.
-  DCHECK(!extension_id_prompting_.empty());
-
-  // The extension can be uninstalled in another window while the UI was
-  // showing. Do nothing in that case.
-  const Extension* extension =
-      extension_service_->GetInstalledExtension(extension_id_prompting_);
-  if (!extension)
-    return;
-
-  extension_service_->UninstallExtension(
-      extension_id_prompting_,
-      extensions::UNINSTALL_REASON_USER_INITIATED,
-      base::Bind(&base::DoNothing),
-      NULL);
-  CleanupAfterUninstall();
-}
-
-void AppLauncherHandler::ExtensionUninstallCanceled() {
+void AppLauncherHandler::OnExtensionUninstallDialogClosed(
+    bool did_start_uninstall,
+    const base::string16& error) {
   CleanupAfterUninstall();
 }
 

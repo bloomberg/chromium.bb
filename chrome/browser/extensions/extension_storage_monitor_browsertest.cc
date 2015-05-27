@@ -150,12 +150,6 @@ class ExtensionStorageMonitorTest : public ExtensionBrowserTest {
     WriteBytes(extension, num_bytes, false);
   }
 
-  void SimulateUninstallDialogAccept() {
-    // Ensure the uninstall dialog was shown and fake an accept.
-    ASSERT_TRUE(monitor()->uninstall_dialog_.get());
-    monitor()->ExtensionUninstallAccepted();
-  }
-
  private:
   void InitStorageMonitor() {
     storage_monitor_ = ExtensionStorageMonitor::Get(profile());
@@ -327,15 +321,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UninstallExtension) {
   ASSERT_TRUE(extension);
   WriteBytesExpectingNotification(extension, GetInitialExtensionThreshold());
 
-  // Fake clicking the notification button to uninstall.
+  // Fake clicking the notification button to uninstall and accepting the
+  // uninstall.
+  ExtensionUninstallDialog::ScopedAutoConfirm scoped_autoconfirm(
+      ExtensionUninstallDialog::ACCEPT);
+  TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()),
+                                         extension->id());
   message_center::MessageCenter::Get()->ClickOnNotificationButton(
       GetNotificationId(extension->id()),
       ExtensionStorageMonitor::BUTTON_UNINSTALL);
-
-  // Also fake accepting the uninstall.
-  TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()),
-                                         extension->id());
-  SimulateUninstallDialogAccept();
   observer.WaitForExtensionUninstalled();
 }
 

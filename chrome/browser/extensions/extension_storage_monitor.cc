@@ -365,26 +365,12 @@ void ExtensionStorageMonitor::OnExtensionUninstalled(
   RemoveNotificationForExtension(extension->id());
 }
 
-void ExtensionStorageMonitor::ExtensionUninstallAccepted() {
-  DCHECK(!uninstall_extension_id_.empty());
-
-  const Extension* extension = GetExtensionById(context_,
-                                                uninstall_extension_id_);
-  uninstall_extension_id_.clear();
-  if (!extension)
-    return;
-
-  ExtensionService* service =
-      ExtensionSystem::Get(context_)->extension_service();
-  DCHECK(service);
-  service->UninstallExtension(
-      extension->id(),
-      extensions::UNINSTALL_REASON_STORAGE_THRESHOLD_EXCEEDED,
-      base::Bind(&base::DoNothing),
-      NULL);
-}
-
-void ExtensionStorageMonitor::ExtensionUninstallCanceled() {
+void ExtensionStorageMonitor::OnExtensionUninstallDialogClosed(
+    bool did_start_uninstall,
+    const base::string16& error) {
+  // We may get a lagging OnExtensionUninstalledDialogClosed() call during
+  // testing, but did_start_uninstall should be false in this case.
+  DCHECK(!uninstall_extension_id_.empty() || !did_start_uninstall);
   uninstall_extension_id_.clear();
 }
 
@@ -621,7 +607,8 @@ void ExtensionStorageMonitor::ShowUninstallPrompt(
   }
 
   uninstall_extension_id_ = extension->id();
-  uninstall_dialog_->ConfirmUninstall(extension);
+  uninstall_dialog_->ConfirmUninstall(
+      extension, extensions::UNINSTALL_REASON_STORAGE_THRESHOLD_EXCEEDED);
 }
 
 int64 ExtensionStorageMonitor::GetNextStorageThreshold(

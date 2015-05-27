@@ -140,8 +140,8 @@ class AppLauncherHandler
   void PromptToEnableApp(const std::string& extension_id);
 
   // ExtensionUninstallDialog::Delegate:
-  void ExtensionUninstallAccepted() override;
-  void ExtensionUninstallCanceled() override;
+  void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
+                                        const base::string16& error) override;
 
   // ExtensionEnableFlowDelegate:
   void ExtensionEnableFlowFinished() override;

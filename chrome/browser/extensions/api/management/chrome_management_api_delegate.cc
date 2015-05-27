@@ -84,20 +84,20 @@ class ManagementUninstallFunctionUninstallDialogDelegate
             web_contents ? web_contents->GetTopLevelNativeWindow() : nullptr,
             this));
     if (show_programmatic_uninstall_ui) {
-      extension_uninstall_dialog_->ConfirmProgrammaticUninstall(
-          target_extension, function->extension());
+      extension_uninstall_dialog_->ConfirmUninstallByExtension(
+          target_extension, function->extension(),
+          extensions::UNINSTALL_REASON_MANAGEMENT_API);
     } else {
-      extension_uninstall_dialog_->ConfirmUninstall(target_extension);
+      extension_uninstall_dialog_->ConfirmUninstall(
+          target_extension, extensions::UNINSTALL_REASON_MANAGEMENT_API);
     }
   }
   ~ManagementUninstallFunctionUninstallDialogDelegate() override {}
 
   // ExtensionUninstallDialog::Delegate implementation.
-  void ExtensionUninstallAccepted() override {
-    function_->ExtensionUninstallAccepted();
-  }
-  void ExtensionUninstallCanceled() override {
-    function_->ExtensionUninstallCanceled();
+  void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
+                                        const base::string16& error) override {
+    function_->OnExtensionUninstallDialogClosed(did_start_uninstall, error);
   }
 
  private:

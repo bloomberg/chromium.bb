@@ -56,8 +56,8 @@ class AppInfoFooterPanel
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from ExtensionUninstallDialog::Delegate:
-  void ExtensionUninstallAccepted() override;
-  void ExtensionUninstallCanceled() override;
+  void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
+                                        const base::string16& error) override;
 
   // Create Shortcuts for the app. Must only be called if CanCreateShortcuts()
   // returns true.

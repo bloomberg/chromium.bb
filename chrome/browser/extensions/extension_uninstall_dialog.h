@@ -5,17 +5,15 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_UNINSTALL_DIALOG_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_UNINSTALL_DIALOG_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
+#include "base/threading/thread_checker.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
-
-namespace base {
-class MessageLoop;
-}
 
 namespace gfx {
 class Image;
@@ -36,13 +34,34 @@ class ExtensionUninstallDialog
     CLOSE_ACTION_LAST = 3,
   };
 
+  // A setting to cause extension/app installs from the webstore skip the normal
+  // confirmation dialog. This should only be used in tests.
+  enum AutoConfirmForTests {
+    NONE,    // The prompt will show normally.
+    ACCEPT,  // The prompt will always accept.
+    CANCEL,  // The prompt will always cancel.
+  };
+  class ScopedAutoConfirm {
+   public:
+    explicit ScopedAutoConfirm(AutoConfirmForTests new_value);
+    ~ScopedAutoConfirm();
+
+   private:
+    AutoConfirmForTests original_value_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedAutoConfirm);
+  };
+
+  // TODO(devlin): For a single method like this, a callback is probably more
+  // appropriate than a delegate.
   class Delegate {
    public:
-    // We call this method to signal that the uninstallation should continue.
-    virtual void ExtensionUninstallAccepted() = 0;
-
-    // We call this method to signal that the uninstallation should stop.
-    virtual void ExtensionUninstallCanceled() = 0;
+    // Called when the dialog closes.
+    // |did_start_uninstall| indicates whether the uninstall process for the
+    // extension started. If this is false, |error| will contain the reason.
+    virtual void OnExtensionUninstallDialogClosed(
+        bool did_start_uninstall,
+        const base::string16& error) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -61,12 +80,15 @@ class ExtensionUninstallDialog
   // Starts the process of showing a confirmation UI, which is split into two.
   // 1) Set off a 'load icon' task.
   // 2) Handle the load icon response and show the UI (OnImageLoaded).
-  void ConfirmUninstall(const Extension* extension);
+  void ConfirmUninstall(const scoped_refptr<const Extension>& extension,
+                        UninstallReason reason);
 
   // This shows the same dialog as above, except it also shows which extension
-  // triggered the dialog by calling chrome.management.uninstall API.
-  void ConfirmProgrammaticUninstall(const Extension* extension,
-                                    const Extension* triggering_extension);
+  // triggered the dialog.
+  void ConfirmUninstallByExtension(
+      const scoped_refptr<const Extension>& extension,
+      const scoped_refptr<const Extension>& triggering_extension,
+      UninstallReason reason);
 
   std::string GetHeadingText();
 
@@ -80,11 +102,7 @@ class ExtensionUninstallDialog
   // Constructor used by the derived classes.
   ExtensionUninstallDialog(Profile* profile, Delegate* delegate);
 
-  // Handles the "report abuse" checkbox being checked at the close of the
-  // dialog.
-  void HandleReportAbuse();
-
-  // Accessors for members
+  // Accessors for members.
   const Profile* profile() const { return profile_; }
   Delegate* delegate() const { return delegate_; }
   const Extension* extension() const { return extension_.get(); }
@@ -93,6 +111,12 @@ class ExtensionUninstallDialog
   const gfx::ImageSkia& icon() const { return icon_; }
 
  private:
+  static AutoConfirmForTests g_auto_confirm_for_testing;
+
+  // Handles the "report abuse" checkbox being checked at the close of the
+  // dialog.
+  void HandleReportAbuse();
+
   // Sets the icon that will be used in the dialog. If |icon| contains an empty
   // image, then we use a default icon instead.
   void SetIcon(const gfx::Image& image);
@@ -118,7 +142,9 @@ class ExtensionUninstallDialog
   // The extensions icon.
   gfx::ImageSkia icon_;
 
-  base::MessageLoop* ui_loop_;
+  UninstallReason uninstall_reason_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialog);
 };

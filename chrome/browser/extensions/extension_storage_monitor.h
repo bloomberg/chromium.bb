@@ -72,8 +72,8 @@ class ExtensionStorageMonitor : public KeyedService,
                               extensions::UninstallReason reason) override;
 
   // Overridden from ExtensionUninstallDialog::Delegate:
-  void ExtensionUninstallAccepted() override;
-  void ExtensionUninstallCanceled() override;
+  void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
+                                        const base::string16& error) override;
 
   std::string GetNotificationId(const std::string& extension_id);
 

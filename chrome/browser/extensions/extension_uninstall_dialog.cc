@@ -9,11 +9,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -32,6 +34,9 @@ namespace extensions {
 
 namespace {
 
+const char kExtensionRemovedError[] =
+    "Extension was removed before dialog closed.";
+
 // Returns bitmap for the default icon with size equal to the default icon's
 // pixel size under maximal supported scale factor.
 SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
@@ -43,27 +48,46 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 
 }  // namespace
 
+// static
+ExtensionUninstallDialog::AutoConfirmForTests
+ExtensionUninstallDialog::g_auto_confirm_for_testing =
+    ExtensionUninstallDialog::NONE;
+
+ExtensionUninstallDialog::ScopedAutoConfirm::ScopedAutoConfirm(
+    AutoConfirmForTests new_value)
+    : original_value_(g_auto_confirm_for_testing) {
+  g_auto_confirm_for_testing = new_value;
+}
+
+ExtensionUninstallDialog::ScopedAutoConfirm::~ScopedAutoConfirm() {
+  g_auto_confirm_for_testing = original_value_;
+}
+
 ExtensionUninstallDialog::ExtensionUninstallDialog(
     Profile* profile,
     ExtensionUninstallDialog::Delegate* delegate)
     : profile_(profile),
       delegate_(delegate),
-      ui_loop_(base::MessageLoop::current()) {
+      uninstall_reason_(UNINSTALL_REASON_FOR_TESTING) {
 }
 
 ExtensionUninstallDialog::~ExtensionUninstallDialog() {
 }
 
-void ExtensionUninstallDialog::ConfirmProgrammaticUninstall(
-    const Extension* extension,
-    const Extension* triggering_extension) {
+void ExtensionUninstallDialog::ConfirmUninstallByExtension(
+    const scoped_refptr<const Extension>& extension,
+    const scoped_refptr<const Extension>& triggering_extension,
+    UninstallReason reason) {
   triggering_extension_ = triggering_extension;
-  ConfirmUninstall(extension);
+  ConfirmUninstall(extension, reason);
 }
 
-void ExtensionUninstallDialog::ConfirmUninstall(const Extension* extension) {
-  DCHECK(ui_loop_ == base::MessageLoop::current());
+void ExtensionUninstallDialog::ConfirmUninstall(
+    const scoped_refptr<const Extension>& extension,
+    UninstallReason reason) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   extension_ = extension;
+  uninstall_reason_ = reason;
   // Bookmark apps may not have 128x128 icons so accept 64x64 icons.
   const int icon_size = extension_->from_bookmark()
                             ? extension_misc::EXTENSION_ICON_SMALL * 2
@@ -81,11 +105,9 @@ void ExtensionUninstallDialog::ConfirmUninstall(const Extension* extension) {
       ImageLoader::ImageRepresentation::NEVER_RESIZE,
       gfx::Size(),
       ui::SCALE_FACTOR_100P));
-  loader->LoadImagesAsync(extension_.get(),
-                          images_list,
+  loader->LoadImagesAsync(extension_.get(), images_list,
                           base::Bind(&ExtensionUninstallDialog::OnImageLoaded,
-                                     AsWeakPtr(),
-                                     extension_->id()));
+                                     AsWeakPtr(), extension_->id()));
 }
 
 void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {
@@ -108,12 +130,24 @@ void ExtensionUninstallDialog::OnImageLoaded(const std::string& extension_id,
       ExtensionRegistry::Get(profile_)
           ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
   if (!target_extension) {
-    delegate_->ExtensionUninstallCanceled();
+    delegate_->OnExtensionUninstallDialogClosed(
+        false, base::ASCIIToUTF16(kExtensionRemovedError));
     return;
   }
 
   SetIcon(image);
-  Show();
+
+  switch (g_auto_confirm_for_testing) {
+    case NONE:
+      Show();
+      break;
+    case ACCEPT:
+      OnDialogClosed(CLOSE_ACTION_UNINSTALL);
+      break;
+    case CANCEL:
+      OnDialogClosed(CLOSE_ACTION_CANCELED);
+      break;
+  }
 }
 
 std::string ExtensionUninstallDialog::GetHeadingText() {
@@ -139,6 +173,36 @@ void ExtensionUninstallDialog::OnDialogClosed(CloseAction action) {
                               action,
                               CLOSE_ACTION_LAST);
   }
+
+  bool success = false;
+  base::string16 error;
+  switch (action) {
+    case CLOSE_ACTION_UNINSTALL_AND_REPORT_ABUSE:
+      HandleReportAbuse();
+    // Fall through.
+    case CLOSE_ACTION_UNINSTALL: {
+      const Extension* current_extension =
+          ExtensionRegistry::Get(profile_)->GetExtensionById(
+              extension_->id(), ExtensionRegistry::EVERYTHING);
+      if (current_extension) {
+        success =
+            ExtensionSystem::Get(profile_)
+                ->extension_service()
+                ->UninstallExtension(extension_->id(), uninstall_reason_,
+                                     base::Bind(&base::DoNothing), &error);
+      } else {
+        error = base::ASCIIToUTF16(kExtensionRemovedError);
+      }
+      break;
+    }
+    case CLOSE_ACTION_CANCELED:
+      error = base::ASCIIToUTF16("User canceled uninstall dialog");
+      break;
+    case CLOSE_ACTION_LAST:
+      NOTREACHED();
+  }
+
+  delegate_->OnExtensionUninstallDialogClosed(success, error);
 }
 
 void ExtensionUninstallDialog::HandleReportAbuse() {

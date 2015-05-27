@@ -167,8 +167,8 @@ class ExtensionDisabledGlobalError
   bool ShouldCloseOnDeactivate() const override;
 
   // ExtensionUninstallDialog::Delegate implementation.
-  void ExtensionUninstallAccepted() override;
-  void ExtensionUninstallCanceled() override;
+  void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
+                                        const base::string16& error) override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,
@@ -370,8 +370,8 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&extensions::ExtensionUninstallDialog::ConfirmUninstall,
-                 uninstall_dialog_->AsWeakPtr(),
-                 extension_));
+                 uninstall_dialog_->AsWeakPtr(), extension_,
+                 extensions::UNINSTALL_REASON_EXTENSION_DISABLED));
 }
 
 bool ExtensionDisabledGlobalError::ShouldCloseOnDeactivate() const {
@@ -381,15 +381,10 @@ bool ExtensionDisabledGlobalError::ShouldCloseOnDeactivate() const {
   return false;
 }
 
-void ExtensionDisabledGlobalError::ExtensionUninstallAccepted() {
-  service_->UninstallExtension(extension_->id(),
-                               extensions::UNINSTALL_REASON_EXTENSION_DISABLED,
-                               base::Bind(&base::DoNothing),
-                               NULL);
-}
-
-void ExtensionDisabledGlobalError::ExtensionUninstallCanceled() {
-  // Nothing happens, and the error is still there.
+void ExtensionDisabledGlobalError::OnExtensionUninstallDialogClosed(
+    bool did_start_uninstall,
+    const base::string16& error) {
+  // No need to do anything.
 }
 
 void ExtensionDisabledGlobalError::Observe(

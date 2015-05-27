@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -233,11 +232,12 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       break;
     }
     case UNINSTALL: {
-      AddRef();  // Balanced in Accepted() and Canceled()
+      AddRef();  // Balanced in OnExtensionUninstallDialogClosed().
       extension_uninstall_dialog_.reset(
           extensions::ExtensionUninstallDialog::Create(
               profile_, browser_->window()->GetNativeWindow(), this));
-      extension_uninstall_dialog_->ConfirmUninstall(extension);
+      extension_uninstall_dialog_->ConfirmUninstall(
+          extension, extensions::UNINSTALL_REASON_USER_INITIATED);
       break;
     }
     case MANAGE: {
@@ -254,19 +254,9 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
   }
 }
 
-void ExtensionContextMenuModel::ExtensionUninstallAccepted() {
-  if (GetExtension()) {
-    extensions::ExtensionSystem::Get(profile_)
-        ->extension_service()
-        ->UninstallExtension(extension_id_,
-                             extensions::UNINSTALL_REASON_USER_INITIATED,
-                             base::Bind(&base::DoNothing),
-                             NULL);
-  }
-  Release();
-}
-
-void ExtensionContextMenuModel::ExtensionUninstallCanceled() {
+void ExtensionContextMenuModel::OnExtensionUninstallDialogClosed(
+    bool did_start_uninstall,
+    const base::string16& error) {
   Release();
 }
 

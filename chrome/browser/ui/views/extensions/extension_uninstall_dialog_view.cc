@@ -47,8 +47,8 @@ class ExtensionUninstallDialogViews
   void DialogDelegateDestroyed() { view_ = NULL; }
 
   // Forwards the accept and cancels to the delegate.
-  void ExtensionUninstallAccepted(bool handle_report_abuse);
-  void ExtensionUninstallCanceled();
+  void DialogAccepted(bool handle_report_abuse);
+  void DialogCanceled();
 
  private:
   void Show() override;
@@ -130,7 +130,7 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 
 void ExtensionUninstallDialogViews::Show() {
   if (parent_ && parent_window_tracker_->WasNativeWindowClosed()) {
-    delegate()->ExtensionUninstallCanceled();
+    OnDialogClosed(CLOSE_ACTION_CANCELED);
     return;
   }
 
@@ -139,25 +139,19 @@ void ExtensionUninstallDialogViews::Show() {
   constrained_window::CreateBrowserModalDialogViews(view_, parent_)->Show();
 }
 
-void ExtensionUninstallDialogViews::ExtensionUninstallAccepted(
-    bool report_abuse_checked) {
+void ExtensionUninstallDialogViews::DialogAccepted(bool report_abuse_checked) {
   // The widget gets destroyed when the dialog is accepted.
   view_->DialogDestroyed();
   view_ = nullptr;
-  if (report_abuse_checked)
-    HandleReportAbuse();
   OnDialogClosed(report_abuse_checked ?
       CLOSE_ACTION_UNINSTALL_AND_REPORT_ABUSE : CLOSE_ACTION_UNINSTALL);
-
-  delegate()->ExtensionUninstallAccepted();
 }
 
-void ExtensionUninstallDialogViews::ExtensionUninstallCanceled() {
+void ExtensionUninstallDialogViews::DialogCanceled() {
   // The widget gets destroyed when the dialog is canceled.
   view_->DialogDestroyed();
   view_ = nullptr;
   OnDialogClosed(CLOSE_ACTION_CANCELED);
-  delegate()->ExtensionUninstallCanceled();
 }
 
 ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
@@ -184,12 +178,11 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
 
 ExtensionUninstallDialogDelegateView::~ExtensionUninstallDialogDelegateView() {
   // If we're here, 2 things could have happened. Either the user closed the
-  // dialog nicely and one of ExtensionUninstallAccepted or
-  // ExtensionUninstallCanceled has been called (in which case dialog_ will be
-  // NULL), *or* neither of them have been called and we are being forced closed
-  // by our parent widget. In this case, we need to make sure to notify dialog_
-  // not to call us again, since we're about to be freed by the Widget
-  // framework.
+  // dialog nicely and one of the installed/canceled methods has been called
+  // (in which case dialog_ will be null), *or* neither of them have been
+  // called and we are being forced closed by our parent widget. In this case,
+  // we need to make sure to notify dialog_ not to call us again, since we're
+  // about to be freed by the Widget framework.
   if (dialog_)
     dialog_->DialogDelegateDestroyed();
 }
@@ -217,15 +210,15 @@ base::string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
 
 bool ExtensionUninstallDialogDelegateView::Accept() {
   if (dialog_) {
-    dialog_->ExtensionUninstallAccepted(
-        report_abuse_checkbox_ && report_abuse_checkbox_->checked());
+    dialog_->DialogAccepted(report_abuse_checkbox_ &&
+                            report_abuse_checkbox_->checked());
   }
   return true;
 }
 
 bool ExtensionUninstallDialogDelegateView::Cancel() {
   if (dialog_)
-    dialog_->ExtensionUninstallCanceled();
+    dialog_->DialogCanceled();
   return true;
 }
 

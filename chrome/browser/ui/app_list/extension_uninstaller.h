@@ -25,8 +25,9 @@ class ExtensionUninstaller
 
  private:
   // Overridden from ExtensionUninstallDialog::Delegate:
-  void ExtensionUninstallAccepted() override;
-  void ExtensionUninstallCanceled() override;
+  void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
+                                        const base::string16& error) override;
+
   void CleanUp();
 
   Profile* profile_;
