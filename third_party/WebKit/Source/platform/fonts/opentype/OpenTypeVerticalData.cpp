@@ -230,10 +230,12 @@ void OpenTypeVerticalData::getVerticalTranslationsForGlyphs(const SimpleFontData
 
         // For Y, try VORG first.
         if (useVORG) {
-            int16_t vertOriginYFUnit = m_vertOriginY.get(glyph);
-            if (vertOriginYFUnit) {
-                outXYArray[1] = -vertOriginYFUnit * sizePerUnit;
-                continue;
+            if (glyph) {
+                int16_t vertOriginYFUnit = m_vertOriginY.get(glyph);
+                if (vertOriginYFUnit) {
+                    outXYArray[1] = -vertOriginYFUnit * sizePerUnit;
+                    continue;
+                }
             }
             if (std::isnan(defaultVertOriginY))
                 defaultVertOriginY = -m_defaultVertOriginY * sizePerUnit;
