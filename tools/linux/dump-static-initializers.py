@@ -40,8 +40,8 @@ IS_GIT_WORKSPACE = (subprocess.Popen(
 
 class Demangler(object):
   """A wrapper around c++filt to provide a function to demangle symbols."""
-  def __init__(self):
-    self.cppfilt = subprocess.Popen(['c++filt'],
+  def __init__(self, toolchain):
+    self.cppfilt = subprocess.Popen([toolchain + 'c++filt'],
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE)
 
@@ -127,9 +127,10 @@ def test_ParseNmLine():
 test_ParseNmLine()
 
 
-def ParseNm(binary):
+def ParseNm(toolchain, binary):
   """Given a binary, yield static initializers as (file, start, size) tuples."""
-  nm = subprocess.Popen(['nm', '-S', binary], stdout=subprocess.PIPE)
+  nm = subprocess.Popen([toolchain + 'nm', '-S', binary],
+                        stdout=subprocess.PIPE)
   for line in nm.stdout:
     parse = ParseNmLine(line)
     if parse:
@@ -139,9 +140,9 @@ def ParseNm(binary):
 # Example line:
 #     12354ab:  (disassembly, including <FunctionReference>)
 disassembly_re = re.compile(r'^\s+[0-9a-f]+:.*<(\S+)>')
-def ExtractSymbolReferences(binary, start, end):
+def ExtractSymbolReferences(toolchain, binary, start, end):
   """Given a span of addresses, returns symbol references from disassembly."""
-  cmd = ['objdump', binary, '--disassemble',
+  cmd = [toolchain + 'objdump', binary, '--disassemble',
          '--start-address=0x%x' % start, '--stop-address=0x%x' % end]
   objdump = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 
@@ -170,17 +171,21 @@ def main():
                     action='store_true', default=False,
                     help='Prints the filename on each line, for more easily '
                          'diff-able output. (Used by sizes.py)')
+  parser.add_option('-t', '--toolchain-prefix', dest='toolchain',
+                    action='store', default='',
+                    help='Toolchain prefix to append to all tool invocations '
+                         '(nm, objdump).')
   opts, args = parser.parse_args()
   if len(args) != 1:
     parser.error('missing filename argument')
     return 1
   binary = args[0]
 
-  demangler = Demangler()
+  demangler = Demangler(opts.toolchain)
   file_count = 0
   initializer_count = 0
 
-  files = ParseNm(binary)
+  files = ParseNm(opts.toolchain, binary)
   if opts.diffable:
     files = sorted(files)
   for filename, addr, size in files:
@@ -195,7 +200,8 @@ def main():
       # Android uses gcc 4.4.
       ref_output.append('[empty ctor, but it still has cost on gcc <4.6]')
     else:
-      for ref in ExtractSymbolReferences(binary, addr, addr+size):
+      for ref in ExtractSymbolReferences(opts.toolchain, binary, addr,
+                                         addr+size):
         initializer_count += 1
 
         ref = demangler.Demangle(ref)
