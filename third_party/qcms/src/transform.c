@@ -1252,6 +1252,8 @@ qcms_transform* qcms_transform_create(
             return NULL;
         }
 
+	transform->transform_flags = 0;
+
 	if (out->output_table_r &&
 			out->output_table_g &&
 			out->output_table_b) {
@@ -1365,6 +1367,9 @@ qcms_transform* qcms_transform_create(
 		transform->matrix[1][2] = result.m[2][1];
 		transform->matrix[2][2] = result.m[2][2];
 
+		/* Flag transform as matrix. */
+		transform->transform_flags |= TRANSFORM_FLAG_MATRIX;
+
 	} else if (in->color_space == GRAY_SIGNATURE) {
 		if (in_type != QCMS_DATA_GRAY_8 &&
 				in_type != QCMS_DATA_GRAYA_8){
@@ -1431,7 +1436,27 @@ void qcms_transform_data_type(qcms_transform *transform, void *src, void *dest, 
 }
 
 qcms_bool qcms_supports_iccv4;
+
 void qcms_enable_iccv4()
 {
 	qcms_supports_iccv4 = true;
+}
+
+static inline qcms_bool transform_is_matrix(qcms_transform *t)
+{
+	return (t->transform_flags & TRANSFORM_FLAG_MATRIX) ? true : false;
+}
+
+qcms_bool qcms_transform_is_matrix(qcms_transform *t)
+{
+	return transform_is_matrix(t);
+}
+
+float qcms_transform_get_matrix(qcms_transform *t, unsigned i, unsigned j)
+{
+	assert(transform_is_matrix(t) && i < 3 && j < 3);
+
+	// Return transform matrix element in row major order (permute i and j)
+
+	return t->matrix[j][i];
 }

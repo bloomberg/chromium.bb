@@ -158,11 +158,14 @@ qcms_bool qcms_profile_get_vcgt_rgb_channels(qcms_profile *profile, unsigned sho
 
 qcms_transform* qcms_transform_create(
 		qcms_profile *in, qcms_data_type in_type,
-		qcms_profile* out, qcms_data_type out_type,
+		qcms_profile *out, qcms_data_type out_type,
 		qcms_intent intent);
 
+qcms_bool qcms_transform_is_matrix(qcms_transform *transform);
+float qcms_transform_get_matrix(qcms_transform *transform, unsigned i, unsigned j);
+
 qcms_bool qcms_transform_create_LUT_zyx_bgra(
-		qcms_profile *in, qcms_profile* out, qcms_intent intent,
+		qcms_profile *in, qcms_profile *out, qcms_intent intent,
 		int samples, unsigned char* lut);
 
 void qcms_transform_data(qcms_transform *transform, void *src, void *dest, size_t length);

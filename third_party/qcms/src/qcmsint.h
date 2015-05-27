@@ -94,6 +94,10 @@ struct _qcms_transform {
 	struct precache_output *output_table_b;
 
 	void (*transform_fn)(struct _qcms_transform *transform, unsigned char *src, unsigned char *dest, size_t length, struct _qcms_format_type output_format);
+
+#define TRANSFORM_FLAG_MATRIX  0x0001
+
+	uint16_t transform_flags;
 };
 
 struct matrix {
