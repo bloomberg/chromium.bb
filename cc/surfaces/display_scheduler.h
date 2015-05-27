@@ -35,6 +35,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverMixIn {
   ~DisplayScheduler() override;
 
   void SetRootSurfaceResourcesLocked(bool locked);
+  void ForceImmediateSwapIfPossible();
   virtual void EntireDisplayDamaged(SurfaceId root_surface_id);
   virtual void SurfaceDamaged(SurfaceId surface_id);
 
@@ -49,6 +50,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverMixIn {
  protected:
   base::TimeTicks DesiredBeginFrameDeadlineTime();
   virtual void ScheduleBeginFrameDeadline();
+  void AttemptDrawAndSwap();
   void OnBeginFrameDeadline();
   void DrawAndSwap();
 

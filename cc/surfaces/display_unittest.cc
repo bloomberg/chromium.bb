@@ -21,6 +21,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::AnyNumber;
+
 namespace cc {
 namespace {
 
@@ -33,14 +35,19 @@ class DisplayTest : public testing::Test {
  public:
   DisplayTest() : factory_(&manager_, &empty_client_) {}
 
-  void SetUp() override {
-    output_surface_ = FakeOutputSurface::CreateSoftware(
-        make_scoped_ptr(new SoftwareOutputDevice));
+ protected:
+  void SetUpContext(scoped_ptr<TestWebGraphicsContext3D> context) {
+    if (context) {
+      output_surface_ = FakeOutputSurface::Create3d(
+          TestContextProvider::Create(context.Pass()));
+    } else {
+      output_surface_ = FakeOutputSurface::CreateSoftware(
+          make_scoped_ptr(new SoftwareOutputDevice));
+    }
     shared_bitmap_manager_.reset(new TestSharedBitmapManager);
     output_surface_ptr_ = output_surface_.get();
   }
 
- protected:
   void SubmitFrame(RenderPassList* pass_list, SurfaceId surface_id) {
     scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     pass_list->swap(frame_data->render_pass_list);
@@ -90,7 +97,10 @@ class TestDisplayScheduler : public DisplayScheduler {
     entire_display_damaged = true;
   }
 
-  void SurfaceDamaged(SurfaceId surface_id) override { damaged = true; }
+  void SurfaceDamaged(SurfaceId surface_id) override {
+    damaged = true;
+    needs_draw_ = true;
+  }
 
   void DidSwapBuffers() override { swapped = true; }
 
@@ -110,9 +120,11 @@ void CopyCallback(bool* called, scoped_ptr<CopyOutputResult> result) {
 
 // Check that frame is damaged and swapped only under correct conditions.
 TEST_F(DisplayTest, DisplayDamaged) {
+  SetUpContext(nullptr);
   TestDisplayClient client;
   RendererSettings settings;
   settings.partial_swap_enabled = true;
+  settings.finish_rendering_on_resize = true;
   Display display(&client, &manager_, shared_bitmap_manager_.get(), nullptr,
                   settings);
 
@@ -271,7 +283,114 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_EQ(4u, output_surface_ptr_->num_sent_frames());
   }
 
+  // Resize should cause a swap if no frame was swapped at the previous size.
+  {
+    scheduler.swapped = false;
+    display.Resize(gfx::Size(200, 200));
+    EXPECT_FALSE(scheduler.swapped);
+    EXPECT_EQ(4u, output_surface_ptr_->num_sent_frames());
+
+    pass = RenderPass::Create();
+    pass->output_rect = gfx::Rect(0, 0, 200, 200);
+    pass->damage_rect = gfx::Rect(10, 10, 10, 10);
+    pass->id = RenderPassId(1, 1);
+
+    pass_list.push_back(pass.Pass());
+    scheduler.ResetDamageForTest();
+    scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    pass_list.swap(frame_data->render_pass_list);
+
+    scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->delegated_frame_data = frame_data.Pass();
+
+    factory_.SubmitFrame(surface_id, frame.Pass(),
+                         SurfaceFactory::DrawCallback());
+    EXPECT_TRUE(scheduler.damaged);
+    EXPECT_FALSE(scheduler.entire_display_damaged);
+
+    scheduler.swapped = false;
+    display.Resize(gfx::Size(100, 100));
+    EXPECT_TRUE(scheduler.swapped);
+    EXPECT_EQ(5u, output_surface_ptr_->num_sent_frames());
+  }
+
   factory_.Destroy(surface_id);
+}
+
+class MockedContext : public TestWebGraphicsContext3D {
+ public:
+  MOCK_METHOD0(finish, void());
+};
+
+TEST_F(DisplayTest, Finish) {
+  scoped_ptr<MockedContext> context(new MockedContext());
+  MockedContext* context_ptr = context.get();
+  SetUpContext(context.Pass());
+
+  EXPECT_CALL(*context_ptr, finish()).Times(0);
+  TestDisplayClient client;
+  RendererSettings settings;
+  settings.partial_swap_enabled = true;
+  settings.finish_rendering_on_resize = true;
+  Display display(&client, &manager_, shared_bitmap_manager_.get(), nullptr,
+                  settings);
+
+  TestDisplayScheduler scheduler(&display, &fake_begin_frame_source_);
+  display.Initialize(output_surface_.Pass(), &scheduler);
+
+  SurfaceId surface_id(7u);
+  display.SetSurfaceId(surface_id, 1.f);
+
+  display.Resize(gfx::Size(100, 100));
+  factory_.Create(surface_id);
+
+  {
+    RenderPassList pass_list;
+    scoped_ptr<RenderPass> pass = RenderPass::Create();
+    pass->output_rect = gfx::Rect(0, 0, 100, 100);
+    pass->damage_rect = gfx::Rect(10, 10, 1, 1);
+    pass->id = RenderPassId(1, 1);
+    pass_list.push_back(pass.Pass());
+
+    SubmitFrame(&pass_list, surface_id);
+  }
+
+  display.DrawAndSwap();
+
+  // First resize and draw shouldn't finish.
+  testing::Mock::VerifyAndClearExpectations(context_ptr);
+
+  EXPECT_CALL(*context_ptr, finish());
+  display.Resize(gfx::Size(150, 150));
+  testing::Mock::VerifyAndClearExpectations(context_ptr);
+
+  // Another resize without a swap doesn't need to finish.
+  EXPECT_CALL(*context_ptr, finish()).Times(0);
+  display.Resize(gfx::Size(200, 200));
+  testing::Mock::VerifyAndClearExpectations(context_ptr);
+
+  EXPECT_CALL(*context_ptr, finish()).Times(0);
+  {
+    RenderPassList pass_list;
+    scoped_ptr<RenderPass> pass = RenderPass::Create();
+    pass->output_rect = gfx::Rect(0, 0, 200, 200);
+    pass->damage_rect = gfx::Rect(10, 10, 1, 1);
+    pass->id = RenderPassId(1, 1);
+    pass_list.push_back(pass.Pass());
+
+    SubmitFrame(&pass_list, surface_id);
+  }
+
+  display.DrawAndSwap();
+
+  testing::Mock::VerifyAndClearExpectations(context_ptr);
+
+  EXPECT_CALL(*context_ptr, finish());
+  display.Resize(gfx::Size(250, 250));
+  testing::Mock::VerifyAndClearExpectations(context_ptr);
+
+  factory_.Destroy(surface_id);
+  EXPECT_CALL(*context_ptr, finish()).Times(AnyNumber());
 }
 
 }  // namespace

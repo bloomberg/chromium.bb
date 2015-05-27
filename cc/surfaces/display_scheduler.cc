@@ -47,6 +47,14 @@ void DisplayScheduler::SetRootSurfaceResourcesLocked(bool locked) {
   ScheduleBeginFrameDeadline();
 }
 
+// This is used to force an immediate swap before a resize.
+void DisplayScheduler::ForceImmediateSwapIfPossible() {
+  bool in_begin = inside_begin_frame_deadline_interval_;
+  AttemptDrawAndSwap();
+  if (in_begin)
+    begin_frame_source_->DidFinishFrame(0);
+}
+
 // Notification that there was a resize or the root surface changed and
 // that we should just draw immediately.
 void DisplayScheduler::EntireDisplayDamaged(SurfaceId root_surface_id) {
@@ -240,8 +248,7 @@ void DisplayScheduler::ScheduleBeginFrameDeadline() {
                "desired_deadline", desired_deadline);
 }
 
-void DisplayScheduler::OnBeginFrameDeadline() {
-  TRACE_EVENT0("cc", "DisplayScheduler::OnBeginFrameDeadline");
+void DisplayScheduler::AttemptDrawAndSwap() {
   inside_begin_frame_deadline_interval_ = false;
   begin_frame_deadline_task_.Cancel();
   begin_frame_deadline_task_time_ = base::TimeTicks();
@@ -252,7 +259,12 @@ void DisplayScheduler::OnBeginFrameDeadline() {
   } else {
     begin_frame_source_->SetNeedsBeginFrames(false);
   }
+}
 
+void DisplayScheduler::OnBeginFrameDeadline() {
+  TRACE_EVENT0("cc", "DisplayScheduler::OnBeginFrameDeadline");
+
+  AttemptDrawAndSwap();
   begin_frame_source_->DidFinishFrame(0);
 }
 

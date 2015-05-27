@@ -33,6 +33,7 @@ Display::Display(DisplayClient* client,
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
       device_scale_factor_(1.f),
+      swapped_since_resize_(false),
       scheduler_(nullptr),
       texture_mailbox_deleter_(
           new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get())) {
@@ -74,8 +75,13 @@ void Display::Resize(const gfx::Size& size) {
     return;
   // Need to ensure all pending swaps have executed before the window is
   // resized, or D3D11 will scale the swap output.
-  if (renderer_ && settings_.finish_rendering_on_resize)
-    renderer_->Finish();
+  if (renderer_ && settings_.finish_rendering_on_resize) {
+    if (!swapped_since_resize_ && scheduler_)
+      scheduler_->ForceImmediateSwapIfPossible();
+    if (swapped_since_resize_)
+      renderer_->Finish();
+  }
+  swapped_since_resize_ = false;
   current_surface_size_ = size;
   if (scheduler_)
     scheduler_->EntireDisplayDamaged(current_surface_id_);
@@ -181,6 +187,7 @@ bool Display::DrawAndSwap() {
   }
 
   if (should_draw && !avoid_swap) {
+    swapped_since_resize_ = true;
     renderer_->SwapBuffers(frame->metadata);
   } else {
     stored_latency_info_.insert(stored_latency_info_.end(),

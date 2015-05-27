@@ -105,6 +105,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   float device_scale_factor_;
+  bool swapped_since_resize_;
   scoped_ptr<OutputSurface> output_surface_;
   DisplayScheduler* scheduler_;
   scoped_ptr<ResourceProvider> resource_provider_;
