@@ -1571,6 +1571,8 @@ class PreCQLauncherStage(SyncStage):
         'launch_count', launch_count)
     graphite.StatsFactory.GetInstance().Counter('pre-cq').increment(
         'cl_launch_count', cl_launch_count)
+    graphite.StatsFactory.GetInstance().Counter('pre-cq').increment(
+        'tick_count')
 
     self.last_cycle_launch_count = launch_count
 
