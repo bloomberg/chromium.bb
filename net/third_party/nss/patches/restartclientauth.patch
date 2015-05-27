@@ -15,10 +15,10 @@ index e2d1b09..593dd00 100644
  ** Query security status of socket. *on is set to one if security is
  ** enabled. *keySize will contain the stream key size used. *issuer will
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index cb59cc1..1852806 100644
+index 800c28e..29e8f1c 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
-@@ -7259,6 +7259,85 @@ done:
+@@ -7275,6 +7275,85 @@ done:
      return rv;
  }
  
@@ -105,10 +105,10 @@ index cb59cc1..1852806 100644
  ssl3_CheckFalseStart(sslSocket *ss)
  {
 diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 9f59f5a..c6ac398 100644
+index 46e618a..2cf0b3a 100644
 --- a/ssl/sslimpl.h
 +++ b/ssl/sslimpl.h
-@@ -1592,16 +1592,17 @@ extern  SECStatus ssl3_MasterKeyDeriveBypass( ssl3CipherSpec * pwSpec,
+@@ -1599,16 +1599,17 @@ extern  SECStatus ssl3_MasterKeyDeriveBypass( ssl3CipherSpec * pwSpec,
  /* These functions are called from secnav, even though they're "private". */
  
  extern int ssl2_SendErrorMessage(struct sslSocketStr *ss, int error);

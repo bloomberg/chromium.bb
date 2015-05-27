@@ -31,10 +31,10 @@ index 716537d..80717db 100644
  **
  ** This API should be used to control SSL 3.0 & TLS support instead of the
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 45c3454..67c8f6d 100644
+index c0e8e79..7c06815 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
-@@ -12471,6 +12471,68 @@ ssl3_InitSocketPolicy(sslSocket *ss)
+@@ -12479,6 +12479,68 @@ ssl3_InitSocketPolicy(sslSocket *ss)
      PORT_Memcpy(ss->cipherSuites, cipherSuites, sizeof cipherSuites);
  }
  
@@ -104,10 +104,10 @@ index 45c3454..67c8f6d 100644
   * the caller of this function.
   */
 diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 57346cb..2d21e90 100644
+index e11860e..0ece0ed 100644
 --- a/ssl/sslimpl.h
 +++ b/ssl/sslimpl.h
-@@ -1857,6 +1857,11 @@ extern PRBool ssl_GetSessionTicketKeysPKCS11(SECKEYPrivateKey *svrPrivKey,
+@@ -1864,6 +1864,11 @@ extern PRBool ssl_GetSessionTicketKeysPKCS11(SECKEYPrivateKey *svrPrivKey,
  extern SECStatus ssl3_ValidateNextProtoNego(const unsigned char* data,
  					    unsigned int length);
  
@@ -120,7 +120,7 @@ index 57346cb..2d21e90 100644
  extern PRFileDesc *ssl_NewPRSocket(sslSocket *ss, PRFileDesc *fd);
  extern void ssl_FreePRSocket(PRFileDesc *fd);
 diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index d3f3bf4..47906e0 100644
+index 042f24f..14ff328 100644
 --- a/ssl/sslsock.c
 +++ b/ssl/sslsock.c
 @@ -1345,6 +1345,27 @@ NSS_SetFrancePolicy(void)

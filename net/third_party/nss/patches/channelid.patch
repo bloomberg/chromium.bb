@@ -55,7 +55,7 @@ index 593dd00..716537d 100644
  ** How long should we wait before retransmitting the next flight of
  ** the DTLS handshake? Returns SECFailure if not DTLS or not in a
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 1852806..45c3454 100644
+index 29e8f1c..c0e8e79 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
 @@ -55,6 +55,7 @@ static SECStatus ssl3_SendCertificateStatus( sslSocket *ss);
@@ -66,7 +66,7 @@ index 1852806..45c3454 100644
  static SECStatus ssl3_SendFinished(          sslSocket *ss, PRInt32 flags);
  static SECStatus ssl3_SendServerHello(       sslSocket *ss);
  static SECStatus ssl3_SendServerHelloDone(   sslSocket *ss);
-@@ -6281,6 +6282,15 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+@@ -6296,6 +6297,15 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
      }
  #endif  /* NSS_PLATFORM_CLIENT_AUTH */
  
@@ -82,7 +82,7 @@ index 1852806..45c3454 100644
      temp = ssl3_ConsumeHandshakeNumber(ss, 2, &b, &length);
      if (temp < 0) {
      	goto loser; 	/* alert has been sent */
-@@ -6563,7 +6573,7 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+@@ -6578,7 +6588,7 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
  	if (rv != SECSuccess) {
  	    goto alert_loser;	/* err code was set */
  	}
@@ -91,10 +91,10 @@ index 1852806..45c3454 100644
      } while (0);
  
      if (sid_match)
-@@ -6589,6 +6599,27 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
- 
-     ss->ssl3.hs.isResuming = PR_FALSE;
-     ss->ssl3.hs.ws         = wait_server_cert;
+@@ -6613,6 +6623,27 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+     } else {
+         ss->ssl3.hs.ws = wait_cert_request;
+     }
 +
 +winner:
 +    /* If we will need a ChannelID key then we make the callback now. This
@@ -119,7 +119,7 @@ index 1852806..45c3454 100644
      return SECSuccess;
  
  alert_loser:
-@@ -7550,7 +7581,14 @@ ssl3_SendClientSecondRound(sslSocket *ss)
+@@ -7565,7 +7596,14 @@ ssl3_SendClientSecondRound(sslSocket *ss)
  	if (rv != SECSuccess) {
  	    goto loser;	/* err code was set. */
  	}
@@ -134,7 +134,7 @@ index 1852806..45c3454 100644
  	if (ss->opt.enableFalseStart) {
  	    if (!ss->ssl3.hs.authCertificatePending) {
  		/* When we fix bug 589047, we will need to know whether we are
-@@ -7587,6 +7625,33 @@ ssl3_SendClientSecondRound(sslSocket *ss)
+@@ -7602,6 +7640,33 @@ ssl3_SendClientSecondRound(sslSocket *ss)
  
      ssl_ReleaseXmitBufLock(ss);		/*******************************/
  
@@ -168,7 +168,7 @@ index 1852806..45c3454 100644
      if (ssl3_ExtensionNegotiated(ss, ssl_session_ticket_xtn))
  	ss->ssl3.hs.ws = wait_new_session_ticket;
      else
-@@ -10582,6 +10647,184 @@ ssl3_RecordKeyLog(sslSocket *ss)
+@@ -10590,6 +10655,184 @@ ssl3_RecordKeyLog(sslSocket *ss)
  }
  
  /* called from ssl3_SendClientSecondRound
@@ -353,7 +353,7 @@ index 1852806..45c3454 100644
   *             ssl3_HandleClientHello
   *             ssl3_HandleFinished
   */
-@@ -10841,11 +11084,16 @@ ssl3_HandleFinished(sslSocket *ss, SSL3Opaque *b, PRUint32 length,
+@@ -10849,11 +11092,16 @@ ssl3_HandleFinished(sslSocket *ss, SSL3Opaque *b, PRUint32 length,
  	    flags = ssl_SEND_FLAG_FORCE_INTO_BUFFER;
  	}
  
@@ -374,7 +374,7 @@ index 1852806..45c3454 100644
  	}
  
  	if (IS_DTLS(ss)) {
-@@ -12325,6 +12573,11 @@ ssl3_DestroySSL3Info(sslSocket *ss)
+@@ -12333,6 +12581,11 @@ ssl3_DestroySSL3Info(sslSocket *ss)
  	ssl_FreePlatformKey(ss->ssl3.platformClientKey);
  #endif /* NSS_PLATFORM_CLIENT_AUTH */
  
@@ -387,13 +387,13 @@ index 1852806..45c3454 100644
  	ssl3_CleanupPeerCerts(ss);
  
 diff --git a/ssl/ssl3ext.c b/ssl/ssl3ext.c
-index 9345be8..b6ed17d 100644
+index 0a2288a..4d17587 100644
 --- a/ssl/ssl3ext.c
 +++ b/ssl/ssl3ext.c
-@@ -68,6 +68,10 @@ static PRInt32 ssl3_SendUseSRTPXtn(sslSocket *ss, PRBool append,
-     PRUint32 maxBytes);
- static SECStatus ssl3_HandleUseSRTPXtn(sslSocket * ss, PRUint16 ex_type,
-     SECItem *data);
+@@ -73,6 +73,10 @@ static SECStatus ssl3_ClientHandleUseSRTPXtn(sslSocket * ss, PRUint16 ex_type,
+                                              SECItem *data);
+ static SECStatus ssl3_ServerHandleUseSRTPXtn(sslSocket * ss, PRUint16 ex_type,
+                                              SECItem *data);
 +static SECStatus ssl3_ClientHandleChannelIDXtn(sslSocket *ss,
 +    PRUint16 ex_type, SECItem *data);
 +static PRInt32 ssl3_ClientSendChannelIDXtn(sslSocket *ss, PRBool append,
@@ -401,23 +401,23 @@ index 9345be8..b6ed17d 100644
  static PRInt32 ssl3_ServerSendStatusRequestXtn(sslSocket * ss,
      PRBool append, PRUint32 maxBytes);
  static SECStatus ssl3_ServerHandleStatusRequestXtn(sslSocket *ss,
-@@ -264,6 +268,7 @@ static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
+@@ -269,6 +273,7 @@ static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
      { ssl_next_proto_nego_xtn,    &ssl3_ClientHandleNextProtoNegoXtn },
      { ssl_app_layer_protocol_xtn, &ssl3_ClientHandleAppProtoXtn },
-     { ssl_use_srtp_xtn,           &ssl3_HandleUseSRTPXtn },
+     { ssl_use_srtp_xtn,           &ssl3_ClientHandleUseSRTPXtn },
 +    { ssl_channel_id_xtn,         &ssl3_ClientHandleChannelIDXtn },
      { ssl_cert_status_xtn,        &ssl3_ClientHandleStatusRequestXtn },
      { -1, NULL }
  };
-@@ -291,6 +296,7 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
+@@ -296,6 +301,7 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
      { ssl_next_proto_nego_xtn,    &ssl3_ClientSendNextProtoNegoXtn },
      { ssl_app_layer_protocol_xtn, &ssl3_ClientSendAppProtoXtn },
-     { ssl_use_srtp_xtn,           &ssl3_SendUseSRTPXtn },
+     { ssl_use_srtp_xtn,           &ssl3_ClientSendUseSRTPXtn },
 +    { ssl_channel_id_xtn,         &ssl3_ClientSendChannelIDXtn },
      { ssl_cert_status_xtn,        &ssl3_ClientSendStatusRequestXtn },
      { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn },
      { ssl_tls13_draft_version_xtn, &ssl3_ClientSendDraftVersionXtn },
-@@ -910,6 +916,61 @@ ssl3_ServerSendAppProtoXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
+@@ -930,6 +936,61 @@ ssl3_ServerSendAppProtoXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
  }
  
  static SECStatus
@@ -538,7 +538,7 @@ index 12dbb1d..24bf893 100644
  } SSLErrorCodes;
  #endif /* NO_SECURITY_ERROR_ENUM */
 diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index c6ac398..57346cb 100644
+index 2cf0b3a..e11860e 100644
 --- a/ssl/sslimpl.h
 +++ b/ssl/sslimpl.h
 @@ -711,6 +711,14 @@ struct sslSessionIDStr {
@@ -556,7 +556,7 @@ index c6ac398..57346cb 100644
  	    /* This lock is lazily initialized by CacheSID when a sid is first
  	     * cached. Before then, there is no need to lock anything because
  	     * the sid isn't being shared by anything.
-@@ -980,6 +988,9 @@ struct ssl3StateStr {
+@@ -986,6 +994,9 @@ struct ssl3StateStr {
      CERTCertificateList *clientCertChain;    /* used by client */
      PRBool               sendEmptyCert;      /* used by client */
  
@@ -566,7 +566,7 @@ index c6ac398..57346cb 100644
      int                  policy;
  			/* This says what cipher suites we can do, and should 
  			 * be either SSL_ALLOWED or SSL_RESTRICTED 
-@@ -1257,6 +1268,8 @@ const unsigned char *  preferredCipher;
+@@ -1264,6 +1275,8 @@ const unsigned char *  preferredCipher;
      void                     *pkcs11PinArg;
      SSLNextProtoCallback      nextProtoCallback;
      void                     *nextProtoArg;
@@ -575,7 +575,7 @@ index c6ac398..57346cb 100644
  
      PRIntervalTime            rTimeout; /* timeout for NSPR I/O */
      PRIntervalTime            wTimeout; /* timeout for NSPR I/O */
-@@ -1603,6 +1616,11 @@ extern SECStatus ssl3_RestartHandshakeAfterCertReq(sslSocket *    ss,
+@@ -1610,6 +1623,11 @@ extern SECStatus ssl3_RestartHandshakeAfterCertReq(sslSocket *    ss,
  					     SECKEYPrivateKey *   key,
  					     CERTCertificateList *certChain);
  
@@ -649,7 +649,7 @@ index d44336e..5c6751a 100644
   * this implementation exists to maintain link-time compatibility.
   */
 diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index a939781..d3f3bf4 100644
+index 9431fe4..042f24f 100644
 --- a/ssl/sslsock.c
 +++ b/ssl/sslsock.c
 @@ -288,6 +288,8 @@ ssl_DupSocket(sslSocket *os)

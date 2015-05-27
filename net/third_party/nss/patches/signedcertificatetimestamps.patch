@@ -37,10 +37,10 @@ index 80717db..e9f5fb0 100644
   * in the fd's data, which may be sent as part of a server side cert_status
   * handshake message. Parameter |responses| is for the server certificate of
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 708a4c7..3421e0b 100644
+index 6a4a443..54c5b80 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
-@@ -6737,10 +6737,22 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+@@ -6752,6 +6752,14 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
      sid->u.ssl3.sessionIDLength = sidBytes.len;
      PORT_Memcpy(sid->u.ssl3.sessionID, sidBytes.data, sidBytes.len);
  
@@ -53,7 +53,10 @@ index 708a4c7..3421e0b 100644
 +    }
 +
      ss->ssl3.hs.isResuming = PR_FALSE;
-     ss->ssl3.hs.ws         = wait_server_cert;
+     if (ss->ssl3.hs.kea_def->signKeyType != sign_null) {
+         /* All current cipher suites other than those with sign_null (i.e.,
+@@ -6765,6 +6773,10 @@ ssl3_HandleServerHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+     }
  
  winner:
 +    /* Clean up the temporary pointer to the handshake buffer. */
@@ -63,7 +66,7 @@ index 708a4c7..3421e0b 100644
      /* If we will need a ChannelID key then we make the callback now. This
       * allows the handshake to be restarted cleanly if the callback returns
       * SECWouldBlock. */
-@@ -6766,6 +6778,9 @@ alert_loser:
+@@ -6790,6 +6802,9 @@ alert_loser:
      (void)SSL3_SendAlert(ss, alert_fatal, desc);
  
  loser:
@@ -74,10 +77,10 @@ index 708a4c7..3421e0b 100644
      return SECFailure;
  }
 diff --git a/ssl/ssl3ext.c b/ssl/ssl3ext.c
-index b6ed17d..6c120ff 100644
+index 4d17587..c18d6f6 100644
 --- a/ssl/ssl3ext.c
 +++ b/ssl/ssl3ext.c
-@@ -85,6 +85,12 @@ static PRInt32 ssl3_ClientSendSigAlgsXtn(sslSocket *ss, PRBool append,
+@@ -90,6 +90,12 @@ static PRInt32 ssl3_ClientSendSigAlgsXtn(sslSocket *ss, PRBool append,
                                           PRUint32 maxBytes);
  static SECStatus ssl3_ServerHandleSigAlgsXtn(sslSocket *ss, PRUint16 ex_type,
                                               SECItem *data);
@@ -90,8 +93,8 @@ index b6ed17d..6c120ff 100644
  
  static PRInt32 ssl3_ClientSendDraftVersionXtn(sslSocket *ss, PRBool append,
                                                PRUint32 maxBytes);
-@@ -270,6 +276,8 @@ static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
-     { ssl_use_srtp_xtn,           &ssl3_HandleUseSRTPXtn },
+@@ -275,6 +281,8 @@ static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
+     { ssl_use_srtp_xtn,           &ssl3_ClientHandleUseSRTPXtn },
      { ssl_channel_id_xtn,         &ssl3_ClientHandleChannelIDXtn },
      { ssl_cert_status_xtn,        &ssl3_ClientHandleStatusRequestXtn },
 +    { ssl_signed_certificate_timestamp_xtn,
@@ -99,8 +102,8 @@ index b6ed17d..6c120ff 100644
      { -1, NULL }
  };
  
-@@ -298,6 +306,8 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
-     { ssl_use_srtp_xtn,           &ssl3_SendUseSRTPXtn },
+@@ -303,6 +311,8 @@ ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
+     { ssl_use_srtp_xtn,           &ssl3_ClientSendUseSRTPXtn },
      { ssl_channel_id_xtn,         &ssl3_ClientSendChannelIDXtn },
      { ssl_cert_status_xtn,        &ssl3_ClientSendStatusRequestXtn },
 +    { ssl_signed_certificate_timestamp_xtn,
@@ -108,10 +111,11 @@ index b6ed17d..6c120ff 100644
      { ssl_signature_algorithms_xtn, &ssl3_ClientSendSigAlgsXtn },
      { ssl_tls13_draft_version_xtn, &ssl3_ClientSendDraftVersionXtn },
      /* any extra entries will appear as { 0, NULL }    */
-@@ -2582,3 +2592,64 @@ loser:
+@@ -2616,3 +2626,65 @@ ssl3_ServerHandleDraftVersionXtn(sslSocket * ss, PRUint16 ex_type,
+ 
      return SECSuccess;
  }
- 
++
 +/* ssl3_ClientSendSignedCertTimestampXtn sends the signed_certificate_timestamp
 + * extension for TLS ClientHellos. */
 +static PRInt32
@@ -174,7 +178,7 @@ index b6ed17d..6c120ff 100644
 +    return SECSuccess;
 +}
 diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 62f822a..2f61a46 100644
+index c4c87b4..0fd0a89 100644
 --- a/ssl/sslimpl.h
 +++ b/ssl/sslimpl.h
 @@ -339,6 +339,7 @@ typedef struct sslOptionsStr {
@@ -197,7 +201,7 @@ index 62f822a..2f61a46 100644
  	    /* This lock is lazily initialized by CacheSID when a sid is first
  	     * cached. Before then, there is no need to lock anything because
  	     * the sid isn't being shared by anything.
-@@ -829,6 +835,18 @@ struct TLSExtensionDataStr {
+@@ -835,6 +841,18 @@ struct TLSExtensionDataStr {
       * is beyond ssl3_HandleClientHello function. */
      SECItem *sniNameArr;
      PRUint32 sniNameArrSize;
@@ -231,7 +235,7 @@ index c45849d..cefdda6 100644
          if (sid->u.ssl3.lock) {
              PR_DestroyRWLock(sid->u.ssl3.lock);
 diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index 0d12273..80f4e67 100644
+index 6a6c8d1..72058f5 100644
 --- a/ssl/sslsock.c
 +++ b/ssl/sslsock.c
 @@ -89,7 +89,8 @@ static sslOptions ssl_defaults = {

@@ -1,6 +1,6 @@
 Name: Network Security Services (NSS)
 URL: http://www.mozilla.org/projects/security/pki/nss/
-Version: 3.18 RTM
+Version: 3.19 RTM
 Security Critical: Yes
 License: MPL 2
 License File: NOT_SHIPPED
@@ -11,7 +11,7 @@ This directory includes a copy of NSS's libssl from the hg repo at:
 The same module appears in crypto/third_party/nss (and third_party/nss on some
 platforms), so we don't repeat the license file here.
 
-The snapshot was updated to the hg tag: NSS_3_18_RTM
+The snapshot was updated to the hg tag: NSS_3_19_RTM
 
 Patches:
 

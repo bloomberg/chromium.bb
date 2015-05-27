@@ -20,10 +20,10 @@ index 34142fc..e2d1b09 100644
  #ifdef SSL_DEPRECATED_FUNCTION 
  /* deprecated!
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 40ae885..cb59cc1 100644
+index b9014ef..800c28e 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
-@@ -7045,6 +7045,9 @@ ssl3_HandleCertificateRequest(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+@@ -7061,6 +7061,9 @@ ssl3_HandleCertificateRequest(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
      if (rv != SECSuccess)
      	goto loser;		/* malformed, alert has been sent */
  
@@ -33,7 +33,7 @@ index 40ae885..cb59cc1 100644
      if (isTLS12) {
  	rv = ssl3_ConsumeHandshakeVariable(ss, &algorithms, 2, &b, &length);
  	if (rv != SECSuccess)
-@@ -7246,6 +7249,7 @@ loser:
+@@ -7262,6 +7265,7 @@ loser:
      PORT_SetError(errCode);
      rv = SECFailure;
  done:
@@ -42,10 +42,10 @@ index 40ae885..cb59cc1 100644
      	PORT_FreeArena(arena, PR_FALSE);
  #ifdef NSS_PLATFORM_CLIENT_AUTH
 diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index cda1869..9f59f5a 100644
+index bbc9bd2..46e618a 100644
 --- a/ssl/sslimpl.h
 +++ b/ssl/sslimpl.h
-@@ -1231,6 +1231,10 @@ struct sslSocketStr {
+@@ -1238,6 +1238,10 @@ struct sslSocketStr {
      unsigned int     sizeCipherSpecs;
  const unsigned char *  preferredCipher;
  
@@ -57,7 +57,7 @@ index cda1869..9f59f5a 100644
  
      /* Callbacks */
 diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index 688f399..a939781 100644
+index 1a9c584..9431fe4 100644
 --- a/ssl/sslsock.c
 +++ b/ssl/sslsock.c
 @@ -1911,6 +1911,20 @@ SSL_HandshakeResumedSession(PRFileDesc *fd, PRBool *handshake_resumed) {

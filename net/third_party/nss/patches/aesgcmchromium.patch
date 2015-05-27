@@ -1,5 +1,5 @@
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index da0abfb..375ed6a 100644
+index 1167d6d..dabe333 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
 @@ -8,6 +8,7 @@
@@ -97,7 +97,7 @@ index da0abfb..375ed6a 100644
  			  maxout, in, inlen);
      }
      *outlen += (int) uOutLen;
-@@ -5147,6 +5208,10 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5162,6 +5223,10 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	ssl3_DisableNonDTLSSuites(ss);
      }
  
@@ -108,7 +108,7 @@ index da0abfb..375ed6a 100644
      /* how many suites are permitted by policy and user preference? */
      num_suites = count_cipher_suites(ss, ss->ssl3.policy, PR_TRUE);
      if (!num_suites) {
-@@ -8159,6 +8224,10 @@ ssl3_HandleClientHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+@@ -8172,6 +8237,10 @@ ssl3_HandleClientHello(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
  	ssl3_DisableNonDTLSSuites(ss);
      }
  

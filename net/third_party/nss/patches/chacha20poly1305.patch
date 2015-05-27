@@ -1,5 +1,5 @@
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 375ed6a..adaa9a4 100644
+index dabe333..6819b03 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
 @@ -41,6 +41,21 @@
@@ -135,10 +135,10 @@ index 375ed6a..adaa9a4 100644
      }
  
 diff --git a/ssl/ssl3ecc.c b/ssl/ssl3ecc.c
-index 003ed78..d5d6c9c 100644
+index 9b91270..31e0774 100644
 --- a/ssl/ssl3ecc.c
 +++ b/ssl/ssl3ecc.c
-@@ -920,6 +920,7 @@ static const ssl3CipherSuite ecdhe_ecdsa_suites[] = {
+@@ -921,6 +921,7 @@ static const ssl3CipherSuite ecdhe_ecdsa_suites[] = {
      TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
      TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
      TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
@@ -146,7 +146,7 @@ index 003ed78..d5d6c9c 100644
      TLS_ECDHE_ECDSA_WITH_NULL_SHA,
      TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
      0 /* end of list marker */
-@@ -931,6 +932,7 @@ static const ssl3CipherSuite ecdhe_rsa_suites[] = {
+@@ -932,6 +933,7 @@ static const ssl3CipherSuite ecdhe_rsa_suites[] = {
      TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
      TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
      TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
@@ -154,7 +154,7 @@ index 003ed78..d5d6c9c 100644
      TLS_ECDHE_RSA_WITH_NULL_SHA,
      TLS_ECDHE_RSA_WITH_RC4_128_SHA,
      0 /* end of list marker */
-@@ -943,6 +945,7 @@ static const ssl3CipherSuite ecSuites[] = {
+@@ -944,6 +946,7 @@ static const ssl3CipherSuite ecSuites[] = {
      TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
      TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
      TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
@@ -162,7 +162,7 @@ index 003ed78..d5d6c9c 100644
      TLS_ECDHE_ECDSA_WITH_NULL_SHA,
      TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
      TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
-@@ -950,6 +953,7 @@ static const ssl3CipherSuite ecSuites[] = {
+@@ -951,6 +954,7 @@ static const ssl3CipherSuite ecSuites[] = {
      TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
      TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
      TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
@@ -200,7 +200,7 @@ index 09ce43f..a036627 100644
      TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
      /* TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA must appear before
 diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 88f559a..643570f 100644
+index ea71975..88b2eba 100644
 --- a/ssl/sslimpl.h
 +++ b/ssl/sslimpl.h
 @@ -65,6 +65,7 @@ typedef SSLSignType     SSL3SignType;

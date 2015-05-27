@@ -1,5 +1,5 @@
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 67c8f6d..da0abfb 100644
+index 7c06815..1167d6d 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
 @@ -31,6 +31,15 @@
@@ -19,10 +19,10 @@ index 67c8f6d..da0abfb 100644
  #ifdef NSS_ENABLE_ZLIB
  #include "zlib.h"
 diff --git a/ssl/ssl3ecc.c b/ssl/ssl3ecc.c
-index 0f805ec..003ed78 100644
+index dac7a9e..9b91270 100644
 --- a/ssl/ssl3ecc.c
 +++ b/ssl/ssl3ecc.c
-@@ -30,6 +30,12 @@
+@@ -31,6 +31,12 @@
  
  #include <stdio.h>
  
@@ -36,7 +36,7 @@ index 0f805ec..003ed78 100644
  
  #ifndef PK11_SETATTRS
 diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index 47906e0..0d12273 100644
+index 14ff328..6a6c8d1 100644
 --- a/ssl/sslsock.c
 +++ b/ssl/sslsock.c
 @@ -17,8 +17,15 @@

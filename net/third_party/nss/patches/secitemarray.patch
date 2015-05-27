@@ -1,8 +1,8 @@
 diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 2d21e90..88f559a 100644
+index 0ece0ed..ea71975 100644
 --- a/ssl/sslimpl.h
 +++ b/ssl/sslimpl.h
-@@ -1366,6 +1366,15 @@ extern sslSessionIDUncacheFunc ssl_sid_uncache;
+@@ -1373,6 +1373,15 @@ extern sslSessionIDUncacheFunc ssl_sid_uncache;
  
  SEC_BEGIN_PROTOS
  

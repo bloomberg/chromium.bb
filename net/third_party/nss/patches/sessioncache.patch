@@ -22,10 +22,10 @@ index be6d88e..57771cd 100644
  */
  SSL_IMPORT SECItem *SSL_GetSessionID(PRFileDesc *fd);
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index c1f30a3..17c368e 100644
+index 26b87c6..0ac85da 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
-@@ -11367,7 +11367,7 @@ ssl3_FinishHandshake(sslSocket * ss)
+@@ -11375,7 +11375,7 @@ ssl3_FinishHandshake(sslSocket * ss)
          ss->ssl3.hs.receivedNewSessionTicket = PR_FALSE;
      }
  

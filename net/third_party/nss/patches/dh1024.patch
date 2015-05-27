@@ -1,8 +1,8 @@
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 89c98ea..861d434 100644
+index a67a9d1..02b0dda 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
-@@ -6946,7 +6946,8 @@ ssl3_HandleServerKeyExchange(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+@@ -6964,7 +6964,8 @@ ssl3_HandleServerKeyExchange(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
      	if (rv != SECSuccess) {
  	    goto loser;		/* malformed. */
  	}

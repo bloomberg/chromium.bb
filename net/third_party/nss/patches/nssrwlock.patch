@@ -1,8 +1,8 @@
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 17c368e..424c1fb 100644
+index 0ac85da..f5afab7 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
-@@ -5246,7 +5246,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5261,7 +5261,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
       * the lock across the calls to ssl3_CallHelloExtensionSenders.
       */
      if (sid->u.ssl3.lock) {
@@ -11,7 +11,7 @@ index 17c368e..424c1fb 100644
      }
  
      if (isTLS || (ss->firstHsDone && ss->peerRequestedProtection)) {
-@@ -5255,7 +5255,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5270,7 +5270,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  
  	extLen = ssl3_CallHelloExtensionSenders(ss, PR_FALSE, maxBytes, NULL);
  	if (extLen < 0) {
@@ -20,7 +20,7 @@ index 17c368e..424c1fb 100644
  	    return SECFailure;
  	}
  	total_exten_len += extLen;
-@@ -5282,7 +5282,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5297,7 +5297,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
      /* how many suites are permitted by policy and user preference? */
      num_suites = count_cipher_suites(ss, ss->ssl3.policy, PR_TRUE);
      if (!num_suites) {
@@ -29,7 +29,7 @@ index 17c368e..424c1fb 100644
      	return SECFailure;	/* count_cipher_suites has set error code. */
      }
  
-@@ -5327,7 +5327,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5342,7 +5342,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  
      rv = ssl3_AppendHandshakeHeader(ss, client_hello, length);
      if (rv != SECSuccess) {
@@ -38,7 +38,7 @@ index 17c368e..424c1fb 100644
  	return rv;	/* err set by ssl3_AppendHandshake* */
      }
  
-@@ -5346,21 +5346,21 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5361,21 +5361,21 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	rv = ssl3_AppendHandshakeNumber(ss, ss->clientHelloVersion, 2);
      }
      if (rv != SECSuccess) {
@@ -63,7 +63,7 @@ index 17c368e..424c1fb 100644
  	return rv;	/* err set by ssl3_AppendHandshake* */
      }
  
-@@ -5370,7 +5370,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5385,7 +5385,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
      else
  	rv = ssl3_AppendHandshakeNumber(ss, 0, 1);
      if (rv != SECSuccess) {
@@ -72,7 +72,7 @@ index 17c368e..424c1fb 100644
  	return rv;	/* err set by ssl3_AppendHandshake* */
      }
  
-@@ -5378,14 +5378,14 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5393,14 +5393,14 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	rv = ssl3_AppendHandshakeVariable(
  	    ss, ss->ssl3.hs.cookie, ss->ssl3.hs.cookieLen, 1);
  	if (rv != SECSuccess) {
@@ -89,7 +89,7 @@ index 17c368e..424c1fb 100644
  	return rv;	/* err set by ssl3_AppendHandshake* */
      }
  
-@@ -5394,7 +5394,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5409,7 +5409,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	rv = ssl3_AppendHandshakeNumber(ss, TLS_EMPTY_RENEGOTIATION_INFO_SCSV,
  					sizeof(ssl3CipherSuite));
  	if (rv != SECSuccess) {
@@ -98,7 +98,7 @@ index 17c368e..424c1fb 100644
  	    return rv;	/* err set by ssl3_AppendHandshake* */
  	}
  	actual_count++;
-@@ -5403,7 +5403,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5418,7 +5418,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	rv = ssl3_AppendHandshakeNumber(ss, TLS_FALLBACK_SCSV,
  					sizeof(ssl3CipherSuite));
  	if (rv != SECSuccess) {
@@ -107,7 +107,7 @@ index 17c368e..424c1fb 100644
  	    return rv;	/* err set by ssl3_AppendHandshake* */
  	}
  	actual_count++;
-@@ -5413,7 +5413,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5428,7 +5428,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	if (config_match(suite, ss->ssl3.policy, PR_TRUE, &ss->vrange)) {
  	    actual_count++;
  	    if (actual_count > num_suites) {
@@ -116,7 +116,7 @@ index 17c368e..424c1fb 100644
  		/* set error card removal/insertion error */
  		PORT_SetError(SSL_ERROR_TOKEN_INSERTION_REMOVAL);
  		return SECFailure;
-@@ -5421,7 +5421,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5436,7 +5436,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	    rv = ssl3_AppendHandshakeNumber(ss, suite->cipher_suite,
  					    sizeof(ssl3CipherSuite));
  	    if (rv != SECSuccess) {
@@ -125,7 +125,7 @@ index 17c368e..424c1fb 100644
  		return rv;	/* err set by ssl3_AppendHandshake* */
  	    }
  	}
-@@ -5432,14 +5432,14 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5447,14 +5447,14 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
       * the server.. */
      if (actual_count != num_suites) {
  	/* Card removal/insertion error */
@@ -142,7 +142,7 @@ index 17c368e..424c1fb 100644
  	return rv;	/* err set by ssl3_AppendHandshake* */
      }
      for (i = 0; i < compressionMethodsCount; i++) {
-@@ -5447,7 +5447,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5462,7 +5462,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  	    continue;
  	rv = ssl3_AppendHandshakeNumber(ss, compressions[i], 1);
  	if (rv != SECSuccess) {
@@ -151,7 +151,7 @@ index 17c368e..424c1fb 100644
  	    return rv;	/* err set by ssl3_AppendHandshake* */
  	}
      }
-@@ -5458,20 +5458,20 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5473,20 +5473,20 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
  
  	rv = ssl3_AppendHandshakeNumber(ss, maxBytes, 2);
  	if (rv != SECSuccess) {
@@ -175,7 +175,7 @@ index 17c368e..424c1fb 100644
  	    return SECFailure;
  	}
  	maxBytes -= extLen;
-@@ -5480,7 +5480,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+@@ -5495,7 +5495,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
      } 
  
      if (sid->u.ssl3.lock) {
@@ -185,7 +185,7 @@ index 17c368e..424c1fb 100644
  
      if (ss->xtnData.sentSessionTicketInClientHello) {
 diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index f796a14..a809616 100644
+index d12228e..efcbf9f 100644
 --- a/ssl/sslimpl.h
 +++ b/ssl/sslimpl.h
 @@ -731,7 +731,7 @@ struct sslSessionIDStr {

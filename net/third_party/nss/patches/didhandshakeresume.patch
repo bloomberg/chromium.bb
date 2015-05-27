@@ -13,7 +13,7 @@ index 4e7d52e..34142fc 100644
  ** How long should we wait before retransmitting the next flight of
  ** the DTLS handshake? Returns SECFailure if not DTLS or not in a
 diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index fccc664..688f399 100644
+index 6c09992..1a9c584 100644
 --- a/ssl/sslsock.c
 +++ b/ssl/sslsock.c
 @@ -1897,6 +1897,20 @@ SSL_PeerStapledOCSPResponses(PRFileDesc *fd)

@@ -17,10 +17,10 @@ index e9f5fb0..be6d88e 100644
   * values. See RFC 5929. */
  typedef enum SSLChannelBindingType {
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index 3421e0b..c1f30a3 100644
+index 54c5b80..26b87c6 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
-@@ -12623,6 +12623,46 @@ ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *enabled)
+@@ -12631,6 +12631,46 @@ ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *enabled)
      return rv;
  }
  
@@ -68,10 +68,10 @@ index 3421e0b..c1f30a3 100644
  void
  ssl3_InitSocketPolicy(sslSocket *ss)
 diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 2f61a46..f796a14 100644
+index 0fd0a89..d12228e 100644
 --- a/ssl/sslimpl.h
 +++ b/ssl/sslimpl.h
-@@ -1747,6 +1747,8 @@ extern SECStatus ssl3_CipherPrefSet(sslSocket *ss, ssl3CipherSuite which, PRBool
+@@ -1754,6 +1754,8 @@ extern SECStatus ssl3_CipherPrefSet(sslSocket *ss, ssl3CipherSuite which, PRBool
  extern SECStatus ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *on);
  extern SECStatus ssl2_CipherPrefSet(sslSocket *ss, PRInt32 which, PRBool enabled);
  extern SECStatus ssl2_CipherPrefGet(sslSocket *ss, PRInt32 which, PRBool *enabled);
@@ -81,7 +81,7 @@ index 2f61a46..f796a14 100644
  extern SECStatus ssl3_SetPolicy(ssl3CipherSuite which, PRInt32 policy);
  extern SECStatus ssl3_GetPolicy(ssl3CipherSuite which, PRInt32 *policy);
 diff --git a/ssl/sslsock.c b/ssl/sslsock.c
-index 80f4e67..13634c6 100644
+index 72058f5..09a0fb5 100644
 --- a/ssl/sslsock.c
 +++ b/ssl/sslsock.c
 @@ -1316,6 +1316,19 @@ SSL_CipherPrefSet(PRFileDesc *fd, PRInt32 which, PRBool enabled)

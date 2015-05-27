@@ -1,8 +1,8 @@
 diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
-index adaa9a4..708a4c7 100644
+index 6819b03..6a4a443 100644
 --- a/ssl/ssl3con.c
 +++ b/ssl/ssl3con.c
-@@ -5733,7 +5733,6 @@ SSL3_ShutdownServerCache(void)
+@@ -5748,7 +5748,6 @@ SSL3_ShutdownServerCache(void)
      }
  
      PZ_Unlock(symWrapKeysLock);
@@ -10,7 +10,7 @@ index adaa9a4..708a4c7 100644
      return SECSuccess;
  }
  
-@@ -5785,7 +5784,7 @@ getWrappingKey( sslSocket *       ss,
+@@ -5800,7 +5799,7 @@ getWrappingKey( sslSocket *       ss,
  
      pSymWrapKey = &symWrapKeys[symWrapMechIndex].symWrapKey[exchKeyType];
  
@@ -20,10 +20,10 @@ index adaa9a4..708a4c7 100644
      PZ_Lock(symWrapKeysLock);
  
 diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
-index 643570f..62f822a 100644
+index 88b2eba..c4c87b4 100644
 --- a/ssl/sslimpl.h
 +++ b/ssl/sslimpl.h
-@@ -1917,9 +1917,7 @@ extern SECStatus ssl_InitSymWrapKeysLock(void);
+@@ -1924,9 +1924,7 @@ extern SECStatus ssl_InitSymWrapKeysLock(void);
  
  extern SECStatus ssl_FreeSymWrapKeysLock(void);
  
