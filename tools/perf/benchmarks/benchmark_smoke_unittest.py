@@ -23,6 +23,8 @@ from benchmarks import dom_perf
 from benchmarks import indexeddb_perf
 from benchmarks import image_decoding
 from benchmarks import octane
+from benchmarks import kraken
+from benchmarks import sunspider
 from benchmarks import rasterize_and_record_micro
 from benchmarks import repaint
 from benchmarks import spaceport
@@ -91,6 +93,13 @@ _BLACK_LIST_TEST_MODULES = {
     jetstream,  # Take 206 seconds.
 }
 
+# Some smoke benchmark tests that run quickly on desktop platform can be very
+# slow on Android. So we create a separate set of black list only for Android.
+_ANDROID_BLACK_LIST_MODULES = {
+    kraken,  # Takes 275 seconds on Android.
+    sunspider  # Takes 163 seconds on Android.
+}
+
 
 def load_tests(loader, standard_tests, pattern):
   del loader, standard_tests, pattern  # unused
@@ -140,6 +149,10 @@ def load_tests(loader, standard_tests, pattern):
       if (getattr(method, attribute, None) == [] or
           getattr(benchmark, attribute, None) == []):
         setattr(method, attribute, [])
+
+    # Disable some tests on android platform only.
+    if sys.modules[benchmark.__module__] in _ANDROID_BLACK_LIST_MODULES:
+      method._disabled_strings.append('android')
 
     setattr(BenchmarkSmokeTest, benchmark.Name(), method)
 
