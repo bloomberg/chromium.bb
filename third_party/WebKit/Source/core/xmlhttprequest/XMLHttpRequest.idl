@@ -46,44 +46,35 @@ enum XMLHttpRequestResponseType {
     ConstructorCallWith=ScriptState,
     Exposed=(Window,DedicatedWorker,SharedWorker)
 ] interface XMLHttpRequest : XMLHttpRequestEventTarget {
-    // event handler attributes
+    // event handler
     attribute EventHandler onreadystatechange;
 
-    // state
+    // states
     const unsigned short UNSENT = 0;
     const unsigned short OPENED = 1;
     const unsigned short HEADERS_RECEIVED = 2;
     const unsigned short LOADING = 3;
     const unsigned short DONE = 4;
-
-    [RaisesException=Setter] attribute unsigned long timeout;
     readonly attribute unsigned short readyState;
 
-    [RaisesException=Setter] attribute boolean withCredentials;
-
+    // request
     [RaisesException] void open(DOMString method, DOMString url, optional boolean async, [TreatUndefinedAs=NullString] optional DOMString? user, [TreatUndefinedAs=NullString] optional DOMString? password);
-
     [RaisesException] void setRequestHeader(DOMString header, DOMString value);
-
+    [RaisesException=Setter] attribute unsigned long timeout;
+    [RaisesException=Setter] attribute boolean withCredentials;
+    readonly attribute XMLHttpRequestUpload upload;
     [RaisesException] void send(optional (ArrayBuffer or ArrayBufferView or Blob or Document or DOMString or FormData)? data);
-
     void abort();
 
-    readonly attribute XMLHttpRequestUpload upload;
-
     // response
-    [TreatReturnedNullStringAs=Undefined] DOMString getAllResponseHeaders();
-    DOMString? getResponseHeader(DOMString header);
-    [Custom=Getter, RaisesException=Getter] readonly attribute DOMString? responseText;
-    [RaisesException=Getter] readonly attribute Document responseXML;
-
-    [RaisesException=Setter] attribute XMLHttpRequestResponseType responseType;
-    [Custom=Getter, RaisesException=Getter] readonly attribute object response;
     readonly attribute DOMString responseURL;
-
     readonly attribute unsigned short status;
     readonly attribute DOMString statusText;
-
-    // Extension
+    DOMString? getResponseHeader(DOMString header);
+    [TreatReturnedNullStringAs=Undefined] DOMString getAllResponseHeaders();
     [RaisesException] void overrideMimeType(DOMString override);
+    [RaisesException=Setter] attribute XMLHttpRequestResponseType responseType;
+    [Custom=Getter, RaisesException=Getter] readonly attribute object response;
+    [Custom=Getter, RaisesException=Getter] readonly attribute DOMString? responseText;
+    [RaisesException=Getter] readonly attribute Document responseXML;
 };
