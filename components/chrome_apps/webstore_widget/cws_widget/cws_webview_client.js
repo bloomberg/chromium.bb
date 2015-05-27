@@ -201,7 +201,7 @@ CWSContainerClient.prototype.postInitializeMessage_ = function() {
   new Promise(function(fulfill, reject) {
     this.delegate_.getInstalledItems(
         /**
-         * @param {?Array.<!string>} items Installed items.
+         * @param {?Array<!string>} items Installed items.
          *     Null on error.
          */
         function(items) {

@@ -36,7 +36,7 @@ shareDialog.embedderTarget = null;
 
 /**
  * List of pending messages enqueued to be sent before establishing the target.
- * @type {Array.<Object>}
+ * @type {Array<Object>}
  */
 shareDialog.pendingMessages = [];
 

@@ -9,7 +9,7 @@
 function MockTimer() {
   /**
    * Default versions of the timing functions.
-   * @type {Object.<string, !Function>}
+   * @type {Object<string, !Function>}
    * @private
    */
   this.originals_ = [];
@@ -25,7 +25,7 @@ function MockTimer() {
 
   /**
    * Details for active timers.
-   * @type {Array.<{callback: Function,
+   * @type {Array<{callback: Function,
    *                delay: number,
    *                key: number,
    *                repeats: boolean}>}
@@ -35,7 +35,7 @@ function MockTimer() {
 
   /**
    * List of scheduled tasks.
-   * @type {Array.<{when: number, key: number}>}
+   * @type {Array<{when: number, key: number}>}
    * @private
    */
   this.schedule_ = [];

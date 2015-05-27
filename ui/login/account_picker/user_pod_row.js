@@ -9,7 +9,7 @@
 cr.define('login', function() {
   /**
    * Number of displayed columns depending on user pod count.
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @const
    */
   var COLUMNS = [0, 1, 2, 3, 4, 5, 4, 4, 4, 5, 5, 6, 6, 5, 5, 6, 6, 6, 6];
@@ -17,7 +17,7 @@ cr.define('login', function() {
   /**
    * Mapping between number of columns in pod-row and margin between user pods
    * for such layout.
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @const
    */
   var MARGIN_BY_COLUMNS = [undefined, 40, 40, 40, 40, 40, 12];
@@ -25,7 +25,7 @@ cr.define('login', function() {
   /**
    * Mapping between number of columns in the desktop pod-row and margin
    * between user pods for such layout.
-   * @type {Array.<number>}
+   * @type {Array<number>}
    * @const
    */
   var DESKTOP_MARGIN_BY_COLUMNS = [undefined, 15, 15, 15, 15, 15, 15];
@@ -187,7 +187,7 @@ cr.define('login', function() {
    * The supported user pod custom icons.
    * {@code id} properties should be in sync with values set by C++ side.
    * {@code class} properties are CSS classes used to set the icons' background.
-   * @const {Array.<{id: !string, class: !string}>}
+   * @const {Array<{id: !string, class: !string}>}
    */
   UserPodCustomIcon.ICONS = [
     {id: 'locked', class: 'custom-icon-locked'},

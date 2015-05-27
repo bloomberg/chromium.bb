@@ -38,7 +38,7 @@ CursorsTest.prototype = {
   /**
    * Performs a series of operations on a cursor and asserts the result.
    * @param {cursors.Cursor} cursor The starting cursor.
-   * @param {!Array.<Array.<
+   * @param {!Array<Array<
    *     cursors.Unit|
    *     cursors.Movement|
    *     automationUtil.Dir|
@@ -58,7 +58,7 @@ CursorsTest.prototype = {
   /**
    * Performs a series of operations on a range and asserts the result.
    * @param {cursors.Range} range The starting range.
-   * @param {!Array.<Array.<
+   * @param {!Array<Array<
    *          cursors.Unit|
    *          cursors.Movement|
    *          automationUtil.Dir|

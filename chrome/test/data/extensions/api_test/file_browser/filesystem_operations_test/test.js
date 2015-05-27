@@ -274,7 +274,7 @@ function deleteDirectoryRecursively(
  *
  * @param {string} volumeId ID of the volume.
  * @param {DOMFileSystem} fileSystem File system of the volume.
- * @returns {Array.<function()>} The list of tests that should be run.
+ * @returns {Array<function()>} The list of tests that should be run.
  */
 function collectTestsForVolumeId(volumeId, fileSystem) {
   console.log(volumeId);

@@ -55,7 +55,7 @@ function prepareFile(filesystem, name, contents) {
  * Prepares two test files on the file system.
  * @param {FileSystem} filesystem File system.
  * @return {Promise} Promise to be fullfilled with an object {filesystem:
- *     FileSystem, entries: Array.<FileEntry>} that contains the passed file
+ *     FileSystem, entries: Array<FileEntry>} that contains the passed file
  *     system and the created entries.
  */
 function prepareFiles(filesystem) {

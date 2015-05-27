@@ -266,7 +266,7 @@ function FakePort() {
 
 /**
  * Mapping from braille cells to Unicode characters.
- * @const Array.<Array.<string> >
+ * @const Array<Array<string> >
  */
 var UNCONTRACTED_TABLE = [
   ['0', ' '],
@@ -295,7 +295,7 @@ var CONTRACTED_TABLE = [
 /**
  * A fake braille translator that can do back translation according
  * to one of the tables above.
- * @param {Array.<Array.<number>>} table Backtranslation mapping.
+ * @param {Array<Array<number>>} table Backtranslation mapping.
  * @param {boolean=} opt_capitalize Whether the result should be capitalized.
  * @constructor
  */
@@ -402,7 +402,7 @@ FakeTranslatorManager.prototype = {
  *     Each group corresponds to one braille cell and each digit in a group
  *     corresponds to a particular dot in the cell (1 to 8).  As a special
  *     case, the digit 0 by itself represents a blank cell.
- * @return {Array.<number>} An array with each cell encoded as a bit
+ * @return {Array<number>} An array with each cell encoded as a bit
  *     pattern (dot 1 uses bit 0, etc).
  */
 function cellsToArray(cells) {

@@ -16,8 +16,8 @@ var GraphView = function(profiler) {
 
 /**
  * Generate lines for flot plotting.
- * @param {Array.<Object>} models
- * @return {Array.<Object>}
+ * @param {Array<Object>} models
+ * @return {Array<Object>}
  * @private
  */
 GraphView.prototype.generateLines_ = function(models) {
@@ -100,7 +100,7 @@ GraphView.prototype.generateLines_ = function(models) {
 /**
  * Update graph view when model updated.
  * TODO(junjianx): use redraw function to improve perfomance.
- * @param {Array.<Object>} models
+ * @param {Array<Object>} models
  * @private
  */
 GraphView.prototype.redraw_ = function(models) {

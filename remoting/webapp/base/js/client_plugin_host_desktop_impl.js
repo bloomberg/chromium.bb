@@ -106,7 +106,7 @@ remoting.ClientPlugin.HostDesktopImpl.prototype.onShapeUpdated =
     function(message) {
   var shapes = base.getArrayAttr(message.data, 'rects');
   var rects = shapes.map(
-    /** @param {Array.<number>} shape */
+    /** @param {Array<number>} shape */
     function(shape) {
       if (!Array.isArray(shape) || shape.length != 4) {
         throw 'Received invalid onDesktopShape message';

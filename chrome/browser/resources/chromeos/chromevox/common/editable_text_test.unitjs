@@ -16,14 +16,14 @@ function TestTts() {
 
 /**
  * The strings that were spoken since the last call to get().
- * @type {Array.<string>}
+ * @type {Array<string>}
  */
 TestTts.prototype.strings;
 
 /**
  * Returns the list of strings spoken since the last time this method was
  * called, and then clears the list.
- * @return {Array.<string>} The list of strings.
+ * @return {Array<string>} The list of strings.
  */
 TestTts.prototype.get = function() {
   var result = this.strings;

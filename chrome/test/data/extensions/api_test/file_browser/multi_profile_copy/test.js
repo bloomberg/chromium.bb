@@ -81,7 +81,7 @@ function verifyFileExists(root, path, successCallback, errorCallback) {
  *
  * @param {Entry} firstRoot Root entry of the first volume.
  * @param {Entry} secondRoot Root entry of the second volume.
- * @return {Array.<function()>} The list of tests that should be run.
+ * @return {Array<function()>} The list of tests that should be run.
  */
 function collectTests(firstRoot, secondRoot) {
   var testsToRun = [];

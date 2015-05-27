@@ -55,7 +55,7 @@ var kBodyHtml =
 function AdInjectorTest(functions) {
   /*
    * The list of functions to run in order to test ad injection.
-   * @type {Array.<Function>}
+   * @type {Array<Function>}
    * @private
    */
   this.functions_ = functions;
@@ -230,7 +230,7 @@ var getNestedAd = function() {
  * All functions will be run in the test, and each will report its success or
  * failure independently of the others.
  * All test functions must be synchronous.
- * @type {Array.<Function>}
+ * @type {Array<Function>}
  */
 var functions = [];
 

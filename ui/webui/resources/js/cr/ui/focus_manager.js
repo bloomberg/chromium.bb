@@ -43,7 +43,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Returns the elements on the page capable of receiving focus.
-     * @return {Array.<Element>} The focusable elements.
+     * @return {Array<Element>} The focusable elements.
      */
     getFocusableElements_: function() {
       var focusableDiv = this.getFocusParent();

@@ -45,7 +45,7 @@ MockEvent.prototype = {
 function MockPort() {
   this.onMessage = new MockEvent();
   this.onDisconnect = new MockEvent();
-  /** @type {Array.<Object>} */
+  /** @type {Array<Object>} */
   this.messages = [];
 }
 

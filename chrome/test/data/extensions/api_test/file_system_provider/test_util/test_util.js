@@ -33,7 +33,7 @@ test_util.volumeId = null;
  * Default metadata. Used by onMetadataRequestedDefault(). The key is a full
  * path, and the value, a MetadataEntry object.
  *
- * @type {Object.<string, Object>}
+ * @type {Object<string, Object>}
  */
 test_util.defaultMetadata = {
   '/': {
@@ -48,7 +48,7 @@ test_util.defaultMetadata = {
  * Map of opened files, from a <code>openRequestId</code> to <code>filePath
  * </code>.
  *
- * @type {Object.<number, string>}
+ * @type {Object<number, string>}
  */
 test_util.openedFiles = {};
 

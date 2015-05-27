@@ -150,7 +150,7 @@ TraverseUtil.isSkipped = function(node) {
  * @param {Cursor} cursor The cursor location where the search should start.
  *     On exit, the cursor will be immediately to the right of the
  *     character returned.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @return {?string} The character found, or null if the bottom of the
  *     document has been reached.
@@ -232,7 +232,7 @@ TraverseUtil.forwardsChar = function(cursor, nodesCrossed) {
  * @param {Cursor} cursor The cursor location where the search should start.
  *     On exit, the cursor will be immediately to the left of the
  *     character returned.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @return {?string} The previous character, or null if the top of the
  *     document has been reached.
@@ -322,7 +322,7 @@ TraverseUtil.backwardsChar = function(cursor, nodesCrossed) {
  *     the char.
  * @param {Cursor} endCursor The position to start searching for the next
  *     char.  On exit, will point to the position past the char.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @param {boolean} skipWhitespace If true, will keep scanning until a
  *     non-whitespace character is found.
@@ -382,7 +382,7 @@ TraverseUtil.getNextChar = function(
  *     char. On exit, will point to the position before the char.
  * @param {Cursor} endCursor The position to start searching for the next
  *     char. On exit, will point to the position past the char.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @param {boolean} skipWhitespace If true, will keep scanning until a
  *     non-whitespace character is found.
@@ -437,7 +437,7 @@ TraverseUtil.getPreviousChar = function(
  *     word returned.
  * @param {Cursor} endCursor The position to start searching for the next
  *     word.  On exit, will point to the end of the word returned.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @return {?string} The next word, or null if the bottom of the
  *     document has been reached.
@@ -495,7 +495,7 @@ TraverseUtil.getNextWord = function(startCursor, endCursor,
  *     word returned.
  * @param {Cursor} endCursor On exit, will point to the end of the
  *     word returned.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @return {?string} The previous word, or null if the bottom of the
  *     document has been reached.
@@ -548,7 +548,7 @@ TraverseUtil.getPreviousWord = function(startCursor, endCursor,
  * @param {Cursor} startCursor On exit, marks the beginning of the sentence.
  * @param {Cursor} endCursor The position to start searching for the next
  *     sentence.  On exit, will point to the end of the returned string.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @param {Object} breakTags Associative array of tags that should break
  *     the sentence.
@@ -583,7 +583,7 @@ TraverseUtil.getNextSentence = function(
  * @param {Cursor} startCursor The position to start searching for the next
  *     sentence.  On exit, will point to the start of the returned string.
  * @param {Cursor} endCursor On exit, the end of the returned string.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @param {Object} breakTags Associative array of tags that should break
  *     the sentence.
@@ -618,7 +618,7 @@ TraverseUtil.getPreviousSentence = function(
  * @param {Cursor} startCursor On exit, marks the beginning of the line.
  * @param {Cursor} endCursor The position to start searching for the next
  *     line.  On exit, will point to the end of the returned string.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @param {number} lineLength The maximum number of characters in a line.
  * @param {Object} breakTags Associative array of tags that should break
@@ -654,7 +654,7 @@ TraverseUtil.getNextLine = function(
  * @param {Cursor} startCursor The position to start searching for the next
  *     line.  On exit, will point to the start of the returned string.
  * @param {Cursor} endCursor On exit, the end of the returned string.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @param {number} lineLength The maximum number of characters in a line.
  * @param {Object} breakTags Associative array of tags that should break
@@ -690,7 +690,7 @@ TraverseUtil.getPreviousLine = function(
  * @param {Cursor} startCursor On exit, marks the beginning of the paragraph.
  * @param {Cursor} endCursor The position to start searching for the next
  *     paragraph.  On exit, will point to the end of the returned string.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @return {?string} The next paragraph, or null if the bottom of the
  *     document has been reached.
@@ -720,7 +720,7 @@ TraverseUtil.getNextParagraph = function(startCursor, endCursor,
  * @param {Cursor} startCursor The position to start searching for the next
  *     paragraph.  On exit, will point to the start of the returned string.
  * @param {Cursor} endCursor On exit, the end of the returned string.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @return {?string} The previous paragraph, or null if the bottom of the
  *     document has been reached.
@@ -763,9 +763,9 @@ TraverseUtil.getPreviousParagraph = function(
  *     next string.
  * @param {Cursor} endCursor The position to start searching for the next
  *     string.  On exit, will point to the end of the returned string.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
- * @param {function(string, string, Array.<string>)} breakBefore
+ * @param {function(string, string, Array<string>)} breakBefore
  *     Function that takes the string so far, next word to be added, and
  *     nodes crossed, and returns true if the string should be ended before
  *     adding this word.
@@ -822,9 +822,9 @@ TraverseUtil.getNextString = function(
  *     string returned.
  * @param {Cursor} endCursor On exit, will point to the end of the
  *     string returned.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
- * @param {function(string, string, Array.<string>)} breakBefore
+ * @param {function(string, string, Array<string>)} breakBefore
  *     Function that takes the string so far, the word to be added, and
  *     nodes crossed, and returns true if the string should be ended before
  *     adding this word.

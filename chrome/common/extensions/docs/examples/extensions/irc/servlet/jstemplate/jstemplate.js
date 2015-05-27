@@ -131,7 +131,7 @@ function JstProcessor() {
     /**
      * An array of logging messages.  These are collected during processing
      * and dumped to the console at the end.
-     * @type Array.<string>
+     * @type Array<string>
      */
     this.logs_ = [];
   }
@@ -216,7 +216,7 @@ JstProcessor.prepareTemplate_ = function(template) {
  * A list of attributes we use to specify jst processing instructions,
  * and the functions used to parse their values.
  *
- * @type Array.<Array>
+ * @type Array<Array>
  */
 var JST_ATTRIBUTES = [
     [ ATT_select, jsEvalToFunction ],
@@ -344,7 +344,7 @@ JstProcessor.prototype.run_ = function(f) {
    *
    * The outer array is a stack of such queues.
    *
-   * @type Array.<Array>
+   * @type Array<Array>
    */
   var calls = me.calls_ = [];
 
@@ -353,13 +353,13 @@ JstProcessor.prototype.run_ = function(f) {
    * be to maintain the queues in reverse order (popping off of the
    * end) but the repeated calls to .pop() consumed 90% of this
    * function's execution time.
-   * @type Array.<number>
+   * @type Array<number>
    */
   var queueIndices = me.queueIndices_ = [];
 
   /**
    * A pool of empty arrays.  Minimizes object allocation for IE6's benefit.
-   * @type Array.<Array>
+   * @type Array<Array>
    */
   var arrayPool = me.arrayPool_ = [];
 
@@ -1010,7 +1010,7 @@ JstProcessor.prototype.logState_ = function(
 
 /**
  * Retrieve the processing logs.
- * @return {Array.<string>} The processing logs.
+ * @return {Array<string>} The processing logs.
  */
 JstProcessor.prototype.getLogs = function() {
   return this.logs_;

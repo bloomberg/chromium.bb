@@ -22,9 +22,9 @@ function testFeatureIsEnabled(featureName, expectedIsEnabled) {
 
 /**
  * Initializes and runs tests that get feature statuses.
- * @param {Array.<string>} enabledFeatures The list of features that are
+ * @param {Array<string>} enabledFeatures The list of features that are
  *     expected to be enabled.
- * @param {Array.<string>} disabledFeatures The list of features that are
+ * @param {Array<string>} disabledFeatures The list of features that are
  *     expected to be disabled.
  */
 function runGetterTest(enabledFeatures, disabledFeatures) {
@@ -71,9 +71,9 @@ function testSetFeatureNotAllowed(feature, value) {
  * In the test the extension tries to flip the feature values.
  * Note that the tests only verify that set method fails. They don't verify the
  * feature values remain unchanged. That is done by the Chrome side of the test.
- * @param {Array.<string>} enabledFeatures The list of features that are
+ * @param {Array<string>} enabledFeatures The list of features that are
  *     enabled at the start of the test.
- * @param {Array.<string>} disabledFeatures The list of features that are
+ * @param {Array<string>} disabledFeatures The list of features that are
  *     disabled at the start of the test.
  */
 function runSetterTest(enabledFeatures, disabledFeatures) {
@@ -108,9 +108,9 @@ function runSetterTest(enabledFeatures, disabledFeatures) {
  * event value is expected to be false ({@code toBeDisabled}).
  * Once an event for a feature is observed, the feature is removed from the list
  * that contains it.
- * @type {?{toBeDisabled: Array.<{name: string,
+ * @type {?{toBeDisabled: Array<{name: string,
  *                                listener: function(Event)}>,
- *          toBeEnabled: Array.<{name: string,
+ *          toBeEnabled: Array<{name: string,
  *                               listener: function(Event)}>}}
  *     For each array type: |name|: the feature name;
  *                          |listener|: {@code onChange} listener.
@@ -124,10 +124,10 @@ var observerTestState = null;
  * be sent (if the test succeeds): once when the features' change listeners have
  * been setup, and the second time when all the expected events are seen.
  * In case of the failure notification, no further notifications will be sent.
- * @param {Array.<string>} initiallyEnabled
+ * @param {Array<string>} initiallyEnabled
  *     The list of features that are enabled at the start of the test, and for
  *     which a {@code onChange} event with value false should be observed.
- * @param {Array.<string>} initiallyDisabled
+ * @param {Array<string>} initiallyDisabled
  *     The list of features that are disabled at the start of the test, and for
  *     which a {@code onChange} event with value true should be observed.
  */
@@ -145,7 +145,7 @@ function startObserverTest(initiallyEnabled, initiallyDisabled) {
 
   /**
    * Finds feature with the provided name in the.
-   * @param {Array.<{name: string, listener: function(Event)>} list The list in
+   * @param {Array<{name: string, listener: function(Event)>} list The list in
    *     which to search.
    * @param {string} featureName The feature name for which to search.
    * @return {number} The feature's index in the list. If not found returns -1.
@@ -226,9 +226,9 @@ function startObserverTest(initiallyEnabled, initiallyDisabled) {
 
 /**
  * Mapping from test name to the function that runs tests.
- * @type {getterTest: function(Array.<string>, Array.<string>),
- *        setterTest: function(Array.<string>, Array.<string>),
- *        observerTest: function(Array.<string>, Array.<string>)}
+ * @type {getterTest: function(Array<string>, Array<string>),
+ *        setterTest: function(Array<string>, Array<string>),
+ *        observerTest: function(Array<string>, Array<string>)}
  * @const
  */
 var TEST_FUNCTIONS = {

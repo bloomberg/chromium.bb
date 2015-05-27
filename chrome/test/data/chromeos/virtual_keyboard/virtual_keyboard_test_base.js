@@ -54,7 +54,7 @@ function mockExtensionApis(mockController) {
   /**
    * Mocks methods within a namespace.
    * @param {string} namespace Dot delimited namespace.
-   * @param {Array.<string>} methods List of methods names to mock.
+   * @param {Array<string>} methods List of methods names to mock.
    */
   var addMocks = function(namespace, methods) {
     var parts = namespace.split('.');
@@ -242,7 +242,7 @@ function onKeyboardReady(runTestCallback, opt_config) {
 
 /**
  * Defers continuation of a test until one or more keysets are loaded.
- * @param {string|Array.<string>} keyset Name of the target keyset or list of
+ * @param {string|Array<string>} keyset Name of the target keyset or list of
  *     keysets.
  * @param {Function} continueTestCallback Callback function to invoke in order
  *     to resume the test.

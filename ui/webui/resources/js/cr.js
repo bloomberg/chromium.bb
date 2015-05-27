@@ -298,7 +298,7 @@ var cr = function() {
    * Forwards public APIs to private implementations.
    * @param {Function} ctor Constructor that have private implementations in its
    *     prototype.
-   * @param {Array.<string>} methods List of public method names that have their
+   * @param {Array<string>} methods List of public method names that have their
    *     underscored counterparts in constructor's prototype.
    * @param {string=} opt_target Selector for target node.
    */

@@ -27,7 +27,7 @@ cr.define('cr.ui', function() {
    * @constructor
    */
   function FocusGrid() {
-    /** @type {!Array.<!cr.ui.FocusRow>} */
+    /** @type {!Array<!cr.ui.FocusRow>} */
     this.rows = [];
 
     /** @private {!EventTracker} */

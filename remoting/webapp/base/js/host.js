@@ -77,7 +77,7 @@ remoting.Host.Options.prototype.load = function() {
   var that = this;
   return base.Promise.as(remoting.HostSettings.load, [this.hostId_]).then(
     /**
-     * @param {Object.<string|boolean|number>} options
+     * @param {Object<string|boolean|number>} options
      */
     function(options) {
       // Must be defaulted to true so that app-remoting can resize the host

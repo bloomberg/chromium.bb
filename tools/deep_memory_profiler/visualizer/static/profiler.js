@@ -91,7 +91,7 @@ Profiler.prototype.setSelected = function(id, pos) {
 /**
  * Get all models throughout the whole timeline of given id.
  * @param {string} id Model id.
- * @return {Array.<Object>} model array of given id.
+ * @return {Array<Object>} model array of given id.
  */
 Profiler.prototype.getModelsbyId = function(id) {
   function find(model) {
@@ -176,7 +176,7 @@ Profiler.prototype.unsetSub = function(id) {
  * @param {string} template Local template.
  * @param {Object} snapshot Current snapshot.
  * @param {Object} worldUnits Mapping of world units.
- * @param {Array.<number>} localUnits Array of local units.
+ * @param {Array<number>} localUnits Array of local units.
  * @param {string} name Local node path.
  * @return {Object} Return model, total size and remaining units.
  * @private
@@ -299,7 +299,7 @@ Profiler.prototype.accumulate_ = function(
 
 /**
  * Parse template and calculate models of the whole timeline.
- * @return {Array.<Object>} Models of the whole timeline.
+ * @return {Array<Object>} Models of the whole timeline.
  * @private
  */
 Profiler.prototype.parseTemplate_ = function() {

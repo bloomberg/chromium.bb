@@ -134,7 +134,7 @@ cr.define('cr.ui.table', function() {
 
     /**
      * Place splitters to right positions.
-     * @param {Array.<HTMLElement>|NodeList} splitters Array of splitters.
+     * @param {Array<HTMLElement>|NodeList} splitters Array of splitters.
      */
     placeSplitters_: function(splitters) {
       var cm = this.table_.columnModel;

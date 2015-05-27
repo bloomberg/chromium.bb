@@ -6,8 +6,8 @@
  * Parse a very small subset of HTML.  This ensures that insecure HTML /
  * javascript cannot be injected into the new tab page.
  * @param {string} s The string to parse.
- * @param {Array.<string>=} opt_extraTags Optional extra allowed tags.
- * @param {Object.<string, function(Node, string):boolean>=} opt_extraAttrs
+ * @param {Array<string>=} opt_extraTags Optional extra allowed tags.
+ * @param {Object<string, function(Node, string):boolean>=} opt_extraAttrs
  *     Optional extra allowed attributes (all tags are run through these).
  * @throws {Error} In case of non supported markup.
  * @return {DocumentFragment} A document fragment containing the DOM tree.
@@ -32,7 +32,7 @@ var parseHtmlSubset = (function() {
 
   /**
    * Whitelist of tag names allowed in parseHtmlSubset.
-   * @type {!Array.<string>}
+   * @type {!Array<string>}
    * @const
    */
   var allowedTags = ['A', 'B', 'STRONG'];

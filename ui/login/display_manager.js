@@ -106,7 +106,7 @@ cr.define('cr.ui.login', function() {
 
   /**
    * Groups of screens (screen IDs) that should have the same dimensions.
-   * @type Array.<Array.<string>>
+   * @type Array<Array<string>>
    * @const
    */
   var SCREEN_GROUPS = [[SCREEN_OOBE_NETWORK,
@@ -117,7 +117,7 @@ cr.define('cr.ui.login', function() {
   /**
    * Group of screens (screen IDs) where factory-reset screen invocation is
    * available.
-   * @type Array.<string>
+   * @type Array<string>
    * @const
    */
   var RESET_AVAILABLE_SCREEN_GROUP = [
@@ -142,7 +142,7 @@ cr.define('cr.ui.login', function() {
   /**
    * Group of screens (screen IDs) where enable debuggingscreen invocation is
    * available.
-   * @type Array.<string>
+   * @type Array<string>
    * @const
    */
   var ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP = [
@@ -156,7 +156,7 @@ cr.define('cr.ui.login', function() {
   /**
    * Group of screens (screen IDs) that are not participating in
    * left-current-right animation.
-   * @type Array.<string>
+   * @type Array<string>
    * @const
    */
   var NOT_ANIMATED_SCREEN_GROUP = [
@@ -430,7 +430,7 @@ cr.define('cr.ui.login', function() {
 
     /**
      * Appends buttons to the button strip.
-     * @param {Array.<HTMLElement>} buttons Array with the buttons to append.
+     * @param {Array<HTMLElement>} buttons Array with the buttons to append.
      * @param {string} screenId Id of the screen that buttons belong to.
      */
     appendButtons_: function(buttons, screenId) {

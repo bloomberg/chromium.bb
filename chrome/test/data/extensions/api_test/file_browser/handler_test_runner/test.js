@@ -25,7 +25,7 @@
 
 /**
  * Files for which the file browser handlers will be executed by the extension.
- * @type {Array.<string>}
+ * @type {Array<string>}
  */
 var kTestPaths = ['test_dir/test_file.xul', 'test_dir/test_file.tiff'];
 
@@ -35,7 +35,7 @@ function run() {
    * Test cases after the file path has been resolved to FileEntry. Each
    * resolved test case contains the resolved FileEntry object.
    *
-   * @type Array.<FileEntry>
+   * @type Array<FileEntry>
    */
   var resolvedEntries = [];
 
@@ -43,7 +43,7 @@ function run() {
    * List of tasks found for a testCase. Each object contains the found task id
    * and file URL for which the task should be executed.
    *
-   * @type {Array.<Object.<string, string>>}
+   * @type {Array<Object<string, string>>}
    */
   var foundTasks = [];
 
@@ -87,7 +87,7 @@ function run() {
    * and calls getFileTasks again.
    *
    * @param {string} fileUrl File url for which getFileTasks was called.
-   * @param {Array.<Object>} tasks List of found task objects.
+   * @param {Array<Object>} tasks List of found task objects.
    */
 
   function onGotNonDefaultTasks(fileUrl, tasks) {
@@ -115,7 +115,7 @@ function run() {
    * are found, they are executed.
    *
    * @param {string} fileUrl File url for which getFileTasks was called.
-   * @param {Array.<Object>} tasks List of found task objects.
+   * @param {Array<Object>} tasks List of found task objects.
    */
   function onGotTasks(fileUrl, tasks) {
     if (!tasks) {

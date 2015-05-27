@@ -162,7 +162,7 @@ function CWSWidgetContainer(document, parentNode, delegate, params) {
 
   /**
    * Map of options for the widget.
-   * @type {?Object.<string, *>}
+   * @type {?Object<string, *>}
    * @private
    */
   this.options_ = null;

@@ -108,7 +108,7 @@ cr.define('cr', function() {
 
     /**
      * Opens URLs in new tab, window or incognito mode.
-     * @param {!Array.<string>} urls The URLs to open.
+     * @param {!Array<string>} urls The URLs to open.
      * @param {cr.LinkKind} kind The kind of open we want to do.
      */
     openUrls: function(urls, kind) {

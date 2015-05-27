@@ -18,8 +18,8 @@ function testGetFeatureNotAllowed(feature) {
 /**
  * Initializes and runs tests that verify the extension cannot query feature
  * states.
- * @param {Array.<string>} enabledFeatures The list of enabled features.
- * @param {Array.<string>} disabledFeatures The list of disabled features.
+ * @param {Array<string>} enabledFeatures The list of enabled features.
+ * @param {Array<string>} disabledFeatures The list of disabled features.
  */
 function runGetterTest(enabledFeatures, disabledFeatures) {
   var tests = [];
@@ -62,9 +62,9 @@ function testEnableFeature(feature, value) {
  * the setter methods do not cause API errors. The tests don't verify that the
  * feature state actually changes as a result of setter calls. That should be
  * done in Chrome part of test, after the test extension is done.
- * @param {Array.<string>} initiallyEnabledFeatures The list of features that
+ * @param {Array<string>} initiallyEnabledFeatures The list of features that
  *     are enabled when the test starts.
- * @param {Array.<string>} initiallyDisabledFeatures The list of features that
+ * @param {Array<string>} initiallyDisabledFeatures The list of features that
  *     are disabled when the test starts.
  */
 function runSetterTest(initiallyEnabledFeatures, initiallyDisabledFeatures) {
@@ -93,8 +93,8 @@ function runSetterTest(initiallyEnabledFeatures, initiallyDisabledFeatures) {
 
 /**
  * Mapping from test name to the function that runs tests.
- * @type {getterTest: function(Array.<string>, Array.<string>),
- *        setterTest: function(Array.<string>, Array.<string>)}
+ * @type {getterTest: function(Array<string>, Array<string>),
+ *        setterTest: function(Array<string>, Array<string>)}
  * @const
  */
 var TEST_FUNCTIONS = {

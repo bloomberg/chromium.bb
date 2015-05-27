@@ -6,7 +6,7 @@
 
 /**
  * Verifies that the layout matches with expectations.
- * @param {Array.<string>} rows List of strings where each string indicates the
+ * @param {Array<string>} rows List of strings where each string indicates the
  *     expected sequence of characters on the corresponding row.
  */
 function verifyLayout(rows) {

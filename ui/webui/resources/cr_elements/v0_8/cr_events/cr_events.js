@@ -23,7 +23,7 @@ Polymer({
    * Sets up an element to forward events across the shadow boundary, for events
    * which normally stop at the root node (see http://goo.gl/WGMO9x).
    * @param {!HTMLElement} element The element to forward events from.
-   * @param {!Array.<string>} events The events to forward.
+   * @param {!Array<string>} events The events to forward.
    */
   forward: function(element, events) {
     for (var i = 0; i < events.length; i++)

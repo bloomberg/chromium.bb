@@ -6,7 +6,7 @@
 
 /**
  * Map from a file path to contents of the file.
- * @type {Object.<string, string>}
+ * @type {Object<string, string>}
  */
 var fileContents = {};
 
@@ -50,7 +50,7 @@ var TESTING_CHOCOLATE_FILE_NAME = 'chocolate.txt';
 
 /**
  * List of callbacks to be called when a file write is requested.
- * @type {Array.<function(string)>}
+ * @type {Array<function(string)>}
  */
 var writeFileRequestedCallbacks = [];
 

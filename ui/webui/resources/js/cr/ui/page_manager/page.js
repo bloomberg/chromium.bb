@@ -52,7 +52,7 @@ cr.define('cr.ui.pageManager', function() {
     /**
      * An array of controls that are associated with this page. The first
      * control should be located on a root page.
-     * @type {Array.<Element>}
+     * @type {Array<Element>}
      */
     associatedControls: null,
 

@@ -30,7 +30,7 @@ var TESTING_ANOTHER_TAG = "hello-giraffe";
 /**
  * List of directory changed events received from the chrome.fileManagerPrivate
  * API.
- * @type {Array.<Object>}
+ * @type {Array<Object>}
  */
 var directoryChangedEvents = [];
 

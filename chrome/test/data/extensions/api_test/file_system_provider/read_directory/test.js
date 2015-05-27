@@ -41,7 +41,7 @@ var TESTING_TIRAMISU_FILE = Object.freeze({
  * Returns entries in the requested directory.
  *
  * @param {ReadDirectoryRequestedOptions} options Options.
- * @param {function(Array.<Object>, boolean)} onSuccess Success callback with
+ * @param {function(Array<Object>, boolean)} onSuccess Success callback with
  *     a list of entries. May be called multiple times.
  * @param {function(string)} onError Error callback with an error code.
  */

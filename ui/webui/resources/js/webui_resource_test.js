@@ -121,7 +121,7 @@ function assertDeepEquals(expected, observed, opt_message) {
 (function(exports) {
   /**
    * List of test cases.
-   * @type {Array.<string>} List of function names for tests to run.
+   * @type {Array<string>} List of function names for tests to run.
    */
   var testCases = [];
 

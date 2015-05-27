@@ -12,7 +12,7 @@ Polymer('device-list', {
 
     /**
      * Info of the devices contained in the list.
-     * @type {Array.<DeviceInfo>}
+     * @type {Array<DeviceInfo>}
      */
     devices: null
   },

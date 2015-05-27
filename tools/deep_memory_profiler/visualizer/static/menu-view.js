@@ -36,7 +36,7 @@ MenuView.prototype.selectNode_ = function(id) {
 
 /**
  * Update menu view when model updated.
- * @param {Array.<Object>} models
+ * @param {Array<Object>} models
  * @private
  */
 MenuView.prototype.redraw_ = function(models) {

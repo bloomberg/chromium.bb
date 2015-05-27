@@ -6,7 +6,7 @@ Polymer('log-buffer', {
   publish: {
     /**
      * List of displayed logs.
-     * @type {?Array.<{{
+     * @type {?Array<{{
      *    text: string,
      *    time: string,
      *    file: string,
@@ -68,7 +68,7 @@ LogBufferInterface = {
   /**
    * Called in response to chrome.send('getLogMessages') with the log messages
    * currently in the buffer.
-   * @type {function(Array.<LogMessage>)}
+   * @type {function(Array<LogMessage>)}
    */
   onGotLogMessages: function(messages) {},
 };

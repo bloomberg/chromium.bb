@@ -31,7 +31,7 @@ var EventTrackerEntry;
  */
 function EventTracker() {
   /**
-   * @type {Array.<EventTrackerEntry>}
+   * @type {Array<EventTrackerEntry>}
    * @private
    */
   this.listeners_ = [];

@@ -56,7 +56,7 @@ var testPreRunStatus = {
 /**
  * List of tests to be run for the handlers.
  *
- * @type {Array.<function()>}
+ * @type {Array<function()>}
  */
 var handlerTests = [];
 

@@ -108,7 +108,7 @@ function countItemsInHistory(callback) {
 
 /**
  * Populates the history by calling addUrl for each url in the array urls.
- * @param {Array.<string>} urls The array of urls to populate the history.
+ * @param {Array<string>} urls The array of urls to populate the history.
  * @param {function} callback Closure.
  */
 function populateHistory(urls, callback) {
@@ -123,7 +123,7 @@ function populateHistory(urls, callback) {
 
 /**
  * Tests call this function to invoke specific tests.
- * @param {Array.<funcion>} testFns The tests to run.
+ * @param {Array<funcion>} testFns The tests to run.
  */
 function runHistoryTestFns(testFns) {
   chrome.test.getConfig(function(config) {
@@ -143,7 +143,7 @@ function runHistoryTestFns(testFns) {
  *    'between': A time between the times teh URLs were added.
  *    'after': A time after both were added.
  * All times are passed to |callback| as properties of its object parameter.
- * @param {Array.<string>} urls An array of two URLs to add to the history.
+ * @param {Array<string>} urls An array of two URLs to add to the history.
  * @param {function(object)} callback Called with the times described above.
  */
 function addUrlsWithTimeline(urls, callback) {

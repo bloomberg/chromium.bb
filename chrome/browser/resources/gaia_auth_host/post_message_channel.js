@@ -14,7 +14,7 @@
 var PostMessageChannel = (function() {
   /**
    * Allowed origins of the hosting page.
-   * @type {Array.<string>}
+   * @type {Array<string>}
    */
   var ALLOWED_ORIGINS = [
     'chrome://oobe',
@@ -78,7 +78,7 @@ var PostMessageChannel = (function() {
 
     /**
      * Channle Id to port map.
-     * @type {Object.<number, PostMessagePort>}
+     * @type {Object<number, PostMessagePort>}
      */
     this.channels_ = {};
 

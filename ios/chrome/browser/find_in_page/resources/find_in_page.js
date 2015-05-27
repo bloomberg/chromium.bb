@@ -22,20 +22,20 @@ __gCrWeb['findInPage']['index'] = -1;
 
 /**
  * The list of found searches in span form.
- * @type {Array.<Element>}
+ * @type {Array<Element>}
  */
 __gCrWeb['findInPage']['spans'] = [];
 
 /**
  * The list of frame documents.
  * TODO(justincohen): x-domain frames won't work.
- * @type {Array.<Document>}
+ * @type {Array<Document>}
  */
 __gCrWeb['findInPage'].frameDocs = [];
 
 /**
  * Associate array to stash element styles while the element is highlighted.
- * @type {Object.<Element,Object<string,string>>}
+ * @type {Object<Element,Object<string,string>>}
  */
 __gCrWeb['findInPage'].savedElementStyles = {};
 
@@ -621,7 +621,7 @@ __gCrWeb['findInPage'].removeSelectHighlight = function(element) {
  * Normalize coordinates according to the current document dimensions. Don't go
  * too far off the screen in either direction. Try to center if possible.
  * @param {Element} elem Element to find normalized coordinates for.
- * @return {Array.<number>} Normalized coordinates.
+ * @return {Array<number>} Normalized coordinates.
  */
 __gCrWeb['findInPage'].getNormalizedCoordinates = function(elem) {
   var fip = __gCrWeb['findInPage'];
@@ -644,8 +644,8 @@ __gCrWeb['findInPage'].getNormalizedCoordinates = function(elem) {
 /**
  * Scale coordinates according to the width of the screen, in case the screen
  * is zoomed out.
- * @param {Array.<number>} coordinates Coordinates to scale.
- * @return {Array.<number>} Scaled coordinates.
+ * @param {Array<number>} coordinates Coordinates to scale.
+ * @return {Array<number>} Scaled coordinates.
  */
 __gCrWeb['findInPage'].scaleCoordinates = function(coordinates) {
   var scaleFactor = __gCrWeb['findInPage'].pageWidth / window.innerWidth;
@@ -914,7 +914,7 @@ __gCrWeb['findInPage'].isVisible = function(elem) {
 /**
  * Helper function to find the absolute position of an element on the page.
  * @param {Element} elem Element to check.
- * @return {Array.<number>} [x, y] positions.
+ * @return {Array<number>} [x, y] positions.
  */
 __gCrWeb['findInPage'].findAbsolutePosition = function(elem) {
   var boundingRect = elem.getBoundingClientRect();
@@ -943,7 +943,7 @@ __gCrWeb['findInPage'].escapeRegex = function(text) {
 
 /**
  * Gather all iframes in the main window.
- * @return {Array.<Document>} frames.
+ * @return {Array<Document>} frames.
  */
 __gCrWeb['findInPage'].frameDocuments = function() {
   var windowsToSearch = [window];

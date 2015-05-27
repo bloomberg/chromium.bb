@@ -250,7 +250,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Convenience alias for selectionModel.selectedItems
-     * @type {!Array.<*>}
+     * @type {!Array<*>}
      */
     get selectedItems() {
       var indexes = this.selectionModel.selectedIndexes;

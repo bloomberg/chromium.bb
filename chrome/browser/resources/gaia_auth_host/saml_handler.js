@@ -105,7 +105,7 @@ cr.define('cr.login', function() {
 
     /**
      * Scraped password stored in an id to password field value map.
-     * @type {Object.<string, string>}
+     * @type {Object<string, string>}
      * @private
      */
     this.passwordStore_ = {};
@@ -199,7 +199,7 @@ cr.define('cr.login', function() {
 
     /**
      * Gets the de-duped scraped passwords.
-     * @return {Array.<string>}
+     * @return {Array<string>}
      * @private
      */
     getConsolidatedScrapedPasswords_: function() {

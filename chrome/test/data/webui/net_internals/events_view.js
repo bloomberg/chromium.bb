@@ -8,7 +8,7 @@ GEN_INCLUDE(['net_internals_test.js']);
 // Anonymous namespace
 (function() {
 
-// @return {Array.<object>} List of events for an abbreviated URL request.
+// @return {Array<object>} List of events for an abbreviated URL request.
 function urlRequestEvents(id) {
   return [
     {
@@ -102,7 +102,7 @@ function urlRequestEvents(id) {
 TEST_F('NetInternalsTest', 'netInternalsEventsViewFilter', function() {
   // Sets the filter and checks the results.
   // @param {string} filter Filter to use.
-  // @param {Array.<boolean>} matches Ordered list of whether or not each source
+  // @param {Array<boolean>} matches Ordered list of whether or not each source
   //     matches |filter|.  Order must match display order after applying the
   //     filter.
   function checkFilter(filter, matches) {

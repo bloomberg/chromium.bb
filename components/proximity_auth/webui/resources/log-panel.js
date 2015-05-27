@@ -6,7 +6,7 @@ Polymer('log-panel', {
   publish: {
     /**
      * List of displayed logs.
-     * @type {Array.<{{
+     * @type {Array<{{
      *    text: string,
      *    date: string,
      *    source: string

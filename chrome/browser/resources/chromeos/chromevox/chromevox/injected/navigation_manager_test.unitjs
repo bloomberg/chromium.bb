@@ -40,8 +40,8 @@ CvoxNavigationManagerUnitTest.prototype = {
   /**
    * Check a sequence of navigations.
    *
-   * @param {Array.<string>} strategies A list of nav strategies to try.
-   * @param {Array.<Object>} commandsAndExpectations An array of objects,
+   * @param {Array<string>} strategies A list of nav strategies to try.
+   * @param {Array<Object>} commandsAndExpectations An array of objects,
    *     each one of which should contain:
    *       'command': The UserCommands command to execute.
    *       'text': The expected text of the node that's navigated to.

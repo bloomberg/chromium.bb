@@ -135,7 +135,7 @@ var testing = {};
 
     /**
      * Extra libraries to add before loading this test file.
-     * @type {Array.<string>}
+     * @type {Array<string>}
      */
     extraLibraries: [],
 
@@ -146,7 +146,7 @@ var testing = {};
      * be specified when generating the test C++ source.
      * The specified libraries will be included with their transitive
      * dependencies according to the deps file.
-     * @type {Array.<string>}
+     * @type {Array<string>}
      */
     closureModuleDeps: [],
 
@@ -210,14 +210,14 @@ var testing = {};
 
     /**
      * Holds any accessibility results found during the accessibility audit.
-     * @type {Array.<Object>}
+     * @type {Array<Object>}
      */
     a11yResults_: [],
 
     /**
      * Gets the list of accessibility errors found during the accessibility
      * audit. Only for use in testing.
-     * @return {Array.<Object>}
+     * @return {Array<Object>}
      */
     getAccessibilityResults: function() {
       return this.a11yResults_;
@@ -283,7 +283,7 @@ var testing = {};
     /**
       * Create a container of mocked standalone functions to handle
       * |functionNames|, assign it to |this.mockLocalFunctions| and return it.
-      * @param {!Array.<string>} functionNames
+      * @param {!Array<string>} functionNames
       * @return {Mock} Mock handler class.
       * @see makeMockFunctions
       */
@@ -649,7 +649,7 @@ var testing = {};
 
   /**
    * Make a mock from the supplied |methodNames| array.
-   * @param {Array.<string>} methodNames Array of names of methods to mock.
+   * @param {Array<string>} methodNames Array of names of methods to mock.
    * @return {Function} Constructor with prototype filled in with methods
    *     matching |methodNames|.
    */
@@ -741,7 +741,7 @@ var testing = {};
     /**
      * Holds the mapping of (callerCallerString, callerName) -> count of times
      * called.
-     * @type {Object.<string, Object.<string, number>>}
+     * @type {Object<string, Object<string, number>>}
      */
     counts_: {},
 
@@ -831,7 +831,7 @@ var testing = {};
   /**
    * Holds the errors, if any, caught by expects so that the test case can
    * fail. Cleared when results are reported from runTest() or testDone().
-   * @type {Array.<Error>}
+   * @type {Array<Error>}
    */
   var errors = [];
 
@@ -851,7 +851,7 @@ var testing = {};
 
   /**
    * Notifies the running browser test of the test results. Clears |errors|.
-   * @param {Array.<boolean, string>=} result When passed, this is used for the
+   * @param {Array<boolean, string>=} result When passed, this is used for the
    *     testResult message.
    */
   function testDone(result) {
@@ -888,7 +888,7 @@ var testing = {};
   /**
    * Converts each Error in |errors| to a suitable message, adding them to
    * |message|, and returns the message string.
-   * @param {Array.<Error>} errors Array of errors to add to |message|.
+   * @param {Array<Error>} errors Array of errors to add to |message|.
    * @param {string?} message When supplied, error messages are appended to it.
    * @return {string} |message| + messages of all |errors|.
    */
@@ -908,7 +908,7 @@ var testing = {};
   /**
    * Returns [success, message] & clears |errors|.
    * @param {boolean} errorsOk When true, errors are ok.
-   * @return {Array.<boolean, string>}
+   * @return {Array<boolean, string>}
    */
   function testResult(errorsOk) {
     var result = [true, ''];
@@ -1081,7 +1081,7 @@ var testing = {};
    * |a11yResults| and
    * |a11yWarnings| in to an accessibility report, appends it to the given
    * |message| and returns the resulting message string.
-   * @param {Array.<string>} a11yResults The list of accessibility results
+   * @param {Array<string>} a11yResults The list of accessibility results
    * @return {string} |message| + accessibility report.
    */
   function accessibilityAuditReport(a11yResults, message) {
@@ -1182,7 +1182,7 @@ var testing = {};
    * @param {Array} testArguments The arguments to call |testBody| with.
    * @param {boolean} onlyAssertFails When true, only assertions cause failing
    *     testResult.
-   * @return {Array.<boolean, string>} [test-succeeded, message-if-failed]
+   * @return {Array<boolean, string>} [test-succeeded, message-if-failed]
    * @see createExpect
    * @see testResult
    */
@@ -1590,7 +1590,7 @@ var testing = {};
    * @param {boolean} isAsync When true, call testDone() on Errors.
    * @param {WhenTestDone} whenTestDone Call testDone() at the appropriate
    *     time.
-   * @param {Array.<Object>} actions Actions to run.
+   * @param {Array<Object>} actions Actions to run.
    * @constructor
    */
   function RunAllAction(isAsync, whenTestDone, actions) {

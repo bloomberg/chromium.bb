@@ -28,9 +28,9 @@ var binarySearch = function(target) {
 
 /**
  * Return the intersection set of two sorted arrays.
- * @param {Array.<*>} left
- * @param {Array.<*>} right
- * @return {Array.<*>}
+ * @param {Array<*>} left
+ * @param {Array<*>} right
+ * @return {Array<*>}
  */
 var intersectionOfSorted = function(left, right) {
   var from = 0;

@@ -28,14 +28,14 @@ function MockMethod() {
 
   /**
    * List of signatures for fucntion calls.
-   * @type {!Array.<!Array>}
+   * @type {!Array<!Array>}
    * @private
    */
   fn.calls_ = [];
 
   /**
    * List of expected call signatures.
-   * @type {!Array.<!Array>}
+   * @type {!Array<!Array>}
    * @private
    */
   fn.expectations_ = [];
@@ -48,7 +48,7 @@ function MockMethod() {
 
   /**
    * List of arguments for callback function.
-   * @type {!Array.<!Array>}
+   * @type {!Array<!Array>}
    */
   fn.callbackData = [];
 
@@ -122,14 +122,14 @@ function MockController() {
   /**
    * Original functions implementations, which are restored when |reset| is
    * called.
-   * @type {!Array.<!Object>}
+   * @type {!Array<!Object>}
    * @private
    */
   this.overrides_ = [];
 
   /**
    * List of registered mocks.
-   * @type {!Array.<!MockMethod>}
+   * @type {!Array<!MockMethod>}
    * @private
    */
   this.mocks_ = [];

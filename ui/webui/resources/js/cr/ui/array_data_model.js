@@ -255,7 +255,7 @@ cr.define('cr.ui', function() {
      * reinsert new items.
      * This dispatches one or more change events.
      * This runs sort after updating.
-     * @param {Array.<number>} indexes The index list of items to update.
+     * @param {Array<number>} indexes The index list of items to update.
      */
     updateIndexes: function(indexes) {
       indexes.forEach(function(index) {

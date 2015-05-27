@@ -6,7 +6,7 @@
  * Creates an array spanning a range of integer values.
  * @param {number} start The first number in the range.
  * @param {number} end The last number in the range inclusive.
- * @return {!Array.<number>}
+ * @return {!Array<number>}
  */
 function range(start, end) {
   var a = [];

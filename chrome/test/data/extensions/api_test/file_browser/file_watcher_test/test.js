@@ -28,7 +28,7 @@ function TestEventListener() {
    * Set of events that are expected to be triggered during the test. Each
    * object property represents one expected event.
    *
-   * @type {Object.<string, Object>}
+   * @type {Object<string, Object>}
    * @private
    */
   this.expectedEvents_ = {};
@@ -37,7 +37,7 @@ function TestEventListener() {
    * List of fileManagerPrivate.onDirectoryChanged events received before file
    * system operation was done.
    *
-   * @type {Array.<Object>}
+   * @type {Array<Object>}
    * @private
    */
   this.eventQueue_ = [];
@@ -219,7 +219,7 @@ function initTests(callback) {
     isOnDrive: false,
     /**
      * Set of entries that are being watched during the tests.
-     * @type {Object.<Entry>}
+     * @type {Object<Entry>}
      */
     entries: {},
     /**

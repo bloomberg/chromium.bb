@@ -360,7 +360,7 @@ CaretBrowsing.setFocusToNode = function(node) {
  * Set focus to the first focusable node in the given list.
  * select the text, otherwise it doesn't appear focused to the user.
  * Every other control behaves normally if you just call focus() on it.
- * @param {Array.<Node>} nodeList An array of nodes to focus.
+ * @param {Array<Node>} nodeList An array of nodes to focus.
  * @return {boolean} True if the node was focused.
  */
 CaretBrowsing.setFocusToFirstFocusable = function(nodeList) {
@@ -768,7 +768,7 @@ CaretBrowsing.isMoveByWordEvent = function(evt) {
  * Moves the cursor forwards to the next valid position.
  * @param {Cursor} cursor The current cursor location.
  *     On exit, the cursor will be at the next position.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @return {?string} The character reached, or null if the bottom of the
  *     document has been reached.
@@ -791,7 +791,7 @@ CaretBrowsing.forwards = function(cursor, nodesCrossed) {
  * Moves the cursor backwards to the previous valid position.
  * @param {Cursor} cursor The current cursor location.
  *     On exit, the cursor will be at the previous position.
- * @param {Array.<Node>} nodesCrossed Any HTML nodes crossed between the
+ * @param {Array<Node>} nodesCrossed Any HTML nodes crossed between the
  *     initial and final cursor position will be pushed onto this array.
  * @return {?string} The character reached, or null if the top of the
  *     document has been reached.

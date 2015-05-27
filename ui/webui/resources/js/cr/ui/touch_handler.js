@@ -67,7 +67,7 @@ cr.define('cr.ui', function() {
      * recent relevant touch and the second item is the touch's time stamp. Old
      * touches are removed based on the max tracking time and when direction
      * changes.
-      * @type {!Array.<number>}
+      * @type {!Array<number>}
       * @private
       */
     this.recentTouchesX_ = [];
@@ -77,7 +77,7 @@ cr.define('cr.ui', function() {
      * recent relevant touch and the second item is the touch's time stamp. Old
      * touches are removed based on the max tracking time and when direction
      * changes.
-     * @type {!Array.<number>}
+     * @type {!Array<number>}
      * @private
      */
     this.recentTouchesY_ = [];
@@ -632,7 +632,7 @@ cr.define('cr.ui', function() {
     /**
      * Filters the provided recent touches array to remove all touches except
      * the last if the move direction has changed.
-     * @param {!Array.<number>} recentTouches An array of tuples where the first
+     * @param {!Array<number>} recentTouches An array of tuples where the first
      *     item is the x or y component of the recent touch and the second item
      *     is the touch time stamp.
      * @param {number|undefined} lastMove The x or y component of the previous
@@ -651,7 +651,7 @@ cr.define('cr.ui', function() {
     /**
      * Filters the provided recent touches array to remove all touches older
      * than the max tracking time or the 5th most recent touch.
-     * @param {!Array.<number>} recentTouches An array of tuples where the first
+     * @param {!Array<number>} recentTouches An array of tuples where the first
      *     item is the x or y component of the recent touch and the second item
      *     is the touch time stamp.
      * @param {number} recentTime The time of the most recent event.

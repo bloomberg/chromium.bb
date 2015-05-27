@@ -169,7 +169,7 @@ JsEvalContext.setGlobal(GLOB_default, null);
 /**
  * A cache to reuse JsEvalContext instances. (IE6 perf)
  *
- * @type Array.<JsEvalContext>
+ * @type Array<JsEvalContext>
  */
 JsEvalContext.recycledInstances_ = [];
 
@@ -394,7 +394,7 @@ function jsEvalToValues(expr) {
  *
  * @param {string} expr
  *
- * @return {Array.<Function>}
+ * @return {Array<Function>}
  */
 function jsEvalToExpressions(expr) {
   var ret = [];
