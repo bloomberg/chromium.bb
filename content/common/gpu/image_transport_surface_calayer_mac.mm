@@ -490,6 +490,7 @@ void CALayerStorageProvider::LayerDoDraw() {
   TRACE_EVENT0("gpu", "CALayerStorageProvider::LayerDoDraw");
   if (gfx::GetGLImplementation() ==
       gfx::kGLImplementationDesktopGLCoreProfile) {
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClearColor(1, 0, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_BLEND);
@@ -529,6 +530,7 @@ void CALayerStorageProvider::LayerDoDraw() {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_SCISSOR_TEST);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glColor4f(1, 1, 1, 1);
     glActiveTexture(GL_TEXTURE0);
     glEnable(GL_TEXTURE_RECTANGLE_ARB);
