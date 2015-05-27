@@ -19,7 +19,7 @@ namespace media {
 
 // Video decoder interface.
 // This interface is extended by the various components that ultimately
-// implement the backend of PPB_VideoDecode_Dev.
+// implement the backend of PPB_VideoDecoder_Dev.
 class MEDIA_EXPORT VideoDecodeAccelerator {
  public:
   // Specification of a decoding profile supported by an decoder.
@@ -56,7 +56,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // output picture and blitting them. These callbacks will not be made unless
   // Initialize() has returned successfully.
   // This interface is extended by the various layers that relay messages back
-  // to the plugin, through the PPP_VideoDecode_Dev interface the plugin
+  // to the plugin, through the PPP_VideoDecoder_Dev interface the plugin
   // implements.
   class MEDIA_EXPORT Client {
    public:
