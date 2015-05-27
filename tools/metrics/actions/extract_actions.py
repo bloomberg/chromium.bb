@@ -221,113 +221,6 @@ def AddClosedSourceActions(actions):
   actions.add('PDF_Unsupported_Sound')
   actions.add('PDF_Unsupported_XFA')
 
-def AddAndroidActions(actions):
-  """Add actions that are used by Chrome on Android.
-
-  Arguments
-    actions: set of actions to add to.
-  """
-  actions.add('Cast_Sender_CastDeviceSelected');
-  actions.add('Cast_Sender_CastEnterFullscreen');
-  actions.add('Cast_Sender_CastMediaType');
-  actions.add('Cast_Sender_CastPlayRequested');
-  actions.add('Cast_Sender_YouTubeDeviceSelected');
-  actions.add('DataReductionProxy_PromoDisplayed');
-  actions.add('DataReductionProxy_PromoLearnMore');
-  actions.add('DataReductionProxy_TurnedOn');
-  actions.add('DataReductionProxy_TurnedOnFromPromo');
-  actions.add('DataReductionProxy_TurnedOff');
-  actions.add('MobileActionBarShown')
-  actions.add('MobileBreakpadUploadAttempt')
-  actions.add('MobileBreakpadUploadFailure')
-  actions.add('MobileBreakpadUploadSuccess')
-  actions.add('MobileContextMenuCopyImageLinkAddress')
-  actions.add('MobileContextMenuCopyLinkAddress')
-  actions.add('MobileContextMenuCopyLinkText')
-  actions.add('MobileContextMenuDownloadImage')
-  actions.add('MobileContextMenuDownloadLink')
-  actions.add('MobileContextMenuDownloadVideo')
-  actions.add('MobileContextMenuImage')
-  actions.add('MobileContextMenuLink')
-  actions.add('MobileContextMenuOpenImageInNewTab')
-  actions.add('MobileContextMenuOpenLink')
-  actions.add('MobileContextMenuOpenLinkInIncognito')
-  actions.add('MobileContextMenuOpenLinkInNewTab')
-  actions.add('MobileContextMenuSaveImage')
-  actions.add('MobileContextMenuSearchByImage')
-  actions.add('MobileContextMenuShareLink')
-  actions.add('MobileContextMenuText')
-  actions.add('MobileContextMenuVideo')
-  actions.add('MobileContextMenuViewImage')
-  actions.add('MobileFirstEditInOmnibox')
-  actions.add('MobileFocusedFakeboxOnNtp')
-  actions.add('MobileFocusedOmniboxNotOnNtp')
-  actions.add('MobileFocusedOmniboxOnNtp')
-  actions.add('MobileFreAttemptSignIn')
-  actions.add('MobileFreSignInSuccessful')
-  actions.add('MobileFreSkipSignIn')
-  actions.add('MobileMenuAddToBookmarks')
-  actions.add('MobileMenuAddToHomescreen')
-  actions.add('MobileMenuAllBookmarks')
-  actions.add('MobileMenuBack')
-  actions.add('MobileMenuCloseAllTabs')
-  actions.add('MobileMenuCloseTab')
-  actions.add('MobileMenuDirectShare')
-  actions.add('MobileMenuFeedback')
-  actions.add('MobileMenuFindInPage')
-  actions.add('MobileMenuForward')
-  actions.add('MobileMenuFullscreen')
-  actions.add('MobileMenuHistory')
-  actions.add('MobileMenuNewIncognitoTab')
-  actions.add('MobileMenuNewTab')
-  actions.add('MobileMenuOpenTabs')
-  actions.add('MobileMenuPrint')
-  actions.add('MobileMenuQuit')
-  actions.add('MobileMenuReload')
-  actions.add('MobileMenuRequestDesktopSite')
-  actions.add('MobileMenuSettings')
-  actions.add('MobileMenuShare')
-  actions.add('MobileNTPBookmark')
-  actions.add('MobileNTPForeignSession')
-  actions.add('MobileNTPMostVisited')
-  actions.add('MobileNTPRecentlyClosed')
-  actions.add('MobileNTPSwitchToBookmarks')
-  actions.add('MobileNTPSwitchToIncognito')
-  actions.add('MobileNTPSwitchToMostVisited')
-  actions.add('MobileNTPSwitchToOpenTabs')
-  actions.add('MobileNewTabOpened')
-  actions.add('MobileOmniboxSearch')
-  actions.add('MobileOmniboxVoiceSearch')
-  actions.add('MobileOmniboxRefineSuggestion')
-  actions.add('MobilePageLoaded')
-  actions.add('MobilePageLoadedDesktopUserAgent')
-  actions.add('MobilePageLoadedWithKeyboard')
-  actions.add('MobilePullGestureReload')
-  actions.add('MobileReceivedExternalIntent')
-  actions.add('MobileRendererCrashed')
-  actions.add('MobileShortcutAllBookmarks')
-  actions.add('MobileShortcutFindInPage')
-  actions.add('MobileShortcutNewIncognitoTab')
-  actions.add('MobileShortcutNewTab')
-  actions.add('MobileSideSwipeFinished')
-  actions.add('MobileStackViewCloseTab')
-  actions.add('MobileStackViewSwipeCloseTab')
-  actions.add('MobileTabClobbered')
-  actions.add('MobileTabClosed')
-  actions.add('MobileTabStripCloseTab')
-  actions.add('MobileTabStripNewTab')
-  actions.add('MobileTabSwitched')
-  actions.add('MobileToolbarBack')
-  actions.add('MobileToolbarForward')
-  actions.add('MobileToolbarNewTab')
-  actions.add('MobileToolbarReload')
-  actions.add('MobileToolbarShowMenu')
-  actions.add('MobileToolbarShowStackView')
-  actions.add('MobileToolbarStackViewNewTab')
-  actions.add('MobileToolbarToggleBookmark')
-  actions.add('SystemBack')
-  actions.add('SystemBackForNavigation')
-
 def AddAboutFlagsActions(actions):
   """This parses the experimental feature flags for UMA actions.
 
@@ -833,7 +726,6 @@ def UpdateXml(original_xml):
   # print "Scanned {0} number of files".format(number_of_files_total)
   # print "Found {0} entries".format(len(actions))
 
-  AddAndroidActions(actions)
   AddAutomaticResetBannerActions(actions)
   AddBookmarkManagerActions(actions)
   AddChromeOSActions(actions)
