@@ -151,8 +151,8 @@ public class ConnectionInfoPopup implements OnClickListener {
 
         mResetCertDecisionsButton = new Button(mContext);
         mResetCertDecisionsButton.setText(label);
-        mResetCertDecisionsButton.setBackground(mContext.getResources().getDrawable(
-                R.drawable.connection_info_reset_cert_decisions));
+        mResetCertDecisionsButton.setBackgroundResource(
+                R.drawable.connection_info_reset_cert_decisions);
         mResetCertDecisionsButton.setTextColor(
                 mContext.getResources().getColor(
                 R.color.connection_info_popup_reset_cert_decisions_button));
