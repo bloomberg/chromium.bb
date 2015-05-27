@@ -1256,7 +1256,6 @@ _nohwqual_boards = frozenset([
 ])
 
 _norootfs_verification_boards = frozenset([
-    'lakitu',
 ])
 
 _base_layout_boards = frozenset([
