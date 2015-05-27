@@ -56,6 +56,7 @@ VideoFrameCompositor::VideoFrameCompositor(
       client_(nullptr),
       rendering_(false),
       rendered_last_frame_(false),
+      is_background_rendering_(false),
       // Assume 60Hz before the first UpdateCurrentFrame() call.
       last_interval_(base::TimeDelta::FromSecondsD(1.0 / 60)),
       callback_(nullptr) {
