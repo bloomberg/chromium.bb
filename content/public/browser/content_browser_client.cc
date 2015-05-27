@@ -340,6 +340,7 @@ const wchar_t* ContentBrowserClient::GetResourceDllName() {
 ExternalVideoSurfaceContainer*
 ContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
     WebContents* web_contents) {
+  NOTREACHED() << "Hole-punching is not supported. See crbug.com/469348.";
   return nullptr;
 }
 #endif
