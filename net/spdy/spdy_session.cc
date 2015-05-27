@@ -1795,7 +1795,7 @@ void SpdySession::MakeUnavailable() {
   }
 }
 
-base::Value* SpdySession::GetInfoAsValue() const {
+scoped_ptr<base::Value> SpdySession::GetInfoAsValue() const {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetInteger("source_id", net_log_.source().id);
@@ -1839,7 +1839,7 @@ base::Value* SpdySession::GetInfoAsValue() const {
   dict->SetInteger("recv_window_size", session_recv_window_size_);
   dict->SetInteger("unacked_recv_window_bytes",
                    session_unacked_recv_window_bytes_);
-  return dict.release();
+  return dict.Pass();
 }
 
 bool SpdySession::IsReused() const {

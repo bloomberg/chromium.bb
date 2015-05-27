@@ -248,8 +248,8 @@ void SpdySessionPool::CloseAllSessions() {
   }
 }
 
-base::Value* SpdySessionPool::SpdySessionPoolInfoToValue() const {
-  base::ListValue* list = new base::ListValue();
+scoped_ptr<base::Value> SpdySessionPool::SpdySessionPoolInfoToValue() const {
+  scoped_ptr<base::ListValue> list(new base::ListValue());
 
   for (AvailableSessionMap::const_iterator it = available_sessions_.begin();
        it != available_sessions_.end(); ++it) {
@@ -260,7 +260,7 @@ base::Value* SpdySessionPool::SpdySessionPoolInfoToValue() const {
     if (key.Equals(session_key))
       list->Append(it->second->GetInfoAsValue());
   }
-  return list;
+  return list.Pass();
 }
 
 void SpdySessionPool::OnIPAddressChanged() {

@@ -119,9 +119,8 @@ class NET_EXPORT SpdySessionPool
   // closing the current ones.
   void CloseAllSessions();
 
-  // Creates a Value summary of the state of the spdy session pool. The caller
-  // responsible for deleting the returned value.
-  base::Value* SpdySessionPoolInfoToValue() const;
+  // Creates a Value summary of the state of the spdy session pool.
+  scoped_ptr<base::Value> SpdySessionPoolInfoToValue() const;
 
   base::WeakPtr<HttpServerProperties> http_server_properties() {
     return http_server_properties_;

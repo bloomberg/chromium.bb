@@ -397,8 +397,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void MaybeFinishGoingAway();
 
   // Retrieves information on the current state of the SPDY session as a
-  // Value.  Caller takes possession of the returned value.
-  base::Value* GetInfoAsValue() const;
+  // Value.
+  scoped_ptr<base::Value> GetInfoAsValue() const;
 
   // Indicates whether the session is being reused after having successfully
   // used to send/receive data in the past or if the underlying socket was idle

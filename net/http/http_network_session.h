@@ -187,9 +187,8 @@ class NET_EXPORT HttpNetworkSession
   // responsible for deleting the returned value.
   base::Value* SocketPoolInfoToValue() const;
 
-  // Creates a Value summary of the state of the SPDY sessions. The caller is
-  // responsible for deleting the returned value.
-  base::Value* SpdySessionPoolInfoToValue() const;
+  // Creates a Value summary of the state of the SPDY sessions.
+  scoped_ptr<base::Value> SpdySessionPoolInfoToValue() const;
 
   // Creates a Value summary of the state of the QUIC sessions and
   // configuration.
