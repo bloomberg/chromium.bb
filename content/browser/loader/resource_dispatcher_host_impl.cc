@@ -115,7 +115,7 @@ namespace {
 static ResourceDispatcherHostImpl* g_resource_dispatcher_host;
 
 // The interval for calls to ResourceDispatcherHostImpl::UpdateLoadStates
-const int kUpdateLoadStatesIntervalMsec = 100;
+const int kUpdateLoadStatesIntervalMsec = 250;
 
 // Maximum byte "cost" of all the outstanding requests for a renderer.
 // See delcaration of |max_outstanding_requests_cost_per_process_| for details.
@@ -788,8 +788,9 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
-  // Make sure we have the load state monitor running
-  if (!update_load_states_timer_->IsRunning()) {
+  // Make sure we have the load state monitor running.
+  if (!update_load_states_timer_->IsRunning() &&
+      scheduler_->HasLoadingClients()) {
     update_load_states_timer_->Start(
         FROM_HERE, TimeDelta::FromMilliseconds(kUpdateLoadStatesIntervalMsec),
         this, &ResourceDispatcherHostImpl::UpdateLoadInfo);
@@ -1779,10 +1780,6 @@ void ResourceDispatcherHostImpl::RemovePendingLoader(
   IncrementOutstandingRequestsMemory(-1, *info);
 
   pending_loaders_.erase(iter);
-
-  // If we have no more pending requests, then stop the load state monitor
-  if (pending_loaders_.empty() && update_load_states_timer_)
-    update_load_states_timer_->Stop();
 }
 
 void ResourceDispatcherHostImpl::CancelRequest(int child_id,
@@ -2200,8 +2197,14 @@ ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes() {
 void ResourceDispatcherHostImpl::UpdateLoadInfo() {
   scoped_ptr<LoadInfoMap> info_map(GetLoadInfoForAllRoutes());
 
-  if (info_map->empty())
+  // Stop the timer if there are no more pending requests. Future new requests
+  // will restart it as necessary.
+  // Also stop the timer if there are no loading clients, to avoid waking up
+  // unnecessarily when there is a long running (hanging get) request.
+  if (info_map->empty() || !scheduler_->HasLoadingClients()) {
+    update_load_states_timer_->Stop();
     return;
+  }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

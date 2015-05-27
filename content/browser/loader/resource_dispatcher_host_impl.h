@@ -502,8 +502,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       RegisteredTempFiles;  // key is child process id
   RegisteredTempFiles registered_temp_files_;
 
-  // A timer that periodically calls UpdateLoadStates while pending_requests_
-  // is not empty.
+  // A timer that periodically calls UpdateLoadInfo while pending_loaders_ is
+  // not empty and at least one RenderViewHost is loading.
   scoped_ptr<base::RepeatingTimer<ResourceDispatcherHostImpl> >
       update_load_states_timer_;
 

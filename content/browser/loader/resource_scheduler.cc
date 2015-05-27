@@ -1005,6 +1005,14 @@ bool ResourceScheduler::IsClientVisibleForTesting(int child_id, int route_id) {
   return client->is_visible();
 }
 
+bool ResourceScheduler::HasLoadingClients() const {
+  for (const auto& client : client_map_) {
+    if (!client.second->is_loaded())
+      return true;
+  }
+  return false;
+}
+
 ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,
                                                         int route_id) {
   ClientId client_id = MakeClientId(child_id, route_id);

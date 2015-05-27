@@ -305,6 +305,7 @@ class WebContents : public PageNavigator,
   virtual bool IsWaitingForResponse() const = 0;
 
   // Returns the current load state and the URL associated with it.
+  // The load state is only updated while IsLoading() is true.
   virtual const net::LoadStateWithParam& GetLoadState() const = 0;
   virtual const base::string16& GetLoadStateHost() const = 0;
 

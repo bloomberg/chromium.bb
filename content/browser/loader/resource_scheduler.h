@@ -150,6 +150,9 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
 
   bool IsClientVisibleForTesting(int child_id, int route_id);
 
+  // Returns true if at least one client is currently loading.
+  bool HasLoadingClients() const;
+
  private:
   enum ClientState {
     // Observable client.
