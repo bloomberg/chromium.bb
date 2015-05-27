@@ -61,6 +61,8 @@ main/libd/libdrm/libdrm2_2.4.40-1~deb7u2_armhf.deb
 main/libe/libexif/libexif12_0.6.20-3_armhf.deb
 main/libe/libexif/libexif-dev_0.6.20-3_armhf.deb
 main/libf/libffi/libffi5_3.0.10-3+b1_armhf.deb
+main/libg/libgcrypt11/libgcrypt11_1.5.0-5+deb7u2_armhf.deb
+main/libg/libgcrypt11/libgcrypt11-dev_1.5.0-5+deb7u2_armhf.deb
 main/libg/libgnome-keyring/libgnome-keyring0_3.4.1-1_armhf.deb
 main/libg/libgnome-keyring/libgnome-keyring-dev_3.4.1-1_armhf.deb
 main/libg/libgpg-error/libgpg-error0_1.10-3.1_armhf.deb
