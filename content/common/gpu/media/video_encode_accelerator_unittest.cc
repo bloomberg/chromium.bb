@@ -1195,8 +1195,7 @@ bool VEAClient::HandleEncodedFrame(bool keyframe) {
   // kMaxKeyframeDelay frames after the frame, for which we requested
   // it, comes back encoded.
   if (keyframe) {
-    if (num_keyframes_requested_ > 0 &&
-        num_encoded_frames_ > next_keyframe_at_) {
+    if (num_keyframes_requested_ > 0) {
       --num_keyframes_requested_;
       next_keyframe_at_ += keyframe_period_;
     }
