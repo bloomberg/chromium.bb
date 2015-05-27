@@ -47,6 +47,9 @@ def _CreateOptionParser():
                     action='store_true')
   parser.add_option('-z', '--compress', help='Compress the resulting trace '
                     'with gzip. ', action='store_true')
+  parser.add_option('-t', '--time', help='Stops tracing after N seconds, 0 to '
+                    'manually stop (startup trace ends after at most 5s).',
+                    default=5, metavar='N', type='int')
   return parser
 
 
@@ -81,7 +84,8 @@ def main():
           device, package_info, options.cold, options.url))
   if options.output:
     options.output = os.path.expanduser(options.output)
-  result = profiler.CaptureProfile(enabled_controllers, 0,
+  result = profiler.CaptureProfile(enabled_controllers,
+                                   options.time,
                                    output=options.output,
                                    compress=options.compress,
                                    write_json=options.json)
