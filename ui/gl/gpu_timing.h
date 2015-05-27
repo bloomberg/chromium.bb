@@ -56,6 +56,9 @@ class GPUTiming {
   TimerType GetTimerType() const { return timer_type_; }
   uint32_t GetDisjointCount();
 
+  int64 CalculateTimerOffset(base::Callback<int64(void)> cpu_time);
+  void InvalidateTimerOffset();
+
  private:
   friend struct base::DefaultDeleter<GPUTiming>;
   friend class GLContextReal;
@@ -67,6 +70,8 @@ class GPUTiming {
 
   TimerType timer_type_ = kTimerTypeInvalid;
   uint32_t disjoint_counter_ = 0;
+  int64 offset_ = 0;  // offset cache when timer_type_ == kTimerTypeARB
+  bool offset_valid_ = false;
   DISALLOW_COPY_AND_ASSIGN(GPUTiming);
 };
 
@@ -87,6 +92,8 @@ class GL_EXPORT GPUTimer {
   void GetStartEndTimestamps(int64* start, int64* end);
   int64 GetDeltaElapsed();
 
+  int64 GetOffset() const { return offset_; }
+
  private:
   friend class GPUTimingClient;
 
@@ -95,6 +102,7 @@ class GL_EXPORT GPUTimer {
   unsigned int queries_[2];
   int64 offset_ = 0;
   bool end_requested_ = false;
+  bool end_available_ = false;
   scoped_refptr<GPUTimingClient> gpu_timing_client_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUTimer);
@@ -119,9 +127,6 @@ class GL_EXPORT GPUTimingClient
   // If the returned value is false, all the previous timers should be
   // discarded.
   bool CheckAndResetTimerErrors();
-
-  // Returns the offset between the current gpu time and the cpu time.
-  int64 CalculateTimerOffset();
   void InvalidateTimerOffset();
 
   void SetCpuTimeForTesting(const base::Callback<int64(void)>& cpu_time);
@@ -133,11 +138,12 @@ class GL_EXPORT GPUTimingClient
 
   virtual ~GPUTimingClient();
 
+  // Returns the offset between the current gpu time and the cpu time.
+  int64 CalculateTimerOffset();
+
   GPUTiming* gpu_timing_;
   GPUTiming::TimerType timer_type_ = GPUTiming::kTimerTypeInvalid;
-  int64 offset_ = 0;  // offset cache when timer_type_ == kTimerTypeARB
   uint32_t disjoint_counter_ = 0;
-  bool offset_valid_ = false;
   base::Callback<int64(void)> cpu_time_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUTimingClient);

@@ -37,10 +37,35 @@ uint32_t GPUTiming::GetDisjointCount() {
     GLint disjoint_value = 0;
     glGetIntegerv(GL_GPU_DISJOINT_EXT, &disjoint_value);
     if (disjoint_value) {
+      offset_valid_ = false;
       disjoint_counter_++;
     }
   }
   return disjoint_counter_;
+}
+
+int64 GPUTiming::CalculateTimerOffset(base::Callback<int64(void)> cpu_time) {
+  if (!offset_valid_) {
+    if (timer_type_ == kTimerTypeDisjoint || timer_type_ == kTimerTypeARB) {
+      GLint64 gl_now = 0;
+      glGetInteger64v(GL_TIMESTAMP, &gl_now);
+      int64 now =
+          cpu_time.is_null()
+              ? base::TimeTicks::NowFromSystemTraceTime().ToInternalValue()
+              : cpu_time.Run();
+      offset_ = now - gl_now / base::Time::kNanosecondsPerMicrosecond;
+      offset_valid_ = (timer_type_ == kTimerTypeARB);
+    } else {
+      // TODO(dyen): figure out how to calculate the offset for EXT_Timer_Query.
+      offset_ = 0;
+      offset_valid_ = true;
+    }
+  }
+  return offset_;
+}
+
+void GPUTiming::InvalidateTimerOffset() {
+  offset_valid_ = false;
 }
 
 GPUTimer::~GPUTimer() {
@@ -77,7 +102,6 @@ void GPUTimer::End() {
   switch (gpu_timing_client_->gpu_timing_->timer_type_) {
     case GPUTiming::kTimerTypeARB:
     case GPUTiming::kTimerTypeDisjoint:
-      offset_ = gpu_timing_client_->CalculateTimerOffset();
       glQueryCounter(queries_[1], GL_TIMESTAMP);
       break;
     case GPUTiming::kTimerTypeEXT:
@@ -89,13 +113,20 @@ void GPUTimer::End() {
 }
 
 bool GPUTimer::IsAvailable() {
-  if (!gpu_timing_client_->IsAvailable() || !end_requested_) {
+  if (!gpu_timing_client_->IsAvailable() || !end_requested_)
     return false;
+
+  if (!end_available_) {
+    GLint done = 0;
+    glGetQueryObjectiv(queries_[1] ? queries_[1] : queries_[0],
+                       GL_QUERY_RESULT_AVAILABLE, &done);
+    if (done) {
+      end_available_ = true;
+      offset_ = gpu_timing_client_->CalculateTimerOffset();
+    }
   }
-  GLint done = 0;
-  glGetQueryObjectiv(queries_[1] ? queries_[1] : queries_[0],
-                     GL_QUERY_RESULT_AVAILABLE, &done);
-  return done != 0;
+
+  return end_available_;
 }
 
 void GPUTimer::GetStartEndTimestamps(int64* start, int64* end) {
@@ -204,21 +235,15 @@ bool GPUTimingClient::CheckAndResetTimerErrors() {
 
 int64 GPUTimingClient::CalculateTimerOffset() {
   DCHECK(IsTimerOffsetAvailable());
-  if (!offset_valid_) {
-    GLint64 gl_now = 0;
-    glGetInteger64v(GL_TIMESTAMP, &gl_now);
-    int64 now =
-        cpu_time_for_testing_.is_null()
-            ? base::TimeTicks::NowFromSystemTraceTime().ToInternalValue()
-            : cpu_time_for_testing_.Run();
-    offset_ = now - gl_now / base::Time::kNanosecondsPerMicrosecond;
-    offset_valid_ = timer_type_ == GPUTiming::kTimerTypeARB;
-  }
-  return offset_;
+  return gpu_timing_
+         ? gpu_timing_->CalculateTimerOffset(cpu_time_for_testing_)
+         : 0;
 }
 
 void GPUTimingClient::InvalidateTimerOffset() {
-  offset_valid_ = false;
+  if (gpu_timing_) {
+    gpu_timing_->InvalidateTimerOffset();
+  }
 }
 
 void GPUTimingClient::SetCpuTimeForTesting(

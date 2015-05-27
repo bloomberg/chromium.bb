@@ -267,9 +267,6 @@ bool GPUTracer::EndDecoding() {
   }
 
   gpu_executing_ = false;
-
-  // NOTE(vmiura): glFlush() here can help give better trace results,
-  // but it distorts the normal device behavior.
   return true;
 }
 
