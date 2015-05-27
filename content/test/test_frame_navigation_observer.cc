@@ -58,10 +58,10 @@ void TestFrameNavigationObserver::DidStartProvisionalLoadForFrame(
     navigation_started_ = true;
 }
 
-void TestFrameNavigationObserver::DidNavigateAnyFrame(
+void TestFrameNavigationObserver::DidCommitProvisionalLoadForFrame(
     RenderFrameHost* render_frame_host,
-    const LoadCommittedDetails& details,
-    const FrameNavigateParams& params) {
+    const GURL& url,
+    ui::PageTransition transition_type) {
   if (!navigation_started_)
     return;
 

@@ -44,9 +44,10 @@ class TestFrameNavigationObserver : public WebContentsObserver {
                                        const GURL& validated_url,
                                        bool is_error_page,
                                        bool is_iframe_srcdoc) override;
-  void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
-                           const LoadCommittedDetails& details,
-                           const FrameNavigateParams& params) override;
+  void DidCommitProvisionalLoadForFrame(
+      RenderFrameHost* render_frame_host,
+      const GURL& url,
+      ui::PageTransition transition_type) override;
 
   // The id of the FrameTreeNode in which navigations are peformed.
   int frame_tree_node_id_;
