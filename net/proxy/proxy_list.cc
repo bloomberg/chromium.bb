@@ -143,10 +143,10 @@ std::string ProxyList::ToPacString() const {
 }
 
 base::ListValue* ProxyList::ToValue() const {
-  base::ListValue* list = new base::ListValue();
+  scoped_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < proxies_.size(); ++i)
     list->AppendString(proxies_[i].ToURI());
-  return list;
+  return list.release();
 }
 
 bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,

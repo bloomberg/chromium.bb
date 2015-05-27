@@ -136,7 +136,7 @@ bool NetLog::Source::FromEventParameters(base::Value* event_params,
 }
 
 base::Value* NetLog::Entry::ToValue() const {
-  base::DictionaryValue* entry_dict(new base::DictionaryValue());
+  scoped_ptr<base::DictionaryValue> entry_dict(new base::DictionaryValue());
 
   entry_dict->SetString("time", TickCountToString(data_->time));
 
@@ -158,7 +158,7 @@ base::Value* NetLog::Entry::ToValue() const {
       entry_dict->Set("params", value.Pass());
   }
 
-  return entry_dict;
+  return entry_dict.release();
 }
 
 base::Value* NetLog::Entry::ParametersToValue() const {
