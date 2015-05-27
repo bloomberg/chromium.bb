@@ -41473,6 +41473,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sync.BookmarksModelSyncStateAtNewDuplication"
+    enum="SyncBookmarkModelSyncState">
+  <owner>stanisc@chromium.org</owner>
+  <summary>
+    Tracks state of local bookmark model version relative to the sync version
+    when a new bookmark duplication occurs during bookmark association.
+  </summary>
+</histogram>
+
 <histogram name="Sync.BookmarksNewDuplicationsAtAssociation">
   <owner>stanisc@chromium.org</owner>
   <summary>
@@ -65137,6 +65146,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Expected restored types but found none"/>
   <int value="2" label="Did not expect restored types and found none"/>
   <int value="3" label="Did not expect restored types but found some"/>
+</enum>
+
+<enum name="SyncBookmarkModelSyncState" type="int">
+  <summary>
+    The state of the local bookmark model version compared to Sync. Corresponds
+    to NativeModelSyncState in bookmark_model_associator.h.
+  </summary>
+  <int value="0" label="Local version is unset"/>
+  <int value="1" label="Local version is in sync"/>
+  <int value="2" label="Local version is behind"/>
+  <int value="3" label="Local version is ahead"/>
 </enum>
 
 <enum name="SyncConfigureResult" type="int">

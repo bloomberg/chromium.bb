@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
@@ -44,6 +45,7 @@
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/internal_api/syncapi_internal.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/syncable_write_transaction.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -2092,6 +2094,12 @@ TEST_F(ProfileSyncServiceBookmarkTest, AssociationState) {
 // Verify that the creation_time_us changes are applied in the local model at
 // association time and update time.
 TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateDateAdded) {
+  // TODO(stanisc): crbug.com/456876: Remove this once the optimistic
+  // association experiment has ended.
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial("SyncOptimisticBookmarkAssociation",
+                                         "Enabled");
+
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   WriteTestDataToBookmarkModel();
 
@@ -2102,12 +2110,34 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateDateAdded) {
   // Modify the date_added field of a bookmark so it doesn't match with
   // the sync data.
   const BookmarkNode* bookmark_bar_node = model_->bookmark_bar_node();
-  int remove_index = 2;
-  ASSERT_GT(bookmark_bar_node->child_count(), remove_index);
-  const BookmarkNode* child_node = bookmark_bar_node->GetChild(remove_index);
+  int modified_index = 2;
+  ASSERT_GT(bookmark_bar_node->child_count(), modified_index);
+  const BookmarkNode* child_node = bookmark_bar_node->GetChild(modified_index);
   ASSERT_TRUE(child_node);
   EXPECT_TRUE(child_node->is_url());
   model_->SetDateAdded(child_node, base::Time::FromInternalValue(10));
+
+  StartSync();
+  StopSync();
+
+  // Verify that transaction versions are in sync between the native model
+  // and Sync.
+  {
+    syncer::ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+    int64 sync_version = trans.GetModelVersion(syncer::BOOKMARKS);
+    int64 native_version = model_->root_node()->sync_transaction_version();
+    EXPECT_EQ(native_version, sync_version);
+  }
+
+  // Since the version is in sync the association above should have skipped
+  // updating the native node above. That is expected optimization (see
+  // crbug/464907.
+  EXPECT_EQ(child_node->date_added(), base::Time::FromInternalValue(10));
+
+  // Reset transaction version on the native model to trigger conservative
+  // association algorithm.
+  model_->SetNodeSyncTransactionVersion(
+      model_->root_node(), syncer::syncable::kInvalidTransactionVersion);
 
   StartSync();
 
