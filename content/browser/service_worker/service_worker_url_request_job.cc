@@ -345,7 +345,10 @@ void ServiceWorkerURLRequestJob::StartRequest() {
       return;
 
     case FORWARD_TO_SERVICE_WORKER:
-      DCHECK(provider_host_ && provider_host_->active_version());
+      if (!provider_host_ || !provider_host_->active_version()) {
+        DeliverErrorResponse();
+        return;
+      }
       DCHECK(!fetch_dispatcher_);
       // Send a fetch event to the ServiceWorker associated to the
       // provider_host.

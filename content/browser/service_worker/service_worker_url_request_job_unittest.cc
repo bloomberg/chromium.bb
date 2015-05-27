@@ -270,7 +270,7 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
   DISALLOW_COPY_AND_ASSIGN(ProviderDeleteHelper);
 };
 
-TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHost) {
+TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostOnFetchEvent) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   // Shouldn't crash if the ProviderHost is deleted prior to completion of
   // the fetch event.
@@ -278,6 +278,23 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHost) {
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(200, "OK", std::string());
+}
+
+TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  request_ = url_request_context_.CreateRequest(
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      &url_request_delegate_);
+
+  request_->set_method("GET");
+  request_->Start();
+  helper_->context()->RemoveProviderHost(kProcessID, kProviderID);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_->status().is_success());
+  EXPECT_EQ(500, request_->response_headers()->response_code());
+  EXPECT_EQ("Service Worker Response Error",
+            request_->response_headers()->GetStatusText());
+  EXPECT_EQ(std::string(), url_request_delegate_.response_data());
 }
 
 // Responds to fetch events with a blob.
