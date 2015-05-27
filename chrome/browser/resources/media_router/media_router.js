@@ -85,4 +85,4 @@ cr.define('media_router', function() {
   };
 });
 
-window.addEventListener('polymer-ready', media_router.initialize);
+window.addEventListener('load', media_router.initialize);
