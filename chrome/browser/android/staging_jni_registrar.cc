@@ -15,24 +15,18 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_manager.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_tab_helper.h"
 #include "chrome/browser/android/document/document_web_contents_delegate.h"
-#include "chrome/browser/android/history_report/history_report_jni_bridge.h"
-#include "chrome/browser/android/policy/policy_manager.h"
 #include "chrome/browser/android/rlz/revenue_stats.h"
-#include "chrome/browser/android/tab/background_content_view_helper.h"
 #include "chrome/browser/android/tab/thumbnail_tab_helper_android.h"
 
 namespace chrome {
 namespace android {
 static base::android::RegistrationMethod kRegistrationMethods[] = {
-    {"BackgroundContentViewHelper", BackgroundContentViewHelper::Register},
     {"CompositorView", RegisterCompositorView},
     {"ContextualSearchManager", RegisterContextualSearchManager},
     {"ContextualSearchSceneLayer", RegisterContextualSearchSceneLayer},
     {"ContextualSearchTabHelper", RegisterContextualSearchTabHelper},
     {"DocumentWebContentsDelegate", DocumentWebContentsDelegate::Register},
     {"EditBookmarkHelper", RegisterEditBookmarkHelper},
-    {"HistoryReportJniBridge", history_report::RegisterHistoryReportJniBridge},
-    {"PolicyManager", RegisterPolicyManager},
     {"ReaderModeSceneLayer", RegisterReaderModeSceneLayer},
     {"RevenueStats", RegisterRevenueStats},
     {"TabListSceneLayer", RegisterTabListSceneLayer},
