@@ -6,19 +6,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "chromecast/common/media/cma_messages.h"
-#include "chromecast/common/media/shared_memory_chunk.h"
+#include "chromecast/media/cma/backend/media_pipeline_device_fake.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/filters/cma_renderer.h"
-#include "chromecast/media/cma/ipc/media_memory_chunk.h"
-#include "chromecast/media/cma/ipc/media_message_fifo.h"
-#include "chromecast/media/cma/pipeline/media_pipeline.h"
-#include "chromecast/renderer/media/cma_message_filter_proxy.h"
-#include "chromecast/renderer/media/media_pipeline_proxy.h"
-#include "ipc/ipc_test_sink.h"
+#include "chromecast/media/cma/pipeline/media_pipeline_impl.h"
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/fake_demuxer_stream.h"
 #include "media/base/null_video_sink.h"
@@ -30,9 +23,9 @@ namespace media {
 
 namespace {
 
-class CmaRendererTest : public testing::Test {
+class CmaEndToEndTest : public testing::Test {
  public:
-  CmaRendererTest() {
+  CmaEndToEndTest() {
     demuxer_stream_provider_.reset(
         new ::media::FakeDemuxerStreamProvider(1, 1, false));
     null_sink_.reset(new ::media::NullVideoSink(
@@ -41,24 +34,19 @@ class CmaRendererTest : public testing::Test {
         base::Bind(&MockCB::OnFrameReceived, base::Unretained(&mock_)),
         message_loop_.task_runner()));
 
-    cma_proxy_ = new CmaMessageFilterProxy(message_loop_.task_runner());
-    cma_proxy_->OnFilterAdded(&ipc_sink_);
+    scoped_ptr<MediaPipelineImpl> media_pipeline(new MediaPipelineImpl());
+    media_pipeline->Initialize(kLoadTypeMediaSource,
+                               make_scoped_ptr(new MediaPipelineDeviceFake()));
 
-    renderer_.reset(new CmaRenderer(
-        scoped_ptr<MediaPipelineProxy>(new MediaPipelineProxy(
-            0, message_loop_.task_runner(), LoadType::kLoadTypeMediaSource)),
-        null_sink_.get()));
+    renderer_.reset(new CmaRenderer(media_pipeline.Pass(), null_sink_.get()));
   }
 
-  ~CmaRendererTest() override {
-    cma_proxy_->OnFilterRemoved();
+  ~CmaEndToEndTest() override {
   }
 
  protected:
   base::MessageLoop message_loop_;
   scoped_ptr<::media::FakeDemuxerStreamProvider> demuxer_stream_provider_;
-  IPC::TestSink ipc_sink_;
-  scoped_refptr<CmaMessageFilterProxy> cma_proxy_;
   scoped_ptr<CmaRenderer> renderer_;
 
   class MockCB {
@@ -77,12 +65,12 @@ class CmaRendererTest : public testing::Test {
  private:
   scoped_ptr<::media::NullVideoSink> null_sink_;
 
-  DISALLOW_COPY_AND_ASSIGN(CmaRendererTest);
+  DISALLOW_COPY_AND_ASSIGN(CmaEndToEndTest);
 };
 
 }  // namespace
 
-TEST_F(CmaRendererTest, TestInitialization) {
+TEST_F(CmaEndToEndTest, TestInitialization) {
   renderer_->Initialize(
       demuxer_stream_provider_.get(),
       base::Bind(&MockCB::OnInitialized, base::Unretained(&mock_)),
@@ -91,31 +79,8 @@ TEST_F(CmaRendererTest, TestInitialization) {
       base::Bind(&MockCB::OnEnded, base::Unretained(&mock_)),
       base::Bind(&MockCB::OnError, base::Unretained(&mock_)),
       base::Bind(&MockCB::OnWaitingForDecryptionKey, base::Unretained(&mock_)));
-  message_loop_.RunUntilIdle();
-
-  EXPECT_TRUE(ipc_sink_.GetUniqueMessageMatching(CmaHostMsg_CreateAvPipe::ID));
-  base::SharedMemory* shared_memory = new base::SharedMemory();
-  EXPECT_TRUE(shared_memory->CreateAndMapAnonymous(kAppVideoBufferSize));
-
-  // Renderer MediaMessageFifo instance expects the first bytes of the shared
-  // memory blob to describe how much space is available for writing.
-  *(static_cast<size_t*>(shared_memory->memory())) =
-      shared_memory->requested_size() - MediaMessageFifo::kDescriptorSize;
-
-  base::FileDescriptor foreign_socket_handle;
-  cma_proxy_->OnMessageReceived(CmaMsg_AvPipeCreated(
-       1, kVideoTrackId, true,
-       shared_memory->handle(), foreign_socket_handle));
-  message_loop_.RunUntilIdle();
-
-  EXPECT_FALSE(
-      ipc_sink_.GetUniqueMessageMatching(CmaHostMsg_AudioInitialize::ID));
-  EXPECT_TRUE(
-      ipc_sink_.GetUniqueMessageMatching(CmaHostMsg_VideoInitialize::ID));
 
   EXPECT_CALL(mock_, OnInitialized(::media::PIPELINE_OK));
-  cma_proxy_->OnMessageReceived(
-      CmaMsg_TrackStateChanged(1, kVideoTrackId, ::media::PIPELINE_OK));
   message_loop_.RunUntilIdle();
 }
 

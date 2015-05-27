@@ -269,6 +269,7 @@
         'cma/ipc/media_message_unittest.cc',
         'cma/ipc_streamer/av_streamer_unittest.cc',
         'cma/pipeline/audio_video_pipeline_impl_unittest.cc',
+        'cma/test/cma_end_to_end_test.cc',
         'cma/test/frame_generator_for_test.cc',
         'cma/test/frame_generator_for_test.h',
         'cma/test/frame_segmenter_for_test.cc',
