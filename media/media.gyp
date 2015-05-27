@@ -35,6 +35,11 @@
         'use_alsa%': 0,
         'use_pulseaudio%': 0,
       }],
+      ['sysroot!=""', {
+        'pkg-config': '../build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)" "<(system_libdir)"',
+      }, {
+        'pkg-config': 'pkg-config'
+      }],
       # low memory buffer is used in non-Android based chromecast build due to hardware limitation.
       ['chromecast==1 and OS!="android"', {
         'use_low_memory_buffer%': 1,
