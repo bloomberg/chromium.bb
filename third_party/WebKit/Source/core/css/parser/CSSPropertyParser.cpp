@@ -2090,7 +2090,7 @@ CSSPropertyParser::SizeParameterType CSSPropertyParser::parseSizeParameter(CSSVa
 // [ <string> <string> ]+ | none, but none is handled in parseValue
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseQuotes()
 {
-    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
     while (CSSParserValue* val = m_valueList->current()) {
         RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
         if (val->unit != CSSPrimitiveValue::CSS_STRING)

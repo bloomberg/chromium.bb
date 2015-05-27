@@ -10,4 +10,9 @@ test(function(){
     div.style.quotes = '"a" "b" cake';
     assert_equals(div.style.quotes, "");
 }, "Invalid strings for quotes property do not parse");
+
+test(function(){
+    div.style.quotes = '"a" "b"';
+    assert_equals(div.style.quotes, '"a" "b"');
+}, "Valid strings should be serialized with space separator");
 </script>
