@@ -2971,6 +2971,7 @@ interface IDBIndex
     method constructor
     method count
     method get
+    method getAll
     method getKey
     method openCursor
     method openKeyCursor
@@ -6634,6 +6635,7 @@ interface webkitIDBIndex
     method constructor
     method count
     method get
+    method getAll
     method getKey
     method openCursor
     method openKeyCursor
