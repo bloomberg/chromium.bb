@@ -56,7 +56,7 @@ public:
     virtual bool didStopMediaStreamTrack(const WebMediaStreamTrack&) { return false; }
 
     // Caller must take the ownership of the returned |WebAudioSourceProvider| object.
-    virtual WebAudioSourceProvider* createWebAudioSourceFromMediaStreamTrack(const WebMediaStreamTrack&) { return 0; }
+    virtual WebAudioSourceProvider* createWebAudioSourceFromMediaStreamTrack(const WebMediaStreamTrack&) { return nullptr; }
 };
 
 } // namespace blink

@@ -445,7 +445,7 @@ public:
     virtual void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId) { }
 
     // GL_CHROMIUM_pixel_transfer_buffer_object
-    virtual void* mapBufferCHROMIUM(WGC3Denum target, WGC3Denum access) { return 0; }
+    virtual void* mapBufferCHROMIUM(WGC3Denum target, WGC3Denum access) { return nullptr; }
     virtual WGC3Dboolean unmapBufferCHROMIUM(WGC3Denum target) { return false; }
 
     // GL_CHROMIUM_async_pixel_transfers
@@ -456,7 +456,7 @@ public:
     // GL_EXT_draw_buffers
     virtual void drawBuffersEXT(WGC3Dsizei n, const WGC3Denum* bufs) { }
 
-    virtual GrGLInterface* createGrGLInterface() { return 0; }
+    virtual GrGLInterface* createGrGLInterface() { return nullptr; }
 
     // GL_CHROMIUM_image
     virtual void destroyImageCHROMIUM(WGC3Duint imageId) { }
@@ -495,7 +495,7 @@ public:
     virtual void deleteTransformFeedback(WebGLId transformfeedback) { }
     virtual void drawRangeElements(WGC3Denum mode, WGC3Duint start, WGC3Duint end, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset) { }
     virtual void endTransformFeedback(void) { }
-    virtual WGC3Dsync fenceSync(WGC3Denum condition, WGC3Dbitfield flags) { return 0; }
+    virtual WGC3Dsync fenceSync(WGC3Denum condition, WGC3Dbitfield flags) { return nullptr; }
     virtual void framebufferTextureLayer(WGC3Denum target, WGC3Denum attachment, WGC3Duint texture, WGC3Dint level, WGC3Dint layer) { }
     virtual void getActiveUniformBlockName(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dchar *uniformBlockName) { }
     virtual void getActiveUniformBlockiv(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Denum pname, WGC3Dint *params) { }

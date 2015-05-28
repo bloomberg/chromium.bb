@@ -143,7 +143,7 @@ public:
 
     virtual unsigned decodedFrameCount() const = 0;
     virtual unsigned droppedFrameCount() const = 0;
-    virtual unsigned corruptedFrameCount() const { return 0; };
+    virtual unsigned corruptedFrameCount() const { return 0; }
     virtual unsigned audioDecodedByteCount() const = 0;
     virtual unsigned videoDecodedByteCount() const = 0;
 
@@ -151,7 +151,7 @@ public:
     // Do a GPU-GPU textures copy if possible.
     virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, unsigned texture, unsigned level, unsigned internalFormat, unsigned type, bool premultiplyAlpha, bool flipY) { return false; }
 
-    virtual WebAudioSourceProvider* audioSourceProvider() { return 0; }
+    virtual WebAudioSourceProvider* audioSourceProvider() { return nullptr; }
 
     // Returns whether keySystem is supported. If true, the result will be
     // reported by an event.

@@ -216,7 +216,7 @@ public:
     // if it fails to create a WebCryptoDigestor. If it succeeds, the
     // WebCryptoDigestor returned by createDigestor must be freed by the
     // caller.
-    virtual WebCryptoDigestor* createDigestor(WebCryptoAlgorithmId algorithmId) { return 0; }
+    virtual WebCryptoDigestor* createDigestor(WebCryptoAlgorithmId algorithmId) { return nullptr; }
 
     // -----------------------
     // Structured clone

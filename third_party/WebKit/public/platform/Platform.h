@@ -130,27 +130,27 @@ public:
     BLINK_PLATFORM_EXPORT static Platform* current();
 
     // May return null.
-    virtual WebCookieJar* cookieJar() { return 0; }
+    virtual WebCookieJar* cookieJar() { return nullptr; }
 
     // Must return non-null.
-    virtual WebClipboard* clipboard() { return 0; }
+    virtual WebClipboard* clipboard() { return nullptr; }
 
     // Must return non-null.
-    virtual WebFileUtilities* fileUtilities() { return 0; }
+    virtual WebFileUtilities* fileUtilities() { return nullptr; }
 
     // Must return non-null.
-    virtual WebMimeRegistry* mimeRegistry() { return 0; }
+    virtual WebMimeRegistry* mimeRegistry() { return nullptr; }
 
     // May return null if sandbox support is not necessary
-    virtual WebSandboxSupport* sandboxSupport() { return 0; }
+    virtual WebSandboxSupport* sandboxSupport() { return nullptr; }
 
     // May return null on some platforms.
-    virtual WebThemeEngine* themeEngine() { return 0; }
+    virtual WebThemeEngine* themeEngine() { return nullptr; }
 
-    virtual WebFallbackThemeEngine* fallbackThemeEngine() { return 0; }
+    virtual WebFallbackThemeEngine* fallbackThemeEngine() { return nullptr; }
 
     // May return null.
-    virtual WebSpeechSynthesizer* createSpeechSynthesizer(WebSpeechSynthesizerClient*) { return 0; }
+    virtual WebSpeechSynthesizer* createSpeechSynthesizer(WebSpeechSynthesizerClient*) { return nullptr; }
 
 
     // Audio --------------------------------------------------------------
@@ -161,20 +161,20 @@ public:
 
     // Creates a device for audio I/O.
     // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
-    virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*, const WebString& deviceId) { return 0; }
+    virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*, const WebString& deviceId) { return nullptr; }
 
 
     // MIDI ----------------------------------------------------------------
 
     // Creates a platform dependent WebMIDIAccessor. MIDIAccessor under platform
     // creates and owns it.
-    virtual WebMIDIAccessor* createMIDIAccessor(WebMIDIAccessorClient*) { return 0; }
+    virtual WebMIDIAccessor* createMIDIAccessor(WebMIDIAccessorClient*) { return nullptr; }
 
 
     // Blob ----------------------------------------------------------------
 
     // Must return non-null.
-    virtual WebBlobRegistry* blobRegistry() { return 0; }
+    virtual WebBlobRegistry* blobRegistry() { return nullptr; }
 
     // Database ------------------------------------------------------------
 
@@ -201,13 +201,13 @@ public:
     // DOM Storage --------------------------------------------------
 
     // Return a LocalStorage namespace
-    virtual WebStorageNamespace* createLocalStorageNamespace() { return 0; }
+    virtual WebStorageNamespace* createLocalStorageNamespace() { return nullptr; }
 
 
     // FileSystem ----------------------------------------------------------
 
     // Must return non-null.
-    virtual WebFileSystem* fileSystem() { return 0; }
+    virtual WebFileSystem* fileSystem() { return nullptr; }
 
 
     // IDN conversion ------------------------------------------------------
@@ -218,7 +218,7 @@ public:
     // IndexedDB ----------------------------------------------------------
 
     // Must return non-null.
-    virtual WebIDBFactory* idbFactory() { return 0; }
+    virtual WebIDBFactory* idbFactory() { return nullptr; }
 
 
     // Cache Storage ----------------------------------------------------------
@@ -281,12 +281,12 @@ public:
     // Returns true if the size has been reported, or false otherwise.
     virtual bool memoryAllocatorWasteInBytes(size_t*) { return false; }
 
-    // Allocates discardable memory. May return 0, even if the platform supports
+    // Allocates discardable memory. May return nullptr, even if the platform supports
     // discardable memory. If nonzero, however, then the WebDiscardableMmeory is
     // returned in an locked state. You may use its underlying data() member
     // directly, taking care to unlock it when you are ready to let it become
     // discardable.
-    virtual WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) { return 0; }
+    virtual WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) { return nullptr; }
 
     static const size_t noDecodedImageByteLimit = static_cast<size_t>(-1);
 
@@ -305,13 +305,13 @@ public:
     // Network -------------------------------------------------------------
 
     // Returns a new WebURLLoader instance.
-    virtual WebURLLoader* createURLLoader() { return 0; }
+    virtual WebURLLoader* createURLLoader() { return nullptr; }
 
     // May return null.
-    virtual WebPrescientNetworking* prescientNetworking() { return 0; }
+    virtual WebPrescientNetworking* prescientNetworking() { return nullptr; }
 
     // Returns a new WebSocketHandle instance.
-    virtual WebSocketHandle* createWebSocketHandle() { return 0; }
+    virtual WebSocketHandle* createWebSocketHandle() { return nullptr; }
 
     // Returns the User-Agent string.
     virtual WebString userAgent() { return WebString(); }
@@ -338,7 +338,7 @@ public:
     // Public Suffix List --------------------------------------------------
 
     // May return null on some platforms.
-    virtual WebPublicSuffixList* publicSuffixList() { return 0; }
+    virtual WebPublicSuffixList* publicSuffixList() { return nullptr; }
 
 
     // Resources -----------------------------------------------------------
@@ -352,11 +352,11 @@ public:
     // Threads -------------------------------------------------------
 
     // Creates an embedder-defined thread.
-    virtual WebThread* createThread(const char* name) { return 0; }
+    virtual WebThread* createThread(const char* name) { return nullptr; }
 
     // Returns an interface to the current thread. This is owned by the
     // embedder.
-    virtual WebThread* currentThread() { return 0; }
+    virtual WebThread* currentThread() { return nullptr; }
 
     // Yield the current thread so another thread can be scheduled.
     virtual void yieldCurrentThread() { }
@@ -364,13 +364,13 @@ public:
     // WaitableEvent -------------------------------------------------------
 
     // Creates an embedder-defined waitable event object.
-    virtual WebWaitableEvent* createWaitableEvent() { return 0; }
+    virtual WebWaitableEvent* createWaitableEvent() { return nullptr; }
 
     // Waits on multiple events and returns the event object that has been
-    // signaled. This may return 0 if it fails to wait events.
+    // signaled. This may return nullptr if it fails to wait events.
     // Any event objects given to this method must not deleted while this
     // wait is happening.
-    virtual WebWaitableEvent* waitMultipleEvents(const WebVector<WebWaitableEvent*>& events) { return 0; }
+    virtual WebWaitableEvent* waitMultipleEvents(const WebVector<WebWaitableEvent*>& events) { return nullptr; }
 
 
     // Profiling -----------------------------------------------------------
@@ -398,7 +398,7 @@ public:
     // Scrollbar ----------------------------------------------------------
 
     // Must return non-null.
-    virtual WebScrollbarBehavior* scrollbarBehavior() { return 0; }
+    virtual WebScrollbarBehavior* scrollbarBehavior() { return nullptr; }
 
 
     // Sudden Termination --------------------------------------------------
@@ -451,7 +451,7 @@ public:
     // Testing -------------------------------------------------------------
 
     // Get a pointer to testing support interfaces. Will not be available in production builds.
-    virtual WebUnitTestSupport* unitTestSupport() { return 0; }
+    virtual WebUnitTestSupport* unitTestSupport() { return nullptr; }
 
 
     // Tracing -------------------------------------------------------------
@@ -463,7 +463,7 @@ public:
     // expects the returned pointer to be held permanently in a local static. If
     // the unsigned char is non-zero, tracing is enabled. If tracing is enabled,
     // addTraceEvent is expected to be called by the trace event macros.
-    virtual const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) { return 0; }
+    virtual const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) { return nullptr; }
 
     typedef intptr_t TraceEventAPIAtomicWord;
 
@@ -471,7 +471,7 @@ public:
     // expected to update the global state as the state of the embedder changes.
     // A sampling thread in the Chromium side reads the global state periodically
     // and reflects the sampling profiled results into about:tracing.
-    virtual TraceEventAPIAtomicWord* getTraceSamplingState(const unsigned bucketName) { return 0; }
+    virtual TraceEventAPIAtomicWord* getTraceSamplingState(const unsigned bucketName) { return nullptr; }
 
     typedef uint64_t TraceEventHandle;
 
@@ -583,13 +583,13 @@ public:
     // May return null if GPU is not supported.
     // Returns newly allocated and initialized offscreen WebGraphicsContext3D instance.
     // Passing an existing context to shareContext will create the new context in the same share group as the passed context.
-    virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3D* shareContext) { return 0; }
-    virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3D* shareContext, WebGLInfo* glInfo) { return 0; }
-    virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&) { return 0; }
+    virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3D* shareContext) { return nullptr; }
+    virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3D* shareContext, WebGLInfo* glInfo) { return nullptr; }
+    virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&) { return nullptr; }
 
     // Returns a newly allocated and initialized offscreen context provider. The provider may return a null
     // graphics context if GPU is not supported.
-    virtual WebGraphicsContext3DProvider* createSharedOffscreenGraphicsContext3DProvider() { return 0; }
+    virtual WebGraphicsContext3DProvider* createSharedOffscreenGraphicsContext3DProvider() { return nullptr; }
 
     // Returns true if the platform is capable of producing an offscreen context suitable for accelerating 2d canvas.
     // This will return false if the platform cannot promise that contexts will be preserved across operations like
@@ -600,22 +600,22 @@ public:
 
     virtual bool isThreadedCompositingEnabled() { return false; }
 
-    virtual WebCompositorSupport* compositorSupport() { return 0; }
+    virtual WebCompositorSupport* compositorSupport() { return nullptr; }
 
-    virtual WebFlingAnimator* createFlingAnimator() { return 0; }
+    virtual WebFlingAnimator* createFlingAnimator() { return nullptr; }
 
     // Creates a new fling animation curve instance for device |deviceSource|
     // with |velocity| and already scrolled |cumulativeScroll| pixels.
-    virtual WebGestureCurve* createFlingAnimationCurve(WebGestureDevice deviceSource, const WebFloatPoint& velocity, const WebSize& cumulativeScroll) { return 0; }
+    virtual WebGestureCurve* createFlingAnimationCurve(WebGestureDevice deviceSource, const WebFloatPoint& velocity, const WebSize& cumulativeScroll) { return nullptr; }
 
     // WebRTC ----------------------------------------------------------
 
     // Creates an WebRTCPeerConnectionHandler for RTCPeerConnection.
     // May return null if WebRTC functionality is not avaliable or out of resources.
-    virtual WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*) { return 0; }
+    virtual WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*) { return nullptr; }
 
     // May return null if WebRTC functionality is not avaliable or out of resources.
-    virtual WebMediaStreamCenter* createMediaStreamCenter(WebMediaStreamCenterClient*) { return 0; }
+    virtual WebMediaStreamCenter* createMediaStreamCenter(WebMediaStreamCenterClient*) { return nullptr; }
 
 
     // WebWorker ----------------------------------------------------------
@@ -625,7 +625,7 @@ public:
 
     // WebCrypto ----------------------------------------------------------
 
-    virtual WebCrypto* crypto() { return 0; }
+    virtual WebCrypto* crypto() { return nullptr; }
 
 
     // Platform events -----------------------------------------------------
@@ -678,42 +678,42 @@ public:
 
     // WebDatabase --------------------------------------------------------
 
-    virtual WebDatabaseObserver* databaseObserver() { return 0; }
+    virtual WebDatabaseObserver* databaseObserver() { return nullptr; }
 
 
     // Web Notifications --------------------------------------------------
 
-    virtual WebNotificationManager* notificationManager() { return 0; }
+    virtual WebNotificationManager* notificationManager() { return nullptr; }
 
 
     // Geofencing ---------------------------------------------------------
 
-    virtual WebGeofencingProvider* geofencingProvider() { return 0; }
+    virtual WebGeofencingProvider* geofencingProvider() { return nullptr; }
 
 
     // Bluetooth ----------------------------------------------------------
 
     // Returns pointer to client owned WebBluetooth implementation.
-    virtual WebBluetooth* bluetooth() { return 0; }
+    virtual WebBluetooth* bluetooth() { return nullptr; }
 
 
     // Push API------------------------------------------------------------
 
-    virtual WebPushProvider* pushProvider() { return 0; }
+    virtual WebPushProvider* pushProvider() { return nullptr; }
 
 
     // navigator.connect --------------------------------------------------
 
-    virtual WebNavigatorConnectProvider* navigatorConnectProvider() { return 0; }
+    virtual WebNavigatorConnectProvider* navigatorConnectProvider() { return nullptr; }
 
     // Permissions --------------------------------------------------------
 
-    virtual WebPermissionClient* permissionClient() { return 0; }
+    virtual WebPermissionClient* permissionClient() { return nullptr; }
 
 
     // Background Sync API------------------------------------------------------------
 
-    virtual WebSyncProvider* backgroundSyncProvider() { return 0; }
+    virtual WebSyncProvider* backgroundSyncProvider() { return nullptr; }
 
 protected:
     BLINK_PLATFORM_EXPORT Platform();
