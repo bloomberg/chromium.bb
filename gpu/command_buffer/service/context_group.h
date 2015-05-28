@@ -202,6 +202,12 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   bool GetTransformFeedbackServiceId(
       GLuint client_id, GLuint* service_id) const {
+    if (client_id == 0) {
+      // Default one.
+      if (service_id)
+        *service_id = 0;
+      return true;
+    }
     base::hash_map<GLuint, GLuint>::const_iterator iter =
         transformfeedbacks_id_map_.find(client_id);
     if (iter == transformfeedbacks_id_map_.end())
