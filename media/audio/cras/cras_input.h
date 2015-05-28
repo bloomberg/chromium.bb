@@ -100,6 +100,12 @@ class CrasInputStream : public AgcAudioStream<AudioInputStream> {
   // Direction of the stream.
   const CRAS_STREAM_DIRECTION stream_direction_;
 
+  // Index of the CRAS device to stream input from.
+  uint32 pin_device_;
+
+  // True if the stream is a system-wide loopback stream.
+  bool is_loopback_;
+
   scoped_ptr<AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(CrasInputStream);

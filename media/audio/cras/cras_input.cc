@@ -24,8 +24,9 @@ CrasInputStream::CrasInputStream(const AudioParameters& params,
       params_(params),
       started_(false),
       stream_id_(0),
-      stream_direction_(device_id == AudioManagerBase::kLoopbackInputDeviceId ?
-                            CRAS_STREAM_POST_MIX_PRE_DSP : CRAS_STREAM_INPUT) {
+      stream_direction_(CRAS_STREAM_INPUT),
+      pin_device_(NO_DEVICE),
+      is_loopback_(device_id == AudioManagerBase::kLoopbackInputDeviceId) {
   DCHECK(audio_manager_);
   audio_bus_ = AudioBus::Create(params_);
 }
@@ -79,6 +80,25 @@ bool CrasInputStream::Open() {
     cras_client_destroy(client_);
     client_ = NULL;
     return false;
+  }
+
+  if (is_loopback_) {
+    if (cras_client_connected_wait(client_) < 0) {
+      DLOG(WARNING) << "Couldn't synchronize data.";
+      // TODO(chinyue): Add a DestroyClientOnError method to de-duplicate the
+      // cleanup code.
+      cras_client_destroy(client_);
+      client_ = NULL;
+      return false;
+    }
+    pin_device_ = cras_client_get_first_dev_type_idx(client_,
+        CRAS_NODE_TYPE_POST_MIX_PRE_DSP, CRAS_STREAM_INPUT);
+    if (pin_device_ < 0) {
+      DLOG(WARNING) << "Couldn't find CRAS loopback device.";
+      cras_client_destroy(client_);
+      client_ = NULL;
+      return false;
+    }
   }
 
   return true;
@@ -188,7 +208,8 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
   bytes_per_frame_ = cras_client_format_bytes_per_frame(audio_format);
 
   // Adding the stream will start the audio callbacks.
-  if (cras_client_add_stream(client_, &stream_id_, stream_params)) {
+  if (cras_client_add_pinned_stream(client_, pin_device_, &stream_id_,
+                                    stream_params)) {
     DLOG(WARNING) << "Failed to add the stream.";
     callback_->OnError(this);
     callback_ = NULL;
