@@ -16,7 +16,10 @@
 namespace IPC {
 
 void ParamTraits<GURL>::Write(Message* m, const GURL& p) {
-  DCHECK(p.possibly_invalid_spec().length() <= content::GetMaxURLChars());
+  if (p.possibly_invalid_spec().length() > content::GetMaxURLChars()) {
+    m->WriteString(std::string());
+    return;
+  }
 
   // Beware of print-parse inconsistency which would change an invalid
   // URL into a valid one. Ideally, the message would contain this flag
