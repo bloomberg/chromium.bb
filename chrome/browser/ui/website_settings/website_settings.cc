@@ -415,12 +415,6 @@ void WebsiteSettings::Init(Profile* profile,
 
   cert_id_ = ssl.cert_id;
 
-  if (ssl.cert_id && !ssl.signed_certificate_timestamp_ids.empty()) {
-    signed_certificate_timestamp_ids_.assign(
-        ssl.signed_certificate_timestamp_ids.begin(),
-        ssl.signed_certificate_timestamp_ids.end());
-  }
-
   if (ssl.cert_id &&
       cert_store_->RetrieveCert(ssl.cert_id, &cert) &&
       (!net::IsCertStatusError(ssl.cert_status) ||
@@ -779,9 +773,6 @@ void WebsiteSettings::PresentSiteIdentity() {
   info.identity_status_description =
       UTF16ToUTF8(site_identity_details_);
   info.cert_id = cert_id_;
-  info.signed_certificate_timestamp_ids.assign(
-      signed_certificate_timestamp_ids_.begin(),
-      signed_certificate_timestamp_ids_.end());
   info.show_ssl_decision_revoke_button = show_ssl_decision_revoke_button_;
   ui_->SetIdentityInfo(info);
 }

@@ -12,7 +12,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
-#include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -119,7 +118,6 @@ class WebsiteSettingsPopupView
                               const base::string16& headline,
                               const base::string16& text,
                               views::Link* link,
-                              views::Link* secondary_link,
                               views::LabelButton* reset_decisions_button);
 
   // Used to asynchronously handle clicks since these calls may cause the
@@ -162,10 +160,6 @@ class WebsiteSettingsPopupView
   // provided by the website. If the site does not provide a certificate then
   // |certificate_dialog_link_| is NULL.
   views::Link* certificate_dialog_link_;
-  // The link to open the signed certificate timestamps viewer for displaying
-  // Certificate Transparency info. If no such SCTs accompany the certificate
-  // then |signed_certificate_timestamps_link_| is NULL.
-  views::Link* signed_certificate_timestamps_link_;
   // The button to reset the Allow/Deny certificate errors decision for the
   // current host.
   views::LabelButton* reset_decisions_button_;
@@ -173,10 +167,6 @@ class WebsiteSettingsPopupView
   // The ID of the certificate provided by the site. If the site does not
   // provide a certificate then |cert_id_| is 0.
   int cert_id_;
-  // The IDs and validation status of Signed Certificate Timestamps provided
-  // by the site. Empty if no SCTs accompany the certificate.
-  content::SignedCertificateTimestampIDStatusList
-      signed_certificate_timestamp_ids_;
 
   // The link to open the help center page that contains more information about
   // the connection status icons.

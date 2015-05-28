@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 
 #include "base/callback.h"
-#include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -69,12 +68,6 @@ void ShowCreateChromeAppShortcutsDialog(
 // Shows a color chooser that reports to the given WebContents.
 content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
                                         SkColor initial_color);
-
-// Shows the Signed Certificate Timestamps viewer, to view the signed
-// certificate timestamps in |sct_ids_list|
-void ShowSignedCertificateTimestampsViewer(
-    content::WebContents* web_contents,
-    const content::SignedCertificateTimestampIDStatusList& sct_ids_list);
 
 }  // namespace chrome
 

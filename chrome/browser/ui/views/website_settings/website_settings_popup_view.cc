@@ -312,7 +312,6 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       connection_tab_(nullptr),
       identity_info_content_(nullptr),
       certificate_dialog_link_(nullptr),
-      signed_certificate_timestamps_link_(nullptr),
       reset_decisions_button_(nullptr),
       cert_id_(0),
       help_center_link_(nullptr),
@@ -575,20 +574,10 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   base::string16 headline;
   if (identity_info.cert_id) {
     cert_id_ = identity_info.cert_id;
-    signed_certificate_timestamp_ids_.assign(
-        identity_info.signed_certificate_timestamp_ids.begin(),
-        identity_info.signed_certificate_timestamp_ids.end());
 
     certificate_dialog_link_ = new views::Link(
         l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
     certificate_dialog_link_->set_listener(this);
-
-    if (!signed_certificate_timestamp_ids_.empty()) {
-      signed_certificate_timestamps_link_ =
-          new views::Link(l10n_util::GetStringUTF16(
-              IDS_PAGEINFO_CERT_TRANSPARENCY_INFO_BUTTON));
-      signed_certificate_timestamps_link_->set_listener(this);
-    }
 
     if (identity_info.show_ssl_decision_revoke_button) {
       reset_decisions_button_ = new views::LabelButton(
@@ -606,7 +595,6 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
       base::string16(),  // The identity section has no headline.
       base::UTF8ToUTF16(identity_info.identity_status_description),
       certificate_dialog_link_,
-      signed_certificate_timestamps_link_,
       reset_decisions_button_);
 
   ResetConnectionSection(
@@ -614,7 +602,6 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
       WebsiteSettingsUI::GetConnectionIcon(identity_info.connection_status),
       base::string16(),  // The connection section has no headline.
       base::UTF8ToUTF16(identity_info.connection_status_description),
-      nullptr,
       nullptr,
       nullptr);
 
@@ -630,7 +617,6 @@ void WebsiteSettingsPopupView::SetFirstVisit(
       WebsiteSettingsUI::GetFirstVisitIcon(first_visit),
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE),
       first_visit,
-      nullptr,
       nullptr,
       nullptr);
   connection_tab_->InvalidateLayout();
@@ -746,7 +732,6 @@ void WebsiteSettingsPopupView::ResetConnectionSection(
     const base::string16& headline,
     const base::string16& text,
     views::Link* link,
-    views::Link* secondary_link,
     views::LabelButton* reset_decisions_button) {
   section_container->RemoveAllChildViews(true);
 
@@ -815,11 +800,6 @@ void WebsiteSettingsPopupView::ResetConnectionSection(
     content_layout->AddView(link);
   }
 
-  if (secondary_link) {
-    content_layout->StartRow(1, 0);
-    content_layout->AddView(secondary_link);
-  }
-
   if (reset_decisions_button) {
     content_layout->StartRow(1, 0);
     content_layout->AddView(reset_decisions_button);
@@ -844,11 +824,6 @@ void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
     presenter_->RecordWebsiteSettingsAction(
         WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
     ShowCertificateViewerByID(web_contents_, parent, cert_id_);
-  } else if (source == signed_certificate_timestamps_link_) {
-    chrome::ShowSignedCertificateTimestampsViewer(
-        web_contents_, signed_certificate_timestamp_ids_);
-    presenter_->RecordWebsiteSettingsAction(
-        WebsiteSettings::WEBSITE_SETTINGS_TRANSPARENCY_VIEWER_OPENED);
   } else if (source == help_center_link_) {
     browser_->OpenURL(
         content::OpenURLParams(GURL(chrome::kPageInfoHelpCenterURL),
