@@ -7,6 +7,7 @@
 #include "cc/layers/delegated_renderer_layer.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/resource_provider.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/trees/layer_tree_settings.h"

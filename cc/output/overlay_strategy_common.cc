@@ -9,6 +9,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/resource_provider.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"

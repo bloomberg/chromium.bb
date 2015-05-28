@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/resource_id.h"
 #include "cc/quads/shared_quad_state.h"
-#include "cc/resources/resource_provider.h"
 
 namespace base {
 namespace trace_event {

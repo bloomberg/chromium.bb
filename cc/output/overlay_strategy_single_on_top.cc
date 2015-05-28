@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "cc/output/overlay_candidate_validator.h"
 #include "cc/quads/draw_quad.h"
 
 namespace cc {

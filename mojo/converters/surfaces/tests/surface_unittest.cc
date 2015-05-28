@@ -6,6 +6,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/resource_provider.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
