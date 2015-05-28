@@ -21,7 +21,7 @@
 #include "core/html/canvas/WebGLTexture.h"
 #include "core/html/canvas/WebGLTransformFeedback.h"
 #include "core/html/canvas/WebGLUniformLocation.h"
-#include "core/html/canvas/WebGLVertexArrayObjectOES.h"
+#include "core/html/canvas/WebGLVertexArrayObject.h"
 
 #include "platform/NotImplemented.h"
 
@@ -1407,17 +1407,17 @@ void WebGL2RenderingContextBase::uniformBlockBinding(WebGLProgram* program, GLui
     webContext()->uniformBlockBinding(objectOrZero(program), uniformBlockIndex, uniformBlockBinding);
 }
 
-PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> WebGL2RenderingContextBase::createVertexArray()
+PassRefPtrWillBeRawPtr<WebGLVertexArrayObject> WebGL2RenderingContextBase::createVertexArray()
 {
     if (isContextLost())
         return nullptr;
 
-    RefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> o = WebGLVertexArrayObjectOES::create(this, WebGLVertexArrayObjectOES::VaoTypeUser);
+    RefPtrWillBeRawPtr<WebGLVertexArrayObject> o = WebGLVertexArrayObject::create(this, WebGLVertexArrayObjectBase::VaoTypeUser);
     addContextObject(o.get());
     return o.release();
 }
 
-void WebGL2RenderingContextBase::deleteVertexArray(WebGLVertexArrayObjectOES* vertexArray)
+void WebGL2RenderingContextBase::deleteVertexArray(WebGLVertexArrayObject* vertexArray)
 {
     if (isContextLost() || !vertexArray)
         return;
@@ -1428,7 +1428,7 @@ void WebGL2RenderingContextBase::deleteVertexArray(WebGLVertexArrayObjectOES* ve
     vertexArray->deleteObject(webContext());
 }
 
-GLboolean WebGL2RenderingContextBase::isVertexArray(WebGLVertexArrayObjectOES* vertexArray)
+GLboolean WebGL2RenderingContextBase::isVertexArray(WebGLVertexArrayObject* vertexArray)
 {
     if (isContextLost() || !vertexArray)
         return 0;
@@ -1439,7 +1439,7 @@ GLboolean WebGL2RenderingContextBase::isVertexArray(WebGLVertexArrayObjectOES* v
     return webContext()->isVertexArrayOES(vertexArray->object());
 }
 
-void WebGL2RenderingContextBase::bindVertexArray(WebGLVertexArrayObjectOES* vertexArray)
+void WebGL2RenderingContextBase::bindVertexArray(WebGLVertexArrayObject* vertexArray)
 {
     if (isContextLost())
         return;

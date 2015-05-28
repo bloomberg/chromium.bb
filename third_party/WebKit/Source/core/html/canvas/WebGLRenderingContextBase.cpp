@@ -76,6 +76,8 @@
 #include "core/html/canvas/WebGLSharedWebGraphicsContext3D.h"
 #include "core/html/canvas/WebGLTexture.h"
 #include "core/html/canvas/WebGLUniformLocation.h"
+#include "core/html/canvas/WebGLVertexArrayObject.h"
+#include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutBox.h"
@@ -725,7 +727,11 @@ void WebGLRenderingContextBase::initializeNewContext()
 
     m_backDrawBuffer = GL_BACK;
 
-    m_defaultVertexArrayObject = WebGLVertexArrayObjectOES::create(this, WebGLVertexArrayObjectOES::VaoTypeDefault);
+    if (isWebGL2OrHigher()) {
+        m_defaultVertexArrayObject = WebGLVertexArrayObject::create(this, WebGLVertexArrayObjectBase::VaoTypeDefault);
+    } else {
+        m_defaultVertexArrayObject = WebGLVertexArrayObjectOES::create(this, WebGLVertexArrayObjectBase::VaoTypeDefault);
+    }
     addContextObject(m_defaultVertexArrayObject.get());
     m_boundVertexArrayObject = m_defaultVertexArrayObject;
 
@@ -1871,7 +1877,7 @@ void WebGLRenderingContextBase::disableVertexAttribArray(GLuint index)
         return;
     }
 
-    WebGLVertexArrayObjectOES::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
+    WebGLVertexArrayObjectBase::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
     state->enabled = false;
 
     webContext()->disableVertexAttribArray(index);
@@ -1983,7 +1989,7 @@ void WebGLRenderingContextBase::enableVertexAttribArray(GLuint index)
         return;
     }
 
-    WebGLVertexArrayObjectOES::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
+    WebGLVertexArrayObjectBase::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
     state->enabled = true;
 
     webContext()->enableVertexAttribArray(index);
@@ -3054,7 +3060,7 @@ ScriptValue WebGLRenderingContextBase::getVertexAttrib(ScriptState* scriptState,
         synthesizeGLError(GL_INVALID_VALUE, "getVertexAttrib", "index out of range");
         return ScriptValue::createNull(scriptState);
     }
-    const WebGLVertexArrayObjectOES::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
+    const WebGLVertexArrayObjectBase::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
 
     if ((extensionEnabled(ANGLEInstancedArraysName) || isWebGL2OrHigher())
         && pname == GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE)

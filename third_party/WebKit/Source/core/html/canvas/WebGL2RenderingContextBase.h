@@ -154,10 +154,10 @@ public:
     void uniformBlockBinding(WebGLProgram*, GLuint, GLuint);
 
     /* Vertex Array Objects */
-    PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> createVertexArray();
-    void deleteVertexArray(WebGLVertexArrayObjectOES*);
-    GLboolean isVertexArray(WebGLVertexArrayObjectOES*);
-    void bindVertexArray(WebGLVertexArrayObjectOES*);
+    PassRefPtrWillBeRawPtr<WebGLVertexArrayObject> createVertexArray();
+    void deleteVertexArray(WebGLVertexArrayObject*);
+    GLboolean isVertexArray(WebGLVertexArrayObject*);
+    void bindVertexArray(WebGLVertexArrayObject*);
 
     /* WebGLRenderingContextBase overrides */
     void initializeNewContext() override;

@@ -36,7 +36,7 @@
 #include "core/html/canvas/WebGLContextAttributes.h"
 #include "core/html/canvas/WebGLExtensionName.h"
 #include "core/html/canvas/WebGLTexture.h"
-#include "core/html/canvas/WebGLVertexArrayObjectOES.h"
+#include "core/html/canvas/WebGLVertexArrayObjectBase.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/page/Page.h"
 #include "platform/Timer.h"
@@ -99,7 +99,7 @@ class WebGLShaderPrecisionFormat;
 class WebGLSharedObject;
 class WebGLSharedWebGraphicsContext3D;
 class WebGLUniformLocation;
-class WebGLVertexArrayObjectOES;
+class WebGLVertexArrayObjectBase;
 
 class WebGLRenderingContextLostCallback;
 class WebGLRenderingContextErrorMessageCallback;
@@ -405,7 +405,7 @@ protected:
     friend class WebGLCompressedTexturePVRTC;
     friend class WebGLCompressedTextureS3TC;
     friend class WebGLRenderingContextErrorMessageCallback;
-    friend class WebGLVertexArrayObjectOES;
+    friend class WebGLVertexArrayObjectBase;
     friend class ScopedTexture2DRestorer;
     friend class ScopedFramebufferRestorer;
 
@@ -487,9 +487,9 @@ protected:
     // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and stored values for ELEMENT_ARRAY_BUFFER
     RefPtrWillBeMember<WebGLBuffer> m_boundArrayBuffer;
 
-    RefPtrWillBeMember<WebGLVertexArrayObjectOES> m_defaultVertexArrayObject;
-    RefPtrWillBeMember<WebGLVertexArrayObjectOES> m_boundVertexArrayObject;
-    void setBoundVertexArrayObject(PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> arrayObject)
+    RefPtrWillBeMember<WebGLVertexArrayObjectBase> m_defaultVertexArrayObject;
+    RefPtrWillBeMember<WebGLVertexArrayObjectBase> m_boundVertexArrayObject;
+    void setBoundVertexArrayObject(PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectBase> arrayObject)
     {
         if (arrayObject)
             m_boundVertexArrayObject = arrayObject;
