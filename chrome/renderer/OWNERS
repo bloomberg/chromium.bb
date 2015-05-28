@@ -5,4 +5,3 @@ per-file instant_restricted_id_cache*=samarth@chromium.org
 
 # Page load metrics.
 per-file page_load_histograms.*=ppi@chromium.org
-per-file page_load_histograms.*=tonyg@chromium.org
