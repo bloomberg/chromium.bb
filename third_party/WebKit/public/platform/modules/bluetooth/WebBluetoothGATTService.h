@@ -14,7 +14,8 @@ struct WebBluetoothGATTService {
         const WebString& uuid,
         bool isPrimary,
         const WebString& deviceInstanceID)
-        : uuid(uuid)
+        : serviceInstanceID(serviceInstanceID)
+        , uuid(uuid)
         , isPrimary(isPrimary)
         , deviceInstanceID(deviceInstanceID)
     {
