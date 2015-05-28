@@ -1099,12 +1099,17 @@ class MountOverlayContext(object):
     lower_dir: The lower directory (read-only).
     upper_dir: The upper directory (read-write).
     mount_dir: The mount point for the merged overlay.
+    cleanup: Whether to remove the mount point after unmounting. This uses an
+        internal retry logic for cases where unmount is successful but the
+        directory still appears busy, and is generally more resilient than
+        removing it independently.
   """
 
-  def __init__(self, lower_dir, upper_dir, mount_dir):
+  def __init__(self, lower_dir, upper_dir, mount_dir, cleanup=False):
     self._lower_dir = lower_dir
     self._upper_dir = upper_dir
     self._mount_dir = mount_dir
+    self._cleanup = cleanup
 
   def __enter__(self):
     MountDir('overlayfs', self._mount_dir, fs_type='overlayfs', makedirs=False,
@@ -1113,7 +1118,7 @@ class MountOverlayContext(object):
     return self
 
   def __exit__(self, exc_type, exc_value, traceback):
-    UmountDir(self._mount_dir, cleanup=False)
+    UmountDir(self._mount_dir, cleanup=self._cleanup)
 
 
 MountInfo = collections.namedtuple(

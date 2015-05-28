@@ -212,9 +212,13 @@ class SDKPackageBoardToolchainsStage(generic_stages.BuilderStage):
       overlay_tarball_path = overlay_tarball_template % {'board': board}
       with osutils.TempDir(prefix='toolchain-overlay-%s.' % board,
                            base_dir=tmp_dir, sudo_rm=True) as overlay_dir:
+        # NOTE: We let MountOverlayContext remove the mount point created by
+        # the TempDir context below, because it has built-in retries for rmdir
+        # EBUSY errors that are due to unmount lag.
         with osutils.TempDir(prefix='amd64-host-%s.' % board,
-                             base_dir=tmp_dir) as merged_dir:
-          with osutils.MountOverlayContext(sdk_dir, overlay_dir, merged_dir):
+                             base_dir=tmp_dir, delete=False) as merged_dir:
+          with osutils.MountOverlayContext(sdk_dir, overlay_dir, merged_dir,
+                                           cleanup=True):
             sysroot = merged_dir[len(chroot_dir):]
             cmd = ['cros_setup_toolchains', '--targets=boards',
                    '--include-boards=%s' % board,

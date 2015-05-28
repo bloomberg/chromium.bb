@@ -631,11 +631,13 @@ class MountOverlayTest(cros_test_lib.MockTempDirTestCase):
   def testMountWriteUnmountRead(self):
     mount_call = self.PatchObject(osutils, 'MountDir')
     umount_call = self.PatchObject(osutils, 'UmountDir')
-    with osutils.MountOverlayContext('lower', 'upper', 'merged'):
-      mount_call.assert_any_call(
-          'overlayfs', 'merged', fs_type='overlayfs', makedirs=False,
-          mount_opts=('lowerdir=lower', 'upperdir=upper'))
-    umount_call.assert_any_call('merged', cleanup=False)
+    for cleanup in (True, False):
+      with osutils.MountOverlayContext('lower', 'upper', 'merged',
+                                       cleanup=cleanup):
+        mount_call.assert_any_call(
+            'overlayfs', 'merged', fs_type='overlayfs', makedirs=False,
+            mount_opts=('lowerdir=lower', 'upperdir=upper'))
+      umount_call.assert_any_call('merged', cleanup=cleanup)
 
 
 class IterateMountPointsTests(cros_test_lib.TempDirTestCase):
