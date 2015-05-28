@@ -136,12 +136,8 @@
   "gcm": {
     "Learn More": [
       {
-        "link": "cloudMessaging",
-        "text": "Google Cloud Messaging Tutorial"
-      },
-      {
-        "link": "inform_users",
-        "text": "Keep Users Informed"
+        "link": "https://developers.google.com/cloud-messaging/chrome/client",
+        "text": "Implementing GCM Client on Chrome"
       }
     ]
   },

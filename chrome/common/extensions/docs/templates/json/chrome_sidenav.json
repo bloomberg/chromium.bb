@@ -415,14 +415,6 @@
                 "href": "/apps/offline_storage"
               },
               {
-                "title": "Keep Users Informed",
-                "href": "/apps/inform_users"
-              },
-              {
-                "title": "Cloud Messaging",
-                "href": "/apps/cloudMessaging"
-              },
-              {
                 "title": "Native Messaging",
                 "href": "/apps/nativeMessaging"
               },  
