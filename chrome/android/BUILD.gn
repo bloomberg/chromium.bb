@@ -28,6 +28,7 @@ jinja_variables = [
 android_resources("chrome_java_resources") {
   resource_dirs = [ "java/res" ]
   deps = [
+    ":chrome_staging_strings_grd",
     ":chrome_strings_grd",
     "//content/public/android:content_java_resources",
     "//chrome/app:java_strings_grd",
@@ -621,7 +622,6 @@ android_resources("chrome_staging_java_resources") {
   ]
   custom_package = "com.google.android.apps.chrome"
   deps = [
-    ":chrome_staging_strings_grd",
     ":chrome_template_resources",
     "//chrome/android:chrome_java_resources",
     "//components/policy:app_restrictions_resources",

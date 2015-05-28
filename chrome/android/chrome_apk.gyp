@@ -140,7 +140,6 @@
         'res_extra_files': ['<!@(find <(res_channel_dir) -type f)'],
       },
       'dependencies': [
-        'chrome_staging_strings_grd',
         'chrome_template_resources',
         'hosted_service_aidl',
         '<(DEPTH)/base/base.gyp:base_java',
@@ -170,14 +169,6 @@
         }],
       ],
       'includes': [ '../../build/java.gypi' ],
-    },
-    {
-      'target_name': 'chrome_staging_strings_grd',
-      'type': 'none',
-      'variables': {
-        'grd_file': '<(chrome_java_dir)/strings/android_strings.grd',
-      },
-      'includes': [ '../../build/java_strings_grd.gypi' ],
     },
     {
       # GN: //chrome/test/android:chrome_staging_test_support_java
