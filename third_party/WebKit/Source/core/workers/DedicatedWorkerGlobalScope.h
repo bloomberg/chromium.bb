@@ -31,6 +31,7 @@
 #ifndef DedicatedWorkerGlobalScope_h
 #define DedicatedWorkerGlobalScope_h
 
+#include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -41,7 +42,7 @@ namespace blink {
 class DedicatedWorkerThread;
 class WorkerThreadStartupData;
 
-class DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
+class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
     typedef WorkerGlobalScope Base;
