@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/media/cast_rtp_stream.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -130,16 +132,10 @@ bool IsHardwareH264EncodingSupported() {
 }
 
 int NumberOfEncodeThreads() {
-  // We want to give CPU cycles for capturing and not to saturate the system
-  // just for encoding. So on a lower end system with only 1 or 2 cores we
-  // use only one thread for encoding.
-  if (base::SysInfo::NumberOfProcessors() <= 2)
-    return 1;
-
-  // On higher end we want to use 2 threads for encoding to reduce latency.
-  // In theory a physical CPU core has maximum 2 hyperthreads. Having 3 or
-  // more logical processors means the system has at least 2 physical cores.
-  return 2;
+  // Do not saturate CPU utilization just for encoding. On a lower-end system
+  // with only 1 or 2 cores, use only one thread for encoding. On systems with
+  // more cores, allow half of the cores to be used for encoding.
+  return std::min(8, (base::SysInfo::NumberOfProcessors() + 1) / 2);
 }
 
 std::vector<CastRtpParams> SupportedAudioParams() {
