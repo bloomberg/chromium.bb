@@ -18,72 +18,45 @@
 
 namespace dom_distiller {
 
-namespace {
-
-class IOSContentDataCallback : public DistillerDataCallback {
- public:
-  IOSContentDataCallback(
-      const GURL& url,
-      const DistillerViewer::DistillationFinishedCallback& callback,
-      DistillerViewer* distiller_viewer_handle);
-  ~IOSContentDataCallback() override{};
-  void RunCallback(std::string& data) override;
-
- private:
-  // Extra param needed by the callback specified below.
-  GURL url_;
-  // The callback to be run.
-  const DistillerViewer::DistillationFinishedCallback callback_;
-  // A handle to the DistillerViewer object.
-  DistillerViewer* distiller_viewer_handle_;
-};
-
-IOSContentDataCallback::IOSContentDataCallback(
-    const GURL& url,
-    const DistillerViewer::DistillationFinishedCallback& callback,
-    DistillerViewer* distiller_viewer_handle)
-    : url_(url),
-      callback_(callback),
-      distiller_viewer_handle_(distiller_viewer_handle) {
-}
-
-void IOSContentDataCallback::RunCallback(std::string& data) {
-  std::string htmlAndScript(data);
-  htmlAndScript += "<script>" +
-                   distiller_viewer_handle_->GetJavaScriptBuffer() +
-                   "</script>";
-
-  callback_.Run(url_, htmlAndScript);
-}
-
-}  // namespace
-
 DistillerViewer::DistillerViewer(ios::ChromeBrowserState* browser_state,
                                  const GURL& url,
                                  const DistillationFinishedCallback& callback)
     : DomDistillerRequestViewBase(
-          scoped_ptr<DistillerDataCallback>(
-              new IOSContentDataCallback(url, callback, this)).Pass(),
-          new DistilledPagePrefs(browser_state->GetPrefs())) {
+          new DistilledPagePrefs(browser_state->GetPrefs())),
+      url_(url),
+      callback_(callback) {
   DCHECK(browser_state);
   DCHECK(url.is_valid());
   dom_distiller::DomDistillerService* distillerService =
       dom_distiller::DomDistillerServiceFactory::GetForBrowserState(
           browser_state);
 
-  viewer_handle_ = distillerService->ViewUrl(
+  scoped_ptr<ViewerHandle> viewer_handle = distillerService->ViewUrl(
       this, distillerService->CreateDefaultDistillerPage(gfx::Size()), url);
+
+  TakeViewerHandle(viewer_handle.Pass());
 }
 
 DistillerViewer::~DistillerViewer() {
 }
 
-void DistillerViewer::SendJavaScript(const std::string& buffer) {
-  js_buffer_ += buffer;
+void DistillerViewer::OnArticleReady(
+    const dom_distiller::DistilledArticleProto* article_proto) {
+  DomDistillerRequestViewBase::OnArticleReady(article_proto);
+
+  const std::string html = viewer::GetUnsafeArticleTemplateHtml(
+      url_.spec(), distilled_page_prefs_->GetTheme(),
+      distilled_page_prefs_->GetFontFamily());
+
+  std::string html_and_script(html);
+  std::string hide_feedback =
+      "document.getElementById('feedbackContainer').style.display = 'none';";
+  html_and_script += "<script>" + js_buffer_ + hide_feedback + "</script>";
+  callback_.Run(url_, html_and_script);
 }
 
-std::string DistillerViewer::GetJavaScriptBuffer() {
-  return js_buffer_;
+void DistillerViewer::SendJavaScript(const std::string& buffer) {
+  js_buffer_ += buffer;
 }
 
 }  // namespace dom_distiller

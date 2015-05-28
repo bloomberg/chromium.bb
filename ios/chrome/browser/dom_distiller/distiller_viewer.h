@@ -34,17 +34,18 @@ class DistillerViewer : public DomDistillerRequestViewBase {
                   const DistillationFinishedCallback& callback);
   ~DistillerViewer() override;
 
-  void SendJavaScript(const std::string& buffer) override;
+  void OnArticleReady(
+      const dom_distiller::DistilledArticleProto* article_proto) override;
 
-  std::string GetJavaScriptBuffer();
+  void SendJavaScript(const std::string& buffer) override;
 
  private:
   // The url of the distilled page.
   const GURL url_;
-  // Interface for accessing preferences for distilled pages.
-  scoped_ptr<DistilledPagePrefs> distilled_page_prefs_;
   // JavaScript buffer.
   std::string js_buffer_;
+  // Callback to run once distillation is complete.
+  const DistillationFinishedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DistillerViewer);
 };

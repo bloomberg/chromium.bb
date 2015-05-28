@@ -25,10 +25,8 @@
 namespace dom_distiller {
 
 DomDistillerRequestViewBase::DomDistillerRequestViewBase(
-    scoped_ptr<DistillerDataCallback> callback,
     DistilledPagePrefs* distilled_page_prefs)
-    : callback_(callback.Pass()),
-      page_count_(0),
+    : page_count_(0),
       distilled_page_prefs_(distilled_page_prefs),
       is_error_page_(false) {
 }
@@ -38,10 +36,6 @@ DomDistillerRequestViewBase::~DomDistillerRequestViewBase() {
 
 void DomDistillerRequestViewBase::FlagAsErrorPage() {
   is_error_page_ = true;
-  std::string error_page_html =
-      viewer::GetErrorPageHtml(distilled_page_prefs_->GetTheme(),
-                               distilled_page_prefs_->GetFontFamily());
-  callback_->RunCallback(error_page_html);
 }
 
 bool DomDistillerRequestViewBase::IsErrorPage() {
@@ -51,17 +45,15 @@ bool DomDistillerRequestViewBase::IsErrorPage() {
 void DomDistillerRequestViewBase::OnArticleReady(
     const DistilledArticleProto* article_proto) {
   if (page_count_ == 0) {
-    const DistilledPageProto* cur_page;
-    if (article_proto->pages().size() < 1) {
-      cur_page = new DistilledPageProto();
+    std::string text_direction;
+    if (article_proto->pages().size() > 0) {
+      text_direction = article_proto->pages(0).text_direction();
     } else {
-      cur_page = &article_proto->pages(0);
+      text_direction = "auto";
     }
-    std::string unsafe_page_html = viewer::GetUnsafeArticleTemplateHtml(
-        cur_page, distilled_page_prefs_->GetTheme(),
-        distilled_page_prefs_->GetFontFamily());
-    callback_->RunCallback(unsafe_page_html);
-    // Send first page to client.
+    // Send first page, title, and text direction to client.
+    SendJavaScript(viewer::GetSetTitleJs(article_proto->title()));
+    SendJavaScript(viewer::GetSetTextDirectionJs(text_direction));
     SendJavaScript(viewer::GetUnsafeArticleContentJs(article_proto));
     // If any content was loaded, show the feedback form.
     SendJavaScript(viewer::GetShowFeedbackFormJs());
@@ -92,11 +84,10 @@ void DomDistillerRequestViewBase::OnArticleUpdated(
     SendJavaScript(viewer::GetUnsafeIncrementalDistilledPageJs(&page, false));
 
     if (page_count_ == 0) {
-      // This is the first page, so send Viewer page scaffolding too.
-      std::string unsafe_page_html = viewer::GetUnsafeArticleTemplateHtml(
-          &page, distilled_page_prefs_->GetTheme(),
-          distilled_page_prefs_->GetFontFamily());
-      callback_->RunCallback(unsafe_page_html);
+      // This is the first page, so send the title and text direction to the
+      // client.
+      SendJavaScript(viewer::GetSetTitleJs(page.title()));
+      SendJavaScript(viewer::GetSetTextDirectionJs(page.text_direction()));
       // If any content was loaded, show the feedback form.
       SendJavaScript(viewer::GetShowFeedbackFormJs());
     }
@@ -116,6 +107,9 @@ void DomDistillerRequestViewBase::OnChangeFontFamily(
 void DomDistillerRequestViewBase::TakeViewerHandle(
     scoped_ptr<ViewerHandle> viewer_handle) {
   viewer_handle_ = viewer_handle.Pass();
+  // Getting the viewer handle means this is not an error page, show the
+  // loading indicator.
+  SendJavaScript(viewer::GetToggleLoadingIndicatorJs(false));
 }
 
 }  // namespace dom_distiller

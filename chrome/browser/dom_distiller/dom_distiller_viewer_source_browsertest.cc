@@ -257,6 +257,64 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
+                       EarlyTemplateLoad) {
+  dom_distiller::DomDistillerServiceFactory::GetInstance()
+      ->SetTestingFactoryAndUse(browser()->profile(), &Build);
+
+  scoped_refptr<content::MessageLoopRunner> distillation_done_runner =
+      new content::MessageLoopRunner;
+
+  FakeDistiller* distiller = new FakeDistiller(
+      false,
+      distillation_done_runner->QuitClosure());
+  EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
+      .WillOnce(testing::Return(distiller));
+
+  // Navigate to a URL.
+  GURL url(dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
+      kDomDistillerScheme, GURL("http://urlthatlooksvalid.com")));
+  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  chrome::Navigate(&params);
+  distillation_done_runner->Run();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Wait for the page load to complete (should only be template).
+  content::WaitForLoadStop(contents);
+  std::string result;
+  // Loading spinner should be on screen at this point.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      contents, kGetLoadIndicatorClassName , &result));
+  EXPECT_EQ("visible", result);
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      contents, kGetContent , &result));
+  EXPECT_THAT(result, Not(HasSubstr("content")));
+
+  // Finish distillation and make sure the spinner has been replaced by text.
+  std::vector<scoped_refptr<ArticleDistillationUpdate::RefCountedPageProto> >
+      update_pages;
+  scoped_ptr<DistilledArticleProto> article(new DistilledArticleProto());
+
+  scoped_refptr<base::RefCountedData<DistilledPageProto> > page_proto =
+      new base::RefCountedData<DistilledPageProto>();
+  page_proto->data.set_url("http://foo.html");
+  page_proto->data.set_html("<div>content</div>");
+  update_pages.push_back(page_proto);
+  *(article->add_pages()) = page_proto->data;
+
+  ArticleDistillationUpdate update(update_pages, true, false);
+  distiller->RunDistillerUpdateCallback(update);
+
+  content::WaitForLoadStop(contents);
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      contents, kGetContent , &result));
+  EXPECT_THAT(result, HasSubstr("content"));
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
                        MultiPageArticle) {
   expect_distillation_ = false;
   expect_distiller_page_ = true;

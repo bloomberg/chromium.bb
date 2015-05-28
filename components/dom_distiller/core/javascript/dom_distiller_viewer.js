@@ -49,10 +49,16 @@ function setTitle(title) {
   collapse.style.height = "0px";
 
   holder.textContent = title;
+  document.title = title;
   var newHeight = Math.max(90, holder.getBoundingClientRect().height);
 
   collapse.style.transition = "height 0.2s";
   collapse.style.height = newHeight + "px";
+}
+
+// Set the text direction of the document ('ltr', 'rtl', or 'auto').
+function setTextDirection(direction) {
+  document.body.setAttribute('dir', direction);
 }
 
 // Maps JS Font Family to CSS class and then changes body class name.

@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,11 +39,17 @@ class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
   }
 };
 
+// WebContentsMainFrameHelper is used to detect if a distilled page has
+// finished loading. This is done by checking how many times the title has
+// been set rather than using "DidFinishLoad" directly due to the content
+// being set by JavaScript.
 class WebContentsMainFrameHelper : public content::WebContentsObserver {
  public:
   WebContentsMainFrameHelper(content::WebContents* web_contents,
                              const base::Closure& callback)
-      : callback_(callback) {
+      : callback_(callback),
+        title_set_count_(0),
+        loaded_distiller_page_(false) {
     content::WebContentsObserver::Observe(web_contents);
   }
 
@@ -50,11 +57,24 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
                      const GURL& validated_url) override {
     if (!render_frame_host->GetParent() &&
         validated_url.scheme() == kDomDistillerScheme)
+      loaded_distiller_page_ = true;
+  }
+
+  void TitleWasSet(content::NavigationEntry* entry,
+                   bool explicit_set) override {
+    // The title will be set twice on distilled pages; once for the placeholder
+    // and once when the distillation has finished. Watch for the second time
+    // as a signal that the JavaScript that sets the content has run.
+    title_set_count_++;
+    if (title_set_count_ >= 2 && loaded_distiller_page_) {
       callback_.Run();
+    }
   }
 
  private:
   base::Closure callback_;
+  int title_set_count_;
+  bool loaded_distiller_page_;
 };
 
 #if (defined(OS_LINUX) && defined(OS_CHROMEOS))
@@ -86,12 +106,15 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
                                      new_url_loaded_runner.QuitClosure()));
   new_url_loaded_runner.Run();
 
+  std::string page_title;
+  content::ExecuteScriptAndGetValue(after_web_contents->GetMainFrame(),
+                                    "document.title")->GetAsString(&page_title);
+
   // Verify the new URL is showing distilled content in a new WebContents.
   EXPECT_NE(initial_web_contents, after_web_contents);
   EXPECT_TRUE(
       after_web_contents->GetLastCommittedURL().SchemeIs(kDomDistillerScheme));
-  EXPECT_EQ("Test Page Title",
-            base::UTF16ToUTF8(after_web_contents->GetTitle()));
+  EXPECT_EQ("Test Page Title", page_title);
 }
 
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
@@ -128,14 +151,17 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
 
   // Verify that the source WebContents is showing the original article.
   EXPECT_EQ(article_url, source_web_contents->GetLastCommittedURL());
-  EXPECT_EQ("Test Page Title",
-            base::UTF16ToUTF8(source_web_contents->GetTitle()));
+  std::string page_title;
+  content::ExecuteScriptAndGetValue(source_web_contents->GetMainFrame(),
+                                    "document.title")->GetAsString(&page_title);
+  EXPECT_EQ("Test Page Title", page_title);
 
   // Verify the destination WebContents is showing distilled content.
   EXPECT_TRUE(destination_web_contents->GetLastCommittedURL().SchemeIs(
       kDomDistillerScheme));
-  EXPECT_EQ("Test Page Title",
-            base::UTF16ToUTF8(destination_web_contents->GetTitle()));
+  content::ExecuteScriptAndGetValue(destination_web_contents->GetMainFrame(),
+                                    "document.title")->GetAsString(&page_title);
+  EXPECT_EQ("Test Page Title", page_title);
 
   content::WebContentsDestroyedWatcher destroyed_watcher(
       destination_web_contents);

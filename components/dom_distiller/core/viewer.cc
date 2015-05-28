@@ -104,19 +104,13 @@ void EnsureNonEmptyContent(std::string* content) {
 }
 
 std::string ReplaceHtmlTemplateValues(
-    const std::string& title,
-    const std::string& textDirection,
-    const std::string& loading_indicator_class,
     const std::string& original_url,
     const DistilledPagePrefs::Theme theme,
     const DistilledPagePrefs::FontFamily font_family) {
   base::StringPiece html_template =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DOM_DISTILLER_VIEWER_HTML);
-  // TODO(mdjones): Many or all of these substitutions can be placed on the
-  // page via JavaScript.
   std::vector<std::string> substitutions;
-  substitutions.push_back(title);                                         // $1
 
   std::ostringstream css;
   std::ostringstream script;
@@ -129,16 +123,19 @@ std::string ReplaceHtmlTemplateValues(
   css << "<link rel=\"stylesheet\" href=\"/" << kViewerCssPath << "\">";
   script << "<script src=\"" << kViewerJsPath << "\"></script>";
 #endif  // defined(OS_IOS)
+
+  substitutions.push_back(
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_LOADING_TITLE));  // $1
   substitutions.push_back(css.str());                                     // $2
-  substitutions.push_back(script.str());                                  // $3
 
   substitutions.push_back(GetThemeCssClass(theme) + " " +
-                          GetFontCssClass(font_family));                  // $4
-  substitutions.push_back(loading_indicator_class);                       // $5
-  substitutions.push_back(original_url);                                  // $6
+                          GetFontCssClass(font_family));                  // $3
+
+  substitutions.push_back(original_url);                                  // $4
   substitutions.push_back(
-      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL));  // $7
-  substitutions.push_back(textDirection);                                 // $8
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL));  // $5
+
+  substitutions.push_back(script.str());                                  // $6
 
   return ReplaceStringPlaceholders(html_template, substitutions, NULL);
 }
@@ -190,6 +187,21 @@ const std::string GetErrorPageJs() {
   return page_update;
 }
 
+const std::string GetSetTitleJs(std::string title) {
+  EnsureNonEmptyTitle(&title);
+  base::StringValue value(title);
+  std::string output;
+  base::JSONWriter::Write(value, &output);
+  return "setTitle(" + output + ");";
+}
+
+const std::string GetSetTextDirectionJs(const std::string& direction) {
+  base::StringValue value(direction);
+  std::string output;
+  base::JSONWriter::Write(value, &output);
+  return "setTextDirection(" + output + ");";
+}
+
 const std::string GetToggleLoadingIndicatorJs(const bool is_last_page) {
   if (is_last_page)
     return "showLoadingIndicator(true);";
@@ -198,20 +210,10 @@ const std::string GetToggleLoadingIndicatorJs(const bool is_last_page) {
 }
 
 const std::string GetUnsafeArticleTemplateHtml(
-    const DistilledPageProto* page_proto,
+    const std::string original_url,
     const DistilledPagePrefs::Theme theme,
     const DistilledPagePrefs::FontFamily font_family) {
-  DCHECK(page_proto);
-
-  std::string title = net::EscapeForHTML(page_proto->title());
-
-  EnsureNonEmptyTitle(&title);
-
-  std::string text_direction = page_proto->text_direction();
-  std::string original_url = page_proto->url();
-
-  return ReplaceHtmlTemplateValues(title, text_direction, "hidden",
-                                   original_url, theme, font_family);
+  return ReplaceHtmlTemplateValues(original_url, theme, font_family);
 }
 
 const std::string GetUnsafeArticleContentJs(
@@ -230,15 +232,6 @@ const std::string GetUnsafeArticleContentJs(
   std::string page_update("addToPage(");
   page_update += output + ");";
   return page_update + GetToggleLoadingIndicatorJs(true);
-}
-
-const std::string GetErrorPageHtml(
-    const DistilledPagePrefs::Theme theme,
-    const DistilledPagePrefs::FontFamily font_family) {
-  std::string title = l10n_util::GetStringUTF8(
-      IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_TITLE);
-  return ReplaceHtmlTemplateValues(title, "auto", "hidden", "", theme,
-                                   font_family);
 }
 
 const std::string GetCss() {
