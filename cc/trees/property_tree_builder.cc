@@ -271,13 +271,13 @@ bool AddTransformNodeIfNeeded(
       node->data.layer_scale_factor *= data_from_ancestor.page_scale_factor;
   }
 
+  node->data.source_node_id = source_index;
   if (is_root) {
     node->data.post_local.Scale(post_local_scale_factor,
                                 post_local_scale_factor);
   } else {
     node->data.post_local_scale_factor = post_local_scale_factor;
     node->data.source_offset = source_offset;
-    node->data.source_node_id = source_index;
     node->data.update_post_local_transform(layer->position(),
                                            layer->transform_origin());
   }

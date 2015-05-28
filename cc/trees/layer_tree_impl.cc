@@ -418,6 +418,7 @@ void LayerTreeImpl::DidUpdatePageScale() {
     TransformNode* node = property_trees_.transform_tree.Node(
         page_scale_layer()->transform_tree_index());
     node->data.post_local_scale_factor = current_page_scale_factor();
+    node->data.needs_local_transform_update = true;
     // TODO(enne): property trees can't ask the layer these things, but
     // the page scale layer should *just* be the page scale.
     DCHECK_EQ(page_scale_layer()->position().ToString(),
