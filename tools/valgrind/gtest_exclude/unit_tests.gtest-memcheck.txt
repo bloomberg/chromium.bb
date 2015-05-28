@@ -22,3 +22,6 @@ PluginInfoMessageFilterTest.FindEnabledPlugin
 
 # Test fail: crbug.com/492705
 StatusUploaderTest.NoUploadAfterVideoCapture
+
+# Flaky test: crbug.com/493187
+DesktopMediaListAshTest.WindowOnly
