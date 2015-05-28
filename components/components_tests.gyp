@@ -1028,7 +1028,6 @@
           'dependencies': [
             'components.gyp:cronet_static',
             'components.gyp:data_reduction_proxy_content',
-            '../content/content.gyp:content_java',
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
           'dependencies!': [

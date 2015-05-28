@@ -250,12 +250,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   bool IsRegistrationReadyToFire(
       const BackgroundSyncRegistration& registration);
 
-  // Schedules pending registrations to run in the future. For one-shots this
-  // means keeping the browser alive so that network connectivity events can be
-  // seen (on Android the browser is instead woken up the next time it goes
-  // online). For periodic syncs this means creating an alarm.
-  void SchedulePendingRegistrations();
-
   // FireReadyEvents and callbacks
   void FireReadyEvents();
   void FireReadyEventsImpl(const base::Closure& callback);

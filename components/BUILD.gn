@@ -305,10 +305,6 @@ test("components_unittests") {
   ]
   data_deps = [ ":components_tests_pak" ]
 
-  if (is_android) {
-    deps += [ "//content/public/android:content_java" ]
-  }
-
   if (!is_android && !is_ios) {
     deps += [ "//components/proximity_auth:unit_tests" ]
   }
