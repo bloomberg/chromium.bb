@@ -68,6 +68,13 @@ public class PopupTouchHandleDrawable extends View {
     private boolean mVisible;
     private boolean mTemporarilyHidden;
 
+    // There are no guarantees that the side effects of setting the position of
+    // the PopupWindow and the visibility of its content View will be realized
+    // in the same frame. Thus, to ensure the PopupWindow is seen in the right
+    // location, when the PopupWindow reappears we delay the visibility update
+    // by one frame after setting the position.
+    private boolean mDelayVisibilityUpdateWAR;
+
     // Deferred runnable to avoid invalidating outside of frame dispatch,
     // in turn avoiding issues with sync barrier insertion.
     private Runnable mInvalidationRunnable;
@@ -205,8 +212,20 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     private void updateVisibility() {
-        boolean visible = mVisible && !mTemporarilyHidden;
-        setVisibility(visible ? VISIBLE : INVISIBLE);
+        int newVisibility = mVisible && !mTemporarilyHidden ? VISIBLE : INVISIBLE;
+
+        // When regaining visibility, delay the visibility update by one frame
+        // to ensure the PopupWindow has first been positioned properly.
+        if (newVisibility == VISIBLE && getVisibility() != VISIBLE) {
+            if (!mDelayVisibilityUpdateWAR) {
+                mDelayVisibilityUpdateWAR = true;
+                scheduleInvalidate();
+                return;
+            }
+        }
+        mDelayVisibilityUpdateWAR = false;
+
+        setVisibility(newVisibility);
     }
 
     private void updateAlpha() {
@@ -225,8 +244,8 @@ public class PopupTouchHandleDrawable extends View {
 
     private void doInvalidate() {
         if (!mContainer.isShowing()) return;
-        updatePosition();
         updateVisibility();
+        updatePosition();
         invalidate();
     }
 

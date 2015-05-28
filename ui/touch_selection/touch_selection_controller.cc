@@ -389,16 +389,13 @@ void TouchSelectionController::OnInsertionChanged() {
   if (!activate_insertion_automatically_)
     return;
 
-  const bool was_active = active_status_ == INSERTION_ACTIVE;
-  const gfx::PointF position = GetStartPosition();
-  if (!was_active)
-    ActivateInsertion();
-  else
-    client_->OnSelectionEvent(INSERTION_MOVED);
+  const bool activated = ActivateInsertionIfNecessary();
 
-  insertion_handle_->SetVisible(GetStartVisible(),
-                                GetAnimationStyle(was_active));
-  insertion_handle_->SetPosition(position);
+  const TouchHandle::AnimationStyle animation = GetAnimationStyle(!activated);
+  insertion_handle_->SetVisible(GetStartVisible(), animation);
+  insertion_handle_->SetPosition(GetStartPosition());
+
+  client_->OnSelectionEvent(activated ? INSERTION_SHOWN : INSERTION_MOVED);
 }
 
 void TouchSelectionController::OnSelectionChanged() {
@@ -407,32 +404,31 @@ void TouchSelectionController::OnSelectionChanged() {
   if (!activate_selection_automatically_)
     return;
 
-  const bool was_active = active_status_ == SELECTION_ACTIVE;
-  if (!was_active || response_pending_input_event_ == LONG_PRESS)
-    ActivateSelection();
-  else
-    client_->OnSelectionEvent(SELECTION_MOVED);
+  const bool activated = ActivateSelectionIfNecessary();
 
-  const TouchHandle::AnimationStyle animation = GetAnimationStyle(was_active);
+  const TouchHandle::AnimationStyle animation = GetAnimationStyle(!activated);
   start_selection_handle_->SetVisible(GetStartVisible(), animation);
   end_selection_handle_->SetVisible(GetEndVisible(), animation);
-
   start_selection_handle_->SetPosition(GetStartPosition());
   end_selection_handle_->SetPosition(GetEndPosition());
+
+  client_->OnSelectionEvent(activated ? SELECTION_SHOWN : SELECTION_MOVED);
 }
 
-void TouchSelectionController::ActivateInsertion() {
+bool TouchSelectionController::ActivateInsertionIfNecessary() {
   DCHECK_NE(SELECTION_ACTIVE, active_status_);
 
-  if (!insertion_handle_)
+  if (!insertion_handle_) {
     insertion_handle_.reset(
         new TouchHandle(this, TouchHandleOrientation::CENTER));
+  }
 
   if (active_status_ == INACTIVE) {
     active_status_ = INSERTION_ACTIVE;
     insertion_handle_->SetEnabled(true);
-    client_->OnSelectionEvent(INSERTION_SHOWN);
+    return true;
   }
+  return false;
 }
 
 void TouchSelectionController::DeactivateInsertion() {
@@ -444,7 +440,7 @@ void TouchSelectionController::DeactivateInsertion() {
   client_->OnSelectionEvent(INSERTION_CLEARED);
 }
 
-void TouchSelectionController::ActivateSelection() {
+bool TouchSelectionController::ActivateSelectionIfNecessary() {
   DCHECK_NE(INSERTION_ACTIVE, active_status_);
 
   if (!start_selection_handle_) {
@@ -474,8 +470,9 @@ void TouchSelectionController::ActivateSelection() {
     selection_handle_dragged_ = false;
     selection_start_time_ = base::TimeTicks::Now();
     response_pending_input_event_ = INPUT_EVENT_TYPE_NONE;
-    client_->OnSelectionEvent(SELECTION_SHOWN);
+    return true;
   }
+  return false;
 }
 
 void TouchSelectionController::DeactivateSelection() {

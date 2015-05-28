@@ -129,9 +129,11 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   void OnInsertionChanged();
   void OnSelectionChanged();
 
-  void ActivateInsertion();
+  // Returns true if insertion mode was newly (re)activated.
+  bool ActivateInsertionIfNecessary();
   void DeactivateInsertion();
-  void ActivateSelection();
+  // Returns true if selection mode was newly (re)activated.
+  bool ActivateSelectionIfNecessary();
   void DeactivateSelection();
   void ForceNextUpdateIfInactive();
 

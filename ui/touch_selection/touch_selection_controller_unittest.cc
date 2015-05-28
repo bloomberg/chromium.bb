@@ -101,6 +101,7 @@ class TouchSelectionControllerTest : public testing::Test,
     events_.push_back(event);
     last_event_start_ = controller_->GetStartPosition();
     last_event_end_ = controller_->GetEndPosition();
+    last_event_bounds_rect_ = controller_->GetRectBetweenBounds();
   }
 
   scoped_ptr<TouchHandleDrawable> CreateDrawable() override {
@@ -193,6 +194,9 @@ class TouchSelectionControllerTest : public testing::Test,
   const gfx::PointF& GetLastSelectionEnd() const { return selection_end_; }
   const gfx::PointF& GetLastEventStart() const { return last_event_start_; }
   const gfx::PointF& GetLastEventEnd() const { return last_event_end_; }
+  const gfx::RectF& GetLastEventBoundsRect() const {
+    return last_event_bounds_rect_;
+  }
 
   std::vector<SelectionEventType> GetAndResetEvents() {
     std::vector<SelectionEventType> events;
@@ -208,6 +212,7 @@ class TouchSelectionControllerTest : public testing::Test,
   gfx::PointF caret_position_;
   gfx::PointF selection_start_;
   gfx::PointF selection_end_;
+  gfx::RectF last_event_bounds_rect_;
   std::vector<SelectionEventType> events_;
   bool caret_moved_;
   bool selection_moved_;
@@ -1044,6 +1049,51 @@ TEST_F(TouchSelectionControllerTest, HandlesShowOnLongPressInsideRect) {
   // A point inside the rect should be handled.
   EXPECT_TRUE(controller().WillHandleLongPressEvent(inner_point));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_SHOWN));
+}
+
+TEST_F(TouchSelectionControllerTest, RectBetweenBounds) {
+  gfx::RectF start_rect(5, 5, 0, 10);
+  gfx::RectF end_rect(50, 5, 0, 10);
+  bool visible = true;
+
+  EXPECT_EQ(gfx::RectF(), controller().GetRectBetweenBounds());
+
+  OnLongPressEvent();
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  ASSERT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_SHOWN));
+  EXPECT_EQ(gfx::RectF(5, 5, 45, 10), controller().GetRectBetweenBounds());
+
+  // The result of |GetRectBetweenBounds| should be available within the
+  // |OnSelectionEvent| callback, as stored by |GetLastEventBoundsRect()|.
+  EXPECT_EQ(GetLastEventBoundsRect(), controller().GetRectBetweenBounds());
+
+  start_rect.Offset(1, 0);
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  ASSERT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_MOVED));
+  EXPECT_EQ(gfx::RectF(6, 5, 44, 10), controller().GetRectBetweenBounds());
+  EXPECT_EQ(GetLastEventBoundsRect(), controller().GetRectBetweenBounds());
+
+  // If only one bound is visible, the selection bounding rect should reflect
+  // only the visible bound.
+  ChangeSelection(start_rect, visible, end_rect, false);
+  ASSERT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_MOVED));
+  EXPECT_EQ(start_rect, controller().GetRectBetweenBounds());
+  EXPECT_EQ(GetLastEventBoundsRect(), controller().GetRectBetweenBounds());
+
+  ChangeSelection(start_rect, false, end_rect, visible);
+  ASSERT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_MOVED));
+  EXPECT_EQ(end_rect, controller().GetRectBetweenBounds());
+  EXPECT_EQ(GetLastEventBoundsRect(), controller().GetRectBetweenBounds());
+
+  // If both bounds are visible, the full bounding rect should be returned.
+  ChangeSelection(start_rect, false, end_rect, false);
+  ASSERT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_MOVED));
+  EXPECT_EQ(gfx::RectF(6, 5, 44, 10), controller().GetRectBetweenBounds());
+  EXPECT_EQ(GetLastEventBoundsRect(), controller().GetRectBetweenBounds());
+
+  ClearSelection();
+  ASSERT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_CLEARED));
+  EXPECT_EQ(gfx::RectF(), controller().GetRectBetweenBounds());
 }
 
 }  // namespace ui
