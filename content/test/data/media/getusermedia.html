@@ -356,9 +356,16 @@
   }
 
   function displayDetectAndAnalyzeVideoInElement(
-      stream, callback, videoElement) {
-    attachMediaStream(stream, videoElement);
-    detectAspectRatio(callback, videoElement);
+      stream, callback, videoElementName) {
+    attachMediaStream(stream, videoElementName);
+    var videoElement = $(videoElementName);
+    var playbackTimeout = setTimeout(function() {
+      failTest("VideoElement playback not working.");
+    }, 1000);
+    videoElement.onloadedmetadata = function () {
+      clearTimeout(playbackTimeout);
+      detectAspectRatio(callback, videoElement);
+    };
   }
 
   function createAndRenderClone(stream) {
@@ -442,9 +449,8 @@
   // pixels are not the same along the X and Y axis.
   // The result of the analysis is sent back to the test as a string on the
   // format "w=xxx:h=yyy".
-  function detectAspectRatio(callback, videoElementName) {
-    var videoElement = $(videoElementName);
-    var canvas = $(videoElementName + '-canvas');
+  function detectAspectRatio(callback, videoElement) {
+    var canvas = $(videoElement.id + '-canvas');
 
     var maxLightGreenPixelsX = 0;
     var maxLightGreenPixelsY = 0;
@@ -456,7 +462,7 @@
       var width = videoElement.videoWidth;
       var height = videoElement.videoHeight;
       if (width == 0 || height == 0)
-        return;
+        failTest("VideoElement width and height set to 0.");
 
       canvas.width = width;
       canvas.height = height;
