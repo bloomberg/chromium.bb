@@ -1126,6 +1126,13 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
 {
     LayoutPoint adjustedLocation = accumulatedOffset + location();
 
+    // Exit early if no children can be hit.
+    LayoutRect overflowRect = visualOverflowRect();
+    overflowRect.moveBy(adjustedLocation);
+    if (!locationInContainer.intersects(overflowRect)) {
+        return false;
+    }
+
     // Check kids first.
     for (LayoutObject* child = slowLastChild(); child; child = child->previousSibling()) {
         if ((!child->hasLayer() || !toLayoutBoxModelObject(child)->layer()->isSelfPaintingLayer()) && child->nodeAtPoint(result, locationInContainer, adjustedLocation, action)) {
