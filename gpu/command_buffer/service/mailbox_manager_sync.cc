@@ -312,19 +312,29 @@ void MailboxManagerSync::PushTextureUpdates(uint32 sync_point) {
 }
 
 void MailboxManagerSync::PullTextureUpdates(uint32 sync_point) {
-  base::AutoLock lock(g_lock.Get());
-  AcquireFenceLocked(sync_point);
+  using TextureUpdatePair = std::pair<Texture*, TextureDefinition>;
+  std::vector<TextureUpdatePair> needs_update;
+  {
+    base::AutoLock lock(g_lock.Get());
+    AcquireFenceLocked(sync_point);
 
-  for (TextureToGroupMap::iterator it = texture_to_group_.begin();
-       it != texture_to_group_.end(); it++) {
-    const TextureDefinition& definition = it->second.group->GetDefinition();
-    Texture* texture = it->first;
-    unsigned& texture_version = it->second.version;
-    if (texture_version == definition.version() ||
-        definition.IsOlderThan(texture_version))
-      continue;
-    texture_version = definition.version();
-    definition.UpdateTexture(texture);
+    for (TextureToGroupMap::iterator it = texture_to_group_.begin();
+         it != texture_to_group_.end(); it++) {
+      const TextureDefinition& definition = it->second.group->GetDefinition();
+      Texture* texture = it->first;
+      unsigned& texture_version = it->second.version;
+      if (texture_version == definition.version() ||
+          definition.IsOlderThan(texture_version))
+        continue;
+      needs_update.push_back(TextureUpdatePair(texture, definition));
+    }
+  }
+
+  if (!needs_update.empty()) {
+    ScopedUpdateTexture scoped_update_texture;
+    for (const TextureUpdatePair& pair : needs_update) {
+      pair.second.UpdateTexture(pair.first);
+    }
   }
 }
 

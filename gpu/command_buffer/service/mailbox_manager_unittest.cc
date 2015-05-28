@@ -254,10 +254,10 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
     EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, Flush())
+    EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kCurrentTexture))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kCurrentTexture))
+    EXPECT_CALL(*gl_, Flush())
         .Times(1)
         .RetiresOnSaturation();
   }
