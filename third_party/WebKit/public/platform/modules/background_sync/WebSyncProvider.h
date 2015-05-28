@@ -9,6 +9,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/background_sync/WebSyncPermissionStatus.h"
 #include "public/platform/modules/background_sync/WebSyncRegistration.h"
 
 namespace blink {
@@ -19,6 +20,7 @@ struct WebSyncError;
 using WebSyncRegistrationCallbacks = WebCallbacks<WebSyncRegistration, WebSyncError>;
 using WebSyncUnregistrationCallbacks = WebCallbacks<bool, WebSyncError>;
 using WebSyncGetRegistrationsCallbacks = WebCallbacks<WebVector<WebSyncRegistration*>, WebSyncError>;
+using WebSyncGetPermissionStatusCallbacks = WebCallbacks<WebSyncPermissionStatus, WebSyncError>;
 
 class WebSyncProvider {
 public:

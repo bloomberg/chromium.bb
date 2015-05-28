@@ -76,6 +76,24 @@ private:
     Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 
+// SyncGetPermissionStatusCallbacks is an implementation of
+// WebSyncGetPermissionStatusCallbacks that will resolve the underlying promise
+// depending on the permission status passed to the callback.
+class SyncGetPermissionStatusCallbacks final : public WebSyncGetPermissionStatusCallbacks {
+    WTF_MAKE_NONCOPYABLE(SyncGetPermissionStatusCallbacks);
+public:
+    SyncGetPermissionStatusCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, ServiceWorkerRegistration*);
+    ~SyncGetPermissionStatusCallbacks() override;
+
+    void onSuccess(WebSyncPermissionStatus*) override;
+    void onError(WebSyncError*) override;
+
+private:
+    static String permissionString(WebSyncPermissionStatus);
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+    Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
+};
+
 } // namespace blink
 
 #endif // SyncCallbacks_h

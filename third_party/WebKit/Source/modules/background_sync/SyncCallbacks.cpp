@@ -10,6 +10,8 @@
 #include "modules/background_sync/SyncError.h"
 #include "modules/background_sync/SyncRegistration.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -141,6 +143,53 @@ void SyncGetRegistrationsCallbacks::onError(WebSyncError* error)
         return;
     }
     m_resolver->reject(SyncError::take(m_resolver.get(), error));
+}
+
+SyncGetPermissionStatusCallbacks::SyncGetPermissionStatusCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
+    : m_resolver(resolver)
+    , m_serviceWorkerRegistration(serviceWorkerRegistration)
+{
+    ASSERT(m_resolver);
+    ASSERT(m_serviceWorkerRegistration);
+}
+
+SyncGetPermissionStatusCallbacks::~SyncGetPermissionStatusCallbacks()
+{
+}
+
+void SyncGetPermissionStatusCallbacks::onSuccess(WebSyncPermissionStatus* status)
+{
+    OwnPtr<WebSyncPermissionStatus> statusPtr = adoptPtr(status);
+    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+        return;
+    }
+
+    m_resolver->resolve(permissionString(*statusPtr));
+}
+
+void SyncGetPermissionStatusCallbacks::onError(WebSyncError* error)
+{
+    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+        SyncError::dispose(error);
+        return;
+    }
+    m_resolver->reject(SyncError::take(m_resolver.get(), error));
+}
+
+// static
+String SyncGetPermissionStatusCallbacks::permissionString(WebSyncPermissionStatus status)
+{
+    switch (status) {
+    case WebSyncPermissionStatusGranted:
+        return "granted";
+    case WebSyncPermissionStatusDenied:
+        return "denied";
+    case WebSyncPermissionStatusPrompt:
+        return "prompt";
+    }
+
+    ASSERT_NOT_REACHED();
+    return "denied";
 }
 
 } // namespace blink
