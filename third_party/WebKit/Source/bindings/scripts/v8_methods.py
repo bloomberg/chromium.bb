@@ -374,8 +374,13 @@ def v8_value_to_local_cpp_variadic_value(method, argument, index, return_promise
     else:
         check_expression = 'exceptionState.throwIfNeeded()'
 
+    if idl_type.is_dictionary or idl_type.is_union_type:
+        vector_type = 'HeapVector'
+    else:
+        vector_type = 'Vector'
+
     return {
-        'assign_expression': 'toImplArguments<%s>(info, %s, exceptionState)' % (this_cpp_type, index),
+        'assign_expression': 'toImplArguments<%s<%s>>(info, %s, exceptionState)' % (vector_type, this_cpp_type, index),
         'check_expression': check_expression,
         'cpp_type': this_cpp_type,
         'cpp_name': argument.name,

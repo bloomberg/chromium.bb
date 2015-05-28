@@ -7483,6 +7483,26 @@ static void voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCallback(
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void voidMethodArrayOfDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodArrayOfDoubleOrDOMStringArg", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    HeapVector<DoubleOrString> arg;
+    {
+        arg = toImplArguments<HeapVector<DoubleOrString>>(info, 0, exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+    }
+    impl->voidMethodArrayOfDoubleOrDOMStringArg(arg);
+}
+
+static void voidMethodArrayOfDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::voidMethodArrayOfDoubleOrDOMStringArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void voidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -7731,7 +7751,7 @@ static void promiseMethodMethodPromise(const v8::FunctionCallbackInfo<v8::Value>
         arg3 = info[2];
         if (!arg3.prepare(exceptionState))
             return;
-        variadic = toImplArguments<String>(info, 3, exceptionState);
+        variadic = toImplArguments<Vector<String>>(info, 3, exceptionState);
         if (exceptionState.hadException())
             return;
     }
@@ -8588,7 +8608,7 @@ static void voidMethodVariadicStringArgMethod(const v8::FunctionCallbackInfo<v8:
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<String> variadicStringArgs;
     {
-        variadicStringArgs = toImplArguments<String>(info, 0, exceptionState);
+        variadicStringArgs = toImplArguments<Vector<String>>(info, 0, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -8617,7 +8637,7 @@ static void voidMethodStringArgVariadicStringArgMethod(const v8::FunctionCallbac
         stringArg = info[0];
         if (!stringArg.prepare())
             return;
-        variadicStringArgs = toImplArguments<String>(info, 1, exceptionState);
+        variadicStringArgs = toImplArguments<Vector<String>>(info, 1, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -9453,7 +9473,7 @@ static void overloadedMethodL1Method(const v8::FunctionCallbackInfo<v8::Value>& 
         longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        restArgs = toImplArguments<ScriptValue>(info, 1, exceptionState);
+        restArgs = toImplArguments<Vector<ScriptValue>>(info, 1, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -9470,7 +9490,7 @@ static void overloadedMethodL2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         stringArg = info[0];
         if (!stringArg.prepare())
             return;
-        restArgs = toImplArguments<ScriptValue>(info, 1, exceptionState);
+        restArgs = toImplArguments<Vector<ScriptValue>>(info, 1, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -10054,7 +10074,7 @@ static void activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::Func
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingAccessForAllWorldsMethod", "TestObject", info.Holder(), info.GetIsolate());
-        Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<v8::Local<v8::Value>>(info, 0, exceptionState);
+        Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingAccessForAllWorldsMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingAccessForAllWorldsMethodMethod(info);
@@ -10911,7 +10931,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback(
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForAllWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
-        Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<v8::Local<v8::Value>>(info, 0, exceptionState);
+        Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(info);
@@ -10931,7 +10951,7 @@ static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackF
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForAllWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
-        Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<v8::Local<v8::Value>>(info, 0, exceptionState);
+        Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodForMainWorld(info);
@@ -10951,7 +10971,7 @@ static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCall
     V8PerContextData* contextData = scriptState->perContextData();
     if (contextData && contextData->activityLogger()) {
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
-        Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<v8::Local<v8::Value>>(info, 0, exceptionState);
+        Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("TestObject.activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data());
     }
     TestObjectV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethod(info);
@@ -12688,6 +12708,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodDoubleOrNullOrDOMStringArg", TestObjectV8Internal::voidMethodDoubleOrNullOrDOMStringArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg", TestObjectV8Internal::voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg", TestObjectV8Internal::voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"voidMethodArrayOfDoubleOrDOMStringArg", TestObjectV8Internal::voidMethodArrayOfDoubleOrDOMStringArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodTestInterfaceEmptyOrNullArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyOrNullArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodTestCallbackInterfaceArg", TestObjectV8Internal::voidMethodTestCallbackInterfaceArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodOptionalTestCallbackInterfaceArg", TestObjectV8Internal::voidMethodOptionalTestCallbackInterfaceArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},

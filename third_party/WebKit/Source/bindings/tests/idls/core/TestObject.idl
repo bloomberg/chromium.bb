@@ -376,6 +376,8 @@ interface TestObject {
     void voidMethodDoubleOrNullOrDOMStringArg((double? or DOMString) arg);
     void voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg((DOMString or ArrayBuffer or ArrayBufferView) arg);
     void voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg((ArrayBuffer or ArrayBufferView or Dictionary) arg);
+    // Array of Union types
+    void voidMethodArrayOfDoubleOrDOMStringArg((double or DOMString)... arg);
     // Currently only used on interface type arguments
     void voidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? nullableTestInterfaceEmptyArg);
     // Callback interface types

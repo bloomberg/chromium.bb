@@ -804,18 +804,19 @@ VectorType toImplArray(const Vector<ScriptValue>& value, v8::Isolate* isolate, E
     return result;
 }
 
-template <typename T>
-Vector<T> toImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info, int startIndex, ExceptionState& exceptionState)
+template <typename VectorType>
+VectorType toImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info, int startIndex, ExceptionState& exceptionState)
 {
-    Vector<T> result;
-    typedef NativeValueTraits<T> TraitsType;
+    VectorType result;
+    typedef typename VectorType::ValueType ValueType;
+    typedef NativeValueTraits<ValueType> TraitsType;
     int length = info.Length();
     if (startIndex < length) {
         result.reserveInitialCapacity(length - startIndex);
         for (int i = startIndex; i < length; ++i) {
             result.uncheckedAppend(TraitsType::nativeValue(info.GetIsolate(), info[i], exceptionState));
             if (exceptionState.hadException())
-                return Vector<T>();
+                return VectorType();
         }
     }
     return result;

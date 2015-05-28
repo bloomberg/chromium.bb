@@ -495,7 +495,7 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     if (contextData && contextData->activityLogger()) {
     {% endif %}
         ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
-        Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<v8::Local<v8::Value>>(info, 0, exceptionState);
+        Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data());
     }
     {% endif %}
