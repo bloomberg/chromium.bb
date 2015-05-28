@@ -1869,6 +1869,13 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(Script
 DEFINE_TRACE(WebGL2RenderingContextBase)
 {
     visitor->trace(m_readFramebufferBinding);
+    visitor->trace(m_transformFeedbackBinding);
+    visitor->trace(m_boundCopyReadBuffer);
+    visitor->trace(m_boundCopyWriteBuffer);
+    visitor->trace(m_boundPixelPackBuffer);
+    visitor->trace(m_boundPixelUnpackBuffer);
+    visitor->trace(m_boundTransformFeedbackBuffer);
+    visitor->trace(m_boundUniformBuffer);
     WebGLRenderingContextBase::trace(visitor);
 }
 
