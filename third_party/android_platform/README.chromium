@@ -40,13 +40,7 @@ Android relocation packing tool details:
     Create a nativehelper/ScopedFd.h to satisfy inclusion from main.cc
     Create gyp build
     Create gn build (currently packer only; no unit tests)
-    List of bionic changes currently included:
-      Refresh: https://android-review.googlesource.com/#/c/143878/
-      Refresh: https://android-review.googlesource.com/#/c/147620/
-               https://android-review.googlesource.com/#/c/147745/
-               https://android-review.googlesource.com/#/c/148073/
-      Refresh: https://android-review.googlesource.com/#/c/151901/
-               https://android-review.googlesource.com/#/c/149300/
-               https://android-review.googlesource.com/#/c/148822/
-               https://android-review.googlesource.com/#/c/148492/
-               https://android-review.googlesource.com/#/c/148175/
+    Apply https://android-review.googlesource.com/#/c/143878/
+    Apply https://android-review.googlesource.com/#/c/147620/
+          https://android-review.googlesource.com/#/c/147745/
+          https://android-review.googlesource.com/#/c/148073/
