@@ -116,8 +116,12 @@ TEST_F(DisplaySchedulerTest, EntireDisplayDamagedDrawsImmediately) {
 }
 
 TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
+  SurfaceId root_surface_id(0);
   SurfaceId sid1(1);
   SurfaceId sid2(2);
+
+  // Set the root surface
+  scheduler_->EntireDisplayDamaged(root_surface_id);
 
   // Get scheduler to detect surface 1 as active by drawing
   // two frames in a row with damage from surface 1.
@@ -154,6 +158,22 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
   EXPECT_LT(now_src().Now(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   scheduler_->SurfaceDamaged(sid2);
+  EXPECT_GE(now_src().Now(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->BeginFrameDeadlineForTest();
+
+  // Make the system idle
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+  BeginFrameForTest();
+  scheduler_->BeginFrameDeadlineForTest();
+
+  // Deadline should trigger early if child surfaces are idle and
+  // we get damage on the root surface.
+  BeginFrameForTest();
+  EXPECT_LT(now_src().Now(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_->SurfaceDamaged(root_surface_id);
   EXPECT_GE(now_src().Now(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
   scheduler_->BeginFrameDeadlineForTest();

@@ -106,19 +106,20 @@ void DisplayScheduler::DrawAndSwap() {
   if (!success)
     return;
 
-  needs_draw_ = false;
-  entire_display_damaged_ = false;
-  all_active_child_surfaces_ready_to_draw_ = false;
-
-  expect_damage_from_root_surface_ = root_surface_damaged_;
-  root_surface_damaged_ = false;
-
   child_surface_ids_to_expect_damage_from_ =
       base::STLSetIntersection<std::vector<SurfaceId>>(
           child_surface_ids_damaged_, child_surface_ids_damaged_prev_);
 
   child_surface_ids_damaged_prev_.swap(child_surface_ids_damaged_);
   child_surface_ids_damaged_.clear();
+
+  needs_draw_ = false;
+  entire_display_damaged_ = false;
+  all_active_child_surfaces_ready_to_draw_ =
+      child_surface_ids_to_expect_damage_from_.empty();
+
+  expect_damage_from_root_surface_ = root_surface_damaged_;
+  root_surface_damaged_ = false;
 }
 
 bool DisplayScheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
@@ -257,6 +258,13 @@ void DisplayScheduler::AttemptDrawAndSwap() {
     if (pending_swaps_ < max_pending_swaps_ && !root_surface_resources_locked_)
       DrawAndSwap();
   } else {
+    // We are going idle, so reset expectations.
+    child_surface_ids_to_expect_damage_from_.clear();
+    child_surface_ids_damaged_prev_.clear();
+    child_surface_ids_damaged_.clear();
+    all_active_child_surfaces_ready_to_draw_ = true;
+    expect_damage_from_root_surface_ = false;
+
     begin_frame_source_->SetNeedsBeginFrames(false);
   }
 }
