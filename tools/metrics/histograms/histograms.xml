@@ -30132,6 +30132,44 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Power.DarkResumeWakeDurationMs.Other" units="milliseconds">
+  <owner>chirantan@chromium.org</owner>
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    The amount of time a system spent awake every time it woke up in dark resume
+    triggered by an unknown or unsupported wake trigger.
+  </summary>
+</histogram>
+
+<histogram name="Power.DarkResumeWakeDurationMs.WiFi.Disconnect"
+    units="milliseconds">
+  <owner>chirantan@chromium.org</owner>
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    The amount of time a system spent awake every time it woke up in dark resume
+    triggered by a WiFi disconnect.
+  </summary>
+</histogram>
+
+<histogram name="Power.DarkResumeWakeDurationMs.WiFi.Pattern"
+    units="milliseconds">
+  <owner>chirantan@chromium.org</owner>
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    The amount of time a system spent awake every time it woke up in dark resume
+    triggered by a WiFi packet pattern match.
+  </summary>
+</histogram>
+
+<histogram name="Power.DarkResumeWakeDurationMs.WiFi.SSID" units="milliseconds">
+  <owner>chirantan@chromium.org</owner>
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    The amount of time a system spent awake every time it woke up in dark resume
+    triggered by a net detect SSID match.
+  </summary>
+</histogram>
+
 <histogram name="Power.DarkResumeWakeupsPerHour">
   <owner>chirantan@chromium.org</owner>
   <summary>
