@@ -11,11 +11,13 @@ namespace drive {
 TEST(JobQueueTest, BasicJobQueueOperations) {
   const size_t kNumMaxConcurrentJobs = 3;
   const size_t kNumPriorityLevels = 2;
+  const size_t kNumMaxBatchJob = 0;
   const size_t kMaxBatchSize = 0;
   enum {HIGH_PRIORITY, LOW_PRIORITY};
 
   // Create a queue. Number of jobs are initially zero.
-  JobQueue queue(kNumMaxConcurrentJobs, kNumPriorityLevels, kMaxBatchSize);
+  JobQueue queue(kNumMaxConcurrentJobs, kNumPriorityLevels, kNumMaxBatchJob,
+                 kMaxBatchSize);
   EXPECT_EQ(0U, queue.GetNumberOfJobs());
 
   // Push 4 jobs.
@@ -77,11 +79,13 @@ TEST(JobQueueTest, BasicJobQueueOperations) {
 TEST(JobQueueTest, JobQueueRemove) {
   const size_t kNumMaxConcurrentJobs = 3;
   const size_t kNumPriorityLevels = 2;
+  const size_t kNumMaxBatchJob = 0;
   const size_t kMaxBatchSize = 0;
   enum {HIGH_PRIORITY, LOW_PRIORITY};
 
   // Create a queue. Number of jobs are initially zero.
-  JobQueue queue(kNumMaxConcurrentJobs, kNumPriorityLevels, kMaxBatchSize);
+  JobQueue queue(kNumMaxConcurrentJobs, kNumPriorityLevels, kNumMaxBatchJob,
+                 kMaxBatchSize);
   EXPECT_EQ(0U, queue.GetNumberOfJobs());
 
   // Push 4 jobs.
@@ -116,11 +120,13 @@ TEST(JobQueueTest, JobQueueRemove) {
 TEST(JobQueueTest, BatchRequest) {
   const size_t kNumMaxConcurrentJobs = 1;
   const size_t kNumPriorityLevels = 2;
+  const size_t kNumMaxBatchJob = 100;
   const size_t kMaxBatchSize = 5;
   enum { HIGH_PRIORITY, LOW_PRIORITY };
 
   // Create a queue. Number of jobs are initially zero.
-  JobQueue queue(kNumMaxConcurrentJobs, kNumPriorityLevels, kMaxBatchSize);
+  JobQueue queue(kNumMaxConcurrentJobs, kNumPriorityLevels, kNumMaxBatchJob,
+                 kMaxBatchSize);
   EXPECT_EQ(0U, queue.GetNumberOfJobs());
 
   // Push 6 jobs.
@@ -159,6 +165,34 @@ TEST(JobQueueTest, BatchRequest) {
   queue.MarkFinished(105);
   queue.PopForRun(LOW_PRIORITY, &ids);
   EXPECT_EQ(0u, ids.size());
+}
+
+TEST(JobQueueTest, BatchRequstNumMaxJobs) {
+  const size_t kNumMaxConcurrentJobs = 1;
+  const size_t kNumPriorityLevels = 2;
+  const size_t kNumMaxBatchJob = 5;
+  const size_t kMaxBatchSize = 100;
+  enum { HIGH_PRIORITY, LOW_PRIORITY };
+
+  // Create a queue. Number of jobs are initially zero.
+  JobQueue queue(kNumMaxConcurrentJobs, kNumPriorityLevels, kNumMaxBatchJob,
+                 kMaxBatchSize);
+  EXPECT_EQ(0U, queue.GetNumberOfJobs());
+
+  // Push 6 jobs.
+  queue.Push(101, LOW_PRIORITY, true, 1);
+  queue.Push(102, LOW_PRIORITY, true, 1);
+  queue.Push(103, LOW_PRIORITY, true, 1);
+  queue.Push(104, LOW_PRIORITY, true, 1);
+  queue.Push(105, LOW_PRIORITY, true, 1);
+  queue.Push(106, LOW_PRIORITY, true, 1);
+
+  EXPECT_EQ(6U, queue.GetNumberOfJobs());
+
+  // Pop the 5 of 6 jobs.
+  std::vector<JobID> ids;
+  queue.PopForRun(LOW_PRIORITY, &ids);
+  EXPECT_EQ(5u, ids.size());
 }
 
 }  // namespace drive

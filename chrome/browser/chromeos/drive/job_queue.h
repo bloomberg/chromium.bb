@@ -20,6 +20,7 @@ class JobQueue {
   // execution and has |num_priority_levels| levels of priority.
   JobQueue(size_t num_max_concurrent_jobs,
            size_t num_priority_levels,
+           size_t num_max_batch_jobs,
            size_t max_batch_size);
   ~JobQueue();
 
@@ -27,7 +28,8 @@ class JobQueue {
   // is popped first (lower values are higher priority). In the same priority,
   // the queue is "first-in first-out". If multiple jobs with |batchable| = true
   // are pushed continuously, there will be popped at the same time unless the
-  // sum of |job_size| exceeds |max_batch_size_|.
+  // number of jobs exceeds |num_max_batch_jobs_| or the sum of |job_size|
+  // exceeds or |max_batch_size_|.
   void Push(JobID id, int priority, bool batchable, uint64 job_size);
 
   // Pops the first job which meets |accepted_priority| (i.e. the first job in
@@ -72,9 +74,10 @@ class JobQueue {
     uint64 size;
   };
 
-  size_t num_max_concurrent_jobs_;
+  const size_t num_max_concurrent_jobs_;
   std::vector<std::deque<Item>> queue_;
-  size_t max_batch_size_;
+  const size_t num_max_batch_jobs_;
+  const size_t max_batch_size_;
   std::set<JobID> running_;
 
   DISALLOW_COPY_AND_ASSIGN(JobQueue);

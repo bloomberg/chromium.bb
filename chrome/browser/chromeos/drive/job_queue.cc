@@ -23,9 +23,11 @@ JobQueue::Item::~Item() {
 
 JobQueue::JobQueue(size_t num_max_concurrent_jobs,
                    size_t num_priority_levels,
+                   size_t num_max_batch_jobs,
                    size_t max_batch_size)
     : num_max_concurrent_jobs_(num_max_concurrent_jobs),
       queue_(num_priority_levels),
+      num_max_batch_jobs_(num_max_batch_jobs),
       max_batch_size_(max_batch_size) {
 }
 
@@ -47,7 +49,9 @@ void JobQueue::PopForRun(int accepted_priority, std::vector<JobID>* jobs) {
     while (!queue_[priority].empty()) {
       const auto& item = queue_[priority].front();
       total_size += item.size;
-      batchable = batchable && item.batchable && total_size <= max_batch_size_;
+      batchable = batchable && item.batchable &&
+                  jobs->size() < num_max_batch_jobs_ &&
+                  total_size <= max_batch_size_;
       if (!(jobs->empty() || batchable))
         return;
       jobs->push_back(item.id);

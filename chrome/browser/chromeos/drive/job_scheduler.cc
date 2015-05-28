@@ -34,6 +34,7 @@ namespace {
 // sufficient number of times. crbug.com/269918
 const int kMaxThrottleCount = 4;
 const int kMaxRetryCount = 2 * kMaxThrottleCount;
+const size_t kMaxBatchCount = 20;
 const size_t kMaxBatchSize = 1024 * 1024 * 10;
 
 // GetDefaultValue returns a value constructed by the default constructor.
@@ -191,8 +192,8 @@ JobScheduler::JobScheduler(PrefService* pref_service,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (int i = 0; i < NUM_QUEUES; ++i)
-    queue_[i].reset(
-        new JobQueue(kMaxJobCount[i], NUM_CONTEXT_TYPES, kMaxBatchSize));
+    queue_[i].reset(new JobQueue(kMaxJobCount[i], NUM_CONTEXT_TYPES,
+                                 kMaxBatchCount, kMaxBatchSize));
 
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 }
