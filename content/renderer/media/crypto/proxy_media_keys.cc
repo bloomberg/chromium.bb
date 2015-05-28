@@ -94,9 +94,7 @@ void ProxyMediaKeys::LoadSession(
     SessionType session_type,
     const std::string& session_id,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
-  // TODO(xhwang): Check key system and platform support for LoadSession in
-  // blink and add NOTREACHED() here. See http://crbug.com/384152
-  DLOG(ERROR) << "ProxyMediaKeys doesn't support session loading.";
+  NOTREACHED() << "ProxyMediaKeys doesn't support persistent sessions.";
   promise->reject(NOT_SUPPORTED_ERROR, 0, "LoadSession() is not supported.");
 }
 
@@ -117,8 +115,7 @@ void ProxyMediaKeys::CloseSession(const std::string& session_id,
 void ProxyMediaKeys::RemoveSession(
     const std::string& session_id,
     scoped_ptr<media::SimpleCdmPromise> promise) {
-  // TODO(xhwang): Check key system and platform support for LoadSession in
-  // blink and add NOTREACHED() here. See http://crbug.com/384152
+  NOTREACHED() << "ProxyMediaKeys doesn't support persistent sessions.";
   promise->reject(NOT_SUPPORTED_ERROR, 0, "RemoveSession() not supported.");
 }
 
