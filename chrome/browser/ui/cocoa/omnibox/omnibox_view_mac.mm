@@ -1021,6 +1021,22 @@ NSFont* OmniboxViewMac::GetFieldFont(int style) {
       .GetPrimaryFont().GetNativeFont();
 }
 
+NSFont* OmniboxViewMac::GetLargeFont(int style) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetFontList(ui::ResourceBundle::LargeFont)
+      .Derive(1, style)
+      .GetPrimaryFont()
+      .GetNativeFont();
+}
+
+NSFont* OmniboxViewMac::GetSmallFont(int style) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetFontList(ui::ResourceBundle::SmallFont)
+      .Derive(1, style)
+      .GetPrimaryFont()
+      .GetNativeFont();
+}
+
 int OmniboxViewMac::GetOmniboxTextLength() const {
   return static_cast<int>(GetTextLength());
 }

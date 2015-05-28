@@ -35,6 +35,24 @@ class SuggestionAnswer {
   typedef std::vector<TextField> TextFields;
   typedef std::vector<GURL> URLs;
 
+  // These values are named and numbered to match a specification at go/ais_api.
+  // The values are only used for answer results.
+  enum TextType {
+    ANSWER = 1,
+    HEADLINE = 2,
+    TOP_ALIGNED = 3,
+    DESCRIPTION = 4,
+    DESCRIPTION_NEGATIVE = 5,
+    DESCRIPTION_POSITIVE = 6,
+    MORE_INFO = 7,
+    SUGGESTION = 8,
+    SUGGESTION_POSITIVE = 9,
+    SUGGESTION_NEGATIVE = 10,
+    SUGGESTION_LINK = 11,
+    STATUS = 12,
+    PERSONALIZED_SUGGESTION = 13,
+  };
+
   class TextField {
    public:
     TextField();

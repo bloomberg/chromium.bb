@@ -4,8 +4,12 @@
 
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_cell.h"
 
+#include "base/json/json_reader.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/values.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "components/omnibox/suggestion_answer.h"
+#import "testing/gtest_mac.h"
 
 namespace {
 
@@ -42,6 +46,41 @@ TEST_F(OmniboxPopupCellTest, Title) {
       initWithString:@"The quick brown fox jumps over the lazy dog."]);
   [cell_ setAttributedTitle:text];
   [button_ display];
+}
+
+TEST_F(OmniboxPopupCellTest, AnswerStyle) {
+  const char* weatherJson =
+      "{\"l\": [ {\"il\": {\"t\": [ {"
+      "\"t\": \"weather in pari&lt;b&gt;s&lt;/b&gt;\", \"tt\": 8} ]}}, {"
+      "\"il\": {\"at\": {\"t\": \"Thu\",\"tt\": 12}, "
+      "\"i\": {\"d\": \"//ssl.gstatic.com/onebox/weather/64/cloudy.png\","
+      "\"t\": 3}, \"t\": [ {\"t\": \"46\",\"tt\": 1}, {"
+      "\"t\": \"°F\",\"tt\": 3} ]}} ]}";
+  NSString* finalString = @"46°F Thu";
+
+  scoped_ptr<base::Value> root(base::JSONReader::Read(weatherJson));
+  ASSERT_NE(root, nullptr);
+  base::DictionaryValue* dictionary;
+  root->GetAsDictionary(&dictionary);
+  ASSERT_NE(dictionary, nullptr);
+  AutocompleteMatch match;
+  match.answer = SuggestionAnswer::ParseAnswer(dictionary);
+  EXPECT_TRUE(match.answer);
+  [cell_ setMatch:match];
+  EXPECT_NSEQ([[cell_ description] string], finalString);
+  size_t length = [[cell_ description] length];
+  const NSRange checkValues[] = {{0, 2}, {2, 2}, {4, 4}};
+  EXPECT_EQ(length, 8UL);
+  NSDictionary* lastAttributes = nil;
+  for (const NSRange& value : checkValues) {
+    NSRange range;
+    NSDictionary* currentAttributes =
+        [[cell_ description] attributesAtIndex:value.location
+                                effectiveRange:&range];
+    EXPECT_TRUE(NSEqualRanges(value, range));
+    EXPECT_FALSE([currentAttributes isEqualToDictionary:lastAttributes]);
+    lastAttributes = currentAttributes;
+  }
 }
 
 }  // namespace

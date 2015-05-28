@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/suggestion_answer.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 
@@ -66,6 +67,12 @@ NSColor* ContentTextColor() {
 NSColor* DimTextColor() {
   return [NSColor darkGrayColor];
 }
+NSColor* PositiveTextColor() {
+  return gfx::SkColorToCalibratedNSColor(SkColorSetRGB(0x0b, 0x80, 0x43));
+}
+NSColor* NegativeTextColor() {
+  return gfx::SkColorToCalibratedNSColor(SkColorSetRGB(0xc5, 0x39, 0x29));
+}
 NSColor* URLTextColor() {
   return [NSColor colorWithCalibratedRed:0.0 green:0.55 blue:0.0 alpha:1.0];
 }
@@ -76,9 +83,124 @@ NSFont* FieldFont() {
 NSFont* BoldFieldFont() {
   return OmniboxViewMac::GetFieldFont(gfx::Font::BOLD);
 }
+NSFont* LargeFont() {
+  return OmniboxViewMac::GetLargeFont(gfx::Font::NORMAL);
+}
+NSFont* LargeSuperscriptFont() {
+  NSFont* font = OmniboxViewMac::GetLargeFont(gfx::Font::NORMAL);
+  // Calculate a slightly smaller font. The ratio here is somewhat arbitrary.
+  // Proportions from 5/9 to 5/7 all look pretty good.
+  CGFloat size = [font pointSize] * 5.0 / 9.0;
+  NSFontDescriptor* descriptor = [font fontDescriptor];
+  return [NSFont fontWithDescriptor:descriptor size:size];
+}
+NSFont* SmallFont() {
+  return OmniboxViewMac::GetSmallFont(gfx::Font::NORMAL);
+}
 
 CGFloat GetContentAreaWidth(NSRect cellFrame) {
   return NSWidth(cellFrame) - kTextStartOffset;
+}
+
+NSAttributedString* CreateAnswerString(const base::string16& text,
+                                       NSInteger style_type) {
+  NSDictionary* answer_style = nil;
+  switch (style_type) {
+    case SuggestionAnswer::ANSWER:
+      answer_style = @{
+        NSForegroundColorAttributeName : ContentTextColor(),
+        NSFontAttributeName : LargeFont()
+      };
+      break;
+    case SuggestionAnswer::HEADLINE:
+      answer_style = @{
+        NSForegroundColorAttributeName : DimTextColor(),
+        NSFontAttributeName : LargeFont()
+      };
+      break;
+    case SuggestionAnswer::TOP_ALIGNED:
+      answer_style = @{
+        NSForegroundColorAttributeName : DimTextColor(),
+        NSFontAttributeName : LargeSuperscriptFont(),
+        NSSuperscriptAttributeName : @1
+      };
+      break;
+    case SuggestionAnswer::DESCRIPTION:
+      answer_style = @{
+        NSForegroundColorAttributeName : DimTextColor(),
+        NSFontAttributeName : FieldFont()
+      };
+      break;
+    case SuggestionAnswer::DESCRIPTION_NEGATIVE:
+      answer_style = @{
+        NSForegroundColorAttributeName : NegativeTextColor(),
+        NSFontAttributeName : LargeSuperscriptFont()
+      };
+      break;
+    case SuggestionAnswer::DESCRIPTION_POSITIVE:
+      answer_style = @{
+        NSForegroundColorAttributeName : PositiveTextColor(),
+        NSFontAttributeName : LargeSuperscriptFont()
+      };
+      break;
+    case SuggestionAnswer::MORE_INFO:
+      answer_style = @{
+        NSForegroundColorAttributeName : DimTextColor(),
+        NSFontAttributeName : SmallFont()
+      };
+      break;
+    case SuggestionAnswer::SUGGESTION:
+      answer_style = @{
+        NSForegroundColorAttributeName : ContentTextColor(),
+        NSFontAttributeName : FieldFont()
+      };
+      break;
+    case SuggestionAnswer::SUGGESTION_POSITIVE:
+      answer_style = @{
+        NSForegroundColorAttributeName : PositiveTextColor(),
+        NSFontAttributeName : FieldFont()
+      };
+      break;
+    case SuggestionAnswer::SUGGESTION_NEGATIVE:
+      answer_style = @{
+        NSForegroundColorAttributeName : NegativeTextColor(),
+        NSFontAttributeName : FieldFont()
+      };
+      break;
+    case SuggestionAnswer::SUGGESTION_LINK:
+      answer_style = @{
+        NSForegroundColorAttributeName : URLTextColor(),
+        NSFontAttributeName : FieldFont()
+      };
+      break;
+    case SuggestionAnswer::STATUS:
+      answer_style = @{
+        NSForegroundColorAttributeName : DimTextColor(),
+        NSFontAttributeName : LargeSuperscriptFont()
+      };
+      break;
+    case SuggestionAnswer::PERSONALIZED_SUGGESTION:
+      answer_style = @{
+        NSForegroundColorAttributeName : ContentTextColor(),
+        NSFontAttributeName : FieldFont()
+      };
+      break;
+  }
+
+  // Start out with a string using the default style info.
+  base::scoped_nsobject<NSMutableAttributedString> attributed_string(
+      [[NSMutableAttributedString alloc]
+          initWithString:base::SysUTF16ToNSString(text)
+              attributes:answer_style]);
+
+  base::scoped_nsobject<NSMutableParagraphStyle> style(
+      [[NSMutableParagraphStyle alloc] init]);
+  [style setLineBreakMode:NSLineBreakByTruncatingTail];
+  [style setTighteningFactorForTruncation:0.0];
+  [attributed_string addAttribute:NSParagraphStyleAttributeName
+                            value:style
+                            range:NSMakeRange(0, [attributed_string length])];
+  return attributed_string.autorelease();
 }
 
 NSMutableAttributedString* CreateAttributedString(
@@ -91,21 +213,20 @@ NSMutableAttributedString* CreateAttributedString(
       NSFontAttributeName : FieldFont(),
       NSForegroundColorAttributeName : text_color
   };
-  NSMutableAttributedString* as =
-      [[[NSMutableAttributedString alloc] initWithString:s
-                                              attributes:attributes]
-        autorelease];
+  NSMutableAttributedString* attributedString = [[
+      [NSMutableAttributedString alloc] initWithString:s
+                                            attributes:attributes] autorelease];
 
   NSMutableParagraphStyle* style =
       [[[NSMutableParagraphStyle alloc] init] autorelease];
   [style setLineBreakMode:NSLineBreakByTruncatingTail];
   [style setTighteningFactorForTruncation:0.0];
   [style setAlignment:textAlignment];
-  [as addAttribute:NSParagraphStyleAttributeName
-             value:style
-             range:NSMakeRange(0, [as length])];
+  [attributedString addAttribute:NSParagraphStyleAttributeName
+                           value:style
+                           range:NSMakeRange(0, [attributedString length])];
 
-  return as;
+  return attributedString;
 }
 
 NSMutableAttributedString* CreateAttributedString(
@@ -118,8 +239,9 @@ NSAttributedString* CreateClassifiedAttributedString(
     const base::string16& text,
     NSColor* text_color,
     const ACMatchClassifications& classifications) {
-  NSMutableAttributedString* as = CreateAttributedString(text, text_color);
-  NSUInteger match_length = [as length];
+  NSMutableAttributedString* attributedString =
+      CreateAttributedString(text, text_color);
+  NSUInteger match_length = [attributedString length];
 
   // Mark up the runs which differ from the default.
   for (ACMatchClassifications::const_iterator i = classifications.begin();
@@ -136,21 +258,23 @@ NSAttributedString* CreateClassifiedAttributedString(
         NSMakeRange(location, std::min(length, match_length - location));
 
     if (0 != (i->style & ACMatchClassification::MATCH)) {
-      [as addAttribute:NSFontAttributeName value:BoldFieldFont() range:range];
+      [attributedString addAttribute:NSFontAttributeName
+                               value:BoldFieldFont()
+                               range:range];
     }
 
     if (0 != (i->style & ACMatchClassification::URL)) {
-      [as addAttribute:NSForegroundColorAttributeName
-                 value:URLTextColor()
-                 range:range];
+      [attributedString addAttribute:NSForegroundColorAttributeName
+                               value:URLTextColor()
+                               range:range];
     } else if (0 != (i->style & ACMatchClassification::DIM)) {
-      [as addAttribute:NSForegroundColorAttributeName
-                 value:DimTextColor()
-                 range:range];
+      [attributedString addAttribute:NSForegroundColorAttributeName
+                               value:DimTextColor()
+                               range:range];
     }
   }
 
-  return as;
+  return attributedString;
 }
 
 }  // namespace
@@ -184,29 +308,42 @@ NSAttributedString* CreateClassifiedAttributedString(
   NSAttributedString *contents = CreateClassifiedAttributedString(
       match_.contents, ContentTextColor(), match_.contents_class);
   [self setAttributedTitle:contents];
-
   [self setAnswerImage:nil];
   if (match_.answer) {
-    base::string16 answerString;
+    base::scoped_nsobject<NSMutableAttributedString> answerString(
+        [[NSMutableAttributedString alloc] init]);
+    DCHECK(!match_.answer->second_line().text_fields().empty());
     for (const SuggestionAnswer::TextField& textField :
-         match_.answer->second_line().text_fields())
-      answerString += textField.text();
+         match_.answer->second_line().text_fields()) {
+      NSAttributedString* as =
+          CreateAnswerString(textField.text(), textField.type());
+      [answerString appendAttributedString:as];
+    }
     const base::char16 space(' ');
     const SuggestionAnswer::TextField* textField =
         match_.answer->second_line().additional_text();
-    if (textField)
-      answerString += space + textField->text();
+    if (textField) {
+      [answerString
+          appendAttributedString:CreateAnswerString(space + textField->text(),
+                                                    textField->type())];
+    }
     textField = match_.answer->second_line().status_text();
-    if (textField)
-      answerString += space + textField->text();
-    description_.reset([CreateClassifiedAttributedString(
-        answerString, DimTextColor(), match_.description_class) retain]);
+    if (textField) {
+      [answerString
+          appendAttributedString:CreateAnswerString(space + textField->text(),
+                                                    textField->type())];
+    }
+    description_.reset(answerString.release());
   } else if (match_.description.empty()) {
     description_.reset();
   } else {
     description_.reset([CreateClassifiedAttributedString(
         match_.description, DimTextColor(), match_.description_class) retain]);
   }
+}
+
+- (NSAttributedString*)description {
+  return description_;
 }
 
 - (void)setMaxMatchContentsWidth:(CGFloat)maxMatchContentsWidth {

@@ -46,6 +46,8 @@ class OmniboxPopupViewMac;
 
 - (void)setMatch:(const AutocompleteMatch&)match;
 
+- (NSAttributedString*)description;
+
 - (void)setMaxMatchContentsWidth:(CGFloat)maxMatchContentsWidth;
 
 - (void)setContentsOffset:(CGFloat)contentsOffset;
