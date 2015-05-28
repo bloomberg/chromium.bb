@@ -1674,9 +1674,9 @@ crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass 
 # update and reenable the test once the bugfix for 475244 lands in Chromium
 crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]
 
-crbug.com/476913 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
-crbug.com/476913 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/unicode-fallback-font.html [ Crash ]
-crbug.com/476913 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
+crbug.com/419769 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
+crbug.com/419769 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/unicode-fallback-font.html [ Skip ]
+crbug.com/419769 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
 
 crbug.com/479164 inspector/geolocation-emulation-tests.html [ Pass Failure ]
 
