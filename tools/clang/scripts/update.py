@@ -319,10 +319,14 @@ def main():
     # dup()ed sys.stdin is writable, try
     #   fd2 = os.dup(sys.stdin.fileno()); os.write(fd2, 'hi')
     # TODO: Fix gclient instead, http://crbug.com/95350
-    try:
-      stderr = os.fdopen(os.dup(sys.stdin.fileno()))
-    except:
-      stderr = sys.stderr
+    if '--no-stdin-hack' in sys.argv:
+      sys.argv.remove('--no-stdin-hack')
+      stderr = None
+    else:
+      try:
+        stderr = os.fdopen(os.dup(sys.stdin.fileno()))
+      except:
+        stderr = sys.stderr
     return subprocess.call(
         [os.path.join(os.path.dirname(__file__), 'update.sh')] + sys.argv[1:],
         stderr=stderr)
