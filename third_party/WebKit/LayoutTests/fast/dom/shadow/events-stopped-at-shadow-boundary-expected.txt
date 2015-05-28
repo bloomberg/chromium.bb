@@ -1,3 +1,4 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
 Tests to ensure that some kinds of events are stopeed at shadow boundary.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

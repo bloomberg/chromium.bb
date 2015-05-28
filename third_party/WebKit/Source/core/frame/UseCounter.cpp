@@ -900,6 +900,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case DocumentGetCSSCanvasContext:
         return "The -webkit-canvas CSS feature is deprecated. Please use a positioned <canvas> element instead.";
 
+    case ElementCreateShadowRootMultiple:
+        return "Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.";
+
+    case ElementCreateShadowRootMultipleWithUserAgentShadowRoot:
+        return "Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

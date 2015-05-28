@@ -1,3 +1,4 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
 Tests that distributed nodes and their updates are correctly shown in different shadow host display modes.
 
 youngest distributed text

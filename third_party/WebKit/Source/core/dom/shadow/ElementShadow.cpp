@@ -149,10 +149,14 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::Shadow
     ScriptForbiddenScope forbidScript;
 
     if (type == ShadowRoot::OpenShadowRoot) {
-        if (!youngestShadowRoot() || youngestShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot)
+        if (!youngestShadowRoot()) {
             shadowHost.willAddFirstOpenShadowRoot();
-        else
-            UseCounter::count(shadowHost.document(), UseCounter::ElementCreateShadowRootMultiple);
+        } else if (youngestShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot) {
+            shadowHost.willAddFirstOpenShadowRoot();
+            UseCounter::countDeprecation(shadowHost.document(), UseCounter::ElementCreateShadowRootMultipleWithUserAgentShadowRoot);
+        } else {
+            UseCounter::countDeprecation(shadowHost.document(), UseCounter::ElementCreateShadowRootMultiple);
+        }
     }
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())

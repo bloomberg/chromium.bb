@@ -710,6 +710,7 @@ public:
         V8SVGPatternElement_HasExtension_Method = 797,
         V8SVGStyleElement_Disabled_AttributeGetter = 798,
         V8SVGStyleElement_Disabled_AttributeSetter = 799,
+        ElementCreateShadowRootMultipleWithUserAgentShadowRoot = 800,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
