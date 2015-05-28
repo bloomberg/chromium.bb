@@ -25,6 +25,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import clactions
 from chromite.lib import cros_logging as logging
 from chromite.lib import factory
+from chromite.lib import graphite
 from chromite.lib import osutils
 from chromite.lib import retry_stats
 
@@ -624,7 +625,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
           'action': action,
           'reason': reason})
 
-    return self._InsertMany('clActionTable', values)
+    retval = self._InsertMany('clActionTable', values)
+
+    stats = graphite.StatsFactory.GetInstance()
+    for cl_action in cl_actions:
+      r = cl_action.reason or 'no_reason'
+      stats.Counter('.'.join(['cl_actions', cl_action.action])).increment(r)
+
+    return retval
 
   @minimum_schema(6)
   def InsertBoardPerBuild(self, build_id, board):
