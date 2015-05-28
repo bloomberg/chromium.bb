@@ -121,6 +121,10 @@ void OverlayUserPrefStore::CommitPendingWrite() {
   // We do not write our content intentionally.
 }
 
+void OverlayUserPrefStore::SchedulePendingLossyWrites() {
+  underlay_->SchedulePendingLossyWrites();
+}
+
 void OverlayUserPrefStore::ReportValueChanged(const std::string& key,
                                               uint32 flags) {
   FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));

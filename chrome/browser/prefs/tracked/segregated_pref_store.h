@@ -68,6 +68,7 @@ class SegregatedPrefStore : public PersistentPrefStore {
   PrefReadError ReadPrefs() override;
   void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
   void CommitPendingWrite() override;
+  void SchedulePendingLossyWrites() override;
 
  private:
   // Aggregates events from the underlying stores and synthesizes external

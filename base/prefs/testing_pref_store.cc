@@ -89,6 +89,8 @@ void TestingPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
 
 void TestingPrefStore::CommitPendingWrite() { committed_ = true; }
 
+void TestingPrefStore::SchedulePendingLossyWrites() {}
+
 void TestingPrefStore::SetInitializationCompleted() {
   NotifyInitializationCompleted();
 }

@@ -303,11 +303,15 @@ void JsonPrefStore::CommitPendingWrite() {
 
   // Schedule a write for any lossy writes that are outstanding to ensure that
   // they get flushed when this function is called.
-  if (pending_lossy_write_)
-    writer_.ScheduleWrite(this);
+  SchedulePendingLossyWrites();
 
   if (writer_.HasPendingWrite() && !read_only_)
     writer_.DoScheduledWrite();
+}
+
+void JsonPrefStore::SchedulePendingLossyWrites() {
+  if (pending_lossy_write_)
+    writer_.ScheduleWrite(this);
 }
 
 void JsonPrefStore::ReportValueChanged(const std::string& key, uint32 flags) {

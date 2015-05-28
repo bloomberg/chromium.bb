@@ -165,6 +165,12 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // immediately (basically, during shutdown).
   void CommitPendingWrite();
 
+  // Schedule a write if there is any lossy data pending. Unlike
+  // CommitPendingWrite() this does not immediately sync to disk, instead it
+  // triggers an eventual write if there is lossy data pending and if there
+  // isn't one scheduled already.
+  void SchedulePendingLossyWrites();
+
   // Returns true if the preference for the given preference name is available
   // and is managed.
   bool IsManagedPreference(const std::string& pref_name) const;

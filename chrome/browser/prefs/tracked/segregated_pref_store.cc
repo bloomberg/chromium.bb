@@ -150,6 +150,11 @@ void SegregatedPrefStore::CommitPendingWrite() {
   selected_pref_store_->CommitPendingWrite();
 }
 
+void SegregatedPrefStore::SchedulePendingLossyWrites() {
+  default_pref_store_->SchedulePendingLossyWrites();
+  selected_pref_store_->SchedulePendingLossyWrites();
+}
+
 SegregatedPrefStore::~SegregatedPrefStore() {
   default_pref_store_->RemoveObserver(&aggregating_observer_);
   selected_pref_store_->RemoveObserver(&aggregating_observer_);

@@ -44,6 +44,7 @@ class AwPrefStore : public PersistentPrefStore {
   PersistentPrefStore::PrefReadError ReadPrefs() override;
   void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
   void CommitPendingWrite() override {}
+  void SchedulePendingLossyWrites() override {}
 
  protected:
   ~AwPrefStore() override;

@@ -98,6 +98,7 @@ class BASE_PREFS_EXPORT JsonPrefStore
   PrefReadError ReadPrefs() override;
   void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
   void CommitPendingWrite() override;
+  void SchedulePendingLossyWrites() override;
   void ReportValueChanged(const std::string& key, uint32 flags) override;
 
   // Just like RemoveValue(), but doesn't notify observers. Used when doing some

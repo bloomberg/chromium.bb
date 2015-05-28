@@ -356,6 +356,10 @@ void LevelDBPrefStore::CommitPendingWrite() {
   }
 }
 
+void LevelDBPrefStore::SchedulePendingLossyWrites() {
+  // LevelDBPrefStore does not support lossy prefs.
+}
+
 void LevelDBPrefStore::MarkForDeletion(const std::string& key) {
   if (read_only_)
     return;

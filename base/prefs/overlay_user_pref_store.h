@@ -51,6 +51,7 @@ class BASE_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
   PrefReadError ReadPrefs() override;
   void ReadPrefsAsync(ReadErrorDelegate* delegate) override;
   void CommitPendingWrite() override;
+  void SchedulePendingLossyWrites() override;
   void ReportValueChanged(const std::string& key, uint32 flags) override;
 
   // Methods of PrefStore::Observer.

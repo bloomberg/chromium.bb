@@ -928,4 +928,24 @@ TEST_F(JsonPrefStoreLossyWriteTest, LossyWriteMixedLossySecond) {
   ASSERT_FALSE(file_writer->HasPendingWrite());
 }
 
+TEST_F(JsonPrefStoreLossyWriteTest, ScheduleLossyWrite) {
+  scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
+  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store);
+
+  // Set a lossy pref and check that it is not scheduled to be written.
+  pref_store->SetValue("lossy", new base::StringValue("lossy"),
+                       WriteablePrefStore::LOSSY_PREF_WRITE_FLAG);
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+
+  // Schedule pending lossy writes and check that it is scheduled.
+  pref_store->SchedulePendingLossyWrites();
+  ASSERT_TRUE(file_writer->HasPendingWrite());
+
+  // Call CommitPendingWrite and check that the lossy pref is there with the
+  // last value set above.
+  pref_store->CommitPendingWrite();
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+  ASSERT_EQ("{\"lossy\":\"lossy\"}", GetTestFileContents());
+}
+
 }  // namespace base

@@ -106,6 +106,11 @@ void PrefService::CommitPendingWrite() {
   user_pref_store_->CommitPendingWrite();
 }
 
+void PrefService::SchedulePendingLossyWrites() {
+  DCHECK(CalledOnValidThread());
+  user_pref_store_->SchedulePendingLossyWrites();
+}
+
 bool PrefService::GetBoolean(const std::string& path) const {
   DCHECK(CalledOnValidThread());
 
