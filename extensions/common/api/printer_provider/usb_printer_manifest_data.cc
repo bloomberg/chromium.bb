@@ -5,9 +5,12 @@
 #include "extensions/common/api/printer_provider/usb_printer_manifest_data.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"
 #include "extensions/common/api/extensions_manifest_types.h"
 #include "extensions/common/manifest_constants.h"
+
+using device::UsbDeviceFilter;
 
 namespace extensions {
 
@@ -37,7 +40,7 @@ scoped_ptr<UsbPrinterManifestData> UsbPrinterManifestData::FromValue(
   scoped_ptr<UsbPrinterManifestData> result(new UsbPrinterManifestData());
   for (const auto& input : usb_printers->filters) {
     DCHECK(input.get());
-    device::UsbDeviceFilter output;
+    UsbDeviceFilter output;
     output.SetVendorId(input->vendor_id);
     if (input->product_id && input->interface_class) {
       *error = base::ASCIIToUTF16(
@@ -59,6 +62,11 @@ scoped_ptr<UsbPrinterManifestData> UsbPrinterManifestData::FromValue(
     result->filters_.push_back(output);
   }
   return result.Pass();
+}
+
+bool UsbPrinterManifestData::SupportsDevice(
+    const scoped_refptr<device::UsbDevice>& device) const {
+  return UsbDeviceFilter::MatchesAny(device, filters_);
 }
 
 }  // namespace extensions

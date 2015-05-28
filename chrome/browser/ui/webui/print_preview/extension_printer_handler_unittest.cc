@@ -13,23 +13,36 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/local_discovery/pwg_raster_converter.h"
 #include "chrome/browser/ui/webui/print_preview/extension_printer_handler.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "device/core/device_client.h"
+#include "device/usb/mock_usb_device.h"
+#include "device/usb/mock_usb_service.h"
+#include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/value_builder.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
+using device::MockUsbDevice;
+using device::MockUsbService;
+using extensions::DictionaryBuilder;
+using extensions::Extension;
 using extensions::PrinterProviderAPI;
 using extensions::PrinterProviderPrintJob;
+using extensions::TestExtensionEnvironment;
 using local_discovery::PWGRasterConverter;
 
 namespace {
@@ -115,6 +128,50 @@ const char kPrintTicketWithDuplex[] =
     "  \"version\": \"1.0\","
     "  \"print\": {"
     "    \"duplex\": {\"type\": \"LONG_EDGE\"}"
+    "  }"
+    "}";
+
+// An extension with permission for 1 printer it supports.
+const char kExtension1[] =
+    "{"
+    "  \"name\": \"Provider 1\","
+    "  \"app\": {"
+    "    \"background\": {"
+    "      \"scripts\": [\"background.js\"]"
+    "    }"
+    "  },"
+    "  \"permissions\": ["
+    "    \"printerProvider\","
+    "    \"usb\","
+    "    {"
+    "     \"usbDevices\": ["
+    "       { \"vendorId\": 0, \"productId\": 1 }"
+    "     ]"
+    "    },"
+    "  ],"
+    "  \"usb_printers\": {"
+    "    \"filters\": ["
+    "      { \"vendorId\": 0, \"productId\": 0 },"
+    "      { \"vendorId\": 0, \"productId\": 1 }"
+    "    ]"
+    "  }"
+    "}";
+
+// An extension with permission for none of the printers it supports.
+const char kExtension2[] =
+    "{"
+    "  \"name\": \"Provider 2\","
+    "  \"app\": {"
+    "    \"background\": {"
+    "      \"scripts\": [\"background.js\"]"
+    "    }"
+    "  },"
+    "  \"permissions\": [ \"printerProvider\", \"usb\" ],"
+    "  \"usb_printers\": {"
+    "    \"filters\": ["
+    "      { \"vendorId\": 0, \"productId\": 0 },"
+    "      { \"vendorId\": 0, \"productId\": 1 }"
+    "    ]"
     "  }"
     "}";
 
@@ -356,6 +413,22 @@ KeyedService* BuildTestingPrinterProviderAPI(content::BrowserContext* context) {
   return new FakePrinterProviderAPI();
 }
 
+class FakeDeviceClient : public device::DeviceClient {
+ public:
+  FakeDeviceClient() {}
+
+  // device::DeviceClient implementation:
+  device::UsbService* GetUsbService() override {
+    DCHECK(usb_service_);
+    return usb_service_;
+  }
+
+  void set_usb_service(device::UsbService* service) { usb_service_ = service; }
+
+ private:
+  device::UsbService* usb_service_ = nullptr;
+};
+
 }  // namespace
 
 class ExtensionPrinterHandlerTest : public testing::Test {
@@ -364,35 +437,32 @@ class ExtensionPrinterHandlerTest : public testing::Test {
   ~ExtensionPrinterHandlerTest() override = default;
 
   void SetUp() override {
-    TestingProfile::Builder profile_builder;
-    profile_builder.AddTestingFactory(
-        extensions::PrinterProviderAPIFactory::GetInstance(),
-        &BuildTestingPrinterProviderAPI);
-    profile_ = profile_builder.Build();
-
+    extensions::PrinterProviderAPIFactory::GetInstance()->SetTestingFactory(
+        env_.profile(), &BuildTestingPrinterProviderAPI);
     extension_printer_handler_.reset(new ExtensionPrinterHandler(
-        profile_.get(), base::MessageLoop::current()->task_runner()));
+        env_.profile(), base::MessageLoop::current()->task_runner()));
 
     pwg_raster_converter_ = new FakePWGRasterConverter();
     extension_printer_handler_->SetPwgRasterConverterForTesting(
         scoped_ptr<PWGRasterConverter>(pwg_raster_converter_));
+    device_client_.set_usb_service(&usb_service_);
   }
 
  protected:
   FakePrinterProviderAPI* GetPrinterProviderAPI() {
     return static_cast<FakePrinterProviderAPI*>(
         extensions::PrinterProviderAPIFactory::GetInstance()
-            ->GetForBrowserContext(profile_.get()));
+            ->GetForBrowserContext(env_.profile()));
   }
 
+  MockUsbService usb_service_;
+  TestExtensionEnvironment env_;
   scoped_ptr<ExtensionPrinterHandler> extension_printer_handler_;
 
   FakePWGRasterConverter* pwg_raster_converter_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-
-  scoped_ptr<TestingProfile> profile_;
+  FakeDeviceClient device_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrinterHandlerTest);
 };
@@ -447,6 +517,68 @@ TEST_F(ExtensionPrinterHandlerTest, GetPrinters_Reset) {
   fake_api->TriggerNextGetPrintersCallback(*original_printers, true);
 
   EXPECT_EQ(0u, call_count);
+}
+
+TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
+  scoped_refptr<MockUsbDevice> device0 =
+      new MockUsbDevice(0, 0, "Google", "USB Printer", "");
+  usb_service_.AddDevice(device0);
+  scoped_refptr<MockUsbDevice> device1 =
+      new MockUsbDevice(0, 1, "Google", "USB Printer", "");
+  usb_service_.AddDevice(device1);
+
+  const Extension* extension_1 = env_.MakeExtension(
+      *base::test::ParseJson(kExtension1), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  const Extension* extension_2 = env_.MakeExtension(
+      *base::test::ParseJson(kExtension2), "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+
+  extensions::DevicePermissionsManager* permissions_manager =
+      extensions::DevicePermissionsManager::Get(env_.profile());
+  permissions_manager->AllowUsbDevice(extension_2->id(), device0);
+
+  size_t call_count = 0;
+  scoped_ptr<base::ListValue> printers;
+  bool is_done = false;
+  extension_printer_handler_->StartGetPrinters(
+      base::Bind(&RecordPrinterList, &call_count, &printers, &is_done));
+
+  FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
+  ASSERT_TRUE(fake_api);
+  ASSERT_EQ(1u, fake_api->pending_get_printers_count());
+
+  EXPECT_EQ(1u, call_count);
+  EXPECT_FALSE(is_done);
+  EXPECT_TRUE(printers.get());
+  EXPECT_EQ(2u, printers->GetSize());
+  scoped_ptr<base::DictionaryValue> extension_1_entry(
+      DictionaryBuilder()
+          .Set("id", base::StringPrintf("provisional-usb:%s:%u",
+                                        extension_1->id().c_str(),
+                                        device0->unique_id()))
+          .Set("name", "USB Printer")
+          .Set("extensionName", "Provider 1")
+          .Set("extensionId", extension_1->id())
+          .Set("provisional", true)
+          .Build());
+  scoped_ptr<base::DictionaryValue> extension_2_entry(
+      DictionaryBuilder()
+          .Set("id", base::StringPrintf("provisional-usb:%s:%u",
+                                        extension_2->id().c_str(),
+                                        device1->unique_id()))
+          .Set("name", "USB Printer")
+          .Set("extensionName", "Provider 2")
+          .Set("extensionId", extension_2->id())
+          .Set("provisional", true)
+          .Build());
+  EXPECT_TRUE(printers->Find(*extension_1_entry) != printers->end());
+  EXPECT_TRUE(printers->Find(*extension_2_entry) != printers->end());
+
+  fake_api->TriggerNextGetPrintersCallback(base::ListValue(), true);
+
+  EXPECT_EQ(2u, call_count);
+  EXPECT_TRUE(is_done);
+  EXPECT_TRUE(printers.get());
+  EXPECT_EQ(0u, printers->GetSize());  // RecordPrinterList resets |printers|.
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GetCapability) {
