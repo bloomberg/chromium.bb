@@ -62,6 +62,7 @@ class LayerSettings;
 class LayerTreeHost;
 class LayerTreeHostCommon;
 class LayerTreeImpl;
+class LayerTreeSettings;
 class PriorityCalculator;
 class RenderingStatsInstrumentation;
 class ResourceUpdateQueue;
@@ -425,10 +426,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
       scoped_refptr<LayerAnimationController> controller);
 
   void set_layer_animation_delegate(AnimationDelegate* delegate) {
+    DCHECK(layer_animation_controller_);
     layer_animation_controller_->set_layer_animation_delegate(delegate);
   }
 
   bool HasActiveAnimation() const;
+  void RegisterForAnimations(AnimationRegistrar* registrar);
 
   void AddLayerAnimationEventObserver(
       LayerAnimationEventObserver* animation_observer);

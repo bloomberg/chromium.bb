@@ -1173,7 +1173,7 @@ TEST_F(LayerLayerTreeHostTest, ShouldNotAddAnimationWithoutAnimationRegistrar) {
   EXPECT_FALSE(AddTestAnimation(layer.get()));
 
   scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();
-  layer->layer_animation_controller()->SetAnimationRegistrar(registrar.get());
+  layer->RegisterForAnimations(registrar.get());
 
   // Case 2: with an AnimationRegistrar, the animation should be accepted.
   EXPECT_TRUE(AddTestAnimation(layer.get()));

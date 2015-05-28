@@ -90,9 +90,11 @@ Layer::Layer(const LayerSettings& settings)
       raster_scale_(0.f),
       client_(nullptr),
       frame_timing_requests_dirty_(false) {
-  layer_animation_controller_ = LayerAnimationController::Create(layer_id_);
-  layer_animation_controller_->AddValueObserver(this);
-  layer_animation_controller_->set_value_provider(this);
+  if (!settings.use_compositor_animation_timelines) {
+    layer_animation_controller_ = LayerAnimationController::Create(layer_id_);
+    layer_animation_controller_->AddValueObserver(this);
+    layer_animation_controller_->set_value_provider(this);
+  }
 }
 
 Layer::~Layer() {
@@ -103,8 +105,10 @@ Layer::~Layer() {
   // reference to us.
   DCHECK(!layer_tree_host());
 
-  layer_animation_controller_->RemoveValueObserver(this);
-  layer_animation_controller_->remove_value_provider(this);
+  if (layer_animation_controller_) {
+    layer_animation_controller_->RemoveValueObserver(this);
+    layer_animation_controller_->remove_value_provider(this);
+  }
 
   RemoveFromScrollTree();
   RemoveFromClipTree();
@@ -143,9 +147,7 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     replica_layer_->SetLayerTreeHost(host);
 
   if (host) {
-    layer_animation_controller_->SetAnimationRegistrar(
-        host->animation_registrar());
-
+    RegisterForAnimations(host->animation_registrar());
     if (host->settings().layer_transforms_should_scale_layer_contents)
       reset_raster_scale_to_unknown();
   }
@@ -1477,6 +1479,7 @@ bool Layer::IsActive() const {
 }
 
 bool Layer::AddAnimation(scoped_ptr <Animation> animation) {
+  DCHECK(layer_animation_controller_);
   if (!layer_animation_controller_->animation_registrar())
     return false;
 
@@ -1493,18 +1496,21 @@ bool Layer::AddAnimation(scoped_ptr <Animation> animation) {
 }
 
 void Layer::PauseAnimation(int animation_id, double time_offset) {
+  DCHECK(layer_animation_controller_);
   layer_animation_controller_->PauseAnimation(
       animation_id, base::TimeDelta::FromSecondsD(time_offset));
   SetNeedsCommit();
 }
 
 void Layer::RemoveAnimation(int animation_id) {
+  DCHECK(layer_animation_controller_);
   layer_animation_controller_->RemoveAnimation(animation_id);
   SetNeedsCommit();
 }
 
 void Layer::RemoveAnimation(int animation_id,
                             Animation::TargetProperty property) {
+  DCHECK(layer_animation_controller_);
   layer_animation_controller_->RemoveAnimation(animation_id, property);
   SetNeedsCommit();
 }
@@ -1518,16 +1524,24 @@ void Layer::SetLayerAnimationControllerForTest(
 }
 
 bool Layer::HasActiveAnimation() const {
+  DCHECK(layer_animation_controller_);
   return layer_animation_controller_->HasActiveAnimation();
+}
+
+void Layer::RegisterForAnimations(AnimationRegistrar* registrar) {
+  if (layer_animation_controller_)
+    layer_animation_controller_->SetAnimationRegistrar(registrar);
 }
 
 void Layer::AddLayerAnimationEventObserver(
     LayerAnimationEventObserver* animation_observer) {
+  DCHECK(layer_animation_controller_);
   layer_animation_controller_->AddEventObserver(animation_observer);
 }
 
 void Layer::RemoveLayerAnimationEventObserver(
     LayerAnimationEventObserver* animation_observer) {
+  DCHECK(layer_animation_controller_);
   layer_animation_controller_->RemoveEventObserver(animation_observer);
 }
 

@@ -180,8 +180,7 @@ void WebLayerTreeViewImpl::setPageScaleFactorAndLimits(float page_scale_factor,
 
 void WebLayerTreeViewImpl::registerForAnimations(blink::WebLayer* layer) {
   cc::Layer* cc_layer = static_cast<cc_blink::WebLayerImpl*>(layer)->layer();
-  cc_layer->layer_animation_controller()->SetAnimationRegistrar(
-      layer_tree_host_->animation_registrar());
+  cc_layer->RegisterForAnimations(layer_tree_host_->animation_registrar());
 }
 
 void WebLayerTreeViewImpl::registerViewportLayers(

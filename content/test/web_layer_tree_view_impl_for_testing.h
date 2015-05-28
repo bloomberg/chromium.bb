@@ -53,6 +53,7 @@ class WebLayerTreeViewImplForTesting
   virtual void didStopFlinging();
   virtual void finishAllRendering();
   virtual void setDeferCommits(bool defer_commits);
+  virtual void registerForAnimations(blink::WebLayer* layer);
   virtual void registerViewportLayers(
       const blink::WebLayer* overscrollElasticityLayer,
       const blink::WebLayer* pageScaleLayerLayer,
