@@ -148,6 +148,9 @@ imported/web-platform-tests/websockets [ Skip ]
 imported/web-platform-tests/webstorage [ Skip ]
 imported/web-platform-tests/webvtt [ Skip ]
 imported/web-platform-tests/workers [ Skip ]
+## Owners: mkwst
+# http://crbug.com/360762: Requires HTTPS server with python.
+imported/web-platform-tests/referrer-policy [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the upstream tests
 # that we shouldn't bother importing until they are fixed.
@@ -209,9 +212,3 @@ imported/web-platform-tests/shadow-dom/styles/not-apply-in-shadow-root-001.html 
 imported/web-platform-tests/encoding/single-byte-decoder.html [ Skip ]
 imported/web-platform-tests/encoding/resources/single-byte-raw.py [ Skip ]
 imported/web-platform-tests/encoding/resources/text-plain-charset.py [ Skip ]
-
-# crbug.com/486860 Depends on unsupported .py request handler
-imported/web-platform-tests/referrer-policy/no-referrer-policy/no-referrer-policy.html [ Skip ]
-imported/web-platform-tests/referrer-policy/no-referrer-policy/no-referrer-policy.subresource.py [ Skip ]
-imported/web-platform-tests/referrer-policy/generic/common.js [ Skip ]
-
