@@ -32,6 +32,7 @@
 #include "wtf/SpinLock.h"
 
 #include "platform/Task.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
@@ -83,8 +84,8 @@ TEST(WTF_SpinLock, Torture)
     OwnPtr<WebThread> thread1 = adoptPtr(Platform::current()->createThread("thread1"));
     OwnPtr<WebThread> thread2 = adoptPtr(Platform::current()->createThread("thread2"));
 
-    thread1->postTask(FROM_HERE, new Task(WTF::bind(&threadMain, static_cast<char*>(sharedBuffer))));
-    thread2->postTask(FROM_HERE, new Task(WTF::bind(&threadMain, static_cast<char*>(sharedBuffer))));
+    thread1->postTask(FROM_HERE, new Task(threadSafeBind(&threadMain, AllowCrossThreadAccess(static_cast<char*>(sharedBuffer)))));
+    thread2->postTask(FROM_HERE, new Task(threadSafeBind(&threadMain, AllowCrossThreadAccess(static_cast<char*>(sharedBuffer)))));
 
     thread1.clear();
     thread2.clear();

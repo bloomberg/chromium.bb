@@ -31,6 +31,7 @@
 #include "config.h"
 
 #include "platform/Task.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapLinkedStack.h"
@@ -450,7 +451,7 @@ protected:
         Vector<OwnPtr<WebThread>, numberOfThreads> m_threads;
         for (int i = 0; i < numberOfThreads; i++) {
             m_threads.append(adoptPtr(Platform::current()->createThread("blink gc testing thread")));
-            m_threads.last()->postTask(FROM_HERE, new Task(WTF::bind(threadFunc, tester)));
+            m_threads.last()->postTask(FROM_HERE, new Task(threadSafeBind(threadFunc, AllowCrossThreadAccess(tester))));
         }
         while (tester->m_threadsToFinish) {
             SafePointScope scope(ThreadState::NoHeapPointersOnStack);
@@ -4448,7 +4449,7 @@ public:
     static void test()
     {
         OwnPtr<WebThread> sleepingThread = adoptPtr(Platform::current()->createThread("SleepingThread"));
-        sleepingThread->postTask(FROM_HERE, new Task(WTF::bind(sleeperMainFunc)));
+        sleepingThread->postTask(FROM_HERE, new Task(threadSafeBind(sleeperMainFunc)));
 
         // Wait for the sleeper to run.
         while (!s_sleeperRunning) {
@@ -5118,7 +5119,7 @@ public:
 
         MutexLocker locker(mainThreadMutex());
         OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
-        workerThread->postTask(FROM_HERE, new Task(WTF::bind(workerThreadMain)));
+        workerThread->postTask(FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
 
         // Wait for the worker thread to have done its initialization,
         // IE. the worker allocates an object and then throw aways any
@@ -5221,7 +5222,7 @@ public:
 
         MutexLocker locker(mainThreadMutex());
         OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
-        workerThread->postTask(FROM_HERE, new Task(WTF::bind(workerThreadMain)));
+        workerThread->postTask(FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
 
         // Wait for the worker thread initialization. The worker
         // allocates a weak collection where both collection and
@@ -5424,7 +5425,7 @@ public:
 
         MutexLocker locker(mainThreadMutex());
         OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
-        workerThread->postTask(FROM_HERE, new Task(WTF::bind(workerThreadMain)));
+        workerThread->postTask(FROM_HERE, new Task(threadSafeBind(workerThreadMain)));
 
         // Park the main thread until the worker thread has initialized.
         parkMainThread();

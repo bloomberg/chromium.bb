@@ -33,6 +33,7 @@
 #include "SkSurface.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Task.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "public/platform/Platform.h"
@@ -226,7 +227,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 
     // Create a thread to rasterize SkPicture.
     OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("RasterThread"));
-    thread->postTask(FROM_HERE, new Task(WTF::bind(&rasterizeMain, m_surface->getCanvas(), picture.get())));
+    thread->postTask(FROM_HERE, new Task(threadSafeBind(&rasterizeMain, AllowCrossThreadAccess(m_surface->getCanvas()), AllowCrossThreadAccess(picture.get()))));
     thread.clear();
     EXPECT_EQ(0, m_decodeRequestCount);
 

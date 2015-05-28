@@ -28,6 +28,7 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/Task.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "public/platform/Platform.h"
@@ -176,7 +177,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     setFrameStatus(ImageFrame::FrameComplete);
     addNewData();
     OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("DecodeThread"));
-    thread->postTask(FROM_HERE, new Task(WTF::bind(&decodeThreadMain, m_generator.get())));
+    thread->postTask(FROM_HERE, new Task(threadSafeBind(&decodeThreadMain, AllowCrossThreadAccess(m_generator.get()))));
     thread.clear();
     EXPECT_EQ(2, m_decodeRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);
