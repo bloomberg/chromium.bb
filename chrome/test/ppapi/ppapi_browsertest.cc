@@ -646,7 +646,13 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_PostMessage) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PostMessage2) {
   RUN_POSTMESSAGE_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, PostMessage) {
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437408
+#define MAYBE_PostMessage3 DISABLED_PostMessage
+#else
+#define MAYBE_PostMessage3 PostMessage
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PostMessage3) {
   RUN_POSTMESSAGE_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
