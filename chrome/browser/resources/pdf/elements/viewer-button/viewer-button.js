@@ -5,15 +5,28 @@
 (function() {
   var dpi = '';
 
-  Polymer('viewer-button', {
-    img: '',
-    latchable: false,
-    ready: function() {
+  Polymer({
+    is: 'viewer-button',
+
+    properties: {
+      img: {
+        type: String,
+        observer: 'imgChanged'
+      },
+
+      latchable: {
+        type: Boolean,
+        observer: 'latchableChanged'
+      }
+    },
+
+    created: function() {
       if (!dpi) {
         var mql = window.matchMedia('(-webkit-min-device-pixel-ratio: 1.3');
         dpi = mql.matches ? 'hi' : 'low';
       }
     },
+
     imgChanged: function() {
       if (this.img) {
         this.$.icon.style.backgroundImage =
@@ -23,6 +36,7 @@
         this.$.icon.style.backgroundImage = '';
       }
     },
+
     latchableChanged: function() {
       if (this.latchable)
         this.classList.add('latchable');

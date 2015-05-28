@@ -2,20 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('viewer-page-indicator', {
-  label: '1',
-  index: 0,
+Polymer({
+  is: 'viewer-page-indicator',
+
+  properties: {
+    label: {
+      type: String,
+      value: '1'
+    },
+
+    index: {
+      type: Number,
+      observer: 'indexChanged'
+    },
+
+    pageLabels: {
+      type: Array,
+      value: null,
+      observer: 'pageLabelsChanged'
+    }
+  },
+
   timerId: undefined,
-  pageLabels: null,
+
   ready: function() {
     var callback = this.fadeIn.bind(this, 2000);
     window.addEventListener('scroll', function() {
       requestAnimationFrame(callback);
     });
   },
+
   initialFadeIn: function() {
     this.fadeIn(6000);
   },
+
   fadeIn: function(displayTime) {
     var percent = window.scrollY /
         (document.body.scrollHeight -
@@ -30,9 +50,11 @@ Polymer('viewer-page-indicator', {
       this.timerId = undefined;
     }.bind(this), displayTime);
   },
+
   pageLabelsChanged: function() {
     this.indexChanged();
   },
+
   indexChanged: function() {
     if (this.pageLabels)
       this.label = this.pageLabels[this.index];

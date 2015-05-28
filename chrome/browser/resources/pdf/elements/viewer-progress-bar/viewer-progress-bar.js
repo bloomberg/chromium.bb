@@ -2,14 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('viewer-progress-bar', {
-  progress: 0,
-  text: 'Loading',
-  numSegments: 8,
+Polymer({
+  is: 'viewer-progress-bar',
+
+  properties: {
+    progress: {
+      type: Number,
+      observer: 'progressChanged'
+    },
+
+    text: {
+      type: String,
+      value: 'Loading'
+    },
+
+    numSegments: {
+      type: Number,
+      value: 8,
+      observer: 'numSegmentsChanged'
+    }
+  },
+
   segments: [],
+
   ready: function() {
     this.numSegmentsChanged();
   },
+
   progressChanged: function() {
     var numVisible = this.progress * this.segments.length / 100.0;
     for (var i = 0; i < this.segments.length; i++) {
@@ -20,6 +39,7 @@ Polymer('viewer-progress-bar', {
     if (this.progress >= 100 || this.progress < 0)
       this.style.opacity = 0;
   },
+
   numSegmentsChanged: function() {
     // Clear the existing segments.
     this.segments = [];

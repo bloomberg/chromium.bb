@@ -2,10 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('viewer-toolbar', {
-  fadingIn: false,
+Polymer({
+  is: 'viewer-toolbar',
+
+  properties: {
+    fadingIn: {
+      type: Boolean,
+      value: false,
+      observer: 'fadingInChanged'
+    }
+  },
+
   timerId_: undefined,
+
   inInitialFadeIn_: false,
+
   ready: function() {
     this.mousemoveCallback = function(e) {
       var rect = this.getBoundingClientRect();
@@ -22,17 +33,21 @@ Polymer('viewer-toolbar', {
       }
     }.bind(this);
   },
+
   attached: function() {
     this.parentNode.addEventListener('mousemove', this.mousemoveCallback);
   },
+
   detached: function() {
     this.parentNode.removeEventListener('mousemove', this.mousemoveCallback);
   },
+
   initialFadeIn: function() {
     this.inInitialFadeIn_ = true;
     this.fadeIn();
     this.fadeOutAfterDelay(6000);
   },
+
   fadingInChanged: function() {
     if (this.fadingIn) {
       this.fadeIn();
@@ -41,11 +56,13 @@ Polymer('viewer-toolbar', {
         this.fadeOutAfterDelay(3000);
     }
   },
+
   fadeIn: function() {
     this.style.opacity = 1;
     clearTimeout(this.timerId_);
     this.timerId_ = undefined;
   },
+
   fadeOutAfterDelay: function(delay) {
     this.timerId_ = setTimeout(
       function() {
