@@ -1045,12 +1045,12 @@ void ContentDecryptorDelegate::DeliverFrame(
           base::TimeDelta::FromMicroseconds(
               frame_info->tracking_info.timestamp));
   decoded_frame->AddDestructionObserver(
-          media::BindToCurrentLoop(
-              base::Bind(&BufferNoLongerNeeded,
-                         ppb_buffer,
-                         base::Bind(&ContentDecryptorDelegate::FreeBuffer,
-                                    weak_this_,
-                                    frame_info->tracking_info.buffer_id))));
+      media::BindToCurrentLoop(
+          base::Bind(&BufferNoLongerNeeded,
+                     ppb_buffer,
+                     base::Bind(&ContentDecryptorDelegate::FreeBuffer,
+                                weak_this_,
+                                frame_info->tracking_info.buffer_id))));
 
   video_decode_cb.Run(Decryptor::kSuccess, decoded_frame);
 }
