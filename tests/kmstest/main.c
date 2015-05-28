@@ -64,6 +64,7 @@ static const char *drivers[] = {
 	"exynos",
 	"imx-drm",
 	"rockchip",
+	"atmel-hlcdc",
 	NULL
 };
 
