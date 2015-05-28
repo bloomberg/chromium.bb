@@ -1,7 +1,7 @@
 {
   "tables": [
     "unicode.dis",
-    "nl-BE-g1.ctb"
+    "nl-NL-g1.ctb"
   ], 
   "tests": [
     {
@@ -276,8 +276,7 @@
         {
           "xfail": "Fails because special handling of more than three capitalized words is not supported by liblouis",
           "input": "MEER DAN DRIE WOORDEN in hoofdletters",
-          "output": "⠘⠘⠍⠑⠑⠗ ⠙⠁⠝ ⠙⠗⠊⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎",
-          "xfail": "Fails because ?"
+          "output": "⠘⠘⠍⠑⠑⠗ ⠙⠁⠝ ⠙⠗⠊⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎"
         },
         {
           "input": "BTW-TARIEF volledig in hoofdletters",
@@ -392,7 +391,7 @@
         {
           "comment": "Some Greek uppercase",
           "input": "Α Β Γ",
-          "output": "⠸⠁ ⠸⠃ ⠸⠛"
+          "output": "⠰⠨⠁ ⠰⠨⠃ ⠰⠨⠛"
         },
         {
           "input": "'s morgens, baby's, Alex' boeken, de jaren '90",
