@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <sstream>
+
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1272,5 +1274,14 @@ TEST_F(FilePathTest, ContentUriTest) {
   }
 }
 #endif
+
+// Test the PrintTo overload for FilePath (used when a test fails to compare two
+// FilePaths).
+TEST_F(FilePathTest, PrintTo) {
+  std::stringstream ss;
+  FilePath fp(FPL("foo"));
+  base::PrintTo(fp, &ss);
+  EXPECT_EQ("foo", ss.str());
+}
 
 }  // namespace base
