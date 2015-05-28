@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
 
+  <message name="IDS_DOM_DISTILLER_JAVASCRIPT_DISABLED_CONTENT" desc="The text to show in place of reading list article content if the user has JavaScript disabled.">
+    JavaScript must be enabled to use this feature.
+  </message>
   <message name="IDS_DOM_DISTILLER_WEBUI_ENTRY_URL" desc="The label for the URL of an entry on the DOM Distiller debug page.">
     URL
   </message>

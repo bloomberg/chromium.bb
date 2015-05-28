@@ -126,16 +126,22 @@ std::string ReplaceHtmlTemplateValues(
 
   substitutions.push_back(
       l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_LOADING_TITLE));  // $1
-  substitutions.push_back(css.str());                                     // $2
 
+  substitutions.push_back(css.str());                                     // $2
   substitutions.push_back(GetThemeCssClass(theme) + " " +
                           GetFontCssClass(font_family));                  // $3
 
-  substitutions.push_back(original_url);                                  // $4
   substitutions.push_back(
-      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL));  // $5
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_TITLE));  // $4
+  substitutions.push_back(
+      l10n_util::GetStringUTF8(
+          IDS_DOM_DISTILLER_JAVASCRIPT_DISABLED_CONTENT));                // $5
 
-  substitutions.push_back(script.str());                                  // $6
+  substitutions.push_back(original_url);                                  // $6
+  substitutions.push_back(
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL));  // $7
+
+  substitutions.push_back(script.str());                                  // $8
 
   return ReplaceStringPlaceholders(html_template, substitutions, NULL);
 }
