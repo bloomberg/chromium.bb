@@ -5,13 +5,10 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_DISPLAY_HOST_MANAGER_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_DISPLAY_HOST_MANAGER_H_
 
-#include <map>
 #include <queue>
 #include <set>
 
-#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -23,6 +20,7 @@ namespace ui {
 
 class DeviceManager;
 class DrmDeviceHandle;
+class DrmDisplayHost;
 class DrmGpuPlatformSupportHost;
 class DrmNativeDisplayDelegate;
 
@@ -35,7 +33,7 @@ class DrmDisplayHostManager : public DeviceEventObserver,
                         DeviceManager* device_manager);
   ~DrmDisplayHostManager() override;
 
-  DisplaySnapshot* GetDisplay(int64_t display_id);
+  DrmDisplayHost* GetDisplay(int64_t display_id);
 
   void AddDelegate(DrmNativeDisplayDelegate* delegate);
   void RemoveDelegate(DrmNativeDisplayDelegate* delegate);
@@ -43,16 +41,6 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   bool TakeDisplayControl();
   bool RelinquishDisplayControl();
   void UpdateDisplays(const GetDisplaysCallback& callback);
-  void Configure(int64_t display_id,
-                 const DisplayMode* mode,
-                 const gfx::Point& origin,
-                 const ConfigureCallback& callback);
-  void GetHDCPState(int64_t display_id, const GetHDCPStateCallback& callback);
-  void SetHDCPState(int64_t display_id,
-                    HDCPState state,
-                    const SetHDCPStateCallback& callback);
-  bool SetGammaRamp(int64_t display_id,
-                    const std::vector<GammaRampRGBEntry>& lut);
 
   // DeviceEventObserver overrides:
   void OnDeviceEvent(const DeviceEvent& event) override;
@@ -111,16 +99,9 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   // when there is no connection to the GPU to update the displays.
   bool has_dummy_display_;
 
-  ScopedVector<DisplaySnapshot> displays_;
+  ScopedVector<DrmDisplayHost> displays_;
 
   GetDisplaysCallback get_displays_callback_;
-
-  // Map between display_id and the configuration callback.
-  std::map<int64_t, ConfigureCallback> configure_callback_map_;
-
-  std::map<int64_t, GetHDCPStateCallback> get_hdcp_state_callback_map_;
-
-  std::map<int64_t, SetHDCPStateCallback> set_hdcp_state_callback_map_;
 
   // Used to serialize display event processing. This is done since
   // opening/closing DRM devices cannot be done on the UI thread and are handled

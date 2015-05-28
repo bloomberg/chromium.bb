@@ -13,6 +13,7 @@
 #include "ui/gfx/display.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
+#include "ui/ozone/platform/drm/host/drm_display_host.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
@@ -139,8 +140,12 @@ bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& ne) {
     if (display_id == gfx::Display::kInvalidDisplayID)
       return false;
 
-    DisplaySnapshot* snapshot = display_manager_->GetDisplay(display_id);
-    if (!snapshot || !snapshot->current_mode())
+    DrmDisplayHost* display = display_manager_->GetDisplay(display_id);
+    if (!display)
+      return false;
+
+    DisplaySnapshot* snapshot = display->snapshot();
+    if (!snapshot->current_mode())
       return false;
 
     gfx::Rect display_bounds(snapshot->origin(),

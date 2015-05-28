@@ -6,6 +6,7 @@
 
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_observer.h"
+#include "ui/ozone/platform/drm/host/drm_display_host.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 
 namespace ui {
@@ -64,7 +65,8 @@ void DrmNativeDisplayDelegate::Configure(const ui::DisplaySnapshot& output,
                                          const ui::DisplayMode* mode,
                                          const gfx::Point& origin,
                                          const ConfigureCallback& callback) {
-  display_manager_->Configure(output.display_id(), mode, origin, callback);
+  DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
+  display->Configure(mode, origin, callback);
 }
 
 void DrmNativeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {
@@ -73,14 +75,16 @@ void DrmNativeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {
 void DrmNativeDisplayDelegate::GetHDCPState(
     const ui::DisplaySnapshot& output,
     const GetHDCPStateCallback& callback) {
-  display_manager_->GetHDCPState(output.display_id(), callback);
+  DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
+  display->GetHDCPState(callback);
 }
 
 void DrmNativeDisplayDelegate::SetHDCPState(
     const ui::DisplaySnapshot& output,
     ui::HDCPState state,
     const SetHDCPStateCallback& callback) {
-  display_manager_->SetHDCPState(output.display_id(), state, callback);
+  DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
+  display->SetHDCPState(state, callback);
 }
 
 std::vector<ui::ColorCalibrationProfile>
@@ -99,7 +103,9 @@ bool DrmNativeDisplayDelegate::SetColorCalibrationProfile(
 bool DrmNativeDisplayDelegate::SetGammaRamp(
     const ui::DisplaySnapshot& output,
     const std::vector<GammaRampRGBEntry>& lut) {
-  return display_manager_->SetGammaRamp(output.display_id(), lut);
+  DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
+  display->SetGammaRamp(lut);
+  return true;
 }
 
 void DrmNativeDisplayDelegate::AddObserver(NativeDisplayObserver* observer) {

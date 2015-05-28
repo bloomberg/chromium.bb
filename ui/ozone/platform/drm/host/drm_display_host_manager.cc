@@ -13,13 +13,14 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
-#include "ui/ozone/common/display_snapshot_proxy.h"
 #include "ui/ozone/common/display_util.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/host/drm_device_handle.h"
+#include "ui/ozone/platform/drm/host/drm_display_host.h"
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 #include "ui/ozone/platform/drm/host/drm_native_display_delegate.h"
 
@@ -75,12 +76,13 @@ base::FilePath GetPrimaryDisplayCardPath() {
   return base::FilePath();
 }
 
-class FindDisplaySnapshotById {
+class FindDrmDisplayHostById {
  public:
-  FindDisplaySnapshotById(int64_t display_id) : display_id_(display_id) {}
+  explicit FindDrmDisplayHostById(int64_t display_id)
+      : display_id_(display_id) {}
 
-  bool operator()(const DisplaySnapshot* display) {
-    return display->display_id() == display_id_;
+  bool operator()(const DrmDisplayHost* display) const {
+    return display->snapshot()->display_id() == display_id_;
   }
 
  private:
@@ -118,8 +120,11 @@ DrmDisplayHostManager::DrmDisplayHostManager(DrmGpuPlatformSupportHost* proxy,
       GetAvailableDisplayControllerInfos(primary_drm_device_handle_->fd());
   has_dummy_display_ = !display_infos.empty();
   for (size_t i = 0; i < display_infos.size(); ++i) {
-    displays_.push_back(new DisplaySnapshotProxy(CreateDisplaySnapshotParams(
-        display_infos[i], primary_drm_device_handle_->fd(), i, gfx::Point())));
+    displays_.push_back(new DrmDisplayHost(
+        proxy_, CreateDisplaySnapshotParams(display_infos[i],
+                                            primary_drm_device_handle_->fd(), i,
+                                            gfx::Point()),
+        true /* is_dummy */));
   }
 }
 
@@ -128,9 +133,9 @@ DrmDisplayHostManager::~DrmDisplayHostManager() {
   proxy_->UnregisterHandler(this);
 }
 
-DisplaySnapshot* DrmDisplayHostManager::GetDisplay(int64_t display_id) {
+DrmDisplayHost* DrmDisplayHostManager::GetDisplay(int64_t display_id) {
   auto it = std::find_if(displays_.begin(), displays_.end(),
-                         FindDisplaySnapshotById(display_id));
+                         FindDrmDisplayHostById(display_id));
   if (it == displays_.end())
     return nullptr;
 
@@ -162,55 +167,8 @@ void DrmDisplayHostManager::UpdateDisplays(
   get_displays_callback_ = callback;
   if (!proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays())) {
     get_displays_callback_.Reset();
-    callback.Run(displays_.get());
+    RunUpdateDisplaysCallback(callback);
   }
-}
-
-void DrmDisplayHostManager::Configure(int64_t display_id,
-                                      const DisplayMode* mode,
-                                      const gfx::Point& origin,
-                                      const ConfigureCallback& callback) {
-  // The dummy display is used on the first run only. Note: cannot post a task
-  // here since there is no task runner.
-  if (has_dummy_display_) {
-    callback.Run(true);
-    return;
-  }
-
-  configure_callback_map_[display_id] = callback;
-
-  bool status = false;
-  if (mode) {
-    status = proxy_->Send(new OzoneGpuMsg_ConfigureNativeDisplay(
-        display_id, GetDisplayModeParams(*mode), origin));
-  } else {
-    status = proxy_->Send(new OzoneGpuMsg_DisableNativeDisplay(display_id));
-  }
-
-  if (!status)
-    OnDisplayConfigured(display_id, false);
-}
-
-void DrmDisplayHostManager::GetHDCPState(int64_t display_id,
-                                         const GetHDCPStateCallback& callback) {
-  get_hdcp_state_callback_map_[display_id] = callback;
-  if (!proxy_->Send(new OzoneGpuMsg_GetHDCPState(display_id)))
-    OnHDCPStateReceived(display_id, false, HDCP_STATE_UNDESIRED);
-}
-
-void DrmDisplayHostManager::SetHDCPState(int64_t display_id,
-                                         HDCPState state,
-                                         const SetHDCPStateCallback& callback) {
-  set_hdcp_state_callback_map_[display_id] = callback;
-  if (!proxy_->Send(new OzoneGpuMsg_SetHDCPState(display_id, state)))
-    OnHDCPStateUpdated(display_id, false);
-}
-
-bool DrmDisplayHostManager::SetGammaRamp(
-    int64_t display_id,
-    const std::vector<GammaRampRGBEntry>& lut) {
-  proxy_->Send(new OzoneGpuMsg_SetGammaRamp(display_id, lut));
-  return true;
 }
 
 void DrmDisplayHostManager::OnDeviceEvent(const DeviceEvent& event) {
@@ -312,21 +270,6 @@ void DrmDisplayHostManager::OnChannelEstablished(
 }
 
 void DrmDisplayHostManager::OnChannelDestroyed(int host_id) {
-  // If the channel got destroyed in the middle of a configuration then just
-  // respond with failure.
-  if (!get_displays_callback_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&DrmDisplayHostManager::RunUpdateDisplaysCallback,
-                   weak_ptr_factory_.GetWeakPtr(), get_displays_callback_));
-    get_displays_callback_.Reset();
-  }
-
-  for (const auto& pair : configure_callback_map_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(pair.second, false));
-  }
-  configure_callback_map_.clear();
 }
 
 bool DrmDisplayHostManager::OnMessageReceived(const IPC::Message& message) {
@@ -344,11 +287,20 @@ bool DrmDisplayHostManager::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DrmDisplayHostManager::OnUpdateNativeDisplays(
-    const std::vector<DisplaySnapshot_Params>& displays) {
-  has_dummy_display_ = false;
-  displays_.clear();
-  for (size_t i = 0; i < displays.size(); ++i)
-    displays_.push_back(new DisplaySnapshotProxy(displays[i]));
+    const std::vector<DisplaySnapshot_Params>& params) {
+  ScopedVector<DrmDisplayHost> old_displays(displays_.Pass());
+  for (size_t i = 0; i < params.size(); ++i) {
+    auto it = std::find_if(old_displays.begin(), old_displays.end(),
+                           FindDrmDisplayHostById(params[i].display_id));
+    if (it == old_displays.end()) {
+      displays_.push_back(
+          new DrmDisplayHost(proxy_, params[i], false /* is_dummy */));
+    } else {
+      (*it)->UpdateDisplaySnapshot(params[i]);
+      displays_.push_back(*it);
+      old_displays.weak_erase(it);
+    }
+  }
 
   if (!get_displays_callback_.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -361,38 +313,39 @@ void DrmDisplayHostManager::OnUpdateNativeDisplays(
 
 void DrmDisplayHostManager::OnDisplayConfigured(int64_t display_id,
                                                 bool status) {
-  auto it = configure_callback_map_.find(display_id);
-  if (it != configure_callback_map_.end()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(it->second, status));
-    configure_callback_map_.erase(it);
-  }
+  DrmDisplayHost* display = GetDisplay(display_id);
+  if (display)
+    display->OnDisplayConfigured(status);
+  else
+    LOG(ERROR) << "Couldn't find display with id=" << display_id;
 }
 
 void DrmDisplayHostManager::OnHDCPStateReceived(int64_t display_id,
                                                 bool status,
                                                 HDCPState state) {
-  auto it = get_hdcp_state_callback_map_.find(display_id);
-  if (it != get_hdcp_state_callback_map_.end()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(it->second, status, state));
-    get_hdcp_state_callback_map_.erase(it);
-  }
+  DrmDisplayHost* display = GetDisplay(display_id);
+  if (display)
+    display->OnHDCPStateReceived(status, state);
+  else
+    LOG(ERROR) << "Couldn't find display with id=" << display_id;
 }
 
 void DrmDisplayHostManager::OnHDCPStateUpdated(int64_t display_id,
                                                bool status) {
-  auto it = set_hdcp_state_callback_map_.find(display_id);
-  if (it != set_hdcp_state_callback_map_.end()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(it->second, status));
-    set_hdcp_state_callback_map_.erase(it);
-  }
+  DrmDisplayHost* display = GetDisplay(display_id);
+  if (display)
+    display->OnHDCPStateUpdated(status);
+  else
+    LOG(ERROR) << "Couldn't find display with id=" << display_id;
 }
 
 void DrmDisplayHostManager::RunUpdateDisplaysCallback(
     const GetDisplaysCallback& callback) const {
-  callback.Run(displays_.get());
+  std::vector<DisplaySnapshot*> snapshots;
+  for (auto* display : displays_)
+    snapshots.push_back(display->snapshot());
+
+  callback.Run(snapshots);
 }
 
 void DrmDisplayHostManager::NotifyDisplayDelegate() const {
