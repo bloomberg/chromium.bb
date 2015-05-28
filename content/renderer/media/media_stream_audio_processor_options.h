@@ -42,6 +42,7 @@ class CONTENT_EXPORT MediaAudioConstraints {
   static const char kGoogNoiseSuppression[];
   static const char kGoogExperimentalNoiseSuppression[];
   static const char kGoogBeamforming[];
+  static const char kGoogArrayGeometry[];
   static const char kGoogHighpassFilter[];
   static const char kGoogTypingNoiseDetection[];
   static const char kGoogAudioMirroring[];
@@ -62,11 +63,16 @@ class CONTENT_EXPORT MediaAudioConstraints {
   virtual ~MediaAudioConstraints();
 
   // Gets the property of the constraint named by |key| in |constraints_|.
-  // Returns the constraint's value if the key is found; Otherwise returns the
+  // Returns the constraint's value if the key is found; otherwise returns the
   // default value of the constraint.
   // Note, for constraint of |kEchoCancellation| or |kGoogEchoCancellation|,
   // clients should use GetEchoCancellationProperty().
   bool GetProperty(const std::string& key) const;
+
+  // Gets the property of the constraint named by |key| in |constraints_| as a
+  // string. Returns the constraint's string value if the key is found;
+  // otherwise returns an empty string.
+  std::string GetPropertyAsString(const std::string& key) const;
 
   // Gets the property of echo cancellation defined in |constraints_|. The
   // returned value depends on a combination of |effects_|, |kEchoCancellation|

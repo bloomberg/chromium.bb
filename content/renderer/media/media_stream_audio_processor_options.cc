@@ -35,6 +35,7 @@ const char MediaAudioConstraints::kGoogNoiseSuppression[] =
 const char MediaAudioConstraints::kGoogExperimentalNoiseSuppression[] =
     "googNoiseSuppression2";
 const char MediaAudioConstraints::kGoogBeamforming[] = "googBeamforming";
+const char MediaAudioConstraints::kGoogArrayGeometry[] = "googArrayGeometry";
 const char MediaAudioConstraints::kGoogHighpassFilter[] = "googHighpassFilter";
 const char MediaAudioConstraints::kGoogTypingNoiseDetection[] =
     "googTypingNoiseDetection";
@@ -157,6 +158,13 @@ bool MediaAudioConstraints::GetProperty(const std::string& key) const {
   if (!GetConstraintValueAsBoolean(constraints_, key, &value))
     value = GetDefaultValueForConstraint(constraints_, key);
 
+  return value;
+}
+
+std::string MediaAudioConstraints::GetPropertyAsString(
+    const std::string& key) const {
+  std::string value;
+  GetConstraintValueAsString(constraints_, key, &value);
   return value;
 }
 
