@@ -116,7 +116,7 @@ void WebUIUserScriptLoader::CreateWebUIURLFetchers(
           browser_context, render_process_id, render_view_id, file.url(),
           base::Bind(&WebUIUserScriptLoader::OnSingleWebUIURLFetchComplete,
                      base::Unretained(this), &file)));
-      fetchers_.push_back(fetcher.release());
+      fetchers_.push_back(fetcher.Pass());
     }
   }
 }
