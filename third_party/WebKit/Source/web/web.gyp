@@ -241,6 +241,24 @@
                 }],
             ],
         },
+        {
+           'target_name': 'image_decode_bench',
+           'type': 'executable',
+           'dependencies': [
+               '../config.gyp:config',
+               '../core/core.gyp:webcore',
+               '../platform/blink_platform.gyp:blink_common',
+               '../wtf/wtf.gyp:wtf',
+               'blink_web',
+               'blink_web_test_support',
+           ],
+           'defines': [
+               'BLINK_IMPLEMENTATION=1',
+           ],
+           'sources': [
+               'ImageDecodeBench.cpp',
+           ],
+        },
     ], # targets
     'conditions': [
         ['gcc_version>=46', {
