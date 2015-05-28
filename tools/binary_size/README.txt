@@ -75,11 +75,10 @@ pretend that you are building the Content Shell APK for Android.
      This command will run the analysis on the Content Shell native library for
      Android, producing an HTML report in /tmp/report and saving the NM output
      (useful for re-running the tool or analyzing deltas between two builds)
-     under /tmp/nm.out:
+     under /tmp/report/nm.out:
        tools/binary_size/run_binary_size_analysis.py \
          --library out/Release/lib/libcontent_shell_content_view.so \
-         --destdir /tmp/report \
-         --nm-out /tmp/nm.out
+         --destdir /tmp/report
 
 Of course, there are additional options that you can see by running the tool
 with "--help".
@@ -105,7 +104,7 @@ report may be saved and viewed offline with no problems.
 --------------------------------------------------------------------------------
 How to Run: explain_binary_size_delta.py
 --------------------------------------------------------------------------------
-Continuing the example, assume that explain_binary_size_delta.py has been run
+Continuing the example, assume that run_binary_size_analysis.py has been run
 both before and after a code change and that the "nm.out" files have been saved
 to "nm.out.before" and "nm.out.after". To generate an explanation of the symbol
 differences between the two runs:

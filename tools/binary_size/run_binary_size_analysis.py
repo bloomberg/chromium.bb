@@ -566,15 +566,18 @@ def main():
                     'and ramp this number up until your machine begins to '
                     'struggle with RAM. '
                     'This argument is only valid when using --library.')
-  parser.add_option('-v', dest='verbose', action='store_true',
+  parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
                     help='be verbose, printing lots of status information.')
   parser.add_option('--nm-out', metavar='PATH',
-                    help='keep the nm output file, and store it at the '
-                    'specified path. This is useful if you want to see the '
-                    'fully processed nm output after the symbols have been '
-                    'mapped to source locations. By default, a tempfile is '
-                    'used and is deleted when the program terminates.'
-                    'This argument is only valid when using --library.')
+                    help='(deprecated) No-op. nm.out is stored in --destdir.')
+  parser.add_option('--no-nm-out', action='store_true',
+                    help='do not keep the nm output file. This file is useful '
+                    'if you want to see the fully processed nm output after '
+                    'the symbols have been mapped to source locations, or if '
+                    'you plan to run explain_binary_size_delta.py. By default '
+                    'the file \'nm.out\' is placed alongside the generated '
+                    'report. The nm.out file is only created when using '
+                    '--library.')
   parser.add_option('--disable-disambiguation', action='store_true',
                     help='disables the disambiguation process altogether,'
                     ' NOTE: this may, depending on your toolchain, produce'
@@ -588,12 +591,14 @@ def main():
 
   if ((not opts.library) and (not opts.nm_in)) or (opts.library and opts.nm_in):
     parser.error('exactly one of --library or --nm-in is required')
+  if opts.nm_out:
+    print >> sys.stderr, ('WARNING: --nm-out is deprecated and has no effect.')
   if (opts.nm_in):
     if opts.jobs:
       print >> sys.stderr, ('WARNING: --jobs has no effect '
                             'when used with --nm-in')
   if not opts.destdir:
-    parser.error('--destdir is required argument')
+    parser.error('--destdir is a required argument')
   if not opts.jobs:
     # Use the number of processors but cap between 2 and 4 since raw
     # CPU power isn't the limiting factor. It's I/O limited, memory
@@ -626,26 +631,17 @@ def main():
   if opts.library:
     CheckDebugFormatSupport(opts.library, addr2line_binary)
 
-  symbols = GetNmSymbols(opts.nm_in, opts.nm_out, opts.library,
-                         opts.jobs, opts.verbose is True,
-                         addr2line_binary, nm_binary,
-                         opts.disable_disambiguation is None,
-                         opts.source_path)
-
-  if opts.pak:
-    AddPakData(symbols, opts.pak)
-
+  # Prepare output directory and report guts
   if not os.path.exists(opts.destdir):
     os.makedirs(opts.destdir, 0755)
+  nm_out = os.path.join(opts.destdir, 'nm.out')
+  if opts.no_nm_out:
+    nm_out = None
 
-
-  if opts.library:
-    symbol_path_origin_dir = os.path.dirname(os.path.abspath(opts.library))
-  else:
-    # Just a guess. Hopefully all paths in the input file are absolute.
-    symbol_path_origin_dir = os.path.abspath(os.getcwd())
+  # Copy report boilerplate into output directory. This also proves that the
+  # output directory is safe for writing, so there should be no problems writing
+  # the nm.out file later.
   data_js_file_name = os.path.join(opts.destdir, 'data.js')
-  DumpCompactTree(symbols, symbol_path_origin_dir, data_js_file_name)
   d3_out = os.path.join(opts.destdir, 'd3')
   if not os.path.exists(d3_out):
     os.makedirs(d3_out, 0755)
@@ -660,8 +656,24 @@ def main():
   shutil.copy(os.path.join(template_src, 'index.html'), opts.destdir)
   shutil.copy(os.path.join(template_src, 'D3SymbolTreeMap.js'), opts.destdir)
 
-  print 'Report saved to ' + opts.destdir + '/index.html'
+  # Run nm and/or addr2line to gather the data
+  symbols = GetNmSymbols(opts.nm_in, nm_out, opts.library,
+                         opts.jobs, opts.verbose is True,
+                         addr2line_binary, nm_binary,
+                         opts.disable_disambiguation is None,
+                         opts.source_path)
 
+  # Post-processing
+  if opts.pak:
+    AddPakData(symbols, opts.pak)
+  if opts.library:
+    symbol_path_origin_dir = os.path.dirname(os.path.abspath(opts.library))
+  else:
+    # Just a guess. Hopefully all paths in the input file are absolute.
+    symbol_path_origin_dir = os.path.abspath(os.getcwd())
+  # Dump JSON for the HTML report.
+  DumpCompactTree(symbols, symbol_path_origin_dir, data_js_file_name)
+  print 'Report saved to ' + opts.destdir + '/index.html'
 
 if __name__ == '__main__':
   sys.exit(main())
