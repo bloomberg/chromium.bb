@@ -48,7 +48,7 @@
 
 namespace blink {
 
-PictureSnapshot::PictureSnapshot(PassRefPtr<SkPicture> picture)
+PictureSnapshot::PictureSnapshot(PassRefPtr<const SkPicture> picture)
     : m_picture(picture)
 {
 }

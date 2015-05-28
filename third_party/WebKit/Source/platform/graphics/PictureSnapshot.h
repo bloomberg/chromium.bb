@@ -54,7 +54,7 @@ public:
 
     static PassRefPtr<PictureSnapshot> load(const Vector<RefPtr<TilePictureStream>>&);
 
-    PictureSnapshot(PassRefPtr<SkPicture>);
+    PictureSnapshot(PassRefPtr<const SkPicture>);
 
     PassOwnPtr<Vector<char>> replay(unsigned fromStep = 0, unsigned toStep = 0, double scale = 1.0) const;
     PassOwnPtr<Timings> profile(unsigned minIterations, double minDuration, const FloatRect* clipRect) const;
@@ -63,7 +63,7 @@ public:
 private:
     PassOwnPtr<SkBitmap> createBitmap() const;
 
-    RefPtr<SkPicture> m_picture;
+    RefPtr<const SkPicture> m_picture;
 };
 
 } // namespace blink
