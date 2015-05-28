@@ -11,11 +11,11 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
+#include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 
 namespace webrtc {
 
 class AudioFrame;
-class AudioProcessing;
 class EchoCancellation;
 class MediaConstraintsInterface;
 class TypingDetection;
@@ -110,7 +110,8 @@ class CONTENT_EXPORT EchoInformation {
 void EnableEchoCancellation(AudioProcessing* audio_processing);
 
 // Enables the noise suppression in |audio_processing|.
-void EnableNoiseSuppression(AudioProcessing* audio_processing);
+void EnableNoiseSuppression(AudioProcessing* audio_processing,
+                            webrtc::NoiseSuppression::Level ns_level);
 
 // Enables the high pass filter in |audio_processing|.
 void EnableHighPassFilter(AudioProcessing* audio_processing);

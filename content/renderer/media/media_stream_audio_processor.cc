@@ -29,6 +29,7 @@ namespace content {
 namespace {
 
 using webrtc::AudioProcessing;
+using webrtc::NoiseSuppression;
 
 const int kAudioProcessingNumberOfChannels = 1;
 
@@ -513,8 +514,15 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     echo_information_.reset(new EchoInformation());
   }
 
-  if (goog_ns)
-    EnableNoiseSuppression(audio_processing_.get());
+  if (goog_ns) {
+    // The beamforming postfilter is effective at suppressing stationary noise,
+    // so reduce the single-channel NS aggressiveness when enabled.
+    const NoiseSuppression::Level ns_level =
+        config.Get<webrtc::Beamforming>().enabled ? NoiseSuppression::kLow
+                                                  : NoiseSuppression::kHigh;
+
+    EnableNoiseSuppression(audio_processing_.get(), ns_level);
+  }
 
   if (goog_high_pass_filter)
     EnableHighPassFilter(audio_processing_.get());

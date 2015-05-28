@@ -291,9 +291,9 @@ void EnableEchoCancellation(AudioProcessing* audio_processing) {
   CHECK_EQ(err, 0);
 }
 
-void EnableNoiseSuppression(AudioProcessing* audio_processing) {
-  int err = audio_processing->noise_suppression()->set_level(
-      webrtc::NoiseSuppression::kHigh);
+void EnableNoiseSuppression(AudioProcessing* audio_processing,
+                            webrtc::NoiseSuppression::Level ns_level) {
+  int err = audio_processing->noise_suppression()->set_level(ns_level);
   err |= audio_processing->noise_suppression()->Enable(true);
   CHECK_EQ(err, 0);
 }

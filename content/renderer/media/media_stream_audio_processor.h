@@ -16,7 +16,6 @@
 #include "media/base/audio_converter.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
-#include "third_party/webrtc/modules/interface/module_common_types.h"
 
 namespace blink {
 class WebMediaConstraints;
@@ -29,7 +28,6 @@ class AudioParameters;
 }  // namespace media
 
 namespace webrtc {
-class AudioFrame;
 class TypingDetection;
 }
 
