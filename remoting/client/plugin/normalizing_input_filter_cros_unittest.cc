@@ -7,6 +7,7 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"
+#include "remoting/protocol/usb_key_codes.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,14 +24,9 @@ namespace remoting {
 
 namespace {
 
-const unsigned int kUsbLeftOsKey      = 0x0700e3;
-const unsigned int kUsbRightOsKey     = 0x0700e7;
-const unsigned int kUsbLeftAltKey     = 0x0700e2;
-const unsigned int kUsbRightAltKey    = 0x0700e6;
-
-const unsigned int kUsbFunctionKey    = 0x07003a;  // F1
-const unsigned int kUsbExtendedKey    = 0x070049;  // Insert
-const unsigned int kUsbOtherKey       = 0x07002b;  // Tab
+const unsigned int kUsbFunctionKey = 0x07003a;  // F1
+const unsigned int kUsbExtendedKey = kUsbInsert;
+const unsigned int kUsbOtherKey    = kUsbTab;
 
 KeyEvent MakeKeyEvent(uint32 keycode, bool pressed) {
   KeyEvent event;
@@ -72,19 +68,19 @@ TEST(NormalizingInputFilterCrosTest, PressReleaseOsKey) {
     InSequence s;
 
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, true)));
     EXPECT_CALL(
-        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, false)));
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, false)));
 
     EXPECT_CALL(
-        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOsKey, true)));
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOs, true)));
     EXPECT_CALL(
-        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOsKey, false)));
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOs, false)));
   }
 
   // Inject press & release events for left & right OSKeys.
-  PressAndReleaseKey(processor.get(), kUsbLeftOsKey);
-  PressAndReleaseKey(processor.get(), kUsbRightOsKey);
+  PressAndReleaseKey(processor.get(), kUsbLeftOs);
+  PressAndReleaseKey(processor.get(), kUsbRightOs);
 }
 
 // Test OSKey key repeat switches it to "modifying" mode.
@@ -97,18 +93,18 @@ TEST(NormalizingInputFilterCrosTest, OSKeyRepeats) {
     InSequence s;
 
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, true)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, true)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, true)));
   }
 
   // Inject a press and repeats for the left OSKey, but don't release it, and
   // verify that the repeats result in press events.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
 }
 
 // Test OSKey press followed by function key press and release results in
@@ -128,9 +124,9 @@ TEST(NormalizingInputFilterCrosTest, FunctionKey) {
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
   PressAndReleaseKey(processor.get(), kUsbFunctionKey);
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, false));
 }
 
 // Test OSKey press followed by extended key press and release results in
@@ -150,9 +146,9 @@ TEST(NormalizingInputFilterCrosTest, ExtendedKey) {
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
   PressAndReleaseKey(processor.get(), kUsbExtendedKey);
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, false));
 }
 
 // Test OSKey press followed by non-function, non-extended key press and release
@@ -166,19 +162,19 @@ TEST(NormalizingInputFilterCrosTest, OtherKey) {
     InSequence s;
 
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, true)));
     EXPECT_CALL(stub,
                 InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbOtherKey, true)));
     EXPECT_CALL(stub,
                 InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbOtherKey, false)));
     EXPECT_CALL(
-        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, false)));
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
   PressAndReleaseKey(processor.get(), kUsbOtherKey);
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, false));
 }
 
 // Test OSKey press followed by extended key press, then normal key press
@@ -196,20 +192,20 @@ TEST(NormalizingInputFilterCrosTest, ExtendedThenOtherKey) {
     EXPECT_CALL(stub, InjectKeyEvent(
                           EqualsKeyEventWithNumLock(kUsbExtendedKey, false)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, true)));
     EXPECT_CALL(stub,
                 InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbOtherKey, true)));
     EXPECT_CALL(stub,
                 InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbOtherKey, false)));
     EXPECT_CALL(
-        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, false)));
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
   PressAndReleaseKey(processor.get(), kUsbExtendedKey);
   PressAndReleaseKey(processor.get(), kUsbOtherKey);
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, false));
 }
 
 // Test OSKey press followed by mouse event puts the OSKey into modifying mode.
@@ -222,16 +218,16 @@ TEST(NormalizingInputFilterCrosTest, MouseEvent) {
     InSequence s;
 
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseMoveEvent(0, 0)));
     EXPECT_CALL(
-        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, false)));
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
   processor->InjectMouseEvent(MakeMouseMoveEvent(0, 0));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOsKey, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, false));
 }
 
 // Test left alt + right click is remapped to left alt + left click.
@@ -244,23 +240,23 @@ TEST(NormalizingInputFilterCrosTest, LeftAltClick) {
     InSequence s;
 
     EXPECT_CALL(
-        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftAltKey, true)));
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftAlt, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
                           MouseEvent::BUTTON_LEFT, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
                           MouseEvent::BUTTON_LEFT, false)));
     EXPECT_CALL(
-        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftAltKey, false)));
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftAlt, false)));
   }
 
   // Hold the left alt key while left-clicking. ChromeOS will rewrite this as
   // Alt+RightClick
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftAltKey, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftAlt, true));
   processor->InjectMouseEvent(
       MakeMouseButtonEvent(MouseEvent::BUTTON_RIGHT, true));
   processor->InjectMouseEvent(
       MakeMouseButtonEvent(MouseEvent::BUTTON_RIGHT, false));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftAltKey, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftAlt, false));
 }
 
 // Test that right alt + right click is unchanged.
@@ -273,23 +269,23 @@ TEST(NormalizingInputFilterCrosTest, RightAltClick) {
     InSequence s;
 
     EXPECT_CALL(
-        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightAltKey, true)));
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightAlt, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
                           MouseEvent::BUTTON_RIGHT, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
                           MouseEvent::BUTTON_RIGHT, false)));
     EXPECT_CALL(stub, InjectKeyEvent(
-                          EqualsKeyEventWithNumLock(kUsbRightAltKey, false)));
+                          EqualsKeyEventWithNumLock(kUsbRightAlt, false)));
   }
 
   // Hold the right alt key while left-clicking. ChromeOS will rewrite this as
   // Alt+RightClick
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightAltKey, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightAlt, true));
   processor->InjectMouseEvent(
       MakeMouseButtonEvent(MouseEvent::BUTTON_RIGHT, true));
   processor->InjectMouseEvent(
       MakeMouseButtonEvent(MouseEvent::BUTTON_RIGHT, false));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightAltKey, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightAlt, false));
 }
 
 }  // namespace remoting

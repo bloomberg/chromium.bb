@@ -9,23 +9,9 @@
 
 #include "base/logging.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/usb_key_codes.h"
 
 namespace remoting {
-
-namespace {
-
-const unsigned int kUsbCapsLock     = 0x070039;
-const unsigned int kUsbLeftControl  = 0x0700e0;
-const unsigned int kUsbLeftShift    = 0x0700e1;
-const unsigned int kUsbLeftOption   = 0x0700e2;
-const unsigned int kUsbLeftCmd      = 0x0700e3;
-const unsigned int kUsbRightControl = 0x0700e4;
-const unsigned int kUsbRightShift   = 0x0700e5;
-const unsigned int kUsbRightOption  = 0x0700e6;
-const unsigned int kUsbRightCmd     = 0x0700e7;
-const unsigned int kUsbTab          = 0x07002b;
-
-}  // namespace
 
 NormalizingInputFilterMac::NormalizingInputFilterMac(
     protocol::InputStub* input_stub)
@@ -40,14 +26,14 @@ void NormalizingInputFilterMac::InjectKeyEvent(const protocol::KeyEvent& event)
 
   bool is_special_key = event.usb_keycode() == kUsbLeftControl ||
       event.usb_keycode() == kUsbLeftShift ||
-      event.usb_keycode() == kUsbLeftOption ||
+      event.usb_keycode() == kUsbLeftAlt ||
       event.usb_keycode() == kUsbRightControl ||
       event.usb_keycode() == kUsbRightShift ||
-      event.usb_keycode() == kUsbRightOption ||
+      event.usb_keycode() == kUsbRightAlt ||
       event.usb_keycode() == kUsbTab;
 
-  bool is_cmd_key = event.usb_keycode() == kUsbLeftCmd ||
-      event.usb_keycode() == kUsbRightCmd;
+  bool is_cmd_key = event.usb_keycode() == kUsbLeftOs ||
+      event.usb_keycode() == kUsbRightOs;
 
   if (event.usb_keycode() == kUsbCapsLock) {
     // Mac OS X generates keydown/keyup on lock-state transitions, rather than

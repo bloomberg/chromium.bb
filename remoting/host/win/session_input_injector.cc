@@ -15,16 +15,11 @@
 #include "base/win/windows_version.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/usb_key_codes.h"
 #include "third_party/webrtc/modules/desktop_capture/win/desktop.h"
 #include "third_party/webrtc/modules/desktop_capture/win/scoped_thread_desktop.h"
 
 namespace {
-
-const uint32 kUsbLeftControl =  0x0700e0;
-const uint32 kUsbRightControl = 0x0700e4;
-const uint32 kUsbLeftAlt =  0x0700e2;
-const uint32 kUsbRightAlt = 0x0700e6;
-const uint32 kUsbDelete = 0x07004c;
 
 bool CheckCtrlAndAltArePressed(const std::set<uint32>& pressed_keys) {
   size_t ctrl_keys = pressed_keys.count(kUsbLeftControl) +

@@ -7,6 +7,7 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"
+#include "remoting/protocol/usb_key_codes.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,12 +21,6 @@ using remoting::protocol::test::EqualsKeyEventWithNumLock;
 namespace remoting {
 
 namespace {
-
-const unsigned int kUsbCapsLock   = 0x070039;
-const unsigned int kUsbLeftShift  = 0x0700e1;
-const unsigned int kUsbLeftOption = 0x0700e2;
-const unsigned int kUsbLeftCmd    = 0x0700e3;
-const unsigned int kUsbRightCmd   = 0x0700e7;
 
 KeyEvent MakeKeyEvent(uint32 keycode, bool pressed) {
   KeyEvent event;
@@ -86,46 +81,46 @@ TEST(NormalizingInputFilterMacTest, CmdKey) {
 
     // Left command key.
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftCmd, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('C', true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('C', false)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftCmd, false)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, false)));
 
     // Right command key.
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightCmd, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOs, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('C', true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('C', false)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightCmd, false)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOs, false)));
 
     // More than one keys after CMD.
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightCmd, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOs, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('C', true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('V', true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('C', false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('V', false)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightCmd, false)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOs, false)));
   }
 
   // Left command key.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
   processor->InjectKeyEvent(MakeKeyEvent('C', true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, false));
 
   // Right command key.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightOs, true));
   processor->InjectKeyEvent(MakeKeyEvent('C', true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightOs, false));
 
   // More than one keys after CMD.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightOs, true));
   processor->InjectKeyEvent(MakeKeyEvent('C', true));
   processor->InjectKeyEvent(MakeKeyEvent('V', true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightOs, false));
 }
 
 // Test pressing command and special keys.
@@ -139,36 +134,36 @@ TEST(NormalizingInputFilterMacTest, SpecialKeys) {
 
     // Command + Shift.
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftCmd, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, true)));
     EXPECT_CALL(stub,
                 InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftShift, true)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftCmd, false)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, false)));
     EXPECT_CALL(
         stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftShift, false)));
 
     // Command + Option.
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftCmd, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, true)));
     EXPECT_CALL(
-        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOption, true)));
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftAlt, true)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftCmd, false)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, false)));
     EXPECT_CALL(
-        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOption, false)));
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftAlt, false)));
   }
 
   // Command + Shift.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
   processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftShift, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, false));
   processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftShift, false));
 
   // Command + Option.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOption, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOption, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftAlt, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftAlt, false));
 }
 
 // Test pressing multiple command keys.
@@ -181,21 +176,21 @@ TEST(NormalizingInputFilterMacTest, MultipleCmdKeys) {
     InSequence s;
 
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftCmd, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('C', true)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightCmd, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOs, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('C', false)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftCmd, false)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOs, false)));
   }
 
   // Test multiple CMD keys at the same time.
   // L CMD Down, C Down, R CMD Down, L CMD Up.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, true));
   processor->InjectKeyEvent(MakeKeyEvent('C', true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightOs, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOs, false));
 }
 
 // Test press C key before command key.
@@ -209,17 +204,17 @@ TEST(NormalizingInputFilterMacTest, BeforeCmdKey) {
 
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('C', true)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightCmd, true)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOs, true)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('C', false)));
     EXPECT_CALL(stub,
-                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightCmd, false)));
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOs, false)));
     EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEventWithNumLock('C', false)));
   }
 
   // Press C before command key.
   processor->InjectKeyEvent(MakeKeyEvent('C', true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, false));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightOs, true));
+  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightOs, false));
   processor->InjectKeyEvent(MakeKeyEvent('C', false));
 }
 

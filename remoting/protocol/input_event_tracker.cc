@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/usb_key_codes.h"
 
 namespace remoting {
 namespace protocol {
@@ -69,24 +70,23 @@ void InputEventTracker::ReleaseAll() {
 
 void InputEventTracker::ReleaseAllIfModifiersStuck(bool alt_expected,
                                                    bool ctrl_expected,
-                                                   bool meta_expected,
+                                                   bool os_expected,
                                                    bool shift_expected) {
-  // See src/ui/events/keycodes/dom/keycode_converter_data.h for these values.
   bool alt_down =
-      pressed_keys_.find(0x0700e2) != pressed_keys_.end() ||  // Left
-      pressed_keys_.find(0x0700e6) != pressed_keys_.end();    // Right
+      pressed_keys_.find(kUsbLeftAlt) != pressed_keys_.end() ||
+      pressed_keys_.find(kUsbRightAlt) != pressed_keys_.end();
   bool ctrl_down =
-      pressed_keys_.find(0x0700e0) != pressed_keys_.end() ||  // Left
-      pressed_keys_.find(0x0700e4) != pressed_keys_.end();    // Right
-  bool meta_down =
-      pressed_keys_.find(0x0700e3) != pressed_keys_.end() ||  // Left
-      pressed_keys_.find(0x0700e7) != pressed_keys_.end();    // Right
+      pressed_keys_.find(kUsbLeftControl) != pressed_keys_.end() ||
+      pressed_keys_.find(kUsbRightControl) != pressed_keys_.end();
+  bool os_down =
+      pressed_keys_.find(kUsbLeftOs) != pressed_keys_.end() ||
+      pressed_keys_.find(kUsbRightOs) != pressed_keys_.end();
   bool shift_down =
-      pressed_keys_.find(0x0700e1) != pressed_keys_.end() ||  // Left
-      pressed_keys_.find(0x0700e5) != pressed_keys_.end();    // Right
+      pressed_keys_.find(kUsbLeftShift) != pressed_keys_.end() ||
+      pressed_keys_.find(kUsbRightShift) != pressed_keys_.end();
 
   if ((alt_down && !alt_expected) || (ctrl_down && !ctrl_expected) ||
-      (meta_down && !meta_expected) || (shift_down && !shift_expected)) {
+      (os_down && !os_expected) || (shift_down && !shift_expected)) {
     ReleaseAll();
   }
 }

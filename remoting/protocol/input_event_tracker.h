@@ -37,7 +37,7 @@ class InputEventTracker : public InputStub {
   // class being pressed without the corresponding parameter indicating that it
   // should be.
   void ReleaseAllIfModifiersStuck(bool alt_expected, bool ctrl_expected,
-                                  bool meta_expected, bool shift_expected);
+                                  bool os_expected, bool shift_expected);
 
   // InputStub interface.
   void InjectKeyEvent(const KeyEvent& event) override;

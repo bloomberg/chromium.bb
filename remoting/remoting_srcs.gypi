@@ -190,6 +190,7 @@
       'protocol/token_validator.h',
       'protocol/transport.cc',
       'protocol/transport.h',
+      'protocol/usb_key_codes.h',
       'protocol/v2_authenticator.cc',
       'protocol/v2_authenticator.h',
       'protocol/video_stub.h',
