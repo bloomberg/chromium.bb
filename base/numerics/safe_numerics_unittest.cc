@@ -18,7 +18,10 @@
 using std::numeric_limits;
 using base::CheckedNumeric;
 using base::checked_cast;
+using base::SizeT;
+using base::StrictNumeric;
 using base::saturated_cast;
+using base::strict_cast;
 using base::internal::MaxExponent;
 using base::internal::RANGE_VALID;
 using base::internal::RANGE_INVALID;
@@ -560,8 +563,24 @@ TEST(SafeNumerics, CastTests) {
   double double_large = numeric_limits<double>::max();
   double double_infinity = numeric_limits<float>::infinity();
 
-  // Just test that the cast compiles, since the other tests cover logic.
+  // Just test that the casts compile, since the other tests cover logic.
   EXPECT_EQ(0, checked_cast<int>(static_cast<size_t>(0)));
+  EXPECT_EQ(0, strict_cast<int>(static_cast<char>(0)));
+  EXPECT_EQ(0, strict_cast<int>(static_cast<unsigned char>(0)));
+  EXPECT_EQ(0U, strict_cast<unsigned>(static_cast<unsigned char>(0)));
+  EXPECT_EQ(1ULL, static_cast<uint64_t>(StrictNumeric<size_t>(1U)));
+  EXPECT_EQ(1ULL, static_cast<uint64_t>(SizeT(1U)));
+  EXPECT_EQ(1U, static_cast<size_t>(StrictNumeric<unsigned>(1U)));
+
+  EXPECT_TRUE(CheckedNumeric<uint64_t>(StrictNumeric<unsigned>(1U)).IsValid());
+  EXPECT_TRUE(CheckedNumeric<int>(StrictNumeric<unsigned>(1U)).IsValid());
+  EXPECT_FALSE(CheckedNumeric<unsigned>(StrictNumeric<int>(-1)).IsValid());
+
+  // These casts and coercions will fail to compile:
+  // EXPECT_EQ(0, strict_cast<int>(static_cast<size_t>(0)));
+  // EXPECT_EQ(0, strict_cast<size_t>(static_cast<int>(0)));
+  // EXPECT_EQ(1ULL, StrictNumeric<size_t>(1));
+  // EXPECT_EQ(1, StrictNumeric<size_t>(1U));
 
   // Test various saturation corner cases.
   EXPECT_EQ(saturated_cast<int>(small_negative),
