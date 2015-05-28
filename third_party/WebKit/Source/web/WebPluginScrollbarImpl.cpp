@@ -27,6 +27,7 @@
 
 #include "platform/KeyboardCodes.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
@@ -229,8 +230,10 @@ void WebPluginScrollbarImpl::scroll(ScrollDirection direction, ScrollGranularity
 
 void WebPluginScrollbarImpl::paint(WebCanvas* canvas, const WebRect& rect)
 {
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    m_scrollbar->paint(context.get(), rect);
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
+    m_scrollbar->paint(&pictureBuilder.context(), rect);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 bool WebPluginScrollbarImpl::handleInputEvent(const WebInputEvent& event)
