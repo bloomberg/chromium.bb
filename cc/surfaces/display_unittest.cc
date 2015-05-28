@@ -319,7 +319,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
 class MockedContext : public TestWebGraphicsContext3D {
  public:
-  MOCK_METHOD0(finish, void());
+  MOCK_METHOD0(shallowFinishCHROMIUM, void());
 };
 
 TEST_F(DisplayTest, Finish) {
@@ -327,7 +327,7 @@ TEST_F(DisplayTest, Finish) {
   MockedContext* context_ptr = context.get();
   SetUpContext(context.Pass());
 
-  EXPECT_CALL(*context_ptr, finish()).Times(0);
+  EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
   TestDisplayClient client;
   RendererSettings settings;
   settings.partial_swap_enabled = true;
@@ -360,16 +360,16 @@ TEST_F(DisplayTest, Finish) {
   // First resize and draw shouldn't finish.
   testing::Mock::VerifyAndClearExpectations(context_ptr);
 
-  EXPECT_CALL(*context_ptr, finish());
+  EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM());
   display.Resize(gfx::Size(150, 150));
   testing::Mock::VerifyAndClearExpectations(context_ptr);
 
   // Another resize without a swap doesn't need to finish.
-  EXPECT_CALL(*context_ptr, finish()).Times(0);
+  EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
   display.Resize(gfx::Size(200, 200));
   testing::Mock::VerifyAndClearExpectations(context_ptr);
 
-  EXPECT_CALL(*context_ptr, finish()).Times(0);
+  EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
   {
     RenderPassList pass_list;
     scoped_ptr<RenderPass> pass = RenderPass::Create();
@@ -385,12 +385,11 @@ TEST_F(DisplayTest, Finish) {
 
   testing::Mock::VerifyAndClearExpectations(context_ptr);
 
-  EXPECT_CALL(*context_ptr, finish());
+  EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM());
   display.Resize(gfx::Size(250, 250));
   testing::Mock::VerifyAndClearExpectations(context_ptr);
 
   factory_.Destroy(surface_id);
-  EXPECT_CALL(*context_ptr, finish()).Times(AnyNumber());
 }
 
 }  // namespace

@@ -56,6 +56,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   void Clear(GLbitfield mask) override;
   void Flush() override;
   void Finish() override;
+  void ShallowFinishCHROMIUM() override;
   void ShallowFlushCHROMIUM() override;
   void Enable(GLenum cap) override;
   void Disable(GLenum cap) override;

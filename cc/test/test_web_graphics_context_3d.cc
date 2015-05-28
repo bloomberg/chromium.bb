@@ -500,6 +500,10 @@ void TestWebGraphicsContext3D::flush() {
   test_support_->CallAllSyncPointCallbacks();
 }
 
+void TestWebGraphicsContext3D::shallowFinishCHROMIUM() {
+  test_support_->CallAllSyncPointCallbacks();
+}
+
 GLint TestWebGraphicsContext3D::getAttribLocation(GLuint program,
                                                   const GLchar* name) {
   return 0;

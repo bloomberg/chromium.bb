@@ -205,6 +205,7 @@ class TestWebGraphicsContext3D {
   virtual void enable(GLenum cap) {}
   virtual void finish();
   virtual void flush();
+  virtual void shallowFinishCHROMIUM();
   virtual void shallowFlushCHROMIUM() {}
 
   virtual void getAttachedShaders(GLuint program,

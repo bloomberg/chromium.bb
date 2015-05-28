@@ -19,6 +19,7 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace cc {
 
@@ -74,11 +75,12 @@ void Display::Resize(const gfx::Size& size) {
     return;
   // Need to ensure all pending swaps have executed before the window is
   // resized, or D3D11 will scale the swap output.
-  if (renderer_ && settings_.finish_rendering_on_resize) {
+  if (settings_.finish_rendering_on_resize) {
     if (!swapped_since_resize_ && scheduler_)
       scheduler_->ForceImmediateSwapIfPossible();
-    if (swapped_since_resize_)
-      renderer_->Finish();
+    if (swapped_since_resize_ && output_surface_ &&
+        output_surface_->context_provider())
+      output_surface_->context_provider()->ContextGL()->ShallowFinishCHROMIUM();
   }
   swapped_since_resize_ = false;
   current_surface_size_ = size;

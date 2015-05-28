@@ -158,6 +158,10 @@ void TestGLES2Interface::Flush() { test_context_->flush(); }
 
 void TestGLES2Interface::Finish() { test_context_->finish(); }
 
+void TestGLES2Interface::ShallowFinishCHROMIUM() {
+  test_context_->shallowFinishCHROMIUM();
+}
+
 void TestGLES2Interface::ShallowFlushCHROMIUM() {
   test_context_->shallowFlushCHROMIUM();
 }
