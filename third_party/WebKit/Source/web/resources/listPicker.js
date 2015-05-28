@@ -328,6 +328,7 @@ ListPicker.prototype._applyItemStyle = function(element, styleConfig) {
     style.fontFamily = styleConfig.fontFamily.join(",");
     style.fontStyle = styleConfig.fontStyle;
     style.fontVariant = styleConfig.fontVariant;
+    style.textTransform = styleConfig.textTransform;
 };
 
 ListPicker.prototype._configureItem = function(element, config, inGroup) {

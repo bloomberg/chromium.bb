@@ -186,6 +186,22 @@ const char* fontStyleToString(FontStyle style)
     return 0;
 }
 
+static const char* textTransformToString(ETextTransform transform)
+{
+    switch (transform) {
+    case CAPITALIZE:
+        return "capitalize";
+    case UPPERCASE:
+        return "uppercase";
+    case LOWERCASE:
+        return "lowercase";
+    case TTNONE:
+        return "none";
+    }
+    ASSERT_NOT_REACHED();
+    return "";
+}
+
 void PopupMenuImpl::addElementStyle(HTMLElement& element, bool enableExtraStyling, SharedBuffer* data)
 {
     const ComputedStyle* style = m_client->computedStyleForItem(element);
@@ -210,6 +226,7 @@ void PopupMenuImpl::addElementStyle(HTMLElement& element, bool enableExtraStylin
         PagePopupClient::addString("],\n", data);
         addProperty("fontStyle", String(fontStyleToString(fontDescription.style())), data);
         addProperty("fontVariant", String(fontVariantToString(fontDescription.variant())), data);
+        addProperty("textTransform", String(textTransformToString(style->textTransform())), data);
     }
     PagePopupClient::addString("},\n", data);
 }
