@@ -326,6 +326,7 @@ by a child template that "extends" this file.
             android:icon="@mipmap/app_shortcut_icon"
             android:label="@string/webapp_activity_title"
             android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize"
             android:persistableMode="persistNever"
             android:hardwareAccelerated="true"
             android:taskAffinity="{{ manifest_package }}.webapps.WebappActivity{{ i }}"
