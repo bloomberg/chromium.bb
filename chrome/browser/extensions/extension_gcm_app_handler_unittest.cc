@@ -132,6 +132,7 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
       : ExtensionGCMAppHandler(profile),
         waiter_(waiter),
         unregistration_result_(gcm::GCMClient::UNKNOWN_ERROR),
+        delete_tokens_result_(gcm::GCMClient::UNKNOWN_ERROR),
         app_handler_count_drop_to_zero_(false) {
   }
 
@@ -153,6 +154,12 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
     waiter_->SignalCompleted();
   }
 
+  void OnDeleteTokensCompleted(const std::string& app_id,
+                               gcm::GCMClient::Result result) override {
+    delete_tokens_result_ = result;
+    ExtensionGCMAppHandler::OnDeleteTokensCompleted(app_id, result);
+  }
+
   void RemoveAppHandler(const std::string& app_id) override {
     ExtensionGCMAppHandler::RemoveAppHandler(app_id);
     if (!GetGCMDriver()->app_handlers().size())
@@ -162,6 +169,9 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
   gcm::GCMClient::Result unregistration_result() const {
     return unregistration_result_;
   }
+  gcm::GCMClient::Result delete_tokens_result() const {
+    return delete_tokens_result_;
+  }
   bool app_handler_count_drop_to_zero() const {
     return app_handler_count_drop_to_zero_;
   }
@@ -169,6 +179,7 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
  private:
   Waiter* waiter_;
   gcm::GCMClient::Result unregistration_result_;
+  gcm::GCMClient::Result delete_tokens_result_;
   bool app_handler_count_drop_to_zero_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeExtensionGCMAppHandler);
@@ -418,9 +429,11 @@ TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
   waiter()->WaitUntilCompleted();
   EXPECT_EQ(gcm::GCMClient::SUCCESS, registration_result());
 
-  // Unregistration should be triggered when the extension is uninstalled.
+  // Both token deletion and unregistration should be triggered when the
+  // extension is uninstalled.
   UninstallExtension(extension.get());
   waiter()->WaitUntilCompleted();
+  EXPECT_EQ(gcm::GCMClient::SUCCESS, gcm_app_handler()->delete_tokens_result());
   EXPECT_EQ(gcm::GCMClient::SUCCESS,
             gcm_app_handler()->unregistration_result());
 }

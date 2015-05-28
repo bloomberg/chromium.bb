@@ -22,6 +22,11 @@ InstanceIDHandler::InstanceIDHandler() {
 InstanceIDHandler::~InstanceIDHandler() {
 }
 
+void InstanceIDHandler::DeleteAllTokensForApp(
+    const std::string& app_id, const DeleteTokenCallback& callback) {
+  DeleteToken(app_id, "*", "*", callback);
+}
+
 GCMDriver::GCMDriver() : weak_ptr_factory_(this) {
 }
 

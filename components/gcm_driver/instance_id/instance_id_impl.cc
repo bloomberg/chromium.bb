@@ -188,10 +188,8 @@ void InstanceIDImpl::DoDeleteID(const DeleteIDCallback& callback) {
     return;
   }
 
-  GetInstanceIDHandler()->DeleteToken(
+  GetInstanceIDHandler()->DeleteAllTokensForApp(
       app_id(),
-      "*",
-      "*",
       base::Bind(&InstanceIDImpl::OnDeleteIDCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

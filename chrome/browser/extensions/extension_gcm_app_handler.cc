@@ -136,11 +136,17 @@ void ExtensionGCMAppHandler::OnExtensionUninstalled(
     const Extension* extension,
     extensions::UninstallReason reason) {
   if (IsGCMPermissionEnabled(extension)) {
-    GetGCMDriver()->Unregister(
+    // Let's first remove InstanceID data. GCM unregistration will be triggered
+    // after the asynchronous call is returned in OnDeleteTokensCompleted.
+    gcm::InstanceIDHandler* instance_id_handler =
+        GetGCMDriver()->GetInstanceIDHandler();
+    DCHECK(instance_id_handler);
+    instance_id_handler->DeleteAllTokensForApp(
         extension->id(),
-        base::Bind(&ExtensionGCMAppHandler::OnUnregisterCompleted,
+        base::Bind(&ExtensionGCMAppHandler::OnDeleteTokensCompleted,
                    weak_factory_.GetWeakPtr(),
                    extension->id()));
+    instance_id_handler->RemoveInstanceIDData(extension->id());
   }
 }
 
@@ -159,6 +165,15 @@ gcm::GCMDriver* ExtensionGCMAppHandler::GetGCMDriver() const {
 void ExtensionGCMAppHandler::OnUnregisterCompleted(
     const std::string& app_id, gcm::GCMClient::Result result) {
   RemoveAppHandler(app_id);
+}
+
+void ExtensionGCMAppHandler::OnDeleteTokensCompleted(
+    const std::string& app_id, gcm::GCMClient::Result result) {
+  GetGCMDriver()->Unregister(
+      app_id,
+      base::Bind(&ExtensionGCMAppHandler::OnUnregisterCompleted,
+                 weak_factory_.GetWeakPtr(),
+                  app_id));
 }
 
 void ExtensionGCMAppHandler::AddAppHandler(const std::string& app_id) {

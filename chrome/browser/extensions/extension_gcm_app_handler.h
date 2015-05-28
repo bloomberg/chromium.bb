@@ -60,12 +60,14 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
   // Could be overridden by testing purpose.
   virtual void OnUnregisterCompleted(const std::string& app_id,
                                      gcm::GCMClient::Result result);
+  virtual void OnDeleteTokensCompleted(const std::string& app_id,
+                                       gcm::GCMClient::Result result);
   virtual void AddAppHandler(const std::string& app_id);
   virtual void RemoveAppHandler(const std::string& app_id);
 
   gcm::GCMDriver* GetGCMDriver() const;
 
-private:
+ private:
   friend class BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler>;
 
   // ExtensionRegistryObserver implementation.
