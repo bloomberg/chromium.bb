@@ -71,6 +71,7 @@ SyncUnregistrationCallbacks::~SyncUnregistrationCallbacks()
 
 void SyncUnregistrationCallbacks::onSuccess(bool* status)
 {
+    OwnPtr<bool> statusPtr = adoptPtr(status);
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
         return;
     }
