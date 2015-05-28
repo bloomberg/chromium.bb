@@ -19,7 +19,6 @@ class Message;
 namespace content {
 
 class BrowserContext;
-class DevToolsProtocolHandler;
 
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
@@ -43,16 +42,13 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   WebContents* GetWebContents() override;
   void DisconnectWebContents() override;
   void ConnectWebContents(WebContents* wc) override;
-  bool DispatchProtocolMessage(const std::string& message) override;
 
  protected:
   DevToolsAgentHostImpl();
   ~DevToolsAgentHostImpl() override;
 
-  scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
   std::string state_cookie_;
 
-  void set_handle_all_protocol_commands() { handle_all_commands_ = true; }
   void HostClosed();
   void SendMessageToClient(const std::string& message);
   void ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
@@ -63,7 +59,6 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   const std::string id_;
   DevToolsAgentHostClient* client_;
-  bool handle_all_commands_;
   std::string message_buffer_;
   uint32 message_buffer_size_;
 };

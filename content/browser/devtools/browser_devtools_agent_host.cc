@@ -5,7 +5,7 @@
 #include "content/browser/devtools/browser_devtools_agent_host.h"
 
 #include "base/bind.h"
-#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/browser/devtools/protocol/system_info_handler.h"
 #include "content/browser/devtools/protocol/tethering_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
@@ -25,8 +25,11 @@ BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
       tethering_handler_(new devtools::tethering::TetheringHandler(
           socket_callback, tethering_message_loop)),
       tracing_handler_(new devtools::tracing::TracingHandler(
-          devtools::tracing::TracingHandler::Browser)) {
-  set_handle_all_protocol_commands();
+          devtools::tracing::TracingHandler::Browser)),
+      protocol_handler_(new DevToolsProtocolHandler(
+          this,
+          base::Bind(&BrowserDevToolsAgentHost::SendMessageToClient,
+                     base::Unretained(this)))) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetSystemInfoHandler(system_info_handler_.get());
   dispatcher->SetTetheringHandler(tethering_handler_.get());
@@ -60,6 +63,12 @@ bool BrowserDevToolsAgentHost::Activate() {
 
 bool BrowserDevToolsAgentHost::Close() {
   return false;
+}
+
+bool BrowserDevToolsAgentHost::DispatchProtocolMessage(
+    const std::string& message) {
+  protocol_handler_->HandleMessage(message);
+  return true;
 }
 
 }  // content

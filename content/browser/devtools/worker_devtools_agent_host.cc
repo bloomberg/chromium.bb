@@ -4,7 +4,7 @@
 
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
-#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -43,7 +43,7 @@ bool WorkerDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
   if (state_ != WORKER_INSPECTED)
     return true;
-  if (DevToolsAgentHostImpl::DispatchProtocolMessage(message))
+  if (protocol_handler_->HandleOptionalMessage(message))
     return true;
 
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
@@ -117,7 +117,11 @@ bool WorkerDevToolsAgentHost::IsTerminated() {
 
 WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(
     WorkerId worker_id)
-    : state_(WORKER_UNINSPECTED),
+    : protocol_handler_(new DevToolsProtocolHandler(
+          this,
+          base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
+                     base::Unretained(this)))),
+      state_(WORKER_UNINSPECTED),
       worker_id_(worker_id) {
   WorkerCreated();
 }

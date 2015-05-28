@@ -10,7 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 #include "content/public/browser/tracing_controller.h"
 
 namespace base {

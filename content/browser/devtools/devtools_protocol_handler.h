@@ -9,21 +9,29 @@
 
 namespace content {
 
+class DevToolsAgentHost;
+
 class DevToolsProtocolHandler {
  public:
   using Response = DevToolsProtocolClient::Response;
   using Notifier = base::Callback<void(const std::string& message)>;
 
-  explicit DevToolsProtocolHandler(const Notifier& notifier);
+  DevToolsProtocolHandler(DevToolsAgentHost* agent_host,
+                          const Notifier& notifier);
   virtual ~DevToolsProtocolHandler();
 
-  scoped_ptr<base::DictionaryValue> ParseCommand(const std::string& message);
-  void HandleCommand(scoped_ptr<base::DictionaryValue> command);
-  bool HandleOptionalCommand(scoped_ptr<base::DictionaryValue> command);
+  void HandleMessage(const std::string& message);
+  bool HandleOptionalMessage(const std::string& message);
 
   DevToolsProtocolDispatcher* dispatcher() { return &dispatcher_; }
 
  private:
+  scoped_ptr<base::DictionaryValue> ParseCommand(const std::string& message);
+  bool PassCommandToDelegate(base::DictionaryValue* command);
+  void HandleCommand(scoped_ptr<base::DictionaryValue> command);
+  bool HandleOptionalCommand(scoped_ptr<base::DictionaryValue> command);
+
+  DevToolsAgentHost* agent_host_;
   DevToolsProtocolClient client_;
   DevToolsProtocolDispatcher dispatcher_;
 };

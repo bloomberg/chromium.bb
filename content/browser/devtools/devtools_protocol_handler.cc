@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/browser/devtools/devtools_protocol_handler.h"
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
+#include "content/browser/devtools/devtools_manager.h"
+#include "content/public/browser/devtools_manager_delegate.h"
 
 namespace content {
 
@@ -32,12 +35,52 @@ scoped_ptr<base::DictionaryValue> TakeDictionary(base::DictionaryValue* dict,
 
 }  // namespace
 
-DevToolsProtocolHandler::DevToolsProtocolHandler(const Notifier& notifier)
-    : client_(notifier),
+DevToolsProtocolHandler::DevToolsProtocolHandler(
+    DevToolsAgentHost* agent_host, const Notifier& notifier)
+    : agent_host_(agent_host),
+      client_(notifier),
       dispatcher_(notifier) {
 }
 
 DevToolsProtocolHandler::~DevToolsProtocolHandler() {
+}
+
+void DevToolsProtocolHandler::HandleMessage(const std::string& message) {
+  scoped_ptr<base::DictionaryValue> command = ParseCommand(message);
+  if (!command)
+    return;
+  if (PassCommandToDelegate(command.get()))
+    return;
+  HandleCommand(command.Pass());
+}
+
+bool DevToolsProtocolHandler::HandleOptionalMessage(
+    const std::string& message) {
+  scoped_ptr<base::DictionaryValue> command = ParseCommand(message);
+  if (!command)
+    return true;
+  if (PassCommandToDelegate(command.get()))
+    return true;
+  return HandleOptionalCommand(command.Pass());
+}
+
+bool DevToolsProtocolHandler::PassCommandToDelegate(
+    base::DictionaryValue* command) {
+  DevToolsManagerDelegate* delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (!delegate)
+    return false;
+
+  scoped_ptr<base::DictionaryValue> response(
+      delegate->HandleCommand(agent_host_, command));
+  if (response) {
+    std::string json_response;
+    base::JSONWriter::Write(*response, &json_response);
+    client_.SendRawMessage(json_response);
+    return true;
+  }
+
+  return false;
 }
 
 scoped_ptr<base::DictionaryValue>
@@ -84,6 +127,7 @@ void DevToolsProtocolHandler::HandleCommand(
     client_.SendError(id, Response(kStatusNoSuchMethod, "No such method"));
     return;
   }
+
   bool result =
       command_handler.Run(id, TakeDictionary(command.get(), kParamsParam));
   DCHECK(result);

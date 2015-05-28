@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_INPUT_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "ui/gfx/geometry/size_f.h"
 

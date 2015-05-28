@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
-#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/devtools/protocol/input_handler.h"
@@ -145,6 +145,10 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
           devtools::tracing::TracingHandler::Renderer)),
       emulation_handler_(nullptr),
       frame_trace_recorder_(nullptr),
+      protocol_handler_(new DevToolsProtocolHandler(
+          this,
+          base::Bind(&RenderFrameDevToolsAgentHost::SendMessageToClient,
+                     base::Unretained(this)))),
       reattaching_(false) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetDOMHandler(dom_handler_.get());
@@ -195,7 +199,7 @@ void RenderFrameDevToolsAgentHost::Detach() {
 
 bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
-  if (DevToolsAgentHostImpl::DispatchProtocolMessage(message))
+  if (protocol_handler_->HandleOptionalMessage(message))
     return true;
 
   if (render_frame_host_) {

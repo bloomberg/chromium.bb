@@ -11,6 +11,7 @@
 namespace content {
 
 class BrowserContext;
+class DevToolsProtocolHandler;
 class SharedWorkerInstance;
 
 class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
@@ -20,11 +21,11 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
 
   // DevToolsAgentHost override.
   BrowserContext* GetBrowserContext() override;
+  bool DispatchProtocolMessage(const std::string& message) override;
 
   // DevToolsAgentHostImpl overrides.
   void Attach() override;
   void Detach() override;
-  bool DispatchProtocolMessage(const std::string& message) override;
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -60,6 +61,7 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   void WorkerCreated();
   void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
 
+  scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
   WorkerState state_;
   WorkerId worker_id_;
   DISALLOW_COPY_AND_ASSIGN(WorkerDevToolsAgentHost);

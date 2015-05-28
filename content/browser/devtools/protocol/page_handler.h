@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/readback_types.h"

@@ -22,6 +22,7 @@ namespace content {
 
 class BrowserContext;
 class DevToolsFrameTraceRecorder;
+class DevToolsProtocolHandler;
 class RenderFrameHost;
 class RenderFrameHostImpl;
 
@@ -65,6 +66,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   GURL GetURL() override;
   bool Activate() override;
   bool Close() override;
+  bool DispatchProtocolMessage(const std::string& message) override;
 
  private:
   friend class DevToolsAgentHost;
@@ -80,7 +82,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void Attach() override;
   void Detach() override;
   void InspectElement(int x, int y) override;
-  bool DispatchProtocolMessage(const std::string& message) override;
 
   // WebContentsObserver overrides.
   void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
@@ -138,6 +139,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 #if defined(OS_ANDROID)
   scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;
 #endif
+  scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
   bool reattaching_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameDevToolsAgentHost);

@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 
 namespace net {
 class ServerSocket;

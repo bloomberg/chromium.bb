@@ -242,8 +242,6 @@ tmpl_field = string.Template("""\
 
 template_cc = string.Template(header + """\
 
-#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
-
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 ${includes}\
