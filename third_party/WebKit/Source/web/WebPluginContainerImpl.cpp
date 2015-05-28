@@ -252,8 +252,7 @@ void WebPluginContainerImpl::setParentVisible(bool parentVisible)
     if (!isSelfVisible())
         return;  // This widget has explicitely been marked as not visible.
 
-    if (m_webPlugin)
-        m_webPlugin->updateVisibility(isVisible());
+    m_webPlugin->updateVisibility(isVisible());
 }
 
 void WebPluginContainerImpl::setParent(Widget* widget)
@@ -745,9 +744,7 @@ void WebPluginContainerImpl::dispose()
 
     for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
         m_pluginLoadObservers[i]->clearPluginContainer();
-
-    if (m_webPlugin)
-        m_webPlugin->destroy();
+    m_webPlugin->destroy();
     m_webPlugin = nullptr;
 
     if (m_webLayer)
@@ -1023,6 +1020,11 @@ void WebPluginContainerImpl::calculateGeometry(IntRect& windowRect, IntRect& cli
     // Convert to the plugin position.
     for (size_t i = 0; i < cutOutRects.size(); i++)
         cutOutRects[i].move(-frameRect().x(), -frameRect().y());
+}
+
+bool WebPluginContainerImpl::pluginShouldPersist() const
+{
+    return m_webPlugin->shouldPersist();
 }
 
 } // namespace blink
