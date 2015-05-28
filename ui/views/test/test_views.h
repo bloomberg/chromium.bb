@@ -17,10 +17,23 @@ class StaticSizedView : public View {
   explicit StaticSizedView(const gfx::Size& size);
   ~StaticSizedView() override;
 
+  void set_minimum_size(const gfx::Size& minimum_size) {
+    minimum_size_ = minimum_size;
+  }
+
+  void set_maximum_size(const gfx::Size& maximum_size) {
+    maximum_size_ = maximum_size;
+  }
+
+  // View overrides:
   gfx::Size GetPreferredSize() const override;
+  gfx::Size GetMinimumSize() const override;
+  gfx::Size GetMaximumSize() const override;
 
  private:
   gfx::Size size_;
+  gfx::Size minimum_size_;
+  gfx::Size maximum_size_;
 
   DISALLOW_COPY_AND_ASSIGN(StaticSizedView);
 };

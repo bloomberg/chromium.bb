@@ -210,11 +210,17 @@ gfx::Insets BubbleFrameView::GetInsets() const {
 }
 
 gfx::Size BubbleFrameView::GetPreferredSize() const {
-  return GetSizeForClientSize(GetWidget()->client_view()->GetPreferredSize());
+  // Get the preferred size of the client area.
+  gfx::Size client_size = GetWidget()->client_view()->GetPreferredSize();
+  // Expand it to include the bubble border and space for the arrow.
+  return GetWindowBoundsForClientBounds(gfx::Rect(client_size)).size();
 }
 
 gfx::Size BubbleFrameView::GetMinimumSize() const {
-  return GetSizeForClientSize(GetWidget()->client_view()->GetMinimumSize());
+  // Get the minimum size of the client area.
+  gfx::Size client_size = GetWidget()->client_view()->GetMinimumSize();
+  // Expand it to include the bubble border and space for the arrow.
+  return GetWindowBoundsForClientBounds(gfx::Rect(client_size)).size();
 }
 
 void BubbleFrameView::Layout() {

@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
 
@@ -17,16 +22,65 @@ namespace {
 const BubbleBorder::Arrow kArrow = BubbleBorder::TOP_LEFT;
 const SkColor kColor = SK_ColorRED;
 const int kMargin = 6;
+const int kMinimumClientWidth = 100;
+const int kMinimumClientHeight = 200;
+const int kPreferredClientWidth = 150;
+const int kPreferredClientHeight = 250;
+const int kExpectedBorderWidth = 22;
+const int kExpectedBorderHeight = 29;
+
+class TestBubbleFrameViewWidgetDelegate : public WidgetDelegate {
+ public:
+  TestBubbleFrameViewWidgetDelegate(Widget* widget) : widget_(widget) {}
+
+  ~TestBubbleFrameViewWidgetDelegate() override {}
+
+  // WidgetDelegate overrides:
+  Widget* GetWidget() override { return widget_; }
+  const Widget* GetWidget() const override { return widget_; }
+
+  View* GetContentsView() override {
+    if (!contents_view_) {
+      StaticSizedView* contents_view = new StaticSizedView(
+          gfx::Size(kPreferredClientWidth, kPreferredClientHeight));
+      contents_view->set_minimum_size(
+          gfx::Size(kMinimumClientWidth, kMinimumClientHeight));
+      contents_view_ = contents_view;
+    }
+    return contents_view_;
+  }
+
+ private:
+  Widget* widget_;
+  View* contents_view_ = nullptr;  // Owned by |widget_|.
+};
 
 class TestBubbleFrameView : public BubbleFrameView {
  public:
-  TestBubbleFrameView()
+  TestBubbleFrameView(ViewsTestBase* test_base)
       : BubbleFrameView(gfx::Insets(kMargin, kMargin, kMargin, kMargin)),
+        test_base_(test_base),
         available_bounds_(gfx::Rect(0, 0, 1000, 1000)) {
-    SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
+    SetBubbleBorder(scoped_ptr<BubbleBorder>(
         new BubbleBorder(kArrow, BubbleBorder::NO_SHADOW, kColor)));
   }
   ~TestBubbleFrameView() override {}
+
+  // View overrides:
+  const Widget* GetWidget() const override {
+    if (!widget_) {
+      widget_.reset(new Widget);
+      widget_delegate_.reset(
+          new TestBubbleFrameViewWidgetDelegate(widget_.get()));
+      Widget::InitParams params =
+          test_base_->CreateParams(Widget::InitParams::TYPE_BUBBLE);
+      params.delegate = widget_delegate_.get();
+      params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+      widget_->Init(params);
+    }
+
+    return widget_.get();
+  }
 
   // BubbleFrameView overrides:
   gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) override {
@@ -34,7 +88,13 @@ class TestBubbleFrameView : public BubbleFrameView {
   }
 
  private:
+  ViewsTestBase* test_base_;
+
   gfx::Rect available_bounds_;
+
+  // Widget returned by GetWidget(). Only created if GetWidget() is called.
+  mutable scoped_ptr<TestBubbleFrameViewWidgetDelegate> widget_delegate_;
+  mutable scoped_ptr<Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBubbleFrameView);
 };
@@ -42,7 +102,7 @@ class TestBubbleFrameView : public BubbleFrameView {
 }  // namespace
 
 TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
-  TestBubbleFrameView frame;
+  TestBubbleFrameView frame(this);
   EXPECT_EQ(kArrow, frame.bubble_border()->arrow());
   EXPECT_EQ(kColor, frame.bubble_border()->background_color());
 
@@ -55,7 +115,7 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientView) {
 
 // Tests that the arrow is mirrored as needed to better fit the screen.
 TEST_F(BubbleFrameViewTest, GetUpdatedWindowBounds) {
-  TestBubbleFrameView frame;
+  TestBubbleFrameView frame(this);
   gfx::Rect window_bounds;
 
   gfx::Insets insets = frame.bubble_border()->GetInsets();
@@ -166,7 +226,7 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBounds) {
 // Tests that the arrow is not moved when the info-bubble does not fit the
 // screen but moving it would make matter worse.
 TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsMirroringFails) {
-  TestBubbleFrameView frame;
+  TestBubbleFrameView frame(this);
   frame.bubble_border()->set_arrow(BubbleBorder::TOP_LEFT);
   gfx::Rect window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(400, 100, 50, 50),  // |anchor_rect|
@@ -176,7 +236,7 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsMirroringFails) {
 }
 
 TEST_F(BubbleFrameViewTest, TestMirroringForCenteredArrow) {
-  TestBubbleFrameView frame;
+  TestBubbleFrameView frame(this);
 
   // Test bubble not fitting above the anchor.
   frame.bubble_border()->set_arrow(BubbleBorder::BOTTOM_CENTER);
@@ -213,7 +273,7 @@ TEST_F(BubbleFrameViewTest, TestMirroringForCenteredArrow) {
 
 // Test that the arrow will not be mirrored when |adjust_if_offscreen| is false.
 TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsDontTryMirror) {
-  TestBubbleFrameView frame;
+  TestBubbleFrameView frame(this);
   frame.bubble_border()->set_arrow(BubbleBorder::TOP_RIGHT);
   gfx::Rect window_bounds = frame.GetUpdatedWindowBounds(
       gfx::Rect(100, 900, 50, 50),  // |anchor_rect|
@@ -228,7 +288,7 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsDontTryMirror) {
 
 // Test that the center arrow is moved as needed to fit the screen.
 TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsCenterArrows) {
-  TestBubbleFrameView frame;
+  TestBubbleFrameView frame(this);
   gfx::Rect window_bounds;
 
   // Test that the bubble displays normally when it fits.
@@ -347,6 +407,25 @@ TEST_F(BubbleFrameViewTest, GetUpdatedWindowBoundsCenterArrows) {
   EXPECT_EQ(window_bounds.bottom(), 1000);
   EXPECT_EQ(window_bounds.y() +
             frame.bubble_border()->GetArrowOffset(window_bounds.size()), 925);
+}
+
+TEST_F(BubbleFrameViewTest, GetPreferredSize) {
+  TestBubbleFrameView frame(this);
+  gfx::Size preferred_size = frame.GetPreferredSize();
+  // Expect that a border has been added to the preferred size.
+  EXPECT_EQ(kPreferredClientWidth + kExpectedBorderWidth,
+            preferred_size.width());
+  EXPECT_EQ(kPreferredClientHeight + kExpectedBorderHeight,
+            preferred_size.height());
+}
+
+TEST_F(BubbleFrameViewTest, GetMinimumSize) {
+  TestBubbleFrameView frame(this);
+  gfx::Size minimum_size = frame.GetMinimumSize();
+  // Expect that a border has been added to the minimum size.
+  EXPECT_EQ(kMinimumClientWidth + kExpectedBorderWidth, minimum_size.width());
+  EXPECT_EQ(kMinimumClientHeight + kExpectedBorderHeight,
+            minimum_size.height());
 }
 
 }  // namespace views
