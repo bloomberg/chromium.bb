@@ -11,14 +11,21 @@
 
 #if LINK_CORE_MODULES_SEPARATELY && defined(COMPONENT_BUILD)
 #if defined(WIN32)
+
 #if defined(BLINK_MODULES_IMPLEMENTATION) && BLINK_MODULES_IMPLEMENTATION
 #define MODULES_EXPORT __declspec(dllexport)
 #else
 #define MODULES_EXPORT __declspec(dllimport)
-#endif
+#endif // defined(BLINK_MODULES_IMPLEMENTATION) && BLINK_MODULES_IMPLEMENTATION
+
 #else // defined(WIN32)
+#if defined(BLINK_MODULES_IMPLEMENTATION) && BLINK_MODULES_IMPLEMENTATION
 #define MODULES_EXPORT __attribute__((visibility("default")))
+#else
+#define MODULES_EXPORT
 #endif
+#endif
+
 #else // defined(COMPONENT_BUILD)
 #define MODULES_EXPORT
 #endif
