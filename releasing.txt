@@ -11,8 +11,8 @@ To make a release of Weston and/or Wayland, follow these steps.
       configure.ac which typically need updated as well.  Then commit
       your changes:
 
-	  $ export RELEASE_NUMBER="x.y.z"
-	  $ export RELEASE_NAME="[alpha|RC1|RC2|official|point]"
+      $ export RELEASE_NUMBER="x.y.z"
+      $ export RELEASE_NAME="[alpha|RC1|RC2|official|point]"
       $ git status
       $ git commit configure.ac -m "configure.ac: bump to version $RELEASE_NUMBER for the $RELEASE_NAME release"
       $ git push
@@ -44,12 +44,12 @@ To make a release of Weston and/or Wayland, follow these steps.
       skip testsuite by specifying the --dist argument.  Pass --help to
       see other supported options.
 
-	  $ release.sh .
+      $ release.sh .
 
-	  For wayland, also publish the publican documentation to
-	  wayland.freedesktop.org:
+      For wayland, also publish the publican documentation to
+      wayland.freedesktop.org:
 
-  	  $ ./publish-doc
+      $ ./publish-doc
 
 
   4.  Compose the release announcements.  The script will generate
@@ -67,12 +67,12 @@ To make a release of Weston and/or Wayland, follow these steps.
   7.  Update releases.html in wayland-web with links to tarballs and
       the release email URL.
 
-	  The register_release script in wayland-web will generate an HTML
-	  snippet that can be pasted into releases.html (or e.g. in emacs
-	  insert it via "C-u M-! register_release x.y.z RC2") and
-	  customized.
+      The register_release script in wayland-web will generate an HTML
+      snippet that can be pasted into releases.html (or e.g. in emacs
+      insert it via "C-u M-! register_release x.y.z RC2") and
+      customized.
 
-	  Once satisfied:
+      Once satisfied:
 
       $ git commit ./releases.html -m "Add ${RELEASE_NUMBER} release"
       $ git push
