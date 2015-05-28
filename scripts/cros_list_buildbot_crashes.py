@@ -16,6 +16,7 @@ import re
 import sys
 
 from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.lib import cros_build_lib
@@ -58,7 +59,7 @@ class CrashTriager(object):
       bot_id: Gather crashes from this bot id.
       build_config: Configuration options for this bot.
     """
-    if build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
+    if build_config['gs_path'] == config_lib.GS_PATH_DEFAULT:
       gsutil_archive = 'gs://chromeos-image-archive/' + bot_id
     else:
       gsutil_archive = build_config['gs_path']

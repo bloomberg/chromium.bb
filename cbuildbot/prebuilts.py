@@ -9,8 +9,8 @@ from __future__ import print_function
 import glob
 import os
 
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import portage_util
@@ -116,7 +116,7 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
     assert chrome_rev
     key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
     extra_args.extend(['--key', key.upper()])
-  elif cbuildbot_config.IsPFQType(category):
+  elif config_lib.IsPFQType(category):
     extra_args.extend(['--key', _PREFLIGHT_BINHOST])
   else:
     assert category in (constants.BUILD_FROM_SOURCE_TYPE,

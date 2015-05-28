@@ -1034,7 +1034,7 @@ def AbortHWTests(config_type_or_name, version, debug, suite=''):
   Args:
     config_type_or_name: Either the name of the builder (e.g. link-paladin) or
                          the config type if you want to abort all HWTests for
-                         that config (e.g. cbuildbot_config.CONFIG_TYPE_FULL).
+                         that config (e.g. config_lib.CONFIG_TYPE_FULL).
     version: The version of the current build. E.g. R18-1655.0.0-rc1
     debug: Whether we are in debug mode.
     suite: Name of the Autotest suite. If empty, abort all suites.

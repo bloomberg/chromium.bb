@@ -135,8 +135,7 @@ class BuildConfig(dict):
     speeds up deep copies by 10x because we know in advance what is stored
     inside a BuildConfig object and don't have to do as much introspection. This
     function is called a lot during setup of the config objects so optimizing it
-    makes a big difference. (It saves seconds off the load time of the
-    cbuildbot_config module!)
+    makes a big difference. (It saves seconds off the load time of this module!)
     """
     new_config = BuildConfig(self)
     for k, v in self.iteritems():

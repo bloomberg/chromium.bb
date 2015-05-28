@@ -13,6 +13,7 @@ import time
 
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
+from chromite.cbuildbot import config_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
 
@@ -39,15 +40,15 @@ DEFAULT_OPTIONS = cros_test_lib.EasyAttr(
     debug=False,
     postsync_patch=True,
 )
-DEFAULT_CONFIG = cbuildbot_config.BuildConfig(
+DEFAULT_CONFIG = config_lib.BuildConfig(
     name=DEFAULT_BOT_NAME,
     master=True,
     boards=[DEFAULT_BOARD],
     postsync_patch=True,
     child_configs=[
-        cbuildbot_config.BuildConfig(
+        config_lib.BuildConfig(
             name='foo', postsync_patch=False, boards=[]),
-        cbuildbot_config.BuildConfig(
+        config_lib.BuildConfig(
             name='bar', postsync_patch=False, boards=[]),
     ],
 )
@@ -66,7 +67,7 @@ def _ExtendDefaultConfig(**kwargs):
   """Extend DEFAULT_CONFIG with keys/values in kwargs."""
   config_kwargs = DEFAULT_CONFIG.copy()
   config_kwargs.update(kwargs)
-  return cbuildbot_config.BuildConfig(**config_kwargs)
+  return config_lib.BuildConfig(**config_kwargs)
 
 
 class ExceptionsTest(cros_test_lib.TestCase):

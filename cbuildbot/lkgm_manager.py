@@ -10,7 +10,7 @@ import os
 import re
 from xml.dom import minidom
 
-from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.lib import cros_build_lib
@@ -126,7 +126,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     Args:
       source_repo: Repository object for the source code.
       manifest_repo: Manifest repository for manifest versions/buildspecs.
-      build_names: Identifiers for the build. Must match cbuildbot_config
+      build_names: Identifiers for the build. Must match config_lib
           entries. If multiple identifiers are provided, the first item in the
           list must be an identifier for the group.
       build_type: Type of build.  Must be a pfq type.
@@ -150,12 +150,12 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     # must have separate subdirs in the manifest-versions repository.
     if self.build_type == constants.CHROME_PFQ_TYPE:
       self.rel_working_dir = self.CHROME_PFQ_SUBDIR
-    elif cbuildbot_config.IsCQType(self.build_type):
+    elif config_lib.IsCQType(self.build_type):
       self.rel_working_dir = self.COMMIT_QUEUE_SUBDIR
     elif self.build_type == constants.PROJECT_SDK_TYPE:
       self.rel_working_dir = self.PROJECT_SDK_SUBDIR
     else:
-      assert cbuildbot_config.IsPFQType(self.build_type)
+      assert config_lib.IsPFQType(self.build_type)
       self.rel_working_dir = self.LKGM_SUBDIR
 
   def GetCurrentVersionInfo(self):
@@ -280,7 +280,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       # we're not also a pfq type, we got nothing to do.
       assert self.cros_source.directory == validation_pool.build_root
       if (not validation_pool.ApplyPoolIntoRepo() and
-          not cbuildbot_config.IsPFQType(self.build_type)):
+          not config_lib.IsPFQType(self.build_type)):
         return None
 
       self._AddPatchesToManifest(new_manifest, validation_pool.changes)
@@ -406,7 +406,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     # We want to generate the blamelist only for valid pfq types and if we are
     # building on the master branch i.e. revving the build number.
     return (self.incr_type == 'build' and
-            cbuildbot_config.IsPFQType(self.build_type) and
+            config_lib.IsPFQType(self.build_type) and
             self.build_type != constants.CHROME_PFQ_TYPE)
 
   def GenerateBlameListSinceLKGM(self):

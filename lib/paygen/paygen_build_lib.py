@@ -23,9 +23,10 @@ import sys
 import tempfile
 import urlparse
 
+from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -1003,7 +1004,7 @@ class _PaygenBuild(object):
       logging.info('Skipping payload autotest for board %s',
                    self._archive_board)
       return
-    timeout_mins = cbuildbot_config.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
+    timeout_mins = config_lib.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
     if self._run_on_builder:
       try:
         commands.RunHWTestSuite(board=self._archive_board,

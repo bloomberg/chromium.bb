@@ -9,8 +9,8 @@ from __future__ import print_function
 import mock
 
 from chromite.cbuildbot import archive_lib
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
+from chromite.cbuildbot import config_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
 
@@ -37,12 +37,12 @@ DEFAULT_OPTIONS = cros_test_lib.EasyAttr(
     remote_trybot=False,
     debug=False,
 )
-DEFAULT_CONFIG = cbuildbot_config.BuildConfig(
+DEFAULT_CONFIG = config_lib.BuildConfig(
     name=DEFAULT_BOT_NAME,
     master=True,
     boards=[DEFAULT_BOARD],
-    child_configs=[cbuildbot_config.BuildConfig(name='foo'),
-                   cbuildbot_config.BuildConfig(name='bar'),
+    child_configs=[config_lib.BuildConfig(name='foo'),
+                   config_lib.BuildConfig(name='bar'),
                   ],
 )
 
@@ -58,7 +58,7 @@ def _ExtendDefaultConfig(**kwargs):
   """Extend DEFAULT_CONFIG with keys/values in kwargs."""
   config_kwargs = DEFAULT_CONFIG.copy()
   config_kwargs.update(kwargs)
-  return cbuildbot_config.BuildConfig(**config_kwargs)
+  return config_lib.BuildConfig(**config_kwargs)
 
 
 def _NewBuilderRun(options=None, config=None):
@@ -131,7 +131,7 @@ class GetBaseUploadURITest(cros_test_lib.TestCase):
 
   def testDefaultGSPathRemoteTrybotFalse(self):
     """Test GetBaseUploadURI with default gs_path value in config."""
-    self.cfg = _ExtendDefaultConfig(gs_path=cbuildbot_config.GS_PATH_DEFAULT)
+    self.cfg = _ExtendDefaultConfig(gs_path=config_lib.GS_PATH_DEFAULT)
 
     # Test without bot_id.
     expected_result = ('%s/%s' %

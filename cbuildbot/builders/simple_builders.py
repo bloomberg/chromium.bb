@@ -9,8 +9,9 @@ from __future__ import print_function
 import collections
 
 from chromite.cbuildbot import afdo
-from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import generate_chromeos_config
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot.builders import generic_builders
@@ -247,7 +248,7 @@ class SimpleBuilder(generic_builders.Builder):
             self._RunStage(artifact_stages.UploadTestArtifactsStage, board,
                            builder_run=builder_run,
                            suffix='[afdo_generate_min]')
-            suite = cbuildbot_config.AFDORecordTest()
+            suite = generate_chromeos_config.HWTestList.AFDORecordTest()
             self._RunStage(test_stages.HWTestStage, board, suite,
                            builder_run=builder_run)
             self._RunStage(afdo_stages.AFDODataGenerateStage, board,
@@ -306,18 +307,18 @@ class DistributedBuilder(SimpleBuilder):
                                           self.patch_pool.gerrit_patches)
       self.completion_stage_class = completion_stages.PreCQCompletionStage
       self.patch_pool.gerrit_patches = []
-    elif cbuildbot_config.IsCQType(self._run.config.build_type):
+    elif config_lib.IsCQType(self._run.config.build_type):
       if self._run.config.do_not_apply_cq_patches:
         sync_stage = self._GetStageInstance(
             sync_stages.MasterSlaveLKGMSyncStage)
       else:
         sync_stage = self._GetStageInstance(sync_stages.CommitQueueSyncStage)
       self.completion_stage_class = completion_stages.CommitQueueCompletionStage
-    elif cbuildbot_config.IsPFQType(self._run.config.build_type):
+    elif config_lib.IsPFQType(self._run.config.build_type):
       sync_stage = self._GetStageInstance(sync_stages.MasterSlaveLKGMSyncStage)
       self.completion_stage_class = (
           completion_stages.MasterSlaveSyncCompletionStage)
-    elif cbuildbot_config.IsCanaryType(self._run.config.build_type):
+    elif config_lib.IsCanaryType(self._run.config.build_type):
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)
       self.completion_stage_class = (

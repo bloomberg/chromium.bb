@@ -10,7 +10,7 @@ import collections
 import os
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lab_status
@@ -234,7 +234,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     elif issubclass(exc_type, failures_lib.BoardNotAvailable):
       # Some boards may not have been setup in the lab yet for
       # non-code-checkin configs.
-      if not cbuildbot_config.IsPFQType(self._run.config.build_type):
+      if not config_lib.IsPFQType(self._run.config.build_type):
         logging.warning('HWTest did not run because the board was not '
                         'available in the lab yet')
         return self._HandleExceptionAsWarning(exc_info)

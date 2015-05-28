@@ -9,9 +9,9 @@ from __future__ import print_function
 import mock
 import os
 
-from chromite.cbuildbot import cbuildbot_config as config
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lab_status
@@ -360,7 +360,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare('x86-alex-release', cmd_args=cmd_args)
     self._RunHWTestSuite()
     self.assertEqual(self.suite_config.timeout,
-                     config.HWTestConfig.BRANCHED_HW_TEST_TIMEOUT)
+                     config_lib.HWTestConfig.BRANCHED_HW_TEST_TIMEOUT)
     self.assertEqual(self.suite_config.priority,
                      constants.HWTEST_DEFAULT_PRIORITY)
 

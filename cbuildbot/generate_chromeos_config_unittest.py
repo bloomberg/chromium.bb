@@ -74,7 +74,7 @@ class ConfigClassTest(GenerateChromeosConfigTestBase):
 
 
 class CBuildBotTest(GenerateChromeosConfigTestBase):
-  """General tests of cbuildbot_config with respect to cbuildbot."""
+  """General tests of generate_chromeos_config."""
 
   def testConfigsKeysMismatch(self):
     """Verify that all configs contain exactly the default keys.

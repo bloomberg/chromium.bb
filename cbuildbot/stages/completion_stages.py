@@ -8,7 +8,7 @@ from __future__ import print_function
 
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import triage_lib
@@ -120,7 +120,7 @@ class ManifestVersionedSyncCompletionStage(
     if not self.success:
       self.message = self.GetBuildFailureMessage()
 
-    if not cbuildbot_config.IsPFQType(self._run.config.build_type):
+    if not config_lib.IsPFQType(self._run.config.build_type):
       # Update the pass/fail status in the manifest-versions
       # repo. Suite scheduler checks the build status to schedule
       # suites.
@@ -219,7 +219,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     # We only promote for the pfq, not chrome pfq.
     # TODO(build): Run this logic in debug mode too.
     if (not self._run.options.debug and
-        cbuildbot_config.IsPFQType(self._run.config.build_type) and
+        config_lib.IsPFQType(self._run.config.build_type) and
         self._run.config.master and
         self._run.manifest_branch == 'master' and
         self._run.config.build_type != constants.CHROME_PFQ_TYPE):
@@ -491,7 +491,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       manifest = git.ManifestCheckout.Cached(self._build_root)
       portage_util.EBuild.UpdateCommitHashesForChanges(
           self.sync_stage.pool.changes, self._build_root, manifest)
-      if cbuildbot_config.IsPFQType(self._run.config.build_type):
+      if config_lib.IsPFQType(self._run.config.build_type):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 
     manager = self._run.attrs.manifest_manager

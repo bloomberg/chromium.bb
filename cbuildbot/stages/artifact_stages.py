@@ -15,7 +15,7 @@ import shutil
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages
@@ -351,9 +351,9 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       # TODO: When we support branches fully, the friendly name of the branch
       # needs to be used with PushImages
       sign_types = []
-      if config['name'].endswith('-%s' % cbuildbot_config.CONFIG_TYPE_FIRMWARE):
+      if config['name'].endswith('-%s' % config_lib.CONFIG_TYPE_FIRMWARE):
         sign_types += ['firmware']
-      if config['name'].endswith('-%s' % cbuildbot_config.CONFIG_TYPE_FACTORY):
+      if config['name'].endswith('-%s' % config_lib.CONFIG_TYPE_FACTORY):
         sign_types += ['factory']
       urls = commands.PushImages(
           board=board,
@@ -545,7 +545,7 @@ class MasterUploadPrebuiltsStage(generic_stages.BuilderStage):
 
     # Distributed builders that use manifest-versions to sync with one another
     # share prebuilt logic by passing around versions.
-    assert cbuildbot_config.IsPFQType(self._prebuilt_type)
+    assert config_lib.IsPFQType(self._prebuilt_type)
 
     # Public pfqs should upload host preflight prebuilts.
     public_args.append('--sync-host')
@@ -609,7 +609,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
 
     if self._run.config.git_sync:
       # Git sync should never be set for pfq type builds.
-      assert not cbuildbot_config.IsPFQType(self._prebuilt_type)
+      assert not config_lib.IsPFQType(self._prebuilt_type)
       generated_args.extend(['--git-sync'])
 
     return generated_args
@@ -658,7 +658,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
 
     # Distributed builders that use manifest-versions to sync with one another
     # share prebuilt logic by passing around versions.
-    if cbuildbot_config.IsPFQType(prebuilt_type):
+    if config_lib.IsPFQType(prebuilt_type):
       # Public pfqs should upload host preflight prebuilts.
       if prebuilt_type != constants.CHROME_PFQ_TYPE:
         public_args.append('--sync-host')

@@ -14,6 +14,7 @@ import warnings
 
 from chromite.cbuildbot import binhost
 from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -114,7 +115,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         pfqs.add(key)
 
     if not pfqs:
-      pre_cq = (config.build_type == cbuildbot_config.CONFIG_TYPE_PRECQ)
+      pre_cq = (config.build_type == config_lib.CONFIG_TYPE_PRECQ)
       msg = '%s cannot find Chrome prebuilts -- %s'
       self.Complain(msg % (config.name, compat_id),
                     fatal=pre_cq or config.important)
@@ -123,7 +124,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     """Get the CompatId for a config.
 
     Args:
-      config: A cbuildbot_config.BuildConfig object.
+      config: A config_lib.BuildConfig object.
       board: Board to use. Defaults to the first board in the config.
           Optional if len(config.boards) == 1.
     """
@@ -165,7 +166,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         continue
 
       # Look for boards with missing prebuilts.
-      pre_cq = (config.build_type == cbuildbot_config.CONFIG_TYPE_PRECQ)
+      pre_cq = (config.build_type == config_lib.CONFIG_TYPE_PRECQ)
       if ((config.usepkg_build_packages and not config.chrome_rev) and
           (config.active_waterfall or pre_cq)):
         self.AssertChromePrebuilts(pfq_configs, config)
