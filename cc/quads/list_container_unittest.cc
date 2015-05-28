@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/quads/list_container.h"
+#include "cc/base/list_container.h"
 
 #include <vector>
 #include "cc/quads/draw_quad.h"
@@ -12,6 +12,8 @@
 #include "cc/quads/stream_video_draw_quad.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// TODO(jbroman): This unit test should be made generic and moved to cc/base/.
 
 namespace cc {
 namespace {
@@ -259,8 +261,7 @@ TEST(ListContainerTest,
   ListContainer<SharedQuadState>::Iterator iter = list.begin();
   for (std::vector<SharedQuadState*>::const_iterator sqs_iter =
            sqs_list.begin();
-       sqs_iter != sqs_list.end();
-       ++sqs_iter) {
+       sqs_iter != sqs_list.end(); ++sqs_iter) {
     EXPECT_EQ(*sqs_iter, *iter);
     ++iter;
   }
@@ -344,8 +345,7 @@ TEST(ListContainerTest,
   ListContainer<SharedQuadState>::Iterator iter = list.begin();
   for (std::vector<SharedQuadState*>::const_iterator sqs_iter =
            sqs_list.begin();
-       sqs_iter != sqs_list.end();
-       ++sqs_iter) {
+       sqs_iter != sqs_list.end(); ++sqs_iter) {
     EXPECT_EQ(*sqs_iter, *iter);
     ++iter;
   }
@@ -364,8 +364,7 @@ TEST(ListContainerTest, SimpleIterationSharedQuadState) {
   {
     std::vector<SharedQuadState*>::const_iterator sqs_iter = sqs_list.begin();
     for (ListContainer<SharedQuadState>::Iterator iter = list.begin();
-         iter != list.end();
-         ++iter) {
+         iter != list.end(); ++iter) {
       EXPECT_EQ(*sqs_iter, *iter);
       ++num_iters_in_list;
       ++sqs_iter;
@@ -377,8 +376,7 @@ TEST(ListContainerTest, SimpleIterationSharedQuadState) {
     ListContainer<SharedQuadState>::Iterator iter = list.begin();
     for (std::vector<SharedQuadState*>::const_iterator sqs_iter =
              sqs_list.begin();
-         sqs_iter != sqs_list.end();
-         ++sqs_iter) {
+         sqs_iter != sqs_list.end(); ++sqs_iter) {
       EXPECT_EQ(*sqs_iter, *iter);
       ++num_iters_in_vector;
       ++iter;
@@ -401,8 +399,7 @@ TEST(ListContainerTest, SimpleConstIteratorIterationSharedQuadState) {
     std::vector<const SharedQuadState*>::const_iterator sqs_iter =
         sqs_list.begin();
     for (ListContainer<SharedQuadState>::ConstIterator iter = list.begin();
-         iter != list.end();
-         ++iter) {
+         iter != list.end(); ++iter) {
       EXPECT_TRUE(isConstSharedQuadStatePointer(*iter));
       EXPECT_EQ(*sqs_iter, *iter);
       ++sqs_iter;
@@ -413,8 +410,7 @@ TEST(ListContainerTest, SimpleConstIteratorIterationSharedQuadState) {
     std::vector<const SharedQuadState*>::const_iterator sqs_iter =
         sqs_list.begin();
     for (ListContainer<SharedQuadState>::Iterator iter = list.begin();
-         iter != list.end();
-         ++iter) {
+         iter != list.end(); ++iter) {
       EXPECT_FALSE(isConstSharedQuadStatePointer(*iter));
       EXPECT_EQ(*sqs_iter, *iter);
       ++sqs_iter;
@@ -425,8 +421,7 @@ TEST(ListContainerTest, SimpleConstIteratorIterationSharedQuadState) {
     ListContainer<SharedQuadState>::ConstIterator iter = list.begin();
     for (std::vector<const SharedQuadState*>::const_iterator sqs_iter =
              sqs_list.begin();
-         sqs_iter != sqs_list.end();
-         ++sqs_iter) {
+         sqs_iter != sqs_list.end(); ++sqs_iter) {
       EXPECT_EQ(*sqs_iter, *iter);
       ++iter;
     }
@@ -446,8 +441,7 @@ TEST(ListContainerTest, SimpleReverseInsertionSharedQuadState) {
     std::vector<SharedQuadState*>::const_reverse_iterator sqs_iter =
         sqs_list.rbegin();
     for (ListContainer<SharedQuadState>::ReverseIterator iter = list.rbegin();
-         iter != list.rend();
-         ++iter) {
+         iter != list.rend(); ++iter) {
       EXPECT_EQ(*sqs_iter, *iter);
       ++sqs_iter;
     }
@@ -457,8 +451,7 @@ TEST(ListContainerTest, SimpleReverseInsertionSharedQuadState) {
     ListContainer<SharedQuadState>::ReverseIterator iter = list.rbegin();
     for (std::vector<SharedQuadState*>::reverse_iterator sqs_iter =
              sqs_list.rbegin();
-         sqs_iter != sqs_list.rend();
-         ++sqs_iter) {
+         sqs_iter != sqs_list.rend(); ++sqs_iter) {
       EXPECT_EQ(*sqs_iter, *iter);
       ++iter;
     }
@@ -480,8 +473,7 @@ TEST(ListContainerTest, SimpleDeletion) {
   EXPECT_EQ(size, list.size());
   int i = 1;
   for (ListContainer<DrawQuad>::Iterator iter = list.begin();
-       iter != list.end();
-       ++iter) {
+       iter != list.end(); ++iter) {
     EXPECT_EQ(i, static_cast<SimpleDrawQuad*>(*iter)->get_value());
     ++i;
   }
@@ -586,8 +578,7 @@ TEST(ListContainerTest, SimpleIterationAndManipulation) {
 
   int i = 0;
   for (std::vector<SimpleDrawQuad*>::const_iterator sdq_iter = sdq_list.begin();
-       sdq_iter < sdq_list.end();
-       ++sdq_iter) {
+       sdq_iter < sdq_list.end(); ++sdq_iter) {
     EXPECT_EQ(i, (*sdq_iter)->get_value());
     ++i;
   }
@@ -608,8 +599,7 @@ TEST(ListContainerTest, SimpleManipulationWithIndexSimpleDrawQuad) {
 
   int i = 0;
   for (std::vector<SimpleDrawQuad*>::const_iterator dq_iter = dq_list.begin();
-       dq_iter != dq_list.end();
-       ++dq_iter, ++i) {
+       dq_iter != dq_list.end(); ++dq_iter, ++i) {
     EXPECT_EQ(i, (*dq_iter)->get_value());
   }
 }
@@ -630,8 +620,7 @@ TEST(ListContainerTest,
 
   int i = 0;
   for (std::vector<SimpleDrawQuad*>::const_iterator dq_iter = dq_list.begin();
-       dq_iter != dq_list.end();
-       ++dq_iter, ++i) {
+       dq_iter != dq_list.end(); ++dq_iter, ++i) {
     EXPECT_EQ(i, (*dq_iter)->get_value());
   }
 }
@@ -648,16 +637,14 @@ TEST(ListContainerTest,
 
   size_t i = 0;
   for (ListContainer<SharedQuadState>::Iterator iter = list.begin();
-       iter != list.end();
-       ++iter) {
+       iter != list.end(); ++iter) {
     EXPECT_EQ(i, iter.index());
     ++i;
   }
 
   i = 0;
   for (ListContainer<SharedQuadState>::ReverseIterator iter = list.rbegin();
-       iter != list.rend();
-       ++iter) {
+       iter != list.rend(); ++iter) {
     EXPECT_EQ(i, iter.index());
     ++i;
   }

@@ -10,11 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/list_container.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/playback/display_item.h"
 #include "cc/playback/pixel_ref_map.h"
-// TODO(danakj): Move ListContainer out of cc/quads/
-#include "cc/quads/list_container.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"

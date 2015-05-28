@@ -13,6 +13,8 @@ source_set("base") {
     "histograms.h",
     "invalidation_region.cc",
     "invalidation_region.h",
+    "list_container.cc",
+    "list_container.h",
     "math_util.cc",
     "math_util.h",
     "region.cc",
