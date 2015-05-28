@@ -21566,6 +21566,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.PreferAesGcm" enum="BooleanPreferred">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    True if the QUIC session prefers to use AES GCM because of hardware support.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.PublicResetAddressMismatch"
     enum="QuicAddressMismatch">
   <owner>wtc@chromium.org</owner>
@@ -49005,6 +49012,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanPopulated" type="int">
   <int value="0" label="Not populated"/>
   <int value="1" label="Populated"/>
+</enum>
+
+<enum name="BooleanPreferred" type="int">
+  <int value="0" label="Not Preferred"/>
+  <int value="1" label="Preferred"/>
 </enum>
 
 <enum name="BooleanPresent" type="int">

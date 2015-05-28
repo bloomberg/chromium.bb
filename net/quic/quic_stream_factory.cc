@@ -596,7 +596,10 @@ QuicStreamFactory::QuicStreamFactory(
         new ChannelIDSourceChromium(channel_id_service));
   }
   base::CPU cpu;
-  if (cpu.has_aesni() && cpu.has_avx())
+  bool has_aes_hardware_support = cpu.has_aesni() && cpu.has_avx();
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm",
+                        has_aes_hardware_support);
+  if (has_aes_hardware_support)
     crypto_config_.PreferAesGcm();
   if (!IsEcdsaSupported())
     crypto_config_.DisableEcdsa();
