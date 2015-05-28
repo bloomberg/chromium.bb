@@ -496,10 +496,9 @@ void InspectorResourceAgent::documentThreadableLoaderStartedLoadingForClient(uns
     if (it == m_pendingXHRReplayData.end())
         return;
 
-    m_resourcesData->setResourceType(IdentifiersFactory::requestId(identifier), InspectorPageAgent::XHRResource);
-    XHRReplayData* xhrReplayData = it->value.get();
     String requestId = IdentifiersFactory::requestId(identifier);
-    m_resourcesData->setXHRReplayData(requestId, xhrReplayData);
+    m_resourcesData->setResourceType(requestId, InspectorPageAgent::XHRResource);
+    m_resourcesData->setXHRReplayData(requestId, it->value.get());
 }
 
 void InspectorResourceAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData> formData, const HTTPHeaderMap& headers, bool includeCredentials)
