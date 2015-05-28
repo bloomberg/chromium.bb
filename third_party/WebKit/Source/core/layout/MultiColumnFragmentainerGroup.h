@@ -147,6 +147,7 @@ private:
 class CORE_EXPORT MultiColumnFragmentainerGroupList {
 public:
     MultiColumnFragmentainerGroupList(LayoutMultiColumnSet&);
+    ~MultiColumnFragmentainerGroupList();
 
     // Add an additional fragmentainer group to the end of the list, and return it.
     MultiColumnFragmentainerGroup& addExtraGroup();
