@@ -110,6 +110,8 @@ public:
 
     void addClient(ImageLoaderClient*);
     void removeClient(ImageLoaderClient*);
+
+    virtual bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) override final;
 protected:
     virtual void notifyFinished(Resource*) override;
 

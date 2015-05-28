@@ -119,6 +119,7 @@ public:
     // Set animationPolicy
     virtual void setAnimationPolicy(ImageAnimationPolicy) { }
     virtual ImageAnimationPolicy animationPolicy() { return ImageAnimationPolicyAllowed; }
+    virtual void advanceTime(double deltaTimeInSeconds) { }
 
     // Typically the ImageResource that owns us.
     ImageObserver* imageObserver() const { return m_imageObserver; }

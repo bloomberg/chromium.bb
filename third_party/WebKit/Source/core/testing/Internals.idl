@@ -67,6 +67,10 @@
     // CSS Animation and Transition testing.
     [RaisesException] void pauseAnimations(double pauseTime);
 
+    // Modifies m_desiredFrameStartTime in BitmapImage to advance the next frame time
+    // for testing whether animated images work properly.
+    [RaisesException] void advanceTimeForImage(Element image, double deltaTimeInSeconds);
+
     [RaisesException, TypeChecking=Interface] Node nextSiblingInComposedTree(Node node);
     [RaisesException, TypeChecking=Interface] Node firstChildInComposedTree(Node node);
     [RaisesException, TypeChecking=Interface] Node lastChildInComposedTree(Node node);

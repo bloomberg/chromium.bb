@@ -82,6 +82,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -419,6 +420,34 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState
 
     frame()->view()->updateLayoutAndStyleForPainting();
     frame()->document()->timeline().pauseAnimationsForTesting(pauseTime);
+}
+
+void Internals::advanceTimeForImage(Element* image, double deltaTimeInSeconds, ExceptionState& exceptionState)
+{
+    ASSERT(image);
+    if (deltaTimeInSeconds < 0) {
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::indexExceedsMinimumBound("deltaTimeInSeconds", deltaTimeInSeconds, 0.0));
+        return;
+    }
+
+    if (!isHTMLImageElement(*image)) {
+        exceptionState.throwDOMException(InvalidAccessError, "The element provided is not a image element.");
+        return;
+    }
+
+    ImageResource* resource = toHTMLImageElement(*image).cachedImage();
+    if (!resource || !resource->hasImage()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The image resource is not available.");
+        return;
+    }
+
+    Image* imageData = resource->image();
+    if (!imageData->isBitmapImage()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The image resource is not a BitmapImage type.");
+        return;
+    }
+
+    imageData->advanceTime(deltaTimeInSeconds);
 }
 
 bool Internals::hasShadowInsertionPoint(const Node* root, ExceptionState& exceptionState) const

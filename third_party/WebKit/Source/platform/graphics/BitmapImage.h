@@ -83,6 +83,7 @@ public:
 
     virtual void setAnimationPolicy(ImageAnimationPolicy policy) override { m_animationPolicy = policy; }
     virtual ImageAnimationPolicy animationPolicy() override { return m_animationPolicy; }
+    virtual void advanceTime(double deltaTimeInSeconds) override;
 
     virtual bool bitmapForCurrentFrame(SkBitmap*) override;
     virtual PassRefPtr<Image> imageForDefaultFrame() override;

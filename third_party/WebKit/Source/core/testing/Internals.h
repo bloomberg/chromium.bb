@@ -111,6 +111,10 @@ public:
     // CSS Animation / Transition testing.
     void pauseAnimations(double pauseTime, ExceptionState&);
 
+    // Modifies m_desiredFrameStartTime in BitmapImage to advance the next frame time
+    // for testing whether animated images work properly.
+    void advanceTimeForImage(Element* image, double deltaTimeInSeconds, ExceptionState&);
+
     bool isValidContentSelect(Element* insertionPoint, ExceptionState&);
     Node* treeScopeRootNode(Node*);
     Node* parentTreeScope(Node*);

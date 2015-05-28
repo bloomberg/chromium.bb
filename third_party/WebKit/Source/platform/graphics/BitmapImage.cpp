@@ -599,6 +599,14 @@ bool BitmapImage::maybeAnimated()
     return m_source.repetitionCount() != cAnimationNone;
 }
 
+void BitmapImage::advanceTime(double deltaTimeInSeconds)
+{
+    if (m_desiredFrameStartTime)
+        m_desiredFrameStartTime -= deltaTimeInSeconds;
+    else
+        m_desiredFrameStartTime = monotonicallyIncreasingTime() - deltaTimeInSeconds;
+}
+
 void BitmapImage::advanceAnimation(Timer<BitmapImage>*)
 {
     internalAdvanceAnimation(false);

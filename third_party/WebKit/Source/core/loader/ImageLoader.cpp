@@ -33,6 +33,7 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -589,6 +590,15 @@ void ImageLoader::removeClient(ImageLoaderClient* client)
 {
     willRemoveClient(*client);
     m_clients.remove(client);
+}
+
+bool ImageLoader::getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy& policy)
+{
+    if (!element()->document().settings())
+        return false;
+
+    policy = element()->document().settings()->imageAnimationPolicy();
+    return true;
 }
 
 void ImageLoader::dispatchPendingLoadEvents()
