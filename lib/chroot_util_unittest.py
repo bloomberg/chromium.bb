@@ -21,18 +21,19 @@ if cros_build_lib.IsInsideChroot():
 class ChrootUtilTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Test class for the chroot_util functions."""
 
-  def testGetToolchainPackages(self):
-    """Test GetToolchainPackages function without mocking."""
-    packages = chroot_util._GetToolchainPackages()
-    self.assertTrue(packages)
-
   def testEmerge(self):
     """Tests correct invocation of emerge."""
     packages = ['foo-app/bar', 'sys-baz/clap']
     self.PatchObject(cros_list_modified_packages, 'ListModifiedWorkonPackages',
                      return_value=[packages[0]])
 
-    toolchain_packages = chroot_util._GetToolchainPackages()
+    toolchain_packages = [
+        'sys-devel/binutils',
+        'sys-devel/gcc',
+        'sys-kernel/linux-headers',
+        'sys-libs/glibc',
+        'sys-devel/gdb'
+    ]
     self.PatchObject(chroot_util, '_GetToolchainPackages',
                      return_value=toolchain_packages)
     toolchain_package_list = ' '.join(toolchain_packages)
