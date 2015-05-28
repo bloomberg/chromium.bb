@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/notifications/notification_style.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -71,7 +73,8 @@ std::string StripScopeFromIdentifier(const std::string& extension_id,
   return id.substr(index_of_separator);
 }
 
-class NotificationsApiDelegate : public NotificationDelegate {
+class NotificationsApiDelegate : public NotificationDelegate,
+                                 public content::NotificationObserver {
  public:
   NotificationsApiDelegate(ChromeAsyncExtensionFunction* api_function,
                            Profile* profile,
@@ -83,6 +86,8 @@ class NotificationsApiDelegate : public NotificationDelegate {
         id_(id),
         scoped_id_(CreateScopedIdentifier(extension_id, id)) {
     DCHECK(api_function_.get());
+    notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                                content::Source<Profile>(profile_));
   }
 
   void Close(bool by_user) override {
@@ -102,6 +107,9 @@ class NotificationsApiDelegate : public NotificationDelegate {
   }
 
   bool HasClickedListener() override {
+    if (profile_ == nullptr)
+      return false;
+
     return EventRouter::Get(profile_)->HasEventListener(
         notifications::OnClicked::kEventName);
   }
@@ -122,10 +130,21 @@ class NotificationsApiDelegate : public NotificationDelegate {
   void SendEvent(const std::string& name,
                  EventRouter::UserGestureState user_gesture,
                  scoped_ptr<base::ListValue> args) {
+    if (profile_ == nullptr)
+      return;
+
     scoped_ptr<Event> event(new Event(name, args.Pass()));
     event->user_gesture = user_gesture;
     EventRouter::Get(profile_)->DispatchEventToExtension(extension_id_,
                                                          event.Pass());
+  }
+
+  // content::NotificationObserver implementation.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
+    profile_ = nullptr;
   }
 
   scoped_ptr<base::ListValue> CreateBaseEventArgs() {
@@ -135,10 +154,17 @@ class NotificationsApiDelegate : public NotificationDelegate {
   }
 
   scoped_refptr<ChromeAsyncExtensionFunction> api_function_;
+
+  // Since this class is refcounted it may outlive |profile_|.  We listen for
+  // profile destruction events and reset to nullptr at that time, so make sure
+  // to check for a valid pointer before use.
   Profile* profile_;
+
   const std::string extension_id_;
   const std::string id_;
   const std::string scoped_id_;
+
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationsApiDelegate);
 };
