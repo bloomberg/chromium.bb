@@ -1089,18 +1089,14 @@ emit_header(struct protocol *protocol, enum side side)
 		printf("struct %s;\n", *p);
 		prev = *p;
 	}
+	wl_array_release(&types);
 	printf("\n");
 
-	prev = NULL;
-	wl_array_for_each(p, &types) {
-		if (prev && strcmp(*p, prev) == 0)
-			continue;
+	wl_list_for_each(i, &protocol->interface_list, link) {
 		printf("extern const struct wl_interface "
-		       "%s_interface;\n", *p);
-		prev = *p;
+		       "%s_interface;\n", i->name);
 	}
 
-	wl_array_release(&types);
 	printf("\n");
 
 	wl_list_for_each(i, &protocol->interface_list, link) {
