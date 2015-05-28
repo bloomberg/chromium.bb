@@ -178,14 +178,8 @@ public:
     };
 
     enum GCType {
-        // Run a marking task and a sweeping task in Heap::collectGarbage().
-        GCWithSweep,
-        // Run only a marking task in Heap::collectGarbage(). A sweeping task
-        // is split into chunks and scheduled lazily.
-        GCWithoutSweep,
-        // Run a marking task just to take a heap snapshot. A sweeping task
-        // doesn't run and the marks are just dropped.
-        TakeSnapshot,
+        GCWithSweep, // Sweeping is completed in Heap::collectGarbage().
+        GCWithoutSweep, // Lazy sweeping is scheduled.
     };
 
     // See setGCState() for possible state transitions.
@@ -346,10 +340,6 @@ public:
     void preSweep();
     void completeSweep();
     void postSweep();
-    // makeConsistentForMutator() drops marks from marked objects and rebuild
-    // free lists. This is called after taking a snapshot and before resuming
-    // the executions of mutators.
-    void makeConsistentForMutator();
 
     // Support for disallowing allocation. Mainly used for sanity
     // checks asserts.
@@ -660,7 +650,6 @@ private:
     void unregisterPreFinalizerInternal(void*);
     void invokePreFinalizers(Visitor&);
 
-    void takeSnapshot();
 #if ENABLE(GC_PROFILING)
     void snapshotFreeList();
 #endif

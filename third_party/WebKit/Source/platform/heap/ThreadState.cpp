@@ -850,13 +850,6 @@ void ThreadState::makeConsistentForGC()
         m_heaps[i]->makeConsistentForGC();
 }
 
-void ThreadState::makeConsistentForMutator()
-{
-    ASSERT(isInGC());
-    for (int i = 0; i < NumberOfHeaps; ++i)
-        m_heaps[i]->makeConsistentForMutator();
-}
-
 void ThreadState::preGC()
 {
     ASSERT(!isInGC());
@@ -889,23 +882,9 @@ void ThreadState::postGC(GCType gcType)
     }
 #endif
 
+    setGCState(gcType == GCWithSweep ? EagerSweepScheduled : LazySweepScheduled);
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->prepareForSweep();
-
-    if (gcType == GCWithSweep) {
-        setGCState(EagerSweepScheduled);
-    } else if (gcType == GCWithoutSweep) {
-        setGCState(LazySweepScheduled);
-    } else {
-        takeSnapshot();
-
-        // This unmarks all marked objects and marks all unmarked objects dead.
-        makeConsistentForMutator();
-
-        // Force setting NoGCScheduled to circumvent checkThread()
-        // in setGCState().
-        m_gcState = NoGCScheduled;
-    }
 }
 
 void ThreadState::preSweep()
@@ -1288,12 +1267,6 @@ void ThreadState::promptlyFreed(size_t gcInfoIndex)
     size_t entryIndex = gcInfoIndex & likelyToBePromptlyFreedArrayMask;
     // See the comment in vectorBackingHeap() for why this is +3.
     m_likelyToBePromptlyFreed[entryIndex] += 3;
-}
-
-void ThreadState::takeSnapshot()
-{
-    ASSERT(isInGC());
-    // TODO(ssid): Implement this.
 }
 
 #if ENABLE(GC_PROFILING)

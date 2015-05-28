@@ -386,7 +386,6 @@ public:
     virtual void removeFromHeap() = 0;
     virtual void sweep() = 0;
     virtual void makeConsistentForGC() = 0;
-    virtual void makeConsistentForMutator() = 0;
 #if defined(ADDRESS_SANITIZER)
     virtual void poisonUnmarkedObjects() = 0;
 #endif
@@ -474,7 +473,6 @@ public:
     virtual void removeFromHeap() override;
     virtual void sweep() override;
     virtual void makeConsistentForGC() override;
-    virtual void makeConsistentForMutator() override;
 #if defined(ADDRESS_SANITIZER)
     virtual void poisonUnmarkedObjects() override;
 #endif
@@ -537,7 +535,6 @@ public:
     virtual void removeFromHeap() override;
     virtual void sweep() override;
     virtual void makeConsistentForGC() override;
-    virtual void makeConsistentForMutator() override;
 #if defined(ADDRESS_SANITIZER)
     virtual void poisonUnmarkedObjects() override;
 #endif
@@ -696,7 +693,6 @@ public:
 
     virtual void clearFreeLists() { }
     void makeConsistentForGC();
-    void makeConsistentForMutator();
 #if ENABLE(ASSERT)
     virtual bool isConsistentForGC() = 0;
 #endif

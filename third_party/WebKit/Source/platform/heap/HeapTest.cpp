@@ -523,8 +523,6 @@ protected:
                     atomicIncrement(&m_gcCount);
                 }
 
-                // Taking snapshot shouldn't have any bad side effect.
-                Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::TakeSnapshot, Heap::ForcedGC);
                 Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
                 EXPECT_EQ(wrapper->value(), 0x0bbac0de);
                 EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);
@@ -569,8 +567,6 @@ private:
                     atomicIncrement(&m_gcCount);
                 }
 
-                // Taking snapshot shouldn't have any bad side effect.
-                Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::TakeSnapshot, Heap::ForcedGC);
                 Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
                 EXPECT_TRUE(weakMap->isEmpty());
                 EXPECT_TRUE(weakMap2.isEmpty());
@@ -3640,7 +3636,7 @@ TEST(HeapTest, CheckAndMarkPointer)
     // This is a low-level test where we call checkAndMarkPointer. This method
     // causes the object start bitmap to be computed which requires the heap
     // to be in a consistent state (e.g. the free allocation area must be put
-    // into a free list header). However when we call makeConsistentForGC it
+    // into a free list header). However when we call makeConsistentForSweeping it
     // also clears out the freelists so we have to rebuild those before trying
     // to allocate anything again. We do this by forcing a GC after doing the
     // checkAndMarkPointer tests.
