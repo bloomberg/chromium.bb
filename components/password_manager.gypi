@@ -50,6 +50,8 @@
         'password_manager/core/browser/credential_manager_password_form_manager.h',
         'password_manager/core/browser/credential_manager_pending_request_task.cc',
         'password_manager/core/browser/credential_manager_pending_request_task.h',
+        'password_manager/core/browser/credential_manager_pending_signed_out_task.cc',
+        'password_manager/core/browser/credential_manager_pending_signed_out_task.h',
         'password_manager/core/browser/export/csv_writer.cc',
         'password_manager/core/browser/export/csv_writer.h',
         'password_manager/core/browser/facet_manager.cc',

@@ -12,6 +12,7 @@
 #include "base/prefs/pref_member.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/core/browser/credential_manager_pending_request_task.h"
+#include "components/password_manager/core/browser/credential_manager_pending_signed_out_task.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -35,7 +36,8 @@ struct CredentialInfo;
 class CredentialManagerDispatcher
     : public content::WebContentsObserver,
       public CredentialManagerPasswordFormManagerDelegate,
-      public CredentialManagerPendingRequestTaskDelegate {
+      public CredentialManagerPendingRequestTaskDelegate,
+      public CredentialManagerPendingSignedOutTaskDelegate {
  public:
   CredentialManagerDispatcher(content::WebContents* web_contents,
                               PasswordManagerClient* client);
@@ -78,19 +80,17 @@ class CredentialManagerDispatcher
   void SendCredential(int request_id, const CredentialInfo& info) override;
   PasswordManagerClient* client() const override;
 
+  // CredentialManagerPendingSignedOutTaskDelegate:
+  PasswordStore* GetPasswordStore() override;
+  void DoneSigningOut() override;
+
   // CredentialManagerPasswordFormManagerDelegate:
   void OnProvisionalSaveComplete() override;
 
  private:
-  class PendingSignedOutTask;
-
-  PasswordStore* GetPasswordStore();
-
   // Returns the driver for the current main frame.
   // Virtual for testing.
   virtual base::WeakPtr<PasswordManagerDriver> GetDriver();
-
-  void DoneSigningOut();
 
   PasswordManagerClient* client_;
   scoped_ptr<CredentialManagerPasswordFormManager> form_manager_;
@@ -103,7 +103,7 @@ class CredentialManagerDispatcher
   // they can properly respond to the request once the PasswordStore gives
   // us data.
   scoped_ptr<CredentialManagerPendingRequestTask> pending_request_;
-  scoped_ptr<PendingSignedOutTask> pending_sign_out_;
+  scoped_ptr<CredentialManagerPendingSignedOutTask> pending_sign_out_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerDispatcher);
 };

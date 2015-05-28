@@ -22,56 +22,6 @@
 
 namespace password_manager {
 
-// CredentialManagerDispatcher::PendingSignedOutTask ---------------------------
-
-class CredentialManagerDispatcher::PendingSignedOutTask
-    : public PasswordStoreConsumer {
- public:
-  PendingSignedOutTask(CredentialManagerDispatcher* const dispatcher,
-                       const GURL& origin);
-
-  void AddOrigin(const GURL& origin);
-
-  // PasswordStoreConsumer implementation.
-  void OnGetPasswordStoreResults(
-      ScopedVector<autofill::PasswordForm> results) override;
-
- private:
-  // Backlink to the CredentialManagerDispatcher that owns this object.
-  CredentialManagerDispatcher* const dispatcher_;
-  std::set<std::string> origins_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingSignedOutTask);
-};
-
-CredentialManagerDispatcher::PendingSignedOutTask::PendingSignedOutTask(
-    CredentialManagerDispatcher* const dispatcher,
-    const GURL& origin)
-    : dispatcher_(dispatcher) {
-  origins_.insert(origin.spec());
-}
-
-void CredentialManagerDispatcher::PendingSignedOutTask::AddOrigin(
-    const GURL& origin) {
-  origins_.insert(origin.spec());
-}
-
-void CredentialManagerDispatcher::PendingSignedOutTask::
-    OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
-  PasswordStore* store = dispatcher_->GetPasswordStore();
-  for (autofill::PasswordForm* form : results) {
-    if (origins_.count(form->origin.spec())) {
-      form->skip_zero_click = true;
-      // Note that UpdateLogin ends up copying the form while posting a task to
-      // update the PasswordStore, so it's fine to let |results| delete the
-      // original at the end of this method.
-      store->UpdateLogin(*form);
-    }
-  }
-
-  dispatcher_->DoneSigningOut();
-}
-
 // CredentialManagerDispatcher -------------------------------------------------
 
 CredentialManagerDispatcher::CredentialManagerDispatcher(
@@ -150,11 +100,11 @@ void CredentialManagerDispatcher::OnNotifySignedOut(int request_id) {
   PasswordStore* store = GetPasswordStore();
   if (store) {
     if (!pending_sign_out_) {
-      pending_sign_out_.reset(new PendingSignedOutTask(
+      pending_sign_out_.reset(new CredentialManagerPendingSignedOutTask(
           this, web_contents()->GetLastCommittedURL().GetOrigin()));
 
       // This will result in a callback to
-      // PendingSignedOutTask::OnGetPasswordStoreResults().
+      // CredentialManagerPendingSignedOutTask::OnGetPasswordStoreResults().
       store->GetAutofillableLogins(pending_sign_out_.get());
     } else {
       pending_sign_out_->AddOrigin(

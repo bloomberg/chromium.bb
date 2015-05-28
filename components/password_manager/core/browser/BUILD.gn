@@ -32,6 +32,8 @@ static_library("browser") {
     "credential_manager_password_form_manager.h",
     "credential_manager_pending_request_task.cc",
     "credential_manager_pending_request_task.h",
+    "credential_manager_pending_signed_out_task.cc",
+    "credential_manager_pending_signed_out_task.h",
     "export/csv_writer.cc",
     "export/csv_writer.h",
     "facet_manager.cc",
