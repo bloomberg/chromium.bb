@@ -655,9 +655,17 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
 }
 
+// Disabled on Mac due to flakiness: crbug.com/493263
+#if defined(OS_MACOSX)
+#define MAYBE_NoPromptForFailedLoginFromSubFrameWithMultiFramesInPage \
+    DISABLED_NoPromptForFailedLoginFromSubFrameWithMultiFramesInPage
+#else
+#define MAYBE_NoPromptForFailedLoginFromSubFrameWithMultiFramesInPage \
+    NoPromptForFailedLoginFromSubFrameWithMultiFramesInPage
+#endif
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTest,
-    NoPromptForFailedLoginFromSubFrameWithMultiFramesInPage) {
+    MAYBE_NoPromptForFailedLoginFromSubFrameWithMultiFramesInPage) {
   NavigateToFile("/password/multi_frames.html");
 
   // Make sure that we don't prompt to save the password for a failed login
