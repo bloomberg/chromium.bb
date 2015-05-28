@@ -54,6 +54,7 @@ struct CORE_EXPORT CachedDocumentParameters {
     RefPtr<MediaValues> mediaValues;
     Length defaultViewportMinWidth;
     bool viewportMetaZeroValuesQuirk;
+    bool viewportMetaEnabled;
 
 private:
     CachedDocumentParameters(Document*, PassRefPtr<MediaValues>);

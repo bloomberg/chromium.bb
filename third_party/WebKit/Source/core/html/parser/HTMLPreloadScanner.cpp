@@ -436,6 +436,8 @@ void TokenPreloadScanner::scan(const CompactHTMLToken& token, const SegmentedStr
 
 static void handleMetaViewport(const String& attributeValue, CachedDocumentParameters* documentParameters)
 {
+    if (!documentParameters->viewportMetaEnabled)
+        return;
     ViewportDescription description(ViewportDescription::ViewportMeta);
     HTMLMetaElement::getViewportDescriptionFromContentAttribute(attributeValue, description, nullptr, documentParameters->viewportMetaZeroValuesQuirk);
     FloatSize initialViewport(documentParameters->mediaValues->viewportHeight(), documentParameters->mediaValues->viewportWidth());
@@ -601,6 +603,7 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document, PassRefPt
     ASSERT(mediaValues->isSafeToSendToAnotherThread());
     defaultViewportMinWidth = document->viewportDefaultMinWidth();
     viewportMetaZeroValuesQuirk = document->settings() && document->settings()->viewportMetaZeroValuesQuirk();
+    viewportMetaEnabled = document->settings() && document->settings()->viewportMetaEnabled();
 }
 
 }
