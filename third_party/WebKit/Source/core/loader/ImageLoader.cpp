@@ -23,6 +23,9 @@
 #include "core/loader/ImageLoader.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
@@ -86,9 +89,22 @@ public:
         , m_updateBehavior(updateBehavior)
         , m_weakFactory(this)
     {
+        v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+        v8::HandleScope scope(isolate);
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
+        // If we're invoked from C++ without a V8 context on the stack, we should
+        // run the microtask in the context of the element's document's main world.
+        if (context.IsEmpty())
+            m_scriptState = ScriptState::from(toV8Context(&loader->element()->document(), DOMWrapperWorld::mainWorld()));
+        else
+            m_scriptState = ScriptState::from(context);
     }
 
-    virtual void run() override
+    ~Task() override
+    {
+    }
+
+    void run() override
     {
         if (m_loader) {
 #if ENABLE(OILPAN)
@@ -103,13 +119,19 @@ public:
             if (Heap::willObjectBeLazilySwept(m_loader))
                 return;
 #endif
-            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);
+            if (m_scriptState->contextIsValid()) {
+                ScriptState::Scope scope(m_scriptState.get());
+                m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);
+            } else {
+                m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);
+            }
         }
     }
 
     void clearLoader()
     {
         m_loader = 0;
+        m_scriptState.clear();
     }
 
     WeakPtr<Task> createWeakPtr()
@@ -121,6 +143,7 @@ private:
     ImageLoader* m_loader;
     BypassMainWorldBehavior m_shouldBypassMainWorldCSP;
     UpdateFromElementBehavior m_updateBehavior;
+    RefPtr<ScriptState> m_scriptState;
     WeakPtrFactory<Task> m_weakFactory;
 };
 
@@ -376,7 +399,12 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior)
             image->removeClient(this);
         m_image = nullptr;
     }
-    enqueueImageLoadingMicroTask(updateBehavior);
+
+    // Don't load images for inactive documents. We don't want to slow down the
+    // raw HTML parsing case by loading images we don't intend to display.
+    Document& document = m_element->document();
+    if (document.isActive())
+        enqueueImageLoadingMicroTask(updateBehavior);
 }
 
 KURL ImageLoader::imageSourceToKURL(AtomicString imageSourceURL) const

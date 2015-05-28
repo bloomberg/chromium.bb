@@ -44,6 +44,10 @@ class CORE_EXPORT Microtask {
 public:
     static void performCheckpoint(v8::Isolate*);
     static bool performingCheckpoint(v8::Isolate*);
+
+    // TODO(jochen): Make all microtasks pass in the ScriptState they want to be
+    // executed in. Until then, all microtasks have to keep track of their
+    // ScriptState themselves.
     static void enqueueMicrotask(PassOwnPtr<WebThread::Task>);
     static void enqueueMicrotask(PassOwnPtr<Closure>);
 
