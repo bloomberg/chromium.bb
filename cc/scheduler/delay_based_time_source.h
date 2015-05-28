@@ -95,27 +95,6 @@ class CC_EXPORT DelayBasedTimeSource
   DISALLOW_COPY_AND_ASSIGN(DelayBasedTimeSource);
 };
 
-// DelayBasedTimeSource that once used base::TimeTicks::HighResNow as its time
-// source, but is now a no-op.
-// TODO(brianderson): Remove along with gfx::/FrameTime.http://crbug.com/447329
-class DelayBasedTimeSourceHighRes : public DelayBasedTimeSource {
- public:
-  static scoped_refptr<DelayBasedTimeSourceHighRes> Create(
-        base::TimeDelta interval, base::SingleThreadTaskRunner* task_runner);
-
-  base::TimeTicks Now() const override;
-
- protected:
-  DelayBasedTimeSourceHighRes(base::TimeDelta interval,
-                              base::SingleThreadTaskRunner* task_runner);
-  ~DelayBasedTimeSourceHighRes() override;
-
-  std::string TypeString() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DelayBasedTimeSourceHighRes);
-};
-
 }  // namespace cc
 
 #endif  // CC_SCHEDULER_DELAY_BASED_TIME_SOURCE_H_

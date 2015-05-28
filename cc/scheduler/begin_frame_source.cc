@@ -210,14 +210,8 @@ scoped_ptr<SyntheticBeginFrameSource> SyntheticBeginFrameSource::Create(
     base::TimeTicks initial_vsync_timebase,
     base::TimeDelta initial_vsync_interval) {
   scoped_refptr<DelayBasedTimeSource> time_source;
-  if (base::TimeTicks::IsHighResolution()) {
-    time_source = DelayBasedTimeSourceHighRes::Create(initial_vsync_interval,
-                                                      task_runner);
-  } else {
-    time_source =
-        DelayBasedTimeSource::Create(initial_vsync_interval, task_runner);
-  }
-
+  time_source =
+      DelayBasedTimeSource::Create(initial_vsync_interval, task_runner);
   return make_scoped_ptr(new SyntheticBeginFrameSource(time_source));
 }
 
