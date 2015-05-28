@@ -31,7 +31,6 @@
 #include "chrome/browser/android/find_in_page/find_in_page_bridge.h"
 #include "chrome/browser/android/foreign_session_helper.h"
 #include "chrome/browser/android/fullscreen/fullscreen_infobar_delegate.h"
-#include "chrome/browser/android/history_report/history_report_jni_bridge.h"
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/java_exception_reporter.h"
 #include "chrome/browser/android/large_icon_bridge.h"
@@ -47,7 +46,6 @@
 #include "chrome/browser/android/omnibox/autocomplete_controller_android.h"
 #include "chrome/browser/android/omnibox/omnibox_prerender.h"
 #include "chrome/browser/android/password_ui_view_android.h"
-#include "chrome/browser/android/policy/policy_manager.h"
 #include "chrome/browser/android/precache/precache_launcher.h"
 #include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
@@ -58,7 +56,6 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
-#include "chrome/browser/android/tab/background_content_view_helper.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_state.h"
 #include "chrome/browser/android/url_utilities.h"
@@ -168,7 +165,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AutofillPopup",
      autofill::AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid},
     {"AutofillProfileBridge", autofill::RegisterAutofillProfileBridge},
-    {"BackgroundContentViewHelper", BackgroundContentViewHelper::Register},
     {"BookmarksBridge", BookmarksBridge::RegisterBookmarksBridge},
     {"CardUnmaskPrompt", autofill::CardUnmaskPromptViewAndroid::Register},
     {"CertificateViewer", RegisterCertificateViewer},
@@ -215,7 +211,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      FullscreenInfoBarDelegate::RegisterFullscreenInfoBarDelegate},
     {"GeneratedPasswordSavedInfoBarDelegate",
      RegisterGeneratedPasswordSavedInfoBarDelegate},
-    {"HistoryReportJniBridge", history_report::RegisterHistoryReportJniBridge},
     {"InfoBarContainer", RegisterInfoBarContainer},
     {"InvalidationServiceFactory",
      invalidation::InvalidationServiceFactoryAndroid::Register},
@@ -247,7 +242,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      PasswordUIViewAndroid::RegisterPasswordUIViewAndroid},
     {"PersonalDataManagerAndroid",
      autofill::PersonalDataManagerAndroid::Register},
-    {"PolicyManager", RegisterPolicyManager},
     {"PrecacheLauncher", RegisterPrecacheLauncher},
     {"PrefServiceBridge", RegisterPrefServiceBridge},
     {"ProfileAndroid", ProfileAndroid::RegisterProfileAndroid},

@@ -6,7 +6,6 @@ import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//third_party/protobuf/proto_library.gni")
 
 # //build/config/android/rules.gni imports //tools/grit/grit_rule.gni, which
 # produces a conflict for the "grit" template so we have to only include one.
@@ -624,8 +623,6 @@ source_set("browser") {
     sources +=
         rebase_path(gypi_values.chrome_browser_android_sources, ".", "//chrome")
     deps += [
-      ":client_discourse_context_proto",
-      ":delta_file_proto",
       ":jni_headers",
       "//components/cdm/browser",
       "//components/enhanced_bookmarks",
@@ -812,20 +809,6 @@ if (is_android) {
     sources =
         rebase_path(gypi_values.chrome_browser_jni_sources, ".", "//chrome")
     jni_package = "chrome"
-  }
-
-  #GYP: '//chrome/chrome_browser.gypi:client_discourse_context_proto'
-  proto_library("client_discourse_context_proto") {
-    sources = [
-      "android/proto/client_discourse_context.proto",
-    ]
-  }
-
-  #GYP: '//chrome/chrome_browser.gypi:delta_file_proto'
-  proto_library("delta_file_proto") {
-    sources = [
-      "android/proto/delta_file.proto",
-    ]
   }
 }
 

@@ -742,6 +742,7 @@ generate_jni("staging_jni_headers") {
 # GYP: //chrome/android/chrome_apk.gyp:libchrome_staging
 static_library("chrome_staging") {
   deps = [
+    ":proto",
     ":staging_jni_headers",
     "//chrome/browser",
     "//chrome:strings",
@@ -773,4 +774,12 @@ static_library("chrome_staging") {
   ]
 
   defines = []
+}
+
+proto_library("proto") {
+  sources = [
+    "../browser/android/proto/client_discourse_context.proto",
+    "../browser/android/proto/delta_file.proto",
+  ]
+  proto_out_dir = "chrome/browser/android/proto"
 }
