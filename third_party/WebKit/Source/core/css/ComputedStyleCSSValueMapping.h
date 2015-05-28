@@ -27,6 +27,7 @@ private:
     static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowData(const ShadowData&, const ComputedStyle&, bool useSpread);
     static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowList(const ShadowList*, const ComputedStyle&, bool useSpread);
     static PassRefPtrWillBeRawPtr<CSSValue> valueForFilter(const ComputedStyle&);
+    static PassRefPtrWillBeRawPtr<CSSValue> valueForFont(const ComputedStyle&);
 };
 
 } // namespace blink

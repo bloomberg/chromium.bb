@@ -1056,8 +1056,6 @@
             'css/CSSFontSelector.cpp',
             'css/CSSFontSelector.h',
             'css/CSSFontSelectorClient.h',
-            'css/CSSFontValue.cpp',
-            'css/CSSFontValue.h',
             'css/CSSFunctionValue.cpp',
             'css/CSSFunctionValue.h',
             'css/CSSGradientValue.cpp',

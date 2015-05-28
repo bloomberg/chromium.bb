@@ -30,7 +30,6 @@
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSFontFeatureValue.h"
-#include "core/css/CSSFontValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
@@ -1325,6 +1324,24 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::valueForFilter(co
     return list.release();
 }
 
+PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::valueForFont(const ComputedStyle& style)
+{
+    // Add a slash between size and line-height.
+    RefPtrWillBeRawPtr<CSSValueList> sizeAndLineHeight = CSSValueList::createSlashSeparated();
+    sizeAndLineHeight->append(valueForFontSize(style));
+    sizeAndLineHeight->append(valueForLineHeight(style));
+
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    list->append(valueForFontStyle(style));
+    list->append(valueForFontVariant(style));
+    list->append(valueForFontWeight(style));
+    list->append(valueForFontStretch(style));
+    list->append(sizeAndLineHeight.release());
+    list->append(valueForFontFamily(style));
+
+    return list.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
 {
     const SVGComputedStyle& svgStyle = style.svgStyle();
@@ -1581,17 +1598,8 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         if (style.display() != NONE && style.hasOutOfFlowPosition())
             return cssValuePool().createIdentifierValue(CSSValueNone);
         return cssValuePool().createValue(style.floating());
-    case CSSPropertyFont: {
-        RefPtrWillBeRawPtr<CSSFontValue> computedFont = CSSFontValue::create();
-        computedFont->style = valueForFontStyle(style);
-        computedFont->variant = valueForFontVariant(style);
-        computedFont->weight = valueForFontWeight(style);
-        computedFont->stretch = valueForFontStretch(style);
-        computedFont->size = valueForFontSize(style);
-        computedFont->lineHeight = valueForLineHeight(style);
-        computedFont->family = valueForFontFamily(style);
-        return computedFont.release();
-    }
+    case CSSPropertyFont:
+        return valueForFont(style);
     case CSSPropertyFontFamily:
         return valueForFontFamily(style);
     case CSSPropertyFontSize:

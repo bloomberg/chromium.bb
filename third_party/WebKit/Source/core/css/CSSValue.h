@@ -68,7 +68,6 @@ public:
     bool isCursorImageValue() const { return m_classType == CursorImageClass; }
     bool isCrossfadeValue() const { return m_classType == CrossfadeClass; }
     bool isFontFeatureValue() const { return m_classType == FontFeatureClass; }
-    bool isFontValue() const { return m_classType == FontClass; }
     bool isFontFaceSrcValue() const { return m_classType == FontFaceSrcClass; }
     bool isFunctionValue() const { return m_classType == FunctionClass; }
     bool isImageGeneratorValue() const { return m_classType >= CanvasClass && m_classType <= RadialGradientClass; }
@@ -132,7 +131,6 @@ protected:
         // Other class types.
         BorderImageSliceClass,
         FontFeatureClass,
-        FontClass,
         FontFaceSrcClass,
 
         InheritedClass,

@@ -44,7 +44,6 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSCursorImageValue.h"
-#include "core/css/CSSFontValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSHelper.h"

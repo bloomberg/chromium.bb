@@ -35,7 +35,6 @@
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFeatureValue.h"
-#include "core/css/CSSFontValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
@@ -101,8 +100,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSCanvasValue>(*this, other);
         case CursorImageClass:
             return compareCSSValues<CSSCursorImageValue>(*this, other);
-        case FontClass:
-            return compareCSSValues<CSSFontValue>(*this, other);
         case FontFaceSrcClass:
             return compareCSSValues<CSSFontFaceSrcValue>(*this, other);
         case FontFeatureClass:
@@ -170,8 +167,6 @@ String CSSValue::cssText() const
         return toCSSCanvasValue(this)->customCSSText();
     case CursorImageClass:
         return toCSSCursorImageValue(this)->customCSSText();
-    case FontClass:
-        return toCSSFontValue(this)->customCSSText();
     case FontFaceSrcClass:
         return toCSSFontFaceSrcValue(this)->customCSSText();
     case FontFeatureClass:
@@ -238,9 +233,6 @@ void CSSValue::destroy()
         return;
     case CursorImageClass:
         delete toCSSCursorImageValue(this);
-        return;
-    case FontClass:
-        delete toCSSFontValue(this);
         return;
     case FontFaceSrcClass:
         delete toCSSFontFaceSrcValue(this);
@@ -333,9 +325,6 @@ void CSSValue::finalizeGarbageCollectedObject()
     case CursorImageClass:
         toCSSCursorImageValue(this)->~CSSCursorImageValue();
         return;
-    case FontClass:
-        toCSSFontValue(this)->~CSSFontValue();
-        return;
     case FontFaceSrcClass:
         toCSSFontFaceSrcValue(this)->~CSSFontFaceSrcValue();
         return;
@@ -426,9 +415,6 @@ DEFINE_TRACE(CSSValue)
         return;
     case CursorImageClass:
         toCSSCursorImageValue(this)->traceAfterDispatch(visitor);
-        return;
-    case FontClass:
-        toCSSFontValue(this)->traceAfterDispatch(visitor);
         return;
     case FontFaceSrcClass:
         toCSSFontFaceSrcValue(this)->traceAfterDispatch(visitor);
