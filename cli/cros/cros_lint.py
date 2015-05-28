@@ -103,8 +103,8 @@ CPPLINT_OUTPUT_FORMAT_MAP = {
 
 def _LinterRunCommand(cmd, debug, **kwargs):
   """Run the linter with common RunCommand args set as higher levels expect."""
-  return cros_build_lib.RunCommand(
-      cmd, error_code_ok=True, print_cmd=debug, **kwargs)
+  return cros_build_lib.RunCommand(cmd, error_code_ok=True, print_cmd=debug,
+                                   debug_level=logging.NOTICE, **kwargs)
 
 
 def _CpplintFile(path, output_format, debug):
