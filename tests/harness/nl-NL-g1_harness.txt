@@ -389,8 +389,7 @@
           "output": "⠰⠁ ⠰⠃ ⠰⠛"
         },
         {
-          "comment": "Some Greek uppercase",
-          "xfail": "Fails for Belgium Dutch because it uses a different capital sign for special letters",
+          "comment": "Some Greek uppercase; fails for Belgium Dutch because it uses a different capital sign for special letters",
           "input": "Α Β Γ",
           "output": "⠰⠨⠁ ⠰⠨⠃ ⠰⠨⠛"
         },
