@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_RENDERER_GUEST_VIEW_EXTENSIONS_GUEST_VIEW_REQUEST_H_
-#define EXTENSIONS_RENDERER_GUEST_VIEW_EXTENSIONS_GUEST_VIEW_REQUEST_H_
+#ifndef COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_REQUEST_H_
+#define COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_REQUEST_H_
 
 #include "ipc/ipc_message.h"
 #include "v8/include/v8.h"
 
-namespace extensions {
+namespace guest_view {
 
 class GuestViewContainer;
 
@@ -92,6 +92,6 @@ class GuestViewDetachRequest : public GuestViewRequest {
   DISALLOW_COPY_AND_ASSIGN(GuestViewDetachRequest);
 };
 
-}  // namespace extensions
+}  // namespace guest_view
 
-#endif  // EXTENSIONS_RENDERER_GUEST_VIEW_EXTENSIONS_GUEST_VIEW_CONTAINER_H_
+#endif  // COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_CONTAINER_H_

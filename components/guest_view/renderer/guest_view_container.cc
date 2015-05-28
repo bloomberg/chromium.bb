@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/renderer/guest_view/guest_view_container.h"
+#include "components/guest_view/renderer/guest_view_container.h"
 
 #include "components/guest_view/common/guest_view_constants.h"
 #include "components/guest_view/common/guest_view_messages.h"
+#include "components/guest_view/renderer/guest_view_request.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view.h"
-#include "extensions/common/guest_view/extensions_guest_view_messages.h"
-#include "extensions/renderer/guest_view/guest_view_request.h"
 
 namespace {
 
-using GuestViewContainerMap = std::map<int, extensions::GuestViewContainer*>;
+using GuestViewContainerMap = std::map<int, guest_view::GuestViewContainer*>;
 static base::LazyInstance<GuestViewContainerMap> g_guest_view_container_map =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-namespace extensions {
+namespace guest_view {
 
 class GuestViewContainer::RenderFrameLifetimeObserver
     : public content::RenderFrameObserver {
@@ -147,4 +146,4 @@ void GuestViewContainer::SetElementInstanceID(int element_instance_id) {
       std::make_pair(element_instance_id, this));
 }
 
-}  // namespace extensions
+}  // namespace guest_view

@@ -1,0 +1,17 @@
+static_library("renderer") {
+  sources = [
+    "guest_view_container.cc",
+    "guest_view_container.h",
+    "guest_view_request.cc",
+    "guest_view_request.h"
+  ]
+
+  deps = [
+    "//base",
+    "//components/guest_view/common",
+    "//content/public/renderer",
+    "//ipc",
+    "//third_party/WebKit/public:blink",
+    "//v8",
+  ]
+}

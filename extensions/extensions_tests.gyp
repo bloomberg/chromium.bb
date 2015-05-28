@@ -72,7 +72,8 @@
         'shell/app_shell.gyp:app_shell_lib',
         # TODO(yoz): find the right deps
         '<(DEPTH)/base/base.gyp:test_support_base',
-        '<(DEPTH)/components/components.gyp:guest_view',
+        '<(DEPTH)/components/components.gyp:guest_view_browser',
+        '<(DEPTH)/components/components.gyp:guest_view_renderer',
         '<(DEPTH)/components/components.gyp:guest_view_test_support',
         '<(DEPTH)/content/content.gyp:content_app_both',
         '<(DEPTH)/content/content_shell_and_tests.gyp:content_browser_test_support',

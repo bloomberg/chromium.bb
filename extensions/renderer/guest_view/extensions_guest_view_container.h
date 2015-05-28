@@ -7,7 +7,7 @@
 
 #include <queue>
 
-#include "extensions/renderer/guest_view/guest_view_container.h"
+#include "components/guest_view/renderer/guest_view_container.h"
 #include "v8/include/v8.h"
 
 namespace gfx {
@@ -16,7 +16,7 @@ class Size;
 
 namespace extensions {
 
-class ExtensionsGuestViewContainer : public GuestViewContainer {
+class ExtensionsGuestViewContainer : public guest_view::GuestViewContainer {
  public:
   explicit ExtensionsGuestViewContainer(content::RenderFrame* render_frame);
   ~ExtensionsGuestViewContainer() override;

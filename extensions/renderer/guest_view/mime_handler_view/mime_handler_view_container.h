@@ -10,7 +10,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "extensions/renderer/guest_view/guest_view_container.h"
+#include "components/guest_view/renderer/guest_view_container.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,7 +35,7 @@ namespace extensions {
 //    a WebURLLoader. In this case, the |didReceiveData| and |didFinishLoading|
 //    (from WebURLLoaderClient) when data is received and when it has finished
 //    being received.
-class MimeHandlerViewContainer : public GuestViewContainer,
+class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
                                  public blink::WebURLLoaderClient {
  public:
   MimeHandlerViewContainer(content::RenderFrame* render_frame,

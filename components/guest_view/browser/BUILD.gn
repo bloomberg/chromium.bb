@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("guest_view") {
-  output_name = "guest_view"
+static_library("browser") {
+  output_name = "guest_view_browser"
   sources = [
     "//components/guest_view/browser/guest_view.h",
     "//components/guest_view/browser/guest_view_base.cc",
@@ -17,15 +17,11 @@ static_library("guest_view") {
     "//components/guest_view/browser/guest_view_manager_factory.h",
     "//components/guest_view/browser/guest_view_message_filter.cc",
     "//components/guest_view/browser/guest_view_message_filter.h",
-    "//components/guest_view/common/guest_view_constants.cc",
-    "//components/guest_view/common/guest_view_constants.h",
-    "//components/guest_view/common/guest_view_message_generator.cc",
-    "//components/guest_view/common/guest_view_message_generator.h",
-    "//components/guest_view/common/guest_view_messages.h",
   ]
 
   deps = [
     "//base",
+    "//components/guest_view/common",
     "//content/public/browser",
     "//content/public/common",
     "//third_party/WebKit/public:blink",
@@ -40,7 +36,7 @@ static_library("test_support") {
   ]
 
   deps = [
-    ":guest_view",
+    ":browser",
     "//content/test:test_support",
   ]
 }

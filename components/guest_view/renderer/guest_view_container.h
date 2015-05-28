@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_RENDERER_GUEST_VIEW_GUEST_VIEW_CONTAINER_H_
-#define EXTENSIONS_RENDERER_GUEST_VIEW_GUEST_VIEW_CONTAINER_H_
+#ifndef COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_CONTAINER_H_
+#define COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_CONTAINER_H_
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
 #include "ipc/ipc_message.h"
 
-namespace extensions {
+namespace guest_view {
 
 class GuestViewRequest;
 
@@ -68,6 +68,6 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   DISALLOW_COPY_AND_ASSIGN(GuestViewContainer);
 };
 
-}  // namespace extensions
+}  // namespace guest_view
 
-#endif  // EXTENSIONS_RENDERER_GUEST_VIEW_GUEST_VIEW_CONTAINER_H_
+#endif  // COMPONENTS_GUEST_VIEW_RENDERER_GUEST_VIEW_CONTAINER_H_

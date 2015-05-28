@@ -42,7 +42,7 @@ include_rules = [
   "+components/gcm_driver",
   "+components/google",
   "+components/grit",
-  "+components/guest_view",
+  "+components/guest_view/browser",
   "+components/handoff",
   "+components/history",
   "+components/infobars",

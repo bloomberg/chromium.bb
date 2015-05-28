@@ -102,7 +102,7 @@ source_set("browser") {
     "//components/gcm_driver",
     "//components/gcm_driver/instance_id",
     "//components/google/core/browser",
-    "//components/guest_view:guest_view",
+    "//components/guest_view/browser",
     "//components/handoff",
     "//components/history/core/browser",
     "//components/history/core/common",

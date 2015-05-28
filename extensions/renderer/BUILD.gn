@@ -18,7 +18,7 @@ source_set("renderer") {
 
   deps = [
     "//chrome:resources",
-    "//components/guest_view:guest_view",
+    "//components/guest_view/renderer",
     "//content:resources",
     "//extensions:extensions_resources",
     "//gin",

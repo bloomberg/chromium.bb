@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/renderer/guest_view/guest_view_request.h"
+#include "components/guest_view/renderer/guest_view_request.h"
 
 #include "components/guest_view/common/guest_view_messages.h"
+#include "components/guest_view/renderer/guest_view_container.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "extensions/renderer/guest_view/guest_view_container.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-namespace extensions {
+namespace guest_view {
 
 GuestViewRequest::GuestViewRequest(GuestViewContainer* container,
                                    v8::Local<v8::Function> callback,
@@ -62,7 +62,7 @@ void GuestViewAttachRequest::PerformRequest() {
   if (!container()->render_frame())
     return;
 
-  // Step 1, send the attach params to extensions/.
+  // Step 1, send the attach params to guest_view/.
   container()->render_frame()->Send(
       new GuestViewHostMsg_AttachGuest(container()->element_instance_id(),
                                        guest_instance_id_,
@@ -120,4 +120,4 @@ void GuestViewDetachRequest::HandleResponse(const IPC::Message& message) {
   ExecuteCallbackIfAvailable(0 /* argc */, nullptr);
 }
 
-}  // namespace extensions
+}  // namespace guest_view
