@@ -15,7 +15,8 @@
 
 namespace proximity_auth {
 
-ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui)
+ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui,
+                                 ProximityAuthUIDelegate* delegate)
     : content::WebUIController(web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIProximityAuthHost);
@@ -36,11 +37,17 @@ ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui)
   source->AddResourcePath("log-buffer.html",
                           IDR_PROXIMITY_AUTH_LOG_BUFFER_HTML);
   source->AddResourcePath("log-buffer.js", IDR_PROXIMITY_AUTH_LOG_BUFFER_JS);
+  source->AddResourcePath("eligible-devices.html",
+                          IDR_PROXIMITY_AUTH_ELIGIBLE_DEVICES_HTML);
+  source->AddResourcePath("eligible-devices.js",
+                          IDR_PROXIMITY_AUTH_ELIGIBLE_DEVICES_JS);
+  source->AddResourcePath("cryptauth_interface.js",
+                          IDR_PROXIMITY_AUTH_CRYPTAUTH_INTERFACE_JS);
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, source);
-  web_ui->AddMessageHandler(new ProximityAuthWebUIHandler());
+  web_ui->AddMessageHandler(new ProximityAuthWebUIHandler(delegate));
 }
 
 ProximityAuthUI::~ProximityAuthUI() {

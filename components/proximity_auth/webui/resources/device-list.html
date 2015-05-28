@@ -109,11 +109,6 @@
           </div>
 
           <div flex></div>
-          <paper-icon-button class="end-icon"
-              hidden?="{{!device.unlockKey}}"
-              icon="{{ getIconForConnection_(device.connectionStatus) }}">
-          </paper-icon-button>
-
           <div class="ineligibility-icons"
               hidden?="{{!device.ineligibilityReasons}}">
             <template repeat="{{ reason in device.ineligibilityReasons }}">
@@ -124,6 +119,10 @@
               </core-tooltip>
             </template>
           </div>
+          <paper-icon-button class="end-icon"
+              hidden?="{{!device.unlockKey}}"
+              icon="{{ getIconForConnection_(device.connectionStatus) }}">
+          </paper-icon-button>
         </div>
       </template>
     </paper-shadow>

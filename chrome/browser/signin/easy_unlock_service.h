@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/proximity_auth/screenlock_state.h"
+#include "components/proximity_auth/webui/proximity_auth_ui_delegate.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
@@ -45,7 +46,8 @@ class EasyUnlockServiceObserver;
 class Profile;
 class PrefRegistrySimple;
 
-class EasyUnlockService : public KeyedService {
+class EasyUnlockService : public KeyedService,
+                          public proximity_auth::ProximityAuthUIDelegate {
  public:
   enum TurnOffFlowStatus {
     IDLE,
@@ -217,6 +219,11 @@ class EasyUnlockService : public KeyedService {
 
   void AddObserver(EasyUnlockServiceObserver* observer);
   void RemoveObserver(EasyUnlockServiceObserver* observer);
+
+  // ProximityAuthUIDelegate:
+  scoped_ptr<proximity_auth::CryptAuthClientFactory>
+  CreateCryptAuthClientFactory() override;
+  cryptauth::DeviceClassifier GetDeviceClassifier() override;
 
  protected:
   explicit EasyUnlockService(Profile* profile);

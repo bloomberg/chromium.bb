@@ -22,7 +22,8 @@ class EasyUnlockServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static EasyUnlockServiceFactory* GetInstance();
 
-  static EasyUnlockService* GetForProfile(Profile* profile);
+  static EasyUnlockService* GetForBrowserContext(
+      content::BrowserContext* browser_context);
 
   void set_app_path_for_testing(const base::FilePath& app_path) {
     app_path_for_testing_ = app_path;

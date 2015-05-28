@@ -7,6 +7,7 @@ static_library("webui") {
   sources = [
     "proximity_auth_ui.cc",
     "proximity_auth_ui.h",
+    "proximity_auth_ui_delegate.h",
     "proximity_auth_webui_handler.cc",
     "proximity_auth_webui_handler.h",
     "url_constants.cc",
@@ -15,6 +16,7 @@ static_library("webui") {
 
   deps = [
     "//base",
+    "//components/proximity_auth/cryptauth",
     "//components/resources",
     "//content/public/browser",
     "//ui/resources",

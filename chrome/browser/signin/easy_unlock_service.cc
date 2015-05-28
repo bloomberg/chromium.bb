@@ -14,22 +14,30 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service_observer.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/proximity_auth_facade.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proximity_auth/ble/proximity_auth_ble_system.h"
+#include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -75,7 +83,7 @@ EasyUnlockService::UserSettings::~UserSettings() {
 
 // static
 EasyUnlockService* EasyUnlockService::Get(Profile* profile) {
-  return EasyUnlockServiceFactory::GetForProfile(profile);
+  return EasyUnlockServiceFactory::GetForBrowserContext(profile);
 }
 
 // static
@@ -619,7 +627,39 @@ void EasyUnlockService::RemoveObserver(EasyUnlockServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void  EasyUnlockService::Shutdown() {
+scoped_ptr<proximity_auth::CryptAuthClientFactory>
+EasyUnlockService::CreateCryptAuthClientFactory() {
+  return make_scoped_ptr(new proximity_auth::CryptAuthClientFactoryImpl(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
+      SigninManagerFactory::GetForProfile(profile())
+          ->GetAuthenticatedAccountId(),
+      profile()->GetRequestContext(), GetDeviceClassifier()));
+}
+
+cryptauth::DeviceClassifier EasyUnlockService::GetDeviceClassifier() {
+  cryptauth::DeviceClassifier device_classifier;
+
+#if defined(OS_CHROMEOS)
+  int32 major_version, minor_version, bugfix_version;
+  // TODO(tengs): base::OperatingSystemVersionNumbers only works for ChromeOS.
+  // We need to get different numbers for other platforms.
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                               &bugfix_version);
+  device_classifier.set_device_os_version_code(major_version);
+  device_classifier.set_device_type(cryptauth::CHROME);
+#endif
+
+  chrome::VersionInfo version_info;
+  const std::vector<uint32_t>& version_components =
+      base::Version(version_info.Version()).components();
+  if (version_components.size() > 0)
+    device_classifier.set_device_software_version_code(version_components[0]);
+
+  device_classifier.set_device_software_package(version_info.Name());
+  return device_classifier;
+}
+
+void EasyUnlockService::Shutdown() {
   if (shut_down_)
     return;
   shut_down_ = true;

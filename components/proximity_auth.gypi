@@ -165,6 +165,7 @@
         '../content/content.gyp:content_browser',
         '../ui/resources/ui_resources.gyp:ui_resources',
         'components_resources.gyp:components_resources',
+        'cryptauth',
         'proximity_auth',
       ],
       'include_dirs': [
@@ -173,6 +174,7 @@
       'sources': [
         'proximity_auth/webui/proximity_auth_ui.cc',
         'proximity_auth/webui/proximity_auth_ui.h',
+        'proximity_auth/webui/proximity_auth_ui_delegate.h',
         'proximity_auth/webui/proximity_auth_webui_handler.cc',
         'proximity_auth/webui/proximity_auth_webui_handler.h',
         'proximity_auth/webui/url_constants.cc',

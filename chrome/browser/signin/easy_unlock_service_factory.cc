@@ -53,10 +53,11 @@ EasyUnlockServiceFactory* EasyUnlockServiceFactory::GetInstance() {
 }
 
 // static
-EasyUnlockService* EasyUnlockServiceFactory::GetForProfile(Profile* profile) {
+EasyUnlockService* EasyUnlockServiceFactory::GetForBrowserContext(
+    content::BrowserContext* browser_context) {
   return static_cast<EasyUnlockService*>(
       EasyUnlockServiceFactory::GetInstance()->GetServiceForBrowserContext(
-          profile, true));
+          browser_context, true));
 }
 
 EasyUnlockServiceFactory::EasyUnlockServiceFactory()

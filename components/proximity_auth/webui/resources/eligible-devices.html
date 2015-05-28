@@ -1,0 +1,28 @@
+<link href="chrome://resources/polymer/polymer/polymer.html" rel="import">
+<link href="chrome://resources/polymer/paper-spinner/paper-spinner.html" rel="import">
+<link rel="import" href="device-list.html">
+
+<polymer-element name="eligible-devices" layout vertical>
+  <template>
+    <style>
+      paper-spinner {
+        margin-top: 40px;
+      }
+    </style>
+
+    <paper-spinner
+        hidden?="{{!requestInProgress_}}" self-center active>
+    </paper-spinner>
+
+    <device-list
+        label="Eligible Phones" devices={{eligibleDevices_}}
+        hidden?="{{eligibleDevices_.length == 0}}" cross-fade>
+    </device-list>
+
+    <device-list
+        label="Ineligible Phones" devices={{ineligibleDevices_}}
+        hidden?="{{ineligibleDevices_.length == 0}}" cross-fade>
+    </device-list>
+  </template>
+  <script src="eligible-devices.js"></script>
+</polymer-element>

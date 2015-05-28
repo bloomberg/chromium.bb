@@ -4,62 +4,6 @@
 
 Polymer('content-panel', {
   /**
-   * List of devices that are eligible to be used as an unlock key.
-   * @type {Array<DeviceInfo>}
-   * @private
-   */
-  eligibleDevices_: [
-    {
-      publicKey: 'CAESRQogHoQkD-Q7ryI-FL8Pei6YaONx_v9vdvCSRvGQc4_bX2wSIQDWs' +
-                 'grK8XORMk5AKxlvOMXpSdDeNiwJH2R5-TUtoJmc3Q==',
-      friendlyDeviceName: 'LGE Nexus 5',
-      unlockKey: true,
-      unlockable: false,
-      connectionStatus: 'connecting',
-    },
-    {
-      publicKey: 'KA5STvog9oQkt1K9r7n-AL83eiXYaqN38v3vdvCSRvGQc4_bX2wSIQDWs' +
-                 'grK8XORMk5AKxlvOMXpSdDeNiwJH2R5-TUtoJmc3Q==',
-      friendlyDeviceName: 'Apple iPhone 6',
-      unlockKey: false,
-      unlockable: false
-    },
-  ],
-
-  /**
-   * List of devices that are ineligible to be used as an unlock key.
-   * @type {Array<DeviceInfo>}
-   * @private
-   */
-  ineligibleDevices_: [
-    {
-      publicKey: 'CAESRQogHoQkD-Q7ryI-FL8Pei6YaONx_v9vdvCSRvGQc4_bX2wSIQDWs' +
-                 'grK8XORMk5AKxlvOMXpSdDeNiwJH2R5-TUtoJmc3Q==',
-      friendlyDeviceName: 'Motorola Nexus 6',
-      unlockKey: false,
-      unlockable: false,
-      ineligibilityReasons: [
-         'deviceOffline',
-         'invalidCredentials',
-         'unknownError'
-      ]
-    },
-    {
-      publicKey: 'CAESRQogHoQkD-Q7ryI-FL8Pei6YaONx_v9vdvCSRvGQc4_bX2wSIQDWs' +
-                 'grK8XORMk5AKxlvOMXpSdDeNiwJH2R5-TUtoJmc3Q==',
-      friendlyDeviceName: 'LGE LG-D855',
-      unlockKey: false,
-      unlockable: false,
-      ineligibilityReasons: [
-         'badOsVersion',
-         'invalidCredentials',
-         'bluetoothNotSupported',
-         'deviceOffline'
-      ],
-    },
-  ],
-
-  /**
    * List of devices that are online and reachable by CryptAuth.
    * @type {Array<DeviceInfo>}
    * @private
@@ -115,4 +59,14 @@ Polymer('content-panel', {
    * @private
    */
   selected_: 0,
+
+  /**
+   * Called when the current page is about to transition.
+   * @private
+   */
+  preparePageTransition_: function() {
+    var page = this.$.pages.selectedItem.querySelector(':first-child');
+    if (page.activate)
+      page.activate();
+  }
 });

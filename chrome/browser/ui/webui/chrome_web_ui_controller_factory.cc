@@ -105,6 +105,8 @@
 #include "chrome/browser/ui/webui/net_export_ui.h"
 #else
 #include "chrome/browser/devtools/device/webrtc/webrtc_device_provider.h"
+#include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/ui/webui/copresence_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
@@ -221,6 +223,18 @@ template <>
 WebUIController* NewWebUI<OobeMdUI>(WebUI* web_ui, const GURL& url) {
   chromeos::Oobe::Register();
   return new OobeMdUI(web_ui, url.host());
+}
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+// Special case for chrome://proximity_auth.
+template <>
+WebUIController* NewWebUI<proximity_auth::ProximityAuthUI>(WebUI* web_ui,
+                                                           const GURL& url) {
+  content::BrowserContext* browser_context =
+      web_ui->GetWebContents()->GetBrowserContext();
+  return new proximity_auth::ProximityAuthUI(
+      web_ui, EasyUnlockServiceFactory::GetForBrowserContext(browser_context));
 }
 #endif
 

@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 <link rel="import" href="device-list.html">
 <link rel="import" href="local-state.html">
+<link rel="import" href="eligible-devices.html">
 
 <polymer-element name="content-panel" layout vertical>
   <template>
@@ -22,6 +23,7 @@
       }
 
       local-state,
+      eligible-devices,
       device-list {
         width: 80%;
       }
@@ -33,19 +35,18 @@
       <paper-tab>REACHABLE PHONES</paper-tab>
     </paper-tabs>
 
-    <core-animated-pages selected="{{selected_}}" transitions="cross-fade" flex>
+    <core-animated-pages id='pages' selected="{{selected_}}"
+        transitions="cross-fade"
+        on-core-animated-pages-transition-prepare="{{preparePageTransition_}}"
+        flex>
       <section layout vertical center>
         <local-state id="local-state" flex self-center cross-fade>
         </local-state>
       </section>
 
       <section layout vertical center>
-        <device-list
-            label="Eligible Phones" devices={{eligibleDevices_}} cross-fade>
-        </device-list>
-        <device-list
-            label="Ineligible Phones" devices={{ineligibleDevices_}} cross-fade>
-        </device-list>
+        <eligible-devices id='eligible-devices' flex self-center cross-fade>
+        </eligible-devices>
       </section>
 
       <section layout vertical center>
