@@ -30,7 +30,7 @@ def ParseCommandLine(argv):
                       help=('The board to generate the sysroot for.'))
   parser.add_argument('--package', required=True,
                       help=('The package to generate the sysroot for.'))
-  parser.add_argument('--out-dir', type=osutils.ExpandPath, required=True,
+  parser.add_argument('--out-dir', type='path', required=True,
                       help='Directory to place the generated tarball.')
   parser.add_argument('--out-file',
                       help=('The name to give to the tarball.  Defaults to %r.'

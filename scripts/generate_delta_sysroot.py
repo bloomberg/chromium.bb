@@ -62,7 +62,7 @@ def _ParseCommandLine(argv):
   parser = commandline.ArgumentParser(description=__doc__)
   parser.add_argument('--board', required=True,
                       help='The board to generate the sysroot for.')
-  parser.add_argument('--out-dir', type=osutils.ExpandPath, required=True,
+  parser.add_argument('--out-dir', type='path', required=True,
                       help='Directory to place the generated tarball.')
   parser.add_argument('--out-batch', default=constants.DELTA_SYSROOT_BATCH,
                       help=('The name to give to the batch file. Defaults to '

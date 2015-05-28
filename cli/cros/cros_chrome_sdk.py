@@ -465,25 +465,25 @@ class ChromeSDKCommand(command.CliCommand):
     parser.add_argument(
         '--board', required=True, help='The board SDK to use.')
     parser.add_argument(
-        '--bashrc', type=osutils.ExpandPath,
+        '--bashrc', type='path',
         default=constants.CHROME_SDK_BASHRC,
         help='A bashrc file used to set up the SDK shell environment. '
              'Defaults to %s.' % constants.CHROME_SDK_BASHRC)
     parser.add_argument(
-        '--chroot', type=osutils.ExpandPath,
+        '--chroot', type='path',
         help='Path to a ChromeOS chroot to use.  If set, '
              '<chroot>/build/<board> will be used as the sysroot that Chrome '
              'is built against.  The version shown in the SDK shell prompt '
              'will then have an asterisk prepended to it.')
     parser.add_argument(
-        '--chrome-src', type=osutils.ExpandPath,
+        '--chrome-src', type='path',
         help='Specifies the location of a Chrome src/ directory.  Required if '
              'running with --clang if not running from a Chrome checkout.')
     parser.add_argument(
         '--clang', action='store_true', default=False,
         help='Sets up the environment for building with clang.')
     parser.add_argument(
-        '--cwd', type=osutils.ExpandPath,
+        '--cwd', type='path',
         help='Specifies a directory to switch to after setting up the SDK '
              'shell.  Defaults to the current directory.')
     parser.add_argument(
