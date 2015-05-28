@@ -191,7 +191,7 @@ base::CancelableTaskTracker::TaskId
   //   possible large icon. Also add logic to fetch-on-demand when the URL of
   //   a large icon is known but its bitmap is not available.
   return favicon_service_->GetLargestRawFaviconForPageURL(
-      page_url, large_icon_types_, desired_size_in_pixel,
+      page_url, large_icon_types_, min_source_size_in_pixel,
       base::Bind(&LargeIconWorker::OnIconLookupComplete, worker),
       tracker);
 }
