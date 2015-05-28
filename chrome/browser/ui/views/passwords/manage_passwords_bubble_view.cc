@@ -1037,6 +1037,7 @@ class ManagePasswordsBubbleView::WebContentMouseHandler
 
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
  private:
   ManagePasswordsBubbleView* bubble_;
@@ -1066,6 +1067,12 @@ void ManagePasswordsBubbleView::WebContentMouseHandler::OnKeyEvent(
 void ManagePasswordsBubbleView::WebContentMouseHandler::OnMouseEvent(
     ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
+    bubble_->Close();
+}
+
+void ManagePasswordsBubbleView::WebContentMouseHandler::OnTouchEvent(
+    ui::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED)
     bubble_->Close();
 }
 
