@@ -239,15 +239,10 @@ void partitionAllocGenericInit(PartitionRootGeneric* root)
 static bool partitionAllocShutdownBucket(PartitionBucket* bucket)
 {
     // Failure here indicates a memory leak.
-    bool noLeaks = !bucket->numFullPages;
-    PartitionPage* page = bucket->activePagesHead;
-    while (page) {
-        if (page->numAllocatedSlots)
-            noLeaks = false;
-        page = page->nextPage;
-    }
-
-    return noLeaks;
+    bool foundLeak = bucket->numFullPages;
+    for (PartitionPage* page = bucket->activePagesHead; page; page = page->nextPage)
+        foundLeak |= (page->numAllocatedSlots > 0);
+    return foundLeak;
 }
 
 static bool partitionAllocBaseShutdown(PartitionRootBase* root)
@@ -270,36 +265,31 @@ static bool partitionAllocBaseShutdown(PartitionRootBase* root)
         }
         entry = nextEntry;
     }
-    return !root->directMapList;
+    return root->directMapList;
 }
 
 bool partitionAllocShutdown(PartitionRoot* root)
 {
-    bool noLeaks = true;
+    bool foundLeak = false;
     size_t i;
     for (i = 0; i < root->numBuckets; ++i) {
         PartitionBucket* bucket = &root->buckets()[i];
-        if (!partitionAllocShutdownBucket(bucket))
-            noLeaks = false;
+        foundLeak |= partitionAllocShutdownBucket(bucket);
     }
-
-    if (!partitionAllocBaseShutdown(root))
-        noLeaks = false;
-    return noLeaks;
+    foundLeak |= partitionAllocBaseShutdown(root);
+    return !foundLeak;
 }
 
 bool partitionAllocGenericShutdown(PartitionRootGeneric* root)
 {
-    bool noLeaks = true;
+    bool foundLeak = false;
     size_t i;
     for (i = 0; i < kGenericNumBucketedOrders * kGenericNumBucketsPerOrder; ++i) {
         PartitionBucket* bucket = &root->buckets[i];
-        if (!partitionAllocShutdownBucket(bucket))
-            noLeaks = false;
+        foundLeak |= partitionAllocShutdownBucket(bucket);
     }
-    if (!partitionAllocBaseShutdown(root))
-        noLeaks = false;
-    return noLeaks;
+    foundLeak |= partitionAllocBaseShutdown(root);
+    return !foundLeak;
 }
 
 #if !CPU(64BIT)
