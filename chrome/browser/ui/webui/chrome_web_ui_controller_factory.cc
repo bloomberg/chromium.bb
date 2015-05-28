@@ -404,7 +404,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<NewTabUI>;
   if (url.host() == chrome::kChromeUIMdSettingsHost &&
       ::switches::MdSettingsEnabled()) {
-    return &NewWebUI<MdSettingsUI>;
+    return &NewWebUI<settings::MdSettingsUI>;
   }
   // Android does not support plugins for now.
   if (url.host() == chrome::kChromeUIPluginsHost)

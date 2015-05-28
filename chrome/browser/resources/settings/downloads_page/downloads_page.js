@@ -75,8 +75,6 @@ Polymer({
 
   /** @private */
   selectDownloadLocation_: function() {
-    // TODO(orenb): Communicate with the C++ to actually display a folder
-    // picker.
-    this.$.downloadsPath.value = '/Downloads';
+    chrome.send('selectDownloadLocation');
   },
 });
