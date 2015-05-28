@@ -551,6 +551,9 @@ void MediaStreamAudioProcessor::ConfigureBeamforming(webrtc::Config* config) {
   } else if (board.find("swanky") != std::string::npos) {
     enabled = true;
     geometry.push_back(webrtc::Point(0.052f, 0.f, 0.f));
+  } else if (board.find("samus") != std::string::npos) {
+    enabled = true;
+    geometry.push_back(webrtc::Point(0.064f, 0.f, 0.f));
   }
 #endif
   config->Set<webrtc::Beamforming>(new webrtc::Beamforming(enabled, geometry));
