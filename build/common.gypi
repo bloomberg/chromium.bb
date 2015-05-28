@@ -665,7 +665,7 @@
       'use_lto_o2%': 0,
 
       # Allowed level of identical code folding in the gold linker.
-      'gold_icf_level%': 'all',
+      'gold_icf_level%': 'safe',
 
       # Libxkbcommon usage.
       'use_xkbcommon%': 0,
