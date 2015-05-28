@@ -88,6 +88,7 @@
         "trybot_list": false,
         "unittest_blacklist": [],
         "unittests": true,
+        "upload_gce_images": false,
         "upload_hw_test_artifacts": true,
         "upload_standalone_images": true,
         "upload_symbols": false,

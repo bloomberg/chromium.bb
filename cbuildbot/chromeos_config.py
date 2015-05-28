@@ -221,6 +221,10 @@ _settings = dict(
     # If true, uploads individual image tarballs.
     upload_standalone_images=True,
 
+    # upload_gce_images -- If true, uploads tarballs that can be used as the
+    #                      basis for GCE images.
+    upload_gce_images=False,
+
     # Google Storage path to offload files to.
     #   None - No upload
     #   GS_PATH_DEFAULT - 'gs://chromeos-image-archive/' + bot_id

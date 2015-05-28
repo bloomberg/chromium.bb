@@ -204,6 +204,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     #             \- ArchiveStandaloneArtifact
     #          \- ArchiveZipFiles
     #          \- ArchiveHWQual
+    #          \- ArchiveGceTarballs
     #       \- PushImage (blocks on BuildAndArchiveAllImages)
     #    \- ArchiveManifest
     #    \- ArchiveStrippedChrome
@@ -260,6 +261,28 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       if config['upload_standalone_images']:
         parallel.RunTasksInProcessPool(ArchiveStandaloneArtifact,
                                        [[x] for x in self.artifacts])
+
+    def ArchiveGceTarballs():
+      """Creates .tar.gz files that can be converted to GCE images.
+
+      These files will be uploaded to GCS buckets, where they can be
+      used as input to the "gcloud compute images create" command.
+      This will convert them into images that can be used to create
+      GCE VM instances.
+      """
+      image_bins = []
+      if 'base' in config['images']:
+        image_bins.append(constants.IMAGE_TYPE_TO_NAME['base'])
+      if 'test' in config['images']:
+        image_bins.append(constants.IMAGE_TYPE_TO_NAME['test'])
+
+      for image_bin in image_bins:
+        if not os.path.exists(os.path.join(image_dir, image_bin)):
+          logging.warning('Missing image file skipped: %s', image_bin)
+          continue
+        output_file = commands.BuildGceTarball(
+            archive_path, image_dir, image_bin)
+        self._release_upload_queue.put([output_file])
 
     def ArchiveZipFiles():
       """Build and archive zip files.
@@ -325,10 +348,15 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         self._recovery_image_status_queue.put(False)
 
       if config['images']:
-        parallel.RunParallelSteps([BuildAndArchiveFactoryImages,
-                                   ArchiveHWQual,
-                                   ArchiveStandaloneArtifacts,
-                                   ArchiveZipFiles])
+        steps = [
+            BuildAndArchiveFactoryImages,
+            ArchiveHWQual,
+            ArchiveStandaloneArtifacts,
+            ArchiveZipFiles,
+        ]
+        if config['upload_gce_images']:
+          steps.append(ArchiveGceTarballs)
+        parallel.RunParallelSteps(steps)
 
     def ArchiveImageScripts():
       """Archive tarball of generated image manipulation scripts."""
