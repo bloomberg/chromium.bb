@@ -17,7 +17,6 @@
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/origin_util.h"
 
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
@@ -100,14 +99,6 @@ void PermissionContextBase::DecidePermission(
         << "," << embedding_origin
         << " (" << content_settings::GetTypeName(permission_type_)
         << " is not supported in popups)";
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, CONTENT_SETTING_BLOCK);
-    return;
-  }
-
-  // The Web MIDI SYSEX API is only available to secure origins.
-  if (permission_type_ == CONTENT_SETTINGS_TYPE_MIDI_SYSEX &&
-      !content::IsOriginSecure(requesting_origin)) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         false /* persist */, CONTENT_SETTING_BLOCK);
     return;

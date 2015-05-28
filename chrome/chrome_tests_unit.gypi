@@ -126,6 +126,7 @@
       'browser/mac/keystone_glue_unittest.mm',
       'browser/manifest/manifest_icon_selector_unittest.cc',
       'browser/media/native_desktop_media_list_unittest.cc',
+      'browser/media/midi_permission_context_unittest.cc',
       'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
       'browser/metrics/cloned_install_detector_unittest.cc',
       'browser/metrics/drive_metrics_provider_unittest.cc',
@@ -2103,7 +2104,7 @@
           'dependencies': [
             'browser/media/router/media_router.gyp:media_router_test_support',
           ],
-        }],         
+        }],
       ],
     },
     {

@@ -15,12 +15,22 @@ class MidiPermissionContext : public PermissionContextBase {
   explicit MidiPermissionContext(Profile* profile);
   ~MidiPermissionContext() override;
 
- private:
+  // PermissionContextBase:
+  ContentSetting GetPermissionStatus(
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const override;
 
+ private:
   // PermissionContextBase:
   void UpdateTabContext(const PermissionRequestID& id,
                         const GURL& requesting_frame,
                         bool allowed) override;
+  void DecidePermission(content::WebContents* web_contents,
+                        const PermissionRequestID& id,
+                        const GURL& requesting_origin,
+                        const GURL& embedding_origin,
+                        bool user_gesture,
+                        const BrowserPermissionCallback& callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(MidiPermissionContext);
 };
