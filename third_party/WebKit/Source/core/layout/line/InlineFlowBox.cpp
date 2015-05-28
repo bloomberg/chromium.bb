@@ -294,7 +294,7 @@ static inline bool isLastChildForLayoutObject(LayoutObject* ancestor, LayoutObje
     return true;
 }
 
-static bool isAnsectorAndWithinBlock(LayoutObject* ancestor, LayoutObject* child)
+static bool isAncestorAndWithinBlock(LayoutObject* ancestor, LayoutObject* child)
 {
     LayoutObject* object = child;
     while (object && (!object->isLayoutBlock() || object->isInline())) {
@@ -330,7 +330,7 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
 
         if (!lineBoxList->lastLineBox()->isConstructed()) {
             LayoutInline& inlineFlow = toLayoutInline(layoutObject());
-            bool isLastObjectOnLine = !isAnsectorAndWithinBlock(&layoutObject(), logicallyLastRunLayoutObject) || (isLastChildForLayoutObject(&layoutObject(), logicallyLastRunLayoutObject) && !isLogicallyLastRunWrapped);
+            bool isLastObjectOnLine = !isAncestorAndWithinBlock(&layoutObject(), logicallyLastRunLayoutObject) || (isLastChildForLayoutObject(&layoutObject(), logicallyLastRunLayoutObject) && !isLogicallyLastRunWrapped);
 
             // We include the border under these conditions:
             // (1) The next line was not created, or it is constructed. We check the previous line for rtl.
