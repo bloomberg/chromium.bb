@@ -1318,14 +1318,6 @@
       'browser/bookmarks/chrome_bookmark_client_factory.h',
       'browser/bookmarks/enhanced_bookmarks_features.cc',
       'browser/bookmarks/enhanced_bookmarks_features.h',
-      'browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service.cc',
-      'browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service.h',
-      'browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service_factory.cc',
-      'browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service_factory.h',
-      'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.cc',
-      'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h',
-    ],
-    'chrome_browser_bookmark_android_sources': [
       'browser/enhanced_bookmarks/android/bookmark_image_service_android.cc',
       'browser/enhanced_bookmarks/android/bookmark_image_service_android.h',
       'browser/enhanced_bookmarks/android/bookmark_image_service_factory.cc',
@@ -1334,6 +1326,12 @@
       'browser/enhanced_bookmarks/android/enhanced_bookmark_tab_helper.h',
       'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.cc',
       'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.h',
+      'browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service.cc',
+      'browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service.h',
+      'browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service_factory.cc',
+      'browser/enhanced_bookmarks/chrome_bookmark_server_cluster_service_factory.h',
+      'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.cc',
+      'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h',
     ],
     'chrome_browser_browser_process_sources': [
       'browser/browser_process.cc',
@@ -3586,8 +3584,6 @@
             '../components/components.gyp:service_tab_launcher',
             '../components/components.gyp:web_contents_delegate_android',
             '../components/components_resources.gyp:components_resources',
-            '../components/resources/enhanced_bookmarks/enhanced_bookmarks.gypi:*',
-            '../components/resources/enhanced_bookmarks/enhanced_bookmarks_resources.gyp:*',
             '../third_party/android_opengl/etc1/etc1.gyp:etc1',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_util',
             'chrome_browser_jni_headers',
@@ -3599,10 +3595,7 @@
             '../components/components.gyp:web_modal',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
-          'sources': [
-            '<@(chrome_browser_android_sources)',
-            '<@(chrome_browser_bookmark_android_sources)',
-           ],
+          'sources': [ '<@(chrome_browser_android_sources)' ],
           'defines': [ 'ENABLE_DATA_REDUCTION_PROXY_DEBUGGING' ],
           'conditions': [
             ['use_seccomp_bpf==1', {

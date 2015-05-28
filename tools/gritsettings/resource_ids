@@ -248,9 +248,6 @@
   "components/resources/components_scaled_resources.grd": {
     "structures": [30280],
   },
-  "components/resources/enhanced_bookmarks/enhanced_bookmarks_resources.grd": {
-    "includes": [30330],
-  },
   "third_party/WebKit/public/blink_resources.grd": {
     "includes": [30350],
     "structures": [30650],

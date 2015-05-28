@@ -17,7 +17,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/enhanced_bookmarks_resources.h"
+#include "content/public/common/referrer.h"
 #include "net/base/load_flags.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/device_form_factor.h"
@@ -87,7 +87,7 @@ void BookmarkImageServiceAndroid::RetrieveSalientImage(
 }
 
 void BookmarkImageServiceAndroid::RetrieveSalientImageFromContext(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const GURL& page_url,
     bool update_bookmark) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -109,25 +109,18 @@ void BookmarkImageServiceAndroid::RetrieveSalientImageFromContext(
     return;
   }
 
-  if (dom_initializer_script_.empty()) {
-    dom_initializer_script_ =
-        base::UTF8ToUTF16(
-            ResourceBundle::GetSharedInstance()
-                .GetRawDataResource(IDR_DOM_INITIALIZER_GEN_JS)
-                .as_string());
+  if (script_.empty()) {
+    script_ =
+        base::UTF8ToUTF16(ResourceBundle::GetSharedInstance()
+                              .GetRawDataResource(IDR_GET_SALIENT_IMAGE_URL_JS)
+                              .as_string());
   }
 
-  blink::WebReferrerPolicy policy =
-      web_contents->GetController().GetVisibleEntry()->GetReferrer().policy;
-
-  content::RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
-
   render_frame_host->ExecuteJavaScriptInIsolatedWorld(
-      dom_initializer_script_,
+      script_,
       base::Bind(
-          &BookmarkImageServiceAndroid::InitializeDomCallback,
-          base::Unretained(this), policy, render_frame_host, page_url,
-          update_bookmark),
+          &BookmarkImageServiceAndroid::RetrieveSalientImageFromContextCallback,
+          base::Unretained(this), page_url, update_bookmark),
       chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
 }
 
@@ -148,36 +141,13 @@ void BookmarkImageServiceAndroid::FinishSuccessfulPageLoadForTab(
     urls.push_back(entry_original_url);
   for (GURL url : urls) {
     if (enhanced_bookmark_model_->bookmark_model()->IsBookmarked(url)) {
-      RetrieveSalientImageFromContext(web_contents, url,
+      RetrieveSalientImageFromContext(web_contents->GetMainFrame(), url,
                                       update_bookmark);
     }
   }
 }
 
-void BookmarkImageServiceAndroid::InitializeDomCallback(
-    blink::WebReferrerPolicy policy,
-    content::RenderFrameHost* render_frame_host,
-    const GURL& page_url,
-    bool update_bookmark,
-    const base::Value* result) {
-  if (get_salient_image_url_script_.empty()) {
-    get_salient_image_url_script_ =
-        base::UTF8ToUTF16(
-            ResourceBundle::GetSharedInstance()
-                .GetRawDataResource(IDR_GET_SALIENT_IMAGE_URL_GEN_JS)
-                .as_string());
-  }
-
-  render_frame_host->ExecuteJavaScriptInIsolatedWorld(
-      get_salient_image_url_script_,
-      base::Bind(
-          &BookmarkImageServiceAndroid::RetrieveSalientImageFromContextCallback,
-          base::Unretained(this), policy, page_url, update_bookmark),
-      chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
-}
-
 void BookmarkImageServiceAndroid::RetrieveSalientImageFromContextCallback(
-    blink::WebReferrerPolicy policy,
     const GURL& page_url,
     bool update_bookmark,
     const base::Value* result) {
@@ -210,6 +180,15 @@ void BookmarkImageServiceAndroid::RetrieveSalientImageFromContextCallback(
   std::string image_url;
   dict->GetString("referrerPolicy", &referrerPolicy);
   dict->GetString("imageUrl", &image_url);
+
+  // The policy strings are guaranteed to be in lower-case.
+  blink::WebReferrerPolicy policy = blink::WebReferrerPolicyDefault;
+  if (referrerPolicy == "never")
+    policy = blink::WebReferrerPolicyNever;
+  if (referrerPolicy == "always")
+    policy = blink::WebReferrerPolicyAlways;
+  if (referrerPolicy == "origin")
+    policy = blink::WebReferrerPolicyOrigin;
 
   in_progress_page_urls_.insert(page_url);
 
