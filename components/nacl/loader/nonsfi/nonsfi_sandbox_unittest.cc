@@ -202,7 +202,7 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
 
 #if defined(OS_NACL_NONSFI)
 BPF_DEATH_TEST_C(NaClNonsfiSandboxTest,
-                 socketpair,
+                 socketpair_af_unix_disallowed,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   int tmp_fds[2];
@@ -226,6 +226,19 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
   BPF_ASSERT_EQ(static_cast<int>(payload.size()),
                 HANDLE_EINTR(recvmsg(fds[0].get(), &msg, 0)));
   BPF_ASSERT_EQ(0, shutdown(fds[0].get(), SHUT_RDWR));
+}
+#endif
+
+// On arm and x86_64 the arguments to socketpair are passed in registers,
+// so they can be filtered by seccomp-bpf.  This filter cannot be applied
+// on x86_32 as the arguments are passed in memory.
+#if defined(__x86_64__) || defined(__arm__)
+BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
+                 socketpair_af_inet_disallowed,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+  int fds[2];
+  socketpair(AF_INET, SOCK_STREAM, 0, fds);
 }
 #endif
 
@@ -392,16 +405,6 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
   syscall(__NR_socket, 0, 0, 0);
 #endif
 }
-
-#if defined(__x86_64__) || defined(__arm__)
-BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
-                 socketpair,
-                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
-                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  int fds[2];
-  socketpair(AF_INET, SOCK_STREAM, 0, fds);
-}
-#endif
 
 BPF_TEST_C(NaClNonSfiSandboxTest,
            fcntl_SETFD_allowed,
