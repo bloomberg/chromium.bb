@@ -19,8 +19,6 @@ crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/transforms [ Pass ]
 crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/writing-mode [ Pass ]
 
 crbug.com/474117 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
-crbug.com/492552 fast/forms/select/popup-menu-appearance-texttransform.html [ NeedsRebaseline ]
-crbug.com/492552 virtual/slimmingpaint/fast/forms/select/popup-menu-appearance-texttransform.html [ NeedsRebaseline ]
 
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/mask-box-image.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ ImageOnlyFailure ]
