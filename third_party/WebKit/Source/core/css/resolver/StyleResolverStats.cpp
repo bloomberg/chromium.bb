@@ -31,11 +31,6 @@
 #include "config.h"
 #include "core/css/resolver/StyleResolverStats.h"
 
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
-
-#define PERCENT(x, y) ((!y) ? 0 : (((x) * 100.0) / (y)))
-
 namespace blink {
 
 void StyleResolverStats::reset()
@@ -51,37 +46,38 @@ void StyleResolverStats::reset()
     matchedPropertyCacheHit = 0;
     matchedPropertyCacheInheritedHit = 0;
     matchedPropertyCacheAdded = 0;
+    rulesFastRejected = 0;
+    rulesRejected = 0;
+    rulesMatched = 0;
 }
 
-String StyleResolverStats::report() const
+bool StyleResolverStats::allCountersEnabled() const
 {
-    StringBuilder output;
-
-    unsigned sharedStylesRejected = sharedStyleRejectedByUncommonAttributeRules + sharedStyleRejectedBySiblingRules + sharedStyleRejectedByParent;
-    unsigned sharedStylesUsed = sharedStyleFound - sharedStylesRejected;
-
-    output.appendLiteral("Style sharing:\n");
-    output.append(String::format("  %u elements were added to the sharing candidate list.\n", sharedStyleCandidates));
-    output.append(String::format("  %u calls were made to findSharedStyle, %u found a candidate to share with (%.2f%%).\n", sharedStyleLookups, sharedStyleFound, PERCENT(sharedStyleFound, sharedStyleLookups)));
-    if (printMissedCandidateCount)
-        output.append(String::format("  %u candidates could have matched but were not in the list when searching (%.2f%%).\n", sharedStyleMissed, PERCENT(sharedStyleMissed, sharedStyleLookups)));
-    output.append(String::format("  %u of found styles were rejected (%.2f%%), %.2f%% by uncommon attribute rules, %.2f%% by sibling rules and %.2f%% by parents disabling sharing.\n",
-        sharedStylesRejected,
-        PERCENT(sharedStylesRejected, sharedStyleFound),
-        PERCENT(sharedStyleRejectedByUncommonAttributeRules, sharedStylesRejected),
-        PERCENT(sharedStyleRejectedBySiblingRules, sharedStylesRejected),
-        PERCENT(sharedStyleRejectedByParent, sharedStylesRejected)));
-    output.append(String::format("  %u of found styles were used for sharing (%.2f%%).\n", sharedStylesUsed, PERCENT(sharedStylesUsed, sharedStyleFound)));
-    output.append(String::format("  %.2f%% of calls to findSharedStyle returned a shared style.\n", PERCENT(sharedStylesUsed, sharedStyleLookups)));
-
-    output.append('\n');
-
-    output.appendLiteral("Matched property cache:\n");
-    output.append(String::format("  %u calls to applyMatchedProperties, %u hit the cache (%.2f%%).\n", matchedPropertyApply, matchedPropertyCacheHit, PERCENT(matchedPropertyCacheHit, matchedPropertyApply)));
-    output.append(String::format("  %u cache hits also shared the inherited style (%.2f%%).\n", matchedPropertyCacheInheritedHit, PERCENT(matchedPropertyCacheInheritedHit, matchedPropertyCacheHit)));
-    output.append(String::format("  %u styles created in applyMatchedProperties were added to the cache (%.2f%%).\n", matchedPropertyCacheAdded, PERCENT(matchedPropertyCacheAdded, matchedPropertyApply)));
-
-    return output.toString();
+    bool allCountersEnabled;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.style"), &allCountersEnabled);
+    return allCountersEnabled;
 }
+
+PassRefPtr<TracedValue> StyleResolverStats::toTracedValue() const
+{
+    RefPtr<TracedValue> tracedValue = TracedValue::create();
+    tracedValue->setInteger("sharedStyleLookups", sharedStyleLookups);
+    tracedValue->setInteger("sharedStyleCandidates", sharedStyleCandidates);
+    tracedValue->setInteger("sharedStyleFound", sharedStyleFound);
+    if (allCountersEnabled())
+        tracedValue->setInteger("sharedStyleMissed", sharedStyleMissed);
+    tracedValue->setInteger("sharedStyleRejectedByUncommonAttributeRules", sharedStyleRejectedByUncommonAttributeRules);
+    tracedValue->setInteger("sharedStyleRejectedBySiblingRules", sharedStyleRejectedBySiblingRules);
+    tracedValue->setInteger("sharedStyleRejectedByParent", sharedStyleRejectedByParent);
+    tracedValue->setInteger("matchedPropertyApply", matchedPropertyApply);
+    tracedValue->setInteger("matchedPropertyCacheHit", matchedPropertyCacheHit);
+    tracedValue->setInteger("matchedPropertyCacheInheritedHit", matchedPropertyCacheInheritedHit);
+    tracedValue->setInteger("matchedPropertyCacheAdded", matchedPropertyCacheAdded);
+    tracedValue->setInteger("rulesRejected", rulesRejected);
+    tracedValue->setInteger("rulesFastRejected", rulesFastRejected);
+    tracedValue->setInteger("rulesMatched", rulesMatched);
+    return tracedValue.release();
+}
+
 
 } // namespace blink

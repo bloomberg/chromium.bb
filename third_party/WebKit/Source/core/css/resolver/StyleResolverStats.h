@@ -31,8 +31,9 @@
 #ifndef StyleResolverStats_h
 #define StyleResolverStats_h
 
+#include "platform/TraceEvent.h"
+#include "platform/TracedValue.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -44,7 +45,8 @@ public:
     }
 
     void reset();
-    String report() const;
+    bool allCountersEnabled() const;
+    PassRefPtr<TracedValue> toTracedValue() const;
 
     unsigned sharedStyleLookups;
     unsigned sharedStyleCandidates;
@@ -57,20 +59,18 @@ public:
     unsigned matchedPropertyCacheHit;
     unsigned matchedPropertyCacheInheritedHit;
     unsigned matchedPropertyCacheAdded;
-
-    // We keep a separate flag for this since crawling the entire document to print
-    // the number of missed candidates is very slow.
-    bool printMissedCandidateCount;
+    unsigned rulesFastRejected;
+    unsigned rulesRejected;
+    unsigned rulesMatched;
 
 private:
     StyleResolverStats()
-        : printMissedCandidateCount(false)
     {
         reset();
     }
 };
 
-#define INCREMENT_STYLE_STATS_COUNTER(resolver, counter) ((resolver).stats() && ++(resolver).stats()-> counter && (resolver).statsTotals()-> counter ++);
+#define INCREMENT_STYLE_STATS_COUNTER(resolver, counter, n) ((resolver).stats() && ((resolver).stats()-> counter += n));
 
 } // namespace blink
 

@@ -1782,14 +1782,9 @@ void Document::updateStyle(StyleRecalcChange change)
 
     clearNeedsStyleRecalc();
 
-    // Uncomment to enable printing of statistics about style sharing and the matched property cache.
-    // Optionally pass StyleResolver::ReportSlowStats to print numbers that require crawling the
-    // entire DOM (where collecting them is very slow).
-    // FIXME: Expose this as a runtime flag.
-    // ensureStyleResolver().enableStats(/*StyleResolver::ReportSlowStats*/);
-
-    if (StyleResolverStats* stats = ensureStyleResolver().stats())
-        stats->reset();
+    bool shouldRecordStats;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink,blink_style", &shouldRecordStats);
+    ensureStyleResolver().setStatsEnabled(shouldRecordStats);
 
     if (Element* documentElement = this->documentElement()) {
         inheritHtmlAndBodyElementStyles(change);
@@ -1799,8 +1794,6 @@ void Document::updateStyle(StyleRecalcChange change)
         while (dirtyElementsForLayerUpdate())
             documentElement->recalcStyle(NoChange);
     }
-
-    ensureStyleResolver().printStats();
 
     view()->recalcOverflowAfterStyleChange();
 
@@ -1817,7 +1810,9 @@ void Document::updateStyle(StyleRecalcChange change)
     ASSERT(!childNeedsStyleRecalc());
     ASSERT(inStyleRecalc());
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
-    TRACE_EVENT_END1("blink,blink_style", "Document::updateStyle", "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount);
+    TRACE_EVENT_END2("blink,blink_style", "Document::updateStyle",
+        "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount,
+        "counters", ensureStyleResolver().stats()->toTracedValue());
 }
 
 void Document::notifyLayoutTreeOfSubtreeChanges()
