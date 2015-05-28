@@ -183,9 +183,8 @@ class NET_EXPORT HttpNetworkSession
     return net_log_;
   }
 
-  // Creates a Value summary of the state of the socket pools. The caller is
-  // responsible for deleting the returned value.
-  base::Value* SocketPoolInfoToValue() const;
+  // Creates a Value summary of the state of the socket pools.
+  scoped_ptr<base::Value> SocketPoolInfoToValue() const;
 
   // Creates a Value summary of the state of the SPDY sessions.
   scoped_ptr<base::Value> SpdySessionPoolInfoToValue() const;

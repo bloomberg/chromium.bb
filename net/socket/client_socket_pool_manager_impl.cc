@@ -324,8 +324,9 @@ SSLClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
   return ret.first->second;
 }
 
-base::Value* ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
-  base::ListValue* list = new base::ListValue();
+scoped_ptr<base::Value> ClientSocketPoolManagerImpl::SocketPoolInfoToValue()
+    const {
+  scoped_ptr<base::ListValue> list(new base::ListValue());
   list->Append(transport_socket_pool_->GetInfoAsValue("transport_socket_pool",
                                                 "transport_socket_pool",
                                                 false));
@@ -335,22 +336,16 @@ base::Value* ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
   list->Append(ssl_socket_pool_->GetInfoAsValue("ssl_socket_pool",
                                                 "ssl_socket_pool",
                                                 false));
-  AddSocketPoolsToList(list,
-                       http_proxy_socket_pools_,
-                       "http_proxy_socket_pool",
-                       true);
-  AddSocketPoolsToList(list,
-                       socks_socket_pools_,
-                       "socks_socket_pool",
+  AddSocketPoolsToList(list.get(), http_proxy_socket_pools_,
+                       "http_proxy_socket_pool", true);
+  AddSocketPoolsToList(list.get(), socks_socket_pools_, "socks_socket_pool",
                        true);
 
   // Third parameter is false because |ssl_socket_pools_for_proxies_| use
   // socket pools in |http_proxy_socket_pools_| and |socks_socket_pools_|.
-  AddSocketPoolsToList(list,
-                       ssl_socket_pools_for_proxies_,
-                       "ssl_socket_pool_for_proxies",
-                       false);
-  return list;
+  AddSocketPoolsToList(list.get(), ssl_socket_pools_for_proxies_,
+                       "ssl_socket_pool_for_proxies", false);
+  return list.Pass();
 }
 
 void ClientSocketPoolManagerImpl::OnCertAdded(const X509Certificate* cert) {

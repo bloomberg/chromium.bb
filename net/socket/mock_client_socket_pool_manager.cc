@@ -4,6 +4,7 @@
 
 #include "net/socket/mock_client_socket_pool_manager.h"
 
+#include "base/values.h"
 #include "net/http/http_proxy_client_socket_pool.h"
 #include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/ssl_client_socket_pool.h"
@@ -86,9 +87,10 @@ SSLClientSocketPool* MockClientSocketPoolManager::GetSocketPoolForSSLWithProxy(
   return NULL;
 }
 
-base::Value* MockClientSocketPoolManager::SocketPoolInfoToValue() const {
+scoped_ptr<base::Value> MockClientSocketPoolManager::SocketPoolInfoToValue()
+    const {
   NOTIMPLEMENTED();
-  return NULL;
+  return scoped_ptr<base::Value>(nullptr);
 }
 
 }  // namespace net

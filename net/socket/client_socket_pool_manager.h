@@ -83,9 +83,8 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
       const HostPortPair& http_proxy) = 0;
   virtual SSLClientSocketPool* GetSocketPoolForSSLWithProxy(
       const HostPortPair& proxy_server) = 0;
-  // Creates a Value summary of the state of the socket pools. The caller is
-  // responsible for deleting the returned value.
-  virtual base::Value* SocketPoolInfoToValue() const = 0;
+  // Creates a Value summary of the state of the socket pools.
+  virtual scoped_ptr<base::Value> SocketPoolInfoToValue() const = 0;
 };
 
 // A helper method that uses the passed in proxy information to initialize a

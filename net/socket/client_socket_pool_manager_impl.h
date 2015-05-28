@@ -82,9 +82,8 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
   SSLClientSocketPool* GetSocketPoolForSSLWithProxy(
       const HostPortPair& proxy_server) override;
 
-  // Creates a Value summary of the state of the socket pools. The caller is
-  // responsible for deleting the returned value.
-  base::Value* SocketPoolInfoToValue() const override;
+  // Creates a Value summary of the state of the socket pools.
+  scoped_ptr<base::Value> SocketPoolInfoToValue() const override;
 
   // CertDatabase::Observer methods:
   void OnCertAdded(const X509Certificate* cert) override;
