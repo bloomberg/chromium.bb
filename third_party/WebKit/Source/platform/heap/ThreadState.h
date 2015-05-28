@@ -332,9 +332,9 @@ public:
     // - It is valid that the next GC is scheduled while some thread
     //   has not yet completed its lazy sweeping of the last GC.
     //   In this case, the next GC just cancels the remaining lazy sweeping.
-    //   Specifically, preGC() of the next GC calls makeConsistentForSweeping()
+    //   Specifically, preGC() of the next GC calls makeConsistentForGC()
     //   and it marks all not-yet-swept objets as dead.
-    void makeConsistentForSweeping();
+    void makeConsistentForGC();
     void preGC();
     void postGC(GCType);
     void preSweep();

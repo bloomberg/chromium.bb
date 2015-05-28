@@ -385,7 +385,7 @@ public:
     virtual bool isEmpty() = 0;
     virtual void removeFromHeap() = 0;
     virtual void sweep() = 0;
-    virtual void markUnmarkedObjectsDead() = 0;
+    virtual void makeConsistentForGC() = 0;
 #if defined(ADDRESS_SANITIZER)
     virtual void poisonUnmarkedObjects() = 0;
 #endif
@@ -472,7 +472,7 @@ public:
     virtual bool isEmpty() override;
     virtual void removeFromHeap() override;
     virtual void sweep() override;
-    virtual void markUnmarkedObjectsDead() override;
+    virtual void makeConsistentForGC() override;
 #if defined(ADDRESS_SANITIZER)
     virtual void poisonUnmarkedObjects() override;
 #endif
@@ -534,7 +534,7 @@ public:
     virtual bool isEmpty() override;
     virtual void removeFromHeap() override;
     virtual void sweep() override;
-    virtual void markUnmarkedObjectsDead() override;
+    virtual void makeConsistentForGC() override;
 #if defined(ADDRESS_SANITIZER)
     virtual void poisonUnmarkedObjects() override;
 #endif
@@ -692,9 +692,9 @@ public:
 #endif
 
     virtual void clearFreeLists() { }
-    void makeConsistentForSweeping();
+    void makeConsistentForGC();
 #if ENABLE(ASSERT)
-    virtual bool isConsistentForSweeping() = 0;
+    virtual bool isConsistentForGC() = 0;
 #endif
     size_t objectPayloadSizeForTesting();
     void prepareHeapForTermination();
@@ -737,7 +737,7 @@ public:
     }
     virtual void clearFreeLists() override;
 #if ENABLE(ASSERT)
-    virtual bool isConsistentForSweeping() override;
+    virtual bool isConsistentForGC() override;
     bool pagesToBeSweptContains(Address);
 #endif
 #if ENABLE(GC_PROFILING)
@@ -786,7 +786,7 @@ public:
     Address allocateLargeObjectPage(size_t, size_t gcInfoIndex);
     void freeLargeObjectPage(LargeObjectPage*);
 #if ENABLE(ASSERT)
-    virtual bool isConsistentForSweeping() override { return true; }
+    virtual bool isConsistentForGC() override { return true; }
 #endif
 private:
     Address doAllocateLargeObjectPage(size_t, size_t gcInfoIndex);

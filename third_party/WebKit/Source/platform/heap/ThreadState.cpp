@@ -842,19 +842,19 @@ void ThreadState::flushHeapDoesNotContainCacheIfNeeded()
     }
 }
 
-void ThreadState::makeConsistentForSweeping()
+void ThreadState::makeConsistentForGC()
 {
     ASSERT(isInGC());
-    TRACE_EVENT0("blink_gc", "ThreadState::makeConsistentForSweeping");
+    TRACE_EVENT0("blink_gc", "ThreadState::makeConsistentForGC");
     for (int i = 0; i < NumberOfHeaps; ++i)
-        m_heaps[i]->makeConsistentForSweeping();
+        m_heaps[i]->makeConsistentForGC();
 }
 
 void ThreadState::preGC()
 {
     ASSERT(!isInGC());
     setGCState(GCRunning);
-    makeConsistentForSweeping();
+    makeConsistentForGC();
     prepareRegionTree();
     flushHeapDoesNotContainCacheIfNeeded();
     clearHeapAges();

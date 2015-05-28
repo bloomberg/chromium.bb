@@ -232,7 +232,7 @@ BasePage* BaseHeap::findPageFromAddress(Address address)
 #define GC_PROFILE_HEAP_PAGE_SNAPSHOT_THRESHOLD 0
 void BaseHeap::snapshot(TracedValue* json, ThreadState::SnapshotInfo* info)
 {
-    ASSERT(isConsistentForSweeping());
+    ASSERT(isConsistentForGC());
     size_t previousPageCount = info->pageCount;
 
     json->beginArray("pages");
@@ -271,10 +271,10 @@ void BaseHeap::incrementMarkedObjectsAge()
 }
 #endif
 
-void BaseHeap::makeConsistentForSweeping()
+void BaseHeap::makeConsistentForGC()
 {
     clearFreeLists();
-    ASSERT(isConsistentForSweeping());
+    ASSERT(isConsistentForGC());
     for (BasePage* page = m_firstPage; page; page = page->next())
         page->markAsUnswept();
 
@@ -287,7 +287,7 @@ void BaseHeap::makeConsistentForSweeping()
     // found object.
     BasePage* previousPage = nullptr;
     for (BasePage* page = m_firstUnsweptPage; page; previousPage = page, page = page->next()) {
-        page->markUnmarkedObjectsDead();
+        page->makeConsistentForGC();
         ASSERT(!page->hasBeenSwept());
     }
     if (previousPage) {
@@ -301,7 +301,7 @@ void BaseHeap::makeConsistentForSweeping()
 
 size_t BaseHeap::objectPayloadSizeForTesting()
 {
-    ASSERT(isConsistentForSweeping());
+    ASSERT(isConsistentForGC());
     ASSERT(!m_firstUnsweptPage);
 
     size_t objectPayloadSize = 0;
@@ -441,7 +441,7 @@ void NormalPageHeap::clearFreeLists()
 }
 
 #if ENABLE(ASSERT)
-bool NormalPageHeap::isConsistentForSweeping()
+bool NormalPageHeap::isConsistentForGC()
 {
     // A thread heap is consistent for sweeping if none of the pages to be swept
     // contain a freelist block or the current allocation point.
@@ -1154,7 +1154,7 @@ void NormalPage::sweep()
         Heap::increaseMarkedObjectSize(markedObjectSize);
 }
 
-void NormalPage::markUnmarkedObjectsDead()
+void NormalPage::makeConsistentForGC()
 {
     size_t markedObjectSize = 0;
     for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
@@ -1457,7 +1457,7 @@ void LargeObjectPage::sweep()
     Heap::increaseMarkedObjectSize(size());
 }
 
-void LargeObjectPage::markUnmarkedObjectsDead()
+void LargeObjectPage::makeConsistentForGC()
 {
     HeapObjectHeader* header = heapObjectHeader();
     if (header->isMarked()) {
@@ -2101,7 +2101,7 @@ size_t Heap::objectPayloadSizeForTesting()
     size_t objectPayloadSize = 0;
     for (ThreadState* state : ThreadState::attachedThreads()) {
         state->setGCState(ThreadState::GCRunning);
-        state->makeConsistentForSweeping();
+        state->makeConsistentForGC();
         objectPayloadSize += state->objectPayloadSizeForTesting();
         state->setGCState(ThreadState::EagerSweepScheduled);
         state->setGCState(ThreadState::Sweeping);
