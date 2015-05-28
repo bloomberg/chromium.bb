@@ -48,6 +48,7 @@ PassOwnPtrWillBeRawPtr<FrameHost> FrameHost::create(Page& page)
 FrameHost::FrameHost(Page& page)
     : m_page(&page)
     , m_topControls(TopControls::create(*this))
+    , m_pageScaleConstraintsSet(PageScaleConstraintsSet::create())
     , m_pinchViewport(PinchViewport::create(*this))
     , m_eventHandlerRegistry(adoptPtrWillBeNoop(new EventHandlerRegistry(*this)))
     , m_consoleMessageStorage(ConsoleMessageStorage::create())
@@ -90,6 +91,11 @@ PinchViewport& FrameHost::pinchViewport() const
     return *m_pinchViewport;
 }
 
+PageScaleConstraintsSet& FrameHost::pageScaleConstraintsSet() const
+{
+    return *m_pageScaleConstraintsSet;
+}
+
 EventHandlerRegistry& FrameHost::eventHandlerRegistry() const
 {
     return *m_eventHandlerRegistry;
@@ -104,6 +110,7 @@ DEFINE_TRACE(FrameHost)
 {
     visitor->trace(m_page);
     visitor->trace(m_topControls);
+    visitor->trace(m_pageScaleConstraintsSet);
     visitor->trace(m_eventHandlerRegistry);
     visitor->trace(m_consoleMessageStorage);
 }

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "web/PageScaleConstraintsSet.h"
+#include "core/frame/PageScaleConstraintsSet.h"
 
 #include "platform/Length.h"
 #include "wtf/Assertions.h"

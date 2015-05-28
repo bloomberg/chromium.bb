@@ -32,6 +32,7 @@
 #define FrameHost_h
 
 #include "core/CoreExport.h"
+#include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/PinchViewport.h"
 #include "core/frame/TopControls.h"
 #include "platform/heap/Handle.h"
@@ -46,6 +47,7 @@ class Chrome;
 class ConsoleMessageStorage;
 class EventHandlerRegistry;
 class Page;
+class PageScaleConstraintsSet;
 class PinchViewport;
 class Settings;
 class UseCounter;
@@ -79,6 +81,7 @@ public:
 
     TopControls& topControls() const;
     PinchViewport& pinchViewport() const;
+    PageScaleConstraintsSet& pageScaleConstraintsSet() const;
     EventHandlerRegistry& eventHandlerRegistry() const;
 
     const AtomicString& overrideEncoding() const { return m_overrideEncoding; }
@@ -102,6 +105,7 @@ private:
 
     RawPtrWillBeMember<Page> m_page;
     const OwnPtrWillBeMember<TopControls> m_topControls;
+    const OwnPtrWillBeMember<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
     const OwnPtr<PinchViewport> m_pinchViewport;
     const OwnPtrWillBeMember<EventHandlerRegistry> m_eventHandlerRegistry;
     const OwnPtrWillBeMember<ConsoleMessageStorage> m_consoleMessageStorage;

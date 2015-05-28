@@ -32,9 +32,9 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PageScaleConstraints.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
-#include "core/page/PageScaleConstraints.h"
 #include "platform/Length.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"

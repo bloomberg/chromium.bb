@@ -54,6 +54,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/PinchViewport.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
@@ -1762,7 +1763,7 @@ void WebViewImpl::resizePinchViewport(const WebSize& newSize)
 
 void WebViewImpl::performResize()
 {
-    m_pageScaleConstraintsSet.didChangeViewSize(m_size);
+    pageScaleConstraintsSet().didChangeViewSize(m_size);
 
     updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
     updateMainFrameLayoutSize();
@@ -1878,7 +1879,7 @@ void WebViewImpl::resize(const WebSize& newSize)
 
     FloatSize viewportAnchorCoords(viewportAnchorCoordX, viewportAnchorCoordY);
     if (isRotation) {
-        RotationViewportAnchor anchor(*view, pinchViewport, viewportAnchorCoords, m_pageScaleConstraintsSet);
+        RotationViewportAnchor anchor(*view, pinchViewport, viewportAnchorCoords, pageScaleConstraintsSet());
         resizeViewWhileAnchored(view);
     } else {
         ResizeViewportAnchor anchor(*view, pinchViewport);
@@ -3127,7 +3128,7 @@ float WebViewImpl::pageScaleFactor() const
 
 float WebViewImpl::clampPageScaleFactorToLimits(float scaleFactor) const
 {
-    return m_pageScaleConstraintsSet.finalConstraints().clampToConstraints(scaleFactor);
+    return pageScaleConstraintsSet().finalConstraints().clampToConstraints(scaleFactor);
 }
 
 void WebViewImpl::setPinchViewportOffset(const WebFloatPoint& offset)
@@ -3245,10 +3246,10 @@ void WebViewImpl::disableAutoResizeMode()
 
 void WebViewImpl::setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints)
 {
-    if (newConstraints == m_pageScaleConstraintsSet.userAgentConstraints())
+    if (newConstraints == pageScaleConstraintsSet().userAgentConstraints())
         return;
 
-    m_pageScaleConstraintsSet.setUserAgentConstraints(newConstraints);
+    pageScaleConstraintsSet().setUserAgentConstraints(newConstraints);
 
     if (!mainFrameImpl() || !mainFrameImpl()->frameView())
         return;
@@ -3258,16 +3259,16 @@ void WebViewImpl::setUserAgentPageScaleConstraints(PageScaleConstraints newConst
 
 void WebViewImpl::setDefaultPageScaleLimits(float minScale, float maxScale)
 {
-    PageScaleConstraints newDefaults = m_pageScaleConstraintsSet.defaultConstraints();
+    PageScaleConstraints newDefaults = pageScaleConstraintsSet().defaultConstraints();
     newDefaults.minimumScale = minScale;
     newDefaults.maximumScale = maxScale;
 
-    if (newDefaults == m_pageScaleConstraintsSet.defaultConstraints())
+    if (newDefaults == pageScaleConstraintsSet().defaultConstraints())
         return;
 
-    m_pageScaleConstraintsSet.setDefaultConstraints(newDefaults);
-    m_pageScaleConstraintsSet.computeFinalConstraints();
-    m_pageScaleConstraintsSet.setNeedsReset(true);
+    pageScaleConstraintsSet().setDefaultConstraints(newDefaults);
+    pageScaleConstraintsSet().computeFinalConstraints();
+    pageScaleConstraintsSet().setNeedsReset(true);
 
     if (!mainFrameImpl() || !mainFrameImpl()->frameView())
         return;
@@ -3277,13 +3278,13 @@ void WebViewImpl::setDefaultPageScaleLimits(float minScale, float maxScale)
 
 void WebViewImpl::setInitialPageScaleOverride(float initialPageScaleFactorOverride)
 {
-    PageScaleConstraints constraints = m_pageScaleConstraintsSet.userAgentConstraints();
+    PageScaleConstraints constraints = pageScaleConstraintsSet().userAgentConstraints();
     constraints.initialScale = initialPageScaleFactorOverride;
 
-    if (constraints == m_pageScaleConstraintsSet.userAgentConstraints())
+    if (constraints == pageScaleConstraintsSet().userAgentConstraints())
         return;
 
-    m_pageScaleConstraintsSet.setNeedsReset(true);
+    pageScaleConstraintsSet().setNeedsReset(true);
     setUserAgentPageScaleConstraints(constraints);
 }
 
@@ -3294,10 +3295,10 @@ void WebViewImpl::setMaximumLegibleScale(float maximumLegibleScale)
 
 void WebViewImpl::setIgnoreViewportTagScaleLimits(bool ignore)
 {
-    PageScaleConstraints constraints = m_pageScaleConstraintsSet.userAgentConstraints();
+    PageScaleConstraints constraints = pageScaleConstraintsSet().userAgentConstraints();
     if (ignore) {
-        constraints.minimumScale = m_pageScaleConstraintsSet.defaultConstraints().minimumScale;
-        constraints.maximumScale = m_pageScaleConstraintsSet.defaultConstraints().maximumScale;
+        constraints.minimumScale = pageScaleConstraintsSet().defaultConstraints().minimumScale;
+        constraints.maximumScale = pageScaleConstraintsSet().defaultConstraints().maximumScale;
     } else {
         constraints.minimumScale = -1;
         constraints.maximumScale = -1;
@@ -3307,7 +3308,12 @@ void WebViewImpl::setIgnoreViewportTagScaleLimits(bool ignore)
 
 IntSize WebViewImpl::mainFrameSize()
 {
-    return m_pageScaleConstraintsSet.mainFrameSize();
+    return pageScaleConstraintsSet().mainFrameSize();
+}
+
+PageScaleConstraintsSet& WebViewImpl::pageScaleConstraintsSet() const
+{
+    return page()->frameHost().pageScaleConstraintsSet();
 }
 
 void WebViewImpl::refreshPageScaleFactorAfterLayout()
@@ -3317,17 +3323,17 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
     FrameView* view = page()->deprecatedLocalMainFrame()->view();
 
     updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
-    m_pageScaleConstraintsSet.computeFinalConstraints();
+    pageScaleConstraintsSet().computeFinalConstraints();
 
     int verticalScrollbarWidth = 0;
     if (view->verticalScrollbar() && !view->verticalScrollbar()->isOverlayScrollbar())
         verticalScrollbarWidth = view->verticalScrollbar()->width();
-    m_pageScaleConstraintsSet.adjustFinalConstraintsToContentsSize(contentsSize(), verticalScrollbarWidth, settings()->shrinksViewportContentToFit());
+    pageScaleConstraintsSet().adjustFinalConstraintsToContentsSize(contentsSize(), verticalScrollbarWidth, settings()->shrinksViewportContentToFit());
 
     float newPageScaleFactor = pageScaleFactor();
-    if (m_pageScaleConstraintsSet.needsReset() && m_pageScaleConstraintsSet.finalConstraints().initialScale != -1) {
-        newPageScaleFactor = m_pageScaleConstraintsSet.finalConstraints().initialScale;
-        m_pageScaleConstraintsSet.setNeedsReset(false);
+    if (pageScaleConstraintsSet().needsReset() && pageScaleConstraintsSet().finalConstraints().initialScale != -1) {
+        newPageScaleFactor = pageScaleConstraintsSet().finalConstraints().initialScale;
+        pageScaleConstraintsSet().setNeedsReset(false);
     }
     setPageScaleFactor(newPageScaleFactor);
 
@@ -3367,21 +3373,21 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
         adjustedDescription.minHeight = adjustedDescription.maxHeight;
     }
 
-    float oldInitialScale = m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale;
-    m_pageScaleConstraintsSet.updatePageDefinedConstraints(adjustedDescription, defaultMinWidth);
+    float oldInitialScale = pageScaleConstraintsSet().pageDefinedConstraints().initialScale;
+    pageScaleConstraintsSet().updatePageDefinedConstraints(adjustedDescription, defaultMinWidth);
 
     if (settingsImpl()->clobberUserAgentInitialScaleQuirk()
-        && m_pageScaleConstraintsSet.userAgentConstraints().initialScale != -1
-        && m_pageScaleConstraintsSet.userAgentConstraints().initialScale * deviceScaleFactor() <= 1) {
+        && pageScaleConstraintsSet().userAgentConstraints().initialScale != -1
+        && pageScaleConstraintsSet().userAgentConstraints().initialScale * deviceScaleFactor() <= 1) {
         if (description.maxWidth == Length(DeviceWidth)
-            || (description.maxWidth.type() == Auto && m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale == 1.0f))
+            || (description.maxWidth.type() == Auto && pageScaleConstraintsSet().pageDefinedConstraints().initialScale == 1.0f))
             setInitialPageScaleOverride(-1);
     }
 
-    m_pageScaleConstraintsSet.adjustForAndroidWebViewQuirks(adjustedDescription, defaultMinWidth.intValue(), deviceScaleFactor(), settingsImpl()->supportDeprecatedTargetDensityDPI(), page()->settings().wideViewportQuirkEnabled(), page()->settings().useWideViewport(), page()->settings().loadWithOverviewMode(), settingsImpl()->viewportMetaNonUserScalableQuirk());
-    float newInitialScale = m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale;
+    pageScaleConstraintsSet().adjustForAndroidWebViewQuirks(adjustedDescription, defaultMinWidth.intValue(), deviceScaleFactor(), settingsImpl()->supportDeprecatedTargetDensityDPI(), page()->settings().wideViewportQuirkEnabled(), page()->settings().useWideViewport(), page()->settings().loadWithOverviewMode(), settingsImpl()->viewportMetaNonUserScalableQuirk());
+    float newInitialScale = pageScaleConstraintsSet().pageDefinedConstraints().initialScale;
     if (oldInitialScale != newInitialScale && newInitialScale != -1) {
-        m_pageScaleConstraintsSet.setNeedsReset(true);
+        pageScaleConstraintsSet().setNeedsReset(true);
         if (mainFrameImpl() && mainFrameImpl()->frameView())
             mainFrameImpl()->frameView()->setNeedsLayout();
     }
@@ -3406,7 +3412,7 @@ void WebViewImpl::updateMainFrameLayoutSize()
     WebSize layoutSize = m_size;
 
     if (settings()->viewportEnabled())
-        layoutSize = m_pageScaleConstraintsSet.layoutSize();
+        layoutSize = pageScaleConstraintsSet().layoutSize();
 
     if (page()->settings().forceZeroLayoutHeight())
         layoutSize.height = 0;
@@ -3444,28 +3450,28 @@ void WebViewImpl::enableViewport()
 void WebViewImpl::disableViewport()
 {
     settings()->setViewportEnabled(false);
-    m_pageScaleConstraintsSet.clearPageDefinedConstraints();
+    pageScaleConstraintsSet().clearPageDefinedConstraints();
     updateMainFrameLayoutSize();
 }
 
 float WebViewImpl::defaultMinimumPageScaleFactor() const
 {
-    return m_pageScaleConstraintsSet.defaultConstraints().minimumScale;
+    return pageScaleConstraintsSet().defaultConstraints().minimumScale;
 }
 
 float WebViewImpl::defaultMaximumPageScaleFactor() const
 {
-    return m_pageScaleConstraintsSet.defaultConstraints().maximumScale;
+    return pageScaleConstraintsSet().defaultConstraints().maximumScale;
 }
 
 float WebViewImpl::minimumPageScaleFactor() const
 {
-    return m_pageScaleConstraintsSet.finalConstraints().minimumScale;
+    return pageScaleConstraintsSet().finalConstraints().minimumScale;
 }
 
 float WebViewImpl::maximumPageScaleFactor() const
 {
-    return m_pageScaleConstraintsSet.finalConstraints().maximumScale;
+    return pageScaleConstraintsSet().finalConstraints().maximumScale;
 }
 
 void WebViewImpl::resetScrollAndScaleState()
@@ -3479,7 +3485,7 @@ void WebViewImpl::resetScrollAndScaleState()
     // Clear out the values for the current history item. This will prevent the history item from clobbering the
     // value determined during page scale initialization, which may be less than 1.
     page()->deprecatedLocalMainFrame()->loader().clearScrollPositionAndViewState();
-    m_pageScaleConstraintsSet.setNeedsReset(true);
+    pageScaleConstraintsSet().setNeedsReset(true);
 
     // Clobber saved scales and scroll offsets.
     if (FrameView* view = page()->deprecatedLocalMainFrame()->document()->view())
@@ -3960,7 +3966,7 @@ void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
 void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPage)
 {
     if (isNewNavigation && !isNavigationWithinPage)
-        m_pageScaleConstraintsSet.setNeedsReset(true);
+        pageScaleConstraintsSet().setNeedsReset(true);
 
     // Give the pinch viewport's scroll layer its initial size.
     page()->frameHost().pinchViewport().mainFrameDidChangeSize();
@@ -4027,14 +4033,14 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
             m_size = frameSize;
 
             page()->frameHost().pinchViewport().setSize(m_size);
-            m_pageScaleConstraintsSet.didChangeViewSize(m_size);
+            pageScaleConstraintsSet().didChangeViewSize(m_size);
 
             m_client->didAutoResize(m_size);
             sendResizeEventAndRepaint();
         }
     }
 
-    if (m_pageScaleConstraintsSet.constraintsDirty())
+    if (pageScaleConstraintsSet().constraintsDirty())
         refreshPageScaleFactorAfterLayout();
 
     FrameView* view = webframe->frame()->view();
@@ -4054,12 +4060,12 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
 
 void WebViewImpl::didChangeContentsSize()
 {
-    m_pageScaleConstraintsSet.didChangeContentsSize(contentsSize(), pageScaleFactor());
+    pageScaleConstraintsSet().didChangeContentsSize(contentsSize(), pageScaleFactor());
 }
 
 void WebViewImpl::pageScaleFactorChanged()
 {
-    m_pageScaleConstraintsSet.setNeedsReset(false);
+    pageScaleConstraintsSet().setNeedsReset(false);
     updateLayerTreeViewport();
     if (m_inspectorOverlay)
         m_inspectorOverlay->update();
@@ -4522,7 +4528,7 @@ bool WebViewImpl::shouldDisableDesktopWorkarounds()
     //    the initial viewport width.
     // 2. The author has disabled viewport zoom.
 
-    const PageScaleConstraints& constraints = m_pageScaleConstraintsSet.pageDefinedConstraints();
+    const PageScaleConstraints& constraints = pageScaleConstraintsSet().pageDefinedConstraints();
 
     if (!mainFrameImpl() || !mainFrameImpl()->frameView())
         return false;

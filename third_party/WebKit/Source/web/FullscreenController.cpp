@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Fullscreen.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PageScaleConstraintsSet.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "platform/LayoutTestSupport.h"

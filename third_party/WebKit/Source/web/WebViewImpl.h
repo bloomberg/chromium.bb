@@ -55,7 +55,6 @@
 #include "web/EditorClientImpl.h"
 #include "web/MediaKeysClientImpl.h"
 #include "web/PageOverlayList.h"
-#include "web/PageScaleConstraintsSet.h"
 #include "web/PageWidgetDelegate.h"
 #include "web/SpellCheckerClientImpl.h"
 #include "web/StorageClientImpl.h"
@@ -74,6 +73,7 @@ class InputMethodContext;
 class InspectorOverlay;
 class InspectorOverlayImpl;
 class LinkHighlight;
+class PageScaleConstraintsSet;
 class PopupContainer;
 class DeprecatedPaintLayerCompositor;
 class TopControls;
@@ -536,7 +536,7 @@ public:
     IntSize mainFrameSize();
     WebDisplayMode displayMode() const { return m_displayMode; }
 
-    PageScaleConstraintsSet& pageScaleConstraintsSet() { return m_pageScaleConstraintsSet; }
+    PageScaleConstraintsSet& pageScaleConstraintsSet() const;
 
 private:
     void setPageScaleFactorAndLocation(float, const FloatPoint&);
@@ -673,8 +673,6 @@ private:
     double m_minimumZoomLevel;
 
     double m_maximumZoomLevel;
-
-    PageScaleConstraintsSet m_pageScaleConstraintsSet;
 
     // This value, when multiplied by the font scale factor, gives the maximum
     // page scale that can result from automatic zooms.

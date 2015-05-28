@@ -67,8 +67,6 @@
       'PageOverlay.h',
       'PageOverlayList.cpp',
       'PageOverlayList.h',
-      'PageScaleConstraintsSet.cpp',
-      'PageScaleConstraintsSet.h',
       'PageWidgetDelegate.cpp',
       'PageWidgetDelegate.h',
       'PluginPlaceholderImpl.cpp',

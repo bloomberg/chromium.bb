@@ -32,9 +32,10 @@
 #define PageScaleConstraintsSet_h
 
 #include "core/dom/ViewportDescription.h"
-#include "core/page/PageScaleConstraints.h"
+#include "core/frame/PageScaleConstraints.h"
 #include "platform/Length.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -42,7 +43,10 @@ namespace blink {
 // the meta viewport tag and other sources.
 class PageScaleConstraintsSet {
 public:
-    PageScaleConstraintsSet();
+    static PassOwnPtrWillBeRawPtr<PageScaleConstraintsSet> create()
+    {
+        return adoptPtrWillBeNoop(new PageScaleConstraintsSet);
+    }
 
     void setDefaultConstraints(const PageScaleConstraints&);
     const PageScaleConstraints& defaultConstraints() const;
@@ -85,6 +89,8 @@ public:
     IntSize layoutSize() const;
 
 private:
+    PageScaleConstraintsSet();
+
     PageScaleConstraints computeConstraintsStack() const;
 
     PageScaleConstraints m_defaultConstraints;
