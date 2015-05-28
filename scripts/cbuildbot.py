@@ -70,7 +70,8 @@ def _PrintValidConfigs(site_config, display_all=False):
             config_name)
 
   COLUMN_WIDTH = 45
-  print()
+  if not display_all:
+    print('Note: This is the common list; for all configs, use --all.')
   print('config'.ljust(COLUMN_WIDTH), 'description')
   print('------'.ljust(COLUMN_WIDTH), '-----------')
   config_names = site_config.keys()
@@ -80,8 +81,6 @@ def _PrintValidConfigs(site_config, display_all=False):
       desc = site_config[name].get('description')
       desc = desc if desc else ''
       print(name.ljust(COLUMN_WIDTH), desc)
-
-  print()
 
 
 def _ConfirmBuildRoot(buildroot):
