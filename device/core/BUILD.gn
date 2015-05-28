@@ -10,8 +10,7 @@ source_set("core") {
     "device_monitor_win.h",
   ]
 
-  public_deps = [
+  deps = [
     "//base",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 }

@@ -9,12 +9,6 @@ generated_ids = "$target_gen_dir/usb_ids_gen.cc"
 
 source_set("usb") {
   sources = [
-    "device_impl.cc",
-    "device_impl.h",
-    "device_manager_impl.cc",
-    "device_manager_impl.h",
-    "type_converters.cc",
-    "type_converters.h",
     "usb_context.cc",
     "usb_context.h",
     "usb_descriptors.cc",
@@ -45,8 +39,6 @@ source_set("usb") {
     "//base/third_party/dynamic_annotations",
     "//components/device_event_log",
     "//device/core",
-    "//device/usb/public/cpp",
-    "//device/usb/public/interfaces",
     "//net",
     "//third_party/libusb",
   ]

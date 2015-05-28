@@ -15,12 +15,10 @@
 class ChromeDeviceClient : device::DeviceClient {
  public:
   ChromeDeviceClient();
-  ~ChromeDeviceClient() override;
+  virtual ~ChromeDeviceClient();
 
   // device::DeviceClient implementation
   device::UsbService* GetUsbService() override;
-  void ConnectToUSBDeviceManager(
-      mojo::InterfaceRequest<device::usb::DeviceManager> request) override;
   device::HidService* GetHidService() override;
 
  private:

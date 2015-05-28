@@ -17,7 +17,7 @@ namespace extensions {
 class ShellDeviceClient : device::DeviceClient {
  public:
   ShellDeviceClient();
-  ~ShellDeviceClient() override;
+  virtual ~ShellDeviceClient();
 
   // device::DeviceClient implementation
   device::UsbService* GetUsbService() override;
