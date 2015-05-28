@@ -33,22 +33,6 @@ namespace blink {
 
 class StylePropertySet;
 
-struct RuleRange {
-    RuleRange(int& firstRuleIndex, int& lastRuleIndex): firstRuleIndex(firstRuleIndex), lastRuleIndex(lastRuleIndex) { }
-    int& firstRuleIndex;
-    int& lastRuleIndex;
-};
-
-struct MatchRanges {
-    MatchRanges() : firstUARule(-1), lastUARule(-1), firstAuthorRule(-1), lastAuthorRule(-1) { }
-    int firstUARule;
-    int lastUARule;
-    int firstAuthorRule;
-    int lastAuthorRule;
-    RuleRange UARuleRange() { return RuleRange(firstUARule, lastUARule); }
-    RuleRange authorRuleRange() { return RuleRange(firstAuthorRule, lastAuthorRule); }
-};
-
 struct MatchedProperties {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
@@ -78,12 +62,18 @@ namespace blink {
 class MatchResult {
     STACK_ALLOCATED();
 public:
-    MatchResult() : isCacheable(true) { }
-    WillBeHeapVector<MatchedProperties, 64> matchedProperties;
-    MatchRanges ranges;
-    bool isCacheable;
-
     void addMatchedProperties(const StylePropertySet* properties, unsigned linkMatchType = CSSSelector::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
+
+    int firstRule() const { return 0; }
+    int lastRule() const { return matchedProperties.size() - 1; }
+    int firstUARule() const { return lastUARuleIndex == -1 ? -1 : 0; }
+    int lastUARule() const { return lastUARuleIndex; }
+    int firstAuthorRule() const { return lastUARuleIndex + 1; }
+    int lastAuthorRule() const { return lastRule(); }
+
+    WillBeHeapVector<MatchedProperties, 64> matchedProperties;
+    int lastUARuleIndex = -1;
+    bool isCacheable = true;
 };
 
 inline bool operator==(const MatchedProperties& a, const MatchedProperties& b)

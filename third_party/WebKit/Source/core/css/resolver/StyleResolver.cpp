@@ -371,7 +371,6 @@ static inline ScopedStyleResolver* scopedResolverFor(const Element* element)
 void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
 {
     collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
 
     CascadeOrder cascadeOrder = 0;
     WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolversInShadowTree;
@@ -412,11 +411,7 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector)
 void StyleResolver::matchRuleSet(ElementRuleCollector& collector, RuleSet* rules)
 {
     collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastUARule = collector.matchedResult().matchedProperties.size() - 1;
-
-    RuleRange ruleRange = collector.matchedResult().ranges.UARuleRange();
-    collector.collectMatchingRules(MatchRequest(rules), ruleRange);
-
+    collector.collectMatchingRules(MatchRequest(rules));
     collector.sortAndTransferMatchedRules();
 }
 
@@ -438,7 +433,7 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
             TextDirection textDirection = toHTMLElement(state.element())->directionalityIfhasDirAutoAttribute(isAuto);
             if (isAuto) {
                 state.setHasDirAutoAttribute(true);
-                collector.matchedResult().addMatchedProperties(textDirection == LTR ? leftToRightDeclaration() : rightToLeftDeclaration());
+                collector.addElementStyleProperties(textDirection == LTR ? leftToRightDeclaration() : rightToLeftDeclaration());
             }
         }
     }
@@ -660,13 +655,13 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForKeyframe(Element& element, cons
     // relevant one is animation-timing-function and we special-case that in
     // CSSAnimations.cpp
     bool inheritedOnly = false;
-    applyMatchedProperties<HighPropertyPriority>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, result, false, result.firstRule(), result.lastRule(), inheritedOnly);
 
     // If our font got dirtied, go ahead and update it now.
     updateFont(state);
 
     // Now do rest of the properties.
-    applyMatchedProperties<LowPropertyPriority>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, result, false, result.firstRule(), result.lastRule(), inheritedOnly);
 
     loadPendingResources(state);
 
@@ -854,13 +849,13 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForPage(int pageIndex)
 
     bool inheritedOnly = false;
 
-    MatchResult& result = collector.matchedResult();
-    applyMatchedProperties<HighPropertyPriority>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    const MatchResult& result = collector.matchedResult();
+    applyMatchedProperties<HighPropertyPriority>(state, result, false, result.firstRule(), result.lastRule(), inheritedOnly);
 
     // If our font got dirtied, go ahead and update it now.
     updateFont(state);
 
-    applyMatchedProperties<LowPropertyPriority>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, result, false, result.firstRule(), result.lastRule(), inheritedOnly);
 
     loadPendingResources(state);
 
@@ -1263,6 +1258,8 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     if (startIndex == -1)
         return;
 
+    ASSERT(startIndex >= 0 && endIndex < static_cast<int>(matchResult.matchedProperties.size()));
+
     if (state.style()->insideLink() != NotInsideLink) {
         for (int i = startIndex; i <= endIndex; ++i) {
             const MatchedProperties& matchedProperties = matchResult.matchedProperties[i];
@@ -1339,9 +1336,9 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     // high-priority properties first, i.e., those properties that other properties depend on.
     // The order is (1) high-priority not important, (2) high-priority important, (3) normal not important
     // and (4) normal important.
-    applyMatchedProperties<HighPropertyPriority>(state, matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    applyMatchedProperties<HighPropertyPriority>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-    applyMatchedProperties<HighPropertyPriority>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, matchResult, false, matchResult.firstRule(), matchResult.lastRule(), applyInheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, matchResult, true, matchResult.firstAuthorRule(), matchResult.lastAuthorRule(), applyInheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, matchResult, true, matchResult.firstUARule(), matchResult.lastUARule(), applyInheritedOnly);
 
     if (UNLIKELY(isSVGForeignObjectElement(element))) {
         // LayoutSVGRoot handles zooming for the whole SVG subtree, so foreignObject content should not be scaled again.
@@ -1367,15 +1364,15 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
         applyInheritedOnly = false;
 
     // Now do the normal priority UA properties.
-    applyMatchedProperties<LowPropertyPriority>(state, matchResult, false, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, false, matchResult.firstUARule(), matchResult.lastUARule(), applyInheritedOnly);
 
     // Cache the UA properties to pass them to LayoutTheme in adjustComputedStyle.
     state.cacheUserAgentBorderAndBackground();
 
     // Now do the author and user normal priority properties and all the !important properties.
-    applyMatchedProperties<LowPropertyPriority>(state, matchResult, false, matchResult.ranges.lastUARule + 1, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    applyMatchedProperties<LowPropertyPriority>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-    applyMatchedProperties<LowPropertyPriority>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, false, matchResult.firstAuthorRule(), matchResult.lastAuthorRule(), applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, true, matchResult.firstAuthorRule(), matchResult.lastAuthorRule(), applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, true, matchResult.firstUARule(), matchResult.lastUARule(), applyInheritedOnly);
 
     loadPendingResources(state);
 
@@ -1396,8 +1393,7 @@ void StyleResolver::applyCallbackSelectors(StyleResolverState& state)
     collector.setMode(SelectorChecker::CollectingStyleRules);
 
     MatchRequest matchRequest(m_watchedSelectorsRules.get(), true);
-    RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
-    collector.collectMatchingRules(matchRequest, ruleRange);
+    collector.collectMatchingRules(matchRequest);
     collector.sortAndTransferMatchedRules();
 
     RefPtrWillBeRawPtr<StyleRuleList> rules = collector.matchedStyleRuleList();

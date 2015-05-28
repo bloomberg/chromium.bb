@@ -35,7 +35,7 @@ public:
     PageRuleCollector(const ComputedStyle* rootElementStyle, int pageIndex);
 
     void matchPageRules(RuleSet* rules);
-    MatchResult& matchedResult() { return m_result; }
+    const MatchResult& matchedResult() { return m_result; }
 
 private:
     bool isLeftPage(const ComputedStyle* rootElementStyle, int pageIndex) const;

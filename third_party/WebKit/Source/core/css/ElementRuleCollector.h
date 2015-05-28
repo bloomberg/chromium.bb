@@ -118,21 +118,21 @@ public:
     bool scopeContainsLastMatchedElement() const { return m_scopeContainsLastMatchedElement; }
     bool hasAnyMatchingRules(RuleSet*);
 
-    MatchResult& matchedResult();
+    const MatchResult& matchedResult();
     PassRefPtrWillBeRawPtr<StyleRuleList> matchedStyleRuleList();
     PassRefPtrWillBeRawPtr<CSSRuleList> matchedCSSRuleList();
 
-    void collectMatchingRules(const MatchRequest&, RuleRange&, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
-    void collectMatchingShadowHostRules(const MatchRequest&, RuleRange&, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
+    void collectMatchingRules(const MatchRequest&, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
+    void collectMatchingShadowHostRules(const MatchRequest&, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
     void sortAndTransferMatchedRules();
     void clearMatchedRules();
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
 
 private:
     template<typename RuleDataListType>
-    void collectMatchingRulesForList(const RuleDataListType*, CascadeOrder, const MatchRequest&, RuleRange&);
+    void collectMatchingRulesForList(const RuleDataListType*, CascadeOrder, const MatchRequest&);
 
-    void didMatchRule(const RuleData&, const SelectorChecker::MatchResult&, CascadeOrder, const MatchRequest&, RuleRange&);
+    void didMatchRule(const RuleData&, const SelectorChecker::MatchResult&, CascadeOrder, const MatchRequest&);
 
     template<class CSSRuleCollection>
     CSSRule* findStyleRule(CSSRuleCollection*, StyleRule*);
