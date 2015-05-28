@@ -829,7 +829,7 @@ public:
     static bool willObjectBeLazilySwept(const T* objectPointer)
     {
         static_assert(IsGarbageCollectedType<T>::value, "only objects deriving from GarbageCollected can be used.");
-#if ENABLE(OILPAN)
+#if ENABLE_LAZY_SWEEPING
         BasePage* page = pageFromObject(objectPointer);
         if (page->hasBeenSwept())
             return false;
@@ -837,8 +837,6 @@ public:
 
         return !ObjectAliveTrait<T>::isHeapObjectAlive(s_markingVisitor, const_cast<T*>(objectPointer));
 #else
-        // FIXME: remove when lazy sweeping is always on
-        // (cf. ThreadState::preSweep()).
         return false;
 #endif
     }
@@ -1108,8 +1106,7 @@ public:
     }
 };
 
-// TODO(Oilpan): enable this macro when enabling lazy sweeping, non-Oilpan.
-#if ENABLE(OILPAN)
+#if ENABLE_LAZY_SWEEPING
 #define EAGERLY_FINALIZE() typedef int IsEagerlyFinalizedMarker
 #define EAGERLY_FINALIZE_WILL_BE_REMOVED()
 #else

@@ -1828,8 +1828,7 @@ TEST(HeapTest, SimpleFinalization)
     EXPECT_EQ(1, SimpleFinalizedObject::s_destructorCalls);
 }
 
-// FIXME: Lazy sweeping is disabled in non-oilpan builds.
-#if ENABLE(OILPAN)
+#if ENABLE_LAZY_SWEEPING
 TEST(HeapTest, LazySweepingPages)
 {
     clearOutOldGarbage();

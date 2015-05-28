@@ -699,8 +699,7 @@ void ThreadState::scheduleIdleLazySweep()
     if (!isMainThread())
         return;
 
-    // TODO(haraken): Remove this. Lazy sweeping is not yet enabled in non-oilpan builds.
-#if ENABLE(OILPAN)
+#if ENABLE_LAZY_SWEEPING
     Platform::current()->currentThread()->scheduler()->postIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleLazySweep, this));
 #endif
 }
@@ -924,7 +923,7 @@ void ThreadState::preSweep()
 #endif
 #endif
 
-#if ENABLE(OILPAN)
+#if ENABLE_LAZY_SWEEPING
     if (gcState() == EagerSweepScheduled) {
         // Eager sweeping should happen only in testing.
         setGCState(Sweeping);
@@ -936,8 +935,6 @@ void ThreadState::preSweep()
         scheduleIdleLazySweep();
     }
 #else
-    // FIXME: For now, we disable lazy sweeping in non-oilpan builds
-    // to avoid unacceptable behavior regressions on trunk.
     setGCState(Sweeping);
     completeSweep();
 #endif
