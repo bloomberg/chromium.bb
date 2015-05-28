@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -52,15 +53,19 @@ namespace {
 // Callback to provide when deleting the data associated with persistent Web
 // Notifications from the notification database.
 void OnPersistentNotificationDataDeleted(bool success) {
-  // TODO(peter): Record UMA for notification deletion requests created by the
-  // PlatformNotificationService.
+  UMA_HISTOGRAM_BOOLEAN(
+      "ServiceWorker.PlatformNotificationService."
+      "PersistentNotificationDataDeleted", success);
 }
 
 // Persistent notifications fired through the delegate do not care about the
 // lifetime of the Service Worker responsible for executing the event.
 void OnEventDispatchComplete(content::PersistentNotificationStatus status) {
-  // TODO(peter): Record UMA statistics about the result status of running
-  // events for persistent Web Notifications.
+  UMA_HISTOGRAM_ENUMERATION(
+      "ServiceWorker.PlatformNotificationService."
+      "PersistentWebNotificationClickResult",
+      status, content::PersistentNotificationStatus::
+          PERSISTENT_NOTIFICATION_STATUS_MAX);
 }
 
 void CancelNotification(const std::string& id, ProfileID profile_id) {

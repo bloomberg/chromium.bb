@@ -36452,6 +36452,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram
+    name="ServiceWorker.PlatformNotificationService.PersistentNotificationDataDeleted"
+    enum="BooleanSuccess">
+  <owner>peter@chromium.org</owner>
+  <owner>deepak.m1@samsung.com</owner>
+  <summary>
+    Recorded when the data associated with a persistent Web Notification gets
+    deleted. The value will be true if data deletion succeeded, and false if
+    there was an error.
+  </summary>
+</histogram>
+
+<histogram
+    name="ServiceWorker.PlatformNotificationService.PersistentWebNotificationClickResult"
+    enum="ServiceWorkerPlatformNotificationStatus">
+  <owner>peter@chromium.org</owner>
+  <owner>deepak.m1@samsumg.com</owner>
+  <summary>
+    Recorded delivery status for persistent notification clicks to a Service
+    Worker when handling a click on a persistent WebNotification has finished.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.PushEventExecutionTime" units="millisecond">
   <owner>johnme@chromium.org</owner>
   <summary>Execution time of ServiceWorkerGlobalScope.onpush.</summary>
@@ -63564,6 +63587,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="OK"/>
   <int value="1" label="Failed to delete ServiceWorkerDatabase"/>
   <int value="2" label="Failed to delete ServiceWorkerDiskCache"/>
+</enum>
+
+<enum name="ServiceWorkerPlatformNotificationStatus" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Service Worker not found"/>
+  <int value="2" label="Service Worker error"/>
+  <int value="3" label="event.waitUntil promise rejected"/>
+  <int value="4" label="Database error"/>
 </enum>
 
 <enum name="ServiceWorkerReadResponseResult" type="int">

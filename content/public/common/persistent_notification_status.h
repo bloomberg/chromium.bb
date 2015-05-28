@@ -8,6 +8,7 @@
 namespace content {
 
 // Delivery status for persistent notification clicks to a Service Worker.
+// PersistentNotificationStatus entries should not be reordered or removed.
 enum PersistentNotificationStatus {
   // The notificationclick event has been delivered successfully.
   PERSISTENT_NOTIFICATION_STATUS_SUCCESS = 0,
@@ -25,6 +26,9 @@ enum PersistentNotificationStatus {
   // The event could not be delivered because the data associated with the
   // notification could not be read from the database.
   PERSISTENT_NOTIFICATION_STATUS_DATABASE_ERROR,
+
+  // Only add new entries above this line.
+  PERSISTENT_NOTIFICATION_STATUS_MAX
 };
 
 }  // content
