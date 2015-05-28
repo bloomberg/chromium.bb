@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"  // Temporary
@@ -822,7 +823,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params);
-#if DCHECK_IS_ON()
   NavigationType new_type = ClassifyNavigationWithoutPageID(rfh, params);
   bool ignore_mismatch = false;
   // There are disagreements on some Android bots over SAME_PAGE between the two
@@ -851,9 +851,29 @@ bool NavigationControllerImpl::RendererDidNavigate(
                        new_type == NAVIGATION_TYPE_AUTO_SUBFRAME;
   }
   if (!ignore_mismatch) {
-    DCHECK_EQ(details->type, new_type);
+    base::debug::SetCrashKeyValue("369661-oldtype",
+                                  base::IntToString(details->type));
+    base::debug::SetCrashKeyValue("369661-newtype",
+                                  base::IntToString(new_type));
+    base::debug::SetCrashKeyValue("369661-navurl", params.url.spec());
+    base::debug::SetCrashKeyValue("369661-naventryid",
+                                  base::IntToString(params.nav_entry_id));
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+      base::debug::SetCrashKeyValue("369661-spp", "yes");
+    } else {
+      base::debug::SetCrashKeyValue("369661-spp", "no");
+    }
+    base::debug::SetCrashKeyValue("369661-didcreatenew",
+                                  params.did_create_new_entry ? "yes" : "no");
+    base::debug::SetCrashKeyValue("369661-pageid",
+                                  base::IntToString(params.page_id));
+    base::debug::SetCrashKeyValue(
+        "369661-maxpageid",
+        base::IntToString(delegate_->GetMaxPageIDForSiteInstance(
+            rfh->GetSiteInstance())));
+    CHECK_EQ(details->type, new_type);
   }
-#endif  // DCHECK_IS_ON()
 
   // is_in_page must be computed before the entry gets committed.
   details->is_in_page = AreURLsInPageNavigation(rfh->GetLastCommittedURL(),
@@ -1124,8 +1144,11 @@ NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
     // navigated on a popup navigated to about:blank (the iframe would be
     // written into the popup by script on the main page). For these cases,
     // there isn't any navigation stuff we can do, so just ignore it.
-    if (!GetLastCommittedEntry())
+    if (!GetLastCommittedEntry()) {
+      base::debug::SetCrashKeyValue("369661-newignore",
+                                    "new subframe no last committed");
       return NAVIGATION_TYPE_NAV_IGNORE;
+    }
 
     // Valid subframe navigation.
     return NAVIGATION_TYPE_NEW_SUBFRAME;
@@ -1142,6 +1165,8 @@ NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
     } else {
       // We ignore subframes created in non-committed pages; we'd appreciate if
       // people stopped doing that.
+      base::debug::SetCrashKeyValue("369661-newignore",
+                                    "auto subframe no last committed");
       return NAVIGATION_TYPE_NAV_IGNORE;
     }
   }
@@ -1154,8 +1179,11 @@ NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
     // scribble onto an uncommitted page. Again, there isn't any navigation
     // stuff that we can do, so ignore it here as well.
     NavigationEntry* last_committed = GetLastCommittedEntry();
-    if (!last_committed)
+    if (!last_committed) {
+      base::debug::SetCrashKeyValue("369661-newignore",
+                                    "renderer-initiated no last committed");
       return NAVIGATION_TYPE_NAV_IGNORE;
+    }
 
     if (AreURLsInPageNavigation(last_committed->GetURL(), params.url,
                                 params.was_within_same_page, rfh)) {
@@ -1204,6 +1232,8 @@ NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
     // to such entries). It could also mean that the renderer is smoking crack.
     // TODO(avi): Crash the renderer like we do in the old ClassifyNavigation?
     NOTREACHED() << "Could not find nav entry with id " << params.nav_entry_id;
+    base::debug::SetCrashKeyValue("369661-newignore",
+                                  "renderer smoking crack; no such entry id");
     return NAVIGATION_TYPE_NAV_IGNORE;
   }
 
