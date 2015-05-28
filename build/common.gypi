@@ -6034,27 +6034,6 @@
         ],
       },
     }],
-    ['use_lto==1 and clang==1 and (target_arch=="ia32" or target_arch=="x64")', {
-      'target_defaults': {
-        'target_conditions': [
-          # Required for third_party/zlib/crc_folding.c and various other code
-          # that uses SSE. TODO(pcc): Remove this once we properly support
-          # subtarget specific code generation in LLVM.
-          ['_toolset=="target"', {
-            'ldflags': [
-              '-Wl,-plugin-opt,mcpu=corei7-avx',
-            ],
-          }],
-          ['_toolset=="target" and _type!="static_library"', {
-            'xcode_settings':  {
-              'OTHER_LDFLAGS': [
-                '-Wl,-mcpu,corei7-avx',
-              ],
-            },
-          }],
-        ],
-      },
-    }],
     ['use_lto==1 and clang==1 and target_arch=="arm"', {
       'target_defaults': {
         'target_conditions': [
