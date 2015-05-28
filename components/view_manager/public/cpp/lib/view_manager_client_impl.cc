@@ -70,19 +70,26 @@ View* BuildViewTree(ViewManagerClientImpl* client,
 
 // Responsible for removing a root from the ViewManager when that view is
 // destroyed.
-class RootObserver : public ViewObserver {
+class ViewManagerClientImpl::RootObserver : public ViewObserver {
  public:
-  explicit RootObserver(View* root) : root_(root) {}
-  ~RootObserver() override {}
+  explicit RootObserver(View* root) : root_(root) {
+    root_->AddObserver(this);
+  }
+  ~RootObserver() override {
+    if (root_)
+      root_->RemoveObserver(this);
+  }
 
  private:
   // Overridden from ViewObserver:
   void OnViewDestroyed(View* view) override {
     DCHECK_EQ(view, root_);
-    static_cast<ViewManagerClientImpl*>(root_->view_manager())
-        ->RootDestroyed(root_);
     view->RemoveObserver(this);
-    delete this;
+    View* root = root_;
+    root_ = nullptr;
+    static_cast<ViewManagerClientImpl*>(root->view_manager())
+        ->RootDestroyed(root);
+    // WARNING: we've been deleted.
   }
 
   View* root_;
@@ -107,6 +114,10 @@ ViewManagerClientImpl::ViewManagerClientImpl(
 }
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
+  // Destroy RootObserver early on so that when we delete |root_| below we don't
+  // attempt to delete this again.
+  root_observer_.reset();
+
   std::vector<View*> non_owned;
   while (!views_.empty()) {
     IdToViewMap::iterator it = views_.begin();
@@ -117,6 +128,7 @@ ViewManagerClientImpl::~ViewManagerClientImpl() {
       views_.erase(it);
     }
   }
+
   // Delete the non-owned views last. In the typical case these are roots. The
   // exception is the window manager, which may know aboutother random views
   // that it doesn't own.
@@ -285,7 +297,7 @@ void ViewManagerClientImpl::OnEmbed(ConnectionSpecificId connection_id,
 
   DCHECK(!root_);
   root_ = AddViewToViewManager(this, nullptr, root_data);
-  root_->AddObserver(new RootObserver(root_));
+  root_observer_.reset(new RootObserver(root_));
 
   focused_view_ = GetViewById(focused_view_id);
 
@@ -433,6 +445,8 @@ void ViewManagerClientImpl::OnConnectionError() {
 void ViewManagerClientImpl::RootDestroyed(View* root) {
   DCHECK_EQ(root, root_);
   root_ = nullptr;
+  // When the root is gone we can't do anything useful.
+  delete this;
 }
 
 void ViewManagerClientImpl::OnActionCompleted(bool success) {

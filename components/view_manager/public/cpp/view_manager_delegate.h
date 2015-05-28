@@ -15,12 +15,22 @@ class View;
 class ViewManager;
 
 // Interface implemented by an application using the view manager.
+//
+// Each call to OnEmbed() results in a new ViewManager and new root View.
+// ViewManager is deleted by any of the following:
+// . If the root of the connection is destroyed. This happens if the owner
+//   of the root Embed()s another app in root, or the owner explicitly deletes
+//   root.
+// . The connection to the viewmanager is lost.
+// . Explicitly by way of calling delete.
+//
+// When the ViewManager is deleted all views are deleted (and observers
+// notified). This is followed by notifying the delegate by way of
+// OnViewManagerDisconnected().
 class ViewManagerDelegate {
  public:
   // Called when the application implementing this interface is embedded at
-  // |root|. Every embed results in a new ViewManager and root View being
-  // created. |root| and it's corresponding ViewManager are valid until
-  // OnViewManagerDisconnected() is called with the same object.
+  // |root|.
   //
   // |services| exposes the services offered by the embedder to the delegate.
   //

@@ -16,6 +16,8 @@ class View;
 // is made every time an app is embedded.
 class ViewManager {
  public:
+  virtual ~ViewManager() {}
+
   // Returns the URL of the application that embedded this application.
   virtual const std::string& GetEmbedderURL() const = 0;
 
@@ -32,9 +34,6 @@ class ViewManager {
   // Creates and returns a new View (which is owned by the ViewManager). Views
   // are initially hidden, use SetVisible(true) to show.
   virtual View* CreateView() = 0;
-
- protected:
-  virtual ~ViewManager() {}
 };
 
 }  // namespace mojo

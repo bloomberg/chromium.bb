@@ -74,7 +74,7 @@ class ViewManagerClientImpl : public ViewManager,
   void SetViewManagerService(ViewManagerServicePtr service);
 
  private:
-  friend class RootObserver;
+  class RootObserver;
 
   typedef std::map<Id, View*> IdToViewMap;
 
@@ -148,6 +148,8 @@ class ViewManagerClientImpl : public ViewManager,
   Binding<ViewManagerClient> binding_;
   ViewManagerServicePtr service_;
   const bool delete_on_error_;
+
+  scoped_ptr<RootObserver> root_observer_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };

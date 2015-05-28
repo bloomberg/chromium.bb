@@ -29,7 +29,9 @@ class ViewObserver;
 template <typename T>
 struct ViewProperty;
 
-// Views are owned by the ViewManager.
+// Views are owned by the ViewManager. See ViewManagerDelegate for details on
+// ownership.
+//
 // TODO(beng): Right now, you'll have to implement a ViewObserver to track
 //             destruction and NULL any pointers you have.
 //             Investigate some kind of smart pointer or weak pointer for these.
@@ -38,7 +40,10 @@ class View {
   using Children = std::vector<View*>;
   using SharedProperties = std::map<std::string, std::vector<uint8_t>>;
 
-  // Destroys this view and all its children.
+  // Destroys this view and all its children. Destruction is allowed for views
+  // that were created by this connection. For views from other connections
+  // (such as the root) Destroy() does nothing. If the destruction is allowed
+  // observers are notified and the View is immediately deleted.
   void Destroy();
 
   ViewManager* view_manager() { return manager_; }
