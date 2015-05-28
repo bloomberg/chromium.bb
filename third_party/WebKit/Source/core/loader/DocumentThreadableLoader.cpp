@@ -88,6 +88,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_securityOrigin(m_resourceLoaderOptions.securityOrigin)
     , m_sameOriginRequest(securityOrigin()->canRequest(request.url()))
     , m_crossOriginNonSimpleRequest(false)
+    , m_isUsingDataConsumerHandle(false)
     , m_async(blockingBehavior == LoadAsynchronously)
     , m_requestContext(request.requestContext())
     , m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout)
@@ -373,6 +374,9 @@ void DocumentThreadableLoader::responseReceived(Resource* resource, const Resour
     ASSERT_UNUSED(resource, resource == this->resource());
     ASSERT(m_async);
 
+    if (handle)
+        m_isUsingDataConsumerHandle = true;
+
     handleResponse(resource->identifier(), response, handle);
 }
 
@@ -464,6 +468,9 @@ void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data
 {
     ASSERT_UNUSED(resource, resource == this->resource());
     ASSERT(m_async);
+
+    if (m_isUsingDataConsumerHandle)
+        return;
 
     handleReceivedData(data, dataLength);
 }
