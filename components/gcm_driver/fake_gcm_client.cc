@@ -18,6 +18,39 @@
 
 namespace gcm {
 
+// static
+std::string FakeGCMClient::GenerateGCMRegistrationID(
+    const std::vector<std::string>& sender_ids) {
+  // GCMService normalizes the sender IDs by making them sorted.
+  std::vector<std::string> normalized_sender_ids = sender_ids;
+  std::sort(normalized_sender_ids.begin(), normalized_sender_ids.end());
+
+  // Simulate the registration_id by concaternating all sender IDs.
+  // Set registration_id to empty to denote an error if sender_ids contains a
+  // hint.
+  std::string registration_id;
+  if (sender_ids.size() != 1 ||
+      sender_ids[0].find("error") == std::string::npos) {
+    for (size_t i = 0; i < normalized_sender_ids.size(); ++i) {
+      if (i > 0)
+        registration_id += ",";
+      registration_id += normalized_sender_ids[i];
+    }
+  }
+  return registration_id;
+}
+
+// static
+std::string FakeGCMClient::GenerateInstanceIDToken(
+    const std::string& authorized_entity, const std::string& scope) {
+  if (authorized_entity.find("error") != std::string::npos)
+    return "";
+  std::string token(authorized_entity);
+  token += ",";
+  token += scope;
+  return token;
+}
+
 FakeGCMClient::FakeGCMClient(
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
     const scoped_refptr<base::SequencedTaskRunner>& io_thread)
@@ -78,12 +111,23 @@ void FakeGCMClient::Register(
     const linked_ptr<RegistrationInfo>& registration_info) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
+  std::string registration_id;
+
   GCMRegistrationInfo* gcm_registration_info =
       GCMRegistrationInfo::FromRegistrationInfo(registration_info.get());
-  DCHECK(gcm_registration_info);
+  if (gcm_registration_info) {
+    registration_id = GenerateGCMRegistrationID(
+        gcm_registration_info->sender_ids);
+  }
 
-  std::string registration_id = GetRegistrationIdFromSenderIds(
-      gcm_registration_info->sender_ids);
+  InstanceIDTokenInfo* instance_id_token_info =
+      InstanceIDTokenInfo::FromRegistrationInfo(registration_info.get());
+  if (instance_id_token_info) {
+    registration_id = GenerateInstanceIDToken(
+        instance_id_token_info->authorized_entity,
+        instance_id_token_info->scope);
+  }
+
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMClient::RegisterFinished,
@@ -191,27 +235,6 @@ void FakeGCMClient::DeleteMessages(const std::string& app_id) {
       base::Bind(&FakeGCMClient::MessagesDeleted,
                  weak_ptr_factory_.GetWeakPtr(),
                  app_id));
-}
-
-std::string FakeGCMClient::GetRegistrationIdFromSenderIds(
-    const std::vector<std::string>& sender_ids) const {
-  // GCMService normalizes the sender IDs by making them sorted.
-  std::vector<std::string> normalized_sender_ids = sender_ids;
-  std::sort(normalized_sender_ids.begin(), normalized_sender_ids.end());
-
-  // Simulate the registration_id by concaternating all sender IDs.
-  // Set registration_id to empty to denote an error if sender_ids contains a
-  // hint.
-  std::string registration_id;
-  if (sender_ids.size() != 1 ||
-      sender_ids[0].find("error") == std::string::npos) {
-    for (size_t i = 0; i < normalized_sender_ids.size(); ++i) {
-      if (i > 0)
-        registration_id += ",";
-      registration_id += normalized_sender_ids[i];
-    }
-  }
-  return registration_id;
 }
 
 void FakeGCMClient::Started() {

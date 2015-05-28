@@ -810,6 +810,7 @@ void GCMDriverDesktop::GetToken(
   DCHECK(!authorized_entity.empty());
   DCHECK(!scope.empty());
   DCHECK(!callback.is_null());
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
   GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
   if (result != GCMClient::SUCCESS) {
@@ -825,6 +826,35 @@ void GCMDriverDesktop::GetToken(
   }
 
   get_token_callbacks_[tuple_key] = callback;
+
+  // Delay the GetToken operation until GCMClient is ready.
+  if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
+    delayed_task_controller_->AddTask(
+        base::Bind(&GCMDriverDesktop::DoGetToken,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   app_id,
+                   authorized_entity,
+                   scope,
+                   options));
+    return;
+  }
+
+  DoGetToken(app_id, authorized_entity, scope, options);
+}
+
+void GCMDriverDesktop::DoGetToken(
+    const std::string& app_id,
+    const std::string& authorized_entity,
+    const std::string& scope,
+    const std::map<std::string, std::string>& options) {
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  TokenTuple tuple_key(app_id, authorized_entity, scope);
+  auto callback_iter = get_token_callbacks_.find(tuple_key);
+  if (callback_iter == get_token_callbacks_.end()) {
+    // The callback could have been removed when the app is uninstalled.
+    return;
+  }
 
   io_thread_->PostTask(
       FROM_HERE,
@@ -844,6 +874,7 @@ void GCMDriverDesktop::DeleteToken(const std::string& app_id,
   DCHECK(!authorized_entity.empty());
   DCHECK(!scope.empty());
   DCHECK(!callback.is_null());
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
   GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
   if (result != GCMClient::SUCCESS) {
@@ -860,6 +891,25 @@ void GCMDriverDesktop::DeleteToken(const std::string& app_id,
   }
 
   delete_token_callbacks_[tuple_key] = callback;
+
+  // Delay the DeleteToken operation until GCMClient is ready.
+  if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
+    delayed_task_controller_->AddTask(
+        base::Bind(&GCMDriverDesktop::DoDeleteToken,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   app_id,
+                   authorized_entity,
+                   scope));
+    return;
+  }
+
+  DoDeleteToken(app_id, authorized_entity, scope);
+}
+
+void GCMDriverDesktop::DoDeleteToken(const std::string& app_id,
+                                     const std::string& authorized_entity,
+                                     const std::string& scope) {
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
   io_thread_->PostTask(
       FROM_HERE,

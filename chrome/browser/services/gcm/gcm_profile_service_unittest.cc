@@ -203,7 +203,7 @@ TEST_F(GCMProfileServiceTest, RegisterAndUnregister) {
   RegisterAndWaitForCompletion(sender_ids);
 
   std::string expected_registration_id =
-      GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids);
+      FakeGCMClient::GenerateGCMRegistrationID(sender_ids);
   EXPECT_EQ(expected_registration_id, registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
 

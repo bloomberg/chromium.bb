@@ -25,6 +25,13 @@ class FakeGCMClient : public GCMClient {
     FORCE_TO_ALWAYS_DELAY_START_GCM,
   };
 
+  // Generate and return the registration ID/token based on parameters for
+  // testing verification.
+  static std::string GenerateGCMRegistrationID(
+      const std::vector<std::string>& sender_ids);
+  static std::string GenerateInstanceIDToken(
+      const std::string& authorized_entity, const std::string& scope);
+
   FakeGCMClient(const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
                 const scoped_refptr<base::SequencedTaskRunner>& io_thread);
   ~FakeGCMClient() override;
@@ -75,9 +82,6 @@ class FakeGCMClient : public GCMClient {
   void ReceiveMessage(const std::string& app_id,
                       const IncomingMessage& message);
   void DeleteMessages(const std::string& app_id);
-
-  std::string GetRegistrationIdFromSenderIds(
-      const std::vector<std::string>& sender_ids) const;
 
   void set_start_mode_overridding(StartModeOverridding overridding) {
     start_mode_overridding_ = overridding;

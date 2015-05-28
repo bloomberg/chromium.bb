@@ -142,6 +142,13 @@ class GCMDriverDesktop : public GCMDriver,
   void DoSend(const std::string& app_id,
               const std::string& receiver_id,
               const GCMClient::OutgoingMessage& message);
+  void DoGetToken(const std::string& app_id,
+                  const std::string& authorized_entity,
+                  const std::string& scope,
+                  const std::map<std::string, std::string>& options);
+  void DoDeleteToken(const std::string& app_id,
+                     const std::string& authorized_entity,
+                     const std::string& scope);
 
   // Callbacks posted from IO thread to UI thread.
   void MessageReceived(const std::string& app_id,

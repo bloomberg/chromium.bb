@@ -40,6 +40,7 @@ namespace {
 const char kTestAppID1[] = "TestApp1";
 const char kTestAppID2[] = "TestApp2";
 const char kUserID1[] = "user1";
+const char kScope[] = "GCM";
 
 class FakeGCMConnectionObserver : public GCMConnectionObserver {
  public:
@@ -139,12 +140,16 @@ class GCMDriverTest : public testing::Test {
 
   void WaitForAsyncOperation();
 
- private:
   void RegisterCompleted(const std::string& registration_id,
                          GCMClient::Result result);
   void SendCompleted(const std::string& message_id, GCMClient::Result result);
   void UnregisterCompleted(GCMClient::Result result);
 
+  void set_async_operation_completed_callback(const base::Closure& callback) {
+    async_operation_completed_callback_ = callback;
+  }
+
+ private:
   base::ScopedTempDir temp_dir_;
   TestingPrefServiceSimple prefs_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -578,7 +583,7 @@ TEST_F(GCMDriverFunctionalTest, Register) {
   sender_ids.push_back("sender1");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   const std::string expected_registration_id =
-      GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids);
+      FakeGCMClient::GenerateGCMRegistrationID(sender_ids);
 
   EXPECT_EQ(expected_registration_id, registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
@@ -599,7 +604,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAgainWithSameSenderIDs) {
   sender_ids.push_back("sender2");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   const std::string expected_registration_id =
-      GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids);
+      FakeGCMClient::GenerateGCMRegistrationID(sender_ids);
 
   EXPECT_EQ(expected_registration_id, registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
@@ -624,7 +629,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAgainWithDifferentSenderIDs) {
   sender_ids.push_back("sender1");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   const std::string expected_registration_id =
-      GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids);
+      FakeGCMClient::GenerateGCMRegistrationID(sender_ids);
 
   EXPECT_EQ(expected_registration_id, registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
@@ -632,7 +637,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAgainWithDifferentSenderIDs) {
   // Make sender IDs different.
   sender_ids.push_back("sender2");
   const std::string expected_registration_id2 =
-      GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids);
+      FakeGCMClient::GenerateGCMRegistrationID(sender_ids);
 
   // Calling register 2nd time with the different sender IDs will get back a new
   // registration ID.
@@ -710,7 +715,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAfterUnfinishedUnregister) {
   sender_ids.push_back("sender1");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
-  EXPECT_EQ(GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids),
+  EXPECT_EQ(FakeGCMClient::GenerateGCMRegistrationID(sender_ids),
             registration_id());
 
   // Clears the results the would be set by the Register callback in preparation
@@ -728,7 +733,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAfterUnfinishedUnregister) {
   // uncompleted Unregister.
   WaitForAsyncOperation();
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
-  EXPECT_EQ(GetGCMClient()->GetRegistrationIdFromSenderIds(sender_ids),
+  EXPECT_EQ(FakeGCMClient::GenerateGCMRegistrationID(sender_ids),
             registration_id());
 }
 
@@ -1068,6 +1073,152 @@ TEST_F(GCMChannelStatusSyncerTest, SubsequentPollingWithUpdatedInterval) {
   EXPECT_TRUE(CompareDelaySeconds(expected_delay_seconds, actual_delay_seconds))
       << "expected delay: " << expected_delay_seconds
       << " actual delay: " << actual_delay_seconds;
+}
+
+class GCMDriverInstanceIDTest : public GCMDriverTest {
+ public:
+  GCMDriverInstanceIDTest();
+  ~GCMDriverInstanceIDTest() override;
+
+  void GetReady();
+  void GetToken(const std::string& app_id,
+                const std::string& authorized_entity,
+                const std::string& scope,
+                WaitToFinish wait_to_finish);
+  void DeleteToken(const std::string& app_id,
+                   const std::string& authorized_entity,
+                   const std::string& scope,
+                   WaitToFinish wait_to_finish);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GCMDriverInstanceIDTest);
+};
+
+GCMDriverInstanceIDTest::GCMDriverInstanceIDTest() {
+}
+
+GCMDriverInstanceIDTest::~GCMDriverInstanceIDTest() {
+}
+
+void GCMDriverInstanceIDTest::GetReady() {
+  CreateDriver();
+  AddAppHandlers();
+  PumpIOLoop();
+  PumpUILoop();
+}
+
+void GCMDriverInstanceIDTest::GetToken(const std::string& app_id,
+                                       const std::string& authorized_entity,
+                                       const std::string& scope,
+                                       WaitToFinish wait_to_finish) {
+  base::RunLoop run_loop;
+  set_async_operation_completed_callback(run_loop.QuitClosure());
+  std::map<std::string, std::string> options;
+  driver()->GetToken(app_id,
+                     authorized_entity,
+                     scope,
+                     options,
+                     base::Bind(&GCMDriverTest::RegisterCompleted,
+                                base::Unretained(this)));
+  if (wait_to_finish == WAIT)
+    run_loop.Run();
+}
+
+void GCMDriverInstanceIDTest::DeleteToken(const std::string& app_id,
+                                          const std::string& authorized_entity,
+                                          const std::string& scope,
+                                          WaitToFinish wait_to_finish) {
+  base::RunLoop run_loop;
+  set_async_operation_completed_callback(run_loop.QuitClosure());
+  driver()->DeleteToken(app_id,
+                        authorized_entity,
+                        scope,
+                        base::Bind(&GCMDriverTest::UnregisterCompleted,
+                                   base::Unretained(this)));
+  if (wait_to_finish == WAIT)
+    run_loop.Run();
+}
+
+TEST_F(GCMDriverInstanceIDTest, GetToken) {
+  GetReady();
+
+  const std::string expected_token =
+      FakeGCMClient::GenerateInstanceIDToken(kUserID1, kScope);
+  GetToken(kTestAppID1, kUserID1, kScope, GCMDriverTest::WAIT);
+
+  EXPECT_EQ(expected_token, registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, registration_result());
+}
+
+TEST_F(GCMDriverInstanceIDTest, GetTokenError) {
+  GetReady();
+
+  std::string error_entity = "sender@error";
+  GetToken(kTestAppID1, error_entity, kScope, GCMDriverTest::WAIT);
+
+  EXPECT_TRUE(registration_id().empty());
+  EXPECT_NE(GCMClient::SUCCESS, registration_result());
+}
+
+TEST_F(GCMDriverInstanceIDTest, GCMClientNotReadyBeforeGetToken) {
+  CreateDriver();
+  PumpIOLoop();
+  PumpUILoop();
+
+  // Make GCMClient not ready until PerformDelayedStart is called.
+  GetGCMClient()->set_start_mode_overridding(
+      FakeGCMClient::FORCE_TO_ALWAYS_DELAY_START_GCM);
+
+  AddAppHandlers();
+
+  // GetToken operation is on hold until GCMClient is ready.
+  GetToken(kTestAppID1, kUserID1, kScope, GCMDriverTest::DO_NOT_WAIT);
+  PumpIOLoop();
+  PumpUILoop();
+  EXPECT_TRUE(registration_id().empty());
+  EXPECT_EQ(GCMClient::UNKNOWN_ERROR, registration_result());
+
+  // GetToken operation will be invoked after GCMClient becomes ready.
+  GetGCMClient()->PerformDelayedStart();
+  WaitForAsyncOperation();
+  EXPECT_FALSE(registration_id().empty());
+  EXPECT_EQ(GCMClient::SUCCESS, registration_result());
+}
+
+TEST_F(GCMDriverInstanceIDTest, DeleteToken) {
+  GetReady();
+
+  const std::string expected_token =
+      FakeGCMClient::GenerateInstanceIDToken(kUserID1, kScope);
+  GetToken(kTestAppID1, kUserID1, kScope, GCMDriverTest::WAIT);
+  EXPECT_EQ(expected_token, registration_id());
+  EXPECT_EQ(GCMClient::SUCCESS, registration_result());
+
+  DeleteToken(kTestAppID1, kUserID1, kScope, GCMDriverTest::WAIT);
+  EXPECT_EQ(GCMClient::SUCCESS, unregistration_result());
+}
+
+TEST_F(GCMDriverInstanceIDTest, GCMClientNotReadyBeforeDeleteToken) {
+  CreateDriver();
+  PumpIOLoop();
+  PumpUILoop();
+
+  // Make GCMClient not ready until PerformDelayedStart is called.
+  GetGCMClient()->set_start_mode_overridding(
+      FakeGCMClient::FORCE_TO_ALWAYS_DELAY_START_GCM);
+
+  AddAppHandlers();
+
+  // DeleteToken operation is on hold until GCMClient is ready.
+  DeleteToken(kTestAppID1, kUserID1, kScope, GCMDriverTest::DO_NOT_WAIT);
+  PumpIOLoop();
+  PumpUILoop();
+  EXPECT_EQ(GCMClient::UNKNOWN_ERROR, unregistration_result());
+
+  // DeleteToken operation will be invoked after GCMClient becomes ready.
+  GetGCMClient()->PerformDelayedStart();
+  WaitForAsyncOperation();
+  EXPECT_EQ(GCMClient::SUCCESS, unregistration_result());
 }
 
 }  // namespace gcm
