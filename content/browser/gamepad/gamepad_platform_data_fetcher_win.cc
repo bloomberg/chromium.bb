@@ -97,7 +97,6 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices(
     WebGamepads* pads) {
   TRACE_EVENT0("GAMEPAD", "EnumerateDevices");
 
-  pads->length = 0;
   // Mark all disconnected pads DISCONNECTED.
   for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
     if (!pads->items[i].connected)
@@ -115,7 +114,6 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices(
       pad_state_[pad_index].status = XINPUT_CONNECTED;
       pad_state_[pad_index].xinput_index = i;
       pad_state_[pad_index].mapper = NULL;
-      pads->length++;
     }
   }
 
@@ -151,7 +149,6 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices(
       else
         pad.mapping[0] = 0;
 
-      pads->length++;
     }
   }
 }
@@ -177,6 +174,7 @@ void GamepadPlatformDataFetcherWin::GetGamepadData(WebGamepads* pads,
   if (devices_changed_hint)
     EnumerateDevices(pads);
 
+  pads->length = 0;
   for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
     // We rely on device_changed and GetCapabilities to tell us that
     // something's been connected, but we will mark as disconnected if
@@ -188,6 +186,9 @@ void GamepadPlatformDataFetcherWin::GetGamepadData(WebGamepads* pads,
       GetXInputPadData(i, &pads->items[i]);
     else if (pad_state_[i].status == RAWINPUT_CONNECTED)
       GetRawInputPadData(i, &pads->items[i]);
+
+    if (pads->items[i].connected)
+      pads->length++;
   }
 }
 
