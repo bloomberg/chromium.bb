@@ -44,10 +44,8 @@ testserver.log
 /tests/spec2k/bin/
 /tests/spec2k/[0-9][0-9][0-9].*/
 
-# These directories are created by pnacl/build.sh sync-sources
+# These directories are created by pnacl/build.sh
 /pnacl/build/
-/pnacl/git/
-/pnacl/src/
 
 # Ignore the hermetic cygwin used on windows toolchain builds.
 /cygwin/

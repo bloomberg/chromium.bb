@@ -959,17 +959,6 @@ values.
   return deps
 
 
-def GetSyncPNaClReposSource(revisions, GetGitSyncCmds):
-  sources = {}
-  for repo, revision in revisions.iteritems():
-    sources['legacy_pnacl_%s_src' % repo] = {
-        'type': 'source',
-        'output_dirname': os.path.join(NACL_DIR, 'pnacl', 'git', repo),
-        'commands': GetGitSyncCmds(repo),
-    }
-  return sources
-
-
 def InstallMinGWHostCompiler():
   """Install the MinGW host compiler used to build the host tools on Windows.
 
@@ -1086,9 +1075,6 @@ if __name__ == '__main__':
   # by the package builder based on the command-line flags.
   logging.getLogger().setLevel(logging.DEBUG)
   parser = argparse.ArgumentParser(add_help=False)
-  parser.add_argument('--legacy-repo-sync', action='store_true',
-                      dest='legacy_repo_sync', default=False,
-                      help='Sync the git repo directories used by build.sh')
   parser.add_argument('--disable-llvm-assertions', action='store_false',
                       dest='enable_llvm_assertions', default=True)
   parser.add_argument('--cmake', action='store_true', default=False,
@@ -1136,65 +1122,58 @@ if __name__ == '__main__':
   upload_packages = {}
 
   rev = ParseComponentRevisionsFile(GIT_DEPS_FILE)
-  if args.legacy_repo_sync:
-    packages = GetSyncPNaClReposSource(rev, GetGitSyncCmdsCallback(rev))
+  upload_packages = GetUploadPackageTargets()
+  if pynacl.platform.IsWindows():
+    InstallMinGWHostCompiler()
 
-    # Make sure sync is inside of the args to toolchain_main.
-    if not set(['-y', '--sync', '--sync-only']).intersection(leftover_args):
-      leftover_args.append('--sync-only')
+  packages.update(HostToolsSources(GetGitSyncCmdsCallback(rev)))
+  if args.testsuite_sync:
+    packages.update(TestsuiteSources(GetGitSyncCmdsCallback(rev)))
+
+  if args.pnacl_in_pnacl:
+    hosts = ['le32-nacl']
   else:
-    upload_packages = GetUploadPackageTargets()
-    if pynacl.platform.IsWindows():
-      InstallMinGWHostCompiler()
-
-    packages.update(HostToolsSources(GetGitSyncCmdsCallback(rev)))
-    if args.testsuite_sync:
-      packages.update(TestsuiteSources(GetGitSyncCmdsCallback(rev)))
-
-    if args.pnacl_in_pnacl:
-      hosts = ['le32-nacl']
-    else:
-      hosts = [pynacl.platform.PlatformTriple()]
-    if pynacl.platform.IsLinux() and BUILD_CROSS_MINGW:
-      hosts.append(pynacl.platform.PlatformTriple('win', 'x86-32'))
-    for host in hosts:
-      packages.update(HostTools(host, args))
-      if not args.pnacl_in_pnacl:
-        packages.update(HostLibs(host, args))
-        packages.update(HostToolsDirectToNacl(host, args))
+    hosts = [pynacl.platform.PlatformTriple()]
+  if pynacl.platform.IsLinux() and BUILD_CROSS_MINGW:
+    hosts.append(pynacl.platform.PlatformTriple('win', 'x86-32'))
+  for host in hosts:
+    packages.update(HostTools(host, args))
     if not args.pnacl_in_pnacl:
-      packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple(), args))
-    # Don't build the target libs on Windows because of pathname issues.
-    # Only the linux64 bot is canonical (i.e. it will upload its packages).
-    # The other bots will use a 'work' target instead of a 'build' target for
-    # the target libs, so they will not be memoized, but can be used for tests.
-    # TODO(dschuff): Even better would be if we could memoize non-canonical
-    # build targets without doing things like mangling their names (and for e.g.
-    # scons tests, skip running them if their dependencies haven't changed, like
-    # build targets)
-    is_canonical = pynacl.platform.IsLinux64()
-    if ((pynacl.platform.IsLinux() or pynacl.platform.IsMac())
-        and not args.pnacl_in_pnacl):
-      packages.update(pnacl_targetlibs.TargetLibsSrc(
-        GetGitSyncCmdsCallback(rev)))
-      for bias in BITCODE_BIASES:
-        packages.update(pnacl_targetlibs.TargetLibs(bias, is_canonical))
-      for arch in DIRECT_TO_NACL_ARCHES:
-        packages.update(pnacl_targetlibs.TargetLibs(arch, is_canonical))
-        packages.update(pnacl_targetlibs.SDKLibs(arch, is_canonical))
-      for arch in TRANSLATOR_ARCHES:
-        packages.update(pnacl_targetlibs.TranslatorLibs(arch, is_canonical))
-      packages.update(Metadata(rev, is_canonical))
-      packages.update(pnacl_targetlibs.SDKCompiler(
-                      ['le32'] + DIRECT_TO_NACL_ARCHES))
-      packages.update(pnacl_targetlibs.SDKLibs('le32', is_canonical))
-      unsandboxed_runtime_canonical = is_canonical or pynacl.platform.IsMac()
-      packages.update(pnacl_targetlibs.UnsandboxedRuntime(
-          'x86-32-%s' % pynacl.platform.GetOS(), unsandboxed_runtime_canonical))
+      packages.update(HostLibs(host, args))
+      packages.update(HostToolsDirectToNacl(host, args))
+  if not args.pnacl_in_pnacl:
+    packages.update(TargetLibCompiler(pynacl.platform.PlatformTriple(), args))
+  # Don't build the target libs on Windows because of pathname issues.
+  # Only the linux64 bot is canonical (i.e. it will upload its packages).
+  # The other bots will use a 'work' target instead of a 'build' target for
+  # the target libs, so they will not be memoized, but can be used for tests.
+  # TODO(dschuff): Even better would be if we could memoize non-canonical
+  # build targets without doing things like mangling their names (and for e.g.
+  # scons tests, skip running them if their dependencies haven't changed, like
+  # build targets)
+  is_canonical = pynacl.platform.IsLinux64()
+  if ((pynacl.platform.IsLinux() or pynacl.platform.IsMac())
+      and not args.pnacl_in_pnacl):
+    packages.update(pnacl_targetlibs.TargetLibsSrc(
+      GetGitSyncCmdsCallback(rev)))
+    for bias in BITCODE_BIASES:
+      packages.update(pnacl_targetlibs.TargetLibs(bias, is_canonical))
+    for arch in DIRECT_TO_NACL_ARCHES:
+      packages.update(pnacl_targetlibs.TargetLibs(arch, is_canonical))
+      packages.update(pnacl_targetlibs.SDKLibs(arch, is_canonical))
+    for arch in TRANSLATOR_ARCHES:
+      packages.update(pnacl_targetlibs.TranslatorLibs(arch, is_canonical))
+    packages.update(Metadata(rev, is_canonical))
+    packages.update(pnacl_targetlibs.SDKCompiler(
+                    ['le32'] + DIRECT_TO_NACL_ARCHES))
+    packages.update(pnacl_targetlibs.SDKLibs('le32', is_canonical))
+    unsandboxed_runtime_canonical = is_canonical or pynacl.platform.IsMac()
+    packages.update(pnacl_targetlibs.UnsandboxedRuntime(
+        'x86-32-%s' % pynacl.platform.GetOS(), unsandboxed_runtime_canonical))
 
-    if args.build_sbtc and not args.pnacl_in_pnacl:
-      packages.update(pnacl_sandboxed_translator.SandboxedTranslators(
-        SANDBOXED_TRANSLATOR_ARCHES))
+  if args.build_sbtc and not args.pnacl_in_pnacl:
+    packages.update(pnacl_sandboxed_translator.SandboxedTranslators(
+      SANDBOXED_TRANSLATOR_ARCHES))
 
   tb = toolchain_main.PackageBuilder(packages,
                                      upload_packages,

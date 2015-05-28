@@ -7,13 +7,13 @@
 This tool will send a PNaCl Git change to the trybots for testing.
 
 This tool is intended for testing changes to the PNaCl Git
-repositories that are checked out under subdirectories of pnacl/git/.
+repositories that are checked out under subdirectories of toolchain_build/src.
 It should be run from one of these subdirectories.  The tool sends
 changes to the PNaCl toolchain trybots.
 
 Example usage:
 
-$ cd pnacl/git/llvm
+$ cd toolchain_build/src/llvm
 $ git checkout -b my-change origin/master
 $ ... make changes to LLVM
 $ git commit -a
@@ -87,11 +87,10 @@ def Main(args):
   parent_path1, component_name = os.path.split(repo_dir)
   parent_path2, parent2 = os.path.split(parent_path1)
   parent_path3, parent3 = os.path.split(parent_path2)
-  if ((parent3, parent2) != ('toolchain_build', 'src') and
-      (parent3, parent2) != ('pnacl', 'git')):
+  if ((parent3, parent2) != ('toolchain_build', 'src')):
     raise Exception(
         'Expected the Git repo (%r) to be under '
-        'toolchain_build/src/ or pnacl/git/' % repo_dir)
+        'toolchain_build/src/' % repo_dir)
   print 'Trying change to %r component' % component_name
 
   # Check that there are no uncommitted changes.
@@ -139,7 +138,7 @@ def Main(args):
       return
 
     # Send the patch to the trybots.  Keeping the cwd set to
-    # pnacl/git/FOO has the effect of sending the trybot results to
+    # toolchain_build/src/FOO has the effect of sending the trybot results to
     # the Rietveld code review for the change to FOO.
     subprocess.check_call([
         'git', 'try',

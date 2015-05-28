@@ -87,13 +87,15 @@ def AssertNoUncommittedChanges():
 
 
 def Main(args):
+  src_base = 'toolchain_build/src'
   parser = optparse.OptionParser('%prog [options]\n\n' + __doc__.strip())
   parser.add_option('--list', action='store_true', default=False,
                     dest='list_only',
                     help='Only list the new Git revisions to be pulled in')
   parser.add_option('-c', '--component', default='llvm', type='string',
-                    help='Subdirectory of pnacl/git/ to update '
-                    'COMPONENT_REVISIONS from (defaults to "llvm")')
+                    help='Subdirectory of {src_dir} to update '
+                    'COMPONENT_REVISIONS from (defaults to "llvm")'.format(
+                        src_dir=src_base))
   parser.add_option('-r', '--revision', default=None, type='string',
                     help='Git revision to use')
   parser.add_option('-u', '--no-upload', action='store_true', default=False,
@@ -113,7 +115,6 @@ def Main(args):
                         'compiler-rt': 'compiler-rt',
                         'subzero': 'Subzero'}
 
-  src_base = 'toolchain_build/src'
   git_dir = os.path.join(src_base, options.component)
   component_name = component_name_map.get(options.component, options.component)
   if options.component == 'pnacl-gcc':
