@@ -85,7 +85,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& first_party,
       const net::CompletionCallback& callback) override;
   void GetAllOriginsInfo(const GetUsageInfoCallback& callback) override;
-  void DeleteForOrigin(const GURL& origin_url) override;
+  void DeleteForOrigin(const GURL& origin) override;
   void CheckHasServiceWorker(
       const GURL& url,
       const GURL& other_url,
@@ -119,8 +119,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // DeleteForOrigin with completion callback.  Does not exit early, and returns
   // false if one or more of the deletions fail.
-  virtual void DeleteForOrigin(const GURL& origin_url,
-                               const ResultCallback& done);
+  virtual void DeleteForOrigin(const GURL& origin, const ResultCallback& done);
 
   void StartServiceWorker(const GURL& pattern, const StatusCallback& callback);
   void UpdateRegistration(const GURL& pattern);
