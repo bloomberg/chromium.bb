@@ -11,6 +11,7 @@ import android.content.DialogInterface.OnCancelListener;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -44,6 +45,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * subclassing this class.
  */
 public abstract class UserRecoverableErrorHandler {
+    private static final String ERROR_HANDLER_ACTION_HISTOGRAM_NAME =
+            "GooglePlayServices.ErrorHandlerAction";
+    // Never remove or reorder histogram values. It is safe to append new values to the end.
+    private static final int ERROR_HANDLER_ACTION_SILENT = 0;
+    private static final int ERROR_HANDLER_ACTION_SYSTEM_NOTIFICATION = 1;
+    private static final int ERROR_HANDLER_ACTION_MODAL_DIALOG = 2;
+    private static final int ERROR_HANDLER_ACTION_IGNORED_AS_REDUNDANT = 3;
+    private static final int ERROR_HANDLER_ACTION_HISTOGRAM_BOUNDARY = 4;
+
     /**
      * Handles the specified error code from Google Play Services.
      * This method must only be called on the UI thread.
@@ -72,7 +82,11 @@ public abstract class UserRecoverableErrorHandler {
      * A handler that does nothing.
      */
     public static final class Silent extends UserRecoverableErrorHandler {
-        // No special behavior.
+        @Override
+        protected final void handle(final Context context, final int errorCode) {
+            RecordHistogram.recordEnumeratedHistogram(ERROR_HANDLER_ACTION_HISTOGRAM_NAME,
+                    ERROR_HANDLER_ACTION_SILENT, ERROR_HANDLER_ACTION_HISTOGRAM_BOUNDARY);
+        }
     }
 
     /**
@@ -93,9 +107,15 @@ public abstract class UserRecoverableErrorHandler {
         @Override
         protected void handle(final Context context, final int errorCode) {
             if (!sNotificationShown.getAndSet(true)) {
+                RecordHistogram.recordEnumeratedHistogram(ERROR_HANDLER_ACTION_HISTOGRAM_NAME,
+                        ERROR_HANDLER_ACTION_IGNORED_AS_REDUNDANT,
+                        ERROR_HANDLER_ACTION_HISTOGRAM_BOUNDARY);
                 return;
             }
             ExternalAuthUtils.getInstance().showErrorNotification(errorCode, context);
+            RecordHistogram.recordEnumeratedHistogram(ERROR_HANDLER_ACTION_HISTOGRAM_NAME,
+                    ERROR_HANDLER_ACTION_SYSTEM_NOTIFICATION,
+                    ERROR_HANDLER_ACTION_HISTOGRAM_BOUNDARY);
         }
     }
 
@@ -208,6 +228,8 @@ public abstract class UserRecoverableErrorHandler {
             prepareToHandle(getActivity(), context, errorCode);
             ExternalAuthUtils.getInstance().showErrorDialog(
                     errorCode, getActivity(), getRequestCode(), getOnCancelListener());
+            RecordHistogram.recordEnumeratedHistogram(ERROR_HANDLER_ACTION_HISTOGRAM_NAME,
+                    ERROR_HANDLER_ACTION_MODAL_DIALOG, ERROR_HANDLER_ACTION_HISTOGRAM_BOUNDARY);
         }
     }
 }

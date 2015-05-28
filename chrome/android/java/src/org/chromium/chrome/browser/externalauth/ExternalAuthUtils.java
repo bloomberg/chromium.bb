@@ -21,6 +21,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromiumApplication;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,6 +35,8 @@ public class ExternalAuthUtils {
     public static final int FLAG_SHOULD_BE_GOOGLE_SIGNED = 1 << 0;
     public static final int FLAG_SHOULD_BE_SYSTEM = 1 << 1;
     private static final String TAG = Log.makeTag("ExternalAuthUtils");
+    private static final String CONNECTION_RESULT_HISTOGRAM_NAME =
+            "GooglePlayServices.ConnectionResult";
 
     // Use an AtomicReference since getInstance() can be called from multiple threads.
     private static AtomicReference<ExternalAuthUtils> sInstance =
@@ -173,6 +176,7 @@ public class ExternalAuthUtils {
     public boolean canUseGooglePlayServices(
             final Context context, final UserRecoverableErrorHandler errorHandler) {
         final int resultCode = checkGooglePlayServicesAvailable(context);
+        recordConnectionResult(resultCode);
         if (isSuccess(resultCode)) {
             return true; // Hooray!
         }
@@ -188,6 +192,18 @@ public class ExternalAuthUtils {
             ThreadUtils.runOnUiThread(errorHandlerTask);
         }
         return false;
+    }
+
+    /**
+     * Record the result of a connection attempt. The default implementation records via a UMA
+     * histogram.
+     * @param resultCode the result from {@link #checkGooglePlayServicesAvailable(Context)}
+     */
+    protected void recordConnectionResult(final int resultCode) {
+        // Doing it this way avoids a hard dependency on RecordHistogram, which allows the code to
+        // be tested with simple mocks and junit instead of having an instrumentation test.
+        RecordHistogram.recordSparseSlowlyHistogram(
+                CONNECTION_RESULT_HISTOGRAM_NAME, resultCode);
     }
 
     /**

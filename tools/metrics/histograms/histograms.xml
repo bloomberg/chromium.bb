@@ -12163,6 +12163,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GooglePlayServices.ConnectionResult"
+    enum="GooglePlayServicesConnectionResult">
+  <owner>andrewhayden@chromium.org</owner>
+  <owner>dgn@chromium.org</owner>
+  <summary>
+    ConnectionResult error codes resulting from attempts to check whether or not
+    Google Play Services is available. Most of these checks are done lazily,
+    when a user accesses a feature that uses Google Play Services. Added for
+    http://crbug.com/490710.
+  </summary>
+</histogram>
+
+<histogram name="GooglePlayServices.ErrorHandlerAction"
+    enum="GooglePlayServicesErrorHandlerAction">
+  <owner>andrewhayden@chromium.org</owner>
+  <summary>
+    Types of action taken in response to Google Play Services user-recoverable
+    errors. Added for http://crbug.com/490710.
+  </summary>
+</histogram>
+
 <histogram name="GoogleSearch.AccessPoint" enum="SearchAccessPoint">
   <owner>kmadhusu@chromium.org</owner>
   <summary>
@@ -55260,6 +55281,47 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="11" label="SIGNED_OUT"/>
   <int value="12" label="NOTIFICATION_DISABLED"/>
   <int value="13" label="GOOGLE_NOW_DISABLED"/>
+</enum>
+
+<enum name="GooglePlayServicesConnectionResult" type="int">
+  <summary>
+    Results of attempting a connection to Google Play Services. See Javadoc for
+    com.google.android.gms.common.ConnectionResult at
+    http://developer.android.com/reference for more information.
+  </summary>
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="SERVICE_MISSING"/>
+  <int value="2" label="SERVICE_VERSION_UPDATE_REQUIRED"/>
+  <int value="3" label="SERVICE_DISABLED"/>
+  <int value="4" label="SIGN_IN_REQUIRED"/>
+  <int value="5" label="INVALID_ACCOUNT"/>
+  <int value="6" label="RESOLUTION_REQUIRED"/>
+  <int value="7" label="NETWORK_ERROR"/>
+  <int value="8" label="INTERNAL_ERROR"/>
+  <int value="9" label="SERVICE_INVALID"/>
+  <int value="10" label="DEVELOPER_ERROR"/>
+  <int value="11" label="LICENSE_CHECK_FAILED"/>
+  <int value="12" label="DATE_INVALID"/>
+  <int value="13" label="CANCELED"/>
+  <int value="14" label="TIMEOUT"/>
+  <int value="15" label="INTERRUPTED"/>
+  <int value="16" label="API_UNAVAILABLE"/>
+  <int value="17" label="SIGN_IN_FAILED"/>
+  <int value="18" label="SERVICE_UPDATING"/>
+  <int value="1500" label="DRIVE_EXTERNAL_STORAGE_REQUIRED"/>
+</enum>
+
+<enum name="GooglePlayServicesErrorHandlerAction" type="int">
+  <summary>
+    Types of action taken in response to Google Play Services user-recoverable
+    errors. See subclasses of UserRecoverableErrorHandler in
+    org.chromium.chrome.browser.externalauth.ExternalAuthUtils for more
+    information.
+  </summary>
+  <int value="0" label="SILENT"/>
+  <int value="1" label="SYSTEM_NOTIFICATION"/>
+  <int value="2" label="MODAL_DIALOG"/>
+  <int value="3" label="IGNORED_AS_REDUNDANT"/>
 </enum>
 
 <enum name="GoogleServiceAuthError" type="int">
