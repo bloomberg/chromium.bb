@@ -45,6 +45,8 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
   blink::WebThemeEngine* OverrideThemeEngine() override;
   scoped_ptr<blink::WebAppBannerClient> CreateAppBannerClient(
       RenderFrame* render_frame) override;
+  scoped_ptr<MediaStreamRendererFactory> CreateMediaStreamRendererFactory()
+      override;
 
  private:
   void WebTestProxyCreated(RenderView* render_view, WebTestProxyBase* proxy);

@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/test_media_stream_renderer_factory.h"
+#include "content/shell/renderer/layout_test/test_media_stream_renderer_factory.h"
 
-#include "content/renderer/media/media_stream_audio_renderer.h"
-#include "content/test/test_video_frame_provider.h"
+#include "content/shell/renderer/layout_test/test_video_frame_provider.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"

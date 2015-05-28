@@ -80,7 +80,7 @@
 #include "content/renderer/media/crypto/render_cdm_factory.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
-#include "content/renderer/media/media_stream_renderer_factory.h"
+#include "content/renderer/media/media_stream_renderer_factory_impl.h"
 #include "content/renderer/media/midi_dispatcher.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/user_media_client_impl.h"
@@ -4569,9 +4569,13 @@ WebMediaPlayer* RenderFrameImpl::CreateWebMediaPlayerForMediaStream(
 
 scoped_ptr<MediaStreamRendererFactory>
 RenderFrameImpl::CreateRendererFactory() {
+  scoped_ptr<MediaStreamRendererFactory> factory =
+      GetContentClient()->renderer()->CreateMediaStreamRendererFactory();
+  if (factory.get())
+    return factory.Pass();
 #if defined(ENABLE_WEBRTC)
   return scoped_ptr<MediaStreamRendererFactory>(
-      new MediaStreamRendererFactory());
+      new MediaStreamRendererFactoryImpl());
 #else
   return scoped_ptr<MediaStreamRendererFactory>(
       static_cast<MediaStreamRendererFactory*>(NULL));

@@ -11,7 +11,6 @@
 #include "content/shell/renderer/test_runner/test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
-#include "content/test/test_media_stream_renderer_factory.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
@@ -283,13 +282,6 @@ class WebFrameTestProxy : public Base {
   }
 
  private:
-#if defined(ENABLE_WEBRTC)
-  scoped_ptr<MediaStreamRendererFactory> CreateRendererFactory() override {
-    return scoped_ptr<MediaStreamRendererFactory>(
-        new TestMediaStreamRendererFactory());
-  }
-#endif
-
   WebTestProxyBase* base_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxy);

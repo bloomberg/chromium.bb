@@ -228,13 +228,6 @@ if (!is_ios) {
     if (is_android) {
       deps += [ ":jni" ]
     }
-
-    if (!enable_webrtc) {
-      sources -= [
-        "test_media_stream_renderer_factory.cc",
-        "test_media_stream_renderer_factory.h",
-      ]
-    }
   }
 
   if (is_android) {

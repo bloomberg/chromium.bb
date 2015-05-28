@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/media_stream_renderer_factory.h"
+#include "content/renderer/media/media_stream_renderer_factory_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream.h"
@@ -62,7 +62,7 @@ scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
   if (stream->GetAudioTracks().empty())
     return NULL;
 
-  DVLOG(1) << "MediaStreamRendererFactory::CreateRemoteAudioRenderer label:"
+  DVLOG(1) << "MediaStreamRendererFactoryImpl::CreateRemoteAudioRenderer label:"
            << stream->label();
 
   // TODO(tommi): Change the default value of session_id to be
@@ -83,7 +83,7 @@ scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
 scoped_refptr<WebRtcLocalAudioRenderer> CreateLocalAudioRenderer(
     const blink::WebMediaStreamTrack& audio_track,
     int render_frame_id) {
-  DVLOG(1) << "MediaStreamRendererFactory::CreateLocalAudioRenderer";
+  DVLOG(1) << "MediaStreamRendererFactoryImpl::CreateLocalAudioRenderer";
 
   int session_id = 0, sample_rate = 0, buffer_size = 0;
   if (!GetAuthorizedDeviceInfoForAudioRenderer(&session_id,
@@ -104,14 +104,14 @@ scoped_refptr<WebRtcLocalAudioRenderer> CreateLocalAudioRenderer(
 }  // namespace
 
 
-MediaStreamRendererFactory::MediaStreamRendererFactory() {
+MediaStreamRendererFactoryImpl::MediaStreamRendererFactoryImpl() {
 }
 
-MediaStreamRendererFactory::~MediaStreamRendererFactory() {
+MediaStreamRendererFactoryImpl::~MediaStreamRendererFactoryImpl() {
 }
 
 scoped_refptr<VideoFrameProvider>
-MediaStreamRendererFactory::GetVideoFrameProvider(
+MediaStreamRendererFactoryImpl::GetVideoFrameProvider(
     const GURL& url,
     const base::Closure& error_cb,
     const VideoFrameProvider::RepaintCB& repaint_cb) {
@@ -119,7 +119,7 @@ MediaStreamRendererFactory::GetVideoFrameProvider(
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url);
   DCHECK(!web_stream.isNull());
 
-  DVLOG(1) << "MediaStreamRendererFactory::GetVideoFrameProvider stream:"
+  DVLOG(1) << "MediaStreamRendererFactoryImpl::GetVideoFrameProvider stream:"
            << base::UTF16ToUTF8(web_stream.id());
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
@@ -133,7 +133,7 @@ MediaStreamRendererFactory::GetVideoFrameProvider(
 }
 
 scoped_refptr<MediaStreamAudioRenderer>
-MediaStreamRendererFactory::GetAudioRenderer(const GURL& url,
+MediaStreamRendererFactoryImpl::GetAudioRenderer(const GURL& url,
                                              int render_frame_id) {
   blink::WebMediaStream web_stream =
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url);
@@ -141,7 +141,7 @@ MediaStreamRendererFactory::GetAudioRenderer(const GURL& url,
   if (web_stream.isNull() || !web_stream.extraData())
     return NULL;  // This is not a valid stream.
 
-  DVLOG(1) << "MediaStreamRendererFactory::GetAudioRenderer stream:"
+  DVLOG(1) << "MediaStreamRendererFactoryImpl::GetAudioRenderer stream:"
            << base::UTF16ToUTF8(web_stream.id());
 
   MediaStream* native_stream = MediaStream::GetMediaStream(web_stream);

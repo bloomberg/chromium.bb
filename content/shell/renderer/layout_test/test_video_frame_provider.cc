@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/test_video_frame_provider.h"
+#include "content/shell/renderer/layout_test/test_video_frame_provider.h"
 
 #include "base/bind.h"
 #include "base/location.h"

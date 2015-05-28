@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_MEDIA_STREAM_RENDERER_FACTORY_H_
-#define CONTENT_TEST_TEST_MEDIA_STREAM_RENDERER_FACTORY_H_
+#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_MEDIA_STREAM_RENDERER_FACTORY_H_
+#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_MEDIA_STREAM_RENDERER_FACTORY_H_
 
 #include "base/callback_forward.h"
-#include "content/renderer/media/media_stream_renderer_factory.h"
+#include "content/public/renderer/media_stream_renderer_factory.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
 namespace content {
@@ -31,4 +31,4 @@ class TestMediaStreamRendererFactory : public MediaStreamRendererFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_TEST_MEDIA_STREAM_RENDERER_FACTORY_H_
+#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_MEDIA_STREAM_RENDERER_FACTORY_H_

@@ -742,8 +742,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebMediaPlayerClient* client);
 
   // Creates a factory object used for creating audio and video renderers.
-  // The method is virtual so that layouttests can override it.
-  virtual scoped_ptr<MediaStreamRendererFactory> CreateRendererFactory();
+  scoped_ptr<MediaStreamRendererFactory> CreateRendererFactory();
 
   // Checks that the RenderView is ready to display the navigation to |url|. If
   // the return value is false, the navigation should be abandoned.

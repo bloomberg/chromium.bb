@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_
-#define CONTENT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_
+#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_
+#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_
 
 #include "base/time/time.h"
-#include "content/renderer/media/video_frame_provider.h"
+#include "content/public/renderer/video_frame_provider.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -60,4 +60,4 @@ class TestVideoFrameProvider : public VideoFrameProvider {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_
+#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_VIDEO_FRAME_PROVIDER_H_

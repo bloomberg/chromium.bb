@@ -9,10 +9,6 @@
       'public/test/nested_message_pump_android.cc',
       'public/test/nested_message_pump_android.h',
       'test/layouttest_support.cc',
-      'test/test_media_stream_renderer_factory.cc',
-      'test/test_media_stream_renderer_factory.h',
-      'test/test_video_frame_provider.cc',
-      'test/test_video_frame_provider.h',
     ],
     'test_support_content_sources': [
       # TODO(phajdan.jr): All of those files should live in content/test (if
@@ -624,8 +620,8 @@
       'common/inter_process_time_ticks_converter_unittest.cc',
       'common/mac/attributed_string_coder_unittest.mm',
       'common/mac/font_descriptor_unittest.mm',
-      'common/origin_util_unittest.cc',
       'common/one_writer_seqlock_unittest.cc',
+      'common/origin_util_unittest.cc',
       'common/page_state_serialization_unittest.cc',
       'common/page_zoom_unittest.cc',
       'common/plugin_list_unittest.cc',

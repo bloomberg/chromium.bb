@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_RENDERER_H_
-#define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_RENDERER_H_
+#ifndef CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_AUDIO_RENDERER_H_
+#define CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_AUDIO_RENDERER_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -40,13 +40,9 @@ class MediaStreamAudioRenderer
  protected:
   friend class base::RefCountedThreadSafe<MediaStreamAudioRenderer>;
 
-  MediaStreamAudioRenderer();
-  virtual ~MediaStreamAudioRenderer();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioRenderer);
+  virtual ~MediaStreamAudioRenderer() {}
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_RENDERER_H_
+#endif  // CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_AUDIO_RENDERER_H_

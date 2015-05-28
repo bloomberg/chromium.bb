@@ -64,6 +64,7 @@ struct KeySystemInfo;
 namespace content {
 class BrowserPluginDelegate;
 class DocumentState;
+class MediaStreamRendererFactory;
 class RenderFrame;
 class RenderView;
 class SynchronousCompositor;
@@ -260,6 +261,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual scoped_ptr<media::RendererFactory> CreateMediaRendererFactory(
       RenderFrame* render_frame,
       const scoped_refptr<media::MediaLog>& media_log);
+
+  // Allows an embedder to provide a MediaStreamRendererFactory.
+  virtual scoped_ptr<MediaStreamRendererFactory>
+  CreateMediaStreamRendererFactory();
 
   // Gives the embedder a chance to register the key system(s) it supports by
   // populating |key_systems|.
