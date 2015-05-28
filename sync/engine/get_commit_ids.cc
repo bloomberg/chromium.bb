@@ -453,7 +453,8 @@ bool Traversal::HaveItem(int64 handle) const {
 }
 
 bool Traversal::SupportsHierarchy(const syncable::Entry& item) const {
-  return !item.GetParentId().IsNull();
+  // Types with explicit server supported hierarchy only.
+  return IsTypeWithServerGeneratedRoot(item.GetModelType());
 }
 
 void Traversal::AppendManyToTraversal(

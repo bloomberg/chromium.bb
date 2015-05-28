@@ -985,9 +985,9 @@ bool Directory::InitialSyncEndedForType(ModelType type) {
 
 bool Directory::InitialSyncEndedForType(
     BaseTransaction* trans, ModelType type) {
-  // True iff the type's root node has been received and applied.
+  // True iff the type's root node has been created.
   syncable::Entry entry(trans, syncable::GET_TYPE_ROOT, type);
-  return entry.good() && entry.GetBaseVersion() != CHANGES_VERSION;
+  return entry.good();
 }
 
 string Directory::store_birthday() const {
