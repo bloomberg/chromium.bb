@@ -83,20 +83,23 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
 
     AffineTransform scale;
     scale.scale(scaleFactor);
-    TransformRecorder scaleRecorder(*context, root, scale);
 
-    IntRect dirtyRect(rect);
-    FrameView* view = root.view();
-    if (view) {
-        ClipRecorder clipRecorder(*context, root, DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
+    {
+        TransformRecorder scaleRecorder(*context, root, scale);
 
-        view->paint(context, dirtyRect);
-        if (overlays)
-            overlays->paintWebFrame(*context);
-    } else {
-        DrawingRecorder drawingRecorder(*context, root, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
-        if (!drawingRecorder.canUseCachedDrawing())
-            context->fillRect(dirtyRect, Color::white);
+        IntRect dirtyRect(rect);
+        FrameView* view = root.view();
+        if (view) {
+            ClipRecorder clipRecorder(*context, root, DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
+
+            view->paint(context, dirtyRect);
+            if (overlays)
+                overlays->paintWebFrame(*context);
+        } else {
+            DrawingRecorder drawingRecorder(*context, root, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
+            if (!drawingRecorder.canUseCachedDrawing())
+                context->fillRect(dirtyRect, Color::white);
+        }
     }
     builder.endRecording()->playback(canvas);
 }
