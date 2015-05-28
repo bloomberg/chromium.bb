@@ -132,6 +132,11 @@
               '-w',
               '-P', 'config.asm',
             ],
+            'yasm_includes': [
+              # Sets visibility hidden for cglobal functions. Explicitly included
+              # to avoid overlooking changes to this file in incremental builds.
+              'libavutil/x86/x86inc.asm',
+            ],
             'yasm_output_path': '<(shared_generated_dir)/yasm'
           },
         },
