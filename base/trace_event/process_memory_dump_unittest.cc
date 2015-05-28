@@ -5,6 +5,7 @@
 #include "base/trace_event/process_memory_dump.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,8 +24,12 @@ TEST(ProcessMemoryDumpTest, Clear) {
   pmd1->process_mmaps()->AddVMRegion({0});
   pmd1->set_has_process_mmaps();
 
+  pmd1->AddOwnershipEdge(MemoryAllocatorDumpGuid(42),
+                         MemoryAllocatorDumpGuid(4242));
+
   pmd1->Clear();
   ASSERT_TRUE(pmd1->allocator_dumps().empty());
+  ASSERT_TRUE(pmd1->allocator_dumps_edges().empty());
   ASSERT_EQ(nullptr, pmd1->GetAllocatorDump("mad1"));
   ASSERT_EQ(nullptr, pmd1->GetAllocatorDump("mad2"));
   ASSERT_FALSE(pmd1->has_process_totals());
@@ -55,20 +60,25 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   scoped_refptr<TracedValue> traced_value(new TracedValue());
 
   scoped_ptr<ProcessMemoryDump> pmd1(new ProcessMemoryDump(nullptr));
-  pmd1->CreateAllocatorDump("pmd1/mad1");
-  pmd1->CreateAllocatorDump("pmd1/mad2");
+  auto mad1_1 = pmd1->CreateAllocatorDump("pmd1/mad1");
+  auto mad1_2 = pmd1->CreateAllocatorDump("pmd1/mad2");
+  pmd1->AddOwnershipEdge(mad1_1->guid(), mad1_2->guid());
 
   scoped_ptr<ProcessMemoryDump> pmd2(new ProcessMemoryDump(nullptr));
-  pmd2->CreateAllocatorDump("pmd2/mad1");
-  pmd2->CreateAllocatorDump("pmd2/mad2");
+  auto mad2_1 = pmd2->CreateAllocatorDump("pmd2/mad1");
+  auto mad2_2 = pmd2->CreateAllocatorDump("pmd2/mad2");
+  pmd1->AddOwnershipEdge(mad2_1->guid(), mad2_2->guid());
 
   pmd1->TakeAllDumpsFrom(pmd2.get());
 
   // Make sure that pmd2 is empty but still usable after it has been emptied.
   ASSERT_TRUE(pmd2->allocator_dumps().empty());
+  ASSERT_TRUE(pmd2->allocator_dumps_edges().empty());
   pmd2->CreateAllocatorDump("pmd2/this_mad_stays_with_pmd2");
   ASSERT_EQ(1u, pmd2->allocator_dumps().size());
   ASSERT_EQ(1u, pmd2->allocator_dumps().count("pmd2/this_mad_stays_with_pmd2"));
+  pmd2->AddOwnershipEdge(MemoryAllocatorDumpGuid(42),
+                         MemoryAllocatorDumpGuid(4242));
 
   // Check that calling AsValueInto() doesn't cause a crash.
   pmd2->AsValueInto(traced_value.get());
@@ -83,6 +93,7 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd1/mad2"));
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd2/mad1"));
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd1/mad2"));
+  ASSERT_EQ(2u, pmd1->allocator_dumps_edges().size());
 
   // Check that calling AsValueInto() doesn't cause a crash.
   traced_value = new TracedValue();

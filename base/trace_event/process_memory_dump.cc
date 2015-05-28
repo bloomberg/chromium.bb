@@ -10,6 +10,10 @@
 namespace base {
 namespace trace_event {
 
+namespace {
+const char kEdgeTypeOwnership[] = "ownership";
+}
+
 ProcessMemoryDump::ProcessMemoryDump(
     const scoped_refptr<MemoryDumpSessionState>& session_state)
     : has_process_totals_(false),
@@ -48,6 +52,7 @@ void ProcessMemoryDump::Clear() {
 
   allocator_dumps_storage_.clear();
   allocator_dumps_.clear();
+  allocator_dumps_edges_.clear();
 }
 
 void ProcessMemoryDump::TakeAllDumpsFrom(ProcessMemoryDump* other) {
@@ -63,26 +68,56 @@ void ProcessMemoryDump::TakeAllDumpsFrom(ProcessMemoryDump* other) {
   }
   other->allocator_dumps_storage_.weak_clear();
   other->allocator_dumps_.clear();
+
+  // Move all the edges.
+  allocator_dumps_edges_.insert(allocator_dumps_edges_.end(),
+                                other->allocator_dumps_edges_.begin(),
+                                other->allocator_dumps_edges_.end());
+  other->allocator_dumps_edges_.clear();
 }
 
 void ProcessMemoryDump::AsValueInto(TracedValue* value) const {
-  // Build up the [dumper name] -> [value] dictionary.
   if (has_process_totals_) {
     value->BeginDictionary("process_totals");
     process_totals_.AsValueInto(value);
     value->EndDictionary();
   }
+
   if (has_process_mmaps_) {
     value->BeginDictionary("process_mmaps");
     process_mmaps_.AsValueInto(value);
     value->EndDictionary();
   }
+
   if (allocator_dumps_storage_.size() > 0) {
     value->BeginDictionary("allocators");
     for (const MemoryAllocatorDump* allocator_dump : allocator_dumps_storage_)
       allocator_dump->AsValueInto(value);
     value->EndDictionary();
   }
+
+  value->BeginArray("allocators_graph");
+  for (const MemoryAllocatorDumpEdge& edge : allocator_dumps_edges_) {
+    value->BeginDictionary();
+    value->SetString("source", edge.source.ToString());
+    value->SetString("target", edge.target.ToString());
+    value->SetInteger("importance", edge.importance);
+    value->SetString("type", edge.type);
+    value->EndDictionary();
+  }
+  value->EndArray();
+}
+
+void ProcessMemoryDump::AddOwnershipEdge(MemoryAllocatorDumpGuid source,
+                                         MemoryAllocatorDumpGuid target,
+                                         int importance) {
+  allocator_dumps_edges_.push_back(
+      {source, target, importance, kEdgeTypeOwnership});
+}
+
+void ProcessMemoryDump::AddOwnershipEdge(MemoryAllocatorDumpGuid source,
+                                         MemoryAllocatorDumpGuid target) {
+  AddOwnershipEdge(source, target, 0 /* importance */);
 }
 
 }  // namespace trace_event

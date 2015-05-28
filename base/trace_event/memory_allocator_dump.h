@@ -8,6 +8,7 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/values.h"
 
 namespace base {
@@ -21,6 +22,9 @@ class TracedValue;
 class BASE_EXPORT MemoryAllocatorDump {
  public:
   // MemoryAllocatorDump is owned by ProcessMemoryDump.
+  MemoryAllocatorDump(const std::string& absolute_name,
+                      ProcessMemoryDump* process_memory_dump,
+                      const MemoryAllocatorDumpGuid& guid);
   MemoryAllocatorDump(const std::string& absolute_name,
                       ProcessMemoryDump* process_memory_dump);
   ~MemoryAllocatorDump();
@@ -68,10 +72,19 @@ class BASE_EXPORT MemoryAllocatorDump {
     return process_memory_dump_;
   }
 
+  // |guid| is an optional global dump identifier, unique across all processes
+  // within the scope of a global dump. It is only required when using the
+  // graph APIs (see TODO_method_name) to express retention / suballocation or
+  // cross process sharing. See crbug.com/492102 for design docs.
+  // Subsequent MemoryAllocatorDump(s) with the same |absolute_name| are
+  // expected to have the same guid.
+  const MemoryAllocatorDumpGuid& guid() const { return guid_; }
+
  private:
   const std::string absolute_name_;
   ProcessMemoryDump* const process_memory_dump_;  // Not owned (PMD owns this).
   DictionaryValue attributes_;
+  MemoryAllocatorDumpGuid guid_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryAllocatorDump);
 };

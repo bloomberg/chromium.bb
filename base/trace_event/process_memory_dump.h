@@ -5,12 +5,15 @@
 #ifndef BASE_TRACE_EVENT_PROCESS_MEMORY_DUMP_H_
 #define BASE_TRACE_EVENT_PROCESS_MEMORY_DUMP_H_
 
+#include <vector>
+
 #include "base/base_export.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/small_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/process_memory_maps.h"
 #include "base/trace_event/process_memory_totals.h"
@@ -30,6 +33,13 @@ class MemoryDumpSessionState;
 // dump point time.
 class BASE_EXPORT ProcessMemoryDump {
  public:
+  struct MemoryAllocatorDumpEdge {
+    MemoryAllocatorDumpGuid source;
+    MemoryAllocatorDumpGuid target;
+    int importance;
+    const char* type;
+  };
+
   // Maps allocator dumps absolute names (allocator_name/heap/subheap) to
   // MemoryAllocatorDump instances.
   using AllocatorDumpsMap =
@@ -78,6 +88,21 @@ class BASE_EXPORT ProcessMemoryDump {
   // Returns the map of the MemoryAllocatorDumps added to this dump.
   const AllocatorDumpsMap& allocator_dumps() const { return allocator_dumps_; }
 
+  // Adds an ownership relationship between two MemoryAllocatorDump(s) with the
+  // semantics: |source| owns |target|, and has the effect of attributing
+  // the memory usage of |target| to |source|. |importance| is optional and
+  // relevant only for the cases of co-ownership, where it acts as a z-index:
+  // the owner with the highest importance will be attributed |target|'s memory.
+  void AddOwnershipEdge(MemoryAllocatorDumpGuid source,
+                        MemoryAllocatorDumpGuid target,
+                        int importance);
+  void AddOwnershipEdge(MemoryAllocatorDumpGuid source,
+                        MemoryAllocatorDumpGuid target);
+
+  const std::vector<MemoryAllocatorDumpEdge>& allocator_dumps_edges() const {
+    return allocator_dumps_edges_;
+  }
+
   const scoped_refptr<MemoryDumpSessionState>& session_state() const {
     return session_state_;
   }
@@ -96,6 +121,9 @@ class BASE_EXPORT ProcessMemoryDump {
 
   // State shared among all PMDs instances created in a given trace session.
   scoped_refptr<MemoryDumpSessionState> session_state_;
+
+  // Keeps track of relationships between MemoryAllocatorDump(s).
+  std::vector<MemoryAllocatorDumpEdge> allocator_dumps_edges_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryDump);
 };

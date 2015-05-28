@@ -6,6 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -77,6 +78,29 @@ void CheckAttribute(const MemoryAllocatorDump* dump,
                  StringPrintf("%" PRIx64, expected_value));
 }
 }  // namespace
+
+TEST(MemoryAllocatorDumpTest, GuidGeneration) {
+  scoped_ptr<MemoryAllocatorDump> mad(
+      new MemoryAllocatorDump("foo", nullptr, MemoryAllocatorDumpGuid(0x42u)));
+  ASSERT_EQ("42", mad->guid().ToString());
+
+  // If the dumper does not provide a Guid, the MAD will make one up on the
+  // flight. Furthermore that Guid will stay stable across across multiple
+  // snapshots if the |absolute_name| of the dump doesn't change
+  mad.reset(new MemoryAllocatorDump("bar", nullptr));
+  const MemoryAllocatorDumpGuid guid_bar = mad->guid();
+  ASSERT_FALSE(guid_bar.empty());
+  ASSERT_FALSE(guid_bar.ToString().empty());
+  ASSERT_EQ(guid_bar, mad->guid());
+
+  mad.reset(new MemoryAllocatorDump("bar", nullptr));
+  const MemoryAllocatorDumpGuid guid_bar_2 = mad->guid();
+  ASSERT_EQ(guid_bar, guid_bar_2);
+
+  mad.reset(new MemoryAllocatorDump("baz", nullptr));
+  const MemoryAllocatorDumpGuid guid_baz = mad->guid();
+  ASSERT_NE(guid_bar, guid_baz);
+}
 
 TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   FakeMemoryAllocatorDumpProvider fmadp;
