@@ -14,6 +14,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "platform/SharedBuffer.h"
+#include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
@@ -429,8 +430,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         // running. This is taken care of with a manual ref() & deref() pair;
         // the corresponding deref() is in streamingComplete.
         ref();
-        ScriptStreamingTask* task = new ScriptStreamingTask(scriptStreamingTask.release(), this);
-        ScriptStreamerThread::shared()->postTask(task);
+        ScriptStreamerThread::shared()->postTask(new Task(threadSafeBind(&ScriptStreamerThread::runScriptStreamingTask, scriptStreamingTask.release(), AllowCrossThreadAccess(this))));
         Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 1, 2);
     }
     if (m_stream)

@@ -77,18 +77,15 @@ WebThread& ScriptStreamerThread::platformThread()
     return *m_thread;
 }
 
-ScriptStreamingTask::ScriptStreamingTask(WTF::PassOwnPtr<v8::ScriptCompiler::ScriptStreamingTask> task, ScriptStreamer* streamer)
-    : m_v8Task(task), m_streamer(streamer) { }
-
-void ScriptStreamingTask::run()
+void ScriptStreamerThread::runScriptStreamingTask(WTF::PassOwnPtr<v8::ScriptCompiler::ScriptStreamingTask> task, ScriptStreamer* streamer)
 {
     TRACE_EVENT0("v8", "v8.parseOnBackground");
     // Running the task can and will block: SourceStream::GetSomeData will get
     // called and it will block and wait for data from the network.
-    m_v8Task->Run();
-    m_streamer->streamingCompleteOnBackgroundThread();
+    task->Run();
+    streamer->streamingCompleteOnBackgroundThread();
     MutexLocker locker(*s_mutex);
-    ScriptStreamerThread* thread = ScriptStreamerThread::shared();
+    ScriptStreamerThread* thread = shared();
     if (thread)
         thread->taskDone();
     // If thread is 0, we're shutting down.
