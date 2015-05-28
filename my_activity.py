@@ -707,10 +707,10 @@ def main():
       help='Filter on user, default=%default')
   parser.add_option(
       '-b', '--begin', metavar='<date>',
-      help='Filter issues created after the date')
+      help='Filter issues created after the date (mm/dd/yy)')
   parser.add_option(
       '-e', '--end', metavar='<date>',
-      help='Filter issues created before the date')
+      help='Filter issues created before the date (mm/dd/yy)')
   quarter_begin, quarter_end = get_quarter_of(datetime.today() -
                                               relativedelta(months=2))
   parser.add_option(
@@ -722,7 +722,7 @@ def main():
       help='Use this year\'s dates')
   parser.add_option(
       '-w', '--week_of', metavar='<date>',
-      help='Show issues for week of the date')
+      help='Show issues for week of the date (mm/dd/yy)')
   parser.add_option(
       '-W', '--last_week', action='count',
       help='Show last week\'s issues. Use more times for more weeks.')
