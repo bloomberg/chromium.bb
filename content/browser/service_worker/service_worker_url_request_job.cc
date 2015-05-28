@@ -296,9 +296,7 @@ void ServiceWorkerURLRequestJob::GetExtraResponseInfo(
     bool* was_fallback_required_by_service_worker,
     GURL* original_url_via_service_worker,
     blink::WebServiceWorkerResponseType* response_type_via_service_worker,
-    base::TimeTicks* fetch_start_time,
-    base::TimeTicks* fetch_ready_time,
-    base::TimeTicks* fetch_end_time) const {
+    base::TimeTicks* worker_start_time) const {
   if (response_type_ != FORWARD_TO_SERVICE_WORKER) {
     *was_fetched_via_service_worker = false;
     *was_fallback_required_by_service_worker = false;
@@ -311,9 +309,7 @@ void ServiceWorkerURLRequestJob::GetExtraResponseInfo(
   *was_fallback_required_by_service_worker = fall_back_required_;
   *original_url_via_service_worker = response_url_;
   *response_type_via_service_worker = service_worker_response_type_;
-  *fetch_start_time = fetch_start_time_;
-  *fetch_ready_time = fetch_ready_time_;
-  *fetch_end_time = fetch_end_time_;
+  *worker_start_time = worker_start_time_;
 }
 
 
@@ -359,7 +355,7 @@ void ServiceWorkerURLRequestJob::StartRequest() {
                      weak_factory_.GetWeakPtr()),
           base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr())));
-      fetch_start_time_ = base::TimeTicks::Now();
+      worker_start_time_ = base::TimeTicks::Now();
       fetch_dispatcher_->Run();
       return;
   }
@@ -475,8 +471,7 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
 }
 
 void ServiceWorkerURLRequestJob::DidPrepareFetchEvent() {
-  fetch_ready_time_ = base::TimeTicks::Now();
-  load_timing_info_.send_start = fetch_ready_time_;
+  load_timing_info_.send_start = base::TimeTicks::Now();
 }
 
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
@@ -531,8 +526,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     return;
   }
 
-  fetch_end_time_ = base::TimeTicks::Now();
-  load_timing_info_.send_end = fetch_end_time_;
+  load_timing_info_.send_end = base::TimeTicks::Now();
 
   // Creates a new HttpResponseInfo using the the ServiceWorker script's
   // HttpResponseInfo to show HTTPS padlock.

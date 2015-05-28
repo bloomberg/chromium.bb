@@ -45,11 +45,8 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
       head.original_url_via_service_worker;
   new_response->head.response_type_via_service_worker =
       head.response_type_via_service_worker;
-  new_response->head.service_worker_fetch_start =
-      head.service_worker_fetch_start;
-  new_response->head.service_worker_fetch_ready =
-      head.service_worker_fetch_ready;
-  new_response->head.service_worker_fetch_end = head.service_worker_fetch_end;
+  new_response->head.service_worker_start_time =
+      head.service_worker_start_time;
   return new_response;
 }
 

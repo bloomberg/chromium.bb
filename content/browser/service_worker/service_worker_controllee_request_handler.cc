@@ -114,22 +114,17 @@ void ServiceWorkerControlleeRequestHandler::GetExtraResponseInfo(
     bool* was_fallback_required_by_service_worker,
     GURL* original_url_via_service_worker,
     blink::WebServiceWorkerResponseType* response_type_via_service_worker,
-    base::TimeTicks* fetch_start_time,
-    base::TimeTicks* fetch_ready_time,
-    base::TimeTicks* fetch_end_time) const {
+    base::TimeTicks* worker_start_time) const {
   if (!job_.get()) {
     *was_fetched_via_service_worker = false;
     *was_fallback_required_by_service_worker = false;
     *original_url_via_service_worker = GURL();
     return;
   }
-  job_->GetExtraResponseInfo(was_fetched_via_service_worker,
-                             was_fallback_required_by_service_worker,
-                             original_url_via_service_worker,
-                             response_type_via_service_worker,
-                             fetch_start_time,
-                             fetch_ready_time,
-                             fetch_end_time);
+  job_->GetExtraResponseInfo(
+      was_fetched_via_service_worker, was_fallback_required_by_service_worker,
+      original_url_via_service_worker, response_type_via_service_worker,
+      worker_start_time);
 }
 
 void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(

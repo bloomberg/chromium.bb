@@ -120,11 +120,11 @@ struct ResourceResponseInfo {
   // The type of the response which was fetched by the ServiceWorker.
   blink::WebServiceWorkerResponseType response_type_via_service_worker;
 
-  // ServiceWorker Timing Information. These will be set if the response is
-  // provided by the ServiceWorker, or kept empty.
-  base::TimeTicks service_worker_fetch_start;
-  base::TimeTicks service_worker_fetch_ready;
-  base::TimeTicks service_worker_fetch_end;
+  // The time immediately before starting ServiceWorker, or if the worker is
+  // already running, the time immediately before dispatching fetch event.
+  // If the response is not provided by the ServiceWorker, it is kept empty.
+  // TODO(ksakamoto): Move this to net::LoadTimingInfo.
+  base::TimeTicks service_worker_start_time;
 };
 
 }  // namespace content

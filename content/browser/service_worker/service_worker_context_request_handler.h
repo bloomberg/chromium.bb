@@ -34,9 +34,7 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
       bool* was_fallback_required_by_service_worker,
       GURL* original_url_via_service_worker,
       blink::WebServiceWorkerResponseType* response_type_via_service_worker,
-      base::TimeTicks* fetch_start_time,
-      base::TimeTicks* fetch_ready_time,
-      base::TimeTicks* fetch_end_time) const override;
+      base::TimeTicks* worker_start_time) const override;
 
  private:
   bool ShouldAddToScriptCache(const GURL& url);

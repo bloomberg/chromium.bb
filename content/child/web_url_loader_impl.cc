@@ -990,12 +990,8 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
     WebURLLoadTiming timing;
     PopulateURLLoadTiming(info.load_timing, &timing);
     const TimeTicks kNullTicks;
-    timing.setServiceWorkerFetchStart(
-        (info.service_worker_fetch_start - kNullTicks).InSecondsF());
-    timing.setServiceWorkerFetchReady(
-        (info.service_worker_fetch_ready - kNullTicks).InSecondsF());
-    timing.setServiceWorkerFetchEnd(
-        (info.service_worker_fetch_end - kNullTicks).InSecondsF());
+    timing.setWorkerStart(
+        (info.service_worker_start_time - kNullTicks).InSecondsF());
     response->setLoadTiming(timing);
   }
 
