@@ -6,11 +6,16 @@
 #define DEVICE_CORE_DEVICE_CLIENT_H_
 
 #include "base/macros.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace device {
 
 class HidService;
 class UsbService;
+
+namespace usb {
+class DeviceManager;
+}
 
 // Interface used by consumers of //device APIs to get pointers to the service
 // singletons appropriate for a given embedding application. For an example see
@@ -21,13 +26,18 @@ class DeviceClient {
   DeviceClient();
 
   // Destruction clears the single instance.
-  ~DeviceClient();
+  virtual ~DeviceClient();
 
   // Returns the single instance of |this|.
   static DeviceClient* Get();
 
   // Returns the UsbService instance for this embedder.
   virtual UsbService* GetUsbService();
+
+  // Connects a USB DeviceManager client to a concrete implementation. If
+  // no such implementation is available the request is dropped.
+  virtual void ConnectToUSBDeviceManager(
+      mojo::InterfaceRequest<usb::DeviceManager> request);
 
   // Returns the HidService instance for this embedder.
   virtual HidService* GetHidService();
