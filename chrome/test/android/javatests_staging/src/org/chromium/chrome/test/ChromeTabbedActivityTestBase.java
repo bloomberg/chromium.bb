@@ -133,5 +133,11 @@ public abstract class ChromeTabbedActivityTestBase extends
         } catch (TimeoutException e) {
             fail("Never received tab creation event");
         }
+
+        if (expectIncognito) {
+            assertTrue(getActivity().getTabModelSelector().isIncognitoSelected());
+        } else {
+            assertFalse(getActivity().getTabModelSelector().isIncognitoSelected());
+        }
     }
 }

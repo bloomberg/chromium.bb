@@ -588,6 +588,64 @@ public class DocumentModeTest extends MultiActivityTestBase {
     }
 
     /**
+     * Tests that Incognito tabs are opened in the foreground.
+     */
+    @MediumTest
+    public void testIncognitoOpensInForegroundViaLinkContextMenu() throws Exception {
+        launchLinkDocument();
+
+        // Save the current tab info.
+        final DocumentActivity regularActivity =
+                (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+        final DocumentTabModelSelector selector =
+                ChromeMobileApplication.getDocumentTabModelSelector();
+        final TabModel regularTabModel = selector.getModel(false);
+        final int regularTabId = selector.getCurrentTabId();
+
+        // Open a link in incognito via the context menu.
+        openLinkInNewTabViaContextMenu(true);
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                if (1 != regularTabModel.getCount()) return false;
+                if (regularTabId == selector.getCurrentTabId()) return false;
+                if (!selector.isIncognitoSelected()) return false;
+                return true;
+            }
+        }));
+        assertEquals(0, selector.getCurrentModel().index());
+        MoreAsserts.assertNotEqual(
+                regularActivity, ApplicationStatus.getLastTrackedFocusedActivity());
+
+        // Re-open the other tab.
+        TabModelUtils.setIndex(regularTabModel, 0);
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !selector.isIncognitoSelected()
+                        && selector.getCurrentTabId() == regularTabId;
+            }
+        }));
+
+        // Try to open a new Incognito Tab in the background using the TabModelSelector directly.
+        // Should open it in the foreground, instead.
+        final DocumentActivity currentActivity =
+                (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                LoadUrlParams params = new LoadUrlParams(URL_1);
+                currentActivity.getTabModelSelector().openNewTab(
+                        params, TabModel.TabLaunchType.FROM_LONGPRESS_BACKGROUND, null, true);
+            }
+        };
+        ActivityUtils.waitForActivity(
+                getInstrumentation(), IncognitoDocumentActivity.class, runnable);
+        MoreAsserts.assertNotEqual(
+                currentActivity, ApplicationStatus.getLastTrackedFocusedActivity());
+    }
+
+    /**
      * Tests that tab ID is properly set when tabs change.
      */
     @MediumTest
@@ -802,6 +860,34 @@ public class DocumentModeTest extends MultiActivityTestBase {
      * from the menu.
      */
     private void openLinkInBackgroundTab() throws Exception {
+        // We expect tab to open in the background, i.e. tab index / id should
+        // stay the same.
+        final DocumentTabModelSelector selector =
+                ChromeMobileApplication.getDocumentTabModelSelector();
+        final TabModel tabModel = selector.getModel(false);
+        final int expectedTabCount = tabModel.getCount() + 1;
+        final int expectedTabIndex = tabModel.index();
+        final int expectedTabId = selector.getCurrentTabId();
+        final DocumentActivity expectedActivity =
+                (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+
+        openLinkInNewTabViaContextMenu(false);
+
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                if (expectedTabCount != tabModel.getCount()) return false;
+                if (expectedTabIndex != tabModel.index()) return false;
+                if (expectedTabId != selector.getCurrentTabId()) return false;
+                return true;
+            }
+        }));
+
+        assertEquals(expectedActivity, ApplicationStatus.getLastTrackedFocusedActivity());
+    }
+
+
+    private void openLinkInNewTabViaContextMenu(final boolean incognito) throws Exception {
         // Long press the center of the page, which should bring up the context menu.
         final TestTabObserver observer = new TestTabObserver();
         final DocumentActivity activity =
@@ -821,40 +907,24 @@ public class DocumentModeTest extends MultiActivityTestBase {
                 return observer.mContextMenu != null;
             }
         }));
-
         activity.getActivityTab().removeObserver(observer);
 
-        // We expect tab to open in the background, i.e. tab index / id should
-        // stay the same.
-        final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
-        final TabModel tabModel = selector.getModel(false);
-        final int expectedTabCount = tabModel.getCount() + 1;
-        final int expectedTabIndex = tabModel.index();
-        final int expectedTabId = selector.getCurrentTabId();
-
         // Select the "open in new tab" option to open a tab in the background.
-        ActivityUtils.waitForActivity(getInstrumentation(), DocumentActivity.class,
+        ActivityUtils.waitForActivity(getInstrumentation(),
+                incognito ? IncognitoDocumentActivity.class : DocumentActivity.class,
                 new Runnable() {
                     @Override
                     public void run() {
-                        assertTrue(observer.mContextMenu.performIdentifierAction(
-                                R.id.contextmenu_open_in_new_tab, 0));
+                        if (incognito) {
+                            assertTrue(observer.mContextMenu.performIdentifierAction(
+                                    R.id.contextmenu_open_in_incognito_tab, 0));
+                        } else {
+                            assertTrue(observer.mContextMenu.performIdentifierAction(
+                                    R.id.contextmenu_open_in_new_tab, 0));
+                        }
                     }
                 }
         );
-
-        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (expectedTabCount != tabModel.getCount()) return false;
-                if (expectedTabIndex != tabModel.index()) return false;
-                if (expectedTabId != selector.getCurrentTabId()) return false;
-                return true;
-            }
-        }));
-
-        assertEquals(activity, ApplicationStatus.getLastTrackedFocusedActivity());
     }
 
     /**

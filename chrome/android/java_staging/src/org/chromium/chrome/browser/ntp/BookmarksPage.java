@@ -196,7 +196,7 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
             assert !item.isFolder();
             recordOpenedBookmark();
             mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl()),
-                    TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, true);
+                    TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, true);
         }
 
         @Override
