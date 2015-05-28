@@ -76,9 +76,19 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', ('amd', 0x6779)], bug=491419)
     self.Fail('conformance/extensions/oes-standard-derivatives.html',
         ['win', ('amd', 0x6779)], bug=491419)
+    self.Fail('conformance/extensions/oes-vertex-array-object.html',
+        ['win', ('amd', 0x6779)], bug=491419)
     self.Fail('conformance/glsl/functions/*',
         ['win', ('amd', 0x6779)], bug=491419)
     self.Fail('conformance/glsl/misc/glsl-long-variable-names.html',
+        ['win', ('amd', 0x6779)], bug=491419)
+    self.Fail('conformance/ogles/GL/swizzlers/swizzlers_017_to_024.html',
+        ['win', ('amd', 0x6779)], bug=491419)
+    self.Fail('conformance/ogles/GL/vec3/vec3_001_to_008.html',
+        ['win', ('amd', 0x6779)], bug=491419)
+    self.Fail('conformance/rendering/gl-scissor-test.html',
+        ['win', ('amd', 0x6779)], bug=491419)
+    self.Fail('conformance/textures/texture-size.html',
         ['win', ('amd', 0x6779)], bug=491419)
 
     # Win / AMD D3D9 failures
