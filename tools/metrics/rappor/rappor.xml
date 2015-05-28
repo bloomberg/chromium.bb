@@ -404,6 +404,20 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="WebComponents.EventPath" type="ETLD_PLUS_ONE">
+  <owner>kojii@chromium.org</owner>
+  <summary>
+    The host of a URL that used Event::Path().
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="WebComponents.EventPath.Extensions" type="ETLD_PLUS_ONE">
+  <owner>kojii@chromium.org</owner>
+  <summary>
+    The name of an extension that used Event::Path().
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="interstitial.harmful.domain" type="COARSE_RAPPOR_TYPE">
   <owner>nparker@chromium.org</owner>
   <summary>
