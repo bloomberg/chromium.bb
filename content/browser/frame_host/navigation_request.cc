@@ -54,7 +54,7 @@ int LoadFlagFromNavigationType(FrameMsg_Navigate_Type::Value navigation_type) {
 bool NavigationRequest::ShouldMakeNetworkRequest(const GURL& url) {
   // Data urls should not make network requests.
   // TODO(clamy): same document navigations should not make network requests.
-  return !url.SchemeIs(url::kDataScheme);
+  return !url.SchemeIs(url::kDataScheme) && url != GURL(url::kAboutBlankURL);
 }
 
 // static
