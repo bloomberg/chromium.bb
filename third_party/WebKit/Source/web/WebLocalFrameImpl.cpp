@@ -149,6 +149,8 @@
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/ScopeRecorder.h"
+#include "core/paint/TransformRecorder.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "modules/app_banner/AppBannerController.h"
@@ -166,7 +168,9 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerClient.h"
-#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
+#include "platform/graphics/paint/ClipRecorder.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
@@ -346,7 +350,7 @@ public:
         return m_printedPageWidth / pageRect.width();
     }
 
-    float spoolSinglePage(GraphicsContext& graphicsContext, int pageNumber)
+    float spoolSinglePage(WebCanvas* canvas, int pageNumber)
     {
         dispatchEventsForPrintingOnAllFrames();
         if (!frame()->document() || !frame()->document()->layoutView())
@@ -356,10 +360,15 @@ public:
         if (!frame()->document() || !frame()->document()->layoutView())
             return 0;
 
-        return spoolPage(graphicsContext, pageNumber);
+        IntRect pageRect = m_pageRects[pageNumber];
+        SkPictureBuilder pictureBuilder(pageRect);
+
+        float scale = spoolPage(pictureBuilder.context(), pageNumber);
+        pictureBuilder.endRecording()->playback(canvas);
+        return scale;
     }
 
-    void spoolAllPagesWithBoundaries(GraphicsContext& graphicsContext, const FloatSize& pageSizeInPixels)
+    void spoolAllPagesWithBoundaries(WebCanvas* canvas, const FloatSize& pageSizeInPixels)
     {
         dispatchEventsForPrintingOnAllFrames();
         if (!frame()->document() || !frame()->document()->layoutView())
@@ -375,36 +384,52 @@ public:
         const float pageWidth = pageSizeInPixels.width();
         size_t numPages = pageRects().size();
         int totalHeight = numPages * (pageSizeInPixels.height() + 1) - 1;
+        IntRect allPagesRect(0, 0, pageWidth, totalHeight);
+
+        SkPictureBuilder pictureBuilder(allPagesRect);
+        GraphicsContext& context = pictureBuilder.context();
 
         // Fill the whole background by white.
-        graphicsContext.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
+        {
+            DrawingRecorder backgroundRecorder(context, *this, DisplayItem::PrintedContentBackground, allPagesRect);
+            if (!backgroundRecorder.canUseCachedDrawing())
+                context.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
+        }
 
         int currentHeight = 0;
         for (size_t pageIndex = 0; pageIndex < numPages; pageIndex++) {
+            ScopeRecorder scopeRecorder(context, *this);
             // Draw a line for a page boundary if this isn't the first page.
             if (pageIndex > 0) {
-                graphicsContext.save();
-                graphicsContext.setStrokeColor(Color(0, 0, 255));
-                graphicsContext.setFillColor(Color(0, 0, 255));
-                graphicsContext.drawLine(IntPoint(0, currentHeight), IntPoint(pageWidth, currentHeight));
-                graphicsContext.restore();
+                DrawingRecorder lineBoundaryRecorder(context, *this, DisplayItem::PrintedContentLineBoundary, allPagesRect);
+                if (!lineBoundaryRecorder.canUseCachedDrawing()) {
+                    context.save();
+                    context.setStrokeColor(Color(0, 0, 255));
+                    context.setFillColor(Color(0, 0, 255));
+                    context.drawLine(IntPoint(0, currentHeight), IntPoint(pageWidth, currentHeight));
+                    context.restore();
+                }
             }
 
-            graphicsContext.save();
-
-            graphicsContext.translate(0, currentHeight);
+            AffineTransform transform;
+            transform.translate(0, currentHeight);
 #if OS(WIN) || OS(MACOSX)
             // Account for the disabling of scaling in spoolPage. In the context
             // of spoolAllPagesWithBoundaries the scale HAS NOT been pre-applied.
             float scale = getPageShrink(pageIndex);
-            graphicsContext.scale(scale, scale);
+            transform.scale(scale, scale);
 #endif
-            spoolPage(graphicsContext, pageIndex);
-            graphicsContext.restore();
+            TransformRecorder transformRecorder(context, *this, transform);
+            spoolPage(context, pageIndex);
 
             currentHeight += pageSizeInPixels.height() + 1;
         }
+        pictureBuilder.endRecording()->playback(canvas);
     }
+
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+
+    String debugName() const { return "ChromePrintContext"; }
 
 protected:
     // Spools the printed page, a subrect of frame(). Skip the scale step.
@@ -417,20 +442,21 @@ protected:
         IntRect pageRect = m_pageRects[pageNumber];
         float scale = m_printedPageWidth / pageRect.width();
 
-        context.save();
-#if OS(POSIX) && !OS(MACOSX)
-        context.scale(scale, scale);
-#endif
-        context.translate(static_cast<float>(-pageRect.x()), static_cast<float>(-pageRect.y()));
-        context.clip(pageRect);
+        context.setPrinting(true);
 
-        {
-            DisplayItemListContextRecorder contextRecorder(context);
-            frame()->view()->paintContents(&contextRecorder.context(), pageRect);
-        }
+        AffineTransform transform;
+#if OS(POSIX) && !OS(MACOSX)
+        transform.scale(scale);
+#endif
+        transform.translate(static_cast<float>(-pageRect.x()), static_cast<float>(-pageRect.y()));
+        TransformRecorder transformRecorder(context, *this, transform);
+
+        ClipRecorder clipRecorder(context, *this, DisplayItem::ClipPrintedPage, LayoutRect(pageRect));
+
+        frame()->view()->paintContents(&context, pageRect);
 
         outputLinkAndLinkedDestinations(context, pageRect);
-        context.restore();
+
         return scale;
     }
 
@@ -1376,11 +1402,10 @@ float WebLocalFrameImpl::getPrintPageShrink(int page)
 float WebLocalFrameImpl::printPage(int page, WebCanvas* canvas)
 {
 #if ENABLE(PRINTING)
+
     ASSERT(m_printContext && page >= 0 && frame() && frame()->document());
 
-    OwnPtr<GraphicsContext> graphicsContext = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    graphicsContext->setPrinting(true);
-    return m_printContext->spoolSinglePage(*graphicsContext, page);
+    return m_printContext->spoolSinglePage(canvas, page);
 #else
     return 0;
 #endif
@@ -1557,10 +1582,7 @@ void WebLocalFrameImpl::printPagesWithBoundaries(WebCanvas* canvas, const WebSiz
 {
     ASSERT(m_printContext);
 
-    OwnPtr<GraphicsContext> graphicsContext = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    graphicsContext->setPrinting(true);
-
-    m_printContext->spoolAllPagesWithBoundaries(*graphicsContext, FloatSize(pageSizeInPixels.width, pageSizeInPixels.height));
+    m_printContext->spoolAllPagesWithBoundaries(canvas, FloatSize(pageSizeInPixels.width, pageSizeInPixels.height));
 }
 
 WebRect WebLocalFrameImpl::selectionBoundsRect() const

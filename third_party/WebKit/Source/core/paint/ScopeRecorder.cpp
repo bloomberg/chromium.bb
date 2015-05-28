@@ -12,7 +12,7 @@
 
 namespace blink {
 
-ScopeRecorder::ScopeRecorder(GraphicsContext& context, const LayoutObject& object)
+ScopeRecorder::ScopeRecorder(GraphicsContext& context, const DisplayItemClientWrapper& object)
     : m_displayItemList(context.displayItemList())
     , m_object(object)
 {
@@ -20,7 +20,7 @@ ScopeRecorder::ScopeRecorder(GraphicsContext& context, const LayoutObject& objec
         return;
 
     ASSERT(m_displayItemList);
-    m_displayItemList->beginScope(m_object.displayItemClient());
+    m_displayItemList->beginScope(object.displayItemClient());
 }
 
 ScopeRecorder::~ScopeRecorder()

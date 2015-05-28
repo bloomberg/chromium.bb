@@ -91,7 +91,10 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(TableCellBackgroundFromSelfPaintingRow);
         DEBUG_STRING_CASE(VideoBitmap);
         DEBUG_STRING_CASE(WebPlugin);
+        DEBUG_STRING_CASE(PrintedContentBackground);
+        DEBUG_STRING_CASE(PrintedContentLineBoundary);
         DEBUG_STRING_CASE(WebFont);
+
         DEFAULT_CASE;
     }
 }
@@ -123,6 +126,7 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(ClipSelectionImage);
         DEBUG_STRING_CASE(PageWidgetDelegateClip);
         DEBUG_STRING_CASE(TransparencyClip);
+        DEBUG_STRING_CASE(ClipPrintedPage);
         DEFAULT_CASE;
     }
 }

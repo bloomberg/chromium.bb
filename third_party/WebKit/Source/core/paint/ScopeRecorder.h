@@ -5,7 +5,7 @@
 #ifndef ScopeRecorder_h
 #define ScopeRecorder_h
 
-#include "wtf/PassOwnPtr.h"
+#include "platform/graphics/paint/DisplayItem.h"
 
 namespace blink {
 
@@ -15,12 +15,13 @@ class LayoutObject;
 
 class ScopeRecorder {
 public:
-    ScopeRecorder(GraphicsContext&, const LayoutObject&);
+    ScopeRecorder(GraphicsContext&, const DisplayItemClientWrapper&);
+
     ~ScopeRecorder();
 
 private:
     DisplayItemList* m_displayItemList;
-    const LayoutObject& m_object;
+    const DisplayItemClientWrapper& m_object;
 };
 
 } // namespace blink

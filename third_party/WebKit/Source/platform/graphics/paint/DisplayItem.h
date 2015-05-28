@@ -89,6 +89,8 @@ public:
         TableCellBackgroundFromSelfPaintingRow, // FIXME: To be deprecated.
         VideoBitmap,
         WebPlugin,
+        PrintedContentBackground,
+        PrintedContentLineBoundary,
         WebFont,
         DrawingLast = WebFont,
 
@@ -116,7 +118,8 @@ public:
         ClipSelectionImage,
         PageWidgetDelegateClip,
         TransparencyClip,
-        ClipLast = TransparencyClip,
+        ClipPrintedPage,
+        ClipLast = ClipPrintedPage,
 
         EndClipFirst,
         EndClipLast = EndClipFirst + ClipLast - ClipFirst,
