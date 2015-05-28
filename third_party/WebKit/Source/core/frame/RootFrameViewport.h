@@ -60,6 +60,9 @@ public:
     GraphicsLayer* layerForHorizontalScrollbar() const override;
     GraphicsLayer* layerForVerticalScrollbar() const override;
     bool scroll(ScrollDirectionPhysical, ScrollGranularity, float delta = 1) override;
+    bool scrollAnimatorEnabled() const override;
+    HostWindow* hostWindow() const override;
+    void serviceScrollAnimations(double) override;
     // TODO(bokan): This method should be removed. It should be replaced by
     // making EventHandler::handleWheelEvent unpack the WheelEvent and make a
     // call to this class' scroll method.
