@@ -167,6 +167,14 @@ class CIDBMigrationsTest(CIDBIntegrationTest):
         for action in constants.CL_ACTIONS]
     db.InsertCLActions(build_id, all_actions_list)
 
+  def testWaterfallMigration(self):
+    """Test that migrating waterfall from enum to varchar preserves value."""
+    db = self._PrepareFreshDatabase(40)
+    build_id = db.InsertBuild('my builder', 'chromiumos', _random(),
+                              'my config', 'my bot hostname')
+    db.ApplySchemaMigrations(41)
+    self.assertEqual('chromiumos', db.GetBuildStatus(build_id)['waterfall'])
+
 
 class CIDBAPITest(CIDBIntegrationTest):
   """Tests of the CIDB API."""
