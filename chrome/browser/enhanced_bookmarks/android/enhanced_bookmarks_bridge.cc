@@ -115,7 +115,7 @@ void EnhancedBookmarksBridge::FetchImageForTab(JNIEnv* env,
                                                jobject j_web_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(j_web_contents);
   bookmark_image_service_->RetrieveSalientImageFromContext(
-      web_contents->GetMainFrame(), web_contents->GetURL(), true);
+      web_contents, web_contents->GetURL(), true);
 }
 
 ScopedJavaLocalRef<jstring> EnhancedBookmarksBridge::GetBookmarkDescription(

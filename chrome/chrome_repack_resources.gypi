@@ -28,6 +28,11 @@
           '<(SHARED_INTERMEDIATE_DIR)/ui/oobe/oobe_resources.pak',
         ],
       }],
+      ['OS == "android"', {
+        'pak_inputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/components/resources/enhanced_bookmarks/enhanced_bookmarks_resources.pak',
+        ]
+      }],
       ['OS != "ios"', {
         'pak_inputs': [
           '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',

@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_ENHANCED_BOOKMARKS_ANDROID_BOOKMARK_IMAGE_SERVICE_ANDROID_H_
 #define CHROME_BROWSER_ENHANCED_BOOKMARKS_ANDROID_BOOKMARK_IMAGE_SERVICE_ANDROID_H_
 
-#include "components/enhanced_bookmarks/bookmark_image_service.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
+#include "components/enhanced_bookmarks/bookmark_image_service.h"
+#include "content/public/common/referrer.h"
 
 namespace chrome {
 class BitmapFetcher;
@@ -35,7 +36,7 @@ class BookmarkImageServiceAndroid : public BookmarkImageService {
   // Searches the current page for a salient image, if a url is found the image
   // is fetched and stored.
   void RetrieveSalientImageFromContext(
-      content::RenderFrameHost* render_frame_host,
+      content::WebContents* web_contents,
       const GURL& page_url,
       bool update_bookmark);
 
@@ -46,15 +47,33 @@ class BookmarkImageServiceAndroid : public BookmarkImageService {
                                       bool update_bookmark);
 
  private:
-  void RetrieveSalientImageFromContextCallback(const GURL& page_url,
+  // The callback for dom_initializer_script_. Once the DOM is initialized,
+  // this method starts execution of get_salient_image_url_script_.
+  void InitializeDomCallback(blink::WebReferrerPolicy policy,
+                             content::RenderFrameHost* render_frame_host,
+                             const GURL& page_url,
+                             bool update_bookmark,
+                             const base::Value* result);
+
+  // The callback for get_salient_image_url_srcipt. Parses the JSON from
+  // execution of get_salient_image_url_script_ to determine the URL for the
+  // salient image and invokes RetrieveSalientImage.
+  void RetrieveSalientImageFromContextCallback(blink::WebReferrerPolicy policy,
+                                               const GURL& page_url,
                                                bool update_bookmark,
                                                const base::Value* result);
 
   scoped_ptr<gfx::Image> ResizeImage(const gfx::Image& image) override;
 
   content::BrowserContext* browser_context_;
+
+  // The script injected in a page to initialize the DOM before extracting image
+  // urls.
+  base::string16 dom_initializer_script_;
+
   // The script injected in a page to extract image urls.
-  base::string16 script_;
+  base::string16 get_salient_image_url_script_;
+
   // Maximum size for retrieved salient images in pixels. This is used when
   // resizing an image.
   gfx::Size max_size_;
