@@ -28,6 +28,9 @@ class MediaSinksObserver {
 
   // This function is invoked when the list of sinks compatible
   // with |source_| has been updated.
+  // Implementations may not perform operations that modify the Media Router's
+  // observer list. In particular, invoking this observer's destructor within
+  // OnSinksReceived will result in undefined behavior.
   virtual void OnSinksReceived(const std::vector<MediaSink>& sinks) {}
 
   const MediaSource& source() const { return source_; }

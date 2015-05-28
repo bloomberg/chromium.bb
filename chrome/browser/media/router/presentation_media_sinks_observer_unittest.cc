@@ -25,7 +25,7 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
   ~PresentationMediaSinksObserverTest() override {}
 
   void SetUp() override {
-    EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).WillOnce(Return(true));
+    EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).Times(1);
     observer_.reset(new PresentationMediaSinksObserver(
         &router_, &listener_,
         ForPresentationUrl("http://example.com/presentation.html")));

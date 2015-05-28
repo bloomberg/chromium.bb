@@ -1,0 +1,91 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_TEST_HELPER_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_TEST_HELPER_H_
+
+#include <string>
+#include <vector>
+
+#include "chrome/browser/media/router/media_router.mojom.h"
+#include "chrome/browser/media/router/media_router_mojo_impl.h"
+#include "chrome/browser/media/router/media_routes_observer.h"
+#include "chrome/browser/media/router/media_sinks_observer.h"
+#include "extensions/browser/event_page_tracker.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+namespace media_router {
+
+// Matcher for objects that uses Equals() member function for equality check.
+MATCHER_P(Equals, other, "") {
+  return arg.Equals(other);
+}
+
+// Matcher for a sequence of objects that uses Equals() member function for
+// equality check.
+MATCHER_P(SequenceEquals, other, "") {
+  if (arg.size() != other.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < arg.size(); ++i) {
+    if (!arg[i].Equals(other[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+class MockMojoMediaRouterService : public interfaces::MediaRouter {
+ public:
+  MockMojoMediaRouterService();
+  ~MockMojoMediaRouterService() override;
+
+  MOCK_METHOD3(CreateRoute,
+               void(const mojo::String& source,
+                    const mojo::String& sink_id,
+                    const CreateRouteCallback& callback));
+  MOCK_METHOD1(CloseRoute, void(const mojo::String& route_id));
+  MOCK_METHOD1(StartObservingMediaSinks, void(const mojo::String& source));
+  MOCK_METHOD1(StopObservingMediaSinks, void(const mojo::String& source));
+  MOCK_METHOD2(PostMessage,
+               void(const mojo::String& media_route_id,
+                    const mojo::String& message));
+  MOCK_METHOD1(ClearIssue, void(const mojo::String& issue_id));
+  MOCK_METHOD0(StartObservingMediaRoutes, void());
+  MOCK_METHOD0(StopObservingMediaRoutes, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockMojoMediaRouterService);
+};
+
+class MockMediaSinksObserver : public MediaSinksObserver {
+ public:
+  MockMediaSinksObserver(MediaRouter* router, const MediaSource& source);
+  ~MockMediaSinksObserver() override;
+
+  MOCK_METHOD1(OnSinksReceived, void(const std::vector<MediaSink>& sinks));
+};
+
+class MockMediaRoutesObserver : public MediaRoutesObserver {
+ public:
+  explicit MockMediaRoutesObserver(MediaRouter* router);
+  ~MockMediaRoutesObserver();
+
+  MOCK_METHOD1(OnRoutesUpdated, void(const std::vector<MediaRoute>& sinks));
+};
+
+class MockEventPageTracker : public extensions::EventPageTracker {
+ public:
+  MockEventPageTracker();
+  ~MockEventPageTracker();
+
+  MOCK_METHOD1(IsEventPageSuspended, bool(const std::string& extension_id));
+  MOCK_METHOD2(WakeEventPage,
+               bool(const std::string& extension_id,
+                    const base::Callback<void(bool)>& callback));
+};
+
+}  // namespace media_router
+
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_TEST_HELPER_H_

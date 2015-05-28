@@ -20,6 +20,8 @@
         'media_router_mojo_gen',
         'media_router_mojo',
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/chrome/common_constants.gyp:common_constants',
+        '<(DEPTH)/components/components.gyp:keyed_service_content',
         '<(DEPTH)/components/components.gyp:keyed_service_core',
         '<(DEPTH)/extensions/extensions.gyp:extensions_browser',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -60,6 +62,7 @@
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)',
+        '<(DEPTH)/third_party/mojo/src',
       ],
       'dependencies': [
         'media_router',

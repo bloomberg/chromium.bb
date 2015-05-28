@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_route_id.h"
 #include "chrome/browser/media/router/media_sink.h"
@@ -16,10 +17,11 @@
 
 namespace media_router {
 
+class IssuesObserver;
 class MediaRoutesObserver;
 class MediaSinksObserver;
 
-// Type of callback used in |RequestRoute()|. Callback is invoked when the
+// Type of callback used in |CreateRoute()|. Callback is invoked when the
 // route request either succeeded or failed.
 // The first argument is the route created. If the route request failed, this
 // will be a nullptr.
@@ -36,11 +38,11 @@ class MediaRouter {
  public:
   virtual ~MediaRouter() {}
 
-  // Requests a media route from |source| to |sink_id|.
+  // Creates a media route from |source_id| to |sink_id|.
   // |callback| is invoked with a response indicating success or failure.
-  virtual void RequestRoute(const MediaSourceId& source,
-                            const MediaSinkId& sink_id,
-                            const MediaRouteResponseCallback& callback) = 0;
+  virtual void CreateRoute(const MediaSourceId& source_id,
+                           const MediaSinkId& sink_id,
+                           const MediaRouteResponseCallback& callback) = 0;
 
   // Closes the media route specified by |route_id|.
   virtual void CloseRoute(const MediaRouteId& route_id) = 0;
@@ -50,6 +52,9 @@ class MediaRouter {
   // ArrayBufferView.
   virtual void PostMessage(const MediaRouteId& route_id,
                            const std::string& message) = 0;
+
+  // Clears the issue with the id |issue_id|.
+  virtual void ClearIssue(const Issue::IssueId& issue_id) = 0;
 
   // Receives updates from a MediaRouter instance.
   class Delegate {
@@ -61,12 +66,13 @@ class MediaRouter {
                            const std::string& message) = 0;
   };
 
- protected:
+ private:
+  friend class IssuesObserver;
   friend class MediaSinksObserver;
   friend class MediaRoutesObserver;
 
-  // The following APIs are called by MediaSinksObserver/MediaRoutesObserver
-  // and implementations of MediaRouter only.
+  // The following functions are called by IssuesObserver, MediaSinksObserver,
+  // and MediaRoutesObserver.
 
   // Registers |observer| with this MediaRouter. |observer| specifies a media
   // source and will receive updates with media sinks that are compatible with
@@ -74,12 +80,11 @@ class MediaRouter {
   // NOTE: This class does not assume ownership of |observer|. Callers must
   // manage |observer| and make sure |UnregisterObserver()| is called
   // before the observer is destroyed.
-  // Returns true if registration succeeded.
-  // It is invalid to request the same observer more than once and will result
+  // It is invalid to register the same observer more than once and will result
   // in undefined behavior.
   // If the MRPM Host is not available, the registration request will fail
   // immediately.
-  virtual bool RegisterMediaSinksObserver(MediaSinksObserver* observer) = 0;
+  virtual void RegisterMediaSinksObserver(MediaSinksObserver* observer) = 0;
 
   // Removes a previously added MediaSinksObserver. |observer| will stop
   // receiving further updates.
@@ -89,11 +94,21 @@ class MediaRouter {
   // The initial update may happen synchronously.
   // MediaRouter does not own |observer|. |RemoveMediaRoutesObserver| should
   // be called before |observer| is destroyed.
-  virtual bool RegisterMediaRoutesObserver(MediaRoutesObserver* observer) = 0;
+  // It is invalid to register the same observer more than once and will result
+  // in undefined behavior.
+  virtual void RegisterMediaRoutesObserver(MediaRoutesObserver* observer) = 0;
 
   // Removes a previously added MediaRoutesObserver. |observer| will stop
   // receiving further updates.
   virtual void UnregisterMediaRoutesObserver(MediaRoutesObserver* observer) = 0;
+
+  // Adds the IssuesObserver |observer|.
+  // It is invalid to register the same observer more than once and will result
+  // in undefined behavior.
+  virtual void AddIssuesObserver(IssuesObserver* observer) = 0;
+
+  // Removes the IssuesObserver |observer|.
+  virtual void RemoveIssuesObserver(IssuesObserver* observer) = 0;
 };
 
 }  // namespace media_router

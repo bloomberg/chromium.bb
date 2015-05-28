@@ -41,8 +41,7 @@ class QueryResultManagerTest : public ::testing::Test {
   }
 
   void DiscoverSinks(MediaCastMode cast_mode, const MediaSource& source) {
-    EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
-        .WillOnce(Return(true));
+    EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_)).Times(1);
     EXPECT_CALL(mock_observer_, OnResultsUpdated(_)).Times(1);
     query_result_manager_.StartSinksQuery(cast_mode, source);
   }
@@ -95,8 +94,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
   EXPECT_TRUE(actual_source.Empty());
 
   MediaSource source(ForPresentationUrl("http://fooUrl"));
-  EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_)).Times(1);
   query_result_manager_.StartSinksQuery(MediaCastMode::DEFAULT, source);
 
   query_result_manager_.GetSupportedCastModes(&cast_modes);
@@ -109,8 +107,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
   // Register a different source for the same cast mode.
   MediaSource another_source(ForPresentationUrl("http://barUrl"));
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_)).Times(1);
-  EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_)).Times(1);
   query_result_manager_.StartSinksQuery(
       MediaCastMode::DEFAULT, another_source);
 
@@ -207,8 +204,7 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
   expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
 
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_)).Times(1);
-  EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
-      .WillOnce(Return(true));
+  EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_)).Times(1);
   EXPECT_CALL(mock_observer_,
               OnResultsUpdated(VectorEquals(expected_sinks))).Times(1);
   query_result_manager_.StartSinksQuery(

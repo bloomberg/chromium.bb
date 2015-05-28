@@ -13,8 +13,7 @@ MediaSinksObserver::MediaSinksObserver(MediaRouter* router,
                                        const MediaSource& source)
     : source_(source), router_(router) {
   DCHECK(router_);
-  if (!router_->RegisterMediaSinksObserver(this))
-    LOG(ERROR) << "RegisterMediaSinksObserver failed: " << source.ToString();
+  router_->RegisterMediaSinksObserver(this);
 }
 
 MediaSinksObserver::~MediaSinksObserver() {

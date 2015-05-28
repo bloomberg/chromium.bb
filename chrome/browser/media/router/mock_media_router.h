@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,25 +17,28 @@
 
 namespace media_router {
 
-// Mocked out MediaRouter used in tests.
+// Media Router mock class. Used for testing purposes.
 class MockMediaRouter : public MediaRouter {
  public:
   MockMediaRouter();
   virtual ~MockMediaRouter();
 
-  MOCK_METHOD3(RequestRoute,
-               void(const MediaSourceId& source,
+  MOCK_METHOD3(CreateRoute,
+               void(const MediaSourceId& source_id,
                     const MediaSinkId& sink_id,
                     const MediaRouteResponseCallback& callback));
   MOCK_METHOD1(CloseRoute, void(const MediaRouteId& route_id));
   MOCK_METHOD2(PostMessage,
                void(const MediaRouteId& route_id, const std::string& message));
+  MOCK_METHOD1(ClearIssue, void(const Issue::IssueId& issue_id));
+  MOCK_METHOD1(AddIssuesObserver, void(IssuesObserver* observer));
+  MOCK_METHOD1(RemoveIssuesObserver, void(IssuesObserver* observer));
 
-  MOCK_METHOD1(RegisterMediaSinksObserver, bool(MediaSinksObserver* observer));
+  MOCK_METHOD1(RegisterMediaSinksObserver, void(MediaSinksObserver* observer));
   MOCK_METHOD1(UnregisterMediaSinksObserver,
                void(MediaSinksObserver* observer));
   MOCK_METHOD1(RegisterMediaRoutesObserver,
-               bool(MediaRoutesObserver* observer));
+               void(MediaRoutesObserver* observer));
   MOCK_METHOD1(UnregisterMediaRoutesObserver,
                void(MediaRoutesObserver* observer));
 };

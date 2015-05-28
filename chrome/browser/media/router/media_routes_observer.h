@@ -21,9 +21,11 @@ class MediaRoutesObserver {
   explicit MediaRoutesObserver(MediaRouter* router);
   virtual ~MediaRoutesObserver();
 
-  // This function is invoked when the list of routes and their associated
-  // sinks have been updated. Routes included in the list are created either
-  // locally or remotely.
+  // Invoked when the list of routes and their associated sinks have been
+  // updated.
+  // Implementations may not perform operations that modify the Media Router's
+  // observer list. In particular, invoking this observer's destructor within
+  // OnRoutesUpdated will result in undefined behavior.
   virtual void OnRoutesUpdated(const std::vector<MediaRoute>& routes) {}
 
  private:

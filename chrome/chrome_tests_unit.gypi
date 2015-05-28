@@ -1430,6 +1430,7 @@
     'chrome_unit_tests_media_router_sources': [
       'browser/media/router/issue_manager_unittest.cc',
       'browser/media/router/issue_unittest.cc',
+      'browser/media/router/media_router_mojo_impl_unittest.cc',
       'browser/media/router/media_router_type_converters_unittest.cc',
       'browser/media/router/media_route_unittest.cc',
       'browser/media/router/media_sink_unittest.cc',

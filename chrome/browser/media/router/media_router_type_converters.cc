@@ -37,6 +37,16 @@ TypeConverter<media_router::MediaRoute, MediaRoutePtr>::Convert(
 }
 
 // static
+scoped_ptr<media_router::MediaRoute>
+TypeConverter<scoped_ptr<media_router::MediaRoute>, MediaRoutePtr>::Convert(
+    const MediaRoutePtr& input) {
+  return make_scoped_ptr(new media_router::MediaRoute(
+      input->media_route_id, media_router::MediaSource(input->media_source),
+      input->media_sink.To<media_router::MediaSink>(), input->description,
+      input->is_local));
+}
+
+// static
 MediaRoutePtr TypeConverter<MediaRoutePtr, media_router::MediaRoute>::Convert(
     const media_router::MediaRoute& input) {
   MediaRoutePtr output(media_router::interfaces::MediaRoute::New());

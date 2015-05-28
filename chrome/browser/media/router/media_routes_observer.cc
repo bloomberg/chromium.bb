@@ -12,8 +12,7 @@ namespace media_router {
 MediaRoutesObserver::MediaRoutesObserver(MediaRouter* router)
     : router_(router) {
   DCHECK(router_);
-  if (!router_->RegisterMediaRoutesObserver(this))
-    LOG(ERROR) << "RegisterMediaRoutesObserver failed.";
+  router_->RegisterMediaRoutesObserver(this);
 }
 
 MediaRoutesObserver::~MediaRoutesObserver() {

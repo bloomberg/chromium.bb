@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_router.mojom.h"
 #include "chrome/browser/media/router/media_sink.h"
@@ -39,6 +40,13 @@ template <>
 struct TypeConverter<media_router::MediaRoute,
                      media_router::interfaces::MediaRoutePtr> {
   static media_router::MediaRoute Convert(
+      const media_router::interfaces::MediaRoutePtr& input);
+};
+
+template <>
+struct TypeConverter<scoped_ptr<media_router::MediaRoute>,
+                     media_router::interfaces::MediaRoutePtr> {
+  static scoped_ptr<media_router::MediaRoute> Convert(
       const media_router::interfaces::MediaRoutePtr& input);
 };
 
