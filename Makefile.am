@@ -96,7 +96,7 @@ BUILT_SOURCES =					\
 	$(nodist_libwayland_client_la_SOURCES)	\
 	$(nodist_headers_test_SOURCES)
 
-CLEANFILES = $(BUILT_SOURCES)
+CLEANFILES = $(BUILT_SOURCES) doc/doxygen/doxygen_sqlite3.db
 DISTCLEANFILES = src/wayland-version.h
 EXTRA_DIST = src/wayland-version.h.in
 
