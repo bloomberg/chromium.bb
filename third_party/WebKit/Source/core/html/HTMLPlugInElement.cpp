@@ -164,7 +164,18 @@ void HTMLPlugInElement::attach(const AttachContext& context)
 {
     HTMLFrameOwnerElement::attach(context);
 
-    if (!layoutObject() || useFallbackContent())
+    if (!layoutObject()) {
+        // If we don't have a layoutObject we have to dispose of any plugins
+        // which we persisted over a reattach.
+        if (m_persistedPluginWidget) {
+            RefPtr<Widget> widget = m_persistedPluginWidget;
+            setPersistedPluginWidget(nullptr);
+            widget->dispose();
+        }
+        return;
+    }
+
+    if (useFallbackContent())
         return;
 
     if (isImageType()) {
@@ -242,7 +253,7 @@ void HTMLPlugInElement::detach(const AttachContext& context)
 
     // Only try to persist a plugin widget we actually own.
     Widget* plugin = ownedWidget();
-    if (plugin && plugin->pluginShouldPersist())
+    if (plugin && context.performingReattach)
         setPersistedPluginWidget(plugin);
 
     resetInstance();

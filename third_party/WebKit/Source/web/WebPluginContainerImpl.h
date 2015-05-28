@@ -95,7 +95,6 @@ public:
     virtual void widgetPositionsUpdated() override;
     virtual bool isPluginContainer() const override { return true; }
     virtual void eventListenersRemoved() override;
-    virtual bool pluginShouldPersist() const override;
 
     // WebPluginContainer methods
     virtual WebElement element() override;
