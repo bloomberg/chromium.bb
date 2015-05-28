@@ -89,11 +89,6 @@ class ExternalProviderImpl : public ExternalProviderInterface {
                                const std::string& extension_id,
                                std::set<std::string>* unsupported_extensions);
 
-  bool HandleInstalledByOem(const base::DictionaryValue* extension,
-                            const std::string& extension_id,
-                            std::set<std::string>* unsupported_extensions,
-                            int* creation_flags);
-
   // Location for external extensions that are provided by this provider from
   // local crx files.
   const Manifest::Location crx_location_;

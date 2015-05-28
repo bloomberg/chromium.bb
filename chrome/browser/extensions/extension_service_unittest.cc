@@ -341,7 +341,6 @@ class MockProviderVisitor
       : ids_found_(0),
         fake_base_path_(fake_base_path),
         expected_creation_flags_(expected_creation_flags) {
-    profile_.reset(new TestingProfile);
   }
 
   int Visit(const std::string& json_data) {

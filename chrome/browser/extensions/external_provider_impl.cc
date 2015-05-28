@@ -43,8 +43,6 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user.h"
 #else
@@ -231,18 +229,19 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
         continue;
       }
     }
-    if (!HandleInstalledByOem(extension, extension_id, &unsupported_extensions,
-                              &creation_flags))
-      continue;
-
+    bool was_installed_by_oem = false;
+    if (extension->GetBoolean(kWasInstalledByOem, &was_installed_by_oem) &&
+        was_installed_by_oem) {
+      creation_flags |= Extension::WAS_INSTALLED_BY_OEM;
+    }
     bool may_be_untrusted = false;
     if (extension->GetBoolean(kMayBeUntrusted, &may_be_untrusted) &&
         may_be_untrusted) {
       creation_flags |= Extension::MAY_BE_UNTRUSTED;
     }
 
-    if (!HandleMinProfileVersion(extension, extension_id,
-                                 &unsupported_extensions))
+    if (!ExternalProviderImpl::HandleMinProfileVersion(extension, extension_id,
+                                                       &unsupported_extensions))
       continue;
 
     std::string install_parameter;
@@ -390,29 +389,6 @@ bool ExternalProviderImpl::HandleMinProfileVersion(
               << min_profile_created_by_version;
       return false;
     }
-  }
-  return true;
-}
-
-bool ExternalProviderImpl::HandleInstalledByOem(
-    const base::DictionaryValue* extension,
-    const std::string& extension_id,
-    std::set<std::string>* unsupported_extensions,
-    int* creation_flags) {
-  bool was_installed_by_oem = false;
-  if (extension->GetBoolean(kWasInstalledByOem, &was_installed_by_oem) &&
-      was_installed_by_oem) {
-#if defined(OS_CHROMEOS)
-    policy::UserCloudPolicyManagerChromeOS* policy_manager =
-        policy::UserCloudPolicyManagerFactoryChromeOS::GetForProfile(profile_);
-    if (policy_manager && policy_manager->core()->store()->is_managed()) {
-      unsupported_extensions->insert(extension_id);
-      VLOG(1) << "Skip installing (or uninstall) external extension "
-              << extension_id << " installed by OEM for managed user";
-      return false;
-    }
-#endif
-    *creation_flags |= Extension::WAS_INSTALLED_BY_OEM;
   }
   return true;
 }
