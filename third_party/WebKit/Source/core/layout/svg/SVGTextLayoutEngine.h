@@ -20,6 +20,7 @@
 #ifndef SVGTextLayoutEngine_h
 #define SVGTextLayoutEngine_h
 
+#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGTextFragment.h"
 #include "core/layout/svg/SVGTextLayoutAttributes.h"
 #include "core/layout/svg/SVGTextMetrics.h"
@@ -30,7 +31,6 @@ namespace blink {
 
 class LayoutObject;
 class ComputedStyle;
-class LayoutSVGInlineText;
 class SVGInlineTextBox;
 
 // SVGTextLayoutEngine performs the second layout phase for SVG text.
@@ -59,17 +59,14 @@ private:
     void updateCurrentTextPosition(float x, float y, float glyphAdvance);
     void updateRelativePositionAdjustmentsIfNeeded(float dx, float dy);
 
-    void recordTextFragment(SVGInlineTextBox*, const Vector<SVGTextMetrics>&);
+    void recordTextFragment(SVGInlineTextBox*);
     bool parentDefinesTextLength(LayoutObject*) const;
 
     void layoutTextOnLineOrPath(SVGInlineTextBox*, const LayoutSVGInlineText&, const ComputedStyle&);
 
     bool currentLogicalCharacterAttributes(SVGTextLayoutAttributes*&);
     bool currentLogicalCharacterMetrics(SVGTextLayoutAttributes*&, SVGTextMetrics&);
-    bool currentVisualCharacterMetrics(SVGInlineTextBox*, const Vector<SVGTextMetrics>&, SVGTextMetrics&);
-
     void advanceToNextLogicalCharacter(const SVGTextMetrics&);
-    void advanceToNextVisualCharacter(const SVGTextMetrics&);
 
 private:
     Vector<SVGTextLayoutAttributes*>& m_layoutAttributes;
@@ -80,8 +77,7 @@ private:
     unsigned m_layoutAttributesPosition;
     unsigned m_logicalCharacterOffset;
     unsigned m_logicalMetricsListOffset;
-    unsigned m_visualCharacterOffset;
-    unsigned m_visualMetricsListOffset;
+    SVGInlineTextMetricsIterator m_visualMetricsIterator;
     float m_x;
     float m_y;
     float m_dx;

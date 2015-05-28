@@ -69,6 +69,57 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGInlineText, isSVGInlineText());
 
+class SVGInlineTextMetricsIterator {
+public:
+    SVGInlineTextMetricsIterator() { reset(nullptr); }
+
+    void advanceToTextStart(const LayoutSVGInlineText* textLayoutObject, unsigned startCharacterOffset)
+    {
+        ASSERT(textLayoutObject);
+        if (m_textLayoutObject != textLayoutObject) {
+            reset(textLayoutObject);
+            ASSERT(!metricsList().isEmpty());
+        }
+
+        if (m_characterOffset == startCharacterOffset)
+            return;
+
+        // TODO(fs): We could walk backwards through the metrics list in these cases.
+        if (m_characterOffset > startCharacterOffset)
+            reset(textLayoutObject);
+
+        while (m_characterOffset < startCharacterOffset)
+            next();
+    }
+
+    void next()
+    {
+        m_characterOffset += metrics().length();
+        ++m_metricsListOffset;
+    }
+
+    const SVGTextMetrics& metrics() const
+    {
+        ASSERT(m_textLayoutObject && m_metricsListOffset < metricsList().size());
+        return metricsList()[m_metricsListOffset];
+    }
+    const Vector<SVGTextMetrics>& metricsList() const { return m_textLayoutObject->layoutAttributes()->textMetricsValues(); }
+    unsigned metricsListOffset() const { return m_metricsListOffset; }
+    unsigned characterOffset() const { return m_characterOffset; }
+
+private:
+    void reset(const LayoutSVGInlineText* textLayoutObject)
+    {
+        m_textLayoutObject = textLayoutObject;
+        m_characterOffset = 0;
+        m_metricsListOffset = 0;
+    }
+
+    const LayoutSVGInlineText* m_textLayoutObject;
+    unsigned m_metricsListOffset;
+    unsigned m_characterOffset;
+};
+
 }
 
 #endif // LayoutSVGInlineText_h
