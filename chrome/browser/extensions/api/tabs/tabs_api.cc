@@ -659,21 +659,11 @@ bool WindowsCreateFunction::RunSync() {
 
   WindowController* controller = new_window->extension_window_controller();
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-  // On Desktop Linux, window managers may ignore hints until the X11 window is
-  // mapped, which happens in the blocking call to Show() above.
-  // DesktopWindowTreeHostX11 currently only checks for an attempt to maximize
-  // once mapped, but not minimize or fullscreen.
+#if defined(OS_CHROMEOS)
   // For ChromeOS, manually Minimize(). Because minimzied window is not
   // considered to create new window. See http://crbug.com/473228.
   if (create_params.initial_show_state == ui::SHOW_STATE_MINIMIZED)
     new_window->window()->Minimize();
-#endif
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  // On Desktop Linux managers don't handle fullscreen state to
-  // create window for now.
-  if (create_params.initial_show_state == ui::SHOW_STATE_FULLSCREEN)
-    controller->SetFullscreenMode(true, extension()->url());
 #endif
 
   if (new_window->profile()->IsOffTheRecord() &&
