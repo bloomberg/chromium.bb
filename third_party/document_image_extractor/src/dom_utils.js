@@ -346,4 +346,43 @@ image.collections.extension.domextractor.DomUtils.unescapeEntitiesUsingDom =
     return seen[s] = value;
   });
 };
+
+
+/**
+ * Checks whether the uri starts with 'data:'.
+ * @param {string} uri
+ * @return {boolean}
+ */
+DomUtils.isDataUri = function(uri) {
+  if (uri && uri.length >= 5) {
+    // Use charAt instead of indexOf since these may be enormous strings we
+    // don't want to iterate through.
+    return uri.charAt(0) == 'd' &&
+           uri.charAt(1) == 'a' &&
+           uri.charAt(2) == 't' &&
+           uri.charAt(3) == 'a' &&
+           uri.charAt(4) == ':';
+  }
+  return false;
+};
+
+
+/**
+ * Checks whether the uri starts with 'url(' and ends with ')'.
+ * @param {string} uri
+ * @return {boolean}
+ */
+DomUtils.isUrlUri = function(uri) {
+  if (uri && uri.length >= 5) {
+    // Use charAt instead of indexOf since these may be enormous strings we
+    // don't want to iterate through.
+    return uri.charAt(0) == 'u' &&
+           uri.charAt(1) == 'r' &&
+           uri.charAt(2) == 'l' &&
+           uri.charAt(3) == '(' &&
+           uri.charAt(uri.length - 1) == ')';
+  }
+  return false;
+};
+
 });  // goog.scope

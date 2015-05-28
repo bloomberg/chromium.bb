@@ -261,7 +261,6 @@ DocumentImageExtractor.prototype.extractImageSrcImage_ = function(element) {
  * @param {string} urlAttributeName
  * @return {DocumentImage}
  * @private
- * @suppress {missingProperties}
  */
 DocumentImageExtractor.prototype.extractCanonicalImage_ = function(
     element, relevance, attributeName, attribute, urlAttributeName) {
@@ -269,7 +268,7 @@ DocumentImageExtractor.prototype.extractCanonicalImage_ = function(
       element.getAttribute(attributeName).toLowerCase() ==
       attribute.toLowerCase()) {
     var url = element.getAttribute(urlAttributeName);
-    if (!url || url.startsWith('data:')) {
+    if (!url || DomUtils.isDataUri(url)) {
       return null;
     }
     var width = parseInt(element.getAttribute(CustomAttribute.WIDTH), 10);
@@ -294,13 +293,12 @@ DocumentImageExtractor.prototype.extractCanonicalImage_ = function(
  * @param {!Element} element
  * @return {DocumentImage}
  * @private
- * @suppress {missingProperties}
  */
 DocumentImageExtractor.prototype.extractMicrodataImage_ = function(element) {
   var itemProp = element.getAttribute('itemprop');
   if (itemProp && itemProp.toLowerCase() == 'thumbnailurl') {
     var url = element.getAttribute('href') || element.getAttribute('content');
-    if (!url || url.startsWith('data:')) {
+    if (!url || DomUtils.isDataUri(url)) {
       return null;
     }
     var width = parseInt(element.getAttribute(CustomAttribute.WIDTH), 10);
@@ -337,7 +335,7 @@ DocumentImageExtractor.prototype.getElementRelevance_ = function(element) {
 DocumentImageExtractor.prototype.extractImage_ = function(element) {
   var url = element.src;
   // We cannot handle data URIs.
-  if (url && !url.startsWith('data:')) {
+  if (url && !DomUtils.isDataUri(url)) {
     var naturalSize = new Size(element.naturalWidth, element.naturalHeight);
     var displaySize = DomUtils.getSize(element);
     var size = naturalSize.area() < displaySize.area() ?
@@ -356,7 +354,6 @@ DocumentImageExtractor.prototype.extractImage_ = function(element) {
  * @param {!Element} element
  * @return {DocumentImage}
  * @private
- * @suppress {missingProperties}
  */
 DocumentImageExtractor.prototype.extractBackgroundImage_ = function(element) {
   var backgroundImage = DomUtils.getComputedStyle(
@@ -367,10 +364,9 @@ DocumentImageExtractor.prototype.extractBackgroundImage_ = function(element) {
       element, 'background-size');
   if (backgroundImage &&
       (backgroundRepeat == 'no-repeat' || backgroundSize == 'cover') &&
-      backgroundImage.startsWith('url(') &&
-      backgroundImage.endsWith(')')) {
+      DomUtils.isUrlUri(backgroundImage)) {
     var url = backgroundImage.substr(4, backgroundImage.length - 5);
-    if (url && !url.startsWith('data:')) {
+    if (url && !DomUtils.isDataUri(url)) {
       var size = DomUtils.getSize(element);
       if (size.width && size.height) {
         var relevance = this.getElementRelevance_(element);
