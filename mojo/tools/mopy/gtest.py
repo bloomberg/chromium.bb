@@ -96,7 +96,7 @@ def _print_error(command_line, error):
   exit_code = ""
   if hasattr(error, 'returncode'):
     exit_code = " (exit code %d)" % error.returncode
-  print "\nFailed command%s: %s" % (exit_code, " ".join(command_line))
+  print "\n[  FAILED  ] Command%s: %s" % (exit_code, " ".join(command_line))
   print 72 * "-"
   print error.output if hasattr(error, 'output') else error
   print 72 * "-"
