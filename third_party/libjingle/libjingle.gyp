@@ -555,7 +555,6 @@
             '<(libjingle_source)/talk/media/webrtc/simulcast.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcmediaengine.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcmediaengine.h',
-            '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine2.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine2.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvoiceengine.cc',
