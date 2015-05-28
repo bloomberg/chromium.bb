@@ -234,6 +234,10 @@
           {
             "title": "Add to Homescreen",
             "href": "/multidevice/android/installtohomescreen"
+          },
+          {
+            "title": "Chrome Custom Tabs",
+            "href": "/multidevice/android/customtabs"
           }
         ]
       },
