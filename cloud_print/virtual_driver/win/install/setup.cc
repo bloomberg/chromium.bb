@@ -36,7 +36,6 @@ namespace {
 
 const wchar_t kNameValue[] = L"GCP Virtual Driver";
 const wchar_t kUninstallId[] = L"{74AA24E0-AC50-4B28-BA46-9CF05467C9B7}";
-const wchar_t kInstallerName[] = L"virtual_driver_setup.exe";
 const wchar_t kGcpUrl[] = L"http://www.google.com/cloudprint";
 
 const wchar_t kDataFileName[] = L"gcp_driver.gpd";
