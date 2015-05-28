@@ -35,7 +35,7 @@
 #include "core/frame/PageScaleConstraints.h"
 #include "platform/Length.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/heap/Handle.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -43,9 +43,9 @@ namespace blink {
 // the meta viewport tag and other sources.
 class PageScaleConstraintsSet {
 public:
-    static PassOwnPtrWillBeRawPtr<PageScaleConstraintsSet> create()
+    static PassOwnPtr<PageScaleConstraintsSet> create()
     {
-        return adoptPtrWillBeNoop(new PageScaleConstraintsSet);
+        return adoptPtr(new PageScaleConstraintsSet);
     }
 
     void setDefaultConstraints(const PageScaleConstraints&);

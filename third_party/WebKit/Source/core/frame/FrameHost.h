@@ -105,7 +105,7 @@ private:
 
     RawPtrWillBeMember<Page> m_page;
     const OwnPtrWillBeMember<TopControls> m_topControls;
-    const OwnPtrWillBeMember<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
+    const OwnPtr<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
     const OwnPtr<PinchViewport> m_pinchViewport;
     const OwnPtrWillBeMember<EventHandlerRegistry> m_eventHandlerRegistry;
     const OwnPtrWillBeMember<ConsoleMessageStorage> m_consoleMessageStorage;
