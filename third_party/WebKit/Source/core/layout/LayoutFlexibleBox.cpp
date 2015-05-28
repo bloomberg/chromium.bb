@@ -1176,7 +1176,6 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         LayoutPoint childLocation(shouldFlipMainAxis ? totalMainExtent - mainAxisOffset - childMainExtent : mainAxisOffset,
             crossAxisOffset + flowAwareMarginBeforeForChild(*child));
 
-        // FIXME: Supporting layout deltas.
         setFlowAwareLocationForChild(*child, childLocation);
         mainAxisOffset += childMainExtent + flowAwareMarginEndForChild(*child);
 
