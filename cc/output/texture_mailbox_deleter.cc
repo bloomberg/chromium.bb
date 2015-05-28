@@ -65,9 +65,13 @@ scoped_ptr<SingleReleaseCallback> TextureMailboxDeleter::GetReleaseCallback(
 
   // Provide a callback for the main thread that posts back to the impl
   // thread.
-  scoped_ptr<SingleReleaseCallback> main_callback =
-      SingleReleaseCallback::Create(base::Bind(
-          &PostTaskFromMainToImplThread, impl_task_runner_, run_impl_callback));
+  scoped_ptr<SingleReleaseCallback> main_callback;
+  if (impl_task_runner_) {
+    main_callback = SingleReleaseCallback::Create(base::Bind(
+        &PostTaskFromMainToImplThread, impl_task_runner_, run_impl_callback));
+  } else {
+    main_callback = SingleReleaseCallback::Create(run_impl_callback);
+  }
 
   return main_callback.Pass();
 }

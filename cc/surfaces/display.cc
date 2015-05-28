@@ -35,8 +35,7 @@ Display::Display(DisplayClient* client,
       device_scale_factor_(1.f),
       swapped_since_resize_(false),
       scheduler_(nullptr),
-      texture_mailbox_deleter_(
-          new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get())) {
+      texture_mailbox_deleter_(new TextureMailboxDeleter(nullptr)) {
   manager_->AddObserver(this);
 }
 

@@ -19,6 +19,8 @@ class SingleReleaseCallback;
 
 class CC_EXPORT TextureMailboxDeleter {
  public:
+  // task_runner corresponds with the thread the delete task should be posted
+  // to. If null, the delete will happen on the calling thread.
   explicit TextureMailboxDeleter(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~TextureMailboxDeleter();
