@@ -29,6 +29,7 @@ WebGLTransformFeedback::~WebGLTransformFeedback()
 
 WebGLTransformFeedback::WebGLTransformFeedback(WebGL2RenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx)
+    , m_target(0)
 {
     setObject(ctx->webContext()->createTransformFeedback());
 }
@@ -37,6 +38,14 @@ void WebGLTransformFeedback::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
     context3d->deleteTransformFeedback(m_object);
     m_object = 0;
+}
+
+void WebGLTransformFeedback::setTarget(GLenum target)
+{
+    if (m_target)
+        return;
+    if (target == GL_TRANSFORM_FEEDBACK)
+        m_target = target;
 }
 
 } // namespace blink

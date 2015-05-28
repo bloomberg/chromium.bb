@@ -1172,6 +1172,9 @@ PassRefPtrWillBeRawPtr<WebGLTransformFeedback> WebGL2RenderingContextBase::creat
 
 void WebGL2RenderingContextBase::deleteTransformFeedback(WebGLTransformFeedback* feedback)
 {
+    if (feedback == m_transformFeedbackBinding)
+        m_transformFeedbackBinding = nullptr;
+
     deleteObject(feedback);
 }
 
@@ -1180,15 +1183,30 @@ GLboolean WebGL2RenderingContextBase::isTransformFeedback(WebGLTransformFeedback
     if (isContextLost() || !feedback)
         return 0;
 
+    if (!feedback->hasEverBeenBound())
+        return 0;
+
     return webContext()->isTransformFeedback(feedback->object());
 }
 
 void WebGL2RenderingContextBase::bindTransformFeedback(GLenum target, WebGLTransformFeedback* feedback)
 {
-    if (isContextLost() || !validateWebGLObject("bindTransformFeedback", feedback))
+    bool deleted;
+    if (!checkObjectToBeBound("bindTransformFeedback", feedback, deleted))
         return;
+    if (deleted)
+        feedback = 0;
+
+    if (target != GL_TRANSFORM_FEEDBACK) {
+        synthesizeGLError(GL_INVALID_ENUM, "bindTransformFeedback", "target must be TRANSFORM_FEEDBACK");
+        return;
+    }
+
+    m_transformFeedbackBinding = feedback;
 
     webContext()->bindTransformFeedback(target, objectOrZero(feedback));
+    if (feedback)
+        feedback->setTarget(target);
 }
 
 void WebGL2RenderingContextBase::beginTransformFeedback(GLenum primitiveMode)
@@ -1569,6 +1587,8 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, G
         return getBooleanParameter(scriptState, pname);
     case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
         return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundTransformFeedbackBuffer.get()));
+    case GL_TRANSFORM_FEEDBACK_BINDING:
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_transformFeedbackBinding.get()));
     case GL_TRANSFORM_FEEDBACK_PAUSED:
         return getBooleanParameter(scriptState, pname);
     case GL_UNIFORM_BUFFER_BINDING:

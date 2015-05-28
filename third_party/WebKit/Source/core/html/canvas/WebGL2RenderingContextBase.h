@@ -202,6 +202,7 @@ protected:
     void removeBoundBuffer(WebGLBuffer*) override;
 
     RefPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
+    RefPtrWillBeMember<WebGLTransformFeedback> m_transformFeedbackBinding;
     GLint m_max3DTextureSize;
     GLint m_max3DTextureLevel;
 

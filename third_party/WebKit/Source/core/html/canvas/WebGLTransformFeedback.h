@@ -19,6 +19,11 @@ public:
 
     static PassRefPtrWillBeRawPtr<WebGLTransformFeedback> create(WebGL2RenderingContextBase*);
 
+    GLenum getTarget() const { return m_target; }
+    void setTarget(GLenum);
+
+    bool hasEverBeenBound() const { return object() && m_target; }
+
 protected:
     explicit WebGLTransformFeedback(WebGL2RenderingContextBase*);
 
@@ -26,6 +31,8 @@ protected:
 
 private:
     bool isTransformFeedback() const override { return true; }
+
+    GLenum m_target;
 };
 
 } // namespace blink
