@@ -3599,12 +3599,3 @@
   fun:SSL_ForceHandshake
   fun:_ZN3net18SSLServerSocketNSS11DoHandshakeEv
 }
-{
-   bug_492450
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN13update_client16UpdateClientTestC2Ev
-   fun:_ZN13update_client*UpdateClientTest_*
-   fun:_ZN7testing8internal15TestFactoryImplIN13update_client*UpdateClientTest*
-}
