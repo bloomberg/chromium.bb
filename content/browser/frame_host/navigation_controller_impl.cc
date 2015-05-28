@@ -1144,10 +1144,12 @@ NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
     // Just like above in the did_create_new_entry case, it's possible to
     // scribble onto an uncommitted page. Again, there isn't any navigation
     // stuff that we can do, so ignore it here as well.
-    if (!GetLastCommittedEntry())
+    NavigationEntry* last_committed = GetLastCommittedEntry();
+    if (!last_committed)
       return NAVIGATION_TYPE_NAV_IGNORE;
 
-    if (params.was_within_same_page) {
+    if (AreURLsInPageNavigation(last_committed->GetURL(), params.url,
+                                params.was_within_same_page, rfh)) {
       // This is history.replaceState(), which is renderer-initiated yet within
       // the same page.
       return NAVIGATION_TYPE_IN_PAGE;
