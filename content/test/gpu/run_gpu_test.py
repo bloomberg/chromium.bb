@@ -85,13 +85,13 @@ def _ShutdownDBus():
 
 if __name__ == '__main__':
   top_level_dir = os.path.dirname(os.path.realpath(__file__))
-  environment = benchmark_runner.Environment(
+  config = benchmark_runner.ProjectConfig(
       top_level_dir=top_level_dir,
       benchmark_dirs=[os.path.join(top_level_dir, 'gpu_tests')])
 
   did_launch_dbus = _LaunchDBus()
   try:
-    retcode = benchmark_runner.main(environment)
+    retcode = benchmark_runner.main(config)
   finally:
     if did_launch_dbus:
       _ShutdownDBus()
