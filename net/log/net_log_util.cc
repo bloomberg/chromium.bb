@@ -474,14 +474,14 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
   }
 
   if (info_sources & NET_INFO_SDCH) {
-    base::Value* info_dict;
+    scoped_ptr<base::Value> info_dict;
     SdchManager* sdch_manager = context->sdch_manager();
     if (sdch_manager) {
       info_dict = sdch_manager->SdchInfoToValue();
     } else {
-      info_dict = new base::DictionaryValue();
+      info_dict.reset(new base::DictionaryValue());
     }
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_SDCH), info_dict);
+    net_info_dict->Set(NetInfoSourceToString(NET_INFO_SDCH), info_dict.Pass());
   }
 
   return net_info_dict.Pass();

@@ -184,7 +184,7 @@ class NET_EXPORT SdchManager {
 
   void SetAllowLatencyExperiment(const GURL& url, bool enable);
 
-  base::Value* SdchInfoToValue() const;
+  scoped_ptr<base::Value> SdchInfoToValue() const;
 
   // Add an SDCH dictionary to our list of availible
   // dictionaries. This addition will fail if addition is illegal

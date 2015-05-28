@@ -489,7 +489,7 @@ void SdchManager::UrlSafeBase64Encode(const std::string& input,
   std::replace(output->begin(), output->end(), '/', '_');
 }
 
-base::Value* SdchManager::SdchInfoToValue() const {
+scoped_ptr<base::Value> SdchManager::SdchInfoToValue() const {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   value->SetBoolean("sdch_enabled", sdch_enabled());
@@ -528,7 +528,7 @@ base::Value* SdchManager::SdchInfoToValue() const {
   }
   value->Set("blacklisted", entry_list.Pass());
 
-  return value.release();
+  return value.Pass();
 }
 
 }  // namespace net
