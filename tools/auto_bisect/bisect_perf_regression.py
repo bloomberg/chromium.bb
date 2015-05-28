@@ -2345,7 +2345,8 @@ class BisectPerformanceMetrics(object):
       # Check how likely it is that the good and bad results are different
       # beyond chance-induced variation.
       confidence_error = False
-      if not self.opts.debug_ignore_regression_confidence:
+      if not (self.opts.debug_ignore_regression_confidence or
+         self._IsBisectModeReturnCode()):
         confidence_error = _CheckRegressionConfidenceError(good_revision,
                                                            bad_revision,
                                                            known_good_value,
