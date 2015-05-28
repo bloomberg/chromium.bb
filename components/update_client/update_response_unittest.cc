@@ -83,6 +83,18 @@ const char* kInvalidValidXmlMissingCodebase =
     " </app>"
     "</response>";
 
+const char* kInvalidValidXmlMissingManifest =
+    "<?xml version='1.0' encoding='UTF-8'?>"
+    "<response protocol='3.0'>"
+    " <app appid='12345'>"
+    "   <updatecheck status='ok'>"
+    "     <urls>"
+    "       <url codebase='http://example.com/'/>"
+    "     </urls>"
+    "   </updatecheck>"
+    " </app>"
+    "</response>";
+
 const char* kMissingAppId =
     "<?xml version='1.0'?>"
     "<response protocol='3.0'>"
@@ -233,6 +245,10 @@ TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
   EXPECT_FALSE(parser.errors().empty());
 
   EXPECT_TRUE(parser.Parse(kInvalidValidXmlMissingCodebase));
+  EXPECT_TRUE(parser.results().list.empty());
+  EXPECT_FALSE(parser.errors().empty());
+
+  EXPECT_TRUE(parser.Parse(kInvalidValidXmlMissingManifest));
   EXPECT_TRUE(parser.results().list.empty());
   EXPECT_FALSE(parser.errors().empty());
 

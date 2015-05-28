@@ -250,8 +250,8 @@ bool ParseUpdateCheckTag(xmlNode* updatecheck,
   }
 
   std::vector<xmlNode*> manifests = GetChildren(updatecheck, "manifest");
-  if (urls.empty()) {
-    *error = "Missing urls on updatecheck.";
+  if (manifests.empty()) {
+    *error = "Missing manifest on updatecheck.";
     return false;
   }
 
