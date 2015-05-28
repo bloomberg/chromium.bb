@@ -339,6 +339,7 @@ v8.log
 /third_party/mesa/src
 /third_party/mingw-w64
 /third_party/mkl
+/third_party/mocha
 /third_party/mockito/src
 /third_party/mojo/src/mojo/public/tools/prebuilt/
 /third_party/nacl_sdk_binaries/
