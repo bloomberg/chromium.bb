@@ -2764,7 +2764,8 @@ def PatchIssue(issue_arg, reject, nocommit, directory, auth_config):
 
   # If we had an issue, commit the current state and register the issue.
   if not nocommit:
-    RunGit(['commit', '-m', ('patch from issue %(i)s at patchset '
+    RunGit(['commit', '-m', (cl.GetDescription() + '\n\n' +
+                             'patch from issue %(i)s at patchset '
                              '%(p)s (http://crrev.com/%(i)s#ps%(p)s)'
                              % {'i': issue, 'p': patchset})])
     cl = Changelist(auth_config=auth_config)

@@ -878,6 +878,7 @@ class TestGitCl(TestCase):
   def _patch_common(self):
     self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda x: '60001')
     self.mock(git_cl.Changelist, 'GetPatchSetDiff', lambda *args: None)
+    self.mock(git_cl.Changelist, 'GetDescription', lambda *args: 'Description')
     self.mock(git_cl.Changelist, 'SetIssue', lambda *args: None)
     self.mock(git_cl.Changelist, 'SetPatchset', lambda *args: None)
     self.mock(git_cl, 'IsGitVersionAtLeast', lambda *args: True)
@@ -894,6 +895,7 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'apply', '--index', '-p0', '--3way'],), ''),
       ((['git', 'commit', '-m',
+         'Description\n\n' +
          'patch from issue 123456 at patchset 60001 ' +
          '(http://crrev.com/123456#ps60001)'],), ''),
     ]
