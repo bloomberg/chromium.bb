@@ -231,9 +231,8 @@ struct NavigateParams {
   // navigation entry.
   bool should_replace_current_entry;
 
-  // Indicates whether |source_contents| should be set as opener when creating
-  // |target_contents|.
-  bool should_set_opener;
+  // Indicates whether |target_contents| is being created with a window.opener.
+  bool created_with_opener;
 
   // SiteInstance of the frame that initiated the navigation or null if we
   // don't know it. This should be assigned from the OpenURLParams of the

@@ -44,7 +44,7 @@ chrome::NavigateParams BlockedWindowParams::CreateNavigateParams(
   nav_params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
   nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = user_gesture_;
-  nav_params.should_set_opener = !opener_suppressed_;
+  nav_params.created_with_opener = !opener_suppressed_;
   nav_params.window_bounds = web_contents->GetContainerBounds();
   if (features_.xSet)
     nav_params.window_bounds.set_x(features_.x);

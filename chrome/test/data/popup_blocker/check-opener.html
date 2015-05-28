@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Check that window.opener is set</title>
+<title>Check that window.opener is not set</title>
 </head>
 <body>
 <div id="console"></div>
@@ -9,9 +9,9 @@
   var log = document.querySelector("#console");
   var result;
   if (window.opener != null)
-    result = "PASS";
+    result = "FAIL: opener set unexpectedly";
   else
-    result = "FAIL: opener not set";
+    result = "PASS";
   log.innerText = result;
   document.title = result;
 </script>

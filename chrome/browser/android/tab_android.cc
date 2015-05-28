@@ -238,7 +238,7 @@ void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
                         jheaders.obj(),
                         jpost_data.obj(),
                         disposition,
-                        params->should_set_opener,
+                        params->created_with_opener,
                         params->is_renderer_initiated);
   } else {
     NOTIMPLEMENTED();

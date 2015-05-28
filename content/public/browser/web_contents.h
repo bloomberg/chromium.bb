@@ -104,6 +104,12 @@ class WebContents : public PageNavigator,
     // reference to its opener.
     bool opener_suppressed;
 
+    // Indicates whether this WebContents was created with a window.opener.
+    // This is used when determining whether the WebContents is allowed to be
+    // closed via window.close(). This may be true even with a null |opener|
+    // (e.g., for blocked popups).
+    bool created_with_opener;
+
     // The routing ids of the RenderView and of the main RenderFrame. Either
     // both must be provided, or both must be MSG_ROUTING_NONE to have the
     // WebContents make the assignment.
