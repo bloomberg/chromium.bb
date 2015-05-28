@@ -51,7 +51,7 @@ GIT_REVISIONS = {
         'upstream-base': 'c1283af40b65f1ad862cf5b27e2d9ed10b2076b6',
         },
     'glibc': {
-        'rev': '46f894d8c60afcc06056a376340df2f378694551',
+        'rev': '3ed015122f159b4fade8e4feecb53fe1f84fa95f',
         'upstream-branch': 'upstream/master',
         'upstream-name': 'glibc-2.21',
         # Upstream tag glibc-2.21:
