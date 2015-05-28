@@ -10,10 +10,12 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
+#include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Page.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/heap/Handle.h"
+#include "public/web/WebElement.h"
 #include "public/web/WebSandboxFlags.h"
 #include "web/OpenedFrameTracker.h"
 #include "web/RemoteBridgeFrameOwner.h"
@@ -256,6 +258,15 @@ WebFrame* WebFrame::findChildByName(const WebString& name) const
     // FIXME: It's not clear this should ever be called to find a remote frame.
     // Perhaps just disallow that completely?
     return fromFrame(frame->tree().child(name));
+}
+
+WebFrame* WebFrame::fromFrameOwnerElement(const WebElement& webElement)
+{
+    Element* element = PassRefPtrWillBeRawPtr<Element>(webElement).get();
+
+    if (!isHTMLFrameElementBase(element))
+        return nullptr;
+    return fromFrame(toHTMLFrameElementBase(element)->contentFrame());
 }
 
 WebFrame* WebFrame::fromFrame(Frame* frame)

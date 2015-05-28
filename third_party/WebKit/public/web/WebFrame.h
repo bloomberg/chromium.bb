@@ -676,6 +676,10 @@ public:
     // text form. This is used only by layout tests.
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const = 0;
 
+    // Returns the frame inside a given frame or iframe element. Returns 0 if
+    // the given element is not a frame, iframe or if the frame is empty.
+    BLINK_EXPORT static WebFrame* fromFrameOwnerElement(const WebElement&);
+
 #if BLINK_IMPLEMENTATION
     static WebFrame* fromFrame(Frame*);
 
