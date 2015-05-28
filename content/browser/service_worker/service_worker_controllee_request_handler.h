@@ -82,6 +82,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   scoped_refptr<ResourceRequestBody> body_;
   ResourceContext* resource_context_;
   GURL stripped_url_;
+  base::TimeTicks worker_start_time_;
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerControlleeRequestHandler);

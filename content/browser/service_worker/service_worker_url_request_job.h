@@ -116,6 +116,10 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
       blink::WebServiceWorkerResponseType* response_type_via_service_worker,
       base::TimeTicks* worker_start_time) const;
 
+  const base::TimeTicks& worker_start_time() const {
+    return worker_start_time_;
+  }
+
  protected:
   ~ServiceWorkerURLRequestJob() override;
 
