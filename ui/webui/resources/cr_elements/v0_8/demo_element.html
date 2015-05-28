@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/cr_elements/v0_8/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v0_8/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v0_8/cr_collapse/cr_collapse.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v0_8/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/v0_8/cr_network_icon/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/v0_8/cr_toggle_button/cr_toggle_button.html">
@@ -19,10 +20,9 @@
     </div>
     <div>
       <h3>cr-collapse</h3>
-      <paper-toggle-button checked="{{collapseOpened}}">
-        Toggle Collapse
-      </paper-toggle-button>
-      <cr-collapse opened="{{collapseOpened}}">
+      <cr-expand-button expanded="{{collapseOpened}}"></cr-expand-button>
+      <span>Toggle Collapse</span>
+      <cr-collapse opened="[[collapseOpened]]">
         <div>
           <span>Collapsable section</span>
         </div>

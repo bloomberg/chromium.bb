@@ -147,6 +147,12 @@
   <structure name="IDR_CR_ELEMENTS_08_CR_EVENTS_JS"
              file="../../webui/resources/cr_elements/v0_8/cr_events/cr_events.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_08_CR_EXPAND_BUTTON_HTML"
+             file="../../webui/resources/cr_elements/v0_8/cr_expand_button/cr_expand_button.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_08_CR_EXPAND_BUTTON_JS"
+             file="../../webui/resources/cr_elements/v0_8/cr_expand_button/cr_expand_button.js"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_08_CR_INPUT_CSS"
              file="../../webui/resources/cr_elements/v0_8/cr_input/cr_input.css"
              type="chrome_html" />
