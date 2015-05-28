@@ -427,6 +427,18 @@ bool SVGImage::dataChanged(bool allDataReceived)
             page->settings().setScriptEnabled(false);
             page->settings().setPluginsEnabled(false);
             page->settings().setAcceleratedCompositingEnabled(false);
+
+            // Because this page is detached, it can't get default font settings
+            // from the embedder. Copy over font settings so we have sensible
+            // defaults. These settings are fixed and will not update if changed.
+            if (!Page::ordinaryPages().isEmpty()) {
+                Settings& defaultSettings = (*Page::ordinaryPages().begin())->settings();
+                page->settings().genericFontFamilySettings() = defaultSettings.genericFontFamilySettings();
+                page->settings().setMinimumFontSize(defaultSettings.minimumFontSize());
+                page->settings().setMinimumLogicalFontSize(defaultSettings.minimumLogicalFontSize());
+                page->settings().setDefaultFontSize(defaultSettings.defaultFontSize());
+                page->settings().setDefaultFixedFontSize(defaultSettings.defaultFixedFontSize());
+            }
         }
 
         RefPtrWillBeRawPtr<LocalFrame> frame = nullptr;
