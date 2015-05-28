@@ -129,12 +129,8 @@ public class PopupTouchHandleDrawable extends View {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        final PopupTouchHandleDrawableDelegate delegate = mDelegate.get();
-        if (delegate == null) {
-            // If the delegate is gone, we should immediately dispose of the popup.
-            hide();
-            return false;
-        }
+        final PopupTouchHandleDrawableDelegate delegate = getDelegateAndHideIfNull();
+        if (delegate == null) return false;
 
         // Convert from PopupWindow local coordinates to
         // parent view local coordinates prior to forwarding.
@@ -308,6 +304,12 @@ public class PopupTouchHandleDrawable extends View {
         mDrawable.draw(c);
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        hide();
+    }
+
     // Returns the x coordinate of the position that the handle appears to be pointing to relative
     // to the handles "parent" view.
     private int getAdjustedPositionX() {
@@ -320,13 +322,16 @@ public class PopupTouchHandleDrawable extends View {
         return mPositionY + Math.round(mHotspotY);
     }
 
-    private boolean isScrollInProgress() {
+    private PopupTouchHandleDrawableDelegate getDelegateAndHideIfNull() {
         final PopupTouchHandleDrawableDelegate delegate = mDelegate.get();
-        if (delegate == null) {
-            hide();
-            return false;
-        }
+        // If the delegate is gone, we should immediately dispose of the popup.
+        if (delegate == null) hide();
+        return delegate;
+    }
 
+    private boolean isScrollInProgress() {
+        final PopupTouchHandleDrawableDelegate delegate = getDelegateAndHideIfNull();
+        if (delegate == null) return false;
         return delegate.isScrollInProgress();
     }
 
@@ -334,11 +339,8 @@ public class PopupTouchHandleDrawable extends View {
     private void show() {
         if (mContainer.isShowing()) return;
 
-        final PopupTouchHandleDrawableDelegate delegate = mDelegate.get();
-        if (delegate == null) {
-            hide();
-            return;
-        }
+        final PopupTouchHandleDrawableDelegate delegate = getDelegateAndHideIfNull();
+        if (delegate == null) return;
 
         mParentPositionObserver = delegate.getParentPositionObserver();
         assert mParentPositionObserver != null;
@@ -356,7 +358,9 @@ public class PopupTouchHandleDrawable extends View {
     @CalledByNative
     private void hide() {
         mTemporarilyHidden = false;
-        mContainer.dismiss();
+        mAlpha = 1.0f;
+        if (mDeferredHandleFadeInRunnable != null) removeCallbacks(mDeferredHandleFadeInRunnable);
+        if (mContainer.isShowing()) mContainer.dismiss();
         if (mParentPositionObserver != null) {
             mParentPositionObserver.removeListener(mParentPositionListener);
             // Clear the strong reference to allow garbage collection.
