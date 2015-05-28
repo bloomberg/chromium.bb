@@ -13,6 +13,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyBypassProtocol;
 class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
+class DataReductionProxyConfigServiceClient;
 class DataReductionProxyEventCreator;
 
 // Used to intercept responses that contain explicit and implicit signals
@@ -21,11 +22,14 @@ class DataReductionProxyEventCreator;
 // without use of the proxy.
 class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
  public:
-  // Constructs the interceptor. |config|, |stats|, and |event_creator| must
-  // outlive |this|. |stats| may be NULL.
-  DataReductionProxyInterceptor(DataReductionProxyConfig* config,
-                                DataReductionProxyBypassStats* stats,
-                                DataReductionProxyEventCreator* event_creator);
+  // Constructs the interceptor. |config|, |config_service_client|, |stats|, and
+  // |event_creator| must outlive |this|. |stats| and |config_service_client|
+  // may be NULL.
+  DataReductionProxyInterceptor(
+      DataReductionProxyConfig* config,
+      DataReductionProxyConfigServiceClient* config_service_client,
+      DataReductionProxyBypassStats* stats,
+      DataReductionProxyEventCreator* event_creator);
 
   // Destroys the interceptor.
   ~DataReductionProxyInterceptor() override;
@@ -67,6 +71,9 @@ class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
 
   // Must outlive |this| if non-NULL.
   DataReductionProxyBypassStats* bypass_stats_;
+
+  // Must outlive |this| if non-NULL.
+  DataReductionProxyConfigServiceClient* config_service_client_;
 
   // Must outlive |this|.
   DataReductionProxyEventCreator* event_creator_;

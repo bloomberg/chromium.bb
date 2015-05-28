@@ -35,6 +35,9 @@ class DataReductionProxyMutableConfigValues
   virtual void UpdateValues(
       const std::vector<net::ProxyServer>& proxies_for_http);
 
+  // Invalidates |this| by clearing the stored Data Reduction Proxy servers.
+  void Invalidate();
+
   // Overrides of |DataReductionProxyConfigValues|
   bool promo_allowed() const override;
   bool holdback() const override;

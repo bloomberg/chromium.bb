@@ -28,6 +28,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
@@ -152,7 +153,8 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       config_service_url_(AddApiKeyToUrl(
           GetConfigServiceURL(*base::CommandLine::ForCurrentProcess()))),
       use_local_config_(!config_service_url_.is_valid()),
-      url_request_context_getter_(nullptr) {
+      url_request_context_getter_(nullptr),
+      previous_request_failed_authentication_(false) {
   DCHECK(request_options);
   DCHECK(config_values);
   DCHECK(config);
@@ -191,6 +193,38 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
   }
 
   RetrieveRemoteConfig();
+}
+
+bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
+    const net::HttpResponseHeaders* response_headers,
+    const net::HostPortPair& proxy_server) {
+  DCHECK(response_headers);
+  if (config_->IsDataReductionProxy(proxy_server, nullptr)) {
+    DCHECK(!use_local_config_);
+    if (response_headers->response_code() ==
+        net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
+      // The default backoff logic is to increment the failure count (and
+      // increase the backoff time) with each response failure to the remote
+      // config service, and to decrement the failure count (and decrease the
+      // backoff time) with each response success. In the case where the
+      // config service returns a success response (decrementing the failure
+      // count) but the session key is continually invalid (as a response from
+      // the Data Reduction Proxy and not the config service), the previous
+      // response should be considered a failure in order to ensure the backoff
+      // time continues to increase.
+      if (previous_request_failed_authentication_)
+        GetBackoffEntry()->InformOfRequest(false);
+
+      previous_request_failed_authentication_ = true;
+      InvalidateConfig();
+      RetrieveConfig();
+      return true;
+    }
+
+    previous_request_failed_authentication_ = false;
+  }
+
+  return false;
 }
 
 net::BackoffEntry* DataReductionProxyConfigServiceClient::GetBackoffEntry() {
@@ -252,6 +286,16 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
 
   fetcher_ = fetcher.Pass();
   fetcher_->Start();
+}
+
+void DataReductionProxyConfigServiceClient::InvalidateConfig() {
+  GetBackoffEntry()->InformOfRequest(false);
+  if (use_local_config_)
+    return;
+
+  request_options_->Invalidate();
+  config_values_->Invalidate();
+  config_->ReloadConfig();
 }
 
 scoped_ptr<net::URLFetcher>

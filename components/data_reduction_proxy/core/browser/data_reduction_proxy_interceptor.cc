@@ -6,6 +6,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "net/http/http_response_headers.h"
@@ -19,9 +20,11 @@ namespace data_reduction_proxy {
 
 DataReductionProxyInterceptor::DataReductionProxyInterceptor(
     DataReductionProxyConfig* config,
+    DataReductionProxyConfigServiceClient* config_service_client,
     DataReductionProxyBypassStats* stats,
     DataReductionProxyEventCreator* event_creator)
     : bypass_stats_(stats),
+      config_service_client_(config_service_client),
       event_creator_(event_creator),
       bypass_protocol_(new DataReductionProxyBypassProtocol(config)) {
 }
@@ -52,17 +55,35 @@ net::URLRequestJob*
 DataReductionProxyInterceptor::MaybeInterceptResponseOrRedirect(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
+  DCHECK(request);
   if (request->response_info().was_cached)
     return nullptr;
-  DataReductionProxyInfo data_reduction_proxy_info;
-  DataReductionProxyBypassType bypass_type = BYPASS_EVENT_TYPE_MAX;
-  bool should_retry = bypass_protocol_->MaybeBypassProxyAndPrepareToRetry(
-      request, &bypass_type, &data_reduction_proxy_info);
-  if (bypass_stats_ && bypass_type != BYPASS_EVENT_TYPE_MAX)
-    bypass_stats_->SetBypassType(bypass_type);
+  bool should_retry = false;
+  // Consider retrying due to an authentication failure from the Data Reduction
+  // Proxy server when using the config service.
+  if (config_service_client_ != nullptr) {
+    const net::HttpResponseHeaders* response_headers =
+        request->response_info().headers.get();
+    if (response_headers) {
+      should_retry = config_service_client_->ShouldRetryDueToAuthFailure(
+          response_headers, request->proxy_server());
+    }
+  }
 
-  MaybeAddBypassEvent(request, data_reduction_proxy_info, bypass_type,
-                      should_retry);
+  // Consider retrying due errors stemming from the Data Reduction Proxy
+  // protocol in the response headers.
+  if (!should_retry) {
+    DataReductionProxyInfo data_reduction_proxy_info;
+    DataReductionProxyBypassType bypass_type = BYPASS_EVENT_TYPE_MAX;
+    should_retry = bypass_protocol_->MaybeBypassProxyAndPrepareToRetry(
+        request, &bypass_type, &data_reduction_proxy_info);
+    if (bypass_stats_ && bypass_type != BYPASS_EVENT_TYPE_MAX)
+      bypass_stats_->SetBypassType(bypass_type);
+
+    MaybeAddBypassEvent(request, data_reduction_proxy_info, bypass_type,
+                        should_retry);
+  }
+
   if (!should_retry)
     return nullptr;
   // Returning non-NULL has the effect of restarting the request with the

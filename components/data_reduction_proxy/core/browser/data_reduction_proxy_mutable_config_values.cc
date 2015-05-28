@@ -89,4 +89,10 @@ void DataReductionProxyMutableConfigValues::UpdateValues(
   proxies_for_http_ = proxies_for_http;
 }
 
+void DataReductionProxyMutableConfigValues::Invalidate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  proxies_for_http_.clear();
+  proxies_for_https_.clear();
+}
+
 }  // namespace data_reduction_proxy

@@ -24,6 +24,8 @@ class CommandLine;
 }
 
 namespace net {
+class HostPortPair;
+class HttpResponseHeaders;
 class URLFetcher;
 class URLRequestContextGetter;
 class URLRequestStatus;
@@ -76,6 +78,12 @@ class DataReductionProxyConfigServiceClient
   // operation takes place asynchronously.
   void RetrieveConfig();
 
+  // Examines |response_headers| to determine if an authentication failure
+  // occurred on a Data Reduction Proxy.
+  bool ShouldRetryDueToAuthFailure(
+      const net::HttpResponseHeaders* response_headers,
+      const net::HostPortPair& proxy_server);
+
  protected:
   // Retrieves the backoff entry object being used to throttle request failures.
   // Virtual for testing.
@@ -110,6 +118,9 @@ class DataReductionProxyConfigServiceClient
 
   // Retrieves the Data Reduction Proxy configuration from a remote service.
   void RetrieveRemoteConfig();
+
+  // Invalidates the current Data Reduction Proxy configuration.
+  void InvalidateConfig();
 
   // Returns a fetcher to retrieve the Data Reduction Proxy configuration.
   // |secure_proxy_check_url| is the url from which to retrieve the config.
@@ -176,6 +187,13 @@ class DataReductionProxyConfigServiceClient
   // Used to determine the latency in retrieving the Data Reduction Proxy
   // configuration.
   base::Time config_fetch_start_time_;
+
+  // Keeps track of whether the previous request to a Data Reduction Proxy
+  // failed to authenticate. This is necessary in the situation where a new
+  // configuration with a bad session key is obtained, but the previous request
+  // failed to authenticate, since the new configuration marks |backoff_entry_|
+  // with a success, resulting in no net increase in the backoff timer.
+  bool previous_request_failed_authentication_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

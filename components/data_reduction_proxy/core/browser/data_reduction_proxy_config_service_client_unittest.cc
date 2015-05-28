@@ -19,6 +19,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,10 +35,24 @@ const char kSuccessResponse[] =
     "{ \"scheme\": \"HTTPS\", \"host\": \"origin.net\", \"port\": 443 },"
     "{ \"scheme\": \"HTTP\", \"host\": \"fallback.net\", \"port\": 80 }"
     "] } }";
+
 // The following values should match the ones in the response above.
 const char kSuccessOrigin[] = "https://origin.net:443";
 const char kSuccessFallback[] = "fallback.net:80";
 const char kSuccessSessionKey[] = "SecretSessionKey";
+
+const char kOldSuccessResponse[] =
+    "{ \"sessionKey\": \"OldSecretSessionKey\", "
+    "\"expireTime\": \"1970-01-01T00:01:00.000Z\", "
+    "\"proxyConfig\": { \"httpProxyServers\": ["
+    "{ \"scheme\": \"HTTPS\", \"host\": \"old.origin.net\", \"port\": 443 },"
+    "{ \"scheme\": \"HTTP\", \"host\": \"old.fallback.net\", \"port\": 80 }"
+    "] } }";
+
+// The following values should match the ones in the response above.
+const char kOldSuccessOrigin[] = "https://old.origin.net:443";
+const char kOldSuccessFallback[] = "old.fallback.net:80";
+const char kOldSuccessSessionKey[] = "OldSecretSessionKey";
 
 }  // namespace
 
@@ -126,6 +141,19 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
                 testing::ContainerEq(configurator()->proxies_for_http()));
     EXPECT_TRUE(configurator()->proxies_for_https().empty());
     EXPECT_EQ(kSuccessSessionKey, request_options()->GetSecureSession());
+  }
+
+  void VerifyRemoteSuccessWithOldConfig() {
+    std::vector<net::ProxyServer> expected_http_proxies;
+    expected_http_proxies.push_back(net::ProxyServer::FromURI(
+        kOldSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
+    expected_http_proxies.push_back(net::ProxyServer::FromURI(
+        kOldSuccessFallback, net::ProxyServer::SCHEME_HTTP));
+    EXPECT_EQ(base::TimeDelta::FromMinutes(1), config_client()->GetDelay());
+    EXPECT_THAT(expected_http_proxies,
+                testing::ContainerEq(configurator()->proxies_for_http()));
+    EXPECT_TRUE(configurator()->proxies_for_https().empty());
+    EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
   }
 
   DataReductionProxyParams* params() {
@@ -385,6 +413,60 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess();
+}
+
+TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
+  net::MockRead mock_reads_array[][3] = {
+      {
+       // Success.
+       net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+       net::MockRead(kOldSuccessResponse),
+       net::MockRead(net::SYNCHRONOUS, net::OK),
+      },
+      {
+       // Success.
+       net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+       net::MockRead(kSuccessResponse),
+       net::MockRead(net::SYNCHRONOUS, net::OK),
+      },
+      {
+       // Success.
+       net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+       net::MockRead(kOldSuccessResponse),
+       net::MockRead(net::SYNCHRONOUS, net::OK),
+      },
+  };
+  ScopedVector<net::SocketDataProvider> socket_data_providers;
+  for (net::MockRead* mock_reads : mock_reads_array) {
+    socket_data_providers.push_back(
+        new net::StaticSocketDataProvider(mock_reads, 3, nullptr, 0));
+    mock_socket_factory()->AddSocketDataProvider(socket_data_providers.back());
+  }
+
+  config_client()->SetConfigServiceURL(GURL("http://configservice.com"));
+  SetDataReductionProxyEnabled(true);
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  VerifyRemoteSuccessWithOldConfig();
+  EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
+
+  scoped_refptr<net::HttpResponseHeaders> parsed(new net::HttpResponseHeaders(
+      "HTTP/1.1 407 Proxy Authentication Required\n"));
+  net::ProxyServer origin = net::ProxyServer::FromURI(
+      kOldSuccessOrigin, net::ProxyServer::SCHEME_HTTP);
+  EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
+      parsed.get(), origin.host_port_pair()));
+  EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
+  RunUntilIdle();
+  VerifyRemoteSuccess();
+
+  origin =
+      net::ProxyServer::FromURI(kSuccessOrigin, net::ProxyServer::SCHEME_HTTP);
+  EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
+      parsed.get(), origin.host_port_pair()));
+  EXPECT_EQ(2, config_client()->GetBackoffErrorCount());
+  RunUntilIdle();
+  VerifyRemoteSuccessWithOldConfig();
 }
 
 }  // namespace data_reduction_proxy

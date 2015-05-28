@@ -336,6 +336,10 @@ void DataReductionProxyRequestOptions::SetSecureSession(
   RegenerateRequestHeaderValue();
 }
 
+void DataReductionProxyRequestOptions::Invalidate() {
+  SetSecureSession(std::string());
+}
+
 std::string DataReductionProxyRequestOptions::GetDefaultKey() const {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

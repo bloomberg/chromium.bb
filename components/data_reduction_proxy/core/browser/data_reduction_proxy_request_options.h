@@ -131,6 +131,9 @@ class DataReductionProxyRequestOptions {
   // Sets the credentials for sending to the Data Reduction Proxy.
   void SetSecureSession(const std::string& secure_session);
 
+  // Invalidates the secure session credentials.
+  void Invalidate();
+
  protected:
   void SetHeader(net::HttpRequestHeaders* headers, bool force_disable_lo_fi);
 

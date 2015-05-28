@@ -213,7 +213,8 @@ scoped_ptr<net::URLRequestInterceptor>
 DataReductionProxyIOData::CreateInterceptor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return make_scoped_ptr(new DataReductionProxyInterceptor(
-      config_.get(), bypass_stats_.get(), event_creator_.get()));
+      config_.get(), config_client_.get(), bypass_stats_.get(),
+      event_creator_.get()));
 }
 
 scoped_ptr<DataReductionProxyNetworkDelegate>

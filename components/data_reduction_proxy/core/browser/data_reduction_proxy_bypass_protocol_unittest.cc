@@ -109,9 +109,9 @@ class DataReductionProxyProtocolTest : public testing::Test {
         test_context_->unreachable_callback()));
 
     DataReductionProxyInterceptor* interceptor =
-        new DataReductionProxyInterceptor(test_context_->config(),
-                                          bypass_stats_.get(),
-                                          test_context_->event_creator());
+        new DataReductionProxyInterceptor(
+            test_context_->config(), test_context_->io_data()->config_client(),
+            bypass_stats_.get(), test_context_->event_creator());
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
         new net::URLRequestJobFactoryImpl());
     job_factory_.reset(new net::URLRequestInterceptingJobFactory(
