@@ -1882,7 +1882,8 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     // the GC.
     if (!gcScope.allThreadsParked()) {
         // Restore the original GCState.
-        state->setGCState(originalGCState);
+        if (LIKELY(state->gcState() == ThreadState::StoppingOtherThreads))
+            state->setGCState(originalGCState);
         return;
     }
 
