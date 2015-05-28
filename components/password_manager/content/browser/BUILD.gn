@@ -10,8 +10,6 @@ static_library("browser") {
     "content_password_manager_driver_factory.h",
     "credential_manager_dispatcher.cc",
     "credential_manager_dispatcher.h",
-    "credential_manager_password_form_manager.cc",
-    "credential_manager_password_form_manager.h",
     "password_manager_internals_service_factory.cc",
     "password_manager_internals_service_factory.h",
   ]

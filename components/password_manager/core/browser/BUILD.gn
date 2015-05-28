@@ -28,6 +28,8 @@ static_library("browser") {
     "affiliation_utils.h",
     "browser_save_password_progress_logger.cc",
     "browser_save_password_progress_logger.h",
+    "credential_manager_password_form_manager.cc",
+    "credential_manager_password_form_manager.h",
     "credential_manager_pending_request_task.cc",
     "credential_manager_pending_request_task.h",
     "export/csv_writer.cc",

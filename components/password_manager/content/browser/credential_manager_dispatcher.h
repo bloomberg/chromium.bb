@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
+#include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/core/browser/credential_manager_pending_request_task.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -33,13 +34,12 @@ struct CredentialInfo;
 
 class CredentialManagerDispatcher
     : public content::WebContentsObserver,
+      public CredentialManagerPasswordFormManagerDelegate,
       public CredentialManagerPendingRequestTaskDelegate {
  public:
   CredentialManagerDispatcher(content::WebContents* web_contents,
                               PasswordManagerClient* client);
   ~CredentialManagerDispatcher() override;
-
-  void OnProvisionalSaveComplete();
 
   // Called in response to an IPC from the renderer, triggered by a page's call
   // to 'navigator.credentials.notifyFailedSignIn'.
@@ -77,6 +77,9 @@ class CredentialManagerDispatcher
       ScopedVector<autofill::PasswordForm> local_forms) override;
   void SendCredential(int request_id, const CredentialInfo& info) override;
   PasswordManagerClient* client() const override;
+
+  // CredentialManagerPasswordFormManagerDelegate:
+  void OnProvisionalSaveComplete() override;
 
  private:
   class PendingSignedOutTask;

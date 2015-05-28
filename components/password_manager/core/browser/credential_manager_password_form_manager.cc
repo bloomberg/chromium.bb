@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/content/browser/credential_manager_password_form_manager.h"
+#include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/content/browser/credential_manager_dispatcher.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
 
@@ -17,13 +16,13 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
     PasswordManagerClient* client,
     base::WeakPtr<PasswordManagerDriver> driver,
     const PasswordForm& observed_form,
-    CredentialManagerDispatcher* dispatcher)
+    CredentialManagerPasswordFormManagerDelegate* delegate)
     : PasswordFormManager(driver->GetPasswordManager(),
                           client,
                           driver,
                           observed_form,
                           true),
-      dispatcher_(dispatcher) {
+      delegate_(delegate) {
   FetchMatchingLoginsFromPasswordStore(PasswordStore::DISALLOW_PROMPT);
 }
 
@@ -39,7 +38,7 @@ void CredentialManagerPasswordFormManager::OnGetPasswordStoreResults(
   PasswordForm provisionally_saved_form(observed_form());
   provisionally_saved_form.preferred = true;
   ProvisionallySave(provisionally_saved_form, IGNORE_OTHER_POSSIBLE_USERNAMES);
-  dispatcher_->OnProvisionalSaveComplete();
+  delegate_->OnProvisionalSaveComplete();
 }
 
 }  // namespace password_manager
