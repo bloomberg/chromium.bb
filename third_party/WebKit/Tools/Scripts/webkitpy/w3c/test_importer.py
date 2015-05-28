@@ -196,7 +196,7 @@ class TestImporter(object):
             reftests = 0
             jstests = 0
 
-            DIRS_TO_SKIP = ('.git', '.hg')
+            DIRS_TO_SKIP = ('.git', '.hg', 'test-plan')
             if dirs:
                 for d in DIRS_TO_SKIP:
                     if d in dirs:
