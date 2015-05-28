@@ -374,8 +374,6 @@ crbug.com/452018 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash Timeout
 
 crbug.com/365340 editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
 
-crbug.com/486663 [ Linux ] fast/text/justify-ideograph-complex.html [ NeedsRebaseline ]
-
 # Disable KeyboardEvent key tests till https://codereview.chromium.org/929053004/ lands
 crbug.com/227231 fast/events/keyboardevent-key.html [ Failure Pass ]
 crbug.com/227231 virtual/slimmingpaint/fast/events/keyboardevent-key.html [ Skip ]
