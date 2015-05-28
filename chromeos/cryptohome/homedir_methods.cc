@@ -9,6 +9,7 @@
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/device_event_log/device_event_log.h"
 
 #if defined(USE_SYSTEM_PROTOBUF)
 #include <google/protobuf/repeated_field.h>
@@ -414,6 +415,7 @@ class HomedirMethodsImpl : public HomedirMethods {
     }
     if (reply.has_error()) {
       if (reply.error() != CRYPTOHOME_ERROR_NOT_SET) {
+        LOGIN_LOG(ERROR) << "HomedirMethods MountEx error: " << reply.error();
         callback.Run(false, MapError(reply.error()), std::string());
         return;
       }

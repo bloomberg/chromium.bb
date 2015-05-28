@@ -24,6 +24,7 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/login/user_names.h"
 #include "chromeos/login_event_recorder.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -212,13 +213,13 @@ void OnGetKeyDataEx(
 
       if (type) {
         if (*type < 0 || *type >= Key::KEY_TYPE_COUNT) {
-          LOG(ERROR) << "Invalid key type: " << *type;
+          LOGIN_LOG(ERROR) << "Invalid key type: " << *type;
           RecordKeyErrorAndResolve(attempt, resolver);
           return;
         }
 
         if (!salt) {
-          LOG(ERROR) << "Missing salt.";
+          LOGIN_LOG(ERROR) << "Missing salt.";
           RecordKeyErrorAndResolve(attempt, resolver);
           return;
         }
@@ -230,8 +231,8 @@ void OnGetKeyDataEx(
         return;
       }
     } else {
-      LOG(ERROR) << "GetKeyDataEx() returned " << key_definitions.size()
-                 << " entries.";
+      LOGIN_LOG(EVENT) << "GetKeyDataEx() returned " << key_definitions.size()
+                       << " entries.";
     }
   }
 
@@ -548,7 +549,7 @@ void CryptohomeAuthenticator::OnAuthFailure(const AuthFailure& error) {
     return;
   }
   chromeos::LoginEventRecorder::Get()->RecordAuthenticationFailure();
-  LOG(WARNING) << "Login failed: " << error.GetErrorString();
+  LOGIN_LOG(ERROR) << "Login failed: " << error.GetErrorString();
   if (consumer_)
     consumer_->OnAuthFailure(error);
 }
@@ -726,7 +727,7 @@ void CryptohomeAuthenticator::Resolve() {
       DBusThreadManager::Get()->GetCryptohomeClient()->Unmount(&success);
       if (!success) {
         // Maybe we should reboot immediately here?
-        LOG(ERROR) << "Couldn't unmount users home!";
+        LOGIN_LOG(ERROR) << "Couldn't unmount users home!";
       }
       task_runner_->PostTask(
           FROM_HERE,
@@ -762,6 +763,9 @@ CryptohomeAuthenticator::AuthState CryptohomeAuthenticator::ResolveState() {
     state = ResolveCryptohomeSuccessState();
   } else {
     state = ResolveCryptohomeFailureState();
+    LOGIN_LOG(ERROR) << "Cryptohome failure: "
+                     << "state=" << state
+                     << ", code=" << current_state_->cryptohome_code();
   }
 
   DCHECK(current_state_->cryptohome_complete());  // Ensure invariant holds.
