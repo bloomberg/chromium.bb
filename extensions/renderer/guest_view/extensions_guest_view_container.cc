@@ -49,8 +49,7 @@ void ExtensionsGuestViewContainer::RegisterElementResizeCallback(
   element_resize_isolate_ = isolate;
 }
 
-void ExtensionsGuestViewContainer::DidResizeElement(const gfx::Size& old_size,
-                                                    const gfx::Size& new_size) {
+void ExtensionsGuestViewContainer::DidResizeElement(const gfx::Size& new_size) {
   // Call the element resize callback, if one is registered.
   if (element_resize_callback_.IsEmpty())
     return;
@@ -58,11 +57,10 @@ void ExtensionsGuestViewContainer::DidResizeElement(const gfx::Size& old_size,
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ExtensionsGuestViewContainer::CallElementResizeCallback,
-                 weak_ptr_factory_.GetWeakPtr(), old_size, new_size));
+                 weak_ptr_factory_.GetWeakPtr(), new_size));
 }
 
 void ExtensionsGuestViewContainer::CallElementResizeCallback(
-    const gfx::Size& old_size,
     const gfx::Size& new_size) {
   v8::HandleScope handle_scope(element_resize_isolate_);
   v8::Local<v8::Function> callback = v8::Local<v8::Function>::New(
@@ -71,10 +69,8 @@ void ExtensionsGuestViewContainer::CallElementResizeCallback(
   if (context.IsEmpty())
     return;
 
-  const int argc = 4;
+  const int argc = 2;
   v8::Local<v8::Value> argv[argc] = {
-      v8::Integer::New(element_resize_isolate_, old_size.width()),
-      v8::Integer::New(element_resize_isolate_, old_size.height()),
       v8::Integer::New(element_resize_isolate_, new_size.width()),
       v8::Integer::New(element_resize_isolate_, new_size.height())};
 

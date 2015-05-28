@@ -27,12 +27,10 @@ class ExtensionsGuestViewContainer : public guest_view::GuestViewContainer {
                                      v8::Isolate* isolate);
 
   // BrowserPluginDelegate implementation.
-  void DidResizeElement(const gfx::Size& old_size,
-                        const gfx::Size& new_size) override;
+  void DidResizeElement(const gfx::Size& new_size) override;
 
  private:
-  void CallElementResizeCallback(const gfx::Size& old_size,
-                                 const gfx::Size& new_size);
+  void CallElementResizeCallback(const gfx::Size& new_size);
 
   v8::Global<v8::Function> destruction_callback_;
   v8::Isolate* destruction_isolate_;

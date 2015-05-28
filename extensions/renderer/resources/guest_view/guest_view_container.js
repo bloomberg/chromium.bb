@@ -139,16 +139,7 @@ GuestViewContainer.prototype.handleBrowserPluginAttributeMutation =
   }
 };
 
-GuestViewContainer.prototype.onElementResize = function(oldWidth, oldHeight,
-                                                        newWidth, newHeight) {
-  // Dispatch the 'resize' event.
-  var resizeEvent = new Event('resize', { bubbles: true });
-  resizeEvent.oldWidth = oldWidth;
-  resizeEvent.oldHeight = oldHeight;
-  resizeEvent.newWidth = newWidth;
-  resizeEvent.newHeight = newHeight;
-  this.dispatchEvent(resizeEvent);
-
+GuestViewContainer.prototype.onElementResize = function(newWidth, newHeight) {
   if (!this.guest.getId())
     return;
   this.guest.setSize({normal: {width: newWidth, height: newHeight}});

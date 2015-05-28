@@ -46,8 +46,7 @@ class CONTENT_EXPORT BrowserPluginDelegate {
   virtual void SetElementInstanceID(int element_instance_id) {}
 
   // Called when the plugin resizes.
-  virtual void DidResizeElement(const gfx::Size& old_size,
-                                const gfx::Size& new_size) {}
+  virtual void DidResizeElement(const gfx::Size& new_size) {}
 
   // Called when a message is received.  Returns true iff the message was
   // handled.

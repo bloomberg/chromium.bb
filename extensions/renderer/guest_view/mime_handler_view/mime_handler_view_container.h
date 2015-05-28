@@ -53,8 +53,7 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   // BrowserPluginDelegate implementation.
   void DidFinishLoading() override;
   void DidReceiveData(const char* data, int data_length) override;
-  void DidResizeElement(const gfx::Size& old_size,
-                        const gfx::Size& new_size) override;
+  void DidResizeElement(const gfx::Size& new_size) override;
   v8::Local<v8::Object> V8ScriptableObject(v8::Isolate*) override;
 
   // WebURLLoaderClient overrides.
