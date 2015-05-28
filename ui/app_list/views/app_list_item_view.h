@@ -14,6 +14,7 @@
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_observer.h"
 #include "ui/app_list/views/cached_label.h"
+#include "ui/app_list/views/image_shadow_animator.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -33,7 +34,8 @@ class ProgressBarView;
 
 class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
                                         public views::ContextMenuController,
-                                        public AppListItemObserver {
+                                        public AppListItemObserver,
+                                        public ImageShadowAnimator::Delegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -91,6 +93,9 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // views::View overrides:
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
+
+  // ImageShadowAnimator::Delegate overrides:
+  void ImageShadowAnimationProgressed(ImageShadowAnimator* animator) override;
 
  private:
   enum UIState {
@@ -157,6 +162,8 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   // True if scroll gestures should contribute to dragging.
   bool touch_dragging_;
+
+  ImageShadowAnimator shadow_animator_;
 
   bool is_installing_;
   bool is_highlighted_;

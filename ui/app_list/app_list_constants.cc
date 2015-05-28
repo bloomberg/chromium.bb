@@ -162,4 +162,18 @@ gfx::ShadowValue GetShadowForZHeight(int z_height) {
   }
 }
 
+const gfx::ShadowValues& IconStartShadows() {
+  CR_DEFINE_STATIC_LOCAL(const gfx::ShadowValues, icon_shadows,
+                         (1, gfx::ShadowValue(gfx::Vector2d(0, 2), 2,
+                                              SkColorSetARGB(0x24, 0, 0, 0))));
+  return icon_shadows;
+}
+
+const gfx::ShadowValues& IconEndShadows() {
+  CR_DEFINE_STATIC_LOCAL(const gfx::ShadowValues, icon_shadows,
+                         (1, gfx::ShadowValue(gfx::Vector2d(0, 4), 4,
+                                              SkColorSetARGB(0x50, 0, 0, 0))));
+  return icon_shadows;
+}
+
 }  // namespace app_list

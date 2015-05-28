@@ -157,10 +157,12 @@ StartPageView::StartPageTilesContainer::StartPageTilesContainer(
         new SearchResultTileItemView(this, view_delegate);
     AddChildView(tile_item);
     tile_item->SetParentBackgroundColor(kLabelBackgroundColor);
+    tile_item->SetHoverStyle(TileItemView::HOVER_STYLE_ANIMATE_SHADOW);
     search_result_tile_views_.push_back(tile_item);
   }
 
   // Also add a special "all apps" button to the end of the container.
+  all_apps_button_->SetHoverStyle(TileItemView::HOVER_STYLE_ANIMATE_SHADOW);
   all_apps_button_->UpdateIcon();
   all_apps_button_->SetParentBackgroundColor(kLabelBackgroundColor);
   AddChildView(all_apps_button_);

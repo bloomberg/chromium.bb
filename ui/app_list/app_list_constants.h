@@ -91,7 +91,10 @@ APP_LIST_EXPORT extern const char kAppListWMClass[];
 #endif
 
 // Returns the shadow values for a view at |z_height|.
-gfx::ShadowValue APP_LIST_EXPORT GetShadowForZHeight(int z_height);
+APP_LIST_EXPORT gfx::ShadowValue GetShadowForZHeight(int z_height);
+
+APP_LIST_EXPORT const gfx::ShadowValues& IconStartShadows();
+APP_LIST_EXPORT const gfx::ShadowValues& IconEndShadows();
 
 }  // namespace app_list
 

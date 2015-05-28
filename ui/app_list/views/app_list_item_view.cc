@@ -11,6 +11,7 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/cached_label.h"
 #include "ui/app_list/views/progress_bar_view.h"
@@ -54,13 +55,6 @@ const float kDraggingIconScale = 1.5f;
 // Delay in milliseconds of when the dragging UI should be shown for mouse drag.
 const int kMouseDragUIDelayInMs = 200;
 
-const gfx::ShadowValues& GetIconShadows() {
-  CR_DEFINE_STATIC_LOCAL(const gfx::ShadowValues, icon_shadows,
-                         (1, gfx::ShadowValue(gfx::Vector2d(0, 2), 2,
-                                              SkColorSetARGB(0x24, 0, 0, 0))));
-  return icon_shadows;
-}
-
 gfx::FontList GetFontList() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::FontList& font_list = rb.GetFontList(kItemTextFontStyle);
@@ -92,9 +86,14 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       progress_bar_(new ProgressBarView),
       ui_state_(UI_STATE_NORMAL),
       touch_dragging_(false),
+      shadow_animator_(this),
       is_installing_(false),
       is_highlighted_(false) {
+  shadow_animator_.animation()->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+  shadow_animator_.SetStartAndEndShadows(IconStartShadows(), IconEndShadows());
+
   icon_->set_interactive(false);
+  icon_->SetVerticalAlignment(views::ImageView::LEADING);
 
   title_->SetBackgroundColor(0);
   title_->SetAutoColorReadabilityEnabled(false);
@@ -140,10 +139,8 @@ void AppListItemView::SetIcon(const gfx::ImageSkia& icon, bool has_shadow) {
       icon,
       skia::ImageOperations::RESIZE_BEST,
       gfx::Size(kGridIconDimension, kGridIconDimension)));
-  if (has_shadow) {
-    gfx::ImageSkia shadow(gfx::ImageSkiaOperations::CreateImageWithDropShadow(
-        resized, GetIconShadows()));
-    icon_->SetImage(shadow);
+  if (has_shadow || app_list::switches::IsExperimentalAppListEnabled()) {
+    shadow_animator_.SetOriginalImage(resized);
     return;
   }
 
@@ -311,7 +308,8 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
   if (apps_grid_view_->IsSelectedView(this)) {
     canvas->FillRect(rect, kSelectedColor);
-  } else if (is_highlighted_ && !is_installing_) {
+  } else if (is_highlighted_ && !is_installing_ &&
+             !app_list::switches::IsExperimentalAppListEnabled()) {
     canvas->FillRect(rect, kHighlightedColor);
     return;
   }
@@ -353,6 +351,14 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 }
 
 void AppListItemView::StateChanged() {
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
+      shadow_animator_.animation()->Show();
+    } else {
+      shadow_animator_.animation()->Hide();
+    }
+  }
+
   if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
     // Show the hover/tap highlight: for tap, lighter highlight replaces darker
     // keyboard selection; for mouse hover, keyboard selection takes precedence.
@@ -464,14 +470,14 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
       }
       break;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (switches::IsTouchFeedbackEnabled() && state_ != STATE_DISABLED) {
+      if (::switches::IsTouchFeedbackEnabled() && state_ != STATE_DISABLED) {
         SetState(STATE_PRESSED);
         event->SetHandled();
       }
       break;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
-      if (switches::IsTouchFeedbackEnabled() && state_ != STATE_DISABLED)
+      if (::switches::IsTouchFeedbackEnabled() && state_ != STATE_DISABLED)
         SetState(STATE_NORMAL);
       break;
     case ui::ET_GESTURE_LONG_PRESS:
@@ -504,6 +510,12 @@ bool AppListItemView::GetTooltipText(const gfx::Point& p,
   return handled;
 }
 
+void AppListItemView::ImageShadowAnimationProgressed(
+    ImageShadowAnimator* animator) {
+  icon_->SetImage(animator->shadow_image());
+  Layout();
+}
+
 void AppListItemView::OnSyncDragEnd() {
   SetUIState(UI_STATE_NORMAL);
 }
@@ -519,14 +531,10 @@ void AppListItemView::SetDragUIState() {
 gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
     const gfx::Rect& target_bounds) {
   gfx::Rect rect(target_bounds);
-
-  const int left_right_padding =
-      title_->font_list().GetExpectedTextWidth(kLeftRightPaddingChars);
-  rect.Inset(left_right_padding, kTopPadding, left_right_padding, 0);
-
-  gfx::Rect icon_bounds(rect.x(), rect.y(), rect.width(), kGridIconDimension);
-  icon_bounds.Inset(gfx::ShadowValue::GetMargin(GetIconShadows()));
-  return icon_bounds;
+  rect.Inset(0, kTopPadding, 0, 0);
+  rect.set_height(icon_->GetImage().height());
+  rect.ClampToCenteredSize(icon_->GetImage().size());
+  return rect;
 }
 
 void AppListItemView::SetTitleSubpixelAA() {
