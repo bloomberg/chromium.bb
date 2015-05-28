@@ -77,6 +77,20 @@ class DataTypeManagerImpl : public DataTypeManager,
   }
 
  private:
+  // Helper enum for identifying which types within a priority group to
+  // associate.
+  enum AssociationGroup {
+    // Those types that were already downloaded and didn't have an error at
+    // configuration time. Corresponds with AssociationTypesInfo's
+    // |ready_types|. These types can start associating as soon as the
+    // ModelAssociationManager is not busy.
+    READY_AT_CONFIG,
+    // All other types, including first time sync types and those that have
+    // encountered an error. These types must wait until the syncer has done
+    // any db changes and/or downloads before associating.
+    UNREADY_AT_CONFIG,
+  };
+
   friend class TestDataTypeManager;
 
   // Abort configuration and stop all data types due to configuration errors.
@@ -94,9 +108,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   void ProcessReconfigure();
 
   void Restart(syncer::ConfigureReason reason);
-  void DownloadReady(base::Time download_start_time,
-                     syncer::ModelTypeSet types_to_download,
-                     syncer::ModelTypeSet high_priority_types_before,
+  void DownloadReady(syncer::ModelTypeSet types_to_download,
                      syncer::ModelTypeSet first_sync_types,
                      syncer::ModelTypeSet failed_configuration_types);
 
@@ -117,9 +129,16 @@ class DataTypeManagerImpl : public DataTypeManager,
   BuildDataTypeConfigStateMap(
       const syncer::ModelTypeSet& types_being_configured) const;
 
+  // Start download of next set of types in |download_types_queue_| (if
+  // any exist, does nothing otherwise).
+  // Will kick off association of any new ready types.
+  void StartNextDownload(syncer::ModelTypeSet high_priority_types_before);
+
   // Start association of next batch of data types after association of
-  // previous batch finishes.
-  void StartNextAssociation();
+  // previous batch finishes. |group| controls which set of types within
+  // an AssociationTypesInfo to associate. Does nothing if model associator
+  // is busy performing association.
+  void StartNextAssociation(AssociationGroup group);
 
   void StopImpl();
 
@@ -169,12 +188,29 @@ class DataTypeManagerImpl : public DataTypeManager,
   struct AssociationTypesInfo {
     AssociationTypesInfo();
     ~AssociationTypesInfo();
+
+    // Types to associate.
     syncer::ModelTypeSet types;
+    // Types that have just been downloaded and are being associated for the
+    // first time. This includes types that had previously encountered an error
+    // and had to be purged/unapplied from the sync db.
+    // This is a subset of |types|.
     syncer::ModelTypeSet first_sync_types;
+    // Types that were already ready for association at configuration time.
+    syncer::ModelTypeSet ready_types;
+    // Time at which |types| began downloading.
     base::Time download_start_time;
+    // Time at which |types| finished downloading.
     base::Time download_ready_time;
-    base::Time association_request_time;
+    // Time at which the association for |read_types| began.
+    base::Time ready_association_request_time;
+    // Time at which the association for |types| began (not relevant to
+    // |ready_types|.
+    base::Time full_association_request_time;
+    // The set of types that are higher priority (and were therefore blocking)
+    // the association of |types|.
     syncer::ModelTypeSet high_priority_types_before;
+    // The subset of |types| that were successfully configured.
     syncer::ModelTypeSet configured_types;
   };
   std::queue<AssociationTypesInfo> association_types_queue_;

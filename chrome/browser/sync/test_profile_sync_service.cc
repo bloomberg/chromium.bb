@@ -85,11 +85,15 @@ void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
   // something we have access to from this strange test harness.  We'll just
   // send back the list of newly configured types instead and hope it doesn't
   // break anything.
-  FinishConfigureDataTypesOnFrontendLoop(
-      syncer::Difference(to_download, failed_configuration_types),
-      syncer::Difference(to_download, failed_configuration_types),
-      failed_configuration_types,
-      ready_task);
+  // Posted to avoid re-entrancy issues.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&SyncBackendHostForProfileSyncTest::
+                     FinishConfigureDataTypesOnFrontendLoop,
+                 base::Unretained(this),
+                 syncer::Difference(to_download, failed_configuration_types),
+                 syncer::Difference(to_download, failed_configuration_types),
+                 failed_configuration_types, ready_task));
 }
 
 }  // namespace browser_sync

@@ -49,6 +49,17 @@ class ModelAssociationManagerDelegate {
 // The class that is responsible for model association.
 class ModelAssociationManager {
  public:
+  enum State {
+    // No configuration is in progress.
+    IDLE,
+    // The model association manager has been initialized with a set of desired
+    // types, but is not actively associating any.
+    INITIALIZED,
+    // One or more types from |desired_types_| are in the process of
+    // associating.
+    ASSOCIATING,
+  };
+
   ModelAssociationManager(const DataTypeController::TypeMap* controllers,
                           ModelAssociationManagerDelegate* delegate);
   virtual ~ModelAssociationManager();
@@ -75,16 +86,9 @@ class ModelAssociationManager {
   // Dependency injection. crbug.com/129212.
    base::OneShotTimer<ModelAssociationManager>* GetTimerForTesting();
 
- private:
-  enum State {
-    // This is the state after |Initialize| is called.
-    INITIALIZED_TO_CONFIGURE,
-    // Starting a new configuration.
-    CONFIGURING,
-    // No configuration is in progress.
-    IDLE
-  };
+   State state() const { return state_; }
 
+ private:
   // Called at the end of association to reset state to prepare for next
   // round of association.
   void ResetForNextAssociation();
@@ -108,8 +112,9 @@ class ModelAssociationManager {
   void ModelLoadCallback(syncer::ModelType type, syncer::SyncError error);
 
   // Called when all requested types are associated or association times out.
-  // Notify |delegate_| of configuration results.
-  void ModelAssociationDone();
+  // Will clean up any unfinished types, and update |state_| to be |new_state|
+  // Finally, it will notify |delegate_| of the configuration result.
+  void ModelAssociationDone(State new_state);
 
   // A helper to stop an individual datatype.
   void StopDatatype(const syncer::SyncError& error, DataTypeController* dtc);

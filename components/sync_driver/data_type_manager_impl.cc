@@ -80,11 +80,10 @@ void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
   // Only allow control types and types that have controllers.
   syncer::ModelTypeSet filtered_desired_types;
   for (syncer::ModelTypeSet::Iterator type = desired_types.First();
-      type.Good(); type.Inc()) {
+       type.Good(); type.Inc()) {
     DataTypeController::TypeMap::const_iterator iter =
         controllers_->find(type.Get());
-    if (syncer::IsControlType(type.Get()) ||
-        iter != controllers_->end()) {
+    if (syncer::IsControlType(type.Get()) || iter != controllers_->end()) {
       if (iter != controllers_->end()) {
         if (!iter->second->ReadyForStart() &&
             !data_type_status_table_.GetUnreadyErrorTypes().Has(
@@ -261,7 +260,7 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
   DCHECK(state_ == STOPPED || state_ == CONFIGURED || state_ == RETRYING);
 
   const State old_state = state_;
-  state_ = DOWNLOAD_PENDING;
+  state_ = CONFIGURING;
 
   // Starting from a "steady state" (stopped or configured) state
   // should send a start notification.
@@ -276,18 +275,7 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
 
   model_association_manager_.Initialize(enabled_types);
 
-  // Tell the backend about the new set of data types we wish to sync.
-  // The task will be invoked when updates are downloaded.
-  configurer_->ConfigureDataTypes(
-      reason,
-      BuildDataTypeConfigStateMap(download_types_queue_.front()),
-      base::Bind(&DataTypeManagerImpl::DownloadReady,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Time::Now(),
-                 download_types_queue_.front(),
-                 syncer::ModelTypeSet()),
-      base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
-                 weak_ptr_factory_.GetWeakPtr()));
+  StartNextDownload(syncer::ModelTypeSet());
 }
 
 syncer::ModelTypeSet DataTypeManagerImpl::GetPriorityTypes() const {
@@ -323,8 +311,13 @@ void DataTypeManagerImpl::ProcessReconfigure() {
   DCHECK(needs_reconfigure_);
 
   // Wait for current download and association to finish.
-  if (!(download_types_queue_.empty() && association_types_queue_.empty()))
+  if (!download_types_queue_.empty() ||
+      model_association_manager_.state() ==
+          ModelAssociationManager::ASSOCIATING) {
     return;
+  }
+
+  association_types_queue_ = std::queue<AssociationTypesInfo>();
 
   // An attempt was made to reconfigure while we were already configuring.
   // This can be because a passphrase was accepted or the user changed the
@@ -346,115 +339,128 @@ void DataTypeManagerImpl::ProcessReconfigure() {
 }
 
 void DataTypeManagerImpl::OnDownloadRetry() {
-  DCHECK(state_ == DOWNLOAD_PENDING || state_ == CONFIGURING);
+  DCHECK_EQ(CONFIGURING, state_);
 }
 
 void DataTypeManagerImpl::DownloadReady(
-    base::Time download_start_time,
     syncer::ModelTypeSet types_to_download,
-    syncer::ModelTypeSet high_priority_types_before,
     syncer::ModelTypeSet first_sync_types,
     syncer::ModelTypeSet failed_configuration_types) {
-  // TODO(erikchen): Remove ScopedTracker below once https://crbug.com/458406
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458406 DataTypeManagerImpl::DownloadReady"));
-
-  DCHECK(state_ == DOWNLOAD_PENDING || state_ == CONFIGURING);
+  DCHECK_EQ(CONFIGURING, state_);
 
   // Persistence errors are reset after each backend configuration attempt
   // during which they would have been purged.
   data_type_status_table_.ResetPersistenceErrorsFrom(types_to_download);
 
-  // TODO(erikchen): Remove ScopedTracker below once https://crbug.com/458406
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458406 DataTypeManagerImpl::DownloadReady::NeedsReconfigure"));
-  // Ignore |failed_configuration_types| if we need to reconfigure
-  // anyway.
+  if (!failed_configuration_types.Empty()) {
+    DataTypeStatusTable::TypeErrorMap errors;
+    for (syncer::ModelTypeSet::Iterator iter =
+             failed_configuration_types.First(); iter.Good(); iter.Inc()) {
+      syncer::SyncError error(
+          FROM_HERE,
+          syncer::SyncError::DATATYPE_ERROR,
+          "Backend failed to download type.",
+          iter.Get());
+      errors[iter.Get()] = error;
+    }
+    data_type_status_table_.UpdateFailedDataTypes(errors);
+    needs_reconfigure_ = true;
+  }
+
   if (needs_reconfigure_) {
     download_types_queue_ = TypeSetPriorityList();
     ProcessReconfigure();
     return;
   }
 
-  // TODO(erikchen): Remove ScopedTracker below once https://crbug.com/458406
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458406 DataTypeManagerImpl::DownloadReady::UnrecoverableError"));
-  if (!failed_configuration_types.Empty()) {
-    if (!unrecoverable_error_method_.is_null())
-      unrecoverable_error_method_.Run();
-    DataTypeStatusTable::TypeErrorMap errors;
-    for (syncer::ModelTypeSet::Iterator iter =
-             failed_configuration_types.First(); iter.Good(); iter.Inc()) {
-      syncer::SyncError error(
-          FROM_HERE,
-          syncer::SyncError::UNRECOVERABLE_ERROR,
-          "Backend failed to download type.",
-          iter.Get());
-      errors[iter.Get()] = error;
-    }
-    data_type_status_table_.UpdateFailedDataTypes(errors);
-    Abort(UNRECOVERABLE_ERROR);
+  CHECK(!download_types_queue_.empty());
+  download_types_queue_.pop();
+
+  // Those types that were already downloaded (non first sync/error types)
+  // should already be associating. Just kick off association of the newly
+  // downloaded types if necessary.
+  if (!association_types_queue_.empty()) {
+    association_types_queue_.back().first_sync_types = first_sync_types;
+    association_types_queue_.back().download_ready_time = base::Time::Now();
+    StartNextAssociation(UNREADY_AT_CONFIG);
+  } else if (download_types_queue_.empty() &&
+             model_association_manager_.state() !=
+                 ModelAssociationManager::ASSOCIATING) {
+    // There's nothing more to download or associate (implying either there were
+    // no types to associate or they associated as part of |ready_types|).
+    // If the model association manager is also finished, then we're done
+    // configuring.
+    state_ = CONFIGURED;
+    ConfigureResult result(OK, last_requested_types_);
+    NotifyDone(result);
     return;
   }
 
-  state_ = CONFIGURING;
-
-  // TODO(erikchen): Remove ScopedTracker below once https://crbug.com/458406
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458406 DataTypeManagerImpl::DownloadReady::Associate"));
-  // Pop and associate download-ready types.
-  syncer::ModelTypeSet ready_types = types_to_download;
-  CHECK(!download_types_queue_.empty());
-  download_types_queue_.pop();
-  syncer::ModelTypeSet new_types_to_download;
-  if (!download_types_queue_.empty())
-    new_types_to_download = download_types_queue_.front();
-
-  AssociationTypesInfo association_info;
-  association_info.types = ready_types;
-  association_info.first_sync_types = first_sync_types;
-  association_info.download_start_time = download_start_time;
-  association_info.download_ready_time = base::Time::Now();
-  association_info.high_priority_types_before = high_priority_types_before;
-  association_types_queue_.push(association_info);
-  if (association_types_queue_.size() == 1u)
-    StartNextAssociation();
-
-  // TODO(erikchen): Remove ScopedTracker below once https://crbug.com/458406
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile5(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458406 DataTypeManagerImpl::DownloadReady::ConfigureDataTypes"));
-  // Download types of low priority while configuring types of high priority.
-  if (!new_types_to_download.Empty()) {
-    configurer_->ConfigureDataTypes(
-        last_configure_reason_,
-        BuildDataTypeConfigStateMap(new_types_to_download),
-        base::Bind(&DataTypeManagerImpl::DownloadReady,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Time::Now(),
-                   new_types_to_download,
-                   syncer::Union(ready_types, high_priority_types_before)),
-        base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  StartNextDownload(types_to_download);
 }
 
-void DataTypeManagerImpl::StartNextAssociation() {
+void DataTypeManagerImpl::StartNextDownload(
+    syncer::ModelTypeSet high_priority_types_before) {
+  if (download_types_queue_.empty())
+    return;
+
+  // Tell the backend about the new set of data types we wish to sync.
+  // The task will be invoked when updates are downloaded.
+  syncer::ModelTypeSet ready_types = configurer_->ConfigureDataTypes(
+      last_configure_reason_,
+      BuildDataTypeConfigStateMap(download_types_queue_.front()),
+      base::Bind(&DataTypeManagerImpl::DownloadReady,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 download_types_queue_.front()),
+      base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  AssociationTypesInfo association_info;
+  association_info.types = download_types_queue_.front();
+  association_info.ready_types = ready_types;
+  association_info.download_start_time = base::Time::Now();
+  association_info.high_priority_types_before = high_priority_types_before;
+  association_types_queue_.push(association_info);
+
+  // Start associating those types that are already downloaded (does nothing
+  // if model associator is busy).
+  StartNextAssociation(READY_AT_CONFIG);
+}
+
+void DataTypeManagerImpl::StartNextAssociation(AssociationGroup group) {
   CHECK(!association_types_queue_.empty());
 
-  association_types_queue_.front().association_request_time =
-      base::Time::Now();
-  model_association_manager_.StartAssociationAsync(
-      association_types_queue_.front().types);
+  // If the model association manager is already associating, let it finish.
+  // The model association done event will result in associating any remaining
+  // association groups.
+  if (model_association_manager_.state() !=
+          ModelAssociationManager::INITIALIZED) {
+    return;
+  }
+
+  syncer::ModelTypeSet types_to_associate;
+  if (group == READY_AT_CONFIG) {
+    association_types_queue_.front().ready_association_request_time =
+        base::Time::Now();
+    types_to_associate = association_types_queue_.front().ready_types;
+  } else {
+    DCHECK_EQ(UNREADY_AT_CONFIG, group);
+    // Only start associating the rest of the types if they have all finished
+    // downloading.
+    if (association_types_queue_.front().download_ready_time.is_null())
+      return;
+    association_types_queue_.front().full_association_request_time =
+        base::Time::Now();
+    // We request the full set of types here for completeness sake. All types
+    // within the READY_AT_CONFIG set will already be started and should be
+    // no-ops.
+    types_to_associate = association_types_queue_.front().types;
+  }
+
+
+  DVLOG(1) << "Associating "
+           << syncer::ModelTypeSetToString(types_to_associate);
+  model_association_manager_.StartAssociationAsync(types_to_associate);
 }
 
 void DataTypeManagerImpl::OnSingleDataTypeWillStop(
@@ -505,8 +511,13 @@ void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
       configuration_stats_.back().download_time =
           info.download_ready_time - info.download_start_time;
     }
-    configuration_stats_.back().association_wait_time_for_high_priority =
-        info.association_request_time - info.download_ready_time;
+    if (info.ready_types.Has(type)) {
+      configuration_stats_.back().association_wait_time_for_high_priority =
+          info.ready_association_request_time - info.download_start_time;
+    } else {
+      configuration_stats_.back().association_wait_time_for_high_priority =
+          info.full_association_request_time - info.download_ready_time;
+    }
     configuration_stats_.back().high_priority_types_configured_before =
         info.high_priority_types_before;
     configuration_stats_.back().same_priority_types_configured_before =
@@ -524,7 +535,6 @@ void DataTypeManagerImpl::OnModelAssociationDone(
 
   // Ignore abort/unrecoverable error if we need to reconfigure anyways.
   if (needs_reconfigure_) {
-    association_types_queue_ = std::queue<AssociationTypesInfo>();
     ProcessReconfigure();
     return;
   }
@@ -537,12 +547,23 @@ void DataTypeManagerImpl::OnModelAssociationDone(
   DCHECK(result.status == OK);
 
   CHECK(!association_types_queue_.empty());
-  association_types_queue_.pop();
-  if (!association_types_queue_.empty()) {
-    StartNextAssociation();
-  } else if (download_types_queue_.empty()) {
-    state_ = CONFIGURED;
-    NotifyDone(result);
+
+  // If this model association was for the full set of types, then this priority
+  // set is done. Otherwise it was just the ready types and the unready types
+  // still need to be associated.
+  if (result.requested_types.Equals(association_types_queue_.front().types)) {
+    association_types_queue_.pop();
+    if (!association_types_queue_.empty()) {
+      StartNextAssociation(READY_AT_CONFIG);
+    } else if (download_types_queue_.empty()) {
+      state_ = CONFIGURED;
+      NotifyDone(result);
+    }
+  } else {
+    DCHECK(result.requested_types.Equals(
+        association_types_queue_.front().ready_types));
+    // Will do nothing if the types are still downloading.
+    StartNextAssociation(UNREADY_AT_CONFIG);
   }
 }
 
@@ -550,8 +571,7 @@ void DataTypeManagerImpl::Stop() {
   if (state_ == STOPPED)
     return;
 
-  bool need_to_notify =
-      state_ == DOWNLOAD_PENDING || state_ == CONFIGURING;
+  bool need_to_notify = state_ == CONFIGURING;
   StopImpl();
 
   if (need_to_notify) {
@@ -562,7 +582,7 @@ void DataTypeManagerImpl::Stop() {
 }
 
 void DataTypeManagerImpl::Abort(ConfigureStatus status) {
-  DCHECK(state_ == DOWNLOAD_PENDING || state_ == CONFIGURING);
+  DCHECK_EQ(CONFIGURING, state_);
 
   StopImpl();
 

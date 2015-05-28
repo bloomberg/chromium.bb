@@ -614,11 +614,6 @@ void SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop(
     const syncer::ModelTypeSet failed_configuration_types,
     const base::Callback<void(syncer::ModelTypeSet,
                               syncer::ModelTypeSet)>& ready_task) {
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458406 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458406 SyncBackendHostImpl::FinishConfigureDataTOFL"));
   if (!frontend_)
     return;
 
@@ -627,11 +622,6 @@ void SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop(
         this, ModelTypeSetToObjectIdSet(enabled_types)));
   }
 
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458406 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458406 SyncBackendHostImpl::FinishConfigureDataTOFL::ReadyTask"));
   if (!ready_task.is_null())
     ready_task.Run(succeeded_configuration_types, failed_configuration_types);
 }
