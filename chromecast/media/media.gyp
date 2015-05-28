@@ -56,6 +56,8 @@
       'sources': [
         'cdm/browser_cdm_cast.cc',
         'cdm/browser_cdm_cast.h',
+        'cdm/chromecast_init_data.cc',
+        'cdm/chromecast_init_data.h',
       ],
       'conditions': [
         ['use_playready==1', {
@@ -260,6 +262,7 @@
         '../../testing/gtest.gyp:gtest_main',
       ],
       'sources': [
+        'cdm/chromecast_init_data_unittest.cc',
         'cma/backend/audio_video_pipeline_device_unittest.cc',
         'cma/base/balanced_media_task_runner_unittest.cc',
         'cma/base/buffering_controller_unittest.cc',
