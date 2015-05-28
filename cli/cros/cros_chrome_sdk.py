@@ -491,6 +491,10 @@ class ChromeSDKCommand(command.CliCommand):
         help='Sets up SDK for building official (internal) Chrome '
              'Chrome, rather than Chromium.')
     parser.add_argument(
+        '--use-external-config', action='store_true', default=False,
+        help='Use the external configuration for the specified board, even if '
+             'an internal configuration is avalable.')
+    parser.add_argument(
         '--sdk-path', type='local_or_gs_path',
         help='Provides a path, whether a local directory or a gs:// path, to '
              'pull SDK components from.')
@@ -835,7 +839,8 @@ class ChromeSDKCommand(command.CliCommand):
                           chrome_src=self.options.chrome_src,
                           sdk_path=self.options.sdk_path,
                           toolchain_path=self.options.toolchain_path,
-                          silent=self.silent)
+                          silent=self.silent,
+                          use_external_config=self.options.use_external_config)
 
     prepare_version = self.options.version
     if not prepare_version and not self.options.sdk_path:
