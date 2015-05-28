@@ -3252,6 +3252,8 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
 
   // We create pending entries for renderer-initiated navigations so that we
   // can show them in new tabs when it is safe.
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(url1, false);
+  main_test_rfh()->PrepareForCommit();
   navigator->DidStartProvisionalLoad(main_test_rfh(), url1);
 
   // Simulate what happens if a BrowserURLHandler rewrites the URL, causing
