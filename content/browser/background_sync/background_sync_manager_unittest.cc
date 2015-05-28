@@ -6,8 +6,6 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/power_monitor/power_monitor.h"
-#include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
@@ -77,18 +75,6 @@ void OneShotDelayedCallback(
   *count += 1;
   *out_callback = callback;
 }
-
-class TestPowerSource : public base::PowerMonitorSource {
- public:
-  void GeneratePowerStateEvent(bool on_battery_power) {
-    test_on_battery_power_ = on_battery_power;
-    ProcessPowerEvent(POWER_STATE_EVENT);
-  }
-
- private:
-  bool IsOnBatteryPowerImpl() final { return test_on_battery_power_; }
-  bool test_on_battery_power_ = false;
-};
 
 }  // namespace
 
@@ -225,13 +211,6 @@ class BackgroundSyncManagerTest : public testing::Test {
     helper_.reset(
         new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
 
-    power_monitor_source_ = new TestPowerSource();
-    // power_monitor_ takes ownership of power_monitor_source.
-    power_monitor_.reset(new base::PowerMonitor(
-        scoped_ptr<base::PowerMonitorSource>(power_monitor_source_)));
-
-    SetOnBatteryPower(false);
-
     background_sync_manager_ =
         BackgroundSyncManager::Create(helper_->context_wrapper());
 
@@ -274,11 +253,6 @@ class BackgroundSyncManagerTest : public testing::Test {
   void SetNetwork(net::NetworkChangeNotifier::ConnectionType connection_type) {
     net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
         connection_type);
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void SetOnBatteryPower(bool on_battery_power) {
-    power_monitor_source_->GeneratePowerStateEvent(on_battery_power);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -456,8 +430,6 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  TestPowerSource* power_monitor_source_;  // owned by power_monitor_
-  scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_ptr<BackgroundSyncManager> background_sync_manager_;
   TestBackgroundSyncManager* test_background_sync_manager_;
@@ -1000,42 +972,6 @@ TEST_F(BackgroundSyncManagerTest, OneShotFiresOnRegistration) {
   EXPECT_TRUE(Register(sync_reg_1_));
   EXPECT_EQ(1, sync_events_called_);
   EXPECT_FALSE(GetRegistration(sync_reg_1_));
-}
-
-// TODO(jkarlin): Change this to a periodic test as one-shots can't be power
-// dependent according to spec.
-TEST_F(BackgroundSyncManagerTest, OneShotFiresOnPowerChange) {
-  InitSyncEventTest();
-  sync_reg_1_.power_state = POWER_STATE_AVOID_DRAINING;
-
-  SetOnBatteryPower(true);
-  EXPECT_TRUE(Register(sync_reg_1_));
-  EXPECT_EQ(0, sync_events_called_);
-  EXPECT_TRUE(GetRegistration(sync_reg_1_));
-
-  SetOnBatteryPower(false);
-  EXPECT_EQ(1, sync_events_called_);
-  EXPECT_FALSE(GetRegistration(sync_reg_1_));
-}
-
-// TODO(jkarlin): Change this to a periodic test as one-shots can't be power
-// dependent according to spec.
-TEST_F(BackgroundSyncManagerTest, MultipleOneShotsFireOnPowerChange) {
-  InitSyncEventTest();
-  sync_reg_1_.power_state = POWER_STATE_AVOID_DRAINING;
-  sync_reg_2_.power_state = POWER_STATE_AVOID_DRAINING;
-
-  SetOnBatteryPower(true);
-  EXPECT_TRUE(Register(sync_reg_1_));
-  EXPECT_TRUE(Register(sync_reg_2_));
-  EXPECT_EQ(0, sync_events_called_);
-  EXPECT_TRUE(GetRegistration(sync_reg_1_));
-  EXPECT_TRUE(GetRegistration(sync_reg_2_));
-
-  SetOnBatteryPower(false);
-  EXPECT_EQ(2, sync_events_called_);
-  EXPECT_FALSE(GetRegistration(sync_reg_1_));
-  EXPECT_FALSE(GetRegistration(sync_reg_2_));
 }
 
 TEST_F(BackgroundSyncManagerTest, OneShotFiresOnNetworkChange) {

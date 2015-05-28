@@ -22,7 +22,6 @@
 namespace content {
 
 class BackgroundSyncNetworkObserver;
-class BackgroundSyncPowerObserver;
 class ServiceWorkerContextWrapper;
 
 // BackgroundSyncManager manages and stores the set of background sync
@@ -288,7 +287,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   void OnStorageWipedImpl(const base::Closure& callback);
 
   void OnNetworkChanged();
-  void OnPowerChanged();
 
   // Operation Scheduling callback and convenience functions.
   template <typename CallbackT, typename... Params>
@@ -308,7 +306,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   bool disabled_;
 
   scoped_ptr<BackgroundSyncNetworkObserver> network_observer_;
-  scoped_ptr<BackgroundSyncPowerObserver> power_observer_;
 
   base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_;
 

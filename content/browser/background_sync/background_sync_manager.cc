@@ -7,7 +7,6 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
-#include "content/browser/background_sync/background_sync_power_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/public/browser/browser_thread.h"
@@ -181,8 +180,6 @@ BackgroundSyncManager::BackgroundSyncManager(
   network_observer_.reset(new BackgroundSyncNetworkObserver(
       base::Bind(&BackgroundSyncManager::OnNetworkChanged,
                  weak_ptr_factory_.GetWeakPtr())));
-  power_observer_.reset(new BackgroundSyncPowerObserver(base::Bind(
-      &BackgroundSyncManager::OnPowerChanged, weak_ptr_factory_.GetWeakPtr())));
 }
 
 void BackgroundSyncManager::Init() {
@@ -642,8 +639,7 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
 
   DCHECK_EQ(SYNC_ONE_SHOT, registration.periodicity);
 
-  return network_observer_->NetworkSufficient(registration.network_state) &&
-         power_observer_->PowerSufficient(registration.power_state);
+  return network_observer_->NetworkSufficient(registration.network_state);
 }
 
 void BackgroundSyncManager::FireReadyEvents() {
@@ -828,12 +824,6 @@ void BackgroundSyncManager::OnStorageWipedImpl(const base::Closure& callback) {
 }
 
 void BackgroundSyncManager::OnNetworkChanged() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  FireReadyEvents();
-}
-
-void BackgroundSyncManager::OnPowerChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   FireReadyEvents();
