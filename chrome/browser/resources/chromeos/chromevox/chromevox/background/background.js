@@ -281,24 +281,20 @@ cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
 
     switch (target) {
     case 'OpenTab':
-      var destination = new Object();
-      destination.url = msg['url'];
+      var destination = {url: msg['url']};
       chrome.tabs.create(destination);
       break;
     case 'KbExplorer':
-      var explorerPage = new Object();
-      explorerPage.url = 'chromevox/background/kbexplorer.html';
+      var explorerPage = {url: 'chromevox/background/kbexplorer.html'};
       chrome.tabs.create(explorerPage);
       break;
     case 'HelpDocs':
-      var helpPage = new Object();
-      helpPage.url = 'http://chromevox.com/tutorial/index.html';
+      var helpPage = {url: 'http://chromevox.com/tutorial/index.html'};
       chrome.tabs.create(helpPage);
       break;
     case 'Options':
       if (action == 'open') {
-        var optionsPage = new Object();
-        optionsPage.url = 'chromevox/background/options.html';
+        var optionsPage = {url: 'chromevox/background/options.html'};
         chrome.tabs.create(optionsPage);
       }
       break;

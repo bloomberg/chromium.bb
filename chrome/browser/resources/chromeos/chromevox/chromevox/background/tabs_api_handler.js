@@ -135,7 +135,7 @@ cvox.TabsApiHandler.prototype = {
       return;
     }
     chrome.windows.get(windowId, function(window) {
-      chrome.tabs.getSelected(windowId, function(tab) {
+      chrome.tabs.query({active: true, windowId: windowId}, function(tab) {
         var msgId = window.incognito ? 'chrome_incognito_window_selected' :
           'chrome_normal_window_selected';
         var title = tab.title ? tab.title : tab.url;
