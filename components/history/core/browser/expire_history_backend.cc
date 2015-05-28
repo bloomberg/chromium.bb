@@ -12,8 +12,9 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_database.h"
@@ -127,11 +128,13 @@ ExpireHistoryBackend::DeleteEffects::~DeleteEffects() {
 
 ExpireHistoryBackend::ExpireHistoryBackend(
     HistoryBackendNotifier* notifier,
-    HistoryClient* history_client)
+    HistoryClient* history_client,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : notifier_(notifier),
       main_db_(NULL),
       thumb_db_(NULL),
       history_client_(history_client),
+      task_runner_(task_runner),
       weak_factory_(this) {
   DCHECK(notifier_);
 }
@@ -453,7 +456,7 @@ void ExpireHistoryBackend::ScheduleExpire() {
     delay = base::TimeDelta::FromSeconds(kExpirationDelaySec);
   }
 
-  base::MessageLoop::current()->PostDelayedTask(
+  task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ExpireHistoryBackend::DoExpireIteration,
                  weak_factory_.GetWeakPtr()),

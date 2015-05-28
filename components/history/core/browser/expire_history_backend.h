@@ -50,7 +50,8 @@ class ExpireHistoryBackend {
   // that we don't remove any URLs or favicons that are bookmarked (visits are
   // removed though).
   ExpireHistoryBackend(HistoryBackendNotifier* notifier,
-                       HistoryClient* history_client);
+                       HistoryClient* history_client,
+                       scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~ExpireHistoryBackend();
 
   // Completes initialization by setting the databases that this class will use.
@@ -259,6 +260,8 @@ class ExpireHistoryBackend {
   // Use GetHistoryClient to access this, which makes sure the bookmarks are
   // loaded before returning.
   HistoryClient* history_client_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Used to generate runnable methods to do timers on this class. They will be
   // automatically canceled when this class is deleted.

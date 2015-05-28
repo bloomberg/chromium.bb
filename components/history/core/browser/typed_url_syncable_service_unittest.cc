@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_types.h"
 #include "sync/api/fake_sync_change_processor.h"
@@ -37,7 +39,8 @@ const int EXPIRED_VISIT = -1;
 
 class TestHistoryBackend : public HistoryBackend {
  public:
-  TestHistoryBackend() : HistoryBackend(nullptr, nullptr) {}
+  TestHistoryBackend() : HistoryBackend(nullptr, nullptr,
+                                        base::ThreadTaskRunnerHandle::Get()) {}
 
   // HistoryBackend test implementation.
   bool IsExpiredVisitTime(const base::Time& time) override {
@@ -131,6 +134,7 @@ class TypedUrlSyncableServiceTest : public testing::Test {
     fake_change_processor_.reset(new syncer::FakeSyncChangeProcessor);
   }
 
+  base::MessageLoop message_loop_;
   scoped_refptr<HistoryBackend> fake_history_backend_;
   scoped_ptr<TypedUrlSyncableService> typed_url_sync_service_;
   scoped_ptr<syncer::FakeSyncChangeProcessor> fake_change_processor_;

@@ -171,7 +171,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // may be null.
   //
   // This constructor is fast and does no I/O, so can be called at any time.
-  HistoryBackend(Delegate* delegate, HistoryClient* history_client);
+  HistoryBackend(Delegate* delegate, HistoryClient* history_client,
+                 scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Must be called after creation but before any objects are created. If this
   // fails, all other functions will fail as well. (Since this runs on another
@@ -804,6 +805,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Use GetHistoryClient to access this, which makes sure the bookmarks are
   // loaded before returning.
   HistoryClient* history_client_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Used to allow embedder code to stash random data by key. Those object will
   // be deleted before closing the databases (hence the member variable instead

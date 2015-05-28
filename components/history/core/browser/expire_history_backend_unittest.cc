@@ -55,7 +55,8 @@ bool MockCanAddURLToHistory(const GURL& url) {
 class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
  public:
   ExpireHistoryTest()
-      : expirer_(this, &history_client_), now_(base::Time::Now()) {}
+      : expirer_(this, &history_client_, message_loop_.task_runner()),
+        now_(base::Time::Now()) {}
 
  protected:
   // Called by individual tests when they want data populated.

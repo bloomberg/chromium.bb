@@ -20,6 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -196,15 +197,18 @@ HistoryBackendHelper::~HistoryBackendHelper() {
 
 // HistoryBackend --------------------------------------------------------------
 
-HistoryBackend::HistoryBackend(Delegate* delegate,
-                               HistoryClient* history_client)
+HistoryBackend::HistoryBackend(
+    Delegate* delegate,
+    HistoryClient* history_client,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : delegate_(delegate),
       scheduled_kill_db_(false),
-      expirer_(this, history_client),
+      expirer_(this, history_client, task_runner),
       recent_redirects_(kMaxRedirectCount),
       backend_destroy_message_loop_(nullptr),
       segment_queried_(false),
-      history_client_(history_client) {
+      history_client_(history_client),
+      task_runner_(task_runner) {
 }
 
 HistoryBackend::~HistoryBackend() {
@@ -2201,7 +2205,7 @@ void HistoryBackend::ScheduleCommit() {
   if (scheduled_commit_.get())
     return;
   scheduled_commit_ = new CommitLaterTask(this);
-  base::MessageLoop::current()->PostDelayedTask(
+  task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CommitLaterTask::RunCommit, scheduled_commit_.get()),
       base::TimeDelta::FromSeconds(kCommitIntervalSeconds));
@@ -2245,7 +2249,7 @@ void HistoryBackend::ProcessDBTaskImpl() {
     // The task wants to run some more. Schedule it at the end of the current
     // tasks, and process it after an invoke later.
     queued_history_db_tasks_.push_back(task.release());
-    base::MessageLoop::current()->PostTask(
+    task_runner_->PostTask(
         FROM_HERE, base::Bind(&HistoryBackend::ProcessDBTaskImpl, this));
   }
 }
@@ -2398,7 +2402,7 @@ void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
     // that seems dangerous.
     // TODO(shess): Consider changing KillHistoryDatabase() to use
     // RazeAndClose().  Then it can be cleared immediately.
-    base::MessageLoop::current()->PostTask(
+    task_runner_->PostTask(
         FROM_HERE, base::Bind(&HistoryBackend::KillHistoryDatabase, this));
   }
 }

@@ -23,6 +23,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -241,7 +242,8 @@ class HistoryBackendTestBase : public testing::Test {
                                       &test_dir_))
       return;
     backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                  &history_client_);
+                                  &history_client_,
+                                  base::ThreadTaskRunnerHandle::Get());
     backend_->Init(std::string(), false,
                    TestHistoryDatabaseParamsForPath(test_dir_));
   }
@@ -1635,7 +1637,8 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   ASSERT_TRUE(base::CopyFile(old_history_path, new_history_file));
 
   backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                &history_client_);
+                                &history_client_,
+                                base::ThreadTaskRunnerHandle::Get());
   backend_->Init(std::string(), false,
                  TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
@@ -2895,7 +2898,8 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   ASSERT_TRUE(base::CopyFile(old_history, new_history_file));
 
   backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                &history_client_);
+                                &history_client_,
+                                base::ThreadTaskRunnerHandle::Get());
   backend_->Init(std::string(), false,
                  TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();

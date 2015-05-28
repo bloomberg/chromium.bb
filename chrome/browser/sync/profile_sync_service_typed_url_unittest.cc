@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -89,7 +90,8 @@ static const int EXPIRED_VISIT = -1;
 
 class HistoryBackendMock : public HistoryBackend {
  public:
-  HistoryBackendMock() : HistoryBackend(nullptr, nullptr) {}
+  HistoryBackendMock()
+      : HistoryBackend(nullptr, nullptr, base::ThreadTaskRunnerHandle::Get()) {}
   bool IsExpiredVisitTime(const base::Time& time) override {
     return time.ToInternalValue() == EXPIRED_VISIT;
   }

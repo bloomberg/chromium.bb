@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_backend.h"
@@ -74,7 +75,8 @@ void HistoryBackendDBBaseTest::TearDown() {
 }
 
 void HistoryBackendDBBaseTest::CreateBackendAndDatabase() {
-  backend_ = new HistoryBackend(new BackendDelegate(this), nullptr);
+  backend_ = new HistoryBackend(new BackendDelegate(this), nullptr,
+                                base::ThreadTaskRunnerHandle::Get());
   backend_->Init(std::string(), false,
                  TestHistoryDatabaseParamsForPath(history_dir_));
   db_ = backend_->db_.get();

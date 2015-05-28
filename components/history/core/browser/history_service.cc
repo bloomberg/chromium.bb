@@ -863,7 +863,8 @@ bool HistoryService::Init(
   scoped_refptr<HistoryBackend> backend(new HistoryBackend(
       new BackendDelegate(weak_ptr_factory_.GetWeakPtr(),
                           base::ThreadTaskRunnerHandle::Get()),
-      history_client_));
+      history_client_,
+      thread_->task_runner()));
   history_backend_.swap(backend);
 
   ScheduleTask(PRIORITY_UI,
