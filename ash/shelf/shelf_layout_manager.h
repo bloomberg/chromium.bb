@@ -121,6 +121,12 @@ class ASH_EXPORT ShelfLayoutManager
   // Returns the docked area bounds.
   const gfx::Rect& dock_bounds() const { return dock_bounds_; }
 
+  // Returns the bounds within the root window not occupied by the shelf nor the
+  // virtual keyboard.
+  const gfx::Rect& user_work_area_bounds() const {
+    return user_work_area_bounds_;
+  }
+
   // Stops any animations and sets the bounds of the shelf and status
   // widgets.
   void LayoutShelf();
@@ -214,6 +220,7 @@ class ASH_EXPORT ShelfLayoutManager
  private:
   class AutoHideEventFilter;
   class UpdateShelfObserver;
+  friend class AshPopupAlignmentDelegateTest;
   friend class ash::ScreenAsh;
   friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTest;
@@ -398,6 +405,10 @@ class ASH_EXPORT ShelfLayoutManager
 
   // The bounds of the dock.
   gfx::Rect dock_bounds_;
+
+  // The bounds within the root window not occupied by the shelf nor the virtual
+  // keyboard.
+  gfx::Rect user_work_area_bounds_;
 
   // The show hide animation duration override or 0 for default.
   int duration_override_in_ms_;

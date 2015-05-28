@@ -12,7 +12,11 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "base/command_line.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/message_center/message_center_style.h"
 
 namespace ash {
@@ -23,6 +27,8 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
   ~AshPopupAlignmentDelegateTest() override {}
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
     test::AshTestBase::SetUp();
     SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate()));
   }
@@ -30,6 +36,11 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
   void TearDown() override {
     alignment_delegate_.reset();
     test::AshTestBase::TearDown();
+  }
+
+  void SetKeyboardBounds(const gfx::Rect& new_bounds) {
+    ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow())
+        ->OnKeyboardBoundsChanging(new_bounds);
   }
 
  protected:
@@ -170,6 +181,19 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedWindow) {
       kShellWindowId_DockedContainer);
   docked_container->AddChild(window.get());
 
+  // Left-side dock should not affect popup alignment
+  EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
+  EXPECT_EQ(baseline, alignment_delegate()->GetBaseLine());
+  EXPECT_FALSE(alignment_delegate()->IsTopDown());
+  EXPECT_FALSE(alignment_delegate()->IsFromLeft());
+
+  // Force dock to right-side
+  Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_LEFT,
+                                          Shell::GetPrimaryRootWindow());
+  Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_BOTTOM,
+                                          Shell::GetPrimaryRootWindow());
+
+  // Right-side dock should not affect popup alignment
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
   EXPECT_EQ(baseline, alignment_delegate()->GetBaseLine());
   EXPECT_FALSE(alignment_delegate()->IsTopDown());
@@ -244,6 +268,25 @@ TEST_F(AshPopupAlignmentDelegateTest, Unified) {
 
   EXPECT_GT(600,
             alignment_delegate()->GetToastOriginX(gfx::Rect(0, 0, 10, 10)));
+}
+
+// Tests that when the keyboard is showing that notifications appear above it,
+// and that they return to normal once the keyboard is gone.
+TEST_F(AshPopupAlignmentDelegateTest, KeyboardShowing) {
+  ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+  ASSERT_TRUE(keyboard::IsKeyboardOverscrollEnabled());
+
+  UpdateDisplay("600x600");
+  int baseline = alignment_delegate()->GetBaseLine();
+
+  gfx::Rect keyboard_bounds(0, 300, 600, 300);
+  SetKeyboardBounds(keyboard_bounds);
+  int keyboard_baseline = alignment_delegate()->GetBaseLine();
+  EXPECT_NE(baseline, keyboard_baseline);
+  EXPECT_GT(keyboard_bounds.y(), keyboard_baseline);
+
+  SetKeyboardBounds(gfx::Rect());
+  EXPECT_EQ(baseline, alignment_delegate()->GetBaseLine());
 }
 
 }  // namespace ash

@@ -70,13 +70,13 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   gfx::Display GetCurrentDisplay() const;
 
   // Compute the new work area.
-  void UpdateWorkArea(const gfx::Display& display,
-                      ShelfAutoHideState new_state);
+  void UpdateWorkArea();
 
   // Overridden from ShellObserver:
   void OnDisplayWorkAreaInsetsChanged() override;
 
   // Overridden from ShelfLayoutManagerObserver:
+  void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
   // Overridden from gfx::DisplayObserver:
