@@ -26,11 +26,12 @@ remoting.AppHostResponse;
 
 /**
  * @param {Array<string>} appCapabilities Array of application capabilities.
+ * @param {remoting.Application} app
  *
  * @constructor
  * @implements {remoting.Activity}
  */
-remoting.AppRemotingActivity = function(appCapabilities) {
+remoting.AppRemotingActivity = function(appCapabilities, app) {
   /** @private */
   this.sessionFactory_ = new remoting.ClientSessionFactory(
       document.querySelector('#client-container .client-plugin-container'),
@@ -41,6 +42,9 @@ remoting.AppRemotingActivity = function(appCapabilities) {
 
   /** @private {base.Disposables} */
   this.connectedDisposables_ = null;
+
+  /** @private */
+  this.app_ = app;
 };
 
 remoting.AppRemotingActivity.prototype.dispose = function() {
@@ -163,7 +167,9 @@ remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
       document.getElementById('client-container'), connectionInfo);
 
   var idleDetector = new remoting.IdleDetector(
-      document.getElementById('idle-dialog'), this.stop.bind(this));
+      document.getElementById('idle-dialog'),
+      this.app_.getApplicationName(),
+      this.stop.bind(this));
 
   // Map Cmd to Ctrl on Mac since hosts typically use Ctrl for keyboard
   // shortcuts, but we want them to act as natively as possible.
@@ -174,7 +180,8 @@ remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
   // Drop the session after 30s of suspension as we cannot recover from a
   // connectivity loss longer than 30s anyways.
   this.session_.dropSessionOnSuspend(30 * 1000);
-  this.connectedDisposables_ = new base.Disposables(connectedView);
+  this.connectedDisposables_ =
+      new base.Disposables(idleDetector, connectedView);
 };
 
 /**
@@ -182,7 +189,7 @@ remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
  */
 remoting.AppRemotingActivity.prototype.onDisconnected = function(error) {
   if (error.isNone()) {
-    chrome.app.window.current().close();
+    this.app_.quit();
   } else {
     this.onConnectionDropped_();
   }
@@ -228,7 +235,7 @@ remoting.AppRemotingActivity.prototype.onConnectionDropped_ = function() {
 remoting.AppRemotingActivity.prototype.showErrorMessage_ = function(error) {
   console.error('Connection failed: ' + error.toString());
   remoting.MessageWindow.showErrorMessage(
-      remoting.app.getApplicationName(),
+      this.app_.getApplicationName(),
       chrome.i18n.getMessage(error.getTag()));
 };
 

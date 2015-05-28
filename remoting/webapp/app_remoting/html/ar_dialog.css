@@ -3,21 +3,13 @@
  * found in the LICENSE file.
  */
 
-#idle-dialog {
-  position: absolute;
-  top: 100px;
-  width: 100%;
-}
-
 .app-remoting .kd-modaldialog {
   /*
    * kd-modaldialog uses outline, which doesn't affect the bounding box, and so
    * doesn't work well when adjusting the window shape.
    */
   border: 1px solid gray;
-}
-
-#connection-dropped-dialog {
+  /* The layout of modal dialog is managed by remoting.Html5ModalDialog */
   margin: 0px;
   position: absolute;
 }

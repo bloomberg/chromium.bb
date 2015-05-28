@@ -23,38 +23,49 @@
 var remoting = remoting || {};
 
 /**
- * @param {HTMLElement} idleWarning The idle warning dialog.
+ * @param {HTMLElement} rootElement The idle warning dialog.
+ * @param {string} applicationName
  * @param {function():void} callback Called when the idle warning dialog has
  *     timed out or the user has explicitly indicated that they are no longer
  *     using the session.
  * @constructor
- * @implements {remoting.WindowShape.ClientUI}
+ * @implements {base.Disposable}
  */
-remoting.IdleDetector = function(idleWarning, callback) {
-  /** @private */
-  this.idleWarning_ = idleWarning;
-
+remoting.IdleDetector = function(rootElement, applicationName, callback) {
   /** @private */
   this.callback_ = callback;
 
   /**
-   * @private {number?} The id of the running timer, or null if no timer is
-   *     running.
+   * @private {base.OneShotTimer}
    */
-  this.timerId_ = null;
+  this.timer_ = null;
 
   /** @private {?function():void} */
   this.resetTimeoutRef_ = null;
 
-  var manifest = chrome.runtime.getManifest();
-  var message = this.idleWarning_.querySelector('.idle-warning-message');
-  l10n.localizeElement(message, manifest.name);
+  var message = rootElement.querySelector('.idle-warning-message');
+  l10n.localizeElement(message, applicationName);
 
-  var cont = this.idleWarning_.querySelector('.idle-dialog-continue');
-  cont.addEventListener('click', this.onContinue_.bind(this), false);
-  var quit = this.idleWarning_.querySelector('.idle-dialog-disconnect');
-  quit.addEventListener('click', this.onDisconnect_.bind(this), false);
+  /** @private */
+  this.dialog_ = new remoting.Html5ModalDialog({
+    dialog: /** @type {HTMLDialogElement} */ (rootElement),
+    primaryButton: rootElement.querySelector('.idle-dialog-continue'),
+    secondaryButton: rootElement.querySelector('.idle-dialog-disconnect'),
+    closeOnEscape: false
+  });
+
   this.resetTimeout_();
+};
+
+remoting.IdleDetector.prototype.dispose = function() {
+  base.dispose(this.timer_);
+  this.timer_ = null;
+
+  if (this.resetTimeoutRef_) {
+    this.registerInputDetectionCallbacks_(false);
+  }
+  base.dispose(this.dialog_);
+  this.dialog_ = null;
 };
 
 /**
@@ -79,20 +90,18 @@ remoting.IdleDetector.prototype.registerInputDetectionCallbacks_ =
     }
     this.resetTimeoutRef_ = null;
   }
-}
+};
 
 /**
  * @private
  */
 remoting.IdleDetector.prototype.resetTimeout_ = function() {
-  if (this.timerId_ !== null) {
-    window.clearTimeout(this.timerId_);
-  }
   if (this.resetTimeoutRef_ == null) {
     this.registerInputDetectionCallbacks_(true);
   }
-  this.timerId_ = window.setTimeout(this.onIdleTimeout_.bind(this),
-                                    remoting.IdleDetector.kIdleTimeoutMs);
+  base.dispose(this.timer_);
+  this.timer_ = new base.OneShotTimer(this.onIdleTimeout_.bind(this),
+                                      remoting.IdleDetector.kIdleTimeoutMs);
 };
 
 /**
@@ -100,61 +109,37 @@ remoting.IdleDetector.prototype.resetTimeout_ = function() {
  */
 remoting.IdleDetector.prototype.onIdleTimeout_ = function() {
   this.registerInputDetectionCallbacks_(false);
-  this.showIdleWarning_(true);
-  this.timerId_ = window.setTimeout(this.onDialogTimeout_.bind(this),
-                                    remoting.IdleDetector.kDialogTimeoutMs);
+  this.timer_ = new base.OneShotTimer(this.onDialogTimeout_.bind(this),
+                                      remoting.IdleDetector.kDialogTimeoutMs);
+  this.showIdleWarning_();
 };
 
 /**
  * @private
  */
 remoting.IdleDetector.prototype.onDialogTimeout_ = function() {
-  this.timerId_ = null;
-  this.showIdleWarning_(false);
-  this.callback_();
+  base.dispose(this.timer_);
+  this.timer_ = null;
+  this.dialog_.close(remoting.MessageDialog.Result.SECONDARY);
 };
 
 /**
  * @private
  */
-remoting.IdleDetector.prototype.onContinue_ = function() {
-  this.showIdleWarning_(false);
-  this.resetTimeout_();
-};
-
-/**
- * @private
- */
-remoting.IdleDetector.prototype.onDisconnect_ = function() {
-  if (this.timerId_ !== null) {
-    window.clearTimeout(this.timerId_);
-  }
-  this.onDialogTimeout_();
-};
-
-/**
- * @param {boolean} show True to show the warning dialog; false to hide it.
- * @private
- */
-remoting.IdleDetector.prototype.showIdleWarning_ = function(show) {
-  this.idleWarning_.hidden = !show;
-  if (show) {
-    remoting.windowShape.registerClientUI(this);
-  } else {
-    remoting.windowShape.unregisterClientUI(this);
-  }
-};
-
-/**
- * @param {Array<{left: number, top: number, width: number, height: number}>}
- *     rects List of rectangles.
- */
-remoting.IdleDetector.prototype.addToRegion = function(rects) {
-  if (!this.idleWarning_.hidden) {
-    var dialog = this.idleWarning_.querySelector('.kd-modaldialog');
-    var rect = /** @type {ClientRect} */ (dialog.getBoundingClientRect());
-    rects.push(rect);
-  }
+remoting.IdleDetector.prototype.showIdleWarning_ = function() {
+  var that = this;
+  this.dialog_.show().then(function(
+      /** remoting.MessageDialog.Result */ result) {
+    if (result === remoting.MessageDialog.Result.PRIMARY) {
+      // Continue.
+      that.resetTimeout_();
+    } else if (result === remoting.MessageDialog.Result.SECONDARY) {
+      // Disconnect.
+      base.dispose(that.timer_);
+      that.timer_ = null;
+      that.callback_();
+    }
+  });
 };
 
 // Time-out after 1hr of no activity.

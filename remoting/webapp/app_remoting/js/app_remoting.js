@@ -58,7 +58,8 @@ remoting.AppRemoting.prototype.signInFailed_ = function(error) {
 remoting.AppRemoting.prototype.initApplication_ = function() {
   remoting.windowShape.updateClientWindowShape();
 
-  this.activity_ = new remoting.AppRemotingActivity(this.appCapabilities_);
+  this.activity_ =
+      new remoting.AppRemotingActivity(this.appCapabilities_, this);
 };
 
 /**
