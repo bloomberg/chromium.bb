@@ -9,7 +9,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/base/util.h"
+#include "cc/base/math_util.h"
 #include "cc/resources/resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -191,7 +191,7 @@ void TextureUploader::UploadWithTexSubImage(const uint8* image,
   // Use 4-byte row alignment (OpenGL default) for upload performance.
   // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
   unsigned upload_image_stride =
-      RoundUp(bytes_per_pixel * source_rect.width(), 4u);
+      MathUtil::RoundUp(bytes_per_pixel * source_rect.width(), 4u);
 
   if (upload_image_stride == image_rect.width() * bytes_per_pixel &&
       !offset.x()) {
@@ -246,7 +246,7 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
   // Use 4-byte row alignment (OpenGL default) for upload performance.
   // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
   unsigned upload_image_stride =
-      RoundUp(bytes_per_pixel * source_rect.width(), 4u);
+      MathUtil::RoundUp(bytes_per_pixel * source_rect.width(), 4u);
 
   // Upload tile data via a mapped transfer buffer
   uint8* pixel_dest =

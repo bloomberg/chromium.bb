@@ -12,7 +12,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
-#include "cc/base/util.h"
 #include "cc/debug/picture_debug_util.h"
 #include "cc/debug/traced_picture.h"
 #include "cc/debug/traced_value.h"

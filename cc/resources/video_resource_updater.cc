@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/base/util.h"
+#include "cc/base/math_util.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/resources/resource_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -336,8 +336,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       size_t bytes_per_pixel = BitsPerPixel(plane_resource.resource_format) / 8;
       // Use 4-byte row alignment (OpenGL default) for upload performance.
       // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
-      size_t upload_image_stride =
-          RoundUp<size_t>(bytes_per_pixel * resource_size_pixels.width(), 4u);
+      size_t upload_image_stride = MathUtil::RoundUp<size_t>(
+          bytes_per_pixel * resource_size_pixels.width(), 4u);
 
       const uint8_t* pixels;
       if (upload_image_stride == video_stride_pixels * bytes_per_pixel) {

@@ -92,7 +92,6 @@
         'base/time_util.h',
         'base/unique_notifier.cc',
         'base/unique_notifier.h',
-        'base/util.h',
         'debug/benchmark_instrumentation.cc',
         'debug/benchmark_instrumentation.h',
         'debug/debug_colors.cc',

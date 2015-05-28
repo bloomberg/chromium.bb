@@ -4,7 +4,7 @@
 
 #include "cc/resources/texture_uploader.h"
 
-#include "cc/base/util.h"
+#include "cc/base/math_util.h"
 #include "cc/resources/prioritized_resource.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -129,7 +129,7 @@ class TextureUploadTestContext : public gpu::gles2::GLES2InterfaceStub {
     // We'll expect the first byte of every row to be 0x1, and the last byte to
     // be 0x2.
     const unsigned int stride =
-        RoundUp(bytes_per_pixel * width, unpack_alignment_);
+        MathUtil::RoundUp(bytes_per_pixel * width, unpack_alignment_);
     for (GLsizei row = 0; row < height; ++row) {
       const uint8* row_bytes =
           bytes + (xoffset * bytes_per_pixel + (yoffset + row) * stride);

@@ -193,5 +193,59 @@ TEST(MathUtilTest, MapEnclosedRectWith2dAxisAlignedTransform) {
   EXPECT_EQ(gfx::Rect(2, 4, 6, 8), output);
 }
 
+TEST(MathUtilTest, RoundUp) {
+  for (int multiplier = 1; multiplier <= 10; ++multiplier) {
+    // Try attempts in descending order, so that we can
+    // determine the correct value before it's needed.
+    int correct;
+    for (int attempt = 5 * multiplier; attempt >= -5 * multiplier; --attempt) {
+      if ((attempt % multiplier) == 0)
+        correct = attempt;
+      EXPECT_EQ(correct, MathUtil::RoundUp(attempt, multiplier))
+          << "attempt=" << attempt << " multiplier=" << multiplier;
+    }
+  }
+
+  for (unsigned multiplier = 1; multiplier <= 10; ++multiplier) {
+    // Try attempts in descending order, so that we can
+    // determine the correct value before it's needed.
+    unsigned correct;
+    for (unsigned attempt = 5 * multiplier; attempt > 0; --attempt) {
+      if ((attempt % multiplier) == 0)
+        correct = attempt;
+      EXPECT_EQ(correct, MathUtil::RoundUp(attempt, multiplier))
+          << "attempt=" << attempt << " multiplier=" << multiplier;
+    }
+    EXPECT_EQ(0u, MathUtil::RoundUp(0u, multiplier))
+        << "attempt=0 multiplier=" << multiplier;
+  }
+}
+
+TEST(MathUtilTest, RoundDown) {
+  for (int multiplier = 1; multiplier <= 10; ++multiplier) {
+    // Try attempts in ascending order, so that we can
+    // determine the correct value before it's needed.
+    int correct;
+    for (int attempt = -5 * multiplier; attempt <= 5 * multiplier; ++attempt) {
+      if ((attempt % multiplier) == 0)
+        correct = attempt;
+      EXPECT_EQ(correct, MathUtil::RoundDown(attempt, multiplier))
+          << "attempt=" << attempt << " multiplier=" << multiplier;
+    }
+  }
+
+  for (unsigned multiplier = 1; multiplier <= 10; ++multiplier) {
+    // Try attempts in ascending order, so that we can
+    // determine the correct value before it's needed.
+    unsigned correct;
+    for (unsigned attempt = 0; attempt <= 5 * multiplier; ++attempt) {
+      if ((attempt % multiplier) == 0)
+        correct = attempt;
+      EXPECT_EQ(correct, MathUtil::RoundDown(attempt, multiplier))
+          << "attempt=" << attempt << " multiplier=" << multiplier;
+    }
+  }
+}
+
 }  // namespace
 }  // namespace cc

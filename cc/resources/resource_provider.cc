@@ -13,7 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/base/util.h"
+#include "cc/base/math_util.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/shared_bitmap_manager.h"
@@ -1622,11 +1622,11 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
   gl->BindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
                  resource->gl_pixel_buffer_id);
   unsigned bytes_per_pixel = BitsPerPixel(resource->format) / 8;
-  gl->BufferData(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
-                 resource->size.height() *
-                     RoundUp(bytes_per_pixel * resource->size.width(), 4u),
-                 NULL,
-                 GL_DYNAMIC_DRAW);
+  gl->BufferData(
+      GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
+      resource->size.height() *
+          MathUtil::RoundUp(bytes_per_pixel * resource->size.width(), 4u),
+      NULL, GL_DYNAMIC_DRAW);
   gl->BindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, 0);
 }
 

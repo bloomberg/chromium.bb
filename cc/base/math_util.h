@@ -96,6 +96,29 @@ class CC_EXPORT MathUtil {
     return (d > 0.0) ? std::floor(d + 0.5) : std::ceil(d - 0.5);
   }
 
+  // RoundUp rounds up a given |n| to be a multiple of |mul|.
+  // Examples:
+  //    - RoundUp(123, 50) returns 150.
+  //    - RoundUp(-123, 50) returns -100.
+  template <typename T>
+  static T RoundUp(T n, T mul) {
+    static_assert(std::numeric_limits<T>::is_integer,
+                  "T must be an integer type");
+    return (n > 0) ? ((n + mul - 1) / mul) * mul : (n / mul) * mul;
+  }
+
+  // RoundDown rounds down a given |n| to be a multiple of |mul|.
+  // Examples:
+  //    - RoundDown(123, 50) returns 100.
+  //    - RoundDown(-123, 50) returns -150.
+  template <typename T>
+  static T RoundDown(T n, T mul) {
+    static_assert(std::numeric_limits<T>::is_integer,
+                  "T must be an integer type");
+    return (n > 0) ? (n / mul) * mul : (n == 0) ? 0
+                                                : ((n - mul + 1) / mul) * mul;
+  }
+
   template <typename T> static T ClampToRange(T value, T min, T max) {
     return std::min(std::max(value, min), max);
   }

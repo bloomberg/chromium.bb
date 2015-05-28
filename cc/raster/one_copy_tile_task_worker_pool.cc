@@ -10,7 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/base/util.h"
+#include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/resources/resource_pool.h"
@@ -307,7 +307,8 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
   size_t chunk_size_in_rows = std::max(
       static_cast<size_t>(1), max_bytes_per_copy_operation_ / bytes_per_row);
   // Align chunk size to 4. Required to support compressed texture formats.
-  chunk_size_in_rows = RoundUp(chunk_size_in_rows, static_cast<size_t>(4));
+  chunk_size_in_rows =
+      MathUtil::RoundUp(chunk_size_in_rows, static_cast<size_t>(4));
   size_t y = 0;
   size_t height = src->size().height();
   while (y < height) {

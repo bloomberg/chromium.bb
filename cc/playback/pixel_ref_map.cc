@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <limits>
 
-#include "cc/base/util.h"
+#include "cc/base/math_util.h"
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/picture.h"
 #include "skia/ext/pixel_ref_utils.h"
@@ -33,15 +33,16 @@ void PixelRefMap::GatherPixelRefsFromPicture(SkPicture* picture) {
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture, &pixel_refs);
   for (skia::DiscardablePixelRefList::const_iterator it = pixel_refs.begin();
        it != pixel_refs.end(); ++it) {
-    gfx::Point min(
-        RoundDown(static_cast<int>(it->pixel_ref_rect.x()), cell_size_.width()),
-        RoundDown(static_cast<int>(it->pixel_ref_rect.y()),
-                  cell_size_.height()));
-    gfx::Point max(
-        RoundDown(static_cast<int>(std::ceil(it->pixel_ref_rect.right())),
-                  cell_size_.width()),
-        RoundDown(static_cast<int>(std::ceil(it->pixel_ref_rect.bottom())),
-                  cell_size_.height()));
+    gfx::Point min(MathUtil::RoundDown(static_cast<int>(it->pixel_ref_rect.x()),
+                                       cell_size_.width()),
+                   MathUtil::RoundDown(static_cast<int>(it->pixel_ref_rect.y()),
+                                       cell_size_.height()));
+    gfx::Point max(MathUtil::RoundDown(
+                       static_cast<int>(std::ceil(it->pixel_ref_rect.right())),
+                       cell_size_.width()),
+                   MathUtil::RoundDown(
+                       static_cast<int>(std::ceil(it->pixel_ref_rect.bottom())),
+                       cell_size_.height()));
 
     for (int y = min.y(); y <= max.y(); y += cell_size_.height()) {
       for (int x = min.x(); x <= max.x(); x += cell_size_.width()) {
@@ -147,11 +148,12 @@ void PixelRefMap::Iterator::PointToFirstPixelRef(const gfx::Rect& rect) {
   gfx::Size cell_size(target_pixel_ref_map_->cell_size_);
   // We have to find a cell_size aligned point that corresponds to
   // query_rect. Point is a multiple of cell_size.
-  min_point_ = gfx::Point(RoundDown(query_rect.x(), cell_size.width()),
-                          RoundDown(query_rect.y(), cell_size.height()));
-  max_point_ =
-      gfx::Point(RoundDown(query_rect.right() - 1, cell_size.width()),
-                 RoundDown(query_rect.bottom() - 1, cell_size.height()));
+  min_point_ =
+      gfx::Point(MathUtil::RoundDown(query_rect.x(), cell_size.width()),
+                 MathUtil::RoundDown(query_rect.y(), cell_size.height()));
+  max_point_ = gfx::Point(
+      MathUtil::RoundDown(query_rect.right() - 1, cell_size.width()),
+      MathUtil::RoundDown(query_rect.bottom() - 1, cell_size.height()));
 
   // Limit the points to known pixel ref boundaries.
   min_point_ = gfx::Point(

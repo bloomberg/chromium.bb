@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
-#include "cc/base/util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/micro_benchmark_impl.h"
 #include "cc/debug/traced_value.h"
@@ -695,7 +694,7 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
       divisor = 2;
     if (content_bounds.width() <= viewport_width / 4)
       divisor = 1;
-    default_tile_height = RoundUp(viewport_height, divisor) / divisor;
+    default_tile_height = MathUtil::RoundUp(viewport_height, divisor) / divisor;
 
     // Grow default sizes to account for overlapping border texels.
     default_tile_width += 2 * PictureLayerTiling::kBorderTexels;
@@ -731,12 +730,12 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
   // Clamp the tile width/height to the content width/height to save space.
   if (content_bounds.width() < default_tile_width) {
     tile_width = std::min(tile_width, content_bounds.width());
-    tile_width = RoundUp(tile_width, kTileRoundUp);
+    tile_width = MathUtil::RoundUp(tile_width, kTileRoundUp);
     tile_width = std::min(tile_width, default_tile_width);
   }
   if (content_bounds.height() < default_tile_height) {
     tile_height = std::min(tile_height, content_bounds.height());
-    tile_height = RoundUp(tile_height, kTileRoundUp);
+    tile_height = MathUtil::RoundUp(tile_height, kTileRoundUp);
     tile_height = std::min(tile_height, default_tile_height);
   }
 

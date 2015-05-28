@@ -33,7 +33,6 @@ source_set("base") {
     "time_util.h",
     "unique_notifier.cc",
     "unique_notifier.h",
-    "util.h",
   ]
 
   deps = [
