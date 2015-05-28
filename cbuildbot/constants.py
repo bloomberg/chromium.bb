@@ -22,20 +22,14 @@ def _FindSourceRoot():
   return source_root
 
 
-def _FindChromiteRoot():
-  """Find the root of the current Chromite checkout."""
-  root = os.path.realpath(os.path.join(
-      os.path.abspath(__file__), '..', '..'))
-  return root
-
-
 SOURCE_ROOT = _FindSourceRoot()
 CHROOT_SOURCE_ROOT = '/mnt/host/source'
 CHROOT_WORKSPACE_ROOT = '/mnt/host/workspace'
 CHROOT_CACHE_ROOT = '/var/cache/chromeos-cache'
 
 CROSUTILS_DIR = os.path.join(SOURCE_ROOT, 'src/scripts')
-CHROMITE_DIR = _FindChromiteRoot()
+CHROMITE_DIR = os.path.realpath(os.path.join(
+    os.path.abspath(__file__), '..', '..'))
 BOOTSTRAP_DIR = os.path.join(CHROMITE_DIR, 'bootstrap')
 DEPOT_TOOLS_DIR = os.path.join(SOURCE_ROOT, 'chromium/tools/depot_tools')
 CHROMITE_BIN_SUBDIR = 'chromite/bin'
@@ -361,7 +355,6 @@ MANIFEST_VERSIONS_INT_GOB_URL = INTERNAL_GOB_URL + '/chromeos/manifest-versions'
 MANIFEST_VERSIONS_INT_GOB_URL_TEST = MANIFEST_VERSIONS_INT_GOB_URL + '-test'
 
 MANIFEST_VERSIONS_GS_URL = 'gs://chromeos-manifest-versions'
-TRASH_BUCKET = 'gs://chromeos-throw-away-bucket'
 
 # Standard directories under buildroot for cloning these repos.
 EXTERNAL_MANIFEST_VERSIONS_PATH = 'manifest-versions'
