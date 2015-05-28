@@ -273,8 +273,6 @@ public class TabPersistentStore extends TabPersister {
             Log.d(TAG, "loadState exception: " + e.toString(), e);
         }
 
-        // Delete manifest file and any stale incognito state.
-        deleteFileAsync(SAVED_STATE_FILE);
         // As everything is loaded asynchronously user actions can create a tab that has ids
         // pointing to old files and not deleted fast enough. This makes sure to delete everything
         // that we are sure not to use.
