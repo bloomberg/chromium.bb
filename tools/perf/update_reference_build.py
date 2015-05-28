@@ -43,7 +43,7 @@ def _ReportValueError(error_string):
 
 class BuildUpdater(object):
   # Remove a platform name from this list to disable updating it.
-  _REF_BUILD_PLATFORMS = ['Mac', 'Win', 'Linux', 'Linux_x64']
+  _REF_BUILD_PLATFORMS = ['Mac64', 'Win', 'Linux', 'Linux_x64']
 
   # Omaha is Chrome's autoupdate server. It reports the current versions used
   # by each platform on each channel.
@@ -56,10 +56,10 @@ class BuildUpdater(object):
   #   destination: Name of the folder to download the reference build to.
   UpdateInfo = collections.namedtuple('UpdateInfo',
       'omaha, gs_build, zip_name, destination')
-  _PLATFORM_MAP = { 'Mac': UpdateInfo(omaha='mac',
-                                      gs_build='mac',
-                                      zip_name='chrome-mac.zip',
-                                      destination='chrome_mac'),
+  _PLATFORM_MAP = { 'Mac64': UpdateInfo(omaha='mac',
+                                        gs_build='mac64',
+                                        zip_name='chrome-mac.zip',
+                                        destination='chrome_mac'),
                     'Win': UpdateInfo(omaha='win',
                                       gs_build='win',
                                       zip_name='chrome-win.zip',
@@ -70,7 +70,7 @@ class BuildUpdater(object):
                                         destination='chrome_linux'),
                     'Linux_x64': UpdateInfo(omaha='linux',
                                             gs_build='precise64',
-                                            zip_name='chrome-precise65.zip',
+                                            zip_name='chrome-precise64.zip',
                                             destination='chrome_linux64')}
 
   def __init__(self):
@@ -204,24 +204,24 @@ class BuildUpdater(object):
   def _DownloadBuilds(self):
     for platform in self._platform_to_version_map:
       version = self._platform_to_version_map[platform]
-      for filename in self._GetPlatformFiles(platform):
-        output = os.path.join('dl', platform,
-                              '%s_%s_%s' % (platform,
-                                            version,
-                                            filename))
-        if os.path.exists(output):
-          logging.info('%s alread exists, skipping download', output)
-          continue
-        build_version = self._FindBuildVersion(platform, version, filename)
-        if not build_version:
-          logging.critical('Failed to find %s build for r%s\n', platform,
-                           version)
-          sys.exit(1)
-        dirname = os.path.dirname(output)
-        if dirname and not os.path.exists(dirname):
-          os.makedirs(dirname)
-        url = self._GetBuildUrl(platform, build_version, filename)
-        self._DownloadFile(url, output)
+      filename = self._GetPlatformFiles(platform)
+      output = os.path.join('dl', platform,
+                            '%s_%s_%s' % (platform,
+                                          version,
+                                          filename))
+      if os.path.exists(output):
+        logging.info('%s alread exists, skipping download', output)
+        continue
+      build_version = self._FindBuildVersion(platform, version, filename)
+      if not build_version:
+        logging.critical('Failed to find %s build for r%s\n', platform,
+                         version)
+        sys.exit(1)
+      dirname = os.path.dirname(output)
+      if dirname and not os.path.exists(dirname):
+        os.makedirs(dirname)
+      url = self._GetBuildUrl(platform, build_version, filename)
+      self._DownloadFile(url, output)
 
   def _DownloadFile(self, url, output):
     logging.info('Downloading %s, saving to %s', url, output)

@@ -18,7 +18,7 @@ class UpdateReferenceBuildUnittest(unittest.TestCase):
       return {'mac':'1', 'linux':'1', 'win':'1'}
     @classmethod
     def AllCurrentVersion1(_):
-      return {'Mac':'1', 'Linux':'1', 'Linux_x64':'1', 'Win':'1'}
+      return {'Mac64':'1', 'Linux':'1', 'Linux_x64':'1', 'Win':'1'}
     @classmethod
     def MixedOmahaVersion23(_):
       return {'mac':'2', 'linux':'3', 'win':'2'}
@@ -30,22 +30,22 @@ class UpdateReferenceBuildUnittest(unittest.TestCase):
     try:
       update_ref_build.BuildUpdater._CurrentRefBuildsMap = EmptyVersions
       update_ref_build.BuildUpdater._OmahaVersionsMap = AllOmahaVersion1
-      expected_versions = {'Mac':'1', 'Linux':'1', 'Linux_x64':'1', 'Win':'1'}
+      expected_versions = {'Mac64':'1', 'Linux':'1', 'Linux_x64':'1', 'Win':'1'}
       b = update_ref_build.BuildUpdater()
       self.assertEqual(expected_versions, b._platform_to_version_map)
 
       update_ref_build.BuildUpdater._OmahaVersionsMap = MissingOmahaVersion
-      expected_versions = {'Mac':'2', 'Win':'1'}
+      expected_versions = {'Mac64':'2', 'Win':'1'}
       b = update_ref_build.BuildUpdater()
       self.assertEqual(expected_versions, b._platform_to_version_map)
 
       update_ref_build.BuildUpdater._CurrentRefBuildsMap = AllCurrentVersion1
-      expected_versions = {'Mac':'2'}
+      expected_versions = {'Mac64':'2'}
       b = update_ref_build.BuildUpdater()
       self.assertEqual(expected_versions, b._platform_to_version_map)
 
       update_ref_build.BuildUpdater._OmahaVersionsMap = MixedOmahaVersion23
-      expected_versions = {'Mac':'2', 'Linux':'3', 'Linux_x64':'3', 'Win':'2'}
+      expected_versions = {'Mac64':'2', 'Linux':'3', 'Linux_x64':'3', 'Win':'2'}
       b = update_ref_build.BuildUpdater()
       self.assertEqual(expected_versions, b._platform_to_version_map)
     finally:
