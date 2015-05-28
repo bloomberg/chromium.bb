@@ -741,11 +741,15 @@ void KeySystemConfigSelector::SelectConfigInternal(
                    << "permission was denied.";
           continue;
         }
-        media_permission_->RequestPermission(
-            MediaPermission::PROTECTED_MEDIA_IDENTIFIER,
-            GURL(request->security_origin.toString()),
-            base::Bind(&KeySystemConfigSelector::OnPermissionResult,
-                       weak_factory_.GetWeakPtr(), base::Passed(&request)));
+        {
+          // Note: the GURL must not be constructed inline because
+          // base::Passed(&request) sets |request| to null.
+          GURL security_origin(request->security_origin.toString());
+          media_permission_->RequestPermission(
+              MediaPermission::PROTECTED_MEDIA_IDENTIFIER, security_origin,
+              base::Bind(&KeySystemConfigSelector::OnPermissionResult,
+                         weak_factory_.GetWeakPtr(), base::Passed(&request)));
+        }
         return;
       case CONFIGURATION_SUPPORTED:
         cdm_config.allow_distinctive_identifier =
