@@ -320,6 +320,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void NotImplemented(const gin::Arguments& args);
 
   void ForceNextWebGLContextCreationToFail();
+  void ForceNextDrawingBufferCreationToFail();
 
   base::WeakPtr<TestRunner> runner_;
 
@@ -570,6 +571,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetBluetoothMockDataSet)
       .SetMethod("forceNextWebGLContextCreationToFail",
                  &TestRunnerBindings::ForceNextWebGLContextCreationToFail)
+      .SetMethod("forceNextDrawingBufferCreationToFail",
+                 &TestRunnerBindings::ForceNextDrawingBufferCreationToFail)
       .SetMethod("setGeofencingMockProvider",
                  &TestRunnerBindings::SetGeofencingMockProvider)
       .SetMethod("clearGeofencingMockProvider",
@@ -1510,6 +1513,11 @@ void TestRunnerBindings::SetInterceptPostMessage(bool value) {
 void TestRunnerBindings::ForceNextWebGLContextCreationToFail() {
   if (runner_)
     runner_->ForceNextWebGLContextCreationToFail();
+}
+
+void TestRunnerBindings::ForceNextDrawingBufferCreationToFail() {
+  if (runner_)
+    runner_->ForceNextDrawingBufferCreationToFail();
 }
 
 void TestRunnerBindings::NotImplemented(const gin::Arguments& args) {
@@ -2946,6 +2954,11 @@ void TestRunner::CapturePixelsAsyncThen(v8::Local<v8::Function> callback) {
 void TestRunner::ForceNextWebGLContextCreationToFail() {
   if (web_view_)
     web_view_->forceNextWebGLContextCreationToFail();
+}
+
+void TestRunner::ForceNextDrawingBufferCreationToFail() {
+  if (web_view_)
+    web_view_->forceNextDrawingBufferCreationToFail();
 }
 
 void TestRunner::CopyImageAtAndCapturePixelsAsyncThen(
