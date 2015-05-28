@@ -111,23 +111,21 @@ private:
 
     RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
 
-    // Container for the media control elements.
-    RawPtrWillBeMember<MediaControlPanelElement> m_panel;
-
     // Media control elements.
-    RawPtrWillBeMember<MediaControlOverlayPlayButtonElement> m_overlayPlayButton;
     RawPtrWillBeMember<MediaControlOverlayEnclosureElement> m_overlayEnclosure;
+    RawPtrWillBeMember<MediaControlOverlayPlayButtonElement> m_overlayPlayButton;
+    RawPtrWillBeMember<MediaControlCastButtonElement> m_overlayCastButton;
+    RawPtrWillBeMember<MediaControlPanelEnclosureElement> m_enclosure;
+    RawPtrWillBeMember<MediaControlPanelElement> m_panel;
     RawPtrWillBeMember<MediaControlPlayButtonElement> m_playButton;
-    RawPtrWillBeMember<MediaControlCurrentTimeDisplayElement> m_currentTimeDisplay;
     RawPtrWillBeMember<MediaControlTimelineElement> m_timeline;
+    RawPtrWillBeMember<MediaControlCurrentTimeDisplayElement> m_currentTimeDisplay;
+    RawPtrWillBeMember<MediaControlTimeRemainingDisplayElement> m_durationDisplay;
     RawPtrWillBeMember<MediaControlMuteButtonElement> m_muteButton;
     RawPtrWillBeMember<MediaControlVolumeSliderElement> m_volumeSlider;
     RawPtrWillBeMember<MediaControlToggleClosedCaptionsButtonElement> m_toggleClosedCaptionsButton;
-    RawPtrWillBeMember<MediaControlFullscreenButtonElement> m_fullScreenButton;
     RawPtrWillBeMember<MediaControlCastButtonElement> m_castButton;
-    RawPtrWillBeMember<MediaControlCastButtonElement> m_overlayCastButton;
-    RawPtrWillBeMember<MediaControlTimeRemainingDisplayElement> m_durationDisplay;
-    RawPtrWillBeMember<MediaControlPanelEnclosureElement> m_enclosure;
+    RawPtrWillBeMember<MediaControlFullscreenButtonElement> m_fullScreenButton;
 
     Timer<MediaControls> m_hideMediaControlsTimer;
     unsigned m_hideTimerBehaviorFlags;
