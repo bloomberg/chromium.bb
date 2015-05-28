@@ -2011,3 +2011,13 @@ name=bug_492821
 *!blink::StyleEngine::createSheet
 *!blink::StyleElement::createSheet
 *!blink::StyleElement::process
+
+UNINITIALIZED READ
+name=bug_493167
+system call NtWriteFile parameter #5
+KERNELBASE.dll!WriteFile
+KERNEL32.dll!WriteFile
+*!base::File::WriteAtCurrentPos
+*!sessions::SessionBackend::AppendCommandsToFile
+*!sessions::SessionBackend::AppendCommands
+*!base::internal::RunnableAdapter<>::Run
