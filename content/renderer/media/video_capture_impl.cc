@@ -247,13 +247,14 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
           buffer->buffer_size,
           buffer->buffer->handle(),
           0,
-          timestamp - first_frame_timestamp_,
-          media::BindToCurrentLoop(
-              base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
-                         weak_factory_.GetWeakPtr(),
-                         buffer_id,
-                         buffer,
-                         0)));
+          timestamp - first_frame_timestamp_);
+  frame->AddDestructionObserver(
+      media::BindToCurrentLoop(
+          base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
+                     weak_factory_.GetWeakPtr(),
+                     buffer_id,
+                     buffer,
+                     0)));
   frame->metadata()->MergeInternalValuesFrom(metadata);
 
   for (const auto& client : clients_)

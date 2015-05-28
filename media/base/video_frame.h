@@ -142,8 +142,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // The image data resides in |data| and is assumed to be packed tightly in a
   // buffer of logical dimensions |coded_size| with the appropriate bit depth
   // and plane count as given by |format|.  The shared memory handle of the
-  // backing allocation, if present, can be passed in with |handle|.  When the
-  // frame is destroyed, |no_longer_needed_cb.Run()| will be called.
+  // backing allocation, if present, can be passed in with |handle|.
   // Returns NULL on failure.
   static scoped_refptr<VideoFrame> WrapExternalPackedMemory(
       Format format,
@@ -154,12 +153,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       size_t data_size,
       base::SharedMemoryHandle handle,
       size_t shared_memory_offset,
-      base::TimeDelta timestamp,
-      const base::Closure& no_longer_needed_cb);
+      base::TimeDelta timestamp);
 
   // Wraps external YUV data of the given parameters with a VideoFrame.
-  // The returned VideoFrame does not own the data passed in. When the frame
-  // is destroyed |no_longer_needed_cb.Run()| will be called.
+  // The returned VideoFrame does not own the data passed in.
   static scoped_refptr<VideoFrame> WrapExternalYuvData(
       Format format,
       const gfx::Size& coded_size,
@@ -171,8 +168,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       uint8* y_data,
       uint8* u_data,
       uint8* v_data,
-      base::TimeDelta timestamp,
-      const base::Closure& no_longer_needed_cb);
+      base::TimeDelta timestamp);
 
 #if defined(OS_POSIX)
   // Wraps provided dmabufs
@@ -184,7 +180,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // The image data is only accessible via dmabuf fds, which are usually passed
   // directly to a hardware device and/or to another process, or can also be
   // mapped via mmap() for CPU access.
-  // When the frame is destroyed, |no_longer_needed_cb.Run()| will be called.
   // Returns NULL on failure.
   static scoped_refptr<VideoFrame> WrapExternalDmabufs(
       Format format,
@@ -192,8 +187,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       const std::vector<int> dmabuf_fds,
-      base::TimeDelta timestamp,
-      const base::Closure& no_longer_needed_cb);
+      base::TimeDelta timestamp);
 #endif
 
 #if defined(OS_MACOSX)
@@ -210,14 +204,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       base::TimeDelta timestamp);
 #endif
 
-  // Wraps |frame| and calls |no_longer_needed_cb| when the wrapper VideoFrame
-  // gets destroyed. |visible_rect| must be a sub rect within
+  // Wraps |frame|. |visible_rect| must be a sub rect within
   // frame->visible_rect().
   static scoped_refptr<VideoFrame> WrapVideoFrame(
       const scoped_refptr<VideoFrame>& frame,
       const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size,
-      const base::Closure& no_longer_needed_cb);
+      const gfx::Size& natural_size);
 
   // Creates a frame which indicates end-of-stream.
   static scoped_refptr<VideoFrame> CreateEOSFrame();
@@ -319,6 +311,14 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Returns the offset into the shared memory where the frame data begins.
   size_t shared_memory_offset() const;
+
+  // Adds a callback to be run when the VideoFrame is about to be destroyed.
+  // The callback may be run from ANY THREAD, and so it is up to the client to
+  // ensure thread safety.  Although read-only access to the members of this
+  // VideoFrame is permitted while the callback executes (including
+  // VideoFrameMetadata), clients should not assume the data pointers are
+  // valid.
+  void AddDestructionObserver(const base::Closure& callback);
 
   // Returns a dictionary of optional metadata.  This contains information
   // associated with the frame that downstream clients might use for frame-level
@@ -439,7 +439,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer_;
 #endif
 
-  base::Closure no_longer_needed_cb_;
+  std::vector<base::Closure> done_callbacks_;
 
   base::TimeDelta timestamp_;
 

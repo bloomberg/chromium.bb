@@ -560,11 +560,11 @@ void V4L2ImageProcessor::Dequeue() {
             gfx::Rect(output_visible_size_),
             output_visible_size_,
             output_record.fds,
-            job_record->frame->timestamp(),
-            media::BindToCurrentLoop(
-                base::Bind(&V4L2ImageProcessor::ReuseOutputBuffer,
-                           device_weak_factory_.GetWeakPtr(),
-                           dqbuf.index)));
+            job_record->frame->timestamp());
+    output_frame->AddDestructionObserver(media::BindToCurrentLoop(
+        base::Bind(&V4L2ImageProcessor::ReuseOutputBuffer,
+                   device_weak_factory_.GetWeakPtr(),
+                   dqbuf.index)));
 
     DVLOG(3) << "Processing finished, returning frame, ts="
              << output_frame->timestamp().InMilliseconds();

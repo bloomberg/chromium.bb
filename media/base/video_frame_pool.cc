@@ -85,9 +85,11 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
         format, coded_size, visible_rect, natural_size, timestamp);
   }
 
-  return VideoFrame::WrapVideoFrame(
-      frame, frame->visible_rect(), frame->natural_size(),
+  scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
+      frame, frame->visible_rect(), frame->natural_size());
+  wrapped_frame->AddDestructionObserver(
       base::Bind(&VideoFramePool::PoolImpl::FrameReleased, this, frame));
+  return wrapped_frame;
 }
 
 void VideoFramePool::PoolImpl::Shutdown() {

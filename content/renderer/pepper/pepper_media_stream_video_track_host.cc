@@ -358,8 +358,7 @@ int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
         y_data,
         u_data,
         v_data,
-        base::TimeDelta::FromMilliseconds(ts_ms),
-        base::Closure());
+        base::TimeDelta::FromMilliseconds(ts_ms));
 
     frame_deliverer_->DeliverVideoFrame(frame);
   }

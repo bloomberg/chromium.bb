@@ -262,7 +262,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     video_frame = media::VideoFrame::WrapVideoFrame(
         frame,
         region_in_frame,
-        desired_size,
+        desired_size);
+    video_frame->AddDestructionObserver(
         base::Bind(&ReleaseOriginalFrame, frame));
 
     DVLOG(3) << "desired size  " << desired_size.ToString()

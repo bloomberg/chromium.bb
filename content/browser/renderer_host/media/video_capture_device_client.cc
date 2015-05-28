@@ -470,8 +470,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
                                        frame_format.frame_size),
             base::SharedMemory::NULLHandle(),
             0  /* shared_memory_offset */,
-            base::TimeDelta(),
-            base::Closure());
+            base::TimeDelta());
     DCHECK(video_frame.get());
     video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                        frame_format.frame_rate);

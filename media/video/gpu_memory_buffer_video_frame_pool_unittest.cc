@@ -63,8 +63,7 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
         y_data,                   // y_data
         u_data,                   // u_data
         v_data,                   // v_data
-        base::TimeDelta(),        // timestamp,
-        base::Closure());         // no_longer_needed_cb
+        base::TimeDelta());       // timestamp
   }
 
  protected:

@@ -142,8 +142,7 @@ class VideoCaptureControllerTest : public testing::Test {
         media::VideoFrame::AllocationSize(media::VideoFrame::I420, dimensions),
         base::SharedMemory::NULLHandle(),
         0,
-        base::TimeDelta(),
-        base::Closure());
+        base::TimeDelta());
   }
 
   scoped_refptr<media::VideoFrame> WrapMailboxBuffer(

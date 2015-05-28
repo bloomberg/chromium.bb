@@ -205,7 +205,7 @@ TEST(VideoFrame, WrapVideoFrame) {
   const int kWidth = 4;
   const int kHeight = 4;
   scoped_refptr<media::VideoFrame> frame;
-  bool no_longer_needed_triggered = false;
+  bool done_callback_was_run = false;
   {
     scoped_refptr<media::VideoFrame> wrapped_frame =
         VideoFrame::CreateBlackFrame(gfx::Size(kWidth, kHeight));
@@ -214,9 +214,10 @@ TEST(VideoFrame, WrapVideoFrame) {
     gfx::Rect visible_rect(1, 1, 1, 1);
     gfx::Size natural_size = visible_rect.size();
     frame = media::VideoFrame::WrapVideoFrame(
-        wrapped_frame, visible_rect, natural_size,
+        wrapped_frame, visible_rect, natural_size);
+    frame->AddDestructionObserver(
         base::Bind(&FrameNoLongerNeededCallback, wrapped_frame,
-                   &no_longer_needed_triggered));
+                   &done_callback_was_run));
     EXPECT_EQ(wrapped_frame->coded_size(), frame->coded_size());
     EXPECT_EQ(wrapped_frame->data(media::VideoFrame::kYPlane),
               frame->data(media::VideoFrame::kYPlane));
@@ -226,9 +227,9 @@ TEST(VideoFrame, WrapVideoFrame) {
     EXPECT_EQ(natural_size, frame->natural_size());
   }
 
-  EXPECT_FALSE(no_longer_needed_triggered);
+  EXPECT_FALSE(done_callback_was_run);
   frame = NULL;
-  EXPECT_TRUE(no_longer_needed_triggered);
+  EXPECT_TRUE(done_callback_was_run);
 }
 
 // Ensure each frame is properly sized and allocated.  Will trigger OOB reads

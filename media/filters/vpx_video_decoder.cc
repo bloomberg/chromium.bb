@@ -488,7 +488,8 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
         vpx_image->planes[VPX_PLANE_Y],
         vpx_image->planes[VPX_PLANE_U],
         vpx_image->planes[VPX_PLANE_V],
-        kNoTimestamp(),
+        kNoTimestamp());
+    video_frame->get()->AddDestructionObserver(
         memory_pool_->CreateFrameCallback(vpx_image->fb_priv));
     video_frame->get()->metadata()->SetInteger(VideoFrameMetadata::COLOR_SPACE,
                                                color_space);

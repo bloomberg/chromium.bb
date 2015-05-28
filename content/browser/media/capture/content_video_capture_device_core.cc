@@ -127,8 +127,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
         output_buffer->size(),
         base::SharedMemory::NULLHandle(),
         0,
-        base::TimeDelta(),
-        base::Closure());
+        base::TimeDelta());
     DCHECK(*storage);
   }
   *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame,

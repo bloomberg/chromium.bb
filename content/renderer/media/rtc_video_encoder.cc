@@ -502,8 +502,9 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
           input_buffer->mapped_size(),
           input_buffer->handle(),
           0,
-          base::TimeDelta(),
-          base::Bind(&RTCVideoEncoder::Impl::EncodeFrameFinished, this, index));
+          base::TimeDelta());
+  frame->AddDestructionObserver(
+      base::Bind(&RTCVideoEncoder::Impl::EncodeFrameFinished, this, index));
   if (!frame.get()) {
     DLOG(ERROR) << "Impl::EncodeOneFrame(): failed to create frame";
     NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);

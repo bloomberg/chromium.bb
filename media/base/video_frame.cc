@@ -280,8 +280,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(
     size_t data_size,
     base::SharedMemoryHandle handle,
     size_t data_offset,
-    base::TimeDelta timestamp,
-    const base::Closure& no_longer_needed_cb) {
+    base::TimeDelta timestamp) {
   const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
 
   if (!IsValidConfig(format, new_coded_size, visible_rect, natural_size))
@@ -303,7 +302,6 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(
       frame->data_[kYPlane] = data;
       frame->data_[kUPlane] = data + new_coded_size.GetArea();
       frame->data_[kVPlane] = data + (new_coded_size.GetArea() * 5 / 4);
-      frame->no_longer_needed_cb_ = no_longer_needed_cb;
       return frame;
     }
     default:
@@ -324,8 +322,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     uint8* y_data,
     uint8* u_data,
     uint8* v_data,
-    base::TimeDelta timestamp,
-    const base::Closure& no_longer_needed_cb) {
+    base::TimeDelta timestamp) {
   const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
   CHECK(IsValidConfig(format, new_coded_size, visible_rect, natural_size));
 
@@ -339,7 +336,6 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
   frame->data_[kYPlane] = y_data;
   frame->data_[kUPlane] = u_data;
   frame->data_[kVPlane] = v_data;
-  frame->no_longer_needed_cb_ = no_longer_needed_cb;
   return frame;
 }
 
@@ -351,8 +347,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     const std::vector<int> dmabuf_fds,
-    base::TimeDelta timestamp,
-    const base::Closure& no_longer_needed_cb) {
+    base::TimeDelta timestamp) {
   if (!IsValidConfig(format, coded_size, visible_rect, natural_size))
     return NULL;
 
@@ -383,7 +378,6 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     frame->strides_[i] = 0;
   }
 
-  frame->no_longer_needed_cb_ = no_longer_needed_cb;
   return frame;
 }
 #endif
@@ -433,8 +427,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
 scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
       const scoped_refptr<VideoFrame>& frame,
       const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size,
-      const base::Closure& no_longer_needed_cb) {
+      const gfx::Size& natural_size) {
   // NATIVE_TEXTURE frames need mailbox info propagated, and there's no support
   // for that here yet, see http://crbug/362521.
   CHECK_NE(frame->format(), NATIVE_TEXTURE);
@@ -451,7 +444,6 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
     wrapped_frame->data_[i] = frame->data(i);
   }
 
-  wrapped_frame->no_longer_needed_cb_ = no_longer_needed_cb;
   return wrapped_frame;
 }
 
@@ -648,7 +640,7 @@ void VideoFrame::AllocateYUV() {
   for (size_t plane = 0; plane < VideoFrame::NumPlanes(format_); ++plane)
     data_[plane] = data + offset[plane];
 
-  no_longer_needed_cb_ = base::Bind(&ReleaseData, data);
+  AddDestructionObserver(base::Bind(&ReleaseData, data));
 }
 
 VideoFrame::VideoFrame(VideoFrame::Format format,
@@ -687,8 +679,9 @@ VideoFrame::~VideoFrame() {
     }
     base::ResetAndReturn(&mailbox_holders_release_cb_).Run(release_sync_point);
   }
-  if (!no_longer_needed_cb_.is_null())
-    base::ResetAndReturn(&no_longer_needed_cb_).Run();
+
+  for (auto& callback : done_callbacks_)
+    base::ResetAndReturn(&callback).Run();
 }
 
 // static
@@ -775,6 +768,11 @@ base::SharedMemoryHandle VideoFrame::shared_memory_handle() const {
 
 size_t VideoFrame::shared_memory_offset() const {
   return shared_memory_offset_;
+}
+
+void VideoFrame::AddDestructionObserver(const base::Closure& callback) {
+  DCHECK(!callback.is_null());
+  done_callbacks_.push_back(callback);
 }
 
 void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {

@@ -1043,7 +1043,8 @@ void ContentDecryptorDelegate::DeliverFrame(
           frame_data + frame_info->plane_offsets[PP_DECRYPTEDFRAMEPLANES_U],
           frame_data + frame_info->plane_offsets[PP_DECRYPTEDFRAMEPLANES_V],
           base::TimeDelta::FromMicroseconds(
-              frame_info->tracking_info.timestamp),
+              frame_info->tracking_info.timestamp));
+  decoded_frame->AddDestructionObserver(
           media::BindToCurrentLoop(
               base::Bind(&BufferNoLongerNeeded,
                          ppb_buffer,

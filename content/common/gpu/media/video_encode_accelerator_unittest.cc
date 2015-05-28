@@ -1097,7 +1097,8 @@ scoped_refptr<media::VideoFrame> VEAClient::PrepareInputFrame(off_t position,
           frame_data_v,
           base::TimeDelta().FromMilliseconds(
               next_input_id_ * base::Time::kMillisecondsPerSecond /
-              current_framerate_),
+              current_framerate_));
+  frame->AddDestructionObserver(
           media::BindToCurrentLoop(
               base::Bind(&VEAClient::InputNoLongerNeededCallback,
                          base::Unretained(this),

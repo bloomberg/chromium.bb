@@ -92,7 +92,8 @@ TEST(VideoFrameMac, CheckLifetime) {
 
   int instances_destroyed = 0;
   auto wrapper_frame = VideoFrame::WrapVideoFrame(
-      frame, frame->visible_rect(), frame->natural_size(),
+      frame, frame->visible_rect(), frame->natural_size());
+  wrapper_frame->AddDestructionObserver(
       base::Bind(&Increment, &instances_destroyed));
   ASSERT_TRUE(wrapper_frame.get());
 

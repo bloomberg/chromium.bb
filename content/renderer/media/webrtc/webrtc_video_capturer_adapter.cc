@@ -128,9 +128,9 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
 
     const gfx::Size output_size(output_width, output_height);
     scoped_refptr<media::VideoFrame> video_frame =
-        media::VideoFrame::WrapVideoFrame(
-            frame_, visible_rect, output_size,
-            base::Bind(&ReleaseOriginalFrame, frame_));
+        media::VideoFrame::WrapVideoFrame(frame_, visible_rect, output_size);
+    video_frame->AddDestructionObserver(
+        base::Bind(&ReleaseOriginalFrame, frame_));
 
     const int64_t timestamp_ns = frame_->timestamp().InMicroseconds() *
                                  base::Time::kNanosecondsPerMicrosecond;

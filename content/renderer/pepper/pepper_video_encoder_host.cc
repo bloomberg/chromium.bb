@@ -632,13 +632,16 @@ scoped_refptr<media::VideoFrame> PepperVideoEncoderHost::CreateVideoFrame(
   uint32_t shm_offset = static_cast<uint8*>(buffer->video.data) -
                         static_cast<uint8*>(buffer_manager_.shm()->memory());
 
-  return media::VideoFrame::WrapExternalPackedMemory(
-      media_input_format_, input_coded_size_, gfx::Rect(input_coded_size_),
-      input_coded_size_, static_cast<uint8*>(buffer->video.data),
-      buffer->video.data_size, buffer_manager_.shm()->handle(), shm_offset,
-      base::TimeDelta(),
+  scoped_refptr<media::VideoFrame> frame =
+      media::VideoFrame::WrapExternalPackedMemory(
+          media_input_format_, input_coded_size_, gfx::Rect(input_coded_size_),
+          input_coded_size_, static_cast<uint8*>(buffer->video.data),
+          buffer->video.data_size, buffer_manager_.shm()->handle(), shm_offset,
+          base::TimeDelta());
+  frame->AddDestructionObserver(
       base::Bind(&PepperVideoEncoderHost::FrameReleased,
                  weak_ptr_factory_.GetWeakPtr(), reply_context, frame_id));
+  return frame;
 }
 
 void PepperVideoEncoderHost::FrameReleased(
