@@ -502,6 +502,9 @@ class ChromeSDKCommand(command.CliCommand):
         '--nogoma', action='store_false', default=True, dest='goma',
         help="Disables Goma in the shell by removing it from the PATH.")
     parser.add_argument(
+        '--gomadir', type='path',
+        help="Use the goma installation at the specified PATH.")
+    parser.add_argument(
         '--version', default=None, type=cls.ValidateVersion,
         help="Specify version of SDK to use, in the format '3912.0.0'.  "
              "Defaults to determining version based on the type of checkout "
@@ -773,27 +776,29 @@ class ChromeSDKCommand(command.CliCommand):
     common_path = os.path.join(self.options.cache_dir, constants.COMMON_CACHE)
     common_cache = cache.DiskCache(common_path)
 
-    ref = common_cache.Lookup(('goma', '2'))
-    if not ref.Exists():
-      Log('Installing Goma.', silent=self.silent)
-      with osutils.TempDir() as tempdir:
-        goma_dir = os.path.join(tempdir, 'goma')
-        os.mkdir(goma_dir)
-        result = cros_build_lib.DebugRunCommand(
-            self.FETCH_GOMA_CMD, cwd=goma_dir, error_code_ok=True)
-        if result.returncode:
-          raise GomaError('Failed to fetch Goma')
-       # Update to latest version of goma. We choose the outside-chroot version
-       # ('goobuntu') over the chroot version ('chromeos') by supplying
-       # input='1' to the following prompt:
-       #
-       # What is your platform?
-       #  1. Goobuntu  2. Precise (32bit)  3. Lucid (32bit)  4. Debian
-       #  5. Chrome OS  6. MacOS ? -->
-        cros_build_lib.DebugRunCommand(
-            ['python2', 'goma_ctl.py', 'update'], cwd=goma_dir, input='1\n')
-        ref.SetDefault(goma_dir)
-    goma_dir = ref.path
+    goma_dir = self.options.gomadir
+    if not goma_dir:
+      ref = common_cache.Lookup(('goma', '2'))
+      if not ref.Exists():
+        Log('Installing Goma.', silent=self.silent)
+        with osutils.TempDir() as tempdir:
+          goma_dir = os.path.join(tempdir, 'goma')
+          os.mkdir(goma_dir)
+          result = cros_build_lib.DebugRunCommand(
+              self.FETCH_GOMA_CMD, cwd=goma_dir, error_code_ok=True)
+          if result.returncode:
+            raise GomaError('Failed to fetch Goma')
+         # Update to latest version of goma. We choose the outside-chroot
+         # version ('goobuntu') over the chroot version ('chromeos') by
+         # supplying input='1' to the following prompt:
+         #
+         # What is your platform?
+         #  1. Goobuntu  2. Precise (32bit)  3. Lucid (32bit)  4. Debian
+         #  5. Chrome OS  6. MacOS ? -->
+          cros_build_lib.DebugRunCommand(
+              ['python2', 'goma_ctl.py', 'update'], cwd=goma_dir, input='1\n')
+          ref.SetDefault(goma_dir)
+      goma_dir = ref.path
 
     Log('Starting Goma.', silent=self.silent)
     cros_build_lib.DebugRunCommand(
