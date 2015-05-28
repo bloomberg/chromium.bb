@@ -302,7 +302,6 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
     OwnPtr<Vector<char>> cachedMetaData = startupData->m_cachedMetaData.release();
     V8CacheOptions v8CacheOptions = startupData->m_v8CacheOptions;
 
-    m_webScheduler = backingThread().platformThread().scheduler();
     {
         MutexLocker lock(m_threadStateMutex);
 
@@ -324,6 +323,7 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
 
         PlatformThreadData::current().threadTimers().setSharedTimer(adoptPtr(new WorkerSharedTimer(this)));
     }
+    m_webScheduler = backingThread().platformThread().scheduler();
 
     // The corresponding call to stopRunLoop() is in ~WorkerScriptController().
     didStartRunLoop();
