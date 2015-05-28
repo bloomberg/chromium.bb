@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/base/util.h"
 #include "cc/debug/traced_value.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/resources/resource_pool.h"
@@ -79,10 +80,6 @@ const int kCopyFlushPeriod = 4;
 
 // Number of in-flight copy operations to allow.
 const int kMaxCopyOperations = 32;
-
-// Minimum number of rows per copy operation. 4 or greater is required to
-// support compressed texture formats.
-const size_t kMinRowsPerCopyOperation = 4;
 
 // Delay been checking for copy operations to complete.
 const int kCheckForCompletedCopyOperationsTickRateMs = 1;
@@ -308,7 +305,9 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
   size_t bytes_per_row =
       (BitsPerPixel(src->format()) * src->size().width()) / 8;
   size_t chunk_size_in_rows = std::max(
-      kMinRowsPerCopyOperation, max_bytes_per_copy_operation_ / bytes_per_row);
+      static_cast<size_t>(1), max_bytes_per_copy_operation_ / bytes_per_row);
+  // Align chunk size to 4. Required to support compressed texture formats.
+  chunk_size_in_rows = RoundUp(chunk_size_in_rows, static_cast<size_t>(4));
   size_t y = 0;
   size_t height = src->size().height();
   while (y < height) {
