@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/debug/leak_tracker.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
@@ -119,14 +118,16 @@ class SafeBrowsingURLRequestContextGetter
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
 
+  // Shuts down any pending requests using the getter, and nulls out
+  // |sb_service_|.
+  void SafeBrowsingServiceShuttingDown();
+
  protected:
   ~SafeBrowsingURLRequestContextGetter() override;
 
  private:
-  SafeBrowsingService* const sb_service_;  // Owned by BrowserProcess.
+  SafeBrowsingService* sb_service_;  // Owned by BrowserProcess.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-
-  base::debug::LeakTracker<SafeBrowsingURLRequestContextGetter> leak_tracker_;
 };
 
 SafeBrowsingURLRequestContextGetter::SafeBrowsingURLRequestContextGetter(
@@ -136,13 +137,15 @@ SafeBrowsingURLRequestContextGetter::SafeBrowsingURLRequestContextGetter(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)) {
 }
 
-SafeBrowsingURLRequestContextGetter::~SafeBrowsingURLRequestContextGetter() {}
-
 net::URLRequestContext*
 SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(sb_service_->url_request_context_.get());
 
+  // Check if the service has been shut down.
+  if (!sb_service_)
+    return nullptr;
+
+  DCHECK(sb_service_->url_request_context_.get());
   return sb_service_->url_request_context_.get();
 }
 
@@ -150,6 +153,13 @@ scoped_refptr<base::SingleThreadTaskRunner>
 SafeBrowsingURLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
 }
+
+void SafeBrowsingURLRequestContextGetter::SafeBrowsingServiceShuttingDown() {
+  sb_service_ = nullptr;
+  URLRequestContextGetter::NotifyContextShuttingDown();
+}
+
+SafeBrowsingURLRequestContextGetter::~SafeBrowsingURLRequestContextGetter() {}
 
 // static
 SafeBrowsingServiceFactory* SafeBrowsingService::factory_ = NULL;
@@ -298,11 +308,16 @@ void SafeBrowsingService::ShutDown() {
 
   download_service_.reset();
 
-  url_request_context_getter_ = NULL;
   BrowserThread::PostNonNestableTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SafeBrowsingService::DestroyURLRequestContextOnIOThread,
-                 this));
+                 this, url_request_context_getter_));
+
+  // Release the URLRequestContextGetter after passing it to the IOThread.  It
+  // has to be released now rather than in the destructor because it can only
+  // be deleted on the IOThread, and the SafeBrowsingService outlives the IO
+  // thread.
+  url_request_context_getter_ = nullptr;
 }
 
 // Binhash verification is only enabled for UMA users for now.
@@ -425,17 +440,11 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
   url_request_context_->set_cookie_store(cookie_store.get());
 }
 
-void SafeBrowsingService::DestroyURLRequestContextOnIOThread() {
+void SafeBrowsingService::DestroyURLRequestContextOnIOThread(
+    scoped_refptr<SafeBrowsingURLRequestContextGetter> context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  url_request_context_->AssertNoURLRequests();
-
-  // Need to do the CheckForLeaks on IOThread instead of in ShutDown where
-  // url_request_context_getter_ is cleared,  since the URLRequestContextGetter
-  // will PostTask to IOTread to delete itself.
-  using base::debug::LeakTracker;
-  LeakTracker<SafeBrowsingURLRequestContextGetter>::CheckForLeaks();
-
+  context_getter->SafeBrowsingServiceShuttingDown();
   url_request_context_.reset();
 }
 

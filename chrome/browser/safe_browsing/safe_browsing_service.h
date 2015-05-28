@@ -181,7 +181,10 @@ class SafeBrowsingService
   void InitURLRequestContextOnIOThread(
       net::URLRequestContextGetter* system_url_request_context_getter);
 
-  void DestroyURLRequestContextOnIOThread();
+  // Destroys the URLRequest and shuts down the provided getter on the
+  // IO thread.
+  void DestroyURLRequestContextOnIOThread(
+      scoped_refptr<SafeBrowsingURLRequestContextGetter> context_getter);
 
   // Called to initialize objects that are used on the io_thread.  This may be
   // called multiple times during the life of the SafeBrowsingService.
@@ -226,7 +229,7 @@ class SafeBrowsingService
 
   // The SafeBrowsingURLRequestContextGetter used to access
   // |url_request_context_|. Accessed on UI thread.
-  scoped_refptr<net::URLRequestContextGetter>
+  scoped_refptr<SafeBrowsingURLRequestContextGetter>
       url_request_context_getter_;
 
   // The SafeBrowsingURLRequestContext. Accessed on IO thread.
