@@ -31,7 +31,8 @@ class HttpResponse;
 // be registered as an additional request handler.
 class FakeGaia {
  public:
-  typedef std::set<std::string> ScopeSet;
+  using ScopeSet = std::set<std::string>;
+  using RefreshTokenToDeviceIdMap = std::map<std::string, std::string>;
 
   // Access token details used for token minting and the token info endpoint.
   struct AccessTokenInfo {
@@ -51,6 +52,9 @@ class FakeGaia {
   struct MergeSessionParams {
     MergeSessionParams();
     ~MergeSessionParams();
+
+    // Updates params with non-empty values from |params|.
+    void Update(const MergeSessionParams& params);
 
     // Values of SID and LSID cookie that are set by /ServiceLoginAuth or its
     // equivalent at the end of the SAML login flow.
@@ -85,6 +89,9 @@ class FakeGaia {
 
   // Sets the initial value of tokens and cookies.
   void SetMergeSessionParams(const MergeSessionParams& params);
+
+  // Updates various params with non-empty values from |params|.
+  void UpdateMergeSessionParams(const MergeSessionParams& params);
 
   // Sets the specified |gaia_id| as corresponding to the given |email|
   // address when setting GAIA response headers.  If no mapping is given for
@@ -122,6 +129,17 @@ class FakeGaia {
   static bool GetQueryParameter(const std::string& query,
                                 const std::string& key,
                                 std::string* value);
+
+  // Returns a device ID associated with a given |refresh_token|.
+  std::string GetDeviceIdByRefreshToken(const std::string& refresh_token) const;
+
+  void SetRefreshTokenToDeviceIdMap(
+      const RefreshTokenToDeviceIdMap& refresh_token_to_device_id_map);
+
+  const RefreshTokenToDeviceIdMap& refresh_token_to_device_id_map() const {
+    return refresh_token_to_device_id_map_;
+  }
+
  protected:
   // HTTP handler for /MergeSession.
   virtual void HandleMergeSession(
@@ -210,6 +228,7 @@ class FakeGaia {
   std::string embedded_setup_chromeos_response_;
   SamlAccountIdpMap saml_account_idp_map_;
   bool issue_oauth_code_cookie_;
+  RefreshTokenToDeviceIdMap refresh_token_to_device_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGaia);
 };

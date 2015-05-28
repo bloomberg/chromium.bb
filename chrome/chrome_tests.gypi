@@ -712,6 +712,7 @@
       'browser/chromeos/login/screens/update_screen_browsertest.cc',
       'browser/chromeos/login/session_login_browsertest.cc',
       'browser/chromeos/login/signin/oauth2_browsertest.cc',
+      'browser/chromeos/login/signin/device_id_browsertest.cc',
       'browser/chromeos/login/supervised/supervised_user_creation_browsertest.cc',
       'browser/chromeos/login/supervised/supervised_user_password_browsertest.cc',
       'browser/chromeos/login/supervised/supervised_user_test_base.cc',

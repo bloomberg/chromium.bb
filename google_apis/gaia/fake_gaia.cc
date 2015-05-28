@@ -136,6 +136,25 @@ FakeGaia::MergeSessionParams::MergeSessionParams() {
 FakeGaia::MergeSessionParams::~MergeSessionParams() {
 }
 
+void FakeGaia::MergeSessionParams::Update(const MergeSessionParams& update) {
+  // This lambda uses a pointer to data member to merge attributes.
+  auto maybe_update_field =
+      [this, &update](std::string MergeSessionParams::* field_ptr) {
+        if (!(update.*field_ptr).empty())
+          this->*field_ptr = update.*field_ptr;
+      };
+
+  maybe_update_field(&MergeSessionParams::auth_sid_cookie);
+  maybe_update_field(&MergeSessionParams::auth_lsid_cookie);
+  maybe_update_field(&MergeSessionParams::auth_code);
+  maybe_update_field(&MergeSessionParams::refresh_token);
+  maybe_update_field(&MergeSessionParams::access_token);
+  maybe_update_field(&MergeSessionParams::gaia_uber_token);
+  maybe_update_field(&MergeSessionParams::session_sid_cookie);
+  maybe_update_field(&MergeSessionParams::session_lsid_cookie);
+  maybe_update_field(&MergeSessionParams::email);
+}
+
 FakeGaia::FakeGaia() : issue_oauth_code_cookie_(false) {
   base::FilePath source_root_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
@@ -171,6 +190,10 @@ void FakeGaia::SetMergeSessionParams(
   merge_session_params_ = params;
 }
 
+void FakeGaia::UpdateMergeSessionParams(const MergeSessionParams& params) {
+  merge_session_params_.Update(params);
+}
+
 void FakeGaia::MapEmailToGaiaId(const std::string& email,
                                 const std::string& gaia_id) {
   DCHECK(!email.empty());
@@ -180,7 +203,7 @@ void FakeGaia::MapEmailToGaiaId(const std::string& email,
 
 std::string FakeGaia::GetGaiaIdOfEmail(const std::string& email) const {
   DCHECK(!email.empty());
-  auto it = email_to_gaia_id_map_.find(email);
+  const auto it = email_to_gaia_id_map_.find(email);
   return it == email_to_gaia_id_map_.end() ? std::string(kDefaultGaiaId) :
       it->second;
 }
@@ -304,6 +327,18 @@ bool FakeGaia::GetQueryParameter(const std::string& query,
   // for parsing.
   GURL query_url("http://localhost?" + query);
   return net::GetValueForKeyInQuery(query_url, key, value);
+}
+
+std::string FakeGaia::GetDeviceIdByRefreshToken(
+    const std::string& refresh_token) const {
+  auto it = refresh_token_to_device_id_map_.find(refresh_token);
+  return it != refresh_token_to_device_id_map_.end() ? it->second
+                                                     : std::string();
+}
+
+void FakeGaia::SetRefreshTokenToDeviceIdMap(
+    const RefreshTokenToDeviceIdMap& refresh_token_to_device_id_map) {
+  refresh_token_to_device_id_map_ = refresh_token_to_device_id_map;
 }
 
 void FakeGaia::HandleMergeSession(const HttpRequest& request,
@@ -602,9 +637,27 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
       return;
     }
 
+    std::string device_id;
+    if (GetQueryParameter(request.content, "device_id", &device_id)) {
+      std::string device_type;
+      if (!GetQueryParameter(request.content, "device_type", &device_type)) {
+        http_response->set_code(net::HTTP_BAD_REQUEST);
+        LOG(ERROR) << "'device_type' should be set if 'device_id' is set.";
+        return;
+      }
+      if (device_type != "chrome") {
+        http_response->set_code(net::HTTP_BAD_REQUEST);
+        LOG(ERROR) << "'device_type' is not 'chrome'.";
+        return;
+      }
+    }
+
     base::DictionaryValue response_dict;
     response_dict.SetString("refresh_token",
                             merge_session_params_.refresh_token);
+    if (!device_id.empty())
+      refresh_token_to_device_id_map_[merge_session_params_.refresh_token] =
+          device_id;
     response_dict.SetString("access_token",
                             merge_session_params_.access_token);
     response_dict.SetInteger("expires_in", 3600);
