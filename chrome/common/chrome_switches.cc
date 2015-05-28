@@ -385,9 +385,6 @@ const char kEnableAppList[]                 = "enable-app-list";
 // Enable OS integration for Chrome app file associations.
 const char kEnableAppsFileAssociations[]    = "enable-apps-file-associations";
 
-// Enables the experimental asynchronous DNS client.
-const char kEnableAsyncDns[]                = "enable-async-dns";
-
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 

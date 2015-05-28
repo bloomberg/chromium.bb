@@ -58,7 +58,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
           prefs::kEnableTouchpadThreeFingerClick, true },
 #endif
       { switches::kDisableAsyncDns, prefs::kBuiltInDnsClientEnabled, false },
-      { switches::kEnableAsyncDns, prefs::kBuiltInDnsClientEnabled, true },
 };
 
 const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry
