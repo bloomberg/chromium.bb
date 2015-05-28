@@ -74,7 +74,7 @@ TEST(VideoCaptureOracleTest, EnforcesFramesDeliveredInOrder) {
         VideoCaptureOracle::kCompositorUpdate,
         damage_rect, t));
     last_frame_number = oracle.RecordCapture();
-    ASSERT_TRUE(oracle.CompleteCapture(last_frame_number, &ignored));
+    ASSERT_TRUE(oracle.CompleteCapture(last_frame_number, true, &ignored));
   }
 
   // Basic pipelined scenario: More than one frame in-flight at delivery points.
@@ -88,7 +88,8 @@ TEST(VideoCaptureOracleTest, EnforcesFramesDeliveredInOrder) {
       last_frame_number = oracle.RecordCapture();
     }
     for (int j = num_in_flight - 1; j >= 0; --j) {
-      ASSERT_TRUE(oracle.CompleteCapture(last_frame_number - j, &ignored));
+      ASSERT_TRUE(
+          oracle.CompleteCapture(last_frame_number - j, true, &ignored));
     }
   }
 
@@ -102,9 +103,10 @@ TEST(VideoCaptureOracleTest, EnforcesFramesDeliveredInOrder) {
           damage_rect, t));
       last_frame_number = oracle.RecordCapture();
     }
-    ASSERT_TRUE(oracle.CompleteCapture(last_frame_number, &ignored));
+    ASSERT_TRUE(oracle.CompleteCapture(last_frame_number, true, &ignored));
     for (int j = 1; j < num_in_flight; ++j) {
-      ASSERT_FALSE(oracle.CompleteCapture(last_frame_number - j, &ignored));
+      ASSERT_FALSE(
+          oracle.CompleteCapture(last_frame_number - j, true, &ignored));
     }
   }
 }
@@ -153,7 +155,7 @@ TEST(VideoCaptureOracleTest, TransitionsSmoothlyBetweenSamplers) {
     const int frame_number = oracle.RecordCapture();
 
     base::TimeTicks frame_timestamp;
-    ASSERT_TRUE(oracle.CompleteCapture(frame_number, &frame_timestamp));
+    ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &frame_timestamp));
     ASSERT_FALSE(frame_timestamp.is_null());
     if (!last_frame_timestamp.is_null()) {
       const base::TimeDelta delta = frame_timestamp - last_frame_timestamp;
@@ -167,6 +169,100 @@ TEST(VideoCaptureOracleTest, TransitionsSmoothlyBetweenSamplers) {
       EXPECT_GE(max_acceptable_delta.InMicroseconds(), delta.InMicroseconds());
     }
     last_frame_timestamp = frame_timestamp;
+  }
+}
+
+// Tests that VideoCaptureOracle prevents timer polling from initiating
+// simultaneous captures.
+TEST(VideoCaptureOracleTest, SamplesOnlyOneOverdueFrameAtATime) {
+  const base::TimeDelta min_capture_period =
+      base::TimeDelta::FromSeconds(1) / 30;
+  const base::TimeDelta vsync_interval =
+      base::TimeDelta::FromSeconds(1) / 60;
+  const base::TimeDelta timer_interval = base::TimeDelta::FromMilliseconds(
+      VideoCaptureOracle::kMinTimerPollPeriodMillis);
+
+  VideoCaptureOracle oracle(min_capture_period);
+
+  // Have the oracle observe some compositor events.  Simulate that each capture
+  // completes successfully.
+  base::TimeTicks t = InitialTestTimeTicks();
+  base::TimeTicks ignored;
+  bool did_complete_a_capture = false;
+  for (int i = 0; i < 10; ++i) {
+    t += vsync_interval;
+    if (oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kCompositorUpdate, gfx::Rect(), t)) {
+      ASSERT_TRUE(
+          oracle.CompleteCapture(oracle.RecordCapture(), true, &ignored));
+      did_complete_a_capture = true;
+    }
+  }
+  ASSERT_TRUE(did_complete_a_capture);
+
+  // Start one more compositor-based capture, but do not notify of completion
+  // yet.
+  for (int i = 0; i <= 10; ++i) {
+    ASSERT_GT(10, i) << "BUG: Seems like it'll never happen!";
+    t += vsync_interval;
+    if (oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kCompositorUpdate, gfx::Rect(), t)) {
+      break;
+    }
+  }
+  int frame_number = oracle.RecordCapture();
+
+  // Stop providing the compositor events and start providing timer polling
+  // events.  No overdue samplings should be recommended because of the
+  // not-yet-complete compositor-based capture.
+  for (int i = 0; i < 10; ++i) {
+    t += timer_interval;
+    ASSERT_FALSE(oracle.ObserveEventAndDecideCapture(
+        VideoCaptureOracle::kTimerPoll, gfx::Rect(), t));
+  }
+
+  // Now, complete the oustanding compositor-based capture and continue
+  // providing timer polling events.  The oracle should start recommending
+  // sampling again.
+  ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
+  did_complete_a_capture = false;
+  for (int i = 0; i < 10; ++i) {
+    t += timer_interval;
+    if (oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kTimerPoll, gfx::Rect(), t)) {
+      ASSERT_TRUE(
+          oracle.CompleteCapture(oracle.RecordCapture(), true, &ignored));
+      did_complete_a_capture = true;
+    }
+  }
+  ASSERT_TRUE(did_complete_a_capture);
+
+  // Start one more timer-based capture, but do not notify of completion yet.
+  for (int i = 0; i <= 10; ++i) {
+    ASSERT_GT(10, i) << "BUG: Seems like it'll never happen!";
+    t += timer_interval;
+    if (oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kTimerPoll, gfx::Rect(), t)) {
+      break;
+    }
+  }
+  frame_number = oracle.RecordCapture();
+
+  // Confirm that the oracle does not recommend sampling until the outstanding
+  // timer-based capture completes.
+  for (int i = 0; i < 10; ++i) {
+    t += timer_interval;
+    ASSERT_FALSE(oracle.ObserveEventAndDecideCapture(
+        VideoCaptureOracle::kTimerPoll, gfx::Rect(), t));
+  }
+  ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
+  for (int i = 0; i <= 10; ++i) {
+    ASSERT_GT(10, i) << "BUG: Seems like it'll never happen!";
+    t += timer_interval;
+    if (oracle.ObserveEventAndDecideCapture(
+            VideoCaptureOracle::kTimerPoll, gfx::Rect(), t)) {
+      break;
+    }
   }
 }
 

@@ -27,6 +27,13 @@ class CONTENT_EXPORT VideoCaptureOracle {
     kNumEvents,
   };
 
+  enum {
+    // The recommended minimum amount of time between calls to
+    // ObserveEventAndDecideCapture() for the kTimerPoll Event type.  Anything
+    // lower than this isn't harmful, just wasteful.
+    kMinTimerPollPeriodMillis = 125,  // 8 FPS
+  };
+
   explicit VideoCaptureOracle(base::TimeDelta min_capture_period);
   virtual ~VideoCaptureOracle();
 
@@ -42,10 +49,13 @@ class CONTENT_EXPORT VideoCaptureOracle {
   // CompleteCapture().
   int RecordCapture();
 
-  // Notify of the completion of a capture.  Returns true iff the captured frame
-  // should be delivered.  |frame_timestamp| is set to the timestamp that should
-  // be provided to the consumer of the frame.
-  bool CompleteCapture(int frame_number, base::TimeTicks* frame_timestamp);
+  // Notify of the completion of a capture, and whether it was successful.
+  // Returns true iff the captured frame should be delivered.  |frame_timestamp|
+  // is set to the timestamp that should be provided to the consumer of the
+  // frame.
+  bool CompleteCapture(int frame_number,
+                       bool capture_was_successful,
+                       base::TimeTicks* frame_timestamp);
 
   base::TimeDelta min_capture_period() const {
     return smoothing_sampler_.min_capture_period();
@@ -64,7 +74,7 @@ class CONTENT_EXPORT VideoCaptureOracle {
   void SetFrameTimestamp(int frame_number, base::TimeTicks timestamp);
 
   // Incremented every time a paint or update event occurs.
-  int frame_number_;
+  int next_frame_number_;
 
   // Stores the last |event_time| from the last observation/decision.  Used to
   // sanity-check that event times are monotonically non-decreasing.

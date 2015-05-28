@@ -322,7 +322,10 @@ ContentCaptureSubscription::ContentCaptureSubscription(
   }
 
   // Subscribe to timer events. This instance will service these as well.
-  timer_.Start(FROM_HERE, oracle_proxy->min_capture_period(),
+  timer_.Start(FROM_HERE,
+               std::max(oracle_proxy->min_capture_period(),
+                        base::TimeDelta::FromMilliseconds(
+                            VideoCaptureOracle::kMinTimerPollPeriodMillis)),
                base::Bind(&ContentCaptureSubscription::OnTimer,
                           base::Unretained(this)));
 }

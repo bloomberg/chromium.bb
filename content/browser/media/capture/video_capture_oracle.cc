@@ -37,7 +37,7 @@ double FractionFromExpectedFrameRate(base::TimeDelta delta, int frame_rate) {
 }  // anonymous namespace
 
 VideoCaptureOracle::VideoCaptureOracle(base::TimeDelta min_capture_period)
-    : frame_number_(0),
+    : next_frame_number_(0),
       last_delivered_frame_number_(-1),
       smoothing_sampler_(min_capture_period,
                          kNumRedundantCapturesOfStaticContent),
@@ -59,7 +59,7 @@ bool VideoCaptureOracle::ObserveEventAndDecideCapture(
   }
   last_event_time_[event] = event_time;
 
-  bool should_sample;
+  bool should_sample = false;
   duration_of_next_frame_ = base::TimeDelta();
   switch (event) {
     case kCompositorUpdate:
@@ -77,33 +77,48 @@ bool VideoCaptureOracle::ObserveEventAndDecideCapture(
           duration_of_next_frame_ = smoothing_sampler_.min_capture_period();
       }
       break;
-    default:
-      should_sample = smoothing_sampler_.IsOverdueForSamplingAt(event_time);
-      if (should_sample)
-        duration_of_next_frame_ = smoothing_sampler_.min_capture_period();
+    case kTimerPoll:
+      // While the timer is firing, only allow a sampling if there are none
+      // currently in-progress.
+      if (last_delivered_frame_number_ == (next_frame_number_ - 1)) {
+        should_sample = smoothing_sampler_.IsOverdueForSamplingAt(event_time);
+        if (should_sample)
+          duration_of_next_frame_ = smoothing_sampler_.min_capture_period();
+      }
+      break;
+    case kNumEvents:
+      NOTREACHED();
       break;
   }
 
-  SetFrameTimestamp(frame_number_, event_time);
+  SetFrameTimestamp(next_frame_number_, event_time);
   return should_sample;
 }
 
 int VideoCaptureOracle::RecordCapture() {
   smoothing_sampler_.RecordSample();
-  content_sampler_.RecordSample(GetFrameTimestamp(frame_number_));
-  return frame_number_++;
+  content_sampler_.RecordSample(GetFrameTimestamp(next_frame_number_));
+  return next_frame_number_++;
 }
 
 bool VideoCaptureOracle::CompleteCapture(int frame_number,
+                                         bool capture_was_successful,
                                          base::TimeTicks* frame_timestamp) {
   // Drop frame if previous frame number is higher.
   if (last_delivered_frame_number_ > frame_number) {
-    LOG(WARNING) << "Out of order frame delivery detected (have #"
-                 << frame_number << ", last was #"
-                 << last_delivered_frame_number_ << ").  Dropping frame.";
+    LOG_IF(WARNING, capture_was_successful)
+        << "Out of order frame delivery detected (have #" << frame_number
+        << ", last was #" << last_delivered_frame_number_
+        << ").  Dropping frame.";
     return false;
   }
+  DCHECK_NE(last_delivered_frame_number_, frame_number);
   last_delivered_frame_number_ = frame_number;
+
+  if (!capture_was_successful) {
+    VLOG(2) << "Capture of frame #" << frame_number << " was not successful.";
+    return false;
+  }
 
   *frame_timestamp = GetFrameTimestamp(frame_number);
 
@@ -141,8 +156,8 @@ bool VideoCaptureOracle::CompleteCapture(int frame_number,
 }
 
 base::TimeTicks VideoCaptureOracle::GetFrameTimestamp(int frame_number) const {
-  DCHECK_LE(frame_number, frame_number_);
-  DCHECK_LT(frame_number_ - frame_number, kMaxFrameTimestamps);
+  DCHECK_LE(frame_number, next_frame_number_);
+  DCHECK_LT(next_frame_number_ - frame_number, kMaxFrameTimestamps);
   return frame_timestamps_[frame_number % kMaxFrameTimestamps];
 }
 

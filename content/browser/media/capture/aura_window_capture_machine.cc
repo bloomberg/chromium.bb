@@ -149,7 +149,10 @@ bool AuraWindowCaptureMachine::Start(
           "DesktopCaptureDevice is running").release());
 
   // Starts timer.
-  timer_.Start(FROM_HERE, oracle_proxy_->min_capture_period(),
+  timer_.Start(FROM_HERE,
+               std::max(oracle_proxy_->min_capture_period(),
+                        base::TimeDelta::FromMilliseconds(
+                            VideoCaptureOracle::kMinTimerPollPeriodMillis)),
                base::Bind(&AuraWindowCaptureMachine::Capture, AsWeakPtr(),
                           false));
 
@@ -212,6 +215,9 @@ void AuraWindowCaptureMachine::Capture(bool dirty) {
   scoped_refptr<media::VideoFrame> frame;
   ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;
 
+  // TODO(miu): Need to fix this so the compositor is providing the presentation
+  // timestamps and damage regions, to leverage the frame timestamp rewriting
+  // logic.  http://crbug.com/492839
   const base::TimeTicks start_time = base::TimeTicks::Now();
   const VideoCaptureOracle::Event event =
       dirty ? VideoCaptureOracle::kCompositorUpdate
@@ -442,6 +448,8 @@ void AuraWindowCaptureMachine::OnWindowRemovingFromRootWindow(
 
 void AuraWindowCaptureMachine::OnCompositingEnded(
     ui::Compositor* compositor) {
+  // TODO(miu): The CopyOutputRequest should be made earlier, at WillCommit().
+  // http://crbug.com/492839
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &AuraWindowCaptureMachine::Capture, AsWeakPtr(), true));
 }

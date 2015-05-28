@@ -176,24 +176,22 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
                          "success", success,
                          "timestamp", timestamp.ToInternalValue());
 
-  if (!client_)
-    return;  // Capture is stopped.
+  if (oracle_.CompleteCapture(frame_number, success, &timestamp)) {
+    TRACE_EVENT_INSTANT0("gpu.capture", "CaptureSucceeded",
+                         TRACE_EVENT_SCOPE_THREAD);
 
-  if (success) {
-    if (oracle_.CompleteCapture(frame_number, &timestamp)) {
-      TRACE_EVENT_INSTANT0("gpu.capture", "CaptureSucceeded",
-                           TRACE_EVENT_SCOPE_THREAD);
+    if (!client_)
+      return;  // Capture is stopped.
 
-      frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
-                                   params_.requested_format.frame_rate);
-      frame->metadata()->SetTimeTicks(
-          media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, capture_begin_time);
-      frame->metadata()->SetTimeTicks(
-          media::VideoFrameMetadata::CAPTURE_END_TIME, base::TimeTicks::Now());
-      frame->metadata()->SetTimeDelta(media::VideoFrameMetadata::FRAME_DURATION,
-                                      estimated_frame_duration);
-      client_->OnIncomingCapturedVideoFrame(buffer.Pass(), frame, timestamp);
-    }
+    frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                 params_.requested_format.frame_rate);
+    frame->metadata()->SetTimeTicks(
+        media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, capture_begin_time);
+    frame->metadata()->SetTimeTicks(
+        media::VideoFrameMetadata::CAPTURE_END_TIME, base::TimeTicks::Now());
+    frame->metadata()->SetTimeDelta(media::VideoFrameMetadata::FRAME_DURATION,
+                                    estimated_frame_duration);
+    client_->OnIncomingCapturedVideoFrame(buffer.Pass(), frame, timestamp);
   }
 }
 
