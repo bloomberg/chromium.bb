@@ -16,3 +16,7 @@ per-file cast_*=miu@chromium.org
 
 per-file midi_*=toyoshim@chromium.org
 per-file renderer_webmidi*=toyoshim@chromium.org
+
+# WebRTC audio processing OWNERS.
+per-file media_stream_audio_processor*=ajm@chromium.org
+per-file media_stream_audio_processor*=aluebs@chromium.org
