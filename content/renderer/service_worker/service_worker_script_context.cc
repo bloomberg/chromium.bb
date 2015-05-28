@@ -158,8 +158,8 @@ void ServiceWorkerScriptContext::SetRegistrationInServiceWorkerGlobalScope(
 void ServiceWorkerScriptContext::DidHandleActivateEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  UMA_HISTOGRAM_TIMES(
-      "ServiceWorker.ActivateEventExecutionTime",
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.ActivateEvent.Time",
       base::TimeTicks::Now() - activate_start_timings_[request_id]);
   activate_start_timings_.erase(request_id);
 
@@ -170,8 +170,8 @@ void ServiceWorkerScriptContext::DidHandleActivateEvent(
 void ServiceWorkerScriptContext::DidHandleInstallEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  UMA_HISTOGRAM_TIMES(
-      "ServiceWorker.InstallEventExecutionTime",
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.InstallEvent.Time",
       base::TimeTicks::Now() - install_start_timings_[request_id]);
   install_start_timings_.erase(request_id);
 
@@ -183,8 +183,8 @@ void ServiceWorkerScriptContext::DidHandleFetchEvent(
     int request_id,
     ServiceWorkerFetchEventResult result,
     const ServiceWorkerResponse& response) {
-  UMA_HISTOGRAM_TIMES(
-      "ServiceWorker.FetchEventExecutionTime",
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.FetchEvent.Time",
       base::TimeTicks::Now() - fetch_start_timings_[request_id]);
   fetch_start_timings_.erase(request_id);
 
@@ -195,8 +195,8 @@ void ServiceWorkerScriptContext::DidHandleFetchEvent(
 void ServiceWorkerScriptContext::DidHandleNotificationClickEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  UMA_HISTOGRAM_TIMES(
-      "ServiceWorker.NotificationClickEventExecutionTime",
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.NotificationClickEvent.Time",
       base::TimeTicks::Now() - notification_click_start_timings_[request_id]);
   notification_click_start_timings_.erase(request_id);
 
@@ -208,8 +208,8 @@ void ServiceWorkerScriptContext::DidHandlePushEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
   if (result == blink::WebServiceWorkerEventResultCompleted) {
-    UMA_HISTOGRAM_TIMES(
-        "ServiceWorker.PushEventExecutionTime",
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "ServiceWorker.PushEvent.Time",
         base::TimeTicks::Now() - push_start_timings_[request_id]);
   }
   push_start_timings_.erase(request_id);
@@ -451,8 +451,8 @@ void ServiceWorkerScriptContext::OnPostMessage(
   // synchronously.
   base::TimeTicks before = base::TimeTicks::Now();
   proxy_->dispatchMessageEvent(message, ports);
-  UMA_HISTOGRAM_TIMES(
-      "ServiceWorker.MessageEventExecutionTime",
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.MessageEvent.Time",
       base::TimeTicks::Now() - before);
 }
 

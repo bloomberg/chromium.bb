@@ -36371,8 +36371,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.ActivateEvent.Time" units="milliseconds">
+  <owner>shimazu@chromium.org</owner>
+  <summary>
+    Execution time of ServiceWorkerGlobalScope.onactivate. Includes the time for
+    waitUntil() promise to settle.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.ActivateEventExecutionTime" units="millisecond">
   <owner>shimazu@chromium.org</owner>
+  <obsolete>
+    Deprecated 2015-05 in favor of ServiceWorker.ActivateEvent.Time.
+  </obsolete>
   <summary>
     Execution time of ServiceWorkerGlobalScope.onactivate. Includes the time for
     waitUntil() promise to settle.
@@ -36438,7 +36449,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.FetchEventExecutionTime" units="millisecond">
+<histogram name="ServiceWorker.FetchEvent.Time" units="milliseconds">
   <owner>shimazu@chromium.org</owner>
   <summary>
     Execution time of ServiceWorkerGlobalScope.onfetch. Includes the time for
@@ -36446,8 +36457,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.FetchEventExecutionTime" units="millisecond">
+  <owner>shimazu@chromium.org</owner>
+  <obsolete>
+    Deprecated 2015-05 in favor of ServiceWorker.FetchEvent.Time.
+  </obsolete>
+  <summary>
+    Execution time of ServiceWorkerGlobalScope.onfetch. Includes the time for
+    the respondWith() promise to settle.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.InstallEvent.Time" units="milliseconds">
+  <owner>shimazu@chromium.org</owner>
+  <summary>
+    Execution time of ServiceWorkerGlobalScope.oninstall. Includes the time for
+    the waitUntil() promise to settle.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.InstallEventExecutionTime" units="millisecond">
   <owner>shimazu@chromium.org</owner>
+  <obsolete>
+    Deprecated 2015-05 in favor of ServiceWorker.InstallEvent.Time.
+  </obsolete>
   <summary>
     Execution time of ServiceWorkerGlobalScope.oninstall. Includes the time for
     the waitUntil() promise to settle.
@@ -36460,14 +36493,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The result of dispatching the install event to the worker.</summary>
 </histogram>
 
-<histogram name="ServiceWorker.MessageEventExecutionTime" units="millisecond">
+<histogram name="ServiceWorker.MessageEvent.Time" units="milliseconds">
   <owner>shimazu@chromium.org</owner>
   <summary>Execution time of ServiceWorkerGlobalScope.onmessage.</summary>
+</histogram>
+
+<histogram name="ServiceWorker.MessageEventExecutionTime" units="millisecond">
+  <owner>shimazu@chromium.org</owner>
+  <obsolete>
+    Deprecated 2015-05 in favor of ServiceWorker.MessageEvent.Time.
+  </obsolete>
+  <summary>Execution time of ServiceWorkerGlobalScope.onmessage.</summary>
+</histogram>
+
+<histogram name="ServiceWorker.NotificationClickEvent.Time"
+    units="milliseconds">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Execution time of ServiceWorkerGlobalScope.onnotificationclick. Includes the
+    time for the waitUntil() promise to settle.
+  </summary>
 </histogram>
 
 <histogram name="ServiceWorker.NotificationClickEventExecutionTime"
     units="millisecond">
   <owner>peter@chromium.org</owner>
+  <obsolete>
+    Deprecated 2015-05 in favor of ServiceWorker.NotificationClickEvent.Time.
+  </obsolete>
   <summary>
     Execution time of ServiceWorkerGlobalScope.onnotificationclick.
   </summary>
@@ -36496,8 +36549,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.PushEvent.Time" units="milliseconds">
+  <owner>johnme@chromium.org</owner>
+  <summary>
+    Execution time of ServiceWorkerGlobalScope.onpush. Includes the time for the
+    waitUntil() promise to settle.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.PushEventExecutionTime" units="millisecond">
   <owner>johnme@chromium.org</owner>
+  <obsolete>
+    Deprecated 2015-05 in favor of ServiceWorker.PushEvent.Time.
+  </obsolete>
   <summary>Execution time of ServiceWorkerGlobalScope.onpush.</summary>
 </histogram>
 
