@@ -388,10 +388,10 @@ void StashPortImpl(
 const int ServiceWorkerVersion::kStartWorkerTimeoutMinutes = 5;
 const int ServiceWorkerVersion::kRequestTimeoutMinutes = 5;
 
-class ServiceWorkerVersion::ServiceWorkerEventMetrics {
+class ServiceWorkerVersion::Metrics {
  public:
-  ServiceWorkerEventMetrics() {}
-  ~ServiceWorkerEventMetrics() {
+  Metrics() {}
+  ~Metrics() {
     ServiceWorkerMetrics::RecordEventStatus(fired_events, handled_events);
   }
 
@@ -404,7 +404,64 @@ class ServiceWorkerVersion::ServiceWorkerEventMetrics {
  private:
   size_t fired_events = 0;
   size_t handled_events = 0;
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerEventMetrics);
+  DISALLOW_COPY_AND_ASSIGN(Metrics);
+};
+
+// A controller for periodically sending a ping to the worker to see
+// if the worker is not stalling.
+class ServiceWorkerVersion::PingController {
+ public:
+  PingController(ServiceWorkerVersion* version) : version_(version) {}
+  ~PingController() {}
+
+  void Activate() { ping_state_ = PINGING; }
+
+  void Deactivate() {
+    ClearTick(&ping_time_);
+    ping_state_ = NOT_PINGING;
+  }
+
+  void OnPongReceived() { ClearTick(&ping_time_); }
+
+  bool IsTimedOut() { return ping_state_ == PING_TIMED_OUT; }
+
+  // Checks ping status. This is supposed to be called periodically.
+  // This may call:
+  // - OnPingTimeout() if the worker hasn't reponded within a certain period.
+  // - PingWorker() if we're running ping timer and can send next ping.
+  void CheckPingStatus() {
+    if (GetTickDuration(ping_time_) >
+        base::TimeDelta::FromSeconds(kPingTimeoutSeconds)) {
+      ping_state_ = PING_TIMED_OUT;
+      version_->OnPingTimeout();
+      return;
+    }
+
+    // Check if we want to send a next ping.
+    if (ping_state_ != PINGING || !ping_time_.is_null())
+      return;
+
+    if (version_->PingWorker() != SERVICE_WORKER_OK) {
+      // TODO(falken): Maybe try resending Ping a few times first?
+      ping_state_ = PING_TIMED_OUT;
+      version_->OnPingTimeout();
+      return;
+    }
+    RestartTick(&ping_time_);
+  }
+
+  void SimulateTimeoutForTesting() {
+    version_->PingWorker();
+    ping_state_ = PING_TIMED_OUT;
+    version_->OnPingTimeout();
+  }
+
+ private:
+  enum PingState { NOT_PINGING, PINGING, PING_TIMED_OUT };
+  ServiceWorkerVersion* version_;  // Not owned.
+  base::TimeTicks ping_time_;
+  PingState ping_state_ = NOT_PINGING;
+  DISALLOW_COPY_AND_ASSIGN(PingController);
 };
 
 ServiceWorkerVersion::ServiceWorkerVersion(
@@ -416,11 +473,10 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       registration_id_(registration->id()),
       script_url_(script_url),
       scope_(registration->pattern()),
-      status_(NEW),
       context_(context),
       script_cache_map_(this, context),
-      ping_state_(NOT_PINGING),
-      metrics_(new ServiceWorkerEventMetrics),
+      ping_controller_(new PingController(this)),
+      metrics_(new Metrics),
       weak_factory_(this) {
   DCHECK(context_);
   DCHECK(registration);
@@ -965,6 +1021,10 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
                     OnMainScriptHttpResponseInfoSet(this));
 }
 
+void ServiceWorkerVersion::SimulatePingTimeoutForTesting() {
+  ping_controller_->SimulateTimeoutForTesting();
+}
+
 const net::HttpResponseInfo*
 ServiceWorkerVersion::GetMainScriptHttpResponseInfo() {
   return main_script_http_info_.get();
@@ -980,7 +1040,7 @@ ServiceWorkerVersion::RequestInfo::~RequestInfo() {
 void ServiceWorkerVersion::OnScriptLoaded() {
   DCHECK_EQ(STARTING, running_status());
   // Activate ping/pong now that JavaScript execution will start.
-  ping_state_ = PINGING;
+  ping_controller_->Activate();
 }
 
 void ServiceWorkerVersion::OnStarting() {
@@ -1010,7 +1070,8 @@ void ServiceWorkerVersion::OnStopped(
                         (old_status != EmbeddedWorkerInstance::STARTING);
 
   StopTimeoutTimer();
-  if (ping_state_ == PING_TIMED_OUT)
+
+  if (ping_controller_->IsTimedOut())
     should_restart = false;
 
   // Fire all stop callbacks.
@@ -1593,7 +1654,7 @@ void ServiceWorkerVersion::OnClaimClients(int request_id) {
 }
 
 void ServiceWorkerVersion::OnPongFromWorker() {
-  ClearTick(&ping_time_);
+  ping_controller_->OnPongReceived();
 }
 
 void ServiceWorkerVersion::OnStashMessagePort(int message_port_id,
@@ -1733,8 +1794,9 @@ void ServiceWorkerVersion::StartTimeoutTimer() {
   }
 
   ClearTick(&idle_time_);
-  ClearTick(&ping_time_);
-  ping_state_ = NOT_PINGING;
+
+  // Ping will be activated in OnScriptLoaded.
+  ping_controller_->Deactivate();
 
   timeout_timer_.Start(FROM_HERE,
                        base::TimeDelta::FromSeconds(kTimeoutTimerDelaySeconds),
@@ -1788,34 +1850,17 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     return;
   }
 
-  // The worker hasn't responded to ping within a certain period.
-  if (GetTickDuration(ping_time_) >
-      base::TimeDelta::FromSeconds(kPingTimeoutSeconds)) {
-    OnPingTimeout();
-    return;
-  }
-
-  if (ping_state_ == PINGING && ping_time_.is_null())
-    PingWorker();
+  // Check ping status.
+  ping_controller_->CheckPingStatus();
 }
 
-void ServiceWorkerVersion::PingWorker() {
+ServiceWorkerStatusCode ServiceWorkerVersion::PingWorker() {
   DCHECK(running_status() == STARTING || running_status() == RUNNING);
-  DCHECK_EQ(PINGING, ping_state_);
-  ServiceWorkerStatusCode status =
-      embedded_worker_->SendMessage(ServiceWorkerMsg_Ping());
-  if (status != SERVICE_WORKER_OK) {
-    // TODO(falken): Maybe try resending Ping a few times first?
-    ping_state_ = PING_TIMED_OUT;
-    StopWorkerIfIdle();
-    return;
-  }
-  RestartTick(&ping_time_);
+  return embedded_worker_->SendMessage(ServiceWorkerMsg_Ping());
 }
 
 void ServiceWorkerVersion::OnPingTimeout() {
   DCHECK(running_status() == STARTING || running_status() == RUNNING);
-  ping_state_ = PING_TIMED_OUT;
   // TODO(falken): Show a message to the developer that the SW was stopped due
   // to timeout (crbug.com/457968). Also, change the error code to
   // SERVICE_WORKER_ERROR_TIMEOUT.
@@ -1823,7 +1868,7 @@ void ServiceWorkerVersion::OnPingTimeout() {
 }
 
 void ServiceWorkerVersion::StopWorkerIfIdle() {
-  if (HasInflightRequests() && ping_state_ != PING_TIMED_OUT)
+  if (HasInflightRequests() && !ping_controller_->IsTimedOut())
     return;
   if (running_status() == STOPPED || running_status() == STOPPING ||
       !stop_callbacks_.empty()) {
@@ -1956,7 +2001,7 @@ void ServiceWorkerVersion::SetAllRequestTimes(const base::TimeTicks& ticks) {
 
 ServiceWorkerStatusCode ServiceWorkerVersion::DeduceStartWorkerFailureReason(
     ServiceWorkerStatusCode default_code) {
-  if (ping_state_ == PING_TIMED_OUT)
+  if (ping_controller_->IsTimedOut())
     return SERVICE_WORKER_ERROR_TIMEOUT;
 
   if (start_worker_status_ != SERVICE_WORKER_OK)

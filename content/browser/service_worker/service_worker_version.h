@@ -325,6 +325,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void SetMainScriptHttpResponseInfo(const net::HttpResponseInfo& http_info);
   const net::HttpResponseInfo* GetMainScriptHttpResponseInfo();
 
+  // Simulate ping timeout. Should be used for tests-only.
+  void SimulatePingTimeoutForTesting();
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerURLRequestJobTest;
@@ -341,7 +344,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutWorkerInEvent);
 
-  class ServiceWorkerEventMetrics;
+  class Metrics;
+  class PingController;
 
   typedef ServiceWorkerVersion self;
   using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
@@ -356,7 +360,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     REQUEST_GEOFENCING,
     REQUEST_CROSS_ORIGIN_CONNECT
   };
-  enum PingState { NOT_PINGING, PINGING, PING_TIMED_OUT };
 
   struct RequestInfo {
     RequestInfo(int id, RequestType type);
@@ -473,11 +476,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void StopTimeoutTimer();
   void OnTimeoutTimer();
 
-  // The ping protocol is for terminating workers that are taking excessively
-  // long executing JavaScript (e.g., stuck in while(true) {}). Periodically a
-  // ping IPC is sent to the worker context and if we timeout waiting for a
-  // pong, the worker is terminated. Pinging starts after the script is loaded.
-  void PingWorker();
+  // Called by PingController for ping protocol.
+  ServiceWorkerStatusCode PingWorker();
   void OnPingTimeout();
 
   // Stops the worker if it is idle (has no in-flight requests) or timed out
@@ -511,7 +511,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const GURL script_url_;
   const GURL scope_;
 
-  Status status_;
+  Status status_ = NEW;
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;
   std::vector<StatusCallback> start_callbacks_;
   std::vector<StatusCallback> stop_callbacks_;
@@ -542,10 +542,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::RepeatingTimer<ServiceWorkerVersion> timeout_timer_;
   // Holds the time the worker last started being considered idle.
   base::TimeTicks idle_time_;
-  // Holds the time that an outstanding ping was sent to the worker.
-  base::TimeTicks ping_time_;
-  // The state of the ping protocol.
-  PingState ping_state_;
   // Holds the time that the outstanding StartWorker() request started.
   base::TimeTicks start_time_;
 
@@ -568,7 +564,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // running |start_callbacks_|.
   ServiceWorkerStatusCode start_worker_status_ = SERVICE_WORKER_OK;
 
-  scoped_ptr<ServiceWorkerEventMetrics> metrics_;
+  scoped_ptr<PingController> ping_controller_;
+  scoped_ptr<Metrics> metrics_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 
