@@ -983,8 +983,6 @@ public:
             parent()->removeChild(this);
     }
 
-    bool isInert() const;
-
     bool visibleToHitTestRequest(const HitTestRequest& request) const { return style()->visibility() == VISIBLE && (request.ignorePointerEventsNone() || style()->pointerEvents() != PE_NONE) && !isInert(); }
 
     bool visibleToHitTesting() const { return style()->visibility() == VISIBLE && style()->pointerEvents() != PE_NONE && !isInert(); }
@@ -1205,6 +1203,8 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    bool isInert() const;
+
     void updateImage(StyleImage*, StyleImage*);
 
     void scheduleRelayout();
