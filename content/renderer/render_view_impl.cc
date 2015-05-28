@@ -1014,8 +1014,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.should_clear_document_background);
   settings->setEnableScrollAnimator(prefs.enable_scroll_animator);
 
-  settings->setRegionBasedColumnsEnabled(prefs.region_based_columns_enabled);
-
   WebRuntimeFeatures::enableTouch(prefs.touch_enabled);
   settings->setMaxTouchPoints(prefs.pointer_events_max_touch_points);
   settings->setAvailablePointerTypes(prefs.available_pointer_types);

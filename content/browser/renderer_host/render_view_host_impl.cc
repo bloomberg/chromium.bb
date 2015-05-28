@@ -434,8 +434,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.text_blobs_enabled = command_line.HasSwitch(switches::kForceTextBlobs)
       || (content::IsImplSidePaintingEnabled() &&
           !command_line.HasSwitch(switches::kDisableTextBlobs));
-  prefs.region_based_columns_enabled =
-      command_line.HasSwitch(switches::kEnableRegionBasedColumns);
 
   if (IsPinchVirtualViewportEnabled()) {
     prefs.pinch_virtual_viewport_enabled = true;

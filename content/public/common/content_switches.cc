@@ -405,10 +405,6 @@ const char kV8NativesPassedByFD[] = "v8-natives-passed-by-fd";
 // process by a file descriptor.
 const char kV8SnapshotPassedByFD[] = "v8-snapshot-passed-by-fd";
 
-// Enables the CSS multicol implementation that uses the regions implementation.
-const char kEnableRegionBasedColumns[] =
-    "enable-region-based-columns";
-
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
