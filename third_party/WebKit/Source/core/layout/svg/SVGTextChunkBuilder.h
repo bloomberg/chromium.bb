@@ -20,7 +20,6 @@
 #ifndef SVGTextChunkBuilder_h
 #define SVGTextChunkBuilder_h
 
-#include "core/layout/svg/SVGTextChunk.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
@@ -41,23 +40,34 @@ class SVGTextChunkBuilder {
 public:
     SVGTextChunkBuilder();
 
-    const Vector<SVGTextChunk>& textChunks() const { return m_textChunks; }
     void processTextChunks(const Vector<SVGInlineTextBox*>&);
     void finalizeTransformMatrices(const Vector<SVGInlineTextBox*>&) const;
 
-    void buildTextChunks(Vector<SVGInlineTextBox*>& lineLayoutBoxes);
-    void layoutTextChunks(Vector<SVGInlineTextBox*>& lineLayoutBoxes);
+protected:
+    virtual void handleTextChunk(const Vector<SVGInlineTextBox*>&, unsigned boxStart, unsigned boxEnd);
 
 private:
-    void addTextChunk(Vector<SVGInlineTextBox*>& lineLayoutBoxes, unsigned boxPosition, unsigned boxCount);
-    void processTextChunk(const SVGTextChunk&);
-
     void processTextLengthSpacingCorrection(bool isVerticalText, float textLengthShift, Vector<SVGTextFragment>&, unsigned& atCharacter);
     void processTextAnchorCorrection(bool isVerticalText, float textAnchorShift, Vector<SVGTextFragment>&);
 
-private:
-    Vector<SVGTextChunk> m_textChunks;
     HashMap<SVGInlineTextBox*, AffineTransform> m_textBoxTransformations;
+};
+
+class SVGTextPathChunkBuilder final : public SVGTextChunkBuilder {
+    WTF_MAKE_NONCOPYABLE(SVGTextPathChunkBuilder);
+public:
+    SVGTextPathChunkBuilder();
+
+    float totalLength() const { return m_totalLength; }
+    unsigned totalCharacters() const { return m_totalCharacters; }
+    float totalTextAnchorShift() const { return m_totalTextAnchorShift; }
+
+private:
+    void handleTextChunk(const Vector<SVGInlineTextBox*>&, unsigned boxStart, unsigned boxEnd) override;
+
+    float m_totalLength;
+    unsigned m_totalCharacters;
+    float m_totalTextAnchorShift;
 };
 
 } // namespace blink

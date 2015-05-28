@@ -177,28 +177,10 @@ void SVGTextLayoutEngine::beginTextPathLayout(LayoutObject* object, SVGTextLayou
     if (m_textPathStartOffset > 0 && m_textPathStartOffset <= 1)
         m_textPathStartOffset *= m_textPathLength;
 
-    float totalLength = 0;
-    unsigned totalCharacters = 0;
+    SVGTextPathChunkBuilder textPathChunkLayoutBuilder;
+    textPathChunkLayoutBuilder.processTextChunks(lineLayout.m_lineLayoutBoxes);
 
-    SVGTextChunkBuilder textPathChunkLayoutBuilder;
-    textPathChunkLayoutBuilder.buildTextChunks(lineLayout.m_lineLayoutBoxes);
-    const Vector<SVGTextChunk>& textChunks = textPathChunkLayoutBuilder.textChunks();
-
-    unsigned size = textChunks.size();
-    for (unsigned i = 0; i < size; ++i) {
-        const SVGTextChunk& chunk = textChunks.at(i);
-
-        float length = 0;
-        unsigned characters = 0;
-        chunk.calculateLength(length, characters);
-
-        // Handle text-anchor as additional start offset for text paths.
-        m_textPathStartOffset += chunk.calculateTextAnchorShift(length);
-
-        totalLength += length;
-        totalCharacters += characters;
-    }
-
+    m_textPathStartOffset += textPathChunkLayoutBuilder.totalTextAnchorShift();
     m_textPathCurrentOffset = m_textPathStartOffset;
 
     // Eventually handle textLength adjustments.
@@ -217,8 +199,9 @@ void SVGTextLayoutEngine::beginTextPathLayout(LayoutObject* object, SVGTextLayou
     if (!desiredTextLength)
         return;
 
+    float totalLength = textPathChunkLayoutBuilder.totalLength();
     if (lengthAdjust == SVGLengthAdjustSpacing)
-        m_textPathSpacing = (desiredTextLength - totalLength) / totalCharacters;
+        m_textPathSpacing = (desiredTextLength - totalLength) / textPathChunkLayoutBuilder.totalCharacters();
     else
         m_textPathScaling = desiredTextLength / totalLength;
 }
@@ -261,7 +244,7 @@ void SVGTextLayoutEngine::finishLayout()
     // After all text fragments are stored in their correpsonding SVGInlineTextBoxes, we can layout individual text chunks.
     // Chunk layouting is only performed for line layout boxes, not for path layout, where it has already been done.
     SVGTextChunkBuilder chunkLayoutBuilder;
-    chunkLayoutBuilder.layoutTextChunks(m_lineLayoutBoxes);
+    chunkLayoutBuilder.processTextChunks(m_lineLayoutBoxes);
 
     // Finalize transform matrices, after the chunk layout corrections have been applied, and all fragment x/y positions are finalized.
     if (!m_lineLayoutBoxes.isEmpty()) {

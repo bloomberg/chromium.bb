@@ -21,6 +21,7 @@
 #include "core/layout/svg/SVGTextChunkBuilder.h"
 
 #include "core/layout/svg/LayoutSVGInlineText.h"
+#include "core/layout/svg/SVGTextChunk.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGTextContentElement.h"
@@ -31,7 +32,7 @@ SVGTextChunkBuilder::SVGTextChunkBuilder()
 {
 }
 
-void SVGTextChunkBuilder::buildTextChunks(Vector<SVGInlineTextBox*>& lineLayoutBoxes)
+void SVGTextChunkBuilder::processTextChunks(const Vector<SVGInlineTextBox*>& lineLayoutBoxes)
 {
     if (lineLayoutBoxes.isEmpty())
         return;
@@ -46,36 +47,30 @@ void SVGTextChunkBuilder::buildTextChunks(Vector<SVGInlineTextBox*>& lineLayoutB
             continue;
 
         if (!foundStart) {
-            lastChunkStartPosition = boxPosition;
             foundStart = true;
         } else {
             ASSERT(boxPosition > lastChunkStartPosition);
-            addTextChunk(lineLayoutBoxes, lastChunkStartPosition, boxPosition - lastChunkStartPosition);
-            lastChunkStartPosition = boxPosition;
+            handleTextChunk(lineLayoutBoxes, lastChunkStartPosition, boxPosition);
         }
+        lastChunkStartPosition = boxPosition;
     }
 
     if (!foundStart)
         return;
 
     if (boxPosition - lastChunkStartPosition > 0)
-        addTextChunk(lineLayoutBoxes, lastChunkStartPosition, boxPosition - lastChunkStartPosition);
+        handleTextChunk(lineLayoutBoxes, lastChunkStartPosition, boxPosition);
 }
 
-void SVGTextChunkBuilder::layoutTextChunks(Vector<SVGInlineTextBox*>& lineLayoutBoxes)
+SVGTextPathChunkBuilder::SVGTextPathChunkBuilder()
+    : SVGTextChunkBuilder()
+    , m_totalLength(0)
+    , m_totalCharacters(0)
+    , m_totalTextAnchorShift(0)
 {
-    buildTextChunks(lineLayoutBoxes);
-    if (m_textChunks.isEmpty())
-        return;
-
-    unsigned chunkCount = m_textChunks.size();
-    for (unsigned i = 0; i < chunkCount; ++i)
-        processTextChunk(m_textChunks[i]);
-
-    m_textChunks.clear();
 }
 
-void SVGTextChunkBuilder::addTextChunk(Vector<SVGInlineTextBox*>& lineLayoutBoxes, unsigned boxStart, unsigned boxCount)
+static SVGTextChunk createTextChunk(const Vector<SVGInlineTextBox*>& lineLayoutBoxes, unsigned boxStart, unsigned boxCount)
 {
     SVGInlineTextBox* textBox = lineLayoutBoxes[boxStart];
     ASSERT(textBox);
@@ -136,7 +131,22 @@ void SVGTextChunkBuilder::addTextChunk(Vector<SVGInlineTextBox*>& lineLayoutBoxe
     for (unsigned i = boxStart; i < boxStart + boxCount; ++i)
         boxes.append(lineLayoutBoxes[i]);
 
-    m_textChunks.append(chunk);
+    return chunk;
+}
+
+void SVGTextPathChunkBuilder::handleTextChunk(const Vector<SVGInlineTextBox*>& boxes, unsigned boxStart, unsigned boxEnd)
+{
+    SVGTextChunk chunk = createTextChunk(boxes, boxStart, boxEnd - boxStart);
+
+    float length = 0;
+    unsigned characters = 0;
+    chunk.calculateLength(length, characters);
+
+    // Handle text-anchor as additional start offset for text paths.
+    m_totalTextAnchorShift += chunk.calculateTextAnchorShift(length);
+
+    m_totalLength += length;
+    m_totalCharacters += characters;
 }
 
 static void buildSpacingAndGlyphsTransform(bool isVerticalText, float scale, const SVGTextFragment& fragment, AffineTransform& spacingAndGlyphsTransform)
@@ -151,8 +161,10 @@ static void buildSpacingAndGlyphsTransform(bool isVerticalText, float scale, con
     spacingAndGlyphsTransform.translate(-fragment.x, -fragment.y);
 }
 
-void SVGTextChunkBuilder::processTextChunk(const SVGTextChunk& chunk)
+void SVGTextChunkBuilder::handleTextChunk(const Vector<SVGInlineTextBox*>& lineBoxes, unsigned boxStart, unsigned boxEnd)
 {
+    SVGTextChunk chunk = createTextChunk(lineBoxes, boxStart, boxEnd - boxStart);
+
     bool processTextLength = chunk.hasDesiredTextLength();
     bool processTextAnchor = chunk.hasTextAnchor();
     if (!processTextAnchor && !processTextLength)
