@@ -157,20 +157,14 @@ private:
 //    GarbageCollectedMixinConstructorMarker's constructor takes care of
 //    this and the field is declared by way of USING_GARBAGE_COLLECTED_MIXIN().
 
-// TODO(inferno): Remove forbidGCDuringConstruction() function once UBSan VPTR supports
-// function attribute level blacklisting. See crbug.com/476073.
 #define DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)                         \
 public:                                                                                 \
-    ALWAYS_INLINE static void forbidGCDuringConstruction(void* object)                  \
-    {                                                                                   \
-        ThreadState* state = ThreadStateFor<ThreadingTrait<TYPE>::Affinity>::state();   \
-        state->enterGCForbiddenScopeIfNeeded(&(reinterpret_cast<TYPE*>(object)->m_mixinConstructorMarker)); \
-    }                                                                                   \
-    GC_PLUGIN_IGNORE("crbug.com/456823")                                                \
+    GC_PLUGIN_IGNORE("crbug.com/456823") NO_SANITIZE_UNRELATED_CAST                     \
     void* operator new(size_t size)                                                     \
     {                                                                                   \
         void* object = TYPE::allocateObject(size);                                      \
-        forbidGCDuringConstruction(object);                                             \
+        ThreadState* state = ThreadStateFor<ThreadingTrait<TYPE>::Affinity>::state();   \
+        state->enterGCForbiddenScopeIfNeeded(&(reinterpret_cast<TYPE*>(object)->m_mixinConstructorMarker)); \
         return object;                                                                  \
     }                                                                                   \
     GarbageCollectedMixinConstructorMarker m_mixinConstructorMarker;                    \
