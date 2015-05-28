@@ -1,0 +1,5 @@
+include_rules = [
+  "-content",
+  "+content/shell/common/test_runner",
+  "+content/shell/renderer/test_runner",
+]

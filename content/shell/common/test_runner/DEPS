@@ -1,0 +1,4 @@
+include_rules = [
+  "-content",
+  "+content/shell/common/test_runner",
+]
