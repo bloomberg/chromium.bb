@@ -1892,11 +1892,10 @@ TEST_F(WebContentsImplTest, ShowInterstitialCrashRendererThenGoBack) {
   // Crash the renderer
   contents()->GetMainFrame()->GetProcess()->SimulateCrash();
 
-  // While the interstitial is showing, go back.
+  // While the interstitial is showing, go back. This will dismiss the
+  // interstitial and not initiate a navigation, but just show the existing
+  // RenderFrameHost.
   controller().GoBack();
-  main_test_rfh()->PrepareForCommit();
-  contents()->GetMainFrame()->SendNavigate(1, entry->GetUniqueID(), false,
-                                           url1);
 
   // Make sure we are back to the original page and that the interstitial is
   // gone.
