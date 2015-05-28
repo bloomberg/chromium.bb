@@ -33,7 +33,7 @@
 
 #info-view table {
   border-collapse: collapse;
-  cursor: text;
+  cursor: auto;
   table-layout: fixed;
   width: 100%;
 }
