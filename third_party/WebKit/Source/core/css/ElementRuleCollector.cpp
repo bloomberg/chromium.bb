@@ -289,7 +289,7 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
     }
 
     if (m_matchingUARules)
-        m_result.lastUARuleIndex = m_result.matchedProperties.size() - 1;
+        m_result.uaEnd = m_result.matchedProperties.size();
 }
 
 void ElementRuleCollector::didMatchRule(const RuleData& ruleData, const SelectorChecker::MatchResult& result, CascadeOrder cascadeOrder, const MatchRequest& matchRequest)

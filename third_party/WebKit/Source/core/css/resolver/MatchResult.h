@@ -64,15 +64,15 @@ class MatchResult {
 public:
     void addMatchedProperties(const StylePropertySet* properties, unsigned linkMatchType = CSSSelector::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
 
-    int firstRule() const { return 0; }
-    int lastRule() const { return matchedProperties.size() - 1; }
-    int firstUARule() const { return lastUARuleIndex == -1 ? -1 : 0; }
-    int lastUARule() const { return lastUARuleIndex; }
-    int firstAuthorRule() const { return lastUARuleIndex + 1; }
-    int lastAuthorRule() const { return lastRule(); }
+    unsigned begin() const { return 0; }
+    unsigned end() const { return matchedProperties.size(); }
+    unsigned beginUA() const { return 0; }
+    unsigned endUA() const { return uaEnd; }
+    unsigned beginAuthor() const { return uaEnd; }
+    unsigned endAuthor() const { return matchedProperties.size(); }
 
     WillBeHeapVector<MatchedProperties, 64> matchedProperties;
-    int lastUARuleIndex = -1;
+    unsigned uaEnd = 0;
     bool isCacheable = true;
 };
 
