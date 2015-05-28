@@ -90,7 +90,7 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       BeginNavigationParams(method, headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type), false),
       entry.ConstructRequestNavigationParams(
-          navigation_start, controller->HasCommittedRealLoad(frame_tree_node),
+          navigation_start,
           controller->GetPendingEntryIndex() == -1,
           controller->GetIndexOfEntry(&entry),
           controller->GetLastCommittedEntryIndex(),
@@ -113,7 +113,6 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // TODO(clamy): See if the navigation start time should be measured in the
   // renderer and sent to the browser instead of being measured here.
   // TODO(clamy): The pending history list offset should be properly set.
-  // TODO(clamy): Set has_committed_real_load.
   RequestNavigationParams request_params;
   request_params.current_history_list_offset = current_history_list_offset;
   request_params.current_history_list_length = current_history_list_length;

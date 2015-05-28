@@ -4355,13 +4355,6 @@ void RenderFrameImpl::NavigateInternal(
 
   GetContentClient()->SetActiveURL(common_params.url);
 
-  // If this frame isn't in the same process as the main frame, it may naively
-  // assume that this is the first navigation in the iframe, but this may not
-  // actually be the case. Inform the frame's state machine if this frame has
-  // already committed other loads.
-  if (request_params.has_committed_real_load && frame_->parent())
-    frame_->setCommittedFirstRealLoad();
-
   if (is_reload && !render_view_->history_controller()->GetCurrentEntry()) {
     // We cannot reload if we do not have any history state.  This happens, for
     // example, when recovering from a crash.

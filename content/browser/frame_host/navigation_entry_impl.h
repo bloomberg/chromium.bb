@@ -34,9 +34,6 @@ class CONTENT_EXPORT NavigationEntryImpl
     TreeNode(FrameNavigationEntry* frame_entry);
     ~TreeNode();
 
-    // Returns whether this TreeNode corresponds to |frame_tree_node|.
-    bool MatchesFrame(FrameTreeNode* frame_tree_node) const;
-
     // Returns a deep copy of the tree with copies of each node's
     // FrameNavigationEntries.  We do not yet share FrameNavigationEntries
     // across trees.
@@ -137,7 +134,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   StartNavigationParams ConstructStartNavigationParams() const;
   RequestNavigationParams ConstructRequestNavigationParams(
       base::TimeTicks navigation_start,
-      bool has_committed_real_load,
       bool intended_as_new_entry,
       int pending_offset_to_send,
       int current_offset_to_send,
@@ -160,16 +156,10 @@ class CONTENT_EXPORT NavigationEntryImpl
   // its FrameNavigationEntry.  A new FrameNavigationEntry is added if none
   // exists, or else the existing one (which might be shared with other
   // NavigationEntries) is updated with the given parameters.
-  // Does nothing if there is no entry already and |url| is about:blank, since
-  // that does not count as a real commit.
   void AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
                              SiteInstanceImpl* site_instance,
                              const GURL& url,
                              const Referrer& referrer);
-
-  // Returns whether this entry has a FrameNavigationEntry for the given
-  // |frame_tree_node|.
-  bool HasFrameEntry(FrameTreeNode* frame_tree_node) const;
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
@@ -317,10 +307,6 @@ class CONTENT_EXPORT NavigationEntryImpl
 #endif
 
  private:
-  // Finds the TreeNode associated with |frame_tree_node|, if any.
-  NavigationEntryImpl::TreeNode* FindFrameEntry(
-      FrameTreeNode* frame_tree_node) const;
-
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
   // later. If you add a new field that needs to be persisted you'll have to

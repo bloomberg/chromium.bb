@@ -20,7 +20,6 @@
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
-class FrameTreeNode;
 class RenderFrameHostImpl;
 class NavigationEntryScreenshotManager;
 class SiteInstance;
@@ -116,11 +115,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   NavigationEntryImpl* GetEntryWithPageID(
       SiteInstance* instance,
       int32 page_id) const;
-
-  // Whether the given frame has committed any navigations yet.
-  // This currently only returns true in --site-per-process mode.
-  // TODO(creis): Create FrameNavigationEntries by default so this always works.
-  bool HasCommittedRealLoad(FrameTreeNode* frame_tree_node) const;
 
   NavigationControllerDelegate* delegate() const {
     return delegate_;
