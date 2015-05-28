@@ -7,23 +7,28 @@
 
 #include "base/android/jni_android.h"
 #include "device/vibration/vibration_manager.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
 // TODO(timvolodine): consider implementing the VibrationManager mojo service
 // directly in java, crbug.com/439434.
-class VibrationManagerImplAndroid
-    : public mojo::InterfaceImpl<VibrationManager> {
+class VibrationManagerImplAndroid : public VibrationManager {
  public:
-  static VibrationManagerImplAndroid* Create();
   static bool Register(JNIEnv* env);
 
   void Vibrate(int64 milliseconds) override;
   void Cancel() override;
 
  private:
-  VibrationManagerImplAndroid();
+  friend class VibrationManagerImpl;
+
+  explicit VibrationManagerImplAndroid(
+      mojo::InterfaceRequest<VibrationManager> request);
   ~VibrationManagerImplAndroid() override;
+
+  // The binding between this object and the other end of the pipe.
+  mojo::StrongBinding<VibrationManager> binding_;
 
   base::android::ScopedJavaGlobalRef<jobject> j_vibration_provider_;
 };

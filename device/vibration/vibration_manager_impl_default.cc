@@ -5,24 +5,27 @@
 #include "device/vibration/vibration_manager_impl.h"
 
 #include "base/basictypes.h"
-#include "base/bind.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
 namespace {
 
-class VibrationManagerEmptyImpl : public mojo::InterfaceImpl<VibrationManager> {
+class VibrationManagerEmptyImpl : public VibrationManager {
  public:
-  static VibrationManagerEmptyImpl* Create() {
-    return new VibrationManagerEmptyImpl();
-  }
-
   void Vibrate(int64 milliseconds) override {}
   void Cancel() override {}
 
  private:
-  VibrationManagerEmptyImpl() {}
+  friend VibrationManagerImpl;
+
+  explicit VibrationManagerEmptyImpl(
+      mojo::InterfaceRequest<VibrationManager> request)
+      : binding_(this, request.Pass()) {}
   ~VibrationManagerEmptyImpl() override {}
+
+  // The binding between this object and the other end of the pipe.
+  mojo::StrongBinding<VibrationManager> binding_;
 };
 
 }  // namespace
@@ -30,7 +33,7 @@ class VibrationManagerEmptyImpl : public mojo::InterfaceImpl<VibrationManager> {
 //static
 void VibrationManagerImpl::Create(
     mojo::InterfaceRequest<VibrationManager> request) {
-  BindToRequest(VibrationManagerEmptyImpl::Create(), &request);
+  new VibrationManagerEmptyImpl(request.Pass());
 }
 
 }  // namespace device

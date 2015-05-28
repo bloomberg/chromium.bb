@@ -4,7 +4,6 @@
 
 #include "device/vibration/vibration_manager_impl_android.h"
 
-#include "base/bind.h"
 #include "device/vibration/vibration_manager_impl.h"
 #include "jni/VibrationProvider_jni.h"
 
@@ -17,12 +16,9 @@ const int64 kMinimumVibrationDurationMs = 1;  // 1 millisecond
 const int64 kMaximumVibrationDurationMs = 10000;  // 10 seconds
 }
 
-// static
-VibrationManagerImplAndroid* VibrationManagerImplAndroid::Create() {
-  return new VibrationManagerImplAndroid();
-}
-
-VibrationManagerImplAndroid::VibrationManagerImplAndroid() {
+VibrationManagerImplAndroid::VibrationManagerImplAndroid(
+    mojo::InterfaceRequest<VibrationManager> request)
+    : binding_(this, request.Pass()) {
   j_vibration_provider_.Reset(
       Java_VibrationProvider_create(AttachCurrentThread(),
                                     base::android::GetApplicationContext()));
@@ -55,7 +51,7 @@ void VibrationManagerImplAndroid::Cancel() {
 // static
 void VibrationManagerImpl::Create(
     mojo::InterfaceRequest<VibrationManager> request) {
-  BindToRequest(VibrationManagerImplAndroid::Create(), &request);
+  new VibrationManagerImplAndroid(request.Pass());
 }
 
 }  // namespace device
