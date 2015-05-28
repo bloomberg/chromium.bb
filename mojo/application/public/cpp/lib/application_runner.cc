@@ -67,8 +67,11 @@ MojoResult ApplicationRunner::Run(MojoHandle application_request_handle) {
                          MakeRequest<Application>(MakeScopedHandle(
                              MessagePipeHandle(application_request_handle))));
     loop->Run();
+    // It's very common for the delegate to cache the app and terminate on
+    // errors. If we don't delete the delegate before the app we run the risk
+    // of the delegate having a stale reference to the app and trying to use it.
+    delegate_.reset();
   }
-  delegate_.reset();
   return MOJO_RESULT_OK;
 }
 
