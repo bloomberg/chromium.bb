@@ -313,7 +313,11 @@ template("grit") {
   } else {
     resource_ids = grit_resource_id_file
   }
-  grit_inputs += [ resource_ids ]  # Script depends on ID file.
+  if (resource_ids != "") {
+    # The script depends on the ID file. Only add this dependency if the ID
+    # file is specified.
+    grit_inputs += [ resource_ids ]
+  }
 
   if (defined(invoker.output_dir)) {
     output_dir = invoker.output_dir
