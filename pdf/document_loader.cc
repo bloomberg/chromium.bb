@@ -14,8 +14,63 @@
 
 namespace chrome_pdf {
 
+namespace {
+
 // Document below size will be downloaded in one chunk.
-const uint32 kMinFileSize = 64*1024;
+const uint32_t kMinFileSize = 64 * 1024;
+
+// If the headers have a byte-range response, writes the start and end
+// positions and returns true if at least the start position was parsed.
+// The end position will be set to 0 if it was not found or parsed from the
+// response.
+// Returns false if not even a start position could be parsed.
+bool GetByteRange(const std::string& headers, uint32_t* start, uint32_t* end) {
+  net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
+  while (it.GetNext()) {
+    if (LowerCaseEqualsASCII(it.name(), "content-range")) {
+      std::string range = it.values().c_str();
+      if (StartsWithASCII(range, "bytes", false)) {
+        range = range.substr(strlen("bytes"));
+        std::string::size_type pos = range.find('-');
+        std::string range_end;
+        if (pos != std::string::npos)
+          range_end = range.substr(pos + 1);
+        TrimWhitespaceASCII(range, base::TRIM_LEADING, &range);
+        TrimWhitespaceASCII(range_end, base::TRIM_LEADING, &range_end);
+        *start = atoi(range.c_str());
+        *end = atoi(range_end.c_str());
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// If the headers have a multi-part response, returns the boundary name.
+// Otherwise returns an empty string.
+std::string GetMultiPartBoundary(const std::string& headers) {
+  net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
+  while (it.GetNext()) {
+    if (LowerCaseEqualsASCII(it.name(), "content-type")) {
+      std::string type = base::StringToLowerASCII(it.values());
+      if (StartsWithASCII(type, "multipart/", true)) {
+        const char* boundary = strstr(type.c_str(), "boundary=");
+        if (!boundary) {
+          NOTREACHED();
+          break;
+        }
+
+        return std::string(boundary + 9);
+      }
+    }
+  }
+  return std::string();
+}
+
+}  // namespace
+
+DocumentLoader::Client::~Client() {
+}
 
 DocumentLoader::DocumentLoader(Client* client)
     : client_(client), partial_document_(false), request_pending_(false),
@@ -48,7 +103,7 @@ bool DocumentLoader::Init(const pp::URLLoader& loader,
 
   bool accept_ranges_bytes = false;
   bool content_encoded = false;
-  uint32 content_length = 0;
+  uint32_t content_length = 0;
   std::string type;
   std::string disposition;
   if (!response_headers.empty()) {
@@ -127,18 +182,16 @@ bool DocumentLoader::IsDocumentComplete() const {
   return IsDataAvailable(0, document_size_);
 }
 
-uint32 DocumentLoader::GetAvailableData() const {
+uint32_t DocumentLoader::GetAvailableData() const {
   if (document_size_ == 0) {  // If document size is unknown.
     return current_pos_;
   }
 
   std::vector<std::pair<size_t, size_t> > ranges;
   chunk_stream_.GetMissedRanges(0, document_size_, &ranges);
-  uint32 available = document_size_;
-  std::vector<std::pair<size_t, size_t> >::iterator it;
-  for (it = ranges.begin(); it != ranges.end(); ++it) {
-    available -= it->second;
-  }
+  uint32_t available = document_size_;
+  for (const auto& range : ranges)
+    available -= range.second;
   return available;
 }
 
@@ -151,15 +204,17 @@ void DocumentLoader::ClearPendingRequests() {
   }
 }
 
-bool DocumentLoader::GetBlock(uint32 position, uint32 size, void* buf) const {
+bool DocumentLoader::GetBlock(uint32_t position,
+                              uint32_t size,
+                              void* buf) const {
   return chunk_stream_.ReadData(position, size, buf);
 }
 
-bool DocumentLoader::IsDataAvailable(uint32 position, uint32 size) const {
+bool DocumentLoader::IsDataAvailable(uint32_t position, uint32_t size) const {
   return chunk_stream_.IsRangeAvailable(position, size);
 }
 
-void DocumentLoader::RequestData(uint32 position, uint32 size) {
+void DocumentLoader::RequestData(uint32_t position, uint32_t size) {
   DCHECK(partial_document_);
 
   // We have some artefact request from
@@ -192,8 +247,8 @@ void DocumentLoader::DownloadPendingRequests() {
     }
   }
 
-  uint32 pos = pending_requests_.front().first;
-  uint32 size = pending_requests_.front().second;
+  uint32_t pos = pending_requests_.front().first;
+  uint32_t size = pending_requests_.front().second;
   if (IsDataAvailable(pos, size)) {
     ReadComplete();
     return;
@@ -203,7 +258,7 @@ void DocumentLoader::DownloadPendingRequests() {
   // a few smaller requests.
   std::vector<std::pair<size_t, size_t> > ranges;
   chunk_stream_.GetMissedRanges(pos, size, &ranges);
-  if (ranges.size() > 0) {
+  if (!ranges.empty()) {
     pending_requests_.pop_front();
     pending_requests_.insert(pending_requests_.begin(),
                              ranges.begin(), ranges.end());
@@ -211,13 +266,13 @@ void DocumentLoader::DownloadPendingRequests() {
     size = pending_requests_.front().second;
   }
 
-  uint32 cur_request_size = GetRequestSize();
+  uint32_t cur_request_size = GetRequestSize();
   // If size is less than default request, try to expand download range for
   // more optimal download.
   if (size < cur_request_size && partial_document_) {
     // First, try to expand block towards the end of the file.
-    uint32 new_pos = pos;
-    uint32 new_size = cur_request_size;
+    uint32_t new_pos = pos;
+    uint32_t new_size = cur_request_size;
     if (pos + new_size > document_size_)
       new_size = document_size_ - pos;
 
@@ -229,7 +284,7 @@ void DocumentLoader::DownloadPendingRequests() {
 
     // Second, try to expand block towards the beginning of the file.
     if (new_size < cur_request_size) {
-      uint32 block_end = new_pos + new_size;
+      uint32_t block_end = new_pos + new_size;
       if (block_end > cur_request_size) {
         new_pos = block_end - cur_request_size;
       } else {
@@ -271,8 +326,8 @@ void DocumentLoader::DownloadPendingRequests() {
     callback.Run(rv);
 }
 
-pp::URLRequestInfo DocumentLoader::GetRequest(uint32 position,
-                                              uint32 size) const {
+pp::URLRequestInfo DocumentLoader::GetRequest(uint32_t position,
+                                              uint32_t size) const {
   pp::URLRequestInfo request(client_->GetPluginInstance());
   request.SetURL(url_);
   request.SetMethod("GET");
@@ -318,7 +373,7 @@ void DocumentLoader::DidOpen(int32_t result) {
     headers = headers_var.AsString();
 
   std::string boundary = GetMultiPartBoundary(headers);
-  if (boundary.size()) {
+  if (!boundary.empty()) {
     // Leave position untouched for now, when we read the data we'll get it.
     is_multipart_ = true;
     multipart_boundary_ = boundary;
@@ -329,7 +384,7 @@ void DocumentLoader::DidOpen(int32_t result) {
     // i.e. sniff response to
     // http://www.act.org/compass/sample/pdf/geometry.pdf
     current_pos_ = 0;
-    uint32 start_pos, end_pos;
+    uint32_t start_pos, end_pos;
     if (GetByteRange(headers, &start_pos, &end_pos)) {
       current_pos_ = start_pos;
       if (end_pos && end_pos > start_pos)
@@ -338,48 +393,6 @@ void DocumentLoader::DidOpen(int32_t result) {
   }
 
   ReadMore();
-}
-
-bool DocumentLoader::GetByteRange(const std::string& headers, uint32* start,
-                                  uint32* end) {
-  net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
-  while (it.GetNext()) {
-    if (LowerCaseEqualsASCII(it.name(), "content-range")) {
-      std::string range = it.values().c_str();
-      if (StartsWithASCII(range, "bytes", false)) {
-        range = range.substr(strlen("bytes"));
-        std::string::size_type pos = range.find('-');
-        std::string range_end;
-        if (pos != std::string::npos)
-          range_end = range.substr(pos + 1);
-        TrimWhitespaceASCII(range, base::TRIM_LEADING, &range);
-        TrimWhitespaceASCII(range_end, base::TRIM_LEADING, &range_end);
-        *start = atoi(range.c_str());
-        *end = atoi(range_end.c_str());
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-std::string DocumentLoader::GetMultiPartBoundary(const std::string& headers) {
-  net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
-  while (it.GetNext()) {
-    if (LowerCaseEqualsASCII(it.name(), "content-type")) {
-      std::string type = base::StringToLowerASCII(it.values());
-      if (StartsWithASCII(type, "multipart/", true)) {
-        const char* boundary = strstr(type.c_str(), "boundary=");
-        if (!boundary) {
-          NOTREACHED();
-          break;
-        }
-
-        return std::string(boundary + 9);
-      }
-    }
-  }
-  return std::string();
 }
 
 void DocumentLoader::ReadMore() {
@@ -400,7 +413,7 @@ void DocumentLoader::DidRead(int32_t result) {
             (i >= 4 &&
              buffer_[i - 1] == '\n' && buffer_[i - 2] == '\r' &&
              buffer_[i - 3] == '\n' && buffer_[i - 4] == '\r')) {
-          uint32 start_pos, end_pos;
+          uint32_t start_pos, end_pos;
           if (GetByteRange(std::string(buffer_, i), &start_pos, &end_pos)) {
             current_pos_ = start_pos;
             start += i;
@@ -455,11 +468,10 @@ void DocumentLoader::ReadComplete() {
       // the chunks already. Let's allocate final document buffer and copy them
       // over.
       chunk_stream_.Preallocate(current_pos_);
-      uint32 pos = 0;
-      std::list<std::vector<unsigned char> >::iterator it;
-      for (it = chunk_buffer_.begin(); it != chunk_buffer_.end(); ++it) {
-        chunk_stream_.WriteData(pos, &((*it)[0]), it->size());
-        pos += it->size();
+      uint32_t pos = 0;
+      for (auto& chunk : chunk_buffer_) {
+        chunk_stream_.WriteData(pos, &(chunk[0]), chunk.size());
+        pos += chunk.size();
       }
       chunk_buffer_.clear();
     }
@@ -494,21 +506,21 @@ void DocumentLoader::ReadComplete() {
   } else {
     // Document is not complete and we have no outstanding requests.
     // Let's keep downloading PDF file in small chunks.
-    uint32 pos = chunk_stream_.GetFirstMissingByte();
+    uint32_t pos = chunk_stream_.GetFirstMissingByte();
     std::vector<std::pair<size_t, size_t> > ranges;
     chunk_stream_.GetMissedRanges(pos, GetRequestSize(), &ranges);
-    DCHECK(ranges.size() > 0);
+    DCHECK(!ranges.empty());
     RequestData(ranges[0].first, ranges[0].second);
   }
 }
 
-uint32 DocumentLoader::GetRequestSize() const {
+uint32_t DocumentLoader::GetRequestSize() const {
   // Document loading strategy:
   // For first 10 requests, we use 32k chunk sizes, for the next 10 requests we
   // double the size (64k), and so on, until we cap max request size at 2M for
   // 71 or more requests.
-  uint32 limited_count = std::min(std::max(requests_count_, 10u), 70u);
-  return 32*1024 * (1 << ((limited_count - 1) / 10u));
+  uint32_t limited_count = std::min(std::max(requests_count_, 10u), 70u);
+  return 32 * 1024 * (1 << ((limited_count - 1) / 10u));
 }
 
 }  // namespace chrome_pdf

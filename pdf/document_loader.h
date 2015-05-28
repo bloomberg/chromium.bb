@@ -21,7 +21,9 @@ namespace chrome_pdf {
 class DocumentLoader {
  public:
   class Client {
-  public:
+   public:
+    virtual ~Client();
+
     // Gets the pp::Instance object.
     virtual pp::Instance* GetPluginInstance() = 0;
     // Creates new URLLoader based on client settings.
@@ -39,31 +41,31 @@ class DocumentLoader {
   };
 
   explicit DocumentLoader(Client* client);
-  virtual ~DocumentLoader();
+  ~DocumentLoader();
 
   bool Init(const pp::URLLoader& loader,
             const std::string& url,
             const std::string& headers);
 
   // Data access interface. Return true is sucessful.
-  bool GetBlock(uint32 position, uint32 size, void* buf) const;
+  bool GetBlock(uint32_t position, uint32_t size, void* buf) const;
 
   // Data availability interface. Return true data avaialble.
-  bool IsDataAvailable(uint32 position, uint32 size) const;
+  bool IsDataAvailable(uint32_t position, uint32_t size) const;
 
   // Data availability interface. Return true data avaialble.
-  void RequestData(uint32 position, uint32 size);
+  void RequestData(uint32_t position, uint32_t size);
 
   bool IsDocumentComplete() const;
-  uint32 document_size() const { return document_size_; }
+  uint32_t document_size() const { return document_size_; }
 
   // Return number of bytes available.
-  uint32 GetAvailableData() const;
+  uint32_t GetAvailableData() const;
 
   // Clear pending requests from the queue.
   void ClearPendingRequests();
 
-  bool is_partial_document() { return partial_document_; }
+  bool is_partial_document() const { return partial_document_; }
 
  private:
   // Called by the completion callback of the document's URLLoader.
@@ -72,18 +74,6 @@ class DocumentLoader {
   void ReadMore();
   // Called by the completion callback of the document's URLLoader.
   void DidRead(int32_t result);
-
-  // If the headers have a byte-range response, writes the start and end
-  // positions and returns true if at least the start position was parsed.
-  // The end position will be set to 0 if it was not found or parsed from the
-  // response.
-  // Returns false if not even a start position could be parsed.
-  static bool GetByteRange(const std::string& headers, uint32* start,
-                           uint32* end);
-
-  // If the headers have a multi-part response, returns the boundary name.
-  // Otherwise returns an empty string.
-  static std::string GetMultiPartBoundary(const std::string& headers);
 
   // Called when we detect that partial document load is possible.
   void LoadPartialDocument();
@@ -94,9 +84,9 @@ class DocumentLoader {
   // Called when we complete server request and read all data from it.
   void ReadComplete();
   // Creates request to download size byte of data data starting from position.
-  pp::URLRequestInfo GetRequest(uint32 position, uint32 size) const;
+  pp::URLRequestInfo GetRequest(uint32_t position, uint32_t size) const;
   // Returns current request size in bytes.
-  uint32 GetRequestSize() const;
+  uint32_t GetRequestSize() const;
 
   Client* client_;
   std::string url_;
@@ -108,14 +98,14 @@ class DocumentLoader {
   typedef std::list<std::pair<size_t, size_t> > PendingRequests;
   PendingRequests pending_requests_;
   char buffer_[kDefaultRequestSize];
-  uint32 current_pos_;
-  uint32 current_chunk_size_;
-  uint32 current_chunk_read_;
-  uint32 document_size_;
+  uint32_t current_pos_;
+  uint32_t current_chunk_size_;
+  uint32_t current_chunk_read_;
+  uint32_t document_size_;
   bool header_request_;
   bool is_multipart_;
   std::string multipart_boundary_;
-  uint32 requests_count_;
+  uint32_t requests_count_;
   std::list<std::vector<unsigned char> > chunk_buffer_;
 };
 
