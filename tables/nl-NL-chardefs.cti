@@ -120,20 +120,12 @@ sign        \x005F        456                 _                   LOW LINE
 
 # (!) FIXME: GRAVE ACCENT should be dots "3" (APOSTROPHE)
 punctuation \x0060        5                   `                   GRAVE ACCENT
-
-# (!) FIXME: LEFT CURLY BRACKET missing from braille specification [1]
-# BE uses dots "12356"
-# suggestion: dots "6-12356", see Norway, p. 101 [2]
-punctuation \x007B        46                  {                   LEFT CURLY BRACKET
+punctuation \x007B        12356               {                   LEFT CURLY BRACKET
 
 # (!) FIXME: VERTICAL LINE missing from braille specification [1]
 # BE does not define VERTICAL LINE
 sign        \x007C        123456              |                   VERTICAL LINE
-
-# (!) FIXME: RIGHT CURLY BRACKET missing from braille specification [1]
-# BE uses dots "23456"
-# suggestion: dots "6-23456", see Norway, p. 101 [2]
-punctuation \x007D        3456                }                   RIGHT CURLY BRACKET
+punctuation \x007D        23456               }                   RIGHT CURLY BRACKET
 
 
 # ----------------------------------------------------------------------------------------------
@@ -141,11 +133,6 @@ punctuation \x007D        3456                }                   RIGHT CURLY BR
 # ----------------------------------------------------------------------------------------------
 
 sign        \x0080        15                  €                   <control> - ANSI: EURO-CURRENCY SIGN - MACROMAN: A DIAERESIS
-
-# (!) FIXME: EURO and other currency symbols
-# NL removes space before number, see §2.17 Muntsymbolen/valutatekens [1]
-# should be covered by nl-NL-g1.ctb (joinnum); if not please provide a test that shows this change is needed
-always      \x0080\x0020  15                  €                   <control> - ANSI: EURO-CURRENCY SIGN WITH SPACE - MACROMAN: A DIAERESIS
 punctuation \x0082        3                   ‚                   <control> BREAK PERMITTED HERE - ANSI: SINGLE LOW-9 QUOTATION MARK - MACROMAN: C CEDILLA
 punctuation \x0084        2356                „                   <control> - ANSI: DOUBLE LOW-9 QUOTATION MARK - MACROMAN: N TILDE
 sign        \x0086        235                 †                   <control> START OF SELECTED AREA - ANSI: DAGGER - MACROMAN: U DIAERESIS
@@ -169,15 +156,9 @@ sign        \x00A5        13456               ¥                   YEN SIGN
 sign        \x00A7        346                 §                   SECTION SIGN
 punctuation \x00AB        2356                «                   LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
 punctuation \x00AD        367                 ­                   SOFT HYPHEN
-
-# (!) FIXME: PLUS-MINUS SIGN missing from braille specification [1] and not defined in BE
-# NL uses ± in a temporary workaround for a DAISY Pipeline 2 bug
-# suggestion: dots "235-36" which is the translation of "+−" (PLUS SIGN followed by MINUS SIGN)
-sign        \x00B1        25                  ±                   PLUS-MINUS SIGN
+sign        \x00B1        235-36              ±                   PLUS-MINUS SIGN
 sign        \x00B4        3                   ´                   ACUTE ACCENT
-
-# (!) FIXME: RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK defined in BE
-# punctuation \x00BB        2356                »                   RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+punctuation \x00BB        2356                »                   RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
 punctuation \x00BF        26                  ¿                   INVERTED QUESTION MARK
 math        \x00D7        236                 ×                   MULTIPLICATION SIGN
 math        \x00F7        256                 ÷                   DIVISION SIGN
@@ -202,10 +183,8 @@ punctuation \x2018        3                   ‘                   LEFT SINGLE 
 punctuation \x2019        3                   ’                   RIGHT SINGLE QUOTATION MARK
 punctuation \x201C        2356                “                   LEFT DOUBLE QUOTATION MARK
 punctuation \x201D        2356                ”                   RIGHT DOUBLE QUOTATION MARK
-
-# (!) FIXME: DOUBLE LOW-9 QUOTATION MARK and DOUBLE HIGH-REVERSED-9 QUOTATION MARK should be dots "2356"
-punctuation \x201E        3                   „                   DOUBLE LOW-9 QUOTATION MARK
-punctuation \x201F        3                   ‟                   DOUBLE HIGH-REVERSED-9 QUOTATION MARK
+punctuation \x201E        2356                „                   DOUBLE LOW-9 QUOTATION MARK
+punctuation \x201F        2356                ‟                   DOUBLE HIGH-REVERSED-9 QUOTATION MARK
 sign        \x2020        235                 †                   DAGGER
 
 
@@ -214,11 +193,6 @@ sign        \x2020        235                 †                   DAGGER
 # ----------------------------------------------------------------------------------------------
 
 sign        \x20AC        15                  €                   EURO SIGN
-
-# (!) FIXME: EURO and other currency symbols
-# NL removes space before number, see §2.17 Muntsymbolen/valutatekens [1]
-# should be covered by nl-NL-g1.ctb (joinnum); if not please provide a test that shows this change is needed
-always      \x20AC\x0020  15                  €                   EURO SIGN WITH SPACE
 
 
 # ----------------------------------------------------------------------------------------------
@@ -258,16 +232,8 @@ sign        \x00AE        5-1235              ®                   REGISTERED SI
 sign        \x00B0        4-356               °                   DEGREE SIGN
 math        \x00B2        34-3456-12          ²                   SUPERSCRIPT TWO
 math        \x00B3        34-3456-14          ³                   SUPERSCRIPT THREE
-
-# (!) FIXME: MICRO SIGN should be dots "56-134"
-sign        \x00B5        136                 µ                   MICRO SIGN
-
-# (!) FIXME: MIDDLE DOT missing from braille specification [1]
-# BE uses dots "5-256" and defines as math
+sign        \x00B5        56-136              µ                   MICRO SIGN
 sign        \x00B7        56                  ·                   MIDDLE DOT
-
-# (!) FIXME: CEDILLA missing from braille specification [1]
-# BE does not define CEDILLA
 sign        \x00B8        45                  ¸                   CEDILLA
 sign        \x00B9        34-3456-1           ¹                   SUPERSCRIPT ONE
 sign        \x00BA        4-356               º                   MASCULINE ORDINAL INDICATOR
