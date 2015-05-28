@@ -12,6 +12,8 @@
     'compiler_flags': [
       '--strict',
       '--no-single-file',
+      '--externs',
+      '<(DEPTH)/third_party/closure_compiler/externs/chrome_extensions.js',
     ],
   },
   'actions': [

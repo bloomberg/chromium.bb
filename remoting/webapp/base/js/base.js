@@ -641,8 +641,8 @@ base.DomEventHook.prototype.dispose = function() {
 /**
   * An event hook implementation for Chrome Events.
   *
-  * @param {chrome.Event} src
-  * @param {Function} listener
+  * @param {ChromeEvent} src
+  * @param {!Function} listener
   *
   * @constructor
   * @implements {base.Disposable}

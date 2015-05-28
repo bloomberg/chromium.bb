@@ -75,10 +75,10 @@ remoting.WindowActivationMenu.prototype.setExtensionMessageSender =
  * @private
  */
 remoting.WindowActivationMenu.prototype.onContextMenu_ = function(info) {
-  /** @type {Array<string>} */
-  var components = info.menuItemId.split('-');
+  var menuId = info.menuItemId.toString();
+  var components = menuId.split('-');
   if (components.length == 2 &&
-      this.makeMenuId_(parseInt(components[1], 10)) == info.menuItemId) {
+      this.makeMenuId_(parseInt(components[1], 10)) == menuId) {
     this.sendExtensionMessage_(
         'activateWindow',
         JSON.stringify({ id: parseInt(components[1], 0) }));

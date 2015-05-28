@@ -52,41 +52,27 @@ remoting.V1AppLauncher = function() {};
 remoting.V1AppLauncher.prototype.launch = function(opt_launchArgs) {
   var url = base.urlJoin('main.html', opt_launchArgs);
 
-  return new Promise(
-      /**
-       * @param {function(*=):void} resolve
-       * @param {function(*=):void} reject
-       */
-      function(resolve, reject) {
-        chrome.tabs.create({ url: url, selected: true },
-            /** @param {chrome.Tab} tab The created tab. */
-            function(tab) {
-              if (!tab) {
-                reject(new Error(chrome.runtime.lastError.message));
-              } else {
-                resolve(String(tab.id));
-              }
-            });
-       });
+  return new Promise(function(resolve, reject) {
+    chrome.tabs.create({ url: url, selected: true }, function(/**Tab*/ tab){
+      if (!tab) {
+        reject(new Error(chrome.runtime.lastError.message));
+      } else {
+        resolve(String(tab.id));
+      }
+    });
+  });
 };
 
 remoting.V1AppLauncher.prototype.close = function(id) {
-  return new Promise(
-      /**
-       * @param {function(*=):void} resolve
-       * @param {function(*=):void} reject
-       */
-      function(resolve, reject) {
-        chrome.tabs.get(id,
-            /** @param {chrome.Tab} tab The retrieved tab. */
-            function(tab) {
-              if (!tab) {
-                reject(new Error(chrome.runtime.lastError.message));
-              } else {
-                chrome.tabs.remove(tab.id, /** function(*=):void */ (resolve));
-              }
-            });
-      });
+  return new Promise(function(resolve, reject) {
+    chrome.tabs.get(parseInt(id, 10), function(/** Tab */ tab) {
+      if (!tab) {
+        reject(new Error(chrome.runtime.lastError.message));
+      } else {
+        chrome.tabs.remove(tab.id, resolve);
+      }
+    });
+  });
 };
 
 
@@ -106,7 +92,7 @@ remoting.V2AppLauncher.prototype.restart = function(id) {
     // Not using the launch() method because we want to launch a new window with
     // the same id, such that the size and positioning of the original window
     // can be preserved.
-    return chrome.app.window.create(APP_MAIN_URL, {'id' : id, 'frame': 'none'});
+    chrome.app.window.create(APP_MAIN_URL, {'id' : id, 'frame': 'none'});
   });
 };
 
@@ -131,8 +117,7 @@ remoting.V2AppLauncher.prototype.launch = function(opt_launchArgs) {
               'id': String(getNextWindowId()),
               'state': state
             },
-            /** @param {AppWindow=} appWindow */
-            function(appWindow) {
+            function(/** chrome.app.window.AppWindow= */ appWindow) {
               if (!appWindow) {
                 reject(new Error(chrome.runtime.lastError.message));
               } else {

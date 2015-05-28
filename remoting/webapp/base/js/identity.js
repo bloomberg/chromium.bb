@@ -108,7 +108,7 @@ remoting.Identity.prototype.getNewToken = function(opt_scopes) {
  */
 remoting.Identity.prototype.removeCachedAuthToken = function() {
   return new Promise(function(resolve, reject) {
-    /** @param {string} token */
+    /** @param {string=} token */
     var onToken = function(token) {
       if (token) {
         chrome.identity.removeCachedAuthToken(
@@ -180,7 +180,7 @@ remoting.Identity.prototype.getEmail = function() {
  *
  * @param {Array<string>|undefined} scopes The explicit scopes passed to
  *     getToken, or undefined if no scopes were specified.
- * @param {?string} token The auth token, or null if the request failed.
+ * @param {string=} token The auth token, or null if the request failed.
  * @private
  */
 remoting.Identity.prototype.onAuthComplete_ = function(scopes, token) {

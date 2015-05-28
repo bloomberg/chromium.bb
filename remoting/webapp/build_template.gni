@@ -61,6 +61,8 @@ template("build_webapp_html") {
     args = [
              "--strict",
              "--no-single-file",
+             "--externs",
+             "../../third_party/closure_compiler/externs/chrome_extensions.js",
              "--success-stamp",
              rebase_path(target_jscompile_stamp, root_build_dir),
            ] + rebase_path(js_files, root_build_dir)

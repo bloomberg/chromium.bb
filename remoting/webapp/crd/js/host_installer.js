@@ -52,7 +52,7 @@ remoting.HostInstaller.isInstalled = function() {
       function(resolve) {
         // TODO(kelvinp): Use different native messaging ports for the Me2me
         // host vs It2MeHost.
-        /** @type {chrome.runtime.Port} */
+        /** @type {Port} */
         var port =
             chrome.runtime.connectNative('com.google.chrome.remote_assistance');
 

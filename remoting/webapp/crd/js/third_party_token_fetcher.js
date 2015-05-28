@@ -85,7 +85,7 @@ remoting.ThirdPartyTokenFetcher.prototype.fetchToken = function() {
 /**
  * Parse the access token from the URL to which we were redirected.
  *
- * @param {string} responseUrl The URL to which we were redirected.
+ * @param {string=} responseUrl The URL to which we were redirected.
  * @private
  */
 remoting.ThirdPartyTokenFetcher.prototype.parseRedirectUrl_ =

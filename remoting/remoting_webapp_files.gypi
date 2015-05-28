@@ -20,7 +20,6 @@
     'remoting_webapp_js_proto_files': [
       'webapp/js_proto/chrome_proto.js',
       'webapp/js_proto/chrome_cast_proto.js',
-      'webapp/js_proto/chrome_event_proto.js',
       'webapp/js_proto/dom_proto.js',
       'webapp/js_proto/remoting_proto.js',
     ],

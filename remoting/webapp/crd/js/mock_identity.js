@@ -100,8 +100,8 @@ remoting.MockIdentity.prototype.validateTokenAndCall =
  * @param {boolean} active
  */
 remoting.MockIdentity.setActive = function(active) {
-  chrome.identity = active ? remoting.mockIdentity
-                           : remoting.savedIdentityApi;
+  chrome['identity'] =
+      active ? remoting.mockIdentity : remoting.savedIdentityApi;
 };
 
 /** @type {Object} */

@@ -18,7 +18,6 @@
 remoting_webapp_js_proto_files = [
   "js_proto/chrome_proto.js",
   "js_proto/chrome_cast_proto.js",
-  "js_proto/chrome_event_proto.js",
   "js_proto/dom_proto.js",
   "js_proto/remoting_proto.js",
 ]

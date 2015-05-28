@@ -11,6 +11,12 @@
   'target_defaults': {
     'variables': {
       'ar_internal': 0,
+      'compiler_flags': [
+        '--strict',
+        '--no-single-file',
+        '--externs',
+        '../third_party/closure_compiler/externs/chrome_extensions.js',
+      ],
     },
 
     'conditions': [
@@ -32,8 +38,7 @@
             ],
             'action': [
               'python', '../third_party/closure_compiler/compile.py',
-              '--strict',
-              '--no-single-file',
+              '<@(compiler_flags)',
               '--success-stamp', '<(success_stamp)',
               '<@(ar_main_js_files)',
               '<@(remoting_webapp_js_proto_files)',
@@ -55,8 +60,7 @@
             ],
             'action': [
               'python', '../third_party/closure_compiler/compile.py',
-              '--strict',
-              '--no-single-file',
+              '<@(compiler_flags)',
               '--success-stamp', '<(success_stamp)',
               '<@(ar_background_js_files)',
               '<@(remoting_webapp_js_proto_files)',
@@ -78,8 +82,7 @@
             ],
             'action': [
               'python', '../third_party/closure_compiler/compile.py',
-              '--strict',
-              '--no-single-file',
+              '<@(compiler_flags)',
               '--success-stamp', '<(success_stamp)',
               '<@(ar_feedback_consent_html_all_js_files)',
               '<@(remoting_webapp_js_proto_files)',

@@ -51,7 +51,9 @@ base.Ipc = function() {
   base.debug.assert(instance_ === null);
   /** @private {!Object<Function>} */
   this.handlers_ = {};
-  this.onMessageHandler_ = this.onMessage_.bind(this);
+  this.onMessageHandler_ =
+      /** @type {function(*, MessageSender, function (*))} */ (
+          this.onMessage_.bind(this));
   chrome.runtime.onMessage.addListener(this.onMessageHandler_);
 };
 
@@ -109,7 +111,7 @@ base.Ipc.prototype.unregister = function(methodName) {
 
 /**
  * @param {base.Ipc.Request_} message
- * @param {chrome.runtime.MessageSender} sender
+ * @param {!MessageSender} sender
  * @param {function(*): void} sendResponse
  */
 base.Ipc.prototype.onMessage_ = function(message, sender, sendResponse) {

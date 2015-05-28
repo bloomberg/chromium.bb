@@ -22,7 +22,7 @@ remoting.HostDaemonFacade = function() {
   /** @private {Object<number, remoting.HostDaemonFacade.PendingReply>} */
   this.pendingReplies_ = {};
 
-  /** @private {?chrome.runtime.Port} */
+  /** @private {?Port} */
   this.port_ = null;
 
   /** @private {string} */

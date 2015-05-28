@@ -79,13 +79,16 @@ remoting.ApplicationContextMenu.prototype.updateConnectionRTT =
 
 /** @param {OnClickData=} info */
 remoting.ApplicationContextMenu.prototype.onClicked_ = function(info) {
-  switch (info.menuItemId) {
+  var menuId = /** @type {string} */ (info.menuItemId.toString());
+  switch (menuId) {
 
     case remoting.ApplicationContextMenu.kSendFeedbackId:
       var windowAttributes = {
         bounds: {
           width: 400,
-          height: 100
+          height: 100,
+          left: undefined,
+          top: undefined
         },
         resizable: false
       };
@@ -93,7 +96,7 @@ remoting.ApplicationContextMenu.prototype.onClicked_ = function(info) {
       /** @type {remoting.ApplicationContextMenu} */
       var that = this;
 
-      /** @param {AppWindow} consentWindow */
+      /** @param {chrome.app.window.AppWindow} consentWindow */
       var onCreate = function(consentWindow) {
         var onLoad = function() {
           var message = {

@@ -121,13 +121,15 @@ function generateId() {
 }
 
 /**
- * @param {string} token
+ * @param {string=} token
  */
 function onToken(token) {
   var getUserInfo = function() {
+    base.debug.assert(Boolean(token), 'token is undefined.');
     var oauth2Api = new remoting.OAuth2ApiImpl();
     oauth2Api.getUserInfo(
-        onUserInfo, onUserInfo.bind(null, 'unknown', 'unknown'), token);
+        onUserInfo, onUserInfo.bind(null, 'unknown', 'unknown'),
+        /** @type {string} */(token));
   };
   if (!token) {
     onUserInfo('unknown', 'unknown');

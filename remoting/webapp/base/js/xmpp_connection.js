@@ -30,7 +30,7 @@ remoting.XmppConnection = function() {
   this.sendPending_ = false;
   /** @private */
   this.startTlsPending_ = false;
-  /** @private {Array<ArrayBuffer>} */
+  /** @private {Array<!ArrayBuffer>} */
   this.sendQueue_ = [];
   /** @private {remoting.XmppLoginHandler} */
   this.loginHandler_ = null;

@@ -169,10 +169,10 @@ remoting.KeyboardLayoutsMenu.prototype.makeMenuId_ = function(layout) {
  * @private
  */
 remoting.KeyboardLayoutsMenu.prototype.onContextMenu_ = function(info) {
-  /** @type {Array<string>} */
-  var components = info.menuItemId.split('@');
+  var menuItemId = info.menuItemId.toString();
+  var components = menuItemId.split('@');
   if (components.length == 2 &&
-      this.makeMenuId_(components[1]) == info.menuItemId) {
+      this.makeMenuId_(components[1]) === menuItemId) {
     this.setLayout_(true, components[1]);
   }
 };

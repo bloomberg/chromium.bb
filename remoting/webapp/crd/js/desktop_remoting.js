@@ -163,11 +163,10 @@ remoting.DesktopRemoting.prototype.exitApplication_ = function() {
  * @private
  */
 remoting.DesktopRemoting.prototype.isWindowed_ = function(callback) {
-  /** @param {chrome.Window} win The current window. */
-  var windowCallback = function(win) {
+  var windowCallback = function(/** ChromeWindow  */ win) {
     callback(win.type == 'popup');
   };
-  /** @param {chrome.Tab} tab The current tab. */
+  /** @param {Tab=} tab */
   var tabCallback = function(tab) {
     if (tab.pinned) {
       callback(false);

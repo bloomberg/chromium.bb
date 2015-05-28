@@ -29,7 +29,8 @@ remoting.ActivationHandler = function (ipc, appLauncher) {
      title: chrome.i18n.getMessage(/*i18n-content*/'NEW_WINDOW')
   });
 
-  chrome.contextMenus.onClicked.addListener(this.onContextMenu_.bind(this));
+  chrome.contextMenus.onClicked.addListener(
+      /** @type {function (Object, Tab=)} */ (this.onContextMenu_.bind(this)));
   chrome.app.runtime.onLaunched.addListener(this.onLaunched_.bind(this));
   ipc.register(remoting.ActivationHandler.Ipc.RELAUNCH,
                appLauncher.restart.bind(appLauncher));

@@ -100,7 +100,9 @@ remoting.MessageWindow = function(options) {
   var windowAttributes = {
     bounds: {
       width: options.minimumWidth || 400,
-      height: 100
+      height: 100,
+      top: undefined,
+      left: undefined
     },
     resizable: false,
     frame: options.frame || 'chrome'
@@ -109,7 +111,7 @@ remoting.MessageWindow = function(options) {
   /** @type {remoting.MessageWindow} */
   var that = this;
 
-  /** @param {AppWindow} appWindow */
+  /** @param {chrome.app.window.AppWindow} appWindow */
   var onCreate = function(appWindow) {
     that.setWindow_(/** @type {Window} */(appWindow.contentWindow));
     var onLoad = function() {

@@ -21,7 +21,7 @@ function addReceiveListeners() {
   receiveListenersAdded = true;
 
   chrome.sockets.tcp.onReceive.addListener(function(
-      /** chrome.sockets.tcp.ReceiveInfo */ info) {
+      /** chrome.sockets.tcp.ReceiveEventData */ info) {
     var socket = sockets[info.socketId];
     if (socket === undefined) {
       console.warn("Received data for unknown socket " + info.socketId);
@@ -35,7 +35,7 @@ function addReceiveListeners() {
   });
 
   chrome.sockets.tcp.onReceiveError.addListener(function(
-      /** chrome.sockets.tcp.ReceiveErrorInfo */ info) {
+      /** chrome.sockets.tcp.ReceiveErrorEventData */ info) {
     var socket = sockets[info.socketId];
     if (socket === undefined) {
       console.warn("Received error for unknown socket " + info.socketId);
@@ -78,10 +78,10 @@ remoting.TcpSocket.prototype.connect = function(/** string */ host,
   var that = this;
 
   return new Promise(function(resolve, reject) {
-    chrome.sockets.tcp.create({}, onCreated);
+    chrome.sockets.tcp.create({}, /** @type {function(Object)} */ (onCreated));
 
 
-    function onCreated(/** chrome.sockets.tcp.CreateInfo */ createInfo) {
+    function onCreated(/** chrome.socket.CreateInfo */ createInfo) {
       // Check if the socket was destroyed.
       if (that.destroyed_) {
         chrome.sockets.tcp.close(createInfo.socketId);
@@ -140,11 +140,12 @@ remoting.TcpSocket.prototype.startReceiving = function(
  *
  * @returns {Promise}
  */
-remoting.TcpSocket.prototype.send = function(/** ArrayBuffer */ data) {
+remoting.TcpSocket.prototype.send = function(/** !ArrayBuffer */ data) {
   var that = this;
 
   return new Promise(function(resolve, reject) {
-    chrome.sockets.tcp.send(that.socketId_, data, function(sendInfo) {
+    chrome.sockets.tcp.send(that.socketId_, data,
+        function(/** chrome.socket.SendInfo */ sendInfo) {
       if (sendInfo.resultCode < 0) {
         reject(sendInfo.resultCode);
       } else {

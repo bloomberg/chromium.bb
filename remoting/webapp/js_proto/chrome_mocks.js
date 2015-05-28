@@ -7,23 +7,13 @@
 
 var chromeMocks = {};
 
-/** @constructor */
-chrome.Event = function() {};
-
-/** @param {Function} callback */
-chrome.Event.prototype.addListener = function(callback) {};
-
-/** @param {Function} callback */
-chrome.Event.prototype.removeListener = function(callback) {};
-
-
 (function(){
 
 'use strict'
 
 /**
  * @constructor
- * @extends {chrome.Event}
+ * @extends {ChromeEvent}
  */
 chromeMocks.Event = function() {
   this.listeners_ = [];
@@ -71,7 +61,7 @@ chromeMocks.runtime.Port = function() {
   /** @type {string} */
   this.name = '';
 
-  /** @type {chrome.runtime.MessageSender} */
+  /** @type {MessageSender} */
   this.sender = null;
 };
 
@@ -284,7 +274,7 @@ chromeMocks.activate = function() {
       chrome[component] = chromeMocks[component];
     });
 
-  chrome.app.window = new chromeMocks.WindowManager();
+  chrome.app['window'] = new chromeMocks.WindowManager();
 };
 
 chromeMocks.restore = function() {

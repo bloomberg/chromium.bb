@@ -22,7 +22,7 @@ remoting.It2MeHostFacade = function() {
   /** @private {number} */
   this.nextId_ = 0;
 
-  /** @private {?chrome.runtime.Port} */
+  /** @private {?Port} */
   this.port_ = null;
 
   /** @private {string} */
