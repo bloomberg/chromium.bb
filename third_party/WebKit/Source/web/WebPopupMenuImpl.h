@@ -31,6 +31,7 @@
 #ifndef WebPopupMenuImpl_h
 #define WebPopupMenuImpl_h
 
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "public/platform/WebContentLayerClient.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
@@ -100,6 +101,9 @@ public:
     bool handleTouchEvent(const WebTouchEvent&);
     bool handleKeyEvent(const WebKeyboardEvent&);
 
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return "WebPopupMenuImpl"; }
+
    protected:
     friend class WebPopupMenu; // For WebPopupMenu::create.
     friend class WTF::RefCounted<WebPopupMenuImpl>;
@@ -116,8 +120,6 @@ public:
     virtual void popupClosed(PopupContainer*) override final;
     void invalidateDisplayItemClient(DisplayItemClient) override final;
     void invalidateAllDisplayItems() override final;
-
-    DisplayItemList* displayItemList();
 
     WebWidgetClient* m_client;
     WebSize m_size;

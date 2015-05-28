@@ -18,14 +18,14 @@ class SkPictureBuilder {
     WTF_MAKE_NONCOPYABLE(SkPictureBuilder);
     STACK_ALLOCATED();
 public:
-    SkPictureBuilder(const FloatRect& bounds)
+    SkPictureBuilder(const FloatRect& bounds, GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled)
         : m_bounds(bounds)
     {
         if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
             m_displayItemList = DisplayItemList::create();
-            m_context = adoptPtr(new GraphicsContext(m_displayItemList.get()));
+            m_context = adoptPtr(new GraphicsContext(m_displayItemList.get(), disabledMode));
         } else {
-            m_context = GraphicsContext::deprecatedCreateWithCanvas(nullptr);
+            m_context = GraphicsContext::deprecatedCreateWithCanvas(nullptr, disabledMode);
             m_context->beginRecording(m_bounds);
         }
     }

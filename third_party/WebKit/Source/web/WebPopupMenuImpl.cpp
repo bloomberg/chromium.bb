@@ -32,6 +32,7 @@
 #include "web/WebPopupMenuImpl.h"
 
 #include "core/frame/FrameView.h"
+#include "core/paint/TransformRecorder.h"
 #include "platform/Cursor.h"
 #include "platform/NotImplemented.h"
 #include "platform/PlatformGestureEvent.h"
@@ -42,6 +43,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -76,6 +78,8 @@ WebPopupMenuImpl::WebPopupMenuImpl(WebWidgetClient* client)
     , m_lastMousePosition(WebPoint(-1, -1))
     , m_widget(0)
 {
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        m_displayItemList = DisplayItemList::create();
 }
 
 WebPopupMenuImpl::~WebPopupMenuImpl()
@@ -223,30 +227,31 @@ void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, Web
         || paintingControl == PaintingControlSetting::DisplayListConstructionDisabled)
         disabledMode = GraphicsContext::FullyDisabled;
 
-    DisplayItemList* itemList = displayItemList();
-    if (itemList) {
-        context = adoptPtr(new GraphicsContext(itemList, disabledMode));
-        itemList->setDisplayItemConstructionIsDisabled(paintingControl == PaintingControlSetting::DisplayListConstructionDisabled);
-    } else {
-        context = GraphicsContext::deprecatedCreateWithCanvas(canvas, disabledMode);
-    }
-    m_widget->paint(context.get(), rect);
+    IntRect intRect(rect);
+    SkPictureBuilder builder(intRect, disabledMode);
 
-    if (itemList)
-        itemList->commitNewDisplayItems();
+    m_widget->paint(&builder.context(), rect);
+    builder.endRecording()->playback(canvas);
 }
 
-void WebPopupMenuImpl::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& clip, WebContentLayerClient::PaintingControlSetting paintingControl)
+void WebPopupMenuImpl::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& rect, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     if (!m_widget)
         return;
 
-    if (paintingControl != WebContentLayerClient::PaintDefaultBehavior && m_displayItemList)
-        m_displayItemList->invalidateAll();
-
-    paintContents(static_cast<WebCanvas*>(nullptr), clip, paintingControl);
-
     RELEASE_ASSERT(m_displayItemList);
+
+    GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
+    if (paintingControl == PaintingControlSetting::DisplayListPaintingDisabled
+        || paintingControl == PaintingControlSetting::DisplayListConstructionDisabled)
+        disabledMode = GraphicsContext::FullyDisabled;
+
+    GraphicsContext context(m_displayItemList.get(), disabledMode);
+    m_displayItemList->setDisplayItemConstructionIsDisabled(paintingControl == PaintingControlSetting::DisplayListConstructionDisabled);
+    m_widget->paint(&context, rect);
+
+    m_displayItemList->commitNewDisplayItems();
+
     for (const auto& item : m_displayItemList->displayItems())
         item->appendToWebDisplayItemList(webDisplayItemList);
 }
@@ -257,10 +262,16 @@ void WebPopupMenuImpl::paint(WebCanvas* canvas, const WebRect& rect)
         return;
 
     if (!rect.isEmpty()) {
-        OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-        float scaleFactor = m_client->deviceScaleFactor();
-        context->scale(scaleFactor, scaleFactor);
-        m_widget->paint(context.get(), rect);
+        IntRect intRect(rect);
+        SkPictureBuilder pictureBuilder(intRect);
+
+        AffineTransform transform;
+        transform.scale(m_client->deviceScaleFactor());
+        TransformRecorder transformRecorder(pictureBuilder.context(), *this, transform);
+
+        m_widget->paint(&pictureBuilder.context(), rect);
+
+        pictureBuilder.endRecording()->playback(canvas);
     }
 }
 
@@ -440,15 +451,6 @@ void WebPopupMenuImpl::invalidateAllDisplayItems()
         ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
         m_displayItemList->invalidateAll();
     }
-}
-
-DisplayItemList* WebPopupMenuImpl::displayItemList()
-{
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return nullptr;
-    if (!m_displayItemList)
-        m_displayItemList = DisplayItemList::create();
-    return m_displayItemList.get();
 }
 
 } // namespace blink
