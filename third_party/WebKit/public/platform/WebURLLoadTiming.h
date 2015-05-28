@@ -80,18 +80,6 @@ public:
     BLINK_PLATFORM_EXPORT double workerStart() const;
     BLINK_PLATFORM_EXPORT void setWorkerStart(double);
 
-    // TODO(ksakamoto): Deprecated, remove them. crbug.com/465640
-    BLINK_PLATFORM_EXPORT double serviceWorkerFetchStart() const;
-    BLINK_PLATFORM_EXPORT void setServiceWorkerFetchStart(double);
-
-    // TODO(ksakamoto): Deprecated, remove them. crbug.com/465640
-    BLINK_PLATFORM_EXPORT double serviceWorkerFetchReady() const;
-    BLINK_PLATFORM_EXPORT void setServiceWorkerFetchReady(double);
-
-    // TODO(ksakamoto): Deprecated, remove them. crbug.com/465640
-    BLINK_PLATFORM_EXPORT double serviceWorkerFetchEnd() const;
-    BLINK_PLATFORM_EXPORT void setServiceWorkerFetchEnd(double);
-
     BLINK_PLATFORM_EXPORT double sendStart() const;
     BLINK_PLATFORM_EXPORT void setSendStart(double);
 

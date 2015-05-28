@@ -131,34 +131,6 @@ void WebURLLoadTiming::setWorkerStart(double start)
     m_private->setWorkerStart(start);
 }
 
-double WebURLLoadTiming::serviceWorkerFetchStart() const
-{
-    return m_private->workerStart();
-}
-
-void WebURLLoadTiming::setServiceWorkerFetchStart(double start)
-{
-    m_private->setWorkerStart(start);
-}
-
-double WebURLLoadTiming::serviceWorkerFetchReady() const
-{
-    return m_private->sendStart();
-}
-
-void WebURLLoadTiming::setServiceWorkerFetchReady(double time)
-{
-}
-
-double WebURLLoadTiming::serviceWorkerFetchEnd() const
-{
-    return m_private->sendEnd();
-}
-
-void WebURLLoadTiming::setServiceWorkerFetchEnd(double end)
-{
-}
-
 double WebURLLoadTiming::sendStart() const
 {
     return m_private->sendStart();
