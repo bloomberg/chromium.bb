@@ -215,10 +215,16 @@ protected:
         FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     }
 
-    void expectHeader(const char* input, const char* headerName, bool isPresent, const char* headerValue)
+    void expectHeader(const char* input, const char* headerName, bool isPresent, const char* headerValue, float width = 0)
     {
         KURL inputURL(ParsedURLString, input);
         FetchRequest fetchRequest = FetchRequest(ResourceRequest(inputURL), FetchInitiatorInfo());
+        if (width > 0) {
+            FetchRequest::ResourceWidth resourceWidth;
+            resourceWidth.width = width;
+            resourceWidth.isSet = true;
+            fetchRequest.setResourceWidth(resourceWidth);
+        }
         fetchContext->addClientHintsIfNecessary(fetchRequest);
 
         EXPECT_STREQ(isPresent ? headerValue : "",
@@ -255,6 +261,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorRWHints)
     dummyPageHolder->frameView().setLayoutSizeFixedToFrameSize(false);
     dummyPageHolder->frameView().setLayoutSize(IntSize(800, 800));
     expectHeader("http://www.example.com/1.gif", "RW", true, "800");
+    expectHeader("http://www.example.com/1.gif", "RW", true, "667", 666.6666);
     expectHeader("http://www.example.com/1.gif", "DPR", false, "");
 }
 

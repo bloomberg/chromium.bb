@@ -627,7 +627,7 @@ void FrameFetchContext::addClientHintsIfNecessary(FetchRequest& fetchRequest)
     if (shouldSendRW && frame()->view()) {
         FetchRequest::ResourceWidth resourceWidth = fetchRequest.resourceWidth();
         float usedResourceWidth = resourceWidth.isSet ? resourceWidth.width : frame()->view()->viewportWidth();
-        fetchRequest.mutableResourceRequest().addHTTPHeaderField("RW", AtomicString(String::number(usedResourceWidth)));
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("RW", AtomicString(String::number(ceil(usedResourceWidth))));
     }
 }
 
