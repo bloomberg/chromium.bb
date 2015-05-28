@@ -274,6 +274,10 @@ class CastDuplexView : public views::View {
   // Overridden from views::View.
   void Layout() override;
 
+  // Only one of |select_view_| or |cast_view_| will be displayed at any given
+  // time. This will return the view is being displayed.
+  views::View* ActiveChildView();
+
   CastSelectDefaultView* select_view_;
   CastCastView* cast_view_;
 
@@ -286,34 +290,47 @@ CastDuplexView::CastDuplexView(SystemTrayItem* owner,
   select_view_ = new CastSelectDefaultView(owner, config_delegate, show_more);
   cast_view_ = new CastCastView(config_delegate);
   SetLayoutManager(new views::FillLayout());
-  AddChildView(select_view_);
-  AddChildView(cast_view_);
 
   ActivateSelectView();
 }
 
 CastDuplexView::~CastDuplexView() {
+  RemoveChildView(ActiveChildView());
+  delete select_view_;
+  delete cast_view_;
 }
 
 void CastDuplexView::ActivateCastView() {
-  select_view_->SetVisible(false);
-  cast_view_->SetVisible(true);
+  if (ActiveChildView() == cast_view_)
+    return;
+
+  RemoveChildView(select_view_);
+  AddChildView(cast_view_);
   InvalidateLayout();
 }
 
 void CastDuplexView::ActivateSelectView() {
-  select_view_->SetVisible(true);
-  cast_view_->SetVisible(false);
+  if (ActiveChildView() == select_view_)
+    return;
+
+  RemoveChildView(cast_view_);
+  AddChildView(select_view_);
   InvalidateLayout();
 }
 
 void CastDuplexView::Layout() {
   views::View::Layout();
 
-  if (select_view_->IsDrawn())
-    select_view_->SetBoundsRect(GetContentsBounds());
-  if (cast_view_->IsDrawn())
-    cast_view_->SetBoundsRect(GetContentsBounds());
+  select_view_->SetBoundsRect(GetContentsBounds());
+  cast_view_->SetBoundsRect(GetContentsBounds());
+}
+
+views::View* CastDuplexView::ActiveChildView() {
+  if (cast_view_->parent() == this)
+    return cast_view_;
+  if (select_view_->parent() == this)
+    return select_view_;
+  return nullptr;
 }
 
 // Exposes an icon in the tray. |TrayCast| manages the visiblity of this.
