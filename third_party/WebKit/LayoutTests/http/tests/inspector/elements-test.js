@@ -7,18 +7,18 @@ InspectorTest.inlineStyleSection = function()
     return WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks[0].sections[0];
 }
 
-InspectorTest.computedStyleSidebarPane = function()
+InspectorTest.computedStyleWidget = function()
 {
-    return WebInspector.panels.elements.sidebarPanes.computedStyle;
+    return WebInspector.panels.elements.sidebarPanes.computedStyle.children()[0]
 }
 
 InspectorTest.dumpComputedStyle = function()
 {
-    var computed = InspectorTest.computedStyleSidebarPane();
+    var computed = InspectorTest.computedStyleWidget();
     var items = computed.element.querySelectorAll(".computed-style-property");
     for (var i = 0; i < items.length; ++i) {
         var item = items[i];
-        var property = item[WebInspector.ComputedStyleSidebarPane._propertySymbol];
+        var property = item[WebInspector.ComputedStyleWidget._propertySymbol];
         if (property.name === "width" || property.name === "height")
             continue;
         InspectorTest.addResult(item.textContent);
@@ -27,11 +27,11 @@ InspectorTest.dumpComputedStyle = function()
 
 InspectorTest.findComputedPropertyWithName = function(name)
 {
-    var computed = InspectorTest.computedStyleSidebarPane();
+    var computed = InspectorTest.computedStyleWidget();
     var items = computed.element.querySelectorAll(".computed-style-property");
     for (var i = 0; i < items.length; ++i) {
         var item = items[i];
-        var property = item[WebInspector.ComputedStyleSidebarPane._propertySymbol];
+        var property = item[WebInspector.ComputedStyleWidget._propertySymbol];
         if (property.name === name)
             return item;
     }
@@ -267,7 +267,7 @@ InspectorTest.selectNodeAndWaitForStylesWithComputed = function(idValue, callbac
 
     function onSidebarRendered()
     {
-        WebInspector.panels.elements.sidebarPanes.computedStyle.doUpdate(callback);
+        InspectorTest.computedStyleWidget().doUpdate(callback);
     }
 }
 
