@@ -831,6 +831,15 @@ bool NavigationControllerImpl::RendererDidNavigate(
                      new_type == NAVIGATION_TYPE_SAME_PAGE;
   ignore_mismatch |= details->type == NAVIGATION_TYPE_SAME_PAGE &&
                      new_type == NAVIGATION_TYPE_EXISTING_PAGE;
+  // There are mismatches in the field where the new classifier thinks it's
+  // AUTO_SUBFRAME and the old classifier somehow thinks it's NEW or IGNORE. For
+  // IGNORE we know of at least one repro (https://crbug.com/492875), and for
+  // NEW it's not entirely clear what's going on, but we're pretty sure the new
+  // classifier is correct for both cases, so we're letting these mismatches go.
+  ignore_mismatch |= details->type == NAVIGATION_TYPE_NEW_SUBFRAME &&
+                     new_type == NAVIGATION_TYPE_AUTO_SUBFRAME;
+  ignore_mismatch |= details->type == NAVIGATION_TYPE_NAV_IGNORE &&
+                     new_type == NAVIGATION_TYPE_AUTO_SUBFRAME;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kSitePerProcess)) {
     // In site-per-process mode, the new classifier sometimes correctly
