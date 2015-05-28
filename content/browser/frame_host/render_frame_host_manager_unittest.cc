@@ -41,6 +41,7 @@
 #include "content/test/test_web_contents.h"
 #include "net/base/load_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -671,7 +672,8 @@ TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
     RenderFrameHostCreatedObserver observer(contents());
     initial_rfh->OnCreateChildFrame(
         initial_rfh->GetProcess()->GetNextRoutingID(),
-        blink::WebTreeScopeType::Document, std::string(), SandboxFlags::NONE);
+        blink::WebTreeScopeType::Document, std::string(),
+        blink::WebSandboxFlags::None);
     EXPECT_TRUE(observer.created());
   }
 
@@ -694,7 +696,8 @@ TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
     RenderFrameHostCreatedObserver observer(contents());
     initial_rfh->OnCreateChildFrame(
         initial_rfh->GetProcess()->GetNextRoutingID(),
-        blink::WebTreeScopeType::Document, std::string(), SandboxFlags::NONE);
+        blink::WebTreeScopeType::Document, std::string(),
+        blink::WebSandboxFlags::None);
     EXPECT_FALSE(observer.created());
   }
 }
@@ -1976,10 +1979,12 @@ TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
   contents()->NavigateAndCommit(kUrlA);
   contents()->GetMainFrame()->OnCreateChildFrame(
       contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
-      blink::WebTreeScopeType::Document, "frame_name", SandboxFlags::NONE);
+      blink::WebTreeScopeType::Document, "frame_name",
+      blink::WebSandboxFlags::None);
   contents()->GetMainFrame()->OnCreateChildFrame(
       contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
-      blink::WebTreeScopeType::Document, "frame_name", SandboxFlags::NONE);
+      blink::WebTreeScopeType::Document, "frame_name",
+      blink::WebSandboxFlags::None);
   RenderFrameHostManager* root_manager =
       contents()->GetFrameTree()->root()->render_manager();
   RenderFrameHostManager* iframe1 =
@@ -2117,7 +2122,8 @@ TEST_F(RenderFrameHostManagerTest, TwoTabsCrashOneReloadsOneLeaves) {
   // |contents1| creates an out of process iframe.
   contents1->GetMainFrame()->OnCreateChildFrame(
       contents1->GetMainFrame()->GetProcess()->GetNextRoutingID(),
-      blink::WebTreeScopeType::Document, "frame_name", SandboxFlags::NONE);
+      blink::WebTreeScopeType::Document, "frame_name",
+      blink::WebSandboxFlags::None);
   RenderFrameHostManager* iframe =
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
   NavigationEntryImpl entry(NULL /* instance */, -1 /* page_id */, kUrl2,

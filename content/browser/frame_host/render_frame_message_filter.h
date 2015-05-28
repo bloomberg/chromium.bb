@@ -31,7 +31,7 @@ class RenderFrameMessageFilter : public BrowserMessageFilter {
   void OnCreateChildFrame(int parent_routing_id,
                           blink::WebTreeScopeType scope,
                           const std::string& frame_name,
-                          SandboxFlags sandbox_flags,
+                          blink::WebSandboxFlags sandbox_flags,
                           int* new_render_frame_id);
 
   const int render_process_id_;

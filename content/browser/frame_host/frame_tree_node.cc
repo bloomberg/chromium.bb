@@ -55,7 +55,7 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
                              RenderFrameHostManager::Delegate* manager_delegate,
                              blink::WebTreeScopeType scope,
                              const std::string& name,
-                             SandboxFlags sandbox_flags)
+                             blink::WebSandboxFlags sandbox_flags)
     : frame_tree_(frame_tree),
       navigator_(navigator),
       render_manager_(this,

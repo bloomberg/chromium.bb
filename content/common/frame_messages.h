@@ -47,10 +47,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
                           blink::WebContextMenuData::MediaTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::InputFieldType,
                           blink::WebContextMenuData::InputFieldTypeLast)
+IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::Last)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
-IPC_ENUM_TRAITS(content::SandboxFlags)  // Bitmask.
 
 IPC_STRUCT_TRAITS_BEGIN(content::ColorSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(color)
@@ -569,7 +569,7 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode,
 IPC_MESSAGE_ROUTED0(FrameMsg_DispatchLoad)
 
 // Notifies the frame that its parent has changed the frame's sandbox flags.
-IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateSandboxFlags, content::SandboxFlags)
+IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateSandboxFlags, blink::WebSandboxFlags)
 
 // Update a proxy's window.name property.  Used when the frame's name is
 // changed in another process.
@@ -646,7 +646,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(FrameHostMsg_CreateChildFrame,
                             int32 /* parent_routing_id */,
                             blink::WebTreeScopeType /* scope */,
                             std::string /* frame_name */,
-                            content::SandboxFlags /* sandbox flags */,
+                            blink::WebSandboxFlags /* sandbox flags */,
                             int32 /* new_routing_id */)
 
 // Sent by the renderer to the parent RenderFrameHost when a child frame is
@@ -735,7 +735,7 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAssignPageId,
 // frame.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeSandboxFlags,
                     int32 /* subframe_routing_id */,
-                    content::SandboxFlags /* updated_flags */)
+                    blink::WebSandboxFlags /* updated_flags */)
 
 // Changes the title for the page in the UI when the page is navigated or the
 // title changes. Sent for top-level frames.

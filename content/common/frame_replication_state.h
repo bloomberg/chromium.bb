@@ -10,42 +10,10 @@
 
 namespace blink {
 enum class WebTreeScopeType;
+enum class WebSandboxFlags;
 }
 
 namespace content {
-
-// Sandboxing flags for iframes.  These flags are set via an iframe's "sandbox"
-// attribute in the renderer process and forwarded to the browser process,
-// which replicates them to other processes as needed.  For a list of sandbox
-// flags, see
-// http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-sandbox
-// Must be kept in sync with blink::WebSandboxFlags. Enforced in
-// render_frame_impl.cc.
-enum class SandboxFlags : int {
-  NONE = 0,
-  NAVIGATION = 1,
-  PLUGINS = 1 << 1,
-  ORIGIN = 1 << 2,
-  FORMS = 1 << 3,
-  SCRIPTS = 1 << 4,
-  TOP_NAVIGATION = 1 << 5,
-  POPUPS = 1 << 6,
-  AUTOMATIC_FEATURES = 1 << 7,
-  POINTER_LOCK = 1 << 8,
-  DOCUMENT_DOMAIN = 1 << 9,
-  ORIENTATION_LOCK = 1 << 10,
-  PROPAGATES_TO_AUXILIARY = 1 << 11,
-  MODALS = 1 << 12,
-  ALL = -1
-};
-
-inline SandboxFlags operator&(SandboxFlags a, SandboxFlags b) {
-  return static_cast<SandboxFlags>(static_cast<int>(a) & static_cast<int>(b));
-}
-
-inline SandboxFlags operator~(SandboxFlags flags) {
-  return static_cast<SandboxFlags>(~static_cast<int>(flags));
-}
 
 // This structure holds information that needs to be replicated between a
 // RenderFrame and any of its associated RenderFrameProxies.
@@ -53,7 +21,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   FrameReplicationState();
   FrameReplicationState(blink::WebTreeScopeType scope,
                         const std::string& name,
-                        SandboxFlags sandbox_flags);
+                        blink::WebSandboxFlags sandbox_flags);
   ~FrameReplicationState();
 
   // Current serialized security origin of the frame.  Unique origins are
@@ -79,7 +47,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   // effect on navigation (see also FrameTreeNode::effective_sandbox_flags_).
   // The proxies need updated flags so that they can be inherited properly if a
   // proxy ever becomes a parent of a local frame.
-  SandboxFlags sandbox_flags;
+  blink::WebSandboxFlags sandbox_flags;
 
   // The assigned name of the frame. This name can be empty, unlike the unique
   // name generated internally in the DOM tree.

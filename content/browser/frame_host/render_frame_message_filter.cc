@@ -17,7 +17,7 @@ void CreateChildFrameOnUI(int process_id,
                           int parent_routing_id,
                           blink::WebTreeScopeType scope,
                           const std::string& frame_name,
-                          SandboxFlags sandbox_flags,
+                          blink::WebSandboxFlags sandbox_flags,
                           int new_routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
@@ -53,11 +53,12 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void RenderFrameMessageFilter::OnCreateChildFrame(int parent_routing_id,
-                                                  blink::WebTreeScopeType scope,
-                                                  const std::string& frame_name,
-                                                  SandboxFlags sandbox_flags,
-                                                  int* new_routing_id) {
+void RenderFrameMessageFilter::OnCreateChildFrame(
+    int parent_routing_id,
+    blink::WebTreeScopeType scope,
+    const std::string& frame_name,
+    blink::WebSandboxFlags sandbox_flags,
+    int* new_routing_id) {
   *new_routing_id = render_widget_helper_->GetNextRoutingID();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

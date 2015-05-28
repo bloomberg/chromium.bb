@@ -22,12 +22,11 @@ class MessageReplyDeserializer;
 }
 
 namespace blink {
+enum class WebSandboxFlags;
 enum class WebTreeScopeType;
 }
 
 namespace content {
-
-enum class SandboxFlags;
 
 // This class is a very simple mock of RenderThread. It simulates an IPC channel
 // which supports only three messages:
@@ -140,7 +139,7 @@ class MockRenderThread : public RenderThread {
   void OnCreateChildFrame(int new_frame_routing_id,
                           blink::WebTreeScopeType scope,
                           const std::string& frame_name,
-                          SandboxFlags sandbox_flags,
+                          blink::WebSandboxFlags sandbox_flags,
                           int* new_render_frame_id);
 
 #if defined(OS_WIN)

@@ -228,7 +228,7 @@ void MockRenderThread::OnCreateWindow(
 void MockRenderThread::OnCreateChildFrame(int new_frame_routing_id,
                                           blink::WebTreeScopeType scope,
                                           const std::string& frame_name,
-                                          SandboxFlags sandbox_flags,
+                                          blink::WebSandboxFlags sandbox_flags,
                                           int* new_render_frame_id) {
   *new_render_frame_id = new_frame_routing_id_++;
 }

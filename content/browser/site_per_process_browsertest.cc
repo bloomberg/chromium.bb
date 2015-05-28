@@ -32,6 +32,7 @@
 #include "ipc/ipc_security_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
 
@@ -1715,12 +1716,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   EXPECT_EQ(baz_url, observer.last_navigation_url());
 
   // Both frames should not be sandboxed to start with.
-  EXPECT_EQ(SandboxFlags::NONE,
+  EXPECT_EQ(blink::WebSandboxFlags::None,
             root->child_at(0)->current_replication_state().sandbox_flags);
-  EXPECT_EQ(SandboxFlags::NONE, root->child_at(0)->effective_sandbox_flags());
-  EXPECT_EQ(SandboxFlags::NONE,
+  EXPECT_EQ(blink::WebSandboxFlags::None,
+            root->child_at(0)->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::None,
             root->child_at(1)->current_replication_state().sandbox_flags);
-  EXPECT_EQ(SandboxFlags::NONE, root->child_at(1)->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::None,
+            root->child_at(1)->effective_sandbox_flags());
 
   // Dynamically update sandbox flags for the first frame.
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
@@ -1734,11 +1737,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   // sandbox flag updates take place only after navigations. "allow-scripts"
   // resets both SandboxFlags::Scripts and SandboxFlags::AutomaticFeatures bits
   // per blink::parseSandboxPolicy().
-  SandboxFlags expected_flags = SandboxFlags::ALL & ~SandboxFlags::SCRIPTS &
-                                ~SandboxFlags::AUTOMATIC_FEATURES;
+  blink::WebSandboxFlags expected_flags =
+      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+      ~blink::WebSandboxFlags::AutomaticFeatures;
   EXPECT_EQ(expected_flags,
             root->child_at(0)->current_replication_state().sandbox_flags);
-  EXPECT_EQ(SandboxFlags::NONE, root->child_at(0)->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::None,
+            root->child_at(0)->effective_sandbox_flags());
 
   // Navigate the first frame to a page on the same site.  The new sandbox
   // flags should take effect.
@@ -1836,11 +1841,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Check that the current sandbox flags are updated but the effective
   // sandbox flags are not.
-  SandboxFlags expected_flags = SandboxFlags::ALL & ~SandboxFlags::SCRIPTS &
-                                ~SandboxFlags::AUTOMATIC_FEATURES;
+  blink::WebSandboxFlags expected_flags =
+      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+      ~blink::WebSandboxFlags::AutomaticFeatures;
   EXPECT_EQ(expected_flags,
             root->child_at(1)->current_replication_state().sandbox_flags);
-  EXPECT_EQ(SandboxFlags::NONE, root->child_at(1)->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::None,
+            root->child_at(1)->effective_sandbox_flags());
 
   // Navigate the second subframe to a page on bar.com.  This will trigger a
   // remote-to-local frame swap in bar.com's process.  The target page has
@@ -1901,9 +1908,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             root->child_at(0)->current_url());
 
   // The frame should not be sandboxed to start with.
-  EXPECT_EQ(SandboxFlags::NONE,
+  EXPECT_EQ(blink::WebSandboxFlags::None,
             root->child_at(0)->current_replication_state().sandbox_flags);
-  EXPECT_EQ(SandboxFlags::NONE, root->child_at(0)->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::None,
+            root->child_at(0)->effective_sandbox_flags());
 
   // Dynamically update the frame's sandbox flags.
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
@@ -1917,11 +1925,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // sandbox flag updates take place only after navigations. "allow-scripts"
   // resets both SandboxFlags::Scripts and SandboxFlags::AutomaticFeatures bits
   // per blink::parseSandboxPolicy().
-  SandboxFlags expected_flags = SandboxFlags::ALL & ~SandboxFlags::SCRIPTS &
-                                ~SandboxFlags::AUTOMATIC_FEATURES;
+  blink::WebSandboxFlags expected_flags =
+      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+      ~blink::WebSandboxFlags::AutomaticFeatures;
   EXPECT_EQ(expected_flags,
             root->child_at(0)->current_replication_state().sandbox_flags);
-  EXPECT_EQ(SandboxFlags::NONE, root->child_at(0)->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::None,
+            root->child_at(0)->effective_sandbox_flags());
 
   // Perform a renderer-initiated same-site navigation in the first frame. The
   // new sandbox flags should take effect.
@@ -2023,11 +2033,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(main_url.GetOrigin().spec(), parent_origin + "/");
 
   // Check that the sandbox flags in the browser process are correct.
-  // "allow-scripts" resets both SandboxFlags::Scripts and
-  // SandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy().
-  SandboxFlags expected_flags = SandboxFlags::ALL & ~SandboxFlags::SCRIPTS &
-                                ~SandboxFlags::AUTOMATIC_FEATURES &
-                                ~SandboxFlags::ORIGIN;
+  // "allow-scripts" resets both WebSandboxFlags::Scripts and
+  // WebSandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy().
+  blink::WebSandboxFlags expected_flags =
+      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+      ~blink::WebSandboxFlags::AutomaticFeatures &
+      ~blink::WebSandboxFlags::Origin;
   EXPECT_EQ(expected_flags,
             root->child_at(1)->current_replication_state().sandbox_flags);
 

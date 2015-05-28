@@ -205,7 +205,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnCreateChildFrame(int new_routing_id,
                           blink::WebTreeScopeType scope,
                           const std::string& frame_name,
-                          SandboxFlags sandbox_flags);
+                          blink::WebSandboxFlags sandbox_flags);
 
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
@@ -503,7 +503,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidDisownOpener();
   void OnDidChangeName(const std::string& name);
   void OnDidAssignPageId(int32 page_id);
-  void OnDidChangeSandboxFlags(int32 frame_routing_id, SandboxFlags flags);
+  void OnDidChangeSandboxFlags(int32 frame_routing_id,
+                               blink::WebSandboxFlags flags);
   void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);

@@ -103,7 +103,6 @@ class RenderWidget;
 class RenderWidgetFullscreenPepper;
 class ScreenOrientationDispatcher;
 class UserMediaClientImpl;
-enum class SandboxFlags;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
 struct FrameReplicationState;
@@ -156,12 +155,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                                              int32);
   static void InstallCreateHook(
       CreateRenderFrameImplFunction create_render_frame_impl);
-
-  static content::SandboxFlags WebToContentSandboxFlags(
-      blink::WebSandboxFlags flags);
-
-  static blink::WebSandboxFlags ContentToWebSandboxFlags(
-      content::SandboxFlags flags);
 
   virtual ~RenderFrameImpl();
 
@@ -658,7 +651,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSnapshotAccessibilityTree(int callback_id);
   void OnDisownOpener();
-  void OnDidUpdateSandboxFlags(SandboxFlags flags);
+  void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
   void OnPostMessageEvent(const FrameMsg_PostMessage_Params& params);

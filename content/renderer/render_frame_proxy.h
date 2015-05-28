@@ -26,7 +26,6 @@ namespace content {
 class ChildFrameCompositingHelper;
 class RenderFrameImpl;
 class RenderViewImpl;
-enum class SandboxFlags;
 struct FrameReplicationState;
 
 // When a page's frames are rendered by multiple processes, each renderer has a
@@ -143,7 +142,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnDisownOpener();
   void OnDidStopLoading();
-  void OnDidUpdateSandboxFlags(SandboxFlags flags);
+  void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
   void OnDispatchLoad();
   void OnDidUpdateName(const std::string& name);
   void OnDidUpdateOrigin(const url::Origin& origin);

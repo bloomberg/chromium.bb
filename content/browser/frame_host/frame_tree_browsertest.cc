@@ -20,6 +20,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 // For fine-grained suppression on flaky tests.
 #if defined(OS_WIN)
@@ -254,15 +255,16 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
   // SandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy(), and
   // third frame has "allow-scripts allow-same-origin".
   EXPECT_EQ(root->current_replication_state().sandbox_flags,
-            SandboxFlags::NONE);
+            blink::WebSandboxFlags::None);
   EXPECT_EQ(root->child_at(0)->current_replication_state().sandbox_flags,
-            SandboxFlags::ALL);
+            blink::WebSandboxFlags::All);
   EXPECT_EQ(root->child_at(1)->current_replication_state().sandbox_flags,
-            SandboxFlags::ALL & ~SandboxFlags::SCRIPTS &
-                ~SandboxFlags::AUTOMATIC_FEATURES);
+            blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+                ~blink::WebSandboxFlags::AutomaticFeatures);
   EXPECT_EQ(root->child_at(2)->current_replication_state().sandbox_flags,
-            SandboxFlags::ALL & ~SandboxFlags::SCRIPTS &
-                ~SandboxFlags::AUTOMATIC_FEATURES & ~SandboxFlags::ORIGIN);
+            blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+                ~blink::WebSandboxFlags::AutomaticFeatures &
+                ~blink::WebSandboxFlags::Origin);
 
   // Sandboxed frames should set a unique origin unless they have the
   // "allow-same-origin" directive.
@@ -278,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
   GURL frame_url(embedded_test_server()->GetURL("/title1.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
   EXPECT_EQ(root->child_at(0)->current_replication_state().sandbox_flags,
-            SandboxFlags::ALL);
+            blink::WebSandboxFlags::All);
 }
 
 class CrossProcessFrameTreeBrowserTest : public ContentBrowserTest {

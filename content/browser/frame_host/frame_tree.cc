@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
 
@@ -112,7 +113,7 @@ FrameTree::FrameTree(Navigator* navigator,
                               // document scope.
                               blink::WebTreeScopeType::Document,
                               std::string(),
-                              SandboxFlags::NONE)),
+                              blink::WebSandboxFlags::None)),
       focused_frame_tree_node_id_(-1),
       load_progress_(0.0) {
 }
@@ -185,7 +186,7 @@ RenderFrameHostImpl* FrameTree::AddFrame(FrameTreeNode* parent,
                                          int new_routing_id,
                                          blink::WebTreeScopeType scope,
                                          const std::string& frame_name,
-                                         SandboxFlags sandbox_flags) {
+                                         blink::WebSandboxFlags sandbox_flags) {
   // A child frame always starts with an initial empty document, which means
   // it is in the same SiteInstance as the parent frame. Ensure that the process
   // which requested a child frame to be added is the same as the process of the

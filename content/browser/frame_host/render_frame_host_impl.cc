@@ -705,10 +705,11 @@ void RenderFrameHostImpl::OnAddMessageToConsole(
   }
 }
 
-void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
-                                             blink::WebTreeScopeType scope,
-                                             const std::string& frame_name,
-                                             SandboxFlags sandbox_flags) {
+void RenderFrameHostImpl::OnCreateChildFrame(
+    int new_routing_id,
+    blink::WebTreeScopeType scope,
+    const std::string& frame_name,
+    blink::WebSandboxFlags sandbox_flags) {
   // It is possible that while a new RenderFrameHost was committed, the
   // RenderFrame corresponding to this host sent an IPC message to create a
   // frame and it is delivered after this host is swapped out.
@@ -1237,8 +1238,9 @@ void RenderFrameHostImpl::OnDidAssignPageId(int32 page_id) {
   render_view_host_->page_id_ = page_id;
 }
 
-void RenderFrameHostImpl::OnDidChangeSandboxFlags(int32 frame_routing_id,
-                                                  SandboxFlags flags) {
+void RenderFrameHostImpl::OnDidChangeSandboxFlags(
+    int32 frame_routing_id,
+    blink::WebSandboxFlags flags) {
   FrameTree* frame_tree = frame_tree_node()->frame_tree();
   FrameTreeNode* child =
       frame_tree->FindByRoutingID(GetProcess()->GetID(), frame_routing_id);

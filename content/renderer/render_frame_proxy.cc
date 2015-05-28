@@ -79,9 +79,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     web_frame = parent->web_frame()->createRemoteChild(
         replicated_state.scope,
         blink::WebString::fromUTF8(replicated_state.name),
-        RenderFrameImpl::ContentToWebSandboxFlags(
-            replicated_state.sandbox_flags),
-        proxy.get());
+        replicated_state.sandbox_flags, proxy.get());
     render_view = parent->render_view();
   }
 
@@ -175,8 +173,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   DCHECK(web_frame_);
   web_frame_->setReplicatedOrigin(blink::WebSecurityOrigin::createFromString(
       blink::WebString::fromUTF8(state.origin.string())));
-  web_frame_->setReplicatedSandboxFlags(
-      RenderFrameImpl::ContentToWebSandboxFlags(state.sandbox_flags));
+  web_frame_->setReplicatedSandboxFlags(state.sandbox_flags);
   web_frame_->setReplicatedName(blink::WebString::fromUTF8(state.name));
 }
 
@@ -196,11 +193,9 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
 // properly if this proxy ever parents a local frame.  The proxy's FrameOwner
 // flags are also updated here with the caveat that the FrameOwner won't learn
 // about updates to its flags until they take effect.
-void RenderFrameProxy::OnDidUpdateSandboxFlags(SandboxFlags flags) {
-  web_frame_->setReplicatedSandboxFlags(
-      RenderFrameImpl::ContentToWebSandboxFlags(flags));
-  web_frame_->setFrameOwnerSandboxFlags(
-      RenderFrameImpl::ContentToWebSandboxFlags(flags));
+void RenderFrameProxy::OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags) {
+  web_frame_->setReplicatedSandboxFlags(flags);
+  web_frame_->setFrameOwnerSandboxFlags(flags);
 }
 
 bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {

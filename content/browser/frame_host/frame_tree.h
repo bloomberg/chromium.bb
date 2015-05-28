@@ -82,7 +82,7 @@ class CONTENT_EXPORT FrameTree {
                                 int new_routing_id,
                                 blink::WebTreeScopeType scope,
                                 const std::string& frame_name,
-                                SandboxFlags sandbox_flags);
+                                blink::WebSandboxFlags sandbox_flags);
   void RemoveFrame(FrameTreeNode* child);
 
   // This method walks the entire frame tree and creates a RenderFrameProxyHost
