@@ -42,7 +42,6 @@ sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools'))
 import licenses
 
 import copyright_scanner
-import known_issues
 
 class InputApi(object):
   def __init__(self):
@@ -131,32 +130,6 @@ def _ReadFile(full_path, mode='rU'):
     return f.read()
 
 
-def _FindThirdPartyDirs():
-  """Gets the list of third-party directories.
-  Returns:
-    The list of third-party directories.
-  """
-
-  # Please don't add here paths that have problems with license files,
-  # as they will end up included in Android WebView snapshot.
-  # Instead, add them into known_issues.py.
-  prune_paths = set([
-    # Apache 2.0 license. See
-    # https://code.google.com/p/chromium/issues/detail?id=140478.
-    os.path.join('third_party', 'bidichecker'),
-    # Not shipped, only relates to Chrome for Android, but not to WebView
-    os.path.join('clank'),
-    # Not checked out on clients, but present on the release bot.
-    # See crbug.com/350472, crbug.com/492111.
-    os.path.join('chrome', 'browser', 'resources', 'chromeos', 'quickoffice'),
-    os.path.join('isolate_deps_dir'),
-    os.path.join('third_party', 'gles2_conform'),
-  ])
-  third_party_dirs = licenses.FindThirdPartyDirs(
-    prune_paths | licenses.PRUNE_PATHS, REPOSITORY_ROOT)
-  return licenses.FilterDirsWithFiles(third_party_dirs, REPOSITORY_ROOT)
-
-
 def _Scan():
   """Checks that license meta-data is present for all third-party code and
      that all non third-party code doesn't contain external copyrighted code.
@@ -167,7 +140,7 @@ def _Scan():
     ScanResult.Errors otherwise.
   """
 
-  third_party_dirs = _FindThirdPartyDirs()
+  third_party_dirs = licenses.FindThirdPartyDirsWithFiles(REPOSITORY_ROOT)
 
   problem_paths = []
 
@@ -177,10 +150,9 @@ def _Scan():
     try:
       licenses.ParseDir(path, REPOSITORY_ROOT)
     except licenses.LicenseError, e:
-      if not (path in known_issues.KNOWN_ISSUES):
-        print 'Got LicenseError "%s" while scanning %s' % (e, path)
-        problem_paths.append(path)
-        all_licenses_valid = False
+      print 'Got LicenseError "%s" while scanning %s' % (e, path)
+      problem_paths.append(path)
+      all_licenses_valid = False
 
   # Second, check for non-standard license text.
   whitelisted_files = copyright_scanner.LoadWhitelistedFilesList(InputApi())
@@ -241,7 +213,7 @@ def GenerateNoticeFile(generate_licenses_file_list_only=False):
     'License File': os.path.join(REPOSITORY_ROOT, 'LICENSE') })
   ]
 
-  third_party_dirs = _FindThirdPartyDirs()
+  third_party_dirs = licenses.FindThirdPartyDirsWithFiles(REPOSITORY_ROOT)
   # We provide attribution for all third-party directories.
   # TODO(mnaganov): Limit this to only code used by the WebView binary.
   for directory in sorted(third_party_dirs):

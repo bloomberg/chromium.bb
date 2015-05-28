@@ -397,12 +397,16 @@ def FindThirdPartyDirs(prune_paths, root):
     return third_party_dirs
 
 
+def FindThirdPartyDirsWithFiles(root):
+    third_party_dirs = FindThirdPartyDirs(PRUNE_PATHS, root)
+    return FilterDirsWithFiles(third_party_dirs, root)
+
+
 def ScanThirdPartyDirs(root=None):
     """Scan a list of directories and report on any problems we find."""
     if root is None:
       root = os.getcwd()
-    third_party_dirs = FindThirdPartyDirs(PRUNE_PATHS, root)
-    third_party_dirs = FilterDirsWithFiles(third_party_dirs, root)
+    third_party_dirs = FindThirdPartyDirsWithFiles(root)
 
     errors = []
     for path in sorted(third_party_dirs):
