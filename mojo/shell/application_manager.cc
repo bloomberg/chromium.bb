@@ -188,6 +188,15 @@ void ApplicationManager::ConnectToApplicationInternal(
           ? NativeApplicationCleanup::DONT_DELETE
           : NativeApplicationCleanup::DELETE;
 
+  if (requested_gurl.SchemeIs("mojo")) {
+    // Use the resolved mojo URL in the request to support origin mapping, etc.
+    mojo::URLRequestPtr resolved_url_request(mojo::URLRequest::New());
+    resolved_url_request->url = resolved_url.spec();
+    new NetworkFetcher(disable_cache_, resolved_url_request.Pass(),
+                       network_service_.get(), base::Bind(callback, cleanup));
+    return;
+  }
+
   new NetworkFetcher(disable_cache_, requested_url.Pass(),
                      network_service_.get(), base::Bind(callback, cleanup));
 }
@@ -221,7 +230,7 @@ bool ApplicationManager::ConnectToApplicationWithLoader(
     return false;
 
   const GURL app_url =
-      requested_url.scheme() == "mojo" ? requested_url : resolved_url;
+      requested_url.SchemeIs("mojo") ? requested_url : resolved_url;
 
   loader->Load(
       resolved_url,
