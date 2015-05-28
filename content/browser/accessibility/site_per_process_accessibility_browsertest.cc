@@ -47,14 +47,10 @@ bool AccessibilityTreeIsLoaded(BrowserAccessibilityManager* manager) {
           root->GetStringAttribute(ui::AX_ATTR_DOC_URL) != url::kAboutBlankURL);
 }
 
+// Disabled, see https://crbug.com/490831.
 // Times out on Android, not clear if it's an actual bug or just slow.
-#if defined(OS_ANDROID)
-#define MAYBE_CrossSiteIframeAccessibility DISABLED_CrossSiteIframeAccessibility
-#else
-#define MAYBE_CrossSiteIframeAccessibility CrossSiteIframeAccessibility
-#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessAccessibilityBrowserTest,
-                       MAYBE_CrossSiteIframeAccessibility) {
+                       DISABLED_CrossSiteIframeAccessibility) {
   // Enable full accessibility for all current and future WebContents.
   BrowserAccessibilityState::GetInstance()->EnableAccessibility();
 
