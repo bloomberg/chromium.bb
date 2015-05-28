@@ -29,6 +29,7 @@
 #import "chrome/browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
@@ -770,7 +771,12 @@ FindBar* BrowserWindowCocoa::CreateFindBar() {
 
 web_modal::WebContentsModalDialogHost*
     BrowserWindowCocoa::GetWebContentsModalDialogHost() {
-  return NULL;
+  DCHECK([controller_ window]);
+  ConstrainedWindowSheetController* sheet_controller =
+      [ConstrainedWindowSheetController
+          controllerForParentWindow:[controller_ window]];
+  DCHECK(sheet_controller);
+  return [sheet_controller dialogHost];
 }
 
 extensions::ActiveTabPermissionGranter*

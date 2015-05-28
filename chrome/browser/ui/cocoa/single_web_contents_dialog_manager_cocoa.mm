@@ -7,7 +7,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#include "chrome/browser/ui/tab_dialogs.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 
@@ -18,6 +18,7 @@ SingleWebContentsDialogManagerCocoa::SingleWebContentsDialogManagerCocoa(
     : client_(client),
       sheet_([sheet retain]),
       delegate_(delegate),
+      host_(nullptr),
       shown_(false) {
   if (client)
     client->set_manager(this);
@@ -30,14 +31,12 @@ void SingleWebContentsDialogManagerCocoa::Show() {
   if (shown_)
     return;
 
-  content::WebContents* web_contents = delegate_->GetWebContents();
-  NSWindow* parent_window = web_contents->GetTopLevelNativeWindow();
-  TabDialogs* tab_dialogs = TabDialogs::FromWebContents(web_contents);
-  // |tab_dialogs| is null when |web_contents| is inside a packaged app window.
-  NSView* parent_view = tab_dialogs ? tab_dialogs->GetDialogParentView()
-                                    : web_contents->GetNativeView();
-  if (!parent_window || !parent_view)
-    return;
+  DCHECK(host_);
+  NSView* parent_view = host_->GetHostView();
+  // Note that simply [parent_view window] for an inactive tab is nil. However,
+  // the following should always be non-nil for all WebContents containers.
+  NSWindow* parent_window =
+      delegate_->GetWebContents()->GetTopLevelNativeWindow();
 
   shown_ = true;
   [[ConstrainedWindowSheetController controllerForParentWindow:parent_window]
@@ -68,6 +67,12 @@ void SingleWebContentsDialogManagerCocoa::Pulse() {
 
 void SingleWebContentsDialogManagerCocoa::HostChanged(
     web_modal::WebContentsModalDialogHost* new_host) {
+  // No need to observe the host. For Cocoa, the constrained window controller
+  // will reposition the dialog when necessary. The host can also never change.
+  // Tabs showing a dialog can not be dragged off a Cocoa browser window.
+  // However, closing a tab with a dialog open will set the host back to null.
+  DCHECK_NE(!!host_, !!new_host);
+  host_ = new_host;
 }
 
 gfx::NativeWindow SingleWebContentsDialogManagerCocoa::dialog() {

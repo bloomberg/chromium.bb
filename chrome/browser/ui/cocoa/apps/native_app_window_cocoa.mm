@@ -677,8 +677,7 @@ bool NativeAppWindowCocoa::CanHaveAlphaEnabled() const {
 }
 
 gfx::NativeView NativeAppWindowCocoa::GetHostView() const {
-  NOTIMPLEMENTED();
-  return NULL;
+  return WebContents()->GetNativeView();
 }
 
 gfx::Point NativeAppWindowCocoa::GetDialogPosition(const gfx::Size& size) {

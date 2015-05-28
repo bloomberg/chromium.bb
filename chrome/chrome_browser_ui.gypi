@@ -1284,6 +1284,8 @@
       'browser/ui/cocoa/view_id_util.h',
       'browser/ui/cocoa/view_id_util.mm',
       'browser/ui/cocoa/view_resizer.h',
+      'browser/ui/cocoa/web_contents_modal_dialog_host_cocoa.h',
+      'browser/ui/cocoa/web_contents_modal_dialog_host_cocoa.mm',
       'browser/ui/cocoa/web_dialog_window_controller.h',
       'browser/ui/cocoa/web_dialog_window_controller.mm',
       'browser/ui/cocoa/website_settings/permission_bubble_cocoa.h',

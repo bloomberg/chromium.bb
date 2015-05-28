@@ -9,7 +9,13 @@
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace web_modal {
+class WebContentsModalDialogHost;
+}
+
+class WebContentsModalDialogHostCocoa;
 
 @protocol ConstrainedWindowSheet;
 
@@ -21,7 +27,15 @@
   base::scoped_nsobject<NSMutableArray> sheets_;
   base::scoped_nsobject<NSWindow> parentWindow_;
   base::scoped_nsobject<NSView> activeView_;
+
+  // Class that bridges the cross-platform web_modal APIs to the Cocoa sheet
+  // controller.
+  scoped_ptr<WebContentsModalDialogHostCocoa> dialogHost_;
 }
+
+@property(readonly, nonatomic)
+    web_modal::WebContentsModalDialogHost* dialogHost;
+@property(readonly, nonatomic) NSWindow* parentWindow;
 
 // Returns a sheet controller for |parentWindow|. If a sheet controller does not
 // exist yet then one will be created.
@@ -58,6 +72,10 @@
 
 // Gets the number of sheets attached to the controller's window.
 - (int)sheetCount;
+
+// The size of the overlay window, which can be used to determine a preferred
+// maximum size for a dialog that should be contained within |parentView|.
+- (NSSize)overlayWindowSizeForParentView:(NSView*)parentView;
 
 @end
 

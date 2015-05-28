@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_info.h"
+#import "chrome/browser/ui/cocoa/web_contents_modal_dialog_host_cocoa.h"
 
 namespace {
 
@@ -136,6 +137,16 @@ NSRect GetSheetParentBoundsForParentView(NSView* view) {
   return self;
 }
 
+- (web_modal::WebContentsModalDialogHost*)dialogHost {
+  if (!dialogHost_)
+    dialogHost_.reset(new WebContentsModalDialogHostCocoa(self));
+  return dialogHost_.get();
+}
+
+- (NSWindow*)parentWindow {
+  return parentWindow_.get();
+}
+
 - (void)showSheet:(id<ConstrainedWindowSheet>)sheet
     forParentView:(NSView*)parentView {
   DCHECK(sheet);
@@ -204,6 +215,10 @@ NSRect GetSheetParentBoundsForParentView(NSView* view) {
   return [sheets_ count];
 }
 
+- (NSSize)overlayWindowSizeForParentView:(NSView*)parentView {
+  return [self overlayWindowFrameForParentView:parentView].size;
+}
+
 - (ConstrainedWindowSheetInfo*)findSheetInfoForParentView:(NSView*)parentView {
   for (ConstrainedWindowSheetInfo* info in sheets_.get()) {
     if ([parentView isEqual:[info parentView]])
@@ -231,6 +246,8 @@ NSRect GetSheetParentBoundsForParentView(NSView* view) {
   NSArray* sheets = [NSArray arrayWithArray:sheets_];
   for (ConstrainedWindowSheetInfo* info in sheets)
     [self closeSheet:info withAnimation:NO];
+
+  dialogHost_.reset();
 
   // Delete this instance.
   [g_sheetControllers removeObjectForKey:GetKeyForParentWindow(parentWindow_)];
