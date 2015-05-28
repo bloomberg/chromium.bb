@@ -38,7 +38,6 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/paint_throbber.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -416,8 +415,6 @@ Tab::Tab(TabController* controller)
       dragging_(false),
       detached_(false),
       favicon_hiding_offset_(0),
-      waiting_animation_frame_(0),
-      loading_animation_frame_(0),
       immersive_loading_step_(0),
       should_display_crashed_favicon_(false),
       close_button_(NULL),
@@ -1335,16 +1332,24 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     // Paint network activity (aka throbber) animation frame.
     ui::ThemeProvider* tp = GetThemeProvider();
     if (data().network_state == TabRendererData::NETWORK_STATE_WAITING) {
-      gfx::PaintThrobberWaitingForFrame(
+      if (waiting_start_time_ == base::TimeTicks())
+        waiting_start_time_ = base::TimeTicks::Now();
+
+      waiting_state_.elapsed_time =
+          base::TimeTicks::Now() - waiting_start_time_;
+      gfx::PaintThrobberWaiting(
           canvas, bounds, tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING),
-          waiting_animation_frame_);
+          waiting_state_.elapsed_time);
     } else {
-      gfx::PaintThrobberSpinningForFrameAfterWaiting(
+      if (loading_start_time_ == base::TimeTicks())
+        loading_start_time_ = base::TimeTicks::Now();
+
+      waiting_state_.color =
+          tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING);
+      gfx::PaintThrobberSpinningAfterWaiting(
           canvas, bounds,
           tp->GetColor(ThemeProperties::COLOR_THROBBER_SPINNING),
-          loading_animation_frame_,
-          tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING),
-          waiting_animation_frame_);
+          base::TimeTicks::Now() - loading_start_time_, &waiting_state_);
     }
   } else if (should_display_crashed_favicon_) {
     // Paint crash favicon.
@@ -1367,19 +1372,17 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
 void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
                                   TabRendererData::NetworkState state) {
   if (state == TabRendererData::NETWORK_STATE_WAITING) {
-    ++waiting_animation_frame_;
     // Waiting steps backwards.
     immersive_loading_step_ =
         (immersive_loading_step_ - 1 + kImmersiveLoadingStepCount) %
             kImmersiveLoadingStepCount;
   } else if (state == TabRendererData::NETWORK_STATE_LOADING) {
-    if (old_state == state)
-      ++loading_animation_frame_;
     immersive_loading_step_ = (immersive_loading_step_ + 1) %
         kImmersiveLoadingStepCount;
   } else {
-    waiting_animation_frame_ = 0;
-    loading_animation_frame_ = 0;
+    waiting_start_time_ = base::TimeTicks();
+    loading_start_time_ = base::TimeTicks();
+    waiting_state_ = gfx::ThrobberWaitingState();
     immersive_loading_step_ = 0;
   }
   if (controller_->IsImmersiveStyle()) {

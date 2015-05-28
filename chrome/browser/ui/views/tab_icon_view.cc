@@ -58,9 +58,7 @@ TabIconView::TabIconView(chrome::TabIconViewModel* model,
                          views::MenuButtonListener* listener)
     : views::MenuButton(NULL, base::string16(), listener, false),
       model_(model),
-      throbber_running_(false),
-      is_light_(false),
-      throbber_frame_(0) {
+      is_light_(false) {
   InitializeIfNeeded();
 }
 
@@ -68,34 +66,22 @@ TabIconView::~TabIconView() {
 }
 
 void TabIconView::Update() {
-  if (throbber_running_) {
-    // We think the tab is loading.
-    if (!model_->ShouldTabIconViewAnimate()) {
-      // Woops, tab is invalid or not loading, reset our status and schedule
-      // a paint.
-      throbber_running_ = false;
-      SchedulePaint();
-    } else {
-      // The tab is still loading, increment the frame.
-      ++throbber_frame_;
-      SchedulePaint();
-    }
-  } else if (model_->ShouldTabIconViewAnimate()) {
-    // We didn't think we were loading, but the tab is loading. Reset the
-    // frame and status and schedule a paint.
-    throbber_running_ = true;
-    throbber_frame_ = 0;
-    SchedulePaint();
-  }
+  if (!model_->ShouldTabIconViewAnimate())
+    throbber_start_time_ = base::TimeTicks();
+
+  SchedulePaint();
 }
 
 void TabIconView::PaintThrobber(gfx::Canvas* canvas) {
-  gfx::PaintThrobberSpinningForFrame(
+  if (throbber_start_time_ == base::TimeTicks())
+    throbber_start_time_ = base::TimeTicks::Now();
+
+  gfx::PaintThrobberSpinning(
       canvas, GetLocalBounds(),
       GetNativeTheme()->GetSystemColor(
           is_light_ ? ui::NativeTheme::kColorId_ThrobberLightColor
                     : ui::NativeTheme::kColorId_ThrobberSpinningColor),
-      throbber_frame_);
+      base::TimeTicks::Now() - throbber_start_time_);
 }
 
 void TabIconView::PaintFavicon(gfx::Canvas* canvas,
@@ -137,7 +123,7 @@ const char* TabIconView::GetClassName() const {
 void TabIconView::OnPaint(gfx::Canvas* canvas) {
   bool rendered = false;
 
-  if (throbber_running_) {
+  if (model_->ShouldTabIconViewAnimate()) {
     rendered = true;
     PaintThrobber(canvas);
   } else {

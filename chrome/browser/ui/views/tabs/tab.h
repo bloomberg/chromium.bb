@@ -14,6 +14,7 @@
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/paint_throbber.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/glow_hover_controller.h"
@@ -318,10 +319,14 @@ class Tab : public gfx::AnimationDelegate,
   // crashes.
   int favicon_hiding_offset_;
 
-  // The current index of the loading animation. The range varies depending on
-  // whether the tab is loading or waiting, see AdvanceLoadingAnimation().
-  int waiting_animation_frame_;
-  int loading_animation_frame_;
+  // The point in time when the tab icon was first painted in the waiting state.
+  base::TimeTicks waiting_start_time_;
+
+  // The point in time when the tab icon was first painted in the loading state.
+  base::TimeTicks loading_start_time_;
+
+  // Paint state for the throbber after the most recent waiting paint.
+  gfx::ThrobberWaitingState waiting_state_;
 
   // Step in the immersive loading progress indicator.
   int immersive_loading_step_;

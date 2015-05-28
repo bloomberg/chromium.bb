@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/time/time.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/view.h"
 
@@ -45,15 +46,12 @@ class TabIconView : public views::MenuButton {
   // Our model.
   chrome::TabIconViewModel* model_;
 
-  // Whether the throbber is running.
-  bool throbber_running_;
-
   // Whether we should display our light or dark style.
   bool is_light_;
 
-  // Current frame of the throbber being painted. This is only used if
-  // throbber_running_ is true.
-  int throbber_frame_;
+  // Time we painted the first frame of the current throbber animation, or
+  // 0 if not painting the throbber.
+  base::TimeTicks throbber_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(TabIconView);
 };
