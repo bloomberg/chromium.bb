@@ -593,13 +593,13 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 51,
-      "description": "TexSubImage2D() is faster for full uploads on ANGLE",
+      "description": "TexSubImage is faster for full uploads on ANGLE",
       "os": {
         "type": "win"
       },
       "gl_renderer": "ANGLE.*",
       "features": [
-        "texsubimage2d_faster_than_teximage2d"
+        "texsubimage_faster_than_teximage"
       ]
     },
     {

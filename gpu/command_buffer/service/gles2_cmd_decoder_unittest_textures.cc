@@ -1888,7 +1888,7 @@ TEST_P(
   base::CommandLine command_line(0, NULL);
   command_line.AppendSwitchASCII(
       switches::kGpuDriverBugWorkarounds,
-      base::IntToString(gpu::TEXSUBIMAGE2D_FASTER_THAN_TEXIMAGE2D));
+      base::IntToString(gpu::TEXSUBIMAGE_FASTER_THAN_TEXIMAGE));
   InitState init;
   init.bind_generates_resource = true;
   InitDecoderWithCommandLine(init, &command_line);
@@ -2595,7 +2595,7 @@ TEST_P(GLES2DecoderTest, GLImageAttachedAfterSubTexImage2D) {
   // Specifically tests that TexSubImage2D is not optimized to TexImage2D
   // in the presence of image attachments.
   ASSERT_FALSE(
-      feature_info()->workarounds().texsubimage2d_faster_than_teximage2d);
+      feature_info()->workarounds().texsubimage_faster_than_teximage);
 
   scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
   GetImageManager()->AddImage(image.get(), 1);

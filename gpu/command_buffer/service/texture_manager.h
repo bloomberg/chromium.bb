@@ -520,21 +520,21 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
 struct DecoderTextureState {
   // total_texture_upload_time automatically initialized to 0 in default
   // constructor.
-  explicit DecoderTextureState(bool texsubimage2d_faster_than_teximage2d)
-      : tex_image_2d_failed(false),
+  explicit DecoderTextureState(bool texsubimage_faster_than_teximage)
+      : tex_image_failed(false),
         texture_upload_count(0),
-        texsubimage2d_faster_than_teximage2d(
-            texsubimage2d_faster_than_teximage2d) {}
+        texsubimage_faster_than_teximage(texsubimage_faster_than_teximage) {}
 
-  // This indicates all the following texSubImage2D calls that are part of the
-  // failed texImage2D call should be ignored.
-  bool tex_image_2d_failed;
+  // This indicates all the following texSubImage*D calls that are part of the
+  // failed texImage*D call should be ignored.
+  // TODO(zmo): This mechanism is buggy. crbug.com/492852
+  bool tex_image_failed;
 
   // Command buffer stats.
   int texture_upload_count;
   base::TimeDelta total_texture_upload_time;
 
-  bool texsubimage2d_faster_than_teximage2d;
+  bool texsubimage_faster_than_teximage;
 };
 
 // This class keeps track of the textures and their sizes so we can do NPOT and
@@ -799,6 +799,11 @@ class GPU_EXPORT TextureManager {
   }
 
   struct DoTexImageArguments {
+    enum TexImageCommandType {
+      kTexImage2D,
+      kTexImage3D,
+    };
+
     GLenum target;
     GLint level;
     GLenum internal_format;
@@ -810,9 +815,10 @@ class GPU_EXPORT TextureManager {
     GLenum type;
     const void* pixels;
     uint32 pixels_size;
+    TexImageCommandType command_type;
   };
 
-  bool ValidateTexImage2D(
+  bool ValidateTexImage(
     ContextState* state,
     const char* function_name,
     const DoTexImageArguments& args,
@@ -820,10 +826,11 @@ class GPU_EXPORT TextureManager {
     // Presumes the pointer is valid.
     TextureRef** texture_ref);
 
-  void ValidateAndDoTexImage2D(
+  void ValidateAndDoTexImage(
     DecoderTextureState* texture_state,
     ContextState* state,
     DecoderFramebufferState* framebuffer_state,
+    const char* function_name,
     const DoTexImageArguments& args);
 
   // TODO(kloveless): Make GetTexture* private once this is no longer called
@@ -851,10 +858,11 @@ class GPU_EXPORT TextureManager {
       GLenum target,
       GLuint* black_texture);
 
-  void DoTexImage2D(
+  void DoTexImage(
     DecoderTextureState* texture_state,
     ErrorState* error_state,
     DecoderFramebufferState* framebuffer_state,
+    const char* function_name,
     TextureRef* texture_ref,
     const DoTexImageArguments& args);
 

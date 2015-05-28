@@ -1767,18 +1767,24 @@ bool TextureManager::ValidateTextureParameters(
         "invalid internalformat/format/type combination");
     return false;
   }
-  uint32 channels = GLES2Util::GetChannelsForFormat(format);
-  if ((channels & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && level) {
-    ERRORSTATE_SET_GL_ERROR(
-        error_state, GL_INVALID_OPERATION, function_name,
-        (std::string("invalid format ") + GLES2Util::GetStringEnum(format) +
-         " for level != 0").c_str());
-    return false;
-  }
+  // For TexSubImage calls, internal_format isn't part of the parameters,
+  // so its validation needs to be after the internal_format/format/type
+  // combination validation. Otherwise, an unexpected INVALID_ENUM could be
+  // generated instead of INVALID_OPERATION.
   if (!validators->texture_internal_format.IsValid(internal_format)) {
     ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
         error_state, function_name, internal_format, "internal_format");
     return false;
+  }
+  if (!feature_info_->IsES3Enabled()) {
+    uint32 channels = GLES2Util::GetChannelsForFormat(format);
+    if ((channels & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && level) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, function_name,
+          (std::string("invalid format ") + GLES2Util::GetStringEnum(format) +
+           " for level != 0").c_str());
+      return false;
+    }
   }
   return true;
 }
@@ -1830,22 +1836,19 @@ TextureRef* TextureManager::GetTextureInfoForTargetUnlessDefault(
   return texture;
 }
 
-bool TextureManager::ValidateTexImage2D(
+bool TextureManager::ValidateTexImage(
     ContextState* state,
     const char* function_name,
     const DoTexImageArguments& args,
     TextureRef** texture_ref) {
   ErrorState* error_state = state->GetErrorState();
   const Validators* validators = feature_info_->validators();
-  if (!validators->texture_target.IsValid(args.target)) {
+  if (((args.command_type == DoTexImageArguments::kTexImage2D) &&
+       !validators->texture_target.IsValid(args.target)) ||
+      ((args.command_type == DoTexImageArguments::kTexImage3D) &&
+       !validators->texture_3_d_target.IsValid(args.target))) {
     ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
         error_state, function_name, args.target, "target");
-    return false;
-  }
-  if (!validators->texture_internal_format.IsValid(args.internal_format)) {
-    ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
-        error_state, function_name, args.internal_format,
-        "internalformat");
     return false;
   }
   if (!ValidateTextureParameters(
@@ -1894,18 +1897,19 @@ bool TextureManager::ValidateTexImage2D(
   return true;
 }
 
-void TextureManager::ValidateAndDoTexImage2D(
+void TextureManager::ValidateAndDoTexImage(
     DecoderTextureState* texture_state,
     ContextState* state,
     DecoderFramebufferState* framebuffer_state,
+    const char* function_name,
     const DoTexImageArguments& args) {
   TextureRef* texture_ref;
-  if (!ValidateTexImage2D(state, "glTexImage2D", args, &texture_ref)) {
+  if (!ValidateTexImage(state, function_name, args, &texture_ref)) {
     return;
   }
 
-  DoTexImage2D(texture_state, state->GetErrorState(), framebuffer_state,
-               texture_ref, args);
+  DoTexImage(texture_state, state->GetErrorState(), framebuffer_state,
+             function_name, texture_ref, args);
 }
 
 GLenum TextureManager::AdjustTexFormat(GLenum format) const {
@@ -1920,31 +1924,34 @@ GLenum TextureManager::AdjustTexFormat(GLenum format) const {
   return format;
 }
 
-void TextureManager::DoTexImage2D(
+void TextureManager::DoTexImage(
     DecoderTextureState* texture_state,
     ErrorState* error_state,
     DecoderFramebufferState* framebuffer_state,
+    const char* function_name,
     TextureRef* texture_ref,
     const DoTexImageArguments& args) {
   Texture* texture = texture_ref->texture();
   GLsizei tex_width = 0;
   GLsizei tex_height = 0;
+  GLsizei tex_depth = 0;
   GLenum tex_type = 0;
   GLenum tex_format = 0;
   bool level_is_same =
       texture->GetLevelSize(
-          args.target, args.level, &tex_width, &tex_height, nullptr) &&
+          args.target, args.level, &tex_width, &tex_height, &tex_depth) &&
       texture->GetLevelType(args.target, args.level, &tex_type, &tex_format) &&
       args.width == tex_width && args.height == tex_height &&
-      args.type == tex_type && args.format == tex_format;
+      args.depth == tex_depth && args.type == tex_type &&
+      args.format == tex_format;
 
   if (level_is_same && !args.pixels) {
     // Just set the level texture but mark the texture as uncleared.
     SetLevelInfo(
         texture_ref,
         args.target, args.level, args.internal_format, args.width, args.height,
-        1, args.border, args.format, args.type, false);
-    texture_state->tex_image_2d_failed = false;
+        args.depth, args.border, args.format, args.type, false);
+    texture_state->tex_image_failed = false;
     return;
   }
 
@@ -1952,32 +1959,44 @@ void TextureManager::DoTexImage2D(
     framebuffer_state->clear_state_dirty = true;
   }
 
-  if (texture_state->texsubimage2d_faster_than_teximage2d &&
+  if (texture_state->texsubimage_faster_than_teximage &&
       level_is_same && args.pixels) {
     {
       ScopedTextureUploadTimer timer(texture_state);
-      glTexSubImage2D(args.target, args.level, 0, 0, args.width, args.height,
-                      AdjustTexFormat(args.format), args.type, args.pixels);
+      if (args.command_type == DoTexImageArguments::kTexImage3D) {
+        glTexSubImage3D(args.target, args.level, 0, 0, 0,
+                        args.width, args.height, args.depth,
+                        args.format, args.type, args.pixels);
+      } else {
+        glTexSubImage2D(args.target, args.level, 0, 0, args.width, args.height,
+                        AdjustTexFormat(args.format), args.type, args.pixels);
+      }
     }
     SetLevelCleared(texture_ref, args.target, args.level, true);
-    texture_state->tex_image_2d_failed = false;
+    texture_state->tex_image_failed = false;
     return;
   }
 
-  ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state, "glTexImage2D");
+  ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state, function_name);
   {
     ScopedTextureUploadTimer timer(texture_state);
-    glTexImage2D(
-        args.target, args.level, args.internal_format, args.width, args.height,
-        args.border, AdjustTexFormat(args.format), args.type, args.pixels);
+    if (args.command_type == DoTexImageArguments::kTexImage3D) {
+      glTexImage3D(args.target, args.level, args.internal_format, args.width,
+                   args.height, args.depth, args.border, args.format,
+                   args.type, args.pixels);
+    } else {
+      glTexImage2D(args.target, args.level, args.internal_format, args.width,
+                   args.height, args.border, AdjustTexFormat(args.format),
+                   args.type, args.pixels);
+    }
   }
-  GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, "glTexImage2D");
+  GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, function_name);
   if (error == GL_NO_ERROR) {
     SetLevelInfo(
         texture_ref,
         args.target, args.level, args.internal_format, args.width, args.height,
-        1, args.border, args.format, args.type, args.pixels != NULL);
-    texture_state->tex_image_2d_failed = false;
+        args.depth, args.border, args.format, args.type, args.pixels != NULL);
+    texture_state->tex_image_failed = false;
   }
 }
 

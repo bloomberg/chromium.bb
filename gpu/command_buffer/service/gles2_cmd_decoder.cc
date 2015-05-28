@@ -2499,7 +2499,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       viewport_max_height_(0),
       texture_state_(group_->feature_info()
                          ->workarounds()
-                         .texsubimage2d_faster_than_teximage2d),
+                         .texsubimage_faster_than_teximage),
       cb_command_trace_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("cb_command"))),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
@@ -9685,7 +9685,7 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32 immediate_data_size,
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexImage2D",
       "width", c.width, "height", c.height);
   // Set as failed for now, but if it successed, this will be set to not failed.
-  texture_state_.tex_image_2d_failed = true;
+  texture_state_.tex_image_failed = true;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
   // TODO(kloveless): Change TexImage2D command to use unsigned integer
@@ -9724,9 +9724,9 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32 immediate_data_size,
 
   TextureManager::DoTexImageArguments args = {
     target, level, internal_format, width, height, 1, border, format, type,
-    pixels, pixels_size};
-  texture_manager()->ValidateAndDoTexImage2D(
-      &texture_state_, &state_, &framebuffer_state_, args);
+    pixels, pixels_size, TextureManager::DoTexImageArguments::kTexImage2D };
+  texture_manager()->ValidateAndDoTexImage(
+      &texture_state_, &state_, &framebuffer_state_, "glTexImage2D", args);
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -9743,6 +9743,8 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32 immediate_data_size,
       *static_cast<const gles2::cmds::TexImage3D*>(cmd_data);
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexImage3D",
       "widthXheight", c.width * c.height, "depth", c.depth);
+  // Set as failed for now, but if it successed, this will be set to not failed.
+  texture_state_.tex_image_failed = true;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
   GLenum internal_format = static_cast<GLenum>(c.internalformat);
@@ -9769,11 +9771,20 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32 immediate_data_size,
     }
   }
 
+  // For testing only. Allows us to stress the ability to respond to OOM errors.
+  if (workarounds().simulate_out_of_memory_on_large_textures &&
+      (width * height * depth >= 4096 * 4096)) {
+    LOCAL_SET_GL_ERROR(
+        GL_OUT_OF_MEMORY,
+        "glTexImage3D", "synthetic out of memory");
+    return error::kNoError;
+  }
+
   TextureManager::DoTexImageArguments args = {
     target, level, internal_format, width, height, depth, border, format, type,
-    pixels, pixels_size};
-  texture_manager()->ValidateAndDoTexImage2D(
-      &texture_state_, &state_, &framebuffer_state_, args);
+    pixels, pixels_size, TextureManager::DoTexImageArguments::kTexImage3D };
+  texture_manager()->ValidateAndDoTexImage(
+      &texture_state_, &state_, &framebuffer_state_, "glTexImage3D", args);
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -10237,7 +10248,7 @@ error::Error GLES2DecoderImpl::DoTexSubImage2D(
     return error::kNoError;
   }
 
-  if (!texture_state_.texsubimage2d_faster_than_teximage2d &&
+  if (!texture_state_.texsubimage_faster_than_teximage &&
       !texture->IsImmutable() &&
       !texture->HasImages()) {
     ScopedTextureUploadTimer timer(&texture_state_);
@@ -10268,7 +10279,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32 immediate_data_size,
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexSubImage2D",
       "width", c.width, "height", c.height);
   GLboolean internal = static_cast<GLboolean>(c.internal);
-  if (internal == GL_TRUE && texture_state_.tex_image_2d_failed)
+  if (internal == GL_TRUE && texture_state_.tex_image_failed)
     return error::kNoError;
 
   GLenum target = static_cast<GLenum>(c.target);
@@ -10336,6 +10347,10 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(uint32 immediate_data_size,
       *static_cast<const gles2::cmds::TexSubImage3D*>(cmd_data);
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexSubImage3D",
       "widthXheight", c.width * c.height, "depth", c.depth);
+  GLboolean internal = static_cast<GLboolean>(c.internal);
+  if (internal == GL_TRUE && texture_state_.tex_image_failed)
+    return error::kNoError;
+
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
   GLint xoffset = static_cast<GLint>(c.xoffset);
@@ -12887,10 +12902,10 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
 
   TextureManager::DoTexImageArguments args = {
     target, level, internal_format, width, height, 1, border, format, type,
-    pixels, pixels_size};
+    pixels, pixels_size, TextureManager::DoTexImageArguments::kTexImage2D };
   TextureRef* texture_ref;
   // All the normal glTexSubImage2D validation.
-  if (!texture_manager()->ValidateTexImage2D(
+  if (!texture_manager()->ValidateTexImage(
       &state_, "glAsyncTexImage2DCHROMIUM", args, &texture_ref)) {
     return error::kNoError;
   }
