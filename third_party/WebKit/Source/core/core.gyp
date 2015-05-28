@@ -777,7 +777,7 @@
               # 4701 and 4702 are disabled because of issues in Bison-generated
               # XPathGrammar.cpp.cpp.
               # Disable c4267 warnings until we fix size_t to int truncations.
-              'msvs_disabled_warnings': [ 4065, 4267, 4305, 4334, 4701, 4702 ],
+              'msvs_disabled_warnings': [ 4065, 4267, 4305, 4334, 4701, 4702, 4910 ],
               # Disable incremental link when building debug binary to avoid
               # "LNK1210: exceeded internal ILK size limit;".
               'configurations': {
