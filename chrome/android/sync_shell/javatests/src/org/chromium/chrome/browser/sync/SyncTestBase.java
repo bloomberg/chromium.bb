@@ -43,7 +43,7 @@ public class SyncTestBase extends ChromeShellTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearAppData();
+        assertTrue("Clearing app data failed.", clearAppData());
         Context targetContext = getInstrumentation().getTargetContext();
         mContext = new SyncTestUtil.SyncTestContext(targetContext);
 
@@ -71,6 +71,13 @@ public class SyncTestBase extends ChromeShellTestBase {
                 mProfileSyncService = ProfileSyncService.get(mContext);
             }
         });
+
+        // Start the activity by opening about:blank. This URL is ideal because it is not synced as
+        // a typed URL. If another URL is used, it could interfere with test data. This call is in
+        // this location so that it takes place before any other calls to getActivity(). If
+        // getActivity() is called without any prior configuration, an undesired URL
+        // (e.g., google.com) will be opened.
+        launchChromeShellWithBlankPage();
     }
 
     @Override
