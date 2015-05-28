@@ -168,7 +168,7 @@ void HTMLPlugInElement::attach(const AttachContext& context)
         // If we don't have a layoutObject we have to dispose of any plugins
         // which we persisted over a reattach.
         if (m_persistedPluginWidget) {
-            RefPtr<Widget> widget = m_persistedPluginWidget;
+            RefPtrWillBeRawPtr<Widget> widget = m_persistedPluginWidget;
             setPersistedPluginWidget(nullptr);
             widget->dispose();
         }
