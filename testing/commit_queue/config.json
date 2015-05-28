@@ -1,80 +1,12 @@
 {
-    "commit_burst_delay": 60,
-    "commit_user": "commit-bot@chromium.org",
-    "cq_status_url": "https://chromium-cq-status.appspot.com",
-    "git_repo_url": "https://chromium.googlesource.com/chromium/src",
-    "hide_ref_in_committed_msg": true,
-    "max_commit_burst": 2,
-    "remote_branch": "refs/pending/heads/master",
-    "rietveld_url": "https://codereview.chromium.org",
-    "rietveld_auth": "oauth2",
-    "skip_throttle_users": [
-        "commit-bot@chromium.org"
-    ],
-    "use_buildbucket_for_tryjobs": true,
+    "_comment1": "This file is no longer used by CQ. Instead CQ reads",
+    "_comment2": "infra/config/cq.cfg. However, this file is still used by",
+    "_comment3": "git-cl-try and thus this list must be manually kept in sync",
+    "_comment4": "to the list of builders in infra/config/cq.cfg. We apologize",
+    "_comment5": "for the incovenience and are working on a fix that will make",
+    "_comment6": "git-cl-try also read infra/config/cq.cfg.",
+
     "verifiers_no_patch": {
-        "experimental_try_job_verifier": {
-            "10 percent experiment": {
-                "percentage": 0.1,
-                "trybots": {
-                    "launched": {
-                        "tryserver.chromium.linux": {
-                        },
-                        "tryserver.chromium.mac": {
-                            "mac_chromium_gn_rel": [
-                                "defaulttests"
-                            ]
-                        },
-                        "tryserver.chromium.win": {
-                            "win8_chromium_gn_rel": [
-                                "defaulttests"
-                            ],
-                            "win8_chromium_ng": [
-                                "defaulttests"
-                            ]
-                        }
-                    }
-                }
-            },
-            "100 percent experiment": {
-                "percentage": 1.0,
-                "trybots": {
-                    "launched": {
-                        "tryserver.chromium.linux": {
-                            "android_amp_rel_tests_recipe": [
-                                "defaulttests"
-                            ],
-                            "linux_arm_compile": [
-                                "defaulttests"
-                            ]
-                        },
-                        "tryserver.chromium.mac": {}
-                    }
-                }
-            },
-            "50 percent experiment": {
-                "percentage": 0.5,
-                "trybots": {
-                    "launched": {
-                        "tryserver.chromium.linux": {}
-                    }
-                }
-            },
-            "75 percent experiment": {
-                "percentage": 0.75,
-                "trybots": {
-                    "launched": {
-                        "tryserver.chromium.linux": {}
-                    }
-                }
-            }
-        },
-        "reviewer_lgtm_verifier": {
-            "committer_project": "chromium"
-        },
-        "tree_status_verifier": {
-            "tree_status_url": "https://chromium-status.appspot.com"
-        },
         "try_job_verifier": {
             "launched": {
                 "tryserver.chromium.linux": {
@@ -166,6 +98,5 @@
                 }
             }
         }
-    },
-    "version": 1
+    }
 }
