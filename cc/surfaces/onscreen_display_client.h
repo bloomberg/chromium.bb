@@ -14,12 +14,14 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surfaces_export.h"
 
+class VSyncParameterObserver;
+
 namespace cc {
+class BeginFrameSource;
 class ContextProvider;
 class DisplayScheduler;
 class SurfaceManager;
 class SurfaceDisplayOutputSurface;
-class SyntheticBeginFrameSource;
 
 // This class provides a DisplayClient implementation for drawing directly to an
 // onscreen context.
@@ -52,11 +54,13 @@ class CC_SURFACES_EXPORT OnscreenDisplayClient
  protected:
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<Display> display_;
-  scoped_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
+  VSyncParameterObserver* vsync_observer_;
+  scoped_ptr<BeginFrameSource> begin_frame_source_;
   scoped_ptr<DisplayScheduler> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   SurfaceDisplayOutputSurface* surface_display_output_surface_;
   bool output_surface_lost_;
+  bool disable_gpu_vsync_;
 
   DISALLOW_COPY_AND_ASSIGN(OnscreenDisplayClient);
 };

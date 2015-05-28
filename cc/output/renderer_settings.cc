@@ -17,6 +17,7 @@ RendererSettings::RendererSettings()
       partial_swap_enabled(false),
       finish_rendering_on_resize(false),
       should_clear_root_render_pass(true),
+      disable_gpu_vsync(false),
       refresh_rate(60.0),
       highp_threshold_min(0),
       use_rgba_4444_textures(false),

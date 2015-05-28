@@ -223,8 +223,8 @@ void RenderWidgetCompositor::Initialize() {
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
 
-  settings.throttle_frame_production =
-      !cmd->HasSwitch(switches::kDisableGpuVsync);
+  settings.renderer_settings.disable_gpu_vsync =
+      cmd->HasSwitch(switches::kDisableGpuVsync);
   settings.main_frame_before_activation_enabled =
       cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation) &&
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);

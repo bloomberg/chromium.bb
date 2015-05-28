@@ -22,7 +22,6 @@ LayerSettings::~LayerSettings() {
 LayerTreeSettings::LayerTreeSettings()
     : impl_side_painting(false),
       raster_enabled(true),
-      throttle_frame_production(true),
       single_thread_proxy_scheduler(true),
       use_external_begin_frame_source(false),
       main_frame_before_activation_enabled(false),
@@ -94,7 +93,8 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
       maximum_number_of_failed_draws_before_draw_is_forced_;
   scheduler_settings.using_synchronous_renderer_compositor =
       using_synchronous_renderer_compositor;
-  scheduler_settings.throttle_frame_production = throttle_frame_production;
+  scheduler_settings.throttle_frame_production =
+      !renderer_settings.disable_gpu_vsync;
   scheduler_settings.main_thread_should_always_be_low_latency = false;
   scheduler_settings.background_frame_interval =
       base::TimeDelta::FromSecondsD(1.0 / background_animation_rate);

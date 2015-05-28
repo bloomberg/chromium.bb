@@ -95,8 +95,8 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       context_factory_->DoesCreateTestContexts() ? kTestRefreshRate
                                                  : kDefaultRefreshRate;
   settings.main_frame_before_activation_enabled = false;
-  settings.throttle_frame_production =
-      !command_line->HasSwitch(switches::kDisableGpuVsync);
+  settings.renderer_settings.disable_gpu_vsync =
+      command_line->HasSwitch(switches::kDisableGpuVsync);
   settings.renderer_settings.partial_swap_enabled =
       !command_line->HasSwitch(cc::switches::kUIDisablePartialSwap);
 #if defined(OS_CHROMEOS)

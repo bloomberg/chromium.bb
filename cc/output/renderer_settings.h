@@ -21,6 +21,7 @@ class CC_EXPORT RendererSettings {
   bool partial_swap_enabled;
   bool finish_rendering_on_resize;
   bool should_clear_root_render_pass;
+  bool disable_gpu_vsync;
   double refresh_rate;
   int highp_threshold_min;
   bool use_rgba_4444_textures;

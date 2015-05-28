@@ -45,7 +45,7 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
   }
 
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->throttle_frame_production = false;
+    settings->renderer_settings.disable_gpu_vsync = true;
   }
 
   void BeginTest() override {
