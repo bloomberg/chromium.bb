@@ -46,6 +46,7 @@ private:
     void detach();
 
     WillBeHeapVector<RefPtrWillBeMember<LocalFrame>, 16> m_deferredFrames;
+    bool m_detached;
 };
 
 } // namespace blink

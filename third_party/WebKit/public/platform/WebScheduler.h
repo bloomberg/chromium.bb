@@ -68,6 +68,14 @@ public:
     // Takes ownership of |WebThread::Task|. Can be called from any thread.
     virtual void postTimerTask(const WebTraceLocation&, WebThread::Task*, long long delayMs) { }
 
+    // Suspends the timer queue and increments the timer queue suspension count.
+    // May only be called from the main thread.
+    virtual void suspendTimerQueue() { }
+
+    // Decrements the timer queue suspension count and re-enables the timer queue
+    // if the suspension count is zero and the current scheduler policy allows it.
+    virtual void resumeTimerQueue() { }
+
 #ifdef INSIDE_BLINK
     // Helpers for posting bound functions as tasks.
     typedef Function<void(double deadlineSeconds)> IdleTask;

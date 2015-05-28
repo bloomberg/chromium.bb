@@ -25,11 +25,13 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
 #include "wtf/HashSet.h"
 
 namespace blink {
 
-ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
+ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion) : m_detached(false)
 {
     const HashSet<Page*>& pages = Page::ordinaryPages();
     for (const Page* page : pages) {
@@ -50,14 +52,21 @@ ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
         if (Page* page = m_deferredFrames[i]->page())
             page->setDefersLoading(true);
     }
+    Platform::current()->currentThread()->scheduler()->suspendTimerQueue();
 }
 
 void ScopedPageLoadDeferrer::detach()
 {
+    if (m_detached)
+        return;
+
     for (size_t i = 0; i < m_deferredFrames.size(); ++i) {
         if (Page* page = m_deferredFrames[i]->page())
             page->setDefersLoading(false);
     }
+
+    Platform::current()->currentThread()->scheduler()->resumeTimerQueue();
+    m_detached = true;
 }
 
 #if ENABLE(OILPAN)
