@@ -299,6 +299,28 @@ void BaseHeap::makeConsistentForGC()
     ASSERT(!m_firstUnsweptPage);
 }
 
+void BaseHeap::makeConsistentForMutator()
+{
+    clearFreeLists();
+    ASSERT(isConsistentForGC());
+    ASSERT(!m_firstPage);
+
+    // Drop marks from marked objects and rebuild free lists in preparation for
+    // resuming the executions of mutators.
+    BasePage* previousPage = nullptr;
+    for (BasePage* page = m_firstUnsweptPage; page; previousPage = page, page = page->next()) {
+        page->makeConsistentForMutator();
+        page->markAsSwept();
+    }
+    if (previousPage) {
+        ASSERT(m_firstUnsweptPage);
+        previousPage->m_next = m_firstPage;
+        m_firstPage = m_firstUnsweptPage;
+        m_firstUnsweptPage = nullptr;
+    }
+    ASSERT(!m_firstUnsweptPage);
+}
+
 size_t BaseHeap::objectPayloadSizeForTesting()
 {
     ASSERT(isConsistentForGC());
@@ -320,7 +342,7 @@ void BaseHeap::prepareHeapForTermination()
 
 void BaseHeap::prepareForSweep()
 {
-    ASSERT(!threadState()->isInGC());
+    ASSERT(threadState()->isInGC());
     ASSERT(!m_firstUnsweptPage);
 
     // Move all pages to a list of unswept pages.
@@ -1179,6 +1201,37 @@ void NormalPage::makeConsistentForGC()
         Heap::increaseMarkedObjectSize(markedObjectSize);
 }
 
+void NormalPage::makeConsistentForMutator()
+{
+    size_t markedObjectSize = 0;
+    Address startOfGap = payload();
+    for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
+        HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
+        ASSERT(header->size() < blinkPagePayloadSize());
+        // Check if a free list entry first since we cannot call
+        // isMarked on a free list entry.
+        if (header->isFree()) {
+            headerAddress += header->size();
+            continue;
+        }
+        header->checkHeader();
+
+        if (startOfGap != headerAddress)
+            heapForNormalPage()->addToFreeList(startOfGap, headerAddress - startOfGap);
+        if (header->isMarked()) {
+            header->unmark();
+            markedObjectSize += header->size();
+        }
+        headerAddress += header->size();
+        startOfGap = headerAddress;
+    }
+    if (startOfGap != payloadEnd())
+        heapForNormalPage()->addToFreeList(startOfGap, payloadEnd() - startOfGap);
+
+    if (markedObjectSize)
+        Heap::increaseMarkedObjectSize(markedObjectSize);
+}
+
 #if defined(ADDRESS_SANITIZER)
 void NormalPage::poisonUnmarkedObjects()
 {
@@ -1465,6 +1518,15 @@ void LargeObjectPage::makeConsistentForGC()
         Heap::increaseMarkedObjectSize(size());
     } else {
         header->markDead();
+    }
+}
+
+void LargeObjectPage::makeConsistentForMutator()
+{
+    HeapObjectHeader* header = heapObjectHeader();
+    if (header->isMarked()) {
+        header->unmark();
+        Heap::increaseMarkedObjectSize(size());
     }
 }
 
