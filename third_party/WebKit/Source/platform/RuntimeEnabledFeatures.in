@@ -132,6 +132,7 @@ ServiceWorkerCache status=stable
 ServiceWorkerClientAttributes status=stable
 ServiceWorkerNotifications status=stable
 ServiceWorkerOnFetch status=stable
+ServiceWorkerPerformanceTimeline status=experimental
 SharedWorker status=stable
 SlimmingPaint
 SlimmingPaintCompositorLayerization depends_on=SlimmingPaint

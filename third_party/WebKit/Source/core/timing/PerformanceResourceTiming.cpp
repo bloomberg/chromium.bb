@@ -69,10 +69,21 @@ AtomicString PerformanceResourceTiming::initiatorType() const
     return m_initiatorType;
 }
 
+double PerformanceResourceTiming::workerStart() const
+{
+    if (!m_timing || m_timing->workerStart() == 0.0)
+        return 0.0;
+
+    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->workerStart());
+}
+
 double PerformanceResourceTiming::redirectStart() const
 {
     if (!m_lastRedirectEndTime || !m_allowRedirectDetails)
         return 0.0;
+
+    if (double workerStartTime = workerStart())
+        return workerStartTime;
 
     return PerformanceEntry::startTime();
 }
@@ -93,6 +104,9 @@ double PerformanceResourceTiming::fetchStart() const
         ASSERT(m_timing);
         return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->requestTime());
     }
+
+    if (double workerStartTime = workerStart())
+        return workerStartTime;
 
     return PerformanceEntry::startTime();
 }

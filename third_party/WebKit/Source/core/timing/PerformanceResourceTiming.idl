@@ -32,6 +32,7 @@
 interface PerformanceResourceTiming : PerformanceEntry {
     readonly attribute DOMString initiatorType;
 
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] readonly attribute double workerStart;
     readonly attribute double redirectStart;
     readonly attribute double redirectEnd;
     readonly attribute double fetchStart;
