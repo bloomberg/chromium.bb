@@ -660,9 +660,9 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   }
 
   if (!video_frame.get() ||
-      video_frame->storage_type() != media::VideoFrame::STORAGE_TEXTURE)
+      video_frame->format() != media::VideoFrame::NATIVE_TEXTURE)
     return false;
-  DCHECK_EQ(1u, media::VideoFrame::NumPlanes(video_frame->format()));
+  DCHECK_EQ(1u, media::VideoFrame::NumTextures(video_frame->texture_format()));
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
   DCHECK((!is_remote_ &&
           mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES) ||

@@ -100,8 +100,9 @@ enum VideoFormat {
   YV24,
   NV12,
   ARGB,
-  XRGB,
-  FORMAT_MAX = XRGB,
+  HOLE,
+  NATIVE_TEXTURE,
+  FORMAT_MAX = NATIVE_TEXTURE,
 };
 
 // See media/base/video_decoder_config.h for descriptions.

@@ -42,12 +42,37 @@ namespace {
 // a temporary resource if it is not used for 3 sec.
 const int kTemporaryResourceDeletionDelay = 3;  // Seconds;
 
+bool IsYUV(media::VideoFrame::Format format) {
+  switch (format) {
+    case VideoFrame::YV12:
+    case VideoFrame::YV16:
+    case VideoFrame::I420:
+    case VideoFrame::YV12A:
+    case VideoFrame::YV24:
+    case VideoFrame::NV12:
+      return true;
+    case VideoFrame::UNKNOWN:
+    case VideoFrame::NATIVE_TEXTURE:
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+    case VideoFrame::ARGB:
+      return false;
+  }
+  NOTREACHED() << "Invalid videoframe format provided: " << format;
+  return false;
+}
+
 bool CheckColorSpace(const scoped_refptr<VideoFrame>& video_frame,
                      VideoFrame::ColorSpace color_space) {
   int result;
   return video_frame->metadata()->GetInteger(
              media::VideoFrameMetadata::COLOR_SPACE, &result) &&
          result == color_space;
+}
+
+bool IsYUVOrNative(media::VideoFrame::Format format) {
+  return IsYUV(format) || format == media::VideoFrame::NATIVE_TEXTURE;
 }
 
 bool IsSkBitmapProperlySizedTexture(const SkBitmap* bitmap,
@@ -159,7 +184,7 @@ class VideoImageGenerator : public SkImageGenerator {
                        void* planes[3],
                        size_t row_bytes[3],
                        SkYUVColorSpace* color_space) override {
-    if (!frame_.get() || !media::VideoFrame::IsYuvPlanar(frame_->format()) ||
+    if (!frame_.get() || !IsYUV(frame_->format()) ||
         // TODO(rileya): Skia currently doesn't support Rec709 YUV conversion,
         // or YUVA conversion. Remove this case once it does. As-is we will
         // fall back on the pure-software path in this case.
@@ -269,8 +294,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   // Paint black rectangle if there isn't a frame available or the
   // frame has an unexpected format.
   if (!video_frame.get() || video_frame->natural_size().IsEmpty() ||
-      !(media::VideoFrame::IsYuvPlanar(video_frame->format()) ||
-        (video_frame->storage_type() == media::VideoFrame::STORAGE_TEXTURE))) {
+      !IsYUVOrNative(video_frame->format())) {
     canvas->drawRect(dest, paint);
     canvas->flush();
     return;
@@ -278,7 +302,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
 
   SkBitmap* target_frame = nullptr;
 
-  if (video_frame->storage_type() == VideoFrame::STORAGE_TEXTURE) {
+  if (video_frame->format() == VideoFrame::NATIVE_TEXTURE) {
     // Draw HW Video on both SW and HW Canvas.
     // In SW Canvas case, rely on skia drawing Ganesh SkBitmap on SW SkCanvas.
     if (accelerated_last_frame_.isNull() ||
@@ -305,6 +329,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     target_frame = &accelerated_last_frame_;
     accelerated_frame_deleting_timer_.Reset();
   } else if (canvas->getGrContext()) {
+    DCHECK(video_frame->format() != VideoFrame::NATIVE_TEXTURE);
     if (accelerated_last_frame_.isNull() ||
         video_frame->timestamp() != accelerated_last_frame_timestamp_) {
       // Draw SW Video on HW Canvas.
@@ -333,7 +358,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     accelerated_frame_deleting_timer_.Reset();
   } else {
     // Draw SW Video on SW Canvas.
-    DCHECK(VideoFrame::IsMappable(video_frame->storage_type()));
+    DCHECK(video_frame->format() != VideoFrame::NATIVE_TEXTURE);
     if (last_frame_.isNull() ||
         video_frame->timestamp() != last_frame_timestamp_) {
       // Check if |bitmap| needs to be (re)allocated.
@@ -417,30 +442,28 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     const scoped_refptr<media::VideoFrame>& video_frame,
     void* rgb_pixels,
     size_t row_bytes) {
-  if (!VideoFrame::IsMappable(video_frame->storage_type())) {
-    NOTREACHED() << "Cannot extract pixels from non-CPU frame formats.";
-    return;
-  }
-  if (!media::VideoFrame::IsYuvPlanar(video_frame->format())) {
-    NOTREACHED() << "Non YUV formats are not supported";
-    return;
+  DCHECK(IsYUVOrNative(video_frame->format()))
+      << video_frame->format();
+  if (IsYUV(video_frame->format())) {
+    DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
+              video_frame->stride(media::VideoFrame::kVPlane));
   }
 
-  DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
-            video_frame->stride(media::VideoFrame::kVPlane));
-
-  const int y_shift =
-      (video_frame->format() == media::VideoFrame::YV16) ? 0 : 1;
-  // Use the "left" and "top" of the destination rect to locate the offset
-  // in Y, U and V planes.
-  const size_t y_offset = (video_frame->stride(media::VideoFrame::kYPlane) *
-                           video_frame->visible_rect().y()) +
-                          video_frame->visible_rect().x();
-  // For format YV12, there is one U, V value per 2x2 block.
-  // For format YV16, there is one U, V value per 2x1 block.
-  const size_t uv_offset = (video_frame->stride(media::VideoFrame::kUPlane) *
-                            (video_frame->visible_rect().y() >> y_shift)) +
-                           (video_frame->visible_rect().x() >> 1);
+  size_t y_offset = 0;
+  size_t uv_offset = 0;
+  if (IsYUV(video_frame->format())) {
+    int y_shift = (video_frame->format() == media::VideoFrame::YV16) ? 0 : 1;
+    // Use the "left" and "top" of the destination rect to locate the offset
+    // in Y, U and V planes.
+    y_offset = (video_frame->stride(media::VideoFrame::kYPlane) *
+                video_frame->visible_rect().y()) +
+                video_frame->visible_rect().x();
+    // For format YV12, there is one U, V value per 2x2 block.
+    // For format YV16, there is one U, V value per 2x1 block.
+    uv_offset = (video_frame->stride(media::VideoFrame::kUPlane) *
+                (video_frame->visible_rect().y() >> y_shift)) +
+                (video_frame->visible_rect().x() >> 1);
+  }
 
   switch (video_frame->format()) {
     case VideoFrame::YV12:
@@ -537,12 +560,16 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
                          video_frame->visible_rect().height());
 #endif
       break;
-#if defined(OS_MACOSX)
-    case VideoFrame::NV12:
-#endif
+
+    case VideoFrame::NATIVE_TEXTURE:
+      NOTREACHED();
+      break;
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
     case VideoFrame::ARGB:
-    case VideoFrame::XRGB:
     case VideoFrame::UNKNOWN:
+    case VideoFrame::NV12:
       NOTREACHED();
   }
 }
@@ -556,10 +583,8 @@ void SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
-  DCHECK(video_frame);
-  DCHECK_EQ(video_frame->storage_type(), VideoFrame::STORAGE_TEXTURE);
-  DCHECK_EQ(1u, VideoFrame::NumPlanes(video_frame->format()));
-
+  DCHECK(video_frame && video_frame->format() == VideoFrame::NATIVE_TEXTURE);
+  DCHECK_EQ(1u, VideoFrame::NumTextures(video_frame->texture_format()));
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
   DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
          mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB ||

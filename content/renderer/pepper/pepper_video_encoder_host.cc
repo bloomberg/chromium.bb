@@ -633,7 +633,7 @@ scoped_refptr<media::VideoFrame> PepperVideoEncoderHost::CreateVideoFrame(
                         static_cast<uint8*>(buffer_manager_.shm()->memory());
 
   scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
+      media::VideoFrame::WrapExternalPackedMemory(
           media_input_format_, input_coded_size_, gfx::Rect(input_coded_size_),
           input_coded_size_, static_cast<uint8*>(buffer->video.data),
           buffer->video.data_size, buffer_manager_.shm()->handle(), shm_offset,

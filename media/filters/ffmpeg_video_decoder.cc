@@ -120,10 +120,9 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
       RoundUp(std::max(size.width(), codec_context->coded_width), 2),
       RoundUp(std::max(size.height(), codec_context->coded_height), 2));
 
-  if (!VideoFrame::IsValidConfig(format, VideoFrame::STORAGE_UNKNOWN,
-                                 coded_size, gfx::Rect(size), natural_size)) {
+  if (!VideoFrame::IsValidConfig(
+          format, coded_size, gfx::Rect(size), natural_size))
     return AVERROR(EINVAL);
-  }
 
   scoped_refptr<VideoFrame> video_frame = frame_pool_.CreateFrame(
       format, coded_size, gfx::Rect(size), natural_size, kNoTimestamp());

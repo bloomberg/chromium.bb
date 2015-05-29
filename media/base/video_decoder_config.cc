@@ -78,7 +78,7 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
     UmaHistogramAspectRatio("Media.VideoCodedAspectRatio", coded_size);
     UMA_HISTOGRAM_COUNTS_10000("Media.VideoVisibleWidth", visible_rect.width());
     UmaHistogramAspectRatio("Media.VideoVisibleAspectRatio", visible_rect);
-    UMA_HISTOGRAM_ENUMERATION("Media.VideoFramePixelFormat", format,
+    UMA_HISTOGRAM_ENUMERATION("Media.VideoFormat", format,
                               VideoFrame::FORMAT_MAX + 1);
     UMA_HISTOGRAM_ENUMERATION("Media.VideoFrameColorSpace", color_space,
                               VideoFrame::COLOR_SPACE_MAX + 1);
@@ -98,8 +98,8 @@ bool VideoDecoderConfig::IsValidConfig() const {
   return codec_ != kUnknownVideoCodec &&
       natural_size_.width() > 0 &&
       natural_size_.height() > 0 &&
-      VideoFrame::IsValidConfig(format_, VideoFrame::STORAGE_UNKNOWN,
-                                coded_size_, visible_rect_, natural_size_);
+      VideoFrame::IsValidConfig(format_, coded_size_, visible_rect_,
+          natural_size_);
 }
 
 bool VideoDecoderConfig::Matches(const VideoDecoderConfig& config) const {

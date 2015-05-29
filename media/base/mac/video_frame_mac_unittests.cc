@@ -61,9 +61,9 @@ TEST(VideoFrameMac, CheckBasicAttributes) {
 }
 
 TEST(VideoFrameMac, CheckFormats) {
-  // CreateFrame() does not support non planar YUV, e.g. NV12.
   const FormatPair format_pairs[] = {
       {VideoFrame::I420, kCVPixelFormatType_420YpCbCr8Planar},
+
       {VideoFrame::YV12, 0},
       {VideoFrame::YV16, 0},
       {VideoFrame::YV12A, 0},

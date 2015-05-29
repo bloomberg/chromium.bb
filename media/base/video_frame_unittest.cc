@@ -76,7 +76,8 @@ void ExpectFrameColor(media::VideoFrame* yv12_frame, uint32 expect_rgb_color) {
     uint32* rgb_row_data = reinterpret_cast<uint32*>(
         rgb_data + (bytes_per_row * row));
     for (int col = 0; col < yv12_frame->coded_size().width(); ++col) {
-      SCOPED_TRACE(base::StringPrintf("Checking (%d, %d)", row, col));
+      SCOPED_TRACE(
+          base::StringPrintf("Checking (%d, %d)", row, col));
       EXPECT_EQ(expect_rgb_color, rgb_row_data[col]);
     }
   }
@@ -260,8 +261,7 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
         base::TimeDelta(),  // timestamp
         false,              // allow_overlay
         true);              // has_alpha
-    EXPECT_EQ(VideoFrame::STORAGE_TEXTURE, frame->storage_type());
-    EXPECT_EQ(VideoFrame::ARGB, frame->format());
+    EXPECT_EQ(VideoFrame::TEXTURE_RGBA, frame->texture_format());
   }
   // Nobody set a sync point to |frame|, so |frame| set |called_sync_point| to 0
   // as default value.
@@ -310,10 +310,9 @@ TEST(VideoFrame,
         base::TimeDelta(),  // timestamp
         false);             // allow_overlay
 
-    EXPECT_EQ(VideoFrame::STORAGE_TEXTURE, frame->storage_type());
-    EXPECT_EQ(VideoFrame::I420, frame->format());
-    EXPECT_EQ(3u, VideoFrame::NumPlanes(frame->format()));
-    for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format());
+    EXPECT_EQ(VideoFrame::TEXTURE_YUV_420, frame->texture_format());
+    EXPECT_EQ(3u, VideoFrame::NumTextures(frame->texture_format()));
+    for (size_t i = 0; i < VideoFrame::NumTextures(frame->texture_format());
          ++i) {
       const gpu::MailboxHolder& mailbox_holder = frame->mailbox_holder(i);
       EXPECT_EQ(mailbox[i].name[0], mailbox_holder.mailbox.name[0]);

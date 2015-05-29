@@ -134,11 +134,14 @@ ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::I420, VIDEO_FORMAT_I420);
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV16, VIDEO_FORMAT_YV16);
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV12A, VIDEO_FORMAT_YV12A);
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV24, VIDEO_FORMAT_YV24);
-#if defined(OS_MACOSX)
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::NV12, VIDEO_FORMAT_NV12);
-#endif
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::ARGB, VIDEO_FORMAT_ARGB);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::XRGB, VIDEO_FORMAT_XRGB);
+#if defined(VIDEO_HOLE)
+ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::HOLE, VIDEO_FORMAT_HOLE);
+#endif
+ASSERT_ENUM_EQ_RAW(VideoFrame::Format,
+                   VideoFrame::NATIVE_TEXTURE,
+                   VIDEO_FORMAT_NATIVE_TEXTURE);
 ASSERT_ENUM_EQ_RAW(VideoFrame::Format,
                    VideoFrame::FORMAT_MAX,
                    VIDEO_FORMAT_FORMAT_MAX);

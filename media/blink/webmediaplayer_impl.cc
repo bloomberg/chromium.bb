@@ -510,14 +510,16 @@ void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
   //   - We haven't reached HAVE_CURRENT_DATA and need to paint black
   //   - We're painting to a canvas
   // See http://crbug.com/341225 http://crbug.com/342621 for details.
-  scoped_refptr<VideoFrame> video_frame = GetCurrentFrameFromCompositor();
+  scoped_refptr<VideoFrame> video_frame =
+      GetCurrentFrameFromCompositor();
 
   gfx::Rect gfx_rect(rect);
   Context3D context_3d;
   if (video_frame.get() &&
-      video_frame->storage_type() == VideoFrame::STORAGE_TEXTURE) {
-    if (!context_3d_cb_.is_null())
+      video_frame->format() == VideoFrame::NATIVE_TEXTURE) {
+    if (!context_3d_cb_.is_null()) {
       context_3d = context_3d_cb_.Run();
+    }
     // GPU Process crashed.
     if (!context_3d.gl)
       return;
@@ -592,10 +594,11 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     bool flip_y) {
   TRACE_EVENT0("media", "WebMediaPlayerImpl:copyVideoTextureToPlatformTexture");
 
-  scoped_refptr<VideoFrame> video_frame = GetCurrentFrameFromCompositor();
+  scoped_refptr<VideoFrame> video_frame =
+      GetCurrentFrameFromCompositor();
 
   if (!video_frame.get() ||
-      video_frame->storage_type() != VideoFrame::STORAGE_TEXTURE) {
+      video_frame->format() != VideoFrame::NATIVE_TEXTURE) {
     return false;
   }
 

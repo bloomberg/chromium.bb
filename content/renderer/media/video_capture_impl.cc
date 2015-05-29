@@ -238,7 +238,7 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
   DCHECK(iter != client_buffers_.end());
   scoped_refptr<ClientBuffer> buffer = iter->second;
   scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
+      media::VideoFrame::WrapExternalPackedMemory(
           media::VideoFrame::I420,
           coded_size,
           visible_rect,

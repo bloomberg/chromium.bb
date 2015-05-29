@@ -53,14 +53,15 @@ static gfx::Size SampleSize(VideoFrame::Format format, size_t plane) {
         case VideoFrame::YV12:
         case VideoFrame::I420:
         case VideoFrame::YV12A:
-#if defined(OS_MACOSX)
         case VideoFrame::NV12:
-#endif
           return gfx::Size(2, 2);
 
         case VideoFrame::UNKNOWN:
+#if defined(VIDEO_HOLE)
+        case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+        case VideoFrame::NATIVE_TEXTURE:
         case VideoFrame::ARGB:
-        case VideoFrame::XRGB:
           break;
       }
   }
@@ -81,11 +82,16 @@ static gfx::Size CommonAlignment(VideoFrame::Format format) {
   return gfx::Size(max_sample_width, max_sample_height);
 }
 
-// Returns the number of bytes per element for given |plane| and |format|.
+// Returns the number of bytes per element for given |plane| and |format|. E.g.
+// 2 for the UV plane in NV12.
 static int BytesPerElement(VideoFrame::Format format, size_t plane) {
   DCHECK(VideoFrame::IsValidPlane(plane, format));
-  if (format == VideoFrame::ARGB || format == VideoFrame::XRGB)
+  if (format == VideoFrame::ARGB)
     return 4;
+
+  if (format == VideoFrame::NV12 && plane == VideoFrame::kUVPlane)
+    return 2;
+
   return 1;
 }
 
@@ -97,70 +103,78 @@ static gfx::Size AdjustCodedSize(VideoFrame::Format format,
                    RoundUp(coded_size.height(), alignment.height()));
 }
 
-// Release data allocated by AllocateYUV().
-static void ReleaseData(uint8* data) {
-  DCHECK(data);
-  base::AlignedFree(data);
-}
-
-//static
-bool VideoFrame::IsYuvPlanar(Format format) {
+// static
+scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
+    VideoFrame::Format format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    base::TimeDelta timestamp) {
   switch (format) {
-    case YV12:
-    case I420:
-    case YV16:
-    case YV12A:
-    case YV24:
-      return true;
-#if defined(OS_MACOSX)
-    case NV12:
-#endif
-    case UNKNOWN:
-    case ARGB:
-    case XRGB:
-      return false;
-  }
-  return false;
-}
+    case VideoFrame::YV12:
+    case VideoFrame::YV16:
+    case VideoFrame::I420:
+    case VideoFrame::YV12A:
+    case VideoFrame::YV24:
+      break;
 
-//static
-bool VideoFrame::IsMappable(StorageType storage_type) {
-  return storage_type == STORAGE_SHMEM ||
-         storage_type == STORAGE_OWNED_MEMORY ||
-         storage_type == STORAGE_UNOWNED_MEMORY;
+    case VideoFrame::UNKNOWN:
+    case VideoFrame::NV12:
+    case VideoFrame::NATIVE_TEXTURE:
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+    case VideoFrame::ARGB:
+      NOTIMPLEMENTED();
+      return nullptr;
+  }
+
+  // Since we're creating a new YUV frame (and allocating memory for it
+  // ourselves), we can pad the requested |coded_size| if necessary if the
+  // request does not line up on sample boundaries.
+  const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
+  DCHECK(IsValidConfig(format, new_coded_size, visible_rect, natural_size));
+
+  gpu::MailboxHolder mailboxes[kMaxPlanes];
+  scoped_refptr<VideoFrame> frame(
+      new VideoFrame(format, new_coded_size, visible_rect, natural_size,
+                     mailboxes, TEXTURE_RGBA, timestamp, false));
+  frame->AllocateYUV();
+  return frame;
 }
 
 // static
-std::string VideoFrame::FormatToString(Format format) {
+std::string VideoFrame::FormatToString(VideoFrame::Format format) {
   switch (format) {
-    case UNKNOWN:
+    case VideoFrame::UNKNOWN:
       return "UNKNOWN";
-    case YV12:
+    case VideoFrame::YV12:
       return "YV12";
-    case YV16:
+    case VideoFrame::YV16:
       return "YV16";
-    case I420:
+    case VideoFrame::I420:
       return "I420";
-    case YV12A:
+    case VideoFrame::NATIVE_TEXTURE:
+      return "NATIVE_TEXTURE";
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+      return "HOLE";
+#endif  // defined(VIDEO_HOLE)
+    case VideoFrame::YV12A:
       return "YV12A";
-    case YV24:
-      return "YV24";
-    case ARGB:
-      return "ARGB";
-    case XRGB:
-      return "XRGB";
-#if defined(OS_MACOSX)
-    case NV12:
+    case VideoFrame::NV12:
       return "NV12";
-#endif
+    case VideoFrame::YV24:
+      return "YV24";
+    case VideoFrame::ARGB:
+      return "ARGB";
   }
-  NOTREACHED() << "Invalid VideoFrame format provided: " << format;
+  NOTREACHED() << "Invalid videoframe format provided: " << format;
   return "";
 }
 
 // static
-bool VideoFrame::IsValidConfig(Format format,
-                               StorageType storage_type,
+bool VideoFrame::IsValidConfig(VideoFrame::Format format,
                                const gfx::Size& coded_size,
                                const gfx::Rect& visible_rect,
                                const gfx::Size& natural_size) {
@@ -176,30 +190,27 @@ bool VideoFrame::IsValidConfig(Format format,
       natural_size.height() > limits::kMaxDimension)
     return false;
 
-// TODO(mcasas): Remove parameter |storage_type| when STORAGE_HOLE and
-// STORAGE_TEXTURE comply with the checks below. Right now we skip them.
-#if defined(VIDEO_HOLE)
-  if (storage_type == STORAGE_HOLE)
-    return true;
-#endif
-  if(storage_type == STORAGE_TEXTURE)
-    return true;
-
   // Check format-specific width/height requirements.
   switch (format) {
-    case UNKNOWN:
+    case VideoFrame::UNKNOWN:
       return (coded_size.IsEmpty() && visible_rect.IsEmpty() &&
               natural_size.IsEmpty());
-    case YV24:
-    case YV12:
-    case I420:
-    case YV12A:
-    case YV16:
-    case ARGB:
-    case XRGB:
-#if defined(OS_MACOSX)
-    case NV12:
-#endif
+
+    // NATIVE_TEXTURE and HOLE have no software-allocated buffers and are
+    // allowed to skip the below check.
+    case VideoFrame::NATIVE_TEXTURE:
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+      return true;
+
+    case VideoFrame::YV24:
+    case VideoFrame::YV12:
+    case VideoFrame::I420:
+    case VideoFrame::YV12A:
+    case VideoFrame::NV12:
+    case VideoFrame::YV16:
+    case VideoFrame::ARGB:
       // Check that software-allocated buffer formats are aligned correctly and
       // not empty.
       const gfx::Size alignment = CommonAlignment(format);
@@ -211,36 +222,8 @@ bool VideoFrame::IsValidConfig(Format format,
              !natural_size.IsEmpty();
   }
 
-  // TODO(mcasas): Check that storage type and underlying mailboxes/dataptr are
-  // matching.
   NOTREACHED();
   return false;
-}
-
-// static
-scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
-    Format format,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    base::TimeDelta timestamp) {
-  if (!IsYuvPlanar(format)) {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  // Since we're creating a new YUV frame (and allocating memory for it
-  // ourselves), we can pad the requested |coded_size| if necessary if the
-  // request does not line up on sample boundaries.
-  const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
-  DCHECK(IsValidConfig(format, STORAGE_OWNED_MEMORY, new_coded_size,
-                       visible_rect, natural_size));
-
-  scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format, STORAGE_OWNED_MEMORY, new_coded_size, visible_rect,
-                     natural_size, timestamp, false));
-  frame->AllocateYUV();
-  return frame;
 }
 
 // static
@@ -255,10 +238,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
     bool has_alpha) {
   gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   mailbox_holders[kARGBPlane] = mailbox_holder;
-  Format texture_format = has_alpha ? ARGB : XRGB;
+  TextureFormat texture_format = has_alpha ? TEXTURE_RGBA : TEXTURE_RGB;
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(texture_format, STORAGE_TEXTURE, coded_size, visible_rect,
-                     natural_size, mailbox_holders, timestamp, false));
+      new VideoFrame(NATIVE_TEXTURE, coded_size, visible_rect, natural_size,
+                     mailbox_holders, texture_format, timestamp, false));
   frame->mailbox_holders_release_cb_ = mailbox_holder_release_cb;
   frame->allow_overlay_ = allow_overlay;
   return frame;
@@ -280,29 +263,15 @@ scoped_refptr<VideoFrame> VideoFrame::WrapYUV420NativeTextures(
   mailbox_holders[kUPlane] = u_mailbox_holder;
   mailbox_holders[kVPlane] = v_mailbox_holder;
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(I420, STORAGE_TEXTURE, coded_size, visible_rect,
-                     natural_size, mailbox_holders, timestamp, false));
+      new VideoFrame(NATIVE_TEXTURE, coded_size, visible_rect, natural_size,
+                     mailbox_holders, TEXTURE_YUV_420, timestamp, false));
   frame->mailbox_holders_release_cb_ = mailbox_holder_release_cb;
   frame->allow_overlay_ = allow_overlay;
   return frame;
 }
 
 // static
-scoped_refptr<VideoFrame> VideoFrame::WrapExternalData(
-    Format format,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    uint8* data,
-    size_t data_size,
-    base::TimeDelta timestamp) {
-  return WrapExternalStorage(format, STORAGE_UNOWNED_MEMORY, coded_size,
-                             visible_rect, natural_size, data, data_size,
-                             timestamp, base::SharedMemory::NULLHandle(), 0);
-}
-
-// static
-scoped_refptr<VideoFrame> VideoFrame::WrapExternalSharedMemory(
+scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(
     Format format,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
@@ -312,9 +281,33 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalSharedMemory(
     base::SharedMemoryHandle handle,
     size_t data_offset,
     base::TimeDelta timestamp) {
-  return WrapExternalStorage(format, STORAGE_SHMEM, coded_size, visible_rect,
-                             natural_size, data, data_size, timestamp, handle,
-                             data_offset);
+  const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
+
+  if (!IsValidConfig(format, new_coded_size, visible_rect, natural_size))
+    return NULL;
+  if (data_size < AllocationSize(format, new_coded_size))
+    return NULL;
+
+  switch (format) {
+    case VideoFrame::I420: {
+      gpu::MailboxHolder mailbox_holders[kMaxPlanes];
+      scoped_refptr<VideoFrame> frame(
+          new VideoFrame(format, new_coded_size, visible_rect, natural_size,
+                         mailbox_holders, TEXTURE_RGBA, timestamp, false));
+      frame->shared_memory_handle_ = handle;
+      frame->shared_memory_offset_ = data_offset;
+      frame->strides_[kYPlane] = new_coded_size.width();
+      frame->strides_[kUPlane] = new_coded_size.width() / 2;
+      frame->strides_[kVPlane] = new_coded_size.width() / 2;
+      frame->data_[kYPlane] = data;
+      frame->data_[kUPlane] = data + new_coded_size.GetArea();
+      frame->data_[kVPlane] = data + (new_coded_size.GetArea() * 5 / 4);
+      return frame;
+    }
+    default:
+      NOTIMPLEMENTED();
+      return NULL;
+  }
 }
 
 // static
@@ -331,12 +324,12 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     uint8* v_data,
     base::TimeDelta timestamp) {
   const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
-  CHECK(IsValidConfig(format, STORAGE_UNOWNED_MEMORY, new_coded_size,
-                      visible_rect, natural_size));
+  CHECK(IsValidConfig(format, new_coded_size, visible_rect, natural_size));
 
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format, STORAGE_UNOWNED_MEMORY, new_coded_size,
-                     visible_rect, natural_size, timestamp, false));
+      new VideoFrame(format, new_coded_size, visible_rect, natural_size,
+                     mailbox_holders, TEXTURE_RGBA, timestamp, false));
   frame->strides_[kYPlane] = y_stride;
   frame->strides_[kUPlane] = u_stride;
   frame->strides_[kVPlane] = v_stride;
@@ -346,7 +339,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
   return frame;
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX)
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     Format format,
@@ -355,10 +348,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     const gfx::Size& natural_size,
     const std::vector<int> dmabuf_fds,
     base::TimeDelta timestamp) {
-  if (!IsValidConfig(format, STORAGE_DMABUFS, coded_size, visible_rect,
-                     natural_size)) {
+  if (!IsValidConfig(format, coded_size, visible_rect, natural_size))
     return NULL;
-  }
 
   // TODO(posciak): This is not exactly correct, it's possible for one
   // buffer to contain more than one plane.
@@ -367,10 +358,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     return NULL;
   }
 
-  DCHECK_EQ(format, ARGB);
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format, STORAGE_DMABUFS, coded_size, visible_rect,
-                     natural_size, timestamp, false));
+      new VideoFrame(format, coded_size, visible_rect, natural_size,
+                     mailbox_holders, TEXTURE_RGBA, timestamp, false));
 
   for (size_t i = 0; i < dmabuf_fds.size(); ++i) {
     int duped_fd = HANDLE_EINTR(dup(dmabuf_fds[i]));
@@ -403,13 +394,13 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
   Format format;
   // There are very few compatible CV pixel formats, so just check each.
   if (cv_format == kCVPixelFormatType_420YpCbCr8Planar) {
-    format = I420;
+    format = Format::I420;
   } else if (cv_format == kCVPixelFormatType_444YpCbCr8) {
-    format = YV24;
+    format = Format::YV24;
   } else if (cv_format == '420v') {
     // TODO(jfroy): Use kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange when the
     // minimum OS X and iOS SDKs permits it.
-    format = NV12;
+    format = Format::NV12;
   } else {
     DLOG(ERROR) << "CVPixelBuffer format not supported: " << cv_format;
     return NULL;
@@ -419,14 +410,13 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
   const gfx::Rect visible_rect(CVImageBufferGetCleanRect(cv_pixel_buffer));
   const gfx::Size natural_size(CVImageBufferGetDisplaySize(cv_pixel_buffer));
 
-  if (!IsValidConfig(format, STORAGE_UNOWNED_MEMORY, coded_size, visible_rect,
-                     natural_size)) {
+  if (!IsValidConfig(format, coded_size, visible_rect, natural_size))
     return NULL;
-  }
 
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format, STORAGE_UNOWNED_MEMORY, coded_size, visible_rect,
-                     natural_size, timestamp, false));
+      new VideoFrame(format, coded_size, visible_rect, natural_size,
+                     mailbox_holders, TEXTURE_RGBA, timestamp, false));
 
   frame->cv_pixel_buffer_.reset(cv_pixel_buffer, base::scoped_policy::RETAIN);
   return frame;
@@ -438,14 +428,15 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
       const scoped_refptr<VideoFrame>& frame,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size) {
-  // STORAGE_TEXTURE frames need mailbox info propagated, and there's no support
+  // NATIVE_TEXTURE frames need mailbox info propagated, and there's no support
   // for that here yet, see http://crbug/362521.
-  CHECK_NE(frame->storage_type(), STORAGE_TEXTURE);
+  CHECK_NE(frame->format(), NATIVE_TEXTURE);
 
   DCHECK(frame->visible_rect().Contains(visible_rect));
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   scoped_refptr<VideoFrame> wrapped_frame(
-      new VideoFrame(frame->format(), frame->storage_type(),
-                     frame->coded_size(), visible_rect, natural_size,
+      new VideoFrame(frame->format(), frame->coded_size(), visible_rect,
+                     natural_size, mailbox_holders, TEXTURE_RGBA,
                      frame->timestamp(), frame->end_of_stream()));
 
   for (size_t i = 0; i < NumPlanes(frame->format()); ++i) {
@@ -458,8 +449,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::CreateEOSFrame() {
-  return new VideoFrame(UNKNOWN, STORAGE_UNKNOWN, gfx::Size(), gfx::Rect(),
-                        gfx::Size(), kNoTimestamp(), true);
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
+  return new VideoFrame(VideoFrame::UNKNOWN, gfx::Size(), gfx::Rect(),
+                        gfx::Size(), mailbox_holders, TEXTURE_RGBA,
+                        kNoTimestamp(), true);
 }
 
 // static
@@ -467,8 +460,8 @@ scoped_refptr<VideoFrame> VideoFrame::CreateColorFrame(
     const gfx::Size& size,
     uint8 y, uint8 u, uint8 v,
     base::TimeDelta timestamp) {
-  scoped_refptr<VideoFrame> frame =
-      CreateFrame(YV12, size, gfx::Rect(size), size, timestamp);
+  scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
+      VideoFrame::YV12, size, gfx::Rect(size), size, timestamp);
   FillYUV(frame.get(), y, u, v);
   return frame;
 }
@@ -488,24 +481,28 @@ scoped_refptr<VideoFrame> VideoFrame::CreateTransparentFrame(
   const uint8 kBlackUV = 0x00;
   const uint8 kTransparentA = 0x00;
   const base::TimeDelta kZero;
-  scoped_refptr<VideoFrame> frame =
-      CreateFrame(YV12A, size, gfx::Rect(size), size, kZero);
+  scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
+      VideoFrame::YV12A, size, gfx::Rect(size), size, kZero);
   FillYUVA(frame.get(), kBlackY, kBlackUV, kBlackUV, kTransparentA);
   return frame;
 }
 
 #if defined(VIDEO_HOLE)
 // This block and other blocks wrapped around #if defined(VIDEO_HOLE) is not
-// maintained by the general compositor team. Please contact
-// wonsik@chromium.org .
+// maintained by the general compositor team. Please contact the following
+// people instead:
+//
+// wonsik@chromium.org
+// ycheo@chromium.org
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::CreateHoleFrame(
     const gfx::Size& size) {
-  DCHECK(IsValidConfig(UNKNOWN, STORAGE_HOLE, size, gfx::Rect(size), size));
+  DCHECK(IsValidConfig(VideoFrame::HOLE, size, gfx::Rect(size), size));
+  gpu::MailboxHolder mailboxes[kMaxPlanes];
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(UNKNOWN, STORAGE_HOLE, size, gfx::Rect(size), size,
-                     base::TimeDelta(), false));
+      new VideoFrame(VideoFrame::HOLE, size, gfx::Rect(size), size, mailboxes,
+                     TEXTURE_RGBA, base::TimeDelta(), false));
   return frame;
 }
 #endif  // defined(VIDEO_HOLE)
@@ -513,24 +510,40 @@ scoped_refptr<VideoFrame> VideoFrame::CreateHoleFrame(
 // static
 size_t VideoFrame::NumPlanes(Format format) {
   switch (format) {
-    case ARGB:
-    case XRGB:
+    case VideoFrame::NATIVE_TEXTURE:
+#if defined(VIDEO_HOLE)
+    case VideoFrame::HOLE:
+#endif  // defined(VIDEO_HOLE)
+      return 0;
+    case VideoFrame::ARGB:
       return 1;
-#if defined(OS_MACOSX)
-    case NV12:
+    case VideoFrame::NV12:
       return 2;
-#endif
-    case YV12:
-    case YV16:
-    case I420:
-    case YV24:
+    case VideoFrame::YV12:
+    case VideoFrame::YV16:
+    case VideoFrame::I420:
+    case VideoFrame::YV24:
       return 3;
-    case YV12A:
+    case VideoFrame::YV12A:
       return 4;
-    case UNKNOWN:
+    case VideoFrame::UNKNOWN:
       break;
   }
   NOTREACHED() << "Unsupported video frame format: " << format;
+  return 0;
+}
+
+// static
+size_t VideoFrame::NumTextures(TextureFormat texture_format) {
+  switch (texture_format) {
+    case TEXTURE_RGBA:
+    case TEXTURE_RGB:
+      return 1;
+    case TEXTURE_YUV_420:
+      return 3;
+  }
+
+  NOTREACHED();
   return 0;
 }
 
@@ -550,7 +563,7 @@ gfx::Size VideoFrame::PlaneSize(Format format,
 
   int width = coded_size.width();
   int height = coded_size.height();
-  if (format != ARGB) {
+  if (format != VideoFrame::ARGB) {
     // Align to multiple-of-two size overall. This ensures that non-subsampled
     // planes can be addressed by pixel with the same scaling as the subsampled
     // planes.
@@ -587,13 +600,20 @@ int VideoFrame::PlaneBitsPerPixel(Format format, size_t plane) {
       SampleSize(format, plane).height();
 }
 
+// Release data allocated by AllocateYUV().
+static void ReleaseData(uint8* data) {
+  DCHECK(data);
+  base::AlignedFree(data);
+}
+
 void VideoFrame::AllocateYUV() {
-  DCHECK_EQ(storage_type_, STORAGE_OWNED_MEMORY);
+  DCHECK(format_ == YV12 || format_ == YV16 || format_ == YV12A ||
+         format_ == I420 || format_ == YV24);
   static_assert(0 == kYPlane, "y plane data must be index 0");
 
   size_t data_size = 0;
   size_t offset[kMaxPlanes];
-  for (size_t plane = 0; plane < NumPlanes(format_); ++plane) {
+  for (size_t plane = 0; plane < VideoFrame::NumPlanes(format_); ++plane) {
     // The *2 in alignment for height is because some formats (e.g. h264) allow
     // interlaced coding, and then the size needs to be a multiple of two
     // macroblocks (vertically). See
@@ -617,21 +637,22 @@ void VideoFrame::AllocateYUV() {
       base::AlignedAlloc(data_size, kFrameAddressAlignment));
   memset(data, 0, data_size);
 
-  for (size_t plane = 0; plane < NumPlanes(format_); ++plane)
+  for (size_t plane = 0; plane < VideoFrame::NumPlanes(format_); ++plane)
     data_[plane] = data + offset[plane];
 
   AddDestructionObserver(base::Bind(&ReleaseData, data));
 }
 
-VideoFrame::VideoFrame(Format format,
-                       StorageType storage_type,
+VideoFrame::VideoFrame(VideoFrame::Format format,
                        const gfx::Size& coded_size,
                        const gfx::Rect& visible_rect,
                        const gfx::Size& natural_size,
+                       const gpu::MailboxHolder(&mailbox_holders)[kMaxPlanes],
+                       VideoFrame::TextureFormat texture_format,
                        base::TimeDelta timestamp,
                        bool end_of_stream)
     : format_(format),
-      storage_type_(storage_type),
+      texture_format_(texture_format),
       coded_size_(coded_size),
       visible_rect_(visible_rect),
       natural_size_(natural_size),
@@ -641,39 +662,10 @@ VideoFrame::VideoFrame(Format format,
       release_sync_point_(0),
       end_of_stream_(end_of_stream),
       allow_overlay_(false) {
-  DCHECK(IsValidConfig(format_, storage_type, coded_size_, visible_rect_,
-                       natural_size_));
-  memset(&mailbox_holders_, 0, sizeof(mailbox_holders_));
+  DCHECK(IsValidConfig(format_, coded_size_, visible_rect_, natural_size_));
+  memcpy(&mailbox_holders_, mailbox_holders, sizeof(mailbox_holders_));
   memset(&strides_, 0, sizeof(strides_));
   memset(&data_, 0, sizeof(data_));
-}
-
-VideoFrame::VideoFrame(Format format,
-                       StorageType storage_type,
-                       const gfx::Size& coded_size,
-                       const gfx::Rect& visible_rect,
-                       const gfx::Size& natural_size,
-                       base::TimeDelta timestamp,
-                       bool end_of_stream,
-                       base::SharedMemoryHandle handle,
-                       size_t shared_memory_offset)
-    : VideoFrame(format, storage_type, coded_size, visible_rect, natural_size,
-      timestamp, end_of_stream) {
-  shared_memory_handle_ = handle;
-  shared_memory_offset_ = shared_memory_offset;
-}
-
-VideoFrame::VideoFrame(Format format,
-                       StorageType storage_type,
-                       const gfx::Size& coded_size,
-                       const gfx::Rect& visible_rect,
-                       const gfx::Size& natural_size,
-                       const gpu::MailboxHolder(&mailbox_holders)[kMaxPlanes],
-                       base::TimeDelta timestamp,
-                       bool end_of_stream)
-    : VideoFrame(format, storage_type, coded_size, visible_rect, natural_size,
-      timestamp, end_of_stream) {
-  memcpy(&mailbox_holders_, mailbox_holders, sizeof(mailbox_holders_));
 }
 
 VideoFrame::~VideoFrame() {
@@ -693,48 +685,7 @@ VideoFrame::~VideoFrame() {
 }
 
 // static
-scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
-    Format format,
-    StorageType storage_type,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    uint8* data,
-    size_t data_size,
-    base::TimeDelta timestamp,
-    base::SharedMemoryHandle handle,
-    size_t data_offset) {
-  const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
-
-  if (!IsValidConfig(format, storage_type, new_coded_size, visible_rect,
-                     natural_size) ||
-      data_size < AllocationSize(format, new_coded_size)) {
-    return NULL;
-  }
-  DLOG_IF(ERROR, format != I420) << "Only I420 format supported: "
-      << FormatToString(format);
-  if (format != I420)
-    return NULL;
-
-  scoped_refptr<VideoFrame> frame;
-  if (storage_type == STORAGE_SHMEM) {
-    frame = new VideoFrame(format, storage_type, new_coded_size, visible_rect,
-                           natural_size, timestamp, false, handle, data_offset);
-  } else {
-    frame = new VideoFrame(format, storage_type, new_coded_size, visible_rect,
-                           natural_size, timestamp, false);
-  }
-  frame->strides_[kYPlane] = new_coded_size.width();
-  frame->strides_[kUPlane] = new_coded_size.width() / 2;
-  frame->strides_[kVPlane] = new_coded_size.width() / 2;
-  frame->data_[kYPlane] = data;
-  frame->data_[kUPlane] = data + new_coded_size.GetArea();
-  frame->data_[kVPlane] = data + (new_coded_size.GetArea() * 5 / 4);
-  return frame;
-}
-
-// static
-bool VideoFrame::IsValidPlane(size_t plane, Format format) {
+bool VideoFrame::IsValidPlane(size_t plane, VideoFrame::Format format) {
   return (plane < NumPlanes(format));
 }
 
@@ -744,7 +695,9 @@ int VideoFrame::stride(size_t plane) const {
 }
 
 // static
-size_t VideoFrame::RowBytes(size_t plane, Format format, int width) {
+size_t VideoFrame::RowBytes(size_t plane,
+                            VideoFrame::Format format,
+                            int width) {
   DCHECK(IsValidPlane(plane, format));
   return BytesPerElement(format, plane) * Columns(plane, format, width);
 }
@@ -754,7 +707,7 @@ int VideoFrame::row_bytes(size_t plane) const {
 }
 
 // static
-size_t VideoFrame::Rows(size_t plane, Format format, int height) {
+size_t VideoFrame::Rows(size_t plane, VideoFrame::Format format, int height) {
   DCHECK(IsValidPlane(plane, format));
   const int sample_height = SampleSize(format, plane).height();
   return RoundUp(height, sample_height) / sample_height;
@@ -773,19 +726,16 @@ int VideoFrame::rows(size_t plane) const {
 
 const uint8* VideoFrame::data(size_t plane) const {
   DCHECK(IsValidPlane(plane, format_));
-  DCHECK(IsMappable(storage_type_));
   return data_[plane];
 }
 
 uint8* VideoFrame::data(size_t plane) {
   DCHECK(IsValidPlane(plane, format_));
-  DCHECK(IsMappable(storage_type_));
   return data_[plane];
 }
 
 const uint8* VideoFrame::visible_data(size_t plane) const {
   DCHECK(IsValidPlane(plane, format_));
-  DCHECK(IsMappable(storage_type_));
 
   // Calculate an offset that is properly aligned for all planes.
   const gfx::Size alignment = CommonAlignment(format_);
@@ -806,26 +756,17 @@ uint8* VideoFrame::visible_data(size_t plane) {
       static_cast<const VideoFrame*>(this)->visible_data(plane));
 }
 
-const gpu::MailboxHolder&
-VideoFrame::mailbox_holder(size_t texture_index) const {
-#if defined(OS_LINUX)
-  DCHECK(storage_type_ == STORAGE_TEXTURE || storage_type_ == STORAGE_DMABUFS);
-#else
-  DCHECK(storage_type_ == STORAGE_TEXTURE);
-#endif
-  DCHECK_LT(texture_index, NumPlanes(format_));
-  return mailbox_holders_[texture_index];
+const gpu::MailboxHolder& VideoFrame::mailbox_holder(size_t texture) const {
+  DCHECK_EQ(format_, NATIVE_TEXTURE);
+  DCHECK_LT(texture, NumTextures(texture_format_));
+  return mailbox_holders_[texture];
 }
 
 base::SharedMemoryHandle VideoFrame::shared_memory_handle() const {
-  DCHECK_EQ(storage_type_, STORAGE_SHMEM);
-  DCHECK(shared_memory_handle_ != base::SharedMemory::NULLHandle());
   return shared_memory_handle_;
 }
 
 size_t VideoFrame::shared_memory_offset() const {
-  DCHECK_EQ(storage_type_, STORAGE_SHMEM);
-  DCHECK(shared_memory_handle_ != base::SharedMemory::NULLHandle());
   return shared_memory_offset_;
 }
 
@@ -835,11 +776,7 @@ void VideoFrame::AddDestructionObserver(const base::Closure& callback) {
 }
 
 void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {
-#if defined(OS_LINUX)
-  DCHECK(storage_type_ == STORAGE_TEXTURE || storage_type_ == STORAGE_DMABUFS);
-#else
-  DCHECK(storage_type_ == STORAGE_TEXTURE);
-#endif
+  DCHECK_EQ(format_, NATIVE_TEXTURE);
   base::AutoLock locker(release_sync_point_lock_);
   // Must wait on the previous sync point before inserting a new sync point so
   // that |mailbox_holders_release_cb_| guarantees the previous sync point
@@ -849,9 +786,8 @@ void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {
   release_sync_point_ = client->InsertSyncPoint();
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX)
 int VideoFrame::dmabuf_fd(size_t plane) const {
-  DCHECK_EQ(storage_type_, STORAGE_DMABUFS);
   return dmabuf_fds_[plane].get();
 }
 #endif
