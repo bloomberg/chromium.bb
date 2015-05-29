@@ -51,6 +51,7 @@ class SupervisedUserImportHandler : public OptionsPageUIHandler,
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const base::string16& profile_name) override;
+  void OnProfileIsOmittedChanged(const base::FilePath& profile_path) override;
 
   // SupervisedUserSyncServiceObserver implementation.
   void OnSupervisedUserAcknowledged(

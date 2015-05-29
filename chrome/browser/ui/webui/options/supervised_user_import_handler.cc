@@ -149,6 +149,12 @@ void SupervisedUserImportHandler::OnProfileWasRemoved(
   }
 }
 
+void SupervisedUserImportHandler::OnProfileIsOmittedChanged(
+    const base::FilePath& profile_path) {
+  if (ProfileIsLegacySupervised(profile_path))
+    FetchSupervisedUsers();
+}
+
 void SupervisedUserImportHandler::OnSupervisedUsersChanged() {
   FetchSupervisedUsers();
 }
@@ -187,8 +193,12 @@ void SupervisedUserImportHandler::SendExistingSupervisedUsers(
   // Collect the ids of local supervised user profiles.
   std::set<std::string> supervised_user_ids;
   for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-    if (cache.ProfileIsLegacySupervisedAtIndex(i))
+    // Filter out omitted profiles. These are currently being imported, and
+    // shouldn't show up as "already on this device" just yet.
+    if (cache.ProfileIsLegacySupervisedAtIndex(i) &&
+        !cache.IsOmittedProfileAtIndex(i)) {
       supervised_user_ids.insert(cache.GetSupervisedUserIdOfProfileAtIndex(i));
+    }
   }
 
   base::ListValue supervised_users;
