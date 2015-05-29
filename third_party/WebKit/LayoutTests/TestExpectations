@@ -18,7 +18,24 @@ crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/scrolling [ Pass ]
 crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/transforms [ Pass ]
 crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/writing-mode [ Pass ]
 
+# Force to run tests under skipped directories that ever had bugs to monitor regressions.
+crbug.com/487279 virtual/slimmingpaint/fast/flexbox/009.html [ Pass ]
+crbug.com/487279 virtual/slimmingpaint/fast/forms/basic-textareas-quirks.html [ Pass ]
+crbug.com/487279 virtual/slimmingpaint/fast/forms/basic-textareas.html [ Pass ]
+crbug.com/487279 virtual/slimmingpaint/fast/repaint/overflow-outline-repaint.html [ Pass ]
+crbug.com/487281 virtual/slimmingpaint/fast/forms/fieldset-align.html [ Pass ]
+crbug.com/486921 virtual/slimmingpaint/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Pass ]
+crbug.com/427743 virtual/slimmingpaint/fast/overflow/overflow-height-float-not-removed-crash.html [ Pass ]
+crbug.com/427743 virtual/slimmingpaint/fast/overflow/overflow-height-float-not-removed-crash2.html [ Pass ]
+crbug.com/427743 virtual/slimmingpaint/fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass ]
+
 crbug.com/474117 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
+
+crbug.com/487281 [ Mac ] virtual/slimmingpaint/fast/forms/menulist-narrow-width.html [ ImageOnlyFailure ]
+crbug.com/487278 [ Mac ] virtual/slimmingpaint/fast/forms/textarea/textarea-placeholder-paint-order-2.html [ ImageOnlyFailure ]
+
+crbug.com/471405 [ Mac ] virtual/slimmingpaint/fast/replaced/width100percent-searchfield.html [ NeedsRebaseline ]
+crbug.com/471405 [ Mac ] virtual/slimmingpaint/fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ NeedsRebaseline ]
 
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/mask-box-image.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ ImageOnlyFailure ]
@@ -299,6 +316,8 @@ crbug.com/382491 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight
 crbug.com/382491 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/borders/border-image-rotate-transform.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/borders/table-borders.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/canvas/canvas-composite-transformclip.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
 crbug.com/133097 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
 
