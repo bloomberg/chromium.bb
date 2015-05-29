@@ -24,6 +24,7 @@
 #include "storage/browser/database/vfs_backend.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
+#include "third_party/WebKit/public/platform/WebScheduler.h"
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
 #include "third_party/WebKit/public/platform/WebStorageNamespace.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -76,6 +77,35 @@ class DummyTaskRunner : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(DummyTaskRunner);
 };
 
+class DummyWebThread : public blink::WebThread {
+ public:
+  DummyWebThread()
+      : thread_id_(base::PlatformThread::CurrentId()),
+        m_dummyScheduler(new blink::WebScheduler()) {}
+
+  virtual void postTask(const blink::WebTraceLocation&, Task*) { NOTREACHED(); }
+
+  virtual void postDelayedTask(const blink::WebTraceLocation&,
+                               Task*,
+                               long long delayMs) {
+    NOTREACHED();
+  }
+
+  virtual bool isCurrentThread() const {
+    return thread_id_ == base::PlatformThread::CurrentId();
+  }
+
+  virtual blink::WebScheduler* scheduler() const {
+    return m_dummyScheduler.get();
+  }
+
+ private:
+  base::PlatformThreadId thread_id_;
+  scoped_ptr<blink::WebScheduler> m_dummyScheduler;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyWebThread);
+};
+
 }  // namespace
 
 namespace content {
@@ -109,6 +139,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
     dummy_task_runner = make_scoped_refptr(new DummyTaskRunner());
     dummy_task_runner_handle.reset(
         new base::ThreadTaskRunnerHandle(dummy_task_runner));
+    web_thread_.reset(new DummyWebThread());
   }
 
   blink::initialize(this);
