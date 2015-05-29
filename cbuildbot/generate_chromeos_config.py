@@ -1237,6 +1237,7 @@ _minimal_profile_boards = frozenset([
 
 _nofactory_boards = frozenset([
   'daisy_winter',
+  'smaug',
 ])
 
 _toolchains_from_source = frozenset([
@@ -1294,6 +1295,8 @@ def _CreateBaseConfigs():
       base.update(profile='minimal')
     if board in _nofactory_boards:
       base.update(factory=False)
+      base.update(factory_toolkit=False)
+      base.update(factory_install_netboot=False)
     if board in _toolchains_from_source:
       base.update(usepkg_toolchain=False)
     if board in _noimagetest_boards:

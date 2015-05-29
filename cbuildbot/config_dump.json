@@ -17429,6 +17429,8 @@
         "chroot_replace": true,
         "description": "Preflight Chrome Uprev & Build (internal)",
         "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -17454,6 +17456,8 @@
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
         "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "manifest_version": true,
@@ -17483,6 +17487,8 @@
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
@@ -17520,6 +17526,8 @@
         "description": "Full Builds",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "git_sync": true,
         "image_test": true,
         "images": [
@@ -17553,6 +17561,8 @@
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
@@ -17589,6 +17599,8 @@
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "image_test": true,
         "images": [
             "base",
@@ -17640,6 +17652,8 @@
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
@@ -17684,6 +17698,8 @@
         "dev_installer_prebuilts": true,
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
         "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
@@ -17971,6 +17987,8 @@
         "chroot_replace": true,
         "description": "Informational Chrome Uprev & Build (internal)",
         "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -17994,6 +18012,8 @@
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
         "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "name": "daisy_winter-tot-chromium-pfq-informational",
         "tests_supported": false,
         "unittests": false,
@@ -56492,6 +56512,9 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Preflight Chrome Uprev & Build (internal)",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -56516,6 +56539,9 @@
         "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "manifest_version": true,
@@ -56544,6 +56570,9 @@
         "debug_symbols": false,
         "description": "Verifies compilation only",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
@@ -56584,6 +56613,8 @@
         "chroot_replace": true,
         "description": "Firmware Canary",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "factory": false,
+        "factory_install_netboot": false,
         "factory_toolkit": false,
         "hwqual": true,
         "images": [],
@@ -56617,6 +56648,9 @@
         "chroot_replace": true,
         "description": "Full Builds",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "git_sync": true,
         "image_test": true,
         "images": [
@@ -56649,6 +56683,9 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
@@ -56685,6 +56722,9 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "image_test": true,
         "images": [
             "base",
@@ -56735,6 +56775,9 @@
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
@@ -56778,6 +56821,9 @@
         "description": "Release Builds (canary) (internal)",
         "dev_installer_prebuilts": true,
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
@@ -57064,6 +57110,9 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Informational Chrome Uprev & Build (internal)",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -57086,6 +57135,9 @@
         "chrome_rev": "tot",
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "name": "smaug-tot-chromium-pfq-informational",
         "tests_supported": false,
         "unittests": false,
