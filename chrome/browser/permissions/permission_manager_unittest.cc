@@ -32,7 +32,7 @@ class PermissionManagerTestingProfile final : public TestingProfile {
 
 class PermissionManagerTest : public testing::Test {
  public:
-  void OnPermissionChange(content::PermissionStatus permission) {
+  void OnPermissionChange(PermissionStatus permission) {
     callback_called_ = true;
     callback_result_ = permission;
   }
@@ -78,9 +78,7 @@ class PermissionManagerTest : public testing::Test {
     return callback_called_;
   }
 
-  content::PermissionStatus callback_result() const {
-    return callback_result_;
-  }
+  PermissionStatus callback_result() const { return callback_result_; }
 
   void Reset() {
     callback_called_ = false;
@@ -91,7 +89,7 @@ class PermissionManagerTest : public testing::Test {
   const GURL url_;
   const GURL other_url_;
   bool callback_called_;
-  content::PermissionStatus callback_result_;
+  PermissionStatus callback_result_;
   content::TestBrowserThreadBundle thread_bundle_;
   PermissionManagerTestingProfile profile_;
 };

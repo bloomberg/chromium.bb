@@ -142,7 +142,7 @@ namespace {
 
 void CallbackPermisisonStatusWrapper(
     const base::WeakPtr<LastRequestResultCache>& result_cache,
-    const base::Callback<void(content::PermissionStatus)>& callback,
+    const base::Callback<void(PermissionStatus)>& callback,
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
@@ -167,12 +167,12 @@ AwPermissionManager::~AwPermissionManager() {
 }
 
 void AwPermissionManager::RequestPermission(
-    content::PermissionType permission,
+    PermissionType permission,
     content::WebContents* web_contents,
     int request_id,
     const GURL& origin,
     bool user_gesture,
-    const base::Callback<void(content::PermissionStatus)>& callback) {
+    const base::Callback<void(PermissionStatus)>& callback) {
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
   AwBrowserPermissionRequestDelegate* delegate =
@@ -189,26 +189,26 @@ void AwPermissionManager::RequestPermission(
       web_contents->GetLastCommittedURL().GetOrigin();
 
   switch (permission) {
-    case content::PermissionType::GEOLOCATION:
+    case PermissionType::GEOLOCATION:
       delegate->RequestGeolocationPermission(
           origin, base::Bind(&CallbackPermisisonStatusWrapper,
                              result_cache_->GetWeakPtr(), callback, permission,
                              origin, embedding_origin));
       break;
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       delegate->RequestProtectedMediaIdentifierPermission(
           origin, base::Bind(&CallbackPermisisonStatusWrapper,
                              result_cache_->GetWeakPtr(), callback, permission,
                              origin, embedding_origin));
       break;
-    case content::PermissionType::MIDI_SYSEX:
-    case content::PermissionType::NOTIFICATIONS:
-    case content::PermissionType::PUSH_MESSAGING:
+    case PermissionType::MIDI_SYSEX:
+    case PermissionType::NOTIFICATIONS:
+    case PermissionType::PUSH_MESSAGING:
       NOTIMPLEMENTED() << "RequestPermission is not implemented for "
                        << static_cast<int>(permission);
       callback.Run(content::PERMISSION_STATUS_DENIED);
       break;
-    case content::PermissionType::NUM:
+    case PermissionType::NUM:
       NOTREACHED() << "PermissionType::NUM was not expected here.";
       callback.Run(content::PERMISSION_STATUS_DENIED);
       break;
@@ -216,7 +216,7 @@ void AwPermissionManager::RequestPermission(
 }
 
 void AwPermissionManager::CancelPermissionRequest(
-    content::PermissionType permission,
+    PermissionType permission,
     content::WebContents* web_contents,
     int request_id,
     const GURL& origin) {
@@ -236,33 +236,32 @@ void AwPermissionManager::CancelPermissionRequest(
     return;
 
   switch (permission) {
-    case content::PermissionType::GEOLOCATION:
+    case PermissionType::GEOLOCATION:
       delegate->CancelGeolocationPermissionRequests(origin);
       break;
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       delegate->CancelProtectedMediaIdentifierPermissionRequests(origin);
       break;
-    case content::PermissionType::MIDI_SYSEX:
-    case content::PermissionType::NOTIFICATIONS:
-    case content::PermissionType::PUSH_MESSAGING:
+    case PermissionType::MIDI_SYSEX:
+    case PermissionType::NOTIFICATIONS:
+    case PermissionType::PUSH_MESSAGING:
       NOTIMPLEMENTED() << "CancelPermission not implemented for "
                        << static_cast<int>(permission);
       break;
-    case content::PermissionType::NUM:
+    case PermissionType::NUM:
       NOTREACHED() << "PermissionType::NUM was not expected here.";
       break;
   }
 }
 
-void AwPermissionManager::ResetPermission(
-    content::PermissionType permission,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
+void AwPermissionManager::ResetPermission(PermissionType permission,
+                                          const GURL& requesting_origin,
+                                          const GURL& embedding_origin) {
   result_cache_->ClearResult(permission, requesting_origin, embedding_origin);
 }
 
-content::PermissionStatus AwPermissionManager::GetPermissionStatus(
-    content::PermissionType permission,
+PermissionStatus AwPermissionManager::GetPermissionStatus(
+    PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
   // Method is called outside the Permissions API only for this permission.
@@ -275,16 +274,16 @@ content::PermissionStatus AwPermissionManager::GetPermissionStatus(
 }
 
 void AwPermissionManager::RegisterPermissionUsage(
-    content::PermissionType permission,
+    PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
 }
 
 int AwPermissionManager::SubscribePermissionStatusChange(
-    content::PermissionType permission,
+    PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const base::Callback<void(content::PermissionStatus)>& callback) {
+    const base::Callback<void(PermissionStatus)>& callback) {
   return -1;
 }
 

@@ -15,11 +15,13 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
+using content::PermissionStatus;
+using content::PermissionType;
+
 namespace {
 
-// Helper method to convert ContentSetting to content::PermissionStatus.
-content::PermissionStatus
-ContentSettingToPermissionStatus(ContentSetting setting) {
+// Helper method to convert ContentSetting to PermissionStatus.
+PermissionStatus ContentSettingToPermissionStatus(ContentSetting setting) {
   switch (setting) {
     case CONTENT_SETTING_ALLOW:
     case CONTENT_SETTING_SESSION_ONLY:
@@ -38,26 +40,25 @@ ContentSettingToPermissionStatus(ContentSetting setting) {
   return content::PERMISSION_STATUS_DENIED;
 }
 
-// Helper method to convert content::PermissionType to ContentSettingType.
-ContentSettingsType PermissionTypeToContentSetting(
-    content::PermissionType permission) {
+// Helper method to convert PermissionType to ContentSettingType.
+ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
   switch (permission) {
-    case content::PermissionType::MIDI_SYSEX:
+    case PermissionType::MIDI_SYSEX:
       return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
-    case content::PermissionType::PUSH_MESSAGING:
+    case PermissionType::PUSH_MESSAGING:
       return CONTENT_SETTINGS_TYPE_PUSH_MESSAGING;
-    case content::PermissionType::NOTIFICATIONS:
+    case PermissionType::NOTIFICATIONS:
       return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
-    case content::PermissionType::GEOLOCATION:
+    case PermissionType::GEOLOCATION:
       return CONTENT_SETTINGS_TYPE_GEOLOCATION;
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
       return CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
 #else
       NOTIMPLEMENTED();
       break;
 #endif
-    case content::PermissionType::NUM:
+    case PermissionType::NUM:
       // This will hit the NOTREACHED below.
       break;
   }
@@ -67,10 +68,10 @@ ContentSettingsType PermissionTypeToContentSetting(
   return CONTENT_SETTINGS_TYPE_DEFAULT;
 }
 
-// Helper method that wraps a callback a void(content::PermissionStatus)
+// Helper method that wraps a callback a void(PermissionStatus)
 // callback into a void(ContentSetting) callback.
 void PermissionStatusCallbackWrapper(
-    const base::Callback<void(content::PermissionStatus)>& callback,
+    const base::Callback<void(PermissionStatus)>& callback,
     ContentSetting content_setting) {
   callback.Run(ContentSettingToPermissionStatus(content_setting));
 }
@@ -78,10 +79,10 @@ void PermissionStatusCallbackWrapper(
 }  // anonymous namespace
 
 struct PermissionManager::Subscription {
-  content::PermissionType permission;
+  PermissionType permission;
   GURL requesting_origin;
   GURL embedding_origin;
-  base::Callback<void(content::PermissionStatus)> callback;
+  base::Callback<void(PermissionStatus)> callback;
   ContentSetting current_value;
 };
 
@@ -95,12 +96,12 @@ PermissionManager::~PermissionManager() {
 }
 
 void PermissionManager::RequestPermission(
-    content::PermissionType permission,
+    PermissionType permission,
     content::WebContents* web_contents,
     int request_id,
     const GURL& requesting_origin,
     bool user_gesture,
-    const base::Callback<void(content::PermissionStatus)>& callback) {
+    const base::Callback<void(PermissionStatus)>& callback) {
   PermissionContextBase* context = PermissionContext::Get(profile_, permission);
   if (!context) {
     callback.Run(content::PERMISSION_STATUS_DENIED);
@@ -121,7 +122,7 @@ void PermissionManager::RequestPermission(
 }
 
 void PermissionManager::CancelPermissionRequest(
-    content::PermissionType permission,
+    PermissionType permission,
     content::WebContents* web_contents,
     int request_id,
     const GURL& requesting_origin) {
@@ -139,10 +140,9 @@ void PermissionManager::CancelPermissionRequest(
   context->CancelPermissionRequest(web_contents, request);
 }
 
-void PermissionManager::ResetPermission(
-    content::PermissionType permission,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
+void PermissionManager::ResetPermission(PermissionType permission,
+                                        const GURL& requesting_origin,
+                                        const GURL& embedding_origin) {
   PermissionContextBase* context = PermissionContext::Get(profile_, permission);
   if (!context)
     return;
@@ -151,8 +151,8 @@ void PermissionManager::ResetPermission(
                            embedding_origin.GetOrigin());
 }
 
-content::PermissionStatus PermissionManager::GetPermissionStatus(
-    content::PermissionType permission,
+PermissionStatus PermissionManager::GetPermissionStatus(
+    PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
   PermissionContextBase* context = PermissionContext::Get(profile_, permission);
@@ -164,10 +164,9 @@ content::PermissionStatus PermissionManager::GetPermissionStatus(
                                    embedding_origin.GetOrigin()));
 }
 
-void PermissionManager::RegisterPermissionUsage(
-    content::PermissionType permission,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
+void PermissionManager::RegisterPermissionUsage(PermissionType permission,
+                                                const GURL& requesting_origin,
+                                                const GURL& embedding_origin) {
   profile_->GetHostContentSettingsMap()->UpdateLastUsage(
       requesting_origin,
       embedding_origin,
@@ -175,10 +174,10 @@ void PermissionManager::RegisterPermissionUsage(
 }
 
 int PermissionManager::SubscribePermissionStatusChange(
-    content::PermissionType permission,
+    PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const base::Callback<void(content::PermissionStatus)>& callback) {
+    const base::Callback<void(PermissionStatus)>& callback) {
   if (subscriptions_.IsEmpty())
     profile_->GetHostContentSettingsMap()->AddObserver(this);
 

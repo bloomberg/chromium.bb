@@ -24,6 +24,8 @@
                               PERMISSION_ACTION_NUM);                       \
   }
 
+using content::PermissionType;
+
 namespace {
 
 // Enum for UMA purposes, make sure you update histograms.xml if you add new
@@ -140,31 +142,31 @@ void RecordPermissionAction(ContentSettingsType permission,
 void RecordPermissionRequest(ContentSettingsType permission,
                              const GURL& requesting_origin) {
   bool secure_origin = content::IsOriginSecure(requesting_origin);
-  content::PermissionType type;
+  PermissionType type;
   switch (permission) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      type = content::PermissionType::GEOLOCATION;
+      type = PermissionType::GEOLOCATION;
       rappor::SampleDomainAndRegistryFromGURL(
           g_browser_process->rappor_service(),
           "ContentSettings.PermissionRequested.Geolocation.Url",
           requesting_origin);
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      type = content::PermissionType::NOTIFICATIONS;
+      type = PermissionType::NOTIFICATIONS;
       rappor::SampleDomainAndRegistryFromGURL(
           g_browser_process->rappor_service(),
           "ContentSettings.PermissionRequested.Notifications.Url",
           requesting_origin);
       break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      type = content::PermissionType::MIDI_SYSEX;
+      type = PermissionType::MIDI_SYSEX;
       break;
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      type = content::PermissionType::PUSH_MESSAGING;
+      type = PermissionType::PUSH_MESSAGING;
       break;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-      type = content::PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+      type = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
       break;
 #endif
     default:
@@ -174,17 +176,17 @@ void RecordPermissionRequest(ContentSettingsType permission,
   UMA_HISTOGRAM_ENUMERATION(
       "ContentSettings.PermissionRequested",
       static_cast<base::HistogramBase::Sample>(type),
-      static_cast<base::HistogramBase::Sample>(content::PermissionType::NUM));
+      static_cast<base::HistogramBase::Sample>(PermissionType::NUM));
   if (secure_origin) {
     UMA_HISTOGRAM_ENUMERATION(
         "ContentSettings.PermissionRequested_SecureOrigin",
         static_cast<base::HistogramBase::Sample>(type),
-        static_cast<base::HistogramBase::Sample>(content::PermissionType::NUM));
+        static_cast<base::HistogramBase::Sample>(PermissionType::NUM));
   } else {
     UMA_HISTOGRAM_ENUMERATION(
         "ContentSettings.PermissionRequested_InsecureOrigin",
         static_cast<base::HistogramBase::Sample>(type),
-        static_cast<base::HistogramBase::Sample>(content::PermissionType::NUM));
+        static_cast<base::HistogramBase::Sample>(PermissionType::NUM));
   }
 }
 

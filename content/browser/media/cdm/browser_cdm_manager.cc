@@ -546,8 +546,7 @@ void BrowserCdmManager::CheckPermissionStatusOnUIThread(
   }
 
   PermissionStatus permission_status = permission_manager->GetPermissionStatus(
-      content::PermissionType::PROTECTED_MEDIA_IDENTIFIER,
-      security_origin,
+      PermissionType::PROTECTED_MEDIA_IDENTIFIER, security_origin,
       web_contents->GetLastCommittedURL().GetOrigin());
 
   bool allowed = (permission_status == PERMISSION_STATUS_GRANTED);
