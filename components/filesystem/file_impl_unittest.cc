@@ -4,7 +4,9 @@
 
 #include <vector>
 
+#include "base/files/file.h"
 #include "components/filesystem/files_test_base.h"
+#include "mojo/platform_handle/platform_handle_functions.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
@@ -621,6 +623,63 @@ TEST_F(FileImplTest, Truncate) {
   EXPECT_EQ(ERROR_OK, error);
   ASSERT_FALSE(file_info.is_null());
   EXPECT_EQ(kTruncatedSize, file_info->size);
+}
+
+TEST_F(FileImplTest, AsHandle) {
+  DirectoryPtr directory;
+  GetTemporaryRoot(&directory);
+  Error error;
+
+  {
+    // Create my_file.
+    FilePtr file1;
+    error = ERROR_FAILED;
+    directory->OpenFile("my_file", GetProxy(&file1),
+                        kFlagRead | kFlagWrite | kFlagCreate, Capture(&error));
+    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    EXPECT_EQ(ERROR_OK, error);
+
+    // Fetch the handle
+    error = ERROR_FAILED;
+    mojo::ScopedHandle handle;
+    file1->AsHandle(Capture(&error, &handle));
+    ASSERT_TRUE(file1.WaitForIncomingResponse());
+    EXPECT_EQ(ERROR_OK, error);
+
+    // Pull a file descriptor out of the scoped handle.
+    MojoPlatformHandle platform_handle;
+    MojoResult extract_result =
+        MojoExtractPlatformHandle(handle.release().value(), &platform_handle);
+    EXPECT_EQ(MOJO_RESULT_OK, extract_result);
+
+    // Pass this raw file descriptor to a base::File.
+    base::File raw_file(platform_handle);
+    ASSERT_TRUE(raw_file.IsValid());
+    EXPECT_EQ(5, raw_file.WriteAtCurrentPos("hello", 5));
+  }
+
+  {
+    // Reopen my_file.
+    FilePtr file2;
+    error = ERROR_FAILED;
+    directory->OpenFile("my_file", GetProxy(&file2), kFlagRead | kFlagOpen,
+                        Capture(&error));
+    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    EXPECT_EQ(ERROR_OK, error);
+
+    // Verify that we wrote data raw on the file descriptor.
+    mojo::Array<uint8_t> bytes_read;
+    error = ERROR_FAILED;
+    file2->Read(5, 0, WHENCE_FROM_BEGIN, Capture(&error, &bytes_read));
+    ASSERT_TRUE(file2.WaitForIncomingResponse());
+    EXPECT_EQ(ERROR_OK, error);
+    ASSERT_EQ(5u, bytes_read.size());
+    EXPECT_EQ(static_cast<uint8_t>('h'), bytes_read[0]);
+    EXPECT_EQ(static_cast<uint8_t>('e'), bytes_read[1]);
+    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read[2]);
+    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read[3]);
+    EXPECT_EQ(static_cast<uint8_t>('o'), bytes_read[4]);
+  }
 }
 
 }  // namespace

@@ -120,6 +120,35 @@ TEST_F(DirectoryImplTest, BasicRenameDelete) {
   EXPECT_EQ(ERROR_FAILED, error);
 }
 
+TEST_F(DirectoryImplTest, CantOpenDirectoriesAsFiles) {
+  DirectoryPtr directory;
+  GetTemporaryRoot(&directory);
+  Error error;
+
+  {
+    // Create a directory called 'my_file'
+    DirectoryPtr my_file_directory;
+    error = ERROR_FAILED;
+    directory->OpenDirectory(
+        "my_file", GetProxy(&my_file_directory),
+        kFlagRead | kFlagWrite | kFlagCreate,
+        Capture(&error));
+    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    EXPECT_EQ(ERROR_OK, error);
+  }
+
+  {
+    // Attempt to open that directory as a file. This must fail!
+    FilePtr file;
+    error = ERROR_FAILED;
+    directory->OpenFile("my_file", GetProxy(&file), kFlagRead | kFlagOpen,
+                        Capture(&error));
+    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    EXPECT_EQ(ERROR_NOT_A_FILE, error);
+  }
+}
+
+
 // TODO(vtl): Test delete flags.
 
 }  // namespace

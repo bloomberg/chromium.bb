@@ -33,8 +33,6 @@ interface File {
   Write(array<uint8> bytes_to_write, int64 offset, Whence whence)
       => (Error error, uint32 num_bytes_written);
 
-  // TODO(erg): Add stream variants of Read()/Write().
-
   // Gets the current file position. On success, |position| is the current
   // offset (in bytes) from the beginning of the file).
   Tell() => (Error error, int64 position);
@@ -60,4 +58,7 @@ interface File {
   // I.e., the access mode, etc. (as specified to |Directory::OpenFile()| by the
   // |open_flags| argument) as well as file position.
   Dup(File& file) => (Error error);
+
+  // Returns a handle to the file for raw access.
+  AsHandle() => (Error error, handle file_handle);
 };

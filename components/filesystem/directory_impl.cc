@@ -66,6 +66,20 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
     return;
   }
 
+  base::File::Info info;
+  if (!base_file.GetInfo(&info)) {
+    callback.Run(ERROR_FAILED);
+    return;
+  }
+
+  if (info.is_directory) {
+    // We must not return directories as files. In the file abstraction, we can
+    // fetch raw file descriptors over mojo pipes, and passing a file
+    // descriptor to a directory is a sandbox escape on Windows.
+    callback.Run(ERROR_NOT_A_FILE);
+    return;
+  }
+
   if (file.is_pending()) {
     new FileImpl(file.Pass(), base_file.Pass());
   }

@@ -10,11 +10,13 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "components/filesystem/util.h"
+#include "mojo/platform_handle/platform_handle_functions.h"
 
 static_assert(sizeof(off_t) <= sizeof(int64_t), "off_t too big");
 static_assert(sizeof(size_t) >= sizeof(uint32_t), "size_t too small");
 
 using base::Time;
+using mojo::ScopedHandle;
 
 namespace filesystem {
 
@@ -250,6 +252,44 @@ void FileImpl::Dup(mojo::InterfaceRequest<File> file,
   if (file.is_pending())
     new FileImpl(file.Pass(), new_file.Pass());
   callback.Run(ERROR_OK);
+}
+
+void FileImpl::AsHandle(const AsHandleCallback& callback) {
+  if (!file_.IsValid()) {
+    callback.Run(GetError(file_), ScopedHandle());
+    return;
+  }
+
+  base::File new_file = file_.Duplicate();
+  if (!new_file.IsValid()) {
+    callback.Run(GetError(new_file), ScopedHandle());
+    return;
+  }
+
+  base::File::Info info;
+  if (!new_file.GetInfo(&info)) {
+    callback.Run(ERROR_FAILED, ScopedHandle());
+    return;
+  }
+
+  // Perform one additional check right before we send the file's file
+  // descriptor over mojo. This is theoretically redundant, but given that
+  // passing a file descriptor to a directory is a sandbox escape on Windows,
+  // we should be absolutely paranoid.
+  if (info.is_directory) {
+    callback.Run(ERROR_NOT_A_FILE, ScopedHandle());
+    return;
+  }
+
+  MojoHandle mojo_handle;
+  MojoResult create_result = MojoCreatePlatformHandleWrapper(
+      new_file.TakePlatformFile(), &mojo_handle);
+  if (create_result != MOJO_RESULT_OK) {
+    callback.Run(ERROR_FAILED, ScopedHandle());
+    return;
+  }
+
+  callback.Run(ERROR_OK, ScopedHandle(mojo::Handle(mojo_handle)).Pass());
 }
 
 }  // namespace filesystem
