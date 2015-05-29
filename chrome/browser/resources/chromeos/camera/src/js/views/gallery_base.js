@@ -211,7 +211,10 @@ camera.views.GalleryBase.prototype.deleteSelection = function() {
     if (!result.isPositive)
       return;
     this.model.deletePicture(this.currentPicture().picture,
-        function() {},
+        function() {
+          if (this.entered && !this.currentPicture())
+            this.router.back();
+        }.bind(this),
         function() {
           // TODO(mtomasz): Handle errors.
         });
