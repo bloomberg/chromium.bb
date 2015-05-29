@@ -111,8 +111,7 @@ struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp) {
   return ndp;
 }
 
-struct NaClDesc *NaClDescIoDescFromHandleAllocCtor(NaClHandle handle,
-                                                   int flags) {
+struct NaClDesc *NaClDescIoMakeFromHandle(NaClHandle handle, int flags) {
   int posix_d;
 
 #if NACL_WINDOWS

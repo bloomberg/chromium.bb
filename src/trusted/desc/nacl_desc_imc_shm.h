@@ -12,6 +12,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/public/nacl_desc.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 
@@ -61,9 +62,6 @@ int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
 int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
                             nacl_off64_t           size,
                             int                    executable)
-    NACL_WUR;
-
-struct NaClDesc *NaClDescImcShmMake(NaClHandle handle, nacl_off64_t size)
     NACL_WUR;
 
 EXTERN_C_END

@@ -14,6 +14,7 @@
 
 #include "native_client/src/include/nacl_base.h"
 
+#include "native_client/src/public/nacl_desc.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 
 /*
@@ -44,8 +45,6 @@ static const size_t kMaxSyncSocketMessageLength = (size_t) INT_MAX;
 int NaClDescSyncSocketCtor(struct NaClDescSyncSocket  *self,
                            NaClHandle                 h)
     NACL_WUR;
-
-struct NaClDesc *NaClDescSyncSocketMake(NaClHandle handle);
 
 EXTERN_C_END
 

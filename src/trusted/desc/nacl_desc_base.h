@@ -19,6 +19,8 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/public/nacl_desc.h"
+
 /* For NaClHandle */
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
@@ -441,11 +443,6 @@ struct NaClDesc {
 int NaClDescCtor(struct NaClDesc *ndp) NACL_WUR;
 
 extern struct NaClDescVtbl const kNaClDescVtbl;
-
-struct NaClDesc *NaClDescRef(struct NaClDesc *ndp);
-
-/* when ref_count reaches zero, will call dtor and free */
-void NaClDescUnref(struct NaClDesc *ndp);
 
 /*
  * NaClDescSafeUnref is just like NaCDescUnref, except that ndp may be

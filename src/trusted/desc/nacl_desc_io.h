@@ -13,6 +13,7 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/public/nacl_desc.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 
 EXTERN_C_BEGIN
@@ -47,14 +48,13 @@ int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
 struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp);
 
 /*
- * NaClDescIoDescFromHandleAllocCtor takes ownership of the |handle|
- * argument -- when the returned NaClDesc object is destroyed
- * (refcount goes to 0), the handle will be closed.  The |flags|
- * argument should be one of NACL_ABI_O_RDONLY, NACL_ABI_O_RDWR,
- * NACL_ABI_O_WRONLY possibly bitwise ORed with NACL_ABI_O_APPEND.
+ * Deprecated alias.  TODO(mseaborn): Remove after Chromium uses the new name.
  */
-struct NaClDesc *NaClDescIoDescFromHandleAllocCtor(NaClHandle handle,
-                                                   int flags) NACL_WUR;
+static INLINE struct NaClDesc *NaClDescIoDescFromHandleAllocCtor(
+    NaClHandle handle, int flags) {
+  return NaClDescIoMakeFromHandle(handle, flags);
+}
+
 /*
  * NaClDescIoDescFromDescAllocCtor is essentially the same as
  * NaClDescIoDescFromHandleAllocCtor, except that instead of
