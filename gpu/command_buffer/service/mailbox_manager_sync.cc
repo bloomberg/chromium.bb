@@ -319,6 +319,7 @@ void MailboxManagerSync::PullTextureUpdates(uint32 sync_point) {
       if (texture_version == definition.version() ||
           definition.IsOlderThan(texture_version))
         continue;
+      texture_version = definition.version();
       needs_update.push_back(TextureUpdatePair(texture, definition));
     }
   }
