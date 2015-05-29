@@ -156,9 +156,15 @@ table_files = \
 	ka-in-g1.utb \
 	kannada.cti \
 	kh-in-g1.utb \
+	ko-2006.cti \
+	ko-2006-g1.ctb \
+	ko-2006-g2.ctb \
+	ko-chars.cti \
 	ko.cti \
 	ko-g1.ctb \
+	ko-g1-rules.cti \
 	ko-g2.ctb \
+	ko-g2-rules.cti \
 	kok.ctb \
 	kru.ctb \
 	ks-in-g1.utb \
