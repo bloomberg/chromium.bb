@@ -185,7 +185,7 @@ WebContentsImpl* EmulationHandler::GetWebContents() {
 void EmulationHandler::UpdateTouchEventEmulationState() {
   RenderWidgetHostImpl* widget_host =
       host_ ? host_->GetRenderWidgetHost() : nullptr;
-  if (!host_)
+  if (!widget_host)
     return;
   bool enabled = touch_emulation_enabled_ ||
       page_handler_->screencast_enabled();
@@ -199,7 +199,7 @@ void EmulationHandler::UpdateTouchEventEmulationState() {
 void EmulationHandler::UpdateDeviceEmulationState() {
   RenderWidgetHostImpl* widget_host =
       host_ ? host_->GetRenderWidgetHost() : nullptr;
-  if (!host_)
+  if (!widget_host)
     return;
   if (device_emulation_enabled_) {
     widget_host->Send(new ViewMsg_EnableDeviceEmulation(
