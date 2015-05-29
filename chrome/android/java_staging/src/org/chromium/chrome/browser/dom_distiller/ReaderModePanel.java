@@ -652,6 +652,8 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         mDistilledContentObserver.destroy();
         mDistilledContentObserver = null;
         mReaderModeHost.getTab().detachOverlayContentViewCore(mDistilledContentViewCore);
+
+        mDistilledContentViewCore.getWebContents().destroy();
         mDistilledContentViewCore.destroy();
         mDistilledContentViewCore = null;
     }
