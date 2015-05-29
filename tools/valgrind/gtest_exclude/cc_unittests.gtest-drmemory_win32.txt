@@ -26,3 +26,4 @@ LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame.RunSingleThread*
 
 # https://crbug.com/378574
 LayerTreeHostTestBreakSwapPromise.RunMultiThread_DirectRenderer_*
+LayerTreeHostTestBreakSwapPromise.RunMultiThread_DelegatingRenderer_MainThreadPaint
