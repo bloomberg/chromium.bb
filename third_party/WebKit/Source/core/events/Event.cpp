@@ -25,6 +25,7 @@
 
 #include "core/dom/StaticNodeList.h"
 #include "core/events/EventTarget.h"
+#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGElement.h"
 #include "wtf/CurrentTime.h"
@@ -212,8 +213,11 @@ void Event::initEventPath(Node& node)
     }
 }
 
-WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::path() const
+WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::path(ScriptState* scriptState) const
 {
+    if (m_target)
+        OriginsUsingFeatures::countOriginOrIsolatedWorldHumanReadableName(scriptState, *m_target, OriginsUsingFeatures::Feature::EventPath);
+
     if (!m_currentTarget) {
         ASSERT(m_eventPhase == Event::NONE);
         if (!m_eventPath) {

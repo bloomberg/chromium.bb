@@ -187,7 +187,7 @@ public:
     EventPath& eventPath() { ASSERT(m_eventPath); return *m_eventPath; }
     void initEventPath(Node&);
 
-    WillBeHeapVector<RefPtrWillBeMember<EventTarget>> path() const;
+    WillBeHeapVector<RefPtrWillBeMember<EventTarget>> path(ScriptState*) const;
 
     bool isBeingDispatched() const { return eventPhase(); }
 
