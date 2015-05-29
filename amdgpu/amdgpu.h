@@ -56,14 +56,6 @@ struct drm_amdgpu_info_hw_ip;
  */
 #define AMDGPU_TIMEOUT_INFINITE			0xffffffffffffffffull
 
-/**
- * The special flag to mark that this IB will re-used
- * by client and should not be automatically return back
- * to free pool by libdrm_amdgpu when submission is completed.
- *
- * \sa amdgpu_cs_ib_info
-*/
-#define AMDGPU_CS_REUSE_IB			0x2
 
 /*--------------------------------------------------------------------------*/
 /* ----------------------------- Enums ------------------------------------ */
@@ -969,9 +961,6 @@ int amdgpu_cs_alloc_ib(amdgpu_context_handle context,
  *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
- * \note Libdrm_amdgpu will guarantee that it will correctly detect when it
- *	is safe to return IB to free pool
- *
  * \sa amdgpu_cs_alloc_ib()
  *
 */
@@ -1006,14 +995,6 @@ int amdgpu_cs_free_ib(amdgpu_ib_handle handle);
  * \return   0 on success\n
  *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
- *
- * \note It is assumed that by default IB will be returned to free pool
- *	 automatically by libdrm_amdgpu when submission will completed.
- *	 It is possible for UMD to make decision to re-use the same IB in
- *	 this case it should be explicitly freed.\n
- *	 Accordingly, by default, after submission UMD should not touch passed
- *	 IBs. If UMD needs to re-use IB then the special flag AMDGPU_CS_REUSE_IB
- *	 must be passed.
  *
  * \note It is required to pass correct resource list with buffer handles
  *	 which will be accessible by command buffers from submission

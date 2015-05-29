@@ -97,42 +97,24 @@ struct amdgpu_bo_list {
 	uint32_t handle;
 };
 
-/*
- * There are three mutexes.
- * To avoid deadlock, only hold the mutexes in this order:
- * sequence_mutex -> pendings_mutex -> pool_mutex.
-*/
 struct amdgpu_context {
 	struct amdgpu_device *dev;
 	/** Mutex for accessing fences and to maintain command submissions
-	    and pending lists in good sequence. */
+	    in good sequence. */
 	pthread_mutex_t sequence_mutex;
 	/** Buffer for user fences */
 	struct amdgpu_ib *fence_ib;
 	/** The newest expired fence for the ring of the ip blocks. */
 	uint64_t expired_fences[AMDGPU_HW_IP_NUM][AMDGPU_HW_IP_INSTANCE_MAX_COUNT][AMDGPU_CS_MAX_RINGS];
-	/** Mutex for accessing pendings list. */
-	pthread_mutex_t pendings_mutex;
-	/** Pending IBs. */
-	struct list_head pendings[AMDGPU_HW_IP_NUM][AMDGPU_HW_IP_INSTANCE_MAX_COUNT][AMDGPU_CS_MAX_RINGS];
-	/** Freed IBs not yet in pool */
-	struct list_head freed;
-	/** Mutex for accessing free ib pool. */
-	pthread_mutex_t pool_mutex;
-	/** Internal free IB pools. */
-	struct list_head ib_pools[AMDGPU_CS_IB_SIZE_NUM];
 	/* context id*/
 	uint32_t id;
 };
 
 struct amdgpu_ib {
 	amdgpu_context_handle context;
-	struct list_head list_node;
 	amdgpu_bo_handle buf_handle;
 	void *cpu;
 	uint64_t virtual_mc_base_address;
-	enum amdgpu_cs_ib_size ib_size;
-	uint64_t cs_handle;
 };
 
 /**
