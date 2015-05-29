@@ -5,7 +5,7 @@
 __gCrWeb['languageDetection'] = {};
 
 
-new function() {
+(function() {
 /**
  * The cache of the text content that was extracted from the page
  */
@@ -22,7 +22,7 @@ __gCrWeb.languageDetection.activeRequests = 0;
 /**
  * Returns true if translation of the page is allowed.
  * Translation is not allowed when a "notranslate" meta tag is defined.
- * @return {Boolean} true if translation of the page is allowed.
+ * @return {boolean} true if translation of the page is allowed.
  */
 __gCrWeb.languageDetection['translationAllowed'] = function() {
   var metaTags = document.getElementsByTagName('meta');
@@ -42,7 +42,7 @@ __gCrWeb.languageDetection['translationAllowed'] = function() {
  * The function is case insensitive.
  * @param {String} httpEquiv Value of the "httpEquiv" attribute, has to be
  *     lower case.
- * @return {String} Value of the "content" attribute of the meta tag.
+ * @return {string} Value of the "content" attribute of the meta tag.
  */
 __gCrWeb.languageDetection['getMetaContentByHttpEquiv'] = function(httpEquiv) {
   var metaTags = document.getElementsByTagName('meta');
@@ -67,8 +67,8 @@ __gCrWeb.languageDetection['nonTextNodeNames'] = {
  * Walks a DOM tree to extract the text content.
  * Does not walk into a node when its name is in |nonTextNodeNames|.
  * @param {HTMLElement} node The DOM tree
- * @param {Integer} maxLen Output will be truncated to |maxLen|
- * @return {String} The text content
+ * @param {number} maxLen Output will be truncated to |maxLen|
+ * @return {string} The text content
  */
 __gCrWeb.languageDetection['getTextContent'] = function(node, maxLen) {
   if (!node || maxLen <= 0) {
@@ -161,5 +161,4 @@ __gCrWeb.languageDetection['retrieveBufferedTextContent'] = function() {
   return textContent;
 }
 
-}  // End of anonymous object
-
+}())  // End of anonymous function.

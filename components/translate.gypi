@@ -260,7 +260,7 @@
             ],
           },
           'includes': [
-            '../ios/web/js_compile.gypi',
+            '../ios/web/js_compile_checked.gypi',
           ],
         },
       ],

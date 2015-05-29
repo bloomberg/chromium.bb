@@ -433,7 +433,7 @@
         ],
       },
       'includes': [
-        'js_compile.gypi'
+        'js_compile_checked.gypi'
       ],
     },
     {

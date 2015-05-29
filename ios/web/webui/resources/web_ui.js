@@ -35,11 +35,11 @@ Function.prototype.bind = function(context) {
   }
 };
 
-/*
+/**
  * Sends message requesting favicon at the URL from imageSet for el. Sets
  * favicon-url attribute on el to the favicon URL.
  * @param {Element} el The DOM element to request the favicon for.
- * @param {string} imageset The CSS -webkit-image-set.
+ * @param {string} imageSet The CSS -webkit-image-set.
  */
 window['chrome']['requestFavicon'] = function(el, imageSet) {
   var cssUrls = imageSet.match(/url\([^\)]+\) \dx/g);
