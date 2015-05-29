@@ -170,6 +170,20 @@ camera.views.Album.prototype.updateButtons_ = function() {
 };
 
 /**
+ * Opens the current picture in the browser view.
+ * @private
+ */
+camera.views.Album.prototype.openCurrentInBrowser_ = function() {
+  this.router.navigate(
+      camera.Router.ViewIdentifier.BROWSER,
+      undefined /* opt_arguments */,
+      function() {
+        if (this.entered && !this.currentPicture())
+          this.router.back();
+      }.bind(this));
+};
+
+/**
  * @override
  */
 camera.views.Album.prototype.onCurrentIndexChanged = function(
@@ -238,7 +252,7 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
         return;
       }
       if (currentPicture)
-        this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
+        this.openCurrentInBrowser_();
       event.preventDefault();
       return;
     case 'Ctrl-U+0053':  // Ctrl+S for saving.
@@ -290,7 +304,7 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
   }.bind(this));
 
   img.addEventListener('dblclick', function() {
-    this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
+    this.openCurrentInBrowser_();
   }.bind(this));
 };
 
