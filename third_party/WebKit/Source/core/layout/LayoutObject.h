@@ -1155,7 +1155,6 @@ protected:
 protected:
     void setSelfMayNeedPaintInvalidation();
 
-    void clearLayoutRootIfNeeded() const;
     virtual void willBeDestroyed();
     void postDestroy();
 
@@ -1203,6 +1202,8 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    void clearLayoutRootIfNeeded() const;
+
     bool isInert() const;
 
     void updateImage(StyleImage*, StyleImage*);
