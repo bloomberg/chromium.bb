@@ -13,6 +13,7 @@
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/testing/SkiaForCoreTesting.h"
 #include "platform/text/TextStream.h"
 #include <gtest/gtest.h>
@@ -84,10 +85,11 @@ protected:
     void printSinglePage(SkCanvas& canvas)
     {
         IntRect pageRect(0, 0, kPageWidth, kPageHeight);
-        OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
+        SkPictureBuilder pictureBuilder(pageRect);
         printContext().begin(kPageWidth, kPageHeight);
-        printContext().outputLinkAndLinkedDestinations(*context, pageRect);
+        printContext().outputLinkAndLinkedDestinations(pictureBuilder.context(), pageRect);
         printContext().end();
+        pictureBuilder.endRecording()->playback(&canvas);
     }
 
     static String htmlForLink(int x, int y, int width, int height, const char* url, const char* children = nullptr)
