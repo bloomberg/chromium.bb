@@ -78,8 +78,13 @@ class BASE_EXPORT ProcessMemoryDump {
   //       by this provider. It is possible to specify nesting by using a
   //       path-like string (e.g., v8/isolate1/heap1, v8/isolate1/heap2).
   //       Leading or trailing slashes are not allowed.
+  //   guid: an optional identifier, unique among all processes within the
+  //       scope of a global dump. This is only relevant when using
+  //       AddOwnershipEdge(). If omitted, it will be automatically generated.
   // ProcessMemoryDump handles the memory ownership of its MemoryAllocatorDumps.
   MemoryAllocatorDump* CreateAllocatorDump(const std::string& absolute_name);
+  MemoryAllocatorDump* CreateAllocatorDump(const std::string& absolute_name,
+                                           const MemoryAllocatorDumpGuid& guid);
 
   // Looks up a MemoryAllocatorDump given its allocator and heap names, or
   // nullptr if not found.
@@ -108,6 +113,8 @@ class BASE_EXPORT ProcessMemoryDump {
   }
 
  private:
+  void AddAllocatorDumpInternal(MemoryAllocatorDump* mad);
+
   ProcessMemoryTotals process_totals_;
   bool has_process_totals_;
 

@@ -27,10 +27,22 @@ ProcessMemoryDump::~ProcessMemoryDump() {
 MemoryAllocatorDump* ProcessMemoryDump::CreateAllocatorDump(
     const std::string& absolute_name) {
   MemoryAllocatorDump* mad = new MemoryAllocatorDump(absolute_name, this);
-  DCHECK_EQ(0ul, allocator_dumps_.count(absolute_name));
-  allocator_dumps_storage_.push_back(mad);
-  allocator_dumps_[absolute_name] = mad;
+  AddAllocatorDumpInternal(mad);  // Takes ownership of |mad|.
   return mad;
+}
+
+MemoryAllocatorDump* ProcessMemoryDump::CreateAllocatorDump(
+    const std::string& absolute_name,
+    const MemoryAllocatorDumpGuid& guid) {
+  MemoryAllocatorDump* mad = new MemoryAllocatorDump(absolute_name, this, guid);
+  AddAllocatorDumpInternal(mad);  // Takes ownership of |mad|.
+  return mad;
+}
+
+void ProcessMemoryDump::AddAllocatorDumpInternal(MemoryAllocatorDump* mad) {
+  DCHECK_EQ(0ul, allocator_dumps_.count(mad->absolute_name()));
+  allocator_dumps_storage_.push_back(mad);
+  allocator_dumps_[mad->absolute_name()] = mad;
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::GetAllocatorDump(
