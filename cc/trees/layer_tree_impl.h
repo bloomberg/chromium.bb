@@ -131,6 +131,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void SetPropertyTrees(const PropertyTrees& property_trees) {
     property_trees_ = property_trees;
+    property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
   }
   PropertyTrees* property_trees() { return &property_trees_; }
 

@@ -23,6 +23,9 @@ template <typename T>
 PropertyTree<T>::~PropertyTree() {
 }
 
+TransformTree::TransformTree() : source_to_parent_updates_allowed_(true) {
+}
+
 template <typename T>
 int PropertyTree<T>::Insert(const T& tree_node, int parent_id) {
   DCHECK_GT(nodes_.size(), 0u);
@@ -137,12 +140,17 @@ bool TransformTree::Are2DAxisAligned(int source_id, int dest_id) const {
          transform.Preserves2dAxisAlignment();
 }
 
+bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
+  return (source_to_parent_updates_allowed() &&
+          node->parent_id != node->data.source_node_id);
+}
+
 void TransformTree::UpdateTransforms(int id) {
   TransformNode* node = Node(id);
   TransformNode* parent_node = parent(node);
   TransformNode* target_node = Node(node->data.target_id);
   if (node->data.needs_local_transform_update ||
-      node->parent_id != node->data.source_node_id)
+      NeedsSourceToParentUpdate(node))
     UpdateLocalTransform(node);
   UpdateScreenSpaceTransform(node, parent_node, target_node);
   UpdateSublayerScale(node);
@@ -274,14 +282,14 @@ bool TransformTree::CombineInversesBetween(int source_id,
 
 void TransformTree::UpdateLocalTransform(TransformNode* node) {
   gfx::Transform transform = node->data.post_local;
-  gfx::Vector2dF source_to_parent;
-  if (node->parent_id != node->data.source_node_id) {
+  if (NeedsSourceToParentUpdate(node)) {
     gfx::Transform to_parent;
     ComputeTransform(node->data.source_node_id, node->parent_id, &to_parent);
-    source_to_parent = to_parent.To2dTranslation();
+    node->data.source_to_parent = to_parent.To2dTranslation();
   }
-  transform.Translate(source_to_parent.x() - node->data.scroll_offset.x(),
-                      source_to_parent.y() - node->data.scroll_offset.y());
+  transform.Translate(
+      node->data.source_to_parent.x() - node->data.scroll_offset.x(),
+      node->data.source_to_parent.y() - node->data.scroll_offset.y());
   transform.PreconcatTransform(node->data.local);
   transform.PreconcatTransform(node->data.pre_local);
   node->data.set_to_parent(transform);

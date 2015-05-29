@@ -212,8 +212,13 @@ bool AddTransformNodeIfNeeded(
   }
 
   if (layer->IsContainerForFixedPositionLayers() || is_root) {
-    DCHECK(!is_scrollable || layer->transform().IsIdentity());
-    data_for_children->transform_fixed_parent = layer;
+    if (is_scrollable) {
+      DCHECK(!is_root);
+      DCHECK(layer->transform().IsIdentity());
+      data_for_children->transform_fixed_parent = layer->parent();
+    } else {
+      data_for_children->transform_fixed_parent = layer;
+    }
   }
   data_for_children->transform_tree_parent = layer;
 
@@ -386,6 +391,9 @@ void BuildPropertyTreesTopLevelInternal(LayerType* root_layer,
                                         const gfx::Rect& viewport,
                                         const gfx::Transform& device_transform,
                                         PropertyTrees* property_trees) {
+  if (!property_trees->needs_rebuild)
+    return;
+
   property_trees->sequence_number++;
 
   DataForRecursion<LayerType> data_for_recursion;
@@ -433,10 +441,6 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
     PropertyTrees* property_trees) {
-  // TODO(enne): hoist this out of here
-  if (!property_trees->needs_rebuild)
-    return;
-
   BuildPropertyTreesTopLevelInternal(
       root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
       viewport, device_transform, property_trees);

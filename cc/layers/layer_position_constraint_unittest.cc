@@ -975,6 +975,7 @@ TEST_F(LayerPositionConstraintTest,
   child_->SetIsContainerForFixedPositionLayers(true);
   grand_child_->SetPositionConstraint(fixed_to_top_left_);
   great_grand_child_->SetIsContainerForFixedPositionLayers(true);
+  great_grand_child_->SetScrollClipLayerId(root_->id());
   great_great_grand_child->SetPositionConstraint(fixed_to_top_left_);
 
   CommitAndUpdateImplPointers();

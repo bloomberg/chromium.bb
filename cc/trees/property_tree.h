@@ -106,6 +106,7 @@ struct CC_EXPORT TransformNodeData {
 
   // TODO(vollick): will be moved when accelerated effects are implemented.
   gfx::Vector2dF source_offset;
+  gfx::Vector2dF source_to_parent;
 
   void set_to_parent(const gfx::Transform& transform) {
     to_parent = transform;
@@ -175,6 +176,8 @@ class CC_EXPORT PropertyTree {
 
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
  public:
+  TransformTree();
+
   // Computes the change of basis transform from node |source_id| to |dest_id|.
   // The function returns false iff the inverse of a singular transform was
   // used (and the result should, therefore, not be trusted). Transforms may
@@ -212,6 +215,21 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   // Updates the parent, target, and screen space transforms and snapping.
   void UpdateTransforms(int id);
 
+  // A TransformNode's source_to_parent value is used to account for the fact
+  // that fixed-position layers are positioned by Blink wrt to their layer tree
+  // parent (their "source"), but are parented in the transform tree by their
+  // fixed-position container. This value needs to be updated on main-thread
+  // property trees (for position changes initiated by Blink), but not on the
+  // compositor thread (since the offset from a node corresponding to a
+  // fixed-position layer to its fixed-position container is unaffected by
+  // compositor-driven effects).
+  void set_source_to_parent_updates_allowed(bool allowed) {
+    source_to_parent_updates_allowed_ = allowed;
+  }
+  bool source_to_parent_updates_allowed() const {
+    return source_to_parent_updates_allowed_;
+  }
+
  private:
   // Returns true iff the node at |desc_id| is a descendant of the node at
   // |anc_id|.
@@ -240,6 +258,9 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
                                   TransformNode* target_node);
   void UpdateIsAnimated(TransformNode* node, TransformNode* parent_node);
   void UpdateSnapping(TransformNode* node);
+  bool NeedsSourceToParentUpdate(TransformNode* node);
+
+  bool source_to_parent_updates_allowed_;
 };
 
 class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {};

@@ -1216,6 +1216,7 @@ gfx::Vector2dF LayerImpl::ScrollDelta() const {
 
 void LayerImpl::SetScrollDelta(const gfx::Vector2dF& delta) {
   DCHECK(IsActive());
+  DCHECK(scrollable() || delta.IsZero());
   SetCurrentScrollOffset(scroll_offset_->ActiveBase() +
                          gfx::ScrollOffset(delta));
 }
