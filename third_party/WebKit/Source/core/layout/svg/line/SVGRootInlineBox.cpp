@@ -58,7 +58,7 @@ void SVGRootInlineBox::computePerCharacterLayoutInformation()
 
     // Perform SVG text layout phase two (see SVGTextLayoutEngine for details).
     SVGTextLayoutEngine characterLayout(layoutAttributes);
-    layoutCharactersInTextBoxes(this, characterLayout);
+    characterLayout.layoutCharactersInTextBoxes(this);
 
     // Perform SVG text layout phase three (see SVGTextChunkBuilder for details).
     characterLayout.finishLayout();
@@ -68,37 +68,6 @@ void SVGRootInlineBox::computePerCharacterLayoutInformation()
     FloatRectWillBeLayoutRect childRect;
     layoutChildBoxes(this, &childRect);
     layoutRootBox(childRect);
-}
-
-void SVGRootInlineBox::layoutCharactersInTextBoxes(InlineFlowBox* start, SVGTextLayoutEngine& characterLayout)
-{
-    for (InlineBox* child = start->firstChild(); child; child = child->nextOnLine()) {
-        if (child->isSVGInlineTextBox()) {
-            ASSERT(child->layoutObject().isSVGInlineText());
-            characterLayout.layoutInlineTextBox(toSVGInlineTextBox(child));
-        } else {
-            // Skip generated content.
-            Node* node = child->layoutObject().node();
-            if (!node)
-                continue;
-
-            SVGInlineFlowBox* flowBox = toSVGInlineFlowBox(child);
-            bool isTextPath = isSVGTextPathElement(*node);
-            if (isTextPath) {
-                // Build text chunks for all <textPath> children, using the line layout algorithm.
-                // This is needeed as text-anchor is just an additional startOffset for text paths.
-                SVGTextLayoutEngine lineLayout(characterLayout.layoutAttributes());
-                layoutCharactersInTextBoxes(flowBox, lineLayout);
-
-                characterLayout.beginTextPathLayout(&child->layoutObject(), lineLayout);
-            }
-
-            layoutCharactersInTextBoxes(flowBox, characterLayout);
-
-            if (isTextPath)
-                characterLayout.endTextPathLayout();
-        }
-    }
 }
 
 void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, FloatRectWillBeLayoutRect* childRect)

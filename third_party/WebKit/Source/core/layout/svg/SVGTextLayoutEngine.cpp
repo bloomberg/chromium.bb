@@ -25,6 +25,7 @@
 #include "core/layout/svg/SVGTextChunkBuilder.h"
 #include "core/layout/svg/SVGTextLayoutEngineBaseline.h"
 #include "core/layout/svg/SVGTextLayoutEngineSpacing.h"
+#include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGLengthContext.h"
@@ -43,6 +44,7 @@ SVGTextLayoutEngine::SVGTextLayoutEngine(Vector<SVGTextLayoutAttributes*>& layou
     , m_dy(0)
     , m_isVerticalText(false)
     , m_inPathLayout(false)
+    , m_textLengthSpacingInEffect(false)
     , m_textPathCalculator(0)
     , m_textPathLength(0)
     , m_textPathCurrentOffset(0)
@@ -140,32 +142,16 @@ void SVGTextLayoutEngine::recordTextFragment(SVGInlineTextBox* textBox)
     m_currentTextFragment = SVGTextFragment();
 }
 
-bool SVGTextLayoutEngine::parentDefinesTextLength(LayoutObject* parent) const
+void SVGTextLayoutEngine::beginTextPathLayout(SVGInlineFlowBox* flowBox)
 {
-    LayoutObject* currentParent = parent;
-    while (currentParent) {
-        if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromLayoutObject(currentParent)) {
-            SVGLengthContext lengthContext(textContentElement);
-            if (textContentElement->lengthAdjust()->currentValue()->enumValue() == SVGLengthAdjustSpacing && textContentElement->textLengthIsSpecifiedByUser())
-                return true;
-        }
-
-        if (currentParent->isSVGText())
-            return false;
-
-        currentParent = currentParent->parent();
-    }
-
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-void SVGTextLayoutEngine::beginTextPathLayout(LayoutObject* object, SVGTextLayoutEngine& lineLayout)
-{
-    ASSERT(object);
+    // Build text chunks for all <textPath> children, using the line layout algorithm.
+    // This is needeed as text-anchor is just an additional startOffset for text paths.
+    SVGTextLayoutEngine lineLayout(m_layoutAttributes);
+    lineLayout.m_textLengthSpacingInEffect = m_textLengthSpacingInEffect;
+    lineLayout.layoutCharactersInTextBoxes(flowBox);
 
     m_inPathLayout = true;
-    LayoutSVGTextPath* textPath = toLayoutSVGTextPath(object);
+    LayoutSVGTextPath* textPath = &toLayoutSVGTextPath(flowBox->layoutObject());
 
     Path path = textPath->layoutPath();
     if (path.isEmpty())
@@ -236,6 +222,42 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox)
         return;
 
     m_lineLayoutBoxes.append(textBox);
+}
+
+static bool definesTextLengthWithSpacing(const InlineFlowBox* start)
+{
+    SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromLayoutObject(&start->layoutObject());
+    return textContentElement
+        && textContentElement->lengthAdjust()->currentValue()->enumValue() == SVGLengthAdjustSpacing
+        && textContentElement->textLengthIsSpecifiedByUser();
+}
+
+void SVGTextLayoutEngine::layoutCharactersInTextBoxes(InlineFlowBox* start)
+{
+    bool textLengthSpacingInEffect = m_textLengthSpacingInEffect || definesTextLengthWithSpacing(start);
+    TemporaryChange<bool> textLengthSpacingScope(m_textLengthSpacingInEffect, textLengthSpacingInEffect);
+
+    for (InlineBox* child = start->firstChild(); child; child = child->nextOnLine()) {
+        if (child->isSVGInlineTextBox()) {
+            ASSERT(child->layoutObject().isSVGInlineText());
+            layoutInlineTextBox(toSVGInlineTextBox(child));
+        } else {
+            // Skip generated content.
+            Node* node = child->layoutObject().node();
+            if (!node)
+                continue;
+
+            SVGInlineFlowBox* flowBox = toSVGInlineFlowBox(child);
+            bool isTextPath = isSVGTextPathElement(*node);
+            if (isTextPath)
+                beginTextPathLayout(flowBox);
+
+            layoutCharactersInTextBoxes(flowBox);
+
+            if (isTextPath)
+                endTextPathLayout();
+        }
+    }
 }
 
 void SVGTextLayoutEngine::finishLayout()
@@ -315,9 +337,6 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
 {
     if (m_inPathLayout && !m_textPathCalculator)
         return;
-
-    LayoutObject* textParent = text.parent();
-    bool definesTextLength = textParent ? parentDefinesTextLength(textParent) : false;
 
     const SVGComputedStyle& svgStyle = style.svgStyle();
 
@@ -454,7 +473,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
 
         // Determine whether we have to start a new fragment.
         bool shouldStartNewFragment = m_dx || m_dy || m_isVerticalText || m_inPathLayout || angle || angle != lastAngle
-            || orientationAngle || applySpacingToNextCharacter || definesTextLength;
+            || orientationAngle || applySpacingToNextCharacter || m_textLengthSpacingInEffect;
 
         // If we already started a fragment, close it now.
         if (didStartTextFragment && shouldStartNewFragment) {

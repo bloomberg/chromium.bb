@@ -52,7 +52,6 @@ public:
 
 private:
     void reorderValueLists(Vector<SVGTextLayoutAttributes*>&);
-    void layoutCharactersInTextBoxes(InlineFlowBox*, SVGTextLayoutEngine&);
     void layoutChildBoxes(InlineFlowBox*, FloatRectWillBeLayoutRect* = 0);
     void layoutRootBox(const FloatRectWillBeLayoutRect&);
 

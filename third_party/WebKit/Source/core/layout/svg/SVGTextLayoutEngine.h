@@ -29,8 +29,10 @@
 
 namespace blink {
 
-class LayoutObject;
 class ComputedStyle;
+class InlineFlowBox;
+class LayoutObject;
+class SVGInlineFlowBox;
 class SVGInlineTextBox;
 
 // SVGTextLayoutEngine performs the second layout phase for SVG text.
@@ -48,10 +50,7 @@ public:
 
     Vector<SVGTextLayoutAttributes*>& layoutAttributes() { return m_layoutAttributes; }
 
-    void beginTextPathLayout(LayoutObject*, SVGTextLayoutEngine& lineLayout);
-    void endTextPathLayout();
-
-    void layoutInlineTextBox(SVGInlineTextBox*);
+    void layoutCharactersInTextBoxes(InlineFlowBox* start);
     void finishLayout();
 
 private:
@@ -60,8 +59,11 @@ private:
     void updateRelativePositionAdjustmentsIfNeeded(float dx, float dy);
 
     void recordTextFragment(SVGInlineTextBox*);
-    bool parentDefinesTextLength(LayoutObject*) const;
 
+    void beginTextPathLayout(SVGInlineFlowBox*);
+    void endTextPathLayout();
+
+    void layoutInlineTextBox(SVGInlineTextBox*);
     void layoutTextOnLineOrPath(SVGInlineTextBox*, const LayoutSVGInlineText&, const ComputedStyle&);
 
     bool currentLogicalCharacterAttributes(SVGTextLayoutAttributes*&);
@@ -84,6 +86,7 @@ private:
     float m_dy;
     bool m_isVerticalText;
     bool m_inPathLayout;
+    bool m_textLengthSpacingInEffect;
 
     // Text on path layout
     Path::PositionCalculator* m_textPathCalculator;
