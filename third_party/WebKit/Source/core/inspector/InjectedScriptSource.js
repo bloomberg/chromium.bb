@@ -2006,7 +2006,7 @@ CommandLineAPIImpl.prototype = {
         var result = [];
         for (var i = 0; i < types.length; ++i) {
             if (types[i] === "mouse")
-                push(result, "mousedown", "mouseup", "click", "dblclick", "mousemove", "mouseover", "mouseout", "mousewheel");
+                push(result, "click", "dblclick", "mousedown", "mouseeenter", "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup", "mouseleave", "mousewheel");
             else if (types[i] === "key")
                 push(result, "keydown", "keyup", "keypress", "textInput");
             else if (types[i] === "touch")
