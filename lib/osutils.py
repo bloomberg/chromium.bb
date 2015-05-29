@@ -1182,12 +1182,12 @@ def ResolveSymlink(file_name, root='/'):
 def IsInsideVm():
   """Return True if we are running inside a virtual machine.
 
-  This function only supports VirtualBox at the moment. The detection is based
-  on the model of the hard drive.
+  The detection is based on the model of the hard drive.
   """
   for blk_model in glob.glob('/sys/block/*/device/model'):
     if os.path.isfile(blk_model):
-      if ReadFile(blk_model).startswith('VBOX'):
+      model = ReadFile(blk_model)
+      if model.startswith('VBOX') or model.startswith('VMware'):
         return True
 
   return False

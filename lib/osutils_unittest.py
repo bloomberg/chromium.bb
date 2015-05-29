@@ -716,6 +716,9 @@ class IsInsideVmTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(self.mock_glob.call_args[0][0],
                      "/sys/block/*/device/model")
 
+    osutils.WriteFile(self.model_file, "VMware")
+    self.assertTrue(osutils.IsInsideVm())
+
   def testIsNotInsideVm(self):
     osutils.WriteFile(self.model_file, "ST1000DM000-1CH1")
     self.assertFalse(osutils.IsInsideVm())
