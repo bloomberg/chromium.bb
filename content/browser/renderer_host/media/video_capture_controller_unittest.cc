@@ -133,15 +133,13 @@ class VideoCaptureControllerTest : public testing::Test {
 
   scoped_refptr<media::VideoFrame> WrapI420Buffer(gfx::Size dimensions,
                                                   uint8* data) {
-    return media::VideoFrame::WrapExternalPackedMemory(
+    return media::VideoFrame::WrapExternalData(
         media::VideoFrame::I420,
         dimensions,
         gfx::Rect(dimensions),
         dimensions,
         data,
         media::VideoFrame::AllocationSize(media::VideoFrame::I420, dimensions),
-        base::SharedMemory::NULLHandle(),
-        0,
         base::TimeDelta());
   }
 

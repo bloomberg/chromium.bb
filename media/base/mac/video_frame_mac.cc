@@ -43,7 +43,7 @@ WrapVideoFrameInCVPixelBuffer(const VideoFrame& frame) {
   // represent I420 and NV12 frames. In addition, VideoFrame does not carry
   // colorimetric information, so this function assumes standard video range
   // and ITU Rec 709 primaries.
-  VideoFrame::Format video_frame_format = frame.format();
+  const VideoFrame::Format video_frame_format = frame.format();
   OSType cv_format;
   if (video_frame_format == VideoFrame::Format::I420) {
     cv_format = kCVPixelFormatType_420YpCbCr8Planar;

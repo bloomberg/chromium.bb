@@ -118,15 +118,13 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   // NATIVE_TEXTURE frames wrap a texture mailbox, which we don't have at the
   // moment.  We do not construct those frames.
   if (params_.requested_format.pixel_format != media::PIXEL_FORMAT_TEXTURE) {
-    *storage = media::VideoFrame::WrapExternalPackedMemory(
+    *storage = media::VideoFrame::WrapExternalData(
         media::VideoFrame::I420,
         coded_size,
         gfx::Rect(visible_size),
         visible_size,
         static_cast<uint8*>(output_buffer->data()),
         output_buffer->size(),
-        base::SharedMemory::NULLHandle(),
-        0,
         base::TimeDelta());
     DCHECK(*storage);
   }
