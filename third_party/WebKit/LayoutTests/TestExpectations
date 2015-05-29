@@ -1663,10 +1663,6 @@ crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedi
 
 crbug.com/472904 virtual/deferred/inspector/tracing/worker-events.html [ Pass Crash ]
 
-crbug.com/473532 http/tests/inspector/stacktraces/csp-inline-warning-contains-stacktrace.html [ Pass Failure ]
-crbug.com/473532 http/tests/inspector/stacktraces/csp-setInterval-warning-contains-stacktrace.html [ Pass Failure ]
-crbug.com/473532 http/tests/inspector/stacktraces/csp-setTimeout-warning-contains-stacktrace.html [ Pass Failure ]
-
 crbug.com/473626 fast/forms/form-submission-cancelable.html [ Pass Timeout ]
 crbug.com/473626 virtual/slimmingpaint/fast/forms/form-submission-cancelable.html [ Skip ]
 crbug.com/461041 fast/forms/calendar-picker/month-picker-ax.html [ Pass Timeout ]
