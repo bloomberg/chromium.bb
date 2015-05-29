@@ -720,6 +720,11 @@ TEST_F(ViewManagerTest, EmbedRemovesChildren) {
   EXPECT_TRUE(observer.was_removed());
   EXPECT_EQ(nullptr, view2->parent());
   EXPECT_TRUE(view1->children().empty());
+
+  // Run the message loop so the Embed() call above completes. Without this
+  // we may end up reconnecting to the test and rerunning the test, which is
+  // problematic since the other services don't shut down.
+  ASSERT_TRUE(DoRunLoopWithTimeout());
 }
 
 }  // namespace mojo
