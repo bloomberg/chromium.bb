@@ -14,6 +14,8 @@ import subprocess
 import stat
 import sys
 import time
+import urllib2
+import zipfile
 
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
@@ -40,12 +42,41 @@ COMPILER_RT_BUILD_DIR = os.path.join(LLVM_BUILD_DIR, '32bit-compiler-rt')
 CLANG_DIR = os.path.join(LLVM_DIR, 'tools', 'clang')
 LLD_DIR = os.path.join(LLVM_DIR, 'tools', 'lld')
 COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'projects', 'compiler-rt')
+LLVM_BUILD_TOOLS_DIR = os.path.abspath(
+    os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
 STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
 VERSION = '3.7.0'
+
+# URL for pre-built binaries.
+CDS_URL = 'https://commondatastorage.googleapis.com/chromium-browser-clang'
 
 LLVM_REPO_URL='https://llvm.org/svn/llvm-project'
 if 'LLVM_REPO_URL' in os.environ:
   LLVM_REPO_URL = os.environ['LLVM_REPO_URL']
+
+
+def DownloadUrl(url, output_file):
+  """Download url into output_file."""
+  CHUNK_SIZE = 4096
+  TOTAL_DOTS = 10
+  sys.stdout.write('Downloading %s ' % url)
+  sys.stdout.flush()
+  response = urllib2.urlopen(url)
+  total_size = int(response.info().getheader('Content-Length').strip())
+  with open(output_file, 'wb') as f:
+    bytes_done = 0
+    dots_printed = 0
+    while True:
+      chunk = response.read(CHUNK_SIZE)
+      if not chunk:
+        break
+      f.write(chunk)
+      bytes_done += len(chunk)
+      num_dots = TOTAL_DOTS * bytes_done / total_size
+      sys.stdout.write('.' * (num_dots - dots_printed))
+      sys.stdout.flush()
+      dots_printed = num_dots
+  print ' Done.'
 
 
 def ReadStampFile():
@@ -166,22 +197,16 @@ def CreateChromeToolsShim():
 
 
 def AddCMakeToPath():
-  """Look for CMake and add it to PATH if it's not there already."""
-  try:
-    # First check if cmake is already on PATH.
-    subprocess.call(['cmake', '--version'])
-    return
-  except OSError as e:
-    if e.errno != os.errno.ENOENT:
-      raise
-
-  cmake_dir = 'C:\\Program Files (x86)\\CMake\\bin'
-  if os.path.isdir(cmake_dir):
-    os.environ['PATH'] = os.environ.get('PATH', '') + os.pathsep + cmake_dir
-    return
-  print 'Failed to find CMake!'
-  sys.exit(1)
-
+  """Download CMake and add it to PATH."""
+  cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'cmake-3.2.2-win32-x86', 'bin')
+  if not os.path.exists(cmake_dir):
+    if not os.path.exists(LLVM_BUILD_TOOLS_DIR):
+      os.makedirs(LLVM_BUILD_TOOLS_DIR)
+    DownloadUrl(CDS_URL + '/tools/cmake-3.2.2-win32-x86.zip',
+                os.path.join(LLVM_BUILD_TOOLS_DIR, 'cmake.zip'))
+    fh = open(os.path.join(LLVM_BUILD_TOOLS_DIR, 'cmake.zip'), 'rb')
+    zipfile.ZipFile(fh).extractall(path=LLVM_BUILD_TOOLS_DIR)
+  os.environ['PATH'] = cmake_dir + os.pathsep + os.environ.get('PATH', '')
 
 vs_version = None
 def GetVSVersion():
