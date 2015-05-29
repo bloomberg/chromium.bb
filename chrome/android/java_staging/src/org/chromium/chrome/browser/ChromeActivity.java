@@ -451,7 +451,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
         super.onNewIntentWithNative(intent);
         if (mIntentHandler.shouldIgnoreIntent(this, intent)) return;
 
-        mIntentHandler.onNewIntent(intent);
+        mIntentHandler.onNewIntent(this, intent);
     }
 
     /**
@@ -584,8 +584,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
             }
 
             @Override
-            public void processUrlViewIntent(String url, String headers, TabOpenType tabOpenType,
-                    String externalAppId, int tabIdToBringToFront, Intent intent) {
+            public void processUrlViewIntent(String url, String referer, String headers,
+                    TabOpenType tabOpenType, String externalAppId, int tabIdToBringToFront,
+                    Intent intent) {
             }
         };
     }

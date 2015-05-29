@@ -1237,7 +1237,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
                     mActivity.getLastUserInteractionTime(), TabRedirectHandler.INVALID_ENTRY_INDEX);
 
             ExternalNavigationParams params = new ExternalNavigationParams.Builder(
-                    navigationParams.url, false, getReferrerUrl(),
+                    navigationParams.url, false, navigationParams.referrer,
                     navigationParams.pageTransitionType, navigationParams.isRedirect)
                     .setApplicationMustBeInForeground(true)
                     .setRedirectHandler(mTabRedirectHandler)
@@ -1251,15 +1251,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
                 return true;
             }
             return false;
-        }
-
-        private String getReferrerUrl() {
-            if (mSearchContentViewCore != null && mSearchContentViewCore.getWebContents() != null) {
-                return mSearchContentViewCore.getWebContents().getNavigationController()
-                        .getOriginalUrlForVisibleNavigationEntry();
-            } else {
-                return null;
-            }
         }
     }
 

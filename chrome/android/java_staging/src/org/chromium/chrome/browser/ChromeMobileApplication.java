@@ -390,6 +390,7 @@ public class ChromeMobileApplication extends ChromiumApplication {
         }
 
         ChildProcessLauncher.onSentToBackground();
+        IntentHandler.clearPendingReferrer();
     }
 
     /**

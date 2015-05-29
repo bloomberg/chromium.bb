@@ -500,7 +500,7 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
             mIntentWithEffect = false;
             if ((mIsOnFirstRun || getSavedInstanceState() == null) && intent != null
                     && !mIntentHandler.shouldIgnoreIntent(ChromeTabbedActivity.this, intent)) {
-                mIntentWithEffect = mIntentHandler.onNewIntent(intent);
+                mIntentWithEffect = mIntentHandler.onNewIntent(ChromeTabbedActivity.this, intent);
             }
 
             mCreatedTabOnStartup = getCurrentTabModel().getCount() > 0
@@ -606,8 +606,9 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
          * @param url The url from the intent.
          */
         @Override
-        public void processUrlViewIntent(String url, String headers, TabOpenType tabOpenType,
-                String externalAppId, int tabIdToBringToFront, Intent intent) {
+        public void processUrlViewIntent(String url, String referer, String headers,
+                TabOpenType tabOpenType, String externalAppId, int tabIdToBringToFront,
+                Intent intent) {
             TabModel tabModel = getCurrentTabModel();
             switch (tabOpenType) {
                 case REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB:
@@ -624,13 +625,13 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
                         tabToBeClobbered.reload();
                         RecordUserAction.record("MobileTabClobbered");
                     } else {
-                        launchIntent(url, headers, externalAppId, true, intent);
+                        launchIntent(url, referer, headers, externalAppId, true, intent);
                     }
                     RecordUserAction.record("MobileReceivedExternalIntent");
                     LaunchMetrics.recordHomeScreenLaunchIntoTab(url);
                     break;
                 case REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB:
-                    launchIntent(url, headers, externalAppId, false, intent);
+                    launchIntent(url, referer, headers, externalAppId, false, intent);
                     RecordUserAction.record("MobileReceivedExternalIntent");
                     break;
                 case BRING_TAB_TO_FRONT:
@@ -662,11 +663,11 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
                         currentTab.loadUrl(loadUrlParams);
                         RecordUserAction.record("MobileTabClobbered");
                     } else {
-                        launchIntent(url, headers, externalAppId, true, intent);
+                        launchIntent(url, referer, headers, externalAppId, true, intent);
                     }
                     break;
                 case OPEN_NEW_TAB:
-                    launchIntent(url, headers, externalAppId, true, intent);
+                    launchIntent(url, referer, headers, externalAppId, true, intent);
                     RecordUserAction.record("MobileReceivedExternalIntent");
                     break;
                 case OPEN_NEW_INCOGNITO_TAB:
@@ -686,7 +687,7 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
                             getTabCreator(true).launchUrl(
                                     url, TabLaunchType.FROM_LINK, intent, mIntentHandlingTimeMs);
                         } else {
-                            getTabCreator(true).launchUrlFromExternalApp(url, headers,
+                            getTabCreator(true).launchUrlFromExternalApp(url, referer, headers,
                                     externalAppId, true, intent, mIntentHandlingTimeMs);
                             RecordUserAction.record("MobileReceivedExternalIntent");
                         }
@@ -1065,14 +1066,15 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
      * Launch a URL from an intent.
      *
      * @param url           The url from the intent.
+     * @param referer       Optional referer URL to be used.
      * @param headers       Optional headers to be sent when opening the URL.
      * @param externalAppId External app id.
      * @param forceNewTab   Whether to force the URL to be launched in a new tab or to fall
      *                      back to the default behavior for making that determination.
      * @param intent        The original intent.
      */
-    private void launchIntent(String url, String headers, String externalAppId,
-            boolean forceNewTab, Intent intent) {
+    private void launchIntent(String url, String referer, String headers,
+            String externalAppId, boolean forceNewTab, Intent intent) {
         if (mUIInitialized) {
             mLayoutManager.hideOverview(false);
             mToolbarHelper.finishAnimations();
@@ -1084,8 +1086,8 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
             getCurrentTabCreator().launchUrl(url, TabLaunchType.FROM_LINK, intent,
                     mIntentHandlingTimeMs);
         } else {
-            getTabCreator(false).launchUrlFromExternalApp(url, headers, externalAppId,
-                    forceNewTab, intent, mIntentHandlingTimeMs);
+            getTabCreator(false).launchUrlFromExternalApp(url, referer, headers,
+                    externalAppId, forceNewTab, intent, mIntentHandlingTimeMs);
         }
     }
 

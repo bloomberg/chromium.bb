@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.provider.Browser;
 import android.speech.RecognizerResultsIntent;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -64,6 +67,8 @@ public class IntentHandlerTest extends NativeLibraryTestBase {
             IntentHandler.GOOGLECHROME_SCHEME + "://navigate?reddit.com",
             IntentHandler.GOOGLECHROME_SCHEME + "://navigate?urlreddit.com",
     };
+
+    private static final String GOOGLE_URL = "https://www.google.com";
 
     private IntentHandler mIntentHandler;
     private Intent mIntent;
@@ -176,5 +181,101 @@ public class IntentHandlerTest extends NativeLibraryTestBase {
                                    + "with http://www.google.com",
                            query),
                 query.indexOf("http://www.google.com") == 0);
+    }
+
+    @UiThreadTest
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testRefererUrl_extraReferrer() {
+        // Check that EXTRA_REFERRER is not accepted with a random URL.
+        Context context = getInstrumentation().getTargetContext();
+        Intent foreignIntent = new Intent(Intent.ACTION_VIEW);
+        foreignIntent.putExtra(Intent.EXTRA_REFERRER, GOOGLE_URL);
+        assertNull(IntentHandler.getReferrerUrl(foreignIntent, context));
+        assertNull(IntentHandler.getExtraHeadersFromIntent(foreignIntent, true));
+
+        // Check that EXTRA_REFERRER with android-app URL works.
+        final String appUrl = "android-app://com.application/http/www.application.com";
+        Intent appIntent = new Intent(Intent.ACTION_VIEW);
+        appIntent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(appUrl));
+        assertEquals(appUrl, IntentHandler.getReferrerUrl(appIntent, context));
+        assertNull(IntentHandler.getExtraHeadersFromIntent(appIntent, false));
+
+        // Check that EXTRA_REFERRER_NAME with android-app works.
+        Intent nameIntent = new Intent(Intent.ACTION_VIEW);
+        nameIntent.putExtra(Intent.EXTRA_REFERRER_NAME, appUrl);
+        assertEquals(appUrl, IntentHandler.getReferrerUrl(nameIntent, context));
+        assertNull(IntentHandler.getExtraHeadersFromIntent(nameIntent, false));
+    }
+
+    @UiThreadTest
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testRefererUrl_extraHeadersInclReferer() {
+        // Check that invalid header specified in EXTRA_HEADERS isn't used.
+        Bundle bundle = new Bundle();
+        bundle.putString("X-custom-header", "X-custom-value");
+        bundle.putString("Referer", GOOGLE_URL);
+        Intent headersIntent = new Intent(Intent.ACTION_VIEW);
+        headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
+        assertEquals("X-custom-header: X-custom-value",
+                IntentHandler.getExtraHeadersFromIntent(headersIntent, false));
+    }
+
+    @UiThreadTest
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testRefererUrl_extraHeadersInclRefererMultiple() {
+        // Check that invalid header specified in EXTRA_HEADERS isn't used.
+        Bundle bundle = new Bundle();
+        bundle.putString("X-custom-header", "X-custom-value");
+        bundle.putString("X-custom-header-2", "X-custom-value-2");
+        bundle.putString("Referer", GOOGLE_URL);
+        Intent headersIntent = new Intent(Intent.ACTION_VIEW);
+        headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
+        assertEquals("X-custom-header-2: X-custom-value-2\nX-custom-header: X-custom-value",
+                IntentHandler.getExtraHeadersFromIntent(headersIntent, false));
+    }
+
+    @UiThreadTest
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testRefererUrl_extraHeadersOnlyReferer() {
+        // Check that invalid header specified in EXTRA_HEADERS isn't used.
+        Bundle bundle = new Bundle();
+        bundle.putString("Referer", GOOGLE_URL);
+        Intent headersIntent = new Intent(Intent.ACTION_VIEW);
+        headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
+        assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent, false));
+    }
+
+    @UiThreadTest
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testRefererUrl_extraHeadersAndExtraReferrer() {
+        Context context = getInstrumentation().getTargetContext();
+        String validReferer = "android-app://package/http/url";
+        Bundle bundle = new Bundle();
+        bundle.putString("Referer", GOOGLE_URL);
+        Intent headersIntent = new Intent(Intent.ACTION_VIEW);
+        headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
+        headersIntent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(validReferer));
+        assertEquals(validReferer, IntentHandler.getReferrerUrl(headersIntent, context));
+        assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent, true));
+    }
+
+    @UiThreadTest
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testRefererUrl_extraHeadersValidReferrer() {
+        Context context = getInstrumentation().getTargetContext();
+        String validReferer = "android-app://package/http/url";
+        Bundle bundle = new Bundle();
+        bundle.putString("Referer", validReferer);
+        Intent headersIntent = new Intent(Intent.ACTION_VIEW);
+        headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
+        assertNull(IntentHandler.getReferrerUrl(headersIntent, context));
+        assertEquals("Referer: " + validReferer,
+                IntentHandler.getExtraHeadersFromIntent(headersIntent, false));
     }
 }

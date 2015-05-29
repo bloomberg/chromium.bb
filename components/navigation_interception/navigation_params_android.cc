@@ -18,10 +18,19 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationParams(
   ScopedJavaLocalRef<jstring> jstring_url =
       ConvertUTF8ToJavaString(env, params.url().spec());
 
+  ScopedJavaLocalRef<jstring> jstring_referrer =
+      ConvertUTF8ToJavaString(env, params.referrer().url.spec());
+
   return Java_NavigationParams_create(
-      env, jstring_url.obj(), params.is_post(), params.has_user_gesture(),
-      params.transition_type(), params.is_redirect(),
-      params.is_external_protocol(), params.is_main_frame(),
+      env,
+      jstring_url.obj(),
+      jstring_referrer.obj(),
+      params.is_post(),
+      params.has_user_gesture(),
+      params.transition_type(),
+      params.is_redirect(),
+      params.is_external_protocol(),
+      params.is_main_frame(),
       has_user_gesture_carryover);
 }
 

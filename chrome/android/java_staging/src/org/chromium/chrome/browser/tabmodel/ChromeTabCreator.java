@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -221,6 +222,7 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
      * several link from the same application, we reuse the same tab so as to not open too many
      * tabs.
      * @param url the URL to open
+     * @param referer The referer url if provided, null otherwise.
      * @param headers HTTP headers to send alongside the URL.
      * @param appId the ID of the application that triggered that URL navigation.
      * @param forceNewTab whether the URL should be opened in a new tab. If false, an existing tab
@@ -229,8 +231,8 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
      * @param intentTimestamp the time the intent was received.
      * @return the tab the URL was opened in, could be a new tab or a reused one.
      */
-    public ChromeTab launchUrlFromExternalApp(String url, String headers, String appId,
-            boolean forceNewTab, Intent intent, long intentTimestamp) {
+    public ChromeTab launchUrlFromExternalApp(String url, String referer, String headers,
+            String appId, boolean forceNewTab, Intent intent, long intentTimestamp) {
         assert !mIncognito;
         boolean isLaunchedFromChrome = TextUtils.equals(appId, mActivity.getPackageName());
         if (forceNewTab && !isLaunchedFromChrome) {
@@ -240,6 +242,9 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setIntentReceivedTimestamp(intentTimestamp);
             loadUrlParams.setVerbatimHeaders(headers);
+            if (referer != null) {
+                loadUrlParams.setReferrer(new Referrer(referer, 1 /* WebReferrerPolicyDefault */));
+            }
             return createNewTab(loadUrlParams, TabLaunchType.FROM_EXTERNAL_APP, null, intent);
         }
 

@@ -244,7 +244,7 @@ public class ChromeLauncherActivity extends Activity
     }
 
     @Override
-    public void processUrlViewIntent(String url, String headers,
+    public void processUrlViewIntent(String url, String referer, String headers,
             IntentHandler.TabOpenType tabOpenType, String externalAppId,
             int tabIdToBringToFront, Intent intent) {
         assert false;

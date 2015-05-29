@@ -19,6 +19,7 @@ import android.test.mock.MockPackageManager;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.CommandLine;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
@@ -903,6 +904,25 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 null,
                 OverrideUrlLoadingResult.NO_OVERRIDE,
                 IGNORE);
+    }
+
+    @SmallTest
+    public void testReferrerExtra() {
+        String referrer = "http://www.google.com";
+        check("http://youtube.com:90/foo/bar",
+                referrer,
+                false, /* incognito */
+                PageTransition.FORM_SUBMIT,
+                REDIRECT,
+                true,
+                false,
+                null,
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                START_ACTIVITY);
+        assertEquals(Uri.parse(referrer),
+                mDelegate.startActivityIntent.getParcelableExtra(Intent.EXTRA_REFERRER));
+        assertEquals(1, mDelegate.startActivityIntent.getIntExtra(
+                IntentHandler.EXTRA_REFERRER_ID, 0));
     }
 
     private static class TestExternalNavigationDelegate implements ExternalNavigationDelegate {

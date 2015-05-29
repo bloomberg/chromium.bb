@@ -10,10 +10,8 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
@@ -24,6 +22,7 @@ import com.google.android.apps.chrome.R;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -499,12 +498,14 @@ public class DocumentActivity extends CompositorChromeActivity {
             loadUrlParams.setIntentReceivedTimestamp(getOnCreateTimestampUptimeMs());
         }
 
-        Uri referrerExtra = null;
-        if (isIntentChromeOrFirstParty
-                && IntentUtils.safeGetParcelableExtra(intent, Intent.EXTRA_REFERRER) != null) {
-            referrerExtra = (Uri) IntentUtils.safeGetParcelableExtra(intent, Intent.EXTRA_REFERRER);
-            loadUrlParams.setReferrer(new Referrer(
-                    referrerExtra.toString(), 1 /* WebReferrerPolicyDefault */));
+        String refererUrl = IntentHandler.getReferrerUrl(intent, this);
+        if (refererUrl != null) {
+            loadUrlParams.setReferrer(new Referrer(refererUrl, 1 /* WebReferrerPolicyDefault */));
+        }
+
+        String extraHeaders = IntentHandler.getExtraHeadersFromIntent(intent, refererUrl != null);
+        if (extraHeaders != null) {
+            loadUrlParams.setVerbatimHeaders(extraHeaders);
         }
 
         if (pendingData != null) {
@@ -512,8 +513,12 @@ public class DocumentActivity extends CompositorChromeActivity {
                 loadUrlParams.setPostData(pendingData.postData);
                 loadUrlParams.setLoadType(LoadURLType.BROWSER_INITIATED_HTTP_POST);
             }
-            loadUrlParams.setVerbatimHeaders(pendingData.extraHeaders);
-            loadUrlParams.setReferrer(pendingData.referrer);
+            if (pendingData.extraHeaders != null) {
+                loadUrlParams.setVerbatimHeaders(pendingData.extraHeaders);
+            }
+            if (pendingData.referrer != null) {
+                loadUrlParams.setReferrer(pendingData.referrer);
+            }
             mDocumentTab.getTabRedirectHandler().updateIntent(pendingData.originalIntent);
         } else {
             if (getIntent() != null) {

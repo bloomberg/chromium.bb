@@ -1190,7 +1190,8 @@ public class ChromeTab extends Tab {
             // http://crbug.com/448977: If a new tab is closed by this overriding, we should open an
             // Intent in a new tab when Chrome receives it again.
             ExternalNavigationParams params = new ExternalNavigationParams.Builder(
-                    url, isIncognito(), getReferrerUrl(), navigationParams.pageTransitionType,
+                    url, isIncognito(), navigationParams.referrer,
+                    navigationParams.pageTransitionType,
                     navigationParams.isRedirect)
                     .setTab(ChromeTab.this)
                     .setApplicationMustBeInForeground(true)
@@ -1235,19 +1236,6 @@ public class ChromeTab extends Tab {
                     : R.string.unreachable_navigation_warning;
             getWebContents().addMessageToDevToolsConsole(
                     ConsoleMessageLevel.WARNING, getApplicationContext().getString(resId, url));
-        }
-
-        private String getReferrerUrl() {
-            // At this point, ContentView#getCurrentUrl() has already changed to
-            // be the URL to be loaded, so we need to check the last navigation entry
-            // instead. Note that for browser-initiated navigations, we rely on the
-            // mLastLoadUrlAddress check bailing early.
-            if (getWebContents() != null) {
-                return getWebContents().getNavigationController()
-                        .getOriginalUrlForVisibleNavigationEntry();
-            } else {
-                return null;
-            }
         }
     }
 
