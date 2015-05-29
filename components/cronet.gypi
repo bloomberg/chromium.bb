@@ -374,6 +374,25 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
+          'target_name': 'cronet_perf_test_apk',
+          'type': 'none',
+          'dependencies': [
+            'cronet_java',
+            'cronet_stub',
+          ],
+          'variables': {
+            'apk_name': 'CronetPerfTest',
+            'java_in_dir': 'cronet/android/test/javaperftests',
+            'is_test_apk': 1,
+            'native_lib_target': 'libcronet',
+            'proguard_enabled': 'true',
+            'proguard_flags_paths': [
+              'cronet/android/proguard.cfg',
+            ],
+          },
+          'includes': [ '../build/java_apk.gypi' ],
+        },
+        {
           'target_name': 'cronet_package',
           'type': 'none',
           'dependencies': [
