@@ -21781,6 +21781,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicStreamFactory.BadPacketLossEvents5"
+    enum="QuicBadPacketLossEvents">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    A count of how often a user hits 1, 2, 3, 4 and 5 bad packet loss events for
+    port 443. Recorded whenever QUIC has bad packet loss (high packet loss on
+    multiple consecutive connections).
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicStreamFactory.QuicIsDisabled" enum="Ports">
   <owner>rtenneti@chromium.org</owner>
   <summary>
@@ -62644,6 +62654,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Port mismatch: IPv6 IPv6"/>
   <int value="6" label="Address and port match: IPv4 IPv4"/>
   <int value="7" label="Address and port match: IPv6 IPv6"/>
+</enum>
+
+<enum name="QuicBadPacketLossEvents" type="int">
+  <int value="1" label="ONE_PACKET_LOST"/>
+  <int value="2" label="TWO_PACKETS_LOST"/>
+  <int value="3" label="THREE_PACKETS_LOST"/>
+  <int value="4" label="FOUR_PACKETS_LOST"/>
+  <int value="5" label="FIVE_PACKETS_LOST"/>
 </enum>
 
 <enum name="QuicDiskCacheAPICall" type="int">

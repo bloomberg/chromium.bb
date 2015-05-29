@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_stream_factory.h"
 
+#include <algorithm>
 #include <set>
 
 #include "base/cpu.h"
@@ -15,6 +16,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
@@ -836,6 +838,14 @@ bool QuicStreamFactory::OnHandshakeConfirmed(QuicClientSession* session,
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicStreamFactory.QuicIsDisabled", port);
   }
 
+  // Collect data for port 443 for packet loss events.
+  if (port == 443 && max_number_of_lossy_connections_ > 0) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        base::StringPrintf("Net.QuicStreamFactory.BadPacketLossEvents%d",
+                           max_number_of_lossy_connections_),
+        std::min(number_of_lossy_connections_[port],
+                 max_number_of_lossy_connections_));
+  }
   return true;
 }
 
