@@ -125,7 +125,7 @@ class GCMDriverDesktop : public GCMDriver,
  private:
   class IOWorker;
 
-  typedef Tuple<std::string, std::string, std::string> TokenTuple;
+  typedef base::Tuple<std::string, std::string, std::string> TokenTuple;
   struct TokenTupleComparer {
     bool operator()(const TokenTuple& a, const TokenTuple& b) const;
   };

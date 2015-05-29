@@ -383,13 +383,13 @@ TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
   EXPECT_CALL(*send_algorithm, GetCongestionWindow())
       .WillRepeatedly(Return(kMaxPacketSize * 10));
   EXPECT_CALL(*stream2, OnCanWrite())
-      .WillOnce(IgnoreResult(Invoke(CreateFunctor(
+      .WillOnce(testing::IgnoreResult(Invoke(CreateFunctor(
           &session_, &TestSession::SendStreamData, stream2->id()))));
   EXPECT_CALL(*stream4, OnCanWrite())
-      .WillOnce(IgnoreResult(Invoke(CreateFunctor(
+      .WillOnce(testing::IgnoreResult(Invoke(CreateFunctor(
           &session_, &TestSession::SendStreamData, stream4->id()))));
   EXPECT_CALL(*stream6, OnCanWrite())
-      .WillOnce(IgnoreResult(Invoke(CreateFunctor(
+      .WillOnce(testing::IgnoreResult(Invoke(CreateFunctor(
           &session_, &TestSession::SendStreamData, stream6->id()))));
 
   // Expect that we only send one packet, the writes from different streams

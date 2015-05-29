@@ -406,21 +406,21 @@ class StreamCopyOrMoveImpl
   void NotifyOnStartUpdate(const FileSystemURL& url) {
     if (file_system_context_->GetUpdateObservers(url.type())) {
       file_system_context_->GetUpdateObservers(url.type())
-          ->Notify(&FileUpdateObserver::OnStartUpdate, MakeTuple(url));
+          ->Notify(&FileUpdateObserver::OnStartUpdate, base::MakeTuple(url));
     }
   }
 
   void NotifyOnModifyFile(const FileSystemURL& url) {
     if (file_system_context_->GetChangeObservers(url.type())) {
       file_system_context_->GetChangeObservers(url.type())
-          ->Notify(&FileChangeObserver::OnModifyFile, MakeTuple(url));
+          ->Notify(&FileChangeObserver::OnModifyFile, base::MakeTuple(url));
     }
   }
 
   void NotifyOnEndUpdate(const FileSystemURL& url) {
     if (file_system_context_->GetUpdateObservers(url.type())) {
       file_system_context_->GetUpdateObservers(url.type())
-          ->Notify(&FileUpdateObserver::OnEndUpdate, MakeTuple(url));
+          ->Notify(&FileUpdateObserver::OnEndUpdate, base::MakeTuple(url));
     }
   }
 

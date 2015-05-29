@@ -82,6 +82,8 @@ using media::VideoDecodeAccelerator;
 namespace content {
 namespace {
 
+using base::MakeTuple;
+
 // Values optionally filled in from flags; see main() below.
 // The syntax of multiple test videos is:
 //  test-video1;test-video2;test-video3
@@ -1177,17 +1179,18 @@ void VideoDecodeAcceleratorTest::OutputLogFile(
 class VideoDecodeAcceleratorParamTest
     : public VideoDecodeAcceleratorTest,
       public ::testing::WithParamInterface<
-        Tuple<int, int, int, ResetPoint, ClientState, bool, bool> > {
+        base::Tuple<int, int, int, ResetPoint, ClientState, bool, bool> > {
 };
 
 // Helper so that gtest failures emit a more readable version of the tuple than
 // its byte representation.
 ::std::ostream& operator<<(
     ::std::ostream& os,
-    const Tuple<int, int, int, ResetPoint, ClientState, bool, bool>& t) {
-  return os << get<0>(t) << ", " << get<1>(t) << ", " << get<2>(t) << ", "
-            << get<3>(t) << ", " << get<4>(t) << ", " << get<5>(t) << ", "
-            << get<6>(t);
+    const base::Tuple<int, int, int, ResetPoint, ClientState, bool, bool>& t) {
+  return os << base::get<0>(t) << ", " << base::get<1>(t) << ", "
+            << base::get<2>(t) << ", " << base::get<3>(t) << ", "
+            << base::get<4>(t) << ", " << base::get<5>(t) << ", "
+            << base::get<6>(t);
 }
 
 // Wait for |note| to report a state and if it's not |expected_state| then
@@ -1211,13 +1214,13 @@ enum { kMinSupportedNumConcurrentDecoders = 3 };
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
 TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
-  size_t num_concurrent_decoders = get<0>(GetParam());
-  const size_t num_in_flight_decodes = get<1>(GetParam());
-  int num_play_throughs = get<2>(GetParam());
-  const int reset_point = get<3>(GetParam());
-  const int delete_decoder_state = get<4>(GetParam());
-  bool test_reuse_delay = get<5>(GetParam());
-  const bool render_as_thumbnails = get<6>(GetParam());
+  size_t num_concurrent_decoders = base::get<0>(GetParam());
+  const size_t num_in_flight_decodes = base::get<1>(GetParam());
+  int num_play_throughs = base::get<2>(GetParam());
+  const int reset_point = base::get<3>(GetParam());
+  const int delete_decoder_state = base::get<4>(GetParam());
+  bool test_reuse_delay = base::get<5>(GetParam());
+  const bool render_as_thumbnails = base::get<6>(GetParam());
 
   if (test_video_files_.size() > 1)
     num_concurrent_decoders = test_video_files_.size();

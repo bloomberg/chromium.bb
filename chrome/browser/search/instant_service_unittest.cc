@@ -109,8 +109,8 @@ TEST_F(InstantServiceEnabledTest, SendsSearchURLsToRenderer) {
   ASSERT_TRUE(msg);
   ChromeViewMsg_SetSearchURLs::Param params;
   ChromeViewMsg_SetSearchURLs::Read(msg, &params);
-  std::vector<GURL> search_urls = get<0>(params);
-  GURL new_tab_page_url = get<1>(params);
+  std::vector<GURL> search_urls = base::get<0>(params);
+  GURL new_tab_page_url = base::get<1>(params);
   EXPECT_EQ(2U, search_urls.size());
   EXPECT_EQ("https://www.google.com/alt#quux=", search_urls[0].spec());
   EXPECT_EQ("https://www.google.com/url?bar=", search_urls[1].spec());

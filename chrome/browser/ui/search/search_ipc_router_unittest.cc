@@ -162,10 +162,11 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
     const IPC::Message* message = process()->sink().GetFirstMessageMatching(
         ChromeViewMsg_SearchBoxSetDisplayInstantResults::ID);
     EXPECT_NE(static_cast<const IPC::Message*>(NULL), message);
-    Tuple<bool> display_instant_results_param;
+    base::Tuple<bool> display_instant_results_param;
     ChromeViewMsg_SearchBoxSetDisplayInstantResults::Read(
         message, &display_instant_results_param);
-    EXPECT_EQ(expected_param_value, get<0>(display_instant_results_param));
+    EXPECT_EQ(expected_param_value,
+              base::get<0>(display_instant_results_param));
   }
 
   MockSearchIPCRouterDelegate* mock_delegate() { return &delegate_; }

@@ -16,7 +16,7 @@
 #ifndef EXTENSIONS_COMMON_EXTENSION_UTILITY_MESSAGES_H_
 #define EXTENSIONS_COMMON_EXTENSION_UTILITY_MESSAGES_H_
 
-typedef std::vector<Tuple<SkBitmap, base::FilePath>> DecodedImages;
+typedef std::vector<base::Tuple<SkBitmap, base::FilePath>> DecodedImages;
 
 #endif  //  EXTENSIONS_COMMON_EXTENSION_UTILITY_MESSAGES_H_
 

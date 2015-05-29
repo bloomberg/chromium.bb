@@ -22,44 +22,46 @@ class ResourceMessageReplyParams;
 template <class ObjT, class Method>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple<>& arg) {
+                                  const base::Tuple<>& arg) {
   (obj->*method)(params);
 }
 
 template <class ObjT, class Method, class A>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple<A>& arg) {
-  (obj->*method)(params, get<0>(arg));
+                                  const base::Tuple<A>& arg) {
+  (obj->*method)(params, base::get<0>(arg));
 }
 
 template<class ObjT, class Method, class A, class B>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple<A, B>& arg) {
-  (obj->*method)(params, get<0>(arg), get<1>(arg));
+                                  const base::Tuple<A, B>& arg) {
+  (obj->*method)(params, base::get<0>(arg), base::get<1>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple<A, B, C>& arg) {
-  (obj->*method)(params, get<0>(arg), get<1>(arg), get<2>(arg));
+                                  const base::Tuple<A, B, C>& arg) {
+  (obj->*method)(params, base::get<0>(arg), base::get<1>(arg),
+                 base::get<2>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple<A, B, C, D>& arg) {
-  (obj->*method)(params, get<0>(arg), get<1>(arg), get<2>(arg), get<3>(arg));
+                                  const base::Tuple<A, B, C, D>& arg) {
+  (obj->*method)(params, base::get<0>(arg), base::get<1>(arg),
+                 base::get<2>(arg), base::get<3>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D, class E>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const Tuple<A, B, C, D, E>& arg) {
-  (obj->*method)(params, get<0>(arg), get<1>(arg), get<2>(arg), get<3>(arg),
-                 get<4>(arg));
+                                  const base::Tuple<A, B, C, D, E>& arg) {
+  (obj->*method)(params, base::get<0>(arg), base::get<1>(arg),
+                 base::get<2>(arg), base::get<3>(arg), base::get<4>(arg));
 }
 
 // Used to dispatch resource replies. In most cases, you should not call this

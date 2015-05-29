@@ -145,9 +145,9 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   InputMsg_HandleInputEvent::Param params;
   if (!InputMsg_HandleInputEvent::Read(&message, &params))
     return;
-  const WebInputEvent* event = get<0>(params);
-  ui::LatencyInfo latency_info = get<1>(params);
-  bool is_keyboard_shortcut = get<2>(params);
+  const WebInputEvent* event = base::get<0>(params);
+  ui::LatencyInfo latency_info = base::get<1>(params);
+  bool is_keyboard_shortcut = base::get<2>(params);
   DCHECK(event);
 
   const bool send_ack = WebInputEventTraits::WillReceiveAckFromRenderer(*event);

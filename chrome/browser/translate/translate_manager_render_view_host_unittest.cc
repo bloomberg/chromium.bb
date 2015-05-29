@@ -135,14 +135,14 @@ class TranslateManagerRenderViewHostTest
         ChromeViewMsg_TranslatePage::ID);
     if (!message)
       return false;
-    Tuple<int, std::string, std::string, std::string> translate_param;
+    base::Tuple<int, std::string, std::string, std::string> translate_param;
     ChromeViewMsg_TranslatePage::Read(message, &translate_param);
     // Ignore get<0>(translate_param) which is the page seq no.
     // Ignore get<1>(translate_param) which is the script injected in the page.
     if (original_lang)
-      *original_lang = get<2>(translate_param);
+      *original_lang = base::get<2>(translate_param);
     if (target_lang)
-      *target_lang = get<3>(translate_param);
+      *target_lang = base::get<3>(translate_param);
     return true;
   }
 

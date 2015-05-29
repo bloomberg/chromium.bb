@@ -551,7 +551,7 @@ void FileSystemOperationImpl::DidWrite(
   if (complete && write_status != FileWriterDelegate::ERROR_WRITE_NOT_STARTED) {
     DCHECK(operation_context_);
     operation_context_->change_observers()->Notify(
-        &FileChangeObserver::OnModifyFile, MakeTuple(url));
+        &FileChangeObserver::OnModifyFile, base::MakeTuple(url));
   }
 
   StatusCallback cancel_callback = cancel_callback_;

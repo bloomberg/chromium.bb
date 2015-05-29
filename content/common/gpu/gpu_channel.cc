@@ -112,7 +112,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
     }
 
     if (message.type() == GpuCommandBufferMsg_InsertSyncPoint::ID) {
-      Tuple<bool> retire;
+      base::Tuple<bool> retire;
       IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
       if (!GpuCommandBufferMsg_InsertSyncPoint::ReadSendParam(&message,
                                                               &retire)) {
@@ -120,7 +120,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
         Send(reply);
         return true;
       }
-      if (!future_sync_points_ && !get<0>(retire)) {
+      if (!future_sync_points_ && !base::get<0>(retire)) {
         LOG(ERROR) << "Untrusted contexts can't create future sync points";
         reply->set_reply_error();
         Send(reply);
@@ -133,7 +133,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
           FROM_HERE,
           base::Bind(&GpuChannelMessageFilter::InsertSyncPointOnMainThread,
                      gpu_channel_, sync_point_manager_, message.routing_id(),
-                     get<0>(retire), sync_point));
+                     base::get<0>(retire), sync_point));
       handled = true;
     }
 

@@ -41,7 +41,7 @@ bool SyncMessageSchema<SendParamType, ReplyParamType>::ReadSendParam(
 
 template <class SendParamType, class ReplyParamType>
 bool SyncMessageSchema<SendParamType, ReplyParamType>::ReadReplyParam(
-    const Message* msg, typename TupleTypes<ReplyParam>::ValueTuple* p) {
+    const Message* msg, typename base::TupleTypes<ReplyParam>::ValueTuple* p) {
   PickleIterator iter = SyncMessage::GetDataIterator(msg);
   return ReadParam(msg, &iter, p);
 }

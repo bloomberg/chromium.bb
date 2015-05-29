@@ -97,7 +97,8 @@ bool DataProviderMessageFilter::OnMessageReceived(
   if (request_id == request_id_) {
     ResourceMsg_DataReceived::Schema::Param arg;
     if (ResourceMsg_DataReceived::Read(&message, &arg)) {
-      OnReceivedData(get<0>(arg), get<1>(arg), get<2>(arg), get<3>(arg));
+      OnReceivedData(base::get<0>(arg), base::get<1>(arg),
+                     base::get<2>(arg), base::get<3>(arg));
       return true;
     }
   }

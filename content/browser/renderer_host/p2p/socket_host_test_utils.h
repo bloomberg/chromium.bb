@@ -106,7 +106,7 @@ MATCHER_P(MatchPacketMessage, packet_content, "") {
     return false;
   P2PMsg_OnDataReceived::Param params;
   P2PMsg_OnDataReceived::Read(arg, &params);
-  return get<2>(params) == packet_content;
+  return base::get<2>(params) == packet_content;
 }
 
 MATCHER_P(MatchIncomingSocketMessage, address, "") {
@@ -115,7 +115,7 @@ MATCHER_P(MatchIncomingSocketMessage, address, "") {
   P2PMsg_OnIncomingTcpConnection::Param params;
   P2PMsg_OnIncomingTcpConnection::Read(
       arg, &params);
-  return get<1>(params) == address;
+  return base::get<1>(params) == address;
 }
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TEST_UTILS_H_

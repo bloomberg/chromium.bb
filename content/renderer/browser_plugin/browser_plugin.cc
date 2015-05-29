@@ -182,15 +182,15 @@ void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
   guest_crashed_ = false;
 
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  get<1>(param).frame.AssignTo(frame.get());
+  base::get<1>(param).frame.AssignTo(frame.get());
 
   EnableCompositing(true);
   compositing_helper_->OnCompositorFrameSwapped(
       frame.Pass(),
-      get<1>(param).producing_route_id,
-      get<1>(param).output_surface_id,
-      get<1>(param).producing_host_id,
-      get<1>(param).shared_memory_handle);
+      base::get<1>(param).producing_route_id,
+      base::get<1>(param).output_surface_id,
+      base::get<1>(param).producing_host_id,
+      base::get<1>(param).shared_memory_handle);
 }
 
 void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {

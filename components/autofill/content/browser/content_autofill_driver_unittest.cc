@@ -91,13 +91,13 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
-    Tuple<int, FormData> autofill_param;
+    base::Tuple<int, FormData> autofill_param;
     if (!AutofillMsg_FillForm::Read(message, &autofill_param))
       return false;
     if (page_id)
-      *page_id = get<0>(autofill_param);
+      *page_id = base::get<0>(autofill_param);
     if (results)
-      *results = get<1>(autofill_param);
+      *results = base::get<1>(autofill_param);
     process()->sink().ClearMessages();
     return true;
   }
@@ -112,13 +112,13 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
-    Tuple<int, FormData> autofill_param;
+    base::Tuple<int, FormData> autofill_param;
     if (!AutofillMsg_PreviewForm::Read(message, &autofill_param))
       return false;
     if (page_id)
-      *page_id = get<0>(autofill_param);
+      *page_id = base::get<0>(autofill_param);
     if (results)
-      *results = get<1>(autofill_param);
+      *results = base::get<1>(autofill_param);
     process()->sink().ClearMessages();
     return true;
   }
@@ -135,12 +135,12 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
-    Tuple<std::vector<FormDataPredictions> > autofill_param;
+    base::Tuple<std::vector<FormDataPredictions> > autofill_param;
     if (!AutofillMsg_FieldTypePredictionsAvailable::Read(message,
                                                          &autofill_param))
       return false;
     if (predictions)
-      *predictions = get<0>(autofill_param);
+      *predictions = base::get<0>(autofill_param);
 
     process()->sink().ClearMessages();
     return true;
@@ -155,7 +155,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
         process()->sink().GetFirstMessageMatching(messageID);
     if (!message)
       return false;
-    Tuple<base::string16> autofill_param;
+    base::Tuple<base::string16> autofill_param;
     switch (messageID) {
       case AutofillMsg_FillFieldWithValue::ID:
         if (!AutofillMsg_FillFieldWithValue::Read(message, &autofill_param))
@@ -174,7 +174,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
         NOTREACHED();
     }
     if (value)
-      *value = get<0>(autofill_param);
+      *value = base::get<0>(autofill_param);
     process()->sink().ClearMessages();
     return true;
   }

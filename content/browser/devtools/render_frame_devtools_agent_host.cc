@@ -530,12 +530,12 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return;
   if (page_handler_)
-    page_handler_->OnSwapCompositorFrame(get<1>(param).metadata);
+    page_handler_->OnSwapCompositorFrame(base::get<1>(param).metadata);
   if (input_handler_)
-    input_handler_->OnSwapCompositorFrame(get<1>(param).metadata);
+    input_handler_->OnSwapCompositorFrame(base::get<1>(param).metadata);
   if (frame_trace_recorder_) {
     frame_trace_recorder_->OnSwapCompositorFrame(
-        render_frame_host_, get<1>(param).metadata);
+        render_frame_host_, base::get<1>(param).metadata);
   }
 }
 

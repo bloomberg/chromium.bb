@@ -25,6 +25,7 @@
 #include "third_party/WebKit/public/web/WebHeap.h"
 #include "url/gurl.h"
 
+using base::MakeTuple;
 using blink::WebFileInfo;
 using blink::WebFileSystemCallbacks;
 using blink::WebFileSystemEntry;

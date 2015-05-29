@@ -135,12 +135,13 @@ bool ProxyTestHarnessBase::SupportsInterface(const char* name) {
   if (!reply_msg)
     return false;
 
-  TupleTypes<PpapiMsg_SupportsInterface::ReplyParam>::ValueTuple reply_data;
+  base::TupleTypes<PpapiMsg_SupportsInterface::ReplyParam>::ValueTuple
+      reply_data;
   EXPECT_TRUE(PpapiMsg_SupportsInterface::ReadReplyParam(
       reply_msg, &reply_data));
 
   sink().ClearMessages();
-  return get<0>(reply_data);
+  return base::get<0>(reply_data);
 }
 
 // PluginProxyTestHarness ------------------------------------------------------

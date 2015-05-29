@@ -264,7 +264,7 @@ bool Unpacker::AddDecodedImage(const base::FilePath& path) {
     return false;
   }
 
-  internal_data_->decoded_images.push_back(MakeTuple(image_bitmap, path));
+  internal_data_->decoded_images.push_back(base::MakeTuple(image_bitmap, path));
   return true;
 }
 

@@ -246,7 +246,7 @@ void RenderFrameProxy::OnCompositorFrameSwapped(const IPC::Message& message) {
     return;
 
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  get<0>(param).frame.AssignTo(frame.get());
+  base::get<0>(param).frame.AssignTo(frame.get());
 
   if (!compositing_helper_.get()) {
     compositing_helper_ =
@@ -255,10 +255,10 @@ void RenderFrameProxy::OnCompositorFrameSwapped(const IPC::Message& message) {
   }
   compositing_helper_->OnCompositorFrameSwapped(
       frame.Pass(),
-      get<0>(param).producing_route_id,
-      get<0>(param).output_surface_id,
-      get<0>(param).producing_host_id,
-      get<0>(param).shared_memory_handle);
+      base::get<0>(param).producing_route_id,
+      base::get<0>(param).output_surface_id,
+      base::get<0>(param).producing_host_id,
+      base::get<0>(param).shared_memory_handle);
 }
 
 void RenderFrameProxy::OnDisownOpener() {

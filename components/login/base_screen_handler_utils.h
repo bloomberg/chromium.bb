@@ -70,7 +70,7 @@ typename UnwrapConstRef<Arg>::Type ParseArg(const base::ListValue* args) {
 template <typename... Args, size_t... Ns>
 inline void DispatchToCallback(const base::Callback<void(Args...)>& callback,
                                const base::ListValue* args,
-                               IndexSequence<Ns...> indexes) {
+                               base::IndexSequence<Ns...> indexes) {
   DCHECK(args);
   DCHECK_EQ(sizeof...(Args), args->GetSize());
 
@@ -80,7 +80,8 @@ inline void DispatchToCallback(const base::Callback<void(Args...)>& callback,
 template <typename... Args>
 void CallbackWrapper(const base::Callback<void(Args...)>& callback,
                      const base::ListValue* args) {
-  DispatchToCallback(callback, args, MakeIndexSequence<sizeof...(Args)>());
+  DispatchToCallback(callback, args,
+                     base::MakeIndexSequence<sizeof...(Args)>());
 }
 
 

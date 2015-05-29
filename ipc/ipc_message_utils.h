@@ -503,8 +503,8 @@ struct IPC_EXPORT ParamTraits<base::TimeTicks> {
 };
 
 template <>
-struct ParamTraits<Tuple<>> {
-  typedef Tuple<> param_type;
+struct ParamTraits<base::Tuple<>> {
+  typedef base::Tuple<> param_type;
   static void Write(Message* m, const param_type& p) {
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
@@ -515,112 +515,112 @@ struct ParamTraits<Tuple<>> {
 };
 
 template <class A>
-struct ParamTraits<Tuple<A>> {
-  typedef Tuple<A> param_type;
+struct ParamTraits<base::Tuple<A>> {
+  typedef base::Tuple<A> param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, get<0>(p));
+    WriteParam(m, base::get<0>(p));
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    return ReadParam(m, iter, &get<0>(*r));
+    return ReadParam(m, iter, &base::get<0>(*r));
   }
   static void Log(const param_type& p, std::string* l) {
-    LogParam(get<0>(p), l);
+    LogParam(base::get<0>(p), l);
   }
 };
 
 template <class A, class B>
-struct ParamTraits< Tuple<A, B> > {
-  typedef Tuple<A, B> param_type;
+struct ParamTraits<base::Tuple<A, B>> {
+  typedef base::Tuple<A, B> param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, get<0>(p));
-    WriteParam(m, get<1>(p));
+    WriteParam(m, base::get<0>(p));
+    WriteParam(m, base::get<1>(p));
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    return (ReadParam(m, iter, &get<0>(*r)) &&
-            ReadParam(m, iter, &get<1>(*r)));
+    return (ReadParam(m, iter, &base::get<0>(*r)) &&
+            ReadParam(m, iter, &base::get<1>(*r)));
   }
   static void Log(const param_type& p, std::string* l) {
-    LogParam(get<0>(p), l);
+    LogParam(base::get<0>(p), l);
     l->append(", ");
-    LogParam(get<1>(p), l);
+    LogParam(base::get<1>(p), l);
   }
 };
 
 template <class A, class B, class C>
-struct ParamTraits< Tuple<A, B, C> > {
-  typedef Tuple<A, B, C> param_type;
+struct ParamTraits<base::Tuple<A, B, C>> {
+  typedef base::Tuple<A, B, C> param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, get<0>(p));
-    WriteParam(m, get<1>(p));
-    WriteParam(m, get<2>(p));
+    WriteParam(m, base::get<0>(p));
+    WriteParam(m, base::get<1>(p));
+    WriteParam(m, base::get<2>(p));
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    return (ReadParam(m, iter, &get<0>(*r)) &&
-            ReadParam(m, iter, &get<1>(*r)) &&
-            ReadParam(m, iter, &get<2>(*r)));
+    return (ReadParam(m, iter, &base::get<0>(*r)) &&
+            ReadParam(m, iter, &base::get<1>(*r)) &&
+            ReadParam(m, iter, &base::get<2>(*r)));
   }
   static void Log(const param_type& p, std::string* l) {
-    LogParam(get<0>(p), l);
+    LogParam(base::get<0>(p), l);
     l->append(", ");
-    LogParam(get<1>(p), l);
+    LogParam(base::get<1>(p), l);
     l->append(", ");
-    LogParam(get<2>(p), l);
+    LogParam(base::get<2>(p), l);
   }
 };
 
 template <class A, class B, class C, class D>
-struct ParamTraits< Tuple<A, B, C, D> > {
-  typedef Tuple<A, B, C, D> param_type;
+struct ParamTraits<base::Tuple<A, B, C, D>> {
+  typedef base::Tuple<A, B, C, D> param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, get<0>(p));
-    WriteParam(m, get<1>(p));
-    WriteParam(m, get<2>(p));
-    WriteParam(m, get<3>(p));
+    WriteParam(m, base::get<0>(p));
+    WriteParam(m, base::get<1>(p));
+    WriteParam(m, base::get<2>(p));
+    WriteParam(m, base::get<3>(p));
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    return (ReadParam(m, iter, &get<0>(*r)) &&
-            ReadParam(m, iter, &get<1>(*r)) &&
-            ReadParam(m, iter, &get<2>(*r)) &&
-            ReadParam(m, iter, &get<3>(*r)));
+    return (ReadParam(m, iter, &base::get<0>(*r)) &&
+            ReadParam(m, iter, &base::get<1>(*r)) &&
+            ReadParam(m, iter, &base::get<2>(*r)) &&
+            ReadParam(m, iter, &base::get<3>(*r)));
   }
   static void Log(const param_type& p, std::string* l) {
-    LogParam(get<0>(p), l);
+    LogParam(base::get<0>(p), l);
     l->append(", ");
-    LogParam(get<1>(p), l);
+    LogParam(base::get<1>(p), l);
     l->append(", ");
-    LogParam(get<2>(p), l);
+    LogParam(base::get<2>(p), l);
     l->append(", ");
-    LogParam(get<3>(p), l);
+    LogParam(base::get<3>(p), l);
   }
 };
 
 template <class A, class B, class C, class D, class E>
-struct ParamTraits< Tuple<A, B, C, D, E> > {
-  typedef Tuple<A, B, C, D, E> param_type;
+struct ParamTraits<base::Tuple<A, B, C, D, E>> {
+  typedef base::Tuple<A, B, C, D, E> param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, get<0>(p));
-    WriteParam(m, get<1>(p));
-    WriteParam(m, get<2>(p));
-    WriteParam(m, get<3>(p));
-    WriteParam(m, get<4>(p));
+    WriteParam(m, base::get<0>(p));
+    WriteParam(m, base::get<1>(p));
+    WriteParam(m, base::get<2>(p));
+    WriteParam(m, base::get<3>(p));
+    WriteParam(m, base::get<4>(p));
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    return (ReadParam(m, iter, &get<0>(*r)) &&
-            ReadParam(m, iter, &get<1>(*r)) &&
-            ReadParam(m, iter, &get<2>(*r)) &&
-            ReadParam(m, iter, &get<3>(*r)) &&
-            ReadParam(m, iter, &get<4>(*r)));
+    return (ReadParam(m, iter, &base::get<0>(*r)) &&
+            ReadParam(m, iter, &base::get<1>(*r)) &&
+            ReadParam(m, iter, &base::get<2>(*r)) &&
+            ReadParam(m, iter, &base::get<3>(*r)) &&
+            ReadParam(m, iter, &base::get<4>(*r)));
   }
   static void Log(const param_type& p, std::string* l) {
-    LogParam(get<0>(p), l);
+    LogParam(base::get<0>(p), l);
     l->append(", ");
-    LogParam(get<1>(p), l);
+    LogParam(base::get<1>(p), l);
     l->append(", ");
-    LogParam(get<2>(p), l);
+    LogParam(base::get<2>(p), l);
     l->append(", ");
-    LogParam(get<3>(p), l);
+    LogParam(base::get<3>(p), l);
     l->append(", ");
-    LogParam(get<4>(p), l);
+    LogParam(base::get<4>(p), l);
   }
 };
 
@@ -788,7 +788,7 @@ template <class ParamType>
 class MessageSchema {
  public:
   typedef ParamType Param;
-  typedef typename TupleTypes<ParamType>::ParamTuple RefParam;
+  typedef typename base::TupleTypes<ParamType>::ParamTuple RefParam;
 
   static void Write(Message* msg, const RefParam& p) IPC_MSG_NOINLINE;
   static bool Read(const Message* msg, Param* p) IPC_MSG_NOINLINE;
@@ -861,14 +861,14 @@ template <class SendParamType, class ReplyParamType>
 class SyncMessageSchema {
  public:
   typedef SendParamType SendParam;
-  typedef typename TupleTypes<SendParam>::ParamTuple RefSendParam;
+  typedef typename base::TupleTypes<SendParam>::ParamTuple RefSendParam;
   typedef ReplyParamType ReplyParam;
 
   static void Write(Message* msg, const RefSendParam& send) IPC_MSG_NOINLINE;
   static bool ReadSendParam(const Message* msg, SendParam* p) IPC_MSG_NOINLINE;
   static bool ReadReplyParam(
       const Message* msg,
-      typename TupleTypes<ReplyParam>::ValueTuple* p) IPC_MSG_NOINLINE;
+      typename base::TupleTypes<ReplyParam>::ValueTuple* p) IPC_MSG_NOINLINE;
 
   template<class T, class S, class Method>
   static bool DispatchWithSendParams(bool ok, const SendParam& send_params,
@@ -876,7 +876,7 @@ class SyncMessageSchema {
                                      Method func) {
     Message* reply = SyncMessage::GenerateReply(msg);
     if (ok) {
-      typename TupleTypes<ReplyParam>::ValueTuple reply_params;
+      typename base::TupleTypes<ReplyParam>::ValueTuple reply_params;
       DispatchToMethod(obj, func, send_params, &reply_params);
       WriteParam(reply, reply_params);
       LogReplyParamsToMessage(reply_params, msg);
@@ -895,7 +895,7 @@ class SyncMessageSchema {
                                                Method func) {
     Message* reply = SyncMessage::GenerateReply(msg);
     if (ok) {
-      Tuple<Message&> t = MakeRefTuple(*reply);
+      base::Tuple<Message&> t = base::MakeRefTuple(*reply);
       ConnectMessageAndReply(msg, reply);
       DispatchToMethod(obj, func, send_params, &t);
     } else {

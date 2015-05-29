@@ -294,15 +294,15 @@ base::TimeDelta GetTickDuration(const base::TimeTicks& time) {
 
 void OnGetWindowClientsFromUI(
     // The tuple contains process_id, frame_id, client_uuid.
-    const std::vector<Tuple<int, int, std::string>>& clients_info,
+    const std::vector<base::Tuple<int, int, std::string>>& clients_info,
     const GURL& script_url,
     const GetClientsCallback& callback) {
   scoped_ptr<ServiceWorkerClients> clients(new ServiceWorkerClients);
 
   for (const auto& it : clients_info) {
     ServiceWorkerClientInfo info =
-        ServiceWorkerProviderHost::GetWindowClientInfoOnUI(get<0>(it),
-                                                           get<1>(it));
+        ServiceWorkerProviderHost::GetWindowClientInfoOnUI(base::get<0>(it),
+                                                           base::get<1>(it));
 
     // If the request to the provider_host returned an empty
     // ServiceWorkerClientInfo, that means that it wasn't possible to associate
@@ -317,7 +317,7 @@ void OnGetWindowClientsFromUI(
     if (info.url.GetOrigin() != script_url.GetOrigin())
       continue;
 
-    info.client_uuid = get<2>(it);
+    info.client_uuid = base::get<2>(it);
     clients->push_back(info);
   }
 
@@ -325,12 +325,13 @@ void OnGetWindowClientsFromUI(
                           base::Bind(callback, base::Passed(&clients)));
 }
 
-void AddWindowClient(ServiceWorkerProviderHost* host,
-                     std::vector<Tuple<int, int, std::string>>* client_info) {
+void AddWindowClient(
+    ServiceWorkerProviderHost* host,
+    std::vector<base::Tuple<int, int, std::string>>* client_info) {
   if (host->client_type() != blink::WebServiceWorkerClientTypeWindow)
     return;
-  client_info->push_back(
-      MakeTuple(host->process_id(), host->frame_id(), host->client_uuid()));
+  client_info->push_back(base::MakeTuple(host->process_id(), host->frame_id(),
+                                         host->client_uuid()));
 }
 
 void AddNonWindowClient(ServiceWorkerProviderHost* host,
@@ -1729,7 +1730,7 @@ void ServiceWorkerVersion::GetWindowClients(
     const ServiceWorkerClientQueryOptions& options) {
   DCHECK(options.client_type == blink::WebServiceWorkerClientTypeWindow ||
          options.client_type == blink::WebServiceWorkerClientTypeAll);
-  std::vector<Tuple<int, int, std::string>> clients_info;
+  std::vector<base::Tuple<int, int, std::string>> clients_info;
   if (!options.include_uncontrolled) {
     for (auto& controllee : controllee_map_)
       AddWindowClient(controllee.second, &clients_info);

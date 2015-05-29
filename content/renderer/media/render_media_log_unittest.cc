@@ -44,9 +44,9 @@ class RenderMediaLogTest : public testing::Test {
       return std::vector<media::MediaLogEvent>();
     }
 
-    Tuple<std::vector<media::MediaLogEvent>> events;
+    base::Tuple<std::vector<media::MediaLogEvent>> events;
     ViewHostMsg_MediaLogEvents::Read(msg, &events);
-    return get<0>(events);
+    return base::get<0>(events);
   }
 
  private:

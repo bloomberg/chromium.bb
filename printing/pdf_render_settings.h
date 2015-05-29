@@ -16,7 +16,7 @@ namespace printing {
 // gfx::Rect - render area
 // int - render dpi
 // bool - autorotate pages to fit paper
-typedef Tuple<gfx::Rect, int, bool> PdfRenderSettingsBase;
+typedef base::Tuple<gfx::Rect, int, bool> PdfRenderSettingsBase;
 
 class PdfRenderSettings : public PdfRenderSettingsBase {
  public:
@@ -25,9 +25,9 @@ class PdfRenderSettings : public PdfRenderSettingsBase {
       : PdfRenderSettingsBase(area, dpi, autorotate) {}
   ~PdfRenderSettings() {}
 
-  const gfx::Rect& area() const { return ::get<0>(*this); }
-  int dpi() const { return ::get<1>(*this); }
-  bool autorotate() const { return ::get<2>(*this); }
+  const gfx::Rect& area() const { return base::get<0>(*this); }
+  int dpi() const { return base::get<1>(*this); }
+  bool autorotate() const { return base::get<2>(*this); }
 };
 
 }  // namespace printing

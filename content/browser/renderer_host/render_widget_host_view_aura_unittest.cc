@@ -478,10 +478,11 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
       return;
     }
 
-    if (!WebInputEventTraits::WillReceiveAckFromRenderer(*get<0>(params)))
+    if (!WebInputEventTraits::WillReceiveAckFromRenderer(
+            *base::get<0>(params)))
       return;
 
-    const blink::WebInputEvent* event = get<0>(params);
+    const blink::WebInputEvent* event = base::get<0>(params);
     SendTouchEventACK(event->type, ack_result,
         WebInputEventTraits::GetUniqueTouchEventId(*event));
   }
@@ -969,20 +970,21 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
     InputMsg_ImeSetComposition::Param params;
     InputMsg_ImeSetComposition::Read(msg, &params);
     // composition text
-    EXPECT_EQ(composition_text.text, get<0>(params));
+    EXPECT_EQ(composition_text.text, base::get<0>(params));
     // underlines
-    ASSERT_EQ(underlines.size(), get<1>(params).size());
+    ASSERT_EQ(underlines.size(), base::get<1>(params).size());
     for (size_t i = 0; i < underlines.size(); ++i) {
-      EXPECT_EQ(underlines[i].start_offset, get<1>(params)[i].startOffset);
-      EXPECT_EQ(underlines[i].end_offset, get<1>(params)[i].endOffset);
-      EXPECT_EQ(underlines[i].color, get<1>(params)[i].color);
-      EXPECT_EQ(underlines[i].thick, get<1>(params)[i].thick);
+      EXPECT_EQ(underlines[i].start_offset,
+                base::get<1>(params)[i].startOffset);
+      EXPECT_EQ(underlines[i].end_offset, base::get<1>(params)[i].endOffset);
+      EXPECT_EQ(underlines[i].color, base::get<1>(params)[i].color);
+      EXPECT_EQ(underlines[i].thick, base::get<1>(params)[i].thick);
       EXPECT_EQ(underlines[i].background_color,
-                get<1>(params)[i].backgroundColor);
+                base::get<1>(params)[i].backgroundColor);
     }
     // highlighted range
-    EXPECT_EQ(4, get<2>(params)) << "Should be the same to the caret pos";
-    EXPECT_EQ(4, get<3>(params)) << "Should be the same to the caret pos";
+    EXPECT_EQ(4, base::get<2>(params)) << "Should be the same to the caret pos";
+    EXPECT_EQ(4, base::get<3>(params)) << "Should be the same to the caret pos";
   }
 
   view_->ImeCancelComposition();
@@ -1289,9 +1291,9 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
     EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ("100x100", get<0>(params).new_size.ToString());  // dip size
+    EXPECT_EQ("100x100", base::get<0>(params).new_size.ToString());  // dip size
     EXPECT_EQ("100x100",
-        get<0>(params).physical_backing_size.ToString());  // backing size
+        base::get<0>(params).physical_backing_size.ToString());  // backing size
   }
 
   widget_host_->ResetSizeAndRepaintPendingFlags();
@@ -1306,10 +1308,10 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
     EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ(2.0f, get<0>(params).screen_info.deviceScaleFactor);
-    EXPECT_EQ("100x100", get<0>(params).new_size.ToString());  // dip size
+    EXPECT_EQ(2.0f, base::get<0>(params).screen_info.deviceScaleFactor);
+    EXPECT_EQ("100x100", base::get<0>(params).new_size.ToString());  // dip size
     EXPECT_EQ("200x200",
-        get<0>(params).physical_backing_size.ToString());  // backing size
+        base::get<0>(params).physical_backing_size.ToString());  // backing size
   }
 
   widget_host_->ResetSizeAndRepaintPendingFlags();
@@ -1324,10 +1326,10 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
     EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ(1.0f, get<0>(params).screen_info.deviceScaleFactor);
-    EXPECT_EQ("100x100", get<0>(params).new_size.ToString());  // dip size
+    EXPECT_EQ(1.0f, base::get<0>(params).screen_info.deviceScaleFactor);
+    EXPECT_EQ("100x100", base::get<0>(params).new_size.ToString());  // dip size
     EXPECT_EQ("100x100",
-        get<0>(params).physical_backing_size.ToString());  // backing size
+        base::get<0>(params).physical_backing_size.ToString());  // backing size
   }
 }
 
@@ -1492,14 +1494,16 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
     EXPECT_EQ("0,0 800x600",
-              gfx::Rect(get<0>(params).screen_info.availableRect).ToString());
-    EXPECT_EQ("800x600", get<0>(params).new_size.ToString());
+              gfx::Rect(
+                  base::get<0>(params).screen_info.availableRect).ToString());
+    EXPECT_EQ("800x600", base::get<0>(params).new_size.ToString());
     // Resizes are blocked until we swapped a frame of the correct size, and
     // we've committed it.
     view_->OnSwapCompositorFrame(
         0,
         MakeDelegatedFrame(
-            1.f, get<0>(params).new_size, gfx::Rect(get<0>(params).new_size)));
+            1.f, base::get<0>(params).new_size,
+            gfx::Rect(base::get<0>(params).new_size)));
     ui::DrawWaiterForTest::WaitForCommit(
         root_window->GetHost()->compositor());
   }
@@ -1517,12 +1521,14 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
     EXPECT_EQ("0,0 1600x1200",
-              gfx::Rect(get<0>(params).screen_info.availableRect).ToString());
-    EXPECT_EQ("1600x1200", get<0>(params).new_size.ToString());
+              gfx::Rect(
+                  base::get<0>(params).screen_info.availableRect).ToString());
+    EXPECT_EQ("1600x1200", base::get<0>(params).new_size.ToString());
     view_->OnSwapCompositorFrame(
         0,
         MakeDelegatedFrame(
-            1.f, get<0>(params).new_size, gfx::Rect(get<0>(params).new_size)));
+            1.f, base::get<0>(params).new_size,
+            gfx::Rect(base::get<0>(params).new_size)));
     ui::DrawWaiterForTest::WaitForCommit(
         root_window->GetHost()->compositor());
   }
@@ -1621,7 +1627,7 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
     EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
-    EXPECT_EQ(size2.ToString(), get<0>(params).new_size.ToString());
+    EXPECT_EQ(size2.ToString(), base::get<0>(params).new_size.ToString());
   }
   // Send resize ack to observe new Resize messages.
   update_params.view_size = size2;
@@ -1676,7 +1682,7 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
         // to this extra IPC coming in.
         InputMsg_HandleInputEvent::Param params;
         InputMsg_HandleInputEvent::Read(msg, &params);
-        const blink::WebInputEvent* event = get<0>(params);
+        const blink::WebInputEvent* event = base::get<0>(params);
         EXPECT_EQ(blink::WebInputEvent::MouseMove, event->type);
         break;
       }
@@ -1686,7 +1692,7 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
         EXPECT_FALSE(has_resize);
         ViewMsg_Resize::Param params;
         ViewMsg_Resize::Read(msg, &params);
-        EXPECT_EQ(size3.ToString(), get<0>(params).new_size.ToString());
+        EXPECT_EQ(size3.ToString(), base::get<0>(params).new_size.ToString());
         has_resize = true;
         break;
       }
@@ -2373,7 +2379,7 @@ TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
 
   ViewMsg_Resize::Param params;
   ViewMsg_Resize::Read(message, &params);
-  EXPECT_EQ(60, get<0>(params).visible_viewport_size.height());
+  EXPECT_EQ(60, base::get<0>(params).visible_viewport_size.height());
 }
 
 // Ensures that touch event positions are never truncated to integers.
@@ -3500,7 +3506,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SurfaceIdNamespaceInitialized) {
   view_->SetSize(size);
   view_->OnSwapCompositorFrame(0,
                                MakeDelegatedFrame(1.f, size, gfx::Rect(size)));
-  EXPECT_EQ(view_->GetSurfaceIdNamespace(), get<0>(params));
+  EXPECT_EQ(view_->GetSurfaceIdNamespace(), base::get<0>(params));
 }
 
 }  // namespace content

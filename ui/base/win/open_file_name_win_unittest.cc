@@ -27,8 +27,8 @@ void SetResult(const base::string16& result, ui::win::OpenFileName* ofn) {
 }
 
 void CheckFilters(
-    const std::vector<Tuple<base::string16, base::string16>>& expected,
-    const std::vector<Tuple<base::string16, base::string16>>& actual) {
+    const std::vector<base::Tuple<base::string16, base::string16>>& expected,
+    const std::vector<base::Tuple<base::string16, base::string16>>& actual) {
   if (expected.size() != actual.size()) {
     ADD_FAILURE() << "filter count mismatch. Got " << actual.size()
                   << " expected " << expected.size() << ".";
@@ -36,9 +36,9 @@ void CheckFilters(
   }
 
   for (size_t i = 0; i < expected.size(); ++i) {
-    EXPECT_EQ(get<0>(expected[i]), get<0>(actual[i]))
+    EXPECT_EQ(base::get<0>(expected[i]), base::get<0>(actual[i]))
         << "Mismatch at index " << i;
-    EXPECT_EQ(get<1>(expected[i]), get<1>(actual[i]))
+    EXPECT_EQ(base::get<1>(expected[i]), base::get<1>(actual[i]))
         << "Mismatch at index " << i;
   }
 }
@@ -203,19 +203,19 @@ TEST(OpenFileNameTest, SetAndGetFilters) {
   const base::string16 kNull(L"\0", 1);
 
   ui::win::OpenFileName ofn(kHwnd, kFlags);
-  std::vector<Tuple<base::string16, base::string16>> filters;
+  std::vector<base::Tuple<base::string16, base::string16>> filters;
   ofn.SetFilters(filters);
   EXPECT_FALSE(ofn.GetOPENFILENAME()->lpstrFilter);
   CheckFilters(filters,
                ui::win::OpenFileName::GetFilters(ofn.GetOPENFILENAME()));
 
-  filters.push_back(MakeTuple(base::string16(L"a"), base::string16(L"b")));
+  filters.push_back(base::MakeTuple(base::string16(L"a"), base::string16(L"b")));
   ofn.SetFilters(filters);
   CheckFilterString(L"a" + kNull + L"b" + kNull, ofn);
   CheckFilters(filters,
                ui::win::OpenFileName::GetFilters(ofn.GetOPENFILENAME()));
 
-  filters.push_back(MakeTuple(base::string16(L"X"), base::string16(L"Y")));
+  filters.push_back(base::MakeTuple(base::string16(L"X"), base::string16(L"Y")));
   ofn.SetFilters(filters);
   CheckFilterString(L"a" + kNull + L"b" + kNull + L"X" + kNull + L"Y" + kNull,
                     ofn);

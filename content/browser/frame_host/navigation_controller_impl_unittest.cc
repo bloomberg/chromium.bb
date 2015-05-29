@@ -237,12 +237,12 @@ class NavigationControllerTest
       return navigation_request->common_params().url;
     }
     const IPC::Message* message =
-      process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
+        process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
     CHECK(message);
-    Tuple<CommonNavigationParams, StartNavigationParams,
+    base::Tuple<CommonNavigationParams, StartNavigationParams,
           RequestNavigationParams> nav_params;
     FrameMsg_Navigate::Read(message, &nav_params);
-    return get<0>(nav_params).url;
+    return base::get<0>(nav_params).url;
   }
 
  protected:

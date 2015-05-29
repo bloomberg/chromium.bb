@@ -632,7 +632,7 @@ void FileSystemOperationRunner::PrepareForWrite(OperationID id,
                                                 const FileSystemURL& url) {
   if (file_system_context_->GetUpdateObservers(url.type())) {
     file_system_context_->GetUpdateObservers(url.type())->Notify(
-        &FileUpdateObserver::OnStartUpdate, MakeTuple(url));
+        &FileUpdateObserver::OnStartUpdate, base::MakeTuple(url));
   }
   write_target_urls_[id].insert(url);
 }
@@ -641,7 +641,7 @@ void FileSystemOperationRunner::PrepareForRead(OperationID id,
                                                const FileSystemURL& url) {
   if (file_system_context_->GetAccessObservers(url.type())) {
     file_system_context_->GetAccessObservers(url.type())->Notify(
-        &FileAccessObserver::OnAccess, MakeTuple(url));
+        &FileAccessObserver::OnAccess, base::MakeTuple(url));
   }
 }
 
@@ -663,7 +663,7 @@ void FileSystemOperationRunner::FinishOperation(OperationID id) {
         iter != urls.end(); ++iter) {
       if (file_system_context_->GetUpdateObservers(iter->type())) {
         file_system_context_->GetUpdateObservers(iter->type())->Notify(
-            &FileUpdateObserver::OnEndUpdate, MakeTuple(*iter));
+            &FileUpdateObserver::OnEndUpdate, base::MakeTuple(*iter));
       }
     }
     write_target_urls_.erase(found);

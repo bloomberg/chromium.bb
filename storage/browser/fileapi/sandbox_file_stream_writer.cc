@@ -212,7 +212,7 @@ void SandboxFileStreamWriter::DidWrite(
     if (overlapped < 0)
       overlapped = 0;
     observers_.Notify(&FileUpdateObserver::OnUpdate,
-                      MakeTuple(url_, write_response - overlapped));
+                      base::MakeTuple(url_, write_response - overlapped));
   }
   total_bytes_written_ += write_response;
 

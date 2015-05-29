@@ -56,9 +56,9 @@ class PluginVarTrackerTest : public PluginProxyTest {
     if (!release_msg)
       return -1;
 
-    Tuple<int64> id;
+    base::Tuple<int64> id;
     PpapiHostMsg_PPBVar_ReleaseObject::Read(release_msg, &id);
-    return get<0>(id);
+    return base::get<0>(id);
   }
 };
 

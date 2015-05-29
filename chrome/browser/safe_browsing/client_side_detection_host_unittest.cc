@@ -325,9 +325,9 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
         SafeBrowsingMsg_StartPhishingDetection::ID);
     if (url) {
       ASSERT_TRUE(msg);
-      Tuple<GURL> actual_url;
+      base::Tuple<GURL> actual_url;
       SafeBrowsingMsg_StartPhishingDetection::Read(msg, &actual_url);
-      EXPECT_EQ(*url, get<0>(actual_url));
+      EXPECT_EQ(*url, base::get<0>(actual_url));
       EXPECT_EQ(rvh()->GetRoutingID(), msg->routing_id());
       process()->sink().ClearMessages();
     } else {

@@ -172,8 +172,8 @@ class ObserverListThreadSafe
   void Notify(const tracked_objects::Location& from_here,
               Method m,
               const Params&... params) {
-    UnboundMethod<ObserverType, Method, Tuple<Params...>> method(
-        m, MakeTuple(params...));
+    UnboundMethod<ObserverType, Method, base::Tuple<Params...>> method(
+        m, base::MakeTuple(params...));
 
     base::AutoLock lock(list_lock_);
     for (const auto& entry : observer_lists_) {
@@ -182,7 +182,7 @@ class ObserverListThreadSafe
           from_here,
           base::Bind(
               &ObserverListThreadSafe<ObserverType>::template NotifyWrapper<
-                  Method, Tuple<Params...>>,
+                  Method, base::Tuple<Params...>>,
               this, context, method));
     }
   }

@@ -7,6 +7,8 @@
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
+
 namespace {
 
 void DoAdd(int a, int b, int c, int* res) {
@@ -30,14 +32,15 @@ struct Addz {
 }  // namespace
 
 TEST(TupleTest, Basic) {
-  Tuple<> t0 = MakeTuple();
+  base::Tuple<> t0 = base::MakeTuple();
   ALLOW_UNUSED_LOCAL(t0);
-  Tuple<int> t1(1);
-  Tuple<int, const char*> t2 = MakeTuple(1, static_cast<const char*>("wee"));
-  Tuple<int, int, int> t3(1, 2, 3);
-  Tuple<int, int, int, int*> t4(1, 2, 3, &get<0>(t1));
-  Tuple<int, int, int, int, int*> t5(1, 2, 3, 4, &get<0>(t4));
-  Tuple<int, int, int, int, int, int*> t6(1, 2, 3, 4, 5, &get<0>(t4));
+  base::Tuple<int> t1(1);
+  base::Tuple<int, const char*> t2 =
+      base::MakeTuple(1, static_cast<const char*>("wee"));
+  base::Tuple<int, int, int> t3(1, 2, 3);
+  base::Tuple<int, int, int, int*> t4(1, 2, 3, &get<0>(t1));
+  base::Tuple<int, int, int, int, int*> t5(1, 2, 3, 4, &get<0>(t4));
+  base::Tuple<int, int, int, int, int, int*> t6(1, 2, 3, 4, 5, &get<0>(t4));
 
   EXPECT_EQ(1, get<0>(t1));
   EXPECT_EQ(1, get<0>(t2));
@@ -62,7 +65,7 @@ TEST(TupleTest, Basic) {
   EXPECT_EQ(6, get<0>(t1));
 
   int res = 0;
-  DispatchToFunction(&DoAdd, MakeTuple(9, 8, 7, &res));
+  DispatchToFunction(&DoAdd, base::MakeTuple(9, 8, 7, &res));
   EXPECT_EQ(24, res);
 
   Addy addy;
@@ -108,7 +111,7 @@ TEST(TupleTest, Copying) {
   bool res = false;
 
   // Creating the tuple should copy the class to store internally in the tuple.
-  Tuple<CopyLogger, CopyLogger*, bool*> tuple(logger, &logger, &res);
+  base::Tuple<CopyLogger, CopyLogger*, bool*> tuple(logger, &logger, &res);
   get<1>(tuple) = &get<0>(tuple);
   EXPECT_EQ(2, CopyLogger::TimesConstructed);
   EXPECT_EQ(1, CopyLogger::TimesCopied);
@@ -127,3 +130,5 @@ TEST(TupleTest, Copying) {
   EXPECT_EQ(3, CopyLogger::TimesConstructed);
   EXPECT_EQ(2, CopyLogger::TimesCopied);
 }
+
+}  // namespace base

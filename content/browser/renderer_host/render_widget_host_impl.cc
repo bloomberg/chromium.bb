@@ -1458,10 +1458,10 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return false;
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  uint32 output_surface_id = get<0>(param);
-  get<1>(param).AssignTo(frame.get());
+  uint32 output_surface_id = base::get<0>(param);
+  base::get<1>(param).AssignTo(frame.get());
   std::vector<IPC::Message> messages_to_deliver_with_frame;
-  messages_to_deliver_with_frame.swap(get<2>(param));
+  messages_to_deliver_with_frame.swap(base::get<2>(param));
 
   latency_tracker_.OnSwapCompositorFrame(&frame->metadata.latency_info);
 

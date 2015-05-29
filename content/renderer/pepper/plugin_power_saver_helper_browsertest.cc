@@ -129,7 +129,7 @@ TEST_F(PluginPowerSaverHelperTest, TemporaryOriginWhitelist) {
   EXPECT_EQ(FrameHostMsg_PluginContentOriginAllowed::ID, msg->type());
   FrameHostMsg_PluginContentOriginAllowed::Param params;
   FrameHostMsg_PluginContentOriginAllowed::Read(msg, &params);
-  EXPECT_EQ(GURL("http://b.com"), get<0>(params));
+  EXPECT_EQ(GURL("http://b.com"), base::get<0>(params));
 }
 
 TEST_F(PluginPowerSaverHelperTest, UnthrottleOnExPostFactoWhitelist) {

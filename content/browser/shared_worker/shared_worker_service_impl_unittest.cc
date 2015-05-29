@@ -327,12 +327,13 @@ void CheckWorkerProcessMsgCreateWorker(
     int* route_id) {
   scoped_ptr<IPC::Message> msg(renderer_host->PopMessage());
   EXPECT_EQ(WorkerProcessMsg_CreateWorker::ID, msg->type());
-  Tuple<WorkerProcessMsg_CreateWorker_Params> param;
+  base::Tuple<WorkerProcessMsg_CreateWorker_Params> param;
   EXPECT_TRUE(WorkerProcessMsg_CreateWorker::Read(msg.get(), &param));
-  EXPECT_EQ(GURL(expected_url), get<0>(param).url);
-  EXPECT_EQ(base::ASCIIToUTF16(expected_name), get<0>(param).name);
-  EXPECT_EQ(expected_security_policy_type, get<0>(param).security_policy_type);
-  *route_id = get<0>(param).route_id;
+  EXPECT_EQ(GURL(expected_url), base::get<0>(param).url);
+  EXPECT_EQ(base::ASCIIToUTF16(expected_name), base::get<0>(param).name);
+  EXPECT_EQ(expected_security_policy_type,
+            base::get<0>(param).security_policy_type);
+  *route_id = base::get<0>(param).route_id;
 }
 
 void CheckViewMsgWorkerCreated(MockRendererProcessHost* renderer_host,
@@ -358,8 +359,8 @@ void CheckWorkerMsgConnect(MockRendererProcessHost* renderer_host,
   EXPECT_EQ(expected_msg_route_id, msg->routing_id());
   WorkerMsg_Connect::Param params;
   EXPECT_TRUE(WorkerMsg_Connect::Read(msg.get(), &params));
-  int port_id = get<0>(params);
-  *routing_id = get<1>(params);
+  int port_id = base::get<0>(params);
+  *routing_id = base::get<1>(params);
   EXPECT_EQ(expected_sent_message_port_id, port_id);
 }
 
@@ -371,7 +372,7 @@ void CheckMessagePortMsgMessage(MockRendererProcessHost* renderer_host,
   EXPECT_EQ(expected_msg_route_id, msg->routing_id());
   MessagePortMsg_Message::Param params;
   EXPECT_TRUE(MessagePortMsg_Message::Read(msg.get(), &params));
-  base::string16 data = get<0>(params).message_as_string;
+  base::string16 data = base::get<0>(params).message_as_string;
   EXPECT_EQ(base::ASCIIToUTF16(expected_data), data);
 }
 

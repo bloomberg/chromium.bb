@@ -150,7 +150,7 @@ class DrmGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
     if (!OzoneGpuMsg_CursorSet::Read(&message, &param))
       return;
 
-    int frame_delay_ms = get<3>(param);
+    int frame_delay_ms = base::get<3>(param);
     cursor_animating_ = frame_delay_ms != 0;
   }
 

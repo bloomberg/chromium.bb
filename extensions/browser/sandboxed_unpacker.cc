@@ -742,8 +742,8 @@ bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
       return false;
     }
 
-    const SkBitmap& image = get<0>(images[i]);
-    base::FilePath path_suffix = get<1>(images[i]);
+    const SkBitmap& image = base::get<0>(images[i]);
+    base::FilePath path_suffix = base::get<1>(images[i]);
     if (path_suffix.MaybeAsASCII() == install_icon_path)
       *install_icon = image;
 

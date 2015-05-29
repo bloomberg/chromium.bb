@@ -1232,17 +1232,17 @@ void GCMDriverDesktop::GetGCMStatisticsFinished(
 
 bool GCMDriverDesktop::TokenTupleComparer::operator()(
     const TokenTuple& a, const TokenTuple& b) const {
-  if (get<0>(a) < get<0>(b))
+  if (base::get<0>(a) < base::get<0>(b))
     return true;
-  if (get<0>(a) > get<0>(b))
+  if (base::get<0>(a) > base::get<0>(b))
     return false;
 
-  if (get<1>(a) < get<1>(b))
+  if (base::get<1>(a) < base::get<1>(b))
     return true;
-  if (get<1>(a) > get<1>(b))
+  if (base::get<1>(a) > base::get<1>(b))
     return false;
 
-  return get<2>(a) < get<2>(b);
+  return base::get<2>(a) < base::get<2>(b);
 }
 
 }  // namespace gcm

@@ -59,10 +59,10 @@ class RendererAccessibilityTest : public RenderViewTest {
     const IPC::Message* message =
         sink_->GetUniqueMessageMatching(AccessibilityHostMsg_Events::ID);
     ASSERT_TRUE(message);
-    Tuple<std::vector<AccessibilityHostMsg_EventParams>, int> param;
+    base::Tuple<std::vector<AccessibilityHostMsg_EventParams>, int> param;
     AccessibilityHostMsg_Events::Read(message, &param);
-    ASSERT_GE(get<0>(param).size(), 1U);
-    *params = get<0>(param)[0];
+    ASSERT_GE(base::get<0>(param).size(), 1U);
+    *params = base::get<0>(param)[0];
   }
 
   int CountAccessibilityNodesSentToBrowser() {
@@ -404,9 +404,9 @@ TEST_F(RendererAccessibilityTest, EventOnObjectNotInTree) {
   const IPC::Message* message =
       sink_->GetUniqueMessageMatching(AccessibilityHostMsg_Events::ID);
   ASSERT_TRUE(message);
-  Tuple<std::vector<AccessibilityHostMsg_EventParams>, int> param;
+  base::Tuple<std::vector<AccessibilityHostMsg_EventParams>, int> param;
   AccessibilityHostMsg_Events::Read(message, &param);
-  ASSERT_EQ(0U, get<0>(param).size());
+  ASSERT_EQ(0U, base::get<0>(param).size());
 }
 
 }  // namespace content

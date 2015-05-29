@@ -113,7 +113,7 @@ HEADER = """\
 //
 
 #include "base/memory/linked_ptr.h"
-#include "base/tuple.h"  // for Tuple
+#include "base/tuple.h"
 
 namespace testing {"""
 
@@ -202,7 +202,7 @@ struct MutantFunctor {
   }
 
   inline R operator()() {
-    return impl_->RunWithParams(Tuple<>());
+    return impl_->RunWithParams(base::Tuple<>());
   }
 
   template <typename Arg1>
@@ -276,7 +276,7 @@ CreateFunctor(T* obj, R (U::*method)(%(params)s), %(args)s) {
   MutantRunner<R, %(calltime)s>* t =
       new Mutant<R, T, R (U::*)(%(params)s),
                  %(prebound)s, %(calltime)s>
-          (obj, method, MakeTuple(%(call_args)s));
+          (obj, method, base::MakeTuple(%(call_args)s));
   return MutantFunctor<R, %(calltime)s>(t);
 }
 """
@@ -288,14 +288,14 @@ CreateFunctor(R (*function)(%(params)s), %(args)s) {
   MutantRunner<R, %(calltime)s>* t =
       new MutantFunction<R, R (*)(%(params)s),
                          %(prebound)s, %(calltime)s>
-          (function, MakeTuple(%(call_args)s));
+          (function, base::MakeTuple(%(call_args)s));
   return MutantFunctor<R, %(calltime)s>(t);
 }
 """
 
 def SplitLine(line, width):
   """Splits a single line at comma, at most |width| characters long."""
-  if len(line) < width:
+  if len(line) <= width:
     return (line, None)
   n = 1 + line[:width].rfind(",")
   if n == 0:  # If comma cannot be found give up and return the entire line.
@@ -352,14 +352,18 @@ def Merge(a):
 
 
 def GenTuple(pattern, n):
-  return Clean("Tuple<%s>" % (Gen(pattern, n, 1)))
+  return Clean("base::Tuple<%s>" % (Gen(pattern, n, 1)))
 
 
 def FixCode(s):
   lines = Clean(s).splitlines()
-  # Wrap sometimes very long 1st and 3rd line at 80th column.
+  # Wrap sometimes very long 1st line to be inside the "template <"
   lines[0] = Wrap(lines[0], 80, 10)
-  lines[2] = Wrap(lines[2], 80, 4)
+
+  # Wrap all subsequent lines to 6 spaces arbitrarily. This is a 2-space line
+  # indent, plus a 4 space continuation indent.
+  for line in xrange(1, len(lines)):
+    lines[line] = Wrap(lines[line], 80, 6)
   return "\n".join(lines)
 
 
@@ -370,8 +374,8 @@ def GenerateDispatch(prebound, calltime):
                                 Gen("typename C%", calltime, 1)]),
       "prebound": GenTuple("P%", prebound),
       "calltime": GenTuple("C%", calltime),
-      "args": Merge([Gen("get<%>(p)", prebound, 0),
-                     Gen("get<%>(c)", calltime, 0)]),
+      "args": Merge([Gen("base::get<%>(p)", prebound, 0),
+                     Gen("base::get<%>(c)", calltime, 0)]),
   }
 
   print FixCode(DISPATCH_TO_METHOD_TEMPLATE % args)

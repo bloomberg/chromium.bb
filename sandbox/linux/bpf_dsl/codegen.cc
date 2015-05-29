@@ -145,14 +145,14 @@ size_t CodeGen::Offset(Node target) const {
 // TODO(mdempsky): Move into a general base::Tuple helper library.
 bool CodeGen::MemoKeyLess::operator()(const MemoKey& lhs,
                                       const MemoKey& rhs) const {
-  if (get<0>(lhs) != get<0>(rhs))
-    return get<0>(lhs) < get<0>(rhs);
-  if (get<1>(lhs) != get<1>(rhs))
-    return get<1>(lhs) < get<1>(rhs);
-  if (get<2>(lhs) != get<2>(rhs))
-    return get<2>(lhs) < get<2>(rhs);
-  if (get<3>(lhs) != get<3>(rhs))
-    return get<3>(lhs) < get<3>(rhs);
+  if (base::get<0>(lhs) != base::get<0>(rhs))
+    return base::get<0>(lhs) < base::get<0>(rhs);
+  if (base::get<1>(lhs) != base::get<1>(rhs))
+    return base::get<1>(lhs) < base::get<1>(rhs);
+  if (base::get<2>(lhs) != base::get<2>(rhs))
+    return base::get<2>(lhs) < base::get<2>(rhs);
+  if (base::get<3>(lhs) != base::get<3>(rhs))
+    return base::get<3>(lhs) < base::get<3>(rhs);
   return false;
 }
 

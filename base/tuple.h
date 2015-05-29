@@ -30,6 +30,8 @@
 
 #include "base/bind_helpers.h"
 
+namespace base {
+
 // Index sequences
 //
 // Minimal clone of the similarly-named C++14 functionality.
@@ -181,9 +183,9 @@ struct TupleLeaf {
 // Allows accessing an arbitrary tuple element by index.
 //
 // Example usage:
-//   Tuple<int, double> t2;
-//   get<0>(t2) = 42;
-//   get<1>(t2) = 3.14;
+//   base::Tuple<int, double> t2;
+//   base::get<0>(t2) = 42;
+//   base::get<1>(t2) = 3.14;
 
 template <size_t I, typename T>
 T& get(TupleLeaf<I, T>& leaf) {
@@ -328,5 +330,7 @@ inline void DispatchToMethod(ObjT* obj,
                        MakeIndexSequence<sizeof...(InTs)>(),
                        MakeIndexSequence<sizeof...(OutTs)>());
 }
+
+}  // namespace base
 
 #endif  // BASE_TUPLE_H_

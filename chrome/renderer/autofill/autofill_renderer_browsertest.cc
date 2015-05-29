@@ -37,8 +37,8 @@ using blink::WebVector;
 
 namespace autofill {
 
-typedef Tuple<int, autofill::FormData, autofill::FormFieldData, gfx::RectF>
-    AutofillQueryParam;
+typedef base::Tuple<int, autofill::FormData, autofill::FormFieldData,
+                    gfx::RectF> AutofillQueryParam;
 
 class AutofillRendererTest : public ChromeRenderViewTest {
  public:
@@ -86,7 +86,7 @@ TEST_F(AutofillRendererTest, SendForms) {
   ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Param params;
   AutofillHostMsg_FormsSeen::Read(message, &params);
-  std::vector<FormData> forms = get<0>(params);
+  std::vector<FormData> forms = base::get<0>(params);
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(4UL, forms[0].fields.size());
 
@@ -149,7 +149,7 @@ TEST_F(AutofillRendererTest, SendForms) {
       AutofillHostMsg_FormsSeen::ID);
   ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Read(message, &params);
-  forms = get<0>(params);
+  forms = base::get<0>(params);
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(3UL, forms[0].fields.size());
 
@@ -181,7 +181,7 @@ TEST_F(AutofillRendererTest, EnsureNoFormSeenIfTooFewFields) {
   ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Param params;
   AutofillHostMsg_FormsSeen::Read(message, &params);
-  const std::vector<FormData>& forms = get<0>(params);
+  const std::vector<FormData>& forms = base::get<0>(params);
   ASSERT_EQ(0UL, forms.size());
 }
 
@@ -214,7 +214,7 @@ TEST_F(AutofillRendererTest, DynamicallyAddedUnownedFormElements) {
   ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Param params;
   AutofillHostMsg_FormsSeen::Read(message, &params);
-  std::vector<FormData> forms = get<0>(params);
+  std::vector<FormData> forms = base::get<0>(params);
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(7UL, forms[0].fields.size());
 
@@ -227,7 +227,7 @@ TEST_F(AutofillRendererTest, DynamicallyAddedUnownedFormElements) {
       AutofillHostMsg_FormsSeen::ID);
   ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Read(message, &params);
-  forms = get<0>(params);
+  forms = base::get<0>(params);
   ASSERT_EQ(1UL, forms.size());
   ASSERT_EQ(9UL, forms[0].fields.size());
 

@@ -529,13 +529,13 @@ TEST_F(TestUsePrerenderPage, SetEmbeddedSearchRequestParams) {
   ASSERT_TRUE(message);
 
   // Verify the IPC message params.
-  Tuple<base::string16, EmbeddedSearchRequestParams> params;
+  base::Tuple<base::string16, EmbeddedSearchRequestParams> params;
   ChromeViewMsg_SearchBoxSubmit::Read(message, &params);
-  EXPECT_EQ("foo", base::UTF16ToASCII(get<0>(params)));
-  EXPECT_EQ("f", base::UTF16ToASCII(get<1>(params).original_query));
-  EXPECT_EQ("utf-8", base::UTF16ToASCII(get<1>(params).input_encoding));
-  EXPECT_EQ("", base::UTF16ToASCII(get<1>(params).rlz_parameter_value));
+  EXPECT_EQ("foo", base::UTF16ToASCII(base::get<0>(params)));
+  EXPECT_EQ("f", base::UTF16ToASCII(base::get<1>(params).original_query));
+  EXPECT_EQ("utf-8", base::UTF16ToASCII(base::get<1>(params).input_encoding));
+  EXPECT_EQ("", base::UTF16ToASCII(base::get<1>(params).rlz_parameter_value));
   EXPECT_EQ("chrome...0",
-            base::UTF16ToASCII(get<1>(params).assisted_query_stats));
+            base::UTF16ToASCII(base::get<1>(params).assisted_query_stats));
 }
 #endif

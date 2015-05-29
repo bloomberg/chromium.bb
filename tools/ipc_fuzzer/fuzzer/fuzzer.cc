@@ -209,58 +209,58 @@ struct FuzzTraits<base::string16> {
 
 // Specializations for tuples.
 template <>
-struct FuzzTraits<Tuple<>> {
-  static bool Fuzz(Tuple<>* p, Fuzzer* fuzzer) {
+struct FuzzTraits<base::Tuple<>> {
+  static bool Fuzz(base::Tuple<>* p, Fuzzer* fuzzer) {
     return true;
   }
 };
 
 template <class A>
-struct FuzzTraits<Tuple<A>> {
-  static bool Fuzz(Tuple<A>* p, Fuzzer* fuzzer) {
-    return FuzzParam(&get<0>(*p), fuzzer);
+struct FuzzTraits<base::Tuple<A>> {
+  static bool Fuzz(base::Tuple<A>* p, Fuzzer* fuzzer) {
+    return FuzzParam(&base::get<0>(*p), fuzzer);
   }
 };
 
 template <class A, class B>
-struct FuzzTraits<Tuple<A, B>> {
-  static bool Fuzz(Tuple<A, B>* p, Fuzzer* fuzzer) {
+struct FuzzTraits<base::Tuple<A, B>> {
+  static bool Fuzz(base::Tuple<A, B>* p, Fuzzer* fuzzer) {
     return
-        FuzzParam(&get<0>(*p), fuzzer) &&
-        FuzzParam(&get<1>(*p), fuzzer);
+        FuzzParam(&base::get<0>(*p), fuzzer) &&
+        FuzzParam(&base::get<1>(*p), fuzzer);
   }
 };
 
 template <class A, class B, class C>
-struct FuzzTraits<Tuple<A, B, C>> {
-  static bool Fuzz(Tuple<A, B, C>* p, Fuzzer* fuzzer) {
+struct FuzzTraits<base::Tuple<A, B, C>> {
+  static bool Fuzz(base::Tuple<A, B, C>* p, Fuzzer* fuzzer) {
     return
-        FuzzParam(&get<0>(*p), fuzzer) &&
-        FuzzParam(&get<1>(*p), fuzzer) &&
-        FuzzParam(&get<2>(*p), fuzzer);
+        FuzzParam(&base::get<0>(*p), fuzzer) &&
+        FuzzParam(&base::get<1>(*p), fuzzer) &&
+        FuzzParam(&base::get<2>(*p), fuzzer);
   }
 };
 
 template <class A, class B, class C, class D>
-struct FuzzTraits<Tuple<A, B, C, D>> {
-  static bool Fuzz(Tuple<A, B, C, D>* p, Fuzzer* fuzzer) {
+struct FuzzTraits<base::Tuple<A, B, C, D>> {
+  static bool Fuzz(base::Tuple<A, B, C, D>* p, Fuzzer* fuzzer) {
     return
-        FuzzParam(&get<0>(*p), fuzzer) &&
-        FuzzParam(&get<1>(*p), fuzzer) &&
-        FuzzParam(&get<2>(*p), fuzzer) &&
-        FuzzParam(&get<3>(*p), fuzzer);
+        FuzzParam(&base::get<0>(*p), fuzzer) &&
+        FuzzParam(&base::get<1>(*p), fuzzer) &&
+        FuzzParam(&base::get<2>(*p), fuzzer) &&
+        FuzzParam(&base::get<3>(*p), fuzzer);
   }
 };
 
 template <class A, class B, class C, class D, class E>
-struct FuzzTraits<Tuple<A, B, C, D, E>> {
-  static bool Fuzz(Tuple<A, B, C, D, E>* p, Fuzzer* fuzzer) {
+struct FuzzTraits<base::Tuple<A, B, C, D, E>> {
+  static bool Fuzz(base::Tuple<A, B, C, D, E>* p, Fuzzer* fuzzer) {
     return
-        FuzzParam(&get<0>(*p), fuzzer) &&
-        FuzzParam(&get<1>(*p), fuzzer) &&
-        FuzzParam(&get<2>(*p), fuzzer) &&
-        FuzzParam(&get<3>(*p), fuzzer) &&
-        FuzzParam(&get<4>(*p), fuzzer);
+        FuzzParam(&base::get<0>(*p), fuzzer) &&
+        FuzzParam(&base::get<1>(*p), fuzzer) &&
+        FuzzParam(&base::get<2>(*p), fuzzer) &&
+        FuzzParam(&base::get<3>(*p), fuzzer) &&
+        FuzzParam(&base::get<4>(*p), fuzzer);
   }
 };
 
@@ -2053,12 +2053,13 @@ struct FuzzTraits<webrtc::MouseCursor> {
 #define MAX_FAKE_ROUTING_ID 15
 
 #define IPC_MEMBERS_IN_0(p)
-#define IPC_MEMBERS_IN_1(p) get<0>(p)
-#define IPC_MEMBERS_IN_2(p) get<0>(p), get<1>(p)
-#define IPC_MEMBERS_IN_3(p) get<0>(p), get<1>(p), get<2>(p)
-#define IPC_MEMBERS_IN_4(p) get<0>(p), get<1>(p), get<2>(p), get<3>(p)
-#define IPC_MEMBERS_IN_5(p) get<0>(p), get<1>(p), get<2>(p), get<3>(p), \
-                            get<4>(p)
+#define IPC_MEMBERS_IN_1(p) base::get<0>(p)
+#define IPC_MEMBERS_IN_2(p) base::get<0>(p), base::get<1>(p)
+#define IPC_MEMBERS_IN_3(p) base::get<0>(p), base::get<1>(p), base::get<2>(p)
+#define IPC_MEMBERS_IN_4(p) base::get<0>(p), base::get<1>(p), base::get<2>(p), \
+                            base::get<3>(p)
+#define IPC_MEMBERS_IN_5(p) base::get<0>(p), base::get<1>(p), base::get<2>(p), \
+                            base::get<3>(p), base::get<4>(p)
 
 #define IPC_MEMBERS_OUT_0()
 #define IPC_MEMBERS_OUT_1() NULL
