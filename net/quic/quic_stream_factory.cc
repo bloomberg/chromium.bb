@@ -589,6 +589,7 @@ QuicStreamFactory::QuicStreamFactory(
   crypto_config_.set_user_agent_id(user_agent_id);
   crypto_config_.AddCanonicalSuffix(".c.youtube.com");
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
+  crypto_config_.AddCanonicalSuffix(".googleusercontent.com");
   crypto_config_.SetProofVerifier(
       new ProofVerifierChromium(cert_verifier, transport_security_state));
   // TODO(rtenneti): http://crbug.com/487355. Temporary fix for b/20760730 until
