@@ -1760,6 +1760,8 @@ String Heap::createBacktraceString()
 
 void Heap::pushTraceCallback(void* object, TraceCallback callback)
 {
+    ASSERT(ThreadState::current()->isInGC());
+
     // Trace should never reach an orphaned page.
     ASSERT(!Heap::orphanedPagePool()->contains(object));
     CallbackStack::Item* slot = s_markingStack->allocateEntry();
@@ -1781,6 +1783,8 @@ bool Heap::popAndInvokeTraceCallback(Visitor* visitor)
 
 void Heap::pushPostMarkingCallback(void* object, TraceCallback callback)
 {
+    ASSERT(ThreadState::current()->isInGC());
+
     // Trace should never reach an orphaned page.
     ASSERT(!Heap::orphanedPagePool()->contains(object));
     CallbackStack::Item* slot = s_postMarkingCallbackStack->allocateEntry();
@@ -1798,6 +1802,8 @@ bool Heap::popAndInvokePostMarkingCallback(Visitor* visitor)
 
 void Heap::pushGlobalWeakCallback(void** cell, WeakCallback callback)
 {
+    ASSERT(ThreadState::current()->isInGC());
+
     // Trace should never reach an orphaned page.
     ASSERT(!Heap::orphanedPagePool()->contains(cell));
     CallbackStack::Item* slot = s_globalWeakCallbackStack->allocateEntry();
@@ -1806,6 +1812,8 @@ void Heap::pushGlobalWeakCallback(void** cell, WeakCallback callback)
 
 void Heap::pushThreadLocalWeakCallback(void* closure, void* object, WeakCallback callback)
 {
+    ASSERT(ThreadState::current()->isInGC());
+
     // Trace should never reach an orphaned page.
     ASSERT(!Heap::orphanedPagePool()->contains(object));
     ThreadState* state = pageFromObject(object)->heap()->threadState();
@@ -1823,6 +1831,8 @@ bool Heap::popAndInvokeGlobalWeakCallback(Visitor* visitor)
 
 void Heap::registerWeakTable(void* table, EphemeronCallback iterationCallback, EphemeronCallback iterationDoneCallback)
 {
+    ASSERT(ThreadState::current()->isInGC());
+
     // Trace should never reach an orphaned page.
     ASSERT(!Heap::orphanedPagePool()->contains(table));
     CallbackStack::Item* slot = s_ephemeronStack->allocateEntry();
