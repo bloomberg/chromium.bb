@@ -78,7 +78,7 @@ void LayoutTableCol::updateFromElement()
         HTMLTableColElement& tc = toHTMLTableColElement(*n);
         m_span = tc.span();
     } else {
-        m_span = !(style() && style()->display() == TABLE_COLUMN_GROUP);
+        m_span = 1;
     }
     if (m_span != oldSpan && style() && parent())
         setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AttributeChanged);
