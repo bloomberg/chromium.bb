@@ -305,7 +305,7 @@ ResultExpr RestrictClockID() {
   return If(
 #if defined(OS_CHROMEOS)
              // Allow the special clock for Chrome OS used by Chrome tracing.
-             clockid == base::TimeTicks::kClockSystemTrace ||
+             clockid == base::TraceTicks::kClockSystemTrace ||
 #endif
                  clockid == CLOCK_MONOTONIC ||
                  clockid == CLOCK_MONOTONIC_COARSE ||

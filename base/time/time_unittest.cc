@@ -690,15 +690,15 @@ TEST(TimeTicks, HighRes) {
 #else
 #define MAYBE_ThreadNow ThreadNow
 #endif
-TEST(TimeTicks, MAYBE_ThreadNow) {
-  if (TimeTicks::IsThreadNowSupported()) {
+TEST(ThreadTicks, MAYBE_ThreadNow) {
+  if (ThreadTicks::IsSupported()) {
     TimeTicks begin = TimeTicks::Now();
-    TimeTicks begin_thread = TimeTicks::ThreadNow();
+    ThreadTicks begin_thread = ThreadTicks::Now();
     // Make sure that ThreadNow value is non-zero.
-    EXPECT_GT(begin_thread, TimeTicks());
+    EXPECT_GT(begin_thread, ThreadTicks());
     // Sleep for 10 milliseconds to get the thread de-scheduled.
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
-    TimeTicks end_thread = TimeTicks::ThreadNow();
+    ThreadTicks end_thread = ThreadTicks::Now();
     TimeTicks end = TimeTicks::Now();
     TimeDelta delta = end - begin;
     TimeDelta delta_thread = end_thread - begin_thread;
@@ -710,9 +710,10 @@ TEST(TimeTicks, MAYBE_ThreadNow) {
   }
 }
 
-TEST(TimeTicks, NowFromSystemTraceTime) {
+TEST(TraceTicks, NowFromSystemTraceTime) {
   // Re-use HighRes test for now since clock properties are identical.
-  HighResClockTest(&TimeTicks::NowFromSystemTraceTime);
+  using NowFunction = TimeTicks (*)(void);
+  HighResClockTest(reinterpret_cast<NowFunction>(&TraceTicks::Now));
 }
 
 TEST(TimeTicks, SnappedToNextTickBasic) {

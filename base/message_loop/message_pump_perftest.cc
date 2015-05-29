@@ -29,9 +29,9 @@ class ScheduleWorkTest : public testing::Test {
 
   void Schedule(int index) {
     base::TimeTicks start = base::TimeTicks::Now();
-    base::TimeTicks thread_start;
-    if (TimeTicks::IsThreadNowSupported())
-      thread_start = base::TimeTicks::ThreadNow();
+    base::ThreadTicks thread_start;
+    if (ThreadTicks::IsSupported())
+      thread_start = base::ThreadTicks::Now();
     base::TimeDelta minimum = base::TimeDelta::Max();
     base::TimeDelta maximum = base::TimeDelta();
     base::TimeTicks now, lastnow = start;
@@ -49,9 +49,9 @@ class ScheduleWorkTest : public testing::Test {
     } while (now - start < base::TimeDelta::FromSeconds(kTargetTimeSec));
 
     scheduling_times_[index] = now - start;
-    if (TimeTicks::IsThreadNowSupported())
+    if (ThreadTicks::IsSupported())
       scheduling_thread_times_[index] =
-          base::TimeTicks::ThreadNow() - thread_start;
+          base::ThreadTicks::Now() - thread_start;
     min_batch_times_[index] = minimum;
     max_batch_times_[index] = maximum;
     target_message_loop()->PostTask(FROM_HERE,
@@ -139,7 +139,7 @@ class ScheduleWorkTest : public testing::Test {
         max_batch_time.InMicroseconds() / static_cast<double>(kBatchSize),
         "us/task",
         false);
-    if (TimeTicks::IsThreadNowSupported()) {
+    if (ThreadTicks::IsSupported()) {
       perf_test::PrintResult(
           "task",
           "_thread_time",

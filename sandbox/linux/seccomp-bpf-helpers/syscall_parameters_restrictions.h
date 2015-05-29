@@ -92,7 +92,7 @@ SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictGetrusage();
 // access to arbitrary per-{process,thread} CPU-time clock IDs (such as those
 // returned by {clock,pthread}_getcpuclockid), which can leak information
 // about the state of the host OS.
-// On Chrome OS, base::TimeTicks::kClockSystemTrace is also allowed.
+// On Chrome OS, base::TraceTicks::kClockSystemTrace is also allowed.
 SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictClockID();
 
 }  // namespace sandbox.

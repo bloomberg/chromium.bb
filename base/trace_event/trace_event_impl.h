@@ -107,8 +107,8 @@ class BASE_EXPORT TraceEvent {
 
   void Initialize(
       int thread_id,
-      TimeTicks timestamp,
-      TimeTicks thread_timestamp,
+      TraceTicks timestamp,
+      ThreadTicks thread_timestamp,
       char phase,
       const unsigned char* category_group_enabled,
       const char* name,
@@ -122,7 +122,7 @@ class BASE_EXPORT TraceEvent {
 
   void Reset();
 
-  void UpdateDuration(const TimeTicks& now, const TimeTicks& thread_now);
+  void UpdateDuration(const TraceTicks& now, const ThreadTicks& thread_now);
 
   // Serialize event data to JSON
   typedef base::Callback<bool(const char* category_group_name,
@@ -136,8 +136,8 @@ class BASE_EXPORT TraceEvent {
                                 TraceValue value,
                                 std::string* out);
 
-  TimeTicks timestamp() const { return timestamp_; }
-  TimeTicks thread_timestamp() const { return thread_timestamp_; }
+  TraceTicks timestamp() const { return timestamp_; }
+  ThreadTicks thread_timestamp() const { return thread_timestamp_; }
   char phase() const { return phase_; }
   int thread_id() const { return thread_id_; }
   TimeDelta duration() const { return duration_; }
@@ -163,8 +163,8 @@ class BASE_EXPORT TraceEvent {
 
  private:
   // Note: these are ordered by size (largest first) for optimal packing.
-  TimeTicks timestamp_;
-  TimeTicks thread_timestamp_;
+  TraceTicks timestamp_;
+  ThreadTicks thread_timestamp_;
   TimeDelta duration_;
   TimeDelta thread_duration_;
   // id_ can be used to store phase-specific data.
@@ -379,7 +379,7 @@ class BASE_EXPORT TraceLog {
   // For TRACE_EVENT_PHASE_COMPLETE events, the client will still receive pairs
   // of TRACE_EVENT_PHASE_BEGIN and TRACE_EVENT_PHASE_END events to keep the
   // interface simple.
-  typedef void (*EventCallback)(TimeTicks timestamp,
+  typedef void (*EventCallback)(TraceTicks timestamp,
                                 char phase,
                                 const unsigned char* category_group_enabled,
                                 const char* name,
@@ -439,7 +439,7 @@ class BASE_EXPORT TraceLog {
       const char* name,
       unsigned long long id,
       int thread_id,
-      const TimeTicks& timestamp,
+      const TraceTicks& timestamp,
       int num_args,
       const char** arg_names,
       const unsigned char* arg_types,
@@ -502,7 +502,7 @@ class BASE_EXPORT TraceLog {
   // sort index, ascending, then by their name, and then tid.
   void SetThreadSortIndex(PlatformThreadId , int sort_index);
 
-  // Allow setting an offset between the current TimeTicks time and the time
+  // Allow setting an offset between the current TraceTicks time and the time
   // that should be reported.
   void SetTimeOffset(TimeDelta offset);
 
@@ -566,7 +566,7 @@ class BASE_EXPORT TraceLog {
   TraceBuffer* CreateTraceBufferVectorOfSize(size_t max_chunks);
 
   std::string EventToConsoleMessage(unsigned char phase,
-                                    const TimeTicks& timestamp,
+                                    const TraceTicks& timestamp,
                                     TraceEvent* trace_event);
 
   TraceEvent* AddEventToThreadSharedChunkWhileLocked(TraceEventHandle* handle,
@@ -596,10 +596,10 @@ class BASE_EXPORT TraceLog {
   }
   void UseNextTraceBuffer();
 
-  TimeTicks OffsetNow() const {
-    return OffsetTimestamp(TimeTicks::NowFromSystemTraceTime());
+  TraceTicks OffsetNow() const {
+    return OffsetTimestamp(TraceTicks::Now());
   }
-  TimeTicks OffsetTimestamp(const TimeTicks& timestamp) const {
+  TraceTicks OffsetTimestamp(const TraceTicks& timestamp) const {
     return timestamp - time_offset_;
   }
 
@@ -633,10 +633,10 @@ class BASE_EXPORT TraceLog {
   base::hash_map<int, std::string> thread_names_;
 
   // The following two maps are used only when ECHO_TO_CONSOLE.
-  base::hash_map<int, std::stack<TimeTicks> > thread_event_start_times_;
+  base::hash_map<int, std::stack<TraceTicks> > thread_event_start_times_;
   base::hash_map<std::string, int> thread_colors_;
 
-  TimeTicks buffer_limit_reached_timestamp_;
+  TraceTicks buffer_limit_reached_timestamp_;
 
   // XORed with TraceID to make it unlikely to collide with other processes.
   unsigned long long process_id_hash_;

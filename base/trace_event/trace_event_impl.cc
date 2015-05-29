@@ -114,9 +114,8 @@ base::subtle::AtomicWord g_category_index = g_num_builtin_categories;
 LazyInstance<ThreadLocalPointer<const char> >::Leaky
     g_current_thread_name = LAZY_INSTANCE_INITIALIZER;
 
-TimeTicks ThreadNow() {
-  return TimeTicks::IsThreadNowSupported() ?
-      TimeTicks::ThreadNow() : TimeTicks();
+ThreadTicks ThreadNow() {
+  return ThreadTicks::IsSupported() ? ThreadTicks::Now() : ThreadTicks();
 }
 
 class TraceBufferRingBuffer : public TraceBuffer {
@@ -373,7 +372,8 @@ void InitializeMetadataEvent(TraceEvent* trace_event,
   unsigned long long arg_value;
   ::trace_event_internal::SetTraceValue(value, &arg_type, &arg_value);
   trace_event->Initialize(thread_id,
-                          TimeTicks(), TimeTicks(), TRACE_EVENT_PHASE_METADATA,
+                          TraceTicks(), ThreadTicks(),
+                          TRACE_EVENT_PHASE_METADATA,
                           &g_category_group_enabled[g_category_metadata],
                           metadata_name, ::trace_event_internal::kNoEventId,
                           num_args, &arg_name, &arg_type, &arg_value, NULL,
@@ -518,8 +518,8 @@ void TraceEvent::CopyFrom(const TraceEvent& other) {
 
 void TraceEvent::Initialize(
     int thread_id,
-    TimeTicks timestamp,
-    TimeTicks thread_timestamp,
+    TraceTicks timestamp,
+    ThreadTicks thread_timestamp,
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
@@ -612,8 +612,8 @@ void TraceEvent::Reset() {
     convertable_values_[i] = NULL;
 }
 
-void TraceEvent::UpdateDuration(const TimeTicks& now,
-                                const TimeTicks& thread_now) {
+void TraceEvent::UpdateDuration(const TraceTicks& now,
+                                const ThreadTicks& thread_now) {
   DCHECK_EQ(duration_.ToInternalValue(), -1);
   duration_ = now - timestamp_;
   thread_duration_ = thread_now - thread_timestamp_;
@@ -991,8 +991,8 @@ class TraceLog::ThreadLocalEventBuffer
 
   TraceEvent* AddTraceEvent(TraceEventHandle* handle);
 
-  void ReportOverhead(const TimeTicks& event_timestamp,
-                      const TimeTicks& event_thread_timestamp);
+  void ReportOverhead(const TraceTicks& event_timestamp,
+                      const ThreadTicks& event_thread_timestamp);
 
   TraceEvent* GetEventByHandle(TraceEventHandle handle) {
     if (!chunk_ || handle.chunk_seq != chunk_->seq() ||
@@ -1089,16 +1089,16 @@ TraceEvent* TraceLog::ThreadLocalEventBuffer::AddTraceEvent(
 }
 
 void TraceLog::ThreadLocalEventBuffer::ReportOverhead(
-    const TimeTicks& event_timestamp,
-    const TimeTicks& event_thread_timestamp) {
+    const TraceTicks& event_timestamp,
+    const ThreadTicks& event_thread_timestamp) {
   if (!g_category_group_enabled[g_category_trace_event_overhead])
     return;
 
   CheckThisIsCurrentBuffer();
 
   event_count_++;
-  TimeTicks thread_now = ThreadNow();
-  TimeTicks now = trace_log_->OffsetNow();
+  ThreadTicks thread_now = ThreadNow();
+  TraceTicks now = trace_log_->OffsetNow();
   TimeDelta overhead = now - event_timestamp;
   if (overhead.InMicroseconds() >= kOverheadReportThresholdInMicroseconds) {
     TraceEvent* trace_event = AddTraceEvent(NULL);
@@ -1864,7 +1864,7 @@ TraceEventHandle TraceLog::AddTraceEvent(
     const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
     unsigned char flags) {
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
-  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  base::TraceTicks now = base::TraceTicks::Now();
   return AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled,
                                                name, id, thread_id, now,
                                                num_args, arg_names,
@@ -1878,7 +1878,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     const char* name,
     unsigned long long id,
     int thread_id,
-    const TimeTicks& timestamp,
+    const TraceTicks& timestamp,
     int num_args,
     const char** arg_names,
     const unsigned char* arg_types,
@@ -1903,10 +1903,10 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   if (flags & TRACE_EVENT_FLAG_MANGLE_ID)
     id = MangleEventId(id);
 
-  TimeTicks offset_event_timestamp = OffsetTimestamp(timestamp);
-  TimeTicks now = flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP ?
+  TraceTicks offset_event_timestamp = OffsetTimestamp(timestamp);
+  TraceTicks now = flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP ?
       OffsetNow() : offset_event_timestamp;
-  TimeTicks thread_now = ThreadNow();
+  ThreadTicks thread_now = ThreadNow();
 
   ThreadLocalEventBuffer* thread_local_event_buffer = NULL;
   // A ThreadLocalEventBuffer needs the message loop
@@ -2044,7 +2044,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 // May be called when a COMPELETE event ends and the unfinished event has been
 // recycled (phase == TRACE_EVENT_PHASE_END and trace_event == NULL).
 std::string TraceLog::EventToConsoleMessage(unsigned char phase,
-                                            const TimeTicks& timestamp,
+                                            const TraceTicks& timestamp,
                                             TraceEvent* trace_event) {
   AutoLock thread_info_lock(thread_info_lock_);
 
@@ -2124,8 +2124,8 @@ void TraceLog::UpdateTraceEventDuration(
 
   AutoThreadLocalBoolean thread_is_in_trace_event(&thread_is_in_trace_event_);
 
-  TimeTicks thread_now = ThreadNow();
-  TimeTicks now = OffsetNow();
+  ThreadTicks thread_now = ThreadNow();
+  TraceTicks now = OffsetNow();
 
   std::string console_message;
   if (*category_group_enabled & ENABLED_FOR_RECORDING) {
@@ -2376,8 +2376,8 @@ ScopedTraceBinaryEfficient::ScopedTraceBinaryEfficient(
             TRACE_EVENT_PHASE_COMPLETE, category_group_enabled_, name,
             trace_event_internal::kNoEventId,
             static_cast<int>(base::PlatformThread::CurrentId()),
-            base::TimeTicks::NowFromSystemTraceTime(),
-            0, NULL, NULL, NULL, NULL, TRACE_EVENT_FLAG_NONE);
+            base::TraceTicks::Now(), 0, NULL, NULL, NULL, NULL,
+            TRACE_EVENT_FLAG_NONE);
   }
 }
 

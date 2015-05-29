@@ -55,12 +55,12 @@ Measurement::~Measurement() {
 MeasurementTimers::MeasurementTimers(gfx::GPUTimingClient* gpu_timing_client)
     : wall_time_start_(), cpu_time_start_(), gpu_timer_() {
   DCHECK(gpu_timing_client);
-  wall_time_start_ = base::TimeTicks::NowFromSystemTraceTime();
-  if (base::TimeTicks::IsThreadNowSupported()) {
-    cpu_time_start_ = base::TimeTicks::ThreadNow();
+  wall_time_start_ = base::TraceTicks::Now();
+  if (base::ThreadTicks::IsSupported()) {
+    cpu_time_start_ = base::ThreadTicks::Now();
   } else {
     static bool logged_once = false;
-    LOG_IF(WARNING, !logged_once) << "ThreadNow not supported.";
+    LOG_IF(WARNING, !logged_once) << "ThreadTicks not supported.";
     logged_once = true;
   }
 
@@ -71,9 +71,9 @@ MeasurementTimers::MeasurementTimers(gfx::GPUTimingClient* gpu_timing_client)
 }
 
 void MeasurementTimers::Record() {
-  wall_time_ = base::TimeTicks::NowFromSystemTraceTime() - wall_time_start_;
-  if (base::TimeTicks::IsThreadNowSupported()) {
-    cpu_time_ = base::TimeTicks::ThreadNow() - cpu_time_start_;
+  wall_time_ = base::TraceTicks::Now() - wall_time_start_;
+  if (base::ThreadTicks::IsSupported()) {
+    cpu_time_ = base::ThreadTicks::Now() - cpu_time_start_;
   }
   if (gpu_timer_.get()) {
     gpu_timer_->End();
@@ -84,7 +84,7 @@ Measurement MeasurementTimers::GetAsMeasurement(const std::string& name) {
   DCHECK_NE(base::TimeDelta(),
             wall_time_);  // At least wall_time_ has been set.
 
-  if (!base::TimeTicks::IsThreadNowSupported()) {
+  if (!base::ThreadTicks::IsSupported()) {
     cpu_time_ = base::TimeDelta::FromMicroseconds(-1);
   }
   int64 gpu_time = -1;

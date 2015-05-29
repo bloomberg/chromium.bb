@@ -108,14 +108,14 @@ class ClockSystemTesterDelegate : public sandbox::BPFTesterDelegate {
   }
   void RunTestFunction() override {
     if (is_running_on_chromeos_) {
-      CheckClock(base::TimeTicks::kClockSystemTrace);
+      CheckClock(base::TraceTicks::kClockSystemTrace);
     } else {
       struct timespec ts;
       // kClockSystemTrace is 11, which is CLOCK_THREAD_CPUTIME_ID of
       // the init process (pid=1). If kernel supports this feature,
       // this may succeed even if this is not running on Chrome OS. We
       // just check this clock_gettime call does not crash.
-      clock_gettime(base::TimeTicks::kClockSystemTrace, &ts);
+      clock_gettime(base::TraceTicks::kClockSystemTrace, &ts);
     }
   }
 
@@ -133,7 +133,7 @@ BPF_DEATH_TEST_C(ParameterRestrictions,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  RestrictClockIdPolicy) {
   struct timespec ts;
-  clock_gettime(base::TimeTicks::kClockSystemTrace, &ts);
+  clock_gettime(base::TraceTicks::kClockSystemTrace, &ts);
 }
 
 #endif  // defined(OS_CHROMEOS)

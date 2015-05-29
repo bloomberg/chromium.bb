@@ -281,11 +281,11 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
         // CrOS). So we need to adjust the diff between in CLOCK_MONOTONIC and
         // CLOCK_SYSTEM_TRACE. Note that the diff is drifting overtime so we
         // can't use a static value.
-        int64 diff = base::TimeTicks::Now().ToInternalValue() -
-            base::TimeTicks::NowFromSystemTraceTime().ToInternalValue();
-        ts = begin_component.event_time.ToInternalValue() - diff;
+        base::TimeDelta diff = (base::TimeTicks::Now() - base::TimeTicks()) -
+            (base::TraceTicks::Now() - base::TraceTicks());
+        ts = (begin_component.event_time - diff).ToInternalValue();
       } else {
-        ts = base::TimeTicks::NowFromSystemTraceTime().ToInternalValue();
+        ts = base::TraceTicks::Now().ToInternalValue();
       }
 
       if (trace_name_str) {

@@ -48,14 +48,14 @@ class ThreadPerfTest : public testing::Test {
   virtual void PingPong(int hops) = 0;
   virtual void Reset() {}
 
-  void TimeOnThread(base::TimeTicks* ticks, base::WaitableEvent* done) {
-    *ticks = base::TimeTicks::ThreadNow();
+  void TimeOnThread(base::ThreadTicks* ticks, base::WaitableEvent* done) {
+    *ticks = base::ThreadTicks::Now();
     done->Signal();
   }
 
-  base::TimeTicks ThreadNow(base::Thread* thread) {
+  base::ThreadTicks ThreadNow(base::Thread* thread) {
     base::WaitableEvent done(false, false);
-    base::TimeTicks ticks;
+    base::ThreadTicks ticks;
     thread->task_runner()->PostTask(
         FROM_HERE, base::Bind(&ThreadPerfTest::TimeOnThread,
                               base::Unretained(this), &ticks, &done));
@@ -65,11 +65,11 @@ class ThreadPerfTest : public testing::Test {
 
   void RunPingPongTest(const std::string& name, unsigned num_threads) {
     // Create threads and collect starting cpu-time for each thread.
-    std::vector<base::TimeTicks> thread_starts;
+    std::vector<base::ThreadTicks> thread_starts;
     while (threads_.size() < num_threads) {
       threads_.push_back(new base::Thread("PingPonger"));
       threads_.back()->Start();
-      if (base::TimeTicks::IsThreadNowSupported())
+      if (base::ThreadTicks::IsSupported())
         thread_starts.push_back(ThreadNow(threads_.back()));
     }
 
@@ -84,7 +84,7 @@ class ThreadPerfTest : public testing::Test {
     // but that should be in the noise given enough runs.
     base::TimeDelta thread_time;
     while (threads_.size()) {
-      if (base::TimeTicks::IsThreadNowSupported()) {
+      if (base::ThreadTicks::IsSupported()) {
         thread_time += ThreadNow(threads_.back()) - thread_starts.back();
         thread_starts.pop_back();
       }
@@ -102,7 +102,7 @@ class ThreadPerfTest : public testing::Test {
         "task", "", name + "_time ", us_per_task_clock, "us/hop", true);
 
     // Total utilization across threads if available (likely higher).
-    if (base::TimeTicks::IsThreadNowSupported()) {
+    if (base::ThreadTicks::IsSupported()) {
       perf_test::PrintResult(
           "task", "", name + "_cpu ", us_per_task_cpu, "us/hop", true);
     }

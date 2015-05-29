@@ -954,7 +954,7 @@
 //                    const char* name,
 //                    unsigned long long id,
 //                    int thread_id,
-//                    const TimeTicks& timestamp,
+//                    const TraceTicks& timestamp,
 //                    int num_args,
 //                    const char** arg_names,
 //                    const unsigned char* arg_types,
@@ -1083,7 +1083,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
         trace_event_internal::AddTraceEventWithThreadIdAndTimestamp( \
             phase, INTERNAL_TRACE_EVENT_UID(category_group_enabled), \
             name, trace_event_trace_id.data(), \
-            thread_id, base::TimeTicks::FromInternalValue(timestamp), \
+            thread_id, base::TraceTicks::FromInternalValue(timestamp), \
             trace_event_flags | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP, \
             ##__VA_ARGS__); \
       } \
@@ -1324,8 +1324,8 @@ static inline void SetTraceValue(const std::string& arg,
   *value = type_value.as_uint;
 }
 
-// base::Time and base::TimeTicks version of SetTraceValue to make it easier to
-// trace these types.
+// base::Time, base::TimeTicks, etc. versions of SetTraceValue to make it easier
+// to trace these types.
 static inline void SetTraceValue(const base::Time arg,
                                  unsigned char* type,
                                  unsigned long long* value) {
@@ -1334,6 +1334,20 @@ static inline void SetTraceValue(const base::Time arg,
 }
 
 static inline void SetTraceValue(const base::TimeTicks arg,
+                                 unsigned char* type,
+                                 unsigned long long* value) {
+  *type = TRACE_VALUE_TYPE_INT;
+  *value = arg.ToInternalValue();
+}
+
+static inline void SetTraceValue(const base::ThreadTicks arg,
+                                 unsigned char* type,
+                                 unsigned long long* value) {
+  *type = TRACE_VALUE_TYPE_INT;
+  *value = arg.ToInternalValue();
+}
+
+static inline void SetTraceValue(const base::TraceTicks arg,
                                  unsigned char* type,
                                  unsigned long long* value) {
   *type = TRACE_VALUE_TYPE_INT;
@@ -1353,7 +1367,7 @@ AddTraceEventWithThreadIdAndTimestamp(
     const char* name,
     unsigned long long id,
     int thread_id,
-    const base::TimeTicks& timestamp,
+    const base::TraceTicks& timestamp,
     unsigned char flags,
     const char* arg1_name,
     const scoped_refptr<base::trace_event::ConvertableToTraceFormat>&
@@ -1373,7 +1387,7 @@ AddTraceEventWithThreadIdAndTimestamp(
     const char* name,
     unsigned long long id,
     int thread_id,
-    const base::TimeTicks& timestamp,
+    const base::TraceTicks& timestamp,
     unsigned char flags,
     const char* arg1_name,
     const ARG1_TYPE& arg1_val,
@@ -1405,7 +1419,7 @@ AddTraceEventWithThreadIdAndTimestamp(
     const char* name,
     unsigned long long id,
     int thread_id,
-    const base::TimeTicks& timestamp,
+    const base::TraceTicks& timestamp,
     unsigned char flags,
     const char* arg1_name,
     const scoped_refptr<base::trace_event::ConvertableToTraceFormat>& arg1_val,
@@ -1436,7 +1450,7 @@ AddTraceEventWithThreadIdAndTimestamp(
     const char* name,
     unsigned long long id,
     int thread_id,
-    const base::TimeTicks& timestamp,
+    const base::TraceTicks& timestamp,
     unsigned char flags,
     const char* arg1_name,
     const scoped_refptr<base::trace_event::ConvertableToTraceFormat>& arg1_val,
@@ -1462,7 +1476,7 @@ AddTraceEventWithThreadIdAndTimestamp(
     const char* name,
     unsigned long long id,
     int thread_id,
-    const base::TimeTicks& timestamp,
+    const base::TraceTicks& timestamp,
     unsigned char flags) {
   return TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
       phase, category_group_enabled, name, id, thread_id, timestamp,
@@ -1476,7 +1490,7 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
     unsigned long long id,
     unsigned char flags) {
   const int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
-  const base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  const base::TraceTicks now = base::TraceTicks::Now();
   return AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled,
                                                name, id, thread_id, now, flags);
 }
@@ -1489,7 +1503,7 @@ AddTraceEventWithThreadIdAndTimestamp(
     const char* name,
     unsigned long long id,
     int thread_id,
-    const base::TimeTicks& timestamp,
+    const base::TraceTicks& timestamp,
     unsigned char flags,
     const char* arg1_name,
     const ARG1_TYPE& arg1_val) {
@@ -1512,7 +1526,7 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
     const char* arg1_name,
     const ARG1_TYPE& arg1_val) {
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
-  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  base::TraceTicks now = base::TraceTicks::Now();
   return AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled,
                                                name, id, thread_id, now, flags,
                                                arg1_name, arg1_val);
@@ -1526,7 +1540,7 @@ AddTraceEventWithThreadIdAndTimestamp(
     const char* name,
     unsigned long long id,
     int thread_id,
-    const base::TimeTicks& timestamp,
+    const base::TraceTicks& timestamp,
     unsigned char flags,
     const char* arg1_name,
     const ARG1_TYPE& arg1_val,
@@ -1555,7 +1569,7 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
     const char* arg2_name,
     const ARG2_TYPE& arg2_val) {
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
-  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  base::TraceTicks now = base::TraceTicks::Now();
   return AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled,
                                                name, id, thread_id, now, flags,
                                                arg1_name, arg1_val,

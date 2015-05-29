@@ -59,14 +59,13 @@ ChildTraceMessageFilter::~ChildTraceMessageFilter() {}
 
 void ChildTraceMessageFilter::OnBeginTracing(
     const std::string& category_filter_str,
-    base::TimeTicks browser_time,
+    base::TraceTicks browser_time,
     const std::string& options) {
 #if defined(__native_client__)
   // NaCl and system times are offset by a bit, so subtract some time from
   // the captured timestamps. The value might be off by a bit due to messaging
   // latency.
-  base::TimeDelta time_offset = base::TimeTicks::NowFromSystemTraceTime() -
-      browser_time;
+  base::TimeDelta time_offset = base::TraceTicks::Now() - browser_time;
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 #endif
   base::trace_event::TraceOptions trace_options;
@@ -90,7 +89,7 @@ void ChildTraceMessageFilter::OnEndTracing() {
 
 void ChildTraceMessageFilter::OnEnableMonitoring(
     const std::string& category_filter_str,
-    base::TimeTicks browser_time,
+    base::TraceTicks browser_time,
     const std::string& options) {
   base::trace_event::TraceOptions trace_options;
   trace_options.SetFromString(options);

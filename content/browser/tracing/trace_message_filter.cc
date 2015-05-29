@@ -65,7 +65,7 @@ void TraceMessageFilter::SendBeginTracing(
     const base::trace_event::TraceOptions& options) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Send(new TracingMsg_BeginTracing(category_filter.ToString(),
-                                   base::TimeTicks::NowFromSystemTraceTime(),
+                                   base::TraceTicks::Now(),
                                    options.ToString()));
 }
 
@@ -81,8 +81,8 @@ void TraceMessageFilter::SendEnableMonitoring(
     const base::trace_event::TraceOptions& options) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Send(new TracingMsg_EnableMonitoring(category_filter.ToString(),
-      base::TimeTicks::NowFromSystemTraceTime(),
-      options.ToString()));
+                                       base::TraceTicks::Now(),
+                                       options.ToString()));
 }
 
 void TraceMessageFilter::SendDisableMonitoring() {

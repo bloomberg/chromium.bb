@@ -21,8 +21,7 @@ double ANGLEPlatformImpl::currentTime() {
 }
 
 double ANGLEPlatformImpl::monotonicallyIncreasingTime() {
-  return base::TimeTicks::Now().ToInternalValue() /
-         static_cast<double>(base::Time::kMicrosecondsPerSecond);
+  return (base::TraceTicks::Now() - base::TraceTicks()).InSecondsF();
 }
 
 const unsigned char* ANGLEPlatformImpl::getTraceCategoryEnabledFlag(
@@ -41,8 +40,8 @@ angle::Platform::TraceEventHandle ANGLEPlatformImpl::addTraceEvent(
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
     unsigned char flags) {
-  base::TimeTicks timestamp_tt = base::TimeTicks::FromInternalValue(
-      static_cast<int64>(timestamp * base::Time::kMicrosecondsPerSecond));
+  base::TraceTicks timestamp_tt =
+      base::TraceTicks() + base::TimeDelta::FromSecondsD(timestamp);
   base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
           phase, category_group_enabled, name, id,

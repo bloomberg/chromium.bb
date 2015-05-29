@@ -140,7 +140,7 @@ void EtwSystemEventConsumer::ProcessEvent(EVENT_TRACE* event) {
 void EtwSystemEventConsumer::AddSyncEventToBuffer() {
   // Sync the clocks.
   base::Time walltime = base::Time::NowFromSystemTime();
-  base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
+  base::TraceTicks now = base::TraceTicks::Now();
 
   LARGE_INTEGER walltime_in_us;
   walltime_in_us.QuadPart = walltime.ToInternalValue();

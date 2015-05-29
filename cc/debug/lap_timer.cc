@@ -10,9 +10,13 @@ namespace cc {
 
 namespace {
 
-base::TimeTicks Now() {
-  return base::TimeTicks::IsThreadNowSupported() ? base::TimeTicks::ThreadNow()
-                                                 : base::TimeTicks::Now();
+// Returns the offset from the origin from the ThreadTicks time source.
+// TimeTicks is used as a fallback if ThreadTicks is not available on the
+// current platform.
+base::TimeDelta Now() {
+  return base::ThreadTicks::IsSupported()
+             ? base::ThreadTicks::Now() - base::ThreadTicks()
+             : base::TimeTicks::Now() - base::TimeTicks();
 }
 
 // Default values.
@@ -65,7 +69,7 @@ void LapTimer::NextLap() {
   ++num_laps_;
   --remaining_no_check_laps_;
   if (!remaining_no_check_laps_) {
-    base::TimeTicks now = Now();
+    base::TimeDelta now = Now();
     accumulator_ += now - start_time_;
     start_time_ = now;
     remaining_no_check_laps_ = check_interval_;

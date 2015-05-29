@@ -37,21 +37,21 @@ void RenderingStatsInstrumentation::AccumulateAndClearImplThreadStats() {
   impl_thread_rendering_stats_ = RenderingStats();
 }
 
-base::TimeTicks RenderingStatsInstrumentation::StartRecording() const {
+base::TimeDelta RenderingStatsInstrumentation::StartRecording() const {
   if (record_rendering_stats_) {
-    if (base::TimeTicks::IsThreadNowSupported())
-      return base::TimeTicks::ThreadNow();
-    return base::TimeTicks::Now();
+    if (base::ThreadTicks::IsSupported())
+      return base::ThreadTicks::Now() - base::ThreadTicks();
+    return base::TimeTicks::Now() - base::TimeTicks();
   }
-  return base::TimeTicks();
+  return base::TimeDelta();
 }
 
 base::TimeDelta RenderingStatsInstrumentation::EndRecording(
-    base::TimeTicks start_time) const {
-  if (!start_time.is_null()) {
-    if (base::TimeTicks::IsThreadNowSupported())
-      return base::TimeTicks::ThreadNow() - start_time;
-    return base::TimeTicks::Now() - start_time;
+    base::TimeDelta start_time) const {
+  if (start_time != base::TimeDelta()) {
+    if (base::ThreadTicks::IsSupported())
+      return (base::ThreadTicks::Now() - base::ThreadTicks()) - start_time;
+    return (base::TimeTicks::Now() - base::TimeTicks()) - start_time;
   }
   return base::TimeDelta();
 }

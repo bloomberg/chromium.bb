@@ -17,6 +17,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+using base::TraceTicks;
 
 namespace {
 
@@ -185,9 +186,9 @@ TEST(TimeTicks, TimerPerformance) {
   COMPILE_ASSERT(sizeof(TimeTicks) == sizeof(Time),
                  test_only_works_with_same_sizes);
   TestCase cases[] = {
-    { reinterpret_cast<TestFunc>(Time::Now), "Time::Now" },
-    { TimeTicks::Now, "TimeTicks::Now" },
-    { TimeTicks::NowFromSystemTraceTime, "TimeTicks::NowFromSystemTraceTime" },
+    { reinterpret_cast<TestFunc>(&Time::Now), "Time::Now" },
+    { &TimeTicks::Now, "TimeTicks::Now" },
+    { reinterpret_cast<TestFunc>(&TraceTicks::Now), "TraceTicks::Now" },
     { NULL, "" }
   };
 

@@ -44,9 +44,11 @@
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 
+using base::ThreadTicks;
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+using base::TraceTicks;
 
 namespace {
 
@@ -329,7 +331,7 @@ base::Lock g_rollover_lock;
 // which will roll over the 32-bit value every ~49 days.  We try to track
 // rollover ourselves, which works if TimeTicks::Now() is called at least every
 // 49 days.
-TimeTicks RolloverProtectedNow() {
+TimeDelta RolloverProtectedNow() {
   base::AutoLock locked(g_rollover_lock);
   // We should hold the lock while calling tick_function to make sure that
   // we keep last_seen_now stay correctly in sync.
@@ -337,7 +339,7 @@ TimeTicks RolloverProtectedNow() {
   if (now < g_last_seen_now)
     g_rollover_ms += 0x100000000I64;  // ~49.7 days.
   g_last_seen_now = now;
-  return TimeTicks() + TimeDelta::FromMilliseconds(now + g_rollover_ms);
+  return TimeDelta::FromMilliseconds(now + g_rollover_ms);
 }
 
 // Discussion of tick counter options on Windows:
@@ -375,10 +377,10 @@ TimeTicks RolloverProtectedNow() {
 // this timer; and also other Windows applications can alter it, affecting this
 // one.
 
-using NowFunction = TimeTicks (*)(void);
+using NowFunction = TimeDelta (*)(void);
 
-TimeTicks InitialNowFunction();
-TimeTicks InitialSystemTraceNowFunction();
+TimeDelta InitialNowFunction();
+TimeDelta InitialSystemTraceNowFunction();
 
 // See "threading notes" in InitializeNowFunctionPointers() for details on how
 // concurrent reads/writes to these globals has been made safe.
@@ -414,10 +416,10 @@ TimeDelta QPCValueToTimeDelta(LONGLONG qpc_value) {
        g_qpc_ticks_per_second));
 }
 
-TimeTicks QPCNow() {
+TimeDelta QPCNow() {
   LARGE_INTEGER now;
   QueryPerformanceCounter(&now);
-  return TimeTicks() + QPCValueToTimeDelta(now.QuadPart);
+  return QPCValueToTimeDelta(now.QuadPart);
 }
 
 bool IsBuggyAthlon(const base::CPU& cpu) {
@@ -430,12 +432,12 @@ void InitializeNowFunctionPointers() {
   if (!QueryPerformanceFrequency(&ticks_per_sec))
     ticks_per_sec.QuadPart = 0;
 
-  // If Windows cannot provide a QPC implementation, both Now() and
-  // NowFromSystemTraceTime() must use the low-resolution clock.
+  // If Windows cannot provide a QPC implementation, both TimeTicks::Now() and
+  // TraceTicks::Now() must use the low-resolution clock.
   //
-  // If the QPC implementation is expensive and/or unreliable, Now() will use
-  // the low-resolution clock, but NowFromSystemTraceTime() will use the QPC (in
-  // the hope that it is still useful for tracing purposes). A CPU lacking a
+  // If the QPC implementation is expensive and/or unreliable, TimeTicks::Now()
+  // will use the low-resolution clock, but TraceTicks::Now() will use the QPC
+  // (in the hope that it is still useful for tracing purposes). A CPU lacking a
   // non-stop time counter will cause Windows to provide an alternate QPC
   // implementation that works, but is expensive to use. Certain Athlon CPUs are
   // known to make the QPC implementation unreliable.
@@ -469,12 +471,12 @@ void InitializeNowFunctionPointers() {
   g_system_trace_now_function = system_trace_now_function;
 }
 
-TimeTicks InitialNowFunction() {
+TimeDelta InitialNowFunction() {
   InitializeNowFunctionPointers();
   return g_now_function();
 }
 
-TimeTicks InitialSystemTraceNowFunction() {
+TimeDelta InitialSystemTraceNowFunction() {
   InitializeNowFunctionPointers();
   return g_system_trace_now_function();
 }
@@ -494,7 +496,7 @@ TimeTicks::TickFunctionType TimeTicks::SetMockTickFunction(
 
 // static
 TimeTicks TimeTicks::Now() {
-  return g_now_function();
+  return TimeTicks() + g_now_function();
 }
 
 // static
@@ -505,14 +507,14 @@ bool TimeTicks::IsHighResolution() {
 }
 
 // static
-TimeTicks TimeTicks::ThreadNow() {
+ThreadTicks ThreadTicks::Now() {
   NOTREACHED();
-  return TimeTicks();
+  return ThreadTicks();
 }
 
 // static
-TimeTicks TimeTicks::NowFromSystemTraceTime() {
-  return g_system_trace_now_function();
+TraceTicks TraceTicks::Now() {
+  return TraceTicks() + g_system_trace_now_function();
 }
 
 // static

@@ -47,8 +47,8 @@ class MeasurementTimers {
   ~MeasurementTimers();
 
  private:
-  base::TimeTicks wall_time_start_;
-  base::TimeTicks cpu_time_start_;
+  base::TraceTicks wall_time_start_;
+  base::ThreadTicks cpu_time_start_;
   scoped_ptr<gfx::GPUTimer> gpu_timer_;
 
   base::TimeDelta wall_time_;

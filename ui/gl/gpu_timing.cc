@@ -51,7 +51,7 @@ int64 GPUTiming::CalculateTimerOffset(base::Callback<int64(void)> cpu_time) {
       glGetInteger64v(GL_TIMESTAMP, &gl_now);
       int64 now =
           cpu_time.is_null()
-              ? base::TimeTicks::NowFromSystemTraceTime().ToInternalValue()
+          ? (base::TraceTicks::Now() - base::TraceTicks()).InMicroseconds()
               : cpu_time.Run();
       offset_ = now - gl_now / base::Time::kNanosecondsPerMicrosecond;
       offset_valid_ = (timer_type_ == kTimerTypeARB);

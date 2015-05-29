@@ -19,10 +19,11 @@
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_mach_port.h"
+#include "base/numerics/safe_conversions.h"
 
 namespace {
 
-uint64_t ComputeCurrentTicks() {
+int64_t ComputeCurrentTicks() {
 #if defined(OS_IOS)
   // On iOS mach_absolute_time stops while the device is sleeping. Instead use
   // now - KERN_BOOTTIME to get a time difference that is not impacted by clock
@@ -38,8 +39,6 @@ uint64_t ComputeCurrentTicks() {
        base::TimeDelta::FromMicroseconds(boottime.tv_usec));
   return time_difference.InMicroseconds();
 #else
-  uint64_t absolute_micro;
-
   static mach_timebase_info_data_t timebase_info;
   if (timebase_info.denom == 0) {
     // Zero-initialization of statics guarantees that denom will be 0 before
@@ -57,18 +56,19 @@ uint64_t ComputeCurrentTicks() {
 
   // timebase_info converts absolute time tick units into nanoseconds.  Convert
   // to microseconds up front to stave off overflows.
-  absolute_micro =
-      mach_absolute_time() / base::Time::kNanosecondsPerMicrosecond *
-      timebase_info.numer / timebase_info.denom;
+  base::CheckedNumeric<uint64_t> result(
+      mach_absolute_time() / base::Time::kNanosecondsPerMicrosecond);
+  result *= timebase_info.numer;
+  result /= timebase_info.denom;
 
   // Don't bother with the rollover handling that the Windows version does.
   // With numer and denom = 1 (the expected case), the 64-bit absolute time
   // reported in nanoseconds is enough to last nearly 585 years.
-  return absolute_micro;
+  return base::checked_cast<int64_t>(result.ValueOrDie());
 #endif  // defined(OS_IOS)
 }
 
-uint64_t ComputeThreadTicks() {
+int64_t ComputeThreadTicks() {
 #if defined(OS_IOS)
   NOTREACHED();
   return 0;
@@ -89,9 +89,11 @@ uint64_t ComputeThreadTicks() {
       &thread_info_count);
   MACH_DCHECK(kr == KERN_SUCCESS, kr) << "thread_info";
 
-  return (thread_info_data.user_time.seconds *
-              base::Time::kMicrosecondsPerSecond) +
-         thread_info_data.user_time.microseconds;
+  base::CheckedNumeric<int64_t> absolute_micros(
+      thread_info_data.user_time.seconds);
+  absolute_micros *= base::Time::kMicrosecondsPerSecond;
+  absolute_micros += thread_info_data.user_time.microseconds;
+  return absolute_micros.ValueOrDie();
 #endif  // defined(OS_IOS)
 }
 
@@ -225,13 +227,13 @@ bool TimeTicks::IsHighResolution() {
 }
 
 // static
-TimeTicks TimeTicks::ThreadNow() {
-  return TimeTicks(ComputeThreadTicks());
+ThreadTicks ThreadTicks::Now() {
+  return ThreadTicks(ComputeThreadTicks());
 }
 
 // static
-TimeTicks TimeTicks::NowFromSystemTraceTime() {
-  return Now();
+TraceTicks TraceTicks::Now() {
+  return TraceTicks(ComputeCurrentTicks());
 }
 
 }  // namespace base

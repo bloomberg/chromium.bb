@@ -2296,10 +2296,10 @@ class TraceEventCallbackTest : public TraceEventTestFixture {
   std::vector<std::string> collected_events_categories_;
   std::vector<std::string> collected_events_names_;
   std::vector<unsigned char> collected_events_phases_;
-  std::vector<TimeTicks> collected_events_timestamps_;
+  std::vector<TraceTicks> collected_events_timestamps_;
 
   static TraceEventCallbackTest* s_instance;
-  static void Callback(TimeTicks timestamp,
+  static void Callback(TraceTicks timestamp,
                        char phase,
                        const unsigned char* category_group_enabled,
                        const char* name,
@@ -2498,11 +2498,9 @@ TEST_F(TraceEventTestFixture, TraceBufferVectorReportFull) {
       trace_log->CreateTraceBufferVectorOfSize(100));
   do {
     TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(
-        "all", "with_timestamp", 0, 0,
-        TimeTicks::NowFromSystemTraceTime().ToInternalValue());
+        "all", "with_timestamp", 0, 0, TraceTicks::Now().ToInternalValue());
     TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0(
-        "all", "with_timestamp", 0, 0,
-        TimeTicks::NowFromSystemTraceTime().ToInternalValue());
+        "all", "with_timestamp", 0, 0, TraceTicks::Now().ToInternalValue());
   } while (!trace_log->BufferIsFull());
 
   EndTraceAndFlush();
@@ -2875,7 +2873,7 @@ TEST_F(TraceEventTestFixture, EchoToConsoleTraceEventRecursion) {
 TEST_F(TraceEventTestFixture, TimeOffset) {
   BeginTrace();
   // Let TraceLog timer start from 0.
-  TimeDelta time_offset = TimeTicks::NowFromSystemTraceTime() - TimeTicks();
+  TimeDelta time_offset = TraceTicks::Now() - TraceTicks();
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 
   {
@@ -2883,17 +2881,15 @@ TEST_F(TraceEventTestFixture, TimeOffset) {
     TRACE_EVENT0("all", "duration2");
   }
   TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(
-      "all", "with_timestamp", 0, 0,
-      TimeTicks::NowFromSystemTraceTime().ToInternalValue());
+      "all", "with_timestamp", 0, 0, TraceTicks::Now().ToInternalValue());
   TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0(
-      "all", "with_timestamp", 0, 0,
-      TimeTicks::NowFromSystemTraceTime().ToInternalValue());
+      "all", "with_timestamp", 0, 0, TraceTicks::Now().ToInternalValue());
 
   EndTraceAndFlush();
   DropTracedMetadataRecords();
 
   double end_time = static_cast<double>(
-      (TimeTicks::NowFromSystemTraceTime() - time_offset).ToInternalValue());
+      (TraceTicks::Now() - time_offset).ToInternalValue());
   double last_timestamp = 0;
   for (size_t i = 0; i < trace_parsed_.GetSize(); ++i) {
     const DictionaryValue* item;
