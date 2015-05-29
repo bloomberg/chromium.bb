@@ -781,6 +781,14 @@ IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_CookiesEnabled,
                             bool /* cookies_enabled */)
 
 #if defined(ENABLE_PLUGINS)
+// Notification sent from a renderer to the browser that a Pepper plugin
+// instance is created in the DOM.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_PepperInstanceCreated)
+
+// Notification sent from a renderer to the browser that a Pepper plugin
+// instance is deleted from the DOM.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_PepperInstanceDeleted)
+
 // Sent to the browser when the renderer detects it is blocked on a pepper
 // plugin message for too long. This is also sent when it becomes unhung
 // (according to the value of is_hung). The browser can give the user the

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -14,6 +16,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/app_modal_dialog.h"
@@ -22,6 +26,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -31,6 +36,7 @@
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
@@ -85,11 +91,19 @@ class LazyBackgroundPageApiTest : public ExtensionApiTest {
   LazyBackgroundPageApiTest() {}
   ~LazyBackgroundPageApiTest() override {}
 
-  void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+  void SetUpInProcessBrowserTestFixture() override {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     // Set shorter delays to prevent test timeouts.
     extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
     extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    // Disable background network activity as it can suddenly bring the Lazy
+    // Background Page alive.
+    command_line->AppendSwitch(switches::kDisableBackgroundNetworking);
+    command_line->AppendSwitch(switches::kNoProxyServer);
   }
 
   // Loads the extension, which temporarily starts the lazy background page
@@ -297,6 +311,42 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
   // Lazy Background Page has been shut down.
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id()));
 }
+
+// Tests that the lazy background page stays alive while a NaCl module exists in
+// its DOM.
+#if !defined(DISABLE_NACL)
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaCl) {
+  {
+    base::FilePath extdir;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_GEN_TEST_DATA, &extdir));
+    extdir = extdir.AppendASCII("ppapi/tests/extensions/load_unload/newlib");
+    LazyBackgroundObserver page_complete;
+    ASSERT_TRUE(LoadExtension(extdir));
+    page_complete.Wait();
+  }
+
+  // The NaCl module is loaded, and the Lazy Background Page stays alive.
+  {
+    ExtensionTestMessageListener nacl_module_loaded("nacl_module_loaded",
+                                                    false);
+    BrowserActionTestUtil(browser()).Press(0);
+    nacl_module_loaded.WaitUntilSatisfied();
+    content::RunAllBlockingPoolTasksUntilIdle();
+    EXPECT_TRUE(IsBackgroundPageAlive(last_loaded_extension_id()));
+  }
+
+  // The NaCl module is detached from DOM, and the Lazy Background Page shuts
+  // down.
+  {
+    LazyBackgroundObserver page_complete;
+    BrowserActionTestUtil(browser()).Press(0);
+    page_complete.WaitUntilClosed();
+  }
+
+  // The Lazy Background Page has been shut down.
+  EXPECT_FALSE(IsBackgroundPageAlive(last_loaded_extension_id()));
+}
+#endif
 
 // Tests that the lazy background page stays alive until all visible views are
 // closed.

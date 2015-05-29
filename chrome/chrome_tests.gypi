@@ -2129,6 +2129,7 @@
                 '../ppapi/native_client/native_client.gyp:nacl_irt',
                 '../ppapi/ppapi_nacl.gyp:ppapi_nacl_tests',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_background_keepalive',
+                '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_load_unload',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_media_galleries',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_packaged_app',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_socket_permissions',

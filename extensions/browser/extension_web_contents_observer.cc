@@ -18,6 +18,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 
 namespace extensions {
@@ -154,6 +155,22 @@ void ExtensionWebContentsObserver::NotifyRenderViewType(
     render_view_host->Send(new ExtensionMsg_NotifyRenderViewType(
         render_view_host->GetRoutingID(), GetViewType(web_contents())));
   }
+}
+
+void ExtensionWebContentsObserver::PepperInstanceCreated() {
+  ProcessManager* const process_manager = ProcessManager::Get(browser_context_);
+  const Extension* const extension =
+      process_manager->GetExtensionForWebContents(web_contents());
+  if (extension)
+    process_manager->IncrementLazyKeepaliveCount(extension);
+}
+
+void ExtensionWebContentsObserver::PepperInstanceDeleted() {
+  ProcessManager* const process_manager = ProcessManager::Get(browser_context_);
+  const Extension* const extension =
+      process_manager->GetExtensionForWebContents(web_contents());
+  if (extension)
+    process_manager->DecrementLazyKeepaliveCount(extension);
 }
 
 const Extension* ExtensionWebContentsObserver::GetExtension(

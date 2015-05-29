@@ -49,6 +49,11 @@ class ExtensionWebContentsObserver : public content::WebContentsObserver {
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host) override;
 
+  // Per the documentation in WebContentsObserver, these two methods are invoked
+  // when a Pepper plugin instance is attached/detached in the page DOM.
+  void PepperInstanceCreated() override;
+  void PepperInstanceDeleted() override;
+
   // Returns the extension or app associated with a render view host. Returns
   // NULL if the render view host is not for a valid extension.
   const Extension* GetExtension(content::RenderViewHost* render_view_host);

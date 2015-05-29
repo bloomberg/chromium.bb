@@ -1167,6 +1167,10 @@ blink::WebView* RenderViewImpl::webview() const {
 void RenderViewImpl::PepperInstanceCreated(
     PepperPluginInstanceImpl* instance) {
   active_pepper_instances_.insert(instance);
+
+  RenderFrameImpl* const render_frame = instance->render_frame();
+  render_frame->Send(
+      new FrameHostMsg_PepperInstanceCreated(render_frame->GetRoutingID()));
 }
 
 void RenderViewImpl::PepperInstanceDeleted(
@@ -1177,6 +1181,11 @@ void RenderViewImpl::PepperInstanceDeleted(
     pepper_last_mouse_event_target_ = NULL;
   if (focused_pepper_plugin_ == instance)
     PepperFocusChanged(instance, false);
+
+  RenderFrameImpl* const render_frame = instance->render_frame();
+  if (render_frame)
+    render_frame->Send(
+        new FrameHostMsg_PepperInstanceDeleted(render_frame->GetRoutingID()));
 }
 
 void RenderViewImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,

@@ -27,6 +27,26 @@
       },
     },
     {
+      'target_name': 'ppapi_tests_extensions_load_unload',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'ppapi_tests_extensions_load_unload',
+        # Only newlib build is used in tests, no need to build others.
+        'build_newlib': 1,
+        'build_glibc': 0,
+        'build_pnacl_newlib': 0,
+        'nexe_destination_dir': 'test_data/ppapi/tests/extensions/load_unload',
+        'sources': [
+          'load_unload/load_unload.cc',
+        ],
+        'test_files': [
+          'load_unload/background.js',
+          'load_unload/ext_icon.png',
+          'load_unload/manifest.json',
+        ],
+      },
+    },
+    {
       'target_name': 'ppapi_tests_extensions_media_galleries',
       'type': 'none',
       'variables': {

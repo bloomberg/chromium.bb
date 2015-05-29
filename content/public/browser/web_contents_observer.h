@@ -278,6 +278,11 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void AppCacheAccessed(const GURL& manifest_url,
                                 bool blocked_by_policy) {}
 
+  // These methods are invoked when a Pepper plugin instance is created/deleted
+  // in the DOM.
+  virtual void PepperInstanceCreated() {}
+  virtual void PepperInstanceDeleted() {}
+
   // Notification that a plugin has crashed.
   // |plugin_pid| is the process ID identifying the plugin process. Note that
   // this ID is supplied by the renderer process, so should not be trusted.

@@ -547,6 +547,10 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
 #if defined(ENABLE_PLUGINS)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_PepperInstanceCreated,
+                        OnPepperInstanceCreated)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_PepperInstanceDeleted,
+                        OnPepperInstanceDeleted)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperPluginHung, OnPepperPluginHung)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PluginCrashed, OnPluginCrashed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
@@ -3020,6 +3024,14 @@ void WebContentsImpl::OnWebUISend(const GURL& source_url,
 }
 
 #if defined(ENABLE_PLUGINS)
+void WebContentsImpl::OnPepperInstanceCreated() {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, PepperInstanceCreated());
+}
+
+void WebContentsImpl::OnPepperInstanceDeleted() {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, PepperInstanceDeleted());
+}
+
 void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
                                          const base::FilePath& path,
                                          bool is_hung) {

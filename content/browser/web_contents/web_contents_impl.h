@@ -821,6 +821,8 @@ class CONTENT_EXPORT WebContentsImpl
                    const std::string& name,
                    const base::ListValue& args);
 #if defined(ENABLE_PLUGINS)
+  void OnPepperInstanceCreated();
+  void OnPepperInstanceDeleted();
   void OnPepperPluginHung(int plugin_child_id,
                           const base::FilePath& path,
                           bool is_hung);
