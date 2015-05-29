@@ -20,7 +20,7 @@ class GL_EXPORT AwGLSurface : public gfx::GLSurface {
   void Destroy() override;
   bool IsOffscreen() override;
   unsigned int GetBackingFrameBufferObject() override;
-  bool SwapBuffers() override;
+  gfx::SwapResult SwapBuffers() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
   void* GetDisplay() override;

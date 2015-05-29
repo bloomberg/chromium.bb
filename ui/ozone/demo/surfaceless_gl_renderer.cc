@@ -103,7 +103,7 @@ bool SurfacelessGlRenderer::Initialize() {
     if (!buffers_[i].Initialize(buffer_factory_, widget_, size_))
       return false;
 
-  PostRenderFrameTask();
+  PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
   return true;
 }
 

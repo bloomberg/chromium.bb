@@ -39,7 +39,8 @@ class GbmSurface : public GbmSurfaceless {
 
  private:
   void OnSwapBuffersCallback(const SwapCompletionCallback& callback,
-                             gbm_bo* pending_buffer);
+                             gbm_bo* pending_buffer,
+                             gfx::SwapResult result);
 
   scoped_refptr<GbmDevice> gbm_;
 

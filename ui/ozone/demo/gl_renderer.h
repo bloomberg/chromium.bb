@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/ozone/demo/renderer_base.h"
 
 namespace gfx {
@@ -22,7 +23,7 @@ class GlRenderer : public RendererBase {
   GlRenderer(gfx::AcceleratedWidget widget, const gfx::Size& size);
   ~GlRenderer() override;
 
-  void PostRenderFrameTask();
+  void PostRenderFrameTask(gfx::SwapResult result);
 
   // Renderer:
   bool Initialize() override;

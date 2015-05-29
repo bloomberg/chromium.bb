@@ -40,7 +40,7 @@ bool GlRenderer::Initialize() {
     return false;
   }
 
-  PostRenderFrameTask();
+  PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
   return true;
 }
 
@@ -58,7 +58,7 @@ void GlRenderer::RenderFrame() {
     LOG(FATAL) << "Failed to swap buffers";
 }
 
-void GlRenderer::PostRenderFrameTask() {
+void GlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&GlRenderer::RenderFrame, weak_ptr_factory_.GetWeakPtr()));

@@ -37,7 +37,7 @@ class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
   bool Initialize() override;
   void Destroy() override;
   bool IsOffscreen() override;
-  bool SwapBuffers() override;
+  gfx::SwapResult SwapBuffers() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
 
@@ -61,7 +61,7 @@ class PbufferGLSurfaceWGL : public GLSurfaceWGL {
   bool Initialize() override;
   void Destroy() override;
   bool IsOffscreen() override;
-  bool SwapBuffers() override;
+  gfx::SwapResult SwapBuffers() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
 

@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -63,14 +64,14 @@ bool HardwareDisplayController::SchedulePageFlip(
     const OverlayPlaneList& plane_list,
     bool is_sync,
     bool test_only,
-    const base::Closure& callback) {
+    const PageFlipCallback& callback) {
   TRACE_EVENT0("drm", "HDC::SchedulePageFlip");
 
   DCHECK(!is_disabled_);
 
   // Ignore requests with no planes to schedule.
   if (plane_list.empty()) {
-    callback.Run();
+    callback.Run(gfx::SwapResult::SWAP_ACK);
     return true;
   }
 

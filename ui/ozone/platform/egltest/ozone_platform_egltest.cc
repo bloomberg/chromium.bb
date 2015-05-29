@@ -216,7 +216,7 @@ class SurfaceOzoneEgltest : public SurfaceOzoneEGL {
   bool OnSwapBuffers() override { return true; }
 
   bool OnSwapBuffersAsync(const SwapCompletionCallback& callback) override {
-    callback.Run();
+    callback.Run(gfx::SwapResult::SWAP_ACK);
     return true;
   }
 

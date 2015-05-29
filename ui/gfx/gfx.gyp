@@ -278,6 +278,7 @@
         'skbitmap_operations.h',
         'skia_util.cc',
         'skia_util.h',
+        'swap_result.h',
         'switches.cc',
         'switches.h',
         'sys_color_change_listener.cc',

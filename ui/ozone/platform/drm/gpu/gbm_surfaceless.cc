@@ -14,6 +14,10 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 
 namespace ui {
+namespace {
+void EmptyPageFlipCallback(gfx::SwapResult result) {
+}
+}  // namespace
 
 GbmSurfaceless::GbmSurfaceless(DrmWindow* window_delegate,
                                DrmDeviceManager* drm_device_manager)
@@ -35,7 +39,7 @@ bool GbmSurfaceless::ResizeNativeWindow(const gfx::Size& viewport_size) {
 
 bool GbmSurfaceless::OnSwapBuffers() {
   return window_delegate_->SchedulePageFlip(true /* is_sync */,
-                                            base::Bind(&base::DoNothing));
+                                            base::Bind(&EmptyPageFlipCallback));
 }
 
 bool GbmSurfaceless::OnSwapBuffersAsync(

@@ -27,6 +27,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
@@ -148,7 +149,8 @@ class GpuCommandBufferStub
   uint64 GetMemoryUsage() const;
 
   void SendSwapBuffersCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info);
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result);
   void SendUpdateVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval);
 

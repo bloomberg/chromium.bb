@@ -598,14 +598,16 @@ gpu::CommandBufferSharedState* CommandBufferProxyImpl::shared_state() const {
 }
 
 void CommandBufferProxyImpl::OnSwapBuffersCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info,
+    gfx::SwapResult result) {
   if (!swap_buffers_completion_callback_.is_null()) {
     if (!ui::LatencyInfo::Verify(
             latency_info, "CommandBufferProxyImpl::OnSwapBuffersCompleted")) {
-      swap_buffers_completion_callback_.Run(std::vector<ui::LatencyInfo>());
+      swap_buffers_completion_callback_.Run(std::vector<ui::LatencyInfo>(),
+                                            result);
       return;
     }
-    swap_buffers_completion_callback_.Run(latency_info);
+    swap_buffers_completion_callback_.Run(latency_info, result);
   }
 }
 
