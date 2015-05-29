@@ -348,14 +348,16 @@ class WorkonHelper(object):
           possible_ebuilds.append(ebuild)
 
       if not possible_ebuilds:
-        logging.warning('Could not find canonical package for %s', package)
+        logging.warning('Could not find canonical package for "%s"', package)
         return None
 
       if len(possible_ebuilds) > 1:
-        logging.warning('Multiple autocompletes found: %s',
-                        ' '.join(possible_ebuilds))
+        logging.warning('Multiple autocompletes found:')
+        for possible_ebuild in possible_ebuilds:
+          logging.warning('  %s', possible_ebuild)
       autocompleted_package = portage_util.EbuildToCP(possible_ebuilds[0])
-      logging.info('Autocompleted "%s" to: %s', package, autocompleted_package)
+      logging.info('Autocompleted "%s" to: "%s"',
+                   package, autocompleted_package)
 
       return self._GetCanonicalAtom(autocompleted_package)
 
