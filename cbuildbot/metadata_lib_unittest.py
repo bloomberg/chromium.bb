@@ -13,19 +13,6 @@ from chromite.lib import cros_test_lib
 from chromite.lib import parallel
 
 
-@cros_test_lib.NetworkTest()
-class MetadataFetchTest(cros_test_lib.TestCase):
-  """Test functions for fetching metadata from GS."""
-
-  def testPaladinBuilder(self):
-    bot, version = ('x86-mario-paladin', '5611.0.0')
-    full_version = metadata_lib.FindLatestFullVersion(bot, version)
-    self.assertEqual(full_version, 'R35-5611.0.0-rc2')
-    metadata = metadata_lib.GetBuildMetadata(bot, full_version)
-    metadata_dict = metadata._metadata_dict # pylint: disable=protected-access
-    self.assertEqual(metadata_dict['status']['status'], 'passed')
-
-
 class MetadataTest(cros_test_lib.TestCase):
   """Tests the correctness of various metadata methods."""
 

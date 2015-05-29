@@ -14,8 +14,6 @@ import multiprocessing
 import os
 import re
 
-from chromite.cbuildbot import archive_lib
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.lib import clactions
@@ -704,54 +702,6 @@ class BuildData(object):
   def Passed(self):
     """Return True if this represents a successful run."""
     return 'passed' == self.metadata_dict['status']['status'].strip()
-
-
-
-def FindLatestFullVersion(builder, version):
-  """Find the latest full version number built by |builder| on |version|.
-
-  Args:
-    builder: Builder to load information from. E.g. daisy-release
-    version: Version that we are interested in. E.g. 5602.0.0
-
-  Returns:
-    The latest corresponding full version number, including milestone prefix.
-    E.g. R35-5602.0.0. For some builders, this may also include a -rcN or
-    -bNNNN suffix.
-  """
-  gs_ctx = gs.GSContext()
-  config = cbuildbot_config.GetConfig()[builder]
-  base_url = archive_lib.GetBaseUploadURI(config)
-  latest_file_url = os.path.join(base_url, 'LATEST-%s' % version)
-  try:
-    return gs_ctx.Cat(latest_file_url).strip()
-  except gs.GSNoSuchKey:
-    return None
-
-
-def GetBuildMetadata(builder, full_version):
-  """Fetch the metadata.json object for |builder| and |full_version|.
-
-  Args:
-    builder: Builder to load information from. E.g. daisy-release
-    full_version: Version that we are interested in, including milestone
-        prefix. E.g. R35-5602.0.0. For some builders, this may also include a
-        -rcN or -bNNNN suffix.
-
-  Returns:
-    A newly created CBuildbotMetadata object with the metadata from the given
-    |builder| and |full_version|.
-  """
-  gs_ctx = gs.GSContext()
-  config = cbuildbot_config.GetConfig()[builder]
-  base_url = archive_lib.GetBaseUploadURI(config)
-  try:
-    archive_url = os.path.join(base_url, full_version)
-    metadata_url = os.path.join(archive_url, constants.METADATA_JSON)
-    output = gs_ctx.Cat(metadata_url)
-    return CBuildbotMetadata(json.loads(output))
-  except gs.GSNoSuchKey:
-    return None
 
 
 class MetadataException(Exception):
