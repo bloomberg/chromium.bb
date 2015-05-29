@@ -187,7 +187,7 @@ Polymer({
   /**
    * @param {!MediaRouterContainerView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
-   * return {boolean} Whether or not to hide the header.
+   * @return {boolean} Whether or not to hide the header.
    * @private
    */
   computeHeaderHidden_: function(view, issue) {
@@ -199,7 +199,7 @@ Polymer({
   /**
    * @param {!MediaRouterContainerView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
-   * return {boolean} Whether or not to hide the issue banner.
+   * @return {boolean} Whether or not to hide the issue banner.
    * @private
    */
   computeIssueBannerHidden_: function(view, issue) {
@@ -209,7 +209,7 @@ Polymer({
   /**
    * @param {!MediaRouterContainerView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
-   * return {boolean} Whether or not to hide the route details.
+   * @return {boolean} Whether or not to hide the route details.
    * @private
    */
   computerRouteDetailsHidden_: function(view, issue) {
@@ -219,7 +219,7 @@ Polymer({
 
   /**
    * @param {!string} sinkId A sink ID.
-   * return {boolean} Whether or not to hide the route info in the sink list
+   * @return {boolean} Whether or not to hide the route info in the sink list
    *     that is associated with |sinkId|.
    * @private
    */
@@ -229,7 +229,7 @@ Polymer({
 
   /**
    * @param {!string} sinkId A sink ID.
-   * return {string} The title value of the route associated with |sinkId|.
+   * @return {string} The title value of the route associated with |sinkId|.
    * @private
    */
   computeRouteInSinkListValue_: function(sinkId) {
@@ -249,7 +249,7 @@ Polymer({
   /**
    * @param {!MediaRouterContainerView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
-   * return {boolean} Whether or not to hide the sink list.
+   * @return {boolean} Whether or not to hide the sink list.
    * @private
    */
   computeSinkListHidden_: function(view, issue) {

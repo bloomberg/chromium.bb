@@ -19,9 +19,8 @@ Polymer({
   },
 
   /**
-   * Returns true to hide the blocking issue UI, false to show it.
-   *
    * @param {?media_router.Issue} issue
+   * @return {boolean} Whether or not to hide the blocking issue UI.
    * @private
    */
   computeIsBlockingIssueHidden_: function(issue) {
@@ -39,9 +38,8 @@ Polymer({
   },
 
   /**
-   * Returns true to hide |issue|'s optional action, false to show it.
-   *
    * @param {?media_router.Issue} issue
+   * @return {boolean} Whether or not to hide the non-blocking issue UI.
    * @private
    */
   computeOptionalActionHidden_: function(issue) {
