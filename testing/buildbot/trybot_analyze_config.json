@@ -24,6 +24,7 @@
   "chromium": {
     "exclusions": [
       "chrome/test/data/.*",
+      "chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py",
       "components/test/data/.*",
       "content/test/data/.*",
       "content/test/gpu/.*",
