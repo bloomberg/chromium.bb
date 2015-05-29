@@ -428,7 +428,7 @@ FloatWillBeLayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* f
                 logicalLeft += flow->marginLogicalRight();
             } else if (!curr->layoutObject().isListMarker() || toLayoutListMarker(curr->layoutObject()).isInside()) {
                 // The box can have a different writing-mode than the overall line, so this is a bit complicated.
-                // Just get all the physical margin and overflow values by hand based off |isVertical|.
+                // Just get all the physical margin and overflow values by hand based off |isHorizontal|.
                 LayoutUnit logicalLeftMargin = isHorizontal() ? curr->boxModelObject()->marginLeft() : curr->boxModelObject()->marginTop();
                 LayoutUnit logicalRightMargin = isHorizontal() ? curr->boxModelObject()->marginRight() : curr->boxModelObject()->marginBottom();
 
@@ -579,7 +579,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
     bool isRootBox = isRootInlineBox();
     if (isRootBox) {
         const FontMetrics& fontMetrics = layoutObject().style(isFirstLineStyle())->fontMetrics();
-        // RootInlineBoxes are always placed on at pixel boundaries in their logical y direction. Not doing
+        // RootInlineBoxes are always placed at pixel boundaries in their logical y direction. Not doing
         // so results in incorrect layout of text decorations, most notably underlines.
         setLogicalTop(roundToInt(top + maxAscent - fontMetrics.ascent(baselineType)));
     }
@@ -831,7 +831,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
             bottomGlyphOverflow = std::max(bottomGlyphOverflow, emphasisMarkHeight);
     }
 
-    // If letter-spacing is negative, we should factor that into right layout overflow. (Even in RTL, letter-spacing is
+    // If letter-spacing is negative, we should factor that into right layout overflow. Even in RTL, letter-spacing is
     // applied to the right, so this is not an issue with left overflow.
     rightGlyphOverflow -= std::min(0, (int)style.font().fontDescription().letterSpacing());
 
@@ -1047,7 +1047,7 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
     rect.moveBy(accumulatedOffset);
 
     if (visibleToHitTestRequest(result.hitTestRequest()) && locationInContainer.intersects(rect)) {
-        layoutObject().updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(accumulatedOffset))); // Don't add in m_x or m_y here, we want coords in the containing block's space.
+        layoutObject().updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(accumulatedOffset))); // Don't add in m_topLeft here, we want coords in the containing block's space.
         if (!result.addNodeToListBasedTestResult(layoutObject().node(), locationInContainer, rect))
             return true;
     }
@@ -1092,7 +1092,7 @@ LayoutObject::SelectionState InlineFlowBox::selectionState() const
 
 bool InlineFlowBox::canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const
 {
-    for (InlineBox *box = firstChild(); box; box = box->nextOnLine()) {
+    for (InlineBox* box = firstChild(); box; box = box->nextOnLine()) {
         if (!box->canAccommodateEllipsis(ltr, blockEdge, ellipsisWidth))
             return false;
     }
@@ -1130,7 +1130,7 @@ FloatWillBeLayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr, FloatWillBeLayou
 
 void InlineFlowBox::clearTruncation()
 {
-    for (InlineBox *box = firstChild(); box; box = box->nextOnLine())
+    for (InlineBox* box = firstChild(); box; box = box->nextOnLine())
         box->clearTruncation();
 }
 
