@@ -14418,26 +14418,6 @@ After you create a new supervised user, you can manage their settings at any tim
         </message>
       </if>
 
-      <!-- Strings for controlling the minimum SSL/TLS version in about:flags. -->
-      <message name="IDS_FLAGS_SSL_VERSION_MIN_NAME" desc="Name of about::flags option to control the minimum supported SSL/TLS version">
-        Minimum SSL/TLS version supported.
-      </message>
-      <message name="IDS_FLAGS_SSL_VERSION_MIN_DESCRIPTION" desc="Description of about::flags option to control the minimum supported SSL/TLS version">
-        Configure the minimum SSL/TLS version that can be used when connecting to HTTPS servers.
-      </message>
-      <message name="IDS_FLAGS_SSL_VERSION_DEFAULT" desc="The description of the default value for the minimum SSL/TLS version.">
-        Default
-      </message>
-      <message name="IDS_FLAGS_SSL_VERSION_TLSV1" desc="Name of TLS 1.0. This is a technical term and it's very unlikely that any translation will be needed.">
-        TLS 1.0
-      </message>
-      <message name="IDS_FLAGS_SSL_VERSION_TLSV11" desc="Name of TLS 1.1. This is a technical term and it's very unlikely that any translation will be needed.">
-        TLS 1.1
-      </message>
-      <message name="IDS_FLAGS_SSL_VERSION_TLSV12" desc="Name of TLS 1.2. This is a technical term and it's very unlikely that any translation will be needed.">
-        TLS 1.2
-      </message>
-
       <!-- Strings for controlling credit card scanning feature in about:flags. -->
       <message name="IDS_FLAGS_ENABLE_CREDIT_CARD_SCAN_NAME" desc="The name of about:flags option to enable scanning of credit cards using device camera.">
         Credit card scanning

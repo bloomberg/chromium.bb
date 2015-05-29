@@ -406,16 +406,6 @@ const Experiment::Choice kAutofillSyncCredentialChoices[] = {
     password_manager::switches::kDisallowAutofillSyncCredential, ""},
 };
 
-const Experiment::Choice kSSLVersionMinChoices[] = {
-  { IDS_FLAGS_SSL_VERSION_DEFAULT, "", "" },
-  { IDS_FLAGS_SSL_VERSION_TLSV1, switches::kSSLVersionMin,
-    switches::kSSLVersionTLSv1 },
-  { IDS_FLAGS_SSL_VERSION_TLSV11, switches::kSSLVersionMin,
-    switches::kSSLVersionTLSv11 },
-  { IDS_FLAGS_SSL_VERSION_TLSV12, switches::kSSLVersionMin,
-    switches::kSSLVersionTLSv12 },
-};
-
 const Experiment::Choice kFillOnAccountSelectChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
@@ -2147,13 +2137,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableNewZIPUnpacker)
   },
 #endif  // defined(OS_CHROMEOS)
-  {
-    "ssl-version-min",
-    IDS_FLAGS_SSL_VERSION_MIN_NAME,
-    IDS_FLAGS_SSL_VERSION_MIN_DESCRIPTION,
-    kOsAll,
-    MULTI_VALUE_TYPE(kSSLVersionMinChoices)
-  },
   {
     "enable-credit-card-scan",
     IDS_FLAGS_ENABLE_CREDIT_CARD_SCAN_NAME,
