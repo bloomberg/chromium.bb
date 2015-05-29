@@ -167,12 +167,16 @@ public class FirstRunSignInProcessor {
             return;
         }
 
+        final boolean delaySync = getFirstRunFlowSignInSetupSync(mActivity);
+        final int delaySyncType = delaySync
+                ? SigninManager.SIGNIN_SYNC_SETUP_IN_PROGRESS
+                : SigninManager.SIGNIN_SYNC_IMMEDIATELY;
         signinManager.signInToSelectedAccount(mActivity, account,
-                mSignInType, SigninManager.SIGNIN_SYNC_IMMEDIATELY, mShowSignInNotification,
+                mSignInType, delaySyncType, mShowSignInNotification,
                 new SignInFlowObserver() {
                     private void completeSignIn() {
                         // Show sync settings if user pressed the "Settings" button.
-                        if (getFirstRunFlowSignInSetupSync(mActivity)) {
+                        if (delaySync) {
                             openSyncSettings(
                                     ChromeSigninController.get(mActivity).getSignedInAccountName());
                         }
