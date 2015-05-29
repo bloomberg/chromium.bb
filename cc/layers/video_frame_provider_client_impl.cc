@@ -25,7 +25,8 @@ VideoFrameProviderClientImpl::VideoFrameProviderClientImpl(
       client_(client),
       active_video_layer_(nullptr),
       stopped_(false),
-      rendering_(false) {
+      rendering_(false),
+      needs_put_current_frame_(false) {
   // This only happens during a commit on the compositor thread while the main
   // thread is blocked. That makes this a thread-safe call to set the video
   // frame provider client that does not require a lock. The same is true of
@@ -90,6 +91,7 @@ void VideoFrameProviderClientImpl::PutCurrentFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
   provider_lock_.AssertAcquired();
   provider_->PutCurrentFrame();
+  needs_put_current_frame_ = false;
 }
 
 void VideoFrameProviderClientImpl::ReleaseLock() {
@@ -142,6 +144,7 @@ void VideoFrameProviderClientImpl::DidReceiveFrame() {
                "active_video_layer",
                !!active_video_layer_);
   DCHECK(thread_checker_.CalledOnValidThread());
+  needs_put_current_frame_ = true;
   if (active_video_layer_)
     active_video_layer_->SetNeedsRedraw();
 }
@@ -174,6 +177,16 @@ void VideoFrameProviderClientImpl::OnBeginFrame(const BeginFrameArgs& args) {
   }
 
   DidReceiveFrame();
+}
+
+void VideoFrameProviderClientImpl::DidDrawFrame() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  {
+    base::AutoLock locker(provider_lock_);
+    if (provider_ && needs_put_current_frame_)
+      provider_->PutCurrentFrame();
+  }
+  needs_put_current_frame_ = false;
 }
 
 }  // namespace cc

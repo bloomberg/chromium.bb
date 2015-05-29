@@ -189,7 +189,6 @@ class WebMediaPlayerMS
   bool current_frame_used_;
   // |current_frame_lock_| protects |current_frame_used_| and |current_frame_|.
   base::Lock current_frame_lock_;
-  bool pending_repaint_;
 
   scoped_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 

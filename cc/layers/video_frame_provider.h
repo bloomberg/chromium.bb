@@ -83,8 +83,11 @@ class CC_EXPORT VideoFrameProvider {
   // has been removed. http://crbug.com/439548
   virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() = 0;
 
-  // Indicates that the last frame returned via GetCurrentFrame() is expected to
-  // be rendered. Must only occur after a previous call to GetCurrentFrame().
+  // Called in response to DidReceiveFrame() or a return value of true from
+  // UpdateCurrentFrame() if the current frame was considered for rendering; the
+  // frame may not been rendered for a variety of reasons (occlusion, etc).
+  // Providers may use the absence of this call as a signal to detect when a new
+  // frame missed its intended deadline.
   virtual void PutCurrentFrame() = 0;
 
  protected:

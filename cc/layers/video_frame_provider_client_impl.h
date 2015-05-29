@@ -48,6 +48,7 @@ class CC_EXPORT VideoFrameProviderClientImpl
 
   // VideoFrameController implementation.
   void OnBeginFrame(const BeginFrameArgs& args) override;
+  void DidDrawFrame() override;
 
   // VideoFrameProvider::Client implementation.
   // Called on the main thread.
@@ -70,6 +71,7 @@ class CC_EXPORT VideoFrameProviderClientImpl
   VideoLayerImpl* active_video_layer_;
   bool stopped_;
   bool rendering_;
+  bool needs_put_current_frame_;
 
   // Since the provider lives on another thread, it can be destroyed while the
   // frame controller are accessing its frame. Before being destroyed the

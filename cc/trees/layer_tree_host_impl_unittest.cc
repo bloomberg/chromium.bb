@@ -7753,12 +7753,18 @@ class FakeVideoFrameController : public VideoFrameController {
  public:
   void OnBeginFrame(const BeginFrameArgs& args) override {
     begin_frame_args_ = args;
+    did_draw_frame_ = false;
   }
 
-  const BeginFrameArgs& begin_frame_args() { return begin_frame_args_; }
+  void DidDrawFrame() override { did_draw_frame_ = true; }
+
+  const BeginFrameArgs& begin_frame_args() const { return begin_frame_args_; }
+
+  bool did_draw_frame() const { return did_draw_frame_; }
 
  private:
   BeginFrameArgs begin_frame_args_;
+  bool did_draw_frame_ = false;
 };
 
 TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerInsideFrame) {
@@ -7773,6 +7779,17 @@ TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerInsideFrame) {
   host_impl_->AddVideoFrameController(&controller);
   EXPECT_TRUE(controller.begin_frame_args().IsValid());
   host_impl_->DidFinishImplFrame();
+
+  EXPECT_FALSE(controller.did_draw_frame());
+  LayerTreeHostImpl::FrameData frame;
+  host_impl_->DidDrawAllLayers(frame);
+  EXPECT_TRUE(controller.did_draw_frame());
+
+  controller.OnBeginFrame(begin_frame_args);
+  EXPECT_FALSE(controller.did_draw_frame());
+  host_impl_->RemoveVideoFrameController(&controller);
+  host_impl_->DidDrawAllLayers(frame);
+  EXPECT_FALSE(controller.did_draw_frame());
 }
 
 TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerOutsideFrame) {
@@ -7793,6 +7810,17 @@ TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerOutsideFrame) {
   EXPECT_FALSE(controller.begin_frame_args().IsValid());
   host_impl_->WillBeginImplFrame(begin_frame_args);
   EXPECT_TRUE(controller.begin_frame_args().IsValid());
+
+  EXPECT_FALSE(controller.did_draw_frame());
+  LayerTreeHostImpl::FrameData frame;
+  host_impl_->DidDrawAllLayers(frame);
+  EXPECT_TRUE(controller.did_draw_frame());
+
+  controller.OnBeginFrame(begin_frame_args);
+  EXPECT_FALSE(controller.did_draw_frame());
+  host_impl_->RemoveVideoFrameController(&controller);
+  host_impl_->DidDrawAllLayers(frame);
+  EXPECT_FALSE(controller.did_draw_frame());
 }
 
 TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {

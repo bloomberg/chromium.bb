@@ -26,6 +26,11 @@ class CC_EXPORT VideoFrameController {
  public:
   virtual void OnBeginFrame(const BeginFrameArgs& args) = 0;
 
+  // Called upon completion of LayerTreeHostImpl::DidDrawAllLayers(), regardless
+  // of whether the controller issued a SetNeedsRedraw().  May be used to
+  // determine when SetNeedsRedraw() is called but the draw is aborted.
+  virtual void DidDrawFrame() = 0;
+
  protected:
   virtual ~VideoFrameController() {}
 };
