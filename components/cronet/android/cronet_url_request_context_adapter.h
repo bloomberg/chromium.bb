@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/json_pref_store.h"
 #include "base/threading/thread.h"
 
 namespace base {
@@ -91,13 +92,25 @@ class CronetURLRequestContextAdapter {
 
   void StopNetLogOnNetworkThread();
 
+  // Gets the file thread. Create one if there is none.
+  base::Thread* GetFileThread();
+
   // Network thread is owned by |this|, but is destroyed from java thread.
   base::Thread* network_thread_;
+
+  // File thread should be destroyed last.
+  scoped_ptr<base::Thread> file_thread_;
+
   // |write_to_file_observer_| and |context_| should only be accessed on
   // network thread.
   scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
   scoped_ptr<net::URLRequestContext> context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+
+  // |sdch_owner_| should be destroyed before |json_pref_store_|, because
+  // tearing down |sdch_owner_| forces |json_pref_store_| to flush pending
+  // writes to the disk.
+  scoped_refptr<JsonPrefStore> json_pref_store_;
   scoped_ptr<net::SdchOwner> sdch_owner_;
 
   // Context config is only valid untng context is initialized.

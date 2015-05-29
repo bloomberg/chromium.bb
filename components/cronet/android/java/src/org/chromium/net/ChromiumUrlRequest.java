@@ -116,9 +116,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
         mHeaders = headers;
         mSink = sink;
         mUrlRequestAdapter = nativeCreateRequestAdapter(
-                mRequestContext.getChromiumUrlRequestContextAdapter(),
-                mUrl,
-                mPriority);
+                mRequestContext.getUrlRequestContextAdapter(), mUrl, mPriority);
         mListener = listener;
     }
 

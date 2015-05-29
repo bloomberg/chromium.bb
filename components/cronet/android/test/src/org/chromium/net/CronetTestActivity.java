@@ -36,6 +36,8 @@ public class CronetTestActivity extends Activity {
     public static final String POST_DATA_KEY = "postData";
     public static final String CONFIG_KEY = "config";
     public static final String CACHE_KEY = "cache";
+    public static final String SDCH_KEY = "sdch";
+
     public static final String LIBRARY_INIT_KEY = "libraryInit";
     /**
       * Skips library initialization.
@@ -50,6 +52,9 @@ public class CronetTestActivity extends Activity {
 
     // Uses in-memory cache.
     public static final String CACHE_IN_MEMORY = "memory";
+
+    // Enables Sdch.
+    public static final String SDCH_ENABLE = "enable";
 
     /**
       * Initializes Cronet Async API only.
@@ -150,7 +155,7 @@ public class CronetTestActivity extends Activity {
         assertTrue(storage.mkdir());
     }
 
-    private String getTestStorage() {
+    String getTestStorage() {
         return PathUtils.getDataDirectory(getApplicationContext()) + "/test_storage";
     }
 
@@ -194,6 +199,11 @@ public class CronetTestActivity extends Activity {
             config.enableHttpCache(UrlRequestContextConfig.HttpCache.DISK_NO_HTTP, 1000 * 1024);
         } else if (CACHE_IN_MEMORY.equals(cacheString)) {
             config.enableHttpCache(UrlRequestContextConfig.HttpCache.IN_MEMORY, 100 * 1024);
+        }
+
+        String sdchString = getCommandLineArg(SDCH_KEY);
+        if (SDCH_ENABLE.equals(sdchString)) {
+            config.enableSDCH(true);
         }
 
         // Setting this here so it isn't overridden on the command line

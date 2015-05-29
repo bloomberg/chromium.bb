@@ -283,6 +283,7 @@
             'cronet/android/test/src/org/chromium/net/NativeTestServer.java',
             'cronet/android/test/src/org/chromium/net/NetworkChangeNotifierUtil.java',
             'cronet/android/test/src/org/chromium/net/QuicTestServer.java',
+            'cronet/android/test/src/org/chromium/net/SdchObserver.java',
             'cronet/android/test/src/org/chromium/net/TestUploadDataStreamHandler.java',
           ],
           'variables': {
@@ -301,6 +302,8 @@
             'cronet/android/test/native_test_server.h',
             'cronet/android/test/quic_test_server.cc',
             'cronet/android/test/quic_test_server.h',
+            'cronet/android/test/sdch_test_util.cc',
+            'cronet/android/test/sdch_test_util.h',
             'cronet/android/test/test_upload_data_stream_handler.cc',
             'cronet/android/test/test_upload_data_stream_handler.h',
             'cronet/android/test/network_change_notifier_util.cc',

@@ -39,9 +39,9 @@ public final class NativeTestServer {
      *             old API.
      */
     public static void registerHostResolverProc(long contextAdapter, boolean isLegacyAPI) {
-        sHostResolverBlock.close();
         nativeRegisterHostResolverProc(contextAdapter, isLegacyAPI);
         sHostResolverBlock.block();
+        sHostResolverBlock.close();
     }
 
     public static String getEchoBodyURL() {

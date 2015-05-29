@@ -11,6 +11,7 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/prefs/pref_filter.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "components/cronet/url_request_context_config.h"
@@ -185,6 +186,18 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   context_builder.set_net_log(net_log.release());
   context_builder.set_proxy_config_service(proxy_config_service_.release());
   config->ConfigureURLRequestContextBuilder(&context_builder);
+
+  // Set up pref file if storage path is specified.
+  // TODO(xunjieli): maybe get rid of the condition on sdch.
+  if (!config->storage_path.empty() && config->enable_sdch) {
+    base::FilePath filepath(config->storage_path);
+    filepath = filepath.Append(FILE_PATH_LITERAL("local_prefs.json"));
+    json_pref_store_ = new JsonPrefStore(
+        filepath, GetFileThread()->task_runner(), scoped_ptr<PrefFilter>());
+    json_pref_store_->ReadPrefsAsync(nullptr);
+    context_builder.SetFileTaskRunner(GetFileThread()->task_runner());
+  }
+
   context_.reset(context_builder.Build());
 
   default_load_flags_ = net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -196,6 +209,8 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     DCHECK(context_->sdch_manager());
     sdch_owner_.reset(
         new net::SdchOwner(context_->sdch_manager(), context_.get()));
+    if (json_pref_store_)
+      sdch_owner_->EnablePersistentStorage(json_pref_store_.get());
   }
 
   // Currently (circa M39) enabling QUIC requires setting probability threshold.
@@ -350,6 +365,15 @@ void CronetURLRequestContextAdapter::StopNetLogOnNetworkThread() {
     write_to_file_observer_->StopObserving(context_.get());
     write_to_file_observer_.reset();
   }
+}
+
+base::Thread* CronetURLRequestContextAdapter::GetFileThread() {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  if (!file_thread_) {
+    file_thread_.reset(new base::Thread("Network File Thread"));
+    file_thread_->Start();
+  }
+  return file_thread_.get();
 }
 
 // Creates RequestContextAdater if config is valid URLRequestContextConfig,
