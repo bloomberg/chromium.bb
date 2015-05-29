@@ -70,6 +70,10 @@
         'base/metrics/cast_metrics_helper.h',
         'base/metrics/grouped_histogram.cc',
         'base/metrics/grouped_histogram.h',
+        'base/path_utils.cc',
+        'base/path_utils.h',
+        'base/process_utils.cc',
+        'base/process_utils.h',
         'base/serializers.cc',
         'base/serializers.h'
       ],
