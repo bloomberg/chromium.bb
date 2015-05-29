@@ -451,6 +451,12 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
         content::NotificationService::NoDetails());
     // This will close all browser sessions.
     chrome::CloseAllBrowsers();
+
+    // At this point, the user has already chosen to cancel downloads. If we
+    // were to shut down as usual, the downloads would be cancelled in
+    // DownloadService::Shutdown().
+    DownloadService::CancelAllDownloads();
+
     return NO;
   }
 

@@ -700,6 +700,32 @@ class BrowserCloseManagerWithDownloadsBrowserTest :
   base::ScopedTempDir scoped_download_directory_;
 };
 
+// Mac has its own in-progress download prompt in app_controller_mac.mm, so
+// BrowserCloseManager should simply close all browsers. If there are no
+// browsers, it should not crash.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
+                       TestWithDownloads) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  SetDownloadPathForProfile(browser()->profile());
+  ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
+
+  RepeatedNotificationObserver close_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
+
+  TestBrowserCloseManager::AttemptClose(
+      TestBrowserCloseManager::NO_USER_CHOICE);
+  close_observer.Wait();
+  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
+  EXPECT_TRUE(chrome::BrowserIterator().done());
+  EXPECT_EQ(1, DownloadService::NonMaliciousDownloadCountAllProfiles());
+
+  // Attempting to close again should not crash.
+  TestBrowserCloseManager::AttemptClose(
+      TestBrowserCloseManager::NO_USER_CHOICE);
+}
+#else  // defined(OS_MACOSX)
+
 // Test shutdown with a DANGEROUS_URL download undecided.
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
     TestWithDangerousUrlDownload) {
@@ -888,6 +914,8 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(chrome::BrowserIterator().done());
 }
+
+#endif  // defined(OS_MACOSX)
 
 INSTANTIATE_TEST_CASE_P(BrowserCloseManagerWithDownloadsBrowserTest,
                         BrowserCloseManagerWithDownloadsBrowserTest,
