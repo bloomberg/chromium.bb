@@ -11,7 +11,6 @@ import glob
 import os
 import pprint
 
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
@@ -577,85 +576,6 @@ class CalculateSuspects(object):
       return set(cls.FilterChangesForInfraFail(changes))
 
     return cls._FindPackageBuildFailureSuspects(changes, messages, sanity)
-
-  @classmethod
-  def GetResponsibleOverlays(cls, build_root, messages):
-    """Get the set of overlays that could have caused failures.
-
-    This loops through the set of builders that failed in a given run and
-    finds what overlays could have been responsible for the failure.
-
-    Args:
-      build_root: Build root directory.
-      messages: A list of build failure messages from supporting builders.
-        These must be BuildFailureMessage objects or NoneType objects.
-
-    Returns:
-      The set of overlays that could have caused the failures. If we can't
-      determine what overlays are responsible, returns None.
-    """
-    responsible_overlays = set()
-    for message in messages:
-      if message is None:
-        return None
-      bot_id = message.builder
-      config = cbuildbot_config.GetConfig().get(bot_id)
-      if not config:
-        return None
-      responsible_overlays.update(
-          GetRelevantOverlaysForConfig(config, build_root))
-
-    return responsible_overlays
-
-  @classmethod
-  def FilterOutInnocentChanges(cls, build_root, changes, messages):
-    """Filter out innocent changes based on failure messages.
-
-    Args:
-      build_root: Build root directory.
-      changes: GitRepoPatches that might be guilty.
-      messages: A list of build failure messages from supporting builders.
-        These must be BuildFailureMessage objects or NoneType objects.
-
-    Returns:
-      A list of the changes that we could not prove innocent.
-    """
-    # If there were no internal failures, only kick out external changes.
-    # (Still, fail all changes if we received any None messages.)
-    candidates = changes
-    if all(messages) and not any(message.internal for message in messages):
-      candidates = [change for change in changes if not change.internal]
-    return cls.FilterOutInnocentOverlayChanges(build_root, candidates, messages)
-
-  @classmethod
-  def FilterOutInnocentOverlayChanges(cls, build_root, changes, messages):
-    """Filter out innocent overlay changes based on failure messages.
-
-    It is not possible to break a x86-generic builder via a change to an
-    unrelated overlay (e.g. amd64-generic). Filter out changes that are
-    known to be innocent.
-
-    Args:
-      build_root: Build root directory.
-      changes: GitRepoPatches that might be guilty.
-      messages: A list of build failure messages from supporting builders.
-        These must be BuildFailureMessage objects or NoneType objects.
-
-    Returns:
-      A list of the changes that we could not prove innocent.
-    """
-    all_overlays = set(portage_util.FindOverlays(
-        constants.BOTH_OVERLAYS, None, build_root))
-    responsible_overlays = cls.GetResponsibleOverlays(build_root, messages)
-    if responsible_overlays is None:
-      return changes
-    manifest = git.ManifestCheckout.Cached(build_root)
-    candidates = []
-    for change in changes:
-      overlays = GetAffectedOverlays(change, manifest, all_overlays)
-      if overlays is None or overlays.issubset(responsible_overlays):
-        candidates.append(change)
-    return candidates
 
   @classmethod
   def _CanIgnoreFailures(cls, messages, change, build_root):

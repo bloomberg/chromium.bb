@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import ConfigParser
-import mock
 import os
 import unittest
 
@@ -250,28 +249,6 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     # 'Builders failed to report statuses' belong to infrastructure failures.
     self.assertTrue(
         triage_lib.CalculateSuspects.OnlyInfraFailures(messages, no_stat))
-
-  def testSkipInnocentOverlayPatches(self):
-    """Test that we don't blame innocent overlay patches."""
-    changes = self.GetPatches(4)
-    overlay_dir = os.path.join(constants.SOURCE_ROOT, 'src/overlays')
-    m = mock.MagicMock()
-    self.PatchObject(cros_patch.GitRepoPatch, 'GetCheckout', return_value=m)
-    self.PatchObject(m, 'GetPath', return_value=overlay_dir)
-    self.PatchObject(changes[0], 'GetDiffStatus',
-                     return_value={'overlay-x86-generic/make.conf': 'M'})
-    self.PatchObject(changes[1], 'GetDiffStatus',
-                     return_value={'make.conf': 'M'})
-    self.PatchObject(changes[2], 'GetDiffStatus',
-                     return_value={'overlay-daisy/make.conf': 'M'})
-    self.PatchObject(changes[3], 'GetDiffStatus',
-                     return_value={'overlay-daisy_spring/make.conf': 'M'})
-
-    message = GetFailedMessage([Exception()])
-    candidates = (
-        triage_lib.CalculateSuspects.FilterOutInnocentOverlayChanges(
-            constants.SOURCE_ROOT, changes, [message]))
-    self.assertEquals(candidates, changes[1:])
 
 
 class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
