@@ -143,6 +143,7 @@ public class ChildAccountService {
                         for (HasChildAccountCallback callback : mCallbacks) {
                             callback.onChildAccountChecked(hasChildAccount);
                         }
+                        mCallbacks.clear();
                     }
                 }, null /* handler */);
 
