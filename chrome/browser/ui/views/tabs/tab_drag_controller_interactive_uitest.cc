@@ -38,6 +38,13 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
+#include "ui/aura/window_targeter.h"
+#endif
+
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -560,6 +567,69 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
   // mouse/touch was released.
   EXPECT_FALSE(tab_strip->GetWidget()->HasCapture());
 }
+
+#if defined(USE_AURA)
+namespace {
+
+// We need both MaskedWindowTargeter and MaskedWindowDelegate as they
+// are used in two different pathes. crbug.com/493354.
+class MaskedWindowTargeter : public aura::WindowTargeter {
+ public:
+  MaskedWindowTargeter() {}
+  ~MaskedWindowTargeter() override {}
+
+  // aura::WindowTargeter:
+  bool EventLocationInsideBounds(ui::EventTarget* target,
+                                 const ui::LocatedEvent& event) const override {
+    aura::Window* window = static_cast<aura::Window*>(target);
+    gfx::Point local_point = event.location();
+    if (window->parent())
+      aura::Window::ConvertPointToTarget(window->parent(), window,
+                                         &local_point);
+    return window->GetEventHandlerForPoint(local_point);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MaskedWindowTargeter);
+};
+
+}  // namespace
+
+// The logic to find the target tabstrip should take the window mask into
+// account. This test hangs without the fix. crbug.com/473080.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragWithMaskedWindows) {
+  AddTabAndResetBrowser(browser());
+
+  aura::Window* browser_window = browser()->window()->GetNativeWindow();
+  const gfx::Rect bounds = browser_window->GetBoundsInScreen();
+  aura::test::MaskedWindowDelegate masked_window_delegate(
+      gfx::Rect(bounds.width() - 10, 0, 10, bounds.height()));
+  gfx::Rect test(bounds);
+  masked_window_delegate.set_can_focus(false);
+  scoped_ptr<aura::Window> masked_window(
+      aura::test::CreateTestWindowWithDelegate(&masked_window_delegate, 10,
+                                               test, browser_window->parent()));
+  masked_window->SetEventTargeter(
+      scoped_ptr<ui::EventTargeter>(new MaskedWindowTargeter()));
+
+  ASSERT_FALSE(masked_window->GetEventHandlerForPoint(
+      gfx::Point(bounds.width() - 11, 0)));
+  ASSERT_TRUE(masked_window->GetEventHandlerForPoint(
+      gfx::Point(bounds.width() - 9, 0)));
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+
+  gfx::Point tab_1_center(GetCenterInScreenCoordinates(tab_strip->tab_at(1)));
+  ASSERT_TRUE(PressInput(tab_1_center));
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(DragInputTo(tab_0_center));
+  ASSERT_TRUE(ReleaseInput());
+  EXPECT_EQ("1 0", IDString(model));
+  EXPECT_FALSE(TabDragController::IsActive());
+  EXPECT_FALSE(tab_strip->IsDragSessionActive());
+}
+#endif  // USE_AURA
 
 namespace {
 

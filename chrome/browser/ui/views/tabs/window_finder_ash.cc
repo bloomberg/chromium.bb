@@ -6,8 +6,10 @@
 
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/wm/core/window_util.h"
 
 namespace {
 
@@ -26,8 +28,17 @@ gfx::NativeWindow GetLocalProcessWindowAtPointImpl(
       window->id() == ash::kShellWindowId_MouseCursorContainer)
     return NULL;
 
-  if (window->layer()->type() == ui::LAYER_TEXTURED)
-    return window->GetBoundsInScreen().Contains(screen_point) ? window : NULL;
+  if (window->layer()->type() == ui::LAYER_TEXTURED) {
+    // Returns the window that has visible layer and can hit the
+    // |screen_point|, because we want to detach the tab as soon as
+    // the dragging mouse moved over to the window that can hide the
+    // moving tab.
+    aura::client::ScreenPositionClient* client =
+        aura::client::GetScreenPositionClient(window->GetRootWindow());
+    gfx::Point local_point = screen_point;
+    client->ConvertPointFromScreen(window, &local_point);
+    return window->GetEventHandlerForPoint(local_point) ? window : nullptr;
+  }
 
   for (aura::Window::Windows::const_reverse_iterator i =
            window->children().rbegin(); i != window->children().rend(); ++i) {
