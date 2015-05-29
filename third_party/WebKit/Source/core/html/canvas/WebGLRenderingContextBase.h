@@ -999,6 +999,8 @@ protected:
 
     void findNewMaxNonDefaultTextureUnit();
 
+    virtual void renderbufferStorageImpl(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, const char* functionName);
+
     friend class WebGLStateRestorer;
     friend class WebGLRenderingContextEvictionManager;
 

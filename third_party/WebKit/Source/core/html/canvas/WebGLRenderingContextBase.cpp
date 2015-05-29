@@ -2030,7 +2030,7 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(GLenum target, GLenum at
     }
     Platform3DObject bufferObject = objectOrZero(buffer);
     switch (attachment) {
-    case GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL:
+    case GL_DEPTH_STENCIL_ATTACHMENT:
         if (isDepthStencilSupported() || !buffer) {
             webContext()->framebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT, renderbuffertarget, bufferObject);
             webContext()->framebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT, renderbuffertarget, bufferObject);
@@ -2072,7 +2072,7 @@ void WebGLRenderingContextBase::framebufferTexture2D(GLenum target, GLenum attac
     }
     Platform3DObject textureObject = objectOrZero(texture);
     switch (attachment) {
-    case GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL:
+    case GL_DEPTH_STENCIL_ATTACHMENT:
         webContext()->framebufferTexture2D(target, GL_DEPTH_ATTACHMENT, textarget, textureObject, level);
         webContext()->framebufferTexture2D(target, GL_STENCIL_ATTACHMENT, textarget, textureObject, level);
         break;
@@ -3380,20 +3380,12 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
 #endif
 }
 
-void WebGLRenderingContextBase::renderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
+void WebGLRenderingContextBase::renderbufferStorageImpl(
+    GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height,
+    const char* functionName)
 {
-    if (isContextLost())
-        return;
-    if (target != GL_RENDERBUFFER) {
-        synthesizeGLError(GL_INVALID_ENUM, "renderbufferStorage", "invalid target");
-        return;
-    }
-    if (!m_renderbufferBinding || !m_renderbufferBinding->object()) {
-        synthesizeGLError(GL_INVALID_OPERATION, "renderbufferStorage", "no bound renderbuffer");
-        return;
-    }
-    if (!validateSize("renderbufferStorage", width, height))
-        return;
+    ASSERT(!samples); // |samples| > 0 is only valid in WebGL2's renderbufferStorageMultisample().
+    ASSERT(!isWebGL2OrHigher()); // Make sure this is overridden in WebGL 2.
     switch (internalformat) {
     case GL_DEPTH_COMPONENT16:
     case GL_RGBA4:
@@ -3406,9 +3398,9 @@ void WebGLRenderingContextBase::renderbufferStorage(GLenum target, GLenum intern
         m_renderbufferBinding->deleteEmulatedStencilBuffer(webContext());
         break;
     case GL_SRGB8_ALPHA8_EXT:
-        if (!(extensionEnabled(EXTsRGBName) || isWebGL2OrHigher())) {
-            synthesizeGLError(GL_INVALID_ENUM, "renderbufferStorage", "sRGB not enabled");
-            return;
+        if (!extensionEnabled(EXTsRGBName)) {
+            synthesizeGLError(GL_INVALID_ENUM, functionName, "sRGB not enabled");
+            break;
         }
         webContext()->renderbufferStorage(target, internalformat, width, height);
         m_renderbufferBinding->setInternalFormat(internalformat);
@@ -3421,8 +3413,8 @@ void WebGLRenderingContextBase::renderbufferStorage(GLenum target, GLenum intern
         } else {
             WebGLRenderbuffer* emulatedStencilBuffer = ensureEmulatedStencilBuffer(target, m_renderbufferBinding.get());
             if (!emulatedStencilBuffer) {
-                synthesizeGLError(GL_OUT_OF_MEMORY, "renderbufferStorage", "out of memory");
-                return;
+                synthesizeGLError(GL_OUT_OF_MEMORY, functionName, "out of memory");
+                break;
             }
             webContext()->renderbufferStorage(target, GL_DEPTH_COMPONENT16, width, height);
             webContext()->bindRenderbuffer(target, objectOrZero(emulatedStencilBuffer));
@@ -3435,9 +3427,27 @@ void WebGLRenderingContextBase::renderbufferStorage(GLenum target, GLenum intern
         m_renderbufferBinding->setInternalFormat(internalformat);
         break;
     default:
-        synthesizeGLError(GL_INVALID_ENUM, "renderbufferStorage", "invalid internalformat");
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
+        break;
+    }
+}
+
+void WebGLRenderingContextBase::renderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
+{
+    const char* functionName = "renderbufferStorage";
+    if (isContextLost())
+        return;
+    if (target != GL_RENDERBUFFER) {
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
         return;
     }
+    if (!m_renderbufferBinding || !m_renderbufferBinding->object()) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "no bound renderbuffer");
+        return;
+    }
+    if (!validateSize(functionName, width, height))
+        return;
+    renderbufferStorageImpl(target, 0, internalformat, width, height, functionName);
     applyStencilTest();
 }
 
@@ -5522,7 +5532,7 @@ bool WebGLRenderingContextBase::validateFramebufferFuncParameters(const char* fu
     case GL_COLOR_ATTACHMENT0:
     case GL_DEPTH_ATTACHMENT:
     case GL_STENCIL_ATTACHMENT:
-    case GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL:
+    case GL_DEPTH_STENCIL_ATTACHMENT:
         break;
     default:
         if ((extensionEnabled(WebGLDrawBuffersName) || isWebGL2OrHigher())

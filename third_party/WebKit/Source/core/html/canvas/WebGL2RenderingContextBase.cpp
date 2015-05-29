@@ -16,6 +16,7 @@
 #include "core/html/canvas/WebGLFramebuffer.h"
 #include "core/html/canvas/WebGLProgram.h"
 #include "core/html/canvas/WebGLQuery.h"
+#include "core/html/canvas/WebGLRenderbuffer.h"
 #include "core/html/canvas/WebGLSampler.h"
 #include "core/html/canvas/WebGLSync.h"
 #include "core/html/canvas/WebGLTexture.h"
@@ -130,6 +131,8 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
                 return WebGLAny(scriptState, DOMInt32Array::create(0));
 
             scoped_ptr<GLint[]> values(new GLint[length]);
+            for (GLint ii = 0; ii < length; ++ii)
+                values[ii] = 0;
             webContext()->getInternalformativ(target, internalformat, GL_SAMPLES, length, values.get());
             return WebGLAny(scriptState, DOMInt32Array::create(values.get(), length));
         }
@@ -163,12 +166,86 @@ void WebGL2RenderingContextBase::readBuffer(GLenum mode)
     webContext()->readBuffer(mode);
 }
 
+void WebGL2RenderingContextBase::renderbufferStorageImpl(
+    GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height,
+    const char* functionName)
+{
+    switch (internalformat) {
+    case GL_R8UI:
+    case GL_R8I:
+    case GL_R16UI:
+    case GL_R16I:
+    case GL_R32UI:
+    case GL_R32I:
+    case GL_RG8UI:
+    case GL_RG8I:
+    case GL_RG16UI:
+    case GL_RG16I:
+    case GL_RG32UI:
+    case GL_RG32I:
+    case GL_RGBA8UI:
+    case GL_RGBA8I:
+    case GL_RGB10_A2UI:
+    case GL_RGBA16UI:
+    case GL_RGBA16I:
+    case GL_RGBA32UI:
+    case GL_RGBA32I:
+        if (samples > 0) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                "for integer formats, samples > 0");
+            break;
+        }
+    case GL_R8:
+    case GL_RG8:
+    case GL_RGB8:
+    case GL_RGB565:
+    case GL_RGBA8:
+    case GL_SRGB8_ALPHA8:
+    case GL_RGB5_A1:
+    case GL_RGBA4:
+    case GL_RGB10_A2:
+    case GL_DEPTH_COMPONENT16:
+    case GL_DEPTH_COMPONENT24:
+    case GL_DEPTH_COMPONENT32F:
+    case GL_DEPTH24_STENCIL8:
+    case GL_DEPTH32F_STENCIL8:
+    case GL_STENCIL_INDEX8:
+        if (!samples) {
+            webContext()->renderbufferStorage(target, internalformat, width, height);
+        } else {
+            webContext()->renderbufferStorageMultisampleCHROMIUM(
+                target, samples, internalformat, width, height);
+        }
+        m_renderbufferBinding->setInternalFormat(internalformat);
+        m_renderbufferBinding->setSize(width, height);
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
+        break;
+    }
+}
+
 void WebGL2RenderingContextBase::renderbufferStorageMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)
 {
+    const char* functionName = "renderbufferStorageMultisample";
     if (isContextLost())
         return;
-
-    webContext()->renderbufferStorageMultisampleEXT(target, samples, internalformat, width, height);
+    if (target != GL_RENDERBUFFER) {
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        return;
+    }
+    if (!m_renderbufferBinding || !m_renderbufferBinding->object()) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "no bound renderbuffer");
+        return;
+    }
+    if (!validateSize("renderbufferStorage", width, height))
+        return;
+    if (samples < 0) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "samples < 0");
+        return;
+    }
+    renderbufferStorageImpl(target, samples, internalformat, width, height, functionName);
+    applyStencilTest();
 }
 
 /* Texture objects */

@@ -37,7 +37,6 @@
 typedef unsigned Platform3DObject;
 
 // WebGL-specific enums
-const unsigned GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL = 0x821A;
 const unsigned GC3D_UNPACK_FLIP_Y_WEBGL = 0x9240;
 const unsigned GC3D_UNPACK_PREMULTIPLY_ALPHA_WEBGL = 0x9241;
 const unsigned GC3D_CONTEXT_LOST_WEBGL = 0x9242;

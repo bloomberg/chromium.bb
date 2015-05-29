@@ -120,7 +120,7 @@ namespace {
     void WebGLRenderbufferAttachment::attach(WebGraphicsContext3D* context, GLenum attachment)
     {
         Platform3DObject object = objectOrZero(m_renderbuffer.get());
-        if (attachment == GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL && m_renderbuffer->emulatedStencilBuffer()) {
+        if (attachment == GL_DEPTH_STENCIL_ATTACHMENT && m_renderbuffer->emulatedStencilBuffer()) {
             context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, object);
             context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, objectOrZero(m_renderbuffer->emulatedStencilBuffer()));
         } else {
@@ -130,7 +130,7 @@ namespace {
 
     void WebGLRenderbufferAttachment::unattach(WebGraphicsContext3D* context, GLenum attachment)
     {
-        if (attachment == GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL) {
+        if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
             context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
             context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, 0);
         } else {
@@ -231,7 +231,7 @@ namespace {
 
     void WebGLTextureAttachment::unattach(WebGraphicsContext3D* context, GLenum attachment)
     {
-        if (attachment == GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL) {
+        if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
             context->framebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_target, 0, m_level);
             context->framebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, m_target, 0, m_level);
         } else {
@@ -247,13 +247,16 @@ namespace {
     bool isColorRenderable(GLenum internalformat)
     {
         switch (internalformat) {
-        case GL_RGBA4:
-        case GL_RGB5_A1:
-        case GL_RGB565:
-        case GL_SRGB8_ALPHA8_EXT:
-            return true;
-        default:
+        case GL_DEPTH_COMPONENT16:
+        case GL_DEPTH_COMPONENT24:
+        case GL_DEPTH_COMPONENT32F:
+        case GL_DEPTH24_STENCIL8:
+        case GL_DEPTH32F_STENCIL8:
+        case GL_STENCIL_INDEX8:
+        case GL_DEPTH_STENCIL: // WebGL 1 specific.
             return false;
+        default:
+            return true;
         }
     }
 
@@ -366,7 +369,7 @@ bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GLe
                 return false;
             }
         }
-    } else if (attachment == GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL) {
+    } else if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
         if (object->isRenderbuffer()) {
             if (internalformat != GL_DEPTH_STENCIL_OES) {
                 *reason = "the internalformat of the attached renderbuffer is not DEPTH_STENCIL";
@@ -439,15 +442,15 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(GLenum attachment)
         m_attachments.remove(attachment);
         drawBuffersIfNecessary(false);
         switch (attachment) {
-        case GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL:
+        case GL_DEPTH_STENCIL_ATTACHMENT:
             attach(GL_DEPTH_ATTACHMENT, GL_DEPTH_ATTACHMENT);
             attach(GL_STENCIL_ATTACHMENT, GL_STENCIL_ATTACHMENT);
             break;
         case GL_DEPTH_ATTACHMENT:
-            attach(GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL, GL_DEPTH_ATTACHMENT);
+            attach(GL_DEPTH_STENCIL_ATTACHMENT, GL_DEPTH_ATTACHMENT);
             break;
         case GL_STENCIL_ATTACHMENT:
-            attach(GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL, GL_STENCIL_ATTACHMENT);
+            attach(GL_DEPTH_STENCIL_ATTACHMENT, GL_STENCIL_ATTACHMENT);
             break;
         }
     }
@@ -513,7 +516,7 @@ GLenum WebGLFramebuffer::checkStatus(const char** reason) const
         case GL_STENCIL_ATTACHMENT:
             haveStencil = true;
             break;
-        case GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL:
+        case GL_DEPTH_STENCIL_ATTACHMENT:
             haveDepthStencil = true;
             break;
         }
@@ -555,7 +558,7 @@ bool WebGLFramebuffer::hasStencilBuffer() const
 {
     WebGLAttachment* attachment = getAttachment(GL_STENCIL_ATTACHMENT);
     if (!attachment)
-        attachment = getAttachment(GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL);
+        attachment = getAttachment(GL_DEPTH_STENCIL_ATTACHMENT);
     return attachment && attachment->valid();
 }
 
