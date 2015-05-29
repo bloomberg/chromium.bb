@@ -579,10 +579,9 @@ static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
             if (Character::treatAsZeroWidthSpace(character))
                 continue;
             if ((U_GET_GC_MASK(character) & U_GC_M_MASK)
-                && (Character::isUnicodeVariationSelector(character)
-                    || currentFontData->canRenderCombiningCharacterSequence(
-                        currentCharacterPosition,
-                        iterator.glyphEnd() - currentCharacterPosition)))
+                && currentFontData->canRenderCombiningCharacterSequence(
+                    currentCharacterPosition,
+                    iterator.glyphEnd() - currentCharacterPosition))
                 continue;
 
             nextFontData = font->glyphDataForCharacter(character, false, isSpaceNormalize).fontData;

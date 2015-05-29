@@ -67,32 +67,6 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLeadingCommon)
     ASSERT_EQ(script, HB_SCRIPT_LATIN);
 }
 
-TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants)
-{
-    struct {
-        const char* name;
-        UChar string[4];
-        hb_script_t script;
-    } testlist[] = {
-        { "Standard Variants text style", { 0x30, 0xFE0E }, HB_SCRIPT_COMMON },
-        { "Standard Variants emoji style", { 0x203C, 0xFE0F }, HB_SCRIPT_COMMON },
-        { "Standard Variants of Ideograph", { 0x4FAE, 0xFE00 }, HB_SCRIPT_HAN },
-        { "Ideographic Variants", { 0x3402, 0xDB40, 0xDD00 }, HB_SCRIPT_HAN },
-        { "Not-defined Variants", { 0x41, 0xDB40, 0xDDEF }, HB_SCRIPT_LATIN },
-    };
-    for (auto& test : testlist) {
-        TextRun run(test.string, wcslen((const wchar_t*)test.string));
-        HarfBuzzShaper shaper(font, run);
-        shaper.shape();
-        EXPECT_EQ(1u, shaper.numberOfRunsForTesting()) << test.name;
-        ASSERT_TRUE(shaper.runInfoForTesting(0, startIndex, numGlyphs, script)) << test.name;
-        EXPECT_EQ(0u, startIndex) << test.name;
-        // TODO(kojii): HarfBuzzFace does not support UVS yet and numGlyphs becomes 2
-        // EXPECT_EQ(1u, numGlyphs) << test.name;
-        EXPECT_EQ(test.script, script) << test.name;
-    }
-}
-
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon)
 {
     UChar devanagariCommonString[] = { 0x915, 0x94d, 0x930, 0x28, 0x20, 0x29 };
