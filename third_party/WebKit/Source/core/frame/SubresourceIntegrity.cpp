@@ -70,10 +70,10 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
     if (!RuntimeEnabledFeatures::subresourceIntegrityEnabled())
         return true;
 
-    if (!element.fastHasAttribute(HTMLNames::integrityAttr))
-        return true;
-
     Document& document = element.document();
+    String attribute = element.fastGetAttribute(HTMLNames::integrityAttr);
+    if (attribute.isEmpty())
+        return true;
 
     if (!resource.isEligibleForIntegrityCheck(document.securityOrigin())) {
         logErrorToConsole("Subresource Integrity: The resource '" + resourceUrl.elidedString() + "' has an integrity attribute, but the resource requires CORS to be enabled to check the integrity, and it is not. The resource has been blocked.", document);
@@ -81,7 +81,6 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
     }
 
     WTF::Vector<IntegrityMetadata> metadataList;
-    String attribute = element.fastGetAttribute(HTMLNames::integrityAttr);
     IntegrityParseResult integrityParseResult = parseIntegrityAttribute(attribute, metadataList, document);
     if (integrityParseResult != IntegrityParseValidResult)
         return false;
