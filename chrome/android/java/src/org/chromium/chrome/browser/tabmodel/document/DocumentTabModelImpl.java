@@ -313,10 +313,17 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         ThreadUtils.assertOnUiThread();
         if (index < 0 || index >= getCount()) return false;
 
+        Tab tab = getTabAt(index);
+        for (TabModelObserver obs : mObservers) obs.willCloseTab(tab, false);
+
+        if (!tab.isIncognito()) tab.createHistoricalTab();
+
         int tabId = mTabIdList.get(index);
         mActivityDelegate.finishAndRemoveTask(isIncognito(), tabId);
         mTabIdList.remove(index);
         mEntryMap.remove(tabId);
+
+        for (TabModelObserver obs : mObservers) obs.didCloseTab(tab);
         return true;
     }
 
@@ -426,11 +433,6 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
                     || mActivityDelegate.isTabAssociatedWithNonDestroyedActivity(
                             isIncognito(), tabId)) {
                 continue;
-            }
-
-            Entry entry = mEntryMap.get(tabId);
-            if (!isIncognito() && entry.getTabState() != null) {
-                entry.getTabState().contentsState.createHistoricalTab();
             }
             removed.add(tabId);
         }

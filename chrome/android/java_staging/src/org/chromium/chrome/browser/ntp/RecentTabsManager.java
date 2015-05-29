@@ -294,6 +294,13 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     }
 
     /**
+     * Closes the specified currently open tab.
+     * @param tab Information about the tab that should be closed.
+     */
+    public void closeTab(CurrentlyOpenTab tab) {
+    }
+
+    /**
      * Sets the persistent expanded/collapsed state of a foreign session list.
      *
      * @param session foreign session to collapsed.

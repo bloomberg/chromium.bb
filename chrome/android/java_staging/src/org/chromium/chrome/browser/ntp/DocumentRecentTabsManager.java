@@ -22,6 +22,9 @@ import org.chromium.chrome.browser.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentUtils;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
@@ -76,6 +79,17 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
                     updateCurrentlyOpenTabsWhenDatabaseReady();
                 }
         };
+        mTabModel.addObserver(new EmptyTabModelObserver() {
+            @Override
+            public void didAddTab(Tab tab, TabLaunchType type) {
+                updateCurrentlyOpenTabsWhenDatabaseReady();
+            }
+
+            @Override
+            public void didCloseTab(Tab tab) {
+                updateCurrentlyOpenTabsWhenDatabaseReady();
+            }
+        });
         updateCurrentlyOpenTabs();
     }
 
@@ -148,6 +162,13 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
     }
 
     @Override
+    public void closeTab(CurrentlyOpenTab tab) {
+        Tab tabOject = TabModelUtils.getTabById(mTabModel, tab.getTabId());
+        mTabModel.closeTab(tabOject);
+        postUpdate();
+    }
+
+    @Override
     protected void updateCurrentlyOpenTabs() {
         mUpdateOpenTabsObserver.runWhenReady();
     }
@@ -158,6 +179,7 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
         ActivityManager am = (ActivityManager) mActivity.getSystemService(
                 Activity.ACTIVITY_SERVICE);
         List<ActivityManager.AppTask> taskList = am.getAppTasks();
+        mCurrentlyOpenTabs.clear();
         for (int i = 0; i < taskList.size(); i++) {
             RecentTaskInfo taskInfo = DocumentUtils.getTaskInfoFromTask(taskList.get(i));
             if (taskInfo == null) continue;
@@ -194,7 +216,7 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
                     }
                 }
             };
-            mCurrentlyOpenTabs.add(new CurrentlyOpenTab(url, title, onClickRunnable));
+            mCurrentlyOpenTabs.add(new CurrentlyOpenTab(tabId, url, title, onClickRunnable));
         }
     }
 }

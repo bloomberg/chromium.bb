@@ -272,6 +272,20 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
             }
             return true;
         }
+
+        @Override
+        void onCreateContextMenuForChild(final int childPosition, ContextMenu menu,
+                Activity activity) {
+            if (isMoreButton(childPosition)) return;
+            OnMenuItemClickListener listener = new OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    mRecentTabsManager.closeTab(getChild(childPosition));
+                    return true;
+                }
+            };
+            menu.add(R.string.close_tab).setOnMenuItemClickListener(listener);
+        }
     }
 
     /**

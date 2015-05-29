@@ -9,20 +9,27 @@ package org.chromium.chrome.browser.ntp;
  * expected to bring the Tab back when run.
  */
 public class CurrentlyOpenTab {
+    private final int mTabId;
     private final String mUrl;
     private final String mTitle;
     private final Runnable mRunnable;
 
     /**
      * Basic constructor for {@link CurrentlyOpenTab}.
+     * @param tabId The id of the tab.
      * @param url The url that the tab is currently at.
      * @param title The title of the page that the tab is showing.
      * @param runnable Run when the item is selected.
      */
-    public CurrentlyOpenTab(String url, String title, Runnable runnable) {
+    public CurrentlyOpenTab(int tabId, String url, String title, Runnable runnable) {
+        mTabId = tabId;
         mUrl = url;
         mTitle = title;
         mRunnable = runnable;
+    }
+
+    public int getTabId() {
+        return mTabId;
     }
 
     public String getUrl() {
