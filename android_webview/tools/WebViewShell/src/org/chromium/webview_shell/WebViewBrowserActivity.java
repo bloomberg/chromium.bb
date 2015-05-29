@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 
 import android.view.KeyEvent;
@@ -30,6 +31,9 @@ import android.widget.TextView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -71,6 +75,12 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             public boolean shouldOverrideUrlLoading(WebView webView, String url) {
                 return false;
             }
+
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description,
+                    String failingUrl) {
+                setUrlFail(true);
+            }
         });
 
         mWebView.setWebChromeClient(new WebChromeClient() {
@@ -99,13 +109,27 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
 
         String url = getUrlFromIntent(getIntent());
         if (url != null) {
-            mUrlBar.setText(url, TextView.BufferType.EDITABLE);
-            loadUrl(url);
+            setUrlBarText(url);
+            setUrlFail(false);
+            loadUrlFromUrlBar(mUrlBar);
         }
     }
 
     public void loadUrlFromUrlBar(View view) {
-        loadUrl(mUrlBar.getText().toString());
+        String url = mUrlBar.getText().toString();
+        try {
+            URI uri = new URI(url);
+            url = (uri.getScheme() == null) ? "http://" + uri.toString() : uri.toString();
+        } catch (URISyntaxException e) {
+            String message = "<html><body>URISyntaxException: " + e.getMessage() + "</body></html>";
+            mWebView.loadData(message, "text/html", "UTF-8");
+            setUrlFail(true);
+            return;
+        }
+
+        setUrlBarText(url);
+        setUrlFail(false);
+        loadUrl(url);
         hideKeyboard(mUrlBar);
     }
 
@@ -165,6 +189,14 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     private void loadUrl(String url) {
         mWebView.loadUrl(url);
         mWebView.requestFocus();
+    }
+
+    private void setUrlBarText(String url) {
+        mUrlBar.setText(url, TextView.BufferType.EDITABLE);
+    }
+
+    private void setUrlFail(boolean fail) {
+        mUrlBar.setTextColor(fail ? Color.RED : Color.BLACK);
     }
 
     /**
