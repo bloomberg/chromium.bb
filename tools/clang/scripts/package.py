@@ -17,8 +17,8 @@ import tarfile
 
 # Path constants.
 THIS_DIR = os.path.dirname(__file__)
-LLVM_DIR = os.path.join(THIS_DIR, '..', '..', '..', 'third_party', 'llvm')
 THIRD_PARTY_DIR = os.path.join(THIS_DIR, '..', '..', '..', 'third_party')
+LLVM_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm')
 LLVM_BOOTSTRAP_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-bootstrap')
 LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
                                           'llvm-bootstrap-install')
@@ -37,8 +37,11 @@ def TeeCmd(cmd, logfile, fail_hard=True):
   # Reading from PIPE can deadlock if one buffer is full but we wait on a
   # different one.  To work around this, pipe the subprocess's stderr to
   # its stdout buffer and don't give it a stdin.
-  proc = subprocess.Popen(cmd, bufsize=1, stdin=open(os.devnull),
-                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  # shell=True is required in cmd.exe since depot_tools has an svn.bat, and
+  # bat files only work with shell=True set.
+  proc = subprocess.Popen(cmd, bufsize=1, shell=sys.platform == 'win32',
+                          stdin=open(os.devnull), stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT)
   for line in iter(proc.stdout.readline,''):
     Tee(line, logfile)
     if proc.poll() is not None:
@@ -109,15 +112,20 @@ def main():
 
   # Copy a whitelist of files to the directory we're going to tar up.
   # This supports the same patterns that the fnmatch module understands.
-  so_ext = 'dylib' if sys.platform == 'darwin' else 'so'
-  want = ['bin/clang',
-          'bin/llvm-symbolizer',
-          'lib/libFindBadConstructs.' + so_ext,
-          'lib/libBlinkGCPlugin.' + so_ext,
+  exe_ext = '.exe' if sys.platform == 'win32' else ''
+  want = ['bin/llvm-symbolizer' + exe_ext,
           'lib/clang/*/asan_blacklist.txt',
           # Copy built-in headers (lib/clang/3.x.y/include).
           'lib/clang/*/include/*',
           ]
+  if sys.platform == 'win32':
+    want.append('bin/clang-cl.exe')
+  else:
+    so_ext = 'dylib' if sys.platform == 'darwin' else 'so'
+    want.extend(['bin/clang',
+                 'lib/libFindBadConstructs.' + so_ext,
+                 'lib/libBlinkGCPlugin.' + so_ext,
+                 ])
   if sys.platform == 'darwin':
     want.extend(['bin/libc++.1.dylib',
                  # Copy only the OSX (ASan and profile) and iossim (ASan)
@@ -135,6 +143,11 @@ def main():
                  'lib/clang/*/lib/linux/*libclang_rt.san*',
                  'lib/clang/*/lib/linux/*profile*',
                  'lib/clang/*/msan_blacklist.txt',
+                 ])
+  elif sys.platform == 'win32':
+    want.extend(['lib/clang/*/lib/windows/clang_rt.asan*.dll',
+                 'lib/clang/*/lib/windows/clang_rt.asan*.lib',
+                 'lib/clang/*/include_sanitizer/*',
                  ])
   if args.gcc_toolchain is not None:
     # Copy the stdlibc++.so.6 we linked Clang against so it can run.
@@ -168,7 +181,8 @@ def main():
         subprocess.call(['strip', '-g', dest])
 
   # Set up symlinks.
-  os.symlink('clang', os.path.join(pdir, 'bin', 'clang++'))
+  if sys.platform != 'win32':
+    os.symlink('clang', os.path.join(pdir, 'bin', 'clang++'))
   if sys.platform == 'darwin':
     os.symlink('libc++.1.dylib', os.path.join(pdir, 'bin', 'libc++.dylib'))
     # Also copy libc++ headers.
@@ -188,6 +202,8 @@ def main():
 
   if sys.platform == 'darwin':
     platform = 'Mac'
+  elif sys.platform == 'win32':
+    platform = 'Win'
   else:
     platform = 'Linux_x64'
 
