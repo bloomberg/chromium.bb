@@ -7,10 +7,12 @@
 #include "public/web/WebDocument.h"
 
 #include "core/CSSPropertyNames.h"
+#include "core/HTMLNames.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLLinkElement.h"
 #include "core/style/ComputedStyle.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -26,13 +28,46 @@ using blink::FrameTestHelpers::WebViewHelper;
 using blink::URLTestHelpers::toKURL;
 using namespace blink;
 
-TEST(WebDocumentTest, InsertStyleSheet)
-{
-    WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad("about:blank");
+const char* kDefaultOrigin = "https://example.test/";
+const char* kManifestDummyFilePath = "manifest-dummy.html";
 
-    WebDocument webDoc = webViewHelper.webView()->mainFrame()->document();
-    Document* coreDoc = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
+class WebDocumentTest : public ::testing::Test {
+protected:
+    static void SetUpTestCase();
+
+    void loadURL(const std::string& url);
+    Document* topDocument() const;
+    WebDocument topWebDocument() const;
+
+    WebViewHelper m_webViewHelper;
+};
+
+void WebDocumentTest::SetUpTestCase()
+{
+    URLTestHelpers::registerMockedURLLoad(toKURL(std::string(kDefaultOrigin) + kManifestDummyFilePath), WebString::fromUTF8(kManifestDummyFilePath));
+}
+
+void WebDocumentTest::loadURL(const std::string& url)
+{
+    m_webViewHelper.initializeAndLoad(url);
+}
+
+Document* WebDocumentTest::topDocument() const
+{
+    return toLocalFrame(m_webViewHelper.webViewImpl()->page()->mainFrame())->document();
+}
+
+WebDocument WebDocumentTest::topWebDocument() const
+{
+    return m_webViewHelper.webView()->mainFrame()->document();
+}
+
+TEST_F(WebDocumentTest, InsertStyleSheet)
+{
+    loadURL("about:blank");
+
+    WebDocument webDoc = topWebDocument();
+    Document* coreDoc = topDocument();
 
     webDoc.insertStyleSheet("body { color: green }");
 
@@ -57,6 +92,50 @@ TEST(WebDocumentTest, InsertStyleSheet)
     ASSERT_EQ(Color(0, 128, 0), styleAfterInsertion.visitedDependentColor(CSSPropertyColor));
 }
 
+TEST_F(WebDocumentTest, ManifestURL)
+{
+    loadURL(std::string(kDefaultOrigin) + kManifestDummyFilePath);
+
+    WebDocument webDoc = topWebDocument();
+    Document* document = topDocument();
+    HTMLLinkElement* linkManifest = document->linkManifest();
+
+    // No href attribute was set.
+    ASSERT_EQ(linkManifest->href(), static_cast<KURL>(webDoc.manifestURL()));
+
+    // Set to some absolute url.
+    linkManifest->setAttribute(HTMLNames::hrefAttr, "http://example.com/manifest.json");
+    ASSERT_EQ(linkManifest->href(), static_cast<KURL>(webDoc.manifestURL()));
+
+    // Set to some relative url.
+    linkManifest->setAttribute(HTMLNames::hrefAttr, "static/manifest.json");
+    ASSERT_EQ(linkManifest->href(), static_cast<KURL>(webDoc.manifestURL()));
+}
+
+TEST_F(WebDocumentTest, ManifestUseCredentials)
+{
+    loadURL(std::string(kDefaultOrigin) + kManifestDummyFilePath);
+
+    WebDocument webDoc = topWebDocument();
+    Document* document = topDocument();
+    HTMLLinkElement* linkManifest = document->linkManifest();
+
+    // No crossorigin attribute was set so credentials shouldn't be used.
+    ASSERT_FALSE(linkManifest->fastHasAttribute(HTMLNames::crossoriginAttr));
+    ASSERT_FALSE(webDoc.manifestUseCredentials());
+
+    // Crossorigin set to a random string shouldn't trigger using credentials.
+    linkManifest->setAttribute(HTMLNames::crossoriginAttr, "foobar");
+    ASSERT_FALSE(webDoc.manifestUseCredentials());
+
+    // Crossorigin set to 'anonymous' shouldn't trigger using credentials.
+    linkManifest->setAttribute(HTMLNames::crossoriginAttr, "anonymous");
+    ASSERT_FALSE(webDoc.manifestUseCredentials());
+
+    // Crossorigin set to 'use-credentials' should trigger using credentials.
+    linkManifest->setAttribute(HTMLNames::crossoriginAttr, "use-credentials");
+    ASSERT_TRUE(webDoc.manifestUseCredentials());
+}
 
 namespace {
     const char* baseURLOriginA = "http://example.test:0/";
@@ -89,17 +168,14 @@ namespace {
     }
 }
 
-class WebDocumentFirstPartyTest : public ::testing::Test {
+class WebDocumentFirstPartyTest : public WebDocumentTest {
 public:
     static void SetUpTestCase();
 
 protected:
     void load(const char*);
-    Document* topDocument() const;
     Document* nestedDocument() const;
     Document* nestedNestedDocument() const;
-
-    WebViewHelper m_webViewHelper;
 };
 
 void WebDocumentFirstPartyTest::SetUpTestCase()
@@ -125,11 +201,6 @@ void WebDocumentFirstPartyTest::SetUpTestCase()
 void WebDocumentFirstPartyTest::load(const char* file)
 {
     m_webViewHelper.initializeAndLoad(std::string(baseURLOriginA) + file);
-}
-
-Document* WebDocumentFirstPartyTest::topDocument() const
-{
-    return toLocalFrame(m_webViewHelper.webViewImpl()->page()->mainFrame())->document();
 }
 
 Document* WebDocumentFirstPartyTest::nestedDocument() const

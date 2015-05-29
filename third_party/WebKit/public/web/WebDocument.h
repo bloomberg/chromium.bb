@@ -143,6 +143,7 @@ public:
     BLINK_EXPORT v8::Local<v8::Value> registerEmbedderCustomElement(const WebString& name, v8::Local<v8::Value> options, WebExceptionCode&);
 
     BLINK_EXPORT WebURL manifestURL() const;
+    BLINK_EXPORT bool manifestUseCredentials() const;
 
     BLINK_EXPORT WebURL defaultPresentationURL() const;
 

@@ -358,6 +358,15 @@ WebURL WebDocument::manifestURL() const
     return linkElement->href();
 }
 
+bool WebDocument::manifestUseCredentials() const
+{
+    const Document* document = constUnwrap<Document>();
+    HTMLLinkElement* linkElement = document->linkManifest();
+    if (!linkElement)
+        return false;
+    return equalIgnoringCase(linkElement->fastGetAttribute(HTMLNames::crossoriginAttr), "use-credentials");
+}
+
 WebURL WebDocument::defaultPresentationURL() const
 {
     const Document* document = constUnwrap<Document>();
