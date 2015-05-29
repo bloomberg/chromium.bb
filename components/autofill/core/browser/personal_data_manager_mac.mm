@@ -67,6 +67,11 @@ bool HasQueriedMacAddressBook(PrefService* pref_service) {
 // Whether the user wants Chrome to use the AddressBook to populate Autofill
 // entries.
 bool ShouldUseAddressBook(PrefService* pref_service) {
+  // TODO(erikchen): After Address Book integration has been disabled for 6
+  // weeks, and there are no major problems, rip out all the code. Expected
+  // removal date: 07/15/2015. http://crbug.com/488146.
+  return false;
+
   return pref_service->GetBoolean(prefs::kAutofillUseMacAddressBook);
 }
 
@@ -106,6 +111,11 @@ void EmitMeCardHadPhoneNumber(bool hadPhoneNumber) {
 }
 
 ABAddressBook* GetAddressBook(PrefService* pref_service) {
+  // TODO(erikchen): After Address Book integration has been disabled for 6
+  // weeks, and there are no major problems, rip out all the code. Expected
+  // removal date: 07/15/2015. http://crbug.com/488146.
+  return nil;
+
   bool first_access = !HasQueriedMacAddressBook(pref_service);
 
   base::Time start_time = base::Time::Now();
@@ -438,6 +448,11 @@ bool PersonalDataManager::AccessAddressBook() {
 
 bool PersonalDataManager::ShouldShowAccessAddressBookSuggestion(
     AutofillType type) {
+  // TODO(erikchen): After Address Book integration has been disabled for 6
+  // weeks, and there are no major problems, rip out all the code. Expected
+  // removal date: 07/15/2015. http://crbug.com/488146.
+  return false;
+
   // Don't show the access Address Book prompt if the user has built up any
   // Autofill state.
   if (!web_profiles_.empty())

@@ -69,6 +69,10 @@ cr.define('options', function() {
       $('autofill-options-confirm').onclick = function(event) {
         PageManager.closeOverlay();
       };
+// TODO(erikchen): After Address Book integration has been disabled for
+// 6 weeks, and there are no major problems, rip out all the code. Expected
+// removal date: 07/15/2015. http://crbug.com/488146.
+/*
 <if expr="is_macosx">
       $('autofill-use-mac-address-book-checkbox').onchange = function(event) {
         if (this.checked) {
@@ -82,6 +86,7 @@ cr.define('options', function() {
         }
       };
 </if>
+*/
 
       $('autofill-help').onclick = function(event) {
         chrome.send('coreOptionsUserMetricsAction',

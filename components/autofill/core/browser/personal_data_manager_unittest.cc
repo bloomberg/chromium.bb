@@ -3071,6 +3071,11 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 TEST_F(PersonalDataManagerTest, ShowAddressBookPrompt) {
+  // TODO(erikchen): After Address Book integration has been disabled for 6
+  // weeks, and there are no major problems, rip out all the code. Expected
+  // removal date: 07/15/2015. http://crbug.com/488146.
+  return;
+
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(2);
 
   AutofillType type(ADDRESS_HOME_STREET_ADDRESS);
@@ -3100,6 +3105,10 @@ TEST_F(PersonalDataManagerTest, ShowAddressBookPrompt) {
 // preference that indicates the total number of times the prompt has already
 // been shown.
 TEST_F(PersonalDataManagerTest, MaxTimesToShowAddressBookPrompt) {
+  // TODO(erikchen): After Address Book integration has been disabled for 6
+  // weeks, and there are no major problems, rip out all the code. Expected
+  // removal date: 07/15/2015. http://crbug.com/488146.
+  return;
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(1);
 
   AutofillType type(ADDRESS_HOME_STREET_ADDRESS);

@@ -3040,6 +3040,11 @@ TEST_F(AutofillManagerTest, RemoveProfileVariant) {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 TEST_F(AutofillManagerTest, AccessAddressBookPrompt) {
+  // TODO(erikchen): After Address Book integration has been disabled for 6
+  // weeks, and there are no major problems, rip out all the code. Expected
+  // removal date: 07/15/2015. http://crbug.com/488146.
+  return;
+
   FormData form;
   test::CreateTestAddressFormData(&form);
   std::vector<FormData> forms(1, form);
