@@ -49,23 +49,11 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
 
     v8::Local<v8::Value> result;
     switch (event->dataType()) {
-    case MessageEvent::DataTypeScriptValue: {
-        result = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::data(info.GetIsolate()));
-        if (result.IsEmpty()) {
-            if (!event->dataAsSerializedScriptValue()) {
-                // If we're in an isolated world and the event was created in the main world,
-                // we need to find the 'data' property on the main world wrapper and clone it.
-                v8::Local<v8::Value> mainWorldData = V8HiddenValue::getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenValue::data(info.GetIsolate()));
-                if (!mainWorldData.IsEmpty())
-                    event->setSerializedData(SerializedScriptValueFactory::instance().createAndSwallowExceptions(info.GetIsolate(), mainWorldData));
-            }
-            if (event->dataAsSerializedScriptValue())
-                result = event->dataAsSerializedScriptValue()->deserialize(info.GetIsolate());
-            else
-                result = v8::Null(info.GetIsolate());
-        }
+    case MessageEvent::DataTypeScriptValue:
+        result = event->dataAsScriptValue().v8ValueFor(ScriptState::current(info.GetIsolate()));
+        if (result.IsEmpty())
+            result = v8::Null(info.GetIsolate());
         break;
-    }
 
     case MessageEvent::DataTypeSerializedScriptValue:
         if (SerializedScriptValue* serializedValue = event->dataAsSerializedScriptValue()) {
@@ -98,6 +86,9 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
 
     // Overwrite the data attribute so it returns the cached result in future invocations.
     // This custom getter handler will not be called again.
+    // TODO(bashi): We use ForceSet() here, and we use hidden values in other
+    // places (e.g. V8CustomEventCustom.cpp). We should use the same way to
+    // handle "any" attributes.
     v8::PropertyAttribute dataAttr = static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly);
     if (!v8CallBoolean(info.Holder()->ForceSet(info.GetIsolate()->GetCurrentContext(), v8AtomicString(info.GetIsolate(), "data"), result, dataAttr))) {
         v8SetReturnValue(info, v8::Null(info.GetIsolate()));
@@ -128,13 +119,7 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
         if (exceptionState.throwIfNeeded())
             return;
     }
-    event->initMessageEvent(typeArg, canBubbleArg, cancelableArg, originArg, lastEventIdArg, sourceArg, portArray.release());
-
-    if (!dataArg.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::data(info.GetIsolate()), dataArg);
-        if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld())
-            event->setSerializedData(SerializedScriptValueFactory::instance().createAndSwallowExceptions(info.GetIsolate(), dataArg));
-    }
+    event->initMessageEvent(typeArg, canBubbleArg, cancelableArg, ScriptValue(ScriptState::current(info.GetIsolate()), dataArg), originArg, lastEventIdArg, sourceArg, portArray.release());
 }
 
 } // namespace blink

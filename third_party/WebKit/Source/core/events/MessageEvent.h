@@ -34,19 +34,11 @@
 #include "core/dom/MessagePort.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
+#include "core/events/MessageEventInit.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/DOMWindow.h"
 
 namespace blink {
-
-struct MessageEventInit : public EventInit {
-    MessageEventInit();
-
-    String origin;
-    String lastEventId;
-    RefPtrWillBeMember<EventTarget> source;
-    MessagePortArray ports;
-};
 
 class CORE_EXPORT MessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
@@ -82,13 +74,14 @@ public:
     static PassRefPtrWillBeRawPtr<MessageEvent> create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState&);
     virtual ~MessageEvent();
 
-    void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtrWillBeRawPtr<MessagePortArray>);
+    void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, ScriptValue data, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtrWillBeRawPtr<MessagePortArray>);
     void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtrWillBeRawPtr<MessagePortArray>);
 
     const String& origin() const { return m_origin; }
     const String& lastEventId() const { return m_lastEventId; }
     EventTarget* source() const { return m_source.get(); }
-    MessagePortArray ports() const { return m_ports ? *m_ports : MessagePortArray(); }
+    MessagePortArray ports(bool& isNull) const;
+    MessagePortArray ports() const;
     MessagePortChannelArray* channels() const { return m_channels ? m_channels.get() : 0; }
 
     virtual const AtomicString& interfaceName() const override;
@@ -101,7 +94,8 @@ public:
         DataTypeArrayBuffer
     };
     DataType dataType() const { return m_dataType; }
-    SerializedScriptValue* dataAsSerializedScriptValue() const { ASSERT(m_dataType == DataTypeScriptValue || m_dataType == DataTypeSerializedScriptValue); return m_dataAsSerializedScriptValue.get(); }
+    ScriptValue dataAsScriptValue() const { ASSERT(m_dataType == DataTypeScriptValue); return m_dataAsScriptValue; }
+    SerializedScriptValue* dataAsSerializedScriptValue() const { ASSERT(m_dataType == DataTypeSerializedScriptValue); return m_dataAsSerializedScriptValue.get(); }
     String dataAsString() const { ASSERT(m_dataType == DataTypeString); return m_dataAsString; }
     Blob* dataAsBlob() const { ASSERT(m_dataType == DataTypeBlob); return m_dataAsBlob.get(); }
     DOMArrayBuffer* dataAsArrayBuffer() const { ASSERT(m_dataType == DataTypeArrayBuffer); return m_dataAsArrayBuffer.get(); }
@@ -130,6 +124,7 @@ private:
     MessageEvent(PassRefPtr<DOMArrayBuffer> data, const String& origin);
 
     DataType m_dataType;
+    ScriptValue m_dataAsScriptValue;
     RefPtr<SerializedScriptValue> m_dataAsSerializedScriptValue;
     String m_dataAsString;
     PersistentWillBeMember<Blob> m_dataAsBlob;

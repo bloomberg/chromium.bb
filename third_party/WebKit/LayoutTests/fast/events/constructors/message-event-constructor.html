@@ -17,7 +17,7 @@ shouldBe("new MessageEvent('eventType').data", "null");
 shouldBeEqualToString("new MessageEvent('eventType').origin", "");
 shouldBeEqualToString("new MessageEvent('eventType').lastEventId", "");
 shouldBe("new MessageEvent('eventType').source", "null");
-shouldBe("new MessageEvent('eventType').ports", "[]");
+shouldBe("new MessageEvent('eventType').ports", "null");
 
 // bubbles is passed.
 shouldBe("new MessageEvent('eventType', { bubbles: false }).bubbles", "false");
@@ -30,7 +30,7 @@ shouldBe("new MessageEvent('eventType', { cancelable: true }).cancelable", "true
 // data is passed.
 shouldBe("new MessageEvent('eventType', { data: test_object }).data", "test_object");
 shouldBe("new MessageEvent('eventType', { data: document }).data", "document");
-shouldBe("new MessageEvent('eventType', { data: undefined }).data", "undefined");
+shouldBe("new MessageEvent('eventType', { data: undefined }).data", "null");
 shouldBe("new MessageEvent('eventType', { data: null }).data", "null");
 shouldBe("new MessageEvent('eventType', { data: false }).data", "false");
 shouldBe("new MessageEvent('eventType', { data: true }).data", "true");
@@ -51,7 +51,7 @@ shouldThrow("new MessageEvent('eventType', { get data() { throw 'MessageEvent Er
     shouldBeEqualToString("new MessageEvent('eventType', { " + attr + ": '' })." + attr, "");
 
     // Non-strings.
-    shouldBeEqualToString("new MessageEvent('eventType', { " + attr + ": undefined })." + attr, "undefined");
+    shouldBeEqualToString("new MessageEvent('eventType', { " + attr + ": undefined })." + attr, "");
     shouldBeEqualToString("new MessageEvent('eventType', { " + attr + ": null })." + attr, "null");
     shouldBeEqualToString("new MessageEvent('eventType', { " + attr + ": false })." + attr, "false");
     shouldBeEqualToString("new MessageEvent('eventType', { " + attr + ": true })." + attr, "true");
@@ -101,8 +101,8 @@ shouldBe("new MessageEvent('eventType', { ports: [channel.port1, channel.port2, 
 shouldBe("new MessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[1]", "channel.port2");
 shouldBe("new MessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[2]", "channel2.port1");
 shouldBe("new MessageEvent('eventType', { ports: [] }).ports", "[]");
-shouldBe("new MessageEvent('eventType', { ports: undefined }).ports", "[]");
-shouldBe("new MessageEvent('eventType', { ports: null }).ports", "[]");
+shouldBe("new MessageEvent('eventType', { ports: undefined }).ports", "null");
+shouldBe("new MessageEvent('eventType', { ports: null }).ports", "null");
 
 // Invalid message ports.
 shouldThrow("new MessageEvent('eventType', { ports: [1, 2, 3] }).ports[2]");

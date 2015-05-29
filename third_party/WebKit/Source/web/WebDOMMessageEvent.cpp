@@ -55,6 +55,10 @@ void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble,
     // TODO(alexmos): make ports work properly with OOPIF.
     if (sourceFrame && sourceFrame->isWebLocalFrame())
         ports = MessagePort::toMessagePortArray(toLocalDOMWindow(window)->document(), webChannels);
+    // Use an empty array for |ports| when it is null because this function
+    // is used to implement postMessage().
+    if (!ports)
+        ports = adoptPtrWillBeNoop(new MessagePortArray());
     unwrap<MessageEvent>()->initMessageEvent(type, canBubble, cancelable, messageData, origin, lastEventId, window, ports.release());
 }
 
