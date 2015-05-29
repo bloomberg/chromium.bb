@@ -1,4 +1,0 @@
-CONSOLE WARNING: Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.
-This test passes if it does not crash.
-
-

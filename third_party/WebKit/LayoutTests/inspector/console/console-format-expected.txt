@@ -210,24 +210,20 @@ globals[13]
     attr=""
 console-format.html:12 
     attr="value"
-        "value"
 console-format.html:13 [attr]
     0: attr
     length: 1
     __proto__: Array[0]
 globals[14]
     attr="value"
-        "value"
 console-format.html:12 
     id="x"
-        "x"
 console-format.html:13 [id]
     0: id
     length: 1
     __proto__: Array[0]
 globals[15]
     id="x"
-        "x"
 console-format.html:12 Object {}
     length: (...)
     get length: length()

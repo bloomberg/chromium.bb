@@ -38,34 +38,28 @@ namespace blink {
 using namespace HTMLNames;
 
 Attr::Attr(Element& element, const QualifiedName& name)
-    : ContainerNode(&element.document())
+    : Node(&element.document(), CreateOther)
     , m_element(&element)
     , m_name(name)
-    , m_ignoreChildrenChanged(0)
 {
 }
 
 Attr::Attr(Document& document, const QualifiedName& name, const AtomicString& standaloneValue)
-    : ContainerNode(&document)
+    : Node(&document, CreateOther)
     , m_element(nullptr)
     , m_name(name)
     , m_standaloneValueOrAttachedLocalName(standaloneValue)
-    , m_ignoreChildrenChanged(0)
 {
 }
 
 PassRefPtrWillBeRawPtr<Attr> Attr::create(Element& element, const QualifiedName& name)
 {
-    RefPtrWillBeRawPtr<Attr> attr = adoptRefWillBeNoop(new Attr(element, name));
-    attr->createTextChild();
-    return attr.release();
+    return adoptRefWillBeNoop(new Attr(element, name));
 }
 
 PassRefPtrWillBeRawPtr<Attr> Attr::create(Document& document, const QualifiedName& name, const AtomicString& value)
 {
-    RefPtrWillBeRawPtr<Attr> attr = adoptRefWillBeNoop(new Attr(document, name, value));
-    attr->createTextChild();
-    return attr.release();
+    return adoptRefWillBeNoop(new Attr(document, name, value));
 }
 
 Attr::~Attr()
@@ -85,51 +79,19 @@ const QualifiedName Attr::qualifiedName() const
     return m_name;
 }
 
-void Attr::createTextChild()
+const AtomicString& Attr::value() const
 {
-#if !ENABLE(OILPAN)
-    ASSERT(refCount());
-#endif
-    if (!value().isEmpty()) {
-        RefPtrWillBeRawPtr<Text> textNode = document().createTextNode(value().string());
-
-        // This does everything appendChild() would do in this situation (assuming m_ignoreChildrenChanged was set),
-        // but much more efficiently.
-        textNode->setParentOrShadowHostNode(this);
-        treeScope().adoptIfNeeded(*textNode);
-        setFirstChild(textNode.get());
-        setLastChild(textNode.get());
-    }
+    if (m_element)
+        return m_element->getAttribute(qualifiedName());
+    return m_standaloneValueOrAttachedLocalName;
 }
 
 void Attr::setValue(const AtomicString& value)
 {
-    EventQueueScope scope;
-    m_ignoreChildrenChanged++;
-    // We don't fire the DOMSubtreeModified event for Attr Nodes. This matches the behavior
-    // of IE and Firefox. This event is fired synchronously and is a source of trouble for
-    // attributes as the JS callback could alter the attributes and leave us in a bad state.
-    removeChildren(OmitSubtreeModifiedEvent);
     if (m_element)
-        updateElementAttribute(value);
+        m_element->setAttribute(qualifiedName(), value);
     else
         m_standaloneValueOrAttachedLocalName = value;
-    createTextChild();
-    m_ignoreChildrenChanged--;
-
-    QualifiedName name = qualifiedName();
-    invalidateNodeListCachesInAncestors(&name, m_element);
-}
-
-void Attr::setValueInternal(const AtomicString& value)
-{
-    if (m_element)
-        m_element->willModifyAttribute(qualifiedName(), this->value(), value);
-
-    setValue(value);
-
-    if (m_element)
-        m_element->didModifyAttribute(qualifiedName(), value);
 }
 
 const AtomicString& Attr::valueForBindings() const
@@ -143,78 +105,19 @@ void Attr::setValueForBindings(const AtomicString& value)
     UseCounter::count(document(), UseCounter::AttrSetValue);
     if (m_element)
         UseCounter::count(document(), UseCounter::AttrSetValueWithElement);
-    setValueInternal(value);
+    setValue(value);
 }
 
 void Attr::setNodeValue(const String& v)
 {
     // Attr uses AtomicString type for its value to save memory as there
     // is duplication among Elements' attributes values.
-    setValueInternal(AtomicString(v));
+    setValue(AtomicString(v));
 }
 
 PassRefPtrWillBeRawPtr<Node> Attr::cloneNode(bool /*deep*/)
 {
-    RefPtrWillBeRawPtr<Attr> clone = adoptRefWillBeNoop(new Attr(document(), m_name, value()));
-    cloneChildNodes(clone.get());
-    return clone.release();
-}
-
-// DOM Section 1.1.1
-bool Attr::childTypeAllowed(NodeType type) const
-{
-    return TEXT_NODE == type;
-}
-
-void Attr::childrenChanged(const ChildrenChange&)
-{
-    if (m_ignoreChildrenChanged > 0)
-        return;
-
-    UseCounter::countDeprecation(document(), UseCounter::AttrChildChange);
-
-    QualifiedName name = qualifiedName();
-    invalidateNodeListCachesInAncestors(&name, m_element);
-
-    StringBuilder valueBuilder;
-    for (Node *n = firstChild(); n; n = n->nextSibling()) {
-        if (n->isTextNode())
-            valueBuilder.append(toText(n)->data());
-    }
-
-    AtomicString newValue = valueBuilder.toAtomicString();
-    if (m_element)
-        m_element->willModifyAttribute(qualifiedName(), value(), newValue);
-
-    if (m_element)
-        updateElementAttribute(newValue);
-    else
-        m_standaloneValueOrAttachedLocalName = newValue;
-
-    if (m_element)
-        m_element->attributeChanged(qualifiedName(), newValue);
-}
-
-const AtomicString& Attr::value() const
-{
-    if (m_element)
-        return m_element->getAttribute(qualifiedName());
-    return m_standaloneValueOrAttachedLocalName;
-}
-
-void Attr::updateElementAttribute(const AtomicString& value)
-{
-    ASSERT(m_element);
-    ASSERT(m_element->elementData());
-    MutableAttributeCollection attributes = m_element->ensureUniqueElementData().attributes();
-    size_t index = attributes.findIndex(qualifiedName());
-    if (index == kNotFound) {
-        // Element attributes with null values are not stored.
-        if (!value.isNull())
-            attributes.append(qualifiedName(), value);
-        return;
-    }
-    return attributes[index].setValue(value);
+    return adoptRefWillBeNoop(new Attr(document(), m_name, value()));
 }
 
 void Attr::detachFromElementWithValue(const AtomicString& value)
@@ -234,7 +137,7 @@ void Attr::attachToElement(Element* element, const AtomicString& attachedLocalNa
 DEFINE_TRACE(Attr)
 {
     visitor->trace(m_element);
-    ContainerNode::trace(visitor);
+    Node::trace(visitor);
 }
 
 }

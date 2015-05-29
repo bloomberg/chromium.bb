@@ -15,12 +15,6 @@ gc = window.gc || function()
         var s = new String("AAAA");
 }
 
-handler = function()
-{   
-    this.removeEventListener("DOMNodeRemoved", handler, false);
-    document.body.removeChild(object);
-}
-
 window.onload = function()
 {    
     object = document.createElement("object");
@@ -30,8 +24,6 @@ window.onload = function()
     
     attr = document.createAttribute("width");
     object.setAttributeNode(attr);
-    attr.appendChild(document.createTextNode(1));
-    attr.childNodes[0].addEventListener("DOMNodeRemoved", handler, false);
     
     document.body.appendChild(object);
     

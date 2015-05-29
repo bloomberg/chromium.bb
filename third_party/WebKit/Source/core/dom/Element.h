@@ -253,8 +253,6 @@ public:
 
     void scheduleSVGFilterLayerUpdateHack();
 
-    void normalizeAttributes();
-
     void setBooleanAttribute(const QualifiedName& name, bool);
 
     virtual const StylePropertySet* additionalPresentationAttributeStyle() { return nullptr; }
@@ -589,9 +587,6 @@ private:
     virtual bool areAuthorShadowsAllowed() const { return true; }
     virtual void didAddUserAgentShadowRoot(ShadowRoot&) { }
     virtual bool alwaysCreateUserAgentShadowRoot() const { return false; }
-
-    // FIXME: Remove the need for Attr to call willModifyAttribute/didModifyAttribute.
-    friend class Attr;
 
     enum SynchronizationOfLazyAttribute { NotInSynchronizationOfLazyAttribute = 0, InSynchronizationOfLazyAttribute };
 

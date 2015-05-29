@@ -32,34 +32,6 @@ window.onload = function()
             a.nodeValue = alertMsg("setAttributeNodeNS");
             iFrame.setAttributeNodeNS(a);
         },
-        // Child manipulation methods
-        function(iFrame) { 
-            var src = iFrame.attributes['src'];
-            src.appendChild(document.createTextNode(alertMsg("appendChild() + removeChild()")));
-            src.removeChild(src.firstChild);
-        },
-        function(iFrame) { 
-            var src = iFrame.attributes['src'];
-            src.replaceChild(document.createTextNode(alertMsg("replaceChild()")), src.firstChild);
-        },
-        function(iFrame) { 
-            var src = iFrame.attributes['src'];
-            while (src.firstChild)
-                src.removeChild(src.firstChild);
-            src.appendChild(document.createTextNode(alertMsg("removeChild() + appendChild()")));
-        },
-        function(iFrame) { 
-            var src = iFrame.attributes['src'];
-            while (src.firstChild)
-                src.removeChild(src.firstChild);
-            var msg = alertMsg("removeChild() + appendChild() + appendChild()");
-            src.appendChild(document.createTextNode(msg.slice(0,4)));
-            src.appendChild(document.createTextNode(msg.slice(4)));
-        },
-        function(iFrame) { 
-            var src = iFrame.attributes['src'];
-            src.insertBefore(document.createTextNode(alertMsg("insertBefore()")), src.firstChild);
-        },
         // NamedNodeMap
         function(iFrame) {
             var a = document.createAttribute('src');

@@ -33,9 +33,4 @@ interface Attr : Node {
     [MeasureAs=AttributeOwnerElement] readonly attribute Element? ownerElement;
 
     [MeasureAs=AttributeSpecified] readonly attribute boolean specified; // useless; always returns true
-
-    // FIXME: Attr should not have any child nodes. crbug.com/305105
-    [DeprecateAs=AttrChildAccess] readonly attribute NodeList childNodes;
-    [DeprecateAs=AttrChildAccess] readonly attribute Node firstChild;
-    [DeprecateAs=AttrChildAccess] readonly attribute Node lastChild;
 };

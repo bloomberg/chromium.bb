@@ -84,9 +84,6 @@ function hc_attrclonenode1() {
       var attributes;
       var titleAttr;
       var value;
-      var textNode;
-      var retval;
-      var lastChild;
       var clonedTitle;
 
       var docRef = null;
@@ -99,23 +96,13 @@ function hc_attrclonenode1() {
       attributes = testNode.attributes;
 
       titleAttr = attributes.getNamedItem("title");
-      textNode = doc.createTextNode("terday");
-      retval = titleAttr.appendChild(textNode);
       clonedTitle = titleAttr.cloneNode(false);
-      textNode.nodeValue = "text_node_not_cloned";
 
       value = clonedTitle.value;
+      assertEquals("attrValue","Yes",value);
 
-      assertEquals("attrValue","Yesterday",value);
-       value = clonedTitle.nodeValue;
-
-      assertEquals("attrNodeValue","Yesterday",value);
-       lastChild = clonedTitle.lastChild;
-
-      value = lastChild.nodeValue;
-
-      assertEquals("lastChildValue","terday",value);
-
+      value = clonedTitle.nodeValue;
+      assertEquals("attrNodeValue","Yes",value);
 }
 
 function runTest() {

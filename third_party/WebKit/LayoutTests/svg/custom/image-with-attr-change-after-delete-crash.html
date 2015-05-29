@@ -22,7 +22,7 @@
         setTimeout("crash()", 0);
 
         function crash() {
-          svgImage.attributes[5].replaceChild(newTextNode, svgImage.attributes[5].childNodes[0]);
+          svgImage.attributes[5].value = "no-image";
           svgImage.parentNode.removeChild(svgImage);
           delete svgImage;
           forceGC();

@@ -83,9 +83,6 @@ function hc_attrsetvalue1() {
       var attributes;
       var titleAttr;
       var value;
-      var retval;
-      var firstChild;
-      var otherChild;
 
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
@@ -97,28 +94,14 @@ function hc_attrsetvalue1() {
       attributes = testNode.attributes;
 
       titleAttr = attributes.getNamedItem("title");
-      firstChild = titleAttr.firstChild;
 
-      assertNotNull("attrChildNotNull",firstChild);
-titleAttr.value = "Tomorrow";
-
-      firstChild.nodeValue = "impl reused node";
+      titleAttr.value = "Tomorrow";
 
       value = titleAttr.value;
-
       assertEquals("attrValue","Tomorrow",value);
-       value = titleAttr.nodeValue;
 
+      value = titleAttr.nodeValue;
       assertEquals("attrNodeValue","Tomorrow",value);
-       firstChild = titleAttr.lastChild;
-
-      value = firstChild.nodeValue;
-
-      assertEquals("firstChildValue","Tomorrow",value);
-       otherChild = firstChild.nextSibling;
-
-      assertNull("nextSiblingIsNull",otherChild);
-
 }
 
 function runTest() {

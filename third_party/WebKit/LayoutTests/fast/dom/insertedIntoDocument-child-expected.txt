@@ -1,4 +1,2 @@
-CONSOLE WARNING: Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.
-CONSOLE WARNING: Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.
 PASS 
 

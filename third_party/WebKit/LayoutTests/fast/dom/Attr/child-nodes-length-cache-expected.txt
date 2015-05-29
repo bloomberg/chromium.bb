@@ -1,5 +1,0 @@
-CONSOLE WARNING: Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.
-CONSOLE WARNING: Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.
-Test for bug 19759: ChildNodeList for an attribute node is not properly invalidated after appending a child.
-
-Passed!!

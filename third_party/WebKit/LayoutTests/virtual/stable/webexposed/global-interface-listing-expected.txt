@@ -105,9 +105,6 @@ interface ArrayBuffer
     method constructor
     method slice
 interface Attr
-    getter childNodes
-    getter firstChild
-    getter lastChild
     getter localName
     getter name
     getter namespaceURI

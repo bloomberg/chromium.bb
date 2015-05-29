@@ -95,11 +95,6 @@ function documentadoptnode02() {
       var isSpecified;
       var nullDocType = null;
 
-      var firstChild;
-      var firstChildValue;
-      var secondChild;
-      var secondChildType;
-      var secondChildName;
       var docElem;
       var rootNS;
       var rootName;
@@ -122,11 +117,6 @@ newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
       attr = element.getAttributeNode("class");
       adoptedclass = newDoc.adoptNode(attr);
 
-    if(
-
-    (adoptedclass != null)
-
-    ) {
     nodeName = adoptedclass.nodeName;
 
       nodeValue = adoptedclass.nodeValue;
@@ -141,33 +131,6 @@ newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
        assertEquals("documentadoptnode02_nodeType",2,nodeType);
        assertNull("documentadoptnode02_ownerDoc",attrOwnerElem);
     assertTrue("documentadoptnode02_specified",isSpecified);
-firstChild = adoptedclass.firstChild;
-
-      assertNotNull("firstChildNotNull",firstChild);
-firstChildValue = firstChild.nodeValue;
-
-    if(
-    ("Y" == firstChildValue)
-    ) {
-    secondChild = firstChild.nextSibling;
-
-      assertNotNull("secondChildNotNull",secondChild);
-secondChildType = secondChild.nodeType;
-
-      assertEquals("secondChildIsEntityReference",5,secondChildType);
-       secondChildName = secondChild.nodeName;
-
-      assertEquals("secondChildIsEnt1Reference","alpha",secondChildName);
-
-    }
-
-        else {
-            assertEquals("documentadoptnode02_nodeValue","Yα",nodeValue);
-
-        }
-
-    }
-
 }
 
 function runTest() {

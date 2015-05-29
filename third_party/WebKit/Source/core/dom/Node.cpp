@@ -518,9 +518,6 @@ void Node::normalize()
     while (Node* firstChild = node->firstChild())
         node = firstChild;
     while (node) {
-        if (node->isElementNode())
-            toElement(node)->normalizeAttributes();
-
         if (node == this)
             break;
 

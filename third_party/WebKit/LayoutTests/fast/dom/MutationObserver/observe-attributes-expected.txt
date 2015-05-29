@@ -1,4 +1,3 @@
-CONSOLE WARNING: Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.
 Test WebKitMutationObserver.observe on attributes
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -185,13 +184,6 @@ Testing that a no-op style property mutation does not create Mutation Records.
 PASS mutations is null
 
 Test that mutating an attribute through an attr node delivers mutation records
-PASS mutations.length is 1
-PASS mutations[0].target is div
-PASS mutations[0].type is "attributes"
-PASS mutations[0].attributeName is "data-test"
-PASS mutations[0].oldValue is "foo"
-
-Test that mutating an attribute by attaching a child to an attr node delivers mutation records
 PASS mutations.length is 1
 PASS mutations[0].target is div
 PASS mutations[0].type is "attributes"

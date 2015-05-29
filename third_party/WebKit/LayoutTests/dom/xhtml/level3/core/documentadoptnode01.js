@@ -89,11 +89,6 @@ function documentadoptnode01() {
       var nodeName;
       var nodeType;
       var nodeValue;
-      var firstChild;
-      var firstChildValue;
-      var secondChild;
-      var secondChildType;
-      var secondChildName;
 
       var docRef = null;
       if (typeof(this.doc) != 'undefined') {
@@ -105,11 +100,6 @@ function documentadoptnode01() {
       attr = element.getAttributeNode("class");
       adoptedclass = doc.adoptNode(attr);
 
-    if(
-
-    (adoptedclass != null)
-
-    ) {
     nodeName = adoptedclass.nodeName;
 
       nodeValue = adoptedclass.nodeValue;
@@ -121,33 +111,6 @@ function documentadoptnode01() {
       assertEquals("documentadoptode01_nodeName","class",nodeName);
        assertEquals("documentadoptNode01_nodeType",2,nodeType);
        assertNull("documentadoptnode01_ownerDoc",attrOwnerElem);
-    firstChild = adoptedclass.firstChild;
-
-      assertNotNull("firstChildNotNull",firstChild);
-firstChildValue = firstChild.nodeValue;
-
-    if(
-    ("Y" == firstChildValue)
-    ) {
-    secondChild = firstChild.nextSibling;
-
-      assertNotNull("secondChildNotNull",secondChild);
-secondChildType = secondChild.nodeType;
-
-      assertEquals("secondChildIsEntityReference",5,secondChildType);
-       secondChildName = secondChild.nodeName;
-
-      assertEquals("secondChildIsEnt1Reference","alpha",secondChildName);
-
-    }
-
-        else {
-            assertEquals("documentadoptnode01_nodeValue","Yα",nodeValue);
-
-        }
-
-    }
-
 }
 
 function runTest() {

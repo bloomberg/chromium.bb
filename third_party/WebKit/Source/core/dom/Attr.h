@@ -25,18 +25,12 @@
 #ifndef Attr_h
 #define Attr_h
 
-#include "core/dom/ContainerNode.h"
+#include "core/dom/Node.h"
 #include "core/dom/QualifiedName.h"
 
 namespace blink {
 
-// Attr can have Text children
-// therefore it has to be a fullblown Node. The plan
-// is to dynamically allocate a textchild and store the
-// resulting nodevalue in the attribute upon
-// destruction. however, this is not yet implemented.
-
-class Attr final : public ContainerNode {
+class Attr final : public Node {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Attr> create(Element&, const QualifiedName&);
@@ -70,10 +64,6 @@ private:
 
     bool isElementNode() const = delete; // This will catch anyone doing an unnecessary check.
 
-    void createTextChild();
-
-    void setValueInternal(const AtomicString&);
-
     virtual String nodeName() const override { return name(); }
     virtual NodeType nodeType() const override { return ATTRIBUTE_NODE; }
 
@@ -82,11 +72,6 @@ private:
     virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
 
     virtual bool isAttributeNode() const override { return true; }
-    virtual bool childTypeAllowed(NodeType) const override;
-
-    virtual void childrenChanged(const ChildrenChange&) override;
-
-    void updateElementAttribute(const AtomicString&);
 
     // Attr wraps either an element/name, or a name/value pair (when it's a standalone Node.)
     // Note that m_name is always set, but m_element/m_standaloneValue may be null.
@@ -97,7 +82,6 @@ private:
     // differ from m_name's local name. As these two modes are non-overlapping,
     // use a single field.
     AtomicString m_standaloneValueOrAttachedLocalName;
-    unsigned m_ignoreChildrenChanged;
 };
 
 DEFINE_NODE_TYPE_CASTS(Attr, isAttributeNode());

@@ -1084,17 +1084,8 @@ ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedNa
 
     if (!inSynchronizationOfLazyAttribute)
         willModifyAttribute(existingAttributeName, existingAttributeValue, newValue);
-
-    if (newValue != existingAttributeValue) {
-        // If there is an Attr node hooked to this attribute, the Attr::setValue() call below
-        // will write into the ElementData.
-        // FIXME: Refactor this so it makes some sense.
-        if (RefPtrWillBeRawPtr<Attr> attrNode = inSynchronizationOfLazyAttribute ? nullptr : attrIfExists(existingAttributeName))
-            attrNode->setValue(newValue);
-        else
-            ensureUniqueElementData().attributes().at(index).setValue(newValue);
-    }
-
+    if (newValue != existingAttributeValue)
+        ensureUniqueElementData().attributes().at(index).setValue(newValue);
     if (!inSynchronizationOfLazyAttribute)
         didModifyAttribute(existingAttributeName, newValue);
 }
@@ -2676,21 +2667,6 @@ void Element::cancelFocusAppearanceUpdate()
 {
     if (document().focusedElement() == this)
         document().cancelFocusAppearanceUpdate();
-}
-
-void Element::normalizeAttributes()
-{
-    if (!hasAttributes())
-        return;
-    AttrNodeList* attrNodes = attrNodeList();
-    if (!attrNodes)
-        return;
-    // Copy the Attr Vector because Node::normalize() can fire synchronous JS
-    // events (e.g. DOMSubtreeModified) and a JS listener could add / remove
-    // attributes while we are iterating.
-    AttrNodeList attrNodesCopy(*attrNodes);
-    for (size_t i = 0; i < attrNodesCopy.size(); ++i)
-        attrNodesCopy[i]->normalize();
 }
 
 void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)

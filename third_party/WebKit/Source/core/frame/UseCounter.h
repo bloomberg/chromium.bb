@@ -518,8 +518,6 @@ public:
         UIEventKeyCode = 597,
         UIEventWhich = 598,
         TextWholeText = 599,
-        AttrChildAccess = 600,
-        AttrChildChange = 601,
         NotificationCloseEvent = 603,
         StyleMedia = 606,
         StyleMediaType = 607,
