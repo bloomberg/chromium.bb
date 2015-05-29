@@ -31,37 +31,17 @@ namespace blink {
 class CSSParserToken;
 class CSSParserTokenRange;
 
-// TODO(timloh): Unused, should be removed
-enum CSSParserError {
-    NoCSSError,
-    PropertyDeclarationCSSError,
-    InvalidPropertyValueCSSError,
-    InvalidPropertyCSSError,
-    InvalidSelectorCSSError,
-    InvalidSupportsConditionCSSError,
-    InvalidRuleCSSError,
-    InvalidMediaQueryCSSError,
-    InvalidKeyframeSelectorCSSError,
-    InvalidSelectorPseudoCSSError,
-    UnterminatedCommentCSSError,
-    GeneralCSSError
-};
-
 // This is only for the inspector and shouldn't be used elsewhere.
 class CSSParserObserver {
     STACK_ALLOCATED();
 public:
-    // TODO(timloh): Some of these can be merged once the Bison parser is gone.
     virtual void startRuleHeader(StyleRule::Type, unsigned offset) = 0;
     virtual void endRuleHeader(unsigned offset) = 0;
-    virtual void startSelector(unsigned offset) = 0;
-    virtual void endSelector(unsigned offset) = 0;
+    virtual void observeSelector(unsigned startOffset, unsigned endOffset) = 0;
     virtual void startRuleBody(unsigned offset) = 0;
-    virtual void endRuleBody(unsigned offset, bool error) = 0;
-    virtual void startProperty(unsigned offset) = 0;
-    virtual void endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParserError) = 0;
-    virtual void startComment(unsigned offset) = 0;
-    virtual void endComment(unsigned offset) = 0;
+    virtual void endRuleBody(unsigned offset) = 0;
+    virtual void observeProperty(unsigned startOffset, unsigned endOffset, bool isImportant, bool isParsed) = 0;
+    virtual void observeComment(unsigned startOffset, unsigned endOffset) = 0;
     // TODO(timloh): Unused, should be removed
     virtual void startMediaQueryExp(unsigned offset) = 0;
     virtual void endMediaQueryExp(unsigned offset) = 0;

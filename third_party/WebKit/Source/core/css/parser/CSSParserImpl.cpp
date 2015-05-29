@@ -358,7 +358,7 @@ PassRefPtrWillBeRawPtr<StyleRuleImport> CSSParserImpl::consumeImportRule(CSSPars
         m_observerWrapper->observer().startRuleHeader(StyleRule::Import, m_observerWrapper->startOffset(prelude));
         m_observerWrapper->observer().endRuleHeader(endOffset);
         m_observerWrapper->observer().startRuleBody(endOffset);
-        m_observerWrapper->observer().endRuleBody(endOffset, false);
+        m_observerWrapper->observer().endRuleBody(endOffset);
     }
 
     return StyleRuleImport::create(uri, MediaQueryParser::parseMediaQuerySet(prelude));
@@ -398,7 +398,7 @@ PassRefPtrWillBeRawPtr<StyleRuleMedia> CSSParserImpl::consumeMediaRule(CSSParser
     });
 
     if (m_observerWrapper)
-        m_observerWrapper->observer().endRuleBody(m_observerWrapper->endOffset(block), false);
+        m_observerWrapper->observer().endRuleBody(m_observerWrapper->endOffset(block));
 
     return StyleRuleMedia::create(MediaQueryParser::parseMediaQuerySet(prelude), rules);
 }
@@ -421,7 +421,7 @@ PassRefPtrWillBeRawPtr<StyleRuleSupports> CSSParserImpl::consumeSupportsRule(CSS
     });
 
     if (m_observerWrapper)
-        m_observerWrapper->observer().endRuleBody(m_observerWrapper->endOffset(block), false);
+        m_observerWrapper->observer().endRuleBody(m_observerWrapper->endOffset(block));
 
     return StyleRuleSupports::create(prelude.serialize().stripWhiteSpace(), supported, rules);
 }
@@ -441,7 +441,7 @@ PassRefPtrWillBeRawPtr<StyleRuleViewport> CSSParserImpl::consumeViewportRule(CSS
         m_observerWrapper->observer().startRuleHeader(StyleRule::Viewport, m_observerWrapper->startOffset(prelude));
         m_observerWrapper->observer().endRuleHeader(endOffset);
         m_observerWrapper->observer().startRuleBody(endOffset);
-        m_observerWrapper->observer().endRuleBody(endOffset, false);
+        m_observerWrapper->observer().endRuleBody(endOffset);
     }
 
     consumeDeclarationList(block, StyleRule::Viewport);
@@ -459,7 +459,7 @@ PassRefPtrWillBeRawPtr<StyleRuleFontFace> CSSParserImpl::consumeFontFaceRule(CSS
         m_observerWrapper->observer().startRuleHeader(StyleRule::FontFace, m_observerWrapper->startOffset(prelude));
         m_observerWrapper->observer().endRuleHeader(endOffset);
         m_observerWrapper->observer().startRuleBody(endOffset);
-        m_observerWrapper->observer().endRuleBody(endOffset, false);
+        m_observerWrapper->observer().endRuleBody(endOffset);
     }
 
     if (m_styleSheet)
@@ -492,7 +492,7 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframes> CSSParserImpl::consumeKeyframesRule(b
         m_observerWrapper->observer().startRuleHeader(StyleRule::Keyframes, m_observerWrapper->startOffset(prelude));
         m_observerWrapper->observer().endRuleHeader(m_observerWrapper->endOffset(prelude));
         m_observerWrapper->observer().startRuleBody(endOffset);
-        m_observerWrapper->observer().endRuleBody(endOffset, false);
+        m_observerWrapper->observer().endRuleBody(endOffset);
     }
 
     RefPtrWillBeRawPtr<StyleRuleKeyframes> keyframeRule = StyleRuleKeyframes::create();
@@ -579,8 +579,7 @@ static void observeSelectors(CSSParserObserverWrapper& wrapper, CSSParserTokenRa
         CSSParserTokenRange selector = selectors.makeSubRange(selectorStart, &selectors.peek());
         selectors.consumeIncludingWhitespace();
 
-        wrapper.observer().startSelector(wrapper.startOffset(selector));
-        wrapper.observer().endSelector(wrapper.endOffset(selector));
+        wrapper.observer().observeSelector(wrapper.startOffset(selector), wrapper.endOffset(selector));
     }
 
     wrapper.observer().endRuleHeader(wrapper.endOffset(originalRange));
@@ -648,7 +647,7 @@ void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, StyleRule:
     // Yield remaining comments
     if (useObserver) {
         m_observerWrapper->yieldCommentsBefore(range);
-        m_observerWrapper->observer().endRuleBody(m_observerWrapper->endOffset(range), NoCSSError);
+        m_observerWrapper->observer().endRuleBody(m_observerWrapper->endOffset(range));
     }
 }
 
@@ -681,10 +680,9 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
         size_t propertiesCount = m_parsedProperties.size();
         if (unresolvedProperty != CSSPropertyInvalid)
             consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), unresolvedProperty, important, ruleType);
-        m_observerWrapper->observer().startProperty(m_observerWrapper->startOffset(rangeCopy));
-        m_observerWrapper->observer().endProperty(important,
-            m_parsedProperties.size() != propertiesCount,
-            m_observerWrapper->endOffset(rangeCopy), NoCSSError);
+        m_observerWrapper->observer().observeProperty(
+            m_observerWrapper->startOffset(rangeCopy), m_observerWrapper->endOffset(rangeCopy),
+            important, m_parsedProperties.size() != propertiesCount);
         return;
     }
 

@@ -75,9 +75,6 @@ public:
         : m_parsedText(parsedText)
         , m_document(document)
         , m_result(result)
-        , m_propertyRangeStart(UINT_MAX)
-        , m_selectorRangeStart(UINT_MAX)
-        , m_commentRangeStart(UINT_MAX)
         , m_mediaQueryExpValueRangeStart(UINT_MAX)
     {
         ASSERT(m_result);
@@ -86,14 +83,11 @@ public:
 private:
     virtual void startRuleHeader(StyleRule::Type, unsigned) override;
     virtual void endRuleHeader(unsigned) override;
-    virtual void startSelector(unsigned) override;
-    virtual void endSelector(unsigned) override;
+    virtual void observeSelector(unsigned startOffset, unsigned endOffset) override;
     virtual void startRuleBody(unsigned) override;
-    virtual void endRuleBody(unsigned, bool) override;
-    virtual void startProperty(unsigned) override;
-    virtual void endProperty(bool, bool, unsigned, CSSParserError) override;
-    virtual void startComment(unsigned) override;
-    virtual void endComment(unsigned) override;
+    virtual void endRuleBody(unsigned) override;
+    virtual void observeProperty(unsigned startOffset, unsigned endOffset, bool isImportant, bool isParsed) override;
+    virtual void observeComment(unsigned startOffset, unsigned endOffset) override;
     virtual void startMediaQueryExp(unsigned offset) override;
     virtual void endMediaQueryExp(unsigned offset) override;
     virtual void startMediaQuery() override;
@@ -109,9 +103,6 @@ private:
     RuleSourceDataList* m_result;
     RuleSourceDataList m_currentRuleDataStack;
     RefPtrWillBeMember<CSSRuleSourceData> m_currentRuleData;
-    unsigned m_propertyRangeStart;
-    unsigned m_selectorRangeStart;
-    unsigned m_commentRangeStart;
     RefPtrWillBeMember<CSSMediaQuerySourceData> m_currentMediaQueryData;
     unsigned m_mediaQueryExpValueRangeStart;
 };
@@ -153,16 +144,10 @@ void StyleSheetHandler::endRuleHeader(unsigned offset)
         setRuleHeaderEnd<UChar>(m_parsedText.characters16(), offset);
 }
 
-void StyleSheetHandler::startSelector(unsigned offset)
-{
-    m_selectorRangeStart = offset;
-}
-
-void StyleSheetHandler::endSelector(unsigned offset)
+void StyleSheetHandler::observeSelector(unsigned startOffset, unsigned endOffset)
 {
     ASSERT(m_currentRuleDataStack.size());
-    m_currentRuleDataStack.last()->selectorRanges.append(SourceRange(m_selectorRangeStart, offset));
-    m_selectorRangeStart = UINT_MAX;
+    m_currentRuleDataStack.last()->selectorRanges.append(SourceRange(startOffset, endOffset));
 }
 
 void StyleSheetHandler::startRuleBody(unsigned offset)
@@ -174,14 +159,11 @@ void StyleSheetHandler::startRuleBody(unsigned offset)
     m_currentRuleDataStack.last()->ruleBodyRange.start = offset;
 }
 
-void StyleSheetHandler::endRuleBody(unsigned offset, bool error)
+void StyleSheetHandler::endRuleBody(unsigned offset)
 {
     ASSERT(!m_currentRuleDataStack.isEmpty());
     m_currentRuleDataStack.last()->ruleBodyRange.end = offset;
-    m_propertyRangeStart = UINT_MAX;
     RefPtrWillBeRawPtr<CSSRuleSourceData> rule = popRuleData();
-    if (error)
-        return;
 
     fixUnparsedPropertyRanges(rule.get());
     addNewRuleToSourceTree(rule.release());
@@ -261,30 +243,17 @@ void StyleSheetHandler::fixUnparsedPropertyRanges(CSSRuleSourceData* ruleData)
     fixUnparsedProperties<UChar>(m_parsedText.characters16(), ruleData);
 }
 
-void StyleSheetHandler::startProperty(unsigned offset)
+void StyleSheetHandler::observeProperty(unsigned startOffset, unsigned endOffset, bool isImportant, bool isParsed)
 {
     if (m_currentRuleDataStack.isEmpty() || !m_currentRuleDataStack.last()->styleSourceData)
         return;
-    m_propertyRangeStart = offset;
-}
 
-void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParserError errorType)
-{
-    // FIXME: This is the only place CSSParserError is every read!?
-    if (errorType != NoCSSError)
-        m_propertyRangeStart = UINT_MAX;
+    ASSERT(endOffset <= m_parsedText.length());
+    if (endOffset < m_parsedText.length() && m_parsedText[endOffset] == ';') // Include semicolon into the property text.
+        ++endOffset;
 
-    if (m_propertyRangeStart == UINT_MAX || m_currentRuleDataStack.isEmpty() || !m_currentRuleDataStack.last()->styleSourceData)
-        return;
-
-    ASSERT(offset <= m_parsedText.length());
-    if (offset < m_parsedText.length() && m_parsedText[offset] == ';') // Include semicolon into the property text.
-        ++offset;
-
-    const unsigned start = m_propertyRangeStart;
-    const unsigned end = offset;
-    ASSERT(start < end);
-    String propertyString = m_parsedText.substring(start, end - start).stripWhiteSpace();
+    ASSERT(startOffset < endOffset);
+    String propertyString = m_parsedText.substring(startOffset, endOffset - startOffset).stripWhiteSpace();
     if (propertyString.endsWith(';'))
         propertyString = propertyString.left(propertyString.length() - 1);
     size_t colonIndex = propertyString.find(':');
@@ -293,35 +262,18 @@ void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned of
     String name = propertyString.left(colonIndex).stripWhiteSpace();
     String value = propertyString.substring(colonIndex + 1, propertyString.length()).stripWhiteSpace();
     m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
-        CSSPropertySourceData(name, value, isImportant, false, isParsed, SourceRange(start, end)));
-    m_propertyRangeStart = UINT_MAX;
+        CSSPropertySourceData(name, value, isImportant, false, isParsed, SourceRange(startOffset, endOffset)));
 }
 
-void StyleSheetHandler::startComment(unsigned offset)
+void StyleSheetHandler::observeComment(unsigned startOffset, unsigned endOffset)
 {
-    ASSERT(m_commentRangeStart == UINT_MAX);
-    m_commentRangeStart = offset;
-}
+    ASSERT(endOffset <= m_parsedText.length());
 
-void StyleSheetHandler::endComment(unsigned offset)
-{
-    ASSERT(offset <= m_parsedText.length());
-
-    unsigned startOffset = m_commentRangeStart;
-    m_commentRangeStart = UINT_MAX;
-    if (m_propertyRangeStart != UINT_MAX) {
-        ASSERT(startOffset >= m_propertyRangeStart);
-        // startProperty() is called automatically at the start of a style declaration.
-        // Check if no text has been scanned yet, otherwise the comment is inside a property.
-        if (!m_parsedText.substring(m_propertyRangeStart, startOffset).stripWhiteSpace().isEmpty())
-            return;
-        m_propertyRangeStart = UINT_MAX;
-    }
     if (m_currentRuleDataStack.isEmpty() || !m_currentRuleDataStack.last()->ruleHeaderRange.end || !m_currentRuleDataStack.last()->styleSourceData)
         return;
 
     // The lexer is not inside a property AND it is scanning a declaration-aware rule body.
-    String commentText = m_parsedText.substring(startOffset, offset - startOffset);
+    String commentText = m_parsedText.substring(startOffset, endOffset - startOffset);
 
     ASSERT(commentText.startsWith("/*"));
     commentText = commentText.substring(2);
@@ -347,7 +299,7 @@ void StyleSheetHandler::endComment(unsigned offset)
         return;
 
     m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
-        CSSPropertySourceData(propertyData.name, propertyData.value, false, true, true, SourceRange(startOffset, offset)));
+        CSSPropertySourceData(propertyData.name, propertyData.value, false, true, true, SourceRange(startOffset, endOffset)));
 }
 
 void StyleSheetHandler::startMediaQueryExp(unsigned offset)
