@@ -24,8 +24,9 @@ public:
     //       about the semantics of the attribute.
     //       Currently supported values are "bytes" and "objects".
     //   value: the value of the attribute.
-    virtual void AddScalar(const WebString& name, const char* units, uint64_t value) { }
-    virtual void AddString(const WebString& name, const char* units, const WebString& value) { }
+    virtual void AddScalar(const WebString& name, const char* units, uint64_t value) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void AddScalarF(const WebString& name, const char* units, double value) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void AddString(const WebString& name, const char* units, const WebString& value) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink
