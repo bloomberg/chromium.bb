@@ -229,8 +229,9 @@ void pumpPendingRequestsDoNotUse(WebFrame* frame)
     pumpPendingRequests(frame);
 }
 
-WebViewHelper::WebViewHelper()
+WebViewHelper::WebViewHelper(SettingOverrider* settingOverrider)
     : m_webView(0)
+    , m_settingOverrider(settingOverrider)
 {
 }
 
@@ -253,6 +254,8 @@ WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient
         updateSettingsFunc(m_webView->settings());
     else
         m_webView->settings()->setDeviceSupportsMouse(false);
+    if (m_settingOverrider)
+        m_settingOverrider->overrideSettings(m_webView->settings());
 
     m_webView->setDefaultPageScaleLimits(1, 4);
     m_webView->setMainFrame(WebLocalFrameImpl::create(WebTreeScopeType::Document, webFrameClient));
