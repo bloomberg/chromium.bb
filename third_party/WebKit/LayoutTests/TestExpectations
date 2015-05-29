@@ -338,8 +338,8 @@ crbug.com/463023 inspector/sources/debugger/debugger-reload-breakpoints-with-sou
 
 crbug.com/451577 [ Win ] inspector-protocol/loading-iframe-document-node.html [ Crash Pass ]
 
-crbug.com/451577 [ Win ] http/tests/inspector/search/sources-search-scope-in-files.html [ Failure Pass Crash ]
-crbug.com/451577 [ Win ] http/tests/inspector/search/sources-search-scope-many-projects.html [ Failure Pass ]
+crbug.com/451577 crbug.com/493449 http/tests/inspector/search/sources-search-scope-in-files.html [ Failure Pass Crash Slow ]
+crbug.com/451577 crbug.com/493449 http/tests/inspector/search/sources-search-scope-many-projects.html [ Failure Pass Slow ]
 crbug.com/451577 [ Win ] http/tests/inspector/network/network-datareceived.html [ Slow ]
 
 # Untriaged Mavericks failures
