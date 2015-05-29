@@ -187,6 +187,7 @@ public:
     enum GCType {
         GCWithSweep, // Sweeping is completed in Heap::collectGarbage().
         GCWithoutSweep, // Lazy sweeping is scheduled.
+        ThreadTerminationGC, // A thread-local GC scheduled before the thread shutdown.
     };
 
     // See setGCState() for possible state transitions.
@@ -393,7 +394,7 @@ public:
     void safePoint(StackState);
 
     // Mark current thread as running inside safepoint.
-    void enterSafePointWithPointers(void* scopeMarker) { enterSafePoint(HeapPointersOnStack, scopeMarker); }
+    void enterSafePoint(StackState, void*);
     void leaveSafePoint(SafePointAwareMutexLocker* = nullptr);
     bool isAtSafePoint() const { return m_atSafePoint; }
 
@@ -622,7 +623,6 @@ private:
     ThreadState();
     ~ThreadState();
 
-    void enterSafePoint(StackState, void*);
     NO_SANITIZE_ADDRESS void copyStackUntilSafePointScope();
     void clearSafePointScopeMarker()
     {

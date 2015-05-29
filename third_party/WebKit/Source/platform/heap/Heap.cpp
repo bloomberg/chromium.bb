@@ -109,11 +109,11 @@ static String classOf(const void* object)
 }
 #endif
 
-class GCScope {
+class GCScope final {
 public:
-    explicit GCScope(ThreadState::StackState stackState)
+    GCScope(ThreadState::StackState stackState, ThreadState::GCType gcType)
         : m_state(ThreadState::current())
-        , m_safePointScope(stackState)
+        , m_gcType(gcType)
         , m_parkedAllThreads(false)
     {
         TRACE_EVENT0("blink_gc", "Heap::GCScope");
@@ -123,12 +123,21 @@ public:
 
         m_state->checkThread();
 
-        // FIXME: in an unlikely coincidence that two threads decide
-        // to collect garbage at the same time, avoid doing two GCs in
-        // a row.
-        if (LIKELY(ThreadState::stopThreads())) {
-            m_parkedAllThreads = true;
+        // We explicitly do not enter a safepoint while doing thread specific
+        // garbage collection since we don't want to allow a global GC at the
+        // same time as a thread local GC.
+        if (gcType != ThreadState::ThreadTerminationGC) {
+            RELEASE_ASSERT(!ThreadState::current()->isAtSafePoint());
+            m_state->enterSafePoint(stackState, this);
+
+            // TODO(haraken): In an unlikely coincidence that two threads decide
+            // to collect garbage at the same time, avoid doing two GCs in
+            // a row.
+            if (LIKELY(ThreadState::stopThreads())) {
+                m_parkedAllThreads = true;
+            }
         }
+
         if (m_state->isMainThread())
             TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
     }
@@ -137,16 +146,20 @@ public:
 
     ~GCScope()
     {
-        // Only cleanup if we parked all threads in which case the GC happened
-        // and we need to resume the other threads.
-        if (LIKELY(m_parkedAllThreads)) {
-            ThreadState::resumeThreads();
+        if (m_gcType != ThreadState::ThreadTerminationGC) {
+            // Only cleanup if we parked all threads in which case the GC happened
+            // and we need to resume the other threads.
+            if (LIKELY(m_parkedAllThreads)) {
+                ThreadState::resumeThreads();
+            }
+
+            m_state->leaveSafePoint();
         }
     }
 
 private:
     ThreadState* m_state;
-    SafePointScope m_safePointScope;
+    ThreadState::GCType m_gcType;
     bool m_parkedAllThreads; // False if we fail to park all threads
 };
 
@@ -1887,7 +1900,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     ThreadState::GCState originalGCState = state->gcState();
     state->setGCState(ThreadState::StoppingOtherThreads);
 
-    GCScope gcScope(stackState);
+    GCScope gcScope(stackState, gcType);
     // Check if we successfully parked the other threads.  If not we bail out of
     // the GC.
     if (!gcScope.allThreadsParked()) {
@@ -1969,10 +1982,9 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
 
 void Heap::collectGarbageForTerminatingThread(ThreadState* state)
 {
-    // We explicitly do not enter a safepoint while doing thread specific
-    // garbage collection since we don't want to allow a global GC at the
-    // same time as a thread local GC.
     {
+        GCScope gcScope(ThreadState::NoHeapPointersOnStack, ThreadState::ThreadTerminationGC);
+
         MarkingVisitor<Visitor::ThreadLocalMarking> markingVisitor;
         ThreadState::NoAllocationScope noAllocationScope(state);
 
