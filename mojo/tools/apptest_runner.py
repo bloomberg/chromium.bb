@@ -14,7 +14,6 @@ import time
 from mopy import gtest
 from mopy.android import AndroidShell
 from mopy.config import Config
-from mopy.paths import Paths
 
 
 def main():
@@ -43,8 +42,7 @@ def main():
   shell = None
   extra_args = []
   if config.target_os == Config.OS_ANDROID:
-    paths = Paths(config)
-    shell = AndroidShell(paths.apk_path, paths.build_dir, paths.adb_path)
+    shell = AndroidShell(config)
     extra_args.extend(shell.PrepareShellRun('localhost'))
 
   tests = []

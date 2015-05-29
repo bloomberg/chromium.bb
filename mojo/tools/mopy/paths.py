@@ -15,8 +15,6 @@ class Paths(object):
     self.src_root = os.path.abspath(os.path.join(__file__,
       os.pardir, os.pardir, os.pardir, os.pardir))
     self.mojo_dir = os.path.join(self.src_root, "mojo")
-    self.adb_path = os.path.join(self.src_root, 'third_party', 'android_tools',
-                                 'sdk', 'platform-tools', 'adb')
 
     self.build_dir = config.build_dir
     if self.build_dir is None:

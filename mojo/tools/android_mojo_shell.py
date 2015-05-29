@@ -9,7 +9,6 @@ import sys
 
 from mopy.android import AndroidShell
 from mopy.config import Config
-from mopy.paths import Paths
 
 USAGE = ("android_mojo_shell.py [<shell-and-app-args>] [<mojo-app>]")
 
@@ -34,9 +33,7 @@ def main():
                   target_cpu=launcher_args.target_cpu,
                   is_debug=launcher_args.debug,
                   apk_name="MojoRunner.apk")
-  paths = Paths(config)
-  shell = AndroidShell(paths.apk_path, paths.build_dir, paths.adb_path,
-                       launcher_args.target_device)
+  shell = AndroidShell(config, launcher_args.target_device)
 
   extra_shell_args = shell.PrepareShellRun(launcher_args.origin)
   args.extend(extra_shell_args)

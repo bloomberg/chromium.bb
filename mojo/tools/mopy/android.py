@@ -25,6 +25,14 @@ import urlparse
 import SimpleHTTPServer
 import SocketServer
 
+from .paths import Paths
+
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
+                             os.pardir, 'build', 'android'))
+from pylib import constants
+from pylib.device import device_errors
+from pylib.device import device_utils
+from pylib.utils import apk_helper
 
 # Tags used by the mojo shell application logs.
 LOGCAT_TAGS = [
@@ -35,8 +43,6 @@ LOGCAT_TAGS = [
     'MojoShellApplication',
     'chromium',
 ]
-
-MOJO_SHELL_PACKAGE_NAME = 'org.chromium.mojo.shell'
 
 MAPPING_PREFIX = '--map-origin='
 
@@ -64,9 +70,7 @@ class _SilentTCPServer(SocketServer.TCPServer):
   spurious error messages.
   """
   def handle_error(self, request, client_address):
-    """
-    Override the base class method to have conditional logging.
-    """
+    """Override the base class method to have conditional logging."""
     if logging.getLogger().isEnabledFor(logging.DEBUG):
       SocketServer.TCPServer.handle_error(self, request, client_address)
 
@@ -147,9 +151,7 @@ def _GetHandlerClassForPath(base_path):
       return os.path.join(base_path, os.path.relpath(path_from_current))
 
     def log_message(self, *_):
-      """
-      Override the base class method to disable logging.
-      """
+      """Override the base class method to disable logging."""
       pass
 
   RequestHandler.protocol_version = 'HTTP/1.1'
@@ -173,38 +175,34 @@ def _Split(l, pred):
 
 
 def _ExitIfNeeded(process):
-  """
-  Exits |process| if it is still alive.
-  """
+  """Exits |process| if it is still alive."""
   if process.poll() is None:
     process.kill()
 
 
 class AndroidShell(object):
-  """ Allows to set up and run a given mojo shell binary on an Android device.
+  """
+  Used to set up and run a given mojo shell binary on an Android device.
 
   Args:
-    shell_apk_path: path to the shell Android binary
-    local_dir: directory where locally build Mojo apps will be served, optional
-    adb_path: path to adb, optional if adb is in PATH
+    config: The mopy.config.Config for the build.
     target_device: device to run on, if multiple devices are connected
-    src_root: root of the source tree
   """
-  def __init__(
-      self, shell_apk_path, local_dir=None, adb_path="adb", target_device=None,
-      target_package=MOJO_SHELL_PACKAGE_NAME, src_root=None):
-    self.shell_apk_path = shell_apk_path
-    self.src_root = src_root
-    self.adb_path = adb_path
-    self.local_dir = local_dir
+  def __init__(self, config, target_device=None):
+    self.adb_path = constants.GetAdbPath()
+    self.paths = Paths(config)
     self.target_device = target_device
-    self.target_package = target_package
+    self.target_package = apk_helper.GetPackageName(self.paths.apk_path)
+    # This is used by decive_utils.Install to check if the apk needs updating.
+    constants.SetOutputDirectory(self.paths.build_dir)
 
+  # TODO(msw): Use pylib's adb_wrapper and device_utils instead.
   def _CreateADBCommand(self, args):
     adb_command = [self.adb_path]
     if self.target_device:
       adb_command.extend(['-s', self.target_device])
     adb_command.extend(args)
+    logging.getLogger().debug("Command: %s", " ".join(adb_command))
     return adb_command
 
   def _ReadFifo(self, fifo_path, pipe, on_fifo_closed, max_attempts=5):
@@ -270,8 +268,7 @@ class AndroidShell(object):
     return device_port
 
   def _StartHttpServerForDirectory(self, path, port=0):
-    """Starts an http server serving files from |path|. Returns the local
-    url."""
+    """Starts an http server serving from |path|. Returns the local URL."""
     assert path
     httpd = _SilentTCPServer(('127.0.0.1', 0), _GetHandlerClassForPath(path))
     atexit.register(httpd.shutdown)
@@ -284,15 +281,16 @@ class AndroidShell(object):
     return 'http://127.0.0.1:%d/' % self._MapPort(port, httpd.server_address[1])
 
   def _StartHttpServerForOriginMapping(self, mapping, port):
-    """If |mapping| points at a local file starts an http server to serve files
-    from the directory and returns the new mapping.
-
-    This is intended to be called for every --map-origin value."""
+    """
+    If |mapping| points at a local file starts an http server to serve files
+    from the directory and returns the new mapping. This is intended to be
+    called for every --map-origin value.
+    """
     parts = mapping.split('=')
     if len(parts) != 2:
       return mapping
     dest = parts[1]
-    # If the destination is a url, don't map it.
+    # If the destination is a URL, don't map it.
     if urlparse.urlparse(dest)[0]:
       return mapping
     # Assume the destination is a local file. Start a local server that
@@ -302,8 +300,7 @@ class AndroidShell(object):
     return parts[0] + '=' + localUrl
 
   def _StartHttpServerForOriginMappings(self, map_parameters):
-    """Calls _StartHttpServerForOriginMapping for every --map-origin
-    argument."""
+    """Calls _StartHttpServerForOriginMapping for every --map-origin arg."""
     if not map_parameters:
       return []
 
@@ -315,28 +312,34 @@ class AndroidShell(object):
       result.append(self._StartHttpServerForOriginMapping(value, 0))
     return [MAPPING_PREFIX + ','.join(result)]
 
-  def PrepareShellRun(self, origin=None, install=True, gdb=False):
-    """ Prepares for StartShell: runs adb as root and installs the apk.  If the
-    origin specified is 'localhost', a local http server will be set up to serve
-    files from the build directory along with port forwarding.
+  def PrepareShellRun(self, origin=None, gdb=False):
+    """
+    Prepares for StartShell: runs adb as root and installs the apk as needed.
+    If the origin specified is 'localhost', a local http server will be set up
+    to serve files from the build directory along with port forwarding.
 
-    Returns arguments that should be appended to shell argument list."""
-    # TODO(msw): Remove logging after devices are found; http://crbug.com/486220
-    logging.getLogger().debug("Path to adb: %s", self.adb_path)
-    logging.getLogger().debug("adb devices: %s",
-        subprocess.check_output(self._CreateADBCommand(['devices'])))
+    Returns arguments that should be appended to shell argument list.
+    """
+    devices = device_utils.DeviceUtils.HealthyDevices()
+    if self.target_device:
+      device = next((d for d in devices if d == self.target_device), None)
+      if not device:
+        raise device_errors.DeviceUnreachableError(self.target_device)
+    elif devices:
+      device = devices[0]
+    else:
+      raise device_errors.NoDevicesError()
+    self.target_device = device.adb.GetDeviceSerial()
 
-    subprocess.check_call(self._CreateADBCommand(['root']))
-    if install:
-      subprocess.check_call(
-          self._CreateADBCommand(['install', '-r', self.shell_apk_path, '-i',
-                                  self.target_package]))
+    logging.getLogger().debug("Using device: %s", device)
+    device.EnableRoot()
+    device.Install(self.paths.apk_path)
 
     atexit.register(self.StopShell)
 
     extra_args = []
     if origin is 'localhost':
-      origin = self._StartHttpServerForDirectory(self.local_dir, 0)
+      origin = self._StartHttpServerForDirectory(self.paths.build_dir, 0)
     if origin:
       extra_args.append("--origin=" + origin)
 
@@ -359,13 +362,16 @@ class AndroidShell(object):
 
   def _GetLocalGdbPath(self):
     """Returns the path to the android gdb."""
-    return os.path.join(self.src_root, "third_party", "android_tools", "ndk",
-                        "toolchains", "arm-linux-androideabi-4.9", "prebuilt",
-                        "linux-x86_64", "bin", "arm-linux-androideabi-gdb")
+    return os.path.join(self.paths.src_root, "third_party", "android_tools",
+                        "ndk", "toolchains", "arm-linux-androideabi-4.9",
+                        "prebuilt", "linux-x86_64", "bin",
+                        "arm-linux-androideabi-gdb")
 
   def _WaitForProcessIdAndStartGdb(self, process):
-    """Waits until we see the process id from the remote device, starts up
-    gdbserver on the remote device, and gdb on the local device."""
+    """
+    Waits until we see the process id from the remote device, starts up
+    gdbserver on the remote device, and gdb on the local device.
+    """
     # Wait until we see "PID"
     pid = self._GetProcessId(process)
     assert pid != 0
@@ -385,9 +391,9 @@ class AndroidShell(object):
     atexit.register(shutil.rmtree, temp_dir, True)
 
     gdbinit_path = os.path.join(temp_dir, 'gdbinit')
-    _CreateGdbInit(temp_dir, gdbinit_path, self.local_dir)
+    _CreateGdbInit(temp_dir, gdbinit_path, self.paths.build_dir)
 
-    _CreateSOLinks(temp_dir, self.local_dir)
+    _CreateSOLinks(temp_dir, self.paths.build_dir)
 
     # Wait a second for gdb to start up on the device. Without this the local
     # gdb starts before the remote side has registered the port.
@@ -423,7 +429,7 @@ class AndroidShell(object):
            '-S',
            '-a', 'android.intent.action.VIEW',
            '-n', '%s/%s.MojoShellActivity' % (self.target_package,
-                                              MOJO_SHELL_PACKAGE_NAME)])
+                                              'org.chromium.mojo.shell')])
 
     logcat_process = None
 
@@ -458,26 +464,18 @@ class AndroidShell(object):
       cmd_process.wait()
 
   def StopShell(self):
-    """
-    Stops the mojo shell.
-    """
+    """Stops the mojo shell."""
     subprocess.check_call(self._CreateADBCommand(['shell',
                                                   'am',
                                                   'force-stop',
                                                   self.target_package]))
 
   def CleanLogs(self):
-    """
-    Cleans the logs on the device.
-    """
+    """Cleans the logs on the device."""
     subprocess.check_call(self._CreateADBCommand(['logcat', '-c']))
 
   def ShowLogs(self, stdout=sys.stdout):
-    """
-    Displays the log for the mojo shell.
-
-    Returns the process responsible for reading the logs.
-    """
+    """Displays the mojo shell logs and returns the process reading the logs."""
     logcat = subprocess.Popen(self._CreateADBCommand([
                                'logcat',
                                '-s',
@@ -490,6 +488,7 @@ class AndroidShell(object):
 def _CreateGdbInit(tmp_dir, gdb_init_path, build_dir):
   """
   Creates the gdbinit file.
+
   Args:
     tmp_dir: the directory where the gdbinit and other files lives.
     gdb_init_path: path to gdbinit
@@ -519,10 +518,7 @@ def _CreateGdbInit(tmp_dir, gdb_init_path, build_dir):
 
 
 def _CreateSOLinks(dest_dir, build_dir):
-  """
-  Creates links from files (such as mojo files) to the real .so so that gdb can
-  find them.
-  """
+  """Creates links from files (eg. *.mojo) to the real .so for gdb to find."""
   # The files to create links for. The key is the name as seen on the device,
   # and the target an array of path elements as to where the .so lives (relative
   # to the output directory).

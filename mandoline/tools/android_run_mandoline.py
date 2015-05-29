@@ -13,7 +13,6 @@ sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)),
 
 from mopy.android import AndroidShell
 from mopy.config import Config
-from mopy.paths import Paths
 
 USAGE = ("android_run_mandoline.py [<shell-and-app-args>] [<mojo-app>]")
 
@@ -30,9 +29,6 @@ def main():
   parser.add_argument('--target-cpu', help='CPU architecture to run for.',
                       choices=['x64', 'x86', 'arm'], default='arm')
   parser.add_argument('--target-device', help='Device to run on.')
-  parser.add_argument('--dont-install',
-                      help='Disables installing the apk',
-                      default=False, action='store_true')
   parser.add_argument('--gdb', help='Run gdb',
                       default=False, action='store_true')
   launcher_args, args = parser.parse_known_args()
@@ -41,14 +37,9 @@ def main():
                   target_cpu=launcher_args.target_cpu,
                   is_debug=launcher_args.debug,
                   apk_name="Mandoline.apk")
-  paths = Paths(config)
-  shell = AndroidShell(paths.apk_path, paths.build_dir, paths.adb_path,
-                       launcher_args.target_device,
-                       target_package='org.chromium.mandoline',
-                       src_root=paths.src_root)
+  shell = AndroidShell(config, launcher_args.target_device)
 
-  extra_shell_args = shell.PrepareShellRun(
-      install=not launcher_args.dont_install, gdb=launcher_args.gdb)
+  extra_shell_args = shell.PrepareShellRun(gdb=launcher_args.gdb)
   args.extend(extra_shell_args)
 
   shell.CleanLogs()
