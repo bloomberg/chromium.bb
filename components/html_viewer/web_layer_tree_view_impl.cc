@@ -101,13 +101,6 @@ void WebLayerTreeViewImpl::ApplyViewportDeltas(
       top_controls_delta);
 }
 
-void WebLayerTreeViewImpl::ApplyViewportDeltas(
-    const gfx::Vector2d& scroll_delta,
-    float page_scale,
-    float top_controls_delta) {
-  widget_->applyViewportDeltas(scroll_delta, page_scale, top_controls_delta);
-}
-
 void WebLayerTreeViewImpl::RequestNewOutputSurface() {
   if (output_surface_.get())
     layer_tree_host_->SetOutputSurface(output_surface_.Pass());

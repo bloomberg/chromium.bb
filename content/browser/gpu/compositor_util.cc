@@ -167,19 +167,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
 
 }  // namespace
 
-bool IsPinchVirtualViewportEnabled() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  // Command line switches take precedence over platform default.
-  if (command_line.HasSwitch(cc::switches::kDisablePinchVirtualViewport))
-    return false;
-  if (command_line.HasSwitch(cc::switches::kEnablePinchVirtualViewport))
-    return true;
-
-  return true;
-}
-
 bool IsPropertyTreeVerificationEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

@@ -1291,7 +1291,9 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
+  void ApplyViewportDeltas(const gfx::Vector2dF& scroll_delta,
+                           const gfx::Vector2dF&,
+                           const gfx::Vector2dF& elastic_overscroll_delta,
                            float scale,
                            float) override {
     gfx::ScrollOffset offset = scroll_layer_->scroll_offset();
@@ -6033,15 +6035,6 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float scale_delta,
                            float top_controls_delta) override {
-    EXPECT_EQ(info_.page_scale_delta, scale_delta);
-    EXPECT_EQ(info_.top_controls_delta, top_controls_delta);
-    deltas_sent_to_client_ = true;
-  }
-
-  void ApplyViewportDeltas(
-      const gfx::Vector2d& scroll,
-      float scale_delta,
-      float top_controls_delta) override {
     EXPECT_EQ(info_.page_scale_delta, scale_delta);
     EXPECT_EQ(info_.top_controls_delta, top_controls_delta);
     deltas_sent_to_client_ = true;

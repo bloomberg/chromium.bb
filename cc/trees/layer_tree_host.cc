@@ -1072,22 +1072,12 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
 
     ApplyPageScaleDeltaFromImplSide(info->page_scale_delta);
     elastic_overscroll_ += info->elastic_overscroll_delta;
-    if (!settings_.use_pinch_virtual_viewport) {
-      // TODO(miletus): Make sure either this code path is totally gone,
-      // or revisit the flooring here if the old pinch viewport code path
-      // is causing problems with fractional scroll offset.
-      client_->ApplyViewportDeltas(
-          gfx::ToFlooredVector2d(inner_viewport_scroll_delta +
-                                 outer_viewport_scroll_delta),
-          info->page_scale_delta, info->top_controls_delta);
-    } else {
-      // TODO(ccameron): pass the elastic overscroll here so that input events
-      // may be translated appropriately.
-      client_->ApplyViewportDeltas(
-          inner_viewport_scroll_delta, outer_viewport_scroll_delta,
-          info->elastic_overscroll_delta, info->page_scale_delta,
-          info->top_controls_delta);
-    }
+    // TODO(ccameron): pass the elastic overscroll here so that input events
+    // may be translated appropriately.
+    client_->ApplyViewportDeltas(
+        inner_viewport_scroll_delta, outer_viewport_scroll_delta,
+        info->elastic_overscroll_delta, info->page_scale_delta,
+        info->top_controls_delta);
   }
 }
 

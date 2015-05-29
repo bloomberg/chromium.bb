@@ -48,10 +48,6 @@ const char kCompositeToMailbox[] = "composite-to-mailbox";
 const char kStrictLayerPropertyChangeChecking[] =
     "strict-layer-property-change-checking";
 
-// Virtual viewport for fixed-position elements, scrollbars during pinch.
-const char kEnablePinchVirtualViewport[] = "enable-pinch-virtual-viewport";
-const char kDisablePinchVirtualViewport[] = "disable-pinch-virtual-viewport";
-
 // Ensures that the draw properties computed via the property trees match those
 // computed by CalcDrawProperties.
 const char kEnablePropertyTreeVerification[] =

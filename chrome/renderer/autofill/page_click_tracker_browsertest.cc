@@ -55,7 +55,6 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
 
     // Must be set before loading HTML.
     view_->GetWebView()->setDefaultPageScaleLimits(1, 4);
-    view_->GetWebView()->settings()->setPinchVirtualViewportEnabled(true);
 
     LoadHTML("<form>"
              "  <input type='text' id='text_1'></input><br>"

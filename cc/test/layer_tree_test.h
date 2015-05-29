@@ -71,9 +71,6 @@ class TestHooks : public AnimationDelegate {
       const gfx::Vector2dF& elastic_overscroll_delta,
       float scale,
       float top_controls_delta) {}
-  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
-                                   float scale,
-                                   float top_controls_delta) {}
   virtual void BeginMainFrame(const BeginFrameArgs& args) {}
   virtual void WillBeginMainFrame() {}
   virtual void DidBeginMainFrame() {}

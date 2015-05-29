@@ -406,13 +406,6 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
                                      elastic_overscroll_delta, page_scale,
                                      top_controls_delta);
   }
-  void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
-                           float scale,
-                           float top_controls_delta) override {
-    test_hooks_->ApplyViewportDeltas(scroll_delta,
-                                     scale,
-                                     top_controls_delta);
-  }
 
   void RequestNewOutputSurface() override {
     test_hooks_->RequestNewOutputSurface();

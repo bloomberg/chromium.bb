@@ -435,10 +435,7 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       || (content::IsImplSidePaintingEnabled() &&
           !command_line.HasSwitch(switches::kDisableTextBlobs));
 
-  if (IsPinchVirtualViewportEnabled()) {
-    prefs.pinch_virtual_viewport_enabled = true;
-    prefs.pinch_overlay_scrollbar_thickness = 10;
-  }
+  prefs.pinch_overlay_scrollbar_thickness = 10;
   prefs.use_solid_color_scrollbars = ui::IsOverlayScrollbarEnabled();
 
 #if defined(OS_ANDROID)

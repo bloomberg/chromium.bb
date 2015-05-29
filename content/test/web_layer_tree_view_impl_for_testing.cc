@@ -145,11 +145,6 @@ void WebLayerTreeViewImplForTesting::ApplyViewportDeltas(
     float top_controls_delta) {
 }
 
-void WebLayerTreeViewImplForTesting::ApplyViewportDeltas(
-    const gfx::Vector2d& scroll_delta,
-    float page_scale,
-    float top_controls_delta) {}
-
 void WebLayerTreeViewImplForTesting::RequestNewOutputSurface() {
   bool flipped_output_surface = false;
   layer_tree_host_->SetOutputSurface(

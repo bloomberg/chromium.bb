@@ -109,7 +109,6 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.impl_side_painting = true;
     settings.renderer_settings.texture_id_allocation_chunk_size = 1;
     settings.report_overscroll_only_for_scrollable_axes = true;
-    settings.use_pinch_virtual_viewport = true;
     settings.gpu_rasterization_enabled = true;
     return settings;
   }
@@ -2531,8 +2530,6 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
       : layer_size_(10, 10),
         clip_size_(layer_size_),
         top_controls_height_(50) {
-    settings_.use_pinch_virtual_viewport = true;
-
     viewport_size_ = gfx::Size(clip_size_.width(),
                                clip_size_.height() + top_controls_height_);
   }

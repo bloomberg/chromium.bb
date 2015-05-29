@@ -1100,9 +1100,6 @@ StoragePartition* RenderProcessHostImpl::GetStoragePartition() const {
 }
 
 static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
-  if (IsPinchVirtualViewportEnabled())
-    command_line->AppendSwitch(cc::switches::kEnablePinchVirtualViewport);
-
   if (IsPropertyTreeVerificationEnabled())
     command_line->AppendSwitch(cc::switches::kEnablePropertyTreeVerification);
 

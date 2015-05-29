@@ -35,9 +35,6 @@ class LayerTreeHostClient {
       const gfx::Vector2dF& elastic_overscroll_delta,
       float page_scale,
       float top_controls_delta) = 0;
-  virtual void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
-                                   float page_scale,
-                                   float top_controls_delta) = 0;
   // Request an OutputSurface from the client. When the client has one it should
   // call LayerTreeHost::SetOutputSurface.  This will result in either
   // DidFailToInitializeOutputSurface or DidInitializeOutputSurface being

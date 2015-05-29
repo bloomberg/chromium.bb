@@ -310,8 +310,6 @@ void RenderWidgetCompositor::Initialize() {
         settings.top_controls_hide_threshold = hide_threshold;
   }
 
-  settings.use_pinch_virtual_viewport =
-      cmd->HasSwitch(cc::switches::kEnablePinchVirtualViewport);
   settings.verify_property_trees =
       cmd->HasSwitch(cc::switches::kEnablePropertyTreeVerification) &&
       settings.impl_side_painting;
@@ -431,7 +429,7 @@ void RenderWidgetCompositor::Initialize() {
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::THINNING;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
-  } else if (settings.use_pinch_virtual_viewport) {
+  } else {
     settings.scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   }
@@ -674,6 +672,9 @@ void RenderWidgetCompositor::registerViewportLayers(
     const blink::WebLayer* innerViewportScrollLayer,
     const blink::WebLayer* outerViewportScrollLayer) {
   layer_tree_host_->RegisterViewportLayers(
+      // TODO(bokan): This check can probably be removed now, but it looks
+      // like overscroll elasticity may still be NULL until PinchViewport
+      // registers its layers.
       // The scroll elasticity layer will only exist when using pinch virtual
       // viewports.
       overscrollElasticityLayer
@@ -683,6 +684,9 @@ void RenderWidgetCompositor::registerViewportLayers(
       static_cast<const cc_blink::WebLayerImpl*>(pageScaleLayer)->layer(),
       static_cast<const cc_blink::WebLayerImpl*>(innerViewportScrollLayer)
           ->layer(),
+      // TODO(bokan): This check can probably be removed now, but it looks
+      // like overscroll elasticity may still be NULL until PinchViewport
+      // registers its layers.
       // The outer viewport layer will only exist when using pinch virtual
       // viewports.
       outerViewportScrollLayer
@@ -864,16 +868,6 @@ void RenderWidgetCompositor::ApplyViewportDeltas(
       inner_delta,
       outer_delta,
       elastic_overscroll_delta,
-      page_scale,
-      top_controls_delta);
-}
-
-void RenderWidgetCompositor::ApplyViewportDeltas(
-    const gfx::Vector2d& scroll_delta,
-    float page_scale,
-    float top_controls_delta) {
-  widget_->webwidget()->applyViewportDeltas(
-      scroll_delta,
       page_scale,
       top_controls_delta);
 }

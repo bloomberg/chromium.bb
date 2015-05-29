@@ -458,7 +458,6 @@ class LayerImplScrollTest : public testing::Test {
 
   LayerTreeSettings settings() {
     LayerTreeSettings settings;
-    settings.use_pinch_virtual_viewport = true;
     return settings;
   }
 
@@ -682,7 +681,6 @@ class LayerImplScrollbarSyncTest : public testing::Test {
 
   LayerTreeSettings settings() {
     LayerTreeSettings settings;
-    settings.use_pinch_virtual_viewport = true;
     return settings;
   }
 

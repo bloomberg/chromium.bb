@@ -63,9 +63,6 @@ class LayerTreeHostNoMessageLoopTest
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
                            float top_controls_delta) override {}
-  void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override {}
   void RequestNewOutputSurface() override {
     layer_tree_host_->SetOutputSurface(
         make_scoped_ptr<OutputSurface>(new NoMessageLoopOutputSurface));

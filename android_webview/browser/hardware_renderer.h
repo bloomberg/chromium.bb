@@ -49,9 +49,6 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
                            float top_controls_delta) override {}
-  void ApplyViewportDeltas(const gfx::Vector2d& scroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override {}
   void RequestNewOutputSurface() override;
   void DidInitializeOutputSurface() override {}
   void DidFailToInitializeOutputSurface() override;

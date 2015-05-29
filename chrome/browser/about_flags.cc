@@ -1017,15 +1017,6 @@ const Experiment kExperiments[] = {
   },
 #endif  // defined(USE_ASH)
   {
-    "enable-pinch-virtual-viewport",
-    IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_NAME,
-    IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_DESCRIPTION,
-    kOsLinux | kOsWin | kOsCrOS | kOsAndroid,
-    ENABLE_DISABLE_VALUE_TYPE(
-        cc::switches::kEnablePinchVirtualViewport,
-        cc::switches::kDisablePinchVirtualViewport),
-  },
-  {
     "enable-viewport-meta",
     IDS_FLAGS_ENABLE_VIEWPORT_META_NAME,
     IDS_FLAGS_ENABLE_VIEWPORT_META_DESCRIPTION,

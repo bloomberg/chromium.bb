@@ -13,10 +13,6 @@ namespace content {
 // Note: When adding a function here, please make sure the logic is not
 // duplicated in the renderer.
 
-// Returns true if the virtual viewport model of pinch-to-zoom is on (via
-// flags, or platform default).
-CONTENT_EXPORT bool IsPinchVirtualViewportEnabled();
-
 // Returns true if property tree verification is enabled (via flags or platform
 // default).
 CONTENT_EXPORT bool IsPropertyTreeVerificationEnabled();

@@ -405,12 +405,10 @@ void LayerImpl::GetContentsResourceId(ResourceId* resource_id,
 
 gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
   gfx::ScrollOffset adjusted_scroll(scroll);
-  if (layer_tree_impl()->settings().use_pinch_virtual_viewport) {
-    if (!user_scrollable_horizontal_)
-      adjusted_scroll.set_x(0);
-    if (!user_scrollable_vertical_)
-      adjusted_scroll.set_y(0);
-  }
+  if (!user_scrollable_horizontal_)
+    adjusted_scroll.set_x(0);
+  if (!user_scrollable_vertical_)
+    adjusted_scroll.set_y(0);
   DCHECK(scrollable());
   gfx::ScrollOffset old_offset = CurrentScrollOffset();
   gfx::ScrollOffset new_offset =
@@ -649,27 +647,7 @@ gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
   // In virtual-viewport mode, we don't need to compensate for pinch zoom or
   // scale since the fixed container is the outer viewport, which sits below
   // the page scale.
-  if (layer_tree_impl()->settings().use_pinch_virtual_viewport)
-    return delta_from_scroll;
-
-  float scale_delta = layer_tree_impl()->page_scale_delta();
-  float scale = layer_tree_impl()->current_page_scale_factor() /
-                layer_tree_impl()->page_scale_delta();
-
-  delta_from_scroll.Scale(1.f / scale);
-
-  // The delta-from-pinch component requires some explanation: A viewport of
-  // size (w,h) will appear to be size (w/s,h/s) under scale s in the content
-  // space. If s -> s' on the impl thread, where s' = s * ds, then the apparent
-  // viewport size change in the content space due to ds is:
-  //
-  // (w/s',h/s') - (w/s,h/s) = (w,h)(1/s' - 1/s) = (w,h)(1 - ds)/(s ds)
-  //
-  gfx::Vector2dF delta_from_pinch =
-      gfx::Rect(scroll_clip_layer_->bounds()).bottom_right() - gfx::PointF();
-  delta_from_pinch.Scale((1.f - scale_delta) / (scale * scale_delta));
-
-  return delta_from_scroll + delta_from_pinch;
+  return delta_from_scroll;
 }
 
 base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
