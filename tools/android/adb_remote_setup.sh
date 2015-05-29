@@ -61,11 +61,6 @@ if ! which adb >/dev/null; then
   exit 1
 fi
 
-if which kinit >/dev/null; then
-  # Allow ssh to succeed without typing your password multiple times.
-  kinit -R || kinit
-fi
-
 # Ensure local and remote versions of adb are the same.
 remote_adb_version=$(ssh "$remote_host" "$remote_adb version")
 local_adb_version=$(adb version)
