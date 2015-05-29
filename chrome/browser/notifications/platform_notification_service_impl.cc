@@ -53,18 +53,16 @@ namespace {
 // Callback to provide when deleting the data associated with persistent Web
 // Notifications from the notification database.
 void OnPersistentNotificationDataDeleted(bool success) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "ServiceWorker.PlatformNotificationService."
-      "PersistentNotificationDataDeleted", success);
+  UMA_HISTOGRAM_BOOLEAN("Notifications.PersistentNotificationDataDeleted",
+      success);
 }
 
 // Persistent notifications fired through the delegate do not care about the
 // lifetime of the Service Worker responsible for executing the event.
 void OnEventDispatchComplete(content::PersistentNotificationStatus status) {
   UMA_HISTOGRAM_ENUMERATION(
-      "ServiceWorker.PlatformNotificationService."
-      "PersistentWebNotificationClickResult",
-      status, content::PersistentNotificationStatus::
+      "Notifications.PersistentWebNotificationClickResult", status,
+      content::PersistentNotificationStatus::
           PERSISTENT_NOTIFICATION_STATUS_MAX);
 }
 
