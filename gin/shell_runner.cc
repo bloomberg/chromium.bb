@@ -65,13 +65,11 @@ ShellRunner::~ShellRunner() {
 
 void ShellRunner::Run(const std::string& source,
                       const std::string& resource_name) {
+  TryCatch try_catch;
   v8::Isolate* isolate = GetContextHolder()->isolate();
-  TryCatch try_catch(isolate);
-  v8::ScriptOrigin origin(StringToV8(isolate, resource_name));
-  auto maybe_script = Script::Compile(GetContextHolder()->context(),
-                                      StringToV8(isolate, source), &origin);
-  v8::Local<Script> script;
-  if (!maybe_script.ToLocal(&script)) {
+  v8::Local<Script> script = Script::Compile(
+      StringToV8(isolate, source), StringToV8(isolate, resource_name));
+  if (try_catch.HasCaught()) {
     delegate_->UnhandledException(this, try_catch);
     return;
   }
@@ -83,15 +81,13 @@ v8::Local<v8::Value> ShellRunner::Call(v8::Local<v8::Function> function,
                                         v8::Local<v8::Value> receiver,
                                         int argc,
                                         v8::Local<v8::Value> argv[]) {
-  TryCatch try_catch(GetContextHolder()->isolate());
+  TryCatch try_catch;
   delegate_->WillRunScript(this);
 
-  auto maybe_result =
-      function->Call(GetContextHolder()->context(), receiver, argc, argv);
+  v8::Local<v8::Value> result = function->Call(receiver, argc, argv);
 
   delegate_->DidRunScript(this);
-  v8::Local<v8::Value> result;
-  if (!maybe_result.ToLocal(&result))
+  if (try_catch.HasCaught())
     delegate_->UnhandledException(this, try_catch);
 
   return result;
@@ -102,14 +98,13 @@ ContextHolder* ShellRunner::GetContextHolder() {
 }
 
 void ShellRunner::Run(v8::Local<Script> script) {
-  TryCatch try_catch(GetContextHolder()->isolate());
+  TryCatch try_catch;
   delegate_->WillRunScript(this);
 
-  auto maybe = script->Run(GetContextHolder()->context());
+  script->Run();
 
   delegate_->DidRunScript(this);
-  v8::Local<v8::Value> result;
-  if (!maybe.ToLocal(&result)) {
+  if (try_catch.HasCaught()) {
     delegate_->UnhandledException(this, try_catch);
   }
 }

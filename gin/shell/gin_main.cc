@@ -75,9 +75,7 @@ int main(int argc, char** argv) {
 
   {
     gin::Runner::Scope scope(&runner);
-    runner.GetContextHolder()
-        ->isolate()
-        ->SetCaptureStackTraceForUncaughtExceptions(true);
+    v8::V8::SetCaptureStackTraceForUncaughtExceptions(true);
   }
 
   base::CommandLine::StringVector args =

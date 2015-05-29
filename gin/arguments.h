@@ -69,10 +69,7 @@ class GIN_EXPORT Arguments {
 
   template<typename T>
   void Return(T val) {
-    v8::Local<v8::Value> v8_value;
-    if (!TryConvertToV8(isolate_, val, &v8_value))
-      return;
-    info_->GetReturnValue().Set(v8_value);
+    info_->GetReturnValue().Set(ConvertToV8(isolate_, val));
   }
 
   v8::Local<v8::Value> PeekNext() const;

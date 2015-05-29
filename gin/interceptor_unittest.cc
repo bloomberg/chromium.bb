@@ -139,7 +139,7 @@ class InterceptorTest : public V8Test {
     v8::Local<v8::String> source = StringToV8(isolate, script_source);
     EXPECT_FALSE(source.IsEmpty());
 
-    gin::TryCatch try_catch(isolate);
+    gin::TryCatch try_catch;
     v8::Local<v8::Script> script = v8::Script::Compile(source);
     EXPECT_FALSE(script.IsEmpty());
     v8::Local<v8::Value> val = script->Run();

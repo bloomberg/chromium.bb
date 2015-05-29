@@ -8,21 +8,9 @@
 
 #include "gin/converter.h"
 
-namespace {
-
-v8::Local<v8::String> GetSourceLine(v8::Isolate* isolate,
-                                    v8::Local<v8::Message> message) {
-  auto maybe = message->GetSourceLine(isolate->GetCurrentContext());
-  v8::Local<v8::String> source_line;
-  return maybe.ToLocal(&source_line) ? source_line : v8::String::Empty(isolate);
-}
-
-}  // namespace
-
 namespace gin {
 
-TryCatch::TryCatch(v8::Isolate* isolate)
-    : isolate_(isolate), try_catch_(isolate) {
+TryCatch::TryCatch() {
 }
 
 TryCatch::~TryCatch() {
@@ -40,7 +28,7 @@ std::string TryCatch::GetStackTrace() {
   std::stringstream ss;
   v8::Local<v8::Message> message = try_catch_.Message();
   ss << V8ToString(message->Get()) << std::endl
-     << V8ToString(GetSourceLine(isolate_, message)) << std::endl;
+     << V8ToString(message->GetSourceLine()) << std::endl;
 
   v8::Local<v8::StackTrace> trace = message->GetStackTrace();
   if (trace.IsEmpty())

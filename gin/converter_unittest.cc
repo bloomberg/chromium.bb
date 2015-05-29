@@ -116,16 +116,19 @@ TEST_F(ConverterTest, Vector) {
   expected.push_back(0);
   expected.push_back(1);
 
-  auto maybe = Converter<std::vector<int>>::ToV8(
-      instance_->isolate()->GetCurrentContext(), expected);
-  Local<Value> js_value;
-  EXPECT_TRUE(maybe.ToLocal(&js_value));
-  Local<Array> js_array2 = Local<Array>::Cast(js_value);
-  EXPECT_EQ(3u, js_array2->Length());
+  Local<Array> js_array = Local<Array>::Cast(
+      Converter<std::vector<int>>::ToV8(instance_->isolate(), expected));
+  ASSERT_FALSE(js_array.IsEmpty());
+  EXPECT_EQ(3u, js_array->Length());
   for (size_t i = 0; i < expected.size(); ++i) {
     EXPECT_TRUE(Integer::New(instance_->isolate(), expected[i])
-                    ->StrictEquals(js_array2->Get(static_cast<int>(i))));
+                    ->StrictEquals(js_array->Get(static_cast<int>(i))));
   }
+
+  std::vector<int> actual;
+  EXPECT_TRUE(Converter<std::vector<int> >::FromV8(instance_->isolate(),
+                                                   js_array, &actual));
+  EXPECT_EQ(expected, actual);
 }
 
 }  // namespace gin

@@ -49,10 +49,10 @@ v8::Local<v8::Object> WrappableBase::GetWrapperImpl(v8::Isolate* isolate,
     data->SetObjectTemplate(info, templ);
   }
   CHECK_EQ(kNumberOfInternalFields, templ->InternalFieldCount());
-  v8::Local<v8::Object> wrapper;
+  v8::Local<v8::Object> wrapper = templ->NewInstance();
   // |wrapper| may be empty in some extreme cases, e.g., when
   // Object.prototype.constructor is overwritten.
-  if (!templ->NewInstance(isolate->GetCurrentContext()).ToLocal(&wrapper)) {
+  if (wrapper.IsEmpty()) {
     // The current wrappable object will be no longer managed by V8. Delete this
     // now.
     delete this;
