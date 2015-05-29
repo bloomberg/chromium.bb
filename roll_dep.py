@@ -14,8 +14,11 @@ import re
 import subprocess
 import sys
 
-
 NEED_SHELL = sys.platform.startswith('win')
+
+
+class Error(Exception):
+  pass
 
 
 def check_output(*args, **kwargs):
@@ -43,21 +46,22 @@ def roll(root, deps_dir, key, reviewers, bug):
     with open(deps, 'rb') as f:
       deps_content = f.read()
   except (IOError, OSError):
-    print >> sys.stderr, (
-        'Ensure the script is run in the directory containing DEPS file.')
-    return 1
+    raise Error('Ensure the script is run in the directory '
+                'containing DEPS file.')
 
   if not is_pristine(root):
-    print >> sys.stderr, 'Ensure %s is clean first.' % root
-    return 1
+    raise Error('Ensure %s is clean first.' % root)
 
   full_dir = os.path.normpath(os.path.join(os.path.dirname(root), deps_dir))
-  head = check_output(
-      ['git', 'rev-parse', 'HEAD'], cwd=full_dir).strip()
+  head = check_output(['git', 'rev-parse', 'HEAD'], cwd=full_dir).strip()
 
   if not head in deps_content:
     print('Warning: %s is not checked out at the expected revision in DEPS' %
           deps_dir)
+    if key is None:
+      print("Warning: no key specified.  Using '%s'." % deps_dir)
+      key = deps_dir
+
     # It happens if the user checked out a branch in the dependency by himself.
     # Fall back to reading the DEPS to figure out the original commit.
     for i in deps_content.splitlines():
@@ -66,9 +70,7 @@ def roll(root, deps_dir, key, reviewers, bug):
         head = m.group(1)
         break
     else:
-      print >> sys.stderr, 'Expected to find commit %s for %s in DEPS' % (
-          head, key)
-      return 1
+      raise Error('Expected to find commit %s for %s in DEPS' % (head, key))
 
   print('Found old revision %s' % head)
 
@@ -78,8 +80,7 @@ def roll(root, deps_dir, key, reviewers, bug):
   print('Found new revision %s' % master)
 
   if master == head:
-    print('No revision to roll!')
-    return 1
+    raise Error('No revision to roll!')
 
   commit_range = '%s..%s' % (head[:9], master[:9])
 
@@ -118,7 +119,6 @@ def roll(root, deps_dir, key, reviewers, bug):
     print('')
   print('Run:')
   print('  git cl upload --send-mail')
-  return 0
 
 
 def main():
@@ -141,12 +141,19 @@ def main():
       if not '@' in r:
         reviewers[i] = r + '@chromium.org'
 
-  return roll(
-      os.getcwd(),
-      args[0],
-      args[1] if len(args) > 1 else None,
-      reviewers,
-      options.bug)
+  try:
+    roll(
+        os.getcwd(),
+        deps_dir=args[0],
+        key=args[1] if len(args) > 1 else None,
+        reviewers=reviewers,
+        bug=options.bug)
+
+  except Error as e:
+    sys.stderr.write('error: %s\n' % e)
+    return 1
+
+  return 0
 
 
 if __name__ == '__main__':
