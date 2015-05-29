@@ -40,8 +40,10 @@ namespace blink {
 
 EventTarget* EventPath::eventTargetRespectingTargetRules(Node& referenceNode)
 {
-    if (referenceNode.isPseudoElement())
+    if (referenceNode.isPseudoElement()) {
+        ASSERT(referenceNode.parentNode());
         return referenceNode.parentNode();
+    }
 
     return &referenceNode;
 }
@@ -81,8 +83,15 @@ void EventPath::initializeWith(Node& node, Event* event)
     initialize();
 }
 
+static inline bool eventPathShouldBeEmptyFor(Node& node)
+{
+    return node.isPseudoElement() && !node.parentElement();
+}
+
 void EventPath::initialize()
 {
+    if (eventPathShouldBeEmptyFor(*m_node))
+        return;
     calculatePath();
     calculateAdjustedTargets();
     calculateTreeScopePrePostOrderNumbers();

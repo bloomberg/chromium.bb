@@ -3848,6 +3848,7 @@
             'editing/StyledMarkupSerializerTest.cpp',
             'editing/SurroundingTextTest.cpp',
             'editing/VisibleSelectionTest.cpp',
+            'events/EventPathTest.cpp',
             'fetch/CachingCorrectnessTest.cpp',
             'fetch/ClientHintsPreferencesTest.cpp',
             'fetch/ImageResourceTest.cpp',
