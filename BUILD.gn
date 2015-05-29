@@ -205,6 +205,8 @@ group("both_gn_and_gyp") {
       "//base/android/linker:chromium_android_linker",
       "//build/android/gyp/test:hello_world",
       "//build/android/rezip",
+      "//chrome/android:chrome_public_apk",
+      "//chrome/android:chrome_public_test_apk",
       "//chrome/android:chrome_shell_apk",
       "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
       "//tools/imagediff($host_toolchain)",

@@ -191,6 +191,7 @@
       'includes': [ '../../build/java.gypi' ],
     },
     {
+      # GN: //chrome/android:chrome_template_resources
       'target_name': 'chrome_template_resources',
       'type': 'none',
       'variables': {
@@ -213,6 +214,7 @@
       'includes': [ '../../build/android/jinja_template.gypi' ],
     },
     {
+      # GN: //chrome/android:hosted_service_aidl
       'target_name': 'hosted_service_aidl',
       'type': 'none',
       'variables': {
@@ -226,7 +228,7 @@
       'includes': [ '../../build/java_aidl.gypi' ],
     },
     {
-      # GN: TODO
+      # GN: //chrome/android:chrome_public
       'target_name': 'libchrome_public',
       'type': 'shared_library',
       'dependencies': [
@@ -269,6 +271,7 @@
       ],
     },
     {
+      # GN: //chrome/android:chrome_public_apk_manifest
       'target_name': 'chrome_public_manifest',
       'type': 'none',
       'variables': {
@@ -284,6 +287,7 @@
       'includes': [ '../../build/android/jinja_template.gypi' ],
     },
     {
+      # GN: //chrome/android:chrome_public_apk
       'target_name': 'chrome_public_apk',
       'type': 'none',
       'variables': {
@@ -369,8 +373,7 @@
       'includes': [ '../../build/java.gypi' ],
     },
     {
-      # GN: None. This will most likely be merged with chrome_shell before GN is
-      # done.
+      # GN: //chrome/android:chrome_public_test_apk_manifest
       'target_name': 'chrome_public_test_apk_manifest',
       'type': 'none',
       'variables': {
@@ -383,8 +386,7 @@
       'includes': [ '../../build/android/jinja_template.gypi' ],
     },
     {
-      # GN: None. This will most likely be merged with chrome_shell before GN is
-      # done.
+      # GN: //chrome/android:chrome_public_test_apk
       'target_name': 'chrome_public_test_apk',
       'type': 'none',
       'dependencies': [
