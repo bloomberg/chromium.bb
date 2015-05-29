@@ -1729,13 +1729,13 @@ crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failur
 crbug.com/474798 virtual/slimmingpaint/fast/repaint/align-self-change-keeping-geometry-grid.html [ Skip ]
 crbug.com/474798 virtual/slimmingpaint/fast/repaint/justify-self-change-keeping-geometry.html [ Skip ]
 
-crbug.com/492084 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
-crbug.com/492084 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
-crbug.com/492084 virtual/stable/webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
-crbug.com/492084 webexposed/global-interface-listing-compositor-worker.html [ NeedsManualRebaseline ]
-crbug.com/492084 webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
-crbug.com/492084 webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
-crbug.com/492084 webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
+crbug.com/492084 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsRebaseline ]
+crbug.com/492084 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ NeedsRebaseline ]
+crbug.com/492084 virtual/stable/webexposed/global-interface-listing.html [ NeedsRebaseline ]
+crbug.com/492084 webexposed/global-interface-listing-compositor-worker.html [ NeedsRebaseline ]
+crbug.com/492084 webexposed/global-interface-listing-dedicated-worker.html [ NeedsRebaseline ]
+crbug.com/492084 webexposed/global-interface-listing-shared-worker.html [ NeedsRebaseline ]
+crbug.com/492084 webexposed/global-interface-listing.html [ NeedsRebaseline ]
 
 
 # Temporarily disabled after chromium change
