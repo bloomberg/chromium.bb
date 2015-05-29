@@ -89,8 +89,7 @@ TEST_F(BrowsingDataStoreTest, MakeActiveAndInactiveOperations) {
 
 // Tests that CRWBrowsingDataStore correctly handles |removeDataOfTypes:| call.
 TEST_F(BrowsingDataStoreTest, RemoveDataOperations) {
-  NSSet* browsing_data_types =
-      [NSSet setWithObject:web::kBrowsingDataTypeCookies];
+  web::BrowsingDataTypes browsing_data_types = web::BROWSING_DATA_TYPE_COOKIES;
   __block BOOL block_was_called = NO;
   [browsing_data_store_ removeDataOfTypes:browsing_data_types
                         completionHandler:^{

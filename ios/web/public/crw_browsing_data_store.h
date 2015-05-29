@@ -12,9 +12,16 @@
 namespace web {
 class BrowserState;
 
-// Represents the cookie browsing data that a web view stores.
-extern NSString* const kBrowsingDataTypeCookies;
-}
+// Represents the various kinds of browsing data that a CRWBrowsingDataStore
+// can handle.
+typedef NS_OPTIONS(NSUInteger, BrowsingDataTypes) {
+  // Represents the cookie browsing data that a web view stores.
+  BROWSING_DATA_TYPE_COOKIES = 1 << 0,
+  // Represents all the browsing data that a web view stores.
+  BROWSING_DATA_TYPE_ALL = BROWSING_DATA_TYPE_COOKIES,
+};
+
+}  // namespace web
 
 // Represents the modes that a CRWBrowsingDataStore is currently at.
 enum CRWBrowsingDataStoreMode {
@@ -39,9 +46,6 @@ enum CRWBrowsingDataStoreMode {
 // active state.
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
-
-// Returns a set of all available browsing data types.
-+ (NSSet*)allBrowsingDataTypes;
 
 // The mode that the CRWBrowsingDataStore is in.
 @property(nonatomic, assign, readonly) CRWBrowsingDataStoreMode mode;
@@ -68,7 +72,7 @@ enum CRWBrowsingDataStoreMode {
 // |completionHandler| is called on the main thread after the browsing data has
 // been removed.
 // Precondition: There must be no web views associated with the BrowserState.
-- (void)removeDataOfTypes:(NSSet*)browsingDataTypes
+- (void)removeDataOfTypes:(web::BrowsingDataTypes)browsingDataTypes
         completionHandler:(ProceduralBlock)completionHandler;
 
 // Returns YES if there is still a pending operation that has not finished

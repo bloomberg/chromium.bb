@@ -14,10 +14,6 @@
 #include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/browser_state.h"
 
-namespace web {
-NSString* const kBrowsingDataTypeCookies = @"kBrowsingDataTypeCookies";
-}  // namespace web
-
 namespace {
 // Represents the type of operations that a CRWBrowsingDataStore can perform.
 enum OperationType {
@@ -40,12 +36,9 @@ enum OperationType {
 // The array of all browsing data managers. Must be accessed from the main
 // thread.
 @property(nonatomic, readonly) NSArray* allBrowsingDataManagers;
-// Returns the |CRWBrowsingDataManager| that manages the browsing data for
-// |browsingDataType|.
-- (id<CRWBrowsingDataManager>)browsingDataManagerForBrowsingDataType:
-        (NSString*)browsingDataType;
-// Returns an array of browsing data managers for all the |browsingDataType|.
-- (NSArray*)browsingDataManagersForBrowsingDataTypes:(NSSet*)browsingDataTypes;
+// Returns an array of browsing data managers for the given |browsingDataTypes|.
+- (NSArray*)browsingDataManagersForBrowsingDataTypes:
+        (web::BrowsingDataTypes)browsingDataTypes;
 
 // Redefined to be read-write. Must be called from the main thread.
 @property(nonatomic, assign) CRWBrowsingDataStoreMode mode;
@@ -143,7 +136,7 @@ enum OperationType {
         cookieBrowsingDataManager([[CRWCookieBrowsingDataManager alloc]
             initWithBrowserState:browserState]);
     _browsingDataTypeMap.reset([@{
-      web::kBrowsingDataTypeCookies : cookieBrowsingDataManager,
+      @(web::BROWSING_DATA_TYPE_COOKIES) : cookieBrowsingDataManager,
     } retain]);
   }
   return self;
@@ -159,24 +152,24 @@ enum OperationType {
   return result;
 }
 
-+ (NSSet*)allBrowsingDataTypes {
-  return [[[NSSet alloc]
-      initWithObjects:web::kBrowsingDataTypeCookies, nil] autorelease];
-}
 
 - (NSArray*)allBrowsingDataManagers {
   DCHECK([NSThread isMainThread]);
   return [_browsingDataTypeMap allValues];
 }
 
-- (id<CRWBrowsingDataManager>)browsingDataManagerForBrowsingDataType:
-        (NSString*)browsingDataType {
-  return [_browsingDataTypeMap objectForKey:browsingDataType];
-}
-
-- (NSArray*)browsingDataManagersForBrowsingDataTypes:(NSSet*)browsingDataTypes {
-  return [_browsingDataTypeMap objectsForKeys:[browsingDataTypes allObjects]
-                               notFoundMarker:[NSNull null]];
+- (NSArray*)browsingDataManagersForBrowsingDataTypes:
+        (web::BrowsingDataTypes)browsingDataTypes {
+  __block NSMutableArray* result = [NSMutableArray array];
+  [_browsingDataTypeMap
+      enumerateKeysAndObjectsUsingBlock:^(NSNumber* dataType,
+                                          id<CRWBrowsingDataManager> manager,
+                                          BOOL*) {
+        if ([dataType unsignedIntegerValue] & browsingDataTypes) {
+          [result addObject:manager];
+        }
+      }];
+  return result;
 }
 
 - (CRWBrowsingDataStoreMode)mode {
@@ -225,7 +218,7 @@ enum OperationType {
                }];
 }
 
-- (void)removeDataOfTypes:(NSSet*)browsingDataTypes
+- (void)removeDataOfTypes:(web::BrowsingDataTypes)browsingDataTypes
         completionHandler:(ProceduralBlock)completionHandler {
   DCHECK([NSThread isMainThread]);
 
