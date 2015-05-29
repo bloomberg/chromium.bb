@@ -2461,6 +2461,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
     "http://bbb.com/empty.html",
     "http://sub.bbb.com/empty.html",
     "http://bbb.com/policy/blank.html",
+    "http://bbb.com./policy/blank.html",
   };
   {
     base::RunLoop loop;
@@ -2498,6 +2499,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   CheckURLIsBlocked(browser(), kURLS[1]);
   CheckCanOpenURL(browser(), kURLS[2]);
   CheckCanOpenURL(browser(), kURLS[3]);
+  CheckCanOpenURL(browser(), kURLS[4]);
 
   {
     base::RunLoop loop;

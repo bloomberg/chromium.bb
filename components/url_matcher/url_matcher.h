@@ -190,7 +190,11 @@ class URL_MATCHER_EXPORT URLMatcherConditionFactory {
   URLMatcherCondition CreateCondition(URLMatcherCondition::Criterion criterion,
                                       const std::string& pattern);
 
-  // Prepends a "." to the hostname if it does not start with one.
+  // Prepends a "." to the prefix if it does not start with one.
+  std::string CanonicalizeHostPrefix(const std::string& prefix) const;
+  // Appends a "." to the hostname if it does not start with one.
+  std::string CanonicalizeHostSuffix(const std::string& suffix) const;
+  // Adds "." to either side of the hostname if not present yet.
   std::string CanonicalizeHostname(const std::string& hostname) const;
 
   // Convert the query string to canonical form suitable for key token search.

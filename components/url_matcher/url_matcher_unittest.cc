@@ -241,10 +241,14 @@ TEST(URLMatcherConditionFactoryTest, TestSingletonProperty) {
 }
 
 TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
+  URLMatcherConditionFactory factory;
   GURL gurl("https://www.google.com:1234/webhp?sourceid=chrome-instant&ie=UTF-8"
       "&ion=1#hl=en&output=search&sclient=psy-ab&q=chrome%20is%20awesome");
-  URLMatcherConditionFactory factory;
   std::string url = factory.CanonicalizeURLForComponentSearches(gurl);
+  GURL gurl2("https://www.google.com.:1234/webhp?sourceid=chrome-instant"
+      "&ie=UTF-8&ion=1#hl=en&output=search&sclient=psy-ab"
+      "&q=chrome%20is%20awesome");
+  std::string url2 = factory.CanonicalizeURLForComponentSearches(gurl2);
 
   // Test host component.
   EXPECT_TRUE(Matches(factory.CreateHostPrefixCondition(std::string()), url));
@@ -259,12 +263,18 @@ TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
   EXPECT_FALSE(Matches(factory.CreateHostPrefixCondition("webhp"), url));
 
   EXPECT_TRUE(Matches(factory.CreateHostSuffixCondition(std::string()), url));
+  EXPECT_TRUE(Matches(factory.CreateHostSuffixCondition(std::string()), url2));
   EXPECT_TRUE(Matches(factory.CreateHostSuffixCondition("com"), url));
+  EXPECT_TRUE(Matches(factory.CreateHostSuffixCondition("com"), url2));
   EXPECT_TRUE(Matches(factory.CreateHostSuffixCondition(".com"), url));
   EXPECT_TRUE(
       Matches(factory.CreateHostSuffixCondition("www.google.com"), url));
   EXPECT_TRUE(
       Matches(factory.CreateHostSuffixCondition(".www.google.com"), url));
+  EXPECT_TRUE(
+      Matches(factory.CreateHostSuffixCondition(".www.google.com"), url2));
+  EXPECT_TRUE(
+      Matches(factory.CreateHostSuffixCondition(".www.google.com."), url));
   EXPECT_FALSE(Matches(factory.CreateHostSuffixCondition("www"), url));
   EXPECT_FALSE(
       Matches(factory.CreateHostSuffixCondition("www.google.com/"), url));
@@ -274,9 +284,14 @@ TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
   EXPECT_FALSE(Matches(factory.CreateHostEqualsCondition("www"), url));
   EXPECT_TRUE(
       Matches(factory.CreateHostEqualsCondition("www.google.com"), url));
+  EXPECT_TRUE(
+      Matches(factory.CreateHostEqualsCondition("www.google.com"), url2));
   EXPECT_FALSE(
       Matches(factory.CreateHostEqualsCondition("www.google.com/"), url));
-
+  EXPECT_TRUE(
+      Matches(factory.CreateHostEqualsCondition(".www.google.com."), url));
+  EXPECT_TRUE(
+      Matches(factory.CreateHostEqualsCondition(".www.google.com."), url2));
 
   // Test path component.
   EXPECT_TRUE(Matches(factory.CreatePathPrefixCondition(std::string()), url));
@@ -330,6 +345,12 @@ TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
   // Test adjacent components
   EXPECT_TRUE(Matches(factory.CreateHostSuffixPathPrefixCondition(
       "google.com", "/webhp"), url));
+  EXPECT_TRUE(Matches(factory.CreateHostSuffixPathPrefixCondition(
+      "google.com", "/webhp"), url2));
+  EXPECT_TRUE(Matches(factory.CreateHostSuffixPathPrefixCondition(
+      "google.com.", "/webhp"), url));
+  EXPECT_TRUE(Matches(factory.CreateHostSuffixPathPrefixCondition(
+      "google.com.", "/webhp"), url2));
   EXPECT_TRUE(Matches(
       factory.CreateHostSuffixPathPrefixCondition(std::string(), "/webhp"),
       url));
@@ -341,6 +362,12 @@ TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
 
   EXPECT_TRUE(Matches(factory.CreateHostEqualsPathPrefixCondition(
       "www.google.com", "/webhp"), url));
+  EXPECT_TRUE(Matches(factory.CreateHostEqualsPathPrefixCondition(
+      "www.google.com", "/webhp"), url2));
+  EXPECT_TRUE(Matches(factory.CreateHostEqualsPathPrefixCondition(
+      ".www.google.com.", "/webhp"), url));
+  EXPECT_TRUE(Matches(factory.CreateHostEqualsPathPrefixCondition(
+      ".www.google.com.", "/webhp"), url2));
   EXPECT_FALSE(Matches(
       factory.CreateHostEqualsPathPrefixCondition(std::string(), "/webhp"),
       url));

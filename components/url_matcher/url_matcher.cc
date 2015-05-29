@@ -277,13 +277,13 @@ std::string URLMatcherConditionFactory::CanonicalizeURLForComponentSearches(
 URLMatcherCondition URLMatcherConditionFactory::CreateHostPrefixCondition(
     const std::string& prefix) {
   return CreateCondition(URLMatcherCondition::HOST_PREFIX,
-      kBeginningOfURL + CanonicalizeHostname(prefix));
+      kBeginningOfURL + CanonicalizeHostPrefix(prefix));
 }
 
 URLMatcherCondition URLMatcherConditionFactory::CreateHostSuffixCondition(
     const std::string& suffix) {
   return CreateCondition(URLMatcherCondition::HOST_SUFFIX,
-      suffix + kEndOfDomain);
+      CanonicalizeHostSuffix(suffix) + kEndOfDomain);
 }
 
 URLMatcherCondition URLMatcherConditionFactory::CreateHostContainsCondition(
@@ -365,7 +365,7 @@ URLMatcherCondition
     const std::string& host_suffix,
     const std::string& path_prefix) {
   return CreateCondition(URLMatcherCondition::HOST_SUFFIX_PATH_PREFIX,
-      host_suffix + kEndOfDomain + path_prefix);
+      CanonicalizeHostSuffix(host_suffix) + kEndOfDomain + path_prefix);
 }
 
 URLMatcherCondition
@@ -521,12 +521,25 @@ URLMatcherCondition URLMatcherConditionFactory::CreateCondition(
   }
 }
 
+std::string URLMatcherConditionFactory::CanonicalizeHostSuffix(
+    const std::string& suffix) const {
+  if (!suffix.empty() && suffix[suffix.size() - 1] == '.')
+    return suffix;
+  else
+    return suffix + ".";
+}
+
+std::string URLMatcherConditionFactory::CanonicalizeHostPrefix(
+    const std::string& prefix) const {
+  if (!prefix.empty() && prefix[0] == '.')
+    return prefix;
+  else
+    return "." + prefix;
+}
+
 std::string URLMatcherConditionFactory::CanonicalizeHostname(
     const std::string& hostname) const {
-  if (!hostname.empty() && hostname[0] == '.')
-    return hostname;
-  else
-    return "." + hostname;
+  return CanonicalizeHostPrefix(CanonicalizeHostSuffix(hostname));
 }
 
 // This function prepares the query string by replacing query separator with a
