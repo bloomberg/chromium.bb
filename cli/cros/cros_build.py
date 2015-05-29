@@ -166,7 +166,7 @@ To just build a single package:
         cros_build_lib.Die('--brick should not be used with board names. Use '
                            '--board=%s instead.' % self.brick.config['name'])
 
-    commandline.RunInsideChroot(self, auto_detect_brick=True)
+    commandline.RunInsideChroot(self)
 
     if not (self.build_pkgs or self.options.init_only):
       cros_build_lib.Die('No packages found, nothing to build.')

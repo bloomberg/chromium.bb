@@ -126,7 +126,7 @@ To debug a process by its pid:
 
   def Run(self):
     """Run cros debug."""
-    commandline.RunInsideChroot(self, auto_detect_brick=True)
+    commandline.RunInsideChroot(self)
     self.options.Freeze()
     self._ReadOptions()
     try:

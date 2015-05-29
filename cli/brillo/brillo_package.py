@@ -174,5 +174,5 @@ To enable building a package from latest or stable ebuilds:
     if self.options.create_source:
       self._CreateSource()
     if self.options.enable:
-      commandline.RunInsideChroot(self, auto_detect_brick=True)
+      commandline.RunInsideChroot(self)
       self._EnableBuild()

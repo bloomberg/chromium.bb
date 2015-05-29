@@ -55,7 +55,7 @@ class ImageCommand(command.CliCommand):
                         default='test', help="The image types to build.")
 
   def Run(self):
-    commandline.RunInsideChroot(self, auto_detect_brick=True)
+    commandline.RunInsideChroot(self)
 
     # argparse does not behave well with nargs='*', default, and choices
     # (http://bugs.python.org/issue9625). Before freezing options, we need to

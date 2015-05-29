@@ -112,7 +112,7 @@ For more information of cros build usage:
 
   def Run(self):
     """Run cros deploy."""
-    commandline.RunInsideChroot(self, auto_detect_brick=True)
+    commandline.RunInsideChroot(self)
     self.options.Freeze()
     try:
       deploy.Deploy(

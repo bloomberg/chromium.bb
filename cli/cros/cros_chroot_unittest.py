@@ -8,10 +8,13 @@ from __future__ import print_function
 
 import os
 
+from chromite.cbuildbot import constants
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_chroot
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import path_util
 from chromite.lib import osutils
 from chromite.lib import workspace_lib
 
@@ -29,7 +32,7 @@ class MockChrootCommand(command_unittest.MockCommand):
     return command_unittest.MockCommand.Run(self, inst)
 
 
-class ChrootTest(cros_test_lib.MockTestCase):
+class ChrootTest(cros_test_lib.WorkspaceTestCase, cros_test_lib.MockTestCase):
   """Test the ChrootCommand."""
 
   def SetupCommandMock(self, cmd_args):
@@ -67,7 +70,7 @@ class ChrootTest(cros_test_lib.MockTestCase):
     self.cmd_mock.inst.options.log_level = 'notice'
     # Pretend that we are outside the chroot so the logging level gets passed as
     # an argument to cros_sdk.
-    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+    self.mock_inside.return_value = False
     self.cmd_mock.inst.Run()
 
     #Ensure that we exec'd with logging level notice.
@@ -106,6 +109,26 @@ class ChrootTest(cros_test_lib.MockTestCase):
 
     # Ensure we pass along "--help" instead of processing it directly.
     self.cmd_mock.rc_mock.assertCommandContains(['--help'])
+
+  def testNoWorkspace(self):
+    """Tests entering the chroot from outside a workspace."""
+    self.SetupCommandMock([])
+    self.cmd_mock.inst.Run()
+
+    # Make sure nothing was set in |extra_env|.
+    self.cmd_mock.rc_mock.assertCommandContains(extra_env={})
+
+  def testWorkspace(self):
+    """Tests entering the chroot from inside a workspace."""
+    self.SetupCommandMock([])
+    self.CreateWorkspace()
+    self.PatchObject(path_util.ChrootPathResolver, 'ToChroot',
+                     return_value=constants.CHROOT_WORKSPACE_ROOT)
+    self.cmd_mock.inst.Run()
+
+    # Make sure CWD was set properly in |extra_env|.
+    self.cmd_mock.rc_mock.assertCommandContains(extra_env={
+        commandline.CHROOT_CWD_ENV_VAR: constants.CHROOT_WORKSPACE_ROOT})
 
 
 class ChrootMoveTest(cros_test_lib.MockTempDirTestCase):
