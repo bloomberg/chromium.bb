@@ -809,6 +809,20 @@ static ALWAYS_INLINE void partitionDecommitPage(PartitionRootBase* root, Partiti
     page->numUnprovisionedSlots = 0;
 }
 
+static void partitionDecommitPageIfPossible(PartitionRootBase* root, PartitionPage* page)
+{
+    ASSERT(page != &PartitionRootBase::gSeedPage);
+    ASSERT(page->emptyCacheIndex >= 0);
+    ASSERT(static_cast<unsigned>(page->emptyCacheIndex) < kMaxFreeableSpans);
+    ASSERT(page == root->globalEmptyPageRing[page->emptyCacheIndex]);
+    if (!page->numAllocatedSlots && page->freelistHead) {
+        // The page is still empty, and not decommitted, so _really_ decommit
+        // it.
+        partitionDecommitPage(root, page);
+    }
+    page->emptyCacheIndex = -1;
+}
+
 static ALWAYS_INLINE void partitionRegisterEmptyPage(PartitionPage* page)
 {
     PartitionRootBase* root = partitionPageToRoot(page);
@@ -822,21 +836,11 @@ static ALWAYS_INLINE void partitionRegisterEmptyPage(PartitionPage* page)
     }
 
     int16_t currentIndex = root->globalEmptyPageRingIndex;
-    PartitionPage* pageToFree = root->globalEmptyPageRing[currentIndex];
+    PartitionPage* pageToDecommit = root->globalEmptyPageRing[currentIndex];
     // The page might well have been re-activated, filled up, etc. before we get
     // around to looking at it here.
-    if (pageToFree) {
-        ASSERT(pageToFree != &PartitionRootBase::gSeedPage);
-        ASSERT(pageToFree->emptyCacheIndex >= 0);
-        ASSERT(static_cast<unsigned>(pageToFree->emptyCacheIndex) < kMaxFreeableSpans);
-        ASSERT(pageToFree == root->globalEmptyPageRing[pageToFree->emptyCacheIndex]);
-        if (!pageToFree->numAllocatedSlots && pageToFree->freelistHead) {
-            // The page is still empty, and not decommitted, so _really_
-            // decommit it.
-            partitionDecommitPage(root, pageToFree);
-        }
-        pageToFree->emptyCacheIndex = -1;
-    }
+    if (pageToDecommit)
+        partitionDecommitPageIfPossible(root, pageToDecommit);
 
     // We put the empty slot span on our global list of "pages that were once
     // empty". thus providing it a bit of breathing room to get re-used before
@@ -848,6 +852,16 @@ static ALWAYS_INLINE void partitionRegisterEmptyPage(PartitionPage* page)
     if (currentIndex == kMaxFreeableSpans)
         currentIndex = 0;
     root->globalEmptyPageRingIndex = currentIndex;
+}
+
+void partitionPurgeMemory(PartitionRootBase* root)
+{
+    for (size_t i = 0; i < kMaxFreeableSpans; ++i) {
+        PartitionPage* page = root->globalEmptyPageRing[i];
+        if (page)
+            partitionDecommitPageIfPossible(root, page);
+        root->globalEmptyPageRing[i] = nullptr;
+    }
 }
 
 void partitionFreeSlowPath(PartitionPage* page)

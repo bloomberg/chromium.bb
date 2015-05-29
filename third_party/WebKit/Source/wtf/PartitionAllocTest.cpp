@@ -1457,6 +1457,42 @@ TEST(PartitionAllocTest, DumpMemoryStats)
     TestShutdown();
 }
 
+// Tests the API to purge freeable memory.
+TEST(PartitionAllocTest, Purge)
+{
+    TestSetup();
+
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), 2048 - kExtraAllocSize);
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+    {
+        MockPartitionStatsDumper mockStatsDumperGeneric;
+        partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+        EXPECT_FALSE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+        const WTF::PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
+        EXPECT_TRUE(stats);
+        EXPECT_TRUE(stats->isValid);
+        EXPECT_EQ(WTF::kSystemPageSize, stats->freeableBytes);
+        EXPECT_EQ(WTF::kSystemPageSize, stats->residentBytes);
+    }
+    partitionPurgeMemory(genericAllocator.root());
+    {
+        MockPartitionStatsDumper mockStatsDumperGeneric;
+        partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+        EXPECT_FALSE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+        const WTF::PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(2048);
+        EXPECT_TRUE(stats);
+        EXPECT_TRUE(stats->isValid);
+        EXPECT_EQ(0u, stats->freeableBytes);
+        EXPECT_EQ(0u, stats->residentBytes);
+    }
+    // Calling purge again here is a good way of testing we didn't mess up the
+    // state of the free cache ring.
+    partitionPurgeMemory(genericAllocator.root());
+    TestShutdown();
+}
+
 // Tests that the countLeadingZeros() functions work to our satisfaction.
 // It doesn't seem worth the overhead of a whole new file for these tests, so
 // we'll put them here since partitionAllocGeneric will depend heavily on these
