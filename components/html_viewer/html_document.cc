@@ -290,19 +290,14 @@ blink::WebCookieJar* HTMLDocument::cookieJar(blink::WebLocalFrame* frame) {
 }
 
 blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
-    blink::WebLocalFrame* frame,
-    blink::WebDataSource::ExtraData* data,
-    const blink::WebURLRequest& request,
-    blink::WebNavigationType nav_type,
-    blink::WebNavigationPolicy default_policy,
-    bool is_redirect) {
-  if (CanNavigateLocally(frame, request))
-    return default_policy;
+    const NavigationPolicyInfo& info) {
+  if (CanNavigateLocally(info.frame, info.urlRequest))
+    return info.defaultPolicy;
 
   if (navigator_host_.get()) {
-    mojo::URLRequestPtr url_request = mojo::URLRequest::From(request);
+    mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
     navigator_host_->RequestNavigate(
-        WebNavigationPolicyToNavigationTarget(default_policy),
+        WebNavigationPolicyToNavigationTarget(info.defaultPolicy),
         url_request.Pass());
   }
 

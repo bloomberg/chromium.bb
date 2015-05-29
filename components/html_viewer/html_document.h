@@ -101,12 +101,8 @@ class HTMLDocument : public blink::WebViewClient,
   virtual void frameDetached(blink::WebFrame*);
   virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
-      blink::WebLocalFrame* frame,
-      blink::WebDataSource::ExtraData* data,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationType nav_type,
-      blink::WebNavigationPolicy default_policy,
-      bool isRedirect);
+      const NavigationPolicyInfo& info);
+
   virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,
                                       const blink::WebString& source_name,
                                       unsigned source_line,
