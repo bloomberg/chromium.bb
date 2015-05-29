@@ -342,7 +342,7 @@ Error HttpFsNode::OpenUrl(const char* method,
                                           out_request->pp_resource(),
                                           PP_BlockUntilComplete());
   if (result != PP_OK)
-    return PPErrorToErrno(result);
+    return PPERROR_TO_ERRNO(result);
 
   out_response->Reset(
       loader_interface->GetResponseInfo(out_loader->pp_resource()));
@@ -670,7 +670,7 @@ Error HttpFsNode::ReadResponseToBuffer(const ScopedResource& loader,
     }
 
     if (bytes_read < 0)
-      return PPErrorToErrno(bytes_read);
+      return PPERROR_TO_ERRNO(bytes_read);
 
     assert(bytes_read <= bytes_to_read);
     bytes_to_read -= bytes_read;

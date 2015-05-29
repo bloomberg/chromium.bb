@@ -227,7 +227,7 @@ Error UdpNode::SetSockOpt(int lvl,
                        PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE,
                        PP_MakeInt32(bufsize),
                        PP_BlockUntilComplete());
-    return PPErrorToErrno(error);
+    return PPERROR_TO_ERRNO(error);
   } else if (lvl == SOL_SOCKET && optname == SO_SNDBUF) {
     if (static_cast<size_t>(len) < sizeof(int))
       return EINVAL;
@@ -238,7 +238,7 @@ Error UdpNode::SetSockOpt(int lvl,
                 PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE,
                 PP_MakeInt32(bufsize),
                 PP_BlockUntilComplete());
-    return PPErrorToErrno(error);
+    return PPERROR_TO_ERRNO(error);
   }
 
   return SocketNode::SetSockOpt(lvl, optname, optval, len);
@@ -260,7 +260,7 @@ Error UdpNode::Bind(const struct sockaddr* addr, socklen_t len) {
       UDPInterface()->Bind(socket_resource_, out_addr, PP_BlockUntilComplete());
   filesystem_->ppapi()->ReleaseResource(out_addr);
   if (err != 0)
-    return PPErrorToErrno(err);
+    return PPERROR_TO_ERRNO(err);
 
   // Get the address that was actually bound (in case addr was 0.0.0.0:0).
   out_addr = UDPInterface()->GetBoundAddress(socket_resource_);

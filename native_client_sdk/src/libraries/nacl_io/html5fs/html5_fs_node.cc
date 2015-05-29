@@ -80,7 +80,7 @@ Error Html5FsNode::FSync() {
   int32_t result =
       file_io_iface_->Flush(fileio_resource_, PP_BlockUntilComplete());
   if (result != PP_OK)
-    return PPErrorToErrno(result);
+    return PPERROR_TO_ERRNO(result);
   return 0;
 }
 
@@ -104,7 +104,7 @@ Error Html5FsNode::GetDents(size_t offs,
   int32_t result = file_ref_iface_->ReadDirectoryEntries(
       fileref_resource_, output, PP_BlockUntilComplete());
   if (result != PP_OK)
-    return PPErrorToErrno(result);
+    return PPERROR_TO_ERRNO(result);
 
   PP_DirectoryEntry* entries = static_cast<PP_DirectoryEntry*>(output_buf.data);
 
@@ -151,7 +151,7 @@ Error Html5FsNode::GetStat(struct stat* stat) {
   int32_t result =
       file_ref_iface_->Query(fileref_resource_, &info, PP_BlockUntilComplete());
   if (result != PP_OK)
-    return PPErrorToErrno(result);
+    return PPERROR_TO_ERRNO(result);
 
   // Fill in known info here.
   memcpy(stat, &stat_, sizeof(stat_));
@@ -191,7 +191,7 @@ Error Html5FsNode::Read(const HandleAttr& attr,
                                         static_cast<int32_t>(count),
                                         PP_BlockUntilComplete());
   if (result < 0)
-    return PPErrorToErrno(result);
+    return PPERROR_TO_ERRNO(result);
 
   *out_bytes = result;
   return 0;
@@ -204,7 +204,7 @@ Error Html5FsNode::FTruncate(off_t size) {
   int32_t result = file_io_iface_->SetLength(
       fileio_resource_, size, PP_BlockUntilComplete());
   if (result != PP_OK)
-    return PPErrorToErrno(result);
+    return PPERROR_TO_ERRNO(result);
   return 0;
 }
 
@@ -223,7 +223,7 @@ Error Html5FsNode::Write(const HandleAttr& attr,
                                          static_cast<int32_t>(count),
                                          PP_BlockUntilComplete());
   if (result < 0)
-    return PPErrorToErrno(result);
+    return PPERROR_TO_ERRNO(result);
 
   *out_bytes = result;
   return 0;
@@ -245,7 +245,7 @@ Error Html5FsNode::GetSize(off_t* out_size) {
   int32_t result =
       file_io_iface_->Query(fileio_resource_, &info, PP_BlockUntilComplete());
   if (result != PP_OK)
-    return PPErrorToErrno(result);
+    return PPERROR_TO_ERRNO(result);
 
   *out_size = info.size;
   return 0;
@@ -299,7 +299,7 @@ Error Html5FsNode::Init(int open_flags) {
                            OpenFlagsToPPAPIOpenFlags(open_flags),
                            PP_BlockUntilComplete());
   if (open_result != PP_OK)
-    return PPErrorToErrno(open_result);
+    return PPERROR_TO_ERRNO(open_result);
   return 0;
 }
 

@@ -448,7 +448,7 @@ Error SocketNode::SendHelper(const HandleAttr& attr,
 void SocketNode::SetError_Locked(int pp_error_num) {
   SetStreamFlags(SSF_ERROR | SSF_CLOSED);
   ClearStreamFlags(SSF_CAN_SEND | SSF_CAN_RECV);
-  last_errno_ = PPErrorToErrno(pp_error_num);
+  last_errno_ = PPERROR_TO_ERRNO(pp_error_num);
 }
 
 Error SocketNode::Shutdown(int how) {

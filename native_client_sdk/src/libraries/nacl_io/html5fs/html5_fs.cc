@@ -123,7 +123,7 @@ Error Html5Fs::Mkdir(const Path& path, int permissions) {
   int32_t result = file_ref_iface_->MakeDirectory(
       fileref_resource.pp_resource(), PP_FALSE, PP_BlockUntilComplete());
   if (result != PP_OK)
-    return PPErrorToErrno(result);
+    return PPERROR_TO_ERRNO(result);
 
   return 0;
 }
@@ -178,7 +178,7 @@ Error Html5Fs::RemoveInternal(const Path& path, int remove_type) {
   int32_t result = file_ref_iface_->Delete(fileref_resource.pp_resource(),
                                            PP_BlockUntilComplete());
   if (result != PP_OK)
-    return PPErrorToErrno(result);
+    return PPERROR_TO_ERRNO(result);
 
   return 0;
 }
@@ -206,7 +206,7 @@ Error Html5Fs::Rename(const Path& path, const Path& newpath) {
                                            new_fileref_resource.pp_resource(),
                                            PP_BlockUntilComplete());
   if (result != PP_OK)
-    return PPErrorToErrno(result);
+    return PPERROR_TO_ERRNO(result);
 
   return 0;
 }
@@ -307,7 +307,7 @@ Error Html5Fs::Init(const FsInitArgs& args) {
 
   if (!main_thread) {
     filesystem_open_has_result_ = true;
-    filesystem_open_error_ = PPErrorToErrno(result);
+    filesystem_open_error_ = PPERROR_TO_ERRNO(result);
 
     return filesystem_open_error_;
   }
@@ -340,7 +340,7 @@ void Html5Fs::FilesystemOpenCallbackThunk(void* user_data, int32_t result) {
 void Html5Fs::FilesystemOpenCallback(int32_t result) {
   AUTO_LOCK(filesysem_open_lock_);
   filesystem_open_has_result_ = true;
-  filesystem_open_error_ = PPErrorToErrno(result);
+  filesystem_open_error_ = PPERROR_TO_ERRNO(result);
   pthread_cond_signal(&filesystem_open_cond_);
 }
 

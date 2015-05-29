@@ -6,6 +6,8 @@
 #include <errno.h>
 #include <ppapi/c/pp_errors.h>
 
+#include "nacl_io/log.h"
+
 namespace nacl_io {
 
 void PepperInterface::AddRefResource(PP_Resource resource) {
@@ -102,5 +104,80 @@ int PPErrorToErrno(int32_t err) {
 
   return EINVAL;
 }
+
+#if !defined(NDEBUG)
+
+int PPErrorToErrnoLog(int32_t err, const char* file, int line) {
+  if (err >= PP_OK)
+    return err;
+
+#define PP_ERRORS(V)              \
+  V(PP_OK)                        \
+  V(PP_OK_COMPLETIONPENDING)      \
+  V(PP_ERROR_FAILED)              \
+  V(PP_ERROR_ABORTED)             \
+  V(PP_ERROR_BADARGUMENT)         \
+  V(PP_ERROR_BADRESOURCE)         \
+  V(PP_ERROR_NOINTERFACE)         \
+  V(PP_ERROR_NOACCESS)            \
+  V(PP_ERROR_NOMEMORY)            \
+  V(PP_ERROR_NOSPACE)             \
+  V(PP_ERROR_NOQUOTA)             \
+  V(PP_ERROR_INPROGRESS)          \
+  V(PP_ERROR_NOTSUPPORTED)        \
+  V(PP_ERROR_BLOCKS_MAIN_THREAD)  \
+  V(PP_ERROR_MALFORMED_INPUT)     \
+  V(PP_ERROR_RESOURCE_FAILED)     \
+  V(PP_ERROR_FILENOTFOUND)        \
+  V(PP_ERROR_FILEEXISTS)          \
+  V(PP_ERROR_FILETOOBIG)          \
+  V(PP_ERROR_FILECHANGED)         \
+  V(PP_ERROR_NOTAFILE)            \
+  V(PP_ERROR_TIMEDOUT)            \
+  V(PP_ERROR_USERCANCEL)          \
+  V(PP_ERROR_NO_USER_GESTURE)     \
+  V(PP_ERROR_CONTEXT_LOST)        \
+  V(PP_ERROR_NO_MESSAGE_LOOP)     \
+  V(PP_ERROR_WRONG_THREAD)        \
+  V(PP_ERROR_WOULD_BLOCK_THREAD)  \
+  V(PP_ERROR_CONNECTION_CLOSED)   \
+  V(PP_ERROR_CONNECTION_RESET)    \
+  V(PP_ERROR_CONNECTION_REFUSED)  \
+  V(PP_ERROR_CONNECTION_ABORTED)  \
+  V(PP_ERROR_CONNECTION_FAILED)   \
+  V(PP_ERROR_CONNECTION_TIMEDOUT) \
+  V(PP_ERROR_ADDRESS_INVALID)     \
+  V(PP_ERROR_ADDRESS_UNREACHABLE) \
+  V(PP_ERROR_ADDRESS_IN_USE)      \
+  V(PP_ERROR_MESSAGE_TOO_BIG)     \
+  V(PP_ERROR_NAME_NOT_RESOLVED)
+
+#define ERROR_STRING_PAIR(x) {x, #x},
+
+  const struct {
+    int err;
+    const char* name;
+  } kErrorStringPair[] = {
+    PP_ERRORS(ERROR_STRING_PAIR)
+  };
+
+#undef ERROR_STRING_PAIR
+#undef PP_ERRORS
+
+  const char* err_string = "Unknown PPError value";
+  for (size_t i = 0; i < sizeof(kErrorStringPair) / sizeof(kErrorStringPair[0]);
+       ++i) {
+    if (err == kErrorStringPair[i].err) {
+      err_string = kErrorStringPair[i].name;
+    }
+  }
+
+  nacl_io_log(LOG_PREFIX "%s:%d: Got PPError %d = %s\n", file, line, err,
+              err_string);
+
+  return PPErrorToErrno(err);
+}
+
+#endif
 
 }  // namespace nacl_io

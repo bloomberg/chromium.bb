@@ -71,6 +71,21 @@ namespace nacl_io {
 
 int PPErrorToErrno(int32_t err);
 
+// Helper function to log real pepper error at call site.
+#if defined(NDEBUG)
+
+#define PPERROR_TO_ERRNO(err) \
+  PPErrorToErrno(err)
+
+#else
+
+int PPErrorToErrnoLog(int32_t err, const char* file, int line);
+
+#define PPERROR_TO_ERRNO(err) \
+  PPErrorToErrnoLog(err, __FILE__, __LINE__)
+
+#endif
+
 class PepperInterface {
  public:
   virtual ~PepperInterface() {}
