@@ -27,9 +27,8 @@
 #include "config.h"
 #include "platform/Timer.h"
 
-#include "platform/TraceEvent.h"
-#include "public/platform/Platform.h"
-#include "wtf/AddressSanitizer.h"
+#include "platform/PlatformThreadData.h"
+#include "platform/ThreadTimers.h"
 #include "wtf/Atomics.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashSet.h"
@@ -40,12 +39,162 @@
 
 namespace blink {
 
+class TimerHeapReference;
+
+// Timers are stored in a heap data structure, used to implement a priority queue.
+// This allows us to efficiently determine which timer needs to fire the soonest.
+// Then we set a single shared system timer to fire at that time.
+//
+// When a timer's "next fire time" changes, we need to move it around in the priority queue.
+static Vector<TimerBase*>& threadGlobalTimerHeap()
+{
+    return PlatformThreadData::current().threadTimers().timerHeap();
+}
+// ----------------
+
+class TimerHeapPointer {
+public:
+    TimerHeapPointer(TimerBase** pointer) : m_pointer(pointer) { }
+    TimerHeapReference operator*() const;
+    TimerBase* operator->() const { return *m_pointer; }
+private:
+    TimerBase** m_pointer;
+};
+
+class TimerHeapReference {
+public:
+    TimerHeapReference(TimerBase*& reference) : m_reference(reference) { }
+    operator TimerBase*() const { return m_reference; }
+    TimerHeapPointer operator&() const { return &m_reference; }
+    TimerHeapReference& operator=(TimerBase*);
+    TimerHeapReference& operator=(TimerHeapReference);
+private:
+    TimerBase*& m_reference;
+};
+
+inline TimerHeapReference TimerHeapPointer::operator*() const
+{
+    return *m_pointer;
+}
+
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
+inline TimerHeapReference& TimerHeapReference::operator=(TimerBase* timer)
+{
+    m_reference = timer;
+    Vector<TimerBase*>& heap = timer->timerHeap();
+    if (&m_reference >= heap.data() && &m_reference < heap.data() + heap.size())
+        timer->m_heapIndex = &m_reference - heap.data();
+    return *this;
+}
+
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
+inline TimerHeapReference& TimerHeapReference::operator=(TimerHeapReference b)
+{
+    TimerBase* timer = b;
+    return *this = timer;
+}
+
+inline void swap(TimerHeapReference a, TimerHeapReference b)
+{
+    TimerBase* timerA = a;
+    TimerBase* timerB = b;
+
+    // Invoke the assignment operator, since that takes care of updating m_heapIndex.
+    a = timerB;
+    b = timerA;
+}
+
+// ----------------
+
+// Class to represent iterators in the heap when calling the standard library heap algorithms.
+// Uses a custom pointer and reference type that update indices for pointers in the heap.
+class TimerHeapIterator : public std::iterator<std::random_access_iterator_tag, TimerBase*, ptrdiff_t, TimerHeapPointer, TimerHeapReference> {
+public:
+    explicit TimerHeapIterator(TimerBase** pointer) : m_pointer(pointer) { checkConsistency(); }
+
+    TimerHeapIterator& operator++() { checkConsistency(); ++m_pointer; checkConsistency(); return *this; }
+    TimerHeapIterator operator++(int) { checkConsistency(1); return TimerHeapIterator(m_pointer++); }
+
+    TimerHeapIterator& operator--() { checkConsistency(); --m_pointer; checkConsistency(); return *this; }
+    TimerHeapIterator operator--(int) { checkConsistency(-1); return TimerHeapIterator(m_pointer--); }
+
+    TimerHeapIterator& operator+=(ptrdiff_t i) { checkConsistency(); m_pointer += i; checkConsistency(); return *this; }
+    TimerHeapIterator& operator-=(ptrdiff_t i) { checkConsistency(); m_pointer -= i; checkConsistency(); return *this; }
+
+    TimerHeapReference operator*() const { return TimerHeapReference(*m_pointer); }
+    TimerHeapReference operator[](ptrdiff_t i) const { return TimerHeapReference(m_pointer[i]); }
+    TimerBase* operator->() const { return *m_pointer; }
+
+private:
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
+    void checkConsistency(ptrdiff_t offset = 0) const
+    {
+        ASSERT(m_pointer >= threadGlobalTimerHeap().data());
+        ASSERT(m_pointer <= threadGlobalTimerHeap().data() + threadGlobalTimerHeap().size());
+        ASSERT_UNUSED(offset, m_pointer + offset >= threadGlobalTimerHeap().data());
+        ASSERT_UNUSED(offset, m_pointer + offset <= threadGlobalTimerHeap().data() + threadGlobalTimerHeap().size());
+    }
+
+    friend bool operator==(TimerHeapIterator, TimerHeapIterator);
+    friend bool operator!=(TimerHeapIterator, TimerHeapIterator);
+    friend bool operator<(TimerHeapIterator, TimerHeapIterator);
+    friend bool operator>(TimerHeapIterator, TimerHeapIterator);
+    friend bool operator<=(TimerHeapIterator, TimerHeapIterator);
+    friend bool operator>=(TimerHeapIterator, TimerHeapIterator);
+
+    friend TimerHeapIterator operator+(TimerHeapIterator, size_t);
+    friend TimerHeapIterator operator+(size_t, TimerHeapIterator);
+
+    friend TimerHeapIterator operator-(TimerHeapIterator, size_t);
+    friend ptrdiff_t operator-(TimerHeapIterator, TimerHeapIterator);
+
+    TimerBase** m_pointer;
+};
+
+inline bool operator==(TimerHeapIterator a, TimerHeapIterator b) { return a.m_pointer == b.m_pointer; }
+inline bool operator!=(TimerHeapIterator a, TimerHeapIterator b) { return a.m_pointer != b.m_pointer; }
+inline bool operator<(TimerHeapIterator a, TimerHeapIterator b) { return a.m_pointer < b.m_pointer; }
+inline bool operator>(TimerHeapIterator a, TimerHeapIterator b) { return a.m_pointer > b.m_pointer; }
+inline bool operator<=(TimerHeapIterator a, TimerHeapIterator b) { return a.m_pointer <= b.m_pointer; }
+inline bool operator>=(TimerHeapIterator a, TimerHeapIterator b) { return a.m_pointer >= b.m_pointer; }
+
+inline TimerHeapIterator operator+(TimerHeapIterator a, size_t b) { return TimerHeapIterator(a.m_pointer + b); }
+inline TimerHeapIterator operator+(size_t a, TimerHeapIterator b) { return TimerHeapIterator(a + b.m_pointer); }
+
+inline TimerHeapIterator operator-(TimerHeapIterator a, size_t b) { return TimerHeapIterator(a.m_pointer - b); }
+inline ptrdiff_t operator-(TimerHeapIterator a, TimerHeapIterator b) { return a.m_pointer - b.m_pointer; }
+
+// ----------------
+
+class TimerHeapLessThanFunction {
+public:
+    bool operator()(const TimerBase*, const TimerBase*) const;
+};
+
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
+inline bool TimerHeapLessThanFunction::operator()(const TimerBase* a, const TimerBase* b) const
+{
+    // The comparisons below are "backwards" because the heap puts the largest
+    // element first and we want the lowest time to be the first one in the heap.
+    double aFireTime = a->m_nextFireTime;
+    double bFireTime = b->m_nextFireTime;
+    if (bFireTime != aFireTime)
+        return bFireTime < aFireTime;
+
+    // We need to look at the difference of the insertion orders instead of comparing the two
+    // outright in case of overflow.
+    unsigned difference = a->m_heapInsertionOrder - b->m_heapInsertionOrder;
+    return difference < std::numeric_limits<unsigned>::max() / 2;
+}
+
+// ----------------
+
 TimerBase::TimerBase()
     : m_nextFireTime(0)
     , m_unalignedNextFireTime(0)
     , m_repeatInterval(0)
-    , m_cancellableTaskFactory(WTF::bind(&TimerBase::run, this))
-    , m_webScheduler(Platform::current()->currentThread()->scheduler())
+    , m_heapIndex(-1)
+    , m_cachedThreadGlobalTimerHeap(0)
 #if ENABLE(ASSERT)
     , m_thread(currentThread())
 #endif
@@ -55,6 +204,7 @@ TimerBase::TimerBase()
 TimerBase::~TimerBase()
 {
     stop();
+    ASSERT(!inHeap());
 }
 
 void TimerBase::start(double nextFireInterval, double repeatInterval, const WebTraceLocation& caller)
@@ -63,7 +213,7 @@ void TimerBase::start(double nextFireInterval, double repeatInterval, const WebT
 
     m_location = caller;
     m_repeatInterval = repeatInterval;
-    setNextFireTime(monotonicallyIncreasingTime(), nextFireInterval);
+    setNextFireTime(monotonicallyIncreasingTime() + nextFireInterval);
 }
 
 void TimerBase::stop()
@@ -71,8 +221,11 @@ void TimerBase::stop()
     ASSERT(m_thread == currentThread());
 
     m_repeatInterval = 0;
-    m_nextFireTime = 0;
-    m_cancellableTaskFactory.cancel();
+    setNextFireTime(0);
+
+    ASSERT(m_nextFireTime == 0);
+    ASSERT(m_repeatInterval == 0);
+    ASSERT(!inHeap());
 }
 
 double TimerBase::nextFireInterval() const
@@ -85,42 +238,177 @@ double TimerBase::nextFireInterval() const
 }
 
 NO_LAZY_SWEEP_SANITIZE_ADDRESS
-void TimerBase::setNextFireTime(double now, double delay)
+inline void TimerBase::checkHeapIndex() const
+{
+    ASSERT(timerHeap() == threadGlobalTimerHeap());
+    ASSERT(!timerHeap().isEmpty());
+    ASSERT(m_heapIndex >= 0);
+    ASSERT(m_heapIndex < static_cast<int>(timerHeap().size()));
+    ASSERT(timerHeap()[m_heapIndex] == this);
+}
+
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
+inline void TimerBase::checkConsistency() const
+{
+    // Timers should be in the heap if and only if they have a non-zero next fire time.
+    ASSERT(inHeap() == (m_nextFireTime != 0));
+    if (inHeap())
+        checkHeapIndex();
+}
+
+void TimerBase::heapDecreaseKey()
+{
+    ASSERT(m_nextFireTime != 0);
+    checkHeapIndex();
+    TimerBase** heapData = timerHeap().data();
+    push_heap(TimerHeapIterator(heapData), TimerHeapIterator(heapData + m_heapIndex + 1), TimerHeapLessThanFunction());
+    checkHeapIndex();
+}
+
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
+inline void TimerBase::heapDelete()
+{
+    ASSERT(m_nextFireTime == 0);
+    heapPop();
+    timerHeap().removeLast();
+    m_heapIndex = -1;
+}
+
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
+void TimerBase::heapDeleteMin()
+{
+    ASSERT(m_nextFireTime == 0);
+    heapPopMin();
+    timerHeap().removeLast();
+    m_heapIndex = -1;
+}
+
+inline void TimerBase::heapIncreaseKey()
+{
+    ASSERT(m_nextFireTime != 0);
+    heapPop();
+    heapDecreaseKey();
+}
+
+inline void TimerBase::heapInsert()
+{
+    ASSERT(!inHeap());
+    timerHeap().append(this);
+    m_heapIndex = timerHeap().size() - 1;
+    heapDecreaseKey();
+}
+
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
+inline void TimerBase::heapPop()
+{
+    // Temporarily force this timer to have the minimum key so we can pop it.
+    double fireTime = m_nextFireTime;
+    m_nextFireTime = -std::numeric_limits<double>::infinity();
+    heapDecreaseKey();
+    heapPopMin();
+    m_nextFireTime = fireTime;
+}
+
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
+void TimerBase::heapPopMin()
+{
+    ASSERT(this == timerHeap().first());
+    checkHeapIndex();
+    Vector<TimerBase*>& heap = timerHeap();
+    TimerBase** heapData = heap.data();
+    pop_heap(TimerHeapIterator(heapData), TimerHeapIterator(heapData + heap.size()), TimerHeapLessThanFunction());
+    checkHeapIndex();
+    ASSERT(this == timerHeap().last());
+}
+
+static inline bool parentHeapPropertyHolds(const TimerBase* current, const Vector<TimerBase*>& heap, unsigned currentIndex)
+{
+    if (!currentIndex)
+        return true;
+    unsigned parentIndex = (currentIndex - 1) / 2;
+    TimerHeapLessThanFunction compareHeapPosition;
+    return compareHeapPosition(current, heap[parentIndex]);
+}
+
+static inline bool childHeapPropertyHolds(const TimerBase* current, const Vector<TimerBase*>& heap, unsigned childIndex)
+{
+    if (childIndex >= heap.size())
+        return true;
+    TimerHeapLessThanFunction compareHeapPosition;
+    return compareHeapPosition(heap[childIndex], current);
+}
+
+bool TimerBase::hasValidHeapPosition() const
+{
+    ASSERT(m_nextFireTime);
+    if (!inHeap())
+        return false;
+    // Check if the heap property still holds with the new fire time. If it does we don't need to do anything.
+    // This assumes that the STL heap is a standard binary heap. In an unlikely event it is not, the assertions
+    // in updateHeapIfNeeded() will get hit.
+    const Vector<TimerBase*>& heap = timerHeap();
+    if (!parentHeapPropertyHolds(this, heap, m_heapIndex))
+        return false;
+    unsigned childIndex1 = 2 * m_heapIndex + 1;
+    unsigned childIndex2 = childIndex1 + 1;
+    return childHeapPropertyHolds(this, heap, childIndex1) && childHeapPropertyHolds(this, heap, childIndex2);
+}
+
+void TimerBase::updateHeapIfNeeded(double oldTime)
+{
+    if (m_nextFireTime && hasValidHeapPosition())
+        return;
+#if ENABLE(ASSERT)
+    int oldHeapIndex = m_heapIndex;
+#endif
+    if (!oldTime)
+        heapInsert();
+    else if (!m_nextFireTime)
+        heapDelete();
+    else if (m_nextFireTime < oldTime)
+        heapDecreaseKey();
+    else
+        heapIncreaseKey();
+    ASSERT(m_heapIndex != oldHeapIndex);
+    ASSERT(!inHeap() || hasValidHeapPosition());
+}
+
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
+void TimerBase::setNextFireTime(double newUnalignedTime)
 {
     ASSERT(m_thread == currentThread());
 
-    m_unalignedNextFireTime = now + delay;
+    if (m_unalignedNextFireTime != newUnalignedTime)
+        m_unalignedNextFireTime = newUnalignedTime;
 
-    double newTime = alignedFireTime(m_unalignedNextFireTime);
-    if (m_nextFireTime != newTime) {
+    // Accessing thread global data is slow. Cache the heap pointer.
+    if (!m_cachedThreadGlobalTimerHeap)
+        m_cachedThreadGlobalTimerHeap = &threadGlobalTimerHeap();
+
+    // Keep heap valid while changing the next-fire time.
+    double oldTime = m_nextFireTime;
+    double newTime = alignedFireTime(newUnalignedTime);
+    if (oldTime != newTime) {
         m_nextFireTime = newTime;
-        // Round the delay up to the nearest millisecond to be consistant with the
-        // previous behavior of BlinkPlatformImpl::setSharedTimerFireInterval.
-        long long delayMs = static_cast<long long>(ceil((newTime - now) * 1000.0));
-        if (delayMs < 0)
-            delayMs = 0;
-        m_webScheduler->postTimerTask(m_location, m_cancellableTaskFactory.cancelAndCreate(), delayMs);
+        static unsigned currentHeapInsertionOrder;
+        m_heapInsertionOrder = atomicAdd(&currentHeapInsertionOrder, 1);
+
+        bool wasFirstTimerInHeap = m_heapIndex == 0;
+
+        updateHeapIfNeeded(oldTime);
+
+        bool isFirstTimerInHeap = m_heapIndex == 0;
+
+        if (wasFirstTimerInHeap || isFirstTimerInHeap)
+            PlatformThreadData::current().threadTimers().updateSharedTimer();
     }
+
+    checkConsistency();
 }
 
-void TimerBase::run()
+void TimerBase::didChangeAlignmentInterval()
 {
-    TRACE_EVENT0("blink", "TimerBase::run");
-    ASSERT_WITH_MESSAGE(m_thread == currentThread(), "Timer posted by %s %s was run on a different thread", m_location.functionName(), m_location.fileName());
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "BlinkInternal");
-
-    m_nextFireTime = 0;
-    // Note: repeating timers drift, but this is preserving the functionality of the old timer heap.
-    // See crbug.com/328700.
-    if (m_repeatInterval)
-        setNextFireTime(monotonicallyIncreasingTime(), m_repeatInterval);
-    fired();
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "Sleeping");
-}
-
-void TimerBase::didChangeAlignmentInterval(double now)
-{
-    setNextFireTime(now, m_unalignedNextFireTime - now);
+    setNextFireTime(m_unalignedNextFireTime);
 }
 
 double TimerBase::nextUnalignedFireInterval() const

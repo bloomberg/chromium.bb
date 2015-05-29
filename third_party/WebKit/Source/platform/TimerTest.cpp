@@ -23,58 +23,9 @@ double currentTime()
     return gCurrentTimeSecs;
 }
 
-// This class exists because gcc doesn't know how to move an OwnPtr.
-class RefCountedTaskContainer : public RefCounted<RefCountedTaskContainer> {
-public:
-    explicit RefCountedTaskContainer(WebThread::Task* task) : m_task(adoptPtr(task)) { }
-
-    ~RefCountedTaskContainer() { }
-
-    void run()
-    {
-        m_task->run();
-    }
-
-private:
-    OwnPtr<WebThread::Task> m_task;
-};
-
-class DelayedTask {
-public:
-    DelayedTask(WebThread::Task* task, long long delayMs)
-        : m_task(adoptRef(new RefCountedTaskContainer(task)))
-        , m_runTimeSecs(monotonicallyIncreasingTime() + 0.001 * static_cast<double>(delayMs))
-        , m_delayMs(delayMs) { }
-
-    bool operator<(const DelayedTask& other) const
-    {
-        return m_runTimeSecs > other.m_runTimeSecs;
-    }
-
-    void run() const
-    {
-        m_task->run();
-    }
-
-    double runTimeSecs() const
-    {
-        return m_runTimeSecs;
-    }
-
-    long long delayMs() const
-    {
-        return m_delayMs;
-    }
-
-private:
-    RefPtr<RefCountedTaskContainer> m_task;
-    double m_runTimeSecs;
-    long long m_delayMs;
-};
-
 class MockWebScheduler : public WebScheduler {
 public:
-    MockWebScheduler() { }
+    explicit MockWebScheduler() { }
     ~MockWebScheduler() override { }
 
     bool shouldYieldForHighPriorityWork() override
@@ -105,49 +56,12 @@ public:
 
     void postTimerTask(const WebTraceLocation&, WebThread::Task* task, long long delayMs) override
     {
-        m_timerTasks.push(DelayedTask(task, delayMs));
     }
-
-    void runUntilIdle()
-    {
-        while (!m_timerTasks.empty()) {
-            gCurrentTimeSecs = m_timerTasks.top().runTimeSecs();
-            m_timerTasks.top().run();
-            m_timerTasks.pop();
-        }
-    }
-
-    void runUntilIdleOrDeadlinePassed(double deadline)
-    {
-        while (!m_timerTasks.empty()) {
-            if (m_timerTasks.top().runTimeSecs() > deadline) {
-                gCurrentTimeSecs = deadline;
-                break;
-            }
-            gCurrentTimeSecs = m_timerTasks.top().runTimeSecs();
-            m_timerTasks.top().run();
-            m_timerTasks.pop();
-        }
-    }
-
-    bool hasOneTimerTask() const
-    {
-        return m_timerTasks.size() == 1;
-    }
-
-    long nextTimerTaskDelayMillis() const
-    {
-        ASSERT(hasOneTimerTask());
-        return m_timerTasks.top().delayMs();
-    }
-
-private:
-    std::priority_queue<DelayedTask> m_timerTasks;
 };
 
 class FakeWebThread : public WebThread {
 public:
-    FakeWebThread() : m_webScheduler(adoptPtr(new MockWebScheduler())) { }
+    explicit FakeWebThread(WebScheduler* webScheduler) : m_webScheduler(webScheduler) { }
     ~FakeWebThread() override { }
 
     // WebThread implementation:
@@ -175,7 +89,7 @@ public:
 
     WebScheduler* scheduler() const override
     {
-        return m_webScheduler.get();
+        return m_webScheduler;
     }
 
     virtual void enterRunLoop()
@@ -189,18 +103,19 @@ public:
     }
 
 private:
-    OwnPtr<MockWebScheduler> m_webScheduler;
+    WebScheduler* m_webScheduler;
 };
 
 class TimerTestPlatform : public Platform {
 public:
-    TimerTestPlatform()
-        : m_webThread(adoptPtr(new FakeWebThread())) { }
+    explicit TimerTestPlatform(WebThread* webThread)
+        : m_webThread(webThread)
+        , m_timerInterval(-1) { }
     ~TimerTestPlatform() override { }
 
     WebThread* currentThread() override
     {
-        return m_webThread.get();
+        return m_webThread;
     }
 
     void cryptographicallyRandomValues(unsigned char*, size_t) override
@@ -214,40 +129,71 @@ public:
         return enabled;
     }
 
+    void setSharedTimerFiredFunction(SharedTimerFunction timerFunction) override
+    {
+        s_timerFunction = timerFunction;
+    }
+
+    void setSharedTimerFireInterval(double interval) override
+    {
+        m_timerInterval = interval;
+    }
+
+    virtual void stopSharedTimer() override
+    {
+        m_timerInterval = -1;
+    }
+
     void runUntilIdle()
     {
-        mockScheduler()->runUntilIdle();
+        while (hasOneTimerTask()) {
+            gCurrentTimeSecs += m_timerInterval;
+            s_timerFunction();
+        }
     }
 
     void runUntilIdleOrDeadlinePassed(double deadline)
     {
-        mockScheduler()->runUntilIdleOrDeadlinePassed(deadline);
+        while (hasOneTimerTask()) {
+            double newTime = gCurrentTimeSecs + m_timerInterval;
+            if (newTime >= deadline) {
+                gCurrentTimeSecs = deadline;
+                break;
+            }
+            gCurrentTimeSecs = newTime;
+            s_timerFunction();
+        }
     }
 
     bool hasOneTimerTask() const
     {
-        return mockScheduler()->hasOneTimerTask();
+        return s_timerFunction && m_timerInterval >= 0;
     }
 
     long nextTimerTaskDelayMillis() const
     {
-        return mockScheduler()->nextTimerTaskDelayMillis();
+        ASSERT(hasOneTimerTask());
+        return static_cast<long>(m_timerInterval * 1000);
     }
 
 private:
-    MockWebScheduler* mockScheduler() const
-    {
-        return static_cast<MockWebScheduler*>(m_webThread->scheduler());
-    }
+    WebThread* m_webThread;
+    double m_timerInterval;
 
-    OwnPtr<FakeWebThread> m_webThread;
+    // This needs to be static because the callback is registered only once by
+    // PlatformThreadData.
+    static SharedTimerFunction s_timerFunction;
 };
+
+Platform::SharedTimerFunction TimerTestPlatform::s_timerFunction;
 
 class TimerTest : public testing::Test {
 public:
     void SetUp() override
     {
-        m_platform = adoptPtr(new TimerTestPlatform());
+        m_mockWebScheduler = adoptPtr(new MockWebScheduler());
+        m_fakeWebThread = adoptPtr(new FakeWebThread(m_mockWebScheduler.get()));
+        m_platform = adoptPtr(new TimerTestPlatform(m_fakeWebThread.get()));
         m_oldPlatform = Platform::current();
         Platform::initialize(m_platform.get());
         WTF::setMonotonicallyIncreasingTimeFunction(currentTime);
@@ -297,6 +243,8 @@ protected:
     std::vector<double> m_runTimes;
 
 private:
+    OwnPtr<MockWebScheduler> m_mockWebScheduler;
+    OwnPtr<FakeWebThread> m_fakeWebThread;
     OwnPtr<TimerTestPlatform> m_platform;
     Platform* m_oldPlatform;
 };
@@ -724,7 +672,7 @@ TEST_F(TimerTest, DidChangeAlignmentInterval)
     EXPECT_FLOAT_EQ(m_startTime, timer.lastFireTime());
 
     timer.setAlignedFireTime(m_startTime);
-    timer.didChangeAlignmentInterval(monotonicallyIncreasingTime());
+    timer.didChangeAlignmentInterval();
 
     EXPECT_FLOAT_EQ(0.0, timer.nextFireInterval());
     EXPECT_FLOAT_EQ(0.0, timer.nextUnalignedFireInterval());
