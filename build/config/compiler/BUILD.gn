@@ -15,6 +15,7 @@ if (is_posix) {
 }
 
 import("//build/toolchain/ccache.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 
 declare_args() {
   # Normally, Android builds are lightly optimized, even for debug builds, to
@@ -175,7 +176,15 @@ config("compiler") {
         "-fsanitize-blacklist=$msan_blacklist_path",
       ]
 
-      # TODO(GYP): Support instrumented libraries and custom libc++.
+      # TODO(GYP): Support instrumented libraries.
+    }
+
+    if (use_custom_libcxx) {
+      cflags_cc += [ "-nostdinc++" ]
+      include_dirs = [
+        "//buildtools/third_party/libc++/trunk/include",
+        "//buildtools/third_party/libc++abi/trunk/include",
+      ]
     }
   }
 
