@@ -24,6 +24,7 @@
 
 #include "core/CoreExport.h"
 #include "core/loader/NavigationPolicy.h"
+#include "core/page/ChromeClient.h"
 #include "platform/Cursor.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFocusType.h"
@@ -31,7 +32,6 @@
 
 namespace blink {
 
-class ChromeClient;
 class ColorChooser;
 class ColorChooserClient;
 class DateTimeChooser;
@@ -42,7 +42,6 @@ class HTMLInputElement;
 class HitTestResult;
 class IntRect;
 class Node;
-class Page;
 class PopupMenu;
 class PopupMenuClient;
 class PopupOpeningObserver;
@@ -55,7 +54,7 @@ class CORE_EXPORT Chrome final {
 public:
     virtual ~Chrome();
 
-    static PassOwnPtr<Chrome> create(Page*, ChromeClient*);
+    static PassOwnPtr<Chrome> create(ChromeClient*);
 
     ChromeClient& client() { return *m_client; }
 
@@ -92,10 +91,10 @@ public:
     void unregisterPopupOpeningObserver(PopupOpeningObserver*);
 
 private:
-    Chrome(Page*, ChromeClient*);
+    Chrome(ChromeClient*);
+    bool canRunModalIfDuringPageDismissal(Frame* mainFrame, ChromeClient::DialogType, const String& message);
     void notifyPopupOpeningObservers() const;
 
-    Page* m_page;
     ChromeClient* m_client;
     Vector<PopupOpeningObserver*> m_popupOpeningObservers;
     Cursor m_lastSetMouseCursorForTesting;

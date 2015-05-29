@@ -32,7 +32,6 @@
 #include "core/layout/HitTestResult.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FrameTree.h"
-#include "core/page/Page.h"
 #include "core/page/PopupOpeningObserver.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/WindowFeatures.h"
@@ -49,9 +48,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-Chrome::Chrome(Page* page, ChromeClient* client)
-    : m_page(page)
-    , m_client(client)
+Chrome::Chrome(ChromeClient* client)
+    : m_client(client)
 {
     ASSERT(m_client);
 }
@@ -60,9 +58,9 @@ Chrome::~Chrome()
 {
 }
 
-PassOwnPtr<Chrome> Chrome::create(Page* page, ChromeClient* client)
+PassOwnPtr<Chrome> Chrome::create(ChromeClient* client)
 {
-    return adoptPtr(new Chrome(page, client));
+    return adoptPtr(new Chrome(client));
 }
 
 void Chrome::setWindowRect(const IntRect& pendingRect) const
@@ -88,14 +86,14 @@ IntRect Chrome::windowRect() const
     return m_client->windowRect();
 }
 
-static bool canRunModalIfDuringPageDismissal(Page* page, ChromeClient::DialogType dialog, const String& message)
+bool Chrome::canRunModalIfDuringPageDismissal(Frame* mainFrame, ChromeClient::DialogType dialog, const String& message)
 {
-    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
         Document::PageDismissalType dismissal = toLocalFrame(frame)->document()->pageDismissalEventBeingDispatched();
         if (dismissal != Document::NoDismissal)
-            return page->chrome().client().shouldRunModalDialogDuringPageDismissal(dialog, message, dismissal);
+            return m_client->shouldRunModalDialogDuringPageDismissal(dialog, message, dismissal);
     }
     return true;
 }
@@ -128,7 +126,7 @@ bool Chrome::runBeforeUnloadConfirmPanel(const String& message, LocalFrame* fram
 
 void Chrome::runJavaScriptAlert(LocalFrame* frame, const String& message)
 {
-    if (!canRunModalIfDuringPageDismissal(m_page, ChromeClient::AlertDialog, message))
+    if (!canRunModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::AlertDialog, message))
         return;
 
     // Defer loads in case the client method runs a new event loop that would
@@ -145,7 +143,7 @@ void Chrome::runJavaScriptAlert(LocalFrame* frame, const String& message)
 
 bool Chrome::runJavaScriptConfirm(LocalFrame* frame, const String& message)
 {
-    if (!canRunModalIfDuringPageDismissal(m_page, ChromeClient::ConfirmDialog, message))
+    if (!canRunModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::ConfirmDialog, message))
         return false;
 
     // Defer loads in case the client method runs a new event loop that would
@@ -163,7 +161,7 @@ bool Chrome::runJavaScriptConfirm(LocalFrame* frame, const String& message)
 
 bool Chrome::runJavaScriptPrompt(LocalFrame* frame, const String& prompt, const String& defaultValue, String& result)
 {
-    if (!canRunModalIfDuringPageDismissal(m_page, ChromeClient::PromptDialog, prompt))
+    if (!canRunModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::PromptDialog, prompt))
         return false;
 
     // Defer loads in case the client method runs a new event loop that would
