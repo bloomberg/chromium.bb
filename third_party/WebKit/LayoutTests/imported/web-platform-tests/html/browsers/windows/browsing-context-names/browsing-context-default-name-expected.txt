@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS A embedded browsing context has no default name 
+FAIL A browsing context which is opened by window.open() method with '_blank' parameter has no default name Cannot read property 'name' of undefined
+PASS A browsing context has no default name 
+Harness: the test ran to completion.
+

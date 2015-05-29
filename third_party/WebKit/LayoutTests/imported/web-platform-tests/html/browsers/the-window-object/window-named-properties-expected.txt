@@ -1,0 +1,9 @@
+ 
+This is a testharness.js-based test.
+PASS Static name 
+FAIL Static name on the prototype assert_false: Window.prototype.hasOwnProperty("bar") expected false got true
+FAIL constructor assert_equals: expected (function) function "function Window() { [native code] }" but got (object) object "[object Window]"
+PASS Dynamic name 
+PASS Ghost name 
+Harness: the test ran to completion.
+

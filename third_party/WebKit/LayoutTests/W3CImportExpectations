@@ -86,9 +86,8 @@ imported/web-platform-tests/fetch [ Skip ]
 imported/web-platform-tests/fonts [ Skip ]
 imported/web-platform-tests/geolocation-API [ Skip ]
 imported/web-platform-tests/hr-time [ Skip ]
-# imported/web-platform-tests/html/dom [ Pass ]
 ## Owners: tkent
-imported/web-platform-tests/html/browsers [ Skip ]
+# imported/web-platform-tests/html [ Pass ]
 imported/web-platform-tests/html/editing [ Skip ]
 imported/web-platform-tests/html/iana [ Skip ]
 imported/web-platform-tests/html/infrastructure [ Skip ]
@@ -123,6 +122,7 @@ imported/web-platform-tests/pointerlock [ Skip ]
 imported/web-platform-tests/progress-events [ Skip ]
 imported/web-platform-tests/proximity [ Skip ]
 imported/web-platform-tests/quirks-mode [ Skip ]
+imported/web-platform-tests/referrer-policy [ Skip ]
 imported/web-platform-tests/resource-timing [ Skip ]
 imported/web-platform-tests/resources [ Skip ]
 imported/web-platform-tests/selectors [ Skip ]
@@ -170,10 +170,30 @@ imported/web-platform-tests/html/dom/reflection-sections.html [ Skip ]
 imported/web-platform-tests/html/dom/reflection-tabular.html [ Skip ]
 imported/web-platform-tests/html/dom/reflection-text.html [ Skip ]
 
-# Depends on web-platform-tests/dom/nodes/.
+# Depends on unimported directories of web-platform-tests/.
+imported/web-platform-tests/html/browsers/browsing-the-web/read-text/load-text-plain.html [ Skip ]
+imported/web-platform-tests/html/browsers/history/the-location-interface/location-stringifier.html [ Skip ]
 imported/web-platform-tests/html/dom/documents/dom-tree-accessors/document.title-07.html [ Skip ]
 
-# crbug.com/490940: Needs to load extra resources.
+# crbug.com/490940: Needs to load extra HTML resources.
+imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/001.html [ Skip ]
+imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/002.html [ Skip ]
+imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/003.html [ Skip ]
+imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/004.html [ Skip ]
+imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/005.html [ Skip ]
+imported/web-platform-tests/html/browsers/history/the-history-interface/001.html [ Skip ]
+imported/web-platform-tests/html/browsers/history/the-history-interface/002.html [ Skip ]
+imported/web-platform-tests/html/browsers/history/the-history-interface/009.html [ Skip ]
+imported/web-platform-tests/html/browsers/history/the-history-interface/010.html [ Skip ]
+imported/web-platform-tests/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Skip ]
+imported/web-platform-tests/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-01.html [ Skip ]
+imported/web-platform-tests/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-02.html [ Skip ]
+imported/web-platform-tests/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-03.html [ Skip ]
+imported/web-platform-tests/html/browsers/the-window-object/named-access-on-the-window-object/named-objects.html [ Skip ]
+imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsing-context-choose-existing.html [ Skip ]
+imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsing-context-choose-parent.html [ Skip ]
+imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsing-context-choose-self-1.html [ Skip ]
+imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsing-context-choose-self-2.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/009.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/011.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/012.html [ Skip ]
@@ -182,6 +202,15 @@ imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/015.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/016.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-03.html [ Skip ]
+
+# https://github.com/w3c/web-platform-tests/issues/1861: A function can be
+# called before it's defined.
+# crbug.com/493465: Requires wptserve
+imported/web-platform-tests/html/browsers/the-window-object/security-window/window-security.sub.html [ Skip ]
+
+# https://github.com/w3c/web-platform-tests/issues/1862:
+# The test doesn't handle ':' after a drive letter in file: URL on Windows.
+imported/web-platform-tests/html/browsers/history/the-location-interface/location_hostname.html [ Skip ]
 
 # these contain an extraneous debug log div ..
 imported/web-platform-tests/html-imports/link-import-null.html [ Skip ]
@@ -192,6 +221,9 @@ imported/web-platform-tests/html-imports/loading-import.html [ Skip ]
 # user media.
 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/deny.html [ Skip ]
 
+# Requires http server.
+imported/web-platform-tests/html/browsers/history/the-history-interface/008.html [ Skip ]
+imported/web-platform-tests/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/creating_browsing_context_test_01.html [ Skip ]
 # Requires http server. Moved the following test to http/tests/custom-elements/.
 imported/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Skip ]
 
