@@ -64,7 +64,6 @@ protected:
     virtual bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintSearchFieldDecoration(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaCastButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     bool paintUsingFallbackTheme(LayoutObject*, const PaintInfo&, const IntRect&);
     bool paintCheckboxUsingFallbackTheme(LayoutObject*, const PaintInfo&, const IntRect&);

@@ -428,9 +428,4 @@ bool ThemePainterDefault::paintSearchFieldResultsDecoration(LayoutObject* magnif
     return false;
 }
 
-bool ThemePainterDefault::paintMediaCastButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaCastButton(object, paintInfo, rect);
-}
-
 } // namespace blink

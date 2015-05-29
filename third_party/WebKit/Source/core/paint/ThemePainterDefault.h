@@ -49,7 +49,6 @@ private:
     virtual bool paintSearchField(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaCastButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
 };
 
 } // namespace blink
