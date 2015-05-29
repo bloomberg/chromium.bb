@@ -19,7 +19,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
-#include "net/base/sdch_manager.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
@@ -185,18 +184,9 @@ class NET_EXPORT URLRequestContext
   }
 
   // May return nullptr.
-  SdchManager* sdch_manager() const {
-    // For investigation of http://crbug.com/454198; remove ?: when resolved.
-    CHECK(!have_sdch_manager_ || sdch_manager_.get());
-    return have_sdch_manager_ ? sdch_manager_.get() : nullptr;
-  }
+  SdchManager* sdch_manager() const { return sdch_manager_; }
   void set_sdch_manager(SdchManager* sdch_manager) {
-    // For investigation of http://crbug.com/454198; simplify when resolved.
-    have_sdch_manager_ = !!sdch_manager;
-    if (have_sdch_manager_)
-      sdch_manager_ = sdch_manager->GetWeakPtr();
-    else
-      sdch_manager_.reset();
+    sdch_manager_ = sdch_manager;
   }
 
   // Gets the URLRequest objects that hold a reference to this
@@ -255,9 +245,7 @@ class NET_EXPORT URLRequestContext
   HttpTransactionFactory* http_transaction_factory_;
   const URLRequestJobFactory* job_factory_;
   URLRequestThrottlerManager* throttler_manager_;
-  // For investigation of http://crbug.com/454198; remove WeakPtr when resolved.
-  bool have_sdch_manager_;
-  base::WeakPtr<SdchManager> sdch_manager_;
+  SdchManager* sdch_manager_;
   NetworkQualityEstimator* network_quality_estimator_;
 
   // ---------------------------------------------------------------------------

@@ -81,7 +81,7 @@ void SdchManager::DictionarySet::AddDictionary(
   dictionaries_[server_hash] = dictionary;
 }
 
-SdchManager::SdchManager() : factory_(this) {
+SdchManager::SdchManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -91,12 +91,6 @@ SdchManager::~SdchManager() {
     auto it = dictionaries_.begin();
     dictionaries_.erase(it->first);
   }
-#if defined(OS_CHROMEOS)
-  // For debugging http://crbug.com/454198; remove when resolved.
-
-  // Explicitly confirm that we can't notify any observers anymore.
-  CHECK(!observers_.might_have_observers());
-#endif
 }
 
 void SdchManager::ClearData() {
@@ -472,11 +466,6 @@ SdchProblemCode SdchManager::RemoveSdchDictionary(
 scoped_ptr<SdchManager::DictionarySet>
 SdchManager::CreateEmptyDictionarySetForTesting() {
   return scoped_ptr<DictionarySet>(new DictionarySet).Pass();
-}
-
-// For investigation of http://crbug.com/454198; remove when resolved.
-base::WeakPtr<SdchManager> SdchManager::GetWeakPtr() {
-  return factory_.GetWeakPtr();
 }
 
 // static

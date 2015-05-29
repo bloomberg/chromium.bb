@@ -10,7 +10,6 @@
 
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_store.h"
 #include "net/base/sdch_observer.h"
 #include "net/url_request/sdch_dictionary_fetcher.h"
@@ -162,9 +161,8 @@ class NET_EXPORT SdchOwner : public SdchObserver, public PrefStore::Observer {
       size_t size,
       int use_count, DictionaryFate fate);
 
-  // For investigation of http://crbug.com/454198; remove when resolved.
-  base::WeakPtr<SdchManager> manager_;
-  scoped_ptr<SdchDictionaryFetcher> fetcher_;
+  net::SdchManager* manager_;
+  scoped_ptr<net::SdchDictionaryFetcher> fetcher_;
 
   size_t total_dictionary_bytes_;
 
@@ -172,11 +170,6 @@ class NET_EXPORT SdchOwner : public SdchObserver, public PrefStore::Observer {
 
   size_t max_total_dictionary_size_;
   size_t min_space_for_dictionary_fetch_;
-
-#if defined(OS_CHROMEOS)
-  // For debugging http://crbug.com/454198; remove when resolved.
-  unsigned int destroyed_;
-#endif
 
   base::MemoryPressureListener memory_pressure_listener_;
 

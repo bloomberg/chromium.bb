@@ -243,16 +243,12 @@ void SdchOwner::RecordDictionaryEvictionOrUnload(const std::string& server_hash,
 }
 
 SdchOwner::SdchOwner(SdchManager* sdch_manager, URLRequestContext* context)
-    : manager_(sdch_manager->GetWeakPtr()),
+    : manager_(sdch_manager),
       fetcher_(new SdchDictionaryFetcher(context)),
       total_dictionary_bytes_(0),
       clock_(new base::DefaultClock),
       max_total_dictionary_size_(kMaxTotalDictionarySize),
       min_space_for_dictionary_fetch_(kMinSpaceForDictionaryFetch),
-#if defined(OS_CHROMEOS)
-      // For debugging http://crbug.com/454198; remove when resolved.
-      destroyed_(0),
-#endif
       memory_pressure_listener_(
           base::Bind(&SdchOwner::OnMemoryPressure,
                      // Because |memory_pressure_listener_| is owned by
@@ -263,22 +259,11 @@ SdchOwner::SdchOwner(SdchManager* sdch_manager, URLRequestContext* context)
       external_pref_store_(nullptr),
       pref_store_(in_memory_pref_store_.get()),
       creation_time_(clock_->Now()) {
-#if defined(OS_CHROMEOS)
-  // For debugging http://crbug.com/454198; remove when resolved.
-  CHECK(clock_.get());
-#endif
   manager_->AddObserver(this);
   InitializePrefStore(pref_store_);
 }
 
 SdchOwner::~SdchOwner() {
-#if defined(OS_CHROMEOS)
-  // For debugging http://crbug.com/454198; remove when resolved.
-  CHECK_EQ(0u, destroyed_);
-  CHECK(clock_.get());
-  CHECK(manager_.get());
-#endif
-
   for (DictionaryPreferenceIterator it(pref_store_); !it.IsAtEnd();
        it.Advance()) {
     int new_uses = it.use_count() - use_counts_at_load_[it.server_hash()];
@@ -306,9 +291,6 @@ SdchOwner::~SdchOwner() {
     }
   }
 
-#if defined(OS_CHROMEOS)
-  destroyed_ = 0xdeadbeef;
-#endif
 }
 
 void SdchOwner::EnablePersistentStorage(PersistentPrefStore* pref_store) {
@@ -357,12 +339,6 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
     }
   };
 
-#if defined(OS_CHROMEOS)
-  // For debugging http://crbug.com/454198; remove when resolved.
-  CHECK_EQ(0u, destroyed_);
-  CHECK(clock_.get());
-#endif
-
   if (!was_from_cache)
     UMA_HISTOGRAM_COUNTS("Sdch3.NetworkBytesSpent", dictionary_text.size());
 
@@ -389,12 +365,6 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
       recoverable_bytes += it.size();
     }
   }
-
-#if defined(OS_CHROMEOS)
-  // For debugging http://crbug.com/454198; remove when resolved.
-  CHECK_EQ(0u, destroyed_);
-  CHECK(clock_.get());
-#endif
 
   if (total_dictionary_bytes_ + dictionary_text.size() - recoverable_bytes >
       max_total_dictionary_size_) {
@@ -465,12 +435,6 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
 
   total_dictionary_bytes_ += dictionary_text.size();
 
-#if defined(OS_CHROMEOS)
-  // For debugging http://crbug.com/454198; remove when resolved.
-  CHECK_EQ(0u, destroyed_);
-  CHECK(clock_.get());
-#endif
-
   // Record the addition in the pref store.
   scoped_ptr<base::DictionaryValue> dictionary_description(
       new base::DictionaryValue());
@@ -507,22 +471,16 @@ void SdchOwner::OnDictionaryUsed(const std::string& server_hash) {
   }
   base::DictionaryValue* specific_dictionary_map = nullptr;
   success = value->GetAsDictionary(&specific_dictionary_map);
-  // TODO(rdsmith); Switch back to DCHECK() after http://crbug.com/454198 is
-  // resolved.
-  CHECK(success);
+  DCHECK(success);
 
   double last_used_seconds_since_epoch = 0.0;
   success = specific_dictionary_map->GetDouble(kDictionaryLastUsedKey,
                                                &last_used_seconds_since_epoch);
-  // TODO(rdsmith); Switch back to DCHECK() after http://crbug.com/454198 is
-  // resolved.
-  CHECK(success);
+  DCHECK(success);
   int use_count = 0;
   success =
       specific_dictionary_map->GetInteger(kDictionaryUseCountKey, &use_count);
-  // TODO(rdsmith); Switch back to DCHECK() after http://crbug.com/454198 is
-  // resolved.
-  CHECK(success);
+  DCHECK(success);
 
   if (use_counts_at_load_.count(server_hash) == 0) {
     use_counts_at_load_[server_hash] = use_count;
@@ -544,18 +502,6 @@ void SdchOwner::OnDictionaryUsed(const std::string& server_hash) {
 
 void SdchOwner::OnGetDictionary(const GURL& request_url,
                                 const GURL& dictionary_url) {
-#if defined(OS_CHROMEOS)
-  // For debugging http://crbug.com/454198; remove when resolved.
-  char url_buf[128];
-  if (0u != destroyed_ || !clock_.get()) {
-    base::strlcpy(url_buf, request_url.spec().c_str(), arraysize(url_buf));
-  }
-  base::debug::Alias(url_buf);
-
-  CHECK_EQ(0u, destroyed_);
-  CHECK(clock_.get());
-#endif
-
   base::Time stale_boundary(clock_->Now() - base::TimeDelta::FromDays(1));
   size_t avail_bytes = 0;
   for (DictionaryPreferenceIterator it(pref_store_); !it.IsAtEnd();
@@ -679,12 +625,6 @@ void SdchOwner::OnInitializationCompleted(bool succeeded) {
 
 void SdchOwner::SetClockForTesting(scoped_ptr<base::Clock> clock) {
   clock_ = clock.Pass();
-
-#if defined(OS_CHROMEOS)
-  // For debugging http://crbug.com/454198; remove when resolved.
-  CHECK_EQ(0u, destroyed_);
-  CHECK(clock_.get());
-#endif
 }
 
 int SdchOwner::GetDictionaryCountForTesting() const {
