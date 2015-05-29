@@ -37361,6 +37361,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SharedMemory.TimeSpentMakingAnonymousMemory"
+    units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The time spent making a new region of shared, anonymous memory. This metric
+    is not emitted if the shared memory region is read only.
+  </summary>
+</histogram>
+
 <histogram name="SharedWorker.RendererSurviveForWorkerTime"
     units="milliseconds">
   <owner>horo@chromium.org</owner>
