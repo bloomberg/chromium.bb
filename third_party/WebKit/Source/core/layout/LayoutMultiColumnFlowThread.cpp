@@ -216,10 +216,19 @@ LayoutPoint LayoutMultiColumnFlowThread::visualPointToFlowThreadPoint(const Layo
 
 LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(LayoutUnit offset) const
 {
-    if (m_lastSetWorkedOn) {
+    if (LayoutMultiColumnSet* columnSet = m_lastSetWorkedOn) {
         // Layout in progress. We are calculating the set heights as we speak, so the column set range
         // information is not up-to-date.
-        return m_lastSetWorkedOn;
+        while (columnSet->logicalTopInFlowThread() > offset) {
+            // Sometimes we have to use a previous set. This happens when we're working with a block
+            // that contains a spanner (so that there's a column set both before and after the
+            // spanner, and both sets contain said block).
+            LayoutMultiColumnSet* previousSet = columnSet->previousSiblingMultiColumnSet();
+            if (!previousSet)
+                break;
+            columnSet = previousSet;
+        }
+        return columnSet;
     }
 
     ASSERT(!m_columnSetsInvalidated);
