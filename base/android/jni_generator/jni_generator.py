@@ -1443,7 +1443,7 @@ def GenerateJNIHeader(input_file, output_file, options):
     with file(output_file, 'w') as f:
       f.write(content)
   else:
-    print output
+    print content
 
 
 def GetScriptName():
