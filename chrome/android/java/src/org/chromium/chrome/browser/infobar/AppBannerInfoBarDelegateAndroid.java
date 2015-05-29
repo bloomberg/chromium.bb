@@ -22,14 +22,14 @@ import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Handles the promotion and installation of an app specified by the current web page.  This Java
- * object is created by and owned by the native AppBannerInfoBarDelegate.
+ * object is created by and owned by the native AppBannerInfoBarDelegateAndroid.
  */
 @JNINamespace("banners")
-public class AppBannerInfoBarDelegate {
+public class AppBannerInfoBarDelegateAndroid {
     /** PackageManager to use in place of the real one. */
     private static PackageManager sPackageManagerForTests;
 
-    /** Weak pointer to the native AppBannerInfoBarDelegate. */
+    /** Weak pointer to the native AppBannerInfoBarDelegateAndroid. */
     private long mNativePointer;
 
     /** Monitors an installation in progress. */
@@ -44,7 +44,7 @@ public class AppBannerInfoBarDelegate {
         sPackageManagerForTests = manager;
     }
 
-    private AppBannerInfoBarDelegate(long nativePtr) {
+    private AppBannerInfoBarDelegateAndroid(long nativePtr) {
         mNativePointer = nativePtr;
         mListener = createApplicationStateListener();
         ApplicationStatus.registerApplicationStateListener(mListener);
@@ -129,12 +129,12 @@ public class AppBannerInfoBarDelegate {
 
     @CalledByNative
     private int determineInstallState(AppData data) {
-        if (mInstallTask != null) return AppBannerInfoBar.INSTALL_STATE_INSTALLING;
+        if (mInstallTask != null) return AppBannerInfoBarAndroid.INSTALL_STATE_INSTALLING;
 
         PackageManager pm = getPackageManager(ApplicationStatus.getApplicationContext());
         boolean isInstalled = InstallerDelegate.isInstalled(pm, data.packageName());
-        return isInstalled ? AppBannerInfoBar.INSTALL_STATE_INSTALLED
-                : AppBannerInfoBar.INSTALL_STATE_NOT_INSTALLED;
+        return isInstalled ? AppBannerInfoBarAndroid.INSTALL_STATE_INSTALLED
+                : AppBannerInfoBarAndroid.INSTALL_STATE_NOT_INSTALLED;
     }
 
     private PackageManager getPackageManager(Context context) {
@@ -143,13 +143,13 @@ public class AppBannerInfoBarDelegate {
     }
 
     @CalledByNative
-    private static AppBannerInfoBarDelegate create(long nativePtr) {
-        return new AppBannerInfoBarDelegate(nativePtr);
+    private static AppBannerInfoBarDelegateAndroid create(long nativePtr) {
+        return new AppBannerInfoBarDelegateAndroid(nativePtr);
     }
 
     private native void nativeOnInstallIntentReturned(
-            long nativeAppBannerInfoBarDelegate, boolean isInstalling);
+            long nativeAppBannerInfoBarDelegateAndroid, boolean isInstalling);
     private native void nativeOnInstallFinished(
-            long nativeAppBannerInfoBarDelegate, boolean success);
-    private native void nativeUpdateInstallState(long nativeAppBannerInfoBarDelegate);
+            long nativeAppBannerInfoBarDelegateAndroid, boolean success);
+    private native void nativeUpdateInstallState(long nativeAppBannerInfoBarDelegateAndroid);
 }

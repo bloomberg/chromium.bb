@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
+#include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -17,7 +17,7 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
+#include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/rappor/rappor_utils.h"
@@ -25,7 +25,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/manifest.h"
-#include "jni/AppBannerInfoBarDelegate_jni.h"
+#include "jni/AppBannerInfoBarDelegateAndroid_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -35,7 +35,7 @@ using base::android::ConvertUTF16ToJavaString;
 
 namespace banners {
 
-AppBannerInfoBarDelegate::AppBannerInfoBarDelegate(
+AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     int event_request_id,
     const base::string16& app_title,
     SkBitmap* app_icon,
@@ -48,7 +48,7 @@ AppBannerInfoBarDelegate::AppBannerInfoBarDelegate(
   CreateJavaDelegate();
 }
 
-AppBannerInfoBarDelegate::AppBannerInfoBarDelegate(
+AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     int event_request_id,
     const base::string16& app_title,
     SkBitmap* app_icon,
@@ -63,26 +63,28 @@ AppBannerInfoBarDelegate::AppBannerInfoBarDelegate(
   CreateJavaDelegate();
 }
 
-AppBannerInfoBarDelegate::~AppBannerInfoBarDelegate() {
+AppBannerInfoBarDelegateAndroid::~AppBannerInfoBarDelegateAndroid() {
   TrackDismissEvent(DISMISS_EVENT_DISMISSED);
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AppBannerInfoBarDelegate_destroy(env,
+  Java_AppBannerInfoBarDelegateAndroid_destroy(env,
                                         java_delegate_.obj());
   java_delegate_.Reset();
 }
 
-void AppBannerInfoBarDelegate::UpdateInstallState(JNIEnv* env, jobject obj) {
+void AppBannerInfoBarDelegateAndroid::UpdateInstallState(JNIEnv* env,
+                                                         jobject obj) {
   if (native_app_data_.is_null())
     return;
 
-  int newState = Java_AppBannerInfoBarDelegate_determineInstallState(
+  int newState = Java_AppBannerInfoBarDelegateAndroid_determineInstallState(
       env,
       java_delegate_.obj(),
       native_app_data_.obj());
-  static_cast<AppBannerInfoBar*>(infobar())->OnInstallStateChanged(newState);
+  static_cast<AppBannerInfoBarAndroid*>(infobar())
+      ->OnInstallStateChanged(newState);
 }
 
-void AppBannerInfoBarDelegate::OnInstallIntentReturned(
+void AppBannerInfoBarDelegateAndroid::OnInstallIntentReturned(
     JNIEnv* env,
     jobject obj,
     jboolean jis_installing) {
@@ -111,7 +113,7 @@ void AppBannerInfoBarDelegate::OnInstallIntentReturned(
   UpdateInstallState(env, obj);
 }
 
-void AppBannerInfoBarDelegate::OnInstallFinished(JNIEnv* env,
+void AppBannerInfoBarDelegateAndroid::OnInstallFinished(JNIEnv* env,
                                                  jobject obj,
                                                  jboolean success) {
   if (!infobar())
@@ -126,14 +128,14 @@ void AppBannerInfoBarDelegate::OnInstallFinished(JNIEnv* env,
   }
 }
 
-void AppBannerInfoBarDelegate::CreateJavaDelegate() {
+void AppBannerInfoBarDelegateAndroid::CreateJavaDelegate() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_delegate_.Reset(Java_AppBannerInfoBarDelegate_create(
+  java_delegate_.Reset(Java_AppBannerInfoBarDelegateAndroid_create(
       env,
       reinterpret_cast<intptr_t>(this)));
 }
 
-void AppBannerInfoBarDelegate::SendBannerAccepted(
+void AppBannerInfoBarDelegateAndroid::SendBannerAccepted(
     content::WebContents* web_contents,
     const std::string& platform) {
   web_contents->GetMainFrame()->Send(
@@ -143,11 +145,11 @@ void AppBannerInfoBarDelegate::SendBannerAccepted(
           platform));
 }
 
-gfx::Image AppBannerInfoBarDelegate::GetIcon() const {
+gfx::Image AppBannerInfoBarDelegateAndroid::GetIcon() const {
   return gfx::Image::CreateFrom1xBitmap(*app_icon_.get());
 }
 
-void AppBannerInfoBarDelegate::InfoBarDismissed() {
+void AppBannerInfoBarDelegateAndroid::InfoBarDismissed() {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   if (!web_contents)
@@ -183,15 +185,15 @@ void AppBannerInfoBarDelegate::InfoBarDismissed() {
   }
 }
 
-base::string16 AppBannerInfoBarDelegate::GetMessageText() const {
+base::string16 AppBannerInfoBarDelegateAndroid::GetMessageText() const {
   return app_title_;
 }
 
-int AppBannerInfoBarDelegate::GetButtons() const {
+int AppBannerInfoBarDelegateAndroid::GetButtons() const {
   return BUTTON_OK;
 }
 
-bool AppBannerInfoBarDelegate::Accept() {
+bool AppBannerInfoBarDelegateAndroid::Accept() {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   if (!web_contents) {
@@ -208,7 +210,7 @@ bool AppBannerInfoBarDelegate::Accept() {
       return true;
     }
 
-    bool was_opened = Java_AppBannerInfoBarDelegate_installOrOpenNativeApp(
+    bool was_opened = Java_AppBannerInfoBarDelegateAndroid_installOrOpenNativeApp(
         env,
         java_delegate_.obj(),
         tab->GetJavaObject().obj(),
@@ -248,7 +250,8 @@ bool AppBannerInfoBarDelegate::Accept() {
   return true;
 }
 
-bool AppBannerInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
+bool AppBannerInfoBarDelegateAndroid::LinkClicked(
+    WindowOpenDisposition disposition) {
   if (native_app_data_.is_null())
     return false;
 
@@ -264,7 +267,7 @@ bool AppBannerInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
     return true;
   }
 
-  Java_AppBannerInfoBarDelegate_showAppDetails(env,
+  Java_AppBannerInfoBarDelegateAndroid_showAppDetails(env,
                                                java_delegate_.obj(),
                                                tab->GetJavaObject().obj(),
                                                native_app_data_.obj());
@@ -273,7 +276,7 @@ bool AppBannerInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return true;
 }
 
-bool RegisterAppBannerInfoBarDelegate(JNIEnv* env) {
+bool RegisterAppBannerInfoBarDelegateAndroid(JNIEnv* env) {
  return RegisterNativesImpl(env);
 }
 

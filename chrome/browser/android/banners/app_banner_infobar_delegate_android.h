@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_
+#define CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_
 
 #include "base/android/scoped_java_ref.h"
 #include "base/strings/string16.h"
@@ -25,24 +25,24 @@ class AppBannerInfoBar;
 namespace banners {
 
 // Manages installation of an app being promoted by a webpage.
-class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
+class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
  public:
   // Delegate for promoting a web app.
-  AppBannerInfoBarDelegate(
+  AppBannerInfoBarDelegateAndroid(
       int event_request_id,
       const base::string16& app_title,
       SkBitmap* app_icon,
       const content::Manifest& web_app_data);
 
   // Delegate for promoting an Android app.
-  AppBannerInfoBarDelegate(
+  AppBannerInfoBarDelegateAndroid(
       int event_request_id,
       const base::string16& app_title,
       SkBitmap* app_icon,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
       const std::string& native_app_package);
 
-  ~AppBannerInfoBarDelegate() override;
+  ~AppBannerInfoBarDelegateAndroid() override;
 
   // Called when the AppBannerInfoBar's button needs to be updated.
   void UpdateInstallState(JNIEnv* env, jobject obj);
@@ -82,12 +82,12 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::android::ScopedJavaGlobalRef<jobject> native_app_data_;
   std::string native_app_package_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegate);
-};  // AppBannerInfoBarDelegate
+  DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateAndroid);
+};  // AppBannerInfoBarDelegateAndroid
 
 // Register native methods.
-bool RegisterAppBannerInfoBarDelegate(JNIEnv* env);
+bool RegisterAppBannerInfoBarDelegateAndroid(JNIEnv* env);
 
 }  // namespace banners
 
-#endif  // CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_

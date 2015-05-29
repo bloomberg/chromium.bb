@@ -25,8 +25,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.AnimationHelper;
-import org.chromium.chrome.browser.infobar.AppBannerInfoBar;
-import org.chromium.chrome.browser.infobar.AppBannerInfoBarDelegate;
+import org.chromium.chrome.browser.infobar.AppBannerInfoBarAndroid;
+import org.chromium.chrome.browser.infobar.AppBannerInfoBarDelegateAndroid;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.shell.ChromeShellTestBase;
@@ -127,7 +127,7 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
         mPackageManager = new TestPackageManager();
         AppBannerManager.setAppDetailsDelegate(mDetailsDelegate);
         AppBannerManager.setIsEnabledForTesting(true);
-        AppBannerInfoBarDelegate.setPackageManagerForTesting(mPackageManager);
+        AppBannerInfoBarDelegateAndroid.setPackageManagerForTesting(mPackageManager);
         clearAppData();
 
         super.setUp();
@@ -166,7 +166,7 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
                 InfoBarContainer container = getActivity().getActiveTab().getInfoBarContainer();
                 ArrayList<InfoBar> infobars = container.getInfoBars();
                 if (infobars.size() != 1) return false;
-                if (!(infobars.get(0) instanceof AppBannerInfoBar)) return false;
+                if (!(infobars.get(0) instanceof AppBannerInfoBarAndroid)) return false;
 
                 TextView textView =
                         (TextView) infobars.get(0).getContentWrapper().findViewById(R.id.app_name);

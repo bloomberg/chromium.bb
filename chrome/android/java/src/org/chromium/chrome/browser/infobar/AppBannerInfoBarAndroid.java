@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.banners.AppData;
 /**
  * Infobar informing the user about an app related to this page.
  */
-public class AppBannerInfoBar extends ConfirmInfoBar implements View.OnClickListener {
+public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnClickListener {
     // Installation states.
     public static final int INSTALL_STATE_NOT_INSTALLED = 0;
     public static final int INSTALL_STATE_INSTALLING = 1;
@@ -45,7 +45,8 @@ public class AppBannerInfoBar extends ConfirmInfoBar implements View.OnClickList
     private final String mAppUrl;
 
     // Banner for native apps.
-    private AppBannerInfoBar(long nativeInfoBar, String appTitle, Bitmap iconBitmap, AppData data) {
+    private AppBannerInfoBarAndroid(
+            long nativeInfoBar, String appTitle, Bitmap iconBitmap, AppData data) {
         super(nativeInfoBar, null, 0, iconBitmap, appTitle, null, data.installButtonText(), null);
         mAppTitle = appTitle;
         mAppData = data;
@@ -54,7 +55,8 @@ public class AppBannerInfoBar extends ConfirmInfoBar implements View.OnClickList
     }
 
     // Banner for web apps.
-    private AppBannerInfoBar(long nativeInfoBar, String appTitle, Bitmap iconBitmap, String url) {
+    private AppBannerInfoBarAndroid(
+            long nativeInfoBar, String appTitle, Bitmap iconBitmap, String url) {
         super(nativeInfoBar, null, 0, iconBitmap, appTitle, null, getAddToHomescreenText(), null);
         mAppTitle = appTitle;
         mAppData = null;
@@ -169,12 +171,12 @@ public class AppBannerInfoBar extends ConfirmInfoBar implements View.OnClickList
     @CalledByNative
     private static InfoBar createNativeAppInfoBar(
             long nativeInfoBar, String appTitle, Bitmap iconBitmap, AppData appData) {
-        return new AppBannerInfoBar(nativeInfoBar, appTitle, iconBitmap, appData);
+        return new AppBannerInfoBarAndroid(nativeInfoBar, appTitle, iconBitmap, appData);
     }
 
     @CalledByNative
     private static InfoBar createWebAppInfoBar(
             long nativeInfoBar, String appTitle, Bitmap iconBitmap, String url) {
-        return new AppBannerInfoBar(nativeInfoBar, appTitle, iconBitmap, url);
+        return new AppBannerInfoBarAndroid(nativeInfoBar, appTitle, iconBitmap, url);
     }
 }

@@ -10,7 +10,7 @@
 #include "chrome/browser/android/accessibility/font_size_prefs_android.h"
 #include "chrome/browser/android/accessibility_util.h"
 #include "chrome/browser/android/appmenu/app_menu_drag_helper.h"
-#include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
+#include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
@@ -95,7 +95,7 @@
 #include "chrome/browser/ui/android/connection_info_popup_android.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/infobars/account_chooser_infobar.h"
-#include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
+#include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/data_reduction_proxy_infobar.h"
 #include "chrome/browser/ui/android/infobars/download_overwrite_infobar.h"
@@ -148,8 +148,9 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AndroidProfileOAuth2TokenService",
      AndroidProfileOAuth2TokenService::Register},
     {"AnswersImageBridge", RegisterAnswersImageBridge},
-    {"AppBannerInfoBar", RegisterAppBannerInfoBar},
-    {"AppBannerInfoBarDelegate", banners::RegisterAppBannerInfoBarDelegate},
+    {"AppBannerInfoBarAndroid", RegisterAppBannerInfoBarAndroid},
+    {"AppBannerInfoBarDelegateAndroid",
+     banners::RegisterAppBannerInfoBarDelegateAndroid},
     {"AppBannerManagerAndroid", banners::AppBannerManagerAndroid::Register},
     {"ApplicationLifetime", RegisterApplicationLifetimeAndroid},
     {"AutocompleteControllerAndroid", RegisterAutocompleteControllerAndroid},

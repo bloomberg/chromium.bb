@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_APP_BANNER_INFOBAR_H_
-#define CHROME_BROWSER_UI_ANDROID_INFOBARS_APP_BANNER_INFOBAR_H_
+#ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_APP_BANNER_INFOBAR_ANDROID_H_
+#define CHROME_BROWSER_UI_ANDROID_INFOBARS_APP_BANNER_INFOBAR_ANDROID_H_
 
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
@@ -11,23 +11,23 @@
 #include "url/gurl.h"
 
 namespace banners {
-class AppBannerInfoBarDelegate;
+class AppBannerInfoBarDelegateAndroid;
 }  // namespace banners
 
 
-class AppBannerInfoBar : public ConfirmInfoBar {
+class AppBannerInfoBarAndroid : public ConfirmInfoBar {
  public:
-  // Constructs an AppBannerInfoBar promoting a native app.
-  AppBannerInfoBar(
-      scoped_ptr<banners::AppBannerInfoBarDelegate> delegate,
+  // Constructs an AppBannerInfoBarAndroid promoting a native app.
+  AppBannerInfoBarAndroid(
+      scoped_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
       const base::android::ScopedJavaGlobalRef<jobject>& japp_data);
 
-  // Constructs an AppBannerInfoBar promoting a web app.
-  AppBannerInfoBar(
-      scoped_ptr<banners::AppBannerInfoBarDelegate> delegate,
+  // Constructs an AppBannerInfoBarAndroid promoting a web app.
+  AppBannerInfoBarAndroid(
+      scoped_ptr<banners::AppBannerInfoBarDelegateAndroid> delegate,
       const GURL& app_url);
 
-  ~AppBannerInfoBar() override;
+  ~AppBannerInfoBarAndroid() override;
 
   // Called when the installation state of the app may have changed.
   // Updates the InfoBar visuals to match the new state and re-enables controls
@@ -47,10 +47,10 @@ class AppBannerInfoBar : public ConfirmInfoBar {
 
   base::android::ScopedJavaGlobalRef<jobject> java_infobar_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBar);
+  DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarAndroid);
 };
 
 // Register native methods.
-bool RegisterAppBannerInfoBar(JNIEnv* env);
+bool RegisterAppBannerInfoBarAndroid(JNIEnv* env);
 
-#endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_APP_BANNER_INFOBAR_H_
+#endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_APP_BANNER_INFOBAR_ANDROID_H_

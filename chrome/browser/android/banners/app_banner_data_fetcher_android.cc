@@ -4,8 +4,8 @@
 
 #include "chrome/browser/android/banners/app_banner_data_fetcher_android.h"
 
-#include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
-#include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
+#include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
+#include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace banners {
@@ -49,23 +49,20 @@ infobars::InfoBar* AppBannerDataFetcherAndroid::CreateBanner(
 
   infobars::InfoBar* infobar = nullptr;
   if (native_app_data_.is_null()) {
-    scoped_ptr<AppBannerInfoBarDelegate> delegate(
-        new AppBannerInfoBarDelegate(event_request_id(),
-                                     title,
-                                     new SkBitmap(*icon),
-                                     web_app_data()));
+    scoped_ptr<AppBannerInfoBarDelegateAndroid> delegate(
+        new AppBannerInfoBarDelegateAndroid(
+            event_request_id(), title, new SkBitmap(*icon), web_app_data()));
 
-    infobar = new AppBannerInfoBar(delegate.Pass(), web_app_data().start_url);
+    infobar =
+        new AppBannerInfoBarAndroid(delegate.Pass(), web_app_data().start_url);
     if (infobar)
       RecordDidShowBanner("AppBanner.WebApp.Shown");
   } else {
-    scoped_ptr<AppBannerInfoBarDelegate> delegate(
-        new AppBannerInfoBarDelegate(event_request_id(),
-                                     title,
-                                     new SkBitmap(*icon),
-                                     native_app_data_,
-                                     native_app_package_));
-    infobar = new AppBannerInfoBar(delegate.Pass(), native_app_data_);
+    scoped_ptr<AppBannerInfoBarDelegateAndroid> delegate(
+        new AppBannerInfoBarDelegateAndroid(
+            event_request_id(), title, new SkBitmap(*icon), native_app_data_,
+            native_app_package_));
+    infobar = new AppBannerInfoBarAndroid(delegate.Pass(), native_app_data_);
     if (infobar)
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
   }
