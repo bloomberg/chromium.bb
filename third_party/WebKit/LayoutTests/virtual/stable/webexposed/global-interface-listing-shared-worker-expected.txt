@@ -183,9 +183,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method toString
 [Worker] interface EvalError
 [Worker]     attribute name
-[Worker]     getter stack
 [Worker]     method constructor
-[Worker]     setter stack
 [Worker] interface Event
 [Worker]     attribute AT_TARGET
 [Worker]     attribute BLUR
@@ -586,9 +584,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method then
 [Worker] interface RangeError
 [Worker]     attribute name
-[Worker]     getter stack
 [Worker]     method constructor
-[Worker]     setter stack
 [Worker] interface ReadableByteStream
 [Worker]     method cancel
 [Worker]     method constructor
@@ -599,9 +595,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method getReader
 [Worker] interface ReferenceError
 [Worker]     attribute name
-[Worker]     getter stack
 [Worker]     method constructor
-[Worker]     setter stack
 [Worker] interface RegExp
 [Worker]     attribute global
 [Worker]     attribute ignoreCase
@@ -732,9 +726,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method valueOf
 [Worker] interface SyntaxError
 [Worker]     attribute name
-[Worker]     getter stack
 [Worker]     method constructor
-[Worker]     setter stack
 [Worker] interface TextDecoder
 [Worker]     getter encoding
 [Worker]     getter fatal
@@ -747,14 +739,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method encode
 [Worker] interface TypeError
 [Worker]     attribute name
-[Worker]     getter stack
 [Worker]     method constructor
-[Worker]     setter stack
 [Worker] interface URIError
 [Worker]     attribute name
-[Worker]     getter stack
 [Worker]     method constructor
-[Worker]     setter stack
 [Worker] interface URL
 [Worker]     getter hash
 [Worker]     getter host

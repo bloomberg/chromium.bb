@@ -1383,9 +1383,7 @@ interface ErrorEvent
     method constructor
 interface EvalError
     attribute name
-    getter stack
     method constructor
-    setter stack
 interface Event
     attribute AT_TARGET
     attribute BLUR
@@ -3121,22 +3119,7 @@ interface LocalCredential
     getter password
     method constructor
 interface Location
-    getter hash
-    getter host
-    getter hostname
-    getter origin
-    getter pathname
-    getter port
-    getter protocol
-    getter search
     method constructor
-    setter hash
-    setter host
-    setter hostname
-    setter pathname
-    setter port
-    setter protocol
-    setter search
 interface MIDIAccess
     getter inputs
     getter onstatechange
@@ -3705,6 +3688,7 @@ interface PerformanceResourceTiming
     getter responseEnd
     getter responseStart
     getter secureConnectionStart
+    getter workerStart
     method constructor
 interface PerformanceTiming
     getter connectEnd
@@ -3877,9 +3861,7 @@ interface Range
     method toString
 interface RangeError
     attribute name
-    getter stack
     method constructor
-    setter stack
 interface ReadableByteStream
     method cancel
     method constructor
@@ -3890,9 +3872,7 @@ interface ReadableStream
     method getReader
 interface ReferenceError
     attribute name
-    getter stack
     method constructor
-    setter stack
 interface RegExp
     attribute global
     attribute ignoreCase
@@ -5408,9 +5388,7 @@ interface SyncRegistration
     method unregister
 interface SyntaxError
     attribute name
-    getter stack
     method constructor
-    setter stack
 interface Text
     getter wholeText
     method constructor
@@ -5562,9 +5540,7 @@ interface TreeWalker
     setter currentNode
 interface TypeError
     attribute name
-    getter stack
     method constructor
-    setter stack
 interface UIEvent
     getter charCode
     getter detail
@@ -5579,9 +5555,7 @@ interface UIEvent
     method initUIEvent
 interface URIError
     attribute name
-    getter stack
     method constructor
-    setter stack
 interface URL
     getter hash
     getter host

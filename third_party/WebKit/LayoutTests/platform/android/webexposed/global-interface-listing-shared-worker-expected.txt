@@ -1,12 +1,4 @@
-CONSOLE WARNING: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
-CONSOLE WARNING: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
-CONSOLE WARNING: 'webkitIDBObjectStore' is deprecated. Please use 'IDBObjectStore' instead.
-CONSOLE WARNING: 'webkitIDBKeyRange' is deprecated. Please use 'IDBKeyRange' instead.
-CONSOLE WARNING: 'webkitIDBIndex' is deprecated. Please use 'IDBIndex' instead.
-CONSOLE WARNING: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' instead.
-CONSOLE WARNING: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
-CONSOLE WARNING: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
-This test documents all interface attributes and methods on DedicatedWorkerGlobalScope.
+This test documents all interface attributes and methods on SharedWorkerGlobalScope.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -46,6 +38,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface Blob
 [Worker]     getter size
 [Worker]     getter type
+[Worker]     method close
 [Worker]     method constructor
 [Worker]     method slice
 [Worker] interface Boolean
@@ -66,6 +59,13 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method keys
 [Worker]     method match
 [Worker]     method open
+[Worker] interface CircularGeofencingRegion
+[Worker]     attribute MAX_RADIUS
+[Worker]     attribute MIN_RADIUS
+[Worker]     getter latitude
+[Worker]     getter longitude
+[Worker]     getter radius
+[Worker]     method constructor
 [Worker] interface CloseEvent
 [Worker]     getter code
 [Worker]     getter reason
@@ -184,11 +184,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method toTimeString
 [Worker]     method toUTCString
 [Worker]     method valueOf
-[Worker] interface DedicatedWorkerGlobalScope
-[Worker]     getter onmessage
-[Worker]     method constructor
-[Worker]     method postMessage
-[Worker]     setter onmessage
 [Worker] interface Error
 [Worker]     attribute message
 [Worker]     attribute name
@@ -196,7 +191,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method toString
 [Worker] interface EvalError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface Event
 [Worker]     attribute AT_TARGET
 [Worker]     attribute BLUR
@@ -340,6 +337,15 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface FormData
 [Worker]     method append
 [Worker]     method constructor
+[Worker]     method delete
+[Worker]     method entries
+[Worker]     method forEach
+[Worker]     method get
+[Worker]     method getAll
+[Worker]     method has
+[Worker]     method keys
+[Worker]     method set
+[Worker]     method values
 [Worker] interface Function
 [Worker]     attribute length
 [Worker]     attribute name
@@ -372,6 +378,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method advance
 [Worker]     method constructor
 [Worker]     method continue
+[Worker]     method continuePrimaryKey
 [Worker]     method delete
 [Worker]     method update
 [Worker] interface IDBCursorWithValue
@@ -409,6 +416,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method count
 [Worker]     method get
+[Worker]     method getAll
 [Worker]     method getKey
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
@@ -432,8 +440,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method delete
 [Worker]     method deleteIndex
 [Worker]     method get
+[Worker]     method getAll
 [Worker]     method index
 [Worker]     method openCursor
+[Worker]     method openKeyCursor
 [Worker]     method put
 [Worker] interface IDBOpenDBRequest
 [Worker]     getter onblocked
@@ -456,6 +466,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode
+[Worker]     getter objectStoreNames
 [Worker]     getter onabort
 [Worker]     getter oncomplete
 [Worker]     getter onerror
@@ -541,6 +552,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method postMessage
 [Worker]     method start
 [Worker]     setter onmessage
+[Worker] interface NetworkInformation
+[Worker]     getter ontypechange
+[Worker]     getter type
+[Worker]     method constructor
+[Worker]     setter ontypechange
 [Worker] interface Notification
 [Worker]     getter body
 [Worker]     getter data
@@ -554,6 +570,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter silent
 [Worker]     getter tag
 [Worker]     getter title
+[Worker]     getter vibrate
 [Worker]     method close
 [Worker]     method constructor
 [Worker]     setter onclick
@@ -597,7 +614,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method then
 [Worker] interface RangeError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface ReadableByteStream
 [Worker]     method cancel
 [Worker]     method constructor
@@ -608,7 +627,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method getReader
 [Worker] interface ReferenceError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface RegExp
 [Worker]     attribute global
 [Worker]     attribute ignoreCase
@@ -651,9 +672,12 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method json
 [Worker]     method text
 [Worker] interface ServiceWorkerRegistration
+[Worker]     getter geofencing
 [Worker]     getter onupdatefound
+[Worker]     getter periodicSync
 [Worker]     getter pushManager
 [Worker]     getter scope
+[Worker]     getter sync
 [Worker]     method constructor
 [Worker]     method getNotifications
 [Worker]     method showNotification
@@ -670,6 +694,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method has
 [Worker]     method keys
 [Worker]     method values
+[Worker] interface SharedWorkerGlobalScope
+[Worker]     getter name
+[Worker]     getter onconnect
+[Worker]     method constructor
+[Worker]     setter onconnect
 [Worker] interface String
 [Worker]     attribute length
 [Worker]     method anchor
@@ -734,7 +763,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method valueOf
 [Worker] interface SyntaxError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface TextDecoder
 [Worker]     getter encoding
 [Worker]     getter fatal
@@ -747,10 +778,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method encode
 [Worker] interface TypeError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface URIError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface URL
 [Worker]     getter hash
 [Worker]     getter host
@@ -875,6 +910,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method clearTimeout
 [Worker]     method close
 [Worker]     method constructor
+[Worker]     method createImageBitmap
 [Worker]     method fetch
 [Worker]     method importScripts
 [Worker]     method setInterval
@@ -901,12 +937,17 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter appCodeName
 [Worker]     getter appName
 [Worker]     getter appVersion
+[Worker]     getter connection
+[Worker]     getter geofencing
 [Worker]     getter hardwareConcurrency
 [Worker]     getter onLine
 [Worker]     getter permissions
 [Worker]     getter platform
 [Worker]     getter product
 [Worker]     getter userAgent
+[Worker]     getter webkitPersistentStorage
+[Worker]     getter webkitTemporaryStorage
+[Worker]     method connect
 [Worker]     method constructor
 [Worker] interface XMLHttpRequest
 [Worker]     attribute DONE
@@ -960,6 +1001,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method advance
 [Worker]     method constructor
 [Worker]     method continue
+[Worker]     method continuePrimaryKey
 [Worker]     method delete
 [Worker]     method update
 [Worker] interface webkitIDBDatabase
@@ -994,6 +1036,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method count
 [Worker]     method get
+[Worker]     method getAll
 [Worker]     method getKey
 [Worker]     method openCursor
 [Worker]     method openKeyCursor
@@ -1017,8 +1060,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method delete
 [Worker]     method deleteIndex
 [Worker]     method get
+[Worker]     method getAll
 [Worker]     method index
 [Worker]     method openCursor
+[Worker]     method openKeyCursor
 [Worker]     method put
 [Worker] interface webkitIDBRequest
 [Worker]     getter error
@@ -1035,6 +1080,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter db
 [Worker]     getter error
 [Worker]     getter mode
+[Worker]     getter objectStoreNames
 [Worker]     getter onabort
 [Worker]     getter oncomplete
 [Worker]     getter onerror

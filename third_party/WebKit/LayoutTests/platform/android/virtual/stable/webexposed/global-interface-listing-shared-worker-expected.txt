@@ -1,12 +1,4 @@
-CONSOLE WARNING: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
-CONSOLE WARNING: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
-CONSOLE WARNING: 'webkitIDBObjectStore' is deprecated. Please use 'IDBObjectStore' instead.
-CONSOLE WARNING: 'webkitIDBKeyRange' is deprecated. Please use 'IDBKeyRange' instead.
-CONSOLE WARNING: 'webkitIDBIndex' is deprecated. Please use 'IDBIndex' instead.
-CONSOLE WARNING: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' instead.
-CONSOLE WARNING: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
-CONSOLE WARNING: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
-This test documents all interface attributes and methods on DedicatedWorkerGlobalScope.
+This test documents all interface attributes and methods on SharedWorkerGlobalScope.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -184,11 +176,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method toTimeString
 [Worker]     method toUTCString
 [Worker]     method valueOf
-[Worker] interface DedicatedWorkerGlobalScope
-[Worker]     getter onmessage
-[Worker]     method constructor
-[Worker]     method postMessage
-[Worker]     setter onmessage
 [Worker] interface Error
 [Worker]     attribute message
 [Worker]     attribute name
@@ -196,7 +183,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method toString
 [Worker] interface EvalError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface Event
 [Worker]     attribute AT_TARGET
 [Worker]     attribute BLUR
@@ -597,7 +586,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method then
 [Worker] interface RangeError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface ReadableByteStream
 [Worker]     method cancel
 [Worker]     method constructor
@@ -608,7 +599,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method getReader
 [Worker] interface ReferenceError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface RegExp
 [Worker]     attribute global
 [Worker]     attribute ignoreCase
@@ -670,6 +663,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method has
 [Worker]     method keys
 [Worker]     method values
+[Worker] interface SharedWorkerGlobalScope
+[Worker]     getter name
+[Worker]     getter onconnect
+[Worker]     method constructor
+[Worker]     setter onconnect
 [Worker] interface String
 [Worker]     attribute length
 [Worker]     method anchor
@@ -734,7 +732,9 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method valueOf
 [Worker] interface SyntaxError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface TextDecoder
 [Worker]     getter encoding
 [Worker]     getter fatal
@@ -747,10 +747,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method encode
 [Worker] interface TypeError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface URIError
 [Worker]     attribute name
+[Worker]     getter stack
 [Worker]     method constructor
+[Worker]     setter stack
 [Worker] interface URL
 [Worker]     getter hash
 [Worker]     getter host
