@@ -21,30 +21,30 @@ namespace filesystem {
 // Checks if |path|, which must be non-null, is (looks like) a valid (relative)
 // path. (On failure, returns |ERROR_INVALID_ARGUMENT| if |path| is not UTF-8,
 // or |ERROR_PERMISSION_DENIED| if it is not relative.)
-FileError IsPathValid(const mojo::String& path);
+Error IsPathValid(const mojo::String& path);
 
 // Checks if |whence| is a valid (known) |Whence| value. (On failure, returns
 // |ERROR_UNIMPLEMENTED|.)
-FileError IsWhenceValid(Whence whence);
+Error IsWhenceValid(Whence whence);
 
 // Checks if |offset| is a valid file offset (from some point); this is
 // implementation-dependent (typically checking if |offset| fits in an |off_t|).
 // (On failure, returns |ERROR_OUT_OF_RANGE|.)
-FileError IsOffsetValid(int64_t offset);
+Error IsOffsetValid(int64_t offset);
 
 // Conversion functions:
 
 // Returns the platform dependent error details converted to the
 // filesystem.Error enum.
-FileError GetError(const base::File& file);
+Error GetError(const base::File& file);
 
 // Serializes Info to the wire format.
 FileInformationPtr MakeFileInformation(const base::File::Info& info);
 
 // Creates an absolute file path and ensures that we don't try to traverse up.
-FileError ValidatePath(const mojo::String& raw_path,
-                       const base::FilePath& filesystem_base,
-                       base::FilePath* out);
+Error ValidatePath(const mojo::String& raw_path,
+                   const base::FilePath& filesystem_base,
+                   base::FilePath* out);
 
 }  // namespace filesystem
 

@@ -6,7 +6,7 @@ module filesystem;
 
 // Error codes used by the file system. These error codes line up exactly with
 // those of base::File.
-enum FileError {
+enum Error {
   OK                =   0,
   FAILED            =  -1,
   IN_USE            =  -2,
@@ -50,7 +50,7 @@ struct TimespecOrNow {
 // appropriate capabilities) and may not reflect reality.
 struct FileInformation {
   // Type of the file.
-  FsFileType type;
+  FileType type;
   // Size of the file, in bytes. Zero for directories.
   int64 size;
   // Last access time, in seconds since Unix Epoch.
@@ -79,10 +79,7 @@ const uint32 kFlagWrite = 0x40;
 const uint32 kFlagAppend = 0x80;
 
 // File types.
-//
-// Note: This is named FsFileType because otherwise we have a name collision
-// with windows.h.
-enum FsFileType {
+enum FileType {
   UNKNOWN = 0,
   REGULAR_FILE,
   DIRECTORY,
@@ -90,7 +87,7 @@ enum FsFileType {
 
 // Describes a directory entry (i.e., a single member of a directory).
 struct DirectoryEntry {
-  FsFileType type;
+  FileType type;
   string name;
 };
 

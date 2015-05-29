@@ -10,5 +10,5 @@ import "components/filesystem/public/interfaces/types.mojom";
 interface FileSystem {
   // Opens the root directory for the file system with the given name; null
   // yields the default file system, if any.
-  OpenFileSystem(string? file_system, Directory& directory) => (FileError error);
+  OpenFileSystem(string? file_system, Directory& directory) => (Error error);
 };
