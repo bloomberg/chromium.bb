@@ -683,6 +683,10 @@ NET_ERROR(CACHE_CHECKSUM_MISMATCH, -408)
 // Internal error code for the HTTP cache. The cache lock timeout has fired.
 NET_ERROR(CACHE_LOCK_TIMEOUT, -409)
 
+// Received a challenge after the transaction has read some data, and the
+// credentials aren't available.  There isn't a way to get them at that point.
+NET_ERROR(CACHE_AUTH_FAILURE_AFTER_READ, -410)
+
 // The server's response was insecure (e.g. there was a cert error).
 NET_ERROR(INSECURE_RESPONSE, -501)
 

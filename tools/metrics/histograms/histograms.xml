@@ -49555,6 +49555,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="-503" label="ADD_USER_CERT_FAILED"/>
   <int value="-502" label="NO_PRIVATE_KEY_FOR_CERT"/>
   <int value="-501" label="INSECURE_RESPONSE"/>
+  <int value="-410" label="CACHE_AUTH_FAILURE_AFTER_READ"/>
   <int value="-409" label="CACHE_LOCK_TIMEOUT"/>
   <int value="-408" label="CACHE_CHECKSUM_MISMATCH"/>
   <int value="-407" label="CACHE_CHECKSUM_READ_FAILURE"/>
@@ -49565,6 +49566,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="-402" label="CACHE_WRITE_FAILURE"/>
   <int value="-401" label="CACHE_READ_FAILURE"/>
   <int value="-400" label="CACHE_MISS"/>
+  <int value="-368" label="ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN"/>
+  <int value="-367" label="PAC_SCRIPT_TERMINATED"/>
+  <int value="-366" label="PROXY_HTTP_1_1_REQUIRED"/>
+  <int value="-365" label="HTTP_1_1_REQUIRED"/>
   <int value="-364" label="PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION"/>
   <int value="-363" label="SPDY_COMPRESSION_ERROR"/>
   <int value="-362" label="SPDY_FRAME_SIZE_ERROR"/>
@@ -49615,7 +49620,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="-302" label="UNKNOWN_URL_SCHEME"/>
   <int value="-301" label="DISALLOWED_URL_SCHEME"/>
   <int value="-300" label="INVALID_URL"/>
-  <int value="-213" label="CERT_END"/>
+  <int value="-214" label="CERT_END"/>
+  <int value="-213" label="CERT_VALIDITY_TOO_LONG"/>
   <int value="-212" label="CERT_NAME_CONSTRAINT_VIOLATION"/>
   <int value="-211" label="CERT_WEAK_KEY"/>
   <int value="-210" label="CERT_NON_UNIQUE_NAME"/>
@@ -49628,6 +49634,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="-202" label="CERT_AUTHORITY_INVALID"/>
   <int value="-201" label="CERT_DATE_INVALID"/>
   <int value="-200" label="CERT_COMMON_NAME_INVALID"/>
+  <int value="-166" label="ICANN_NAME_COLLISION"/>
   <int value="-165" label="SSL_FALLBACK_BEYOND_MINIMUM_VERSION"/>
   <int value="-164" label="SSL_CLIENT_AUTH_CERT_BAD_FORMAT"/>
   <int value="-163" label="SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE"/>
@@ -49690,6 +49697,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="-102" label="CONNECTION_REFUSED"/>
   <int value="-101" label="CONNECTION_RESET"/>
   <int value="-100" label="CONNECTION_CLOSED"/>
+  <int value="-26" label="CONTEXT_SHUT_DOWN"/>
   <int value="-25" label="UPLOAD_STREAM_REWIND_NOT_SUPPORTED"/>
   <int value="-24" label="BLOCKED_ENROLLMENT_CHECK_PENDING"/>
   <int value="-23" label="SOCKET_IS_CONNECTED"/>
@@ -59205,6 +59213,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="23" label="SOCKET_IS_CONNECTED"/>
   <int value="24" label="BLOCKED_ENROLLMENT_CHECK_PENDING"/>
   <int value="25" label="UPLOAD_STREAM_REWIND_NOT_SUPPORTED"/>
+  <int value="26" label="CONTEXT_SHUT_DOWN"/>
   <int value="100" label="CONNECTION_CLOSED"/>
   <int value="101" label="CONNECTION_RESET"/>
   <int value="102" label="CONNECTION_REFUSED"/>
@@ -59271,6 +59280,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="163" label="SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE"/>
   <int value="164" label="SSL_CLIENT_AUTH_CERT_BAD_FORMAT"/>
   <int value="165" label="SSL_FALLBACK_BEYOND_MINIMUM_VERSION"/>
+  <int value="166" label="ICANN_NAME_COLLISION"/>
   <int value="200" label="CERT_COMMON_NAME_INVALID"/>
   <int value="201" label="CERT_DATE_INVALID"/>
   <int value="202" label="CERT_AUTHORITY_INVALID"/>
@@ -59284,7 +59294,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="210" label="CERT_NON_UNIQUE_NAME"/>
   <int value="211" label="CERT_WEAK_KEY"/>
   <int value="212" label="CERT_NAME_CONSTRAINT_VIOLATION"/>
-  <int value="213" label="CERT_END"/>
+  <int value="213" label="CERT_VALIDITY_TOO_LONG"/>
+  <int value="214" label="CERT_END"/>
   <int value="300" label="INVALID_URL"/>
   <int value="301" label="DISALLOWED_URL_SCHEME"/>
   <int value="302" label="UNKNOWN_URL_SCHEME"/>
@@ -59336,6 +59347,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="362" label="SPDY_FRAME_SIZE_ERROR"/>
   <int value="363" label="SPDY_COMPRESSION_ERROR"/>
   <int value="364" label="PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION"/>
+  <int value="365" label="HTTP_1_1_REQUIRED"/>
+  <int value="366" label="PROXY_HTTP_1_1_REQUIRED"/>
+  <int value="367" label="PAC_SCRIPT_TERMINATED"/>
+  <int value="368" label="ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>
@@ -59346,6 +59361,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="407" label="CACHE_CHECKSUM_READ_FAILURE"/>
   <int value="408" label="CACHE_CHECKSUM_MISMATCH"/>
   <int value="409" label="CACHE_LOCK_TIMEOUT"/>
+  <int value="410" label="CACHE_AUTH_FAILURE_AFTER_READ"/>
   <int value="501" label="INSECURE_RESPONSE"/>
   <int value="502" label="NO_PRIVATE_KEY_FOR_CERT"/>
   <int value="503" label="ADD_USER_CERT_FAILED"/>

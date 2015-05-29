@@ -300,7 +300,10 @@ class RangeTransactionServer {
   // Other than regular range related behavior (and the flags mentioned above),
   // the server reacts to requests headers like so:
   //   X-Require-Mock-Auth -> return 401.
+  //   X-Require-Mock-Auth-Alt -> return 401.
   //   X-Return-Default-Range -> assume 40-49 was requested.
+  // The -Alt variant doesn't cause the MockNetworkTransaction to
+  // report that it IsReadyToRestartForAuth().
   static void RangeHandler(const HttpRequestInfo* request,
                            std::string* response_status,
                            std::string* response_headers,
@@ -342,8 +345,11 @@ void RangeTransactionServer::RangeHandler(const HttpRequestInfo* request,
   // We want to make sure we don't delete extra headers.
   EXPECT_TRUE(request->extra_headers.HasHeader(kExtraHeaderKey));
 
-  if (request->extra_headers.HasHeader("X-Require-Mock-Auth") &&
-      !request->extra_headers.HasHeader("Authorization")) {
+  bool require_auth =
+      request->extra_headers.HasHeader("X-Require-Mock-Auth") ||
+      request->extra_headers.HasHeader("X-Require-Mock-Auth-Alt");
+
+  if (require_auth && !request->extra_headers.HasHeader("Authorization")) {
     response_status->assign("HTTP/1.1 401 Unauthorized");
     response_data->assign("WWW-Authenticate: Foo\n");
     return;
@@ -5958,6 +5964,42 @@ TEST(HttpCache, GET_IncompleteResourceWithAuth) {
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
+// Test that the transaction won't retry failed partial requests
+// after it starts reading data.  http://crbug.com/474835
+TEST(HttpCache, TransactionRetryLimit) {
+  MockHttpCache cache;
+
+  // Cache 0-9, so that we have data to read before failing.
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = "Range: bytes = 0-9\r\n" EXTRA_HEADER;
+  transaction.data = "rg: 00-09 ";
+
+  // Write to the cache.
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // And now read from the cache and the network.  10-19 will get a
+  // 401, but will have already returned 0-9.
+  // We do not set X-Require-Mock-Auth because that causes the mock
+  // network transaction to become IsReadyToRestartForAuth().
+  transaction.request_headers =
+      "Range: bytes = 0-79\r\n"
+      "X-Require-Mock-Auth-Alt: dummy\r\n" EXTRA_HEADER;
+
+  scoped_ptr<Context> c(new Context);
+  int rv = cache.CreateTransaction(&c->trans);
+  ASSERT_EQ(OK, rv);
+
+  MockHttpRequest request(transaction);
+
+  rv = c->trans->Start(&request, c->callback.callback(), BoundNetLog());
+  if (rv == ERR_IO_PENDING)
+    rv = c->callback.WaitForResult();
+  std::string content;
+  rv = ReadTransaction(c->trans.get(), &content);
+  EXPECT_EQ(ERR_CACHE_AUTH_FAILURE_AFTER_READ, rv);
+}
+
 // Tests that we cache a 200 response to the validation request.
 TEST(HttpCache, GET_IncompleteResource4) {
   MockHttpCache cache;
@@ -7806,5 +7848,4 @@ TEST(HttpCache, NoStoreResponseShouldNotBlockFollowingRequests) {
       "Cache-Control", "no-store"));
   ReadAndVerifyTransaction(second->trans.get(), kSimpleGET_Transaction);
 }
-
 }  // namespace net

@@ -1113,7 +1113,6 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
 int HttpCache::Transaction::DoSuccessfulSendRequest() {
   DCHECK(!new_response_);
   const HttpResponseInfo* new_response = network_trans_->GetResponseInfo();
-  bool authentication_failure = false;
 
   if (new_response->headers->response_code() == 401 ||
       new_response->headers->response_code() == 407) {
@@ -1133,17 +1132,20 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     }
 
     // We have to perform cleanup at this point so that at least the next
-    // request can succeed.
-    authentication_failure = true;
+    // request can succeed.  We do not retry at this point, because data
+    // has been read and we have no way to gather credentials.  We would
+    // fail again, and potentially loop.  This can happen if the credentials
+    // expire while chrome is suspended.
     if (entry_)
       DoomPartialEntry(false);
     mode_ = NONE;
     partial_.reset();
+    ResetNetworkTransaction();
+    return ERR_CACHE_AUTH_FAILURE_AFTER_READ;
   }
 
   new_response_ = new_response;
-  if (authentication_failure ||
-      (!ValidatePartialResponse() && !auth_response_.headers.get())) {
+  if (!ValidatePartialResponse() && !auth_response_.headers.get()) {
     // Something went wrong with this request and we have to restart it.
     // If we have an authentication response, we are exposed to weird things
     // hapenning if the user cancels the authentication before we receive
