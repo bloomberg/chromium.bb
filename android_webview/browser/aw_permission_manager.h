@@ -7,9 +7,12 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/permission_manager.h"
 
 namespace android_webview {
+
+class LastRequestResultCache;
 
 class AwPermissionManager : public content::PermissionManager {
  public:
@@ -46,6 +49,8 @@ class AwPermissionManager : public content::PermissionManager {
   void UnsubscribePermissionStatusChange(int subscription_id) override;
 
  private:
+  scoped_ptr<LastRequestResultCache> result_cache_;
+
   DISALLOW_COPY_AND_ASSIGN(AwPermissionManager);
 };
 
