@@ -1721,6 +1721,8 @@ crbug.com/488037 [ Win Debug ] tables/mozilla_expected_failures/marvin/table_ove
 crbug.com/488101 fast/loader/unload-form-post-about-blank.html [ Pass Failure ]
 crbug.com/488185 [ Debug ] fast/layers/layer-visibility-sublayer.html [ Pass Failure ]
 
+crbug.com/481896 http/tests/inspector/compiler-source-mapping-debug.html [ NeedsManualRebaseline ]
+
 crbug.com/488445 [ Win7 Debug ] http/tests/fetch/window/request.html [ Pass Failure ]
 crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Failure ]
 crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
@@ -1734,6 +1736,7 @@ crbug.com/492084 webexposed/global-interface-listing-compositor-worker.html [ Ne
 crbug.com/492084 webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
 crbug.com/492084 webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
 crbug.com/492084 webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
+
 
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ ImageOnlyFailure ]
