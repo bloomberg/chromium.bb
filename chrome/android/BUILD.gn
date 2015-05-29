@@ -28,7 +28,6 @@ jinja_variables = [
 android_resources("chrome_java_resources") {
   resource_dirs = [ "java/res" ]
   deps = [
-    ":chrome_staging_strings_grd",
     ":chrome_strings_grd",
     "//content/public/android:content_java_resources",
     "//chrome/app:java_strings_grd",
@@ -641,57 +640,6 @@ jinja_template_resources("chrome_template_resources") {
   ]
   res_dir = "java_staging/res_template"
   variables = jinja_variables
-}
-
-# GYP: //chrome/android/chrome_apk.gyp:chrome_staging_strings_grd
-java_strings_grd("chrome_staging_strings_grd") {
-  grd_file = "java_staging/strings/android_strings.grd"
-  outputs = [
-    "values-am/android_strings.xml",
-    "values-ar/android_strings.xml",
-    "values-bg/android_strings.xml",
-    "values-ca/android_strings.xml",
-    "values-cs/android_strings.xml",
-    "values-da/android_strings.xml",
-    "values-de/android_strings.xml",
-    "values-el/android_strings.xml",
-    "values/android_strings.xml",
-    "values-en-rGB/android_strings.xml",
-    "values-es/android_strings.xml",
-    "values-es-rUS/android_strings.xml",
-    "values-fa/android_strings.xml",
-    "values-fi/android_strings.xml",
-    "values-tl/android_strings.xml",
-    "values-fr/android_strings.xml",
-    "values-hi/android_strings.xml",
-    "values-hr/android_strings.xml",
-    "values-hu/android_strings.xml",
-    "values-in/android_strings.xml",
-    "values-it/android_strings.xml",
-    "values-iw/android_strings.xml",
-    "values-ja/android_strings.xml",
-    "values-ko/android_strings.xml",
-    "values-lt/android_strings.xml",
-    "values-lv/android_strings.xml",
-    "values-nl/android_strings.xml",
-    "values-nb/android_strings.xml",
-    "values-pl/android_strings.xml",
-    "values-pt-rBR/android_strings.xml",
-    "values-pt-rPT/android_strings.xml",
-    "values-ro/android_strings.xml",
-    "values-ru/android_strings.xml",
-    "values-sk/android_strings.xml",
-    "values-sl/android_strings.xml",
-    "values-sr/android_strings.xml",
-    "values-sv/android_strings.xml",
-    "values-sw/android_strings.xml",
-    "values-th/android_strings.xml",
-    "values-tr/android_strings.xml",
-    "values-uk/android_strings.xml",
-    "values-vi/android_strings.xml",
-    "values-zh-rCN/android_strings.xml",
-    "values-zh-rTW/android_strings.xml",
-  ]
 }
 
 # GYP: //chrome/android/chrome_apk.gyp:chrome_staging_test_java

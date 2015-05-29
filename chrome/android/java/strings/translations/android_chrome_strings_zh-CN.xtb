@@ -400,4 +400,151 @@
 <translation id="7561196759112975576">永远</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6784675033504223784">搜索“<ph name="SEARCH_TERM"/>”</translation>
+<translation id="8793430725658173476">复制网址</translation>
+<translation id="8275038454117074363">导入</translation>
+<translation id="2707726405694321444">刷新网页</translation>
+<translation id="1389974829397082527">该文件夹中没有书签</translation>
+<translation id="7494266490974328829">网页已保存。</translation>
+<translation id="7989222512959629388">正在保存…</translation>
+<translation id="494334276486034338">上次同步时间：<ph name="HOURS"/>小时前</translation>
+<translation id="572328651809341494">最近打开的标签页</translation>
+<translation id="523407791643572038">无法启动身份验证器。</translation>
+<translation id="9070377983101773829">开始语音搜索</translation>
+<translation id="5168917394043976756">打开抽屉式导航栏</translation>
+<translation id="8143660160623733249">文件夹名称</translation>
+<translation id="5275558766013849309">标签页将与最近用过的应用一起显示。</translation>
+<translation id="4803910478683254032">导入失败</translation>
+<translation id="4352423910708841374">可自动同步，更便于搜索</translation>
+<translation id="7851858861565204677">其他设备</translation>
+<translation id="5423934151118863508">您最常访问的网页将列在此处</translation>
+<translation id="2842985007712546952">父文件夹</translation>
+<translation id="4307992518367153382">基本设置</translation>
+<translation id="7765158879357617694">移动</translation>
+<translation id="7400418766976504921">网址</translation>
+<translation id="2077711166702792587">在手机的“概览”屏幕上一并显示您的标签页和其他最近用过的应用。</translation>
+<translation id="4532845899244822526">选择文件夹</translation>
+<translation id="983192555821071799">关闭所有标签页</translation>
+<translation id="939736085109172342">新建文件夹</translation>
+<translation id="932327136139879170">主页</translation>
+<translation id="963967414714199900">上次同步时间：刚才</translation>
+<translation id="7646360244607347866">阅读器视图（实验性功能）</translation>
+<translation id="9086455579313502267">无法访问网络</translation>
+<translation id="5832934273103296195">已展开 - 点击即可折叠</translation>
+<translation id="8457451314607652708">导入书签</translation>
+<translation id="6612856669344839356">保存书签</translation>
+<translation id="8676374126336081632">清除输入</translation>
+<translation id="6627583120233659107">修改文件夹</translation>
+<translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION"/></translation>
+<translation id="5150703642582475397">合并标签页和应用</translation>
+<translation id="5228579091201413441">启用同步</translation>
+<translation id="3137521801621304719">退出隐身模式</translation>
+<translation id="5719837394786370183">在您关闭所有隐身标签页后，您在这些标签页中查看的网页不会在浏览器历史记录、Cookie存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件或创建的书签均会保留下来。
+
+但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
+<translation id="724999909741939927">正在导入书签</translation>
+<translation id="1825719650605518411">首次运行体验</translation>
+<translation id="5171045022955879922">搜索或输入网址</translation>
+<translation id="6464825623202322042">此设备</translation>
+<translation id="6404511346730675251">修改书签</translation>
+<translation id="4297410240212242334">分开标签页和应用</translation>
+<translation id="8374420395168535396">上次同步时间：<ph name="DAYS"/>天前</translation>
+<translation id="2750015191954606595">输入说明</translation>
+<translation id="1201402288615127009">下一个</translation>
+<translation id="3184369589781594823">要导入 Android 浏览器中的所有本地书签吗？</translation>
+<translation id="8035133914807600019">新建文件夹…</translation>
+<translation id="2576431527583832481">Chrome 现在更好用啦！已推出新版本。</translation>
+<translation id="2904413602477443379">选择文件夹</translation>
+<translation id="8413126021676339697">显示完整历史记录</translation>
+<translation id="5184329579814168207">在 Chrome 中打开</translation>
+<translation id="2268044343513325586">优化</translation>
+<translation id="6710213216561001401">上一个</translation>
+<translation id="7346909386216857016">知道了</translation>
+<translation id="5205222826937269299">需要提供名称</translation>
+<translation id="5305985456140490686">上次同步时间：<ph name="MINUTES"/>分钟前</translation>
+<translation id="3232754137068452469">网络应用</translation>
+<translation id="3608436266458100337">阅读器模式</translation>
+<translation id="8021142450226038616">所有条目</translation>
+<translation id="1181037720776840403">删除</translation>
+<translation id="3328801116991980348">网站信息</translation>
+<translation id="8497726226069778601">目前还未列出任何网页…</translation>
+<translation id="3039671569659952257">删除文件夹</translation>
+<translation id="4543087392704641517">书签标题</translation>
+<translation id="7846076177841592234">取消选择</translation>
+<translation id="1521530746149324532">您已经隐身了。</translation>
+<translation id="971774202801778802">书签网址</translation>
+<translation id="1197267115302279827">移动书签</translation>
+<translation id="2316129865977710310">不用了</translation>
+<translation id="2891154217021530873">停止加载网页</translation>
+<translation id="1853692000353488670">打开新的隐身标签页</translation>
+<translation id="6208263165776660488">Chrome 标签页已移动</translation>
+<translation id="2409301052052350563">正在播放音频</translation>
+<translation id="213279576345780926">已关闭<ph name="TAB_TITLE"/></translation>
+<translation id="4009270185697672233">已删除 <ph name="NUMBER_OF_BOOKMARKS"/> 个书签。</translation>
+<translation id="764743049316168389">“<ph name="FOLDER_NAME"/>”文件夹</translation>
+<translation id="7201341158316793215">正在删除…</translation>
+<translation id="2079545284768500474">撤消</translation>
+<translation id="5042680980623431490">导入 Android 浏览器中的书签时出现问题。</translation>
+<translation id="1829244130665387512">在网页中查找</translation>
+<translation id="4259722352634471385">已屏蔽 <ph name="URL"/></translation>
+<translation id="6850830437481525139">已关闭 <ph name="TAB_COUNT"/> 个标签页</translation>
+<translation id="1974060860693918893">高级</translation>
+<translation id="6963766334940102469">删除书签</translation>
+<translation id="7095930899177687653"><ph name="OPEN_TABS"/> 个打开的标签页</translation>
+<translation id="189172778771606813">关闭抽屉式导航栏</translation>
+<translation id="4351244548802238354">关闭对话框</translation>
+<translation id="3158619413803296679">选择书签</translation>
+<translation id="5345040418939504969">已删除“<ph name="BOOKMARK_TITLE"/>”</translation>
+<translation id="4871370605780490696">添加书签</translation>
+<translation id="9063523880881406963">关闭请求切换到桌面版网站</translation>
+<translation id="4970484396410298643">您可以在此处直接访问计算机上打开的标签页。
+
+只需按以下步骤操作即可：在计算机上打开Chrome，点击菜单，然后选择“登录到Chrome…”</translation>
+<translation id="4797039098279997504">触摸即可返回到 <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
+<translation id="6979922938747275756">加载文件夹时出错</translation>
+<translation id="938850635132480979">错误：<ph name="ERROR_CODE"/></translation>
+<translation id="7191430249889272776">标签页已在后台打开。</translation>
+<translation id="8514577642972634246">进入隐身模式</translation>
+<translation id="3287852534598822456">书签已不存在，请刷新。</translation>
+<translation id="7299721129597238157">删除书签</translation>
+<translation id="4885273946141277891">您尝试启动的Chrome实例过多，超过了支持的数量。</translation>
+<translation id="9156605176886108508">无书签文件夹</translation>
+<translation id="5806294296882899667">加载默认书签文件夹时出错</translation>
+<translation id="6364438453358674297">从历史记录中移除建议？</translation>
+<translation id="1412240523210238692">文字选择</translation>
+<translation id="3527085408025491307">文件夹</translation>
+<translation id="3894427358181296146">添加文件夹</translation>
+<translation id="2996809686854298943">需要提供网址</translation>
+<translation id="8959122750345127698">无法访问 <ph name="URL"/></translation>
+<translation id="129553762522093515">最近关闭的标签页</translation>
+<translation id="6605823718624717484">修改书签</translation>
+<translation id="4690286298542128877">标签页将移到 Chrome 内的标签页切换器中。</translation>
+<translation id="6066720739967032277">您目前打开的标签页和其他最近用过的应用都会显示在您手机的“概览”屏幕上。您可以在<ph name="BEGIN_LINK"/>设置<ph name="END_LINK"/>中控制此功能。</translation>
+<translation id="8901170036886848654">未找到任何相符的书签</translation>
+<translation id="4943872375798546930">找不到结果</translation>
+<translation id="5323972449344932352">启动 Chrome</translation>
+<translation id="7876243839304621966">全部删除</translation>
+<translation id="4852188034940155708">自动文件夹</translation>
+<translation id="7144878232160441200">重试</translation>
+<translation id="7829298379596169484">正在访问音频输入</translation>
+<translation id="3700134753671613714">登录后即可获取您所有设备上的书签。</translation>
+<translation id="6010869025736512584">正在访问视频输入</translation>
+<translation id="5596627076506792578">更多选项</translation>
+<translation id="1513352483775369820">书签和网络历史记录</translation>
+<translation id="3828029223314399057">搜索书签</translation>
+<translation id="6550675742724504774">选项</translation>
+<translation id="856481929701340285">请求切换到桌面版网站</translation>
+<translation id="6031101910111098835">已折叠 - 点击即可展开</translation>
+<translation id="4084682180776658562">已保存的书签</translation>
+<translation id="2433507940547922241">外观</translation>
+<translation id="430949144625048957">在列表模式和网格模式之间切换</translation>
+<translation id="5530766185686772672">关闭隐身标签页</translation>
+<translation id="3090193911106258841">正在访问音频和视频输入</translation>
+<translation id="5327248766486351172">名称</translation>
+<translation id="393697183122708255">无法启用语音搜索功能</translation>
+<translation id="2082238445998314030">第 <ph name="RESULT_NUMBER"/> 条结果，共 <ph name="TOTAL_RESULTS"/> 条</translation>
+<translation id="2038563949887743358">开启请求切换到桌面版网站</translation>
+<translation id="2770465223704140727">从列表中移除</translation>
+<translation id="5210714456814679336">您在其他设备上的 Chrome 中打开的标签页将显示在此处。</translation>
+<translation id="3019988978990626441">为保护您的付款安全，电子钱包已生成新卡 <ph name="GENERATED_CARD"/>。不过，我们仍是从您原来的信用卡 <ph name="ORIGINAL_CARD"/> 中扣款。</translation>
+<translation id="3751298470314028960">书签已删除</translation>
 </translationbundle>

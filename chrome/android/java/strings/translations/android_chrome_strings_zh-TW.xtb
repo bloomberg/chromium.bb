@@ -400,4 +400,151 @@
 <translation id="7561196759112975576">永遠使用</translation>
 <translation id="605721222689873409">年</translation>
 <translation id="6784675033504223784">搜尋「<ph name="SEARCH_TERM"/>」</translation>
+<translation id="8793430725658173476">複製網址</translation>
+<translation id="8275038454117074363">匯入</translation>
+<translation id="2707726405694321444">重新整理頁面</translation>
+<translation id="1389974829397082527">這裡沒有任何書籤</translation>
+<translation id="7494266490974328829">網頁已儲存。</translation>
+<translation id="7989222512959629388">儲存中…</translation>
+<translation id="494334276486034338">上次同步處理時間：<ph name="HOURS"/> 小時前</translation>
+<translation id="572328651809341494">最近開啟的分頁</translation>
+<translation id="523407791643572038">無法啟動 Authenticator。</translation>
+<translation id="9070377983101773829">開始語音搜尋</translation>
+<translation id="5168917394043976756">開啟導覽匣</translation>
+<translation id="8143660160623733249">資料夾名稱</translation>
+<translation id="5275558766013849309">分頁和最近使用的應用程式將會並列顯示。</translation>
+<translation id="4803910478683254032">匯入失敗</translation>
+<translation id="4352423910708841374">保持同步且易於搜尋</translation>
+<translation id="7851858861565204677">其他裝置</translation>
+<translation id="5423934151118863508">這裡會顯示您最常瀏覽的網頁</translation>
+<translation id="2842985007712546952">上層資料夾</translation>
+<translation id="4307992518367153382">基本選項</translation>
+<translation id="7765158879357617694">移動</translation>
+<translation id="7400418766976504921">網址</translation>
+<translation id="2077711166702792587">在手機的「總覽」畫面上查看您的分頁和最近開啟的其他應用程式。</translation>
+<translation id="4532845899244822526">選擇資料夾</translation>
+<translation id="983192555821071799">關閉所有分頁</translation>
+<translation id="939736085109172342">新增資料夾</translation>
+<translation id="932327136139879170">首頁</translation>
+<translation id="963967414714199900">上次同步處理時間：剛剛完成</translation>
+<translation id="7646360244607347866">閱讀器檢視 (實驗功能)</translation>
+<translation id="9086455579313502267">無法存取網路</translation>
+<translation id="5832934273103296195">已展開 - 按一下即可收合</translation>
+<translation id="8457451314607652708">匯入書籤</translation>
+<translation id="6612856669344839356">儲存書籤</translation>
+<translation id="8676374126336081632">清除輸入</translation>
+<translation id="6627583120233659107">編輯資料夾</translation>
+<translation id="1258753120186372309">Google Doodle：<ph name="DOODLE_DESCRIPTION"/></translation>
+<translation id="5150703642582475397">合併分頁與應用程式</translation>
+<translation id="5228579091201413441">啟用同步功能</translation>
+<translation id="3137521801621304719">離開無痕模式</translation>
+<translation id="5719837394786370183">當您關閉所有無痕式分頁後，您在其中瀏覽的網頁都不會保留在瀏覽器紀錄、Cookie 儲存庫或搜尋紀錄中。不過，系統會將您下載的檔案或建立的書籤全部予以保留。
+
+然而，您並沒有因此隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可記錄您的瀏覽行為。</translation>
+<translation id="724999909741939927">正在匯入書籤</translation>
+<translation id="1825719650605518411">初次使用體驗</translation>
+<translation id="5171045022955879922">搜尋或輸入網址</translation>
+<translation id="6464825623202322042">這個裝置</translation>
+<translation id="6404511346730675251">編輯書籤</translation>
+<translation id="4297410240212242334">區隔分頁與應用程式</translation>
+<translation id="8374420395168535396">上次同步處理時間：<ph name="DAYS"/> 天前</translation>
+<translation id="2750015191954606595">輸入附註</translation>
+<translation id="1201402288615127009">下一個</translation>
+<translation id="3184369589781594823">要從 Android 瀏覽器匯入所有本機書籤嗎？</translation>
+<translation id="8035133914807600019">新資料夾…</translation>
+<translation id="2576431527583832481">Chrome 變得更好用了！歡迎您升級使用新版本。</translation>
+<translation id="2904413602477443379">選擇資料夾</translation>
+<translation id="8413126021676339697">顯示完整紀錄</translation>
+<translation id="5184329579814168207">在 Chrome 中開啟</translation>
+<translation id="2268044343513325586">修正搜尋</translation>
+<translation id="6710213216561001401">上一個</translation>
+<translation id="7346909386216857016">好，我知道了</translation>
+<translation id="5205222826937269299">請輸入名稱</translation>
+<translation id="5305985456140490686">上次同步處理時間：<ph name="MINUTES"/> 分鐘前</translation>
+<translation id="3232754137068452469">網路應用程式</translation>
+<translation id="3608436266458100337">閱讀器模式</translation>
+<translation id="8021142450226038616">所有項目</translation>
+<translation id="1181037720776840403">移除</translation>
+<translation id="3328801116991980348">網站資訊</translation>
+<translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
+<translation id="3039671569659952257">刪除資料夾</translation>
+<translation id="4543087392704641517">書籤標題</translation>
+<translation id="7846076177841592234">取消選取</translation>
+<translation id="1521530746149324532">您已經採用無痕式瀏覽。</translation>
+<translation id="971774202801778802">書籤網址</translation>
+<translation id="1197267115302279827">移動書籤</translation>
+<translation id="2316129865977710310">不用了，謝謝</translation>
+<translation id="2891154217021530873">停止載入網頁</translation>
+<translation id="1853692000353488670">新無痕式分頁</translation>
+<translation id="6208263165776660488">Chrome 分頁已移至新的位置</translation>
+<translation id="2409301052052350563">正在播放音訊</translation>
+<translation id="213279576345780926">關閉 <ph name="TAB_TITLE"/></translation>
+<translation id="4009270185697672233">刪除了 <ph name="NUMBER_OF_BOOKMARKS"/> 個項目。</translation>
+<translation id="764743049316168389"><ph name="FOLDER_NAME"/>資料夾</translation>
+<translation id="7201341158316793215">移除中…</translation>
+<translation id="2079545284768500474">復原</translation>
+<translation id="5042680980623431490">從 Android 瀏覽器匯入書籤時發生問題。</translation>
+<translation id="1829244130665387512">從網頁中尋找</translation>
+<translation id="4259722352634471385">瀏覽的網址已封鎖：<ph name="URL"/></translation>
+<translation id="6850830437481525139">關閉了 <ph name="TAB_COUNT"/> 個分頁</translation>
+<translation id="1974060860693918893">進階</translation>
+<translation id="6963766334940102469">刪除書籤</translation>
+<translation id="7095930899177687653"><ph name="OPEN_TABS"/> 個開啟的分頁</translation>
+<translation id="189172778771606813">關閉導覽匣</translation>
+<translation id="4351244548802238354">關閉對話方塊</translation>
+<translation id="3158619413803296679">選擇書籤</translation>
+<translation id="5345040418939504969">已刪除的「<ph name="BOOKMARK_TITLE"/>」</translation>
+<translation id="4871370605780490696">新增書籤</translation>
+<translation id="9063523880881406963">關閉「要求電腦版網站」</translation>
+<translation id="4970484396410298643">您可以在這裡使用您在電腦上開啟的所有分頁。
+
+只需在電腦上開啟 Chrome、前往選單，然後選取 [登入 Chrome...] 即可。</translation>
+<translation id="4797039098279997504">輕觸即可返回 <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
+<translation id="6979922938747275756">載入資料夾時發生錯誤</translation>
+<translation id="938850635132480979">錯誤：<ph name="ERROR_CODE"/></translation>
+<translation id="7191430249889272776">已在背景開啟分頁。</translation>
+<translation id="8514577642972634246">進入無痕模式</translation>
+<translation id="3287852534598822456">書籤已不存在，請重新整理。</translation>
+<translation id="7299721129597238157">刪除書籤</translation>
+<translation id="4885273946141277891">Chrome 實例的數量已超出上限。</translation>
+<translation id="9156605176886108508">沒有書籤資料夾</translation>
+<translation id="5806294296882899667">載入預設值時發生錯誤</translation>
+<translation id="6364438453358674297">從歷史紀錄中移除建議項目？</translation>
+<translation id="1412240523210238692">選取文字</translation>
+<translation id="3527085408025491307">資料夾</translation>
+<translation id="3894427358181296146">新增資料夾</translation>
+<translation id="2996809686854298943">必須要有網址</translation>
+<translation id="8959122750345127698">瀏覽的網址無法存取：<ph name="URL"/></translation>
+<translation id="129553762522093515">最近關閉的分頁</translation>
+<translation id="6605823718624717484">編輯書籤</translation>
+<translation id="4690286298542128877">分頁將改為顯示在 Chrome 的分頁切換選項中。</translation>
+<translation id="6066720739967032277">手機的「總覽」畫面會顯示您的分頁和其他最近使用過的應用程式。您可以在<ph name="BEGIN_LINK"/>設定<ph name="END_LINK"/>中控管這項功能。</translation>
+<translation id="8901170036886848654">找不到書籤</translation>
+<translation id="4943872375798546930">找不到相符的結果</translation>
+<translation id="5323972449344932352">啟動 Chrome</translation>
+<translation id="7876243839304621966">全部移除</translation>
+<translation id="4852188034940155708">自動資料夾</translation>
+<translation id="7144878232160441200">重試</translation>
+<translation id="7829298379596169484">正在存取音訊輸入</translation>
+<translation id="3700134753671613714">不論您使用任何裝置，只要登入帳戶即可取得自己的書籤。</translation>
+<translation id="6010869025736512584">正在存取視訊輸入</translation>
+<translation id="5596627076506792578">更多選項</translation>
+<translation id="1513352483775369820">書籤與網頁紀錄</translation>
+<translation id="3828029223314399057">搜尋書籤</translation>
+<translation id="6550675742724504774">選項</translation>
+<translation id="856481929701340285">切換為電腦版網站</translation>
+<translation id="6031101910111098835">已收合 - 按一下即可展開</translation>
+<translation id="4084682180776658562">書籤</translation>
+<translation id="2433507940547922241">外觀</translation>
+<translation id="430949144625048957">切換清單/格狀模式</translation>
+<translation id="5530766185686772672">關閉無痕式分頁</translation>
+<translation id="3090193911106258841">正在存取音訊和視訊輸入</translation>
+<translation id="5327248766486351172">名稱</translation>
+<translation id="393697183122708255">沒有可用的語音搜尋功能</translation>
+<translation id="2082238445998314030">第 <ph name="RESULT_NUMBER"/> 個結果，共 <ph name="TOTAL_RESULTS"/> 個</translation>
+<translation id="2038563949887743358">開啟「要求電腦版網站」</translation>
+<translation id="2770465223704140727">從清單中移除</translation>
+<translation id="5210714456814679336">這裡會顯示您在其他裝置上開啟的 Chrome 分頁。</translation>
+<translation id="3019988978990626441">電子錢包已產生新的信用卡 (<ph name="GENERATED_CARD"/>)，藉此保障您的付款安全性。不過，我們仍會對您原先使用的信用卡 (<ph name="ORIGINAL_CARD"/>) 扣款。</translation>
+<translation id="3751298470314028960">書籤已刪除</translation>
 </translationbundle>

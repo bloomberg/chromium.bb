@@ -574,7 +574,6 @@
           'dependencies': [
             'activity_type_ids_java',
             'chrome_resources.gyp:chrome_strings',
-            'chrome_staging_strings_grd',
             'chrome_strings_grd',
             'chrome_version_java',
             'connection_security_helper_security_levels_java',
@@ -621,18 +620,6 @@
           },
           'includes': [
             '../build/java.gypi',
-          ],
-        },
-        {
-          # TODO(pkotwicz): Merge into chrome_strings_grd
-          # GN: //chrome/android:chrome_staging_strings_grd
-          'target_name': 'chrome_staging_strings_grd',
-          'type': 'none',
-          'variables': {
-            'grd_file': '../chrome/android/java_staging/strings/android_strings.grd',
-          },
-          'includes': [
-            '../build/java_strings_grd.gypi',
           ],
         },
         {
