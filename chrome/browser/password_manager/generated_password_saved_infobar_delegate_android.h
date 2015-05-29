@@ -33,10 +33,11 @@ class GeneratedPasswordSavedInfoBarDelegateAndroid
   const base::string16& button_label() const { return button_label_; }
 
   // Called when the link in the message is clicked.
-  void OnInlineLinkClicked() const;
+  void OnInlineLinkClicked();
 
  private:
-  GeneratedPasswordSavedInfoBarDelegateAndroid();
+  explicit GeneratedPasswordSavedInfoBarDelegateAndroid(
+      content::WebContents* web_contents);
 
   // infobars::InfoBarDelegate:
   Type GetInfoBarType() const override;
@@ -50,6 +51,11 @@ class GeneratedPasswordSavedInfoBarDelegateAndroid
 
   // The translated label of the button.
   base::string16 button_label_;
+
+  content::WebContents* web_contents_;
+
+  // If smart lock branding should be used.
+  bool smart_lock_branding_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(GeneratedPasswordSavedInfoBarDelegateAndroid);
 };

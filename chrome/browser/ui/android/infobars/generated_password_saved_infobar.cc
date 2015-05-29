@@ -15,7 +15,8 @@ void GeneratedPasswordSavedInfoBarDelegateAndroid::Create(
     content::WebContents* web_contents) {
   InfoBarService::FromWebContents(web_contents)
       ->AddInfoBar(make_scoped_ptr(new GeneratedPasswordSavedInfoBar(
-          make_scoped_ptr(new GeneratedPasswordSavedInfoBarDelegateAndroid))));
+          make_scoped_ptr(new GeneratedPasswordSavedInfoBarDelegateAndroid(
+              web_contents)))));
 }
 
 GeneratedPasswordSavedInfoBar::GeneratedPasswordSavedInfoBar(
