@@ -192,7 +192,6 @@ ChannelPosix::ChannelPosix(const IPC::ChannelHandle& channel_handle,
       pipe_name_(channel_handle.name),
       in_dtor_(false),
       must_unlink_(false) {
-  memset(input_cmsg_buf_, 0, sizeof(input_cmsg_buf_));
   if (!CreatePipe(channel_handle)) {
     // The pipe may have been closed already.
     const char *modestr = (mode_ & MODE_SERVER_FLAG) ? "server" : "client";
@@ -754,11 +753,12 @@ ChannelPosix::ReadState ChannelPosix::ReadData(
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
-  msg.msg_control = input_cmsg_buf_;
+  char input_cmsg_buf[kMaxReadFDBuffer];
+  msg.msg_control = input_cmsg_buf;
 
   // recvmsg() returns 0 if the connection has closed or EAGAIN if no data
   // is waiting on the pipe.
-  msg.msg_controllen = sizeof(input_cmsg_buf_);
+  msg.msg_controllen = sizeof(input_cmsg_buf);
   *bytes_read = HANDLE_EINTR(recvmsg(pipe_.get(), &msg, MSG_DONTWAIT));
 
   if (*bytes_read < 0) {

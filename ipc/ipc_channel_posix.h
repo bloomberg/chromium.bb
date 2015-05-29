@@ -139,18 +139,14 @@ class IPC_EXPORT ChannelPosix : public Channel,
       MessageAttachmentSet::kMaxDescriptorsPerMessage;
 
   // Buffer size for file descriptors used for recvmsg. On Mac the CMSG macros
-  // don't seem to be constant so we have to pick a "large enough" value.
+  // are not constant so we have to pick a "large enough" padding for headers.
 #if defined(OS_MACOSX)
-  static const size_t kMaxReadFDBuffer = 1024;
+  static const size_t kMaxReadFDBuffer = 1024 + sizeof(int) * kMaxReadFDs;
 #else
   static const size_t kMaxReadFDBuffer = CMSG_SPACE(sizeof(int) * kMaxReadFDs);
 #endif
-
-  // Temporary buffer used to receive the file descriptors from recvmsg.
-  // Code that writes into this should immediately read them out and save
-  // them to input_fds_, since this buffer will be re-used anytime we call
-  // recvmsg.
-  char input_cmsg_buf_[kMaxReadFDBuffer];
+  static_assert(kMaxReadFDBuffer <= 8192,
+                "kMaxReadFDBuffer too big for a stack buffer");
 
   // File descriptors extracted from messages coming off of the channel. The
   // handles may span messages and come off different channels from the message
