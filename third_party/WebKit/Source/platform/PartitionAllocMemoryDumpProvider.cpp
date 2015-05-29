@@ -21,18 +21,26 @@ using namespace WTF;
 class PartitionStatsDumperImpl final : public PartitionStatsDumper {
 public:
     explicit PartitionStatsDumperImpl(WebProcessMemoryDump* memoryDump)
-        : m_memoryDump(memoryDump) { }
+        : m_memoryDump(memoryDump), m_uid(0) { }
 
     // PartitionStatsDumper implementation.
     void partitionsDumpBucketStats(const char* partitionName, const PartitionBucketMemoryStats*) override;
 
 private:
     WebProcessMemoryDump* m_memoryDump;
+    size_t m_uid;
 };
 
 void PartitionStatsDumperImpl::partitionsDumpBucketStats(const char* partitionName, const PartitionBucketMemoryStats* memoryStats)
 {
-    WebMemoryAllocatorDump* allocatorDump = m_memoryDump->createMemoryAllocatorDump(String::format("partition_alloc/%s/bucket_%zu", partitionName, memoryStats->bucketSlotSize));
+    ASSERT(memoryStats->isValid);
+    String format;
+    if (memoryStats->isDirectMap)
+        format = String::format("partition_alloc/%s/directMap_%zu", partitionName, ++m_uid);
+    else
+        format = String::format("partition_alloc/%s/bucket_%zu", partitionName, static_cast<size_t>(memoryStats->bucketSlotSize));
+
+    WebMemoryAllocatorDump* allocatorDump = m_memoryDump->createMemoryAllocatorDump(format);
     allocatorDump->AddScalar("partition_page_size", "bytes", memoryStats->allocatedPageSize);
     allocatorDump->AddScalar("waste_size", "bytes", memoryStats->pageWasteSize);
     allocatorDump->AddScalar("inner_size", "bytes", memoryStats->activeBytes);

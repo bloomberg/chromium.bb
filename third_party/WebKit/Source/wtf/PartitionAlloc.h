@@ -344,19 +344,19 @@ enum PartitionAllocFlags {
 
 // Struct used to retrieve memory statistics about a partition bucket. Used by
 // PartitionStatsDumper implementation.
-// TODO(ssid): Add direct mapped memory tracking (allocations >1MB).
 struct PartitionBucketMemoryStats {
     bool isValid; // Used to check if the stats is valid.
-    size_t bucketSlotSize; // The size of the slot in bytes.
-    size_t allocatedPageSize; // Total size the partition page allocated from the system.
-    size_t pageWasteSize; // The bytes allocated from the system but can't be used in any slot in a partition page.
-    size_t activeBytes; // Total active bytes used in the bucket.
-    size_t residentBytes; // Total bytes provisioned in the bucket.
-    size_t freeableBytes; // Total bytes that could be decommitted.
-    size_t numFullPages; // Number of pages with all slots allocated.
-    size_t numActivePages; // Number of pages that have at least one provisioned slot.
-    size_t numEmptyPages; // Number of pages that areempty but not decommitted.
-    size_t numDecommittedPages; // Number of pages that are empty and decommitted.
+    bool isDirectMap; // True if this is a direct mapping; size will not be unique.
+    uint32_t bucketSlotSize; // The size of the slot in bytes.
+    uint32_t allocatedPageSize; // Total size the partition page allocated from the system.
+    uint32_t pageWasteSize; // The bytes allocated from the system but can't be used in any slot in a partition page.
+    uint32_t activeBytes; // Total active bytes used in the bucket.
+    uint32_t residentBytes; // Total bytes provisioned in the bucket.
+    uint32_t freeableBytes; // Total bytes that could be decommitted.
+    uint32_t numFullPages; // Number of pages with all slots allocated.
+    uint32_t numActivePages; // Number of pages that have at least one provisioned slot.
+    uint32_t numEmptyPages; // Number of pages that areempty but not decommitted.
+    uint32_t numDecommittedPages; // Number of pages that are empty and decommitted.
 };
 
 // Interface that is passed to partitionDumpStats and
@@ -640,7 +640,7 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRootGeneric* root, void* ptr)
 #endif
 }
 
-ALWAYS_INLINE bool partitionBucketIsDirectMapped(PartitionBucket* bucket)
+ALWAYS_INLINE bool partitionBucketIsDirectMapped(const PartitionBucket* bucket)
 {
     return !bucket->numSystemPagesPerSlotSpan;
 }

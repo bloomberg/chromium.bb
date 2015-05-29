@@ -201,6 +201,8 @@ public:
     virtual void partitionsDumpBucketStats(const char* partitionName, const WTF::PartitionBucketMemoryStats* memoryStats) override
     {
         (void) partitionName;
+        EXPECT_TRUE(memoryStats->isValid);
+        EXPECT_EQ(0u, memoryStats->bucketSlotSize & WTF::kAllocationGranularityMask);
         m_bucketStats.append(*memoryStats);
         m_totalResidentBytes += memoryStats->residentBytes;
         m_totalActiveBytes += memoryStats->activeBytes;
@@ -1398,6 +1400,58 @@ TEST(PartitionAllocTest, DumpMemoryStats)
             EXPECT_EQ(1u, stats->numDecommittedPages);
         }
         partitionFreeGeneric(genericAllocator.root(), ptr1);
+    }
+
+    // This test checks for correct direct mapped accounting.
+    {
+        size_t sizeSmaller = WTF::kGenericMaxBucketed + 1;
+        size_t sizeBigger = (WTF::kGenericMaxBucketed * 2) + 1;
+        size_t realSizeSmaller = (sizeSmaller + WTF::kSystemPageOffsetMask) & WTF::kSystemPageBaseMask;
+        size_t realSizeBigger = (sizeBigger + WTF::kSystemPageOffsetMask) & WTF::kSystemPageBaseMask;
+        void* ptr = partitionAllocGeneric(genericAllocator.root(), sizeSmaller);
+        void* ptr2 = partitionAllocGeneric(genericAllocator.root(), sizeBigger);
+
+        {
+            MockPartitionStatsDumper mockStatsDumperGeneric;
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+            const WTF::PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(realSizeSmaller);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_TRUE(stats->isDirectMap);
+            EXPECT_EQ(realSizeSmaller, stats->bucketSlotSize);
+            EXPECT_EQ(realSizeSmaller, stats->activeBytes);
+            EXPECT_EQ(realSizeSmaller, stats->residentBytes);
+            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(1u, stats->numFullPages);
+            EXPECT_EQ(0u, stats->numActivePages);
+            EXPECT_EQ(0u, stats->numEmptyPages);
+            EXPECT_EQ(0u, stats->numDecommittedPages);
+
+            stats = mockStatsDumperGeneric.GetBucketStats(realSizeBigger);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_TRUE(stats->isDirectMap);
+            EXPECT_EQ(realSizeBigger, stats->bucketSlotSize);
+            EXPECT_EQ(realSizeBigger, stats->activeBytes);
+            EXPECT_EQ(realSizeBigger, stats->residentBytes);
+            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(1u, stats->numFullPages);
+            EXPECT_EQ(0u, stats->numActivePages);
+            EXPECT_EQ(0u, stats->numEmptyPages);
+            EXPECT_EQ(0u, stats->numDecommittedPages);
+        }
+
+        partitionFreeGeneric(genericAllocator.root(), ptr2);
+        partitionFreeGeneric(genericAllocator.root(), ptr);
+
+        // Whilst we're here, allocate again and free with different ordering
+        // to give a workout to our linked list code.
+        ptr = partitionAllocGeneric(genericAllocator.root(), sizeSmaller);
+        ptr2 = partitionAllocGeneric(genericAllocator.root(), sizeBigger);
+        partitionFreeGeneric(genericAllocator.root(), ptr);
+        partitionFreeGeneric(genericAllocator.root(), ptr2);
     }
 
     TestShutdown();

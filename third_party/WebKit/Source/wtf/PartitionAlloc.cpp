@@ -30,7 +30,6 @@
 
 #include "config.h"
 #include "wtf/PartitionAlloc.h"
-#include "wtf/Vector.h"
 
 #include <string.h>
 
@@ -186,7 +185,7 @@ void partitionAllocGenericInit(PartitionRootGeneric* root)
 
     // Set up the actual usable buckets first.
     // Note that typical values (i.e. min allocation size of 8) will result in
-    // invalid buckets (size==9 etc. or more generally, size is not a multiple
+    // pseudo buckets (size==9 etc. or more generally, size is not a multiple
     // of the smallest allocation granularity).
     // We avoid them in the bucket lookup map, but we tolerate them to keep the
     // code simpler and the structures more generic.
@@ -198,7 +197,7 @@ void partitionAllocGenericInit(PartitionRootGeneric* root)
         for (j = 0; j < kGenericNumBucketsPerOrder; ++j) {
             bucket->slotSize = currentSize;
             partitionBucketInitBase(bucket, root);
-            // Disable invalid buckets so that touching them faults.
+            // Disable psuedo buckets so that touching them faults.
             if (currentSize % kGenericSmallestBucket)
                 bucket->activePagesHead = 0;
             currentSize += currentIncrement;
@@ -1041,6 +1040,7 @@ static void partitionDumpPageStats(PartitionBucketMemoryStats* statsOut, const P
 
 static void partitionDumpBucketStats(PartitionBucketMemoryStats* statsOut, const PartitionBucket* bucket)
 {
+    ASSERT(!partitionBucketIsDirectMapped(bucket));
     statsOut->isValid = false;
     // If the active page list is empty (== &PartitionRootGeneric::gSeedPage),
     // the bucket might still need to be reported if it has an empty page list,
@@ -1050,6 +1050,7 @@ static void partitionDumpBucketStats(PartitionBucketMemoryStats* statsOut, const
 
     memset(statsOut, '\0', sizeof(*statsOut));
     statsOut->isValid = true;
+    statsOut->isDirectMap = false;
     statsOut->numFullPages = static_cast<size_t>(bucket->numFullPages);
     statsOut->bucketSlotSize = bucket->slotSize;
     uint16_t bucketNumSlots = partitionBucketSlots(bucket);
@@ -1080,29 +1081,63 @@ static void partitionDumpBucketStats(PartitionBucketMemoryStats* statsOut, const
 void partitionDumpStatsGeneric(PartitionRootGeneric* partition, const char* partitionName, PartitionStatsDumper* partitionStatsDumper)
 {
     const size_t partitionNumBuckets = kGenericNumBucketedOrders * kGenericNumBucketsPerOrder;
-    Vector<PartitionBucketMemoryStats> memoryStats(partitionNumBuckets);
     spinLockLock(&partition->lock);
+    PartitionBucketMemoryStats bucketStats[partitionNumBuckets];
     for (size_t i = 0; i < partitionNumBuckets; ++i) {
-        partitionDumpBucketStats(&memoryStats[i], &partition->buckets[i]);
+        const PartitionBucket* bucket = &partition->buckets[i];
+        // Don't report the pseudo buckets that the generic allocator sets up in
+        // order to preserve a fast size->bucket map (see
+        // partitionAllocGenericInit for details).
+        if (!bucket->activePagesHead)
+            bucketStats[i].isValid = false;
+        else
+            partitionDumpBucketStats(&bucketStats[i], bucket);
     }
+
+    static const size_t kMaxReportableDirectMaps = 4096;
+    uint32_t directMapLengths[kMaxReportableDirectMaps];
+    size_t numDirectMappedAllocations = 0;
+    for (PartitionDirectMapExtent* extent = partition->directMapList; extent; extent = extent->nextExtent) {
+        ASSERT(!extent->nextExtent || extent->nextExtent->prevExtent == extent);
+        directMapLengths[numDirectMappedAllocations] = extent->bucket->slotSize;
+        ++numDirectMappedAllocations;
+        if (numDirectMappedAllocations == kMaxReportableDirectMaps)
+            break;
+    }
+
     spinLockUnlock(&partition->lock);
 
     // partitionsDumpBucketStats is called after collecting stats because it
     // can try to allocate using PartitionAllocGeneric and it can't obtain the
     // lock.
     for (size_t i = 0; i < partitionNumBuckets; ++i) {
-        if (memoryStats[i].isValid)
-            partitionStatsDumper->partitionsDumpBucketStats(partitionName, &memoryStats[i]);
+        if (bucketStats[i].isValid)
+            partitionStatsDumper->partitionsDumpBucketStats(partitionName, &bucketStats[i]);
+    }
+    for (size_t i = 0; i < numDirectMappedAllocations; ++i) {
+        PartitionBucketMemoryStats stats;
+        memset(&stats, '\0', sizeof(stats));
+        stats.isValid = true;
+        stats.isDirectMap = true;
+        stats.numFullPages = 1;
+        uint32_t size = directMapLengths[i];
+        stats.allocatedPageSize = size;
+        stats.bucketSlotSize = size;
+        stats.activeBytes = size;
+        stats.residentBytes = size;
+        partitionStatsDumper->partitionsDumpBucketStats(partitionName, &stats);
     }
 }
 
 void partitionDumpStats(PartitionRoot* partition, const char* partitionName, PartitionStatsDumper* partitionStatsDumper)
 {
+    static const size_t kMaxReportableBuckets = 4096 / sizeof(void*);
+    PartitionBucketMemoryStats memoryStats[kMaxReportableBuckets];
     const size_t partitionNumBuckets = partition->numBuckets;
-    Vector<PartitionBucketMemoryStats> memoryStats(partitionNumBuckets);
-    for (size_t i = 0; i < partitionNumBuckets; ++i) {
+    ASSERT(partitionNumBuckets <= kMaxReportableBuckets);
+
+    for (size_t i = 0; i < partitionNumBuckets; ++i)
         partitionDumpBucketStats(&memoryStats[i], &partition->buckets()[i]);
-    }
 
     // partitionsDumpBucketStats is called after collecting stats because it
     // can use PartitionAlloc to allocate and this can affect the statistics.
