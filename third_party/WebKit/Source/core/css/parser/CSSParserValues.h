@@ -48,6 +48,13 @@ struct CSSParserString {
         m_is8Bit = false;
     }
 
+    void initRaw(const void* charactersRaw, unsigned length, bool is8Bit)
+    {
+        m_data.charactersRaw = charactersRaw;
+        m_length = length;
+        m_is8Bit = is8Bit;
+    }
+
     void init(const String& string)
     {
         m_length = string.length();
@@ -94,6 +101,7 @@ struct CSSParserString {
     union {
         const LChar* characters8;
         const UChar* characters16;
+        const void* charactersRaw;
     } m_data;
     unsigned m_length;
     bool m_is8Bit;

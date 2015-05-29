@@ -87,8 +87,13 @@ public:
     void convertToPercentage();
 
     CSSParserTokenType type() const { return static_cast<CSSParserTokenType>(m_type); }
-    CSSParserString value() const { return m_value; }
-    bool valueEqualsIgnoringCase(const char* str) const { return m_value.equalIgnoringCase(str); }
+    CSSParserString value() const
+    {
+        CSSParserString ret;
+        ret.initRaw(m_valueDataCharRaw, m_valueLength, m_valueIs8Bit);
+        return ret;
+    }
+    bool valueEqualsIgnoringCase(const char* str) const { return value().equalIgnoringCase(str); }
 
     UChar delimiter() const;
     NumericSign numericSign() const;
@@ -105,13 +110,23 @@ public:
     void serialize(StringBuilder&) const;
 
 private:
+    void initValueFromCSSParserString(const CSSParserString& value)
+    {
+        m_valueLength = value.m_length;
+        m_valueIs8Bit = value.m_is8Bit;
+        m_valueDataCharRaw = value.m_data.charactersRaw;
+    }
     unsigned m_type : 6; // CSSParserTokenType
     unsigned m_blockType : 2; // BlockType
     unsigned m_numericValueType : 1; // NumericValueType
     unsigned m_numericSign : 2; // NumericSign
     unsigned m_unit : 7; // CSSPrimitiveValue::UnitType
 
-    CSSParserString m_value; // FIXME: Pack this better?
+    // m_value... is an unpacked CSSParserString so that we can pack it
+    // tightly with the rest of this object for a smaller object size.
+    bool m_valueIs8Bit : 1;
+    unsigned m_valueLength;
+    const void* m_valueDataCharRaw; // Either LChar* or UChar*.
 
     union {
         UChar m_delimiter;

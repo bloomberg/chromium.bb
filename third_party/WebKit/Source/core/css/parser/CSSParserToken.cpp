@@ -31,8 +31,8 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar c)
 CSSParserToken::CSSParserToken(CSSParserTokenType type, CSSParserString value, BlockType blockType)
     : m_type(type)
     , m_blockType(blockType)
-    , m_value(value)
 {
+    initValueFromCSSParserString(value);
 }
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, NumericValueType numericValueType, NumericSign sign)
@@ -58,16 +58,16 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar32 start, UChar32 e
 CSSParserToken::CSSParserToken(HashTokenType type, CSSParserString value)
     : m_type(HashToken)
     , m_blockType(NotBlock)
-    , m_value(value)
     , m_hashTokenType(type)
 {
+    initValueFromCSSParserString(value);
 }
 
 void CSSParserToken::convertToDimensionWithUnit(CSSParserString unit)
 {
     ASSERT(m_type == NumberToken);
     m_type = DimensionToken;
-    m_value = unit;
+    initValueFromCSSParserString(unit);
     m_unit = CSSPrimitiveValue::fromName(unit);
 }
 
@@ -107,7 +107,7 @@ double CSSParserToken::numericValue() const
 CSSPropertyID CSSParserToken::parseAsUnresolvedCSSPropertyID() const
 {
     ASSERT(m_type == IdentToken);
-    return unresolvedCSSPropertyID(m_value);
+    return unresolvedCSSPropertyID(value());
 }
 
 void CSSParserToken::serialize(StringBuilder& builder) const
