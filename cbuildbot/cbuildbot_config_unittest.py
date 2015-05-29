@@ -22,7 +22,7 @@ class LoadChromeOsConfigTest(cros_test_lib.TestCase):
     new = cbuildbot_config.GetConfig()
 
     self.assertDictEqual(src.GetDefault(),
-                         cbuildbot_config.GetDefault())
+                         new.GetDefault())
 
     #
     # BUG ALERT ON TEST FAILURE

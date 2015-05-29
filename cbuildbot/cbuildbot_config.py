@@ -21,9 +21,3 @@ from chromite.lib import factory
 def GetConfig():
   """Fetch the global cbuildbot config."""
   return config_lib.CreateConfigFromFile(generate_chromeos_config.CONFIG_FILE)
-
-
-def GetDefault():
-  """Fetch the global default BuildConfig."""
-  config = GetConfig()
-  return config.GetDefault()
