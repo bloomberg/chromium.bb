@@ -5,7 +5,7 @@
 #include "components/pdf/renderer/pepper_pdf_host.h"
 
 #include "components/pdf/common/pdf_messages.h"
-#include "components/pdf/renderer/pdf_resource_util.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
@@ -26,7 +26,9 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace pdf {
@@ -37,6 +39,26 @@ namespace {
 // See http://crbug.com/457580.
 base::LazyInstance<base::ThreadLocalPointer<PepperPDFHost::PrintClient>>::Leaky
     g_print_client_tls = LAZY_INSTANCE_INITIALIZER;
+
+std::string GetStringResource(PP_ResourceString string_id) {
+  int resource_id = 0;
+  switch (string_id) {
+    case PP_RESOURCESTRING_PDFGETPASSWORD:
+      resource_id = IDS_PDF_NEED_PASSWORD;
+      break;
+    case PP_RESOURCESTRING_PDFLOADING:
+      resource_id = IDS_PDF_PAGE_LOADING;
+      break;
+    case PP_RESOURCESTRING_PDFLOAD_FAILED:
+      resource_id = IDS_PDF_PAGE_LOAD_FAILED;
+      break;
+    case PP_RESOURCESTRING_PDFPROGRESSLOADING:
+      resource_id = IDS_PDF_PROGRESS_LOADING;
+      break;
+  }
+
+  return l10n_util::GetStringUTF8(resource_id);
+}
 
 }  // namespace
 

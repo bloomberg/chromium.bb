@@ -49,8 +49,6 @@
       'pdf_common',
     ],
     'sources': [
-      'pdf/renderer/pdf_resource_util.cc',
-      'pdf/renderer/pdf_resource_util.h',
       'pdf/renderer/pepper_pdf_host.cc',
       'pdf/renderer/pepper_pdf_host.h',
     ],

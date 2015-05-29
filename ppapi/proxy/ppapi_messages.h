@@ -115,7 +115,6 @@ IPC_ENUM_TRAITS(PP_PrintOutputFormat_Dev)
 IPC_ENUM_TRAITS(PP_PrintScalingOption_Dev)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PrivateDuplexMode_Dev, PP_PRIVATEDUPLEXMODE_LAST)
 IPC_ENUM_TRAITS(PP_PrivateFontCharset)
-IPC_ENUM_TRAITS(PP_ResourceImage)
 IPC_ENUM_TRAITS(PP_ResourceString)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_SessionType, PP_SESSIONTYPE_PERSISTENT_RELEASE)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_TCPSocket_Option,
@@ -2306,18 +2305,6 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_Print)
 
 // Notifies the renderer to save the current PDF.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_SaveAs)
-
-// Requests a resource image for the plugin at a particular scale.
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_PDF_GetResourceImage,
-                     PP_ResourceImage /* image_id */,
-                     float /* scale */)
-
-// Reply for PpapiHostMsg_PDF_GetResourceImage containing the host resource id
-// of the image and a PP_ImageDataDesc which describes the image. Also carries
-// a shared memory handle pointing to the memory containg the image.
-IPC_MESSAGE_CONTROL2(PpapiPluginMsg_PDF_GetResourceImageReply,
-                     ppapi::HostResource /* resource_id */,
-                     PP_ImageDataDesc /* image_data_desc */)
 
 // Called by the plugin when its selection changes.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetSelectedText,

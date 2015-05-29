@@ -14,7 +14,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/shared_impl/var.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"
 
@@ -125,10 +124,6 @@ void PDFResource::SetContentRestriction(int restrictions) {
   Post(RENDERER, PpapiHostMsg_PDF_SetContentRestriction(restrictions));
 }
 
-void PDFResource::HistogramPDFPageCount(int count) {
-  UMA_HISTOGRAM_COUNTS_10000("PDF.PageCount", count);
-}
-
 void PDFResource::UserMetricsRecordAction(const PP_Var& action) {
   scoped_refptr<ppapi::StringVar> action_str(
       ppapi::StringVar::FromPPVar(action));
@@ -162,42 +157,6 @@ PP_Bool PDFResource::IsFeatureEnabled(PP_PDFFeature feature) {
       break;
   }
   return result;
-}
-
-PP_Resource PDFResource::GetResourceImageForScale(PP_ResourceImage image_id,
-                                                  float scale) {
-  IPC::Message reply;
-  ResourceMessageReplyParams reply_params;
-  int32_t result = GenericSyncCall(
-      RENDERER, PpapiHostMsg_PDF_GetResourceImage(image_id, scale), &reply,
-      &reply_params);
-  if (result != PP_OK)
-    return 0;
-
-  HostResource resource;
-  PP_ImageDataDesc image_desc;
-  if (!UnpackMessage<PpapiPluginMsg_PDF_GetResourceImageReply>(
-      reply, &resource, &image_desc)) {
-    return 0;
-  }
-
-  if (resource.is_null())
-    return 0;
-  if (!PPB_ImageData_Shared::IsImageDataDescValid(image_desc))
-    return 0;
-
-  base::SharedMemoryHandle handle;
-  if (!reply_params.TakeSharedMemoryHandleAtIndex(0, &handle))
-    return 0;
-  return (new SimpleImageData(resource, image_desc, handle))->GetReference();
-}
-
-PP_Resource PDFResource::GetResourceImage(PP_ResourceImage image_id) {
-  return GetResourceImageForScale(image_id, 1.0f);
-}
-
-PP_Bool PDFResource::IsOutOfProcess() {
-  return PP_TRUE;
 }
 
 void PDFResource::SetSelectedText(const char* selected_text) {

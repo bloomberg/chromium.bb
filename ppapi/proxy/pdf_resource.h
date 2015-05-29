@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -45,16 +44,11 @@ class PPAPI_PROXY_EXPORT PDFResource
   void DidStartLoading() override;
   void DidStopLoading() override;
   void SetContentRestriction(int restrictions) override;
-  void HistogramPDFPageCount(int count) override;
   void UserMetricsRecordAction(const PP_Var& action) override;
   void HasUnsupportedFeature() override;
   void Print() override;
   void SaveAs() override;
   PP_Bool IsFeatureEnabled(PP_PDFFeature feature) override;
-  PP_Resource GetResourceImageForScale(PP_ResourceImage image_id,
-                                       float scale) override;
-  PP_Resource GetResourceImage(PP_ResourceImage image_id) override;
-  PP_Bool IsOutOfProcess() override;
   void SetSelectedText(const char* selected_text) override;
   void SetLinkUnderCursor(const char* url) override;
   void GetV8ExternalSnapshotData(const char** natives_data_out,

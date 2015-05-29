@@ -6,8 +6,6 @@ import("//build/config/features.gni")
 
 static_library("renderer") {
   sources = [
-    "pdf_resource_util.cc",
-    "pdf_resource_util.h",
     "pepper_pdf_host.cc",
     "pepper_pdf_host.h",
   ]

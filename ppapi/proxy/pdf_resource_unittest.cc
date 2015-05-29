@@ -156,51 +156,5 @@ TEST_F(PDFResourceTest, SaveAs) {
       PpapiHostMsg_PDF_SaveAs::ID, &params, &msg));
 }
 
-TEST_F(PDFResourceTest, GetResourceImageForScale) {
-  const PPB_PDF* pdf_iface = thunk::GetPPB_PDF_Thunk();
-
-  HostResource expected_resource;
-  expected_resource.SetHostResource(pp_instance(), 5);
-  PP_ImageDataDesc expected_desc = {
-      PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-      { 5, 10 },
-      20,
-  };
-  SerializedHandle serialized_handle(SerializedHandle::SHARED_MEMORY);
-  PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(expected_resource,
-                                                     expected_desc);
-  ResourceSyncCallHandler handler(
-      &sink(),
-      PpapiHostMsg_PDF_GetResourceImage::ID,
-      PP_OK,
-      reply_msg);
-  handler.set_serialized_handle(&serialized_handle);
-  sink().AddFilter(&handler);
-
-  PP_Resource resource = pdf_iface->GetResourceImageForScale(pp_instance(),
-      PP_RESOURCEIMAGE_PDF_BUTTON_FTP, 1.0f);
-  {
-    ProxyAutoLock lock;
-    PluginResourceTracker* resource_tracker =
-        static_cast<PluginResourceTracker*>(
-            PluginGlobals::Get()->GetResourceTracker());
-    Resource* resource_object = resource_tracker->GetResource(resource);
-    ImageData* image_data_object = static_cast<ImageData*>(resource_object);
-    PP_ImageDataDesc actual_desc = image_data_object->desc();
-    ASSERT_EQ(expected_desc.format, actual_desc.format);
-    ASSERT_EQ(expected_desc.size.width, actual_desc.size.width);
-    ASSERT_EQ(expected_desc.size.height, actual_desc.size.height);
-    ASSERT_EQ(expected_desc.stride, actual_desc.stride);
-
-    ASSERT_EQ(resource_tracker->PluginResourceForHostResource(
-        expected_resource), resource);
-
-    resource_tracker->ReleaseResource(resource);
-  }
-
-  // Remove the filter or it will be destroyed before the sink() is destroyed.
-  sink().RemoveFilter(&handler);
-}
-
 }  // namespace proxy
 }  // namespace ppapi

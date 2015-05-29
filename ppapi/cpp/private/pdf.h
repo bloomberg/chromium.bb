@@ -24,8 +24,6 @@ class PDF {
 
   static Var GetLocalizedString(const InstanceHandle& instance,
                                 PP_ResourceString string_id);
-  static ImageData GetResourceImage(const InstanceHandle& instance,
-                                    PP_ResourceImage image_id);
   static PP_Resource GetFontFileWithFallback(
       const InstanceHandle& instance,
       const PP_BrowserFont_Trusted_Description* description,
@@ -44,8 +42,6 @@ class PDF {
   static void DidStopLoading(const InstanceHandle& instance);
   static void SetContentRestriction(const InstanceHandle& instance,
                                     int restrictions);
-  static void HistogramPDFPageCount(const InstanceHandle& instance,
-                                    int count);
   static void UserMetricsRecordAction(const InstanceHandle& instance,
                                       const Var& action);
   static void HasUnsupportedFeature(const InstanceHandle& instance);
@@ -53,12 +49,6 @@ class PDF {
   static void Print(const InstanceHandle& instance);
   static bool IsFeatureEnabled(const InstanceHandle& instance,
                                PP_PDFFeature feature);
-  static ImageData GetResourceImageForScale(const InstanceHandle& instance,
-                                            PP_ResourceImage image_id,
-                                            float scale);
-  static Var ModalPromptForPassword(const InstanceHandle& instance,
-                                    Var message);
-  static bool IsOutOfProcess(const InstanceHandle& instance);
   static void SetSelectedText(const InstanceHandle& instance,
                               const char* selected_text);
   static void SetLinkUnderCursor(const InstanceHandle& instance,

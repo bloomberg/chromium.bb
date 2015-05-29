@@ -37,17 +37,6 @@ Var PDF::GetLocalizedString(const InstanceHandle& instance,
 }
 
 // static
-ImageData PDF::GetResourceImage(const InstanceHandle& instance,
-                                PP_ResourceImage image_id) {
-  if (has_interface<PPB_PDF>()) {
-    return ImageData(PASS_REF,
-                     get_interface<PPB_PDF>()->GetResourceImage(
-                         instance.pp_instance(), image_id));
-  }
-  return ImageData();
-}
-
-// static
 PP_Resource PDF::GetFontFileWithFallback(
     const InstanceHandle& instance,
     const PP_BrowserFont_Trusted_Description* description,
@@ -106,14 +95,6 @@ void PDF::SetContentRestriction(const InstanceHandle& instance,
 }
 
 // static
-void PDF::HistogramPDFPageCount(const InstanceHandle& instance,
-                                int count) {
-  if (has_interface<PPB_PDF>())
-    get_interface<PPB_PDF>()->HistogramPDFPageCount(instance.pp_instance(),
-                                                    count);
-}
-
-// static
 void PDF::UserMetricsRecordAction(const InstanceHandle& instance,
                                   const Var& action) {
   if (has_interface<PPB_PDF>()) {
@@ -146,39 +127,6 @@ bool PDF::IsFeatureEnabled(const InstanceHandle& instance,
   if (has_interface<PPB_PDF>())
     return PP_ToBool(get_interface<PPB_PDF>()->IsFeatureEnabled(
         instance.pp_instance(), feature));
-  return false;
-}
-
-// static
-ImageData PDF::GetResourceImageForScale(const InstanceHandle& instance,
-                                        PP_ResourceImage image_id,
-                                        float scale) {
-  if (has_interface<PPB_PDF>()) {
-    return ImageData(PASS_REF,
-                     get_interface<PPB_PDF>()->GetResourceImageForScale(
-                         instance.pp_instance(), image_id, scale));
-  }
-  return ImageData();
-}
-
-// static
-Var PDF::ModalPromptForPassword(const InstanceHandle& instance,
-                                Var message) {
-  if (has_interface<PPB_PDF>()) {
-    return Var(PASS_REF,
-               get_interface<PPB_PDF>()->ModalPromptForPassword(
-                   instance.pp_instance(),
-                   message.pp_var()));
-  }
-  return Var();
-}
-
-// static
-bool PDF::IsOutOfProcess(const InstanceHandle& instance) {
-  if (has_interface<PPB_PDF>()) {
-    return PP_ToBool(get_interface<PPB_PDF>()->IsOutOfProcess(
-        instance.pp_instance()));
-  }
   return false;
 }
 

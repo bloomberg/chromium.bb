@@ -23,14 +23,6 @@ PP_Var GetLocalizedString(PP_Instance instance, PP_ResourceString string_id) {
   return enter.functions()->GetLocalizedString(string_id);
 }
 
-PP_Resource GetResourceImage(PP_Instance instance,
-                             PP_ResourceImage image_id) {
-  EnterInstanceAPI<PPB_PDF_API> enter(instance);
-  if (enter.failed())
-    return 0;
-  return enter.functions()->GetResourceImage(image_id);
-}
-
 PP_Resource GetFontFileWithFallback(
     PP_Instance instance,
     const PP_BrowserFont_Trusted_Description* description,
@@ -87,12 +79,6 @@ void SetContentRestriction(PP_Instance instance, int restrictions) {
     enter.functions()->SetContentRestriction(restrictions);
 }
 
-void HistogramPDFPageCount(PP_Instance instance, int count) {
-  EnterInstanceAPI<PPB_PDF_API> enter(instance);
-  if (enter.succeeded())
-    enter.functions()->HistogramPDFPageCount(count);
-}
-
 void UserMetricsRecordAction(PP_Instance instance, PP_Var action) {
   EnterInstanceAPI<PPB_PDF_API> enter(instance);
   if (enter.succeeded())
@@ -124,29 +110,6 @@ PP_Bool IsFeatureEnabled(PP_Instance instance, PP_PDFFeature feature) {
   return enter.functions()->IsFeatureEnabled(feature);
 }
 
-PP_Resource GetResourceImageForScale(PP_Instance instance,
-                                     PP_ResourceImage image_id,
-                                     float scale) {
-  EnterInstanceAPI<PPB_PDF_API> enter(instance);
-  if (enter.failed())
-    return 0;
-  return enter.functions()->GetResourceImageForScale(image_id, scale);
-}
-
-PP_Var ModalPromptForPassword(PP_Instance instance_id,
-                              PP_Var message) {
-  // TODO(raymes): Implement or remove this function.
-  NOTIMPLEMENTED();
-  return PP_MakeUndefined();
-}
-
-PP_Bool IsOutOfProcess(PP_Instance instance) {
-  EnterInstanceAPI<PPB_PDF_API> enter(instance);
-  if (enter.failed())
-    return PP_FALSE;
-  return enter.functions()->IsOutOfProcess();
-}
-
 void SetSelectedText(PP_Instance instance,
                      const char* selected_text) {
   EnterInstanceAPI<PPB_PDF_API> enter(instance);
@@ -175,22 +138,17 @@ void GetV8ExternalSnapshotData(PP_Instance instance,
 
 const PPB_PDF g_ppb_pdf_thunk = {
   &GetLocalizedString,
-  &GetResourceImage,
   &GetFontFileWithFallback,
   &GetFontTableForPrivateFontFile,
   &SearchString,
   &DidStartLoading,
   &DidStopLoading,
   &SetContentRestriction,
-  &HistogramPDFPageCount,
   &UserMetricsRecordAction,
   &HasUnsupportedFeature,
   &SaveAs,
   &Print,
   &IsFeatureEnabled,
-  &GetResourceImageForScale,
-  &ModalPromptForPassword,
-  &IsOutOfProcess,
   &SetSelectedText,
   &SetLinkUnderCursor,
   &GetV8ExternalSnapshotData,
