@@ -60,6 +60,9 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   void SetClock(scoped_ptr<base::Clock> clock);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DefaultMemorySSLHostStateDelegateTest, AfterRestart);
+  FRIEND_TEST_ALL_PREFIXES(DefaultMemorySSLHostStateDelegateTest,
+                           QueryPolicyExpired);
   FRIEND_TEST_ALL_PREFIXES(ForgetInstantlySSLHostStateDelegateTest,
                            MakeAndForgetException);
   FRIEND_TEST_ALL_PREFIXES(RememberSSLHostStateDelegateTest, AfterRestart);

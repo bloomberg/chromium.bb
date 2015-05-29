@@ -37,6 +37,7 @@ const char kForgetAtSessionEnd[] = "-1";
 const char kForgetInstantly[] = "0";
 const char kDeltaSecondsString[] = "86400";
 const uint64_t kDeltaOneDayInSeconds = UINT64_C(86400);
+const uint64_t kDeltaOneWeekInSeconds = UINT64_C(604800);
 
 scoped_refptr<net::X509Certificate> GetOkCert() {
   return net::ImportCertFromFile(net::GetTestCertsDirectory(), kOkCertFile);
@@ -203,9 +204,20 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
   EXPECT_TRUE(state->DidHostRunInsecureContent("example.com", 42));
 }
 
+class ForgetAtSessionEndSSLHostStateDelegateTest
+    : public ChromeSSLHostStateDelegateTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ChromeSSLHostStateDelegateTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kRememberCertErrorDecisions,
+                                    kForgetAtSessionEnd);
+  }
+};
+
 // QueryPolicyExpired unit tests to make sure that if a certificate decision has
 // expired, the return value from QueryPolicy returns the correct vaule.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, PRE_QueryPolicyExpired) {
+IN_PROC_BROWSER_TEST_F(ForgetAtSessionEndSSLHostStateDelegateTest,
+                       PRE_QueryPolicyExpired) {
   scoped_refptr<net::X509Certificate> cert = GetOkCert();
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -234,7 +246,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, PRE_QueryPolicyExpired) {
 // Since this is being checked on a browser instance that expires security
 // decisions after restart, the test needs to  wait until after a restart to
 // verify that the expiration state is correct.
-IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, QueryPolicyExpired) {
+IN_PROC_BROWSER_TEST_F(ForgetAtSessionEndSSLHostStateDelegateTest,
+                       QueryPolicyExpired) {
   scoped_refptr<net::X509Certificate> cert = GetOkCert();
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -373,6 +386,130 @@ IN_PROC_BROWSER_TEST_F(ForGetSSLHostStateDelegateTest, AfterRestart) {
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
                                net::CERT_STATUS_DATE_INVALID, &unused_value));
+}
+
+// Tests the default certificate memory, which is one week.
+class DefaultMemorySSLHostStateDelegateTest
+    : public ChromeSSLHostStateDelegateTest {};
+
+IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
+                       PRE_AfterRestart) {
+  scoped_refptr<net::X509Certificate> cert = GetOkCert();
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
+  bool unused_value;
+
+  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
+            state->QueryPolicy(kWWWGoogleHost, *cert,
+                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+}
+
+IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest, AfterRestart) {
+  scoped_refptr<net::X509Certificate> cert = GetOkCert();
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
+  bool unused_value;
+
+  // chrome_state takes ownership of this clock
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  ChromeSSLHostStateDelegate* chrome_state =
+      static_cast<ChromeSSLHostStateDelegate*>(state);
+  chrome_state->SetClock(scoped_ptr<base::Clock>(clock));
+
+  // Start the clock at standard system time.
+  clock->SetNow(base::Time::NowFromSystemTime());
+
+  // This should only pass if the cert was allowed before the test was restart
+  // and thus has now been rememebered across browser restarts.
+  EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
+            state->QueryPolicy(kWWWGoogleHost, *cert,
+                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+
+  // Simulate the clock advancing by one day, which is less than the expiration
+  // length.
+  clock->Advance(base::TimeDelta::FromSeconds(kDeltaOneDayInSeconds + 1));
+
+  // The cert should still be |ALLOWED| because the default expiration length
+  // has not passed yet.
+  EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
+            state->QueryPolicy(kWWWGoogleHost, *cert,
+                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+
+  // Now simulate the clock advancing by one week, which is past the expiration
+  // point.
+  clock->Advance(base::TimeDelta::FromSeconds(kDeltaOneWeekInSeconds -
+                                              kDeltaOneDayInSeconds + 1));
+
+  // The cert should now be |DENIED| because the specified delta has passed.
+  EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
+            state->QueryPolicy(kWWWGoogleHost, *cert,
+                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+}
+
+// The same test as ChromeSSLHostStateDelegateTest.QueryPolicyExpired but now
+// applied to a browser context that expires based on time, not restart. This
+// unit tests to make sure that if a certificate decision has expired, the
+// return value from QueryPolicy returns the correct vaule.
+IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
+                       QueryPolicyExpired) {
+  scoped_refptr<net::X509Certificate> cert = GetOkCert();
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
+  bool expired_previous_decision;
+
+  // chrome_state takes ownership of this clock
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  ChromeSSLHostStateDelegate* chrome_state =
+      static_cast<ChromeSSLHostStateDelegate*>(state);
+  chrome_state->SetClock(scoped_ptr<base::Clock>(clock));
+
+  // Start the clock at standard system time but do not advance at all to
+  // emphasize that instant forget works.
+  clock->SetNow(base::Time::NowFromSystemTime());
+
+  // The certificate has never been seen before, so it should be UNKONWN and
+  // should also indicate that it hasn't expired.
+  EXPECT_EQ(
+      content::SSLHostStateDelegate::DENIED,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+                         &expired_previous_decision));
+  EXPECT_FALSE(expired_previous_decision);
+
+  // After allowing the certificate, a query should say that it is allowed and
+  // also specify that it hasn't expired.
+  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  EXPECT_EQ(
+      content::SSLHostStateDelegate::ALLOWED,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+                         &expired_previous_decision));
+  EXPECT_FALSE(expired_previous_decision);
+
+  // Simulate the clock advancing by one week, the default expiration time.
+  clock->Advance(base::TimeDelta::FromSeconds(kDeltaOneWeekInSeconds + 1));
+
+  // The decision expiration time has come, so it should indicate that the
+  // certificate and error are DENIED but also that they expired since the last
+  // query.
+  EXPECT_EQ(
+      content::SSLHostStateDelegate::DENIED,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+                         &expired_previous_decision));
+  EXPECT_TRUE(expired_previous_decision);
+
+  // However, with a new query, it should indicate that no new expiration has
+  // occurred.
+  EXPECT_EQ(
+      content::SSLHostStateDelegate::DENIED,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+                         &expired_previous_decision));
+  EXPECT_FALSE(expired_previous_decision);
 }
 
 // Tests to make sure that if the remember value is set to 0, any decisions made

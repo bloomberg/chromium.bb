@@ -36,6 +36,10 @@ namespace {
 // the end of the current session.
 const int64 kForgetAtSessionEndSwitchValue = -1;
 
+// The default expiration is one week, unless overidden by an experiment group
+// or a flag. See https://crbug.com/487270.
+const uint64_t kDeltaDefaultExpirationInSeconds = UINT64_C(604800);
+
 // Experiment information
 const char kRememberCertificateErrorDecisionsFieldTrialName[] =
     "RememberCertificateErrorDecisions";
@@ -91,7 +95,7 @@ int64 GetExpirationDelta() {
         expiration_delta < kForgetAtSessionEndSwitchValue) {
       LOG(ERROR) << "Failed to parse the certificate error decision "
                  << "memory length: " << switch_value;
-      return kForgetAtSessionEndSwitchValue;
+      return kDeltaDefaultExpirationInSeconds;
     }
 
     return expiration_delta;
@@ -115,7 +119,7 @@ int64 GetExpirationDelta() {
     }
   }
 
-  return kForgetAtSessionEndSwitchValue;
+  return kDeltaDefaultExpirationInSeconds;
 }
 
 std::string GetKey(const net::X509Certificate& cert, net::CertStatus error) {
