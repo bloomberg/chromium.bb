@@ -140,7 +140,7 @@ MathJax.HTML;
  * Creates an HTML element from a node tag, an object with attributes and an
  * array of text content.
  * @param {string} tag
- * @param {Object<string, string>} attribs
+ * @param {Object<string>} attribs
  * @param {Array<string>} text
  */
 MathJax.HTML.Element = function(tag, attribs, text) { };

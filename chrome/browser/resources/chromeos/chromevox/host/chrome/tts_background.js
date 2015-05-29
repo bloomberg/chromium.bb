@@ -128,11 +128,11 @@ cvox.TtsBackground = function(opt_enableMath) {
 
   try {
     /**
-     * @type {Object<string, string>}
+     * @type {Object<string>}
      * @private
      * @const
      */
-    this.PHONETIC_MAP_ = /** @type {Object<string, string>} */(
+    this.PHONETIC_MAP_ = /** @type {Object<string>} */(
         JSON.parse(cvox.ChromeVox.msgs.getMsg('phonetic_map')));
   } catch (e) {
     console.log('Error; unable to parse phonetic map msg.');

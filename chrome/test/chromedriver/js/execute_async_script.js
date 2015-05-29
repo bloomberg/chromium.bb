@@ -22,7 +22,7 @@ var ASYNC_INFO_KEY = '$chrome_asyncScriptInfo';
 /**
 * Return the information of asynchronous script execution.
 *
-* @return {Object<string, ?>} Information of asynchronous script execution.
+* @return {Object<?>} Information of asynchronous script execution.
 */
 function getAsyncScriptInfo() {
   if (!(ASYNC_INFO_KEY in document))

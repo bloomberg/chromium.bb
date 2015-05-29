@@ -51,7 +51,7 @@ cvox.Memoize = function() {
  * to function result. This variable is null when we're out of scope, and it's
  * a map from string to WeakMap to result when we're in scope.
  *
- * @type {?Object<string, WeakMap<Node, *> >}
+ * @type {?Object<WeakMap<Node, *> >}
  * @private
  */
 cvox.Memoize.nodeMap_ = null;

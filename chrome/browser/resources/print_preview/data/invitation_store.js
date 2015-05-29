@@ -22,14 +22,14 @@ cr.define('print_preview', function() {
 
     /**
      * Maps user account to the list of invitations for this account.
-     * @private {!Object<string, !Array<!print_preview.Invitation>>}
+     * @private {!Object<!Array<!print_preview.Invitation>>}
      */
     this.invitations_ = {};
 
     /**
      * Maps user account to the flag whether the invitations for this account
      * were successfully loaded.
-     * @private {!Object<string, print_preview.InvitationStore.LoadStatus_>}
+     * @private {!Object<print_preview.InvitationStore.LoadStatus_>}
      */
     this.loadStatus_ = {};
 

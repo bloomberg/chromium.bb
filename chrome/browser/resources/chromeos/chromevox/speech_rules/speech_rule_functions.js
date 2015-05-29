@@ -24,7 +24,7 @@ cvox.SpeechRuleFunctions = function() { };
  * Private superclass of all the custom function stores.
  * @constructor
  * @param {string} prefix A prefix string for the function names.
- * @param {Object<string, Function>} store Storage object.
+ * @param {Object<Function>} store Storage object.
  * @private
  */
 cvox.SpeechRuleFunctions.Store_ = function(prefix, store) {
@@ -70,7 +70,7 @@ cvox.SpeechRuleFunctions.CustomQuery;
  */
 cvox.SpeechRuleFunctions.CustomQueries = function() {
   var store =
-    /** @type {Object<string, cvox.SpeechRuleFunctions.CustomQuery>} */ ({});
+    /** @type {Object<cvox.SpeechRuleFunctions.CustomQuery>} */ ({});
   goog.base(this, 'CQF', store);
 };
 goog.inherits(cvox.SpeechRuleFunctions.CustomQueries,
@@ -90,7 +90,7 @@ cvox.SpeechRuleFunctions.CustomString;
  */
 cvox.SpeechRuleFunctions.CustomStrings = function() {
   var store =
-    /** @type {Object<string, cvox.SpeechRuleFunctions.CustomString>} */ ({});
+    /** @type {Object<cvox.SpeechRuleFunctions.CustomString>} */ ({});
   goog.base(this, 'CSF', store);
 };
 goog.inherits(cvox.SpeechRuleFunctions.CustomStrings,
@@ -110,7 +110,7 @@ cvox.SpeechRuleFunctions.ContextFunction;
  */
 cvox.SpeechRuleFunctions.ContextFunctions = function() {
   var store =
-    /** @type {Object<string, cvox.SpeechRuleFunctions.ContextFunction>} */
+    /** @type {Object<cvox.SpeechRuleFunctions.ContextFunction>} */
   ({});
   goog.base(this, 'CTXF', store);
 };

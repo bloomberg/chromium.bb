@@ -548,8 +548,8 @@ cvox.TraverseUtil.getPreviousWord = function(startCursor, endCursor,
  *     current word should break.
  * @param {Array<Element>} elementsEntered Any HTML elements entered.
  * @param {Array<Element>} elementsLeft Any HTML elements left.
- * @param {Object<string, boolean>} breakTags Associative array of tags
- *     that should break.
+ * @param {Object<boolean>} breakTags Associative array of tags that should
+ *     break.
  * @return {boolean} True if elementsEntered or elementsLeft include an
  *     element with one of these tags.
  */
@@ -586,8 +586,8 @@ cvox.TraverseUtil.includesBreakTagOrSkippedNode = function(
  *     sentence.  On exit, will point to the end of the returned string.
  * @param {Array<Element>} elementsEntered Any HTML elements entered.
  * @param {Array<Element>} elementsLeft Any HTML elements left.
- * @param {Object<string, boolean>} breakTags Associative array of tags
- *     that should break the sentence.
+ * @param {Object<boolean>} breakTags Associative array of tags that should
+ *     break the sentence.
  * @return {?string} The next sentence, or null if the bottom of the
  *     document has been reached.
  */
@@ -612,8 +612,8 @@ cvox.TraverseUtil.getNextSentence = function(
  * @param {cvox.Cursor} endCursor On exit, the end of the returned string.
  * @param {Array<Element>} elementsEntered Any HTML elements entered.
  * @param {Array<Element>} elementsLeft Any HTML elements left.
- * @param {Object<string, boolean>} breakTags Associative array of tags
- *     that should break the sentence.
+ * @param {Object<boolean>} breakTags Associative array of tags that should
+ *     break the sentence.
  * @return {?string} The previous sentence, or null if the bottom of the
  *     document has been reached.
  */
@@ -638,8 +638,8 @@ cvox.TraverseUtil.getPreviousSentence = function(
  *     line.  On exit, will point to the end of the returned string.
  * @param {Array<Element>} elementsEntered Any HTML elements entered.
  * @param {Array<Element>} elementsLeft Any HTML elements left.
- * @param {Object<string, boolean>} breakTags Associative array of tags
- *     that should break the line.
+ * @param {Object<boolean>} breakTags Associative array of tags that should
+ *     break the line.
  * @return {?string} The next line, or null if the bottom of the
  *     document has been reached.
  */
@@ -684,9 +684,9 @@ cvox.TraverseUtil.getNextLine = function(
  * @param {cvox.Cursor} endCursor On exit, the end of the returned string.
  * @param {Array<Element>} elementsEntered Any HTML elements entered.
  * @param {Array<Element>} elementsLeft Any HTML elements left.
- * @param {Object<string, boolean>} breakTags Associative array of tags
- *     that should break the line.
- *  @return {?string} The previous line, or null if the bottom of the
+ * @param {Object<boolean>} breakTags Associative array of tags that should
+ *     break the line.
+ * @return {?string} The previous line, or null if the bottom of the
  *     document has been reached.
  */
 cvox.TraverseUtil.getPreviousLine = function(

@@ -96,7 +96,7 @@ cvox.BrailleKeyEvent.keyCodeToCharValue = function(keyCode) {
 
 /**
  * Map from DOM level 4 key codes to legacy numeric key codes.
- * @private {Object<string, number>}
+ * @private {Object<number>}
  */
 cvox.BrailleKeyEvent.legacyKeyCodeMap_ = {
   'Backspace': 8,

@@ -38,7 +38,7 @@ TtsExtension.prototype = {
    * A mapping from language and gender to voice name, hardcoded for now
    * until the speech synthesis server capabilities response provides this.
    * The key of this map is of the form '<lang>-<gender>'.
-   * @type {Object<string, string>}
+   * @type {Object<string>}
    * @private
    */
   LANG_AND_GENDER_TO_VOICE_NAME_: {
@@ -68,7 +68,7 @@ TtsExtension.prototype = {
    * A mapping from voice name to language and gender, derived from the
    * manifest file.  This is used in case the speech synthesis request
    * specifies a voice name but doesn't specify a language code or gender.
-   * @type {Object<string, {lang: string, gender: string}>}
+   * @type {Object<{lang: string, gender: string}>}
    * @private
    */
   voiceNameToLangAndGender_: {},

@@ -14,7 +14,7 @@ goog.provide('cvox.Msgs');
  */
 cvox.Msgs = function() {
   /**
-   * @type {Object<string, string>}
+   * @type {Object<string>}
    * @private
    */
   this.localeNameDict_ = null;
@@ -98,7 +98,7 @@ cvox.Msgs.prototype.getNumber = function(num) {
  */
 cvox.Msgs.prototype.getLocaleDisplayName = function(locale) {
   if (!this.localeNameDict_) {
-    this.localeNameDict_ = /** @type {Object<string, string>} */(
+    this.localeNameDict_ = /** @type {Object<string>} */(
         JSON.parse(this.getMsg('locale_dict')));
   }
   var name = this.localeNameDict_[locale];

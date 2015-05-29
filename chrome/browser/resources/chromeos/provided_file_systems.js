@@ -129,7 +129,7 @@ Polymer('request-timeline', {
 
   /**
    * Observes changes in the model.
-   * @type {Object<string, string>}
+   * @type {Object<string>}
    */
   observe: {
     'model.length': 'chartUpdate'

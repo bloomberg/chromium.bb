@@ -75,7 +75,7 @@ var testF;
 /**
  * Keeps track of whether a typedef has been generated for each test
  * fixture.
- * @type {Object<string, string>}
+ * @type {Object<string>}
  */
 var typedeffedCppFixtures = {};
 
@@ -181,14 +181,14 @@ function includeFileToPaths(includeFile) {
 /**
  * Maps object names to the path to the file that provides them.
  * Populated from the |depsFile| if any.
- * @type {Object<string, string>}
+ * @type {Object<string>}
  */
 var dependencyProvidesToPaths = {};
 
 /**
  * Maps dependency path names to object names required by the file.
  * Populated from the |depsFile| if any.
- * @type {Object<string, Array<string>>}
+ * @type {Object<Array<string>>}
  */
 var dependencyPathsToRequires = {};
 

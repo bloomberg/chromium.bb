@@ -42,7 +42,7 @@ cvox.OptionsPage.prefs;
 /**
  * A mapping from keycodes to their human readable text equivalents.
  * This is initialized in cvox.OptionsPage.init for internationalization.
- * @type {Object<string, string>}
+ * @type {Object<string>}
  */
 cvox.OptionsPage.KEYCODE_TO_TEXT = {
 };
@@ -50,7 +50,7 @@ cvox.OptionsPage.KEYCODE_TO_TEXT = {
 /**
  * A mapping from human readable text to keycode values.
  * This is initialized in cvox.OptionsPage.init for internationalization.
- * @type {Object<string, string>}
+ * @type {Object<string>}
  */
 cvox.OptionsPage.TEXT_TO_KEYCODE = {
 };

@@ -22,7 +22,7 @@ function createElementFromText(elementName, text, opt_attributes) {
 /**
  * Creates an element with |tagName| containing the content |dict|.
  * @param {string} elementName Name of the new element to be created.
- * @param {Object<string, string>} dict Dictionary to be contained in the new
+ * @param {Object<string>} dict Dictionary to be contained in the new
  * element.
  * @return {HTMLElement} The newly created HTML element.
  */

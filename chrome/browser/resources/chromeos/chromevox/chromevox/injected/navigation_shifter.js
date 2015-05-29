@@ -70,7 +70,7 @@ goog.inherits(cvox.NavigationShifter, cvox.AbstractShifter);
 // These "const" literals may be used, but no order may be assumed
 // between them by any outside callers.
 /**
- * @type {Object<string, number>}
+ * @type {Object<number>}
  */
 cvox.NavigationShifter.GRANULARITIES = {
   'CHARACTER': 0,

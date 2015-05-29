@@ -108,7 +108,7 @@ cvox.SemanticAttr = function() {
   // record pairs of opening/closing and top/bottom fences.
   /**
    * Mapping opening to closing fences.
-   * @type {Object<string, string>}
+   * @type {Object<string>}
    */
   this.openClosePairs =
       {
@@ -137,7 +137,7 @@ cvox.SemanticAttr = function() {
       };
   /**
    * Mapping top to bottom fences.
-   * @type {Object<string, string>}
+   * @type {Object<string>}
    */
   this.topBottomPairs =
       {

@@ -192,8 +192,8 @@ function buildCardSet() {
    *     of the card.
    * @param {CombinedCard} combinedCard Combined cards with
    *     |chromeNotificationId|.
-   * @param {Object<string, StoredNotificationGroup>} notificationGroups
-   *     Map from group name to group information.
+   * @param {Object<StoredNotificationGroup>} notificationGroups Map from group
+   *     name to group information.
    * @param {function(ReceivedNotification)=} onCardShown Optional parameter
    *     called when each card is shown.
    * @return {(NotificationDataEntry|undefined)} Notification data entry for
@@ -283,8 +283,8 @@ function buildCardSet() {
    *     of the card.
    * @param {NotificationDataEntry} notificationData Stored notification entry
    *     for this card.
-   * @param {Object<string, StoredNotificationGroup>} notificationGroups
-   *     Map from group name to group information.
+   * @param {Object<StoredNotificationGroup>} notificationGroups Map from group
+   *     name to group information.
    * @return {{
    *   dismissals: Array<DismissalData>,
    *   notificationData: (NotificationDataEntry|undefined)
@@ -325,8 +325,8 @@ function buildCardSet() {
    * Removes card information from |notificationGroups|.
    * @param {ChromeNotificationId} chromeNotificationId chrome.notifications ID
    *     of the card.
-   * @param {Object<string, StoredNotificationGroup>} notificationGroups
-   *     Map from group name to group information.
+   * @param {Object<StoredNotificationGroup>} notificationGroups Map from group
+   *     name to group information.
    */
   function clearCardFromGroups(chromeNotificationId, notificationGroups) {
     console.log('cardManager.clearCardFromGroups ' + chromeNotificationId);
@@ -352,7 +352,7 @@ function buildCardSet() {
         fillFromChromeLocalStorage({
           /** @type {Object<ChromeNotificationId, NotificationDataEntry>} */
           notificationsData: {},
-          /** @type {Object<string, StoredNotificationGroup>} */
+          /** @type {Object<StoredNotificationGroup>} */
           notificationGroups: {}
         }).then(function(items) {
           console.log('cardManager.onAlarm.get ' + JSON.stringify(items));

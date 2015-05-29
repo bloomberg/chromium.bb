@@ -44,8 +44,8 @@ cvox.ChromeVoxKbHandler.loadKeyToFunctionsTable = function(
  * Converts the key bindings table into an array that is sorted by the lengths
  * of the key bindings. After the sort, the key bindings that describe single
  * keys will come before the key bindings that describe multiple keys.
- * @param {Object<string, string>} keyToFunctionsTable Contains each key
- * binding and its associated function name.
+ * @param {Object<string>} keyToFunctionsTable Contains each key binding and its
+ * associated function name.
  * @return {Array<Array<string>>} The sorted key bindings table in
  * array form. Each entry in the array is itself an array containing the
  * key binding and its associated function name.

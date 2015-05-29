@@ -92,8 +92,8 @@ cvox.ChromeVoxTester.getUtteranceList = function() {
 };
 
 /**
- * @type {Object<string, number>} Map from a navigation strategy name
- *     to the Navigation Manager strategy enum.
+ * @type {Object<number>} Map from a navigation strategy name to the Navigation
+ *     Manager strategy enum.
  */
 cvox.ChromeVoxTester.STRATEGY_MAP = {
   'lineardom': cvox.NavigationShifter.GRANULARITIES.OBJECT,

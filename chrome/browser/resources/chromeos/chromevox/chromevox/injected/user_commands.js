@@ -55,7 +55,7 @@ cvox.ChromeVoxUserCommands.init_ = function() {
 
 
 /**
- * @type {!Object<string, function(Object=): boolean>}
+ * @type {!Object<function(Object=): boolean>}
  */
 cvox.ChromeVoxUserCommands.commands;
 

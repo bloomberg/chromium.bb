@@ -410,10 +410,10 @@ cr.define('network.status', function() {
 
   /**
    * Groups networks by type.
-   * @param {Object<string, Object>} networkByID A map from network ID to
-   * network properties.
-   * @return {Object<string, Array<string>>} A map from network type to the
-   * list of IDs of networks of that type.
+   * @param {Object<Object>} networkByID A map from network ID to network
+   *     properties.
+   * @return {Object<Array<string>>} A map from network type to the list of IDs
+   *     of networks of that type.
    */
   function createNetworkIDsByType(networkByID) {
     var byType = {};
@@ -454,26 +454,26 @@ cr.define('network.status', function() {
 
       /**
        * The set of technologies shown to the user.
-       * @type {Object<string, boolean>}
+       * @type {Object<boolean>}
        */
       this.technologies_ = {};
 
       /**
        * A map from network type to the array of IDs of network of that type.
-       * @type {Object<string, Array<string>>}
+       * @type {Object<Array<string>>}
        */
       this.networkIDsByType_ = {};
 
       /**
        * A map from network ID to the network's properties.
-       * @type {Object<string, Object>}
+       * @type {Object<Object>}
        */
       this.networkByID_ = {};
 
       /**
        * A map from network ID to the network's position in the last received
        * network list.
-       * @type {Object<string, number>}
+       * @type {Object<number>}
        */
       this.networkIndexByID_ = {};
 

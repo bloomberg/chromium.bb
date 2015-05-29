@@ -37,7 +37,7 @@ cvox.LibLouis = function(nmfPath, opt_tablesDir) {
 
   /**
    * Pending RPC callbacks. Maps from message IDs to callbacks.
-   * @private {!Object<string, function(!Object)>}
+   * @private {!Object<function(!Object)>}
    */
   this.pendingRpcCallbacks_ = {};
 

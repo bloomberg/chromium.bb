@@ -356,7 +356,7 @@ function Enroller(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   /** @private {boolean} */
   this.done_ = false;
 
-  /** @private {Object<string, string>} */
+  /** @private {Object<string>} */
   this.browserData_ = {};
   /** @private {Array<EnrollHelperChallenge>} */
   this.encodedEnrollChallenges_ = [];

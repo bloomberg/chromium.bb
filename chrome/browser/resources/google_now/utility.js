@@ -696,7 +696,7 @@ function buildTaskManager(areConflicting) {
   /**
    * Queue of scheduled tasks. The first element, if present, corresponds to the
    * currently running task.
-   * @type {Array<Object<string, function()>>}
+   * @type {Array<Object<function()>>}
    */
   var queue = [];
 

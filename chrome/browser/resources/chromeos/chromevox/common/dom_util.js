@@ -949,8 +949,7 @@ cvox.DomUtil.getImageTitle = function(node) {
  * the complete set of ids they map to, so that we can skip elements that
  * just label other elements and not double-speak them. We cache this
  * result and then throw it away at the next event loop.
- * @return {Object<string, boolean>} Set of all ids that are mapped
- *     by aria-labelledby.
+ * @return {Object<boolean>} Set of all ids that are mapped by aria-labelledby.
  */
 cvox.DomUtil.getLabelledByTargets = function() {
   if (cvox.labelledByTargets) {
@@ -2262,8 +2261,8 @@ cvox.DomUtil.toArray = function(nodeList) {
 /**
  * Creates a new element with the same attributes and no children.
  * @param {Node|Text} node A node to clone.
- * @param {Object<string, boolean>} skipattrs Set the attribute to true to
- * skip it during cloning.
+ * @param {Object<boolean>} skipattrs Set the attribute to true to skip it
+ *     during cloning.
  * @return {Node|Text} The cloned node.
  */
 cvox.DomUtil.shallowChildlessClone = function(node, skipattrs) {
@@ -2290,8 +2289,8 @@ cvox.DomUtil.shallowChildlessClone = function(node, skipattrs) {
 /**
  * Creates a new element with the same attributes and clones of children.
  * @param {Node|Text} node A node to clone.
- * @param {Object<string, boolean>} skipattrs Set the attribute to true to
- * skip it during cloning.
+ * @param {Object<boolean>} skipattrs Set the attribute to true to skip it
+ *     during cloning.
  * @return {Node|Text} The cloned node.
  */
 cvox.DomUtil.deepClone = function(node, skipattrs) {

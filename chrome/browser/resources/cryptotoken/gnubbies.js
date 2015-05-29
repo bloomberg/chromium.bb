@@ -30,7 +30,7 @@ var GnubbyNamespaceImpl;
  * @constructor
  */
 function Gnubbies() {
-  /** @private {Object<string, Array>} */
+  /** @private {Object<Array>} */
   this.devs_ = {};
   this.pendingEnumerate = [];  // clients awaiting an enumerate
   /**
@@ -39,11 +39,11 @@ function Gnubbies() {
    * @private {Array<string>}
    */
   this.namespaces_ = [];
-  /** @private {Object<string, GnubbyNamespaceImpl>} */
+  /** @private {Object<GnubbyNamespaceImpl>} */
   this.impl_ = {};
-  /** @private {Object<string, Object<number, !GnubbyDevice>>} */
+  /** @private {Object<Object<number, !GnubbyDevice>>} */
   this.openDevs_ = {};
-  /** @private {Object<string, Object<number, *>>} */
+  /** @private {Object<Object<number, *>>} */
   this.pendingOpens_ = {};  // clients awaiting an open
 }
 

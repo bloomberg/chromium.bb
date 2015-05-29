@@ -194,7 +194,7 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
 /**
  * Returns the color to display string with, depending on whether title is
  * displayed, the current theme, and URL parameters.
- * @param {Object<string, string>} params URL parameters specifying style.
+ * @param {Object<string>} params URL parameters specifying style.
  * @param {boolean} isTitle if the style is for the Most Visited Title.
  * @return {string} The color to use, in "rgba(#,#,#,#)" format.
  */
@@ -231,7 +231,7 @@ function getTextColor(params, isTitle) {
  * - ta: text-align property, as a string.
  * - tf: text fade starting position, in pixels.
  * - ntl: number of lines in the title.
- * @param {Object<string, string>} params URL parameters specifying style.
+ * @param {Object<string>} params URL parameters specifying style.
  * @param {boolean} isTitle if the style is for the Most Visited Title.
  * @return {Object} Styles suitable for CSS interpolation.
  */

@@ -49,7 +49,7 @@ cvox.LiveRegions.VISIBILITY_TIMEOUT_MS = 50;
 
 /**
  * A mapping from announced text to the time it was last spoken.
- * @type {Object<string, Date>}
+ * @type {Object<Date>}
  */
 cvox.LiveRegions.lastAnnouncedMap = {};
 

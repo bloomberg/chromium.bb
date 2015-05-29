@@ -27,16 +27,14 @@ goog.require('cvox.KeyUtil');
 goog.require('cvox.PlatformUtil');
 
 /**
- * @param {Array<Object<string,
- *         {command: string, sequence: cvox.KeySequence}>>}
+ * @param {Array<Object<{command: string, sequence: cvox.KeySequence}>>}
  * commandsAndKeySequences An array of pairs - KeySequences and commands.
  * @constructor
  */
 cvox.KeyMap = function(commandsAndKeySequences) {
   /**
    * An array of bindings - commands and KeySequences.
-   * @type {Array<Object<string,
-   *        {command: string, sequence: cvox.KeySequence}>>}
+   * @type {Array<Object<{command: string, sequence: cvox.KeySequence}>>}
    * @private
    */
   this.bindings_ = commandsAndKeySequences;
@@ -44,7 +42,7 @@ cvox.KeyMap = function(commandsAndKeySequences) {
   /**
    * Maps a command to a key. This optimizes the process of searching for a
    * key sequence when you already know the command.
-   * @type {Object<string, cvox.KeySequence>}
+   * @type {Object<cvox.KeySequence>}
    * @private
    */
   this.commandToKey_ = {};
@@ -66,7 +64,7 @@ cvox.KeyMap.KEYMAP_PATH = 'chromevox/background/keymaps/';
  * TODO(dtseng): Not really sure this belongs here, but it doesn't seem to be
  * user configurable, so it doesn't make sense to json-stringify it.
  * Should have class to siwtch among and manage multiple key maps.
- * @type {Object<string, Object<string, string>>}
+ * @type {Object<Object<string>>}
  * @const
  */
 cvox.KeyMap.AVAILABLE_MAP_INFO = {
@@ -112,8 +110,7 @@ cvox.KeyMap.prototype.keys = function() {
 
 /**
  * Returns a collection of command, KeySequence bindings.
- * @return {Array<Object<string, cvox.KeySequence>>} Array of all command,
- * key bindings.
+ * @return {Array<Object<cvox.KeySequence>>} Array of all command, key bindings.
  * @suppress {checkTypes} inconsistent return type
  * found   : (Array<(Object<{command: string,
  *                             sequence: (cvox.KeySequence|null)}>|null)>|null)
@@ -338,8 +335,8 @@ cvox.KeyMap.fromDefaults = function() {
 cvox.KeyMap.fromJSON = function(json) {
   try {
     var commandsAndKeySequences =
-        /** @type {Array<Object<string,
-         *          {command: string, sequence: cvox.KeySequence}>>} */
+        /** @type {Array<Object<{command: string,
+         *                       sequence: cvox.KeySequence}>>} */
     (JSON.parse(json).bindings);
     commandsAndKeySequences = commandsAndKeySequences.filter(function(value) {
       return value.sequence.platformFilter === undefined ||

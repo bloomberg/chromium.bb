@@ -554,10 +554,10 @@ cr.define('options', function() {
      * Uses preallocated DOM elements for each cookie node type from @{code
      * infoNodes}, and inserts the appropriate elements to @{code element}.
      * @param {Element} element The DOM element to insert elements to.
-     * @param {Object<string, {table: Element, info: Object<string,
-     *     Element>}>} infoNodes The map from cookie node types to maps from
-     *     cookie attribute names to DOM elements to display cookie attribute
-     *     values, created by @{code CookiesList.decorate}.
+     * @param {Object<{table: Element, info: Object<Element>}>} infoNodes The
+     *     map from cookie node types to maps from cookie attribute names to DOM
+     *     elements to display cookie attribute values, created by
+     *     @{code CookiesList.decorate}.
      */
     setDetailText: function(element, infoNodes) {
       var table;

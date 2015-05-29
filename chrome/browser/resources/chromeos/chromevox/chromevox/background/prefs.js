@@ -56,7 +56,7 @@ cvox.ChromeVoxPrefs = function() {
 /**
  * The default value of all preferences except the key map.
  * @const
- * @type {Object<string, Object>}
+ * @type {Object<Object>}
  */
 cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'active': true,

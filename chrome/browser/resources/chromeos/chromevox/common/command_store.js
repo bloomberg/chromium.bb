@@ -95,19 +95,18 @@ cvox.CommandStore.commandsForCategory = function(category) {
 
 /**
  * List of commands and their properties
- * @type {Object<string, {forward: (undefined|boolean),
- *                         backward: (undefined|boolean),
- *                         announce: boolean,
- *                         category: (undefined|string),
- *                         findNext: (undefined|string),
- *                         doDefault: (undefined|boolean),
- *                         msgId: (undefined|string),
- *                         nodeList: (undefined|string),
- *                         platformFilter: (undefined|cvox.PlatformFilter),
- *                         skipInput: (undefined|boolean),
- *                         allowEvents: (undefined|boolean),
- *                         disallowContinuation: (undefined|boolean)
- *                         }>}
+ * @type {Object<{forward: (undefined|boolean),
+ *                backward: (undefined|boolean),
+ *                announce: boolean,
+ *                category: (undefined|string),
+ *                findNext: (undefined|string),
+ *                doDefault: (undefined|boolean),
+ *                msgId: (undefined|string),
+ *                nodeList: (undefined|string),
+ *                platformFilter: (undefined|cvox.PlatformFilter),
+ *                skipInput: (undefined|boolean),
+ *                allowEvents: (undefined|boolean),
+ *                disallowContinuation: (undefined|boolean)}>}
  *  forward: Whether this command points forward.
  *  backward: Whether this command points backward. If neither forward or
  *            backward are specified, it stays facing in the current direction.
@@ -678,9 +677,9 @@ cvox.CommandStore.CMD_WHITELIST = {
 
 /**
  * List of find next commands and their associated data.
- * @type {Object<string, {predicate: string,
- *                         forwardError: string,
- *                         backwardError: string}>}
+ * @type {Object<{predicate: string,
+ *                forwardError: string,
+ *                backwardError: string}>}
  *  predicate: The name of the predicate. This must be defined in DomPredicates.
  *  forwardError: The message id of the error string when moving forward.
  *  backwardError: The message id of the error string when moving backward.

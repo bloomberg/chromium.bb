@@ -166,7 +166,7 @@ cr.define('options.network', function() {
 
     /**
      * Description of the network group or control.
-     * @type {Object<string,Object>}
+     * @type {Object<Object>}
      * @private
      */
     data_: null,
@@ -733,7 +733,7 @@ cr.define('options.network', function() {
     /**
      * Extracts a mapping of network names to menu element and position.
      * @param {!Element} menu The menu to process.
-     * @return {Object<string, ?{index: number, button: Element}>}
+     * @return {Object<?{index: number, button: Element}>}
      *     Network mapping.
      * @private
      */

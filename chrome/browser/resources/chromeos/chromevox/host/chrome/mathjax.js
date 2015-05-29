@@ -105,7 +105,7 @@ cvox.ChromeMathJax.prototype.init = function() {
  * Destructive Retrieval of a callback function from the mapping.
  * @param {string} data The command to be sent to the content script.
  * @param {Function} callback A callback function.
- * @param {Object<string, *>=} args Object of arguments.
+ * @param {Object<*>=} args Object of arguments.
  */
 cvox.ChromeMathJax.prototype.postMsg = function(data, callback, args) {
   args = args || {};
@@ -136,7 +136,7 @@ cvox.ChromeMathJax.prototype.portSetup = function(event) {
 
 /**
  * Call the appropriate Cvox function dealing with MathJax return values.
- * @param {{cmd: string, id: string, args: Object<string, string>}} message A
+ * @param {{cmd: string, id: string, args: Object<string>}} message A
  * message object.
  */
 cvox.ChromeMathJax.prototype.dispatchMessage = function(message) {

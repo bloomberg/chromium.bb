@@ -23,7 +23,7 @@ goog.require('cvox.TraverseMath');
 
 /**
  * Lists all Node tagName's who's description is derived from its subtree.
- * @type {Object<string, boolean>}
+ * @type {Object<boolean>}
  */
 cvox.DescriptionUtil.COLLECTION_NODE_TYPE = {
   'H1': true,

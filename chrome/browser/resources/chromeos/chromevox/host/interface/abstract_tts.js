@@ -422,7 +422,7 @@ cvox.AbstractTts.DEBUG = true;
 /**
  * Character dictionary. These symbols are replaced with their human readable
  * equivalents. This replacement only occurs for single character utterances.
- * @type {Object<string, string>}
+ * @type {Object<string>}
  */
 cvox.AbstractTts.CHARACTER_DICTIONARY = {
   ' ': 'space',
@@ -469,7 +469,7 @@ cvox.AbstractTts.CHARACTER_DICTIONARY = {
  * should be spelled out the way most TTS engines will pronounce it
  * correctly. This particular dictionary only handles letters and numbers,
  * no symbols.
- * @type {Object<string, string>}
+ * @type {Object<string>}
  */
 cvox.AbstractTts.PRONUNCIATION_DICTIONARY = {
   'admob': 'ad-mob',
@@ -509,7 +509,7 @@ cvox.AbstractTts.pronunciationDictionaryRegexp_;
  *
  * For example, do not include '$' here because $2 should be read as
  * "two dollars".
- * @type {Object<string, string>}
+ * @type {Object<string>}
  */
 cvox.AbstractTts.SUBSTITUTION_DICTIONARY = {
   '://': 'colon slash slash',

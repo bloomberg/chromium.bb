@@ -70,7 +70,7 @@ cvox.ChromeHost.prototype.init = function() {
 
       if (prefs['position']) {
         cvox.ChromeVox.position =
-            /** @type {Object<string, {x:number, y:number}>} */ (
+            /** @type {Object<{x:number, y:number}>} */ (
                 JSON.parse(prefs['position']));
       }
 

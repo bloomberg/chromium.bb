@@ -60,7 +60,7 @@ function MultipleGnubbySigner(forEnroll, allCompleteCb, gnubbyCompleteCb,
   this.complete_ = false;
   /** @private {number} */
   this.numComplete_ = 0;
-  /** @private {!Object<string, GnubbyTracker>} */
+  /** @private {!Object<GnubbyTracker>} */
   this.gnubbies_ = {};
   /** @private {Countdown} */
   this.timer_ = DEVICE_FACTORY_REGISTRY.getCountdownFactory()

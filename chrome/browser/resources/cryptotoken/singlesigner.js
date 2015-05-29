@@ -72,7 +72,7 @@ function SingleGnubbySigner(gnubbyId, forEnroll, completeCb, timer,
   /** @private {boolean} */
   this.challengesSet_ = false;
 
-  /** @private {!Object<string, number>} */
+  /** @private {!Object<number>} */
   this.cachedError_ = [];
 }
 

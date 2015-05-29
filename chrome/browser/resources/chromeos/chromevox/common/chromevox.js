@@ -150,11 +150,11 @@ cvox.ChromeVox.verbosity = cvox.VERBOSITY_VERBOSE;
 cvox.ChromeVox.typingEcho = 0;
 /**
  * Echoing on key press events.
- * @type {Object<string, boolean>}
+ * @type {Object<boolean>}
  */
 cvox.ChromeVox.keyEcho = {};
 /**
- * @type {Object<string, {x:number, y:number}>}
+ * @type {Object<{x:number, y:number}>}
  */
 cvox.ChromeVox.position = {};
 /**
@@ -184,7 +184,7 @@ if (cvox.ChromeVox.isChromeOS) {
  * @type {!Array<cvox.KeySequence>}
  */
 cvox.ChromeVox.sequenceSwitchKeyCodes = [];
-/** @type {Object<string, boolean>} */
+/** @type {Object<boolean>} */
 cvox.ChromeVox.visitedUrls = {};
 /**
  * This function can be called before doing an operation that may trigger

@@ -376,7 +376,7 @@ cr.define('print_preview', function() {
       if (this.appState_.hasField(
           print_preview.AppState.Field.VENDOR_OPTIONS)) {
         this.vendorItems_.updateValue(
-            /** @type {!Object<string, string>} */(this.appState_.getField(
+            /** @type {!Object<string>} */(this.appState_.getField(
             print_preview.AppState.Field.VENDOR_OPTIONS)));
     }
     },

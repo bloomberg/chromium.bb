@@ -131,8 +131,8 @@ cr.define('options', function() {
 
   /**
    * Sets the values for all the content settings radios and labels.
-   * @param {Object<string, {managedBy: string, value: string}>} dict A mapping
-   *     from radio groups to the checked value for that group.
+   * @param {Object<{managedBy: string, value: string}>} dict A mapping from
+   *     radio groups to the checked value for that group.
    */
   ContentSettings.setContentFilterSettingsValue = function(dict) {
     for (var group in dict) {

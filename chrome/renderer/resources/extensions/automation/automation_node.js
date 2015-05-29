@@ -352,7 +352,7 @@ var AutomationAttributeTypes = [
 /**
  * Maps an attribute name to another attribute who's value is an id or an array
  * of ids referencing an AutomationNode.
- * @param {!Object<string, string>}
+ * @param {!Object<string>}
  * @const
  */
 var ATTRIBUTE_NAME_TO_ID_ATTRIBUTE = {
@@ -366,7 +366,7 @@ var ATTRIBUTE_NAME_TO_ID_ATTRIBUTE = {
 
 /**
  * A set of attributes ignored in the automation API.
- * @param {!Object<string, boolean>}
+ * @param {!Object<boolean>}
  * @const
  */
 var ATTRIBUTE_BLACKLIST = {'activedescendantId': true,

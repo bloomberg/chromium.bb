@@ -63,7 +63,7 @@ Output = function() {
 
   /**
    * Speech properties to apply to the entire output.
-   * @type {!Object<string, *>}
+   * @type {!Object<*>}
    */
   this.speechProperties_ = {};
 };
@@ -76,9 +76,9 @@ Output.SPACE = ' ';
 
 /**
  * Metadata about supported automation roles.
- * @const {Object<string, {msgId: string,
- *                         earconId: (string|undefined),
- *                         inherits: (string|undefined)}>}
+ * @const {Object<{msgId: string,
+ *                 earconId: (string|undefined),
+ *                 inherits: (string|undefined)}>}
  * msgId: the message id of the role.
  * earconId: an optional earcon to play when encountering the role.
  * inherits: inherits rules from this role.
@@ -296,10 +296,9 @@ Output.ROLE_INFO_ = {
 
 /**
  * Metadata about supported automation states.
- * @const {!Object<string,
- *           {on: {msgId: string, earconId: string},
- *            off: {msgId: string, earconId: string},
- *            omitted: {msgId: string, earconId: string}}>}
+ * @const {!Object<{on: {msgId: string, earconId: string},
+ *                  off: {msgId: string, earconId: string},
+ *                  omitted: {msgId: string, earconId: string}}>}
  *     on: info used to describe a state that is set to true.
  *     off: info used to describe a state that is set to false.
  *     omitted: info used to describe a state that is undefined.
@@ -345,7 +344,7 @@ Output.STATE_INFO_ = {
 
 /**
  * Rules specifying format of AutomationNodes for output.
- * @type {!Object<string, Object<string, Object<string, string>>>}
+ * @type {!Object<Object<Object<string>>>}
  */
 Output.RULES = {
   navigate: {

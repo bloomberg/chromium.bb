@@ -30,14 +30,14 @@ cvox.TraverseMath = function() {
 
   /**
    * Dictionary of all LaTeX elements in the page if there are any.
-   * @type {!Object<string, !Node>}
+   * @type {!Object<!Node>}
    * @private
    */
   this.allTexs_ = {};
 
   /**
    * Dictionary of all MathJaxs elements in the page if there are any.
-   * @type {!Object<string, !Node>}
+   * @type {!Object<!Node>}
    * @private
    */
   this.allMathjaxs_ = {};
@@ -45,7 +45,7 @@ cvox.TraverseMath = function() {
   /**
    * Dictionary of all MathJaxs elements that have not yet been translated at
    * page load or during MathJax rendering.
-   * @type {!Object<string, !Node>}
+   * @type {!Object<!Node>}
    * @private
    */
   this.todoMathjaxs_ = {};

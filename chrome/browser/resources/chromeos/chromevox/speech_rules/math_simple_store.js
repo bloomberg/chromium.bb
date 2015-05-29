@@ -34,7 +34,7 @@ goog.inherits(cvox.MathSimpleStore, cvox.MathStore);
  * only into a list of speech rules.
  * @param {string} name Name for the rules.
  * @param {string} str String for precondition and constraints.
- * @param {Object<string, Object<string, string>>} mapping Simple string
+ * @param {Object<Object<string>>} mapping Simple string
  *     mapping.
  */
 cvox.MathSimpleStore.prototype.defineRulesFromMappings = function(
@@ -58,7 +58,7 @@ cvox.MathSimpleStore.prototype.defineRulesFromMappings = function(
 cvox.MathCompoundStore = function() {
   /**
    * A set of efficient substores.
-   * @type {Object<string, cvox.MathStore>}
+   * @type {Object<cvox.MathStore>}
    * @private
    */
   this.subStores_ = {};

@@ -73,7 +73,7 @@ StartupPageListWebUITest.prototype = {
 function MockDataTransfer() {
   /**
    * The data this dataTransfer object knows about.
-   * @type {!Object<string, string>}
+   * @type {!Object<string>}
    * @private
    */
   this.data_ = {};

@@ -54,7 +54,7 @@ cvox.BrailleUtil.CONTAINER = [
  * c: replaced with braille container role; this potentially returns whitespace,
  * so place at the beginning or end of templates for trimming.
  * v: replaced with braille value.
- * @type {Object<string, string>}
+ * @type {Object<string>}
  */
 cvox.BrailleUtil.TEMPLATE = {
   'base': 'c n v r s',

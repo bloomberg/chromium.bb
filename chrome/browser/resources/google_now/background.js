@@ -136,7 +136,7 @@ var ReceivedGroup;
  *
  * @typedef {{
  *   googleNowDisabled: (boolean|undefined),
- *   groups: Object<string, ReceivedGroup>,
+ *   groups: Object<ReceivedGroup>,
  *   notifications: Array<ReceivedNotification>
  * }}
  */
@@ -355,8 +355,8 @@ function requestFromServer(method, handlerName, opt_contentType) {
 
 /**
  * Shows the notification groups as notification cards.
- * @param {Object<string, StoredNotificationGroup>} notificationGroups Map from
- *     group name to group information.
+ * @param {Object<StoredNotificationGroup>} notificationGroups Map from group
+ *     name to group information.
  * @param {function(ReceivedNotification)=} opt_onCardShown Optional parameter
  *     called when each card is shown.
  * @return {Promise} A promise to show the notification groups as cards.
@@ -445,8 +445,8 @@ function combineGroup(combinedCards, storedGroup) {
 
 /**
  * Calculates the soonest poll time from a map of groups as an absolute time.
- * @param {Object<string, StoredNotificationGroup>} groups Map from group name
- *     to group information.
+ * @param {Object<StoredNotificationGroup>} groups Map from group name to group
+ *     information.
  * @return {number} The next poll time based off of the groups.
  */
 function calculateNextPollTimeMilliseconds(groups) {
@@ -467,8 +467,8 @@ function calculateNextPollTimeMilliseconds(groups) {
 
 /**
  * Schedules next cards poll.
- * @param {Object<string, StoredNotificationGroup>} groups Map from group name
- *     to group information.
+ * @param {Object<StoredNotificationGroup>} groups Map from group name to group
+ *     information.
  */
 function scheduleNextCardsPoll(groups) {
   var nextPollTimeMs = calculateNextPollTimeMilliseconds(groups);
@@ -494,8 +494,8 @@ function scheduleOptInCheckPoll() {
 
 /**
  * Combines notification groups into a set of Chrome notifications.
- * @param {Object<string, StoredNotificationGroup>} notificationGroups Map from
- *     group name to group information.
+ * @param {Object<StoredNotificationGroup>} notificationGroups Map from group
+ *     name to group information.
  * @return {Object<ChromeNotificationId, CombinedCard>} Cards to show.
  */
 function combineCardsFromGroups(notificationGroups) {
@@ -527,7 +527,7 @@ function processServerResponse(response) {
   var receivedGroups = response.groups;
 
   return fillFromChromeLocalStorage({
-    /** @type {Object<string, StoredNotificationGroup>} */
+    /** @type {Object<StoredNotificationGroup>} */
     notificationGroups: {},
     /** @type {Object<ServerNotificationId, number>} */
     recentDismissals: {}
@@ -707,7 +707,7 @@ function requestAndUpdateOptedIn() {
  */
 function getGroupsToRequest() {
   return fillFromChromeLocalStorage({
-    /** @type {Object<string, StoredNotificationGroup>} */
+    /** @type {Object<StoredNotificationGroup>} */
     notificationGroups: {}
   }).then(function(items) {
     console.log('getGroupsToRequest-storage-get ' + JSON.stringify(items));
@@ -963,7 +963,7 @@ function onNotificationClosed(chromeNotificationId, byUser) {
       pendingDismissals: [],
       /** @type {Object<ChromeNotificationId, NotificationDataEntry>} */
       notificationsData: {},
-      /** @type {Object<string, StoredNotificationGroup>} */
+      /** @type {Object<StoredNotificationGroup>} */
       notificationGroups: {}
     }).then(function(items) {
       /** @type {NotificationDataEntry} */
@@ -1390,7 +1390,7 @@ instrumented.runtime.onStartup.addListener(function() {
   // persistent notifications will work.
   tasks.add(SHOW_ON_START_TASK_NAME, function() {
     fillFromChromeLocalStorage({
-      /** @type {Object<string, StoredNotificationGroup>} */
+      /** @type {Object<StoredNotificationGroup>} */
       notificationGroups: {}
     }).then(function(items) {
       console.log('onStartup-get ' + JSON.stringify(items));
@@ -1480,7 +1480,7 @@ instrumented.gcm.onMessage.addListener(function(message) {
       // preventing polling the server when the payload really didn't change.
       fillFromChromeLocalStorage({
         lastPollNowPayloads: {},
-        /** @type {Object<string, StoredNotificationGroup>} */
+        /** @type {Object<StoredNotificationGroup>} */
         notificationGroups: {}
       }, PromiseRejection.ALLOW).then(function(items) {
         if (items.lastPollNowPayloads[tag] != payload) {

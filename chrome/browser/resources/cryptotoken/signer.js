@@ -361,9 +361,9 @@ function Signer(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   /** @private {boolean} */
   this.done_ = false;
 
-  /** @private {Object<string, string>} */
+  /** @private {Object<string>} */
   this.browserData_ = {};
-  /** @private {Object<string, SignChallenge>} */
+  /** @private {Object<SignChallenge>} */
   this.serverChallenges_ = {};
   // Allow http appIds for http origins. (Broken, but the caller deserves
   // what they get.)

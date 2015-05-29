@@ -52,7 +52,7 @@ cr.define('print_preview', function() {
 
     /**
      * Set of destination ids.
-     * @type {!Object<string, boolean>}
+     * @type {!Object<boolean>}
      * @private
      */
     this.destinationIds_ = {};

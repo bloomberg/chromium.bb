@@ -428,7 +428,7 @@ cvox.Spannable.SerializedSpan_;
 
 /**
  * Maps type names to serialization info objects.
- * @type {Object<string, cvox.Spannable.SerializeInfo_>}
+ * @type {Object<cvox.Spannable.SerializeInfo_>}
  * @private
  */
 cvox.Spannable.serializableSpansByName_ = {};

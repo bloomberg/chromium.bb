@@ -55,7 +55,7 @@ cr.define('print_preview', function() {
 
     /**
      * Cache used for constant lookup of destinations by origin and id.
-     * @type {Object<string, !print_preview.Destination>}
+     * @type {Object<!print_preview.Destination>}
      * @private
      */
     this.destinationMap_ = {};
@@ -100,7 +100,7 @@ cr.define('print_preview', function() {
     /**
      * Maps user account to the list of origins for which destinations are
      * already loaded.
-     * @type {!Object<string, Array<print_preview.Destination.Origin>>}
+     * @type {!Object<Array<print_preview.Destination.Origin>>}
      * @private
      */
     this.loadedCloudOrigins_ = {};

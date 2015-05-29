@@ -118,7 +118,7 @@ BrailleIme.prototype = {
    * Note that the mapping below is arranged like the dots in a braille cell.
    * Only 6 dot input is supported.
    * @private
-   * @const {Object<string, number>}
+   * @const {Object<number>}
    */
   CODE_TO_DOT_: {'KeyF': 0x01, 'KeyJ': 0x08,
                  'KeyD': 0x02, 'KeyK': 0x10,

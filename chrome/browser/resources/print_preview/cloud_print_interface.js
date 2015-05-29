@@ -52,7 +52,7 @@ cr.define('cloudprint', function() {
     /**
      * Currently logged in users (identified by email) mapped to the Google
      * session index.
-     * @type {!Object<string, number>}
+     * @type {!Object<number>}
      * @private
      */
     this.userSessionIndex_ = {};
@@ -60,7 +60,7 @@ cr.define('cloudprint', function() {
     /**
      * Stores last received XSRF tokens for each user account. Sent as
      * a parameter with every request.
-     * @type {!Object<string, string>}
+     * @type {!Object<string>}
      * @private
      */
     this.xsrfTokens_ = {};

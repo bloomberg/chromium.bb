@@ -17,7 +17,7 @@ cvox.SemanticUtil = function() { };
 
 /**
  * Merges keys of objects into an array.
- * @param {...Object<string, string>} objects Optional objects.
+ * @param {...Object<string>} objects Optional objects.
  * @return {Array<string>} Array of all keys of the objects.
  */
 cvox.SemanticUtil.objectsToKeys = function(objects) {
@@ -29,7 +29,7 @@ cvox.SemanticUtil.objectsToKeys = function(objects) {
 
 /**
  * Merges values of objects into an array.
- * @param {...Object<string, string>} objects Optional objects.
+ * @param {...Object<string>} objects Optional objects.
  * @return {Array<string>} Array of all values of the objects.
  */
 cvox.SemanticUtil.objectsToValues = function(objects) {
