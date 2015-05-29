@@ -37,9 +37,9 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   bool Initialize() override;
   void Destroy() override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers() override;
+  bool SwapBuffers() override;
   bool SupportsPostSubBuffer() override;
-  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+  bool PostSubBuffer(int x, int y, int width, int height) override;
 
  private:
   ~NativeViewGLSurfaceOSMesa() override;
@@ -208,7 +208,7 @@ bool NativeViewGLSurfaceOSMesa::IsOffscreen() {
   return false;
 }
 
-gfx::SwapResult NativeViewGLSurfaceOSMesa::SwapBuffers() {
+bool NativeViewGLSurfaceOSMesa::SwapBuffers() {
   DCHECK(device_context_);
 
   gfx::Size size = GetSize();
@@ -241,17 +241,15 @@ gfx::SwapResult NativeViewGLSurfaceOSMesa::SwapBuffers() {
                 DIB_RGB_COLORS,
                 SRCCOPY);
 
-  return gfx::SwapResult::SWAP_ACK;
+  return true;
 }
 
 bool NativeViewGLSurfaceOSMesa::SupportsPostSubBuffer() {
   return true;
 }
 
-gfx::SwapResult NativeViewGLSurfaceOSMesa::PostSubBuffer(int x,
-                                                         int y,
-                                                         int width,
-                                                         int height) {
+bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
+    int x, int y, int width, int height) {
   DCHECK(device_context_);
 
   gfx::Size size = GetSize();
@@ -284,7 +282,7 @@ gfx::SwapResult NativeViewGLSurfaceOSMesa::PostSubBuffer(int x,
                 DIB_RGB_COLORS,
                 SRCCOPY);
 
-  return gfx::SwapResult::SWAP_ACK;
+  return true;
 }
 
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(

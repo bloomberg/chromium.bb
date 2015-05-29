@@ -44,7 +44,7 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
   // GLSurface:
   bool Initialize() override;
   bool Resize(const gfx::Size& size) override;
-  gfx::SwapResult SwapBuffers() override;
+  bool SwapBuffers() override;
   bool ScheduleOverlayPlane(int z_order,
                             OverlayTransform transform,
                             GLImage* image,
@@ -87,13 +87,11 @@ bool GLSurfaceOzoneEGL::Resize(const gfx::Size& size) {
   return NativeViewGLSurfaceEGL::Resize(size);
 }
 
-gfx::SwapResult GLSurfaceOzoneEGL::SwapBuffers() {
-  gfx::SwapResult result = NativeViewGLSurfaceEGL::SwapBuffers();
-  if (result != gfx::SwapResult::SWAP_ACK)
-    return result;
+bool GLSurfaceOzoneEGL::SwapBuffers() {
+  if (!NativeViewGLSurfaceEGL::SwapBuffers())
+    return false;
 
-  return ozone_surface_->OnSwapBuffers() ? gfx::SwapResult::SWAP_ACK
-                                         : gfx::SwapResult::SWAP_FAILED;
+  return ozone_surface_->OnSwapBuffers();
 }
 
 bool GLSurfaceOzoneEGL::ScheduleOverlayPlane(int z_order,
@@ -143,7 +141,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
   // GLSurface:
   bool Initialize() override;
   bool Resize(const gfx::Size& size) override;
-  gfx::SwapResult SwapBuffers() override;
+  bool SwapBuffers() override;
   bool ScheduleOverlayPlane(int z_order,
                             OverlayTransform transform,
                             GLImage* image,
@@ -152,7 +150,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
   bool IsOffscreen() override;
   VSyncProvider* GetVSyncProvider() override;
   bool SupportsPostSubBuffer() override;
-  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+  bool PostSubBuffer(int x, int y, int width, int height) override;
   bool SwapBuffersAsync(const SwapCompletionCallback& callback) override;
   bool PostSubBufferAsync(int x,
                           int y,
@@ -194,8 +192,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
   EGLSyncKHR InsertFence();
   void FenceRetired(EGLSyncKHR fence, PendingFrame* frame);
 
-  void SwapCompleted(const SwapCompletionCallback& callback,
-                     gfx::SwapResult result);
+  void SwapCompleted(const SwapCompletionCallback& callback);
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface_;
@@ -268,14 +265,14 @@ bool GLSurfaceOzoneSurfaceless::Resize(const gfx::Size& size) {
 
   return SurfacelessEGL::Resize(size);
 }
-gfx::SwapResult GLSurfaceOzoneSurfaceless::SwapBuffers() {
+bool GLSurfaceOzoneSurfaceless::SwapBuffers() {
   glFlush();
   // TODO: the following should be replaced by a per surface flush as it gets
   // implemented in GL drivers.
   if (has_implicit_external_sync_) {
     EGLSyncKHR fence = InsertFence();
     if (!fence)
-      return SwapResult::SWAP_FAILED;
+      return false;
 
     EGLDisplay display = GetDisplay();
     WaitForFence(display, fence);
@@ -287,8 +284,7 @@ gfx::SwapResult GLSurfaceOzoneSurfaceless::SwapBuffers() {
   unsubmitted_frames_.back()->ScheduleOverlayPlanes(widget_);
   unsubmitted_frames_.back()->overlays.clear();
 
-  return ozone_surface_->OnSwapBuffers() ? gfx::SwapResult::SWAP_ACK
-                                         : gfx::SwapResult::SWAP_FAILED;
+  return ozone_surface_->OnSwapBuffers();
 }
 bool GLSurfaceOzoneSurfaceless::ScheduleOverlayPlane(int z_order,
                                                      OverlayTransform transform,
@@ -308,13 +304,13 @@ VSyncProvider* GLSurfaceOzoneSurfaceless::GetVSyncProvider() {
 bool GLSurfaceOzoneSurfaceless::SupportsPostSubBuffer() {
   return true;
 }
-gfx::SwapResult GLSurfaceOzoneSurfaceless::PostSubBuffer(int x,
-                                                         int y,
-                                                         int width,
-                                                         int height) {
+bool GLSurfaceOzoneSurfaceless::PostSubBuffer(int x,
+                                              int y,
+                                              int width,
+                                              int height) {
   // The actual sub buffer handling is handled at higher layers.
   SwapBuffers();
-  return gfx::SwapResult::SWAP_ACK;
+  return true;
 }
 bool GLSurfaceOzoneSurfaceless::SwapBuffersAsync(
     const SwapCompletionCallback& callback) {
@@ -324,7 +320,7 @@ bool GLSurfaceOzoneSurfaceless::SwapBuffersAsync(
 
   glFlush();
 
-  SwapCompletionCallback surface_swap_callback =
+  base::Closure surface_swap_callback =
       base::Bind(&GLSurfaceOzoneSurfaceless::SwapCompleted,
                  weak_factory_.GetWeakPtr(), callback);
 
@@ -399,9 +395,8 @@ void GLSurfaceOzoneSurfaceless::FenceRetired(EGLSyncKHR fence,
 }
 
 void GLSurfaceOzoneSurfaceless::SwapCompleted(
-    const SwapCompletionCallback& callback,
-    gfx::SwapResult result) {
-  callback.Run(result);
+    const SwapCompletionCallback& callback) {
+  callback.Run();
   swap_buffers_pending_ = false;
 
   SubmitFrame();
@@ -421,7 +416,7 @@ class GL_EXPORT GLSurfaceOzoneSurfacelessSurfaceImpl
   bool OnMakeCurrent(GLContext* context) override;
   bool Resize(const gfx::Size& size) override;
   bool SupportsPostSubBuffer() override;
-  gfx::SwapResult SwapBuffers() override;
+  bool SwapBuffers() override;
   bool SwapBuffersAsync(const SwapCompletionCallback& callback) override;
   void Destroy() override;
 
@@ -524,17 +519,16 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::SupportsPostSubBuffer() {
   return false;
 }
 
-gfx::SwapResult GLSurfaceOzoneSurfacelessSurfaceImpl::SwapBuffers() {
+bool GLSurfaceOzoneSurfacelessSurfaceImpl::SwapBuffers() {
   if (!images_[current_surface_]->ScheduleOverlayPlane(
           widget_, 0, OverlayTransform::OVERLAY_TRANSFORM_NONE,
           gfx::Rect(GetSize()), gfx::RectF(1, 1)))
-    return gfx::SwapResult::SWAP_FAILED;
-  gfx::SwapResult result = GLSurfaceOzoneSurfaceless::SwapBuffers();
-  if (result != gfx::SwapResult::SWAP_ACK)
-    return result;
+    return false;
+  if (!GLSurfaceOzoneSurfaceless::SwapBuffers())
+    return false;
   current_surface_ ^= 1;
   BindFramebuffer();
-  return gfx::SwapResult::SWAP_ACK;
+  return true;
 }
 
 bool GLSurfaceOzoneSurfacelessSurfaceImpl::SwapBuffersAsync(

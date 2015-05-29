@@ -19,9 +19,6 @@ namespace ui {
 
 namespace {
 
-void DoNothing(gfx::SwapResult) {
-}
-
 class GbmSurfaceBuffer : public GbmBufferBase {
  public:
   static scoped_refptr<GbmSurfaceBuffer> CreateBuffer(
@@ -134,7 +131,7 @@ bool GbmSurface::ResizeNativeWindow(const gfx::Size& viewport_size) {
 }
 
 bool GbmSurface::OnSwapBuffers() {
-  return OnSwapBuffersAsync(base::Bind(&DoNothing));
+  return OnSwapBuffersAsync(base::Bind(&base::DoNothing));
 }
 
 bool GbmSurface::OnSwapBuffersAsync(const SwapCompletionCallback& callback) {
@@ -147,7 +144,7 @@ bool GbmSurface::OnSwapBuffersAsync(const SwapCompletionCallback& callback) {
     primary = GbmSurfaceBuffer::CreateBuffer(gbm_, pending_buffer);
     if (!primary.get()) {
       LOG(ERROR) << "Failed to associate the buffer with the controller";
-      callback.Run(gfx::SwapResult::SWAP_FAILED);
+      callback.Run();
       return false;
     }
   }
@@ -158,7 +155,7 @@ bool GbmSurface::OnSwapBuffersAsync(const SwapCompletionCallback& callback) {
   if (!GbmSurfaceless::OnSwapBuffersAsync(
           base::Bind(&GbmSurface::OnSwapBuffersCallback,
                      weak_factory_.GetWeakPtr(), callback, pending_buffer))) {
-    callback.Run(gfx::SwapResult::SWAP_FAILED);
+    callback.Run();
     return false;
   }
 
@@ -166,14 +163,13 @@ bool GbmSurface::OnSwapBuffersAsync(const SwapCompletionCallback& callback) {
 }
 
 void GbmSurface::OnSwapBuffersCallback(const SwapCompletionCallback& callback,
-                                       gbm_bo* pending_buffer,
-                                       gfx::SwapResult result) {
+                                       gbm_bo* pending_buffer) {
   // If there was a frontbuffer, it is no longer active. Release it back to GBM.
   if (current_buffer_)
     gbm_surface_release_buffer(native_surface_, current_buffer_);
 
   current_buffer_ = pending_buffer;
-  callback.Run(result);
+  callback.Run();
 }
 
 }  // namespace ui

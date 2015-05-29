@@ -61,12 +61,12 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX,
   void Destroy() override;
   bool Resize(const gfx::Size& size) override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers() override;
+  bool SwapBuffers() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
   bool SupportsPostSubBuffer() override;
   void* GetConfig() override;
-  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+  bool PostSubBuffer(int x, int y, int width, int height) override;
   VSyncProvider* GetVSyncProvider() override;
 
  protected:
@@ -103,7 +103,7 @@ class GL_EXPORT UnmappedNativeViewGLSurfaceGLX : public GLSurfaceGLX {
   bool Initialize() override;
   void Destroy() override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers() override;
+  bool SwapBuffers() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
   void* GetConfig() override;

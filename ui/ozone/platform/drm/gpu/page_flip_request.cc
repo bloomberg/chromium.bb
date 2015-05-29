@@ -4,28 +4,19 @@
 
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 
+#include "base/barrier_closure.h"
+
 namespace ui {
 
-PageFlipRequest::PageFlipRequest(int crtc_count,
-                                 const SwapCompletionCallback& callback)
-    : callback_(callback),
-      crtc_count_(crtc_count),
-      result_(gfx::SwapResult::SWAP_ACK) {
+PageFlipRequest::PageFlipRequest(int crtc_count, const base::Closure& callback)
+    : callback_(base::BarrierClosure(crtc_count, callback)) {
 }
 
 PageFlipRequest::~PageFlipRequest() {
 }
 
-void PageFlipRequest::Signal(gfx::SwapResult result) {
-  if (result == gfx::SwapResult::SWAP_FAILED)
-    result_ = gfx::SwapResult::SWAP_FAILED;
-  else if (result != gfx::SwapResult::SWAP_ACK)
-    result_ = result;
-
-  if (!--crtc_count_) {
-    callback_.Run(result_);
-    callback_.Reset();
-  }
+void PageFlipRequest::Signal() {
+  callback_.Run();
 }
 
 }  // namespace ui

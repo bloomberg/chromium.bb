@@ -17,7 +17,6 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "ui/gfx/swap_result.h"
 #include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
@@ -87,8 +86,6 @@ class DrmDevice;
 // framebuffers. Though, in this case, it would be possible to have all
 // connectors active if some use the same CRTC to mirror the display.
 class OZONE_EXPORT HardwareDisplayController {
-  typedef base::Callback<void(gfx::SwapResult)> PageFlipCallback;
-
  public:
   HardwareDisplayController(scoped_ptr<CrtcController> controller,
                             const gfx::Point& origin);
@@ -126,7 +123,7 @@ class OZONE_EXPORT HardwareDisplayController {
   bool SchedulePageFlip(const OverlayPlaneList& plane_list,
                         bool is_sync,
                         bool test_only,
-                        const PageFlipCallback& callback);
+                        const base::Closure& callback);
 
   // Set the hardware cursor to show the contents of |surface|.
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);

@@ -76,7 +76,7 @@ bool CrtcController::SchedulePageFlip(
   const OverlayPlane* primary = OverlayPlane::GetPrimaryPlane(overlays);
   if (!primary) {
     LOG(ERROR) << "No primary plane to display on crtc " << crtc_;
-    page_flip_request->Signal(gfx::SwapResult::SWAP_ACK);
+    page_flip_request->Signal();
     return true;
   }
   DCHECK(primary->buffer.get());
@@ -86,19 +86,19 @@ bool CrtcController::SchedulePageFlip(
             << mode_.hdisplay << "x" << mode_.vdisplay << " got "
             << primary->buffer->GetSize().ToString() << " for"
             << " crtc=" << crtc_ << " connector=" << connector_;
-    page_flip_request->Signal(gfx::SwapResult::SWAP_ACK);
+    page_flip_request->Signal();
     return true;
   }
 
   if (!drm_->plane_manager()->AssignOverlayPlanes(plane_list, overlays, crtc_,
                                                   this)) {
     PLOG(ERROR) << "Failed to assign overlay planes for crtc " << crtc_;
-    page_flip_request->Signal(gfx::SwapResult::SWAP_FAILED);
+    page_flip_request->Signal();
     return false;
   }
 
   if (test_only) {
-    page_flip_request->Signal(gfx::SwapResult::SWAP_ACK);
+    page_flip_request->Signal();
   } else {
     pending_planes_ = overlays;
     page_flip_request_ = page_flip_request;
@@ -164,7 +164,7 @@ void CrtcController::SignalPageFlipRequest() {
     // locally to  avoid deleting the object we are making a call on.
     scoped_refptr<PageFlipRequest> last_request;
     last_request.swap(page_flip_request_);
-    last_request->Signal(gfx::SwapResult::SWAP_ACK);
+    last_request->Signal();
   }
 }
 

@@ -17,7 +17,7 @@ class GL_EXPORT GLSurfaceStub : public GLSurface {
   // Implement GLSurface.
   void Destroy() override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers() override;
+  bool SwapBuffers() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
 

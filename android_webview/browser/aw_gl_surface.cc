@@ -21,8 +21,8 @@ unsigned int AwGLSurface::GetBackingFrameBufferObject() {
   return fbo_;
 }
 
-gfx::SwapResult AwGLSurface::SwapBuffers() {
-  return gfx::SwapResult::SWAP_ACK;
+bool AwGLSurface::SwapBuffers() {
+  return true;
 }
 
 gfx::Size AwGLSurface::GetSize() {

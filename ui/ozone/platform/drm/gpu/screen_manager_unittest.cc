@@ -14,9 +14,6 @@
 
 namespace {
 
-void EmptySwapCallback(gfx::SwapResult) {
-}
-
 // Create a basic mode for a 6x4 screen.
 const drmModeModeInfo kDefaultMode =
     {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
@@ -462,7 +459,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   scoped_refptr<ui::ScanoutBuffer> buffer =
       buffer_generator_->Create(drm_, GetPrimaryBounds().size());
   window->QueueOverlayPlane(ui::OverlayPlane(buffer));
-  window->SchedulePageFlip(false /* is_sync */, base::Bind(&EmptySwapCallback));
+  window->SchedulePageFlip(false /* is_sync */, base::Bind(&base::DoNothing));
   screen_manager_->AddWindow(1, window.Pass());
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);

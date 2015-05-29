@@ -32,9 +32,9 @@ class GL_EXPORT NoOpGLSurface : public GLSurface {
   bool Initialize() override { return true; }
   void Destroy() override {}
   bool IsOffscreen() override { return true; }
-  gfx::SwapResult SwapBuffers() override {
+  bool SwapBuffers() override {
     NOTREACHED() << "Cannot call SwapBuffers on a NoOpGLSurface.";
-    return gfx::SwapResult::SWAP_FAILED;
+    return false;
   }
   gfx::Size GetSize() override { return size_; }
   void* GetHandle() override { return NULL; }

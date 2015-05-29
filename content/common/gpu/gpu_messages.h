@@ -33,7 +33,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/swap_result.h"
 #include "ui/gl/gpu_preference.h"
 
 #if defined(OS_ANDROID)
@@ -53,7 +52,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuPreference,
                           gfx::GpuPreferenceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::SurfaceType,
                           gfx::SURFACE_TYPE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(gfx::SwapResult, gfx::SwapResult::SWAP_RESULT_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::MemoryAllocation::PriorityCutoff,
                           gpu::MemoryAllocation::CUTOFF_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::Error, gpu::error::kErrorLast)
@@ -560,9 +558,8 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_Destroyed,
                     gpu::error::Error /* error */)
 
 // Tells the browser that SwapBuffers returned and passes latency info
-IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SwapBuffersCompleted,
-                    std::vector<ui::LatencyInfo> /* latency_info */,
-                    gfx::SwapResult /* result */)
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SwapBuffersCompleted,
+                    std::vector<ui::LatencyInfo> /* latency_info */)
 
 // Tells the browser about updated parameters for vsync alignment.
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_UpdateVSyncParameters,

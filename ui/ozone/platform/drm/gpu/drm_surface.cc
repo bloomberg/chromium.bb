@@ -20,8 +20,6 @@
 namespace ui {
 
 namespace {
-void EmptyPageFlipCallback(gfx::SwapResult result) {
-}
 
 scoped_refptr<DrmBuffer> AllocateBuffer(const scoped_refptr<DrmDevice>& drm,
                                         const gfx::Size& size) {
@@ -73,7 +71,7 @@ void DrmSurface::PresentCanvas(const gfx::Rect& damage) {
 
   UpdateNativeSurface(damage);
   window_delegate_->SchedulePageFlip(true /* is_sync */,
-                                     base::Bind(&EmptyPageFlipCallback));
+                                     base::Bind(&base::DoNothing));
 
   // Update our front buffer pointer.
   front_buffer_ ^= 1;

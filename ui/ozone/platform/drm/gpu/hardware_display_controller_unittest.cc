@@ -54,7 +54,7 @@ class HardwareDisplayControllerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void PageFlipCallback(gfx::SwapResult);
+  void PageFlipCallback();
 
  protected:
   scoped_ptr<ui::HardwareDisplayController> controller_;
@@ -82,7 +82,7 @@ void HardwareDisplayControllerTest::TearDown() {
   drm_ = nullptr;
 }
 
-void HardwareDisplayControllerTest::PageFlipCallback(gfx::SwapResult) {
+void HardwareDisplayControllerTest::PageFlipCallback() {
   page_flips_++;
 }
 

@@ -23,8 +23,8 @@ class NullTransportSurface : public PassThroughImageTransportSurface {
   // gfx::GLSurfaceAdapter implementation.
   bool Initialize() override;
   void Destroy() override;
-  gfx::SwapResult SwapBuffers() override;
-  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+  bool SwapBuffers() override;
+  bool PostSubBuffer(int x, int y, int width, int height) override;
   bool OnMakeCurrent(gfx::GLContext* context) override;
 
  protected:

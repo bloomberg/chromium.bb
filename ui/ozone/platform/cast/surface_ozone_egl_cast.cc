@@ -23,7 +23,7 @@ bool SurfaceOzoneEglCast::OnSwapBuffers() {
 
 bool SurfaceOzoneEglCast::OnSwapBuffersAsync(
     const SwapCompletionCallback& callback) {
-  callback.Run(gfx::SwapResult::SWAP_ACK);
+  callback.Run();
   return true;
 }
 

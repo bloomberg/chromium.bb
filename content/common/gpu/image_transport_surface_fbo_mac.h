@@ -71,8 +71,8 @@ class ImageTransportSurfaceFBO
   void Destroy() override;
   bool DeferDraws() override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers() override;
-  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+  bool SwapBuffers() override;
+  bool PostSubBuffer(int x, int y, int width, int height) override;
   bool SupportsPostSubBuffer() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;

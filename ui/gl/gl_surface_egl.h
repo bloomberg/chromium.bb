@@ -80,11 +80,11 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   bool Resize(const gfx::Size& size) override;
   bool Recreate() override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers() override;
+  bool SwapBuffers() override;
   gfx::Size GetSize() override;
   EGLSurface GetHandle() override;
   bool SupportsPostSubBuffer() override;
-  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+  bool PostSubBuffer(int x, int y, int width, int height) override;
   VSyncProvider* GetVSyncProvider() override;
 
   // Create a NativeViewGLSurfaceEGL with an externally provided VSyncProvider.
@@ -130,7 +130,7 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
   bool Initialize() override;
   void Destroy() override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers() override;
+  bool SwapBuffers() override;
   gfx::Size GetSize() override;
   bool Resize(const gfx::Size& size) override;
   EGLSurface GetHandle() override;
@@ -159,7 +159,7 @@ class GL_EXPORT SurfacelessEGL : public GLSurfaceEGL {
   void Destroy() override;
   bool IsOffscreen() override;
   bool IsSurfaceless() const override;
-  gfx::SwapResult SwapBuffers() override;
+  bool SwapBuffers() override;
   gfx::Size GetSize() override;
   bool Resize(const gfx::Size& size) override;
   EGLSurface GetHandle() override;

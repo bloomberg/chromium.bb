@@ -15,7 +15,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -59,7 +58,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   // Swaps front and back buffers. This has no effect for off-screen
   // contexts.
-  virtual gfx::SwapResult SwapBuffers() = 0;
+  virtual bool SwapBuffers() = 0;
 
   // Get the size of the surface.
   virtual gfx::Size GetSize() = 0;
@@ -74,7 +73,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // FBO. Otherwise returns 0.
   virtual unsigned int GetBackingFrameBufferObject();
 
-  typedef base::Callback<void(SwapResult)> SwapCompletionCallback;
+  typedef base::Callback<void()> SwapCompletionCallback;
   // Swaps front and back buffers. This has no effect for off-screen
   // contexts. On some platforms, we want to send SwapBufferAck only after the
   // surface is displayed on screen. The callback can be used to delay sending
@@ -83,7 +82,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual bool SwapBuffersAsync(const SwapCompletionCallback& callback);
 
   // Copy part of the backbuffer to the frontbuffer.
-  virtual gfx::SwapResult PostSubBuffer(int x, int y, int width, int height);
+  virtual bool PostSubBuffer(int x, int y, int width, int height);
 
   // Copy part of the backbuffer to the frontbuffer. On some platforms, we want
   // to send SwapBufferAck only after the surface is displayed on screen. The
@@ -205,9 +204,9 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool Recreate() override;
   bool DeferDraws() override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers() override;
+  bool SwapBuffers() override;
   bool SwapBuffersAsync(const SwapCompletionCallback& callback) override;
-  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+  bool PostSubBuffer(int x, int y, int width, int height) override;
   bool PostSubBufferAsync(int x,
                           int y,
                           int width,

@@ -661,7 +661,7 @@ bool NativeViewGLSurfaceEGL::IsOffscreen() {
   return false;
 }
 
-gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers() {
+bool NativeViewGLSurfaceEGL::SwapBuffers() {
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceEGL:RealSwapBuffers",
       "width", GetSize().width(),
       "height", GetSize().height());
@@ -704,10 +704,10 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers() {
   if (!eglSwapBuffers(GetDisplay(), surface_)) {
     DVLOG(1) << "eglSwapBuffers failed with error "
              << GetLastEGLErrorString();
-    return gfx::SwapResult::SWAP_FAILED;
+    return false;
   }
 
-  return gfx::SwapResult::SWAP_ACK;
+  return true;
 }
 
 gfx::Size NativeViewGLSurfaceEGL::GetSize() {
@@ -766,17 +766,15 @@ bool NativeViewGLSurfaceEGL::SupportsPostSubBuffer() {
   return supports_post_sub_buffer_;
 }
 
-gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(int x,
-                                                      int y,
-                                                      int width,
-                                                      int height) {
+bool NativeViewGLSurfaceEGL::PostSubBuffer(
+    int x, int y, int width, int height) {
   DCHECK(supports_post_sub_buffer_);
   if (!eglPostSubBufferNV(GetDisplay(), surface_, x, y, width, height)) {
     DVLOG(1) << "eglPostSubBufferNV failed with error "
              << GetLastEGLErrorString();
-    return gfx::SwapResult::SWAP_FAILED;
+    return false;
   }
-  return gfx::SwapResult::SWAP_ACK;
+  return true;
 }
 
 VSyncProvider* NativeViewGLSurfaceEGL::GetVSyncProvider() {
@@ -857,9 +855,9 @@ bool PbufferGLSurfaceEGL::IsOffscreen() {
   return true;
 }
 
-gfx::SwapResult PbufferGLSurfaceEGL::SwapBuffers() {
+bool PbufferGLSurfaceEGL::SwapBuffers() {
   NOTREACHED() << "Attempted to call SwapBuffers on a PbufferGLSurfaceEGL.";
-  return gfx::SwapResult::SWAP_FAILED;
+  return false;
 }
 
 gfx::Size PbufferGLSurfaceEGL::GetSize() {
@@ -943,9 +941,9 @@ bool SurfacelessEGL::IsSurfaceless() const {
   return true;
 }
 
-gfx::SwapResult SurfacelessEGL::SwapBuffers() {
+bool SurfacelessEGL::SwapBuffers() {
   LOG(ERROR) << "Attempted to call SwapBuffers with SurfacelessEGL.";
-  return gfx::SwapResult::SWAP_FAILED;
+  return false;
 }
 
 gfx::Size SurfacelessEGL::GetSize() {

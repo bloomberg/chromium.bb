@@ -11,11 +11,8 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/swap_result.h"
 #include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
-#include "ui/ozone/platform/drm/gpu/page_flip_request.h"
-#include "ui/ozone/public/surface_ozone_egl.h"
 
 class SkBitmap;
 
@@ -82,8 +79,7 @@ class OZONE_EXPORT DrmWindow {
   // immediately, otherwise queue up on the window and forward when the hardware
   // is once again ready.
   void QueueOverlayPlane(const OverlayPlane& plane);
-
-  bool SchedulePageFlip(bool is_sync, const SwapCompletionCallback& callback);
+  bool SchedulePageFlip(bool is_sync, const base::Closure& callback);
 
   // Returns the last buffer associated with this window.
   const OverlayPlane* GetLastModesetBuffer();

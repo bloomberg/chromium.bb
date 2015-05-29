@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
@@ -195,13 +194,13 @@ unsigned int GLSurface::GetBackingFrameBufferObject() {
 
 bool GLSurface::SwapBuffersAsync(const SwapCompletionCallback& callback) {
   DCHECK(!IsSurfaceless());
-  gfx::SwapResult result = SwapBuffers();
-  callback.Run(result);
-  return result == gfx::SwapResult::SWAP_ACK;
+  bool success = SwapBuffers();
+  callback.Run();
+  return success;
 }
 
-gfx::SwapResult GLSurface::PostSubBuffer(int x, int y, int width, int height) {
-  return gfx::SwapResult::SWAP_FAILED;
+bool GLSurface::PostSubBuffer(int x, int y, int width, int height) {
+  return false;
 }
 
 bool GLSurface::PostSubBufferAsync(int x,
@@ -209,9 +208,9 @@ bool GLSurface::PostSubBufferAsync(int x,
                                    int width,
                                    int height,
                                    const SwapCompletionCallback& callback) {
-  gfx::SwapResult result = PostSubBuffer(x, y, width, height);
-  callback.Run(result);
-  return result == gfx::SwapResult::SWAP_ACK;
+  bool success = PostSubBuffer(x, y, width, height);
+  callback.Run();
+  return success;
 }
 
 bool GLSurface::OnMakeCurrent(GLContext* context) {
@@ -320,7 +319,7 @@ bool GLSurfaceAdapter::IsOffscreen() {
   return surface_->IsOffscreen();
 }
 
-gfx::SwapResult GLSurfaceAdapter::SwapBuffers() {
+bool GLSurfaceAdapter::SwapBuffers() {
   return surface_->SwapBuffers();
 }
 
@@ -329,10 +328,7 @@ bool GLSurfaceAdapter::SwapBuffersAsync(
   return surface_->SwapBuffersAsync(callback);
 }
 
-gfx::SwapResult GLSurfaceAdapter::PostSubBuffer(int x,
-                                                int y,
-                                                int width,
-                                                int height) {
+bool GLSurfaceAdapter::PostSubBuffer(int x, int y, int width, int height) {
   return surface_->PostSubBuffer(x, y, width, height);
 }
 

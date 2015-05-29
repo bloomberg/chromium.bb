@@ -49,17 +49,15 @@ void NullTransportSurface::Destroy() {
   // Do not destroy |surface_| since we use the shared offscreen surface.
 }
 
-gfx::SwapResult NullTransportSurface::SwapBuffers() {
+bool NullTransportSurface::SwapBuffers() {
   NOTIMPLEMENTED();
-  return gfx::SwapResult::SWAP_FAILED;
+  return false;
 }
 
-gfx::SwapResult NullTransportSurface::PostSubBuffer(int x,
-                                                    int y,
-                                                    int width,
-                                                    int height) {
+bool NullTransportSurface::PostSubBuffer(
+    int x, int y, int width, int height) {
   NOTIMPLEMENTED();
-  return gfx::SwapResult::SWAP_FAILED;
+  return false;
 }
 
 void NullTransportSurface::SendVSyncUpdateIfAvailable() {

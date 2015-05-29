@@ -5,27 +5,22 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_PAGE_FLIP_REQUEST_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_PAGE_FLIP_REQUEST_H_
 
-#include "base/atomic_ref_count.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/swap_result.h"
-#include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace ui {
 
 class PageFlipRequest : public base::RefCounted<PageFlipRequest> {
  public:
-  PageFlipRequest(int crtc_count, const SwapCompletionCallback& callback);
+  PageFlipRequest(int crtc_count, const base::Closure& callback);
 
-  void Signal(gfx::SwapResult result);
+  void Signal();
 
  private:
   friend class base::RefCounted<PageFlipRequest>;
   ~PageFlipRequest();
 
-  SwapCompletionCallback callback_;
-  int crtc_count_;
-  gfx::SwapResult result_;
+  base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PageFlipRequest);
 };
