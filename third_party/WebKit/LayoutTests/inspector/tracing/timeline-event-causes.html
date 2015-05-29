@@ -82,8 +82,8 @@ function test()
             function finishAndRunNextTest()
             {
                 var linkifier = new WebInspector.Linkifier();
-                var record = InspectorTest.findFirstTimelineRecord("RecalculateStyles");
-                InspectorTest.check(record, "Should receive a RecalculateStyles record.");
+                var record = InspectorTest.findFirstTimelineRecord("UpdateLayoutTree");
+                InspectorTest.check(record, "Should receive a UpdateLayoutTree record.");
                 var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, null, true);
                 WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
                 var causes = contentHelper.element.deepTextContent();

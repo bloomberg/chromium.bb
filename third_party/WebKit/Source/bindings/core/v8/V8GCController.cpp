@@ -335,7 +335,6 @@ void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
 {
     // FIXME: It would be nice if the GC callbacks passed the Isolate directly....
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "GCEvent", "usedHeapSizeBefore", usedHeapSize(isolate));
     if (type == v8::kGCTypeScavenge)
         minorGCPrologue(isolate);
     else if (type == v8::kGCTypeMarkSweepCompact)
@@ -344,7 +343,7 @@ void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
 
 void V8GCController::minorGCPrologue(v8::Isolate* isolate)
 {
-    TRACE_EVENT_BEGIN0("v8", "minorGC");
+    TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MinorGC", "usedHeapSizeBefore", usedHeapSize(isolate));
     if (isMainThread()) {
         ScriptForbiddenScope::enter();
         {
@@ -363,7 +362,7 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
 void V8GCController::majorGCPrologue(v8::Isolate* isolate, bool constructRetainedObjectInfos)
 {
     v8::HandleScope scope(isolate);
-    TRACE_EVENT_BEGIN0("v8", "majorGC");
+    TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MajorGC", "usedHeapSizeBefore", usedHeapSize(isolate));
     if (isMainThread()) {
         ScriptForbiddenScope::enter();
         {
@@ -411,13 +410,12 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
         ThreadState::current()->setGCState(ThreadState::FullGCScheduled);
     }
 
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "GCEvent", "usedHeapSizeAfter", usedHeapSize(isolate));
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
 
 void V8GCController::minorGCEpilogue(v8::Isolate* isolate)
 {
-    TRACE_EVENT_END0("v8", "minorGC");
+    TRACE_EVENT_END1("devtools.timeline,v8", "MinorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
     if (isMainThread()) {
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
         ScriptForbiddenScope::exit();
@@ -426,7 +424,7 @@ void V8GCController::minorGCEpilogue(v8::Isolate* isolate)
 
 void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
 {
-    TRACE_EVENT_END0("v8", "majorGC");
+    TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
     if (isMainThread()) {
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
         ScriptForbiddenScope::exit();

@@ -25,10 +25,10 @@ function test()
     function finish(devtoolsEvents)
     {
         var schedRecalc = InspectorTest.findEvent("ScheduleStyleRecalculation", "I");
-        var recalcBegin = InspectorTest.findEvent("RecalculateStyles", "B");
-        var recalcEnd = InspectorTest.findEvent("RecalculateStyles", "E");
-        InspectorTest.log("RecalculateStyles frames match: " + (schedRecalc.args.data.frame === recalcBegin.args.beginData.frame));
-        InspectorTest.log("RecalculateStyles elementCount > 0: " + (recalcEnd.args.elementCount > 0));
+        var recalcBegin = InspectorTest.findEvent("UpdateLayoutTree", "B");
+        var recalcEnd = InspectorTest.findEvent("UpdateLayoutTree", "E");
+        InspectorTest.log("UpdateLayoutTree frames match: " + (schedRecalc.args.data.frame === recalcBegin.args.beginData.frame));
+        InspectorTest.log("UpdateLayoutTree elementCount > 0: " + (recalcEnd.args.elementCount > 0));
 
         var invalidate = InspectorTest.findEvent("InvalidateLayout", "I");
         var layoutBegin = InspectorTest.findEvent("Layout", "B");

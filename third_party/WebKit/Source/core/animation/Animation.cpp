@@ -936,11 +936,11 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope()
         bool wasActive = oldPlayState == Pending || oldPlayState == Running;
         bool isActive = newPlayState == Pending || newPlayState == Running;
         if (!wasActive && isActive)
-            TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("blink.animations," TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "KeyframeEffect", m_animation, "data", InspectorAnimationEvent::data(*m_animation));
+            TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("blink.animations,devtools.timeline", "KeyframeEffect", m_animation, "data", InspectorAnimationEvent::data(*m_animation));
         else if (wasActive && !isActive)
-            TRACE_EVENT_NESTABLE_ASYNC_END1("blink.animations," TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "KeyframeEffect", m_animation, "endData", InspectorAnimationStateEvent::data(*m_animation));
+            TRACE_EVENT_NESTABLE_ASYNC_END1("blink.animations,devtools.timeline", "KeyframeEffect", m_animation, "endData", InspectorAnimationStateEvent::data(*m_animation));
         else
-            TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("blink.animations," TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "KeyframeEffect", m_animation, "data", InspectorAnimationStateEvent::data(*m_animation));
+            TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("blink.animations,devtools.timeline", "KeyframeEffect", m_animation, "data", InspectorAnimationStateEvent::data(*m_animation));
     }
 
     // Ordering is important, the ready promise should resolve/reject before

@@ -42,6 +42,8 @@ function test()
         InspectorTest.addResult("detailsTextContent for " + record.type() + " event: '" + detailsText.replace(/VM[\d]+/, "VM") + "'");
 
         var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), InspectorTest.timelineModel().target(), linkifier);
+        if (!details)
+            return;
         InspectorTest.addResult("details.textContent for " + record.type() + " event: '" + details.textContent.replace(/VM[\d]+/, "VM") + "'");
     }
 

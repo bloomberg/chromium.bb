@@ -1,7 +1,7 @@
 Tests the Timeline API instrumentation of a style recalculation event
 
 Test data
-RecalculateStyles Properties:
+UpdateLayoutTree Properties:
 {
     data : {
         beginData : {
@@ -15,6 +15,6 @@ RecalculateStyles Properties:
     stackTrace : <object>
     startTime : <number>
     thread : <string>
-    type : "RecalculateStyles"
+    type : "UpdateLayoutTree"
 }
 

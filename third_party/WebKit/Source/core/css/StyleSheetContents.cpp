@@ -279,8 +279,7 @@ const AtomicString& StyleSheetContents::determineNamespace(const AtomicString& p
 
 void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cachedStyleSheet, const SecurityOrigin* securityOrigin)
 {
-    TRACE_EVENT0("blink", "StyleSheetContents::parseAuthorStyleSheet");
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseAuthorStyleSheet", "data", InspectorParseAuthorStyleSheetEvent::data(cachedStyleSheet));
+    TRACE_EVENT1("blink,devtools.timeline", "ParseAuthorStyleSheet", "data", InspectorParseAuthorStyleSheetEvent::data(cachedStyleSheet));
 
     bool hasValidMIMEType = false;
     String sheetText = cachedStyleSheet->sheetText(&hasValidMIMEType);

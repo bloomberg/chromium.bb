@@ -379,7 +379,7 @@ void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newS
 
     RefPtrWillBeRawPtr<FrameView> frameView = box().frameView();
 
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ScrollLayer", "data", InspectorScrollLayerEvent::data(&box()));
+    TRACE_EVENT1("devtools.timeline", "ScrollLayer", "data", InspectorScrollLayerEvent::data(&box()));
 
     // FIXME(420741): Resolve circular dependency between scroll offset and
     // compositing state, and remove this disabler.

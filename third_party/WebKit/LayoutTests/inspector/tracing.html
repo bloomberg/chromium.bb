@@ -80,7 +80,7 @@ function test()
 
         knownEvents["MessageLoop::PostTask"] = 0;
         knownEvents["v8.callFunction"] = 0;
-        knownEvents["Document::updateLayoutTree"] = 0;
+        knownEvents["UpdateLayoutTree"] = 0;
         knownEvents["FrameView::layout"] = 0;
 
         for (var i = 0; i < events.length; ++i) {
@@ -92,7 +92,7 @@ function test()
         }
         InspectorTest.assertGreaterOrEqual(events.length, 100, "Too few trace events recorded");
         InspectorTest.assertGreaterOrEqual(knownEvents["v8.callFunction"], 1, "Too few v8.callFunction");
-        InspectorTest.assertGreaterOrEqual(knownEvents["Document::updateLayoutTree"], 1, "Too few Document::recalcStyle");
+        InspectorTest.assertGreaterOrEqual(knownEvents["UpdateLayoutTree"], 1, "Too few UpdateLayoutTree");
         InspectorTest.assertGreaterOrEqual(knownEvents["FrameView::layout"], 1, "Too few FrameView::layout");
         InspectorTest.assertGreaterOrEqual(phaseComplete, 50, "Too few begin events");
         InspectorTest.assertGreaterOrEqual(processes, 2, "Too few processes");

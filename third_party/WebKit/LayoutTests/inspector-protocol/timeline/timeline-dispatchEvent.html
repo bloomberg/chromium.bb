@@ -44,7 +44,7 @@ function test()
     {
         var formattedEvents = devtoolsEvents.map(function(e)
         {
-            return e.name + "(" + e.args.data.type + ")";
+            return e.name + (e.args.data ? "(" + e.args.data.type + ")" : "");
         });
         InspectorTest.log("FAIL: " + message + " devtools.timeline events: " + JSON.stringify(formattedEvents, null, 2));
     }

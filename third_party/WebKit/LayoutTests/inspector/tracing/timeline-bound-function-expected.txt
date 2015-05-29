@@ -1,6 +1,6 @@
 Tests extracting information about original functions from bound ones
 
 
-FunctionCall InjectedScriptSource.js:1
+FunctionCall :1
 FunctionCall timeline-bound-function.html:7
 

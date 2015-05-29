@@ -1,8 +1,8 @@
 DIV
 Recording started
 Tracing complete
-RecalculateStyles frames match: true
-RecalculateStyles elementCount > 0: true
+UpdateLayoutTree frames match: true
+UpdateLayoutTree elementCount > 0: true
 InvalidateLayout frames match: true
 Layout frames match: true
 dirtyObjects > 0: true

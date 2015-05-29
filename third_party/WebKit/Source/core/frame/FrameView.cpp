@@ -942,7 +942,7 @@ void FrameView::layout()
 
     RELEASE_ASSERT(!isPainting());
 
-    TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Layout", "beginData", InspectorLayoutEvent::beginData(this));
+    TRACE_EVENT_BEGIN1("devtools.timeline", "Layout", "beginData", InspectorLayoutEvent::beginData(this));
 
     performPreLayoutTasks();
 
@@ -1075,7 +1075,7 @@ void FrameView::layout()
     scheduleOrPerformPostLayoutTasks();
 
     // FIXME: The notion of a single root for layout is no longer applicable. Remove or update this code. crbug.com/460596
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Layout", "endData", InspectorLayoutEvent::endData(rootForThisLayout));
+    TRACE_EVENT_END1("devtools.timeline", "Layout", "endData", InspectorLayoutEvent::endData(rootForThisLayout));
     InspectorInstrumentation::didLayout(m_frame.get());
 
     m_nestedLayoutCount--;
@@ -2543,7 +2543,7 @@ void FrameView::updateLayoutAndStyleForPaintingInternal()
 
     LayoutView* view = layoutView();
     if (view) {
-        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateLayerTree", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
+        TRACE_EVENT_INSTANT1("devtools.timeline", "UpdateLayerTree", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
 
         view->compositor()->updateIfNeededRecursive();
 

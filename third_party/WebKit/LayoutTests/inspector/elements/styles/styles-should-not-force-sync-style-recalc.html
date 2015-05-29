@@ -32,7 +32,7 @@ function test()
     function callback()
     {
         InspectorTest.printTimelineRecords("", function(record) {
-            if (record.type() === "RecalculateStyles")
+            if (record.type() === "UpdateLayoutTree")
                 InspectorTest.addResult(record.type());
         });
         InspectorTest.completeTest();

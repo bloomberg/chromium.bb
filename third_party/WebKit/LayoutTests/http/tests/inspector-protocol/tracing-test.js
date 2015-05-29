@@ -9,7 +9,7 @@ initialize_tracingHarness = function()
 
 InspectorTest.startTracing = function(callback)
 {
-    InspectorTest.sendCommand("Tracing.start", { "categories": "-*,disabled-by-default-devtools.timeline", "type": "", "options": "" }, onStart);
+    InspectorTest.sendCommand("Tracing.start", { "categories": "-*,disabled-by-default-devtools.timeline,devtools.timeline", "type": "", "options": "" }, onStart);
 
     function onStart(response)
     {
@@ -30,7 +30,7 @@ InspectorTest.stopTracing = function(callback)
         var allEvents = reply.params.value;
         InspectorTest.devtoolsEvents = InspectorTest.devtoolsEvents.concat(allEvents.filter(function(e)
         {
-            return e.cat === "disabled-by-default-devtools.timeline";
+            return /devtools.timeline/.test(e.cat);
         }));
     }
 

@@ -26,14 +26,14 @@ function test()
 
     function testMultipleStyleRecalcs()
     {
-        var firstRecalc = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 0);
+        var firstRecalc = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
         InspectorTest.addArray(firstRecalc._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first style recalc");
-        var secondRecalc = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 1);
+        var secondRecalc = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 1);
         InspectorTest.addArray(secondRecalc._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second style recalc");
         var firstPaint = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Paint, 0);
         InspectorTest.addArray(firstPaint._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first paint");
 
-        var thirdRecalc = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 2);
+        var thirdRecalc = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 2);
         InspectorTest.assertTrue(thirdRecalc === undefined, "There should be no additional style recalc records.");
         var secondPaint = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Paint, 1);
         InspectorTest.assertTrue(secondPaint === undefined, "There should be no additional paint records.");
