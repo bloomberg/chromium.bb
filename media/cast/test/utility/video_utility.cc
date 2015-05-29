@@ -77,6 +77,7 @@ void PopulateVideoFrame(VideoFrame* frame, int start_value) {
   }
 
   const int half_height = (height + 1) / 2;
+#if defined(OS_MACOSX)
   if (frame->format() == VideoFrame::NV12) {
     const int stride_uv = frame->stride(VideoFrame::kUVPlane);
     uint8* uv_plane = frame->data(VideoFrame::kUVPlane);
@@ -91,7 +92,11 @@ void PopulateVideoFrame(VideoFrame* frame, int start_value) {
         uv_plane += 2;
       }
     }
-  } else {  // I420, YV12, etc.
+  } else
+#endif
+  {
+    DCHECK(frame->format() == VideoFrame::I420 ||
+           frame->format() == VideoFrame::YV12);
     const int stride_u = frame->stride(VideoFrame::kUPlane);
     const int stride_v = frame->stride(VideoFrame::kVPlane);
     uint8* u_plane = frame->data(VideoFrame::kUPlane);
@@ -112,7 +117,7 @@ void PopulateVideoFrame(VideoFrame* frame, int start_value) {
       const int stripe_j = (j / stripe_size) * stripe_size;
       for (int i = 0; i < stride_v; ++i) {
         const int stripe_i = (i / stripe_size) * stripe_size;
-        *u_plane = static_cast<uint8>(start_value + stripe_i + stripe_j);
+        *v_plane = static_cast<uint8>(start_value + stripe_i + stripe_j);
         ++v_plane;
       }
     }
@@ -120,14 +125,14 @@ void PopulateVideoFrame(VideoFrame* frame, int start_value) {
 }
 
 void PopulateVideoFrameWithNoise(VideoFrame* frame) {
-  int height = frame->coded_size().height();
-  int stride_y = frame->stride(VideoFrame::kYPlane);
-  int stride_u = frame->stride(VideoFrame::kUPlane);
-  int stride_v = frame->stride(VideoFrame::kVPlane);
-  int half_height = (height + 1) / 2;
-  uint8* y_plane = frame->data(VideoFrame::kYPlane);
-  uint8* u_plane = frame->data(VideoFrame::kUPlane);
-  uint8* v_plane = frame->data(VideoFrame::kVPlane);
+  const int height = frame->coded_size().height();
+  const int stride_y = frame->stride(VideoFrame::kYPlane);
+  const int stride_u = frame->stride(VideoFrame::kUPlane);
+  const int stride_v = frame->stride(VideoFrame::kVPlane);
+  const int half_height = (height + 1) / 2;
+  uint8* const y_plane = frame->data(VideoFrame::kYPlane);
+  uint8* const u_plane = frame->data(VideoFrame::kUPlane);
+  uint8* const v_plane = frame->data(VideoFrame::kVPlane);
 
   base::RandBytes(y_plane, height * stride_y);
   base::RandBytes(u_plane, half_height * stride_u);
@@ -135,17 +140,17 @@ void PopulateVideoFrameWithNoise(VideoFrame* frame) {
 }
 
 bool PopulateVideoFrameFromFile(VideoFrame* frame, FILE* video_file) {
-  int width = frame->coded_size().width();
-  int height = frame->coded_size().height();
-  int half_width = (width + 1) / 2;
-  int half_height = (height + 1) / 2;
-  size_t frame_size = width * height + 2 * half_width * half_height;
-  uint8* y_plane = frame->data(VideoFrame::kYPlane);
-  uint8* u_plane = frame->data(VideoFrame::kUPlane);
-  uint8* v_plane = frame->data(VideoFrame::kVPlane);
+  const int width = frame->coded_size().width();
+  const int height = frame->coded_size().height();
+  const int half_width = (width + 1) / 2;
+  const int half_height = (height + 1) / 2;
+  const size_t frame_size = width * height + 2 * half_width * half_height;
+  uint8* const y_plane = frame->data(VideoFrame::kYPlane);
+  uint8* const u_plane = frame->data(VideoFrame::kUPlane);
+  uint8* const v_plane = frame->data(VideoFrame::kVPlane);
 
-  uint8* raw_data = new uint8[frame_size];
-  size_t count = fread(raw_data, 1, frame_size, video_file);
+  uint8* const raw_data = new uint8[frame_size];
+  const size_t count = fread(raw_data, 1, frame_size, video_file);
   if (count != frame_size)
     return false;
 

@@ -48,33 +48,23 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // http://www.fourcc.org/yuv.php
   // Logged to UMA, so never reuse values. Leave gaps if necessary.
   enum Format {
-    UNKNOWN = 0,  // Unknown format value.
+    UNKNOWN = 0,  // Unknown or unspecified format value.
     YV12 = 1,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
-    I420 = 2,  // 12bpp YVU planar 1x1 Y, 2x2 UV samples, a.k.a. YU12.
+    I420 = 2,  // 12bpp YUV planar 1x1 Y, 2x2 UV samples, a.k.a. YU12.
     YV16 = 3,  // 16bpp YVU planar 1x1 Y, 2x1 VU samples.
-    YV12A = 4,   // 20bpp YUVA planar 1x1 Y, 2x2 VU, 1x1 A samples.
+    YV12A = 4,  // 20bpp YUVA planar 1x1 Y, 2x2 VU, 1x1 A samples.
     YV24 = 5,  // 24bpp YUV planar, no subsampling.
-    NV12 = 6,  // 12bpp 1x1 Y plane followed by an interleaved 2x2 UV plane.
-    ARGB = 7,  // 32bpp ARGB, 1 plane.
-#if defined(VIDEO_HOLE)
-    HOLE = 8,  // Hole frame.
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    NV12 = 6,  // 12bpp with Y plane followed by a 2x2 interleaved UV plane.
 #endif
-    NATIVE_TEXTURE = 9,  // Native texture.  Pixel-format agnostic.
+    ARGB = 7,  // 32bpp ARGB, 1 plane.
+    XRGB = 8,  // 24bpp XRGB, 1 plane.
     // Please update UMA histogram enumeration when adding new formats here.
-    // Must always be equal to largest entry logged.
-    FORMAT_MAX = NATIVE_TEXTURE,
-  };
-
-  // Defines the internal format and the number of the textures in the mailbox
-  // holders.
-  enum TextureFormat {
-    TEXTURE_RGBA,  // One RGBA texture.
-    TEXTURE_RGB,  // One RGB texture.
-    TEXTURE_YUV_420,  // 3 RED textures one per channel. UV are 2x2 subsampled.
+    FORMAT_MAX = XRGB,  // Must always be equal to largest entry logged.
   };
 
   // Color space or color range used for the pixels, in general this is left
-  // unspecified, meaning SD is assumed.
+  // unspecified, meaning Rec601 (SD) is assumed.
   enum ColorSpace {
     COLOR_SPACE_UNSPECIFIED = 0,  // In general this is Rec601.
     COLOR_SPACE_JPEG = 1,  // JPEG color range.
@@ -82,33 +72,62 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     COLOR_SPACE_MAX = COLOR_SPACE_HD_REC709,
   };
 
+  // Defines the pixel storage type. STORAGE_{OWNED, UNOWNED}_MEMORY and
+  // STORAGE_SHMEM have in common that are mappable, i.e. can be accessed from
+  // the VideoFrame memory space, whereas the rest, in principle, can't.
+  enum StorageType {
+    STORAGE_UNKNOWN = 0,
+    STORAGE_UNOWNED_MEMORY = 1,  // External, non owned data pointers.
+    STORAGE_OWNED_MEMORY = 2,  // VideoFrame has allocated its own data buffer.
+    STORAGE_SHMEM = 3,  // Pixels are backed by Shared Memory.
+#if defined(OS_LINUX)
+    STORAGE_DMABUFS = 4,  // Each plane is stored into a DmaBuf.
+#endif
+#if defined(VIDEO_HOLE)
+    // Opaque storage.
+    STORAGE_HOLE = 5,
+#endif
+    // Pixels are stored in textures, one per plane, referred by MailboxHolders.
+    STORAGE_TEXTURE = 6,
+    STORAGE_MAX = STORAGE_TEXTURE,  // Always equal to the last StorageType.
+  };
+
+  // CB to be called on the mailbox backing this frame when the frame is
+  // destroyed.
+  typedef base::Callback<void(uint32)> ReleaseMailboxCB;
+
   // Returns the name of a Format as a string.
   static std::string FormatToString(Format format);
 
-  // Creates a new frame in system memory with given parameters. Buffers for
-  // the frame are allocated but not initialized.
-  static scoped_refptr<VideoFrame> CreateFrame(
-      Format format,
-      const gfx::Size& coded_size,
-      const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size,
-      base::TimeDelta timestamp);
+  // Returns true if |format| is a YUV non interleaved format.
+  static bool IsYuvPlanar(Format format);
 
-  // Returns true if |plane| is a valid plane number for the given format. This
-  // can be used to DCHECK() plane parameters.
+  // Returns true if |storage_type| is mappable in the VideoFrame memory space.
+  static bool IsMappable(StorageType storage_type);
+
+  // Returns true if |plane| is a valid plane number for the given format.
   static bool IsValidPlane(size_t plane, VideoFrame::Format format);
 
   // Call prior to CreateFrame to ensure validity of frame configuration. Called
   // automatically by VideoDecoderConfig::IsValidConfig().
   // TODO(scherkus): VideoDecoderConfig shouldn't call this method
   static bool IsValidConfig(Format format,
+                            StorageType storage_type,
                             const gfx::Size& coded_size,
                             const gfx::Rect& visible_rect,
                             const gfx::Size& natural_size);
 
-  // CB to be called on the mailbox backing this frame when the frame is
-  // destroyed.
-  typedef base::Callback<void(uint32)> ReleaseMailboxCB;
+  // Creates a new YUV frame in system memory with given parameters (|format|
+  // must be YUV). Buffers for the frame are allocated but not initialized. The
+  // caller most not make assumptions about the actual underlying size(s), but
+  // check the returned VideoFrame instead.
+  // TODO(mcasas): implement the RGB version of this factory method.
+  static scoped_refptr<VideoFrame> CreateFrame(
+      Format format,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      base::TimeDelta timestamp);
 
   // Wraps a native texture of the given parameters with a VideoFrame.
   // The backing of the VideoFrame is held in the mailbox held by
@@ -141,10 +160,18 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Wraps packed image data residing in a memory buffer with a VideoFrame.
   // The image data resides in |data| and is assumed to be packed tightly in a
   // buffer of logical dimensions |coded_size| with the appropriate bit depth
-  // and plane count as given by |format|.  The shared memory handle of the
-  // backing allocation, if present, can be passed in with |handle|.
-  // Returns NULL on failure.
-  static scoped_refptr<VideoFrame> WrapExternalPackedMemory(
+  // and plane count as given by |format|. Returns NULL on failure.
+  static scoped_refptr<VideoFrame> WrapExternalData(
+      Format format,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      uint8* data,
+      size_t data_size,
+      base::TimeDelta timestamp);
+
+  // Same as WrapExternalData() with SharedMemoryHandle and its offset.
+  static scoped_refptr<VideoFrame> WrapExternalSharedMemory(
       Format format,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
@@ -170,7 +197,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       uint8* v_data,
       base::TimeDelta timestamp);
 
-#if defined(OS_POSIX)
+#if defined(OS_LINUX)
   // Wraps provided dmabufs
   // (https://www.kernel.org/doc/Documentation/dma-buf-sharing.txt) with a
   // VideoFrame. The dmabuf fds are dup()ed on creation, so that the VideoFrame
@@ -236,8 +263,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   static size_t NumPlanes(Format format);
 
-  static size_t NumTextures(TextureFormat texture_format);
-
   // Returns the required allocation size for a (tightly packed) frame of the
   // given coded size and format.
   static size_t AllocationSize(Format format, const gfx::Size& coded_size);
@@ -274,7 +299,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   Format format() const { return format_; }
 
-  TextureFormat texture_format() const { return texture_format_; }
+  StorageType storage_type() const { return storage_type_; }
 
   const gfx::Size& coded_size() const { return coded_size_; }
   const gfx::Rect& visible_rect() const { return visible_rect_; }
@@ -289,22 +314,23 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   int row_bytes(size_t plane) const;
   int rows(size_t plane) const;
 
-  // Returns pointer to the buffer for a given plane. The memory is owned by
-  // VideoFrame object and must not be freed by the caller.
+  // Returns pointer to the buffer for a given plane, if this is an IsMappable()
+  // frame type. The memory is owned by VideoFrame object and must not be freed
+  // by the caller.
   const uint8* data(size_t plane) const;
   uint8* data(size_t plane);
 
-  // Returns pointer to the data in the visible region of the frame. I.e. the
-  // returned pointer is offsetted into the plane buffer specified by
-  // visible_rect().origin(). Memory is owned by VideoFrame object and must not
-  // be freed by the caller.
+  // Returns pointer to the data in the visible region of the frame, for
+  // IsMappable() storage types. The returned pointer is offsetted into the
+  // plane buffer specified by visible_rect().origin(). Memory is owned by
+  // VideoFrame object and must not be freed by the caller.
   const uint8* visible_data(size_t plane) const;
   uint8* visible_data(size_t plane);
 
   // Returns a mailbox holder for a given texture.
   // Only valid to call if this is a NATIVE_TEXTURE frame. Before using the
   // mailbox, the caller must wait for the included sync point.
-  const gpu::MailboxHolder& mailbox_holder(size_t texture) const;
+  const gpu::MailboxHolder& mailbox_holder(size_t texture_index) const;
 
   // Returns the shared-memory handle, if present
   base::SharedMemoryHandle shared_memory_handle() const;
@@ -331,7 +357,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   bool allow_overlay() const { return allow_overlay_; }
 
-#if defined(OS_POSIX)
+#if defined(OS_LINUX)
   // Returns backing dmabuf file descriptor for given |plane|, if present.
   int dmabuf_fd(size_t plane) const;
 #endif
@@ -344,10 +370,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns true if this VideoFrame represents the end of the stream.
   bool end_of_stream() const { return end_of_stream_; }
 
-  base::TimeDelta timestamp() const {
-    return timestamp_;
-  }
-  void set_timestamp(const base::TimeDelta& timestamp) {
+  base::TimeDelta timestamp() const { return timestamp_; }
+  void set_timestamp(base::TimeDelta timestamp) {
     timestamp_ = timestamp;
   }
 
@@ -377,22 +401,50 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Clients must use the static CreateFrame() method to create a new frame.
   VideoFrame(Format format,
+             StorageType storage_type,
+             const gfx::Size& coded_size,
+             const gfx::Rect& visible_rect,
+             const gfx::Size& natural_size,
+             base::TimeDelta timestamp,
+             bool end_of_stream);
+  VideoFrame(Format format,
+             StorageType storage_type,
+             const gfx::Size& coded_size,
+             const gfx::Rect& visible_rect,
+             const gfx::Size& natural_size,
+             base::TimeDelta timestamp,
+             bool end_of_stream,
+             base::SharedMemoryHandle handle,
+             size_t shared_memory_offset);
+  VideoFrame(Format format,
+             StorageType storage_type,
              const gfx::Size& coded_size,
              const gfx::Rect& visible_rect,
              const gfx::Size& natural_size,
              const gpu::MailboxHolder(&mailbox_holders)[kMaxPlanes],
-             TextureFormat texture_format,
              base::TimeDelta timestamp,
              bool end_of_stream);
   virtual ~VideoFrame();
+
+  static scoped_refptr<VideoFrame> WrapExternalStorage(
+      Format format,
+      StorageType storage_type,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      uint8* data,
+      size_t data_size,
+      base::TimeDelta timestamp,
+      base::SharedMemoryHandle handle,
+      size_t data_offset);
 
   void AllocateYUV();
 
   // Frame format.
   const Format format_;
 
-  // Format of the native textures associated with this frame.
-  const TextureFormat texture_format_;
+  // Storage type for the different planes.
+  const StorageType storage_type_;
 
   // Width and height of the video frame, in pixels. This must include pixel
   // data for the whole image; i.e. for YUV formats with subsampled chroma
@@ -416,19 +468,20 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   int32 strides_[kMaxPlanes];
 
   // Array of data pointers to each plane.
+  // TODO(mcasas): we don't know on ctor if we own |data_| or not. After
+  // refactoring VideoFrame, change to scoped_ptr<uint8, AlignedFreeDeleter>.
   uint8* data_[kMaxPlanes];
 
-  // Native texture mailboxes, if this is a NATIVE_TEXTURE frame.
+  // Native texture mailboxes, if this is a STORAGE_TEXTURE frame.
   gpu::MailboxHolder mailbox_holders_[kMaxPlanes];
   ReleaseMailboxCB mailbox_holders_release_cb_;
 
-  // Shared memory handle, if this frame was allocated from shared memory.
+  // Shared memory handle and associated offset inside it, if this frame was
+  // constructed as STORAGE_SHMEM.
   base::SharedMemoryHandle shared_memory_handle_;
-
-  // Offset in shared memory buffer.
   size_t shared_memory_offset_;
 
-#if defined(OS_POSIX)
+#if defined(OS_LINUX)
   // Dmabufs for each plane, if this frame is wrapping memory
   // acquired via dmabuf.
   base::ScopedFD dmabuf_fds_[kMaxPlanes];

@@ -493,7 +493,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   const int index = input_buffers_free_.back();
   base::SharedMemory* input_buffer = input_buffers_[index];
   scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalPackedMemory(
+      media::VideoFrame::WrapExternalSharedMemory(
           media::VideoFrame::I420,
           input_frame_coded_size_,
           gfx::Rect(input_visible_size_),

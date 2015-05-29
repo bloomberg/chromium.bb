@@ -16,21 +16,20 @@ namespace media {
 // background rendering to keep the Render() callbacks moving.
 const int kBackgroundRenderingTimeoutMs = 250;
 
+// Returns true if the format has no Alpha channel (hence is always opaque).
 static bool IsOpaque(const scoped_refptr<VideoFrame>& frame) {
   switch (frame->format()) {
     case VideoFrame::UNKNOWN:
     case VideoFrame::YV12:
-    case VideoFrame::YV16:
     case VideoFrame::I420:
+    case VideoFrame::YV16:
     case VideoFrame::YV24:
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
     case VideoFrame::NV12:
+#endif
+    case VideoFrame::XRGB:
       return true;
-
     case VideoFrame::YV12A:
-#if defined(VIDEO_HOLE)
-    case VideoFrame::HOLE:
-#endif  // defined(VIDEO_HOLE)
-    case VideoFrame::NATIVE_TEXTURE:
     case VideoFrame::ARGB:
       break;
   }

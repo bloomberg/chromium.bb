@@ -102,7 +102,8 @@ class CONTENT_EXPORT VideoCaptureBufferPool
  private:
   class GpuMemoryBufferTracker;
   class SharedMemTracker;
-  // Generic class to keep track of the state of a given mappable resource.
+  // Generic class to keep track of the state of a given mappable resource. Each
+  // Tracker carries indication of pixel format and storage type.
   class Tracker {
    public:
     static scoped_ptr<Tracker> CreateTracker(bool use_gmb);
@@ -110,6 +111,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
     Tracker()
         : pixel_count_(0), held_by_producer_(false), consumer_hold_count_(0) {}
     virtual bool Init(media::VideoFrame::Format format,
+                      media::VideoFrame::StorageType storage_type,
                       const gfx::Size& dimensions) = 0;
     virtual ~Tracker();
 
@@ -118,6 +120,12 @@ class CONTENT_EXPORT VideoCaptureBufferPool
     media::VideoFrame::Format pixel_format() const { return pixel_format_; }
     void set_pixel_format(media::VideoFrame::Format format) {
       pixel_format_ = format;
+    }
+    media::VideoFrame::StorageType storage_type() const {
+      return storage_type_;
+    }
+    void set_storage_type(media::VideoFrame::StorageType storage_type) {
+      storage_type_ = storage_type;
     }
     bool held_by_producer() const { return held_by_producer_; }
     void set_held_by_producer(bool value) { held_by_producer_ = value; }
@@ -136,6 +144,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
    private:
     size_t pixel_count_;
     media::VideoFrame::Format pixel_format_;
+    media::VideoFrame::StorageType storage_type_;
     // Indicates whether this Tracker is currently referenced by the producer.
     bool held_by_producer_;
     // Number of consumer processes which hold this Tracker.

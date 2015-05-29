@@ -43,14 +43,10 @@ namespace content {
 
 namespace {
 
-// This function copies a YV12 or NATIVE_TEXTURE to a new YV12
-// media::VideoFrame.
+// This function copies |frame| to a new YV12 media::VideoFrame.
 scoped_refptr<media::VideoFrame> CopyFrameToYV12(
     const scoped_refptr<media::VideoFrame>& frame,
     media::SkCanvasVideoRenderer* video_renderer) {
-  DCHECK(frame->format() == media::VideoFrame::YV12 ||
-         frame->format() == media::VideoFrame::I420 ||
-         frame->format() == media::VideoFrame::NATIVE_TEXTURE);
   scoped_refptr<media::VideoFrame> new_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
                                      frame->coded_size(),
@@ -58,16 +54,18 @@ scoped_refptr<media::VideoFrame> CopyFrameToYV12(
                                      frame->natural_size(),
                                      frame->timestamp());
 
-  if (frame->format() == media::VideoFrame::NATIVE_TEXTURE) {
+  if (frame->storage_type() == media::VideoFrame::STORAGE_TEXTURE) {
+    DCHECK(frame->format() == media::VideoFrame::ARGB ||
+           frame->format() == media::VideoFrame::XRGB);
     SkBitmap bitmap;
     bitmap.allocN32Pixels(frame->visible_rect().width(),
                           frame->visible_rect().height());
     SkCanvas canvas(bitmap);
 
-    cc::ContextProvider* provider =
+    cc::ContextProvider* const provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
     if (provider) {
-      media::Context3D context_3d =
+      const media::Context3D context_3d =
           media::Context3D(provider->ContextGL(), provider->GrContext());
       DCHECK(context_3d.gl);
       video_renderer->Copy(frame.get(), &canvas, context_3d);
@@ -75,15 +73,15 @@ scoped_refptr<media::VideoFrame> CopyFrameToYV12(
       // GPU Process crashed.
       bitmap.eraseColor(SK_ColorTRANSPARENT);
     }
-    media::CopyRGBToVideoFrame(
-        reinterpret_cast<uint8*>(bitmap.getPixels()),
-        bitmap.rowBytes(),
-        frame->visible_rect(),
-        new_frame.get());
+    media::CopyRGBToVideoFrame(reinterpret_cast<uint8*>(bitmap.getPixels()),
+                               bitmap.rowBytes(),
+                               frame->visible_rect(),
+                               new_frame.get());
   } else {
-    size_t number_of_planes =
-        media::VideoFrame::NumPlanes(frame->format());
-    for (size_t i = 0; i < number_of_planes; ++i) {
+    DCHECK(media::VideoFrame::IsMappable(frame->storage_type()));
+    DCHECK(frame->format() == media::VideoFrame::YV12 ||
+           frame->format() == media::VideoFrame::I420);
+    for (size_t i = 0; i < media::VideoFrame::NumPlanes(frame->format()); ++i) {
       media::CopyPlane(i, frame->data(i), frame->stride(i),
                        frame->rows(i), new_frame.get());
     }
@@ -343,7 +341,7 @@ void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
 
   media::Context3D context_3d;
   if (current_frame_.get() &&
-      current_frame_->format() == media::VideoFrame::NATIVE_TEXTURE) {
+      current_frame_->storage_type() == media::VideoFrame::STORAGE_TEXTURE) {
     cc::ContextProvider* provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
     // GPU Process crashed.
@@ -431,7 +429,7 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
   }
 
   if (!video_frame.get() ||
-      video_frame->format() != media::VideoFrame::NATIVE_TEXTURE) {
+      video_frame->storage_type() != media::VideoFrame::STORAGE_TEXTURE) {
     return false;
   }
 

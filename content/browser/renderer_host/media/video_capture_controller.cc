@@ -298,10 +298,10 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
       else
         copy_of_metadata.reset(metadata->DeepCopy());
 
-      if (frame->format() == VideoFrame::NATIVE_TEXTURE) {
+      if (frame->storage_type() == VideoFrame::STORAGE_TEXTURE) {
         DCHECK(frame->coded_size() == frame->visible_rect().size())
             << "Textures are always supposed to be tightly packed.";
-        DCHECK_EQ(1u, VideoFrame::NumTextures(frame->texture_format()));
+        DCHECK_EQ(1u, VideoFrame::NumPlanes(frame->format()));
         client->event_handler->OnMailboxBufferReady(
             client->controller_id, buffer_id, frame->mailbox_holder(0),
             frame->coded_size(), timestamp, copy_of_metadata.Pass());

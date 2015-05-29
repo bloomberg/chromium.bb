@@ -332,16 +332,15 @@ GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame(
     case VideoFrame::I420:
       return pool_impl_->CreateHardwareFrame(video_frame);
     // Unsupported cases.
-    case media::VideoFrame::YV12A:
-    case media::VideoFrame::YV16:
-    case media::VideoFrame::YV24:
-#if defined(VIDEO_HOLE)
-    case media::VideoFrame::HOLE:
-#endif  // defined(VIDEO_HOLE)
-    case media::VideoFrame::ARGB:
-    case media::VideoFrame::NATIVE_TEXTURE:
-    case media::VideoFrame::UNKNOWN:
-    case media::VideoFrame::NV12:
+    case VideoFrame::YV12A:
+    case VideoFrame::YV16:
+    case VideoFrame::YV24:
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    case VideoFrame::NV12:
+#endif
+    case VideoFrame::ARGB:
+    case VideoFrame::XRGB:
+    case VideoFrame::UNKNOWN:
       break;
   }
   return video_frame;

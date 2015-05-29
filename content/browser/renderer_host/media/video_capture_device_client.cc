@@ -247,6 +247,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 
   const gfx::Size dimensions(destination_width, destination_height);
   if (!VideoFrame::IsValidConfig(VideoFrame::I420,
+                                 VideoFrame::STORAGE_UNKNOWN,
                                  dimensions,
                                  gfx::Rect(dimensions),
                                  dimensions)) {
@@ -460,7 +461,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
   } else {
     DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_I420);
     scoped_refptr<VideoFrame> video_frame =
-        VideoFrame::WrapExternalPackedMemory(
+        VideoFrame::WrapExternalData(
             VideoFrame::I420,
             frame_format.frame_size,
             gfx::Rect(frame_format.frame_size),
@@ -468,8 +469,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
             reinterpret_cast<uint8*>(buffer->data()),
             VideoFrame::AllocationSize(VideoFrame::I420,
                                        frame_format.frame_size),
-            base::SharedMemory::NULLHandle(),
-            0  /* shared_memory_offset */,
             base::TimeDelta());
     DCHECK(video_frame.get());
     video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,

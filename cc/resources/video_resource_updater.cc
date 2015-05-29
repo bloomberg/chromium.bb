@@ -137,37 +137,13 @@ void VideoResourceUpdater::DeleteResource(ResourceList::iterator resource_it) {
 VideoFrameExternalResources VideoResourceUpdater::
     CreateExternalResourcesFromVideoFrame(
         const scoped_refptr<media::VideoFrame>& video_frame) {
-  if (!VerifyFrame(video_frame))
+  if (video_frame->format() == media::VideoFrame::UNKNOWN)
     return VideoFrameExternalResources();
 
-  if (video_frame->format() == media::VideoFrame::NATIVE_TEXTURE)
+  if (video_frame->storage_type() == media::VideoFrame::STORAGE_TEXTURE)
     return CreateForHardwarePlanes(video_frame);
   else
     return CreateForSoftwarePlanes(video_frame);
-}
-
-bool VideoResourceUpdater::VerifyFrame(
-    const scoped_refptr<media::VideoFrame>& video_frame) {
-  switch (video_frame->format()) {
-    // Acceptable inputs.
-    case media::VideoFrame::YV12:
-    case media::VideoFrame::I420:
-    case media::VideoFrame::YV12A:
-    case media::VideoFrame::YV16:
-    case media::VideoFrame::YV24:
-    case media::VideoFrame::NATIVE_TEXTURE:
-#if defined(VIDEO_HOLE)
-    case media::VideoFrame::HOLE:
-#endif  // defined(VIDEO_HOLE)
-    case media::VideoFrame::ARGB:
-      return true;
-
-    // Unacceptable inputs. ¯\(°_o)/¯
-    case media::VideoFrame::UNKNOWN:
-    case media::VideoFrame::NV12:
-      break;
-  }
-  return false;
 }
 
 // For frames that we receive in software format, determine the dimensions of
@@ -186,10 +162,10 @@ static gfx::Size SoftwarePlaneDimension(
 VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     const scoped_refptr<media::VideoFrame>& video_frame) {
   TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForSoftwarePlanes");
-  media::VideoFrame::Format input_frame_format = video_frame->format();
+  const media::VideoFrame::Format input_frame_format = video_frame->format();
 
 #if defined(VIDEO_HOLE)
-  if (input_frame_format == media::VideoFrame::HOLE) {
+  if (video_frame->storage_type() == media::VideoFrame::STORAGE_HOLE) {
     VideoFrameExternalResources external_resources;
     external_resources.type = VideoFrameExternalResources::HOLE;
     return external_resources;
@@ -197,16 +173,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 #endif  // defined(VIDEO_HOLE)
 
   // Only YUV software video frames are supported.
-  if (input_frame_format != media::VideoFrame::YV12 &&
-      input_frame_format != media::VideoFrame::I420 &&
-      input_frame_format != media::VideoFrame::YV12A &&
-      input_frame_format != media::VideoFrame::YV16 &&
-      input_frame_format != media::VideoFrame::YV24) {
-    NOTREACHED() << input_frame_format;
+  if (!media::VideoFrame::IsYuvPlanar(input_frame_format)) {
+    NOTREACHED() << media::VideoFrame::FormatToString(input_frame_format);
     return VideoFrameExternalResources();
   }
 
-  bool software_compositor = context_provider_ == NULL;
+  const bool software_compositor = context_provider_ == NULL;
 
   ResourceFormat output_resource_format =
       resource_provider_->yuv_resource_format();
@@ -394,27 +366,23 @@ void VideoResourceUpdater::ReturnTexture(
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     const scoped_refptr<media::VideoFrame>& video_frame) {
   TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForHardwarePlanes");
-  media::VideoFrame::Format frame_format = video_frame->format();
-
-  DCHECK_EQ(frame_format, media::VideoFrame::NATIVE_TEXTURE);
+  DCHECK_EQ(video_frame->storage_type(), media::VideoFrame::STORAGE_TEXTURE);
   if (!context_provider_)
     return VideoFrameExternalResources();
 
-  size_t textures =
-      media::VideoFrame::NumTextures(video_frame->texture_format());
+  const size_t textures = media::VideoFrame::NumPlanes(video_frame->format());
   DCHECK_GE(textures, 1u);
   VideoFrameExternalResources external_resources;
-  switch (video_frame->texture_format()) {
-    case media::VideoFrame::TEXTURE_RGBA:
-    case media::VideoFrame::TEXTURE_RGB:
+  switch (video_frame->format()) {
+    case media::VideoFrame::ARGB:
+    case media::VideoFrame::XRGB:
       DCHECK_EQ(1u, textures);
       switch (video_frame->mailbox_holder(0).texture_target) {
         case GL_TEXTURE_2D:
-          if (video_frame->texture_format() == media::VideoFrame::TEXTURE_RGB)
-            external_resources.type = VideoFrameExternalResources::RGB_RESOURCE;
-          else
-            external_resources.type =
-                VideoFrameExternalResources::RGBA_RESOURCE;
+          external_resources.type =
+              (video_frame->format() == media::VideoFrame::XRGB)
+                  ? VideoFrameExternalResources::RGB_RESOURCE
+                  : VideoFrameExternalResources::RGBA_RESOURCE;
           break;
         case GL_TEXTURE_EXTERNAL_OES:
           external_resources.type =
@@ -428,9 +396,20 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
           return VideoFrameExternalResources();
       }
       break;
-    case media::VideoFrame::TEXTURE_YUV_420:
+    case media::VideoFrame::I420:
       external_resources.type = VideoFrameExternalResources::YUV_RESOURCE;
       break;
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    case media::VideoFrame::NV12:
+#endif
+    case media::VideoFrame::YV12:
+    case media::VideoFrame::YV16:
+    case media::VideoFrame::YV24:
+    case media::VideoFrame::YV12A:
+    case media::VideoFrame::UNKNOWN:
+      DLOG(ERROR) << "Unsupported Texture format"
+                  << media::VideoFrame::FormatToString(video_frame->format());
+      return external_resources;
   }
   DCHECK_NE(VideoFrameExternalResources::NONE, external_resources.type);
 
