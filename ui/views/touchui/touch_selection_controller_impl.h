@@ -10,11 +10,13 @@
 #include "ui/base/touch/selection_bound.h"
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/views/touchui/touch_editing_menu.h"
+#include "ui/touch_selection/touch_selection_menu_runner.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace views {
+class WidgetDelegateView;
 
 namespace test {
 class WidgetTestInteractive;
@@ -25,7 +27,7 @@ class WidgetTestInteractive;
 // touch interface.
 class VIEWS_EXPORT TouchSelectionControllerImpl
     : public ui::TouchEditingControllerDeprecated,
-      public TouchEditingMenuController,
+      public ui::TouchSelectionMenuClient,
       public aura::WindowObserver,
       public WidgetObserver,
       public ui::EventHandler {
@@ -69,11 +71,10 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // |bound| should be the clipped version of the selection bound.
   bool ShouldShowHandleFor(const ui::SelectionBound& bound) const;
 
-  // Overridden from TouchEditingMenuController.
+  // Overridden from ui::TouchSelectionMenuClient.
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
-  void OpenContextMenu() override;
-  void OnMenuClosed(TouchEditingMenuView* menu) override;
+  void RunContextMenu() override;
 
   // Overriden from aura::WindowObserver.
   void OnAncestorWindowTransformed(aura::Window* source,
@@ -91,16 +92,20 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
-  // Time to show context menu.
-  void ContextMenuTimerFired();
+  // Time to show quick menu.
+  void QuickMenuTimerFired();
 
-  void StartContextMenuTimer();
+  void StartQuickMenuTimer();
 
-  // Convenience method to update the position/visibility of the context menu.
-  void UpdateContextMenu();
+  // Convenience method to update the position/visibility of the quick menu.
+  void UpdateQuickMenu();
 
-  // Convenience method for hiding context menu.
-  void HideContextMenu();
+  // Convenience method for hiding quick menu.
+  void HideQuickMenu();
+
+  // Convenience method to calculate anchor rect for quick menu, in screen
+  // coordinates.
+  gfx::Rect GetQuickMenuAnchorRect() const;
 
   // Convenience methods for testing.
   gfx::NativeView GetCursorHandleNativeView();
@@ -119,14 +124,13 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   scoped_ptr<EditingHandleView> selection_handle_1_;
   scoped_ptr<EditingHandleView> selection_handle_2_;
   scoped_ptr<EditingHandleView> cursor_handle_;
-  TouchEditingMenuView* context_menu_;
   bool command_executed_;
   base::TimeTicks selection_start_time_;
 
-  // Timer to trigger |context_menu| (|context_menu| is not shown if the
-  // selection handles are being updated. It appears only when the handles are
-  // stationary for a certain amount of time).
-  base::OneShotTimer<TouchSelectionControllerImpl> context_menu_timer_;
+  // Timer to trigger quick menu (Quick menu is not shown if the selection
+  // handles are being updated. It appears only when the handles are stationary
+  // for a certain amount of time).
+  base::OneShotTimer<TouchSelectionControllerImpl> quick_menu_timer_;
 
   // Pointer to the SelectionHandleView being dragged during a drag session.
   EditingHandleView* dragging_handle_;

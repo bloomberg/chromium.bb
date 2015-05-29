@@ -302,6 +302,9 @@ if (!is_android) {
           "../../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
         ]
       }
+      if (use_aura) {
+        deps += [ "//ui/touch_selection" ]
+      }
     }
 
     if (is_linux && !is_chromeos) {

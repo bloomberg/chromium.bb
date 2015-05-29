@@ -47,6 +47,11 @@ class NonClientFrameView;
 class ViewsTouchEditingControllerFactory;
 class View;
 class Widget;
+
+#if defined(USE_AURA)
+class TouchSelectionMenuRunnerViews;
+#endif
+
 namespace internal {
 class NativeWidgetDelegate;
 }
@@ -160,6 +165,10 @@ class VIEWS_EXPORT ViewsDelegate {
 
  private:
   scoped_ptr<ViewsTouchEditingControllerFactory> views_tsc_factory_;
+
+#if defined(USE_AURA)
+  scoped_ptr<TouchSelectionMenuRunnerViews> touch_selection_menu_runner_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ViewsDelegate);
 };

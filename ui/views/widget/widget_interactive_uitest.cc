@@ -284,22 +284,16 @@ class WidgetTestInteractive : public WidgetTest {
   }
 
  protected:
+#if defined(USE_AURA)
   static void ShowQuickMenuImmediately(
       TouchSelectionControllerImpl* controller) {
     DCHECK(controller);
-    if (controller->context_menu_timer_.IsRunning()) {
-      controller->context_menu_timer_.Stop();
-// TODO(tapted): Enable this when porting ui/views/touchui to Mac.
-#if !defined(OS_MACOSX)
-      controller->ContextMenuTimerFired();
-#endif
+    if (controller->quick_menu_timer_.IsRunning()) {
+      controller->quick_menu_timer_.Stop();
+      controller->QuickMenuTimerFired();
     }
   }
-
-  static bool IsQuickMenuVisible(TouchSelectionControllerImpl* controller) {
-    DCHECK(controller);
-    return controller->context_menu_ && controller->context_menu_->visible();
-  }
+#endif  // defined (USE_AURA)
 
   Widget* CreateWidget() {
     Widget* widget = CreateNativeDesktopWidget();
@@ -894,17 +888,9 @@ TEST_F(WidgetTestInteractive, CanActivateFlagIsHonored) {
   EXPECT_FALSE(widget.IsActive());
 }
 
-// No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
-#define MAYBE_TouchSelectionQuickMenuIsNotActivated \
-    DISABLED_TouchSelectionQuickMenuIsNotActivated
-#else
-#define MAYBE_TouchSelectionQuickMenuIsNotActivated \
-    TouchSelectionQuickMenuIsNotActivated
-#endif
-
+#if defined(USE_AURA)
 // Test that touch selection quick menu is not activated when opened.
-TEST_F(WidgetTestInteractive, MAYBE_TouchSelectionQuickMenuIsNotActivated) {
+TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchEditing);
 #if defined(OS_WIN)
@@ -932,10 +918,10 @@ TEST_F(WidgetTestInteractive, MAYBE_TouchSelectionQuickMenuIsNotActivated) {
 
   EXPECT_TRUE(textfield->HasFocus());
   EXPECT_TRUE(widget->IsActive());
-  EXPECT_TRUE(IsQuickMenuVisible(static_cast<TouchSelectionControllerImpl*>(
-      textfield_test_api.touch_selection_controller())));
+  EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
   widget->CloseNow();
 }
+#endif  // defined(USE_AURA)
 
 TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
 #if defined(OS_WIN)

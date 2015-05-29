@@ -388,10 +388,10 @@
       'event_monitor_aura.h',
       'metrics_aura.cc',
       'native_cursor_aura.cc',
-      'touchui/touch_editing_menu.cc',
-      'touchui/touch_editing_menu.h',
       'touchui/touch_selection_controller_impl.cc',
       'touchui/touch_selection_controller_impl.h',
+      'touchui/touch_selection_menu_runner_views.cc',
+      'touchui/touch_selection_menu_runner_views.h',
       'view_constants_aura.cc',
       'view_constants_aura.h',
       'views_touch_selection_controller_factory_aura.cc',
@@ -581,6 +581,7 @@
       'controls/native/native_view_host_aura_unittest.cc',
       'corewm/tooltip_controller_unittest.cc',
       'touchui/touch_selection_controller_impl_unittest.cc',
+      'touchui/touch_selection_menu_runner_views_unittest.cc',
       'view_unittest_aura.cc',
       'widget/native_widget_aura_unittest.cc',
     ],
@@ -706,6 +707,7 @@
           ],
           'dependencies': [
             '../aura/aura.gyp:aura',
+            '../touch_selection/ui_touch_selection.gyp:ui_touch_selection',
             '../wm/wm.gyp:wm',
           ],
         }],
@@ -864,6 +866,7 @@
           'dependencies': [
             '../aura/aura.gyp:aura',
             '../aura/aura.gyp:aura_test_support',
+            '../touch_selection/ui_touch_selection.gyp:ui_touch_selection',
             '../wm/wm.gyp:wm',
           ],
           'conditions': [

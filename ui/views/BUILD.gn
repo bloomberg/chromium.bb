@@ -99,6 +99,7 @@ component("views") {
     sources += gypi_values.views_aura_sources
     deps += [
       "//ui/aura",
+      "//ui/touch_selection",
       "//ui/wm",
     ]
     if (!is_chromeos) {
@@ -235,6 +236,7 @@ test("views_unittests") {
     deps += [
       "//ui/aura",
       "//ui/aura:test_support",
+      "//ui/touch_selection",
       "//ui/wm",
     ]
     if (!is_chromeos) {

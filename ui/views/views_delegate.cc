@@ -7,11 +7,19 @@
 #include "base/command_line.h"
 #include "ui/views/views_touch_selection_controller_factory.h"
 
+#if defined(USE_AURA)
+#include "ui/views/touchui/touch_selection_menu_runner_views.h"
+#endif
+
 namespace views {
 
 ViewsDelegate::ViewsDelegate()
     : views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
   ui::TouchEditingControllerFactory::SetInstance(views_tsc_factory_.get());
+
+#if defined(USE_AURA)
+  touch_selection_menu_runner_.reset(new TouchSelectionMenuRunnerViews());
+#endif
 }
 
 ViewsDelegate::~ViewsDelegate() {

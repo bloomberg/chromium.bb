@@ -16,8 +16,6 @@ component("touch_selection") {
     "selection_event_type.h",
     "touch_handle.cc",
     "touch_handle.h",
-    "touch_handle_drawable_aura.cc",
-    "touch_handle_drawable_aura.h",
     "touch_handle_orientation.h",
     "touch_selection_controller.cc",
     "touch_selection_controller.h",
@@ -27,20 +25,15 @@ component("touch_selection") {
   defines = [ "UI_TOUCH_SELECTION_IMPLEMENTATION" ]
 
   deps = [
-    "//skia:skia",
     "//base:base",
-    "//ui/aura:aura",
-    "//ui/aura_extra:aura_extra",
     "//ui/base:base",
-    "//ui/compositor:compositor",
     "//ui/events:events",
     "//ui/events:gesture_detection",
-    "//ui/gfx:gfx",
     "//ui/gfx/geometry:geometry",
   ]
 
-  if (!use_aura) {
-    deps -= [
+  if (use_aura) {
+    deps += [
       "//skia:skia",
       "//ui/aura:aura",
       "//ui/aura_extra:aura_extra",
@@ -48,9 +41,11 @@ component("touch_selection") {
       "//ui/gfx:gfx",
     ]
 
-    sources -= [
+    sources += [
       "touch_handle_drawable_aura.cc",
       "touch_handle_drawable_aura.h",
+      "touch_selection_menu_runner.cc",
+      "touch_selection_menu_runner.h",
     ]
   }
 }

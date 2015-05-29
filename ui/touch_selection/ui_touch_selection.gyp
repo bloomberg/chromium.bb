@@ -34,6 +34,8 @@
         'touch_handle_orientation.h',
         'touch_selection_controller.cc',
         'touch_selection_controller.h',
+        'touch_selection_menu_runner.cc',
+        'touch_selection_menu_runner.h',
         'ui_touch_selection_export.h',
       ],
       'include_dirs': [
@@ -51,6 +53,8 @@
           'sources!': [
             'touch_handle_drawable_aura.cc',
             'touch_handle_drawable_aura.h',
+            'touch_selection_menu_runner.cc',
+            'touch_selection_menu_runner.h',
           ],
         }],
       ],

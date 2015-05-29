@@ -1624,6 +1624,13 @@
             '../ui/views/views.gyp:views',
             '../ui/views/views.gyp:views_test_support',
           ],
+          'conditions': [
+            ['use_aura==1', {
+              'dependencies': [
+                '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection',
+              ],
+            }],
+          ],
         }],
         ['use_aura==0 or chromeos==1', {
           'sources!': [

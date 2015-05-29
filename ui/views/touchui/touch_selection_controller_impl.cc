@@ -19,6 +19,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/masked_window_targeter.h"
 
@@ -60,7 +61,7 @@ const int kSelectionHandleVerticalDragOffset = 5;
 const int kSelectionHandleHorizPadding = 10;
 const int kSelectionHandleVertPadding = 20;
 
-const int kContextMenuTimoutMs = 200;
+const int kQuickMenuTimoutMs = 200;
 
 const int kSelectionHandleQuickFadeDurationMs = 50;
 
@@ -415,7 +416,6 @@ TouchSelectionControllerImpl::TouchSelectionControllerImpl(
       cursor_handle_(new EditingHandleView(this,
                                            client_view->GetNativeView(),
                                            true)),
-      context_menu_(nullptr),
       command_executed_(false),
       dragging_handle_(nullptr) {
   selection_start_time_ = base::TimeTicks::Now();
@@ -430,7 +430,7 @@ TouchSelectionControllerImpl::TouchSelectionControllerImpl(
 TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {
   UMA_HISTOGRAM_BOOLEAN("Event.TouchSelection.EndedWithAction",
                         command_executed_);
-  HideContextMenu();
+  HideQuickMenu();
   aura::Env::GetInstance()->RemovePreTargetHandler(this);
   if (client_widget_)
     client_widget_->RemoveObserver(this);
@@ -468,7 +468,7 @@ void TouchSelectionControllerImpl::SelectionChanged() {
   selection_bound_2_clipped_ = screen_bound_focus_clipped;
 
   if (client_view_->DrawsHandles()) {
-    UpdateContextMenu();
+    UpdateQuickMenu();
     return;
   }
 
@@ -504,7 +504,7 @@ void TouchSelectionControllerImpl::SelectionChanged() {
       SetHandleBound(non_dragging_handle, anchor, screen_bound_anchor_clipped);
     }
   } else {
-    UpdateContextMenu();
+    UpdateQuickMenu();
 
     // Check if there is any selection at all.
     if (screen_bound_anchor.edge_top() == screen_bound_focus.edge_top() &&
@@ -537,9 +537,9 @@ void TouchSelectionControllerImpl::SetDraggingHandle(
     EditingHandleView* handle) {
   dragging_handle_ = handle;
   if (dragging_handle_)
-    HideContextMenu();
+    HideQuickMenu();
   else
-    StartContextMenuTimer();
+    StartQuickMenuTimer();
 }
 
 void TouchSelectionControllerImpl::SelectionHandleDragged(
@@ -608,21 +608,14 @@ void TouchSelectionControllerImpl::ExecuteCommand(int command_id,
                              base::TimeDelta::FromMilliseconds(500),
                              base::TimeDelta::FromSeconds(60),
                              60);
-  HideContextMenu();
   client_view_->ExecuteCommand(command_id, event_flags);
 }
 
-void TouchSelectionControllerImpl::OpenContextMenu() {
+void TouchSelectionControllerImpl::RunContextMenu() {
   // Context menu should appear centered on top of the selected region.
-  const gfx::Rect rect = context_menu_->GetAnchorRect();
+  const gfx::Rect rect = GetQuickMenuAnchorRect();
   const gfx::Point anchor(rect.CenterPoint().x(), rect.y());
-  HideContextMenu();
   client_view_->OpenContextMenu(anchor);
-}
-
-void TouchSelectionControllerImpl::OnMenuClosed(TouchEditingMenuView* menu) {
-  if (menu == context_menu_)
-    context_menu_ = nullptr;
 }
 
 void TouchSelectionControllerImpl::OnAncestorWindowTransformed(
@@ -659,19 +652,51 @@ void TouchSelectionControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
   client_view_->DestroyTouchSelection();
 }
 
-void TouchSelectionControllerImpl::ContextMenuTimerFired() {
+void TouchSelectionControllerImpl::QuickMenuTimerFired() {
+  gfx::Rect menu_anchor = GetQuickMenuAnchorRect();
+  if (menu_anchor == gfx::Rect())
+    return;
+
+  ui::TouchSelectionMenuRunner::GetInstance()->OpenMenu(
+      this, menu_anchor, GetMaxHandleImageSize(),
+      client_view_->GetNativeView());
+}
+
+void TouchSelectionControllerImpl::StartQuickMenuTimer() {
+  if (quick_menu_timer_.IsRunning())
+    return;
+  quick_menu_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kQuickMenuTimoutMs),
+      this,
+      &TouchSelectionControllerImpl::QuickMenuTimerFired);
+}
+
+void TouchSelectionControllerImpl::UpdateQuickMenu() {
+  // Hide quick menu to be shown when the timer fires.
+  HideQuickMenu();
+  StartQuickMenuTimer();
+}
+
+void TouchSelectionControllerImpl::HideQuickMenu() {
+  if (ui::TouchSelectionMenuRunner::GetInstance()->IsRunning())
+    ui::TouchSelectionMenuRunner::GetInstance()->CloseMenu();
+  quick_menu_timer_.Stop();
+}
+
+gfx::Rect TouchSelectionControllerImpl::GetQuickMenuAnchorRect() const {
   // Get selection end points in client_view's space.
   ui::SelectionBound b1_in_screen = selection_bound_1_clipped_;
-  ui::SelectionBound b2_in_screen =
-      cursor_handle_->IsWidgetVisible() ? b1_in_screen
+  ui::SelectionBound b2_in_screen = cursor_handle_->IsWidgetVisible()
+                                        ? b1_in_screen
                                         : selection_bound_2_clipped_;
   // Convert from screen to client.
   ui::SelectionBound b1 = ConvertFromScreen(client_view_, b1_in_screen);
   ui::SelectionBound b2 = ConvertFromScreen(client_view_, b2_in_screen);
 
-  // if selection is completely inside the view, we display the context menu
-  // in the middle of the end points on the top. Else, we show it above the
-  // visible handle. If no handle is visible, we do not show the menu.
+  // if selection is completely inside the view, we display the quick menu in
+  // the middle of the end points on the top. Else, we show it above the visible
+  // handle. If no handle is visible, we do not show the menu.
   gfx::Rect menu_anchor;
   if (ShouldShowHandleFor(b1) && ShouldShowHandleFor(b2))
     menu_anchor = ui::RectBetweenSelectionBounds(b1_in_screen, b2_in_screen);
@@ -680,39 +705,13 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
   else if (ShouldShowHandleFor(b2))
     menu_anchor = BoundToRect(b2_in_screen);
   else
-    return;
+    return menu_anchor;
 
   // Enlarge the anchor rect so that the menu is offset from the text at least
   // by the same distance the handles are offset from the text.
   menu_anchor.Inset(0, -kSelectionHandleVerticalVisualOffset);
 
-  DCHECK(!context_menu_);
-  context_menu_ = TouchEditingMenuView::Create(this, menu_anchor,
-                                               GetMaxHandleImageSize(),
-                                               client_view_->GetNativeView());
-}
-
-void TouchSelectionControllerImpl::StartContextMenuTimer() {
-  if (context_menu_timer_.IsRunning())
-    return;
-  context_menu_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kContextMenuTimoutMs),
-      this,
-      &TouchSelectionControllerImpl::ContextMenuTimerFired);
-}
-
-void TouchSelectionControllerImpl::UpdateContextMenu() {
-  // Hide context menu to be shown when the timer fires.
-  HideContextMenu();
-  StartContextMenuTimer();
-}
-
-void TouchSelectionControllerImpl::HideContextMenu() {
-  if (context_menu_)
-    context_menu_->Close();
-  context_menu_ = nullptr;
-  context_menu_timer_.Stop();
+  return menu_anchor;
 }
 
 gfx::NativeView TouchSelectionControllerImpl::GetCursorHandleNativeView() {

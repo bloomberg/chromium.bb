@@ -23,6 +23,7 @@
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/views_touch_selection_controller_factory.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -35,12 +36,6 @@ const int kBarMinHeight = 5;
 // Should match kSelectionHandleBarBottomAllowance in
 // touch_selection_controller.
 const int kBarBottomAllowance = 3;
-
-// Should match kMenuButtonWidth in touch_editing_menu.
-const int kMenuButtonWidth = 63;
-
-// Should match size of kMenuCommands array in touch_editing_menu.
-const int kMenuCommandCount = 3;
 
 // For selection bounds |b1| and |b2| in a paragraph of text, returns -1 if |b1|
 // is physically before |b2|, +1 if |b2| is before |b1|, and 0 if they are at
@@ -760,69 +755,6 @@ TEST_F(TouchSelectionControllerImplTest, HandlesStackAboveParent) {
                              ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   EXPECT_EQ(GetCursorHandleNativeView(),
             targeter->FindTargetForEvent(root, &test_event3));
-}
-
-// A simple implementation of TouchEditingMenuController that enables all
-// available commands.
-class TestTouchEditingMenuController : public TouchEditingMenuController {
- public:
-  TestTouchEditingMenuController() {}
-  ~TestTouchEditingMenuController() override {}
-
-  // Overriden from TouchEditingMenuController.
-  bool IsCommandIdEnabled(int command_id) const override {
-    // Return true, since we want the menu to have all |kMenuCommandCount|
-    // available commands.
-    return true;
-  }
-  void ExecuteCommand(int command_id, int event_flags) override {
-    NOTREACHED();
-  }
-  void OpenContextMenu() override { NOTREACHED(); }
-  void OnMenuClosed(TouchEditingMenuView* menu) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestTouchEditingMenuController);
-};
-
-// Tests if anchor rect for touch editing quick menu is adjusted correctly based
-// on the distance of handles.
-TEST_F(TouchSelectionControllerImplTest, QuickMenuAdjustsAnchorRect) {
-  CreateWidget();
-  aura::Window* window = widget_->GetNativeView();
-
-  scoped_ptr<TestTouchEditingMenuController> quick_menu_controller(
-      new TestTouchEditingMenuController());
-
-  // Some arbitrary size for touch editing handle image.
-  gfx::Size handle_image_size(10, 10);
-
-  // Calculate the width of quick menu. In addition to |kMenuCommandCount|
-  // commands, there is an item for ellipsis.
-  int quick_menu_width = (kMenuCommandCount + 1) * kMenuButtonWidth +
-                         kMenuCommandCount;
-
-  // Set anchor rect's width a bit smaller than the quick menu width plus handle
-  // image width and check that anchor rect's height is adjusted.
-  gfx::Rect anchor_rect(
-      0, 0, quick_menu_width + handle_image_size.width() - 10, 20);
-  TouchEditingMenuView* quick_menu(TouchEditingMenuView::Create(
-      quick_menu_controller.get(), anchor_rect, handle_image_size, window));
-  anchor_rect.Inset(0, 0, 0, -handle_image_size.height());
-  EXPECT_EQ(anchor_rect.ToString(), quick_menu->GetAnchorRect().ToString());
-
-  // Set anchor rect's width a bit greater than the quick menu width plus handle
-  // image width and check that anchor rect's height is not adjusted.
-  anchor_rect =
-      gfx::Rect(0, 0, quick_menu_width + handle_image_size.width() + 10, 20);
-  quick_menu = TouchEditingMenuView::Create(
-      quick_menu_controller.get(), anchor_rect, handle_image_size, window);
-  EXPECT_EQ(anchor_rect.ToString(), quick_menu->GetAnchorRect().ToString());
-
-  // Close the widget, hence quick menus, before quick menu controller goes out
-  // of scope.
-  widget_->CloseNow();
-  widget_ = nullptr;
 }
 
 TEST_F(TouchSelectionControllerImplTest, MouseEventDeactivatesTouchSelection) {
