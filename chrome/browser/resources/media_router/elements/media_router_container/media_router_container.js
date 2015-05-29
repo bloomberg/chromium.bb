@@ -238,12 +238,12 @@ Polymer({
   },
 
   /**
-   * @param {!media_router.Route} route The current route.
-   * return {media_router.Sink} The sink associated with |route|.
+   * @param {?media_router.Route} route The current route.
+   * return {?media_router.Sink} The sink associated with |route|.
    * @private
    */
   computeSinkForCurrentRoute_: function(route) {
-    return this.sinkMap_[route.sinkId];
+    return route ? this.sinkMap_[route.sinkId] : null;
   },
 
   /**
