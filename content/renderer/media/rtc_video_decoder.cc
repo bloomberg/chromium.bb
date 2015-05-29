@@ -400,13 +400,13 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   DCHECK(inserted);
 
   // Create a WebRTC video frame.
-  webrtc::I420VideoFrame decoded_image(frame.get(),
-                                       picture.visible_rect().width(),
-                                       picture.visible_rect().height(),
-                                       timestamp,
-                                       0,
-                                       webrtc::kVideoRotation_0,
-                                       rtc::Bind(&ReleaseFrame, frame));
+  webrtc::VideoFrame decoded_image(frame.get(),
+                                   picture.visible_rect().width(),
+                                   picture.visible_rect().height(),
+                                   timestamp,
+                                   0,
+                                   webrtc::kVideoRotation_0,
+                                   rtc::Bind(&ReleaseFrame, frame));
 
   // Invoke decode callback. WebRTC expects no callback after Reset or Release.
   {

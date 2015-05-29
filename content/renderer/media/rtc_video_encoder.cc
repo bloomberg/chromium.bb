@@ -119,7 +119,7 @@ class RTCVideoEncoder::Impl
   // Enqueue a frame from WebRTC for encoding.
   // RTCVideoEncoder expects to be able to call this function synchronously from
   // its own thread, hence the |async_waiter| and |async_retval| arguments.
-  void Enqueue(const webrtc::I420VideoFrame* input_frame,
+  void Enqueue(const webrtc::VideoFrame* input_frame,
                bool force_keyframe,
                base::WaitableEvent* async_waiter,
                int32_t* async_retval);
@@ -192,7 +192,7 @@ class RTCVideoEncoder::Impl
 
   // Next input frame.  Since there is at most one next frame, a single-element
   // queue is sufficient.
-  const webrtc::I420VideoFrame* input_next_frame_;
+  const webrtc::VideoFrame* input_next_frame_;
 
   // Whether to encode a keyframe next.
   bool input_next_frame_keyframe_;
@@ -268,7 +268,7 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   }
 }
 
-void RTCVideoEncoder::Impl::Enqueue(const webrtc::I420VideoFrame* input_frame,
+void RTCVideoEncoder::Impl::Enqueue(const webrtc::VideoFrame* input_frame,
                                     bool force_keyframe,
                                     base::WaitableEvent* async_waiter,
                                     int32_t* async_retval) {
@@ -480,7 +480,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   // we receive a VEA::NotifyError(), and the media::VideoFrame we pass to
   // Encode() gets destroyed early.  Handle this by resetting our
   // input_next_frame_* state before we hand off the VideoFrame to the VEA.
-  const webrtc::I420VideoFrame* next_frame = input_next_frame_;
+  const webrtc::VideoFrame* next_frame = input_next_frame_;
   bool next_frame_keyframe = input_next_frame_keyframe_;
   input_next_frame_ = NULL;
   input_next_frame_keyframe_ = false;
@@ -625,7 +625,7 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
 }
 
 int32_t RTCVideoEncoder::Encode(
-    const webrtc::I420VideoFrame& input_image,
+    const webrtc::VideoFrame& input_image,
     const webrtc::CodecSpecificInfo* codec_specific_info,
     const std::vector<webrtc::VideoFrameType>* frame_types) {
   DVLOG(3) << "Encode()";

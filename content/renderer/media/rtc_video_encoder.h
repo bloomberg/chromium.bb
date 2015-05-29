@@ -21,6 +21,12 @@ namespace media {
 class GpuVideoAcceleratorFactories;
 }  // namespace media
 
+namespace webrtc {
+// TODO(mcasas): Remove this alias when WebRtc has rolled and renamed
+// webrtc::I420VideoFrame to webrtc::VideoFrame.
+using VideoFrame = webrtc::I420VideoFrame;
+}
+
 namespace content {
 
 // RTCVideoEncoder uses a media::VideoEncodeAccelerator to implement a
