@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/common/password_form_field_prediction_map.h"
 
 namespace autofill {
 class AutofillManager;
@@ -46,10 +47,11 @@ class PasswordManagerDriver
   virtual void AccountCreationFormsFound(
       const std::vector<autofill::FormData>& forms) = 0;
 
-  // Notifies the driver that account creation |forms| were found.
+  // Notifies the driver that username and password predictions from autofill
+  // have been received.
   virtual void AutofillDataReceived(
-      const std::map<autofill::FormData, autofill::FormFieldData>&
-          predictions) {}
+      const std::map<autofill::FormData,
+                     autofill::PasswordFormFieldPredictionMap>& predictions) {}
 
   // Notifies the driver that the user has accepted a generated password.
   virtual void GeneratedPasswordAccepted(const base::string16& password) = 0;

@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
+#include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -42,8 +43,8 @@ scoped_ptr<PasswordForm> CreatePasswordForm(
     const blink::WebFormElement& form,
     const std::map<const blink::WebInputElement, blink::WebString>*
         nonscript_modified_values,
-    const std::map<autofill::FormData, autofill::FormFieldData>*
-        form_predictions);
+    const std::map<autofill::FormData,
+                   autofill::PasswordFormFieldPredictionMap>* form_predictions);
 
 }  // namespace autofill
 

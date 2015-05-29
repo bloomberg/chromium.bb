@@ -15,6 +15,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/web_element_descriptor.h"
 #include "content/public/common/common_param_traits.h"
@@ -30,6 +31,10 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(autofill::FormFieldData::RoleAttribute,
                           autofill::FormFieldData::ROLE_ATTRIBUTE_OTHER)
+
+IPC_ENUM_TRAITS_MAX_VALUE(
+    autofill::PasswordFormFieldPredictionType,
+    autofill::PasswordFormFieldPredictionType::PREDICTION_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(base::i18n::TextDirection,
                           base::i18n::TEXT_DIRECTION_NUM_DIRECTIONS - 1)
@@ -108,8 +113,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 
 // IPC_MESSAGE macros fail on the std::map, when expanding. We need to define
 // a type to avoid that.
-using FormDataFieldDataMap =
-    std::map<autofill::FormData, autofill::FormFieldData>;
+using FormsPredictionsMap =
+    std::map<autofill::FormData, autofill::PasswordFormFieldPredictionMap>;
 
 #endif  // COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_MESSAGES_H_
 
@@ -207,10 +212,10 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_AccountCreationFormsDetected,
                     std::vector<autofill::FormData> /* forms */)
 
 // Sent when Autofill manager gets the query response from the Autofill server
-// which contains information about username fields for some forms.
+// which contains information about username and password fields for some forms.
 // |predictions| maps forms to their username fields.
-IPC_MESSAGE_ROUTED1(AutofillMsg_AutofillUsernameDataReceived,
-                    FormDataFieldDataMap /* predictions */)
+IPC_MESSAGE_ROUTED1(AutofillMsg_AutofillUsernameAndPasswordDataReceived,
+                    FormsPredictionsMap /* predictions */)
 
 // Autofill messages sent from the renderer to the browser.
 

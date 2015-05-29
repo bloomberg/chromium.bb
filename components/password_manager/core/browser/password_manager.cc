@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data_predictions.h"
+#include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -85,6 +86,28 @@ void RecordWhetherTargetDomainDiffers(const GURL& src, const GURL& target) {
 
 bool IsSignupForm(const PasswordForm& form) {
   return !form.new_password_element.empty() && form.password_element.empty();
+}
+
+bool ServerTypeToPrediction(autofill::ServerFieldType server_field_type,
+                            autofill::PasswordFormFieldPredictionType* type) {
+  switch (server_field_type) {
+    case autofill::USERNAME:
+    case autofill::USERNAME_AND_EMAIL_ADDRESS:
+      *type = autofill::PREDICTION_USERNAME;
+      break;
+
+    case autofill::PASSWORD:
+      *type = autofill::PREDICTION_CURRENT_PASSWORD;
+      break;
+
+    case autofill::ACCOUNT_CREATION_PASSWORD:
+      *type = autofill::PREDICTION_NEW_PASSWORD;
+      break;
+
+    default:
+      return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -652,15 +675,15 @@ void PasswordManager::ProcessAutofillPredictions(
     password_manager::PasswordManagerDriver* driver,
     const std::vector<autofill::FormStructure*>& forms) {
   // Leave only forms that contain fields that are useful for password manager.
-  std::map<autofill::FormData, autofill::FormFieldData> predictions;
+  std::map<autofill::FormData, autofill::PasswordFormFieldPredictionMap>
+      predictions;
   for (autofill::FormStructure* form : forms) {
     for (std::vector<autofill::AutofillField*>::const_iterator field =
              form->begin();
          field != form->end(); ++field) {
-      if ((*field)->server_type() == autofill::USERNAME ||
-          (*field)->server_type() == autofill::USERNAME_AND_EMAIL_ADDRESS) {
-        predictions[form->ToFormData()] = *(*field);
-      }
+      autofill::PasswordFormFieldPredictionType prediction_type;
+      if (ServerTypeToPrediction((*field)->server_type(), &prediction_type))
+        predictions[form->ToFormData()][prediction_type] = *(*field);
     }
   }
   if (predictions.empty())

@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "content/public/renderer/render_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -1817,9 +1818,9 @@ TEST_F(PasswordAutofillAgentTest, FindingUsernameWithoutAutofillPredictions) {
   ExpectFormSubmittedWithUsernameAndPasswords("temp@google.com", "random", "");
 }
 
-// Tests that username predictions are followed when identifying the username
-// in a password form with two plain text fields.
-TEST_F(PasswordAutofillAgentTest, FindingUsernameWithAutofillPredictions) {
+// Tests that field predictions are followed when identifying the username
+// and password in a password form with two plain text fields.
+TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
   LoadHTML(kFormHTMLWithTwoTextFields);
   UpdateUsernameAndPasswordElements();
   blink::WebInputElement email_element = GetInputElementByID(kEmailName);
@@ -1832,15 +1833,17 @@ TEST_F(PasswordAutofillAgentTest, FindingUsernameWithAutofillPredictions) {
   ASSERT_TRUE(WebFormElementToFormData(form_element,
                                        blink::WebFormControlElement(),
                                        EXTRACT_NONE, &form_data, nullptr));
-  // Simulate Autofill predictions: the first field is username.
-  std::map<autofill::FormData, autofill::FormFieldData> predictions;
-  predictions[form_data] = form_data.fields[0];
-  AutofillMsg_AutofillUsernameDataReceived msg(0, predictions);
+  // Simulate Autofill predictions: the first field is username, the third
+  // one is password.
+  std::map<autofill::FormData, PasswordFormFieldPredictionMap> predictions;
+  predictions[form_data][PREDICTION_USERNAME] = form_data.fields[0];
+  predictions[form_data][PREDICTION_NEW_PASSWORD] = form_data.fields[2];
+  AutofillMsg_AutofillUsernameAndPasswordDataReceived msg(0, predictions);
   static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
       ->OnMessageReceived(msg);
 
-  // The prediction should still match even if the form changes, as long
-  // as the particular element doesn't change.
+  // The predictions should still match even if the form changes, as long
+  // as the particular elements don't change.
   std::string add_field_to_form =
       "var form = document.getElementById('LoginTestForm');"
       "var new_input = document.createElement('input');"
@@ -1856,6 +1859,9 @@ TEST_F(PasswordAutofillAgentTest, FindingUsernameWithAutofillPredictions) {
 
   // Observe that the PasswordAutofillAgent identifies the first field as
   // username.
+  // TODO(msramek): We should also test that adding another password field
+  // won't override the password field prediction either. However, the password
+  // field predictions are not taken into account yet.
   ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
 }
 
