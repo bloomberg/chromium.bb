@@ -6,19 +6,19 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 
 namespace net {
 
 SerialWorker::SerialWorker()
-  : message_loop_(base::MessageLoopProxy::current()),
-    state_(IDLE) {}
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()), state_(IDLE) {
+}
 
 SerialWorker::~SerialWorker() {}
 
 void SerialWorker::WorkNow() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   switch (state_) {
     case IDLE:
       if (!base::WorkerPool::PostTask(FROM_HERE, base::Bind(
@@ -29,7 +29,7 @@ void SerialWorker::WorkNow() {
 #else
         LOG(WARNING) << "Failed to WorkerPool::PostTask, will retry later";
         const int kWorkerPoolRetryDelayMs = 100;
-        message_loop_->PostDelayedTask(
+        task_runner_->PostDelayedTask(
             FROM_HERE,
             base::Bind(&SerialWorker::RetryWork, this),
             base::TimeDelta::FromMilliseconds(kWorkerPoolRetryDelayMs));
@@ -53,19 +53,19 @@ void SerialWorker::WorkNow() {
 }
 
 void SerialWorker::Cancel() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   state_ = CANCELLED;
 }
 
 void SerialWorker::DoWorkJob() {
   this->DoWork();
   // If this fails, the loop is gone, so there is no point retrying.
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &SerialWorker::OnWorkJobFinished, this));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&SerialWorker::OnWorkJobFinished, this));
 }
 
 void SerialWorker::OnWorkJobFinished() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   switch (state_) {
     case CANCELLED:
       return;
@@ -83,7 +83,7 @@ void SerialWorker::OnWorkJobFinished() {
 }
 
 void SerialWorker::RetryWork() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   switch (state_) {
     case CANCELLED:
       return;

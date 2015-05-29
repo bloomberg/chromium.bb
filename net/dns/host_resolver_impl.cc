@@ -21,14 +21,15 @@
 #include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -598,7 +599,7 @@ class HostResolverImpl::ProcTask
       : key_(key),
         params_(params),
         callback_(callback),
-        origin_loop_(base::MessageLoopProxy::current()),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()),
         attempt_number_(0),
         completed_attempt_number_(0),
         completed_attempt_error_(ERR_UNEXPECTED),
@@ -612,7 +613,7 @@ class HostResolverImpl::ProcTask
   }
 
   void Start() {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     net_log_.BeginEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_PROC_TASK);
     StartLookupAttempt();
   }
@@ -621,7 +622,7 @@ class HostResolverImpl::ProcTask
   // attempts running on worker threads will continue running. Only once all the
   // attempts complete will the final reference to this ProcTask be released.
   void Cancel() {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
 
     if (was_canceled() || was_completed())
       return;
@@ -631,17 +632,17 @@ class HostResolverImpl::ProcTask
   }
 
   void set_had_non_speculative_request() {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     had_non_speculative_request_ = true;
   }
 
   bool was_canceled() const {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     return callback_.is_null();
   }
 
   bool was_completed() const {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     return completed_attempt_number_ > 0;
   }
 
@@ -650,7 +651,7 @@ class HostResolverImpl::ProcTask
   ~ProcTask() {}
 
   void StartLookupAttempt() {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     base::TimeTicks start_time = base::TimeTicks::Now();
     ++attempt_number_;
     // Dispatch the lookup attempt to a worker thread.
@@ -663,10 +664,14 @@ class HostResolverImpl::ProcTask
       // Since we could be running within Resolve() right now, we can't just
       // call OnLookupComplete().  Instead we must wait until Resolve() has
       // returned (IO_PENDING).
-      origin_loop_->PostTask(
-          FROM_HERE,
-          base::Bind(&ProcTask::OnLookupComplete, this, AddressList(),
-                     start_time, attempt_number_, ERR_UNEXPECTED, 0));
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&ProcTask::OnLookupComplete,
+                                        this,
+                                        AddressList(),
+                                        start_time,
+                                        attempt_number_,
+                                        ERR_UNEXPECTED,
+                                        0));
       return;
     }
 
@@ -678,7 +683,7 @@ class HostResolverImpl::ProcTask
     // will start a new attempt on a different worker thread if none of our
     // outstanding attempts have completed yet.
     if (attempt_number_ <= params_.max_retry_attempts) {
-      origin_loop_->PostDelayedTask(
+      task_runner_->PostDelayedTask(
           FROM_HERE,
           base::Bind(&ProcTask::RetryIfNotComplete, this),
           params_.unresponsive_delay);
@@ -712,15 +717,20 @@ class HostResolverImpl::ProcTask
       }
     }
 
-    origin_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&ProcTask::OnLookupComplete, this, results, start_time,
-                   attempt_number, error, os_error));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&ProcTask::OnLookupComplete,
+                                      this,
+                                      results,
+                                      start_time,
+                                      attempt_number,
+                                      error,
+                                      os_error));
   }
 
-  // Makes next attempt if DoLookup() has not finished (runs on origin thread).
+  // Makes next attempt if DoLookup() has not finished (runs on task runner
+  // thread).
   void RetryIfNotComplete() {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
 
     if (was_completed() || was_canceled())
       return;
@@ -729,13 +739,13 @@ class HostResolverImpl::ProcTask
     StartLookupAttempt();
   }
 
-  // Callback for when DoLookup() completes (runs on origin thread).
+  // Callback for when DoLookup() completes (runs on task runner thread).
   void OnLookupComplete(const AddressList& results,
                         const base::TimeTicks& start_time,
                         const uint32 attempt_number,
                         int error,
                         const int os_error) {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     // If results are empty, we should return an error.
     bool empty_list_on_ok = (error == OK && results.empty());
     UMA_HISTOGRAM_BOOLEAN("DNS.EmptyAddressListAndNoError", empty_list_on_ok);
@@ -802,7 +812,7 @@ class HostResolverImpl::ProcTask
   void RecordPerformanceHistograms(const base::TimeTicks& start_time,
                                    const int error,
                                    const int os_error) const {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     enum Category {  // Used in UMA_HISTOGRAM_ENUMERATION.
       RESOLVE_SUCCESS,
       RESOLVE_FAIL,
@@ -869,7 +879,7 @@ class HostResolverImpl::ProcTask
                                const uint32 attempt_number,
                                const int error,
                                const int os_error) const {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     bool first_attempt_to_complete =
         completed_attempt_number_ == attempt_number;
     bool is_first_attempt = (attempt_number == 1);
@@ -916,7 +926,7 @@ class HostResolverImpl::ProcTask
       DNS_HISTOGRAM("DNS.AttemptFailDuration", duration);
   }
 
-  // Set on the origin thread, read on the worker thread.
+  // Set on the task runner thread, read on the worker thread.
   Key key_;
 
   // Holds an owning reference to the HostResolverProc that we are going to use.
@@ -928,8 +938,8 @@ class HostResolverImpl::ProcTask
   // The listener to the results of this ProcTask.
   Callback callback_;
 
-  // Used to post ourselves onto the origin thread.
-  scoped_refptr<base::MessageLoopProxy> origin_loop_;
+  // Used to post ourselves onto the task runner thread.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Keeps track of the number of attempts we have made so far to resolve the
   // host. Whenever we start an attempt to resolve the host, we increase this
@@ -991,7 +1001,7 @@ class HostResolverImpl::LoopbackProbeJob {
     resolver_->SetHaveOnlyLoopbackAddresses(result_);
   }
 
-  // Used/set only on origin thread.
+  // Used/set only on task runner thread.
   base::WeakPtr<HostResolverImpl> resolver_;
 
   bool result_;

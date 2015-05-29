@@ -13,7 +13,7 @@
 
 // Forward declaration
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -61,7 +61,7 @@ class NET_EXPORT_PRIVATE SerialWorker
   // Executed on origin thread after |DoRead| completes.
   virtual void OnWorkFinished() = 0;
 
-  base::MessageLoopProxy* loop() { return message_loop_.get(); }
+  base::SingleThreadTaskRunner* loop() { return task_runner_.get(); }
 
  private:
   enum State {
@@ -82,8 +82,8 @@ class NET_EXPORT_PRIVATE SerialWorker
   // Posted to message loop in case WorkerPool is busy. (state == WAITING)
   void RetryWork();
 
-  // Message loop for the thread of origin.
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  // Task runner for the thread of origin.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   State state_;
 
