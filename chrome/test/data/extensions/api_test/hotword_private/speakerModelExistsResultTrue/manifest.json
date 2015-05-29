@@ -6,6 +6,7 @@
   "manifest_version": 2,
   "description": "Browser tests for chrome.hotword_private API",
   "background" : {
+    "persistent": false,
     "scripts": ["test.js"]
   },
   "permissions": ["hotwordPrivate"]

@@ -4,6 +4,7 @@
   "version": "1.0",
   "description": "Tests GCM API",
   "background": {
+    "persistent": false,
     "scripts": ["send_message_data.js"]
   },
   "permissions": ["gcm"]
