@@ -2315,10 +2315,18 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)
   },
   {
+    "enable-add-to-shelf",
+    IDS_FLAGS_ENABLE_ADD_TO_SHELF_NAME,
+    IDS_FLAGS_ENABLE_ADD_TO_SHELF_DESCRIPTION,
+    kOsDesktop,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAddToShelf,
+                              switches::kDisableAddToShelf)
+  },
+  {
     "bypass-app-banner-engagement-checks",
     IDS_FLAGS_BYPASS_APP_BANNER_ENGAGEMENT_CHECKS_NAME,
     IDS_FLAGS_BYPASS_APP_BANNER_ENGAGEMENT_CHECKS_DESCRIPTION,
-    kOsAndroid,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kBypassAppBannerEngagementChecks)
   },
   {

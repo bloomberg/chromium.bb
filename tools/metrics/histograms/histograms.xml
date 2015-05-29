@@ -57528,6 +57528,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1052219252" label="disable-captive-portal-bypass-proxy"/>
   <int value="-1022971520" label="enable-search-button-in-omnibox-for-str"/>
   <int value="-1020450980" label="gesture-deletion"/>
+  <int value="-1016202433" label="disable-add-to-shelf"/>
   <int value="-996673716" label="enable-web-app-frame"/>
   <int value="-979057409" label="enable-seccomp-filter-sandbox"/>
   <int value="-979034258" label="disable-ntp-other-sessions-menu"/>
@@ -57653,6 +57654,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="365467768" label="prefetch-search-results"/>
   <int value="368854020" label="ash-screen-rotation-animation"/>
   <int value="370486304" label="enable-origin-chip-on-srp"/>
+  <int value="379326303" label="enable-add-to-shelf"/>
   <int value="400322063" label="ash-disable-screen-orientation-lock"/>
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
