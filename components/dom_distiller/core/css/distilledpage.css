@@ -326,10 +326,14 @@ pre {
   min-height: 100%;
   overflow: auto;
   padding-bottom: 120px;
+  position: relative;
+  z-index: 1;
 }
 
 #feedbackContainer {
   font-size: 14px;
+  position: relative;
+  z-index: 2;
 }
 
 .footerFeedback {
