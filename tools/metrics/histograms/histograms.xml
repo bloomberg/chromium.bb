@@ -13679,6 +13679,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="InstanceID.Enabled" enum="BooleanEnabled">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Whether the Instance ID API is enabled. Checked when a chrome.instanceID
+    function is called.
+  </summary>
+</histogram>
+
 <histogram name="Instant.InstantControllerEvent" enum="InstantControllerEvent">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
