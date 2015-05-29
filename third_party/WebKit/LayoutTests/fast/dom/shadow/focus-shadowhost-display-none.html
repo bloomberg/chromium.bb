@@ -22,12 +22,15 @@ function testFocusShadowHost() {
             shouldBeEqualToString('window.getComputedStyle(host).display', 'none');
             shouldBe('document.activeElement', 'host');
             shouldBeNull('root.activeElement');
-            window.requestAnimationFrame(function() {
+
+            function onBlur() {
                 shouldBeEqualToString('window.getComputedStyle(host).display', 'block');
                 shouldBe('document.activeElement', 'document.body');
                 shouldBeNull('root.activeElement');
+                host.removeEventListener('blur', onBlur);
                 resolve();
-            });
+            }
+            host.addEventListener('blur', onBlur);
         });
 }
 
@@ -41,12 +44,14 @@ function testFocusInsideShadowRoot() {
             shouldBe('document.activeElement', 'host');
             shouldBe('root.activeElement', 'input');
 
-            window.requestAnimationFrame(function() {
+            function onBlur() {
                 shouldBeEqualToString('window.getComputedStyle(host).display', 'block');
                 shouldBe('document.activeElement', 'document.body');
                 shouldBeNull('root.activeElement');
+                input.removeEventListener('blur', onBlur);
                 resolve();
-            });
+            }
+            input.addEventListener('blur', onBlur);
         });
 }
 
