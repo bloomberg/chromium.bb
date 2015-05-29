@@ -47,68 +47,13 @@ namespace autofill {
 namespace {
 
 // Like |AutofillType::GetStorableType()|, but also returns |NAME_FULL| for
-// first, middle, and last name field types, and groups phone number types
-// similarly.
-ServerFieldType GetStorableTypeCollapsingGroups(ServerFieldType type) {
+// first, middle, and last name field types.
+ServerFieldType GetStorableTypeCollapsingNames(ServerFieldType type) {
   ServerFieldType storable_type = AutofillType(type).GetStorableType();
   if (AutofillType(storable_type).group() == NAME)
     return NAME_FULL;
 
-  if (AutofillType(storable_type).group() == PHONE_HOME)
-    return PHONE_HOME_WHOLE_NUMBER;
-
   return storable_type;
-}
-
-// Returns a value that represents specificity/privacy of the given type. This
-// is used for prioritizing which data types are shown in inferred labels. For
-// example, if the profile is going to fill ADDRESS_HOME_ZIP, it should
-// prioritize showing that over ADDRESS_HOME_STATE in the suggestion sublabel.
-int SpecificityForType(ServerFieldType type) {
-  switch (type) {
-    case ADDRESS_HOME_LINE1:
-      return 1;
-
-    case ADDRESS_HOME_LINE2:
-      return 2;
-
-    case EMAIL_ADDRESS:
-      return 3;
-
-    case PHONE_HOME_WHOLE_NUMBER:
-      return 4;
-
-    case NAME_FULL:
-      return 5;
-
-    case ADDRESS_HOME_ZIP:
-      return 6;
-
-    case ADDRESS_HOME_SORTING_CODE:
-      return 7;
-
-    case COMPANY_NAME:
-      return 8;
-
-    case ADDRESS_HOME_CITY:
-      return 9;
-
-    case ADDRESS_HOME_STATE:
-      return 10;
-
-    case ADDRESS_HOME_COUNTRY:
-      return 11;
-
-    default:
-      break;
-  }
-
-  // The priority of other types is arbitrary, but deterministic.
-  return 100 + type;
-}
-
-bool CompareSpecificity(ServerFieldType type1, ServerFieldType type2) {
-  return SpecificityForType(type1) < SpecificityForType(type2);
 }
 
 // Fills |distinguishing_fields| with a list of fields to use when creating
@@ -153,33 +98,29 @@ void GetFieldsForDistinguishingProfiles(
   // Always ignore fields of unknown type and the excluded field.
   std::set<ServerFieldType> seen_fields;
   seen_fields.insert(UNKNOWN_TYPE);
-  seen_fields.insert(GetStorableTypeCollapsingGroups(excluded_field));
+  seen_fields.insert(GetStorableTypeCollapsingNames(excluded_field));
 
   distinguishing_fields->clear();
   for (std::vector<ServerFieldType>::const_iterator it =
            suggested_fields->begin();
        it != suggested_fields->end(); ++it) {
-    ServerFieldType suggested_type = GetStorableTypeCollapsingGroups(*it);
+    ServerFieldType suggested_type = GetStorableTypeCollapsingNames(*it);
     if (seen_fields.insert(suggested_type).second)
       distinguishing_fields->push_back(suggested_type);
   }
-
-  std::sort(distinguishing_fields->begin(), distinguishing_fields->end(),
-            CompareSpecificity);
 
   // Special case: If the excluded field is a partial name (e.g. first name) and
   // the suggested fields include other name fields, include |NAME_FULL| in the
   // list of distinguishing fields as a last-ditch fallback. This allows us to
   // distinguish between profiles that are identical except for the name.
-  ServerFieldType effective_excluded_type =
-      GetStorableTypeCollapsingGroups(excluded_field);
-  if (excluded_field != effective_excluded_type) {
+  if (excluded_field != NAME_FULL &&
+      GetStorableTypeCollapsingNames(excluded_field) == NAME_FULL) {
     for (std::vector<ServerFieldType>::const_iterator it =
              suggested_fields->begin();
          it != suggested_fields->end(); ++it) {
       if (*it != excluded_field &&
-          GetStorableTypeCollapsingGroups(*it) == effective_excluded_type) {
-        distinguishing_fields->push_back(effective_excluded_type);
+          GetStorableTypeCollapsingNames(*it) == NAME_FULL) {
+        distinguishing_fields->push_back(NAME_FULL);
         break;
       }
     }
