@@ -557,7 +557,7 @@ cr.define('options', function() {
      * @param {Object<{table: Element, info: Object<Element>}>} infoNodes The
      *     map from cookie node types to maps from cookie attribute names to DOM
      *     elements to display cookie attribute values, created by
-     *     @{code CookiesList.decorate}.
+     *     @see {CookiesList.decorate}.
      */
     setDetailText: function(element, infoNodes) {
       var table;
