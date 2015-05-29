@@ -630,6 +630,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     stats = graphite.StatsFactory.GetInstance()
     for cl_action in cl_actions:
       r = cl_action.reason or 'no_reason'
+      # TODO(akeshet) This is a slightly hacky workaround for the fact that our
+      # strategy reasons contain a ':', but statsd considers that character to
+      # be a name terminator.
+      r = r.replace(':', '_')
       stats.Counter('.'.join(['cl_actions', cl_action.action])).increment(r)
 
     return retval
