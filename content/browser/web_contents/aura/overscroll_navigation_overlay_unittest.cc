@@ -39,7 +39,6 @@ class OverscrollTestWebContents : public TestWebContents {
     OverscrollTestWebContents* web_contents = new OverscrollTestWebContents(
         browser_context, fake_native_view.Pass(), fake_contents_window.Pass());
     web_contents->Init(WebContents::CreateParams(browser_context, instance));
-    web_contents->RenderFrameCreated(web_contents->GetMainFrame());
     return web_contents;
   }
 

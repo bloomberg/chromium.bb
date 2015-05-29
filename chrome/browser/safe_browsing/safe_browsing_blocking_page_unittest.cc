@@ -548,7 +548,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
 
   // Proceed, then navigate back.
   ProceedThroughInterstitial(sb_interstitial);
-  Navigate(kBadURL, 2, pending_id, true);  // Commit the navigation.
+  NavigateCrossSite(kBadURL, 2, pending_id, true);  // Commit the navigation.
   GoBack(true);
 
   // We are back on the good page.

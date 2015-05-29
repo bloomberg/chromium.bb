@@ -246,6 +246,10 @@ bool TestRenderViewHost::CreateRenderView(
   set_renderer_initialized(true);
   DCHECK(IsRenderViewLive());
   opener_route_id_ = opener_route_id;
+  RenderFrameHost* main_frame = GetMainFrame();
+  if (main_frame)
+    static_cast<RenderFrameHostImpl*>(main_frame)->SetRenderFrameCreated(true);
+
   return true;
 }
 
