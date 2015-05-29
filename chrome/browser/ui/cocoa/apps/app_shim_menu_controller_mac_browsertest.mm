@@ -168,8 +168,13 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   app_1_app_window->GetBaseWindow()->Close();
   chrome_window->Close();
   [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSWindowWillCloseNotification
+      postNotificationName:NSWindowDidBecomeMainNotification
                     object:app_2_app_window->GetNativeWindow()];
+  CheckHasAppMenus(app_2_);
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidResignMainNotification
+                    object:app_2_app_window->GetNativeWindow()];
+  app_2_app_window->GetBaseWindow()->Close();
   CheckNoAppMenus();
 }
 
@@ -179,22 +184,26 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   // Start with app1 active.
   SetUpApps(PACKAGED_1);
   extensions::AppWindow* app_1_app_window = FirstWindowForApp(app_1_);
-  ScopedFakeNSWindowMainStatus app_1_is_main(
-      app_1_app_window->GetNativeWindow());
 
+  {
+    ScopedFakeNSWindowMainStatus app_1_is_main(
+        app_1_app_window->GetNativeWindow());
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:NSWindowDidBecomeMainNotification
+                      object:app_1_app_window->GetNativeWindow()];
+    CheckHasAppMenus(app_1_);
+
+    // Closing a background window without focusing it should not change menus.
+    BrowserWindow* chrome_window = chrome::BrowserIterator()->window();
+    chrome_window->Close();
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:NSWindowWillCloseNotification
+                      object:chrome_window->GetNativeWindow()];
+    CheckHasAppMenus(app_1_);
+  }
   [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSWindowDidBecomeMainNotification
+      postNotificationName:NSWindowDidResignMainNotification
                     object:app_1_app_window->GetNativeWindow()];
-  CheckHasAppMenus(app_1_);
-
-  // Closing a background window without focusing it should not change menus.
-  BrowserWindow* chrome_window = chrome::BrowserIterator()->window();
-  chrome_window->Close();
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSWindowWillCloseNotification
-                    object:chrome_window->GetNativeWindow()];
-  CheckHasAppMenus(app_1_);
-
   app_1_app_window->GetBaseWindow()->Close();
   CheckNoAppMenus();
 }
@@ -233,14 +242,11 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   CheckEditMenu(app_1_);
 }
 
+// Test that uninstalling an app restores the main menu.
 IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
                        ExtensionUninstallUpdatesMenuBar) {
   SetUpApps(PACKAGED_1 | PACKAGED_2);
 
-  // This essentially tests that a NSWindowWillCloseNotification gets fired when
-  // an app is uninstalled. We need to close the other windows first since the
-  // menu only changes on a NSWindowWillCloseNotification if there are no other
-  // windows.
   FirstWindowForApp(app_2_)->GetBaseWindow()->Close();
   chrome::BrowserIterator()->window()->Close();
   NSWindow* app_1_window = FirstWindowForApp(app_1_)->GetNativeWindow();
@@ -254,6 +260,12 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
       extension_service(),
       app_1_->id(),
       extensions::UNINSTALL_REASON_FOR_TESTING);
+
+  // OSX will send NSWindowWillResignMainNotification when a main window is
+  // closed.
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidResignMainNotification
+                    object:app_1_window];
   CheckNoAppMenus();
 }
 
