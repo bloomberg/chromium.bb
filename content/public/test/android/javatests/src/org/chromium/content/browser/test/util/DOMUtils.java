@@ -23,6 +23,8 @@ import java.util.concurrent.TimeoutException;
 public class DOMUtils {
     /**
      * Plays the media with given {@code id}.
+     * @param webContents The WebContents in which the media element lives.
+     * @param id The element's id to be played.
      */
     public static void playMedia(final WebContents webContents, final String id)
             throws InterruptedException, TimeoutException {
@@ -36,7 +38,9 @@ public class DOMUtils {
     }
 
     /**
-     * Pauses the media with given {@code id}.
+     * Pauses the media with given {@code id}
+     * @param webContents The WebContents in which the media element lives.
+     * @param id The element's id to be paused.
      */
     public static void pauseMedia(final WebContents webContents, final String id)
             throws InterruptedException, TimeoutException {
@@ -51,6 +55,9 @@ public class DOMUtils {
 
     /**
      * Returns whether the media with given {@code id} is paused.
+     * @param webContents The WebContents in which the media element lives.
+     * @param id The element's id to check.
+     * @return whether the media is paused.
      */
     public static boolean isMediaPaused(final WebContents webContents, final String id)
             throws InterruptedException, TimeoutException {
@@ -59,7 +66,8 @@ public class DOMUtils {
 
     /**
      * Waits until the playback of the media with given {@code id} has started.
-     *
+     * @param webContents The WebContents in which the media element lives.
+     * @param id The element's id to check.
      * @return Whether the playback has started.
      */
     public static boolean waitForMediaPlay(final WebContents webContents, final String id)
@@ -82,8 +90,9 @@ public class DOMUtils {
 
     /**
      * Waits until the playback of the media with given {@code id} has stopped.
-     *
-     * @return Whether the playback has started.
+     * @param webContents The WebContents in which the media element lives.
+     * @param id The element's id to check.
+     * @return Whether the playback has paused.
      */
     public static boolean waitForMediaPause(final WebContents webContents, final String id)
             throws InterruptedException {
@@ -104,7 +113,9 @@ public class DOMUtils {
     }
 
     /**
-     * Returns whether the document is in fullscreen.
+     * Returns whether the document is fullscreen.
+     * @param webContents The WebContents to check.
+     * @return Whether the document is fullsscreen.
      */
     public static boolean isFullscreen(final WebContents webContents)
             throws InterruptedException, TimeoutException {
@@ -120,6 +131,7 @@ public class DOMUtils {
 
     /**
      * Makes the document exit fullscreen.
+     * @param webContents The WebContents to make fullscreen.
      */
     public static void exitFullscreen(final WebContents webContents) {
         StringBuilder sb = new StringBuilder();
@@ -132,6 +144,9 @@ public class DOMUtils {
 
     /**
      * Returns the rect boundaries for a node by its id.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @return The rect boundaries for the node.
      */
     public static Rect getNodeBounds(final WebContents webContents, String nodeId)
             throws InterruptedException, TimeoutException {
@@ -177,6 +192,8 @@ public class DOMUtils {
 
     /**
      * Focus a DOM node by its id.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
      */
     public static void focusNode(final WebContents webContents, String nodeId)
             throws InterruptedException, TimeoutException {
@@ -191,6 +208,8 @@ public class DOMUtils {
 
     /**
      * Get the id of the currently focused node.
+     * @param webContents The WebContents in which the node lives.
+     * @return The id of the currently focused node.
      */
     public static String getFocusedNode(WebContents webContents)
             throws InterruptedException, TimeoutException {
@@ -212,6 +231,9 @@ public class DOMUtils {
 
     /**
      * Click a DOM node by its id.
+     * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
+     * @param viewCore The ContentViewCore in which the node lives.
+     * @param nodeId The id of the node.
      */
     public static void clickNode(ActivityInstrumentationTestCase2 activityTestCase,
             final ContentViewCore viewCore, String nodeId)
@@ -222,6 +244,9 @@ public class DOMUtils {
 
     /**
      * Long-press a DOM node by its id.
+     * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
+     * @param viewCore The ContentViewCore in which the node lives.
+     * @param nodeId The id of the node.
      */
     public static void longPressNode(ActivityInstrumentationTestCase2 activityTestCase,
             final ContentViewCore viewCore, String nodeId)
@@ -232,6 +257,8 @@ public class DOMUtils {
 
     /**
      * Scrolls the view to ensure that the required DOM node is visible.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
      */
     public static void scrollNodeIntoView(WebContents webContents, String nodeId)
             throws InterruptedException, TimeoutException {
@@ -240,7 +267,10 @@ public class DOMUtils {
     }
 
     /**
-     * Returns the contents of the node by its id.
+     * Returns the text contents of a given node.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @return the text contents of the node.
      */
     public static String getNodeContents(WebContents webContents, String nodeId)
             throws InterruptedException, TimeoutException {
@@ -248,7 +278,10 @@ public class DOMUtils {
     }
 
     /**
-     * Returns the value of the node by its id.
+     * Returns the value of a given node.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @return the value of the node.
      */
     public static String getNodeValue(final WebContents webContents, String nodeId)
             throws InterruptedException, TimeoutException {
@@ -256,7 +289,11 @@ public class DOMUtils {
     }
 
     /**
-     * Returns the string value of a field of the node by its id.
+     * Returns the string value of a field of a given node.
+     * @param fieldName The field to return the value from.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @return the value of the field.
      */
     public static String getNodeField(String fieldName, final WebContents webContents,
             String nodeId)
@@ -264,6 +301,39 @@ public class DOMUtils {
         return getNodeField(fieldName, webContents, nodeId, String.class);
     }
 
+    /**
+     * Wait until a given node has non-zero bounds.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @return Whether the node started having non-zero bounds.
+     */
+    public static boolean waitForNonZeroNodeBounds(final WebContents webContents,
+            final String nodeId)
+            throws InterruptedException {
+        return CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return !DOMUtils.getNodeBounds(webContents, nodeId).isEmpty();
+                } catch (InterruptedException e) {
+                    // Intentionally do nothing
+                    return false;
+                } catch (TimeoutException e) {
+                    // Intentionally do nothing
+                    return false;
+                }
+            }
+        });
+    }
+
+    /**
+     * Returns the value of a given field of type {@code valueType} as a {@code T}.
+     * @param fieldName The field to return the value from.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @param valueType The type of the value to read.
+     * @return the field's value.
+     */
     private static <T> T getNodeField(String fieldName, final WebContents webContents,
             String nodeId, Class<T> valueType)
             throws InterruptedException, TimeoutException {
@@ -281,6 +351,12 @@ public class DOMUtils {
         return readValue(jsonText, valueType);
     }
 
+    /**
+     * Returns the next value of type {@code valueType} as a {@code T}.
+     * @param jsonText The unparsed json text.
+     * @param valueType The type of the value to read.
+     * @return the read value.
+     */
     private static <T> T readValue(String jsonText, Class<T> valueType) {
         JsonReader jsonReader = new JsonReader(new StringReader(jsonText));
         T value = null;
@@ -297,6 +373,13 @@ public class DOMUtils {
         return value;
     }
 
+    /**
+     * Returns the next value of type {@code valueType} as a {@code T}.
+     * @param jsonReader JsonReader instance to be used.
+     * @param valueType The type of the value to read.
+     * @throws IllegalArgumentException If the {@code valueType} isn't known.
+     * @return the read value.
+     */
     @SuppressWarnings("unchecked")
     private static <T> T readValue(JsonReader jsonReader, Class<T> valueType)
             throws IOException {
@@ -310,35 +393,15 @@ public class DOMUtils {
     }
 
     /**
-     * Wait until a given node has non-zero bounds.
-     * @return Whether the node started having non-zero bounds.
+     * Returns click target for a given DOM node.
+     * @param viewCore The ContentViewCore in which the node lives.
+     * @param nodeId The id of the node.
+     * @return the click target of the node in the form of a [ x, y ] array.
      */
-    public static boolean waitForNonZeroNodeBounds(final WebContents webContents,
-            final String nodeName)
-            throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return !DOMUtils.getNodeBounds(webContents, nodeName).isEmpty();
-                } catch (InterruptedException e) {
-                    // Intentionally do nothing
-                    return false;
-                } catch (TimeoutException e) {
-                    // Intentionally do nothing
-                    return false;
-                }
-            }
-        });
-    }
-
-    /**
-     * Returns click targets for a given DOM node.
-     */
-    private static int[] getClickTargetForNode(ContentViewCore viewCore, String nodeName)
+    private static int[] getClickTargetForNode(ContentViewCore viewCore, String nodeId)
             throws InterruptedException, TimeoutException {
-        Rect bounds = getNodeBounds(viewCore.getWebContents(), nodeName);
-        Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeName + "'.", bounds);
+        Rect bounds = getNodeBounds(viewCore.getWebContents(), nodeId);
+        Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeId + "'.", bounds);
 
         int topControlsLayoutHeight = viewCore.doTopControlsShrinkBlinkSize()
                 ? viewCore.getTopControlsHeightPix() : 0;
