@@ -5841,6 +5841,13 @@ handle_shell_client_destroy(struct wl_listener *listener, void *data)
 
 	if (sc->ping_timer)
 		wl_event_source_remove(sc->ping_timer);
+
+	/* Since we're about to free shell_client, we remove it from the
+	 * head of the surface list so we don't use that freed list node
+	 * during surface clean up later on.
+	 */
+	wl_list_remove(&sc->surface_list);
+
 	free(sc);
 }
 
