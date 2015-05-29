@@ -59,7 +59,7 @@ class DirectSurfaceAndroid : public PassThroughImageTransportSurface {
                        gfx::GLSurface* surface);
 
   // gfx::GLSurface implementation.
-  bool SwapBuffers() override;
+  gfx::SwapResult SwapBuffers() override;
 
  protected:
   ~DirectSurfaceAndroid() override;
@@ -123,7 +123,7 @@ DirectSurfaceAndroid::DirectSurfaceAndroid(GpuChannelManager* manager,
 
 DirectSurfaceAndroid::~DirectSurfaceAndroid() {}
 
-bool DirectSurfaceAndroid::SwapBuffers() {
+gfx::SwapResult DirectSurfaceAndroid::SwapBuffers() {
   DidAccessGpu();
   return PassThroughImageTransportSurface::SwapBuffers();
 }

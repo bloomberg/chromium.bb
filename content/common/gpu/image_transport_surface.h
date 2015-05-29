@@ -19,6 +19,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_surface.h"
 
 struct AcceleratedSurfaceMsg_BufferPresented_Params;
@@ -175,8 +176,8 @@ class PassThroughImageTransportSurface
   // GLSurface implementation.
   bool Initialize() override;
   void Destroy() override;
-  bool SwapBuffers() override;
-  bool PostSubBuffer(int x, int y, int width, int height) override;
+  gfx::SwapResult SwapBuffers() override;
+  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
   bool OnMakeCurrent(gfx::GLContext* context) override;
 
   // ImageTransportSurface implementation.
@@ -196,7 +197,8 @@ class PassThroughImageTransportSurface
   // If updated vsync parameters can be determined, send this information to
   // the browser.
   virtual void SendVSyncUpdateIfAvailable();
-  void SwapBuffersCallBack(std::vector<ui::LatencyInfo>* latency_info_ptr);
+  void SwapBuffersCallBack(std::vector<ui::LatencyInfo>* latency_info_ptr,
+                           gfx::SwapResult result);
 
   ImageTransportHelper* GetHelper() { return helper_.get(); }
 

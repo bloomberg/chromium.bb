@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/overlay_transform.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/ozone/ozone_base_export.h"
 
 namespace gfx {
@@ -18,6 +19,8 @@ class VSyncProvider;
 
 namespace ui {
 class NativePixmap;
+
+typedef base::Callback<void(gfx::SwapResult)> SwapCompletionCallback;
 
 // The platform-specific part of an EGL surface.
 //
@@ -39,7 +42,6 @@ class OZONE_BASE_EXPORT SurfaceOzoneEGL {
   // be used to present the new front buffer if the platform requires this.
   virtual bool OnSwapBuffers() = 0;
 
-  typedef base::Closure SwapCompletionCallback;
   // Called after we swap buffers. This is usually a no-op but can
   // be used to present the new front buffer if the platform requires this.
   // The callback should be run on the calling thread

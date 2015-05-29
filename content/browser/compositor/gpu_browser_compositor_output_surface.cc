@@ -105,7 +105,8 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
 }
 
 void GpuBrowserCompositorOutputSurface::OnSwapBuffersCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info,
+    gfx::SwapResult result) {
 #if defined(OS_MACOSX)
   // On Mac, delay acknowledging the swap to the output surface client until
   // it has been drawn, see OnSurfaceDisplayed();

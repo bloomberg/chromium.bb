@@ -8485,7 +8485,8 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
     gpu_state_tracer_->TakeSnapshotWithCurrentFramebuffer(
         is_offscreen ? offscreen_size_ : surface_->GetSize());
   }
-  if (surface_->PostSubBuffer(c.x, c.y, c.width, c.height)) {
+  if (surface_->PostSubBuffer(c.x, c.y, c.width, c.height) !=
+      gfx::SwapResult::SWAP_FAILED) {
     return error::kNoError;
   } else {
     LOG(ERROR) << "Context lost because PostSubBuffer failed.";
@@ -11018,7 +11019,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
         glFlush();
     }
   } else {
-    if (!surface_->SwapBuffers()) {
+    if (surface_->SwapBuffers() == gfx::SwapResult::SWAP_FAILED) {
       LOG(ERROR) << "Context lost because SwapBuffers failed.";
       if (!CheckResetStatus()) {
         MarkContextLost(error::kUnknown);

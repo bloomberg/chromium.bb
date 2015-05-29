@@ -60,6 +60,7 @@
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/device_display_info.h"
+#include "ui/gfx/swap_result.h"
 
 namespace content {
 
@@ -118,13 +119,14 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     return command_buffer_proxy;
   }
 
-  void OnSwapBuffersCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info) {
+  void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
+                              gfx::SwapResult result) {
     RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
     OutputSurface::OnSwapBuffersComplete();
   }
 
-  base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&)>
+  base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&,
+                                gfx::SwapResult)>
       swap_buffers_completion_callback_;
 
   scoped_refptr<base::MessageLoopProxy> main_thread_;

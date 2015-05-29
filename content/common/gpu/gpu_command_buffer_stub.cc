@@ -1107,8 +1107,10 @@ uint64 GpuCommandBufferStub::GetMemoryUsage() const {
 }
 
 void GpuCommandBufferStub::SendSwapBuffersCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  Send(new GpuCommandBufferMsg_SwapBuffersCompleted(route_id_, latency_info));
+    const std::vector<ui::LatencyInfo>& latency_info,
+    gfx::SwapResult result) {
+  Send(new GpuCommandBufferMsg_SwapBuffersCompleted(route_id_, latency_info,
+                                                    result));
 }
 
 void GpuCommandBufferStub::SendUpdateVSyncParameters(base::TimeTicks timebase,

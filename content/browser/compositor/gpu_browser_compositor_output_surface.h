@@ -7,6 +7,7 @@
 
 #include "base/cancelable_callback.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
+#include "ui/gfx/swap_result.h"
 
 namespace ui {
 class CompositorVSyncManager;
@@ -58,9 +59,11 @@ class GpuBrowserCompositorOutputSurface
 #endif
 
   CommandBufferProxyImpl* GetCommandBufferProxy();
-  void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info);
+  void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
+                              gfx::SwapResult result);
 
-  base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&)>
+  base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&,
+                                gfx::SwapResult)>
       swap_buffers_completion_callback_;
   base::CancelableCallback<void(base::TimeTicks timebase,
                                 base::TimeDelta interval)>

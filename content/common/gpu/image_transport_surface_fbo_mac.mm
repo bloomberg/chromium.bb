@@ -169,9 +169,10 @@ void ImageTransportSurfaceFBO::AdjustBufferAllocation() {
   }
 }
 
-bool ImageTransportSurfaceFBO::SwapBuffers() {
+gfx::SwapResult ImageTransportSurfaceFBO::SwapBuffers() {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceFBO::SwapBuffers");
-  return SwapBuffersInternal();
+  return SwapBuffersInternal() ? gfx::SwapResult::SWAP_ACK
+                               : gfx::SwapResult::SWAP_FAILED;
 }
 
 bool ImageTransportSurfaceFBO::SwapBuffersInternal() {
@@ -208,10 +209,13 @@ void ImageTransportSurfaceFBO::SetRendererID(int renderer_id) {
     context_->share_group()->SetRendererID(renderer_id);
 }
 
-bool ImageTransportSurfaceFBO::PostSubBuffer(
-    int x, int y, int width, int height) {
+gfx::SwapResult ImageTransportSurfaceFBO::PostSubBuffer(int x,
+                                                        int y,
+                                                        int width,
+                                                        int height) {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceFBO::PostSubBuffer");
-  return SwapBuffersInternal();
+  return SwapBuffersInternal() ? gfx::SwapResult::SWAP_ACK
+                               : gfx::SwapResult::SWAP_FAILED;
 }
 
 bool ImageTransportSurfaceFBO::SupportsPostSubBuffer() {
