@@ -173,6 +173,7 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
   heading_ = new views::Label(base::UTF8ToUTF16(dialog_->GetHeadingText()));
   heading_->SetMultiLine(true);
   heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  heading_->SetAllowCharacterBreak(true);
   AddChildView(heading_);
 }
 
