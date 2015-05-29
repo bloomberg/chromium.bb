@@ -205,6 +205,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
     IPC_MESSAGE_HANDLER_GENERIC(FrameMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(msg))
+    IPC_MESSAGE_HANDLER(FrameMsg_SetChildFrameSurface, OnSetChildFrameSurface)
     IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_DidStartLoading, OnDidStartLoading)
     IPC_MESSAGE_HANDLER(FrameMsg_DidStopLoading, OnDidStopLoading)
@@ -259,6 +260,27 @@ void RenderFrameProxy::OnCompositorFrameSwapped(const IPC::Message& message) {
       base::get<0>(param).output_surface_id,
       base::get<0>(param).producing_host_id,
       base::get<0>(param).shared_memory_handle);
+}
+
+void RenderFrameProxy::OnSetChildFrameSurface(
+    const cc::SurfaceId& surface_id,
+    const gfx::Size& frame_size,
+    float scale_factor,
+    const cc::SurfaceSequence& sequence) {
+  // If this WebFrame has already been detached, its parent will be null. This
+  // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
+  // message may arrive after the frame was removed from the frame tree, but
+  // before the frame has been destroyed. http://crbug.com/446575.
+  if (!web_frame()->parent())
+    return;
+
+  if (!compositing_helper_.get()) {
+    compositing_helper_ =
+        ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
+    compositing_helper_->EnableCompositing(true);
+  }
+  compositing_helper_->OnSetSurface(surface_id, frame_size, scale_factor,
+                                    sequence);
 }
 
 void RenderFrameProxy::OnDisownOpener() {

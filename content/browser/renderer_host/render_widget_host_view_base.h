@@ -5,10 +5,6 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_BASE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_BASE_H_
 
-#if defined(OS_MACOSX)
-#include <OpenGL/OpenGL.h>
-#endif
-
 #include <string>
 #include <vector>
 

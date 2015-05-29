@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
+#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/view_messages.h"
@@ -28,6 +29,11 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
   RenderWidgetHostViewGuestTest() {}
 
   void SetUp() override {
+#if !defined(OS_ANDROID)
+    ImageTransportFactory::InitializeForUnitTests(
+        scoped_ptr<ImageTransportFactory>(
+            new NoTransportImageTransportFactory));
+#endif
     browser_context_.reset(new TestBrowserContext);
     MockRenderProcessHost* process_host =
         new MockRenderProcessHost(browser_context_.get());

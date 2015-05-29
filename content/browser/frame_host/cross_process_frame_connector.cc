@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 
+#include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -37,6 +39,8 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardInputEvent, OnForwardInputEvent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_InitializeChildFrame,
                         OnInitializeChildFrame)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SatisfySequence, OnSatisfySequence)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_RequireSequence, OnRequireSequence)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -76,6 +80,42 @@ void CrossProcessFrameConnector::ChildFrameCompositorFrameSwapped(
   params.producing_host_id = host_id;
   frame_proxy_in_parent_renderer_->Send(new FrameMsg_CompositorFrameSwapped(
       frame_proxy_in_parent_renderer_->GetRoutingID(), params));
+}
+
+void CrossProcessFrameConnector::SetChildFrameSurface(
+    const cc::SurfaceId& surface_id,
+    const gfx::Size& frame_size,
+    float scale_factor,
+    const cc::SurfaceSequence& sequence) {
+  frame_proxy_in_parent_renderer_->Send(new FrameMsg_SetChildFrameSurface(
+      frame_proxy_in_parent_renderer_->GetRoutingID(), surface_id, frame_size,
+      scale_factor, sequence));
+}
+
+void CrossProcessFrameConnector::OnSatisfySequence(
+    const cc::SurfaceSequence& sequence) {
+#if !defined(OS_ANDROID)
+  std::vector<uint32_t> sequences;
+  sequences.push_back(sequence.sequence);
+  cc::SurfaceManager* manager =
+      ImageTransportFactory::GetInstance()->GetSurfaceManager();
+  manager->DidSatisfySequences(sequence.id_namespace, &sequences);
+#endif
+}
+
+void CrossProcessFrameConnector::OnRequireSequence(
+    const cc::SurfaceId& id,
+    const cc::SurfaceSequence& sequence) {
+#if !defined(OS_ANDROID)
+  cc::SurfaceManager* manager =
+      ImageTransportFactory::GetInstance()->GetSurfaceManager();
+  cc::Surface* surface = manager->GetSurfaceForId(id);
+  if (!surface) {
+    LOG(ERROR) << "Attempting to require callback on nonexistent surface";
+    return;
+  }
+  surface->AddDestructionDependency(sequence);
+#endif
 }
 
 void CrossProcessFrameConnector::OnCompositorFrameSwappedACK(

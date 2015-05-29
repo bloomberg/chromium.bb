@@ -21,6 +21,11 @@ namespace blink {
 class WebInputEvent;
 }
 
+namespace cc {
+struct SurfaceId;
+struct SurfaceSequence;
+}
+
 namespace content {
 
 class ChildFrameCompositingHelper;
@@ -140,6 +145,10 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnDeleteProxy();
   void OnChildFrameProcessGone();
   void OnCompositorFrameSwapped(const IPC::Message& message);
+  void OnSetChildFrameSurface(const cc::SurfaceId& surface_id,
+                              const gfx::Size& frame_size,
+                              float scale_factor,
+                              const cc::SurfaceSequence& sequence);
   void OnDisownOpener();
   void OnDidStopLoading();
   void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);

@@ -9,6 +9,7 @@
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/solid_color_layer.h"
+#include "cc/layers/surface_layer.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -34,7 +35,8 @@ ChildFrameCompositingHelper*
 ChildFrameCompositingHelper::CreateForBrowserPlugin(
     const base::WeakPtr<BrowserPlugin>& browser_plugin) {
   return new ChildFrameCompositingHelper(
-      browser_plugin, NULL, NULL, browser_plugin->render_frame_routing_id());
+      browser_plugin, nullptr, nullptr,
+      browser_plugin->render_frame_routing_id());
 }
 
 ChildFrameCompositingHelper*
@@ -59,23 +61,25 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
       opaque_(true),
       browser_plugin_(browser_plugin),
       render_frame_proxy_(render_frame_proxy),
-      frame_(frame) {}
+      frame_(frame),
+      weak_factory_(this) {
+}
 
 ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {
   if (resource_collection_.get())
-    resource_collection_->SetClient(NULL);
+    resource_collection_->SetClient(nullptr);
 }
 
 BrowserPluginManager* ChildFrameCompositingHelper::GetBrowserPluginManager() {
   if (!browser_plugin_)
-    return NULL;
+    return nullptr;
 
   return BrowserPluginManager::Get();
 }
 
 blink::WebPluginContainer* ChildFrameCompositingHelper::GetContainer() {
   if (!browser_plugin_)
-    return NULL;
+    return nullptr;
 
   return browser_plugin_->container();
 }
@@ -142,9 +146,9 @@ void ChildFrameCompositingHelper::EnableCompositing(bool enable) {
   }
 
   if (GetContainer()) {
-    GetContainer()->setWebLayer(enable ? web_layer_.get() : NULL);
+    GetContainer()->setWebLayer(enable ? web_layer_.get() : nullptr);
   } else if (frame_) {
-    frame_->setRemoteWebLayer(enable ? web_layer_.get() : NULL);
+    frame_->setRemoteWebLayer(enable ? web_layer_.get() : nullptr);
   }
 }
 
@@ -173,16 +177,17 @@ void ChildFrameCompositingHelper::OnContainerDestroy() {
   DidCommitCompositorFrame();
 
   if (GetContainer())
-    GetContainer()->setWebLayer(NULL);
+    GetContainer()->setWebLayer(nullptr);
 
   if (resource_collection_.get())
-    resource_collection_->SetClient(NULL);
+    resource_collection_->SetClient(nullptr);
 
   ack_pending_ = false;
-  resource_collection_ = NULL;
-  frame_provider_ = NULL;
-  delegated_layer_ = NULL;
-  background_layer_ = NULL;
+  resource_collection_ = nullptr;
+  frame_provider_ = nullptr;
+  delegated_layer_ = nullptr;
+  background_layer_ = nullptr;
+  surface_layer_ = nullptr;
   web_layer_.reset();
 }
 
@@ -200,6 +205,11 @@ void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
     int host_id,
     base::SharedMemoryHandle handle) {
   cc::DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
+
+  // Surface IDs and compositor frames should never be received
+  // interchangeably.
+  DCHECK(!surface_layer_.get());
+
   // Do nothing if we are getting destroyed or have no frame data.
   if (!frame_data || !background_layer_.get())
     return;
@@ -217,16 +227,16 @@ void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
     // case we should recreate the DelegatedRendererLayer, to avoid matching
     // resources from the old one with resources from the new one which would
     // have the same id.
-    frame_provider_ = NULL;
+    frame_provider_ = nullptr;
 
     // Drop the cc::DelegatedFrameResourceCollection so that we will not return
     // any resources from the old output surface with the new output surface id.
     if (resource_collection_.get()) {
-      resource_collection_->SetClient(NULL);
+      resource_collection_->SetClient(nullptr);
 
       if (resource_collection_->LoseAllResources())
         SendReturnedDelegatedResources();
-      resource_collection_ = NULL;
+      resource_collection_ = nullptr;
     }
     last_output_surface_id_ = output_surface_id;
     last_route_id_ = route_id;
@@ -259,9 +269,68 @@ void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
   ack_pending_ = true;
 }
 
+// static
+void ChildFrameCompositingHelper::SatisfyCallback(
+    base::WeakPtr<ChildFrameCompositingHelper> helper,
+    cc::SurfaceSequence sequence) {
+  if (helper && helper->render_frame_proxy_) {
+    helper->render_frame_proxy_->Send(
+        new FrameHostMsg_SatisfySequence(helper->host_routing_id_, sequence));
+  }
+}
+
+// static
+void ChildFrameCompositingHelper::RequireCallback(
+    base::WeakPtr<ChildFrameCompositingHelper> helper,
+    cc::SurfaceId id,
+    cc::SurfaceSequence sequence) {
+  if (helper && helper->render_frame_proxy_) {
+    helper->render_frame_proxy_->Send(new FrameHostMsg_RequireSequence(
+        helper->host_routing_id_, id, sequence));
+  }
+}
+
+void ChildFrameCompositingHelper::OnSetSurface(
+    const cc::SurfaceId& surface_id,
+    const gfx::Size& frame_size,
+    float scale_factor,
+    const cc::SurfaceSequence& sequence) {
+  // Surface IDs and compositor frames should never be received
+  // interchangably.
+  DCHECK(!delegated_layer_.get());
+
+  // Do nothing if we are getting destroyed.
+  if (!background_layer_.get())
+    return;
+
+  if (!surface_layer_.get()) {
+    cc::SurfaceLayer::SatisfyCallback satisfy_callback =
+        base::Bind(&ChildFrameCompositingHelper::SatisfyCallback, GetWeakPtr());
+    cc::SurfaceLayer::RequireCallback require_callback =
+        base::Bind(&ChildFrameCompositingHelper::RequireCallback, GetWeakPtr());
+    surface_layer_ =
+        cc::SurfaceLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
+                                 satisfy_callback, require_callback);
+  }
+  surface_layer_->SetSurfaceId(surface_id, scale_factor, frame_size);
+  UpdateVisibility(true);
+  SetContentsOpaque(opaque_);
+  background_layer_->AddChild(surface_layer_);
+
+  // The RWHV creates a destruction dependency on the surface that needs to be
+  // satisfied.
+  render_frame_proxy_->Send(
+      new FrameHostMsg_SatisfySequence(host_routing_id_, sequence));
+
+  CheckSizeAndAdjustLayerProperties(frame_size, scale_factor,
+                                    surface_layer_.get());
+}
+
 void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {
   if (delegated_layer_.get())
     delegated_layer_->SetIsDrawable(visible);
+  if (surface_layer_.get())
+    surface_layer_->SetIsDrawable(visible);
 }
 
 void ChildFrameCompositingHelper::UnusedResourcesAreAvailable() {
@@ -288,6 +357,8 @@ void ChildFrameCompositingHelper::SetContentsOpaque(bool opaque) {
   opaque_ = opaque;
   if (delegated_layer_.get())
     delegated_layer_->SetContentsOpaque(opaque_);
+  if (surface_layer_.get())
+    surface_layer_->SetContentsOpaque(opaque_);
 }
 
 }  // namespace content

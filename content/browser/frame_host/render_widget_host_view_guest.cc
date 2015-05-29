@@ -389,6 +389,11 @@ void RenderWidgetHostViewGuest::GetScreenInfo(blink::WebScreenInfo* results) {
     embedder_view->GetScreenInfo(results);
 }
 
+uint32_t RenderWidgetHostViewGuest::GetSurfaceIdNamespace() {
+  // Compositing surfaces not supported.
+  return 0;
+}
+
 #if defined(OS_MACOSX)
 void RenderWidgetHostViewGuest::SetActive(bool active) {
   platform_view_->SetActive(active);

@@ -6,16 +6,27 @@
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_WIDGET_HOST_VIEW_CHILD_FRAME_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/resources/returned_resource.h"
+#include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_id_allocator.h"
+#include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace cc {
+class SurfaceFactory;
+enum class SurfaceDrawStatus;
+}
 
 namespace content {
 class CrossProcessFrameConnector;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
+class RenderWidgetHostViewChildFrameTest;
 
 // RenderWidgetHostViewChildFrame implements the view for a RenderWidgetHost
 // associated with content being rendered in a separate process from
@@ -26,7 +37,8 @@ class RenderWidgetHostImpl;
 //
 // See comments in render_widget_host_view.h about this class and its members.
 class CONTENT_EXPORT RenderWidgetHostViewChildFrame
-    : public RenderWidgetHostViewBase {
+    : public RenderWidgetHostViewBase,
+      public cc::SurfaceFactoryClient {
  public:
   explicit RenderWidgetHostViewChildFrame(RenderWidgetHost* widget);
   ~RenderWidgetHostViewChildFrame() override;
@@ -133,8 +145,14 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate) override;
 
+  // cc::SurfaceFactoryClient implementation.
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+
  protected:
   friend class RenderWidgetHostView;
+  friend class RenderWidgetHostViewChildFrameTest;
+
+  void SurfaceDrawn(uint32 output_surface_id, cc::SurfaceDrawStatus drawn);
 
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;
@@ -143,11 +161,30 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // The model object.
   RenderWidgetHostImpl* host_;
 
+  // Flag determining whether we render into a compositing Surface.
+  bool use_surfaces_;
+
+  // Surface-related state.
+  scoped_ptr<cc::SurfaceIdAllocator> id_allocator_;
+  scoped_ptr<cc::SurfaceFactory> surface_factory_;
+  cc::SurfaceId surface_id_;
+  uint32 next_surface_sequence_;
+  uint32 last_output_surface_id_;
+  gfx::Size current_surface_size_;
+  float current_surface_scale_factor_;
+  uint32 ack_pending_count_;
+  cc::ReturnedResourceArray surface_returned_resources_;
+
   // frame_connector_ provides a platform abstraction. Messages
   // sent through it are routed to the embedding renderer process.
   CrossProcessFrameConnector* frame_connector_;
 
  private:
+  base::WeakPtr<RenderWidgetHostViewChildFrame> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  base::WeakPtrFactory<RenderWidgetHostViewChildFrame> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrame);
 };
 

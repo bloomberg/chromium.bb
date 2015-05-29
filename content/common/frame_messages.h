@@ -5,6 +5,8 @@
 // IPC messages for interacting with frames.
 // Multiply-included message file, hence no include guard.
 
+#include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_sequence.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/frame_message_enums.h"
@@ -409,6 +411,12 @@ IPC_STRUCT_END()
 // This is used in the ubercomp compositing path.
 IPC_MESSAGE_ROUTED1(FrameMsg_CompositorFrameSwapped,
                     FrameMsg_CompositorFrameSwapped_Params /* params */)
+
+IPC_MESSAGE_ROUTED4(FrameMsg_SetChildFrameSurface,
+                    cc::SurfaceId /* surface_id */,
+                    gfx::Size /* frame_size */,
+                    float /* scale_factor */,
+                    cc::SurfaceSequence /* sequence */)
 
 // Notifies the embedding frame that the process rendering the child frame's
 // contents has terminated.
@@ -845,6 +853,16 @@ IPC_SYNC_MESSAGE_CONTROL4_2(FrameHostMsg_OpenChannelToPlugin,
 // See FrameMsg_CompositorFrameSwapped
 IPC_MESSAGE_ROUTED1(FrameHostMsg_CompositorFrameSwappedACK,
                     FrameHostMsg_CompositorFrameSwappedACK_Params /* params */)
+
+// Satisfies a Surface destruction dependency associated with |sequence|.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_SatisfySequence,
+                    cc::SurfaceSequence /* sequence */)
+
+// Creates a destruction dependency for the Surface specified by the given
+// |surface_id|.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_RequireSequence,
+                    cc::SurfaceId /* surface_id */,
+                    cc::SurfaceSequence /* sequence */)
 
 // Provides the result from handling BeforeUnload.  |proceed| matches the return
 // value of the frame's beforeunload handler: true if the user decided to

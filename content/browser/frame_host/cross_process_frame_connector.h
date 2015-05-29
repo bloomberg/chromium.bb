@@ -6,10 +6,16 @@
 #define CONTENT_BROWSER_FRAME_HOST_CROSS_PROCESS_FRAME_CONNECTOR_H_
 
 #include "cc/output/compositor_frame.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 class WebInputEvent;
+}
+
+namespace cc {
+struct SurfaceId;
+struct SurfaceSequence;
 }
 
 namespace IPC {
@@ -60,7 +66,7 @@ class RenderWidgetHostViewChildFrame;
 // SiteInstance, A2 in the picture above. When a child frame navigates in a new
 // process, set_view() is called to update to the new view.
 //
-class CrossProcessFrameConnector {
+class CONTENT_EXPORT CrossProcessFrameConnector {
  public:
   // |frame_proxy_in_parent_renderer| corresponds to A2 in the example above.
   explicit CrossProcessFrameConnector(
@@ -76,10 +82,15 @@ class CrossProcessFrameConnector {
 
   void RenderProcessGone();
 
-  void ChildFrameCompositorFrameSwapped(uint32 output_surface_id,
-                                        int host_id,
-                                        int route_id,
-                                        scoped_ptr<cc::CompositorFrame> frame);
+  virtual void ChildFrameCompositorFrameSwapped(
+      uint32 output_surface_id,
+      int host_id,
+      int route_id,
+      scoped_ptr<cc::CompositorFrame> frame);
+  virtual void SetChildFrameSurface(const cc::SurfaceId& surface_id,
+                                    const gfx::Size& frame_size,
+                                    float scale_factor,
+                                    const cc::SurfaceSequence& sequence);
 
   gfx::Rect ChildFrameRect();
 
@@ -91,6 +102,9 @@ class CrossProcessFrameConnector {
       const FrameHostMsg_ReclaimCompositorResources_Params& params);
   void OnForwardInputEvent(const blink::WebInputEvent* event);
   void OnInitializeChildFrame(gfx::Rect frame_rect, float scale_factor);
+  void OnSatisfySequence(const cc::SurfaceSequence& sequence);
+  void OnRequireSequence(const cc::SurfaceId& id,
+                         const cc::SurfaceSequence& sequence);
 
   void SetDeviceScaleFactor(float scale_factor);
   void SetSize(gfx::Rect frame_rect);
