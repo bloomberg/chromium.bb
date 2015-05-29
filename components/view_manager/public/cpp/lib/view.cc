@@ -367,18 +367,22 @@ void View::SetFocus() {
 }
 
 void View::Embed(const String& url) {
-  static_cast<ViewManagerClientImpl*>(manager_)->Embed(url, id_);
+  if (PrepareForEmbed())
+    static_cast<ViewManagerClientImpl*>(manager_)->Embed(url, id_);
 }
 
 void View::Embed(mojo::URLRequestPtr request,
                  InterfaceRequest<ServiceProvider> services,
                  ServiceProviderPtr exposed_services) {
-  static_cast<ViewManagerClientImpl*>(manager_)
-      ->Embed(request.Pass(), id_, services.Pass(), exposed_services.Pass());
+  if (PrepareForEmbed()) {
+    static_cast<ViewManagerClientImpl*>(manager_)
+        ->Embed(request.Pass(), id_, services.Pass(), exposed_services.Pass());
+  }
 }
 
 void View::Embed(ViewManagerClientPtr client) {
-  static_cast<ViewManagerClientImpl*>(manager_)->Embed(id_, client.Pass());
+  if (PrepareForEmbed())
+    static_cast<ViewManagerClientImpl*>(manager_)->Embed(id_, client.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -584,6 +588,15 @@ void View::NotifyViewVisibilityChangedUp(View* target) {
     bool ret = view->NotifyViewVisibilityChangedAtReceiver(target);
     DCHECK(ret);
   }
+}
+
+bool View::PrepareForEmbed() {
+  if (!OwnsView(manager_, this))
+    return false;
+
+  while (!children_.empty())
+    RemoveChild(children_[0]);
+  return true;
 }
 
 }  // namespace mojo

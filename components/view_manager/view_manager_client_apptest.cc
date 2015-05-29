@@ -686,4 +686,40 @@ TEST_F(ViewManagerTest, DISABLED_DisconnectTriggersDelete) {
   EXPECT_TRUE(got_disconnect());
 }
 
+class ViewRemovedFromParentObserver : public ViewObserver {
+ public:
+  explicit ViewRemovedFromParentObserver(View* view)
+      : view_(view), was_removed_(false) {
+    view_->AddObserver(this);
+  }
+  ~ViewRemovedFromParentObserver() override { view_->RemoveObserver(this); }
+
+  bool was_removed() const { return was_removed_; }
+
+ private:
+  // Overridden from ViewObserver:
+  void OnTreeChanged(const TreeChangeParams& params) override {
+    if (params.target == view_ && !params.new_parent)
+      was_removed_ = true;
+  }
+
+  View* view_;
+  bool was_removed_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ViewRemovedFromParentObserver);
+};
+
+TEST_F(ViewManagerTest, EmbedRemovesChildren) {
+  View* view1 = window_manager()->CreateView();
+  View* view2 = window_manager()->CreateView();
+  window_manager()->GetRoot()->AddChild(view1);
+  view1->AddChild(view2);
+
+  ViewRemovedFromParentObserver observer(view2);
+  view1->Embed(application_impl()->url());
+  EXPECT_TRUE(observer.was_removed());
+  EXPECT_EQ(nullptr, view2->parent());
+  EXPECT_TRUE(view1->children().empty());
+}
+
 }  // namespace mojo

@@ -178,6 +178,10 @@ class View {
   // Notifies this view and its parent hierarchy.
   void NotifyViewVisibilityChangedUp(View* target);
 
+  // Returns true if embed is allowed for this node. If embedding is allowed all
+  // the children are removed.
+  bool PrepareForEmbed();
+
   ViewManager* manager_;
   Id id_;
   View* parent_;
