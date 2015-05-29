@@ -740,7 +740,7 @@ wayland_output_resize_surface(struct wayland_output *output)
 	}
 
 	/* Throw away any remaining SHM buffers */
-	wl_list_for_each_safe(buffer, next, &output->shm.free_buffers, link)
+	wl_list_for_each_safe(buffer, next, &output->shm.free_buffers, free_link)
 		wayland_shm_buffer_destroy(buffer);
 	/* These will get thrown away when they get released */
 	wl_list_for_each(buffer, &output->shm.buffers, link)
