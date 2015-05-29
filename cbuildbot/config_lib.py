@@ -288,12 +288,12 @@ class HWTestConfig(object):
     return self.__dict__ == other.__dict__
 
 
-class Config(dict):
+class SiteConfig(dict):
   """This holds a set of named BuildConfig values."""
 
   def __init__(self, defaults=None):
     """Init."""
-    super(Config, self).__init__()
+    super(SiteConfig, self).__init__()
     self._defaults = {} if defaults is None else defaults
 
   def GetDefault(self):
@@ -303,7 +303,7 @@ class Config(dict):
     return BuildConfig(**self._defaults)
 
   #
-  # Methods for searching a Config's contents.
+  # Methods for searching a SiteConfig's contents.
   #
   def FindFullConfigsForBoard(self, board=None):
     """Returns full builder configs for a board.
@@ -485,7 +485,7 @@ def CreateConfigFromString(json_string):
             for n, v in config_dict.iteritems()}
 
   # config is the struct that holds the complete cbuildbot config.
-  result = Config(defaults=defaults)
+  result = SiteConfig(defaults=defaults)
   result.update(builds)
 
   return result

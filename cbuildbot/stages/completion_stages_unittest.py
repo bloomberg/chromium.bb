@@ -129,7 +129,7 @@ class MasterSlaveSyncCompletionStageTest(
         self._run, sync_stage, success=True)
 
   def _GetTestConfig(self):
-    test_config = config_lib.Config(defaults={})
+    test_config = config_lib.SiteConfig(defaults={})
     test_config.AddRawConfig(
         'test1',
         manifest_version=True,

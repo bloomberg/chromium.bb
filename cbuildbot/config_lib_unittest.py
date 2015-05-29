@@ -153,7 +153,7 @@ class ConfigClassTest(cros_test_lib.TestCase):
   """Config tests."""
 
   def testSaveLoadEmpty(self):
-    config = config_lib.Config()
+    config = config_lib.SiteConfig()
 
     config_str = config.SaveConfigToString()
     self.assertEqual(config_str, """{

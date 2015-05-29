@@ -426,7 +426,7 @@ _settings = dict(
 IS_RELEASE_BRANCH = False
 
 
-_CONFIG = config_lib.Config(defaults=_settings)
+_CONFIG = config_lib.SiteConfig(defaults=_settings)
 
 def GetConfig():
   """Get the full build configuration."""
