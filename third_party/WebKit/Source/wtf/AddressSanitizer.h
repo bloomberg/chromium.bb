@@ -28,7 +28,9 @@
 // handles all the code without falling back to CL.
 #if defined(ADDRESS_SANITIZER) && (!OS(WIN) || COMPILER(CLANG))
 #define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
-#if ENABLE_LAZY_SWEEPING
+#if ENABLE(OILPAN)
+// TODO(Oilpan): a temporary annotation while lazy sweeping is phased in.
+// Remove the ENABLE(OILPAN) condition when lazy sweeping is globally enabled.
 #define NO_LAZY_SWEEP_SANITIZE_ADDRESS NO_SANITIZE_ADDRESS
 #else
 #define NO_LAZY_SWEEP_SANITIZE_ADDRESS
