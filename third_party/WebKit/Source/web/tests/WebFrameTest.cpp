@@ -282,14 +282,14 @@ INSTANTIATE_TEST_CASE_P(All, ParametrizedWebFrameTest, ::testing::Values(
     ParametrizedWebFrameTestConfig::Default,
     ParametrizedWebFrameTestConfig::RootLayerScrolls));
 
-TEST_F(WebFrameTest, ContentText)
+TEST_P(ParametrizedWebFrameTest, ContentText)
 {
     registerMockedHttpURLLoad("iframes_test.html");
     registerMockedHttpURLLoad("visible_iframe.html");
     registerMockedHttpURLLoad("invisible_iframe.html");
     registerMockedHttpURLLoad("zero_sized_iframe.html");
 
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "iframes_test.html");
 
     // Now retrieve the frames text and test it only includes visible elements.
@@ -333,12 +333,12 @@ TEST_P(ParametrizedWebFrameTest, FormWithNullFrame)
     WebSearchableFormData searchableDataForm(forms[0]);
 }
 
-TEST_F(WebFrameTest, ChromePageJavascript)
+TEST_P(ParametrizedWebFrameTest, ChromePageJavascript)
 {
     registerMockedChromeURLLoad("history.html");
 
     // Pass true to enable JavaScript.
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_chromeURL + "history.html", true);
 
     // Try to run JS against the chrome-style URL.
@@ -372,13 +372,13 @@ TEST_P(ParametrizedWebFrameTest, ChromePageNoJavascript)
     EXPECT_EQ(std::string::npos, content.find("Clobbered"));
 }
 
-TEST_F(WebFrameTest, LocationSetHostWithMissingPort)
+TEST_P(ParametrizedWebFrameTest, LocationSetHostWithMissingPort)
 {
     std::string fileName = "print-location-href.html";
     registerMockedHttpURLLoad(fileName);
     URLTestHelpers::registerMockedURLLoad(toKURL("http://internal.test:0/" + fileName), WebString::fromUTF8(fileName));
 
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
 
     /// Pass true to enable JavaScript.
     webViewHelper.initializeAndLoad(m_baseURL + fileName, true);
@@ -392,13 +392,13 @@ TEST_F(WebFrameTest, LocationSetHostWithMissingPort)
     EXPECT_EQ("http://internal.test:0/" + fileName, content);
 }
 
-TEST_F(WebFrameTest, LocationSetEmptyPort)
+TEST_P(ParametrizedWebFrameTest, LocationSetEmptyPort)
 {
     std::string fileName = "print-location-href.html";
     registerMockedHttpURLLoad(fileName);
     URLTestHelpers::registerMockedURLLoad(toKURL("http://internal.test:0/" + fileName), WebString::fromUTF8(fileName));
 
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
 
     /// Pass true to enable JavaScript.
     webViewHelper.initializeAndLoad(m_baseURL + fileName, true);
@@ -678,12 +678,12 @@ TEST_F(WebFrameCSSCallbackTest, InvalidSelector)
         << "An invalid selector shouldn't prevent other selectors from matching.";
 }
 
-TEST_F(WebFrameTest, DispatchMessageEventWithOriginCheck)
+TEST_P(ParametrizedWebFrameTest, DispatchMessageEventWithOriginCheck)
 {
     registerMockedHttpURLLoad("postmessage_test.html");
 
     // Pass true to enable JavaScript.
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "postmessage_test.html", true);
 
     // Send a message with the correct origin.
@@ -3327,10 +3327,10 @@ TEST_P(ParametrizedWebFrameTest, ContextNotificationsIsolatedWorlds)
     EXPECT_EQ(1, matchCount);
 }
 
-TEST_F(WebFrameTest, FindInPage)
+TEST_P(ParametrizedWebFrameTest, FindInPage)
 {
     registerMockedHttpURLLoad("find.html");
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find.html");
     WebFrame* frame = webViewHelper.webView()->mainFrame();
     const int findIdentifier = 12345;
@@ -3426,9 +3426,9 @@ TEST_P(ParametrizedWebFrameTest, GetContentAsPlainText)
     EXPECT_EQ("Hello world", text.utf8());
 }
 
-TEST_F(WebFrameTest, GetFullHtmlOfPage)
+TEST_P(ParametrizedWebFrameTest, GetFullHtmlOfPage)
 {
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad("about:blank", true);
     WebFrame* frame = webViewHelper.webView()->mainFrame();
 
@@ -4806,11 +4806,11 @@ private:
     bool m_commitCalled;
 };
 
-TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation)
+TEST_P(ParametrizedWebFrameTest, ReplaceNavigationAfterHistoryNavigation)
 {
     TestSubstituteDataWebFrameClient webFrameClient;
 
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad("about:blank", true, &webFrameClient);
     WebFrame* frame = webViewHelper.webView()->mainFrame();
 
@@ -4917,10 +4917,10 @@ private:
     uint32_t m_hash;
 };
 
-TEST_F(WebFrameTest, ReplaceMisspelledRange)
+TEST_P(ParametrizedWebFrameTest, ReplaceMisspelledRange)
 {
     registerMockedHttpURLLoad("spell.html");
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
     SpellCheckClient spellcheck;
     webViewHelper.webView()->setSpellCheckClient(&spellcheck);
@@ -4977,10 +4977,10 @@ TEST_P(ParametrizedWebFrameTest, RemoveSpellingMarkers)
     EXPECT_EQ(0U, document->markers().markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
 }
 
-TEST_F(WebFrameTest, RemoveSpellingMarkersUnderWords)
+TEST_P(ParametrizedWebFrameTest, RemoveSpellingMarkersUnderWords)
 {
     registerMockedHttpURLLoad("spell.html");
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
     SpellCheckClient spellcheck;
     webViewHelper.webView()->setSpellCheckClient(&spellcheck);
@@ -5009,9 +5009,10 @@ TEST_F(WebFrameTest, RemoveSpellingMarkersUnderWords)
     EXPECT_EQ(0U, documentMarkers2.size());
 }
 
-TEST_F(WebFrameTest, MarkerHashIdentifiers) {
+TEST_P(ParametrizedWebFrameTest, MarkerHashIdentifiers)
+{
     registerMockedHttpURLLoad("spell.html");
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
 
     static const uint32_t kHash = 42;
@@ -5136,10 +5137,10 @@ TEST_P(ParametrizedWebFrameTest, CancelSpellingRequestCrash)
     frame->frame()->spellChecker().cancelCheck();
 }
 
-TEST_F(WebFrameTest, SpellcheckResultErasesMarkers)
+TEST_P(ParametrizedWebFrameTest, SpellcheckResultErasesMarkers)
 {
     registerMockedHttpURLLoad("spell.html");
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
 
     StubbornSpellCheckClient spellcheck;
@@ -5165,10 +5166,10 @@ TEST_F(WebFrameTest, SpellcheckResultErasesMarkers)
     EXPECT_EQ(0U, document->markers().markers().size());
 }
 
-TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument)
+TEST_P(ParametrizedWebFrameTest, SpellcheckResultsSavedInDocument)
 {
     registerMockedHttpURLLoad("spell.html");
-    FrameTestHelpers::WebViewHelper webViewHelper;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
 
     StubbornSpellCheckClient spellcheck;

@@ -17,7 +17,7 @@ namespace {
 inline bool fullyClipsContents(Node* node)
 {
     LayoutObject* layoutObject = node->layoutObject();
-    if (!layoutObject || !layoutObject->isBox() || !layoutObject->hasOverflowClip())
+    if (!layoutObject || !layoutObject->isBox() || !layoutObject->hasOverflowClip() || layoutObject->isLayoutView())
         return false;
     return toLayoutBox(layoutObject)->size().isEmpty();
 }
