@@ -140,6 +140,8 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseGetAll_Params)
   IPC_STRUCT_MEMBER(int64, index_id)
   // The serialized key range.
   IPC_STRUCT_MEMBER(content::IndexedDBKeyRange, key_range)
+  // If this is just retrieving the key
+  IPC_STRUCT_MEMBER(bool, key_only)
   // The max number of values to retrieve.
   IPC_STRUCT_MEMBER(int64, max_count)
 IPC_STRUCT_END()

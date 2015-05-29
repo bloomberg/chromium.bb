@@ -661,7 +661,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGetAll(
   connection->database()->GetAll(
       parent_->HostTransactionId(params.transaction_id), params.object_store_id,
       params.index_id, make_scoped_ptr(new IndexedDBKeyRange(params.key_range)),
-      params.max_count, callbacks);
+      params.key_only, params.max_count, callbacks);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPutWrapper(

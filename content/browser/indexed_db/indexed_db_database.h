@@ -126,6 +126,7 @@ class CONTENT_EXPORT IndexedDBDatabase
               int64 object_store_id,
               int64 index_id,
               scoped_ptr<IndexedDBKeyRange> key_range,
+              bool key_only,
               int64 max_count,
               scoped_refptr<IndexedDBCallbacks> callbacks);
   void Put(int64 transaction_id,
@@ -209,6 +210,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   void GetAllOperation(int64 object_store_id,
                        int64 index_id,
                        scoped_ptr<IndexedDBKeyRange> key_range,
+                       indexed_db::CursorType cursor_type,
                        int64 max_count,
                        scoped_refptr<IndexedDBCallbacks> callbacks,
                        IndexedDBTransaction* transaction);

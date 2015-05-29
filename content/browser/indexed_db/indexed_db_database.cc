@@ -537,6 +537,7 @@ void IndexedDBDatabase::GetAll(int64 transaction_id,
                                int64 object_store_id,
                                int64 index_id,
                                scoped_ptr<IndexedDBKeyRange> key_range,
+                               bool key_only,
                                int64 max_count,
                                scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE1("IndexedDBDatabase::GetAll", "txn.id", transaction_id);
@@ -547,9 +548,11 @@ void IndexedDBDatabase::GetAll(int64 transaction_id,
   if (!ValidateObjectStoreId(object_store_id))
     return;
 
-  transaction->ScheduleTask(
-      base::Bind(&IndexedDBDatabase::GetAllOperation, this, object_store_id,
-                 index_id, Passed(&key_range), max_count, callbacks));
+  transaction->ScheduleTask(base::Bind(
+      &IndexedDBDatabase::GetAllOperation, this, object_store_id, index_id,
+      Passed(&key_range),
+      key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE,
+      max_count, callbacks));
 }
 
 void IndexedDBDatabase::Get(int64 transaction_id,
@@ -742,6 +745,7 @@ void IndexedDBDatabase::GetAllOperation(
     int64 object_store_id,
     int64 index_id,
     scoped_ptr<IndexedDBKeyRange> key_range,
+    indexed_db::CursorType cursor_type,
     int64 max_count,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* transaction) {
@@ -759,12 +763,17 @@ void IndexedDBDatabase::GetAllOperation(
   scoped_ptr<IndexedDBBackingStore::Cursor> cursor;
 
   if (index_id == IndexedDBIndexMetadata::kInvalidId) {
-    // ObjectStore
+    // Object Store Retrieval Operation
     cursor = backing_store_->OpenObjectStoreCursor(
         transaction->BackingStoreTransaction(), id(), object_store_id,
         *key_range, blink::WebIDBCursorDirectionNext, &s);
+  } else if (cursor_type == indexed_db::CURSOR_KEY_ONLY) {
+    // Index Value Retrieval Operation
+    cursor = backing_store_->OpenIndexKeyCursor(
+        transaction->BackingStoreTransaction(), id(), object_store_id, index_id,
+        *key_range, blink::WebIDBCursorDirectionNext, &s);
   } else {
-    // Index
+    // Index Referenced Value Retrieval Operation
     cursor = backing_store_->OpenIndexCursor(
         transaction->BackingStoreTransaction(), id(), object_store_id, index_id,
         *key_range, blink::WebIDBCursorDirectionNext, &s);
@@ -782,8 +791,11 @@ void IndexedDBDatabase::GetAllOperation(
     return;
   }
 
+  std::vector<IndexedDBKey> found_keys;
   std::vector<IndexedDBReturnValue> found_values;
   if (!cursor) {
+    // Doesn't matter if key or value array here - will be empty array when it
+    // hits JavaScript.
     callbacks->OnSuccessArray(&found_values, object_store_metadata.key_path);
     return;
   }
@@ -793,7 +805,8 @@ void IndexedDBDatabase::GetAllOperation(
                        !object_store_metadata.key_path.IsNull();
 
   size_t response_size = kMaxIDBMessageOverhead;
-  do {
+  int64 num_found_items = 0;
+  while (num_found_items++ < max_count) {
     bool cursor_valid;
     if (did_first_seek) {
       cursor_valid = cursor->Continue(&s);
@@ -805,7 +818,6 @@ void IndexedDBDatabase::GetAllOperation(
       IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                    "Internal error in GetAllOperation.");
       callbacks->OnError(error);
-
       if (s.IsCorruption())
         factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
                                                error);
@@ -816,26 +828,50 @@ void IndexedDBDatabase::GetAllOperation(
       break;
 
     IndexedDBReturnValue return_value;
-    return_value.swap(*cursor->value());
+    IndexedDBKey return_key;
 
-    size_t value_estimated_size = return_value.SizeEstimate();
+    if (index_id == IndexedDBIndexMetadata::kInvalidId) {
+      // Object Store Retrieval Operation
+      return_value.swap(*cursor->value());
 
-    if (generated_key) {
-      return_value.primary_key = cursor->primary_key();
-      value_estimated_size += return_value.primary_key.size_estimate();
+      if (generated_key)
+        return_value.primary_key = cursor->primary_key();
+    } else {
+      // Dealing with indexes
+      if (cursor_type == indexed_db::CURSOR_KEY_ONLY) {
+        return_key = cursor->primary_key();
+      } else {
+        // Index Referenced Value Retrieval Operation
+        return_value.swap(*cursor->value());
+        if (!return_value.empty() && generated_key) {
+          return_value.primary_key = cursor->primary_key();
+          return_value.key_path = object_store_metadata.key_path;
+        }
+      }
     }
 
-    if (response_size + value_estimated_size >
-        IPC::Channel::kMaximumMessageSize) {
-      // TODO(cmumford): Reach this limit in more gracefully (crbug.com/478949)
+    if (cursor_type == indexed_db::CURSOR_KEY_ONLY)
+      response_size += return_key.size_estimate();
+    else
+      response_size += return_value.SizeEstimate();
+    if (response_size > IPC::Channel::kMaximumMessageSize) {
+      // TODO(cmumford): Reach this limit more gracefully (crbug.com/478949)
       break;
     }
 
-    found_values.push_back(return_value);
-    response_size += value_estimated_size;
-  } while (found_values.size() < static_cast<size_t>(max_count));
+    if (cursor_type == indexed_db::CURSOR_KEY_ONLY)
+      found_keys.push_back(return_key);
+    else
+      found_values.push_back(return_value);
+  }
 
-  callbacks->OnSuccessArray(&found_values, object_store_metadata.key_path);
+  if (cursor_type == indexed_db::CURSOR_KEY_ONLY) {
+    // IndexedDBKey already supports an array of values so we can leverage  this
+    // to return an array of keys - no need to create our own array of keys.
+    callbacks->OnSuccess(IndexedDBKey(found_keys));
+  } else {
+    callbacks->OnSuccessArray(&found_values, object_store_metadata.key_path);
+  }
 }
 
 static scoped_ptr<IndexedDBKey> GenerateKey(
