@@ -111,10 +111,10 @@ namespace fileSystemProvider {
 
     // Whether the file system supports the <code>tag</code> field for observing
     // directories.
-    [nodoc] boolean? supportsNotifyTag;
+    boolean? supportsNotifyTag;
 
     // List of watchers.
-    [nodoc] Watcher[] watchers;
+    Watcher[] watchers;
   };
 
   // Options for the $(ref:mount) method.
@@ -135,8 +135,8 @@ namespace fileSystemProvider {
     long? openedFilesLimit;
 
     // Whether the file system supports the <code>tag</code> field for observed
-    // directories. Required in order to enable the internal cache.
-    [nodoc] boolean? supportsNotifyTag;
+    // directories.
+    boolean? supportsNotifyTag;
   };
 
   // Options for the $(ref:unmount) method.
@@ -492,8 +492,7 @@ namespace fileSystemProvider {
     // system is mounted with <code>supportsNofityTag</code>, then
     // <code>tag</code> must be provided, and all changes since the last
     // notification always reported, even if the system was shutdown. The last
-    // tag can be obtained with $(ref:getAll). Note, that <code>tag</code> is
-    // required in order to enable the internal cache.
+    // tag can be obtained with $(ref:getAll).
     //
     // Value of <code>tag</code> can be any string which is unique per call,
     // so it's possible to identify the last registered notification. Eg. if
@@ -512,10 +511,10 @@ namespace fileSystemProvider {
     // entries are in fact removed, as there is no entry under their original
     // paths anymore.
     //
-    // In case of an error, $(ref:chrome.runtime.lastError) will be set
+    // In case of an error, $(ref:runtime.lastError) will be set
     // will a corresponding error code.
-    [nodoc] static void notify(NotifyOptions options,
-                               optional ResultCallback callback);
+    static void notify(NotifyOptions options,
+                       optional ResultCallback callback);
   };
 
   interface Events {
@@ -657,14 +656,14 @@ namespace fileSystemProvider {
 
     // Raised when setting a new directory watcher is requested. If an error
     // occurs, then <code>errorCallback</code> must be called.
-    [maxListeners=1, nodoc] static void onAddWatcherRequested(
+    [maxListeners=1] static void onAddWatcherRequested(
       AddWatcherRequestedOptions options,
       ProviderSuccessCallback successCallback,
       ProviderErrorCallback errorCallback);
 
     // Raised when the watcher should be removed. If an error occurs, then
     // <code>errorCallback</code> must be called.
-    [maxListeners=1, nodoc] static void onRemoveWatcherRequested(
+    [maxListeners=1] static void onRemoveWatcherRequested(
       RemoveWatcherRequestedOptions options,
       ProviderSuccessCallback successCallback,
       ProviderErrorCallback errorCallback);
