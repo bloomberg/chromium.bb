@@ -325,6 +325,7 @@ bool NavigatorImpl::NavigateToEntry(
         entry.ConstructStartNavigationParams(),
         entry.ConstructRequestNavigationParams(
             navigation_start,
+            controller_->HasCommittedRealLoad(frame_tree_node),
             controller_->GetPendingEntryIndex() == -1,
             controller_->GetIndexOfEntry(&entry),
             controller_->GetLastCommittedEntryIndex(),

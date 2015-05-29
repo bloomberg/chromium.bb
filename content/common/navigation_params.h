@@ -170,6 +170,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           const PageState& page_state,
                           int32 page_id,
                           int nav_entry_id,
+                          bool has_committed_real_load,
                           bool intended_as_new_entry,
                           int pending_history_list_offset,
                           int current_history_list_offset,
@@ -210,6 +211,12 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // is 0.) If the load succeeds, then this nav_entry_id will be reflected in
   // the resulting FrameHostMsg_DidCommitProvisionalLoad message.
   int nav_entry_id;
+
+  // Whether the frame being navigated has already committed a real page, which
+  // affects how new navigations are classified in the renderer process.
+  // This currently is only ever set to true in --site-per-process mode.
+  // TODO(creis): Create FrameNavigationEntries by default so this always works.
+  bool has_committed_real_load;
 
   // For browser-initiated navigations, this is true if this is a new entry
   // being navigated to. This is false otherwise. TODO(avi): Remove this when
