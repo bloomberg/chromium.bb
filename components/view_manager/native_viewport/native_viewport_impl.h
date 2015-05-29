@@ -32,8 +32,7 @@ namespace native_viewport {
 // or the PlatformViewport informs the NativeViewportImpl that it has been
 // destroyed.
 class NativeViewportImpl : public mojo::NativeViewport,
-                           public PlatformViewport::Delegate,
-                           public mojo::ErrorHandler {
+                           public PlatformViewport::Delegate {
  public:
   NativeViewportImpl(bool is_headless,
                      const scoped_refptr<gles2::GpuState>& gpu_state,
@@ -61,9 +60,6 @@ class NativeViewportImpl : public mojo::NativeViewport,
   bool OnEvent(mojo::EventPtr event) override;
   void OnDestroyed() override;
 
-  // mojo::ErrorHandler implementation.
-  void OnConnectionError() override;
-
  private:
   // Callback when the dispatcher has processed a message we're waiting on
   // an ack from. |pointer_id| identifies the pointer the message was associated
@@ -79,7 +75,7 @@ class NativeViewportImpl : public mojo::NativeViewport,
   CreateCallback create_callback_;
   RequestMetricsCallback metrics_callback_;
   mojo::NativeViewportEventDispatcherPtr event_dispatcher_;
-  mojo::Binding<mojo::NativeViewport> binding_;
+  mojo::StrongBinding<mojo::NativeViewport> binding_;
 
   // Set of pointer_ids we've sent a move to and are waiting on an ack.
   std::set<int32> pointers_waiting_on_ack_;
