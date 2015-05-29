@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_DELEGATE_H_
-#define COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_DELEGATE_H_
+#ifndef COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_ADAPTER_H_
+#define COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_ADAPTER_H_
 
 #include <jni.h>
 
@@ -20,22 +20,22 @@ class SingleThreadTaskRunner;
 
 namespace cronet {
 
-// The Delegate holds onto a reference to the IOBuffer that is currently being
+// The Adapter holds onto a reference to the IOBuffer that is currently being
 // written to in Java, so may not be deleted until any read operation in Java
 // has completed.
 //
-// The Delegate is owned by the Java CronetUploadDataStream, and also owns a
-// reference to it. The Delegate is only destroyed after the net::URLRequest
+// The Adapter is owned by the Java CronetUploadDataStream, and also owns a
+// reference to it. The Adapter is only destroyed after the net::URLRequest
 // destroys the C++ CronetUploadDataStream and the Java CronetUploadDataStream
 // has no read operation pending, at which point it also releases its reference
 // to the Java CronetUploadDataStream.
 //
-// Failures don't go through the delegate, but directly to the Java request
+// Failures don't go back through the Adapter, but directly to the Java request
 // object, since normally reads aren't allowed to fail during an upload.
-class CronetUploadDataStreamDelegate : public CronetUploadDataStream::Delegate {
+class CronetUploadDataStreamAdapter : public CronetUploadDataStream::Delegate {
  public:
-  CronetUploadDataStreamDelegate(JNIEnv* env, jobject jupload_data_stream);
-  ~CronetUploadDataStreamDelegate() override;
+  CronetUploadDataStreamAdapter(JNIEnv* env, jobject jupload_data_stream);
+  ~CronetUploadDataStreamAdapter() override;
 
   // CronetUploadDataStream::Delegate implementation.  Called on network thread.
   void InitializeOnNetworkThread(
@@ -64,12 +64,12 @@ class CronetUploadDataStreamDelegate : public CronetUploadDataStream::Delegate {
   // received.
   scoped_refptr<net::IOBuffer> buffer_;
 
-  DISALLOW_COPY_AND_ASSIGN(CronetUploadDataStreamDelegate);
+  DISALLOW_COPY_AND_ASSIGN(CronetUploadDataStreamAdapter);
 };
 
 // Explicitly register static JNI functions.
-bool CronetUploadDataStreamDelegateRegisterJni(JNIEnv* env);
+bool CronetUploadDataStreamAdapterRegisterJni(JNIEnv* env);
 
 }  // namespace cronet
 
-#endif  // COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_DELEGATE_H_
+#endif  // COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_ADAPTER_H_

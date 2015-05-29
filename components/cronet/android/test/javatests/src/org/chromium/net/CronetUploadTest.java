@@ -242,8 +242,8 @@ public class CronetUploadTest extends CronetTestBase {
         // Destroy the C++ TestUploadDataStreamHandler. The handler will then
         // destroy the C++ CronetUploadDataStream it owns on the network thread.
         // That will result in calling the Java CronetUploadDataSteam's
-        // onCanceled() method on its executor thread, which will then destroy
-        // the CronetUploadDataStreamDelegate.
+        // onUploadDataStreamDestroyed() method on its executor thread, which
+        // will then destroy the CronetUploadDataStreamAdapter.
         mHandler.destroyNativeObjects();
 
         // Make the read complete should not encounter a crash.
@@ -286,8 +286,8 @@ public class CronetUploadTest extends CronetTestBase {
         // Destroy the C++ TestUploadDataStreamHandler. The handler will then
         // destroy the C++ CronetUploadDataStream it owns on the network thread.
         // That will result in calling the Java CronetUploadDataSteam's
-        // onCanceled() method on its executor thread, which will then destroy
-        // the CronetUploadDataStreamDelegate.
+        // onUploadDataStreamDestroyed() method on its executor thread, which
+        // will then destroy the CronetUploadDataStreamAdapter.
         mHandler.destroyNativeObjects();
 
         // Signal rewind completes, and wait for init to complete.

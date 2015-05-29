@@ -13,7 +13,14 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
- * Pass an upload body to a UrlRequest using an UploadDataProvider.
+ * CronetUploadDataStream handles communication between an upload body
+ * encapsulated in the embedder's {@link UploadDataSink} and a C++
+ * UploadDataStreamAdapter, which it owns. It's attached to a {@link
+ * CronetURLRequest}'s during the construction of request's native C++ objects
+ * on the network thread, though it's created on one of the embedder's threads.
+ * It is called by the UploadDataStreamAdapter on the network thread, but calls
+ * into the UploadDataSink and the UploadDataStreamAdapter on the Executor
+ * passed into its constructor.
  */
 @JNINamespace("cronet")
 final class CronetUploadDataStream implements UploadDataSink {
@@ -29,7 +36,7 @@ final class CronetUploadDataStream implements UploadDataSink {
         public void run() {
             synchronized (mLock) {
                 if (mReading || mRewinding || mByteBuffer == null
-                        || mUploadDataStreamDelegate == 0) {
+                        || mUploadDataStreamAdapter == 0) {
                     throw new IllegalStateException(
                             "Unexpected readData call.");
                 }
@@ -48,19 +55,19 @@ final class CronetUploadDataStream implements UploadDataSink {
     // call to mDataProvider.read until onError or onReadSucceeded.
     private ByteBuffer mByteBuffer = null;
 
-    // Lock that protects all subsequent variables. The delegate has to be
+    // Lock that protects all subsequent variables. The adapter has to be
     // protected to ensure safe shutdown, mReading and mRewinding are protected
     // to robustly detect getting read/rewind results more often than expected.
     private final Object mLock = new Object();
 
-    // Native delegate object, owned by the CronetUploadDataStream. It's only
+    // Native adapter object, owned by the CronetUploadDataStream. It's only
     // deleted after the native UploadDataStream object is destroyed. All access
-    // to the delegate is synchronized, for safe usage and cleanup.
-    private long mUploadDataStreamDelegate = 0;
+    // to the adapter is synchronized, for safe usage and cleanup.
+    private long mUploadDataStreamAdapter = 0;
 
     private boolean mReading = false;
     private boolean mRewinding = false;
-    private boolean mDestroyDelegatePostponed = false;
+    private boolean mDestroyAdapterPostponed = false;
 
     /**
      * Constructs a CronetUploadDataStream.
@@ -99,7 +106,7 @@ final class CronetUploadDataStream implements UploadDataSink {
             public void run() {
                 synchronized (mLock) {
                     if (mReading || mRewinding
-                            || mUploadDataStreamDelegate == 0) {
+                            || mUploadDataStreamAdapter == 0) {
                         throw new IllegalStateException(
                                 "Unexpected rewind call.");
                     }
@@ -117,8 +124,8 @@ final class CronetUploadDataStream implements UploadDataSink {
 
     /**
      * Called when the native UploadDataStream is destroyed.  At this point,
-     * the native delegate needs to be destroyed, but only after any pending
-     * read operation completes, as the delegate owns the read buffer.
+     * the native adapter needs to be destroyed, but only after any pending
+     * read operation completes, as the adapter owns the read buffer.
      */
     @SuppressWarnings("unused")
     @CalledByNative
@@ -126,7 +133,7 @@ final class CronetUploadDataStream implements UploadDataSink {
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                destroyDelegate();
+                destroyAdapter();
             }
         };
 
@@ -146,7 +153,7 @@ final class CronetUploadDataStream implements UploadDataSink {
             mReading = false;
             mRewinding = false;
             mByteBuffer = null;
-            destroyDelegateIfPostponed();
+            destroyAdapterIfPostponed();
         }
 
         // Just fail the request - simpler to fail directly, and
@@ -171,12 +178,12 @@ final class CronetUploadDataStream implements UploadDataSink {
             mByteBuffer = null;
             mReading = false;
 
-            destroyDelegateIfPostponed();
+            destroyAdapterIfPostponed();
             // Request may been canceled already.
-            if (mUploadDataStreamDelegate == 0) {
+            if (mUploadDataStreamAdapter == 0) {
                 return;
             }
-            nativeOnReadSucceeded(mUploadDataStreamDelegate, bytesRead,
+            nativeOnReadSucceeded(mUploadDataStreamAdapter, bytesRead,
                     lastChunk);
         }
     }
@@ -200,10 +207,10 @@ final class CronetUploadDataStream implements UploadDataSink {
             }
             mRewinding = false;
             // Request may been canceled already.
-            if (mUploadDataStreamDelegate == 0) {
+            if (mUploadDataStreamAdapter == 0) {
                 return;
             }
-            nativeOnRewindSucceeded(mUploadDataStreamDelegate);
+            nativeOnRewindSucceeded(mUploadDataStreamAdapter);
         }
     }
 
@@ -218,7 +225,7 @@ final class CronetUploadDataStream implements UploadDataSink {
     }
 
     /**
-     * Post task to application Executor.
+     * Posts task to application Executor.
      */
     private void postTaskToExecutor(Runnable task) {
         try {
@@ -231,38 +238,38 @@ final class CronetUploadDataStream implements UploadDataSink {
     }
 
     /**
-     * The delegate is owned by the CronetUploadDataStream, so it can be
+     * The adapter is owned by the CronetUploadDataStream, so it can be
      * destroyed safely when there is no pending read; however, destruction is
      * initiated by the destruction of the native UploadDataStream.
      */
-    private void destroyDelegate() {
+    private void destroyAdapter() {
         synchronized (mLock) {
             if (mReading) {
-                // Wait for the read to complete before destroy the delegate.
-                mDestroyDelegatePostponed = true;
+                // Wait for the read to complete before destroy the adapter.
+                mDestroyAdapterPostponed = true;
                 return;
             }
-            if (mUploadDataStreamDelegate == 0) {
+            if (mUploadDataStreamAdapter == 0) {
                 return;
             }
-            nativeDestroyDelegate(mUploadDataStreamDelegate);
-            mUploadDataStreamDelegate = 0;
+            nativeDestroyAdapter(mUploadDataStreamAdapter);
+            mUploadDataStreamAdapter = 0;
         }
     }
 
     /**
-     * Destroy the native delegate if the destruction is postponed due to a
+     * Destroys the native adapter if the destruction is postponed due to a
      * pending read, which has since completed. Caller needs to be on executor
      * thread.
      */
-    private void destroyDelegateIfPostponed() {
+    private void destroyAdapterIfPostponed() {
         synchronized (mLock) {
             if (mReading) {
                 throw new IllegalStateException(
                         "Method should not be called when read has not completed.");
             }
-            if (mDestroyDelegatePostponed) {
-                destroyDelegate();
+            if (mDestroyAdapterPostponed) {
+                destroyAdapter();
             }
         }
     }
@@ -276,38 +283,38 @@ final class CronetUploadDataStream implements UploadDataSink {
      */
     void attachToRequest(CronetUrlRequest request, long requestAdapter) {
         mRequest = request;
-        mUploadDataStreamDelegate =
+        mUploadDataStreamAdapter =
                 nativeAttachUploadDataToRequest(requestAdapter, mLength);
     }
 
     /**
-     * Creates a native CronetUploadDataStreamDelegate and
+     * Creates a native CronetUploadDataStreamAdapter and
      * CronetUploadDataStream for testing.
      * @return the address of the native CronetUploadDataStream object.
      */
     public long createUploadDataStreamForTesting() {
-        mUploadDataStreamDelegate = nativeCreateDelegateForTesting();
+        mUploadDataStreamAdapter = nativeCreateAdapterForTesting();
         return nativeCreateUploadDataStreamForTesting(mLength,
-                mUploadDataStreamDelegate);
+                mUploadDataStreamAdapter);
     }
 
-    // Native methods are implemented in upload_data_stream.cc.
+    // Native methods are implemented in upload_data_stream_adapter.cc.
 
     private native long nativeAttachUploadDataToRequest(long urlRequestAdapter,
             long length);
 
-    private native long nativeCreateDelegateForTesting();
+    private native long nativeCreateAdapterForTesting();
 
     private native long nativeCreateUploadDataStreamForTesting(long length,
-            long delegate);
+            long adapter);
 
-    @NativeClassQualifiedName("CronetUploadDataStreamDelegate")
+    @NativeClassQualifiedName("CronetUploadDataStreamAdapter")
     private native void nativeOnReadSucceeded(long nativePtr,
             int bytesRead, boolean finalChunk);
 
-    @NativeClassQualifiedName("CronetUploadDataStreamDelegate")
+    @NativeClassQualifiedName("CronetUploadDataStreamAdapter")
     private native void nativeOnRewindSucceeded(long nativePtr);
 
-    private static native void nativeDestroyDelegate(
-            long uploadDataStreamDelegate);
+    private static native void nativeDestroyAdapter(
+            long uploadDataStreamAdapter);
 }
