@@ -31,7 +31,6 @@ const char kEnableSamplingParam[] = "enable_sampling";
 const char kEnableSystraceParam[] = "enable_systrace";
 const char kEnableArgumentFilterParam[] = "enable_argument_filter";
 const char kIncludedCategoriesParam[] = "included_categories";
-const char kDisabledCategoriesParam[] = "disabled_categories";
 const char kExcludedCategoriesParam[] = "excluded_categories";
 const char kSyntheticDelaysParam[] = "synthetic_delays";
 
@@ -41,19 +40,6 @@ const char kSyntheticDelayCategoryFilterPrefix[] = "DELAY(";
 
 TraceConfig::TraceConfig() {
   InitializeDefault();
-}
-
-TraceConfig::TraceConfig(const CategoryFilter& cf,
-                         const TraceOptions& options) {
-  record_mode_ = options.record_mode;
-  enable_sampling_ = options.enable_sampling;
-  enable_systrace_ = options.enable_systrace;
-  enable_argument_filter_ = options.enable_argument_filter;
-
-  included_categories_ = cf.config_->included_categories_;
-  disabled_categories_ = cf.config_->disabled_categories_;
-  excluded_categories_ = cf.config_->excluded_categories_;
-  synthetic_delays_ = cf.config_->synthetic_delays_;
 }
 
 TraceConfig::TraceConfig(const std::string& category_filter_string,
@@ -181,7 +167,7 @@ std::string TraceConfig::ToCategoryFilterString() const {
 
 bool TraceConfig::IsCategoryGroupEnabled(
     const char* category_group_name) const {
-  // TraceLog should call this method only as  part of enabling/disabling
+  // TraceLog should call this method only as part of enabling/disabling
   // categories.
 
   bool had_enabled_by_default = false;
@@ -332,28 +318,41 @@ void TraceConfig::Initialize(const std::string& config_string) {
 
   base::ListValue* category_list = NULL;
   if (dict->GetList(kIncludedCategoriesParam, &category_list))
-    SetCategoriesFromList(included_categories_, *category_list);
-  if (dict->GetList(kDisabledCategoriesParam, &category_list))
-    SetCategoriesFromList(disabled_categories_, *category_list);
+    SetCategoriesFromIncludedList(*category_list);
   if (dict->GetList(kExcludedCategoriesParam, &category_list))
-    SetCategoriesFromList(excluded_categories_, *category_list);
+    SetCategoriesFromExcludedList(*category_list);
   if (dict->GetList(kSyntheticDelaysParam, &category_list))
-    SetSyntheticDelaysFromList(synthetic_delays_, *category_list);
+    SetSyntheticDelaysFromList(*category_list);
 }
 
-void TraceConfig::SetCategoriesFromList(StringList& categories,
-                                        const base::ListValue& list) {
-  categories.clear();
-  for (size_t i = 0; i < list.GetSize(); ++i) {
+void TraceConfig::SetCategoriesFromIncludedList(
+    const base::ListValue& included_list) {
+  included_categories_.clear();
+  for (size_t i = 0; i < included_list.GetSize(); ++i) {
     std::string category;
-    if (list.GetString(i, &category))
-      categories.push_back(category);
+    if (!included_list.GetString(i, &category))
+      continue;
+    if (category.compare(0, strlen(TRACE_DISABLED_BY_DEFAULT("")),
+                         TRACE_DISABLED_BY_DEFAULT("")) == 0) {
+      disabled_categories_.push_back(category);
+    } else {
+      included_categories_.push_back(category);
+    }
   }
 }
 
-void TraceConfig::SetSyntheticDelaysFromList(StringList& delays,
-                                             const base::ListValue& list) {
-  delays.clear();
+void TraceConfig::SetCategoriesFromExcludedList(
+    const base::ListValue& excluded_list) {
+  excluded_categories_.clear();
+  for (size_t i = 0; i < excluded_list.GetSize(); ++i) {
+    std::string category;
+    if (excluded_list.GetString(i, &category))
+      excluded_categories_.push_back(category);
+  }
+}
+
+void TraceConfig::SetSyntheticDelaysFromList(const base::ListValue& list) {
+  synthetic_delays_.clear();
   for (size_t i = 0; i < list.GetSize(); ++i) {
     std::string delay;
     if (!list.GetString(i, &delay))
@@ -362,7 +361,7 @@ void TraceConfig::SetSyntheticDelaysFromList(StringList& delays,
     size_t name_length = delay.find(';');
     if (name_length != std::string::npos && name_length > 0 &&
         name_length != delay.size() - 1) {
-      delays.push_back(delay);
+      synthetic_delays_.push_back(delay);
     }
   }
 }
@@ -416,8 +415,11 @@ void TraceConfig::ToDict(base::DictionaryValue& dict) const {
   else
     dict.SetBoolean(kEnableArgumentFilterParam, false);
 
-  AddCategoryToDict(dict, kIncludedCategoriesParam, included_categories_);
-  AddCategoryToDict(dict, kDisabledCategoriesParam, disabled_categories_);
+  StringList categories(included_categories_);
+  categories.insert(categories.end(),
+                    disabled_categories_.begin(),
+                    disabled_categories_.end());
+  AddCategoryToDict(dict, kIncludedCategoriesParam, categories);
   AddCategoryToDict(dict, kExcludedCategoriesParam, excluded_categories_);
   AddCategoryToDict(dict, kSyntheticDelaysParam, synthetic_delays_);
 }
@@ -458,7 +460,6 @@ void TraceConfig::WriteCategoryFilterString(const StringList& delays,
     ++token_cnt;
   }
 }
-
 
 bool TraceConfig::IsCategoryEnabled(const char* category_name) const {
   StringList::const_iterator ci;

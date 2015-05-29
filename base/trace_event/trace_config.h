@@ -25,15 +25,69 @@ class BASE_EXPORT TraceConfig {
 
   TraceConfig();
 
-  // Create TraceConfig object from CategoryFilter and TraceOptions.
-  TraceConfig(const CategoryFilter& cf, const TraceOptions& options);
-
   // Create TraceConfig object from category filter and trace options strings.
+  //
+  // |category_filter_string| is a comma-delimited list of category wildcards.
+  // A category can have an optional '-' prefix to make it an excluded category.
+  // All the same rules apply above, so for example, having both included and
+  // excluded categories in the same list would not be supported.
+  //
+  // Category filters can also be used to configure synthetic delays.
+  //
+  // |trace_options_string| is a comma-delimited list of trace options.
+  // Possible options are: "record-until-full", "record-continuously",
+  // "record-as-much-as-possible", "trace-to-console", "enable-sampling",
+  // "enable-systrace" and "enable-argument-filter".
+  // The first 4 options are trace recoding modes and hence
+  // mutually exclusive. If more than one trace recording modes appear in the
+  // options_string, the last one takes precedence. If none of the trace
+  // recording mode is specified, recording mode is RECORD_UNTIL_FULL.
+  //
+  // The trace option will first be reset to the default option
+  // (record_mode set to RECORD_UNTIL_FULL, enable_sampling, enable_systrace,
+  // and enable_argument_filter set to false) before options parsed from
+  // |trace_options_string| are applied on it. If |trace_options_string| is
+  // invalid, the final state of trace options is undefined.
+  //
+  // Example: TraceConfig("test_MyTest*", "record-until-full");
+  // Example: TraceConfig("test_MyTest*,test_OtherStuff",
+  //                      "record-continuously, enable-sampling");
+  // Example: TraceConfig("-excluded_category1,-excluded_category2",
+  //                      "record-until-full, trace-to-console");
+  //          would set ECHO_TO_CONSOLE as the recording mode.
+  // Example: TraceConfig("-*,webkit", "");
+  //          would disable everything but webkit; and use default options.
+  // Example: TraceConfig("-webkit", "");
+  //          would enable everything but webkit; and use default options.
+  // Example: TraceConfig("DELAY(gpu.PresentingFrame;16)", "");
+  //          would make swap buffers always take at least 16 ms; and use
+  //          default options.
+  // Example: TraceConfig("DELAY(gpu.PresentingFrame;16;oneshot)", "");
+  //          would make swap buffers take at least 16 ms the first time it is
+  //          called; and use default options.
+  // Example: TraceConfig("DELAY(gpu.PresentingFrame;16;alternating)", "");
+  //          would make swap buffers take at least 16 ms every other time it
+  //          is called; and use default options.
   TraceConfig(const std::string& category_filter_string,
               const std::string& trace_options_string);
 
+  // Create TraceConfig object from the trace config string.
+  //
   // |config_string| is a dictionary formatted as a JSON string, containing both
   // category filters and trace options.
+  //
+  // Example:
+  //   {
+  //     "record_mode": "record-continuously",
+  //     "enable_sampling": true,
+  //     "enable_systrace": true,
+  //     "enable_argument_filter": true,
+  //     "included_categories": ["included",
+  //                             "inc_pattern*",
+  //                             "disabled-by-default-category1"],
+  //     "excluded_categories": ["excluded", "exc_pattern*"],
+  //     "synthetic_delays": ["test.Delay1;16", "test.Delay2;32"]
+  //   }
   explicit TraceConfig(const std::string& config_string);
 
   ~TraceConfig();
@@ -81,10 +135,9 @@ class BASE_EXPORT TraceConfig {
 
   void Initialize(const std::string& config_string);
 
-  void SetCategoriesFromList(StringList& categories,
-                             const base::ListValue& list);
-  void SetSyntheticDelaysFromList(StringList& delays,
-                                  const base::ListValue& list);
+  void SetCategoriesFromIncludedList(const base::ListValue& included_list);
+  void SetCategoriesFromExcludedList(const base::ListValue& excluded_list);
+  void SetSyntheticDelaysFromList(const base::ListValue& list);
   void AddCategoryToDict(base::DictionaryValue& dict,
                          const char* param,
                          const StringList& categories) const;

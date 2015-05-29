@@ -187,14 +187,23 @@ TEST(TraceConfigTest, ConstructDefaultTraceConfig) {
   EXPECT_FALSE(tc.enable_systrace_);
   EXPECT_FALSE(tc.enable_argument_filter_);
   EXPECT_STREQ("-*Debug,-*Test", tc.ToCategoryFilterString().c_str());
-  EXPECT_FALSE(tc.IsCategoryGroupEnabled("CategoryDebug"));
+
+  EXPECT_FALSE(tc.IsCategoryEnabled("Category1"));
+  EXPECT_FALSE(tc.IsCategoryEnabled("not-excluded-category"));
+  EXPECT_FALSE(tc.IsCategoryEnabled("CategoryTest"));
+  EXPECT_FALSE(tc.IsCategoryEnabled("CategoryDebug"));
+  EXPECT_FALSE(tc.IsCategoryEnabled("disabled-by-default-cc"));
+
+  EXPECT_TRUE(tc.IsCategoryGroupEnabled("Category1"));
+  EXPECT_TRUE(tc.IsCategoryGroupEnabled("not-excluded-category"));
   EXPECT_FALSE(tc.IsCategoryGroupEnabled("CategoryTest"));
-  EXPECT_FALSE(tc.IsCategoryGroupEnabled("CategoryDebug,CategoryTest"));
+  EXPECT_FALSE(tc.IsCategoryGroupEnabled("CategoryDebug"));
+  EXPECT_FALSE(tc.IsCategoryGroupEnabled("disabled-by-default-cc"));
+
   EXPECT_TRUE(tc.IsCategoryGroupEnabled("Category1,CategoryDebug"));
   EXPECT_TRUE(tc.IsCategoryGroupEnabled("CategoryDebug,Category1"));
-  EXPECT_TRUE(tc.IsCategoryGroupEnabled("CategoryTest,Category2"));
-  EXPECT_TRUE(tc.IsCategoryGroupEnabled("not-excluded-category"));
-  EXPECT_FALSE(tc.IsCategoryGroupEnabled("disabled-by-default-cc"));
+  EXPECT_TRUE(tc.IsCategoryGroupEnabled("CategoryTest,not-excluded-category"));
+  EXPECT_FALSE(tc.IsCategoryGroupEnabled("CategoryDebug,CategoryTest"));
 }
 
 TEST(TraceConfigTest, TraceConfigFromValidString) {
@@ -205,33 +214,54 @@ TEST(TraceConfigTest, TraceConfigFromValidString) {
       "\"enable_sampling\":true,"
       "\"enable_systrace\":true,"
       "\"excluded_categories\":[\"excluded\",\"exc_pattern*\"],"
-      "\"included_categories\":[\"included\",\"inc_pattern*\"],"
+      "\"included_categories\":[\"included\","
+                               "\"inc_pattern*\","
+                               "\"disabled-by-default-cc\"],"
       "\"record_mode\":\"record-continuously\","
       "\"synthetic_delays\":[\"test.Delay1;16\",\"test.Delay2;32\"]"
     "}";
   TraceConfig tc(config_string);
+
   EXPECT_STREQ(config_string, tc.ToString().c_str());
   EXPECT_TRUE(tc.record_mode_ == RECORD_CONTINUOUSLY);
   EXPECT_TRUE(tc.enable_sampling_);
   EXPECT_TRUE(tc.enable_systrace_);
   EXPECT_TRUE(tc.enable_argument_filter_);
-  EXPECT_STREQ("included,inc_pattern*,-excluded,-exc_pattern*,"
-               "DELAY(test.Delay1;16),DELAY(test.Delay2;32)",
+  EXPECT_STREQ("included,inc_pattern*,disabled-by-default-cc,-excluded,"
+               "-exc_pattern*,DELAY(test.Delay1;16),DELAY(test.Delay2;32)",
                tc.ToCategoryFilterString().c_str());
+
+  EXPECT_TRUE(tc.IsCategoryEnabled("included"));
+  EXPECT_TRUE(tc.IsCategoryEnabled("inc_pattern_category"));
+  EXPECT_TRUE(tc.IsCategoryEnabled("disabled-by-default-cc"));
+  EXPECT_FALSE(tc.IsCategoryEnabled("excluded"));
+  EXPECT_FALSE(tc.IsCategoryEnabled("exc_pattern_category"));
+  EXPECT_FALSE(tc.IsCategoryEnabled("disabled-by-default-others"));
+  EXPECT_FALSE(tc.IsCategoryEnabled("not-excluded-nor-included"));
+
   EXPECT_TRUE(tc.IsCategoryGroupEnabled("included"));
-  EXPECT_TRUE(tc.IsCategoryGroupEnabled("included,excluded"));
   EXPECT_TRUE(tc.IsCategoryGroupEnabled("inc_pattern_category"));
-  EXPECT_FALSE(tc.IsCategoryGroupEnabled("exc_pattern_category"));
+  EXPECT_TRUE(tc.IsCategoryGroupEnabled("disabled-by-default-cc"));
   EXPECT_FALSE(tc.IsCategoryGroupEnabled("excluded"));
+  EXPECT_FALSE(tc.IsCategoryGroupEnabled("exc_pattern_category"));
+  EXPECT_FALSE(tc.IsCategoryGroupEnabled("disabled-by-default-others"));
   EXPECT_FALSE(tc.IsCategoryGroupEnabled("not-excluded-nor-included"));
-  EXPECT_FALSE(tc.IsCategoryGroupEnabled("Category1,CategoryDebug"));
-  EXPECT_FALSE(tc.IsCategoryGroupEnabled("CategoryDebug,Category1"));
-  EXPECT_FALSE(tc.IsCategoryGroupEnabled("CategoryTest,Category2"));
+
+  EXPECT_TRUE(tc.IsCategoryGroupEnabled("included,excluded"));
+  EXPECT_FALSE(tc.IsCategoryGroupEnabled("excluded,exc_pattern_category"));
   EXPECT_TRUE(tc.IsCategoryGroupEnabled("included,DELAY(test.Delay1;16)"));
   EXPECT_FALSE(tc.IsCategoryGroupEnabled("DELAY(test.Delay1;16)"));
+
   EXPECT_EQ(2u, tc.GetSyntheticDelayValues().size());
   EXPECT_STREQ("test.Delay1;16", tc.GetSyntheticDelayValues()[0].c_str());
   EXPECT_STREQ("test.Delay2;32", tc.GetSyntheticDelayValues()[1].c_str());
+
+  const char config_string_2[] = "{\"included_categories\":[\"*\"]}";
+  TraceConfig tc2(config_string_2);
+  EXPECT_TRUE(tc2.IsCategoryEnabled("non-disabled-by-default-pattern"));
+  EXPECT_FALSE(tc2.IsCategoryEnabled("disabled-by-default-pattern"));
+  EXPECT_TRUE(tc2.IsCategoryGroupEnabled("non-disabled-by-default-pattern"));
+  EXPECT_FALSE(tc2.IsCategoryGroupEnabled("disabled-by-default-pattern"));
 
   // Clear
   tc.Clear();
@@ -313,6 +343,17 @@ TEST(TraceConfigTest, TraceConfigFromInvalidString) {
   EXPECT_FALSE(tc.enable_argument_filter_);
   EXPECT_STREQ("-excluded,DELAY(test.Delay1;16),DELAY(test.Delay2;32)",
                tc.ToCategoryFilterString().c_str());
+
+  const char invalid_config_string_2[] =
+    "{"
+      "\"included_categories\":[\"category\",\"disabled-by-default-pattern\"],"
+      "\"excluded_categories\":[\"category\",\"disabled-by-default-pattern\"]"
+    "}";
+  tc = TraceConfig(invalid_config_string_2);
+  EXPECT_TRUE(tc.IsCategoryEnabled("category"));
+  EXPECT_TRUE(tc.IsCategoryEnabled("disabled-by-default-pattern"));
+  EXPECT_TRUE(tc.IsCategoryGroupEnabled("category"));
+  EXPECT_TRUE(tc.IsCategoryGroupEnabled("disabled-by-default-pattern"));
 }
 
 TEST(TraceConfigTest, MergingTraceConfigs) {
