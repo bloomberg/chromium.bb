@@ -46,4 +46,12 @@ void NestableTaskRunnerForTest::SetNested(bool is_nested) {
   is_nested_ = is_nested;
 }
 
+void NestableTaskRunnerForTest::AddTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+}
+
+void NestableTaskRunnerForTest::RemoveTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+}
+
 }  // namespace scheduler

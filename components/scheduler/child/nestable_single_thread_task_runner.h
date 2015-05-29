@@ -6,6 +6,7 @@
 #define COMPONENTS_SCHEDULER_CHILD_NESTABLE_SINGLE_THREAD_TASK_RUNNER_H_
 
 #include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {
@@ -19,6 +20,12 @@ class SCHEDULER_EXPORT NestableSingleThreadTaskRunner
   // Returns true if the task runner is nested (i.e., running a run loop within
   // a nested task).
   virtual bool IsNested() const = 0;
+
+  // Adds and removes MessageLoop::TaskObservers to the task runner.
+  virtual void AddTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) = 0;
+  virtual void RemoveTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) = 0;
 
  protected:
   ~NestableSingleThreadTaskRunner() override {}

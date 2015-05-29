@@ -43,4 +43,14 @@ bool SchedulerMessageLoopDelegate::IsNested() const {
   return message_loop_->IsNested();
 }
 
+void SchedulerMessageLoopDelegate::AddTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  return message_loop_->AddTaskObserver(task_observer);
+}
+
+void SchedulerMessageLoopDelegate::RemoveTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  return message_loop_->RemoveTaskObserver(task_observer);
+}
+
 }  // namespace scheduler
