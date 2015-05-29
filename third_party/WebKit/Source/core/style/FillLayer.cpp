@@ -73,7 +73,6 @@ FillLayer::FillLayer(EFillLayerType type, bool useInitialValues)
     , m_blendModeSet(useInitialValues)
     , m_maskSourceTypeSet(useInitialValues)
     , m_type(type)
-    , m_cachedPropertiesComputed(false)
 {
 }
 
@@ -108,7 +107,6 @@ FillLayer::FillLayer(const FillLayer& o)
     , m_blendModeSet(o.m_blendModeSet)
     , m_maskSourceTypeSet(o.m_maskSourceTypeSet)
     , m_type(o.m_type)
-    , m_cachedPropertiesComputed(false)
 {
 }
 
@@ -319,26 +317,21 @@ static EFillBox clipMax(EFillBox clipA, EFillBox clipB)
     return TextFillBox;
 }
 
-void FillLayer::computeCachedPropertiesIfNeeded() const
+void FillLayer::computeClipMax() const
 {
-    if (m_cachedPropertiesComputed)
-        return;
-    m_thisOrNextLayersClipMax = clip();
-    m_thisOrNextLayersUseContentBox = clip() == ContentFillBox || origin() == ContentFillBox;
-    m_thisOrNextLayersHaveLocalAttachment = attachment() == LocalBackgroundAttachment;
-    m_cachedPropertiesComputed = true;
-
     if (m_next) {
-        m_next->computeCachedPropertiesIfNeeded();
-        m_thisOrNextLayersClipMax = clipMax(thisOrNextLayersClipMax(), m_next->thisOrNextLayersClipMax());
-        m_thisOrNextLayersUseContentBox |= m_next->m_thisOrNextLayersUseContentBox;
-        m_thisOrNextLayersHaveLocalAttachment |= m_next->m_thisOrNextLayersHaveLocalAttachment;
+        m_next->computeClipMax();
+        m_clipMax = clipMax(clip(), m_next->clip());
+    } else {
+        m_clipMax = m_clip;
     }
 }
 
-bool FillLayer::clipOccludesNextLayers() const
+bool FillLayer::clipOccludesNextLayers(bool firstLayer) const
 {
-    return m_clip == m_thisOrNextLayersClipMax;
+    if (firstLayer)
+        computeClipMax();
+    return m_clip == m_clipMax;
 }
 
 bool FillLayer::containsImage(StyleImage* s) const

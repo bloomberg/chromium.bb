@@ -28,10 +28,6 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason)
         return "compositing update";
     case PaintInvalidationBorderBoxChange:
         return "border box change";
-    case PaintInvalidationContentBoxChange:
-        return "content box change";
-    case PaintInvalidationLayoutOverflowBoxChange:
-        return "layout overflow box change";
     case PaintInvalidationBoundsChange:
         return "bounds change";
     case PaintInvalidationLocationChange:

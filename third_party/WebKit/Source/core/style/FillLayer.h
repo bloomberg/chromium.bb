@@ -112,9 +112,9 @@ public:
     void setYPosition(const Length& position) { m_yPosition = position; m_yPosSet = true; m_backgroundYOriginSet = false; m_backgroundYOrigin = TopEdge; }
     void setBackgroundXOrigin(BackgroundEdgeOrigin origin) { m_backgroundXOrigin = origin; m_backgroundXOriginSet = true; }
     void setBackgroundYOrigin(BackgroundEdgeOrigin origin) { m_backgroundYOrigin = origin; m_backgroundYOriginSet = true; }
-    void setAttachment(EFillAttachment attachment) { ASSERT(!m_cachedPropertiesComputed); m_attachment = attachment; m_attachmentSet = true; }
-    void setClip(EFillBox b) { ASSERT(!m_cachedPropertiesComputed); m_clip = b; m_clipSet = true; }
-    void setOrigin(EFillBox b) { ASSERT(!m_cachedPropertiesComputed); m_origin = b; m_originSet = true; }
+    void setAttachment(EFillAttachment attachment) { m_attachment = attachment; m_attachmentSet = true; }
+    void setClip(EFillBox b) { m_clip = b; m_clipSet = true; }
+    void setOrigin(EFillBox b) { m_origin = b; m_originSet = true; }
     void setRepeatX(EFillRepeat r) { m_repeatX = r; m_repeatXSet = true; }
     void setRepeatY(EFillRepeat r) { m_repeatY = r; m_repeatYSet = true; }
     void setComposite(CompositeOperator c) { m_composite = c; m_compositeSet = true; }
@@ -174,17 +174,12 @@ public:
 
     bool hasOpaqueImage(const LayoutObject*) const;
     bool hasRepeatXY() const;
-    bool clipOccludesNextLayers() const;
+    bool clipOccludesNextLayers(bool firstLayer) const;
 
     EFillLayerType type() const { return static_cast<EFillLayerType>(m_type); }
 
     void fillUnsetProperties();
     void cullEmptyLayers();
-
-    EFillBox thisOrNextLayersClipMax() const { computeCachedPropertiesIfNeeded(); return static_cast<EFillBox>(m_thisOrNextLayersClipMax); }
-    bool thisOrNextLayersUseContentBox() const { computeCachedPropertiesIfNeeded(); return m_thisOrNextLayersUseContentBox; }
-    bool thisOrNextLayersHaveLocalAttachment() const { computeCachedPropertiesIfNeeded(); return m_thisOrNextLayersHaveLocalAttachment; }
-    void computeCachedPropertiesIfNeeded() const;
 
     static EFillAttachment initialFillAttachment(EFillLayerType) { return ScrollBackgroundAttachment; }
     static EFillBox initialFillClip(EFillLayerType) { return BorderFillBox; }
@@ -203,6 +198,8 @@ public:
 
 private:
     friend class ComputedStyle;
+
+    void computeClipMax() const;
 
     FillLayer() { }
 
@@ -243,10 +240,7 @@ private:
 
     unsigned m_type : 1; // EFillLayerType
 
-    mutable unsigned m_thisOrNextLayersClipMax : 2; // EFillBox, maximum m_clip value from this to bottom layer
-    mutable unsigned m_thisOrNextLayersUseContentBox : 1; // True if any of this or subsequent layers has content-box clip or origin.
-    mutable unsigned m_thisOrNextLayersHaveLocalAttachment : 1; // True if any of this or subsequent layers has local attachment.
-    mutable unsigned m_cachedPropertiesComputed : 1; // Set once any of the above is accessed. The layers will be frozen thereafter.
+    mutable unsigned m_clipMax : 2; // EFillBox, maximum m_clip value from this to bottom layer
 };
 
 } // namespace blink

@@ -1432,7 +1432,7 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
     }
 
     // This is for the next invalidatePaintIfNeeded so must be at the end.
-    savePreviousBoxSizesIfNeeded();
+    savePreviousBorderBoxSizeIfNeeded();
     return reason;
 }
 
@@ -3995,20 +3995,6 @@ PaintInvalidationReason LayoutBox::paintInvalidationReason(const LayoutBoxModelO
         return invalidationReason;
     }
 
-    if (style()->backgroundLayers().thisOrNextLayersUseContentBox() || style()->maskLayers().thisOrNextLayersUseContentBox()) {
-        LayoutRect oldContentBoxRect = m_rareData ? m_rareData->m_previousContentBoxRect : LayoutRect();
-        LayoutRect newContentBoxRect = contentBoxRect();
-        if (oldContentBoxRect != newContentBoxRect)
-            return PaintInvalidationContentBoxChange;
-    }
-
-    if (style()->backgroundLayers().thisOrNextLayersHaveLocalAttachment()) {
-        LayoutRect oldLayoutOverflowRect = m_rareData ? m_rareData->m_previousLayoutOverflowRect : LayoutRect();
-        LayoutRect newLayoutOverflowRect = layoutOverflowRect();
-        if (oldLayoutOverflowRect != newLayoutOverflowRect)
-            return PaintInvalidationLayoutOverflowBoxChange;
-    }
-
     LayoutSize oldBorderBoxSize = computePreviousBorderBoxSize(oldBounds.size());
     LayoutSize newBorderBoxSize = size();
 
@@ -4677,44 +4663,28 @@ void LayoutBox::setPageLogicalOffset(LayoutUnit offset)
     ensureRareData().m_pageLogicalOffset = offset;
 }
 
-bool LayoutBox::needToSavePreviousBoxSizes()
+void LayoutBox::savePreviousBorderBoxSizeIfNeeded()
 {
     // If m_rareData is already created, always save.
-    if (m_rareData)
-        return true;
+    if (!m_rareData) {
+        LayoutSize paintInvalidationSize = previousPaintInvalidationRect().size();
 
-    LayoutSize paintInvalidationSize = previousPaintInvalidationRect().size();
-    // Don't save old box sizes if the paint rect is empty because we'll
-    // full invalidate once the paint rect becomes non-empty.
-    if (paintInvalidationSize.isEmpty())
-        return false;
+        // Don't save old border box size if the paint rect is empty because we'll
+        // full invalidate once the paint rect becomes non-empty.
+        if (paintInvalidationSize.isEmpty())
+            return;
 
-    // We need the old box sizes only when the box has background, decorations, or masks.
-    if (!style()->hasBackground() && !style()->hasBoxDecorations() && !style()->hasMask())
-        return false;
+        // Don't save old border box size if we can use size of the old paint rect
+        // as the old border box size in the next invalidation.
+        if (paintInvalidationSize == size())
+            return;
 
-    // No need to save old border box size if we can use size of the old paint
-    // rect as the old border box size in the next invalidation.
-    if (paintInvalidationSize != size())
-        return true;
+        // We need the old border box size only when the box has background or box decorations.
+        if (!style()->hasBackground() && !style()->hasBoxDecorations())
+            return;
+    }
 
-    // Background and mask layers can depend on other boxes than border box. See crbug.com/490533
-    if (style()->backgroundLayers().thisOrNextLayersUseContentBox() || style()->backgroundLayers().thisOrNextLayersHaveLocalAttachment()
-        || style()->maskLayers().thisOrNextLayersUseContentBox())
-        return true;
-
-    return false;
-}
-
-void LayoutBox::savePreviousBoxSizesIfNeeded()
-{
-    if (!needToSavePreviousBoxSizes())
-        return;
-
-    LayoutBoxRareData& rareData = ensureRareData();
-    rareData.m_previousBorderBoxSize = size();
-    rareData.m_previousContentBoxRect = contentBoxRect();
-    rareData.m_previousLayoutOverflowRect = layoutOverflowRect();
+    ensureRareData().m_previousBorderBoxSize = size();
 }
 
 LayoutSize LayoutBox::computePreviousBorderBoxSize(const LayoutSize& previousBoundsSize) const
