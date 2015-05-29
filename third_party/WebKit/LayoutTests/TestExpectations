@@ -17,6 +17,9 @@ crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/repaint [ Pass ]
 crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/scrolling [ Pass ]
 crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/transforms [ Pass ]
 crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/writing-mode [ Pass ]
+# Skip the following except for explicit per-test expectations.
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/compositing [ Skip ]
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/svg [ Skip ]
 
 # Force to run tests under skipped directories that ever had bugs to monitor regressions.
 crbug.com/487279 virtual/slimmingpaint/fast/flexbox/009.html [ Pass ]
