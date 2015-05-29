@@ -34,9 +34,6 @@ crbug.com/474117 compositing/overflow/overflow-positioning.html [ ImageOnlyFailu
 crbug.com/487281 [ Mac ] virtual/slimmingpaint/fast/forms/menulist-narrow-width.html [ ImageOnlyFailure ]
 crbug.com/487278 [ Mac ] virtual/slimmingpaint/fast/forms/textarea/textarea-placeholder-paint-order-2.html [ ImageOnlyFailure ]
 
-crbug.com/471405 [ Mac ] virtual/slimmingpaint/fast/replaced/width100percent-searchfield.html [ NeedsRebaseline ]
-crbug.com/471405 [ Mac ] virtual/slimmingpaint/fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ NeedsRebaseline ]
-
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/mask-box-image.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/transformed-body-background.html [ ImageOnlyFailure ]
