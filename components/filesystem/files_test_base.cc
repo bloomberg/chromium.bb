@@ -20,13 +20,13 @@ void FilesTestBase::SetUp() {
   ApplicationTestBase::SetUp();
 
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:files");
+  request->url = mojo::String::From("mojo:filesystem");
   application_impl()->ConnectToService(request.Pass(), &files_);
 }
 
 void FilesTestBase::GetTemporaryRoot(DirectoryPtr* directory) {
-  Error error = ERROR_INTERNAL;
-  files()->OpenFileSystem(nullptr, GetProxy(directory), Capture(&error));
+  Error error = ERROR_FAILED;
+  files()->OpenFileSystem("temp", GetProxy(directory), Capture(&error));
   ASSERT_TRUE(files().WaitForIncomingResponse());
   ASSERT_EQ(ERROR_OK, error);
 }

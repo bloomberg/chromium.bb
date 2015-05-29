@@ -12,11 +12,7 @@ mojo_native_application("filesystem") {
     "file_impl.h",
     "file_system_impl.cc",
     "file_system_impl.h",
-    "futimens.h",
-    "futimens_android.cc",
     "main.cc",
-    "shared_impl.cc",
-    "shared_impl.h",
     "util.cc",
     "util.h",
   ]
@@ -33,7 +29,7 @@ mojo_native_application("filesystem") {
 }
 
 mojo_native_application("apptests") {
-  output_name = "files_apptests"
+  output_name = "filesystem_apptests"
 
   testonly = true
 

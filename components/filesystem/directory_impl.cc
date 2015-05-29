@@ -4,288 +4,149 @@
 
 #include "components/filesystem/directory_impl.h"
 
-#include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-
+#include "base/files/file.h"
+#include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "components/filesystem/file_impl.h"
-#include "components/filesystem/shared_impl.h"
 #include "components/filesystem/util.h"
 
 namespace filesystem {
 
-namespace {
-
-// Calls |closedir()| on a |DIR*|.
-struct DIRDeleter {
-  void operator()(DIR* dir) const { PCHECK(closedir(dir) == 0); }
-};
-using ScopedDIR = scoped_ptr<DIR, DIRDeleter>;
-
-}  // namespace
-
 DirectoryImpl::DirectoryImpl(mojo::InterfaceRequest<Directory> request,
-                             base::ScopedFD dir_fd,
+                             base::FilePath directory_path,
                              scoped_ptr<base::ScopedTempDir> temp_dir)
     : binding_(this, request.Pass()),
-      dir_fd_(dir_fd.Pass()),
+      directory_path_(directory_path),
       temp_dir_(temp_dir.Pass()) {
-  DCHECK(dir_fd_.is_valid());
 }
 
 DirectoryImpl::~DirectoryImpl() {
 }
 
 void DirectoryImpl::Read(const ReadCallback& callback) {
-  static const size_t kMaxReadCount = 1000;
-
-  DCHECK(dir_fd_.is_valid());
-
-  // |fdopendir()| takes ownership of the FD (giving it to the |DIR| --
-  // |closedir()| will close the FD)), so we need to |dup()| ours.
-  base::ScopedFD fd(dup(dir_fd_.get()));
-  if (!fd.is_valid()) {
-    callback.Run(ErrnoToError(errno), mojo::Array<DirectoryEntryPtr>());
-    return;
+  mojo::Array<DirectoryEntryPtr> entries(0);
+  base::FileEnumerator directory_enumerator(
+      directory_path_, false,
+      base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES);
+  for (base::FilePath name = directory_enumerator.Next(); !name.empty();
+       name = directory_enumerator.Next()) {
+    base::FileEnumerator::FileInfo info = directory_enumerator.GetInfo();
+    DirectoryEntryPtr entry = DirectoryEntry::New();
+    entry->type = info.IsDirectory()
+                  ? FILE_TYPE_DIRECTORY : FILE_TYPE_REGULAR_FILE;
+    entry->name = info.GetName().AsUTF8Unsafe();
+    entries.push_back(entry.Pass());
   }
 
-  ScopedDIR dir(fdopendir(fd.release()));
-  if (!dir) {
-    callback.Run(ErrnoToError(errno), mojo::Array<DirectoryEntryPtr>());
-    return;
-  }
-
-  mojo::Array<DirectoryEntryPtr> result(0);
-
-// Warning: This is not portable (per POSIX.1 -- |buffer| may not be large
-// enough), but it's fine for Linux.
-#if !defined(OS_ANDROID) && !defined(OS_LINUX)
-#error "Use of struct dirent for readdir_r() buffer not portable; please check."
-#endif
-  struct dirent buffer;
-  for (size_t n = 0;;) {
-    struct dirent* entry = nullptr;
-    if (int error = readdir_r(dir.get(), &buffer, &entry)) {
-      // |error| is effectively an errno (for |readdir_r()|), AFAICT.
-      callback.Run(ErrnoToError(error), mojo::Array<DirectoryEntryPtr>());
-      return;
-    }
-
-    if (!entry)
-      break;
-
-    n++;
-    if (n > kMaxReadCount) {
-      LOG(WARNING) << "Directory contents truncated";
-      callback.Run(ERROR_OUT_OF_RANGE, result.Pass());
-      return;
-    }
-
-    DirectoryEntryPtr e = DirectoryEntry::New();
-    switch (entry->d_type) {
-      case DT_DIR:
-        e->type = FILE_TYPE_DIRECTORY;
-        break;
-      case DT_REG:
-        e->type = FILE_TYPE_REGULAR_FILE;
-        break;
-      default:
-        e->type = FILE_TYPE_UNKNOWN;
-        break;
-    }
-    e->name = mojo::String(entry->d_name);
-    result.push_back(e.Pass());
-  }
-
-  callback.Run(ERROR_OK, result.Pass());
+  callback.Run(ERROR_OK, entries.Pass());
 }
 
-void DirectoryImpl::Stat(const StatCallback& callback) {
-  DCHECK(dir_fd_.is_valid());
-  StatFD(dir_fd_.get(), FILE_TYPE_DIRECTORY, callback);
-}
-
-void DirectoryImpl::Touch(TimespecOrNowPtr atime,
-                          TimespecOrNowPtr mtime,
-                          const TouchCallback& callback) {
-  DCHECK(dir_fd_.is_valid());
-  TouchFD(dir_fd_.get(), atime.Pass(), mtime.Pass(), callback);
-}
+// TODO(erg): Consider adding an implementation of Stat()/Touch() to the
+// directory, too. Right now, the base::File abstractions do not really deal
+// with directories properly, so these are broken for now.
 
 // TODO(vtl): Move the implementation to a thread pool.
-void DirectoryImpl::OpenFile(const mojo::String& path,
+void DirectoryImpl::OpenFile(const mojo::String& raw_path,
                              mojo::InterfaceRequest<File> file,
                              uint32_t open_flags,
                              const OpenFileCallback& callback) {
-  DCHECK(!path.is_null());
-  DCHECK(dir_fd_.is_valid());
-
-  if (Error error = IsPathValid(path)) {
-    callback.Run(error);
-    return;
-  }
-  // TODO(vtl): Make sure the path doesn't exit this directory (if appropriate).
-  // TODO(vtl): Maybe allow absolute paths?
-
-  if (Error error = ValidateOpenFlags(open_flags, false)) {
+  base::FilePath path;
+  if (Error error = ValidatePath(raw_path, directory_path_, &path)) {
     callback.Run(error);
     return;
   }
 
-  int flags = 0;
-  if ((open_flags & kOpenFlagRead))
-    flags |= (open_flags & kOpenFlagWrite) ? O_RDWR : O_RDONLY;
-  else
-    flags |= O_WRONLY;
-  if ((open_flags & kOpenFlagCreate))
-    flags |= O_CREAT;
-  if ((open_flags & kOpenFlagExclusive))
-    flags |= O_EXCL;
-  if ((open_flags & kOpenFlagAppend))
-    flags |= O_APPEND;
-  if ((open_flags & kOpenFlagTruncate))
-    flags |= O_TRUNC;
-
-  base::ScopedFD file_fd(
-      HANDLE_EINTR(openat(dir_fd_.get(), path.get().c_str(), flags, 0600)));
-  if (!file_fd.is_valid()) {
-    callback.Run(ErrnoToError(errno));
+  base::File base_file(path, open_flags);
+  if (!base_file.IsValid()) {
+    callback.Run(ERROR_FAILED);
     return;
   }
 
-  if (file.is_pending())
-    new FileImpl(file.Pass(), file_fd.Pass());
+  if (file.is_pending()) {
+    new FileImpl(file.Pass(), base_file.Pass());
+  }
   callback.Run(ERROR_OK);
 }
 
-void DirectoryImpl::OpenDirectory(const mojo::String& path,
+void DirectoryImpl::OpenDirectory(const mojo::String& raw_path,
                                   mojo::InterfaceRequest<Directory> directory,
                                   uint32_t open_flags,
                                   const OpenDirectoryCallback& callback) {
-  DCHECK(!path.is_null());
-  DCHECK(dir_fd_.is_valid());
-
-  if (Error error = IsPathValid(path)) {
-    callback.Run(error);
-    return;
-  }
-  // TODO(vtl): Make sure the path doesn't exit this directory (if appropriate).
-  // TODO(vtl): Maybe allow absolute paths?
-
-  if (Error error = ValidateOpenFlags(open_flags, false)) {
+  base::FilePath path;
+  if (Error error = ValidatePath(raw_path, directory_path_, &path)) {
     callback.Run(error);
     return;
   }
 
-  // TODO(vtl): Implement read-only (whatever that means).
-  if (!(open_flags & kOpenFlagWrite)) {
-    callback.Run(ERROR_UNIMPLEMENTED);
-    return;
-  }
-
-  if ((open_flags & kOpenFlagCreate)) {
-    if (mkdirat(dir_fd_.get(), path.get().c_str(), 0700) != 0) {
-      // Allow |EEXIST| if |kOpenFlagExclusive| is not set. Note, however, that
-      // it does not guarantee that |path| is a directory.
-      // TODO(vtl): Hrm, ponder if we should check that |path| is a directory.
-      if (errno != EEXIST || !(open_flags & kOpenFlagExclusive)) {
-        callback.Run(ErrnoToError(errno));
-        return;
-      }
+  if (!base::DirectoryExists(path)) {
+    if (base::PathExists(path)) {
+      callback.Run(ERROR_NOT_A_DIRECTORY);
+      return;
     }
-  }
 
-  base::ScopedFD new_dir_fd(
-      HANDLE_EINTR(openat(dir_fd_.get(), path.get().c_str(), O_DIRECTORY, 0)));
-  if (!new_dir_fd.is_valid()) {
-    callback.Run(ErrnoToError(errno));
-    return;
+    if (!(open_flags & kFlagOpenAlways || open_flags & kFlagCreate)) {
+      // The directory doesn't exist, and we weren't passed parameters to
+      // create it.
+      callback.Run(ERROR_NOT_FOUND);
+      return;
+    }
+
+    base::File::Error error;
+    if (!base::CreateDirectoryAndGetError(path, &error)) {
+      callback.Run(static_cast<filesystem::Error>(error));
+      return;
+    }
   }
 
   if (directory.is_pending())
-    new DirectoryImpl(directory.Pass(), new_dir_fd.Pass(), nullptr);
+    new DirectoryImpl(directory.Pass(), path,
+                      scoped_ptr<base::ScopedTempDir>());
   callback.Run(ERROR_OK);
 }
 
-void DirectoryImpl::Rename(const mojo::String& path,
-                           const mojo::String& new_path,
+void DirectoryImpl::Rename(const mojo::String& raw_old_path,
+                           const mojo::String& raw_new_path,
                            const RenameCallback& callback) {
-  DCHECK(!path.is_null());
-  DCHECK(!new_path.is_null());
-  DCHECK(dir_fd_.is_valid());
-
-  if (Error error = IsPathValid(path)) {
+  base::FilePath old_path;
+  if (Error error = ValidatePath(raw_old_path, directory_path_, &old_path)) {
     callback.Run(error);
     return;
   }
-  if (Error error = IsPathValid(new_path)) {
+
+  base::FilePath new_path;
+  if (Error error = ValidatePath(raw_new_path, directory_path_, &new_path)) {
     callback.Run(error);
     return;
   }
-  // TODO(vtl): See TODOs about |path| in OpenFile().
 
-  if (renameat(dir_fd_.get(), path.get().c_str(), dir_fd_.get(),
-               new_path.get().c_str())) {
-    callback.Run(ErrnoToError(errno));
+  if (!base::Move(old_path, new_path)) {
+    callback.Run(ERROR_FAILED);
     return;
   }
 
   callback.Run(ERROR_OK);
 }
 
-void DirectoryImpl::Delete(const mojo::String& path,
+void DirectoryImpl::Delete(const mojo::String& raw_path,
                            uint32_t delete_flags,
                            const DeleteCallback& callback) {
-  DCHECK(!path.is_null());
-  DCHECK(dir_fd_.is_valid());
-
-  if (Error error = IsPathValid(path)) {
-    callback.Run(error);
-    return;
-  }
-  // TODO(vtl): See TODOs about |path| in OpenFile().
-
-  if (Error error = ValidateDeleteFlags(delete_flags)) {
+  base::FilePath path;
+  if (Error error = ValidatePath(raw_path, directory_path_, &path)) {
     callback.Run(error);
     return;
   }
 
-  // TODO(vtl): Recursive not yet supported.
-  if ((delete_flags & kDeleteFlagRecursive)) {
-    callback.Run(ERROR_UNIMPLEMENTED);
+  bool recursive = delete_flags & kDeleteFlagRecursive;
+  if (!base::DeleteFile(path, recursive)) {
+    callback.Run(ERROR_FAILED);
     return;
   }
 
-  // First try deleting it as a file, unless we're told to do directory-only.
-  if (!(delete_flags & kDeleteFlagDirectoryOnly)) {
-    if (unlinkat(dir_fd_.get(), path.get().c_str(), 0) == 0) {
-      callback.Run(ERROR_OK);
-      return;
-    }
-
-    // If file-only, don't continue.
-    if ((delete_flags & kDeleteFlagFileOnly)) {
-      callback.Run(ErrnoToError(errno));
-      return;
-    }
-  }
-
-  // Try deleting it as a directory.
-  if (unlinkat(dir_fd_.get(), path.get().c_str(), AT_REMOVEDIR) == 0) {
-    callback.Run(ERROR_OK);
-    return;
-  }
-
-  callback.Run(ErrnoToError(errno));
+  callback.Run(ERROR_OK);
 }
 
 }  // namespace filesystem

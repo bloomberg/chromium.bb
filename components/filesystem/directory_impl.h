@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_
 #define COMPONENTS_FILESYSTEM_DIRECTORY_IMPL_H_
 
+#include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -23,16 +24,12 @@ class DirectoryImpl : public Directory {
   // Set |temp_dir| only if there's a temporary directory that should be deleted
   // when this object is destroyed.
   DirectoryImpl(mojo::InterfaceRequest<Directory> request,
-                base::ScopedFD dir_fd,
+                base::FilePath directory_path,
                 scoped_ptr<base::ScopedTempDir> temp_dir);
   ~DirectoryImpl() override;
 
   // |Directory| implementation:
   void Read(const ReadCallback& callback) override;
-  void Stat(const StatCallback& callback) override;
-  void Touch(TimespecOrNowPtr atime,
-             TimespecOrNowPtr mtime,
-             const TouchCallback& callback) override;
   void OpenFile(const mojo::String& path,
                 mojo::InterfaceRequest<File> file,
                 uint32_t open_flags,
@@ -50,7 +47,7 @@ class DirectoryImpl : public Directory {
 
  private:
   mojo::StrongBinding<Directory> binding_;
-  base::ScopedFD dir_fd_;
+  base::FilePath directory_path_;
   scoped_ptr<base::ScopedTempDir> temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryImpl);

@@ -33,17 +33,7 @@ interface File {
   Write(array<uint8> bytes_to_write, int64 offset, Whence whence)
       => (Error error, uint32 num_bytes_written);
 
-  // TODO(vtl): We definitely want 64 bits for |num_bytes_to_read|; but do we
-  // want it to be signed (this is consistent with |size| values, but
-  // inconsistent with 32-bit |num_bytes_to_read| values)? Do we want to have
-  // separate "read to end" versus "tail" (i.e., keep on reading as more data is
-  // appended) modes, and how would those be signalled?
-  ReadToStream(handle<data_pipe_producer> source,
-               int64 offset,
-               Whence whence,
-               int64 num_bytes_to_read) => (Error error);
-  WriteFromStream(handle<data_pipe_consumer> sink, int64 offset, Whence whence)
-      => (Error error);
+  // TODO(erg): Add stream variants of Read()/Write().
 
   // Gets the current file position. On success, |position| is the current
   // offset (in bytes) from the beginning of the file).
@@ -70,22 +60,4 @@ interface File {
   // I.e., the access mode, etc. (as specified to |Directory::OpenFile()| by the
   // |open_flags| argument) as well as file position.
   Dup(File& file) => (Error error);
-
-  // TODO(vtl): What are the rules for reopening (w.r.t. changing mode/flags).
-  // E.g., obviously can go from "read-write" to "read", but reverse? (probably
-  // not), can remove "append"? (probably not?). Do we allow "truncate"?
-  Reopen(File& file, uint32 open_flags) => (Error error);
-
-  // TODO(vtl): probably should have access flags (but also exec?); how do these
-  // relate to access mode?
-  AsBuffer() => (Error error, handle<shared_buffer>? buffer);
-
-  // Special-file-specific control function, for device "files". |in| and |out|
-  // are dependent on |request|.
-  // TODO(vtl): Make a master list of request values somewhere.
-  Ioctl(uint32 request, array<uint32>? in_values)
-      => (Error error, array<uint32>? out_values);
-
-  // TODO(vtl): Add a "watch"?
-  // TODO(vtl): Add something analogous to fsync(2)?
 };

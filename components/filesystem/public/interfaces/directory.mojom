@@ -21,15 +21,6 @@ interface Directory {
   // TODO(vtl): Clarify error codes versus |directory_contents|.
   Read() => (Error error, array<DirectoryEntry>? directory_contents);
 
-  // Gets information about this directory. On success, |file_information| is
-  // non-null and will contain this information.
-  Stat() => (Error error, FileInformation? file_information);
-
-  // Updates this directory's atime and/or mtime to the time specified by
-  // |atime| (or |mtime|, respectively), which may also indicate "now". If
-  // |atime| or |mtime| is null, then the corresponding time is not modified.
-  Touch(TimespecOrNow? atime, TimespecOrNow? mtime) => (Error error);
-
   // Operations *in* "this" |Directory|:
 
   // Opens the file specified by |path| with the given |open_flags|. |file| is
@@ -58,6 +49,4 @@ interface Directory {
   // even if the opened directory is subsequently moved -- e.g., closer to the
   // "root")
   // TODO(vtl): Add a "watch"?
-  // TODO(vtl): Should we have a "close" method?
-  // TODO(vtl): Add Dup() and Reopen() (like File)?
 };

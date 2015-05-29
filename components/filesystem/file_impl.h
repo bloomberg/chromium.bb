@@ -5,18 +5,25 @@
 #ifndef COMPONENTS_FILESYSTEM_FILE_IMPL_H_
 #define COMPONENTS_FILESYSTEM_FILE_IMPL_H_
 
+#include "base/files/file.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace filesystem {
 
 class FileImpl : public File {
  public:
-  // TODO(vtl): Will need more for, e.g., |Reopen()|.
-  FileImpl(mojo::InterfaceRequest<File> request, base::ScopedFD file_fd);
+  FileImpl(mojo::InterfaceRequest<File> request,
+           const base::FilePath& path,
+           uint32 flags);
+  FileImpl(mojo::InterfaceRequest<File> request, base::File file);
   ~FileImpl() override;
 
   // |File| implementation:
@@ -29,15 +36,6 @@ class FileImpl : public File {
              int64_t offset,
              Whence whence,
              const WriteCallback& callback) override;
-  void ReadToStream(mojo::ScopedDataPipeProducerHandle source,
-                    int64_t offset,
-                    Whence whence,
-                    int64_t num_bytes_to_read,
-                    const ReadToStreamCallback& callback) override;
-  void WriteFromStream(mojo::ScopedDataPipeConsumerHandle sink,
-                       int64_t offset,
-                       Whence whence,
-                       const WriteFromStreamCallback& callback) override;
   void Tell(const TellCallback& callback) override;
   void Seek(int64_t offset,
             Whence whence,
@@ -49,17 +47,10 @@ class FileImpl : public File {
              const TouchCallback& callback) override;
   void Dup(mojo::InterfaceRequest<File> file,
            const DupCallback& callback) override;
-  void Reopen(mojo::InterfaceRequest<File> file,
-              uint32_t open_flags,
-              const ReopenCallback& callback) override;
-  void AsBuffer(const AsBufferCallback& callback) override;
-  void Ioctl(uint32_t request,
-             mojo::Array<uint32_t> in_values,
-             const IoctlCallback& callback) override;
 
  private:
   mojo::StrongBinding<File> binding_;
-  base::ScopedFD file_fd_;
+  base::File file_;
 
   DISALLOW_COPY_AND_ASSIGN(FileImpl);
 };

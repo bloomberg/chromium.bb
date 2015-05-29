@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_FILESYSTEM_UTIL_H_
 #define COMPONENTS_FILESYSTEM_UTIL_H_
 
+#include "base/files/file.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
 
 namespace mojo {
@@ -33,29 +34,17 @@ Error IsOffsetValid(int64_t offset);
 
 // Conversion functions:
 
-// Converts a standard errno value (|E...|) to an |Error| value.
-Error ErrnoToError(int errno_value);
+// Returns the platform dependent error details converted to the
+// filesystem.Error enum.
+Error GetError(const base::File& file);
 
-// Converts a |Whence| value to a standard whence value (|SEEK_...|).
-int WhenceToStandardWhence(Whence whence);
+// Serializes Info to the wire format.
+FileInformationPtr MakeFileInformation(const base::File::Info& info);
 
-// Converts a |Timespec| to a |struct timespec|. If |in| is null, |out->tv_nsec|
-// is set to |UTIME_OMIT|.
-Error TimespecToStandardTimespec(const Timespec* in, struct timespec* out);
-
-// Converts a |TimespecOrNow| to a |struct timespec|. If |in| is null,
-// |out->tv_nsec| is set to |UTIME_OMIT|; if |in->now| is set, |out->tv_nsec| is
-// set to |UTIME_NOW|.
-Error TimespecOrNowToStandardTimespec(const TimespecOrNow* in,
-                                      struct timespec* out);
-
-// Ensures that |open_flags| is one of the valid combinations listed in
-// types.mojom.
-Error ValidateOpenFlags(uint32_t open_flags, bool is_directory);
-
-// Ensures that |delete_flags| is one of the valid combinations listed in
-// types.mojom.
-Error ValidateDeleteFlags(uint32_t delete_flags);
+// Creates an absolute file path and ensures that we don't try to traverse up.
+Error ValidatePath(const mojo::String& raw_path,
+                   const base::FilePath& filesystem_base,
+                   base::FilePath* out);
 
 }  // namespace filesystem
 

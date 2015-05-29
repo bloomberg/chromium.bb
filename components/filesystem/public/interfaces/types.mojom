@@ -4,37 +4,37 @@
 
 module filesystem;
 
-// Error codes used by the file manager.
-// TODO(vtl): Add more (to, e.g., cover all of errno).
+// Error codes used by the file system. These error codes line up exactly with
+// those of base::File.
 enum Error {
-  OK = 0,
-  UNKNOWN,
-  INVALID_ARGUMENT,
-  PERMISSION_DENIED,
-  OUT_OF_RANGE,
-  UNIMPLEMENTED,
-  CLOSED,
-  UNAVAILABLE,
-  INTERNAL,
+  OK                =   0,
+  FAILED            =  -1,
+  IN_USE            =  -2,
+  EXISTS            =  -3,
+  NOT_FOUND         =  -4,
+  ACCESS_DENIED     =  -5,
+  TOO_MANY_OPENED   =  -6,
+  NO_MEMORY         =  -7,
+  NO_SPACE          =  -8,
+  NOT_A_DIRECTORY   =  -9,
+  INVALID_OPERATION = -10,
+  SECURITY          = -11,
+  ABORT             = -12,
+  NOT_A_FILE        = -13,
+  NOT_EMPTY         = -14,
+  INVALID_URL       = -15,
+  IO                = -16,
 };
 
-// Used to explain the meaning of an offset within a file.
+// Used to explain the meaning of an offset within a file. These values line up
+// exactly with base::File.
 enum Whence {
-  // Offset is from current position in the file.
-  FROM_CURRENT = 0,
   // Offset is relative to the beginning of the file.
-  FROM_START,
+  FROM_BEGIN   = 0,
+  // Offset is from current position in the file.
+  FROM_CURRENT = 1,
   // Offset is relative to the end of the file.
-  FROM_END,
-};
-
-// Describes (idealized) wall-clock time, since Unix epoch (i.e., since
-// "1970-01-01 00:00 UTC", ignoring leap seconds and that UTC as we know it
-// started in 1972).
-// TODO(vtl): Should probably be moved out of mojo.files (maybe to mojo.time?).
-struct Timespec {
-  int64 seconds;
-  int32 nanoseconds;  // Always in the interval [0, 10^9).
+  FROM_END     = 2
 };
 
 // Used for |Touch()| calls. If |now| is set, |timespec| must be null (the time
@@ -42,7 +42,7 @@ struct Timespec {
 // TODO(vtl): Use a union instead, when that becomes possible.
 struct TimespecOrNow {
   bool now;
-  Timespec? timespec;
+  double seconds;
 };
 
 // Describes various information about a file or directory (for |Stat()|). Note
@@ -53,30 +53,30 @@ struct FileInformation {
   FileType type;
   // Size of the file, in bytes. Zero for directories.
   int64 size;
-  // Last access time, if available/supported.
-  Timespec? atime;
-  // Last modification time, if available/supported.
-  Timespec? mtime;
+  // Last access time, in seconds since Unix Epoch.
+  double atime;
+  // Last modification time, in seconds since Unix Epoch.
+  double mtime;
+  // Create time of the file, in seconds since Unix Epoch.
+  double ctime;
 };
 
-// File and directory open flags (at least one of |kOpenFlagRead| and
-// |kOpenFlagWrite| is required):
-// Opens the file/directory for reading.
-const uint32 kOpenFlagRead = 0x1;
-// Opens the file/directory for writing.
-const uint32 kOpenFlagWrite = 0x2;
-// Only meaningful together with |kOpenFlagWrite|: creates the file if
-// necessary.
-const uint32 kOpenFlagCreate = 0x4;
-// Only meaningful together with |kOpenFlagCreate|: requires file/directory to
-// be created, failing if it already exists.
-const uint32 kOpenFlagExclusive = 0x8;
-// Only meaningful for files, together with |kOpenFlagWrite|: writes will always
-// append to the file.
-const uint32 kOpenFlagAppend = 0x10;
-// Only meaningful for files, together with |kOpenFlagWrite|: truncates the
-// file.
-const uint32 kOpenFlagTruncate = 0x20;
+// File and directory open flags. Is a limited subset of base::File::Flags. These
+// are constants instead of enums so that they are bitwise OR-able.
+
+// Opens a file, only if it exists.
+const uint32 kFlagOpen = 0x1;
+// Creates a new file, only if it does not already exist.
+const uint32 kFlagCreate = 0x2;
+// May create a new file.
+const uint32 kFlagOpenAlways = 0x4;
+// May overwrite an old file.
+const uint32 kCreateAlways = 0x8;
+// Opens a file and truncates it, only if it exists.
+const uint32 kFlagOpenTruncated = 0x10;
+const uint32 kFlagRead = 0x20;
+const uint32 kFlagWrite = 0x40;
+const uint32 kFlagAppend = 0x80;
 
 // File types.
 enum FileType {
@@ -92,10 +92,5 @@ struct DirectoryEntry {
 };
 
 // Deletion flags:
-// Only delete if the path refers to a file/non-directory (by default, will
-// delete files and directories).
-const uint32 kDeleteFlagFileOnly = 0x1;
-// Only delete if the path refers to a directory.
-const uint32 kDeleteFlagDirectoryOnly = 0x2;
-// Recursively delete (neither of the two flags above may be specified).
-const uint32 kDeleteFlagRecursive = 0x4;
+// Recursively delete.
+const uint32 kDeleteFlagRecursive = 0x1;

@@ -31,6 +31,7 @@ class FileSystemImpl : public FileSystem {
                       const OpenFileSystemCallback& callback) override;
 
  private:
+  const std::string remote_application_url_;
   mojo::StrongBinding<FileSystem> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemImpl);
