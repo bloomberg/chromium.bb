@@ -845,7 +845,7 @@ def _RestartInChroot(cmd, chroot_args, extra_env):
                                    mute_output=False).returncode
 
 
-def RunInsideChroot(command, auto_detect_workspace=True):
+def RunInsideChroot(command, auto_detect_workspace=True, chroot_args=None):
   """Restart the current command inside the chroot.
 
   This method is only valid for any code that is run via ScriptWrapperMain.
@@ -855,6 +855,7 @@ def RunInsideChroot(command, auto_detect_workspace=True):
   Args:
     command: An instance of CliCommand to be restarted inside the chroot.
     auto_detect_workspace: If true, sets up workspace automatically.
+    chroot_args: List of command-line arguments to pass to cros_sdk, if invoked.
   """
   if cros_build_lib.IsInsideChroot():
     return
@@ -866,7 +867,9 @@ def RunInsideChroot(command, auto_detect_workspace=True):
   # Enter the chroot for the workspace, if we are in a workspace.
   # Set log-level of cros_sdk to be same as log-level of command entering the
   # chroot.
-  chroot_args = ['--log-level', command.options.log_level]
+  if chroot_args is None:
+    chroot_args = []
+  chroot_args += ['--log-level', command.options.log_level]
   extra_env = {}
   if auto_detect_workspace:
     workspace_path = workspace_lib.WorkspacePath()

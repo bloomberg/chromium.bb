@@ -15,6 +15,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import operation
 from chromite.lib import parallel
+from chromite.lib import toolchain
 from chromite.lib import workon_helper
 
 
@@ -168,7 +169,14 @@ To just build a single package:
         cros_build_lib.Die('--brick should not be used with board names. Use '
                            '--board=%s instead.' % self.brick.config['name'])
 
-    commandline.RunInsideChroot(self)
+    if self.blueprint:
+      chroot_args = ['--toolchains',
+                     ','.join(toolchain.GetToolchainsForBrick(
+                         self.blueprint.GetBSP()).iterkeys())]
+    else:
+      chroot_args = ['--board', self.board]
+
+    commandline.RunInsideChroot(self, chroot_args=chroot_args)
 
     if not (self.build_pkgs or self.options.init_only):
       cros_build_lib.Die('No packages found, nothing to build.')
