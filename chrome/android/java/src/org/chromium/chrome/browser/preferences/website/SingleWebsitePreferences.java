@@ -20,6 +20,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.format.Formatter;
 import android.widget.ListAdapter;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.UrlUtilities;
@@ -364,7 +365,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         if (listPreference.isEnabled()) {
             listPreference.setIcon(ContentSettingsResources.getIcon(contentType));
         } else {
-            Drawable icon = getResources().getDrawable(
+            Drawable icon = ApiCompatibilityUtils.getDrawable(getResources(),
                     ContentSettingsResources.getIcon(contentType));
             icon.mutate();
             int disabledColor = getResources().getColor(
