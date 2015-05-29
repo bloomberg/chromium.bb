@@ -336,12 +336,6 @@ crbug.com/433727 [ XP ] http/tests/cachestorage/window/cache-put.html [ Pass Tim
 crbug.com/433727 [ XP ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout Failure ]
 crbug.com/433727 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout Failure ]
 
-crbug.com/489672 fast/xmlhttprequest/xmlhttprequest-no-file-access.html [ NeedsManualRebaseline ]
-crbug.com/489672 http/tests/eventsource/eventsource-cors-non-http.html [ NeedsManualRebaseline ]
-crbug.com/489672 http/tests/eventsource/workers/eventsource-cors-non-http.html [ NeedsManualRebaseline ]
-crbug.com/489672 http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ NeedsManualRebaseline ]
-crbug.com/489672 http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ NeedsManualRebaseline ]
-
 # Flaky tests under Linux Aura
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]
 
