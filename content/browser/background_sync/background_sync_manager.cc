@@ -12,6 +12,10 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/android/background_sync_launcher_android.h"
+#endif
+
 namespace {
 const char kBackgroundSyncUserDataKey[] = "BackgroundSyncUserData";
 }
@@ -646,6 +650,37 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
          power_observer_->PowerSufficient(registration.power_state);
 }
 
+void BackgroundSyncManager::SchedulePendingRegistrations() {
+#if defined(OS_ANDROID)
+  bool keep_browser_alive_for_one_shot = false;
+
+  for (const auto& sw_id_and_registrations : sw_to_registrations_map_) {
+    for (const auto& key_and_registration :
+         sw_id_and_registrations.second.registration_map) {
+      const BackgroundSyncRegistration& registration =
+          key_and_registration.second;
+      if (registration.sync_state == SYNC_STATE_PENDING) {
+        if (registration.periodicity == SYNC_ONE_SHOT) {
+          keep_browser_alive_for_one_shot = true;
+        } else {
+          // TODO(jkarlin): Support keeping the browser alive for periodic
+          // syncs.
+        }
+      }
+    }
+  }
+
+  // TODO(jkarlin): Use the context's path instead of the 'this' pointer as an
+  // identifier. See crbug.com/489705.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnline,
+                 this, keep_browser_alive_for_one_shot));
+#else
+// TODO(jkarlin): Toggle Chrome's background mode.
+#endif
+}
+
 void BackgroundSyncManager::FireReadyEvents() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -700,6 +735,8 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
                    weak_ptr_factory_.GetWeakPtr(), sw_id_and_key.second,
                    registration->id, barrier_closure));
   }
+
+  SchedulePendingRegistrations();
 }
 
 void BackgroundSyncManager::FireReadyEventsDidFindRegistration(

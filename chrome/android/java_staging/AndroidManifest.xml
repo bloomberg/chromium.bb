@@ -503,6 +503,15 @@ by a child template that "extends" this file.
             </intent-filter>
         </receiver>
 
+        <!-- Service Worker Background Sync service listener -->
+        <service android:name="org.chromium.content.browser.BackgroundSyncLauncherService"
+            android:exported="false" />
+        <receiver android:name="org.chromium.content.browser.BackgroundSyncLauncherService$Receiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+
         <service android:name="org.chromium.chrome.browser.prerender.ChromePrerenderService"
             android:exported="true"
             tools:ignore="ExportedService" />
