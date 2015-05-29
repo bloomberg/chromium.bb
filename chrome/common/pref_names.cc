@@ -911,9 +911,6 @@ const char kPluginsDisabledPluginsExceptions[] =
 // List pref containing names of plugins that are enabled by policy.
 const char kPluginsEnabledPlugins[] = "plugins.plugins_enabled";
 
-// Whether NPAPI plugins are enabled.
-const char kEnableNpapi[] = "plugins.enable_npapi";
-
 // When bundled NPAPI Flash is removed, if at that point it is enabled while
 // Pepper Flash is disabled, we would like to turn on Pepper Flash. And we will
 // want to do so only once.

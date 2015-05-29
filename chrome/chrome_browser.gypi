@@ -2176,11 +2176,6 @@
       'browser/upgrade_detector_impl.cc',
       'browser/upgrade_detector_impl.h',
     ],
-    # Policy sources used if plugins are enabled.
-    'chrome_browser_policy_plugin_sources': [
-      'browser/plugins/enable_npapi_plugins_policy_handler.cc',
-      'browser/plugins/enable_npapi_plugins_policy_handler.h',
-    ],
     'chrome_browser_predictor_sources': [
       'browser/predictors/autocomplete_action_predictor.cc',
       'browser/predictors/autocomplete_action_predictor.h',
@@ -3389,9 +3384,6 @@
             }],
             ['OS=="win" or OS=="mac" or desktop_linux==1', {
               'sources': [ '<@(chrome_browser_policy_desktop_sources)' ],
-            }],
-            ['enable_plugins==1', {
-              'sources': [ '<@(chrome_browser_policy_plugin_sources)' ],
             }],
             ['OS=="android" or OS=="ios"', {  # Mobile.
               'sources': [ '<@(chrome_browser_policy_mobile_sources)' ],

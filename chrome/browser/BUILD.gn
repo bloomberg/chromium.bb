@@ -401,11 +401,6 @@ source_set("browser") {
                              ".",
                              "//chrome")
     }
-    if (enable_plugins) {
-      sources += rebase_path(gypi_values.chrome_browser_policy_plugin_sources,
-                             ".",
-                             "//chrome")
-    }
     if (is_android || is_ios) {
       sources += rebase_path(gypi_values.chrome_browser_policy_mobile_sources,
                              ".",

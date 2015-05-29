@@ -52,7 +52,6 @@ class FakePluginService : public PluginService {
   void UnregisterInternalPlugin(const base::FilePath& path) override;
   void GetInternalPlugins(std::vector<WebPluginInfo>* plugins) override;
   bool NPAPIPluginsSupported() override;
-  void EnableNpapiPlugins() override;
   void DisablePluginsDiscoveryForTesting() override;
 #if defined(OS_MACOSX)
   void AppActivated() override;

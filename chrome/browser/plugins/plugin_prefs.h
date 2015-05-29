@@ -107,9 +107,6 @@ class PluginPrefs : public RefcountedKeyedService {
   void UpdatePatternsAndNotify(std::set<base::string16>* patterns,
                                const std::string& pref_name);
 
-  // Called to enable NPAPI if kEnableNpapi gets set by policy.
-  void EnableNpapi();
-
   // Allows unit tests to directly set enforced plugin patterns.
   void SetPolicyEnforcedPluginPatterns(
       const std::set<base::string16>& disabled_patterns,

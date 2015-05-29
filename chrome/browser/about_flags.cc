@@ -600,15 +600,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableExperimentalWebGL)
   },
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  {
-    "enable-npapi",
-    IDS_FLAGS_ENABLE_NPAPI_NAME,
-    IDS_FLAGS_ENABLE_NPAPI_DESCRIPTION,
-    kOsWin | kOsMac,
-    SINGLE_VALUE_TYPE(switches::kEnableNpapi)
-  },
-#endif
   {
     "disable-webrtc",
     IDS_FLAGS_DISABLE_WEBRTC_NAME,

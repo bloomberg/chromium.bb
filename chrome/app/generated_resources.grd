@@ -5736,14 +5736,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Disables the use of experimental DirectWrite font rendering system.
         </message>
       </if>
-      <if expr="is_win or is_macosx">
-        <message name="IDS_FLAGS_ENABLE_NPAPI_NAME" desc="Name of the 'Enable NPAPI' lab.">
-          Enable NPAPI
-        </message>
-        <message name="IDS_FLAGS_ENABLE_NPAPI_DESCRIPTION" desc="Description of the 'Enable NPAPI' lab.">
-          Enables the use of NPAPI plugins. This flag will be removed in Chrome 45, along with NPAPI support. See g.co/npapi
-        </message>
-      </if>
       <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_CANVAS_FEATURES_NAME" desc="Name of the 'Enable experimental canvas features' lab.">
         Enable experimental canvas features
       </message>

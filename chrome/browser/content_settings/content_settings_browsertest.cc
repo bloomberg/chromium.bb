@@ -327,7 +327,7 @@ class LoadPluginTest : public ContentSettingsTest {
 #endif
     command_line->AppendSwitch(switches::kAlwaysAuthorizePlugins);
     if (expect_loaded)
-      command_line->AppendSwitch(switches::kEnableNpapi);
+      command_line->AppendSwitch(switches::kEnableNpapiForTesting);
   }
 };
 
@@ -370,7 +370,7 @@ class ClickToPlayPluginTest : public ContentSettingsTest {
     // explicitly registered.
     command_line->AppendSwitchPath(switches::kExtraPluginDir, plugin_dir);
 #endif
-    command_line->AppendSwitch(switches::kEnableNpapi);
+    command_line->AppendSwitch(switches::kEnableNpapiForTesting);
   }
 };
 

@@ -280,11 +280,6 @@ void PluginPrefs::UpdatePatternsAndNotify(std::set<base::string16>* patterns,
   NotifyPluginStatusChanged();
 }
 
-void PluginPrefs::EnableNpapi() {
-  PluginService::GetInstance()->EnableNpapiPlugins();
-  NotifyPluginStatusChanged();
-}
-
 /*static*/
 bool PluginPrefs::IsStringMatchedInSet(
     const base::string16& name,
@@ -491,9 +486,6 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
   ListValueToStringSet(prefs_->GetList(prefs::kPluginsEnabledPlugins),
                        &policy_enabled_plugin_patterns_);
 
-  if (prefs_->GetBoolean(prefs::kEnableNpapi))
-    EnableNpapi();
-
   registrar_.Init(prefs_);
 
   // Because pointers to our own members will remain unchanged for the
@@ -512,9 +504,6 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
                  base::Bind(&PluginPrefs::UpdatePatternsAndNotify,
                             base::Unretained(this),
                             &policy_enabled_plugin_patterns_));
-  registrar_.Add(prefs::kEnableNpapi,
-                 base::Bind(&PluginPrefs::EnableNpapi,
-                            base::Unretained(this)));
 
   NotifyPluginStatusChanged();
 }

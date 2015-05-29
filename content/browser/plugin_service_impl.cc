@@ -795,16 +795,14 @@ void PluginServiceImpl::GetInternalPlugins(
 }
 
 bool PluginServiceImpl::NPAPIPluginsSupported() {
-  if (npapi_plugins_enabled_)
-    return true;
-
   static bool command_line_checked = false;
 
   if (!command_line_checked) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
     const base::CommandLine* command_line =
         base::CommandLine::ForCurrentProcess();
-    npapi_plugins_enabled_ = command_line->HasSwitch(switches::kEnableNpapi);
+    npapi_plugins_enabled_ =
+        command_line->HasSwitch(switches::kEnableNpapiForTesting);
     NPAPIPluginStatus status =
         npapi_plugins_enabled_ ? NPAPI_STATUS_ENABLED : NPAPI_STATUS_DISABLED;
 #else
@@ -819,18 +817,6 @@ bool PluginServiceImpl::NPAPIPluginsSupported() {
 
 void PluginServiceImpl::DisablePluginsDiscoveryForTesting() {
   PluginList::Singleton()->DisablePluginsDiscovery();
-}
-
-void PluginServiceImpl::EnableNpapiPlugins() {
-#if defined(OS_WIN)
-  DisableWin32kRendererLockdown();
-#endif
-  npapi_plugins_enabled_ = true;
-  RefreshPlugins();
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PluginService::PurgePluginListCache,
-                 static_cast<BrowserContext*>(NULL), false));
 }
 
 #if defined(OS_MACOSX)
