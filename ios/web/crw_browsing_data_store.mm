@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/ios/ios_util.h"
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
@@ -104,8 +105,10 @@ enum OperationType {
         [[NSOperationQueue alloc] init];
     [operationQueueForStashAndRestoreOperations
         setMaxConcurrentOperationCount:1U];
-    [operationQueueForStashAndRestoreOperations
-        setQualityOfService:NSQualityOfServiceUserInteractive];
+    if (base::ios::IsRunningOnIOS8OrLater()) {
+      [operationQueueForStashAndRestoreOperations
+          setQualityOfService:NSQualityOfServiceUserInteractive];
+    }
   });
   return operationQueueForStashAndRestoreOperations;
 }
@@ -117,8 +120,10 @@ enum OperationType {
     operationQueueForRemoveOperations = [[NSOperationQueue alloc] init];
     [operationQueueForRemoveOperations
         setMaxConcurrentOperationCount:NSUIntegerMax];
-    [operationQueueForRemoveOperations
-        setQualityOfService:NSQualityOfServiceUserInitiated];
+    if (base::ios::IsRunningOnIOS8OrLater()) {
+      [operationQueueForRemoveOperations
+          setQualityOfService:NSQualityOfServiceUserInitiated];
+    }
   });
   return operationQueueForRemoveOperations;
 }
