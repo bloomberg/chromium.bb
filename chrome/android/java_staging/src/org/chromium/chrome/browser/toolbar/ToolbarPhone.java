@@ -721,7 +721,9 @@ public class ToolbarPhone extends ToolbarLayout
         NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
         // Explicitly use the focus change percentage here because it applies scroll compensation
         // that only applies during focus animations.
-        if (ntp != null) ntp.setUrlFocusChangeAnimationPercent(mUrlFocusChangePercent);
+        if (ntp != null && mUrlFocusChangeInProgress) {
+            ntp.setUrlFocusChangeAnimationPercent(mUrlFocusChangePercent);
+        }
 
         if (!isLocationBarShownInNTP()) {
             // Reset these values in case we transitioned to a different page during the
