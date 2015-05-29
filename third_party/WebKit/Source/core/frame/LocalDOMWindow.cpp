@@ -557,7 +557,7 @@ int LocalDOMWindow::orientation() const
     if (!frame() || !frame()->host())
         return 0;
 
-    int orientation = frame()->host()->chrome().screenInfo().orientationAngle;
+    int orientation = frame()->host()->chromeClient().screenInfo().orientationAngle;
     // For backward compatibility, we want to return a value in the range of
     // [-90; 180] instead of [0; 360[ because window.orientation used to behave
     // like that in WebKit (this is a WebKit proprietary API).
@@ -731,7 +731,7 @@ void LocalDOMWindow::focus(ExecutionContext* context)
 
     // If we're a top level window, bring the window to the front.
     if (frame()->isMainFrame() && allowFocus)
-        host->chrome().focus();
+        host->chromeClient().focus();
 
     frame()->eventHandler().focusDocumentView();
 }
@@ -772,7 +772,7 @@ void LocalDOMWindow::close(ExecutionContext* context)
 
     InspectorInstrumentation::willCloseWindow(context);
 
-    page->chrome().closeWindowSoon();
+    page->chromeClient().closeWindowSoon();
     // So as to make window.closed return the expected result
     // after window.close(), separately record the to-be-closed
     // state of this window. Scripts may access window.closed
@@ -1069,7 +1069,7 @@ void LocalDOMWindow::setStatus(const String& string)
         return;
 
     ASSERT(frame()->document()); // Client calls shouldn't be made when the frame is in inconsistent state.
-    host->chrome().setStatusbarText(frame(), m_status);
+    host->chromeClient().setStatusbarText(m_status);
 }
 
 void LocalDOMWindow::setDefaultStatus(const String& string)
@@ -1084,7 +1084,7 @@ void LocalDOMWindow::setDefaultStatus(const String& string)
         return;
 
     ASSERT(frame()->document()); // Client calls shouldn't be made when the frame is in inconsistent state.
-    host->chrome().setStatusbarText(frame(), m_defaultStatus);
+    host->chromeClient().setStatusbarText(m_defaultStatus);
 }
 
 Document* LocalDOMWindow::document() const

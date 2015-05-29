@@ -44,6 +44,7 @@
 namespace blink {
 
 class Chrome;
+class ChromeClient;
 class ConsoleMessageStorage;
 class EventHandlerRegistry;
 class Page;
@@ -72,6 +73,7 @@ public:
     Page& page() const { return *m_page; }
     Settings& settings() const;
     Chrome& chrome() const;
+    ChromeClient& chromeClient() const;
     UseCounter& useCounter() const;
 
     // Corresponds to pixel density of the device where this Page is

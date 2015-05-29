@@ -61,7 +61,7 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
                     if (host == openerFrame.host())
                         frame->page()->focusController().setFocusedFrame(frame);
                     else
-                        host->chrome().focus();
+                        host->chromeClient().focus();
                 }
             }
             return frame;
@@ -100,7 +100,7 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     // for the difference between the window size and the viewport size.
 
     IntRect windowRect = host->chrome().windowRect();
-    IntSize viewportSize = host->chrome().pageRect().size();
+    IntSize viewportSize = host->chromeClient().pageRect().size();
 
     if (features.xSet)
         windowRect.setX(features.x);
@@ -112,7 +112,7 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
         windowRect.setHeight(features.height + (windowRect.height() - viewportSize.height()));
 
     host->chrome().setWindowRect(windowRect);
-    host->chrome().show(policy);
+    host->chromeClient().show(policy);
 
     // TODO(japhet): There's currently no way to set sandbox flags on a RemoteFrame and have it propagate
     // to the real frame in a different process. See crbug.com/483584.

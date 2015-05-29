@@ -422,10 +422,10 @@ bool FocusController::advanceFocusInDocumentOrder(WebFocusType type, bool initia
 
     if (!node) {
         // We didn't find a node to focus, so we should try to pass focus to Chrome.
-        if (!initialFocus && m_page->chrome().canTakeFocus(type)) {
+        if (!initialFocus && m_page->chromeClient().canTakeFocus(type)) {
             document->setFocusedElement(nullptr);
             setFocusedFrame(nullptr);
-            m_page->chrome().takeFocus(type);
+            m_page->chromeClient().takeFocus(type);
             return true;
         }
 

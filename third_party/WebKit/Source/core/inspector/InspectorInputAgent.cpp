@@ -34,7 +34,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorPageAgent.h"
-#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "platform/JSONValues.h"
@@ -80,7 +80,7 @@ public:
 void ConvertInspectorPoint(blink::LocalFrame* frame, const blink::IntPoint& point, blink::IntPoint* convertedPoint, blink::IntPoint* globalPoint)
 {
     *convertedPoint = frame->view()->convertToContainingWindow(point);
-    *globalPoint = frame->page()->chrome().viewportToScreen(blink::IntRect(point, blink::IntSize(0, 0))).location();
+    *globalPoint = frame->page()->chromeClient().viewportToScreen(blink::IntRect(point, blink::IntSize(0, 0))).location();
 }
 
 } // namespace

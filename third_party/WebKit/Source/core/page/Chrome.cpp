@@ -65,29 +65,9 @@ PassOwnPtr<Chrome> Chrome::create(Page* page, ChromeClient* client)
     return adoptPtr(new Chrome(page, client));
 }
 
-void Chrome::invalidateRect(const IntRect& updateRect)
-{
-    m_client->invalidateRect(updateRect);
-}
-
-IntRect Chrome::viewportToScreen(const IntRect& rect) const
-{
-    return m_client->viewportToScreen(rect);
-}
-
-WebScreenInfo Chrome::screenInfo() const
-{
-    return m_client->screenInfo();
-}
-
-void Chrome::contentsSizeChanged(LocalFrame* frame, const IntSize& size) const
-{
-    m_client->contentsSizeChanged(frame, size);
-}
-
 void Chrome::setWindowRect(const IntRect& pendingRect) const
 {
-    IntRect screen = screenInfo().availableRect;
+    IntRect screen = m_client->screenInfo().availableRect;
     IntRect window = pendingRect;
 
     IntSize minimumSize = m_client->minimumWindowSize();
@@ -106,36 +86,6 @@ void Chrome::setWindowRect(const IntRect& pendingRect) const
 IntRect Chrome::windowRect() const
 {
     return m_client->windowRect();
-}
-
-IntRect Chrome::pageRect() const
-{
-    return m_client->pageRect();
-}
-
-void Chrome::focus() const
-{
-    m_client->focus();
-}
-
-bool Chrome::canTakeFocus(WebFocusType type) const
-{
-    return m_client->canTakeFocus(type);
-}
-
-void Chrome::takeFocus(WebFocusType type) const
-{
-    m_client->takeFocus(type);
-}
-
-void Chrome::focusedNodeChanged(Node* fromNode, Node* toNode) const
-{
-    m_client->focusedNodeChanged(fromNode, toNode);
-}
-
-void Chrome::show(NavigationPolicy policy) const
-{
-    m_client->show(policy);
 }
 
 static bool canRunModalIfDuringPageDismissal(Page* page, ChromeClient::DialogType dialog, const String& message)
@@ -159,26 +109,6 @@ void Chrome::setWindowFeatures(const WindowFeatures& features) const
     m_client->setResizable(features.resizable);
 }
 
-bool Chrome::toolbarsVisible() const
-{
-    return m_client->toolbarsVisible();
-}
-
-bool Chrome::statusbarVisible() const
-{
-    return m_client->statusbarVisible();
-}
-
-bool Chrome::scrollbarsVisible() const
-{
-    return m_client->scrollbarsVisible();
-}
-
-bool Chrome::menubarVisible() const
-{
-    return m_client->menubarVisible();
-}
-
 bool Chrome::canRunBeforeUnloadConfirmPanel()
 {
     return m_client->canRunBeforeUnloadConfirmPanel();
@@ -194,11 +124,6 @@ bool Chrome::runBeforeUnloadConfirmPanel(const String& message, LocalFrame* fram
     bool ok = m_client->runBeforeUnloadConfirmPanel(message, frame);
     InspectorInstrumentation::didRunJavaScriptDialog(cookie);
     return ok;
-}
-
-void Chrome::closeWindowSoon()
-{
-    m_client->closeWindowSoon();
 }
 
 void Chrome::runJavaScriptAlert(LocalFrame* frame, const String& message)
@@ -255,17 +180,6 @@ bool Chrome::runJavaScriptPrompt(LocalFrame* frame, const String& prompt, const 
     return ok;
 }
 
-void Chrome::setStatusbarText(LocalFrame* frame, const String& status)
-{
-    ASSERT(frame);
-    m_client->setStatusbarText(status);
-}
-
-IntRect Chrome::windowResizerRect() const
-{
-    return m_client->windowResizerRect();
-}
-
 void Chrome::mouseDidMoveOverElement(const HitTestResult& result)
 {
     if (result.innerNode()) {
@@ -314,11 +228,6 @@ void Chrome::print(LocalFrame* frame)
     m_client->print(frame);
 }
 
-void Chrome::enumerateChosenDirectory(FileChooser* fileChooser)
-{
-    m_client->enumerateChosenDirectory(fileChooser);
-}
-
 PassOwnPtrWillBeRawPtr<ColorChooser> Chrome::createColorChooser(LocalFrame* frame, ColorChooserClient* client, const Color& initialColor)
 {
     notifyPopupOpeningObservers();
@@ -343,11 +252,6 @@ void Chrome::runOpenPanel(LocalFrame* frame, PassRefPtr<FileChooser> fileChooser
     m_client->runOpenPanel(frame, fileChooser);
 }
 
-void Chrome::dispatchViewportPropertiesDidChange(const ViewportDescription& description) const
-{
-    m_client->dispatchViewportPropertiesDidChange(description);
-}
-
 void Chrome::setCursor(const Cursor& cursor)
 {
     m_lastSetMouseCursorForTesting = cursor;
@@ -359,22 +263,7 @@ Cursor Chrome::getLastSetCursorForTesting() const
     return m_lastSetMouseCursorForTesting;
 }
 
-void Chrome::scheduleAnimation()
-{
-    m_client->scheduleAnimation();
-}
-
 // --------
-
-void Chrome::scheduleAnimationForFrame(LocalFrame* localRoot)
-{
-    m_client->scheduleAnimationForFrame(localRoot);
-}
-
-bool Chrome::hasOpenedPopup() const
-{
-    return m_client->hasOpenedPopup();
-}
 
 PassRefPtrWillBeRawPtr<PopupMenu> Chrome::createPopupMenu(LocalFrame& frame, PopupMenuClient* client)
 {
@@ -400,16 +289,6 @@ void Chrome::notifyPopupOpeningObservers() const
     const Vector<PopupOpeningObserver*> observers(m_popupOpeningObservers);
     for (size_t i = 0; i < observers.size(); ++i)
         observers[i]->willOpenPopup();
-}
-
-void Chrome::registerViewportLayers() const
-{
-    m_client->registerViewportLayers();
-}
-
-void Chrome::willBeDestroyed()
-{
-    m_client->chromeDestroyed();
 }
 
 } // namespace blink

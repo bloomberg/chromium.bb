@@ -71,7 +71,7 @@ struct GraphicsDeviceAdapter;
 struct ViewportDescription;
 struct WindowFeatures;
 
-class CORE_EXPORT ChromeClient {
+class CORE_EXPORT ChromeClient : public HostWindow {
 public:
     virtual void chromeDestroyed() = 0;
 
@@ -96,7 +96,7 @@ public:
     // The FrameLoadRequest parameter is only for ChromeClient to check if the
     // request could be fulfilled. The ChromeClient should not load the request.
     virtual Page* createWindow(LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) = 0;
-    virtual void show(NavigationPolicy) = 0;
+    virtual void show(NavigationPolicy = NavigationPolicyIgnore) = 0;
 
     virtual void setToolbarsVisible(bool) = 0;
     virtual bool toolbarsVisible() = 0;
@@ -131,11 +131,8 @@ public:
     virtual IntRect windowResizerRect() const = 0;
 
     // Methods used by HostWindow.
-    virtual void invalidateRect(const IntRect&) = 0;
-    virtual IntRect viewportToScreen(const IntRect&) const = 0;
     virtual WebScreenInfo screenInfo() const = 0;
     virtual void setCursor(const Cursor&) = 0;
-    virtual void scheduleAnimation() = 0;
     // End methods used by HostWindow.
 
     virtual void scheduleAnimationForFrame(LocalFrame*) { }

@@ -42,6 +42,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/text/PlatformLocale.h"
@@ -343,7 +344,7 @@ void LayoutMenuList::showPopup()
     if (m_popupIsVisible)
         return;
 
-    if (document().frameHost()->chrome().hasOpenedPopup())
+    if (document().frameHost()->chromeClient().hasOpenedPopup())
         return;
 
     if (!m_popup)

@@ -34,7 +34,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutListBox.h"
-#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "wtf/CurrentTime.h"
@@ -252,12 +252,12 @@ void AutoscrollController::animate(double)
 #endif
     }
     if (m_autoscrollType != NoAutoscroll)
-        m_page.chrome().scheduleAnimation();
+        m_page.chromeClient().scheduleAnimation();
 }
 
 void AutoscrollController::startAutoscroll()
 {
-    m_page.chrome().scheduleAnimation();
+    m_page.chromeClient().scheduleAnimation();
 }
 
 #if OS(WIN)

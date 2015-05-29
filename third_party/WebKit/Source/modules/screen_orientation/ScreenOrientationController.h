@@ -44,7 +44,7 @@ public:
 private:
     ScreenOrientationController(LocalFrame&, WebScreenOrientationClient*);
 
-    static WebScreenOrientationType computeOrientation(Chrome&);
+    static WebScreenOrientationType computeOrientation(ChromeClient&);
 
     // Inherited from PlatformEventController.
     virtual void didUpdateData() override;

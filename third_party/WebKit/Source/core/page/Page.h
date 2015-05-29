@@ -131,6 +131,7 @@ public:
 
     PageAnimator& animator() { return *m_animator; }
     Chrome& chrome() const { return *m_chrome; }
+    ChromeClient& chromeClient() const;
     AutoscrollController& autoscrollController() const { return *m_autoscrollController; }
     DragCaretController& dragCaretController() const { return *m_dragCaretController; }
     DragController& dragController() const { return *m_dragController; }

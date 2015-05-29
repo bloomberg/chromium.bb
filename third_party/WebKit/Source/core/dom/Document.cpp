@@ -2127,7 +2127,7 @@ void Document::detach(const AttachContext& context)
         RefPtrWillBeRawPtr<Element> oldFocusedElement = m_focusedElement;
         m_focusedElement = nullptr;
         if (frameHost())
-            frameHost()->chrome().focusedNodeChanged(oldFocusedElement.get(), nullptr);
+            frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement.get(), nullptr);
     }
 
     if (this == &axObjectCacheOwner())
@@ -3051,7 +3051,7 @@ void Document::setViewportDescription(const ViewportDescription& viewportDescrip
 void Document::updateViewportDescription()
 {
     if (frame() && frame()->isMainFrame()) {
-        frameHost()->chrome().dispatchViewportPropertiesDidChange(m_viewportDescription);
+        frameHost()->chromeClient().dispatchViewportPropertiesDidChange(m_viewportDescription);
     }
 }
 
@@ -3530,7 +3530,7 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
     }
 
     if (!focusChangeBlocked && frameHost())
-        frameHost()->chrome().focusedNodeChanged(oldFocusedElement.get(), m_focusedElement.get());
+        frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement.get(), m_focusedElement.get());
 
 SetFocusedElementDone:
     updateLayoutTreeIfNeeded();

@@ -40,7 +40,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/plugins/PluginView.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -423,7 +423,7 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
 
     // Update the viewport layer registration if the outer viewport may have changed.
     if (m_page->settings().rootLayerScrolls() && isForRootLayer(scrollableArea))
-        m_page->chrome().registerViewportLayers();
+        m_page->chromeClient().registerViewportLayers();
 
     scrollableArea->layerForScrollingDidChange();
 

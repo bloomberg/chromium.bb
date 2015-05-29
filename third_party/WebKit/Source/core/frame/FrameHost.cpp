@@ -71,6 +71,11 @@ Chrome& FrameHost::chrome() const
     return m_page->chrome();
 }
 
+ChromeClient& FrameHost::chromeClient() const
+{
+    return m_page->chromeClient();
+}
+
 UseCounter& FrameHost::useCounter() const
 {
     return m_page->useCounter();

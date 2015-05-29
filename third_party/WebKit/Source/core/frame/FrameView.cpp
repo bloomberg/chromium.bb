@@ -511,7 +511,7 @@ void FrameView::setContentsSize(const IntSize& size)
 
     updateScrollableAreaSet();
 
-    page->chrome().contentsSizeChanged(m_frame.get(), size);
+    page->chromeClient().contentsSizeChanged(m_frame.get(), size);
 }
 
 IntPoint FrameView::clampOffsetAtScale(const IntPoint& offset, float scale) const
@@ -1679,7 +1679,7 @@ HostWindow* FrameView::hostWindow() const
     Page* page = frame().page();
     if (!page)
         return nullptr;
-    return &page->chrome();
+    return &page->chromeClient();
 }
 
 void FrameView::contentRectangleForPaintInvalidation(const IntRect& rectInContent)
@@ -2248,10 +2248,9 @@ void FrameView::getTickmarks(Vector<IntRect>& tickmarks) const
 
 IntRect FrameView::windowResizerRect() const
 {
-    Page* page = frame().page();
-    if (!page)
-        return IntRect();
-    return page->chrome().windowResizerRect();
+    if (Page* page = frame().page())
+        return page->chromeClient().windowResizerRect();
+    return IntRect();
 }
 
 void FrameView::setVisibleContentScaleFactor(float visibleContentScaleFactor)

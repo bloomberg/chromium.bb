@@ -25,7 +25,6 @@
 #include "core/CoreExport.h"
 #include "core/loader/NavigationPolicy.h"
 #include "platform/Cursor.h"
-#include "platform/HostWindow.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFocusType.h"
 #include "wtf/Forward.h"
@@ -52,7 +51,7 @@ struct DateTimeChooserParameters;
 struct ViewportDescription;
 struct WindowFeatures;
 
-class CORE_EXPORT Chrome final : public HostWindow {
+class CORE_EXPORT Chrome final {
 public:
     virtual ~Chrome();
 
@@ -60,52 +59,20 @@ public:
 
     ChromeClient& client() { return *m_client; }
 
-    // HostWindow methods.
-    virtual void invalidateRect(const IntRect&) override;
-    virtual IntRect viewportToScreen(const IntRect&) const override;
-    virtual void scheduleAnimation() override;
-
-    WebScreenInfo screenInfo() const;
-
-    void scheduleAnimationForFrame(LocalFrame* localRoot);
-
-    void contentsSizeChanged(LocalFrame*, const IntSize&) const;
-
     void setCursor(const Cursor&);
     Cursor getLastSetCursorForTesting() const;
 
     void setWindowRect(const IntRect&) const;
     IntRect windowRect() const;
 
-    IntRect pageRect() const;
-
-    void focus() const;
-
-    bool canTakeFocus(WebFocusType) const;
-    void takeFocus(WebFocusType) const;
-
-    void focusedNodeChanged(Node*, Node*) const;
-
-    void show(NavigationPolicy = NavigationPolicyIgnore) const;
-
     void setWindowFeatures(const WindowFeatures&) const;
-
-    bool toolbarsVisible() const;
-    bool statusbarVisible() const;
-    bool scrollbarsVisible() const;
-    bool menubarVisible() const;
 
     bool canRunBeforeUnloadConfirmPanel();
     bool runBeforeUnloadConfirmPanel(const String& message, LocalFrame*);
 
-    void closeWindowSoon();
-
     void runJavaScriptAlert(LocalFrame*, const String&);
     bool runJavaScriptConfirm(LocalFrame*, const String&);
     bool runJavaScriptPrompt(LocalFrame*, const String& message, const String& defaultValue, String& result);
-    void setStatusbarText(LocalFrame*, const String&);
-
-    IntRect windowResizerRect() const;
 
     void mouseDidMoveOverElement(const HitTestResult&);
 
@@ -118,19 +85,11 @@ public:
     void openTextDataListChooser(HTMLInputElement&);
 
     void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>);
-    void enumerateChosenDirectory(FileChooser*);
 
-    void dispatchViewportPropertiesDidChange(const ViewportDescription&) const;
-
-    bool hasOpenedPopup() const;
     PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*);
 
     void registerPopupOpeningObserver(PopupOpeningObserver*);
     void unregisterPopupOpeningObserver(PopupOpeningObserver*);
-
-    void registerViewportLayers() const;
-
-    void willBeDestroyed();
 
 private:
     Chrome(Page*, ChromeClient*);

@@ -34,6 +34,7 @@
 #include "core/html/forms/FormController.h"
 #include "core/layout/LayoutFileUploadControl.h"
 #include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/DragData.h"
 #include "platform/FileMetadata.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -329,7 +330,7 @@ void FileInputType::receiveDropForDirectoryUpload(const Vector<String>& paths)
         settings.selectedFiles.append(paths[0]);
         settings.acceptMIMETypes = input.acceptMIMETypes();
         settings.acceptFileExtensions = input.acceptFileExtensions();
-        chrome->enumerateChosenDirectory(newFileChooser(settings));
+        chrome->client().enumerateChosenDirectory(newFileChooser(settings));
     }
 }
 

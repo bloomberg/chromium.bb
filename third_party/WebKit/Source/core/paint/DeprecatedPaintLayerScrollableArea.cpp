@@ -60,7 +60,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -149,7 +149,7 @@ DeprecatedPaintLayerScrollableArea::~DeprecatedPaintLayerScrollableArea()
 HostWindow* DeprecatedPaintLayerScrollableArea::hostWindow() const
 {
     if (Page* page = box().frame()->page())
-        return &page->chrome();
+        return &page->chromeClient();
     return nullptr;
 }
 

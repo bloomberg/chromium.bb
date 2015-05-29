@@ -29,9 +29,9 @@
 #include "config.h"
 #include "core/frame/BarProp.h"
 
-#include "core/page/Chrome.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/page/ChromeClient.h"
 
 namespace blink {
 
@@ -58,13 +58,13 @@ bool BarProp::visible() const
     case Locationbar:
     case Personalbar:
     case Toolbar:
-        return host->chrome().toolbarsVisible();
+        return host->chromeClient().toolbarsVisible();
     case Menubar:
-        return host->chrome().menubarVisible();
+        return host->chromeClient().menubarVisible();
     case Scrollbars:
-        return host->chrome().scrollbarsVisible();
+        return host->chromeClient().scrollbarsVisible();
     case Statusbar:
-        return host->chrome().statusbarVisible();
+        return host->chromeClient().statusbarVisible();
     }
 
     ASSERT_NOT_REACHED();

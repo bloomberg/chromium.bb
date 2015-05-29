@@ -18,7 +18,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 #include "public/platform/WebScreenInfo.h"
@@ -49,7 +49,7 @@ int MediaValues::calculateViewportHeight(LocalFrame* frame) const
 int MediaValues::calculateDeviceWidth(LocalFrame* frame) const
 {
     ASSERT(frame && frame->view() && frame->settings() && frame->host());
-    int deviceWidth = frame->host()->chrome().screenInfo().rect.width;
+    int deviceWidth = frame->host()->chromeClient().screenInfo().rect.width;
     if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
         deviceWidth = lroundf(deviceWidth * frame->host()->deviceScaleFactor());
     return deviceWidth;
@@ -58,7 +58,7 @@ int MediaValues::calculateDeviceWidth(LocalFrame* frame) const
 int MediaValues::calculateDeviceHeight(LocalFrame* frame) const
 {
     ASSERT(frame && frame->view() && frame->settings() && frame->host());
-    int deviceHeight = frame->host()->chrome().screenInfo().rect.height;
+    int deviceHeight = frame->host()->chromeClient().screenInfo().rect.height;
     if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
         deviceHeight = lroundf(deviceHeight * frame->host()->deviceScaleFactor());
     return deviceHeight;
@@ -79,18 +79,18 @@ int MediaValues::calculateColorBitsPerComponent(LocalFrame* frame) const
 {
     ASSERT(frame && frame->page() && frame->page()->mainFrame());
     if (!frame->page()->mainFrame()->isLocalFrame()
-        || frame->host()->chrome().screenInfo().isMonochrome)
+        || frame->host()->chromeClient().screenInfo().isMonochrome)
         return 0;
-    return frame->host()->chrome().screenInfo().depthPerComponent;
+    return frame->host()->chromeClient().screenInfo().depthPerComponent;
 }
 
 int MediaValues::calculateMonochromeBitsPerComponent(LocalFrame* frame) const
 {
     ASSERT(frame && frame->page() && frame->page()->mainFrame());
     if (!frame->page()->mainFrame()->isLocalFrame()
-        || !frame->host()->chrome().screenInfo().isMonochrome)
+        || !frame->host()->chromeClient().screenInfo().isMonochrome)
         return 0;
-    return frame->host()->chrome().screenInfo().depthPerComponent;
+    return frame->host()->chromeClient().screenInfo().depthPerComponent;
 }
 
 int MediaValues::calculateDefaultFontSize(LocalFrame* frame) const

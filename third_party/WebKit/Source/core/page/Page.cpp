@@ -284,6 +284,11 @@ void Page::unmarkAllTextMatches()
     } while (frame);
 }
 
+ChromeClient& Page::chromeClient() const
+{
+    return m_chrome->client();
+}
+
 void Page::setValidationMessageClient(PassOwnPtrWillBeRawPtr<ValidationMessageClient> client)
 {
     m_validationMessageClient = client;
@@ -578,7 +583,7 @@ void Page::willBeDestroyed()
     pageCounter.decrement();
 #endif
 
-    m_chrome->willBeDestroyed();
+    chromeClient().chromeDestroyed();
     if (m_validationMessageClient)
         m_validationMessageClient->willBeDestroyed();
     m_mainFrame = nullptr;

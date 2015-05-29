@@ -8,7 +8,6 @@
 #include "core/animation/DocumentAnimations.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -81,9 +80,9 @@ void PageAnimator::scheduleVisualUpdate(LocalFrame* frame)
     // causes scheduleAnimation() to be called for the page, which still uses
     // a page-level WebWidget (the WebViewImpl).
     if (frame && !frame->isMainFrame() && frame->isLocalRoot()) {
-        m_page->chrome().scheduleAnimationForFrame(frame);
+        m_page->chromeClient().scheduleAnimationForFrame(frame);
     } else {
-        m_page->chrome().scheduleAnimation();
+        m_page->chromeClient().scheduleAnimation();
     }
 }
 
