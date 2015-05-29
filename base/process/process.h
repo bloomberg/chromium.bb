@@ -102,9 +102,13 @@ class BASE_EXPORT Process {
   // On POSIX, if the process has been signaled then |exit_code| is set to -1.
   // On Linux this must be a child process, however on Mac and Windows it can be
   // any process.
+  // NOTE: |exit_code| is optional, nullptr can be passed if the exit code is
+  // not required.
   bool WaitForExit(int* exit_code);
 
   // Same as WaitForExit() but only waits for up to |timeout|.
+  // NOTE: |exit_code| is optional, nullptr can be passed if the exit code
+  // is not required.
   bool WaitForExitWithTimeout(TimeDelta timeout, int* exit_code);
 
   // A process is backgrounded when it's priority is lower than normal.

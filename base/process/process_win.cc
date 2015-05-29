@@ -154,7 +154,8 @@ bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) {
   if (!::GetExitCodeProcess(Handle(), &temp_code))
     return false;
 
-  *exit_code = temp_code;
+  if (exit_code)
+    *exit_code = temp_code;
   return true;
 }
 

@@ -161,8 +161,7 @@ class ProcessSingletonTest : public base::MultiProcessTest {
 
     if (browser_victim_.IsValid()) {
       EXPECT_TRUE(::SetEvent(continue_event_.Get()));
-      int exit_code = 0;
-      EXPECT_TRUE(browser_victim_.WaitForExit(&exit_code));
+      EXPECT_TRUE(browser_victim_.WaitForExit(nullptr));
     }
 
     base::MultiProcessTest::TearDown();

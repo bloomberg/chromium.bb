@@ -221,8 +221,7 @@ class ChromeWatcherClientTest : public testing::Test {
   void TearDown() override {
     // Even if we never launched, the following is harmless.
     SignalExit();
-    int exit_code = 0;
-    thread_.client().WaitForExit(&exit_code);
+    thread_.client().WaitForExit(nullptr);
     thread_.Join();
   }
 

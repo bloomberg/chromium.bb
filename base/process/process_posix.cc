@@ -193,11 +193,13 @@ bool WaitForExitWithTimeoutImpl(base::ProcessHandle handle,
   if (!WaitpidWithTimeout(handle, &status, timeout))
     return false;
   if (WIFSIGNALED(status)) {
-    *exit_code = -1;
+    if (exit_code)
+      *exit_code = -1;
     return true;
   }
   if (WIFEXITED(status)) {
-    *exit_code = WEXITSTATUS(status);
+    if (exit_code)
+      *exit_code = WEXITSTATUS(status);
     return true;
   }
   return false;
