@@ -13,8 +13,8 @@ main(int argc, char **argv)
   lou_setLogLevel(LOG_DEBUG);
   lou_indexTables(tables);
   match = lou_findTable("id:foo");
-  success |= (!match || strcmp(match, "tablesWithMetadata/foo"));
+  success |= (!match || (strstr(match, "tablesWithMetadata/foo") == NULL));
   match = lou_findTable("language:en");
-  success |= (!match || strcmp(match, "tablesWithMetadata/bar"));
+  success |= (!match || (strstr(match, "tablesWithMetadata/bar") == NULL));
   return success;
 }
