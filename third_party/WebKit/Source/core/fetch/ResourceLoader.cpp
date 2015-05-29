@@ -62,6 +62,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource, con
     : m_fetcher(fetcher)
     , m_notifiedLoadComplete(false)
     , m_defersLoading(fetcher->defersLoading())
+    , m_loadingMultipartContent(false)
     , m_options(options)
     , m_resource(resource)
     , m_state(Initialized)
@@ -376,10 +377,13 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
         return;
 
     if (response.toResourceResponse().isMultipart()) {
-        if (!m_resource->isImage()) {
+        // We only support multipart for images, though the image may be loaded
+        // as a main resource that we end up displaying through an ImageDocument.
+        if (!m_resource->isImage() && m_resource->type() != Resource::MainResource) {
             cancel();
             return;
         }
+        m_loadingMultipartContent = true;
     } else if (isMultipartPayload) {
         // Since a subresource loader does not load multipart sections progressively, data was delivered to the loader all at once.
         // After the first multipart section is complete, signal to delegates that this load is "finished"

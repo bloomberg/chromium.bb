@@ -35,9 +35,11 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/MockImageResourceClient.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "platform/SharedBuffer.h"
+#include "platform/exported/WrappedResourceResponse.h"
 #include "platform/graphics/Image.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -84,14 +86,25 @@ static Vector<unsigned char> jpegImage()
 
 TEST(ImageResourceTest, MultipartImage)
 {
-    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest());
-    cachedImage->setLoading(true);
+    RefPtrWillBeRawPtr<ResourceFetcher> fetcher = ResourceFetcher::create(nullptr);
+    KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
+    URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
+
+    // Emulate starting a real load, but don't expect any "real" WebURLLoaderClient callbacks.
+    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL));
+    cachedImage->setIdentifier(createUniqueIdentifier());
+    cachedImage->load(fetcher.get(), ResourceLoaderOptions());
+    Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
 
     MockImageResourceClient client;
     cachedImage->addClient(&client);
+    EXPECT_EQ(Resource::Pending, cachedImage->status());
 
     // Send the multipart response. No image or data buffer is created.
-    cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String()), nullptr);
+    // Note that the response must be routed through ResourceLoader to
+    // ensure the load is flagged as multipart.
+    ResourceResponse multipartResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String());
+    cachedImage->loader()->didReceiveResponse(nullptr, WrappedResourceResponse(multipartResponse), nullptr);
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 0);
@@ -100,7 +113,8 @@ TEST(ImageResourceTest, MultipartImage)
     // Send the response for the first real part. No image or data buffer is created.
     const char* svgData = "<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect width='1' height='1' fill='green'/></svg>";
     unsigned svgDataLength = strlen(svgData);
-    cachedImage->responseReceived(ResourceResponse(KURL(), "image/svg+xml", svgDataLength, nullAtom, String()), nullptr);
+    ResourceResponse payloadResponse(KURL(), "image/svg+xml", svgDataLength, nullAtom, String());
+    cachedImage->loader()->didReceiveResponse(nullptr, WrappedResourceResponse(payloadResponse), nullptr);
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 0);
@@ -200,8 +214,6 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     cachedImage->addClient(&client);
 
     // Send the image response.
-    cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String()), nullptr);
-
     Vector<unsigned char> jpeg = jpegImage();
     cachedImage->responseReceived(ResourceResponse(KURL(), "image/jpeg", jpeg.size(), nullAtom, String()), nullptr);
     cachedImage->appendData(reinterpret_cast<const char*>(jpeg.data()), jpeg.size());
@@ -209,7 +221,7 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_FALSE(cachedImage->image()->isNull());
-    ASSERT_EQ(client.imageChangedCount(), 1);
+    ASSERT_EQ(client.imageChangedCount(), 2);
     ASSERT_TRUE(client.notifyFinishedCalled());
 
     HashSet<ImageResource*> bitmapImages;

@@ -29,6 +29,7 @@
 #ifndef ResourceLoader_h
 #define ResourceLoader_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/WebURLLoader.h"
@@ -44,7 +45,7 @@ class ResourceError;
 class ResourceFetcher;
 class ThreadedDataReceiver;
 
-class ResourceLoader final : public RefCountedWillBeGarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {
+class CORE_EXPORT ResourceLoader final : public RefCountedWillBeGarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {
 public:
     static PassRefPtrWillBeRawPtr<ResourceLoader> create(ResourceFetcher*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
     virtual ~ResourceLoader();
@@ -86,6 +87,8 @@ public:
     bool reachedTerminalState() const { return m_state == Terminated; }
     const ResourceRequest& request() const { return m_request; }
 
+    bool loadingMultipartContent() const { return m_loadingMultipartContent; }
+
 private:
     ResourceLoader(ResourceFetcher*, Resource*, const ResourceLoaderOptions&);
 
@@ -107,6 +110,7 @@ private:
     bool m_notifiedLoadComplete;
 
     bool m_defersLoading;
+    bool m_loadingMultipartContent;
     OwnPtr<ResourceRequest> m_fallbackRequestForServiceWorker;
     ResourceRequest m_deferredRequest;
     ResourceLoaderOptions m_options;

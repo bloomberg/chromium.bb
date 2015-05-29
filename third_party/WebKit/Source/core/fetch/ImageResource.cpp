@@ -29,6 +29,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/fetch/ResourceLoader.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -47,7 +48,6 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, Image)
     , m_devicePixelRatioHeaderValue(1.0)
     , m_image(nullptr)
-    , m_loadingMultipartContent(false)
     , m_hasDevicePixelRatioHeaderValue(false)
 {
     WTF_LOG(Timers, "new ImageResource(ResourceRequest) %p", this);
@@ -59,7 +59,6 @@ ImageResource::ImageResource(blink::Image* image)
     : Resource(ResourceRequest(""), Image)
     , m_devicePixelRatioHeaderValue(1.0)
     , m_image(image)
-    , m_loadingMultipartContent(false)
     , m_hasDevicePixelRatioHeaderValue(false)
 {
     WTF_LOG(Timers, "new ImageResource(Image) %p", this);
@@ -318,7 +317,7 @@ inline void ImageResource::clearImage()
 void ImageResource::appendData(const char* data, unsigned length)
 {
     Resource::appendData(data, length);
-    if (!m_loadingMultipartContent)
+    if (!loadingMultipartContent())
         updateImage(false);
 }
 
@@ -357,10 +356,10 @@ void ImageResource::updateImage(bool allDataReceived)
 
 void ImageResource::finishOnePart()
 {
-    if (m_loadingMultipartContent)
+    if (loadingMultipartContent())
         clear();
     updateImage(true);
-    if (m_loadingMultipartContent)
+    if (loadingMultipartContent())
         m_data.clear();
     Resource::finishOnePart();
 }
@@ -374,10 +373,8 @@ void ImageResource::error(Resource::Status status)
 
 void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
-    if (m_loadingMultipartContent && m_data)
+    if (loadingMultipartContent() && m_data)
         finishOnePart();
-    else if (response.isMultipart())
-        m_loadingMultipartContent = true;
     if (RuntimeEnabledFeatures::clientHintsEnabled()) {
         m_devicePixelRatioHeaderValue = response.httpHeaderField("content-dpr").toFloat(&m_hasDevicePixelRatioHeaderValue);
         if (!m_hasDevicePixelRatioHeaderValue || m_devicePixelRatioHeaderValue <= 0.0) {
@@ -514,6 +511,11 @@ Image* ImageResource::svgImageForLayoutObject(const LayoutObject* layoutObject)
     }
 
     return imageForContainer.get();
+}
+
+bool ImageResource::loadingMultipartContent() const
+{
+    return m_loader && m_loader->loadingMultipartContent();
 }
 
 } // namespace blink

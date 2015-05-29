@@ -137,6 +137,8 @@ namespace blink {
         };
         InitialScrollState& initialScrollState() { return m_initialScrollState; }
 
+        bool loadingMultipartContent() const;
+
     protected:
         DocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&);
 

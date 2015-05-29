@@ -128,6 +128,7 @@ private:
     void notifyObservers(const IntRect* changeRect = nullptr);
     IntSize svgImageSizeForLayoutObject(const LayoutObject*) const;
     blink::Image* svgImageForLayoutObject(const LayoutObject*);
+    bool loadingMultipartContent() const;
 
     float m_devicePixelRatioHeaderValue;
 
@@ -135,7 +136,6 @@ private:
     OwnPtr<ImageForContainerMap> m_imageForContainerMap;
 
     RefPtr<blink::Image> m_image;
-    bool m_loadingMultipartContent;
     bool m_hasDevicePixelRatioHeaderValue;
 };
 

@@ -62,7 +62,7 @@ private:
     virtual void dispose() override;
 #endif
 
-    void createDocumentStructure();
+    void createDocumentStructure(bool loadingMultipartContent);
 
     // These methods are for m_shrinkToFitMode == Desktop.
     void resizeImageToFit(ScaleType);
