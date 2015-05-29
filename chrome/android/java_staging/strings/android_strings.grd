@@ -381,6 +381,14 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_SEARCH_OR_TYPE_URL" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL. [CHAR-LIMIT=38]">
         Search or type URL
       </message>
+      
+      <!-- Data Saver -->
+      <message name="IDS_DATA_REDUCTION_LO_FI_SNACKBAR_MESSAGE" desc="Message shown when a page is opened in low fidelity mode when there is a slow unreliable connection.">
+        Slow connection detected.
+      </message>
+      <message name="IDS_DATA_REDUCTION_LO_FI_SNACKBAR_ACTION" desc="Button to load images when page is opened in low fidelity mode when there is a slow unreliable connection.">
+        Load images
+      </message>
 
       <!-- Add bookmark activity -->
       <message name="IDS_REMOVE" desc="Button for removing an item (e.g. a bookmark) from a list. [CHAR-LIMIT=12]">

@@ -48,14 +48,17 @@ import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.TabPrinter;
+import org.chromium.chrome.browser.snackbar.LoFiBarPopupController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -93,7 +96,9 @@ public abstract class CompositorChromeActivity extends ChromeActivity
     private CompositorViewHolder mCompositorViewHolder;
     private ContextualSearchManager mContextualSearchManager;
     private ReaderModeActivityDelegate mReaderModeActivityDelegate;
+    private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private SnackbarManager mSnackbarManager;
+    private LoFiBarPopupController mLoFiBarPopupController;
 
     // Time in ms that it took took us to inflate the initial layout
     private long mInflateInitialLayoutDurationMs;
@@ -107,6 +112,7 @@ public abstract class CompositorChromeActivity extends ChromeActivity
         mWindowAndroid = new ChromeWindow(this);
         mWindowAndroid.restoreInstanceState(getSavedInstanceState());
         mSnackbarManager = new SnackbarManager(findViewById(android.R.id.content));
+        mLoFiBarPopupController = new LoFiBarPopupController(this, getSnackbarManager());
         super.postInflationStartup();
 
         // Set up the animation placeholder to be the SurfaceView. This disables the
@@ -203,6 +209,34 @@ public abstract class CompositorChromeActivity extends ChromeActivity
     }
 
     @Override
+    protected void setTabModelSelector(TabModelSelector tabModelSelector) {
+        super.setTabModelSelector(tabModelSelector);
+
+        if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
+        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(tabModelSelector) {
+            @Override
+            public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
+                    boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
+                    int statusCode) {
+                if (!tab.isNativePage()
+                        && DataReductionProxySettings.getInstance().isLoFiEnabled()) {
+                    mLoFiBarPopupController.showLoFiBar(tab);
+                }
+            }
+
+            @Override
+            public void onHidden(Tab tab) {
+                mLoFiBarPopupController.dismissLoFiBar();
+            }
+
+            @Override
+            public void onDestroyed(Tab tab) {
+                mLoFiBarPopupController.dismissLoFiBar();
+            }
+        };
+    }
+
+    @Override
     public void onStartWithNative() {
         super.onStartWithNative();
         mCompositorViewHolder.resetFlags();
@@ -246,6 +280,7 @@ public abstract class CompositorChromeActivity extends ChromeActivity
     protected final void onDestroy() {
         if (mReaderModeActivityDelegate != null) mReaderModeActivityDelegate.destroy();
         if (mContextualSearchManager != null) mContextualSearchManager.destroy();
+        if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
         if (mCompositorViewHolder != null) {
             if (mCompositorViewHolder.getLayoutManager() != null) {
                 mCompositorViewHolder.getLayoutManager().removeSceneChangeObserver(this);
