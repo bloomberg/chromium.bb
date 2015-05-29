@@ -667,7 +667,7 @@ TEST_F(ViewManagerTest, DeleteViewManager) {
 
 // Verifies two Embed()s in the same view trigger deletion of the first
 // ViewManager.
-TEST_F(ViewManagerTest, DisconnectTriggersDelete) {
+TEST_F(ViewManagerTest, DISABLED_DisconnectTriggersDelete) {
   View* view = window_manager()->CreateView();
   ASSERT_NE(nullptr, view);
   view->SetVisible(true);
