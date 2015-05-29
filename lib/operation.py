@@ -36,6 +36,9 @@ from chromite.lib import parallel
 from chromite.lib import workspace_lib
 from chromite.lib.terminal import Color
 
+# Define filenames for captured stdout and stderr.
+STDOUT_FILE = 'stdout'
+STDERR_FILE = 'stderr'
 
 _TerminalSize = collections.namedtuple('_TerminalSize', ('lines', 'columns'))
 
@@ -183,7 +186,9 @@ class ProgressBarOperation(object):
     # TODO(ralphnathan): Not sure if we need this because it should be done when
     # we store the log file for brillo commands.
     osutils.SafeMakedirs(path)
+    osutils.SafeUnlink(os.path.join(path, STDOUT_FILE))
     shutil.move(self._stdout_path, path)
+    osutils.SafeUnlink(os.path.join(path, STDERR_FILE))
     shutil.move(self._stderr_path, path)
     logging.warning('Please look at %s for more information.', path)
 
@@ -207,8 +212,8 @@ class ProgressBarOperation(object):
       return
 
     with osutils.TempDir() as tempdir:
-      self._stdout_path = os.path.join(tempdir, 'stdout')
-      self._stderr_path = os.path.join(tempdir, 'stderr')
+      self._stdout_path = os.path.join(tempdir, STDOUT_FILE)
+      self._stderr_path = os.path.join(tempdir, STDERR_FILE)
       osutils.Touch(self._stdout_path)
       osutils.Touch(self._stderr_path)
       try:
@@ -226,6 +231,9 @@ class ProgressBarOperation(object):
         # by ParseOutput
         self.Cleanup()
       except:
+        # Add a blank line before the logging message so the message isn't
+        # touching the progress bar.
+        sys.stdout.write('\n')
         logging.error('Oops. Something went wrong.')
         # Move the stdout/stderr files to a location that the user can access.
         if self._workspace_path is not None:
