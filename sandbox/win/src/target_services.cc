@@ -57,8 +57,6 @@ bool CloseOpenHandles() {
   return true;
 }
 
-sandbox::TargetServicesBase* g_target_services = nullptr;
-
 }  // namespace
 
 namespace sandbox {
@@ -102,10 +100,8 @@ ProcessState* TargetServicesBase::GetState() {
 }
 
 TargetServicesBase* TargetServicesBase::GetInstance() {
-  // Leak on purpose TargetServicesBase.
-  if (!g_target_services)
-    g_target_services = new (NT_ALLOC) TargetServicesBase;
-  return g_target_services;
+  static TargetServicesBase instance;
+  return &instance;
 }
 
 // The broker services a 'test' IPC service with the IPC_PING_TAG tag.
@@ -160,18 +156,15 @@ bool TargetServicesBase::TestIPCPing(int version) {
   return true;
 }
 
-ProcessState::ProcessState() : process_state_(0) {
-}
-
-bool ProcessState::IsKernel32Loaded() const {
+bool ProcessState::IsKernel32Loaded() {
   return process_state_ != 0;
 }
 
-bool ProcessState::InitCalled() const {
+bool ProcessState::InitCalled() {
   return process_state_ > 1;
 }
 
-bool ProcessState::RevertedToSelf() const {
+bool ProcessState::RevertedToSelf() {
   return process_state_ > 2;
 }
 
