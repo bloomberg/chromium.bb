@@ -40,6 +40,7 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
 
   scoped_ptr<LayerImpl> layer_impl = TreeSynchronizer::SynchronizeTrees(
       root_layer(), old_root_layer_impl.Pass(), active_tree());
+  active_tree()->SetPropertyTrees(*property_trees());
   TreeSynchronizer::PushProperties(root_layer(), layer_impl.get());
 
   active_tree()->SetRootLayer(layer_impl.Pass());

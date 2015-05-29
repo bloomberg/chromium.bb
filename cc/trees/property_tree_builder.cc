@@ -211,8 +211,10 @@ bool AddTransformNodeIfNeeded(
     }
   }
 
-  if (layer->IsContainerForFixedPositionLayers() || is_root)
+  if (layer->IsContainerForFixedPositionLayers() || is_root) {
+    DCHECK(!is_scrollable || layer->transform().IsIdentity());
     data_for_children->transform_fixed_parent = layer;
+  }
   data_for_children->transform_tree_parent = layer;
 
   if (layer->IsContainerForFixedPositionLayers() || is_fixed)

@@ -174,6 +174,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetPosition(const gfx::PointF& position);
   gfx::PointF position() const { return position_; }
 
+  // A layer that is a container for fixed position layers cannot be both
+  // scrollable and have a non-identity transform.
   void SetIsContainerForFixedPositionLayers(bool container);
   bool IsContainerForFixedPositionLayers() const;
 
