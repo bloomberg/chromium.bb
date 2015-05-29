@@ -1751,3 +1751,5 @@ crbug.com/492511 [ Mac ] virtual/antialiasedtext/fast/text/international/arabic-
 crbug.com/491006 http/tests/security/cross-origin-access-over-property-descriptor.html [ Failure ]
 
 crbug.com/493815 inspector/elements/iframe-load-event.html [ Pass Failure ]
+
+crbug.com/493939 [ XP ] http/tests/security/cross-origin-css.html [ Timeout Pass ]
