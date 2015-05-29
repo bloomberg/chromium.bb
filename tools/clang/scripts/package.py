@@ -8,6 +8,7 @@ to a tgz file."""
 
 import argparse
 import fnmatch
+import itertools
 import os
 import shutil
 import subprocess
@@ -22,8 +23,7 @@ LLVM_BOOTSTRAP_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-bootstrap')
 LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
                                           'llvm-bootstrap-install')
 LLVM_BUILD_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-build')
-LLVM_BIN_DIR = os.path.join(LLVM_BUILD_DIR, 'Release+Asserts', 'bin')
-LLVM_LIB_DIR = os.path.join(LLVM_BUILD_DIR, 'Release+Asserts', 'lib')
+LLVM_RELEASE_DIR = os.path.join(LLVM_BUILD_DIR, 'Release+Asserts')
 STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
 
 
@@ -106,103 +106,85 @@ def main():
   pdir = 'clang-' + stamp
   print pdir
   shutil.rmtree(pdir, ignore_errors=True)
-  os.makedirs(os.path.join(pdir, 'bin'))
-  os.makedirs(os.path.join(pdir, 'lib'))
 
-  golddir = 'llvmgold-' + stamp
-  if sys.platform.startswith('linux'):
-    try:            os.makedirs(os.path.join(golddir, 'lib'))
-    except OSError: pass
-
+  # Copy a whitelist of files to the directory we're going to tar up.
+  # This supports the same patterns that the fnmatch module understands.
   so_ext = 'dylib' if sys.platform == 'darwin' else 'so'
+  want = ['bin/clang',
+          'bin/llvm-symbolizer',
+          'lib/libFindBadConstructs.' + so_ext,
+          'lib/libBlinkGCPlugin.' + so_ext,
+          'lib/clang/*/asan_blacklist.txt',
+          # Copy built-in headers (lib/clang/3.x.y/include).
+          'lib/clang/*/include/*',
+          ]
+  if sys.platform == 'darwin':
+    want.extend(['bin/libc++.1.dylib',
+                 # Copy only the OSX (ASan and profile) and iossim (ASan)
+                 # runtime libraries:
+                 'lib/clang/*/lib/darwin/*asan_osx*',
+                 'lib/clang/*/lib/darwin/*asan_iossim*',
+                 'lib/clang/*/lib/darwin/*profile_osx*',
+                 ])
+  elif sys.platform.startswith('linux'):
+    # Copy only
+    # lib/clang/*/lib/linux/libclang_rt.{[atm]san,san,ubsan,profile}-*.a ,
+    # but not dfsan.
+    want.extend(['lib/clang/*/lib/linux/*[atm]san*',
+                 'lib/clang/*/lib/linux/*ubsan*',
+                 'lib/clang/*/lib/linux/*libclang_rt.san*',
+                 'lib/clang/*/lib/linux/*profile*',
+                 'lib/clang/*/msan_blacklist.txt',
+                 ])
+  if args.gcc_toolchain is not None:
+    # Copy the stdlibc++.so.6 we linked Clang against so it can run.
+    want.append('lib/libstdc++.so.6.so')
+
+  for root, dirs, files in os.walk(LLVM_RELEASE_DIR):
+    # root: third_party/llvm-build/Release+Asserts/lib/..., rel_root: lib/...
+    rel_root = root[len(LLVM_RELEASE_DIR)+1:]
+    rel_files = [os.path.join(rel_root, f) for f in files]
+    wanted_files = list(set(itertools.chain.from_iterable(
+        fnmatch.filter(rel_files, p) for p in want)))
+    if wanted_files:
+      # Guaranteed to not yet exist at this point:
+      os.makedirs(os.path.join(pdir, rel_root))
+    for f in wanted_files:
+      src = os.path.join(LLVM_RELEASE_DIR, f)
+      dest = os.path.join(pdir, f)
+      shutil.copy(src, dest)
+      # Strip libraries.
+      if sys.platform == 'darwin' and f.endswith('.dylib'):
+        # Fix LC_ID_DYLIB for the ASan dynamic libraries to be relative to
+        # @executable_path.
+        # TODO(glider): this is transitional. We'll need to fix the dylib
+        # name either in our build system, or in Clang. See also
+        # http://crbug.com/344836.
+        subprocess.call(['install_name_tool', '-id',
+                         '@executable_path/' + os.path.basename(dest), dest])
+        subprocess.call(['strip', '-x', dest])
+      elif (sys.platform.startswith('linux') and
+            sys.path.splitext(f)[1] in ['.so', '.a']):
+        subprocess.call(['strip', '-g', dest])
+
+  # Set up symlinks.
+  os.symlink('clang', os.path.join(pdir, 'bin', 'clang++'))
+  if sys.platform == 'darwin':
+    os.symlink('libc++.1.dylib', os.path.join(pdir, 'bin', 'libc++.dylib'))
+    # Also copy libc++ headers.
+    shutil.copytree(os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'include', 'c++'),
+                    os.path.join(pdir, 'include', 'c++'))
 
   # Copy buildlog over.
   shutil.copy('buildlog.txt', pdir)
 
-  # Copy clang into pdir, symlink clang++ to it.
-  shutil.copy(os.path.join(LLVM_BIN_DIR, 'clang'), os.path.join(pdir, 'bin'))
-  os.symlink('clang', os.path.join(pdir, 'bin', 'clang++'))
-  shutil.copy(os.path.join(LLVM_BIN_DIR, 'llvm-symbolizer'),
-              os.path.join(pdir, 'bin'))
-  if sys.platform == 'darwin':
-    shutil.copy(os.path.join(LLVM_BIN_DIR, 'libc++.1.dylib'),
-                os.path.join(pdir, 'bin'))
-    os.symlink('libc++.1.dylib', os.path.join(pdir, 'bin', 'libc++.dylib'))
-
-  # Copy libc++ headers.
-  if sys.platform == 'darwin':
-    shutil.copytree(os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'include', 'c++'),
-                    os.path.join(pdir, 'include', 'c++'))
-
-  # Copy plugins. Some of the dylibs are pretty big, so copy only the ones we
-  # care about.
-  shutil.copy(os.path.join(LLVM_LIB_DIR, 'libFindBadConstructs.' + so_ext),
-              os.path.join(pdir, 'lib'))
-  shutil.copy(os.path.join(LLVM_LIB_DIR, 'libBlinkGCPlugin.' + so_ext),
-              os.path.join(pdir, 'lib'))
-
-  # Copy gold plugin on Linux.
-  if sys.platform.startswith('linux'):
-    shutil.copy(os.path.join(LLVM_LIB_DIR, 'LLVMgold.so'),
-                os.path.join(golddir, 'lib'))
-
-  if args.gcc_toolchain is not None:
-    # Copy the stdlibc++.so.6 we linked Clang against so it can run.
-    shutil.copy(os.path.join(LLVM_LIB_DIR, 'libstdc++.so.6'),
-                os.path.join(pdir, 'lib'))
-
-  # Copy built-in headers (lib/clang/3.x.y/include).
-  # compiler-rt builds all kinds of libraries, but we want only some.
-  if sys.platform == 'darwin':
-    # Keep only the OSX (ASan and profile) and iossim (ASan) runtime libraries:
-    want = ['*/lib/darwin/*asan_osx*',
-            '*/lib/darwin/*asan_iosim*',
-            '*/lib/darwin/*profile_osx*']
-    for root, dirs, files in os.walk(os.path.join(LLVM_LIB_DIR, 'clang')):
-      for f in files:
-        qualified = os.path.join(root, f)
-        if not any(fnmatch.fnmatch(qualified, p) for p in want):
-          os.remove(os.path.join(root, f))
-        elif f.endswith('.dylib'):
-          # Fix LC_ID_DYLIB for the ASan dynamic libraries to be relative to
-          # @executable_path.
-          # TODO(glider): this is transitional. We'll need to fix the dylib
-          # name either in our build system, or in Clang. See also
-          # http://crbug.com/344836.
-          subprocess.call(['install_name_tool', '-id',
-                           '@executable_path/' + f, qualified])
-          subprocess.call(['strip', '-x', qualified])
-  elif sys.platform.startswith('linux'):
-    # Keep only
-    # lib/clang/*/lib/linux/libclang_rt.{[atm]san,san,ubsan,profile}-*.a ,
-    # but not dfsan.
-    want = ['*/lib/linux/*[atm]san*',
-            '*/lib/linux/*ubsan*',
-            '*/lib/linux/*libclang_rt.san*',
-            '*/lib/linux/*profile*']
-    for root, dirs, files in os.walk(os.path.join(LLVM_LIB_DIR, 'clang')):
-      for f in files:
-        qualified = os.path.join(root, f)
-        if not any(fnmatch.fnmatch(qualified, p) for p in want):
-          os.remove(os.path.join(root, f))
-        elif not f.endswith('.syms'):
-          # Strip the debug info from the runtime libraries.
-          subprocess.call(['strip', '-g', qualified])
-
-  shutil.copytree(os.path.join(LLVM_LIB_DIR, 'clang'),
-                  os.path.join(pdir, 'lib', 'clang'))
-
+  # Create archive.
   tar_entries = ['bin', 'lib', 'buildlog.txt']
   if sys.platform == 'darwin':
     tar_entries += ['include']
   with tarfile.open(pdir + '.tgz', 'w:gz') as tar:
     for entry in tar_entries:
       tar.add(os.path.join(pdir, entry), arcname=entry, filter=PrintTarProgress)
-
-  if sys.platform.startswith('linux'):
-    with tarfile.open(golddir + '.tgz', 'w:gz') as tar:
-      tar.add(os.path.join(golddir, 'lib'), arcname='lib',
-              filter=PrintTarProgress)
 
   if sys.platform == 'darwin':
     platform = 'Mac'
@@ -213,7 +195,16 @@ def main():
   print ('gsutil cp -a public-read %s.tgz '
          'gs://chromium-browser-clang/%s/%s.tgz') % (pdir, platform, pdir)
 
+  # Zip up gold plugin on Linux.
   if sys.platform.startswith('linux'):
+    golddir = 'llvmgold-' + stamp
+    shutil.rmtree(pdir, ignore_errors=True)
+    os.makedirs(os.path.join(golddir, 'lib'))
+    shutil.copy(os.path.join(LLVM_LIB_DIR, 'LLVMgold.so'),
+                os.path.join(golddir, 'lib'))
+    with tarfile.open(golddir + '.tgz', 'w:gz') as tar:
+      tar.add(os.path.join(golddir, 'lib'), arcname='lib',
+              filter=PrintTarProgress)
     print ('gsutil cp -a public-read %s.tgz '
            'gs://chromium-browser-clang/%s/%s.tgz') % (golddir, platform,
                                                        golddir)
