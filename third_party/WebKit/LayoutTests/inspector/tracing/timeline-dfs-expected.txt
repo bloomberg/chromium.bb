@@ -1,6 +1,7 @@
 Tests TimelineModel.forAllRecords function.
 
 DFS preorder:
+TracingStartedInPage
 a
 aa
 aaa
@@ -17,6 +18,7 @@ bba
 bbb
 
 DFS postorder:
+TracingStartedInPage
 aaa
 aab
 aa

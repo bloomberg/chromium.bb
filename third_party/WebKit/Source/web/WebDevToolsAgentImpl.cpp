@@ -714,7 +714,6 @@ void WebDevToolsAgentImpl::willProcessTask()
         return;
     if (InspectorProfilerAgent* profilerAgent = m_instrumentingAgents->inspectorProfilerAgent())
         profilerAgent->willProcessTask();
-    TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Program");
 }
 
 void WebDevToolsAgentImpl::didProcessTask()
@@ -723,7 +722,6 @@ void WebDevToolsAgentImpl::didProcessTask()
         return;
     if (InspectorProfilerAgent* profilerAgent = m_instrumentingAgents->inspectorProfilerAgent())
         profilerAgent->didProcessTask();
-    TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Program");
     flushPendingProtocolNotifications();
 }
 
