@@ -297,7 +297,8 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KUR
         // Some rules have resources associated with them that we need to retrieve.
         if (rule->type() == CSSRule::IMPORT_RULE) {
             CSSImportRule* importRule = toCSSImportRule(rule);
-            KURL importURL = document.completeURL(importRule->href());
+            ASSERT(styleSheet.baseURL().isValid());
+            KURL importURL = KURL(styleSheet.baseURL(), importRule->href());
             if (m_resourceURLs.contains(importURL))
                 continue;
             if (importRule->styleSheet())

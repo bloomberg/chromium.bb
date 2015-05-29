@@ -168,6 +168,23 @@ TEST_F(PageSerializerTest, InputImage)
     EXPECT_FALSE(isSerialized("non-existing-button.png", "image/png"));
 }
 
+TEST_F(PageSerializerTest, CSSImport)
+{
+    setBaseFolder("pageserializer/css/");
+
+    registerURL("import.html", "text/html");
+    registerURL("import/base.css", "text/css");
+    registerURL("import/relative/red-background.css", "text/css");
+    registerURL("import/absolute/green-header.css", "text/css");
+
+    serialize("import.html");
+
+    EXPECT_TRUE(isSerialized("import.html", "text/html"));
+    EXPECT_TRUE(isSerialized("import/base.css", "text/css"));
+    EXPECT_TRUE(isSerialized("import/relative/red-background.css", "text/css"));
+    EXPECT_TRUE(isSerialized("import/absolute/green-header.css", "text/css"));
+}
+
 TEST_F(PageSerializerTest, XMLDeclaration)
 {
     V8TestingScope scope(v8::Isolate::GetCurrent());
