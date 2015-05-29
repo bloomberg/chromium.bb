@@ -31,6 +31,7 @@
 #include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notifier_settings.h"
@@ -71,6 +72,33 @@ std::string StripScopeFromIdentifier(const std::string& extension_id,
   DCHECK_LT(index_of_separator, id.length());
 
   return id.substr(index_of_separator);
+}
+
+const gfx::ImageSkia CreateSolidColorImage(int width,
+                                           int height,
+                                           SkColor color) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(width, height);
+  bitmap.eraseColor(color);
+  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+}
+
+// Take the alpha channel of small_image, mask it with the foreground,
+// then add the masked foreground on top of the background
+const gfx::Image GetMaskedSmallImage(const gfx::ImageSkia& small_image) {
+  int width = small_image.width();
+  int height = small_image.height();
+
+  // Background color grey
+  const gfx::ImageSkia background = CreateSolidColorImage(
+      width, height, message_center::kSmallImageMaskBackgroundColor);
+  // Foreground color white
+  const gfx::ImageSkia foreground = CreateSolidColorImage(
+      width, height, message_center::kSmallImageMaskForegroundColor);
+  const gfx::ImageSkia masked_small_image =
+      gfx::ImageSkiaOperations::CreateMaskedImage(foreground, small_image);
+  return gfx::Image(gfx::ImageSkiaOperations::CreateSuperimposedImage(
+      background, masked_small_image));
 }
 
 class NotificationsApiDelegate : public NotificationDelegate,
@@ -221,14 +249,15 @@ bool NotificationsApiFunction::CreateNotification(
   // Then, handle any optional data that's been provided.
   message_center::RichNotificationData optional_fields;
   if (options->app_icon_mask_url.get()) {
+    gfx::Image small_icon_mask;
     if (!NotificationConversionHelper::NotificationBitmapToGfxImage(
-            image_scale,
-            bitmap_sizes.app_icon_mask_size,
-            options->app_icon_mask_bitmap.get(),
-            &optional_fields.small_image)) {
+            image_scale, bitmap_sizes.app_icon_mask_size,
+            options->app_icon_mask_bitmap.get(), &small_icon_mask)) {
       SetError(kUnableToDecodeIconError);
       return false;
     }
+    optional_fields.small_image =
+        GetMaskedSmallImage(small_icon_mask.AsImageSkia());
   }
 
   if (options->priority.get())
@@ -355,7 +384,8 @@ bool NotificationsApiFunction::UpdateNotification(
           bitmap_sizes.app_icon_mask_size,
           options->app_icon_mask_bitmap.get(),
           &app_icon_mask)) {
-    notification->set_small_image(app_icon_mask);
+    notification->set_small_image(
+        GetMaskedSmallImage(app_icon_mask.AsImageSkia()));
   }
 
   if (options->priority)

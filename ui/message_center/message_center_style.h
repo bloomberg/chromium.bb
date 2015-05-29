@@ -77,9 +77,9 @@ extern const SkColor kIconBackgroundColor;         // Used behind icons smaller
 extern const SkColor kRegularTextColor;            // Title, message, ...
 extern const SkColor kDimTextColor;
 extern const SkColor kFocusBorderColor;  // The focus border.
-extern const SkColor
+MESSAGE_CENTER_EXPORT extern const SkColor
     kSmallImageMaskForegroundColor;  // Foreground of small icon image.
-extern const SkColor
+MESSAGE_CENTER_EXPORT extern const SkColor
     kSmallImageMaskBackgroundColor;  // Background of small icon image.
 
 // Limits.

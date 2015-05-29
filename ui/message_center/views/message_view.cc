@@ -10,7 +10,6 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
@@ -32,31 +31,6 @@ const int kCloseIconRightPadding = 5;
 
 const int kShadowOffset = 1;
 const int kShadowBlur = 4;
-
-const gfx::ImageSkia CreateImage(int width, int height, SkColor color) {
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(width, height);
-  bitmap.eraseColor(color);
-  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-}
-
-// Take the alpha channel of small_image, mask it with the foreground,
-// then add the masked foreground on top of the background
-const gfx::ImageSkia GetMaskedSmallImage(const gfx::ImageSkia& small_image) {
-  int width = small_image.width();
-  int height = small_image.height();
-
-  // Background color grey
-  const gfx::ImageSkia background = CreateImage(
-      width, height, message_center::kSmallImageMaskBackgroundColor);
-  // Foreground color white
-  const gfx::ImageSkia foreground = CreateImage(
-      width, height, message_center::kSmallImageMaskForegroundColor);
-  const gfx::ImageSkia masked_small_image =
-      gfx::ImageSkiaOperations::CreateMaskedImage(foreground, small_image);
-  return gfx::ImageSkiaOperations::CreateSuperimposedImage(background,
-                                                           masked_small_image);
-}
 
 }  // namespace
 
@@ -81,9 +55,8 @@ MessageView::MessageView(MessageViewController* controller,
       views::Background::CreateSolidBackground(kNotificationBackgroundColor));
   AddChildView(background_view_);
 
-  const gfx::ImageSkia masked_small_image = GetMaskedSmallImage(small_image);
   views::ImageView* small_image_view = new views::ImageView();
-  small_image_view->SetImage(masked_small_image);
+  small_image_view->SetImage(small_image);
   small_image_view->SetImageSize(gfx::Size(kSmallImageSize, kSmallImageSize));
   // The small image view should be added to view hierarchy by the derived
   // class. This ensures that it is on top of other views.
@@ -112,9 +85,7 @@ MessageView::~MessageView() {
 }
 
 void MessageView::UpdateWithNotification(const Notification& notification) {
-  const gfx::ImageSkia masked_small_image =
-      GetMaskedSmallImage(notification.small_image().AsImageSkia());
-  small_image_view_->SetImage(masked_small_image);
+  small_image_view_->SetImage(notification.small_image().AsImageSkia());
   display_source_ = notification.display_source();
 }
 
