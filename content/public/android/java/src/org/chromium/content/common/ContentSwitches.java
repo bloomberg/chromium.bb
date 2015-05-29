@@ -69,6 +69,10 @@ public abstract class ContentSwitches {
     // Native switch kEnableCredentialManagerAPI
     public static final String ENABLE_CREDENTIAL_MANAGER_API = "enable-credential-manager-api";
 
+    // Native switch kDisableGestureRequirementForMediaPlayback
+    public static final String DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK =
+            "disable-gesture-requirement-for-media-playback";
+
     // Prevent instantiation.
     private ContentSwitches() {}
 }

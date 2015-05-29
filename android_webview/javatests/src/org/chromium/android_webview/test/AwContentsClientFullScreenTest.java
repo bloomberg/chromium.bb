@@ -190,10 +190,10 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
     public void doTestOnShowCustomViewAndPlayWithHtmlControl(String videoTestUrl) throws Throwable {
         doOnShowCustomViewTest(videoTestUrl);
-        assertTrue(DOMUtils.isVideoPaused(getWebContentsOnUiThread(), VIDEO_ID));
+        assertTrue(DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID));
 
         tapPlayButton();
-        assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
+        assertTrue(DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID));
     }
 
     @MediumTest
@@ -206,7 +206,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         // Play and verify that a surface view for hole punching is not created.
         // Note that VIDEO_TEST_URL contains clear video.
         tapPlayButton();
-        assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
+        assertTrue(DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID));
         // Wait to ensure that the surface view is not added asynchronously.
         VideoSurfaceViewUtils.waitAndAssertContainsZeroVideoHoleSurfaceViews(this,
                 mTestContainerView);
@@ -228,7 +228,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
         // Play and verify that there is a surface view for hole punching.
         tapPlayButton();
-        assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
+        assertTrue(DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID));
         VideoSurfaceViewUtils.pollAndAssertContainsOneVideoHoleSurfaceView(this,
                 mTestContainerView);
 
@@ -262,7 +262,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
 
         // Play and verify that there is a surface view for hole punching.
         tapPlayButton();
-        assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), VIDEO_ID));
+        assertTrue(DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), VIDEO_ID));
         VideoSurfaceViewUtils.pollAndAssertContainsOneVideoHoleSurfaceView(this,
                 mTestContainerView);
 
@@ -335,7 +335,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         assertWaitForKeepScreenOnActive(customView, true);
 
         // Stop the video and verify that the power save blocker is gone.
-        DOMUtils.pauseVideo(getWebContentsOnUiThread(), VIDEO_ID);
+        DOMUtils.pauseMedia(getWebContentsOnUiThread(), VIDEO_ID);
         assertWaitForKeepScreenOnActive(customView, false);
     }
 
@@ -354,7 +354,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         assertWaitForKeepScreenOnActive(mTestContainerView, true);
 
         // Stop the video and verify that the power save blocker is gone.
-        DOMUtils.pauseVideo(getWebContentsOnUiThread(), VIDEO_ID);
+        DOMUtils.pauseMedia(getWebContentsOnUiThread(), VIDEO_ID);
         assertWaitForKeepScreenOnActive(mTestContainerView, false);
     }
 
@@ -377,7 +377,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         assertKeepScreenOnActive(customView, true);
 
         // Pause the video and the power save blocker is gone.
-        DOMUtils.pauseVideo(getWebContentsOnUiThread(), VIDEO_ID);
+        DOMUtils.pauseMedia(getWebContentsOnUiThread(), VIDEO_ID);
         assertWaitForKeepScreenOnActive(customView, false);
 
         // Exit fullscreen and the power save blocker is still gone.
@@ -435,7 +435,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
             public boolean isSatisfied() {
                 try {
                     return getKeepScreenOn(view) == expected
-                            && DOMUtils.isVideoPaused(getWebContentsOnUiThread(), VIDEO_ID)
+                            && DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID)
                                 != expected;
                 } catch (InterruptedException | TimeoutException e) {
                     fail(e.getMessage());
@@ -448,7 +448,7 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
     private void assertKeepScreenOnActive(final View view, final boolean expected)
             throws Exception {
         assertTrue(getKeepScreenOn(view) == expected
-                && DOMUtils.isVideoPaused(getWebContentsOnUiThread(), VIDEO_ID) != expected);
+                && DOMUtils.isMediaPaused(getWebContentsOnUiThread(), VIDEO_ID) != expected);
     }
 
     private boolean getKeepScreenOn(View view) {

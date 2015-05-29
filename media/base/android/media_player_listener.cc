@@ -41,12 +41,6 @@ void MediaPlayerListener::CreateMediaPlayerListener(
 
 
 void MediaPlayerListener::ReleaseMediaPlayerListenerResources() {
-  JNIEnv* env = AttachCurrentThread();
-  CHECK(env);
-  if (!j_media_player_listener_.is_null()) {
-    Java_MediaPlayerListener_releaseResources(
-        env, j_media_player_listener_.obj());
-  }
   j_media_player_listener_.Reset();
 }
 

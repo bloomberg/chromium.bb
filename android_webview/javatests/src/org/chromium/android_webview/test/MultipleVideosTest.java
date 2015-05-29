@@ -57,7 +57,7 @@ public class MultipleVideosTest extends AwTestBase {
 
         // Play the first video.
         tapFirstPlayButton();
-        assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), FIRST_VIDEO_ID));
+        assertTrue(DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), FIRST_VIDEO_ID));
 
         // Verify that there is one video hole surface.
         VideoSurfaceViewUtils.pollAndAssertContainsOneVideoHoleSurfaceView(this,
@@ -65,11 +65,11 @@ public class MultipleVideosTest extends AwTestBase {
 
         // Start the second video.
         tapSecondPlayButton();
-        assertTrue(DOMUtils.waitForVideoPlay(getWebContentsOnUiThread(), SECOND_VIDEO_ID));
+        assertTrue(DOMUtils.waitForMediaPlay(getWebContentsOnUiThread(), SECOND_VIDEO_ID));
 
         // Verify that the first video pauses once the second video starts.
-        assertFalse(DOMUtils.isVideoPaused(getWebContentsOnUiThread(), SECOND_VIDEO_ID));
-        assertTrue(DOMUtils.isVideoPaused(getWebContentsOnUiThread(), FIRST_VIDEO_ID));
+        assertFalse(DOMUtils.isMediaPaused(getWebContentsOnUiThread(), SECOND_VIDEO_ID));
+        assertTrue(DOMUtils.isMediaPaused(getWebContentsOnUiThread(), FIRST_VIDEO_ID));
 
         // Verify that there is still only one video hole surface.
         VideoSurfaceViewUtils.pollAndAssertContainsOneVideoHoleSurfaceView(this,

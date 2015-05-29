@@ -456,6 +456,11 @@ void MediaPlayerBridge::UpdateAllowedOperations() {
 }
 
 void MediaPlayerBridge::StartInternal() {
+  if (!manager()->RequestPlay(player_id())) {
+    Pause(true);
+    return;
+  }
+
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaPlayerBridge_start(env, j_media_player_bridge_.obj());
   if (!time_update_timer_.IsRunning()) {

@@ -30,6 +30,7 @@
 #include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/browser/media/android/media_drm_credential_manager.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
+#include "content/browser/media/android/media_session.h"
 #include "content/browser/mojo/service_registrar_android.h"
 #include "content/browser/mojo/service_registry_android.h"
 #include "content/browser/power_save_blocker_android.h"
@@ -75,6 +76,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
      content::MediaDrmCredentialManager::RegisterMediaDrmCredentialManager},
     {"MediaResourceGetterImpl",
      content::MediaResourceGetterImpl::RegisterMediaResourceGetter},
+    {"MediaSession", content::MediaSession::RegisterMediaSession},
     {"MotionEventAndroid",
      content::MotionEventAndroid::RegisterMotionEventAndroid},
     {"NavigationControllerAndroid",

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/android/content_video_view.h"
+#include "content/browser/media/android/media_session_observer.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_player_messages_enums_android.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -41,7 +42,8 @@ class WebContents;
 // MediaPlayerAndroid objects are converted to IPCs and then sent to the render
 // process.
 class CONTENT_EXPORT BrowserMediaPlayerManager
-    : public media::MediaPlayerManager {
+    : public media::MediaPlayerManager,
+      public MediaSessionObserver {
  public:
   // Permits embedders to provide an extended version of the class.
   typedef BrowserMediaPlayerManager* (*Factory)(RenderFrameHost*,
@@ -97,11 +99,16 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   media::MediaPlayerAndroid* GetFullscreenPlayer() override;
   media::MediaPlayerAndroid* GetPlayer(int player_id) override;
   void RequestFullScreen(int player_id) override;
+  bool RequestPlay(int player_id) override;
 #if defined(VIDEO_HOLE)
   void AttachExternalVideoSurface(int player_id, jobject surface);
   void DetachExternalVideoSurface(int player_id);
   void OnFrameInfoUpdated();
 #endif  // defined(VIDEO_HOLE)
+
+  // MediaSessionObserver overrides.
+  void OnSuspend(int player_id) override;
+  void OnResume(int player_id) override;
 
   // Message handlers.
   virtual void OnEnterFullscreen(int player_id);

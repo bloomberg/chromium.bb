@@ -22,39 +22,76 @@ import java.util.concurrent.TimeoutException;
  */
 public class DOMUtils {
     /**
-     * Pauses the video with given {@code nodeId}.
+     * Plays the media with given {@code id}.
      */
-    public static void pauseVideo(final WebContents webContents, final String nodeId)
+    public static void playMedia(final WebContents webContents, final String id)
             throws InterruptedException, TimeoutException {
         StringBuilder sb = new StringBuilder();
         sb.append("(function() {");
-        sb.append("  var video = document.getElementById('" + nodeId + "');");
-        sb.append("  if (video) video.pause();");
+        sb.append("  var media = document.getElementById('" + id + "');");
+        sb.append("  if (media) media.play();");
         sb.append("})();");
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 webContents, sb.toString());
     }
 
     /**
-     * Returns whether the video with given {@code nodeId} is paused.
+     * Pauses the media with given {@code id}.
      */
-    public static boolean isVideoPaused(final WebContents webContents, final String nodeId)
+    public static void pauseMedia(final WebContents webContents, final String id)
             throws InterruptedException, TimeoutException {
-        return getNodeField("paused", webContents, nodeId, Boolean.class);
+        StringBuilder sb = new StringBuilder();
+        sb.append("(function() {");
+        sb.append("  var media = document.getElementById('" + id + "');");
+        sb.append("  if (media) media.pause();");
+        sb.append("})();");
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                webContents, sb.toString());
     }
 
     /**
-     * Waits until the playback of the video with given {@code nodeId} has started.
+     * Returns whether the media with given {@code id} is paused.
+     */
+    public static boolean isMediaPaused(final WebContents webContents, final String id)
+            throws InterruptedException, TimeoutException {
+        return getNodeField("paused", webContents, id, Boolean.class);
+    }
+
+    /**
+     * Waits until the playback of the media with given {@code id} has started.
      *
      * @return Whether the playback has started.
      */
-    public static boolean waitForVideoPlay(final WebContents webContents, final String nodeId)
+    public static boolean waitForMediaPlay(final WebContents webContents, final String id)
             throws InterruptedException {
         return CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return !DOMUtils.isVideoPaused(webContents, nodeId);
+                    return !DOMUtils.isMediaPaused(webContents, id);
+                } catch (InterruptedException e) {
+                    // Intentionally do nothing
+                    return false;
+                } catch (TimeoutException e) {
+                    // Intentionally do nothing
+                    return false;
+                }
+            }
+        });
+    }
+
+    /**
+     * Waits until the playback of the media with given {@code id} has stopped.
+     *
+     * @return Whether the playback has started.
+     */
+    public static boolean waitForMediaPause(final WebContents webContents, final String id)
+            throws InterruptedException {
+        return CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return DOMUtils.isMediaPaused(webContents, id);
                 } catch (InterruptedException e) {
                     // Intentionally do nothing
                     return false;

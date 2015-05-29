@@ -48,7 +48,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
         num_metadata_changes_(0),
         timestamp_updated_(false),
         is_audible_(false),
-        is_delay_expired_(false) {}
+        is_delay_expired_(false),
+        allow_play_(true) {}
   ~MockMediaPlayerManager() override {}
 
   // MediaPlayerManager implementation.
@@ -81,6 +82,10 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   MediaPlayerAndroid* GetFullscreenPlayer() override { return NULL; }
   MediaPlayerAndroid* GetPlayer(int player_id) override { return NULL; }
   void RequestFullScreen(int player_id) override {}
+
+  bool RequestPlay(int player_id) override {
+    return allow_play_;
+  }
 
   void OnAudibleStateChanged(int player_id, bool is_audible_now) override {
     is_audible_ = is_audible_now;
@@ -122,6 +127,10 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     is_delay_expired_ = value;
   }
 
+  void set_allow_play(bool value) {
+    allow_play_ = value;
+  }
+
  private:
   base::MessageLoop* message_loop_;
   bool playback_completed_;
@@ -135,6 +144,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   bool is_audible_;
   // Helper flag to ensure delay for WaitForDelay().
   bool is_delay_expired_;
+  // Whether the manager will allow players that request playing.
+  bool allow_play_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaPlayerManager);
 };
@@ -2511,6 +2522,50 @@ TEST_F(MediaSourcePlayerTest, VideoMetadataChangeAfterConfigChange) {
   }
   EXPECT_EQ(2, manager_.num_metadata_changes());
   WaitForVideoDecodeDone();
+}
+
+TEST_F(MediaSourcePlayerTest, RequestPlayDeniedDontPlay_Audio) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  EXPECT_EQ(demuxer_->num_data_requests(), 0);
+  player_.OnDemuxerConfigsAvailable(CreateDemuxerConfigs(true, false));
+
+  manager_.set_allow_play(false);
+  player_.Start();
+  EXPECT_FALSE(player_.IsPlaying());
+}
+
+TEST_F(MediaSourcePlayerTest, RequestPlayDeniedDontPlay_Video) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  EXPECT_EQ(demuxer_->num_data_requests(), 0);
+  player_.OnDemuxerConfigsAvailable(CreateDemuxerConfigs(false, true));
+
+  manager_.set_allow_play(false);
+  player_.Start();
+  EXPECT_FALSE(player_.IsPlaying());
+}
+
+TEST_F(MediaSourcePlayerTest, RequestPlayDeniedDontPlay_AV) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  EXPECT_EQ(demuxer_->num_data_requests(), 0);
+  player_.OnDemuxerConfigsAvailable(CreateDemuxerConfigs(true, true));
+
+  manager_.set_allow_play(false);
+  player_.Start();
+  EXPECT_FALSE(player_.IsPlaying());
+}
+
+TEST_F(MediaSourcePlayerTest, RequestPlayGrantedPlays) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  EXPECT_EQ(demuxer_->num_data_requests(), 0);
+  player_.OnDemuxerConfigsAvailable(CreateDemuxerConfigs(true, true));
+
+  manager_.set_allow_play(true);
+  player_.Start();
+  EXPECT_TRUE(player_.IsPlaying());
 }
 
 }  // namespace media

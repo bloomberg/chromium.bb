@@ -5,7 +5,6 @@
 package org.chromium.media;
 
 import android.content.Context;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 
 import org.chromium.base.CalledByNative;
@@ -19,8 +18,7 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnBufferingUpdateListener,
         MediaPlayer.OnSeekCompleteListener,
         MediaPlayer.OnVideoSizeChangedListener,
-        MediaPlayer.OnErrorListener,
-        AudioManager.OnAudioFocusChangeListener {
+        MediaPlayer.OnErrorListener {
     // These values are mirrored as enums in media/base/android/media_player_bridge.h.
     // Please ensure they stay in sync.
     private static final int MEDIA_ERROR_FORMAT = 0;
@@ -101,25 +99,6 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
         nativeOnMediaPrepared(mNativeMediaPlayerListener);
     }
 
-    @Override
-    public void onAudioFocusChange(int focusChange) {
-        if (focusChange == AudioManager.AUDIOFOCUS_LOSS
-                || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
-            nativeOnMediaInterrupted(mNativeMediaPlayerListener);
-        }
-    }
-
-    @CalledByNative
-    public void releaseResources() {
-        if (mContext != null) {
-            // Unregister the wish for audio focus.
-            AudioManager am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-            if (am != null) {
-                am.abandonAudioFocus(this);
-            }
-        }
-    }
-
     @CalledByNative
     private static MediaPlayerListener create(long nativeMediaPlayerListener,
             Context context, MediaPlayerBridge mediaPlayerBridge) {
@@ -133,14 +112,6 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
             mediaPlayerBridge.setOnSeekCompleteListener(listener);
             mediaPlayerBridge.setOnVideoSizeChangedListener(listener);
         }
-
-        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        am.requestAudioFocus(
-                listener,
-                AudioManager.STREAM_MUSIC,
-
-                // Request permanent focus.
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
         return listener;
     }
 

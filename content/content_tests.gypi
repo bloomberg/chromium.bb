@@ -215,6 +215,7 @@
       'browser/indexed_db/mock_browsertest_indexed_db_class_factory.h',
       'browser/loader/resource_dispatcher_host_browsertest.cc',
       'browser/manifest/manifest_browsertest.cc',
+      'browser/media/android/media_session_browsertest.cc',
       'browser/media/encrypted_media_browsertest.cc',
       'browser/media/media_browsertest.cc',
       'browser/media/media_browsertest.h',
