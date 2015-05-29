@@ -165,6 +165,8 @@ int amdgpu_cs_alloc_ib(amdgpu_context_handle context,
 int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 			 amdgpu_context_handle *context)
 {
+	struct amdgpu_bo_alloc_request alloc_buffer = {};
+	struct amdgpu_bo_alloc_result info = {};
 	struct amdgpu_context *gpu_context;
 	union drm_amdgpu_ctx args;
 	int r;
@@ -184,12 +186,21 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 	if (r)
 		goto error_mutex;
 
-	r = amdgpu_cs_create_ib(gpu_context, amdgpu_cs_ib_size_4K,
-			       &gpu_context->fence_ib);
+	/* Create the fence BO */
+	alloc_buffer.alloc_size = 4 * 1024;
+	alloc_buffer.phys_alignment = 4 * 1024;
+	alloc_buffer.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
+
+	r = amdgpu_bo_alloc(dev, &alloc_buffer, &info);
 	if (r)
-		goto error_fence_ib;
+		goto error_fence_alloc;
+	gpu_context->fence_bo = info.buf_handle;
 
+	r = amdgpu_bo_cpu_map(gpu_context->fence_bo, &gpu_context->fence_cpu);
+	if (r)
+		goto error_fence_map;
 
+	/* Create the context */
 	memset(&args, 0, sizeof(args));
 	args.in.op = AMDGPU_CTX_OP_ALLOC_CTX;
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_CTX, &args, sizeof(args));
@@ -202,9 +213,12 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 	return 0;
 
 error_kernel:
-	amdgpu_cs_free_ib(gpu_context->fence_ib);
+	amdgpu_bo_cpu_unmap(gpu_context->fence_bo);
 
-error_fence_ib:
+error_fence_map:
+	amdgpu_bo_free(gpu_context->fence_bo);
+
+error_fence_alloc:
 	pthread_mutex_destroy(&gpu_context->sequence_mutex);
 
 error_mutex:
@@ -228,7 +242,11 @@ int amdgpu_cs_ctx_free(amdgpu_context_handle context)
 	if (NULL == context)
 		return -EINVAL;
 
-	r = amdgpu_cs_free_ib(context->fence_ib);
+	r = amdgpu_bo_cpu_unmap(context->fence_bo);
+	if (r)
+		return r;
+
+	r = amdgpu_bo_free(context->fence_bo);
 	if (r)
 		return r;
 
@@ -351,7 +369,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		chunks[i].chunk_data = (uint64_t)(uintptr_t)&chunk_data[i];
 
 		/* fence bo handle */
-		chunk_data[i].fence_data.handle = context->fence_ib->buf_handle->handle;
+		chunk_data[i].fence_data.handle = context->fence_bo->handle;
 		/* offset */
 		chunk_data[i].fence_data.offset = amdgpu_cs_fence_index(
 			ibs_request->ip_type, ibs_request->ring);
@@ -480,7 +498,7 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 	ip_type = fence->ip_type;
 	ip_instance = fence->ip_instance;
 	ring = fence->ring;
-	signaled_fence = context->fence_ib->cpu;
+	signaled_fence = context->fence_cpu;
 	signaled_fence += amdgpu_cs_fence_index(ip_type, ring);
 	expired_fence = &context->expired_fences[ip_type][ip_instance][ring];
 	*expired = false;
