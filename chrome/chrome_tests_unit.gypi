@@ -375,7 +375,6 @@
       'browser/ui/cocoa/confirm_bubble_controller_unittest.mm',
       'browser/ui/cocoa/confirm_quit_panel_controller_unittest.mm',
       'browser/ui/cocoa/constrained_window/constrained_window_alert_unittest.mm',
-      'browser/ui/cocoa/constrained_window/constrained_window_animation_unittest.mm',
       'browser/ui/cocoa/constrained_window/constrained_window_button_unittest.mm',
       'browser/ui/cocoa/constrained_window/constrained_window_custom_window_unittest.mm',
       'browser/ui/cocoa/constrained_window/constrained_window_sheet_controller_unittest.mm',

@@ -83,6 +83,8 @@
         'cocoa/base_view.mm',
         'cocoa/cocoa_base_utils.h',
         'cocoa/cocoa_base_utils.mm',
+        'cocoa/constrained_window/constrained_window_animation.h',
+        'cocoa/constrained_window/constrained_window_animation.mm',
         'cocoa/controls/blue_label_button.h',
         'cocoa/controls/blue_label_button.mm',
         'cocoa/controls/hover_image_menu_button.h',

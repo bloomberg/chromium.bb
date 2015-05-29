@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_animation.h"
+#import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -74,7 +74,7 @@ struct KeyFrame {
 // bottom left. The various CGSSetWindow* APIs use a coordinate system where
 // the screen origin is the top left.
 NSPoint GetCGSWindowScreenOrigin(NSWindow* window) {
-  NSArray *screens = [NSScreen screens];
+  NSArray* screens = [NSScreen screens];
   if ([screens count] == 0)
     return NSZeroPoint;
   // Origin is relative to the screen with the menu bar (the screen at index 0).
@@ -147,26 +147,24 @@ void SetWindowWarp(NSWindow* window,
   // A 2 x 2 mesh that maps each corner of the window to a location in screen
   // coordinates. Note that the origin of the coordinate system is top, left.
   CGPointWarp mesh[2][2] = {
-    {
-      {  // Top left.
+      {{
+        // Top left.
         {NSMinX(win_rect), NSMinY(win_rect)},
         {NSMinX(screen_rect) + perspective_offset, NSMinY(screen_rect)},
-      },
-      {  // Top right.
+       },
+       {
+        // Top right.
         {NSMaxX(win_rect), NSMinY(win_rect)},
-        {NSMaxX(screen_rect) - perspective_offset, NSMinY(screen_rect)},
-      }
-    },
-    {
-      {  // Bottom left.
+        {NSMaxX(screen_rect) - perspective_offset, NSMinY(screen_rect)}, }},
+      {{
+        // Bottom left.
         {NSMinX(win_rect), NSMaxY(win_rect)},
         {NSMinX(screen_rect), NSMaxY(screen_rect)},
-      },
-      {  // Bottom right.
+       },
+       {
+        // Bottom right.
         {NSMaxX(win_rect), NSMaxY(win_rect)},
-        {NSMaxX(screen_rect), NSMaxY(screen_rect)},
-      }
-    },
+        {NSMaxX(screen_rect), NSMaxY(screen_rect)}, }},
   };
 
   CGSConnection cid = _CGSDefaultConnection();
@@ -277,10 +275,7 @@ void UpdateWindowShowHideAnimationState(NSWindow* window, CGFloat value) {
 // Sets the window scale based on the animation progress.
 - (void)setWindowStateForValue:(float)value {
   KeyFrame frames[] = {
-    {0.00, 1.0},
-    {0.40, 1.02},
-    {0.60, 1.02},
-    {1.00, 1.0},
+      {0.00, 1.0}, {0.40, 1.02}, {0.60, 1.02}, {1.00, 1.0},
   };
 
   CGFloat scale = 1;
@@ -288,8 +283,7 @@ void UpdateWindowShowHideAnimationState(NSWindow* window, CGFloat value) {
     if (value >= frames[i].value) {
       CGFloat delta = frames[i + 1].value - frames[i].value;
       CGFloat frame_progress = (value - frames[i].value) / delta;
-      scale = gfx::Tween::FloatValueBetween(frame_progress,
-                                            frames[i].scale,
+      scale = gfx::Tween::FloatValueBetween(frame_progress, frames[i].scale,
                                             frames[i + 1].scale);
       break;
     }

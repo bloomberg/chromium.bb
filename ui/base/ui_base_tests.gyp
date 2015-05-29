@@ -54,6 +54,7 @@
         'clipboard/custom_data_helper_unittest.cc',
         'cocoa/base_view_unittest.mm',
         'cocoa/cocoa_base_utils_unittest.mm',
+        'cocoa/constrained_window/constrained_window_animation_unittest.mm',
         'cocoa/controls/blue_label_button_unittest.mm',
         'cocoa/controls/hover_image_menu_button_unittest.mm',
         'cocoa/controls/hyperlink_button_cell_unittest.mm',

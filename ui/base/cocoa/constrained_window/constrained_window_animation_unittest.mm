@@ -5,12 +5,12 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_mac.h"
-#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_animation.h"
+#import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 // This class runs an animation for exactly two frames then end it.
-@interface ConstrainedWindowAnimationTestDelegate : NSObject
-                                                   <NSAnimationDelegate> {
+@interface ConstrainedWindowAnimationTestDelegate
+    : NSObject<NSAnimationDelegate> {
  @private
   CGFloat frameCount_;
   scoped_ptr<base::MessagePumpNSRunLoop> message_pump_;
@@ -52,7 +52,7 @@
 
 @end
 
-class ConstrainedWindowAnimationTest : public CocoaTest {
+class ConstrainedWindowAnimationTest : public ui::CocoaTest {
  protected:
   ConstrainedWindowAnimationTest() : CocoaTest() {
     delegate_.reset([[ConstrainedWindowAnimationTestDelegate alloc] init]);
