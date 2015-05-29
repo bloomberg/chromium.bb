@@ -145,6 +145,7 @@ def main():
           print('Updated %s' % filename)
       else:
         print('%s is not in canonical format' % filename)
+        print('run `testing/buildbot/manage.py -w` to fix')
 
   if args.remaining:
     if args.test_name:
