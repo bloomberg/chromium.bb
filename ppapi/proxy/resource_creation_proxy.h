@@ -173,8 +173,6 @@ class ResourceCreationProxy : public InterfaceProxy,
                               const PP_Flash_Menu* menu_data) override;
   PP_Resource CreateFlashMessageLoop(PP_Instance instance) override;
   PP_Resource CreatePlatformVerificationPrivate(PP_Instance instance) override;
-  PP_Resource CreateScrollbar(PP_Instance instance,
-                              PP_Bool vertical) override;
   PP_Resource CreateVideoCapture(PP_Instance instance) override;
   PP_Resource CreateVideoDecoderDev(
       PP_Instance instance,

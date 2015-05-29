@@ -15,7 +15,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/private/ppb_testing_private.h"
-#include "ppapi/cpp/dev/scrollbar_dev.h"
 #include "ppapi/cpp/message_loop.h"
 #include "ppapi/cpp/view.h"
 #include "ppapi/tests/test_utils.h"

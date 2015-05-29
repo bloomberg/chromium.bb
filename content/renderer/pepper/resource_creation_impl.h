@@ -109,7 +109,6 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
       const PP_NetAddress_Private& private_addr) override;
   PP_Resource CreateNetworkMonitor(PP_Instance instance) override;
   PP_Resource CreatePlatformVerificationPrivate(PP_Instance instance) override;
-  PP_Resource CreateScrollbar(PP_Instance instance, PP_Bool vertical) override;
   PP_Resource CreateOutputProtectionPrivate(PP_Instance instance) override;
   PP_Resource CreateTCPServerSocketPrivate(PP_Instance instance) override;
   PP_Resource CreateTCPSocket1_0(PP_Instance instance) override;

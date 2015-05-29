@@ -262,7 +262,6 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
     : pp::Instance(instance),
       pp::Find_Private(this),
       pp::Printing_Dev(this),
-      pp::Selection_Dev(this),
       cursor_(PP_CURSORTYPE_POINTER),
       zoom_(1.0),
       device_scale_(1.0),
@@ -625,12 +624,6 @@ pp::Var OutOfProcessInstance::GetLinkAtPosition(
   ScalePoint(device_scale_, &offset_point);
   offset_point.set_x(offset_point.x() - available_area_.x());
   return engine_->GetLinkAtPosition(offset_point);
-}
-
-pp::Var OutOfProcessInstance::GetSelectedText(bool html) {
-  if (html)
-    return pp::Var();
-  return engine_->GetSelectedText();
 }
 
 uint32_t OutOfProcessInstance::QuerySupportedPrintOutputFormats() {

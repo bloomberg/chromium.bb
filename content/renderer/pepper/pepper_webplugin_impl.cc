@@ -8,7 +8,6 @@
 
 #include "base/debug/crash_logging.h"
 #include "base/message_loop/message_loop.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/message_channel.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -245,10 +244,6 @@ WebString PepperWebPluginImpl::selectionAsMarkup() const {
 
 WebURL PepperWebPluginImpl::linkAtPosition(const WebPoint& position) const {
   return GURL(instance_->GetLinkAtPosition(position));
-}
-
-void PepperWebPluginImpl::setZoomLevel(double level, bool text_only) {
-  instance_->Zoom(content::ZoomLevelToZoomFactor(level), text_only);
 }
 
 bool PepperWebPluginImpl::startFind(const blink::WebString& search_text,

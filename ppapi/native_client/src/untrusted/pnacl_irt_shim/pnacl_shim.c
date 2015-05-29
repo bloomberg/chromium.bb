@@ -17,7 +17,6 @@
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
-#include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/ppb_compositor.h"
 #include "ppapi/c/ppb_compositor_layer.h"
 #include "ppapi/c/ppb_console.h"
@@ -164,7 +163,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_7;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Selection_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CameraDevice_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_14;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DisplayColorProfile_Private_0_1;
@@ -2766,8 +2764,6 @@ static int32_t Pnacl_M23_PPB_Printing_Dev_GetDefaultPrintSettings(PP_Resource re
 
 /* End wrapper methods for PPB_Printing_Dev_0_7 */
 
-/* Not generating wrapper methods for PPB_Scrollbar_Dev_0_5 */
-
 /* Not generating wrapper methods for PPB_TextInput_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_TextInput_Dev_0_2 */
@@ -3003,42 +2999,15 @@ static void Pnacl_M14_PPB_VideoDecoder_Dev_Destroy(PP_Resource video_decoder) {
 
 /* Not generating wrapper methods for PPB_View_Dev_0_1 */
 
-/* Not generating wrapper methods for PPB_Widget_Dev_0_3 */
-
-/* Not generating wrapper methods for PPB_Widget_Dev_0_4 */
-
-/* Not generating wrapper methods for PPB_Zoom_Dev_0_2 */
-
 /* Not generating wrapper methods for PPP_NetworkState_Dev_0_1 */
 
 /* Not generating wrapper methods for PPP_Printing_Dev_0_6 */
-
-/* Not generating wrapper methods for PPP_Scrollbar_Dev_0_2 */
-
-/* Not generating wrapper methods for PPP_Scrollbar_Dev_0_3 */
-
-/* Begin wrapper methods for PPP_Selection_Dev_0_3 */
-
-static struct PP_Var Pnacl_M13_PPP_Selection_Dev_GetSelectedText(PP_Instance instance, PP_Bool html) {
-  const struct PPP_Selection_Dev_0_3 *iface = Pnacl_WrapperInfo_PPP_Selection_Dev_0_3.real_iface;
-  void (*temp_fp)(struct PP_Var* _struct_result, PP_Instance instance, PP_Bool html) =
-    ((void (*)(struct PP_Var* _struct_result, PP_Instance instance, PP_Bool html))iface->GetSelectedText);
-  struct PP_Var _struct_result;
-  temp_fp(&_struct_result, instance, html);
-  return _struct_result;
-}
-
-/* End wrapper methods for PPP_Selection_Dev_0_3 */
 
 /* Not generating wrapper methods for PPP_TextInput_Dev_0_1 */
 
 /* Not generating wrapper methods for PPP_VideoCapture_Dev_0_1 */
 
 /* Not generating wrapper methods for PPP_VideoDecoder_Dev_0_11 */
-
-/* Not generating wrapper methods for PPP_Widget_Dev_0_2 */
-
-/* Not generating wrapper methods for PPP_Zoom_Dev_0_3 */
 
 /* Not generating wrapper methods for PPB_CameraCapabilities_Private_0_1 */
 
@@ -5311,8 +5280,6 @@ static const struct PPB_Printing_Dev_0_7 Pnacl_Wrappers_PPB_Printing_Dev_0_7 = {
     .GetDefaultPrintSettings = (int32_t (*)(PP_Resource resource, struct PP_PrintSettings_Dev* print_settings, struct PP_CompletionCallback callback))&Pnacl_M23_PPB_Printing_Dev_GetDefaultPrintSettings
 };
 
-/* Not generating wrapper interface for PPB_Scrollbar_Dev_0_5 */
-
 /* Not generating wrapper interface for PPB_TextInput_Dev_0_1 */
 
 /* Not generating wrapper interface for PPB_TextInput_Dev_0_2 */
@@ -5379,33 +5346,15 @@ static const struct PPB_VideoDecoder_Dev_0_16 Pnacl_Wrappers_PPB_VideoDecoder_De
 
 /* Not generating wrapper interface for PPB_View_Dev_0_1 */
 
-/* Not generating wrapper interface for PPB_Widget_Dev_0_3 */
-
-/* Not generating wrapper interface for PPB_Widget_Dev_0_4 */
-
-/* Not generating wrapper interface for PPB_Zoom_Dev_0_2 */
-
 /* Not generating wrapper interface for PPP_NetworkState_Dev_0_1 */
 
 /* Not generating wrapper interface for PPP_Printing_Dev_0_6 */
-
-/* Not generating wrapper interface for PPP_Scrollbar_Dev_0_2 */
-
-/* Not generating wrapper interface for PPP_Scrollbar_Dev_0_3 */
-
-static const struct PPP_Selection_Dev_0_3 Pnacl_Wrappers_PPP_Selection_Dev_0_3 = {
-    .GetSelectedText = &Pnacl_M13_PPP_Selection_Dev_GetSelectedText
-};
 
 /* Not generating wrapper interface for PPP_TextInput_Dev_0_1 */
 
 /* Not generating wrapper interface for PPP_VideoCapture_Dev_0_1 */
 
 /* Not generating wrapper interface for PPP_VideoDecoder_Dev_0_11 */
-
-/* Not generating wrapper interface for PPP_Widget_Dev_0_2 */
-
-/* Not generating wrapper interface for PPP_Zoom_Dev_0_3 */
 
 /* Not generating wrapper interface for PPB_CameraCapabilities_Private_0_1 */
 
@@ -6240,12 +6189,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Selection_Dev_0_3 = {
-  .iface_macro = PPP_SELECTION_DEV_INTERFACE_0_3,
-  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPP_Selection_Dev_0_3,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CameraDevice_Private_0_1 = {
   .iface_macro = PPB_CAMERADEVICE_PRIVATE_INTERFACE_0_1,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_CameraDevice_Private_0_1,
@@ -6599,7 +6542,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
 
 static struct __PnaclWrapperInfo *s_ppp_wrappers[] = {
   &Pnacl_WrapperInfo_PPP_Messaging_1_0,
-  &Pnacl_WrapperInfo_PPP_Selection_Dev_0_3,
   &Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_15,
   &Pnacl_WrapperInfo_PPP_Instance_Private_0_1,
   NULL

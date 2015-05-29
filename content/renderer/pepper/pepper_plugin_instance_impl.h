@@ -28,9 +28,7 @@
 #include "gin/handle.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
-#include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
-#include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_time.h"
@@ -248,7 +246,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   base::string16 GetSelectedText(bool html);
   base::string16 GetLinkAtPosition(const gfx::Point& point);
   void RequestSurroundingText(size_t desired_number_of_characters);
-  void Zoom(double factor, bool text_only);
   bool StartFind(const base::string16& search_text,
                  bool case_sensitive,
                  int identifier);
@@ -426,10 +423,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void ClearInputEventRequest(PP_Instance instance,
                               uint32_t event_classes) override;
   void StartTrackingLatency(PP_Instance instance) override;
-  void ZoomChanged(PP_Instance instance, double factor) override;
-  void ZoomLimitsChanged(PP_Instance instance,
-                         double minimum_factor,
-                         double maximum_factor) override;
   void PostMessage(PP_Instance instance, PP_Var message) override;
   int32_t RegisterMessageHandler(PP_Instance instance,
                                  void* user_data,
@@ -610,7 +603,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool LoadPrintInterface();
   bool LoadPrivateInterface();
   bool LoadTextInputInterface();
-  bool LoadZoomInterface();
 
   // Update any transforms that should be applied to the texture layer.
   void UpdateLayerTransform();
@@ -777,7 +769,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   const PPP_Pdf* plugin_pdf_interface_;
   const PPP_Instance_Private* plugin_private_interface_;
   const PPP_TextInput_Dev* plugin_textinput_interface_;
-  const PPP_Zoom_Dev* plugin_zoom_interface_;
 
   // Flags indicating whether we have asked this plugin instance for the
   // corresponding interfaces, so that we can ask only once.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_video_encoder.idl modified Fri Apr 17 10:38:38 2015.
+// From ppb_video_encoder.idl modified Mon May 18 12:43:25 2015.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -64,12 +64,9 @@ int32_t Initialize(PP_Resource video_encoder,
   EnterResource<PPB_VideoEncoder_API> enter(video_encoder, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Initialize(input_format,
-                                                    input_visible_size,
-                                                    output_profile,
-                                                    initial_bitrate,
-                                                    acceleration,
-                                                    enter.callback()));
+  return enter.SetResult(enter.object()->Initialize(
+      input_format, input_visible_size, output_profile, initial_bitrate,
+      acceleration, enter.callback()));
 }
 
 int32_t GetFramesRequired(PP_Resource video_encoder) {

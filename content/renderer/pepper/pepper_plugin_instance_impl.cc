@@ -27,7 +27,6 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
@@ -62,10 +61,7 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/sad_plugin.h"
 #include "media/base/audio_hardware_config.h"
-#include "ppapi/c/dev/ppb_zoom_dev.h"
-#include "ppapi/c/dev/ppp_selection_dev.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
-#include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_core.h"
@@ -500,7 +496,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       plugin_pdf_interface_(NULL),
       plugin_private_interface_(NULL),
       plugin_textinput_interface_(NULL),
-      plugin_zoom_interface_(NULL),
       checked_for_plugin_input_event_interface_(false),
       checked_for_plugin_pdf_interface_(false),
       gamepad_impl_(new GamepadImpl()),
@@ -1427,14 +1422,6 @@ void PepperPluginInstanceImpl::RequestSurroundingText(
       pp_instance(), desired_number_of_characters);
 }
 
-void PepperPluginInstanceImpl::Zoom(double factor, bool text_only) {
-  // Keep a reference on the stack. See NOTE above.
-  scoped_refptr<PepperPluginInstanceImpl> ref(this);
-  if (!LoadZoomInterface())
-    return;
-  plugin_zoom_interface_->Zoom(pp_instance(), factor, PP_FromBool(text_only));
-}
-
 bool PepperPluginInstanceImpl::StartFind(const base::string16& search_text,
                                          bool case_sensitive,
                                          int identifier) {
@@ -1545,15 +1532,6 @@ bool PepperPluginInstanceImpl::LoadTextInputInterface() {
   }
 
   return !!plugin_textinput_interface_;
-}
-
-bool PepperPluginInstanceImpl::LoadZoomInterface() {
-  if (!plugin_zoom_interface_) {
-    plugin_zoom_interface_ = static_cast<const PPP_Zoom_Dev*>(
-        module_->GetPluginInterface(PPP_ZOOM_DEV_INTERFACE));
-  }
-
-  return !!plugin_zoom_interface_;
 }
 
 void PepperPluginInstanceImpl::UpdateLayerTransform() {
@@ -2700,30 +2678,6 @@ void PepperPluginInstanceImpl::StartTrackingLatency(PP_Instance instance) {
     is_tracking_latency_ = true;
 }
 
-void PepperPluginInstanceImpl::ZoomChanged(PP_Instance instance,
-                                           double factor) {
-  // We only want to tell the page to change its zoom if the whole page is the
-  // plugin.  If we're in an iframe, then don't do anything.
-  if (!IsFullPagePlugin())
-    return;
-  container()->zoomLevelChanged(content::ZoomFactorToZoomLevel(factor));
-}
-
-void PepperPluginInstanceImpl::ZoomLimitsChanged(PP_Instance instance,
-                                                 double minimum_factor,
-                                                 double maximum_factor) {
-  if (!render_frame_)
-    return;
-  if (minimum_factor > maximum_factor) {
-    NOTREACHED();
-    return;
-  }
-  double minimum_level = ZoomFactorToZoomLevel(minimum_factor);
-  double maximum_level = ZoomFactorToZoomLevel(maximum_factor);
-  render_frame_->render_view()->webview()->zoomLimitsChanged(minimum_level,
-                                                             maximum_level);
-}
-
 void PepperPluginInstanceImpl::PostMessage(PP_Instance instance,
                                            PP_Var message) {
   PostMessageToJavaScript(message);
@@ -2965,7 +2919,6 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   checked_for_plugin_pdf_interface_ = false;
   plugin_private_interface_ = NULL;
   plugin_textinput_interface_ = NULL;
-  plugin_zoom_interface_ = NULL;
 
   // Re-send the DidCreate event via the proxy.
   scoped_ptr<const char * []> argn_array(StringVectorToArgArray(argn_));

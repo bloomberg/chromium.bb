@@ -469,12 +469,6 @@ PP_Resource ResourceCreationProxy::CreatePlatformVerificationPrivate(
       GetReference();
 }
 
-PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,
-                                                   PP_Bool vertical) {
-  NOTIMPLEMENTED();  // Not proxied yet.
-  return 0;
-}
-
 PP_Resource ResourceCreationProxy::CreateVideoCapture(PP_Instance instance) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)

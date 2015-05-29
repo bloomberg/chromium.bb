@@ -76,10 +76,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   void StartTrackingLatency(PP_Instance instance) override;
   void ClearInputEventRequest(PP_Instance instance,
                               uint32_t event_classes) override;
-  void ZoomChanged(PP_Instance instance, double factor) override;
-  void ZoomLimitsChanged(PP_Instance instance,
-                         double minimum_factor,
-                         double maximium_factor) override;
   void PostMessage(PP_Instance instance, PP_Var message) override;
   int32_t RegisterMessageHandler(PP_Instance instance,
                                  void* user_data,

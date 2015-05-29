@@ -11,7 +11,6 @@
 #include "content/renderer/pepper/ppb_flash_message_loop_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
-#include "content/renderer/pepper/ppb_scrollbar_impl.h"
 #include "content/renderer/pepper/ppb_video_decoder_impl.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_size.h"
@@ -280,11 +279,6 @@ PP_Resource ResourceCreationImpl::CreateOutputProtectionPrivate(
 PP_Resource ResourceCreationImpl::CreatePlatformVerificationPrivate(
     PP_Instance instance) {
   return 0;  // Not supported in-process.
-}
-
-PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
-                                                  PP_Bool vertical) {
-  return PPB_Scrollbar_Impl::Create(instance, PP_ToBool(vertical));
 }
 
 PP_Resource ResourceCreationImpl::CreateTCPServerSocketPrivate(

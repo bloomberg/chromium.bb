@@ -20,7 +20,6 @@
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/cpp/dev/printing_dev.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
-#include "ppapi/cpp/dev/selection_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
@@ -39,7 +38,6 @@ namespace chrome_pdf {
 class OutOfProcessInstance : public pp::Instance,
                              public pp::Find_Private,
                              public pp::Printing_Dev,
-                             public pp::Selection_Dev,
                              public PaintManager::Client,
                              public PDFEngine::Client,
                              public PreviewModeClient::Client {
@@ -76,9 +74,6 @@ class OutOfProcessInstance : public pp::Instance,
   virtual pp::Var GetLinkAtPosition(const pp::Point& point);
   virtual void GetPrintPresetOptionsFromDocument(
       PP_PdfPrintPresetOptions_Dev* options);
-
-  // PPP_Selection_Dev implementation.
-  pp::Var GetSelectedText(bool html) override;
 
   void FlushCallback(int32_t result);
   void DidOpen(int32_t result);

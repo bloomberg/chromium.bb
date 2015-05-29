@@ -193,8 +193,6 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) = 0;
   virtual PP_Resource CreatePlatformVerificationPrivate(
       PP_Instance instance) = 0;
-  virtual PP_Resource CreateScrollbar(PP_Instance instance,
-                                      PP_Bool vertical) = 0;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) = 0;
   virtual PP_Resource CreateVideoDecoderDev(
       PP_Instance instance,

@@ -485,19 +485,6 @@ void PPB_Instance_Proxy::StartTrackingLatency(PP_Instance instance) {
       API_ID_PPB_INSTANCE, instance));
 }
 
-void PPB_Instance_Proxy::ZoomChanged(PP_Instance instance,
-                                     double factor) {
-  // Not proxied yet.
-  NOTIMPLEMENTED();
-}
-
-void PPB_Instance_Proxy::ZoomLimitsChanged(PP_Instance instance,
-                                           double minimum_factor,
-                                           double maximium_factor) {
-  // Not proxied yet.
-  NOTIMPLEMENTED();
-}
-
 PP_Var PPB_Instance_Proxy::GetDocumentURL(PP_Instance instance,
                                           PP_URLComponents_Dev* components) {
   ReceiveSerializedVarReturnValue result;
