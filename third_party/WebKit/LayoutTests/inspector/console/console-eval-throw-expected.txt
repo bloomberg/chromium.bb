@@ -23,6 +23,6 @@ throw {a:42}
 
 Running: testThrowError
 throw new Error('asdf')
-    VM:2 Uncaught Error: asdf
+    VM:2 Uncaught Error: asdf(…)
 (anonymous function) @ VM:2
 
