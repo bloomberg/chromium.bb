@@ -498,10 +498,13 @@ cr.define('cr.login', function() {
     } else if (this.samlHandler_.scrapedPasswordCount == 0) {
       if (this.noPasswordCallback) {
         this.noPasswordCallback(this.email_);
-      } else {
-        console.error('Authenticator: No password scraped for SAML.');
+        return;
       }
-      return;
+
+      // Fall through to finish the auth flow even if this.needPassword
+      // is true. This is because the flag is used as an intention to get
+      // password when it is available but not a mandatory requirement.
+      console.warning('Authenticator: No password scraped for SAML.');
     } else if (this.needPassword) {
       if (this.confirmPasswordCallback) {
         // Confirm scraped password. The flow follows in
