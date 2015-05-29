@@ -59,6 +59,16 @@ template("android_lint") {
       "--java-files=$rebased_java_files",
       "--enable",
     ]
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+    if (defined(invoker.public_deps)) {
+      public_deps = invoker.public_deps
+    }
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
+    }
   }
 }
 
@@ -182,6 +192,16 @@ template("zip") {
         "--base-dir",
         rebase_path(invoker.base_dir, root_build_dir),
       ]
+    }
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+    if (defined(invoker.public_deps)) {
+      public_deps = invoker.public_deps
+    }
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
     }
   }
 }
@@ -369,7 +389,8 @@ template("process_java_prebuilt") {
     _proguard_config_path = invoker.proguard_config
     _build_config = invoker.build_config
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
-    action("${target_name}__proguard_process") {
+    _output_jar_target = "${target_name}__proguard_process"
+    action(_output_jar_target) {
       script = "//build/android/gyp/proguard.py"
       inputs = [
         android_sdk_jar,
@@ -398,15 +419,36 @@ template("process_java_prebuilt") {
         rebased_android_sdk_jar,
         "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
       ]
+
+      if (defined(invoker.deps)) {
+        deps = invoker.deps
+      }
+      if (defined(invoker.public_deps)) {
+        public_deps = invoker.public_deps
+      }
+      if (defined(invoker.data_deps)) {
+        data_deps = invoker.data_deps
+      }
     }
   } else {
-    copy("${target_name}__copy_jar") {
+    _output_jar_target = "${target_name}__copy_jar"
+    copy(_output_jar_target) {
       sources = [
         _input_jar_path,
       ]
       outputs = [
         _output_jar_path,
       ]
+
+      if (defined(invoker.deps)) {
+        deps = invoker.deps
+      }
+      if (defined(invoker.public_deps)) {
+        public_deps = invoker.public_deps
+      }
+      if (defined(invoker.data_deps)) {
+        data_deps = invoker.data_deps
+      }
     }
   }
 
@@ -429,11 +471,15 @@ template("process_java_prebuilt") {
       "--toc-path",
       rebase_path(_jar_toc_path, root_build_dir),
     ]
+    public_deps = [
+      ":$_output_jar_target",
+    ]
   }
 
   group(target_name) {
-    deps = [
+    public_deps = [
       ":${target_name}__jar_toc",
+      ":$_output_jar_target",
     ]
   }
 }
@@ -442,6 +488,10 @@ template("finalize_apk") {
   action(target_name) {
     script = "//build/android/gyp/finalize_apk.py"
     depfile = "$target_gen_dir/$target_name.d"
+
+    if (defined(invoker.testonly)) {
+      testonly = invoker.testonly
+    }
 
     sources = [
       invoker.input_apk_path,
@@ -478,6 +528,16 @@ template("finalize_apk") {
         "--rezip-apk-jar-path",
         rebase_path(_rezip_jar_path, root_build_dir),
       ]
+    }
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+    if (defined(invoker.public_deps)) {
+      public_deps = invoker.public_deps
+    }
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
     }
   }
 }
@@ -600,7 +660,8 @@ template("create_apk") {
     }
   }
 
-  action("${target_name}__package") {
+  package_target = "${target_name}__package"
+  action(package_target) {
     script = "//build/android/gyp/ant.py"
     _ant_script = "//build/android/ant/apk-package.xml"
 
@@ -664,6 +725,11 @@ template("create_apk") {
     keystore_name = invoker.keystore_name
     keystore_password = invoker.keystore_password
     rezip_apk = _load_library_from_apk
+
+    public_deps = [
+      # Generator of the _packaged_apk_path this target takes as input.
+      ":$package_target",
+    ]
   }
 
   _final_deps = [ ":${_finalize_apk_rule_name}" ]
@@ -686,7 +752,7 @@ template("create_apk") {
   }
 
   group(target_name) {
-    deps = _final_deps
+    public_deps = _final_deps
   }
 }
 
@@ -831,7 +897,7 @@ template("compile_java") {
   action("${_template_name}__javac") {
     script = "//build/android/gyp/javac.py"
     depfile = "$target_gen_dir/$target_name.d"
-    deps = []
+    deps = _srcjar_deps
     outputs = [
       depfile,
       _intermediate_jar_path,
@@ -862,7 +928,6 @@ template("compile_java") {
     args += rebase_path(_java_files, root_build_dir)
   }
 
-  _final_deps += [ ":${_template_name}__finish" ]
   process_java_prebuilt("${_template_name}__finish") {
     build_config = _build_config
     input_jar_path = _intermediate_jar_path
@@ -871,10 +936,12 @@ template("compile_java") {
       proguard_preprocess = invoker.proguard_preprocess
       proguard_config = invoker.proguard_config
     }
+    deps = _final_deps
   }
+  _final_deps += [ ":${_template_name}__finish" ]
 
   group(target_name) {
-    deps = _final_deps
+    public_deps = _final_deps
   }
 }
 
@@ -976,8 +1043,9 @@ template("java_library_impl") {
   }
   assert(_java_files != [] || _srcjar_deps != [] || _srcjars != [])
 
-  _final_deps += [ ":${_template_name}__compile_java" ]
-  compile_java("${_template_name}__compile_java") {
+  _compile_java_target = "${_template_name}__compile_java"
+  _final_deps += [ ":$_compile_java_target" ]
+  compile_java(_compile_java_target) {
     jar_path = _jar_path
     build_config = _build_config
     java_files = _java_files
@@ -1043,6 +1111,9 @@ template("java_library_impl") {
         android_manifest = _android_manifest
         jar_path = _jar_path
         java_files = _java_files
+        deps = [
+          ":$_compile_java_target",
+        ]
       }
 
       if (run_findbugs) {
@@ -1060,6 +1131,9 @@ template("java_library_impl") {
         _jar_path,
       ]
       output = _dex_path
+      deps = [
+        ":$_compile_java_target",
+      ]
     }
   }
 
@@ -1067,8 +1141,8 @@ template("java_library_impl") {
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility
     }
-    deps = _final_deps
-    datadeps = _final_datadeps
+    public_deps = _final_deps
+    data_deps = _final_datadeps
   }
 }
 

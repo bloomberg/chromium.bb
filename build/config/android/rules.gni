@@ -253,7 +253,8 @@ template("java_cpp_template") {
     include_path = "//"
   }
 
-  action_foreach("${target_name}__apply_gcc") {
+  apply_gcc_target = "${target_name}__apply_gcc"
+  action_foreach(apply_gcc_target) {
     script = "//build/android/gyp/gcc_preprocess.py"
     if (defined(invoker.inputs)) {
       inputs = invoker.inputs + []
@@ -299,6 +300,9 @@ template("java_cpp_template") {
     inputs = apply_gcc_outputs
     output = srcjar_path
     base_dir = base_gen_dir
+    deps = [
+      ":$apply_gcc_target",
+    ]
   }
 
   group(target_name) {
@@ -1323,8 +1327,9 @@ template("android_apk") {
 
   final_deps = []
 
-  final_deps += [ ":${_template_name}__process_resources" ]
-  process_resources("${_template_name}__process_resources") {
+  process_resources_target = "${_template_name}__process_resources"
+  final_deps += [ ":$process_resources_target" ]
+  process_resources(process_resources_target) {
     srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
     r_text_path = "${target_gen_dir}/${target_name}_R.txt"
     android_manifest = _android_manifest
@@ -1373,8 +1378,9 @@ template("android_apk") {
     _srcjar_deps += [ ":${_template_name}__native_libraries_java" ]
   }
 
-  final_deps += [ ":${_template_name}__java" ]
-  java_library_impl("${_template_name}__java") {
+  java_target = "${_template_name}__java"
+  final_deps += [ ":$java_target" ]
+  java_library_impl(java_target) {
     supports_android = true
     requires_android = true
     override_build_config = _build_config
@@ -1392,12 +1398,13 @@ template("android_apk") {
   }
 
   if (_dist_jar_path != "") {
-    final_deps += [ ":${_template_name}__create_dist_jar" ]
+    create_dist_target = "${_template_name}__create_dist_jar"
+    final_deps += [ ":$create_dist_target" ]
 
     # TODO(cjhopman): This is only ever needed to calculate the list of tests to
     # run. See build/android/pylib/instrumentation/test_jar.py. We should be
     # able to just do that calculation at build time instead.
-    action("${_template_name}__create_dist_jar") {
+    action(create_dist_target) {
       script = "//build/android/gyp/create_dist_jar.py"
       depfile = "$target_gen_dir/$target_name.d"
       inputs = [
@@ -1417,6 +1424,10 @@ template("android_apk") {
       inputs += [ jar_path ]
       _rebased_jar_path = rebase_path([ jar_path ], root_build_dir)
       args += [ "--inputs=$_rebased_jar_path" ]
+      deps = [
+        # This target generates the jar file.
+        ":$java_target",
+      ]
     }
   }
 
@@ -1475,6 +1486,16 @@ template("android_apk") {
         "--clear-dir",
       ]
 
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
+      }
+      if (defined(invoker.public_deps)) {
+        public_deps = invoker.public_deps
+      }
+      if (defined(invoker.data_deps)) {
+        data_deps = invoker.data_deps
+      }
+
       if (is_debug) {
         rebased_gdbserver = rebase_path([ android_gdbserver ], root_build_dir)
         inputs += [ android_gdbserver ]
@@ -1499,7 +1520,11 @@ template("android_apk") {
     keystore_path = _keystore_path
     keystore_password = _keystore_password
 
-    deps = []
+    # This target generates the input file _all_resources_zip_path.
+    deps = [
+      ":$process_resources_target",
+    ]
+
     if (defined(invoker.asset_location)) {
       asset_location = invoker.asset_location
 
