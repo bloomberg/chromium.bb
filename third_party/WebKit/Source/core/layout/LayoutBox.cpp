@@ -460,22 +460,17 @@ void LayoutBox::scrollToOffset(const DoubleSize& offset, ScrollBehavior scrollBe
         layer()->scrollableArea()->scrollToOffset(offset, ScrollOffsetClamped, scrollBehavior);
 }
 
-static bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameElementBase, FrameView* frameView)
+// Returns true iff we are attempting an autoscroll inside an iframe with scrolling="no".
+static bool isDisallowedAutoscroll(HTMLFrameOwnerElement* ownerElement, FrameView* frameView)
 {
-    // If scrollbars aren't explicitly forbidden, permit scrolling.
-    if (frameElementBase && frameElementBase->scrollingMode() != ScrollbarAlwaysOff)
-        return true;
-
-    // If scrollbars are forbidden, user initiated scrolls should obviously be ignored.
-    if (frameView->wasScrolledByUser())
-        return false;
-
-    // Forbid autoscrolls when scrollbars are off, but permits other programmatic scrolls,
-    // like navigation to an anchor.
-    Page* page = frameView->frame().page();
-    if (!page)
-        return false;
-    return !page->autoscrollController().autoscrollInProgress();
+    if (ownerElement && isHTMLFrameElementBase(*ownerElement)) {
+        HTMLFrameElementBase* frameElementBase = toHTMLFrameElementBase(ownerElement);
+        if (Page* page = frameView->frame().page()) {
+            return page->autoscrollController().autoscrollInProgress()
+                && frameElementBase->scrollingMode() == ScrollbarAlwaysOff;
+        }
+    }
+    return false;
 }
 
 void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
@@ -499,26 +494,19 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
     } else if (!parentBox && canBeProgramaticallyScrolled()) {
         if (FrameView* frameView = this->frameView()) {
             HTMLFrameOwnerElement* ownerElement = document().ownerElement();
-            HTMLFrameElementBase* frameElementBase = nullptr;
-
-            if (ownerElement)
-                frameElementBase = isHTMLFrameElementBase(*ownerElement) ? toHTMLFrameElementBase(ownerElement) : nullptr;
-
-            // TODO(bokan): Why do we only do the frameElementAndViewPermit scroll check in the subframe case?
-            // Seems dated in any case, we should be checking for scrollability at the ScrollableArea level.
-            bool canScroll = !ownerElement || frameElementAndViewPermitScroll(frameElementBase, frameView);
-            if (canScroll)
+            if (!isDisallowedAutoscroll(ownerElement, frameView)) {
                 frameView->scrollableArea()->scrollIntoView(rect, alignX, alignY);
 
-            if (ownerElement && ownerElement->layoutObject() && canScroll) {
-                if (frameView->safeToPropagateScrollToParent()) {
-                    parentBox = ownerElement->layoutObject()->enclosingBox();
-                    // FIXME: This doesn't correctly convert the rect to
-                    // absolute coordinates in the parent.
-                    newRect.setX(rect.x() - frameView->scrollX() + frameView->x());
-                    newRect.setY(rect.y() - frameView->scrollY() + frameView->y());
-                } else {
-                    parentBox = 0;
+                if (ownerElement && ownerElement->layoutObject()) {
+                    if (frameView->safeToPropagateScrollToParent()) {
+                        parentBox = ownerElement->layoutObject()->enclosingBox();
+                        // FIXME: This doesn't correctly convert the rect to
+                        // absolute coordinates in the parent.
+                        newRect.setX(rect.x() - frameView->scrollX() + frameView->x());
+                        newRect.setY(rect.y() - frameView->scrollY() + frameView->y());
+                    } else {
+                        parentBox = 0;
+                    }
                 }
             }
         }
