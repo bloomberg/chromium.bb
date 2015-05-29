@@ -66,10 +66,15 @@ void PictureImageLayer::PaintContents(
   canvas->drawBitmap(bitmap_, 0, 0);
 }
 
-void PictureImageLayer::PaintContentsToDisplayList(
-    DisplayItemList* display_list,
+scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
+  // Picture image layers can be used with GatherPixelRefs, so cached SkPictures
+  // are currently required.
+  const bool use_cached_picture = true;
+  scoped_refptr<DisplayItemList> display_list =
+      DisplayItemList::Create(clip, use_cached_picture);
+
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(clip));
   PaintContents(canvas, clip, painting_control);
@@ -78,6 +83,9 @@ void PictureImageLayer::PaintContentsToDisplayList(
       skia::AdoptRef(recorder.endRecordingAsPicture());
   auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
   item->SetNew(picture.Pass());
+
+  display_list->Finalize();
+  return display_list;
 }
 
 bool PictureImageLayer::FillsBoundsCompletely() const {

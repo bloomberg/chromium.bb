@@ -33,10 +33,8 @@ DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
 namespace cc {
 
 DisplayListRecordingSource::DisplayListRecordingSource(
-    const gfx::Size& grid_cell_size,
-    bool use_cached_picture)
-    : use_cached_picture_(use_cached_picture),
-      slow_down_raster_scale_factor_for_debug_(0),
+    const gfx::Size& grid_cell_size)
+    : slow_down_raster_scale_factor_for_debug_(0),
       gather_pixel_refs_(false),
       requires_clear_(false),
       is_solid_color_(false),
@@ -119,14 +117,9 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
   }
   for (int i = 0; i < repeat_count; ++i) {
-    display_list_ =
-        DisplayItemList::Create(recorded_viewport_, use_cached_picture_);
-    painter->PaintContentsToDisplayList(display_list_.get(), recorded_viewport_,
-                                        painting_control);
+    display_list_ = painter->PaintContentsToDisplayList(recorded_viewport_,
+                                                        painting_control);
   }
-  display_list_->ProcessAppendedItems();
-  if (use_cached_picture_)
-    display_list_->CreateAndCacheSkPicture();
 
   is_suitable_for_gpu_rasterization_ =
       display_list_->IsSuitableForGpuRasterization();

@@ -353,8 +353,7 @@ class COMPOSITOR_EXPORT Layer
       SkCanvas* canvas,
       const gfx::Rect& clip,
       ContentLayerClient::PaintingControlSetting painting_control) override;
-  void PaintContentsToDisplayList(
-      cc::DisplayItemList* display_list,
+  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       ContentLayerClient::PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;

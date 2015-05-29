@@ -25,11 +25,12 @@ void SolidColorContentLayerClient::PaintContents(
       paint);
 }
 
-void SolidColorContentLayerClient::PaintContentsToDisplayList(
-    DisplayItemList* display_list,
+scoped_refptr<DisplayItemList>
+SolidColorContentLayerClient::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     PaintingControlSetting painting_control) {
   NOTIMPLEMENTED();
+  return nullptr;
 }
 
 bool SolidColorContentLayerClient::FillsBoundsCompletely() const {

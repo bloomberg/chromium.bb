@@ -129,7 +129,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
 
   settings.impl_side_painting = IsUIImplSidePaintingEnabled();
   settings.use_display_lists = IsUISlimmingPaintEnabled();
-  settings.use_cached_picture_in_display_list = false;
 
   settings.use_zero_copy = IsUIZeroCopyEnabled();
   settings.use_one_copy = IsUIOneCopyEnabled();

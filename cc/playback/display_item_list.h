@@ -44,8 +44,9 @@ class CC_EXPORT DisplayItemList
     return items_.AllocateAndConstruct<DisplayItemType>();
   }
 
-  void ProcessAppendedItems();
-  void CreateAndCacheSkPicture();
+  // Called after all items are appended, to process the items and, if
+  // applicable, create an internally cached SkPicture.
+  void Finalize();
 
   bool IsSuitableForGpuRasterization() const;
   int ApproximateOpCount() const;
@@ -67,6 +68,7 @@ class CC_EXPORT DisplayItemList
   // While appending new items, if they are not being retained, this can process
   // periodically to avoid retaining all the items and processing at the end.
   void ProcessAppendedItemsOnTheFly();
+  void ProcessAppendedItems();
 #if DCHECK_IS_ON()
   bool ProcessAppendedItemsCalled() const { return !needs_process_; }
   bool needs_process_;

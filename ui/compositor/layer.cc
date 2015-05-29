@@ -779,8 +779,7 @@ void Layer::PaintContents(
   }
 }
 
-void Layer::PaintContentsToDisplayList(
-    cc::DisplayItemList* display_list,
+scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
   TRACE_EVENT1("ui", "Layer::PaintContentsToDisplayList", "name", name_);
@@ -789,10 +788,15 @@ void Layer::PaintContentsToDisplayList(
       gfx::IntersectRects(damaged_region_.bounds(), local_bounds));
   DCHECK(clip.Contains(invalidation));
   ClearDamagedRects();
-  if (!delegate_)
-    return;
-  delegate_->OnPaintLayer(
-      PaintContext(display_list, device_scale_factor_, clip, invalidation));
+  const bool use_cached_picture = false;
+  scoped_refptr<cc::DisplayItemList> display_list =
+      cc::DisplayItemList::Create(clip, use_cached_picture);
+  if (delegate_) {
+    delegate_->OnPaintLayer(PaintContext(
+        display_list.get(), device_scale_factor_, clip, invalidation));
+  }
+  display_list->Finalize();
+  return display_list;
 }
 
 bool Layer::FillsBoundsCompletely() const { return fills_bounds_completely_; }

@@ -14,8 +14,7 @@ class DisplayListRasterSource;
 
 class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
  public:
-  DisplayListRecordingSource(const gfx::Size& grid_cell_size,
-                             bool use_cached_picture);
+  explicit DisplayListRecordingSource(const gfx::Size& grid_cell_size);
   ~DisplayListRecordingSource() override;
 
   // RecordingSource overrides.
@@ -39,8 +38,6 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
 
  protected:
   void Clear();
-
-  const bool use_cached_picture_;
 
   gfx::Rect recorded_viewport_;
   gfx::Size size_;

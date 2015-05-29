@@ -218,12 +218,8 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
                      kTimeCheckInterval);
 
       do {
-        const bool use_cached_picture = true;
-        display_list =
-            DisplayItemList::Create(visible_layer_rect, use_cached_picture);
-        painter->PaintContentsToDisplayList(
-            display_list.get(), visible_layer_rect, painting_control);
-        display_list->CreateAndCacheSkPicture();
+        display_list = painter->PaintContentsToDisplayList(visible_layer_rect,
+                                                           painting_control);
 
         if (memory_used) {
           // Verify we are recording the same thing each time.

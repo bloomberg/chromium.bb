@@ -146,16 +146,20 @@ void DisplayItemList::ProcessAppendedItems() {
     items_.clear();
 }
 
-void DisplayItemList::CreateAndCacheSkPicture() {
-  DCHECK(ProcessAppendedItemsCalled());
-  // Convert to an SkPicture for faster rasterization.
-  DCHECK(use_cached_picture_);
-  DCHECK(!picture_);
-  picture_ = skia::AdoptRef(recorder_->endRecordingAsPicture());
-  DCHECK(picture_);
-  picture_memory_usage_ += SkPictureUtils::ApproximateBytesUsed(picture_.get());
-  recorder_.reset();
-  canvas_.clear();
+void DisplayItemList::Finalize() {
+  ProcessAppendedItems();
+
+  if (use_cached_picture_) {
+    // Convert to an SkPicture for faster rasterization.
+    DCHECK(use_cached_picture_);
+    DCHECK(!picture_);
+    picture_ = skia::AdoptRef(recorder_->endRecordingAsPicture());
+    DCHECK(picture_);
+    picture_memory_usage_ +=
+        SkPictureUtils::ApproximateBytesUsed(picture_.get());
+    recorder_.reset();
+    canvas_.clear();
+  }
 }
 
 bool DisplayItemList::IsSuitableForGpuRasterization() const {

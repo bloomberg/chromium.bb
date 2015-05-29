@@ -16,17 +16,15 @@ namespace cc {
 // display list.
 class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
  public:
-  FakeDisplayListRecordingSource(const gfx::Size& grid_cell_size,
-                                 bool use_cached_picture)
-      : DisplayListRecordingSource(grid_cell_size, use_cached_picture) {}
+  explicit FakeDisplayListRecordingSource(const gfx::Size& grid_cell_size)
+      : DisplayListRecordingSource(grid_cell_size) {}
   ~FakeDisplayListRecordingSource() override {}
 
   static scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource(
       const gfx::Rect& recorded_viewport) {
     scoped_ptr<FakeDisplayListRecordingSource> recording_source(
         new FakeDisplayListRecordingSource(
-            ImplSidePaintingSettings().default_tile_grid_size,
-            ImplSidePaintingSettings().use_cached_picture_in_display_list));
+            ImplSidePaintingSettings().default_tile_grid_size));
     recording_source->SetRecordedViewport(recorded_viewport);
     return recording_source;
   }
@@ -42,13 +40,8 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
   void Rerecord() {
     ContentLayerClient::PaintingControlSetting painting_control =
         ContentLayerClient::PAINTING_BEHAVIOR_NORMAL;
-    bool use_cached_picture = true;
-    display_list_ =
-        DisplayItemList::Create(recorded_viewport_, use_cached_picture);
-    client_.PaintContentsToDisplayList(display_list_.get(), recorded_viewport_,
-                                       painting_control);
-    display_list_->ProcessAppendedItems();
-    display_list_->CreateAndCacheSkPicture();
+    display_list_ = client_.PaintContentsToDisplayList(recorded_viewport_,
+                                                       painting_control);
     if (gather_pixel_refs_)
       display_list_->GatherPixelRefs(grid_cell_size_);
   }

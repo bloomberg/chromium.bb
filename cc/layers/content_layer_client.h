@@ -12,7 +12,6 @@ class SkCanvas;
 
 namespace gfx {
 class Rect;
-class RectF;
 }
 
 namespace cc {
@@ -30,8 +29,7 @@ class CC_EXPORT ContentLayerClient {
                              const gfx::Rect& clip,
                              PaintingControlSetting painting_status) = 0;
 
-  virtual void PaintContentsToDisplayList(
-      DisplayItemList* display_list,
+  virtual scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       const gfx::Rect& clip,
       PaintingControlSetting painting_status) = 0;
 
