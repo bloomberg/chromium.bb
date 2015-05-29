@@ -2182,7 +2182,7 @@
               'clang_dynlib_flags%': '',
             }],
             # https://crbug.com/441916
-            ['OS=="linux" or OS=="mac"', {
+            ['OS=="android" or OS=="linux" or OS=="mac"', {
               'clang_plugin_args%': '-Xclang -plugin-arg-find-bad-constructs -Xclang check-templates ',
             }, { # OS != "linux"
               'clang_plugin_args%': ''
