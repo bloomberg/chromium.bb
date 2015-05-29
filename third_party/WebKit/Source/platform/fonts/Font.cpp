@@ -229,38 +229,16 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     FontCachePurgePreventer purgePreventer;
 
     CodePath codePathToUse = codePath(TextRunPaintInfo(run));
-    if (codePathToUse != ComplexPath) {
-        // The simple path can optimize the case where glyph overflow is not observable.
-        if (codePathToUse != SimpleWithGlyphOverflowPath && (glyphOverflow && !glyphOverflow->computeBounds))
-            glyphOverflow = 0;
-    }
-
-    bool hasWordSpacingOrLetterSpacing = fontDescription().wordSpacing() || fontDescription().letterSpacing();
-    bool isCacheable = codePathToUse == ComplexPath
-        && !hasWordSpacingOrLetterSpacing // Word spacing and letter spacing can change the width of a word.
-        && !run.allowTabs(); // If we allow tabs and a tab occurs inside a word, the width of the word varies based on its position on the line.
-
-    WidthCacheEntry* cacheEntry = isCacheable
-        ? m_fontFallbackList->widthCache().add(run, WidthCacheEntry())
-        : 0;
-    if (cacheEntry && cacheEntry->isValid()) {
-        if (glyphOverflow)
-            updateGlyphOverflowFromBounds(cacheEntry->glyphBounds, fontMetrics(), glyphOverflow);
-        return cacheEntry->width;
-    }
 
     float result;
     IntRectOutsets glyphBounds;
     if (codePathToUse == ComplexPath) {
         result = floatWidthForComplexText(run, fallbackFonts, &glyphBounds);
     } else {
-        ASSERT(!isCacheable);
+        // The simple path can optimize the case where glyph overflow is not observable.
+        if (codePathToUse != SimpleWithGlyphOverflowPath && (glyphOverflow && !glyphOverflow->computeBounds))
+            glyphOverflow = 0;
         result = floatWidthForSimpleText(run, fallbackFonts, glyphOverflow ? &glyphBounds : 0);
-    }
-
-    if (cacheEntry && (!fallbackFonts || fallbackFonts->isEmpty())) {
-        cacheEntry->glyphBounds = glyphBounds;
-        cacheEntry->width = result;
     }
 
     if (glyphOverflow)
@@ -717,6 +695,22 @@ void Font::drawTextBlob(SkCanvas* canvas, const SkPaint& paint, const SkTextBlob
 
 float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectOutsets* glyphBounds) const
 {
+    bool hasWordSpacingOrLetterSpacing = fontDescription().wordSpacing()
+        || fontDescription().letterSpacing();
+    // Word spacing and letter spacing can change the width of a word.
+    // If a tab occurs inside a word, the width of the word varies based on its
+    // position on the line.
+    bool isCacheable = !hasWordSpacingOrLetterSpacing && !run.allowTabs();
+
+    WidthCacheEntry* cacheEntry = isCacheable
+        ? m_fontFallbackList->widthCache().add(run, WidthCacheEntry())
+        : 0;
+    if (cacheEntry && cacheEntry->isValid()) {
+        ASSERT(glyphBounds);
+        *glyphBounds = cacheEntry->glyphBounds;
+        return cacheEntry->width;
+    }
+
     FloatRect bounds;
     HarfBuzzShaper shaper(this, run, nullptr, fallbackFonts, glyphBounds ? &bounds : 0);
     if (!shaper.shape())
@@ -727,7 +721,13 @@ float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFon
     glyphBounds->setLeft(std::max<int>(0, ceilf(-bounds.x())));
     glyphBounds->setRight(std::max<int>(0, ceilf(bounds.maxX() - shaper.totalWidth())));
 
-    return shaper.totalWidth();
+    float result = shaper.totalWidth();
+    if (cacheEntry && (!fallbackFonts || fallbackFonts->isEmpty())) {
+        cacheEntry->glyphBounds = *glyphBounds;
+        cacheEntry->width = result;
+    }
+
+    return result;
 }
 
 // Return the code point index for the given |x| offset into the text run.
