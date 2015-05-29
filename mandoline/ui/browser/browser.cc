@@ -35,7 +35,7 @@ Browser::Browser()
       content_(nullptr),
       omnibox_(nullptr),
       navigator_host_(this),
-      ui_(nullptr) {
+      app_(nullptr) {
   exposed_services_impl_.AddService<mojo::NavigatorHost>(this);
 }
 
@@ -51,6 +51,7 @@ void Browser::ReplaceContentWithRequest(mojo::URLRequestPtr request) {
 }
 
 void Browser::Initialize(mojo::ApplicationImpl* app) {
+  app_ = app;
   view_manager_init_.reset(new mojo::ViewManagerInit(app, this, this));
 
   ui_.reset(BrowserUI::Create(this, app));
@@ -117,6 +118,7 @@ void Browser::OnViewManagerDisconnected(
     mojo::ViewManager* view_manager) {
   ui_.reset();
   root_ = nullptr;
+  app_->Terminate();
 }
 
 void Browser::OnAccelerator(mojo::EventPtr event) {

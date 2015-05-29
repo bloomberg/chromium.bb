@@ -15,6 +15,7 @@
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
+#include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/cpp/lazy_interface_ptr.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
@@ -64,7 +65,7 @@ class HTMLDocument : public blink::WebViewClient,
   // |shell| is the Shell connection for this mojo::Application.
   HTMLDocument(mojo::InterfaceRequest<mojo::ServiceProvider> services,
                mojo::URLResponsePtr response,
-               mojo::Shell* shell,
+               mojo::ShellPtr shell,
                Setup* setup);
   ~HTMLDocument() override;
 
@@ -142,10 +143,11 @@ class HTMLDocument : public blink::WebViewClient,
   media::MediaPermission* GetMediaPermission();
   media::CdmFactory* GetCdmFactory();
 
+  scoped_ptr<mojo::AppRefCount> app_refcount_;
   mojo::URLResponsePtr response_;
   mojo::ServiceProviderImpl exported_services_;
   mojo::ServiceProviderPtr embedder_service_provider_;
-  mojo::Shell* shell_;
+  mojo::ShellPtr shell_;
   mojo::LazyInterfacePtr<mojo::NavigatorHost> navigator_host_;
   blink::WebView* web_view_;
   mojo::View* root_;

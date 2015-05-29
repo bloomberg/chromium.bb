@@ -102,8 +102,12 @@ class ApplicationImpl : public Application,
   void UnbindConnections(InterfaceRequest<Application>* application_request,
                          ShellPtr* shell);
 
-  // Quits the main run loop for this application.
+  // Quits the main run loop for this application. It first checks with the
+  // shell to ensure there are no outstanding service requests.
   void Terminate();
+
+  // Quits without waiting to check with the shell.
+  void QuitNow();
 
  private:
   // Application implementation.
@@ -111,7 +115,7 @@ class ApplicationImpl : public Application,
                         InterfaceRequest<ServiceProvider> services,
                         ServiceProviderPtr exposed_services,
                         const String& url) override;
-  void RequestQuit() override;
+  void OnQuitRequested(const Callback<void(bool)>& callback) override;
 
   // ErrorHandler implementation.
   void OnConnectionError() override;
@@ -128,6 +132,7 @@ class ApplicationImpl : public Application,
   std::string url_;
   base::Closure termination_closure_;
   AppLifetimeHelper app_lifetime_helper_;
+  bool quit_requested_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationImpl);
 };

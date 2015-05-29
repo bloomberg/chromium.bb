@@ -94,7 +94,7 @@ class ApplicationThread : public base::Thread {
   }
 
   void ShutdownCleanly() {
-    static_cast<mojo::Application*>(application_impl_.get())->RequestQuit();
+    application_impl_->QuitNow();
     Thread::SetThreadWasQuitProperly(true);
   }
 

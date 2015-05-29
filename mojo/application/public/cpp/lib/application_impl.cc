@@ -34,7 +34,8 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
     : delegate_(delegate),
       binding_(this, request.Pass()),
       termination_closure_(termination_closure),
-      app_lifetime_helper_(this) {
+      app_lifetime_helper_(this),
+      quit_requested_(false) {
 }
 
 void ApplicationImpl::ClearConnections() {
@@ -95,6 +96,18 @@ void ApplicationImpl::UnbindConnections(
 }
 
 void ApplicationImpl::Terminate() {
+  // We can't quit immediately, since there could be in-flight requests from the
+  // shell. So check with it first.
+  if (shell_) {
+    quit_requested_ = true;
+    shell_->QuitApplication();
+  } else {
+    QuitNow();
+  }
+}
+
+void ApplicationImpl::QuitNow() {
+  delegate_->Quit();
   termination_closure_.Run();
 }
 
@@ -110,17 +123,25 @@ void ApplicationImpl::AcceptConnection(
     return;
   }
   incoming_service_registries_.push_back(registry);
+
+  // If we were quitting because we thought there were no more services for this
+  // app in use, then that has changed so cancel the quit request.
+  if (quit_requested_)
+    quit_requested_ = false;
 }
 
-void ApplicationImpl::RequestQuit() {
-  delegate_->Quit();
-  Terminate();
+void ApplicationImpl::OnQuitRequested(const Callback<void(bool)>& callback) {
+  // If by the time we got the reply from the shell, more requests had come in
+  // then we don't want to quit the app anymore so we return false. Otherwise
+  // |quit_requested_| is true so we tell the shell to proceed with the quit.
+  callback.Run(quit_requested_);
+  if (quit_requested_)
+    QuitNow();
 }
 
 void ApplicationImpl::OnConnectionError() {
-  delegate_->Quit();
-  ClearConnections();
-  Terminate();
+  QuitNow();
+  shell_ = nullptr;
 }
 
 }  // namespace mojo

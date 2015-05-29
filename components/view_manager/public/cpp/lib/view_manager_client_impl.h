@@ -24,8 +24,7 @@ class ViewManagerClientImpl : public ViewManager,
  public:
   ViewManagerClientImpl(ViewManagerDelegate* delegate,
                         Shell* shell,
-                        InterfaceRequest<ViewManagerClient> request,
-                        bool delete_on_error);
+                        InterfaceRequest<ViewManagerClient> request);
   ~ViewManagerClientImpl() override;
 
   bool connected() const { return service_; }
@@ -147,7 +146,6 @@ class ViewManagerClientImpl : public ViewManager,
 
   Binding<ViewManagerClient> binding_;
   ViewManagerServicePtr service_;
-  const bool delete_on_error_;
 
   scoped_ptr<RootObserver> root_observer_;
 

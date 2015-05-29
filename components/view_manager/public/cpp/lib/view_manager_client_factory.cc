@@ -22,8 +22,7 @@ ViewManagerClientFactory::~ViewManagerClientFactory() {
 void ViewManagerClientFactory::Create(
     ApplicationConnection* connection,
     InterfaceRequest<ViewManagerClient> request) {
-  const bool delete_on_error = true;
-  new ViewManagerClientImpl(delegate_, shell_, request.Pass(), delete_on_error);
+  new ViewManagerClientImpl(delegate_, shell_, request.Pass());
 }
 
 }  // namespace mojo

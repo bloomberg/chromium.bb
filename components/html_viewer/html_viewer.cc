@@ -45,10 +45,15 @@ class HTMLViewerApplication : public mojo::Application {
   HTMLViewerApplication(InterfaceRequest<Application> request,
                         URLResponsePtr response,
                         Setup* setup)
-      : url_(response->url),
+      : app_refcount_(setup->app()->app_lifetime_helper()->CreateAppRefCount()),
+        url_(response->url),
         binding_(this, request.Pass()),
         initial_response_(response.Pass()),
-        setup_(setup) {}
+        setup_(setup) {
+  }
+
+  ~HTMLViewerApplication() override {
+  }
 
   void Initialize(ShellPtr shell, const String& url) override {
     shell_ = shell.Pass();
@@ -83,7 +88,10 @@ class HTMLViewerApplication : public mojo::Application {
     }
   }
 
-  void RequestQuit() override {}
+  void OnQuitRequested(const mojo::Callback<void(bool)>& callback) override {
+    callback.Run(true);
+    delete this;
+  }
 
  private:
   void OnResponseReceived(URLLoaderPtr loader,
@@ -91,9 +99,10 @@ class HTMLViewerApplication : public mojo::Application {
                           URLResponsePtr response) {
     // HTMLDocument is destroyed when the hosting view is destroyed.
     // TODO(sky): when headless, this leaks.
-    new HTMLDocument(services.Pass(), response.Pass(), shell_.get(), setup_);
+    new HTMLDocument(services.Pass(), response.Pass(), shell_.Pass(), setup_);
   }
 
+  scoped_ptr<mojo::AppRefCount> app_refcount_;
   String url_;
   mojo::StrongBinding<mojo::Application> binding_;
   ShellPtr shell_;

@@ -43,15 +43,29 @@ class ShellImpl : public Shell, public ErrorHandler {
   void ConnectToApplication(mojo::URLRequestPtr app_request,
                             InterfaceRequest<ServiceProvider> services,
                             ServiceProviderPtr exposed_services) override;
+  void QuitApplication() override;
 
   // ErrorHandler implementation:
   void OnConnectionError() override;
+
+  void OnQuitRequestedResult(bool can_quit);
+
+  struct QueuedClientRequest {
+    QueuedClientRequest();
+    ~QueuedClientRequest();
+    GURL requested_url;
+    GURL requestor_url;
+    InterfaceRequest<ServiceProvider> services;
+    ServiceProviderPtr exposed_services;
+  };
 
   ApplicationManager* const manager_;
   const Identity identity_;
   base::Closure on_application_end_;
   ApplicationPtr application_;
   Binding<Shell> binding_;
+  bool queue_requests_;
+  std::vector<QueuedClientRequest*> queued_client_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellImpl);
 };

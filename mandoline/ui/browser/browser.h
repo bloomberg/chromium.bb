@@ -104,6 +104,7 @@ class Browser : public mojo::ApplicationDelegate,
   GURL current_url_;
 
   scoped_ptr<BrowserUI> ui_;
+  mojo::ApplicationImpl* app_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

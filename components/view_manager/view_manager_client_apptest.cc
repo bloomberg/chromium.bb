@@ -240,7 +240,10 @@ class ViewManagerTest : public test::ApplicationTestBase,
   }
 
   // Overridden from testing::Test:
-  void TearDown() override { ApplicationTestBase::TearDown(); }
+  void TearDown() override {
+    view_manager_init_.reset();  // Uses application_impl() from base class.
+    ApplicationTestBase::TearDown();
+  }
 
   scoped_ptr<ViewManagerInit> view_manager_init_;
 

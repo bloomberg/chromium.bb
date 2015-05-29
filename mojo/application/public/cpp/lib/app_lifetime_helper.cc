@@ -82,10 +82,8 @@ void AppLifetimeHelper::AddRef() {
 
 void AppLifetimeHelper::Release() {
   if (!--ref_count_) {
-    if (app_) {
-      // Disabled until network_service tests pass again http://crbug.com/484234
-      //ApplicationImpl::Terminate();
-    }
+    if (app_)
+      app_->Terminate();
   }
 }
 

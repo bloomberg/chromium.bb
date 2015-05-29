@@ -70,6 +70,10 @@ MojoResult ApplicationRunner::Run(MojoHandle application_request_handle) {
     // It's very common for the delegate to cache the app and terminate on
     // errors. If we don't delete the delegate before the app we run the risk
     // of the delegate having a stale reference to the app and trying to use it.
+    // Note that we destruct the message loop first because that might trigger
+    // connection error handlers and they might access objects created by the
+    // delegate.
+    loop.reset();
     delegate_.reset();
   }
   return MOJO_RESULT_OK;

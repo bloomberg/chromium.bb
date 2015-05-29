@@ -111,13 +111,14 @@ bool AreSecureCodecsSupported() {
 HTMLDocument::HTMLDocument(
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     URLResponsePtr response,
-    mojo::Shell* shell,
+    mojo::ShellPtr shell,
     Setup* setup)
-    : response_(response.Pass()),
-      shell_(shell),
+    : app_refcount_(setup->app()->app_lifetime_helper()->CreateAppRefCount()),
+      response_(response.Pass()),
+      shell_(shell.Pass()),
       web_view_(nullptr),
       root_(nullptr),
-      view_manager_client_factory_(shell_, this),
+      view_manager_client_factory_(shell_.get(), this),
       setup_(setup) {
   exported_services_.AddService(this);
   exported_services_.AddService(&view_manager_client_factory_);
@@ -150,7 +151,7 @@ void HTMLDocument::OnEmbed(
 }
 
 void HTMLDocument::OnViewManagerDisconnected(ViewManager* view_manager) {
-  // TODO(aa): Need to figure out how shutdown works.
+  delete this;
 }
 
 void HTMLDocument::Create(mojo::ApplicationConnection* connection,
@@ -200,13 +201,15 @@ void HTMLDocument::UpdateWebviewSizeFromViewSize() {
 
 void HTMLDocument::InitSetupAndLoadIfNecessary() {
   DCHECK(root_);
-  if (web_view_ || root_->viewport_metrics().device_pixel_ratio == 0.f)
+  if (root_->viewport_metrics().device_pixel_ratio == 0.f)
     return;
 
-  setup_->InitIfNecessary(gfx::Size(root_->viewport_metrics().size->width,
-                                    root_->viewport_metrics().size->height),
-                          root_->viewport_metrics().device_pixel_ratio);
-  Load(response_.Pass());
+  if (!web_view_) {
+    setup_->InitIfNecessary(gfx::Size(root_->viewport_metrics().size->width,
+                                      root_->viewport_metrics().size->height),
+                            root_->viewport_metrics().device_pixel_ratio);
+    Load(response_.Pass());
+  }
 
   UpdateWebviewSizeFromViewSize();
   web_layer_tree_view_impl_->set_view(root_);
@@ -257,7 +260,7 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
       setup_->web_media_player_factory()
           ? setup_->web_media_player_factory()->CreateMediaPlayer(
                 frame, url, client, GetMediaPermission(), GetCdmFactory(),
-                initial_cdm, shell_)
+                initial_cdm, shell_.get())
           : nullptr;
   return player;
 }
@@ -358,8 +361,7 @@ void HTMLDocument::OnViewViewportMetricsChanged(
 void HTMLDocument::OnViewDestroyed(View* view) {
   DCHECK_EQ(view, root_);
   root_ = nullptr;
-  setup_->app()->Terminate();
-  delete this;
+  shell_->QuitApplication();
 }
 
 void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {

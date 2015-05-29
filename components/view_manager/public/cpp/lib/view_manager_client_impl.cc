@@ -100,8 +100,7 @@ class ViewManagerClientImpl::RootObserver : public ViewObserver {
 ViewManagerClientImpl::ViewManagerClientImpl(
     ViewManagerDelegate* delegate,
     Shell* shell,
-    InterfaceRequest<ViewManagerClient> request,
-    bool delete_on_error)
+    InterfaceRequest<ViewManagerClient> request)
     : connection_id_(0),
       next_id_(1),
       delegate_(delegate),
@@ -109,8 +108,7 @@ ViewManagerClientImpl::ViewManagerClientImpl(
       capture_view_(nullptr),
       focused_view_(nullptr),
       activated_view_(nullptr),
-      binding_(this, request.Pass()),
-      delete_on_error_(delete_on_error) {
+      binding_(this, request.Pass()) {
 }
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
@@ -242,6 +240,7 @@ void ViewManagerClientImpl::SetViewManagerService(
   DCHECK(!service_);
   DCHECK(service);
   service_ = service.Pass();
+  service_.set_error_handler(this);
 }
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, ViewManager implementation:
@@ -291,6 +290,7 @@ void ViewManagerClientImpl::OnEmbed(ConnectionSpecificId connection_id,
   if (view_manager_service) {
     DCHECK(!service_);
     service_ = view_manager_service.Pass();
+    service_.set_error_handler(this);
   }
   connection_id_ = connection_id;
   creator_url_ = String::From(creator_url);
@@ -435,8 +435,7 @@ void ViewManagerClientImpl::OnViewFocused(Id focused_view_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // OnConnectionError, private:
 void ViewManagerClientImpl::OnConnectionError() {
-  if (delete_on_error_)
-    delete this;
+  delete this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -38,4 +38,13 @@ interface Shell {
   ConnectToApplication(URLRequest application_url,
                        ServiceProvider&? services,
                        ServiceProvider? exposed_services);
+
+  // When there are no more instantiated services in an application, it should
+  // start its shutdown process by calling this method. Additionally, it should
+  // keep track of any new service requests that come in. The shell will then
+  // call Application::OnQuitRequested and start queueing new service requests.
+  // If the application didn't get any new service requests in the meantime, it
+  // should call the callback with a true value. Otherwise it should call it
+  // with false.
+  QuitApplication();
 };

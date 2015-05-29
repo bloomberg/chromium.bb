@@ -53,7 +53,9 @@ class ShellGrabber : public Application {
     MOJO_CHECK(false);
   }
 
-  void RequestQuit() override { MOJO_CHECK(false); }
+  void OnQuitRequested(const Callback<void(bool)>& callback) override {
+    MOJO_CHECK(false);
+  }
 
   Binding<Application> binding_;
 };

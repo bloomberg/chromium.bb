@@ -54,6 +54,8 @@ interface Application {
                    ServiceProvider? exposed_services,
                    string resolved_url);
 
-  // Called to request the application shut itself down gracefully.
-  RequestQuit();
+  // Called by the shell in response to calling Shell's QuitApplication. The
+  // application should run the callback with true if shutdown can proceed.
+  // See Shell::QuitApplication for details about shutdown workflow.
+  OnQuitRequested() => (bool can_quit);
 };
