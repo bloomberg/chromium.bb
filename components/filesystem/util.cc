@@ -15,6 +15,10 @@
 #include "base/strings/string_util.h"
 #include "mojo/public/cpp/bindings/string.h"
 
+#if defined(OS_WIN)
+#include "base/strings/utf_string_conversions.h"
+#endif
+
 // module filesystem has various constants which must line up with enum values
 // in base::File::Flags.
 static_assert(filesystem::kFlagOpen ==
@@ -43,55 +47,55 @@ static_assert(filesystem::kFlagAppend ==
               "");
 
 // filesystem.Error in types.mojom must be the same as base::File::Error.
-static_assert(static_cast<int>(filesystem::ERROR_OK) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_OK) ==
                   static_cast<int>(base::File::FILE_OK),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_FAILED) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_FAILED) ==
                   static_cast<int>(base::File::FILE_ERROR_FAILED),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_IN_USE) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_IN_USE) ==
                   static_cast<int>(base::File::FILE_ERROR_IN_USE),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_EXISTS) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_EXISTS) ==
                   static_cast<int>(base::File::FILE_ERROR_EXISTS),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_NOT_FOUND) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_NOT_FOUND) ==
                   static_cast<int>(base::File::FILE_ERROR_NOT_FOUND),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_ACCESS_DENIED) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_ACCESS_DENIED) ==
                   static_cast<int>(base::File::FILE_ERROR_ACCESS_DENIED),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_TOO_MANY_OPENED) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_TOO_MANY_OPENED) ==
                   static_cast<int>(base::File::FILE_ERROR_TOO_MANY_OPENED),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_NO_MEMORY) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_NO_MEMORY) ==
                   static_cast<int>(base::File::FILE_ERROR_NO_MEMORY),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_NO_SPACE) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_NO_SPACE) ==
                   static_cast<int>(base::File::FILE_ERROR_NO_SPACE),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_NOT_A_DIRECTORY) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_NOT_A_DIRECTORY) ==
                   static_cast<int>(base::File::FILE_ERROR_NOT_A_DIRECTORY),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_INVALID_OPERATION) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_INVALID_OPERATION) ==
                   static_cast<int>(base::File::FILE_ERROR_INVALID_OPERATION),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_SECURITY) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_SECURITY) ==
                   static_cast<int>(base::File::FILE_ERROR_SECURITY),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_ABORT) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_ABORT) ==
                   static_cast<int>(base::File::FILE_ERROR_ABORT),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_NOT_A_FILE) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_NOT_A_FILE) ==
                   static_cast<int>(base::File::FILE_ERROR_NOT_A_FILE),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_NOT_EMPTY) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_NOT_EMPTY) ==
                   static_cast<int>(base::File::FILE_ERROR_NOT_EMPTY),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_INVALID_URL) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_INVALID_URL) ==
                   static_cast<int>(base::File::FILE_ERROR_INVALID_URL),
               "");
-static_assert(static_cast<int>(filesystem::ERROR_IO) ==
+static_assert(static_cast<int>(filesystem::FILE_ERROR_IO) ==
                   static_cast<int>(base::File::FILE_ERROR_IO),
               "");
 
@@ -108,28 +112,28 @@ static_assert(static_cast<int>(filesystem::WHENCE_FROM_END) ==
 
 namespace filesystem {
 
-Error IsWhenceValid(Whence whence) {
+FileError IsWhenceValid(Whence whence) {
   return (whence == WHENCE_FROM_CURRENT || whence == WHENCE_FROM_BEGIN ||
           whence == WHENCE_FROM_END)
-             ? ERROR_OK
-             : ERROR_INVALID_OPERATION;
+             ? FILE_ERROR_OK
+             : FILE_ERROR_INVALID_OPERATION;
 }
 
-Error IsOffsetValid(int64_t offset) {
+FileError IsOffsetValid(int64_t offset) {
   return (offset >= std::numeric_limits<off_t>::min() &&
           offset <= std::numeric_limits<off_t>::max())
-             ? ERROR_OK
-             : ERROR_INVALID_OPERATION;
+             ? FILE_ERROR_OK
+             : FILE_ERROR_INVALID_OPERATION;
 }
 
-Error GetError(const base::File& file) {
-  return static_cast<filesystem::Error>(file.error_details());
+FileError GetError(const base::File& file) {
+  return static_cast<filesystem::FileError>(file.error_details());
 }
 
 FileInformationPtr MakeFileInformation(const base::File::Info& info) {
   FileInformationPtr file_info(FileInformation::New());
   file_info->type =
-      info.is_directory ? FILE_TYPE_DIRECTORY : FILE_TYPE_REGULAR_FILE;
+      info.is_directory ? FS_FILE_TYPE_DIRECTORY : FS_FILE_TYPE_REGULAR_FILE;
   file_info->size = info.size;
 
   file_info->atime = info.last_accessed.ToDoubleT();
@@ -139,25 +143,31 @@ FileInformationPtr MakeFileInformation(const base::File::Info& info) {
   return file_info.Pass();
 }
 
-Error ValidatePath(const mojo::String& raw_path,
-                   const base::FilePath& filesystem_base,
-                   base::FilePath* out) {
+FileError ValidatePath(const mojo::String& raw_path,
+                       const base::FilePath& filesystem_base,
+                       base::FilePath* out) {
   DCHECK(!raw_path.is_null());
   if (!base::IsStringUTF8(raw_path.get()))
-    return ERROR_INVALID_OPERATION;
+    return FILE_ERROR_INVALID_OPERATION;
+
+#if defined(OS_POSIX)
+  base::FilePath::StringType path = raw_path;
+#elif defined(OS_WIN)
+  base::FilePath::StringType path = base::UTF8ToUTF16(raw_path.get());
+#endif
 
   // TODO(erg): This isn't really what we want. FilePath::AppendRelativePath()
   // is closer. We need to deal with entirely hostile apps trying to bust this
   // function to use a possibly maliciously provided |raw_path| to bust out of
   // |filesystem_base|.
-  base::FilePath full_path = filesystem_base.Append(raw_path);
+  base::FilePath full_path = filesystem_base.Append(path);
   if (full_path.ReferencesParent()) {
     // TODO(erg): For now, if it references a parent, we'll consider this bad.
-    return ERROR_ACCESS_DENIED;
+    return FILE_ERROR_ACCESS_DENIED;
   }
 
   *out = full_path;
-  return ERROR_OK;
+  return FILE_ERROR_OK;
 }
 
 }  // namespace filesystem

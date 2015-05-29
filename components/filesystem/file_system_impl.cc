@@ -4,12 +4,6 @@
 
 #include "components/filesystem/file_system_impl.h"
 
-#include <fcntl.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
@@ -46,9 +40,9 @@ void FileSystemImpl::OpenFileSystem(const mojo::String& file_system,
 
   if (!path.empty()) {
     new DirectoryImpl(directory.Pass(), path, temp_dir.Pass());
-    callback.Run(ERROR_OK);
+    callback.Run(FILE_ERROR_OK);
   } else {
-    callback.Run(ERROR_FAILED);
+    callback.Run(FILE_ERROR_FAILED);
   }
 }
 
