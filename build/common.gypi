@@ -1701,14 +1701,14 @@
           # Android SDK build tools (e.g. dx, aapt, aidl)
           'android_sdk_tools%': '<(android_sdk_root)/build-tools/<(android_sdk_build_tools_version)',
 
-          # Android API level 14 is ICS (Android 4.0) which is the minimum
+          # Android API level 16 is JB (Android 4.1) which is the minimum
           # platform requirement for Chrome on Android, we use it for native
           # code compilation.
           'conditions': [
             ['target_arch == "ia32"', {
               'android_app_abi%': 'x86',
               'android_gdbserver%': '<(android_ndk_absolute_root)/prebuilt/android-x86/gdbserver/gdbserver',
-              'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-x86',
+              'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-16/arch-x86',
               'android_ndk_lib_dir%': 'usr/lib',
               'android_toolchain%': '<(android_ndk_absolute_root)/toolchains/x86-4.9/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
@@ -1728,7 +1728,7 @@
                 }],
               ],
               'android_gdbserver%': '<(android_ndk_absolute_root)/prebuilt/android-arm/gdbserver/gdbserver',
-              'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-arm',
+              'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-16/arch-arm',
               'android_ndk_lib_dir%': 'usr/lib',
               'android_toolchain%': '<(android_ndk_absolute_root)/toolchains/arm-linux-androideabi-4.9/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
@@ -1742,7 +1742,7 @@
             ['target_arch == "mipsel"', {
               'android_app_abi%': 'mips',
               'android_gdbserver%': '<(android_ndk_absolute_root)/prebuilt/android-mips/gdbserver/gdbserver',
-              'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-mips',
+              'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-16/arch-mips',
               'android_ndk_lib_dir%': 'usr/lib',
               'android_toolchain%': '<(android_ndk_absolute_root)/toolchains/mipsel-linux-android-4.9/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
