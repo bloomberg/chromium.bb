@@ -161,8 +161,8 @@ class InitCommand(cr.Command):
     cr.plugin.Activate()
 
     # Write out the new configuration, and select it as the default
-    cr.base.client.WriteConfig(cr.context.Get('CR_BUILD_DIR'),
-                               build_package.config.OVERRIDES.exported)
+    cr.base.client.WriteConfig(
+        use_build_dir=True, data=build_package.config.OVERRIDES.exported)
     # Prepare the platform in here, using the updated config
     cr.Platform.Prepare()
     cr.SelectCommand.Select()

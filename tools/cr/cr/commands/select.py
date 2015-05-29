@@ -51,8 +51,8 @@ class SelectCommand(cr.Command):
     directory.
     """
     cr.base.client.WriteConfig(
-        cr.context.Get('CR_CLIENT_PATH'), dict(
-            CR_OUT_FULL=cr.context.Get('CR_OUT_FULL')))
+        use_build_dir=False,
+        data=dict(CR_OUT_FULL=cr.context.Get('CR_OUT_FULL')))
     cr.base.client.PrintInfo()
     # Now we run the post select actions
     if not getattr(cr.context.args, '_no_prepare', None):
