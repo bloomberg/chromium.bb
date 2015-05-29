@@ -97,6 +97,11 @@ bool Thread::StartWithOptions(const Options& options) {
 
   start_event_.reset(new WaitableEvent(false, false));
 
+  // TODO(kinuko): Remove this after a few days (crbug.com/465458).
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "465458 base::Thread::StartWithOptions"));
+
   // Hold the thread_lock_ while starting a new thread, so that we can make sure
   // that thread_ is populated before the newly created thread accesses it.
   {
