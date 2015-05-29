@@ -69,6 +69,7 @@ is significantly more painful.
 
 __author__ = 'scherkus@chromium.org (Andrew Scherkus)'
 
+import collections
 import datetime
 import fnmatch
 import itertools
@@ -77,6 +78,7 @@ import os
 import re
 import string
 import subprocess
+import shutil
 
 COPYRIGHT = """# Copyright %d The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -690,6 +692,9 @@ INCLUDE_REGEX = re.compile('#\s*include\s+"([^"]+)"')
 # or defines).
 EXOTIC_INCLUDE_REGEX = re.compile('#\s*include\s+[^"<\s].+')
 
+# Prefix added to renamed files as part of
+RENAME_PREFIX = 'autorename'
+
 
 def GetIncludedSources(file_path, source_dir, include_set, depth = 0):
   """ Recurse over include tree, accumulating absolute paths to all included
@@ -806,6 +811,62 @@ def CheckLicensesForStaticLinking(disjoint_sets, source_dir, print_licenses):
       all_checks_passed = False
   return all_checks_passed
 
+
+def FixObjectBasenameCollisions(disjoint_sets, all_sources):
+  """ Mac libtool warns needlessly when it encounters two object files with
+  the same basename in a given static library. See more at
+  https://code.google.com/p/gyp/issues/detail?id=384#c7
+
+  Here we hack around the issue by copying and renaming source files with the
+  same base name to avoid the collision. The original is kept to keep things
+  simple when merging from upstream ffmpeg.
+
+  If upstream changes the name such that the collision no longer exists, we
+  detect the presence of a renamed file in all_sources which is overridden and
+  warn that it should be removed."""
+
+  SourceRename = collections.namedtuple("SourceRename", "old_name, new_name")
+  known_basenames = set()
+  all_renames = set()
+
+  for source_set in disjoint_sets:
+    # Track needed adjustments to change when we're done with each SourceSet.
+    renames = set()
+
+    for source_name in source_set.sources:
+      folder, basename = os.path.split(source_name)
+
+      # Sanity check: source set should not have any renames prior to this step.
+      if RENAME_PREFIX in basename:
+        exit('Found unexpected renamed file in SourceSet: %s' % basename)
+
+      # Craft a new unique basename from the path of the colliding file
+      if basename in known_basenames:
+        name_parts = source_name.split(os.sep)
+        name_parts.insert(0, RENAME_PREFIX)
+        new_basename = '_'.join(name_parts)
+        new_source_name = os.sep.join([folder, new_basename])
+
+        renames.add(SourceRename(source_name, new_source_name))
+      else:
+        known_basenames.add(basename)
+
+    for rename in renames:
+      print "fixing basename collision: %s -> %s" % (rename.old_name, rename.new_name)
+
+      shutil.copy2(rename.old_name, rename.new_name)
+      source_set.sources.remove(rename.old_name);
+      source_set.sources.add(rename.new_name)
+      all_renames.add(rename.new_name)
+
+  # Now, with all collisions handled, walk the set of known sources and warn
+  # about any renames that were not replaced. This should indicate that an old
+  # collision is now resolved by some external/upstream change.
+  for source_name in all_sources:
+    if RENAME_PREFIX in source_name and source_name not in all_renames:
+      print "WARNING: %s no longer collides. DELETE ME!" % source_name
+
+
 def main():
   options, args = ParseOptions()
 
@@ -839,10 +900,11 @@ def main():
          'Are build_dir (%s) and/or source_dir (%s) options correct?' %
               (options.build_dir, options.source_dir))
 
+  FixObjectBasenameCollisions(sets, source_files);
+
   if not CheckLicensesForStaticLinking(sets, source_dir,
                                        options.print_licenses):
     exit ('GENERATE FAILED: invalid licenses detected.')
-
   print 'License checks passed.'
 
   # Open for writing.
