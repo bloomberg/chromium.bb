@@ -923,6 +923,7 @@ test("cc_perftests") {
     "layers/layer_perftest.cc",
     "layers/picture_layer_impl_perftest.cc",
     "playback/picture_pile_impl_perftest.cc",
+    "quads/draw_quad_perftest.cc",
     "raster/task_graph_runner_perftest.cc",
     "raster/texture_compressor_perftest.cc",
     "raster/tile_task_worker_pool_perftest.cc",
