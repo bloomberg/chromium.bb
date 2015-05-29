@@ -87,10 +87,6 @@ class HTMLDocument : public blink::WebViewClient,
   virtual blink::WebMediaPlayer* createMediaPlayer(
       blink::WebLocalFrame* frame,
       const blink::WebURL& url,
-      blink::WebMediaPlayerClient* client);
-  virtual blink::WebMediaPlayer* createMediaPlayer(
-      blink::WebLocalFrame* frame,
-      const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
       blink::WebContentDecryptionModule* initial_cdm);
   virtual blink::WebFrame* createChildFrame(

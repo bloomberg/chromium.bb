@@ -247,13 +247,6 @@ blink::WebLayerTreeView* HTMLDocument::layerTreeView() {
 blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
-    blink::WebMediaPlayerClient* client) {
-  return createMediaPlayer(frame, url, client, nullptr);
-}
-
-blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
-    blink::WebLocalFrame* frame,
-    const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     blink::WebContentDecryptionModule* initial_cdm) {
   blink::WebMediaPlayer* player =
