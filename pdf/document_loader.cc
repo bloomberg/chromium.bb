@@ -67,6 +67,15 @@ std::string GetMultiPartBoundary(const std::string& headers) {
   return std::string();
 }
 
+bool IsValidContentType(const std::string& type) {
+  return (EndsWith(type, "/pdf", false) ||
+          EndsWith(type, ".pdf", false) ||
+          EndsWith(type, "/x-pdf", false) ||
+          EndsWith(type, "/*", false) ||
+          EndsWith(type, "/acrobat", false) ||
+          EndsWith(type, "/unknown", false));
+}
+
 }  // namespace
 
 DocumentLoader::Client::~Client() {
@@ -106,7 +115,15 @@ bool DocumentLoader::Init(const pp::URLLoader& loader,
   uint32_t content_length = 0;
   std::string type;
   std::string disposition;
-  if (!response_headers.empty()) {
+
+  // This happens for PDFs not loaded from http(s) sources.
+  if (response_headers == "Content-Type: text/plain") {
+    if (!StartsWithASCII(url, "http://", false) &&
+        !StartsWithASCII(url, "https://", false)) {
+      type = "application/pdf";
+    }
+  }
+  if (type.empty() && !response_headers.empty()) {
     net::HttpUtil::HeadersIterator it(response_headers.begin(),
                                       response_headers.end(), "\n");
     while (it.GetNext()) {
@@ -128,18 +145,10 @@ bool DocumentLoader::Init(const pp::URLLoader& loader,
       }
     }
   }
-  if (!type.empty() &&
-      !EndsWith(type, "/pdf", false) &&
-      !EndsWith(type, ".pdf", false) &&
-      !EndsWith(type, "/x-pdf", false) &&
-      !EndsWith(type, "/*", false) &&
-      !EndsWith(type, "/acrobat", false) &&
-      !EndsWith(type, "/unknown", false)) {
+  if (!type.empty() && !IsValidContentType(type))
     return false;
-  }
-  if (StartsWithASCII(disposition, "attachment", false)) {
+  if (StartsWithASCII(disposition, "attachment", false))
     return false;
-  }
 
   if (content_length > 0)
     chunk_stream_.Preallocate(content_length);

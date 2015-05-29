@@ -167,12 +167,6 @@ class OutOfProcessInstance : public pp::Instance,
   // frame's origin.
   pp::URLLoader CreateURLLoaderInternal();
 
-  // Figure out the initial page to display based on #page=N and #nameddest=foo
-  // in the |url_|.
-  // Returns -1 if there is no valid fragment. The returned value is 0-based,
-  // whereas page=N is 1-based.
-  int GetInitialPage(const std::string& url);
-
   void FormDidOpen(int32_t result);
 
   std::string GetLocalizedString(PP_ResourceString id);
@@ -338,6 +332,8 @@ class OutOfProcessInstance : public pp::Instance,
 
   // The background color of the PDF viewer.
   uint32 background_color_;
+
+  DISALLOW_COPY_AND_ASSIGN(OutOfProcessInstance);
 };
 
 }  // namespace chrome_pdf

@@ -342,9 +342,9 @@ bool OutOfProcessInstance::Init(uint32_t argc,
 
   text_input_.reset(new pp::TextInput_Dev(this));
 
-  const char* stream_url = NULL;
-  const char* original_url = NULL;
-  const char* headers = NULL;
+  const char* stream_url = nullptr;
+  const char* original_url = nullptr;
+  const char* headers = nullptr;
   bool is_material = false;
   for (uint32_t i = 0; i < argc; ++i) {
     if (strcmp(argn[i], "src") == 0)
@@ -361,12 +361,6 @@ bool OutOfProcessInstance::Init(uint32_t argc,
     background_color_ = kBackgroundColorMaterial;
   else
     background_color_ = kBackgroundColor;
-
-  // TODO(raymes): This is a hack to ensure that if no headers are passed in
-  // then we get the right MIME type. When the in process plugin is removed we
-  // can fix the document loader properly and remove this hack.
-  if (!headers || strcmp(headers, "") == 0)
-    headers = "content-type: application/pdf";
 
   if (!original_url)
     return false;
@@ -443,7 +437,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     preview_engine_.reset();
     engine_.reset(PDFEngine::Create(this));
     engine_->SetGrayscale(dict.Get(pp::Var(kJSPrintPreviewGrayscale)).AsBool());
-    engine_->New(url_.c_str());
+    engine_->New(url_.c_str(), nullptr /* empty header */);
 
     print_preview_page_count_ =
         std::max(dict.Get(pp::Var(kJSPrintPreviewPageCount)).AsInt(), 0);
@@ -908,7 +902,7 @@ void OutOfProcessInstance::UpdateCursor(PP_CursorType_Dev cursor) {
   }
 
   cursor_interface->SetCursor(
-      pp_instance(), cursor_, pp::ImageData().pp_resource(), NULL);
+      pp_instance(), cursor_, pp::ImageData().pp_resource(), nullptr);
 }
 
 void OutOfProcessInstance::UpdateTickMarks(
@@ -1170,7 +1164,7 @@ void OutOfProcessInstance::PreviewDocumentLoadComplete() {
   if (print_preview_page_count_ == 0)
     return;
 
-  if (preview_pages_info_.size())
+  if (!preview_pages_info_.empty())
     LoadAvailablePreviewPage();
 }
 
@@ -1203,7 +1197,7 @@ void OutOfProcessInstance::PreviewDocumentLoadFailed() {
   preview_document_load_state_ = LOAD_STATE_FAILED;
   preview_pages_info_.pop();
 
-  if (preview_pages_info_.size())
+  if (!preview_pages_info_.empty())
     LoadAvailablePreviewPage();
 }
 
@@ -1353,7 +1347,7 @@ void OutOfProcessInstance::AppendBlankPrintPreviewPages() {
   if (print_preview_page_count_ == 0)
     return;
   engine_->AppendBlankPages(print_preview_page_count_);
-  if (preview_pages_info_.size() > 0)
+  if (!preview_pages_info_.empty())
     LoadAvailablePreviewPage();
 }
 
@@ -1386,7 +1380,7 @@ void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,
 }
 
 void OutOfProcessInstance::LoadAvailablePreviewPage() {
-  if (preview_pages_info_.size() <= 0 ||
+  if (preview_pages_info_.empty() ||
       document_load_state_ != LOAD_STATE_COMPLETE) {
     return;
   }

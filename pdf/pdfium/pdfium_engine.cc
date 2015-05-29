@@ -941,8 +941,8 @@ FPDF_FILEHANDLER* PDFiumEngine::Form_OpenFile(FPDF_FORMFILLINFO* param,
     url_str =
         base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(url));
   }
-  //  TODO: need to implement open file from the url
-  //  Use a file path for the ease of testing
+  // TODO: need to implement open file from the url
+  // Use a file path for the ease of testing
   FILE* file = fopen(XFA_TESTFILE("tem.txt"), mode);
   FPDF_FILE* file_wrapper = new FPDF_FILE;
   file_wrapper->file = file;
@@ -992,17 +992,11 @@ void PDFiumEngine::AddSegment(FX_DOWNLOADHINTS* param,
   return download_hints->loader->RequestData(offset, size);
 }
 
-bool PDFiumEngine::New(const char* url) {
-  url_ = url;
-  headers_ = std::string();
-  return true;
-}
-
 bool PDFiumEngine::New(const char* url,
                        const char* headers) {
   url_ = url;
   if (!headers)
-    headers_ = std::string();
+    headers_.clear();
   else
     headers_ = headers;
   return true;
@@ -1243,7 +1237,7 @@ void PDFiumEngine::FinishLoadingDocument() {
     FORM_DoPageAAction(new_page, form_, FPDFPAGE_AACTION_OPEN);
   }
 
-  if (doc_) // This can only happen if loading |doc_| fails.
+  if (doc_)  // This can only happen if loading |doc_| fails.
     client_->DocumentLoadComplete(pages_.size());
 }
 
@@ -2003,8 +1997,8 @@ void PDFiumEngine::StartFind(const char* text, bool case_sensitive) {
 
   if (pages_[current_page]->available()) {
     base::string16 str = base::UTF8ToUTF16(text);
-    // Don't use PDFium to search for now, since it doesn't support unicode text.
-    // Leave the code for now to avoid bit-rot, in case it's fixed later.
+    // Don't use PDFium to search for now, since it doesn't support unicode
+    // text. Leave the code for now to avoid bit-rot, in case it's fixed later.
     if (0) {
       SearchUsingPDFium(
           str, case_sensitive, first_search, character_to_start_searching_from,
@@ -2483,7 +2477,7 @@ bool PDFiumEngine::GetPageSizeAndUniformity(pp::Size* size) {
 }
 
 void PDFiumEngine::AppendBlankPages(int num_pages) {
-  DCHECK(num_pages != 0);
+  DCHECK_NE(num_pages, 0);
 
   if (!doc_)
     return;

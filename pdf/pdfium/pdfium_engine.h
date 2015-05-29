@@ -46,9 +46,7 @@ class PDFiumEngine : public PDFEngine,
   virtual ~PDFiumEngine();
 
   // PDFEngine implementation.
-  virtual bool New(const char* url);
-  virtual bool New(const char* url,
-                   const char* headers);
+  virtual bool New(const char* url, const char* headers);
   virtual void PageOffsetUpdated(const pp::Point& page_offset);
   virtual void PluginSizeUpdated(const pp::Size& size);
   virtual void ScrolledToXPosition(int position);

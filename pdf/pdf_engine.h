@@ -184,11 +184,10 @@ class PDFEngine {
   static PDFEngine* Create(Client* client);
 
   virtual ~PDFEngine() {}
+
   // Most of these functions are similar to the Pepper functions of the same
   // name, so not repeating the description here unless it's different.
-  virtual bool New(const char* url) = 0;
-  virtual bool New(const char* url,
-                   const char* headers) = 0;
+  virtual bool New(const char* url, const char* headers) = 0;
   virtual void PageOffsetUpdated(const pp::Point& page_offset) = 0;
   virtual void PluginSizeUpdated(const pp::Size& size) = 0;
   virtual void ScrolledToXPosition(int position) = 0;
