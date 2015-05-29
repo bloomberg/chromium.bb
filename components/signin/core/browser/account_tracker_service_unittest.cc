@@ -754,3 +754,37 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
     tracker.Shutdown();
   }
 }
+
+TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
+  // Start by creating a tracker and adding an account with a dotted account id
+  // because of an old bug in token service.  The token service would also add
+  // a correct non-dotted account id for the same account.
+  {
+    AccountTrackerService tracker;
+    tracker.Initialize(token_service(), signin_client());
+    tracker.EnableNetworkFetches();
+    SimulateTokenAvailable("foo.bar@gmail.com");
+    SimulateTokenAvailable("foobar@gmail.com");
+    ReturnOAuthUrlFetchSuccess("foo.bar@gmail.com");
+    ReturnOAuthUrlFetchSuccess("foobar@gmail.com");
+    tracker.Shutdown();
+  }
+
+  // Remove the bad account now from the token service to simulate that it
+  // has been "fixed".
+  SimulateTokenRevoked("foo.bar@gmail.com");
+
+  // Instantiate a new tracker and validate that it has only one account, and
+  // it is the correct non dotted one.
+  {
+    AccountTrackerService tracker;
+    tracker.Initialize(token_service(), signin_client());
+
+    ASSERT_TRUE(tracker.IsAllUserInfoFetched());
+    std::vector<AccountTrackerService::AccountInfo> infos =
+        tracker.GetAccounts();
+    ASSERT_EQ(1u, infos.size());
+    ASSERT_STREQ("foobar@gmail.com", infos[0].account_id.c_str());
+    tracker.Shutdown();
+  }
+}

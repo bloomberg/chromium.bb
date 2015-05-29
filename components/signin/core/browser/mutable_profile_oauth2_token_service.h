@@ -107,6 +107,8 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
                            FetchPersistentError);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
                            RetryBackoff);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
+                           CanonAndNonCanonAccountId);
 
   // WebDataServiceConsumer implementation:
   void OnWebDataServiceRequestDone(WebDataServiceBase::Handle handle,

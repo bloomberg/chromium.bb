@@ -568,12 +568,21 @@ void AccountTrackerService::DeleteFetcher(AccountInfoFetcher* fetcher) {
 void AccountTrackerService::LoadFromPrefs() {
   const base::ListValue* list =
       signin_client_->GetPrefs()->GetList(kAccountInfoPref);
+  std::set<std::string> to_remove;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     const base::DictionaryValue* dict;
     if (list->GetDictionary(i, &dict)) {
       base::string16 value;
       if (dict->GetString(kAccountKeyPath, &value)) {
         std::string account_id = base::UTF16ToUTF8(value);
+
+        // Ignore incorrectly persisted non-canonical account ids.
+        if (account_id.find('@') != std::string::npos &&
+            account_id != gaia::CanonicalizeEmail(account_id)) {
+          to_remove.insert(account_id);
+          continue;
+        }
+
         StartTrackingAccount(account_id);
         AccountState& state = accounts_[account_id];
 
@@ -610,6 +619,13 @@ void AccountTrackerService::LoadFromPrefs() {
   }
   last_updated_ = base::Time::FromInternalValue(
       signin_client_->GetPrefs()->GetInt64(kAccountTrackerServiceLastUpdate));
+
+  // Remove any obsolete prefs.
+  for (auto account_id : to_remove) {
+    AccountState state;
+    state.info.account_id = account_id;
+    RemoveFromPrefs(state);
+  }
 }
 
 void AccountTrackerService::SaveToPrefs(const AccountState& state) {

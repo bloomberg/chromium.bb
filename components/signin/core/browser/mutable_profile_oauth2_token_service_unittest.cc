@@ -467,3 +467,16 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, CanonicalizeAccountId) {
   EXPECT_TRUE(oauth2_service_.RefreshTokenIsAvailable("foobar@gmail.com"));
   EXPECT_TRUE(oauth2_service_.RefreshTokenIsAvailable("12345"));
 }
+
+TEST_F(MutableProfileOAuth2TokenServiceTest, CanonAndNonCanonAccountId) {
+  std::map<std::string, std::string> tokens;
+  tokens["AccountId-Foo.Bar@gmail.com"] = "bad_token";
+  tokens["AccountId-foobar@gmail.com"] = "good_token";
+
+  oauth2_service_.LoadAllCredentialsIntoMemory(tokens);
+
+  EXPECT_EQ(1u, oauth2_service_.GetAccounts().size());
+  EXPECT_TRUE(oauth2_service_.RefreshTokenIsAvailable("foobar@gmail.com"));
+  EXPECT_STREQ("good_token",
+               oauth2_service_.GetRefreshToken("foobar@gmail.com").c_str());
+}

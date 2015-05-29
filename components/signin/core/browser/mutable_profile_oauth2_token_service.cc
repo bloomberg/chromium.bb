@@ -295,8 +295,20 @@ void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
         // If the account_id is an email address, then canonicalize it.  This
         // is to support legacy account_ids, and will not be needed after
         // switching to gaia-ids.
-        if (account_id.find('@') != std::string::npos)
-          account_id = gaia::CanonicalizeEmail(account_id);
+        if (account_id.find('@') != std::string::npos) {
+          // If the canonical account id is not the same as the loaded
+          // account id, make sure not to overwrite a refresh token from
+          // a canonical version.  If no canonical version was loaded, then
+          // re-persist this refresh token with the canonical account id.
+          std::string canon_account_id = gaia::CanonicalizeEmail(account_id);
+          if (canon_account_id != account_id) {
+            ClearPersistedCredentials(account_id);
+            if (db_tokens.count(ApplyAccountIdPrefix(canon_account_id)) == 0)
+              PersistCredentials(canon_account_id, refresh_token);
+          }
+
+          account_id = canon_account_id;
+        }
 
         refresh_tokens()[account_id].reset(
             new AccountInfo(signin_error_controller(),
@@ -447,6 +459,11 @@ void MutableProfileOAuth2TokenService::RevokeAllCredentials() {
     RevokeCredentials(i->first);
 
   DCHECK_EQ(0u, refresh_tokens_.size());
+
+  // Make sure all tokens are removed.
+  scoped_refptr<TokenWebData> token_web_data = client()->GetDatabase();
+  if (token_web_data.get())
+    token_web_data->RemoveAllTokens();
 }
 
 void MutableProfileOAuth2TokenService::RevokeCredentialsOnServer(
