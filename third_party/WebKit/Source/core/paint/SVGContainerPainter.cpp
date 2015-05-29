@@ -23,12 +23,17 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
     if (!m_layoutSVGContainer.firstChild() && !m_layoutSVGContainer.selfWillPaint())
         return;
 
+    FloatRect boundingBox = m_layoutSVGContainer.paintInvalidationRectInLocalCoordinates();
+    if (!paintInfo.intersectsCullRect(m_layoutSVGContainer.localToParentTransform(), boundingBox))
+        return;
+
     // Spec: An empty viewBox on the <svg> element disables rendering.
     ASSERT(m_layoutSVGContainer.element());
     if (isSVGSVGElement(*m_layoutSVGContainer.element()) && toSVGSVGElement(*m_layoutSVGContainer.element()).hasEmptyViewBox())
         return;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
+    paintInfoBeforeFiltering.updateCullRectForSVGTransform(m_layoutSVGContainer.localToParentTransform());
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGContainer, m_layoutSVGContainer.localToParentTransform());
     {
         OwnPtr<FloatClipRecorder> clipRecorder;
@@ -50,7 +55,7 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
     }
 
     if (paintInfoBeforeFiltering.phase == PaintPhaseForeground && m_layoutSVGContainer.style()->outlineWidth() && m_layoutSVGContainer.style()->visibility() == VISIBLE) {
-        LayoutRect layoutBoundingBox(m_layoutSVGContainer.paintInvalidationRectInLocalCoordinates());
+        LayoutRect layoutBoundingBox(boundingBox);
         ObjectPainter(m_layoutSVGContainer).paintOutline(paintInfoBeforeFiltering, layoutBoundingBox, layoutBoundingBox);
     }
 }

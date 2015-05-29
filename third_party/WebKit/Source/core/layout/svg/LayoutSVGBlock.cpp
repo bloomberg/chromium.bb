@@ -126,29 +126,8 @@ void LayoutSVGBlock::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalid
     if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
-    if (paintInvalidationState.cachedOffsetsEnabled()) {
-        m_cachedPaintInvalidationTransform = paintInvalidationState.svgTransform();
-    } else {
-        m_cachedPaintInvalidationTransform.makeIdentity();
-        LayoutObject* next = parent();
-        while (!next->isSVGRoot()) {
-            m_cachedPaintInvalidationTransform = next->localToParentTransform() * m_cachedPaintInvalidationTransform;
-            next = next->parent();
-            ASSERT(next);
-        }
-        m_cachedPaintInvalidationTransform = toLayoutSVGRoot(next)->localToBorderBoxTransform() * m_cachedPaintInvalidationTransform;
-    }
-
     ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
     LayoutBlockFlow::invalidateTreeIfNeeded(paintInvalidationState);
-}
-
-void LayoutSVGBlock::updatePaintInfoRect(IntRect& rect)
-{
-    if (rect != LayoutRect::infiniteIntRect()) {
-        AffineTransform transformToRoot = m_cachedPaintInvalidationTransform * localTransform();
-        rect = enclosingIntRect(transformToRoot.inverse().mapRect(FloatRect(rect)));
-    }
 }
 
 }

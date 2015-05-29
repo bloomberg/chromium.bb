@@ -18,11 +18,8 @@ void SVGTextPainter::paint(const PaintInfo& paintInfo)
         return;
 
     PaintInfo blockInfo(paintInfo);
+    blockInfo.updateCullRectForSVGTransform(m_layoutSVGText.localToParentTransform());
     TransformRecorder transformRecorder(*blockInfo.context, m_layoutSVGText, m_layoutSVGText.localToParentTransform());
-
-    // When transitioning from SVG to block painters we need to keep the PaintInfo rect up-to-date
-    // because it can be used for clipping.
-    m_layoutSVGText.updatePaintInfoRect(blockInfo.rect);
 
     BlockPainter(m_layoutSVGText).paint(blockInfo, LayoutPoint());
 

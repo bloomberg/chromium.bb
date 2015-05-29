@@ -45,16 +45,17 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
 
     // Apply initial viewport clip.
     OwnPtr<ClipRecorder> clipRecorder;
-    if (m_layoutSVGRoot.shouldApplyViewportClip())
+    if (m_layoutSVGRoot.shouldApplyViewportClip()) {
+        // TODO(pdr): Clip the paint info cull rect here.
         clipRecorder = adoptPtr(new ClipRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintInfoBeforeFiltering.displayItemTypeForClipping(), LayoutRect(pixelSnappedIntRect(m_layoutSVGRoot.overflowClipRect(paintOffset)))));
+    }
 
     // Convert from container offsets (html layoutObjects) to a relative transform (svg layoutObjects).
     // Transform from our paint container's coordinate system to our local coords.
     IntPoint adjustedPaintOffset = roundedIntPoint(paintOffset);
-    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGRoot, AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()) * m_layoutSVGRoot.localToBorderBoxTransform());
-
-    // SVG doesn't use paintOffset internally but we need to bake it into the paint rect.
-    paintInfoBeforeFiltering.rect.move(-adjustedPaintOffset.x(), -adjustedPaintOffset.y());
+    AffineTransform paintOffsetToBorderBox = AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()) * m_layoutSVGRoot.localToBorderBoxTransform();
+    paintInfoBeforeFiltering.updateCullRectForSVGTransform(paintOffsetToBorderBox);
+    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintOffsetToBorderBox);
 
     SVGPaintContext paintContext(m_layoutSVGRoot, paintInfoBeforeFiltering);
     if (paintContext.paintInfo().phase == PaintPhaseForeground && !paintContext.applyClipMaskAndFilterIfNecessary())

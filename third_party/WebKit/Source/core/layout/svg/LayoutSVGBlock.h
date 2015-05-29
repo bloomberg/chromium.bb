@@ -43,9 +43,6 @@ public:
 
     virtual void invalidateTreeIfNeeded(PaintInvalidationState&) override;
 
-    // Transitioning out of SVG painters requires updating the PaintInfo rect which is only used by non-SVG painters.
-    void updatePaintInfoRect(IntRect&);
-
 protected:
     virtual void willBeDestroyed() override;
     virtual void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override final;
@@ -61,8 +58,6 @@ private:
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override final;
 
     virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
-
-    AffineTransform m_cachedPaintInvalidationTransform;
 };
 
 }

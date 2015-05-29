@@ -21,11 +21,8 @@ void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
         return;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
+    paintInfoBeforeFiltering.updateCullRectForSVGTransform(m_layoutSVGForeignObject.localTransform());
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGForeignObject, m_layoutSVGForeignObject.localTransform());
-
-    // When transitioning from SVG to block painters we need to keep the PaintInfo rect up-to-date
-    // because it can be used for clipping.
-    m_layoutSVGForeignObject.updatePaintInfoRect(paintInfoBeforeFiltering.rect);
 
     OwnPtr<FloatClipRecorder> clipRecorder;
     if (SVGLayoutSupport::isOverflowHidden(&m_layoutSVGForeignObject))

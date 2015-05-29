@@ -88,6 +88,17 @@ struct PaintInfo {
     ListHashSet<LayoutInline*>* outlineObjects() const { return m_outlineObjects; }
     void setOutlineObjects(ListHashSet<LayoutInline*>* objects) { m_outlineObjects = objects; }
 
+    bool intersectsCullRect(const AffineTransform& transform, const FloatRect& boundingBox) const
+    {
+        return transform.mapRect(boundingBox).intersects(rect);
+    }
+
+    void updateCullRectForSVGTransform(const AffineTransform& localToParentTransform)
+    {
+        if (rect != LayoutRect::infiniteIntRect())
+            rect = localToParentTransform.inverse().mapRect(rect);
+    }
+
     // FIXME: Introduce setters/getters at some point. Requires a lot of changes throughout layout/.
     GraphicsContext* context;
     IntRect rect; // dirty rect used for culling non-intersecting layoutObjects
