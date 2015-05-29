@@ -82,6 +82,10 @@ PassRefPtr<FormData> FormData::deepCopy() const
 {
     RefPtr<FormData> formData(create());
 
+    formData->m_identifier = m_identifier;
+    formData->m_boundary = m_boundary;
+    formData->m_containsPasswordData = m_containsPasswordData;
+
     size_t n = m_elements.size();
     formData->m_elements.reserveInitialCapacity(n);
     for (size_t i = 0; i < n; ++i) {

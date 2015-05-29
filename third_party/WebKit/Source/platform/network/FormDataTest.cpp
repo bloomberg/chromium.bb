@@ -48,6 +48,12 @@ TEST_F(FormDataTest, DeepCopy)
     original->appendBlob("originalUUID", nullptr);
     original->appendFileSystemURLRange(KURL(KURL(), "ws://localhost/"), 23456, 34567, 1111.0);
 
+    Vector<char> boundaryVector;
+    boundaryVector.append("----boundaryForTest", 19);
+    original->setIdentifier(45678);
+    original->setBoundary(boundaryVector);
+    original->setContainsPasswordData(true);
+
     RefPtr<FormData> copy = original->deepCopy();
 
     // Check that contents are copied (compare the copy with expected values).
@@ -75,6 +81,10 @@ TEST_F(FormDataTest, DeepCopy)
     EXPECT_EQ(23456ll, copyElements[3].m_fileStart);
     EXPECT_EQ(34567ll, copyElements[3].m_fileLength);
     EXPECT_EQ(1111.0, copyElements[3].m_expectedFileModificationTime);
+
+    EXPECT_EQ(45678, copy->identifier());
+    EXPECT_EQ(boundaryVector, copy->boundary());
+    EXPECT_EQ(true, copy->containsPasswordData());
 
     // Check that contents are copied (compare the copy with the original).
     EXPECT_EQ(*original, *copy);
