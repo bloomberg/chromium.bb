@@ -156,12 +156,19 @@ IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* scriptState, const Str
 short IDBFactory::cmp(ScriptState* scriptState, const ScriptValue& firstValue, const ScriptValue& secondValue, ExceptionState& exceptionState)
 {
     IDBKey* first = ScriptValue::to<IDBKey*>(scriptState->isolate(), firstValue, exceptionState);
-    IDBKey* second = ScriptValue::to<IDBKey*>(scriptState->isolate(), secondValue, exceptionState);
-
+    if (exceptionState.hadException())
+        return 0;
     ASSERT(first);
-    ASSERT(second);
+    if (!first->isValid()) {
+        exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
+        return 0;
+    }
 
-    if (!first->isValid() || !second->isValid()) {
+    IDBKey* second = ScriptValue::to<IDBKey*>(scriptState->isolate(), secondValue, exceptionState);
+    if (exceptionState.hadException())
+        return 0;
+    ASSERT(second);
+    if (!second->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
     }

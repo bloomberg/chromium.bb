@@ -187,7 +187,7 @@ v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creationCont
 
 static const size_t maximumDepth = 2000;
 
-static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> value, Vector<v8::Local<v8::Array>>& stack, bool allowExperimentalTypes = false)
+static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> value, Vector<v8::Local<v8::Array>>& stack, ExceptionState& exceptionState, bool allowExperimentalTypes = false)
 {
     if (value->IsNumber() && !std::isnan(value.As<v8::Number>()->Value()))
         return IDBKey::createNumber(value.As<v8::Number>()->Value());
@@ -222,11 +222,14 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> 
 
         IDBKey::KeyArray subkeys;
         uint32_t length = array->Length();
+        v8::TryCatch block;
         for (uint32_t i = 0; i < length; ++i) {
             v8::Local<v8::Value> item;
-            if (!array->Get(isolate->GetCurrentContext(), v8::Int32::New(isolate, i)).ToLocal(&item))
+            if (!v8Call(array->Get(isolate->GetCurrentContext(), i), item, block)) {
+                exceptionState.rethrowV8Exception(block.Exception());
                 return nullptr;
-            IDBKey* subkey = createIDBKeyFromValue(isolate, item, stack, allowExperimentalTypes);
+            }
+            IDBKey* subkey = createIDBKeyFromValue(isolate, item, stack, exceptionState, allowExperimentalTypes);
             if (!subkey)
                 subkeys.append(IDBKey::createInvalid());
             else
@@ -239,10 +242,10 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> 
     return nullptr;
 }
 
-static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> value, bool allowExperimentalTypes = false)
+static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState, bool allowExperimentalTypes = false)
 {
     Vector<v8::Local<v8::Array>> stack;
-    if (IDBKey* key = createIDBKeyFromValue(isolate, value, stack, allowExperimentalTypes))
+    if (IDBKey* key = createIDBKeyFromValue(isolate, value, stack, exceptionState, allowExperimentalTypes))
         return key;
     return IDBKey::createInvalid();
 }
@@ -295,7 +298,7 @@ static Vector<String> parseKeyPath(const String& keyPath)
     return elements;
 }
 
-static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, const String& keyPath, bool allowExperimentalTypes)
+static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, const String& keyPath, ExceptionState& exceptionState, bool allowExperimentalTypes)
 {
     Vector<String> keyPathElements = parseKeyPath(keyPath);
     ASSERT(isolate->InContext());
@@ -307,10 +310,10 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v
         if (!get(isolate, parentValue, keyPathElements[i], currentValue))
             return nullptr;
     }
-    return createIDBKeyFromValue(isolate, currentValue, allowExperimentalTypes);
+    return createIDBKeyFromValue(isolate, currentValue, exceptionState, allowExperimentalTypes);
 }
 
-static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v8::Value> value, const IDBKeyPath& keyPath, bool allowExperimentalTypes = false)
+static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v8::Value> value, const IDBKeyPath& keyPath, ExceptionState& exceptionState, bool allowExperimentalTypes = false)
 {
     ASSERT(!keyPath.isNull());
     v8::HandleScope handleScope(isolate);
@@ -318,7 +321,7 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v
         IDBKey::KeyArray result;
         const Vector<String>& array = keyPath.array();
         for (size_t i = 0; i < array.size(); ++i) {
-            IDBKey* key = createIDBKeyFromValueAndKeyPath(isolate, value, array[i], allowExperimentalTypes);
+            IDBKey* key = createIDBKeyFromValueAndKeyPath(isolate, value, array[i], exceptionState, allowExperimentalTypes);
             if (!key)
                 return nullptr;
             result.append(key);
@@ -327,7 +330,7 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v
     }
 
     ASSERT(keyPath.type() == IDBKeyPath::StringType);
-    return createIDBKeyFromValueAndKeyPath(isolate, value, keyPath.string(), allowExperimentalTypes);
+    return createIDBKeyFromValueAndKeyPath(isolate, value, keyPath.string(), exceptionState, allowExperimentalTypes);
 }
 
 // Deserialize just the value data & blobInfo from the given IDBValue.
@@ -503,13 +506,13 @@ SQLValue NativeValueTraits<SQLValue>::nativeValue(v8::Isolate* isolate, v8::Loca
 
 IDBKey* NativeValueTraits<IDBKey*>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
-    return createIDBKeyFromValue(isolate, value);
+    return createIDBKeyFromValue(isolate, value, exceptionState);
 }
 
 IDBKey* NativeValueTraits<IDBKey*>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState, const IDBKeyPath& keyPath)
 {
     IDB_TRACE("createIDBKeyFromValueAndKeyPath");
-    return createIDBKeyFromValueAndKeyPath(isolate, value, keyPath);
+    return createIDBKeyFromValueAndKeyPath(isolate, value, keyPath, exceptionState);
 }
 
 IDBKeyRange* NativeValueTraits<IDBKeyRange*>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
@@ -531,7 +534,9 @@ void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, const IDBValue*
 
     // This assertion is about already persisted data, so allow experimental types.
     const bool allowExperimentalTypes = true;
-    IDBKey* expectedKey = createIDBKeyFromValueAndKeyPath(isolate, scriptValue.v8Value(), value->keyPath(), allowExperimentalTypes);
+    TrackExceptionState exceptionState;
+    IDBKey* expectedKey = createIDBKeyFromValueAndKeyPath(isolate, scriptValue.v8Value(), value->keyPath(), exceptionState, allowExperimentalTypes);
+    ASSERT(!exceptionState.hadException());
     if (expectedKey && expectedKey->isEqual(value->primaryKey()))
         return;
 

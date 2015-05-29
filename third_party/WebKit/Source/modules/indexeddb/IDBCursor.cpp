@@ -150,6 +150,8 @@ void IDBCursor::continueFunction(ScriptState* scriptState, const ScriptValue& ke
 {
     IDB_TRACE("IDBCursor::continue");
     IDBKey* key = keyValue.isUndefined() || keyValue.isNull() ? nullptr : ScriptValue::to<IDBKey*>(scriptState->isolate(), keyValue, exceptionState);
+    if (exceptionState.hadException())
+        return;
     if (key && !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
@@ -161,11 +163,21 @@ void IDBCursor::continuePrimaryKey(ScriptState* scriptState, const ScriptValue& 
 {
     IDB_TRACE("IDBCursor::continuePrimaryKey");
     IDBKey* key = ScriptValue::to<IDBKey*>(scriptState->isolate(), keyValue, exceptionState);
-    IDBKey* primaryKey = ScriptValue::to<IDBKey*>(scriptState->isolate(), primaryKeyValue, exceptionState);
-    if (!key->isValid() || !primaryKey->isValid()) {
+    if (exceptionState.hadException())
+        return;
+    if (!key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
     }
+
+    IDBKey* primaryKey = ScriptValue::to<IDBKey*>(scriptState->isolate(), primaryKeyValue, exceptionState);
+    if (exceptionState.hadException())
+        return;
+    if (!primaryKey->isValid()) {
+        exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
+        return;
+    }
+
     continueFunction(key, primaryKey, exceptionState);
 }
 
