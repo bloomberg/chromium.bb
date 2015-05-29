@@ -95,8 +95,8 @@
     <dimen name="most_visited_three_column_min_width">450dp</dimen>
     <dimen name="icon_most_visited_layout_max_width">504dp</dimen>
     <dimen name="icon_most_visited_layout_padding_top">16dp</dimen>
-    <dimen name="icon_most_visited_layout_padding_side">4dp</dimen>
     <dimen name="icon_most_visited_layout_no_logo_padding_top">28dp</dimen>
+    <dimen name="icon_most_visited_layout_bleed">8dp</dimen>
     <dimen name="icon_most_visited_vertical_spacing">7dp</dimen>
     <dimen name="icon_most_visited_min_horizontal_spacing">4dp</dimen>
     <dimen name="icon_most_visited_max_horizontal_spacing">16dp</dimen>

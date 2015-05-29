@@ -626,8 +626,8 @@ public class NewTabPageView extends FrameLayout
 
         // Make the search box and logo the same width as the most visited tiles.
         if (mMostVisitedLayout.getVisibility() != GONE) {
-            int mostVisitedWidth = MeasureSpec.makeMeasureSpec(
-                    mMostVisitedLayout.getMeasuredWidth(), MeasureSpec.EXACTLY);
+            int mostVisitedWidth = MeasureSpec.makeMeasureSpec(mMostVisitedLayout.getMeasuredWidth()
+                    - mMostVisitedDesign.getMostVisitedLayoutBleed(), MeasureSpec.EXACTLY);
             int searchBoxHeight = MeasureSpec.makeMeasureSpec(
                     mSearchBoxView.getMeasuredHeight(), MeasureSpec.EXACTLY);
             int logoHeight = MeasureSpec.makeMeasureSpec(
@@ -768,6 +768,7 @@ public class NewTabPageView extends FrameLayout
     private interface MostVisitedDesign {
         int getNumberOfTiles(boolean searchProviderHasLogo);
         int getMostVisitedLayoutId();
+        int getMostVisitedLayoutBleed();
         void setSearchProviderHasLogo(View mostVisitedLayout, boolean hasLogo);
         View createMostVisitedItemView(LayoutInflater inflater, String url, String title,
                 String displayTitle, int index, boolean isInitialLoad);
@@ -806,6 +807,11 @@ public class NewTabPageView extends FrameLayout
         @Override
         public int getMostVisitedLayoutId() {
             return R.layout.most_visited_layout;
+        }
+
+        @Override
+        public int getMostVisitedLayoutBleed() {
+            return 0;
         }
 
         @Override
@@ -863,6 +869,7 @@ public class NewTabPageView extends FrameLayout
         private static final int ICON_BACKGROUND_COLOR = 0xff787878;
         private static final int ICON_MIN_SIZE_PX = 48;
 
+        private int mMostVisitedLayoutBleed;
         private int mMinIconSize;
         private int mDesiredIconSize;
         private RoundedIconGenerator mIconGenerator;
@@ -873,6 +880,8 @@ public class NewTabPageView extends FrameLayout
 
         IconMostVisitedDesign(Context context) {
             Resources res = context.getResources();
+            mMostVisitedLayoutBleed = res.getDimensionPixelSize(
+                    R.dimen.icon_most_visited_layout_bleed);
             mDesiredIconSize = res.getDimensionPixelSize(R.dimen.icon_most_visited_icon_size);
             // On ldpi devices, mDesiredIconSize could be even smaller than ICON_MIN_SIZE_PX.
             mMinIconSize = Math.min(mDesiredIconSize, ICON_MIN_SIZE_PX);
@@ -894,18 +903,16 @@ public class NewTabPageView extends FrameLayout
         }
 
         @Override
+        public int getMostVisitedLayoutBleed() {
+            return mMostVisitedLayoutBleed;
+        }
+
+        @Override
         public void setSearchProviderHasLogo(View mostVisitedLayout, boolean hasLogo) {
-            if (hasLogo) {
-                int paddingTop = getResources().getDimensionPixelSize(
-                        R.dimen.icon_most_visited_layout_padding_top);
-                int paddingSide = getResources().getDimensionPixelSize(
-                        R.dimen.icon_most_visited_layout_padding_side);
-                mostVisitedLayout.setPadding(paddingSide, paddingTop, paddingSide, 0);
-            } else {
-                int paddingTop = getResources().getDimensionPixelSize(
-                        R.dimen.icon_most_visited_layout_no_logo_padding_top);
-                mostVisitedLayout.setPadding(0, paddingTop, 0, 0);
-            }
+            int paddingTop = getResources().getDimensionPixelSize(hasLogo
+                    ? R.dimen.icon_most_visited_layout_padding_top
+                    : R.dimen.icon_most_visited_layout_no_logo_padding_top);
+            mostVisitedLayout.setPadding(0, paddingTop, 0, 0);
         }
 
         @Override
