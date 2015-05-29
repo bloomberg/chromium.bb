@@ -466,12 +466,9 @@ gfx::Rect NativeAppWindowCocoa::GetBounds() const {
 
 void NativeAppWindowCocoa::Show() {
   if (is_hidden_with_app_) {
-    // If there is a shim to gently request attention, return here. Otherwise
-    // show the window as usual.
-    if (apps::ExtensionAppShimHandler::ActivateAndRequestUserAttentionForWindow(
-            app_window_)) {
-      return;
-    }
+    apps::ExtensionAppShimHandler::UnhideWithoutActivationForWindow(
+        app_window_);
+    is_hidden_with_app_ = false;
   }
 
   [window_controller_ showWindow:nil];

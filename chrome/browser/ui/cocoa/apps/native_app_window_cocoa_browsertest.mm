@@ -111,12 +111,12 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
   other_native_window->HideWithApp();
   EXPECT_FALSE([other_ns_window isVisible]);
 
-  // HideWithApp, Show shows all windows for this app.
+  // HideWithApp, Show shows just one window since there's no shim.
   native_window->HideWithApp();
   EXPECT_FALSE([ns_window isVisible]);
   app_window->Show(AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
-  EXPECT_TRUE([other_ns_window isVisible]);
+  EXPECT_FALSE([other_ns_window isVisible]);
 
   // Hide the other window.
   other_app_window->Hide();
@@ -140,6 +140,7 @@ class MockAppShimHost : public apps::AppShimHandler::Host {
   MOCK_METHOD1(OnAppLaunchComplete, void(apps::AppShimLaunchResult));
   MOCK_METHOD0(OnAppClosed, void());
   MOCK_METHOD0(OnAppHide, void());
+  MOCK_METHOD0(OnAppUnhideWithoutActivation, void());
   MOCK_METHOD1(OnAppRequestUserAttention, void(apps::AppShimAttentionType));
   MOCK_CONST_METHOD0(GetProfilePath, base::FilePath());
   MOCK_CONST_METHOD0(GetAppId, std::string());
@@ -180,19 +181,23 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
   native_window->HideWithApp();
   EXPECT_FALSE([ns_window isVisible]);
 
-  // Show does not show any windows, it notifies the shim instead.
-  EXPECT_CALL(mock_host, OnAppRequestUserAttention(_));
+  // Show notifies the shim to unhide.
+  EXPECT_CALL(mock_host, OnAppUnhideWithoutActivation());
   EXPECT_CALL(*mock, FindHost(_, _)).WillOnce(Return(&mock_host));
   app_window->Show(extensions::AppWindow::SHOW_ACTIVE);
-  EXPECT_FALSE([ns_window isVisible]);
+  EXPECT_TRUE([ns_window isVisible]);
   testing::Mock::VerifyAndClearExpectations(mock);
   testing::Mock::VerifyAndClearExpectations(&mock_host);
 
+  // HideWithApp
+  native_window->HideWithApp();
+  EXPECT_FALSE([ns_window isVisible]);
+
   // Activate does the same.
-  EXPECT_CALL(mock_host, OnAppRequestUserAttention(_));
+  EXPECT_CALL(mock_host, OnAppUnhideWithoutActivation());
   EXPECT_CALL(*mock, FindHost(_, _)).WillOnce(Return(&mock_host));
   native_window->Activate();
-  EXPECT_FALSE([ns_window isVisible]);
+  EXPECT_TRUE([ns_window isVisible]);
   testing::Mock::VerifyAndClearExpectations(mock);
   testing::Mock::VerifyAndClearExpectations(&mock_host);
 }

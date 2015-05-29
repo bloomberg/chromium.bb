@@ -25,6 +25,10 @@ class AppShimHandler {
     virtual void OnAppClosed() = 0;
     // Invoked when the app should be hidden.
     virtual void OnAppHide() = 0;
+    // Invoked when a window becomes visible while the app is hidden. Ensures
+    // the shim's "Hide/Show" state is updated correctly and the app can be
+    // re-hidden.
+    virtual void OnAppUnhideWithoutActivation() = 0;
     // Invoked when the app is requesting user attention.
     virtual void OnAppRequestUserAttention(AppShimAttentionType type) = 0;
 

@@ -101,9 +101,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   static void FocusAppForWindow(extensions::AppWindow* app_window);
 
-  // Brings the window to the front without showing it and instructs the shim to
-  // request user attention. If there is no shim, show the app and return false.
-  static bool ActivateAndRequestUserAttentionForWindow(
+  // Instructs the shim to set it's "Hide/Show" state to not-hidden.
+  static void UnhideWithoutActivationForWindow(
       extensions::AppWindow* app_window);
 
   // Instructs the shim to request user attention. Returns false if there is no

@@ -128,6 +128,10 @@ class AppShimController : public IPC::Listener {
   // Hide this app.
   void OnHide();
 
+  // Set this app to the unhidden state. Happens when an app window shows
+  // itself.
+  void OnUnhideWithoutActivation();
+
   // Requests user attention.
   void OnRequestUserAttention();
   void OnSetUserAttention(apps::AppShimAttentionType attention_type);
@@ -282,6 +286,8 @@ bool AppShimController::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AppShimController, message)
     IPC_MESSAGE_HANDLER(AppShimMsg_LaunchApp_Done, OnLaunchAppDone)
     IPC_MESSAGE_HANDLER(AppShimMsg_Hide, OnHide)
+    IPC_MESSAGE_HANDLER(AppShimMsg_UnhideWithoutActivation,
+                        OnUnhideWithoutActivation)
     IPC_MESSAGE_HANDLER(AppShimMsg_RequestUserAttention, OnRequestUserAttention)
     IPC_MESSAGE_HANDLER(AppShimMsg_SetUserAttention, OnSetUserAttention)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -309,6 +315,10 @@ void AppShimController::OnLaunchAppDone(apps::AppShimLaunchResult result) {
 
 void AppShimController::OnHide() {
   [NSApp hide:nil];
+}
+
+void AppShimController::OnUnhideWithoutActivation() {
+  [NSApp unhideWithoutActivation];
 }
 
 void AppShimController::OnRequestUserAttention() {

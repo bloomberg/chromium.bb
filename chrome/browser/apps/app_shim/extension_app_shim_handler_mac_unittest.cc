@@ -123,6 +123,7 @@ class FakeHost : public apps::AppShimHandler::Host {
     ++close_count_;
   }
   void OnAppHide() override {}
+  void OnAppUnhideWithoutActivation() override {}
   void OnAppRequestUserAttention(AppShimAttentionType type) override {}
   base::FilePath GetProfilePath() const override {
     return profile_path_;

@@ -39,6 +39,7 @@ class FakeHost : public apps::AppShimHandler::Host {
   void OnAppLaunchComplete(AppShimLaunchResult result) override {}
   void OnAppClosed() override { handler_->OnShimClose(this); }
   void OnAppHide() override {}
+  void OnAppUnhideWithoutActivation() override {}
   void OnAppRequestUserAttention(AppShimAttentionType type) override {}
   base::FilePath GetProfilePath() const override { return profile_path_; }
   std::string GetAppId() const override { return app_id_; }

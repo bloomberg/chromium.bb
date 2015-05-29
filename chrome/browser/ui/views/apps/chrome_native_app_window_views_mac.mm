@@ -37,15 +37,7 @@ ChromeNativeAppWindowViewsMac::CreateNonStandardAppFrame() {
 }
 
 void ChromeNativeAppWindowViewsMac::Show() {
-  if (is_hidden_with_app_) {
-    // If there is a shim to gently request attention, return here. Otherwise
-    // show the window as usual.
-    if (apps::ExtensionAppShimHandler::ActivateAndRequestUserAttentionForWindow(
-            app_window())) {
-      return;
-    }
-  }
-
+  UnhideWithoutActivation();
   ChromeNativeAppWindowViews::Show();
 }
 
@@ -54,6 +46,11 @@ void ChromeNativeAppWindowViewsMac::ShowInactive() {
     return;
 
   ChromeNativeAppWindowViews::ShowInactive();
+}
+
+void ChromeNativeAppWindowViewsMac::Activate() {
+  UnhideWithoutActivation();
+  ChromeNativeAppWindowViews::Activate();
 }
 
 void ChromeNativeAppWindowViewsMac::FlashFrame(bool flash) {
@@ -71,4 +68,12 @@ void ChromeNativeAppWindowViewsMac::ShowWithApp() {
 void ChromeNativeAppWindowViewsMac::HideWithApp() {
   is_hidden_with_app_ = true;
   ChromeNativeAppWindowViews::Hide();
+}
+
+void ChromeNativeAppWindowViewsMac::UnhideWithoutActivation() {
+  if (is_hidden_with_app_) {
+    apps::ExtensionAppShimHandler::UnhideWithoutActivationForWindow(
+        app_window());
+    is_hidden_with_app_ = false;
+  }
 }

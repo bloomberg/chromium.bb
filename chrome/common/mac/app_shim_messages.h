@@ -69,3 +69,6 @@ IPC_MESSAGE_CONTROL0(AppShimHostMsg_QuitApp)
 // Instructs the shim to request or cancel user attention.
 IPC_MESSAGE_CONTROL1(AppShimMsg_SetUserAttention,
                      apps::AppShimAttentionType /* attention_type */)
+
+// Instructs the shim to show the app.
+IPC_MESSAGE_CONTROL0(AppShimMsg_UnhideWithoutActivation)

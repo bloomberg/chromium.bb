@@ -70,6 +70,7 @@ class AppListServiceMacInteractiveTest : public InProcessBrowserTest,
   }
   void OnAppClosed() override { NOTREACHED(); }
   void OnAppHide() override {}
+  void OnAppUnhideWithoutActivation() override {}
   void OnAppRequestUserAttention(apps::AppShimAttentionType type) override {}
   base::FilePath GetProfilePath() const override {
     NOTREACHED();  // Currently unused in this test.

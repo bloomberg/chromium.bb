@@ -25,6 +25,7 @@ class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
   // ui::BaseWindow implementation.
   void Show() override;
   void ShowInactive() override;
+  void Activate() override;
   void FlashFrame(bool flash) override;
 
   // NativeAppWindow implementation.
@@ -35,6 +36,9 @@ class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
   void HideWithApp() override;
 
  private:
+  // Unset is_hidden_with_app_ and tell the shim to unhide.
+  void UnhideWithoutActivation();
+
   // Whether this window last became hidden due to a request to hide the entire
   // app, e.g. via the dock menu or Cmd+H. This is set by Hide/ShowWithApp.
   bool is_hidden_with_app_;
