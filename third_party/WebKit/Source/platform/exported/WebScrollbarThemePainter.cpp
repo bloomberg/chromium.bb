@@ -28,8 +28,7 @@
 #include "public/platform/WebScrollbarThemePainter.h"
 
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/WebRect.h"
@@ -49,72 +48,82 @@ void WebScrollbarThemePainter::paintScrollbarBackground(WebCanvas* canvas, const
     SkRect clip = SkRect::MakeXYWH(rect.x, rect.y, rect.width, rect.height);
     canvas->clipRect(clip);
 
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    DisplayItemListContextRecorder contextRecorder(*context);
-    m_theme->paintScrollbarBackground(&contextRecorder.context(), m_scrollbar);
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
+    m_theme->paintScrollbarBackground(&pictureBuilder.context(), m_scrollbar);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 void WebScrollbarThemePainter::paintTrackBackground(WebCanvas* canvas, const WebRect& rect)
 {
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    DisplayItemListContextRecorder contextRecorder(*context);
-    m_theme->paintTrackBackground(&contextRecorder.context(), m_scrollbar, IntRect(rect));
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
+    m_theme->paintTrackBackground(&pictureBuilder.context(), m_scrollbar, intRect);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 void WebScrollbarThemePainter::paintBackTrackPart(WebCanvas* canvas, const WebRect& rect)
 {
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    DisplayItemListContextRecorder contextRecorder(*context);
-    m_theme->paintTrackPiece(&contextRecorder.context(), m_scrollbar, IntRect(rect), BackTrackPart);
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
+    m_theme->paintTrackPiece(&pictureBuilder.context(), m_scrollbar, intRect, BackTrackPart);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 void WebScrollbarThemePainter::paintForwardTrackPart(WebCanvas* canvas, const WebRect& rect)
 {
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    DisplayItemListContextRecorder contextRecorder(*context);
-    m_theme->paintTrackPiece(&contextRecorder.context(), m_scrollbar, IntRect(rect), ForwardTrackPart);
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
+    m_theme->paintTrackPiece(&pictureBuilder.context(), m_scrollbar, intRect, ForwardTrackPart);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 void WebScrollbarThemePainter::paintBackButtonStart(WebCanvas* canvas, const WebRect& rect)
 {
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    DisplayItemListContextRecorder contextRecorder(*context);
-    m_theme->paintButton(&contextRecorder.context(), m_scrollbar, IntRect(rect), BackButtonStartPart);
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
+    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar, intRect, BackButtonStartPart);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 void WebScrollbarThemePainter::paintBackButtonEnd(WebCanvas* canvas, const WebRect& rect)
 {
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    DisplayItemListContextRecorder contextRecorder(*context);
-    m_theme->paintButton(&contextRecorder.context(), m_scrollbar, IntRect(rect), BackButtonEndPart);
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
+    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar, intRect, BackButtonEndPart);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 void WebScrollbarThemePainter::paintForwardButtonStart(WebCanvas* canvas, const WebRect& rect)
 {
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    DisplayItemListContextRecorder contextRecorder(*context);
-    m_theme->paintButton(&contextRecorder.context(), m_scrollbar, IntRect(rect), ForwardButtonStartPart);
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
+    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar, intRect, ForwardButtonStartPart);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 void WebScrollbarThemePainter::paintForwardButtonEnd(WebCanvas* canvas, const WebRect& rect)
 {
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    DisplayItemListContextRecorder contextRecorder(*context);
-    m_theme->paintButton(&contextRecorder.context(), m_scrollbar, IntRect(rect), ForwardButtonEndPart);
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
+    m_theme->paintButton(&pictureBuilder.context(), m_scrollbar, intRect, ForwardButtonEndPart);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 void WebScrollbarThemePainter::paintTickmarks(WebCanvas* canvas, const WebRect& rect)
 {
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    DisplayItemListContextRecorder contextRecorder(*context);
-    m_theme->paintTickmarks(&contextRecorder.context(), m_scrollbar, IntRect(rect));
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
+    m_theme->paintTickmarks(&pictureBuilder.context(), m_scrollbar, intRect);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 void WebScrollbarThemePainter::paintThumb(WebCanvas* canvas, const WebRect& rect)
 {
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
-    DisplayItemListContextRecorder contextRecorder(*context);
-    m_theme->paintThumb(&contextRecorder.context(), m_scrollbar, IntRect(rect));
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
+    m_theme->paintThumb(&pictureBuilder.context(), m_scrollbar, intRect);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 WebScrollbarThemePainter::WebScrollbarThemePainter(ScrollbarTheme* theme, Scrollbar* scrollbar)
