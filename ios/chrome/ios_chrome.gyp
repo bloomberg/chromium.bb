@@ -135,6 +135,8 @@
         'browser/dom_distiller/dom_distiller_service_factory.h',
         'browser/experimental_flags.h',
         'browser/experimental_flags.mm',
+        'browser/file_metadata_util.h',
+        'browser/file_metadata_util.mm',
         'browser/find_in_page/find_in_page_controller.h',
         'browser/find_in_page/find_in_page_controller.mm',
         'browser/find_in_page/find_in_page_model.h',

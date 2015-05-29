@@ -36,6 +36,12 @@ const char kIosBookmarkFolderDefault[] = "ios.bookmark.default_folder";
 // the bookmark promo dialog.
 const char kIosBookmarkPromoAlreadySeen[] = "ios.bookmark.promo_already_seen";
 
+// Boolean which indicates if the user has already set a "do not backup" bit to
+// the OTR Profiles's state stash path to ensure that the folder is not
+// automatically synced to iCloud/iTunes.
+const char kOTRStashStatePathSystemBackupExcluded[] =
+    "ios.otr_stash_state_path_system_backup_excluded";
+
 // Whether Chrome should attempt to hand off the current URL to other Apple
 // devices that share an iCloud account.
 const char kIosHandoffToOtherDevices[] = "ios.handoff_to_other_devices";
