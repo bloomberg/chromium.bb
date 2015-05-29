@@ -51,9 +51,9 @@ function test()
 
     function step3()
     {
-        var eventListenersPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
-        eventListenersPane.settingsSelectElement.selectedIndex = 1;
-        eventListenersPane._changeSetting();
+        var eventListenersWidget = InspectorTest.eventListenersWidget();
+        eventListenersWidget._settingsSelectElement.selectedIndex = 1;
+        eventListenersWidget._changeSetting();
         InspectorTest.addResult("Listeners for selected node only(should be no listeners):");
         InspectorTest.expandAndDumpSelectedElementEventListeners(step4);
     }

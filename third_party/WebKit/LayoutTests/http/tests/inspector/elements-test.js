@@ -411,16 +411,22 @@ InspectorTest.toggleMatchedStyleProperty = function(propertyName, checked)
     treeItem._toggleEnabled({ target: { checked: checked }, consume: function() { } });
 }
 
-InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
+InspectorTest.eventListenersWidget = function()
 {
-    InspectorTest.addSniffer(WebInspector.EventListenersSidebarPane.prototype, "_eventListenersArivedForTest", listenersArrived);
-
     var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
     sidebarPane.expand();
+    return sidebarPane.children()[0];
+}
+
+InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
+{
+    InspectorTest.addSniffer(WebInspector.EventListenersWidget.prototype, "_eventListenersArrivedForTest", listenersArrived);
+
+    var eventListenersWidget = InspectorTest.eventListenersWidget();
 
     function listenersArrived()
     {
-        var listenerTypes = sidebarPane._eventListenersView._treeOutline.rootElement().children();
+        var listenerTypes = eventListenersWidget._eventListenersView._treeOutline.rootElement().children();
         for (var i = 0; i < listenerTypes.length; ++i) {
             listenerTypes[i].expand();
             var listenerItems = listenerTypes[i].children();
@@ -432,7 +438,7 @@ InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
 
     function objectsExpanded()
     {
-        var listenerTypes = sidebarPane._eventListenersView._treeOutline.rootElement().children();
+        var listenerTypes = eventListenersWidget._eventListenersView._treeOutline.rootElement().children();
         for (var i = 0; i < listenerTypes.length; ++i) {
             var eventType = listenerTypes[i]._title;
             InspectorTest.addResult("");
