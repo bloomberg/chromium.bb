@@ -19,6 +19,8 @@ enum PaintInvalidationReason {
     PaintInvalidationForcedByLayout,
     PaintInvalidationCompositingUpdate,
     PaintInvalidationBorderBoxChange,
+    PaintInvalidationContentBoxChange,
+    PaintInvalidationLayoutOverflowBoxChange,
     PaintInvalidationBoundsChange,
     PaintInvalidationLocationChange,
     PaintInvalidationBackgroundObscurationChange,

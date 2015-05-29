@@ -203,8 +203,7 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, con
         if (!shouldDrawBackgroundInSeparateBuffer && curLayer->blendMode() != WebBlendModeNormal)
             shouldDrawBackgroundInSeparateBuffer = true;
 
-        // The clipOccludesNextLayers condition must be evaluated first to avoid short-circuiting.
-        if (curLayer->clipOccludesNextLayers(curLayer == &fillLayer)
+        if (curLayer->clipOccludesNextLayers()
             && curLayer->hasOpaqueImage(&m_layoutBox)
             && curLayer->image()->canRender(m_layoutBox, m_layoutBox.style()->effectiveZoom())
             && curLayer->hasRepeatXY()
