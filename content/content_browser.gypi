@@ -1056,6 +1056,8 @@
       'browser/notifications/notification_database_data_conversions.h',
       'browser/notifications/notification_event_dispatcher_impl.cc',
       'browser/notifications/notification_event_dispatcher_impl.h',
+      'browser/notifications/notification_id_generator.cc',
+      'browser/notifications/notification_id_generator.h',
       'browser/notifications/notification_message_filter.cc',
       'browser/notifications/notification_message_filter.h',
       'browser/notifications/page_notification_delegate.cc',
