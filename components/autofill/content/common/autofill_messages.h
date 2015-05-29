@@ -192,6 +192,11 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_PreviewPasswordSuggestion,
                     base::string16 /* username */,
                     base::string16 /* password */)
 
+// Tells the renderer to find the focused password form (assuming it exists).
+// Renderer is expected to respond with the message
+// |AutofillHostMsg_FocusedPasswordFormFound|.
+IPC_MESSAGE_ROUTED0(AutofillMsg_FindFocusedPasswordForm)
+
 // Tells the renderer that this password form is not blacklisted.  A form can
 // be blacklisted if a user chooses "never save passwords for this site".
 IPC_MESSAGE_ROUTED1(AutofillMsg_FormNotBlacklisted,
@@ -343,3 +348,9 @@ IPC_MESSAGE_ROUTED5(
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_SetDataList,
                     std::vector<base::string16> /* values */,
                     std::vector<base::string16> /* labels */)
+
+// Inform the browser which password form is currently focused, as a response
+// to the |AutofillMsg_FindFocusedPasswordForm| request. If no password form
+// is focused, the response will contain an empty |autofill::PasswordForm|.
+IPC_MESSAGE_ROUTED1(AutofillHostMsg_FocusedPasswordFormFound,
+                    autofill::PasswordForm)

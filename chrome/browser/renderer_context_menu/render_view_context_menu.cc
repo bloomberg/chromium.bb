@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1800,7 +1801,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
-      // TODO(msramek): Force-save the password.
+      ChromePasswordManagerClient::FromWebContents(source_web_contents_)->
+          ForceSavePassword();
       break;
 
     default:

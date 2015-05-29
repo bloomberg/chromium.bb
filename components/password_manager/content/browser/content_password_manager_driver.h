@@ -61,6 +61,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   void PreviewSuggestion(const base::string16& username,
                          const base::string16& password) override;
   void ClearPreviewedForm() override;
+  void ForceSavePassword() override;
 
   PasswordGenerationManager* GetPasswordGenerationManager() override;
   PasswordManager* GetPasswordManager() override;
@@ -78,6 +79,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   void OnPasswordFormSubmitted(const autofill::PasswordForm& password_form);
   void OnInPageNavigation(const autofill::PasswordForm& password_form);
   void OnPasswordNoLongerGenerated(const autofill::PasswordForm& password_form);
+  void OnFocusedPasswordFormFound(const autofill::PasswordForm& password_form);
 
  private:
   content::RenderFrameHost* render_frame_host_;

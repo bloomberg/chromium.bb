@@ -249,6 +249,12 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
                           callback);
 }
 
+void ChromePasswordManagerClient::ForceSavePassword() {
+  password_manager::ContentPasswordManagerDriver* driver =
+      driver_factory_->GetDriverForFrame(web_contents()->GetFocusedFrame());
+  driver->ForceSavePassword();
+}
+
 void ChromePasswordManagerClient::NotifyUserAutoSignin(
     ScopedVector<autofill::PasswordForm> local_forms) {
   DCHECK(!local_forms.empty());

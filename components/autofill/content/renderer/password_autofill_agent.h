@@ -183,6 +183,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   void OnSetLoggingState(bool active);
   void OnAutofillUsernameAndPasswordDataReceived(
       const FormsPredictionsMap& predictions);
+  void OnFindFocusedPasswordForm();
 
   // Scans the given frame for password forms and sends them up to the browser.
   // If |only_visible| is true, only forms visible in the layout are sent.

@@ -30,6 +30,7 @@ class StubPasswordManagerDriver : public PasswordManagerDriver {
   void PreviewSuggestion(const base::string16& username,
                          const base::string16& password) override;
   void ClearPreviewedForm() override;
+  void ForceSavePassword() override;
   PasswordGenerationManager* GetPasswordGenerationManager() override;
   PasswordManager* GetPasswordManager() override;
   PasswordAutofillManager* GetPasswordAutofillManager() override;

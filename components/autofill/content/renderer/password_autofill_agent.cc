@@ -967,6 +967,8 @@ bool PasswordAutofillAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutofillMsg_SetLoggingState, OnSetLoggingState)
     IPC_MESSAGE_HANDLER(AutofillMsg_AutofillUsernameAndPasswordDataReceived,
                         OnAutofillUsernameAndPasswordDataReceived)
+    IPC_MESSAGE_HANDLER(AutofillMsg_FindFocusedPasswordForm,
+                        OnFindFocusedPasswordForm)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1239,6 +1241,25 @@ void PasswordAutofillAgent::OnSetLoggingState(bool active) {
 void PasswordAutofillAgent::OnAutofillUsernameAndPasswordDataReceived(
     const FormsPredictionsMap& predictions) {
   form_predictions_ = predictions;
+}
+
+void PasswordAutofillAgent::OnFindFocusedPasswordForm() {
+  scoped_ptr<PasswordForm> password_form;
+
+  blink::WebElement element = render_frame()->GetFocusedElement();
+  if (!element.isNull() && element.hasHTMLTagName("input")) {
+    blink::WebInputElement input = element.to<blink::WebInputElement>();
+    if (input.isPasswordField() && !input.form().isNull()) {
+      password_form = CreatePasswordForm(
+          input.form(), &nonscript_modified_values_, &form_predictions_);
+    }
+  }
+
+  if (!password_form.get())
+    password_form.reset(new PasswordForm());
+
+  Send(new AutofillHostMsg_FocusedPasswordFormFound(
+      routing_id(), *password_form));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

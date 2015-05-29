@@ -59,6 +59,7 @@ class ChromePasswordManagerClient
       const GURL& origin,
       base::Callback<void(const password_manager::CredentialInfo&)> callback)
       override;
+  void ForceSavePassword() override;
   void NotifyUserAutoSignin(
       ScopedVector<autofill::PasswordForm> local_forms) override;
   void AutomaticPasswordSave(scoped_ptr<password_manager::PasswordFormManager>
