@@ -190,6 +190,17 @@ IDBRequest* IDBIndex::getAll(ScriptState* scriptState, const ScriptValue& range,
     return getAllInternal(scriptState, range, maxCount, exceptionState, false);
 }
 
+IDBRequest* IDBIndex::getAllKeys(ScriptState* scriptState, const ScriptValue& range, ExceptionState& exceptionState)
+{
+    return getAllKeys(scriptState, range, std::numeric_limits<uint32_t>::max(), exceptionState);
+}
+
+IDBRequest* IDBIndex::getAllKeys(ScriptState* scriptState, const ScriptValue& range, uint32_t maxCount, ExceptionState& exceptionState)
+{
+    IDB_TRACE("IDBIndex::getAllKeys");
+    return getAllInternal(scriptState, range, maxCount, exceptionState, true /* keyOnly */);
+}
+
 IDBRequest* IDBIndex::getKey(ScriptState* scriptState, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::getKey");

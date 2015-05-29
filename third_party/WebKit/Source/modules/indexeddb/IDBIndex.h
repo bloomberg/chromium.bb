@@ -67,6 +67,8 @@ public:
     IDBRequest* getAll(ScriptState*, const ScriptValue& range, ExceptionState&);
     IDBRequest* getAll(ScriptState*, const ScriptValue& range, unsigned long maxCount, ExceptionState&);
     IDBRequest* getKey(ScriptState*, const ScriptValue& key, ExceptionState&);
+    IDBRequest* getAllKeys(ScriptState*, const ScriptValue& range, ExceptionState&);
+    IDBRequest* getAllKeys(ScriptState*, const ScriptValue& range, uint32_t maxCount, ExceptionState&);
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const;
