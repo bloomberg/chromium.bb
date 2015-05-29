@@ -37,11 +37,13 @@ static constexpr int32_t DT_ANDROID_RELASZ = DT_LOOS + 5;
 static constexpr uint32_t SHT_ANDROID_REL = SHT_LOOS + 1;
 static constexpr uint32_t SHT_ANDROID_RELA = SHT_LOOS + 2;
 
+static const size_t kPageSize = 4096;
+
 // Alignment to preserve, in bytes.  This must be at least as large as the
 // largest d_align and sh_addralign values found in the loaded file.
 // Out of caution for RELRO page alignment, we preserve to a complete target
 // page.  See http://www.airs.com/blog/archives/189.
-static constexpr size_t kPreserveAlignment = 4096;
+static const size_t kPreserveAlignment = kPageSize;
 
 // Get section data.  Checks that the section has exactly one data entry,
 // so that the section size and the data size are the same.  True in
@@ -300,15 +302,84 @@ static void AdjustSectionHeadersForHole(Elf* elf,
   }
 }
 
-// Helper for ResizeSection().  Adjust the offsets of any program headers
-// that have offsets currently beyond the hole start.
+// Helpers for ResizeSection().  On packing, reduce p_align for LOAD segments
+// to 4kb if larger.  On unpacking, restore p_align for LOAD segments if
+// packing reduced it to 4kb.  Return true if p_align was changed.
 template <typename ELF>
-static void AdjustProgramHeaderOffsets(typename ELF::Phdr* program_headers,
+static bool ClampLoadSegmentAlignment(typename ELF::Phdr* program_header) {
+  CHECK(program_header->p_type == PT_LOAD);
+
+  // If large, reduce p_align for a LOAD segment to page size on packing.
+  if (program_header->p_align > kPageSize) {
+    program_header->p_align = kPageSize;
+    return true;
+  }
+  return false;
+}
+
+template <typename ELF>
+static bool RestoreLoadSegmentAlignment(typename ELF::Phdr* program_headers,
+                                        size_t count,
+                                        typename ELF::Phdr* program_header) {
+  CHECK(program_header->p_type == PT_LOAD);
+
+  // If p_align was reduced on packing, restore it to its previous value
+  // on unpacking.  We do this by searching for a different LOAD segment
+  // and setting p_align to that of the other LOAD segment found.
+  //
+  // Relies on the following observations:
+  //   - a packable ELF executable has more than one LOAD segment;
+  //   - before packing all LOAD segments have the same p_align;
+  //   - on packing we reduce only one LOAD segment's p_align.
+  if (program_header->p_align == kPageSize) {
+    for (size_t i = 0; i < count; ++i) {
+      typename ELF::Phdr* other_header = &program_headers[i];
+      if (other_header->p_type == PT_LOAD && other_header != program_header) {
+        program_header->p_align = other_header->p_align;
+        return true;
+      }
+    }
+    LOG(WARNING) << "Cannot find a LOAD segment from which to restore p_align";
+  }
+  return false;
+}
+
+template <typename ELF>
+static bool AdjustLoadSegmentAlignment(typename ELF::Phdr* program_headers,
                                        size_t count,
-                                       typename ELF::Off hole_start,
+                                       typename ELF::Phdr* program_header,
                                        ssize_t hole_size) {
+  CHECK(program_header->p_type == PT_LOAD);
+
+  bool status = false;
+  if (hole_size < 0) {
+    status = ClampLoadSegmentAlignment<ELF>(program_header);
+  } else if (hole_size > 0) {
+    status = RestoreLoadSegmentAlignment<ELF>(program_headers,
+                                              count,
+                                              program_header);
+  }
+  return status;
+}
+
+// Helper for ResizeSection().  Adjust the offsets of any program headers
+// that have offsets currently beyond the hole start, and adjust the
+// virtual and physical addrs (and perhaps alignment) of the others.
+template <typename ELF>
+static void AdjustProgramHeaderFields(typename ELF::Phdr* program_headers,
+                                      size_t count,
+                                      typename ELF::Off hole_start,
+                                      ssize_t hole_size) {
+  int alignment_changes = 0;
   for (size_t i = 0; i < count; ++i) {
     typename ELF::Phdr* program_header = &program_headers[i];
+
+    // Do not adjust PT_GNU_STACK - it confuses gdb and results
+    // in incorrect unwinding if the executable is stripped after
+    // packing.
+    if (program_header->p_type == PT_GNU_STACK) {
+      continue;
+    }
 
     if (program_header->p_offset > hole_start) {
       // The hole start is past this segment, so adjust offset.
@@ -318,9 +389,24 @@ static void AdjustProgramHeaderOffsets(typename ELF::Phdr* program_headers,
     } else {
       program_header->p_vaddr -= hole_size;
       program_header->p_paddr -= hole_size;
+
+      // If packing, clamp LOAD segment alignment to 4kb to prevent strip
+      // from adjusting it unnecessarily if run on a packed file.  If
+      // unpacking, attempt to restore a reduced alignment to its previous
+      // value.  Ensure that we do this on at most one LOAD segment.
+      if (program_header->p_type == PT_LOAD) {
+        alignment_changes += AdjustLoadSegmentAlignment<ELF>(program_headers,
+                                                             count,
+                                                             program_header,
+                                                             hole_size);
+        LOG_IF(FATAL, alignment_changes > 1)
+            << "Changed p_align on more than one LOAD segment";
+      }
+
       VLOG(1) << "phdr[" << i
               << "] p_vaddr adjusted to "<< program_header->p_vaddr
-              << "; p_paddr adjusted to "<< program_header->p_paddr;
+              << "; p_paddr adjusted to "<< program_header->p_paddr
+              << "; p_align adjusted to "<< program_header->p_align;
     }
   }
 }
@@ -370,10 +456,10 @@ static void RewriteProgramHeadersForHole(Elf* elf,
   target_load_header->p_memsz += hole_size;
 
   // Adjust the offsets and p_vaddrs
-  AdjustProgramHeaderOffsets<ELF>(elf_program_header,
-                                  program_header_count,
-                                  hole_start,
-                                  hole_size);
+  AdjustProgramHeaderFields<ELF>(elf_program_header,
+                                 program_header_count,
+                                 hole_start,
+                                 hole_size);
 }
 
 // Helper for ResizeSection().  Locate and return the dynamic section.
@@ -461,6 +547,16 @@ void ElfFile<ELF>::AdjustDynamicSectionForHole(Elf_Scn* dynamic_section,
     // DT_RELSZ or DT_RELASZ indicate the overall size of relocations.
     // Only one will be present.  Adjust by hole size.
     if (tag == DT_RELSZ || tag == DT_RELASZ || tag == DT_ANDROID_RELSZ || tag == DT_ANDROID_RELASZ) {
+      dynamic->d_un.d_val += hole_size;
+      VLOG(1) << "dynamic[" << i << "] " << dynamic->d_tag
+              << " d_val adjusted to " << dynamic->d_un.d_val;
+    }
+
+    // Special case: DT_MIPS_RLD_MAP2 stores the difference between dynamic
+    // entry address and the address of the _r_debug (used by GDB)
+    // since the dynamic section and target address are on the
+    // different sides of the hole it needs to be adjusted accordingly
+    if (tag == DT_MIPS_RLD_MAP2) {
       dynamic->d_un.d_val += hole_size;
       VLOG(1) << "dynamic[" << i << "] " << dynamic->d_tag
               << " d_val adjusted to " << dynamic->d_un.d_val;
@@ -618,8 +714,8 @@ bool ElfFile<ELF>::PackTypedRelocations(std::vector<typename ELF::Rela>* relocat
   typedef typename ELF::Rela Rela;
 
   if (has_android_relocations_) {
-    LOG(ERROR) << "Relocation table is already packed";
-    return false;
+    LOG(INFO) << "Relocation table is already packed";
+    return true;
   }
 
   // If no relocations then we have nothing packable.  Perhaps
