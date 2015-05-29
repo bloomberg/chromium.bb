@@ -39,6 +39,10 @@ http://www.microsoft.com/downloads/details.aspx?FamilyID=A83C0E03-8913-47A3-ACB7
 <script>
 if (window.testRunner)
     window.testRunner.dumpSelectionRect();
-document.execCommand("SelectAll");
+var range = document.createRange();
+range.selectNode(window.document.documentElement);
+var selection = window.getSelection();
+selection.removeAllRanges();
+selection.addRange(range);
 </script>
 </svg>

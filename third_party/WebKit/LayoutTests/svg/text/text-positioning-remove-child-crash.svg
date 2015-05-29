@@ -7,7 +7,11 @@
     <text><a id="a"><tspan>FAIL</tspan></a></text>
 
 <script><![CDATA[
-document.execCommand("SelectAll");
+var range = document.createRange();
+range.selectNode(window.document.documentElement);
+var selection = window.getSelection();
+selection.removeAllRanges();
+selection.addRange(range);
 document.getElementById("a").textContent = "PASS";
 ]]></script>
 </svg>
