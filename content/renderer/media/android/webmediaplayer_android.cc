@@ -59,9 +59,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "ui/gfx/image/image.h"
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
@@ -89,39 +87,25 @@ void OnReleaseTexture(
   gl->DeleteTextures(1, &texture_id);
 }
 
-bool IsSkBitmapProperlySizedTexture(const SkBitmap* bitmap,
-                                    const gfx::Size& size) {
-  return bitmap->getTexture() && bitmap->width() == size.width() &&
-         bitmap->height() == size.height();
+bool IsSkImageProperlySizedTexture(const SkImage* image,
+                                   const gfx::Size& size) {
+  return image->getTexture() && image->width() == size.width() &&
+         image->height() == size.height();
 }
 
-bool AllocateSkBitmapTexture(GrContext* gr,
-                             SkBitmap* bitmap,
-                             const gfx::Size& size) {
+GrTexture* CreateGrTexture(GrContext* gr, const gfx::Size& size) {
   DCHECK(gr);
   GrTextureDesc desc;
   // Use kRGBA_8888_GrPixelConfig, not kSkia8888_GrPixelConfig, to avoid
   // RGBA to BGRA conversion.
   desc.fConfig = kRGBA_8888_GrPixelConfig;
-  // kRenderTarget_GrTextureFlagBit avoids a copy before readback in skia.
-  desc.fFlags = kRenderTarget_GrSurfaceFlag;
+  desc.fFlags = kNone_GrSurfaceFlags;
   desc.fSampleCnt = 0;
-  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+  desc.fOrigin = kBottomLeft_GrSurfaceOrigin;
   desc.fWidth = size.width();
   desc.fHeight = size.height();
-  skia::RefPtr<GrTexture> texture = skia::AdoptRef(
-      gr->textureProvider()->refScratchTexture(
-          desc, GrTextureProvider::kExact_ScratchTexMatch));
-  if (!texture.get())
-    return false;
-
-  SkImageInfo info = SkImageInfo::MakeN32Premul(desc.fWidth, desc.fHeight);
-  SkGrPixelRef* pixel_ref = SkNEW_ARGS(SkGrPixelRef, (info, texture.get()));
-  if (!pixel_ref)
-    return false;
-  bitmap->setInfo(info);
-  bitmap->setPixelRef(pixel_ref)->unref();
-  return true;
+  return gr->textureProvider()->refScratchTexture(
+      desc, GrTextureProvider::kExact_ScratchTexMatch);
 }
 
 class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
@@ -586,6 +570,8 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
                                   unsigned char alpha,
                                   SkXfermode::Mode mode) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (naturalSize().isEmpty())
+    return;
   scoped_ptr<blink::WebGraphicsContext3DProvider> provider =
     scoped_ptr<blink::WebGraphicsContext3DProvider>(blink::Platform::current(
       )->createSharedOffscreenGraphicsContext3DProvider());
@@ -595,23 +581,36 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   if (!context3D)
     return;
 
-  // Copy video texture into a RGBA texture based bitmap first as video texture
-  // on Android is GL_TEXTURE_EXTERNAL_OES which is not supported by Skia yet.
-  // The bitmap's size needs to be the same as the video and use naturalSize()
-  // here. Check if we could reuse existing texture based bitmap.
-  // Otherwise, release existing texture based bitmap and allocate
-  // a new one based on video size.
-  if (!IsSkBitmapProperlySizedTexture(&bitmap_, naturalSize())) {
-    if (!AllocateSkBitmapTexture(provider->grContext(), &bitmap_,
-                                 naturalSize())) {
+  // Copy video texture into a RGBA SkImage first as video texture on Android is
+  // GL_TEXTURE_EXTERNAL_OES which is not supported by Skia yet.
+  // The image's size needs to be the same as the video and use naturalSize()
+  // here. Check if we could reuse existing SkImage.
+  // Otherwise, release existing SkImage and allocate a new one based on video
+  // size.
+  if (!cache_image_.get() ||
+      !IsSkImageProperlySizedTexture(cache_image_.get(), naturalSize())) {
+    cache_texture_ =
+        skia::AdoptRef(CreateGrTexture(provider->grContext(), naturalSize()));
+    if (!cache_texture_.get()) {
+      PLOG(ERROR) << "Fail to create GrTexture.";
       return;
     }
+    GrBackendTextureDesc texture_description;
+    texture_description.fWidth = naturalSize().width;
+    texture_description.fHeight = naturalSize().height;
+    texture_description.fConfig = kRGBA_8888_GrPixelConfig;
+    texture_description.fTextureHandle = cache_texture_->getTextureHandle();
+    texture_description.fOrigin = kBottomLeft_GrSurfaceOrigin;
+    cache_image_ = skia::AdoptRef(
+        SkImage::NewFromTexture(provider->grContext(), texture_description));
+    DCHECK(cache_image_.get());
   }
 
-  unsigned textureId = static_cast<unsigned>(
-    (bitmap_.getTexture())->getTextureHandle());
-  if (!copyVideoTextureToPlatformTexture(context3D, textureId, 0,
-      GL_RGBA, GL_UNSIGNED_BYTE, true, false)) {
+  unsigned texture_id =
+      static_cast<unsigned>(cache_texture_->getTextureHandle());
+  if (!copyVideoTextureToPlatformTexture(context3D, texture_id, 0, GL_RGBA,
+                                         GL_UNSIGNED_BYTE, true, true)) {
+    NOTREACHED() << "Fail to copy video texture.";
     return;
   }
 
@@ -626,7 +625,7 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   paint.setXfermodeMode(mode);
   // It is not necessary to pass the dest into the drawBitmap call since all
   // the context have been set up before calling paintCurrentFrameInContext.
-  canvas->drawBitmapRect(bitmap_, 0, dest, &paint);
+  canvas->drawImageRect(cache_image_.get(), 0, dest, &paint);
 }
 
 bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(

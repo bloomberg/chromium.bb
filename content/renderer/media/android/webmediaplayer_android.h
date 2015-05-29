@@ -29,12 +29,15 @@
 #include "media/base/media_keys.h"
 #include "media/base/time_delta_interpolator.h"
 #include "media/cdm/proxy_decryptor.h"
+#include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect_f.h"
+
+class GrTexture;
+class SkImage;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -504,7 +507,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // player_manager_->SetCdm() directly.
   media::DecryptorReadyCB decryptor_ready_cb_;
 
-  SkBitmap bitmap_;
+  skia::RefPtr<SkImage> cache_image_;
+  skia::RefPtr<GrTexture> cache_texture_;
 
   // Whether stored credentials are allowed to be passed to the server.
   bool allow_stored_credentials_;
