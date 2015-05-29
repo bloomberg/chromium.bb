@@ -9,6 +9,7 @@
 __version__ = '0.1'
 
 import functools
+import json
 import logging
 import optparse
 import os
@@ -21,6 +22,11 @@ import auth
 import fix_encoding
 import rietveld
 
+THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
+sys.path.append(THIRD_PARTY_DIR)
+
+from cq_client import cq_pb2
+from google.protobuf import text_format
 
 def usage(more):
   def hook(fn):
@@ -101,6 +107,46 @@ def CMDclear(parser, args):
     parser.error('Unrecognized args: %s' % ' '.join(args))
   return set_commit(obj, options.issue, '0')
 
+
+def CMDbuilders(parser, args):
+  """Prints json-formatted list of builders given a path to cq.cfg file.
+
+  The output is a dictionary in the following format:
+    {
+      'master_name': {
+        'builder_name': {
+          'custom_property': 'value',
+          'testfilter': 'compile'
+        },
+        'another_builder': {}
+      },
+      'another_master': {
+        'third_builder': {}
+      }
+    }
+  """
+  _, args = parser.parse_args(args)
+  if len(args) != 1:
+    parser.error('Expected a single path to CQ config. Got: %s' %
+                 ' '.join(args))
+
+  with open(args[0]) as config_file:
+    cq_config = config_file.read()
+
+  config = cq_pb2.Config()
+  text_format.Merge(cq_config, config)
+  masters = {}
+  if config.HasField('verifiers') and config.verifiers.HasField('try_job'):
+    for bucket in config.verifiers.try_job.buckets:
+      masters.setdefault(bucket.name, {})
+      for builder in bucket.builders:
+        if not builder.HasField('experiment_percentage'):
+          masters[bucket.name].setdefault(builder.name, {})
+          for prop in builder.properties:
+            masters[bucket.name][builder.name][prop.name] = prop.value
+  print json.dumps(masters)
+
+CMDbuilders.func_usage_more = '<path-to-cq-config>'
 
 ###############################################################################
 ## Boilerplate code
