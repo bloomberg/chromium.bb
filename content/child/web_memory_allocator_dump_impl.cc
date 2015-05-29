@@ -22,6 +22,12 @@ void WebMemoryAllocatorDumpImpl::AddScalar(const blink::WebString& name,
   memory_allocator_dump_->AddScalar(name.utf8(), units, value);
 }
 
+void WebMemoryAllocatorDumpImpl::AddScalarF(const blink::WebString& name,
+                                            const char* units,
+                                            double value) {
+  memory_allocator_dump_->AddScalarF(name.utf8(), units, value);
+}
+
 void WebMemoryAllocatorDumpImpl::AddString(const blink::WebString& name,
                                            const char* units,
                                            const blink::WebString& value) {

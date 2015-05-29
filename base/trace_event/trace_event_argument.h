@@ -26,7 +26,7 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   void EndArray();
 
   void SetInteger(const char* name, int value);
-  void SetDouble(const char* name, double);
+  void SetDouble(const char* name, double value);
   void SetBoolean(const char* name, bool value);
   void SetString(const char* name, const std::string& value);
   void SetValue(const char* name, scoped_ptr<Value> value);

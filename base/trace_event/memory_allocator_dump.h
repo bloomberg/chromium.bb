@@ -60,6 +60,7 @@ class BASE_EXPORT MemoryAllocatorDump {
 
   // Helper setter for scalar attributes.
   void AddScalar(const std::string& name, const char* units, uint64 value);
+  void AddScalarF(const std::string& name, const char* units, double value);
   void AddString(const std::string& name,
                  const char* units,
                  const std::string& value);

@@ -114,6 +114,12 @@ void MemoryAllocatorDump::AddScalar(const std::string& name,
   Add(name, kTypeScalar, units, hex_value.Pass());
 }
 
+void MemoryAllocatorDump::AddScalarF(const std::string& name,
+                                     const char* units,
+                                     double value) {
+  Add(name, kTypeScalar, units, make_scoped_ptr(new FundamentalValue(value)));
+}
+
 void MemoryAllocatorDump::AddString(const std::string& name,
                                     const char* units,
                                     const std::string& value) {

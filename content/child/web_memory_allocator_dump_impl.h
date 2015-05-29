@@ -29,6 +29,9 @@ class WebMemoryAllocatorDumpImpl : public blink::WebMemoryAllocatorDump {
   virtual void AddScalar(const blink::WebString& name,
                          const char* units,
                          uint64 value);
+  virtual void AddScalarF(const blink::WebString& name,
+                          const char* units,
+                          double value);
   virtual void AddString(const blink::WebString& name,
                          const char* units,
                          const blink::WebString& value);

@@ -32,6 +32,7 @@ class FakeMemoryAllocatorDumpProvider : public MemoryDumpProvider {
                          MemoryAllocatorDump::kUnitsObjects, 42);
     root_heap->AddScalar("attr1", "units1", 1234);
     root_heap->AddString("attr2", "units2", "string_value");
+    root_heap->AddScalarF("attr3", "units3", 42.5f);
 
     MemoryAllocatorDump* sub_heap =
         pmd->CreateAllocatorDump("foobar_allocator/sub_heap");
@@ -50,33 +51,59 @@ class FakeMemoryAllocatorDumpProvider : public MemoryDumpProvider {
   }
 };
 
-void CheckAttribute(const MemoryAllocatorDump* dump,
+bool CheckAttribute(const MemoryAllocatorDump* dump,
                     const std::string& name,
                     const char* expected_type,
                     const char* expected_units,
-                    const std::string& expected_value) {
+                    const Value** out_value) {
   const char* attr_type;
   const char* attr_units;
-  const Value* attr_value;
-  std::string attr_str_value;
-  bool res = dump->Get(name, &attr_type, &attr_units, &attr_value);
+  bool res = dump->Get(name, &attr_type, &attr_units, out_value);
   EXPECT_TRUE(res);
   if (!res)
-    return;
+    return false;
   EXPECT_EQ(expected_type, std::string(attr_type));
   EXPECT_EQ(expected_units, std::string(attr_units));
+  return true;
+}
+
+void CheckString(const MemoryAllocatorDump* dump,
+                 const std::string& name,
+                 const char* expected_type,
+                 const char* expected_units,
+                 const std::string& expected_value) {
+  const Value* attr_value = nullptr;
+  std::string attr_str_value;
+  bool res =
+      CheckAttribute(dump, name, expected_type, expected_units, &attr_value);
+  if (!res)
+    return;
   EXPECT_TRUE(attr_value->GetAsString(&attr_str_value));
   EXPECT_EQ(expected_value, attr_str_value);
 }
 
-void CheckAttribute(const MemoryAllocatorDump* dump,
-                    const std::string& name,
-                    const char* expected_type,
-                    const char* expected_units,
-                    uint64 expected_value) {
-  CheckAttribute(dump, name, expected_type, expected_units,
-                 StringPrintf("%" PRIx64, expected_value));
+void CheckScalar(const MemoryAllocatorDump* dump,
+                 const std::string& name,
+                 const char* expected_units,
+                 uint64 expected_value) {
+  CheckString(dump, name, MemoryAllocatorDump::kTypeScalar, expected_units,
+              StringPrintf("%" PRIx64, expected_value));
 }
+
+void CheckScalarF(const MemoryAllocatorDump* dump,
+                  const std::string& name,
+                  const char* expected_units,
+                  double expected_value) {
+  const Value* attr_value = nullptr;
+  double attr_double_value;
+  bool res = CheckAttribute(dump, name, MemoryAllocatorDump::kTypeScalar,
+                            expected_units, &attr_value);
+  if (!res)
+    return;
+  EXPECT_TRUE(attr_value->GetAsDouble(&attr_double_value));
+  EXPECT_EQ(expected_value, attr_double_value);
+}
+
 }  // namespace
 
 TEST(MemoryAllocatorDumpTest, GuidGeneration) {
@@ -114,33 +141,27 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
       pmd.GetAllocatorDump("foobar_allocator");
   ASSERT_NE(nullptr, root_heap);
   EXPECT_EQ("foobar_allocator", root_heap->absolute_name());
-  CheckAttribute(root_heap, MemoryAllocatorDump::kNameOuterSize,
-                 MemoryAllocatorDump::kTypeScalar,
-                 MemoryAllocatorDump::kUnitsBytes, 4096);
-  CheckAttribute(root_heap, MemoryAllocatorDump::kNameInnerSize,
-                 MemoryAllocatorDump::kTypeScalar,
-                 MemoryAllocatorDump::kUnitsBytes, 1000);
-  CheckAttribute(root_heap, MemoryAllocatorDump::kNameObjectsCount,
-                 MemoryAllocatorDump::kTypeScalar,
-                 MemoryAllocatorDump::kUnitsObjects, 42);
-  CheckAttribute(root_heap, "attr1", MemoryAllocatorDump::kTypeScalar, "units1",
-                 1234);
-  CheckAttribute(root_heap, "attr2", MemoryAllocatorDump::kTypeString, "units2",
-                 "string_value");
+  CheckScalar(root_heap, MemoryAllocatorDump::kNameOuterSize,
+              MemoryAllocatorDump::kUnitsBytes, 4096);
+  CheckScalar(root_heap, MemoryAllocatorDump::kNameInnerSize,
+              MemoryAllocatorDump::kUnitsBytes, 1000);
+  CheckScalar(root_heap, MemoryAllocatorDump::kNameObjectsCount,
+              MemoryAllocatorDump::kUnitsObjects, 42);
+  CheckScalar(root_heap, "attr1", "units1", 1234);
+  CheckString(root_heap, "attr2", MemoryAllocatorDump::kTypeString, "units2",
+              "string_value");
+  CheckScalarF(root_heap, "attr3", "units3", 42.5f);
 
   const MemoryAllocatorDump* sub_heap =
       pmd.GetAllocatorDump("foobar_allocator/sub_heap");
   ASSERT_NE(nullptr, sub_heap);
   EXPECT_EQ("foobar_allocator/sub_heap", sub_heap->absolute_name());
-  CheckAttribute(sub_heap, MemoryAllocatorDump::kNameOuterSize,
-                 MemoryAllocatorDump::kTypeScalar,
-                 MemoryAllocatorDump::kUnitsBytes, 1);
-  CheckAttribute(sub_heap, MemoryAllocatorDump::kNameInnerSize,
-                 MemoryAllocatorDump::kTypeScalar,
-                 MemoryAllocatorDump::kUnitsBytes, 2);
-  CheckAttribute(sub_heap, MemoryAllocatorDump::kNameObjectsCount,
-                 MemoryAllocatorDump::kTypeScalar,
-                 MemoryAllocatorDump::kUnitsObjects, 3);
+  CheckScalar(sub_heap, MemoryAllocatorDump::kNameOuterSize,
+              MemoryAllocatorDump::kUnitsBytes, 1);
+  CheckScalar(sub_heap, MemoryAllocatorDump::kNameInnerSize,
+              MemoryAllocatorDump::kUnitsBytes, 2);
+  CheckScalar(sub_heap, MemoryAllocatorDump::kNameObjectsCount,
+              MemoryAllocatorDump::kUnitsObjects, 3);
 
   const MemoryAllocatorDump* empty_sub_heap =
       pmd.GetAllocatorDump("foobar_allocator/sub_heap/empty");

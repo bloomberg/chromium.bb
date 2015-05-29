@@ -40,9 +40,11 @@ TEST(WebProcessMemoryDumpImplTest, IntegrationTest) {
   // Make sure that pmd2 is still usable after it has been emptied.
   auto wmad = pmd2->createMemoryAllocatorDump("pmd2/new");
   wmad->AddScalar("attr_name", "bytes", 42);
+  wmad->AddScalarF("attr_name_2", "rate", 42.0f);
   ASSERT_EQ(1u, pmd2->process_memory_dump()->allocator_dumps().size());
   auto mad = pmd2->process_memory_dump()->GetAllocatorDump("pmd2/new");
   ASSERT_NE(static_cast<base::trace_event::MemoryAllocatorDump*>(nullptr), mad);
+  // Check that the attributes are propagated correctly.
   const char* attr_type = nullptr;
   const char* attr_units = nullptr;
   const base::Value* attr_value = nullptr;
@@ -50,6 +52,11 @@ TEST(WebProcessMemoryDumpImplTest, IntegrationTest) {
   ASSERT_TRUE(has_attr);
   ASSERT_STREQ(base::trace_event::MemoryAllocatorDump::kTypeScalar, attr_type);
   ASSERT_STREQ("bytes", attr_units);
+  ASSERT_NE(static_cast<base::Value*>(nullptr), attr_value);
+  has_attr = mad->Get("attr_name_2", &attr_type, &attr_units, &attr_value);
+  ASSERT_TRUE(has_attr);
+  ASSERT_STREQ(base::trace_event::MemoryAllocatorDump::kTypeScalar, attr_type);
+  ASSERT_STREQ("rate", attr_units);
   ASSERT_NE(static_cast<base::Value*>(nullptr), attr_value);
 
   // Check that AsValueInto() doesn't cause a crash.
