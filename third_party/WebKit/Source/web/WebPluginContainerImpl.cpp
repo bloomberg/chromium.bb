@@ -88,7 +88,6 @@
 #include "public/web/WebPrintPresetOptions.h"
 #include "public/web/WebViewClient.h"
 #include "web/ChromeClientImpl.h"
-#include "web/ScrollbarGroup.h"
 #include "web/WebDataSourceImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebViewImpl.h"
@@ -430,11 +429,6 @@ void WebPluginContainerImpl::reportGeometry()
     calculateGeometry(windowRect, clipRect, unobscuredRect, cutOutRects);
 
     m_webPlugin->updateGeometry(windowRect, clipRect, unobscuredRect, cutOutRects, isVisible());
-
-    if (m_scrollbarGroup) {
-        m_scrollbarGroup->scrollAnimator()->contentsResized();
-        m_scrollbarGroup->setFrameRect(frameRect());
-    }
 }
 
 void WebPluginContainerImpl::allowScriptObjects()
@@ -690,25 +684,6 @@ void WebPluginContainerImpl::willDestroyPluginLoadObserver(WebPluginLoadObserver
     m_pluginLoadObservers.remove(pos);
 }
 
-ScrollbarGroup* WebPluginContainerImpl::scrollbarGroup()
-{
-    if (!m_scrollbarGroup)
-        m_scrollbarGroup = adoptPtr(new ScrollbarGroup(m_element->document().frame()->view(), frameRect()));
-    return m_scrollbarGroup.get();
-}
-
-void WebPluginContainerImpl::willStartLiveResize()
-{
-    if (m_scrollbarGroup)
-        m_scrollbarGroup->willStartLiveResize();
-}
-
-void WebPluginContainerImpl::willEndLiveResize()
-{
-    if (m_scrollbarGroup)
-        m_scrollbarGroup->willEndLiveResize();
-}
-
 // Private methods -------------------------------------------------------------
 
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPlugin* webPlugin)
@@ -751,7 +726,6 @@ void WebPluginContainerImpl::dispose()
         GraphicsLayer::unregisterContentsLayer(m_webLayer);
 
     m_pluginLoadObservers.clear();
-    m_scrollbarGroup.clear();
     m_element = nullptr;
 }
 
@@ -797,18 +771,6 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
 
     if (event->type() == EventTypeNames::mousedown)
         focusPlugin();
-
-    if (m_scrollbarGroup) {
-        // This needs to be set before the other callbacks in this scope, since
-        // the scroll animator class might query the position in response.
-        m_scrollbarGroup->setLastMousePosition(IntPoint(event->x(), event->y()));
-        if (event->type() == EventTypeNames::mousemove)
-            m_scrollbarGroup->scrollAnimator()->mouseMovedInContentArea();
-        else if (event->type() == EventTypeNames::mouseover)
-            m_scrollbarGroup->scrollAnimator()->mouseEnteredContentArea();
-        else if (event->type() == EventTypeNames::mouseout)
-            m_scrollbarGroup->scrollAnimator()->mouseExitedContentArea();
-    }
 
     WebCursorInfo cursorInfo;
     if (m_webPlugin->handleInputEvent(webEvent, cursorInfo))
@@ -928,14 +890,6 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event)
     }
 }
 
-static inline bool gestureScrollHelper(ScrollbarGroup* scrollbarGroup, ScrollDirectionPhysical positiveDirection, ScrollDirectionPhysical negativeDirection, float delta)
-{
-    if (!delta)
-        return false;
-    float absDelta = delta > 0 ? delta : -delta;
-    return scrollbarGroup->scroll(delta < 0 ? negativeDirection : positiveDirection, ScrollByPrecisePixel, absDelta);
-}
-
 void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event)
 {
     WebGestureEventBuilder webEvent(m_element->layoutObject(), *event);
@@ -949,14 +903,6 @@ void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event)
         return;
     }
 
-    if (webEvent.type == WebInputEvent::GestureScrollUpdate) {
-        if (!m_scrollbarGroup)
-            return;
-        if (gestureScrollHelper(m_scrollbarGroup.get(), ScrollLeft, ScrollRight, webEvent.data.scrollUpdate.deltaX))
-            event->setDefaultHandled();
-        if (gestureScrollHelper(m_scrollbarGroup.get(), ScrollUp, ScrollDown, webEvent.data.scrollUpdate.deltaY))
-            event->setDefaultHandled();
-    }
     // FIXME: Can a plugin change the cursor from a touch-event callback?
 }
 

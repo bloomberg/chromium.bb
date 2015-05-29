@@ -124,11 +124,6 @@ void WebFrameWidgetImpl::willStartLiveResize()
 {
     if (m_localRoot->frameView())
         m_localRoot->frameView()->willStartLiveResize();
-
-    LocalFrame* frame = m_localRoot->frame();
-    WebPluginContainerImpl* pluginContainer = WebLocalFrameImpl::pluginContainerFromFrame(frame);
-    if (pluginContainer)
-        pluginContainer->willStartLiveResize();
 }
 
 void WebFrameWidgetImpl::resize(const WebSize& newSize)
@@ -205,11 +200,6 @@ void WebFrameWidgetImpl::willEndLiveResize()
 {
     if (m_localRoot->frameView())
         m_localRoot->frameView()->willEndLiveResize();
-
-    LocalFrame* frame = m_localRoot->frame();
-    WebPluginContainerImpl* pluginContainer = WebLocalFrameImpl::pluginContainerFromFrame(frame);
-    if (pluginContainer)
-        pluginContainer->willEndLiveResize();
 }
 
 void WebFrameWidgetImpl::willEnterFullScreen()

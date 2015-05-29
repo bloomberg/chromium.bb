@@ -53,7 +53,6 @@ class KeyboardEvent;
 class MouseEvent;
 class ResourceError;
 class ResourceResponse;
-class ScrollbarGroup;
 class TouchEvent;
 class WebPlugin;
 class WebPluginLoadObserver;
@@ -159,11 +158,6 @@ public:
 
     void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
 
-    ScrollbarGroup* scrollbarGroup();
-
-    void willStartLiveResize();
-    void willEndLiveResize();
-
     DECLARE_VIRTUAL_TRACE();
     virtual void dispose() override;
 
@@ -208,10 +202,6 @@ private:
 
     // TODO(schenney) Needed while layout is still called during paint in some plugins
     bool m_isInPaint;
-
-    // The associated scrollbar group object, created lazily. Used for Pepper
-    // scrollbars.
-    OwnPtr<ScrollbarGroup> m_scrollbarGroup;
 
     TouchEventRequestType m_touchEventRequestType;
     bool m_wantsWheelEvents;

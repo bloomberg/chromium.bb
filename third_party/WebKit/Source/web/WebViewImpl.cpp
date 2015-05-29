@@ -1743,11 +1743,6 @@ void WebViewImpl::willStartLiveResize()
 {
     if (mainFrameImpl() && mainFrameImpl()->frameView())
         mainFrameImpl()->frameView()->willStartLiveResize();
-
-    LocalFrame* frame = mainFrameImpl()->frame();
-    WebPluginContainerImpl* pluginContainer = WebLocalFrameImpl::pluginContainerFromFrame(frame);
-    if (pluginContainer)
-        pluginContainer->willStartLiveResize();
 }
 
 WebSize WebViewImpl::size()
@@ -1892,11 +1887,6 @@ void WebViewImpl::willEndLiveResize()
 {
     if (mainFrameImpl() && mainFrameImpl()->frameView())
         mainFrameImpl()->frameView()->willEndLiveResize();
-
-    LocalFrame* frame = mainFrameImpl()->frame();
-    WebPluginContainerImpl* pluginContainer = WebLocalFrameImpl::pluginContainerFromFrame(frame);
-    if (pluginContainer)
-        pluginContainer->willEndLiveResize();
 }
 
 void WebViewImpl::didEnterFullScreen()
