@@ -245,6 +245,7 @@ void DumpHistograms(const WebPerformance& performance,
   Time load_event_start = Time::FromDoubleT(performance.loadEventStart());
   Time load_event_end = Time::FromDoubleT(performance.loadEventEnd());
   Time begin = (request.is_null() ? navigation_start : request_start);
+  Time first_paint = document_state->first_paint_time();
 
   DCHECK(!navigation_start.is_null());
 
@@ -422,6 +423,10 @@ void DumpHistograms(const WebPerformance& performance,
                         load_event_end - navigation_start);
           PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy_AutoLoFiOn",
                         load_event_end - request_start);
+          if (!first_paint.is_null()) {
+            PLT_HISTOGRAM("PLT.BeginToFirstPaint_DataReductionProxy_AutoLoFiOn",
+                          first_paint - begin);
+          }
         } else if (auto_lofi_status ==
                    data_reduction_proxy::AUTO_LOFI_STATUS_OFF) {
           PLT_HISTOGRAM("PLT.PT_BeginToFinish_DataReductionProxy_AutoLoFiOff",
@@ -432,6 +437,11 @@ void DumpHistograms(const WebPerformance& performance,
                         load_event_end - navigation_start);
           PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy_AutoLoFiOff",
                         load_event_end - request_start);
+          if (!first_paint.is_null()) {
+            PLT_HISTOGRAM(
+                "PLT.BeginToFirstPaint_DataReductionProxy_AutoLoFiOff",
+                first_paint - begin);
+          }
         }
       } else {
         PLT_HISTOGRAM("PLT.PT_BeginToFinish_HTTPS_DataReductionProxy",
@@ -455,6 +465,11 @@ void DumpHistograms(const WebPerformance& performance,
           PLT_HISTOGRAM(
               "PLT.PT_StartToFinish_HTTPS_DataReductionProxy_AutoLoFiOn",
               load_event_end - request_start);
+          if (!first_paint.is_null()) {
+            PLT_HISTOGRAM(
+                "PLT.BeginToFirstPaint_HTTPS_DataReductionProxy_AutoLoFiOn",
+                first_paint - begin);
+          }
         } else if (auto_lofi_status ==
                    data_reduction_proxy::AUTO_LOFI_STATUS_OFF) {
           PLT_HISTOGRAM(
@@ -469,6 +484,11 @@ void DumpHistograms(const WebPerformance& performance,
           PLT_HISTOGRAM(
               "PLT.PT_StartToFinish_HTTPS_DataReductionProxy_AutoLoFiOff",
               load_event_end - request_start);
+          if (!first_paint.is_null()) {
+            PLT_HISTOGRAM(
+                "PLT.BeginToFirstPaint_HTTPS_DataReductionProxy_AutoLoFiOff",
+                first_paint - begin);
+          }
         }
       }
     }

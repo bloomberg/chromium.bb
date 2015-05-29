@@ -67520,6 +67520,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="HTTPS_DataReductionProxy_AutoLoFiOff"
       label="Only page loads through the data reduction proxy through an HTTP
              tunnel for HTTPS origins with auto LoFi disabled are considered."/>
+  <affected-histogram name="PLT.BeginToFirstPaint"/>
   <affected-histogram name="PLT.PT_BeginToFinish"/>
   <affected-histogram name="PLT.PT_CommitToFinish"/>
   <affected-histogram name="PLT.PT_RequestToDomContentLoaded"/>
