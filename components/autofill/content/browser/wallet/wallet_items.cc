@@ -128,13 +128,13 @@ scoped_ptr<WalletItems::MaskedInstrument>
   if (dictionary.GetString("type", &type_string)) {
     type = TypeFromString(type_string);
   } else {
-    DLOG(ERROR) << "Response from Google Wallet missing card type";
+    DLOG(ERROR) << "Response from Google Payments missing card type";
     return scoped_ptr<MaskedInstrument>();
   }
 
   base::string16 last_four_digits;
   if (!dictionary.GetString("last_four_digits", &last_four_digits)) {
-    DLOG(ERROR) << "Response from Google Wallet missing last four digits";
+    DLOG(ERROR) << "Response from Google Payments missing last four digits";
     return scoped_ptr<MaskedInstrument>();
   }
 
@@ -143,13 +143,13 @@ scoped_ptr<WalletItems::MaskedInstrument>
   if (dictionary.GetString("status", &status_string)) {
     status = StatusFromString(status_string);
   } else {
-    DLOG(ERROR) << "Response from Google Wallet missing status";
+    DLOG(ERROR) << "Response from Google Payments missing status";
     return scoped_ptr<MaskedInstrument>();
   }
 
   std::string object_id;
   if (!dictionary.GetString("object_id", &object_id)) {
-    DLOG(ERROR) << "Response from Google Wallet missing object id";
+    DLOG(ERROR) << "Response from Google Payments missing object id";
     return scoped_ptr<MaskedInstrument>();
   }
 
@@ -167,15 +167,15 @@ scoped_ptr<WalletItems::MaskedInstrument>
 
   int expiration_month;
   if (!dictionary.GetInteger("expiration_month", &expiration_month))
-    DVLOG(1) << "Response from Google Wallet missing expiration month";
+    DVLOG(1) << "Response from Google Payments missing expiration month";
 
   int expiration_year;
   if (!dictionary.GetInteger("expiration_year", &expiration_year))
-    DVLOG(1) << "Response from Google Wallet missing expiration year";
+    DVLOG(1) << "Response from Google Payments missing expiration year";
 
   base::string16 descriptive_name;
   if (!dictionary.GetString("descriptive_name", &descriptive_name))
-    DVLOG(1) << "Response from Google Wallet missing descriptive name";
+    DVLOG(1) << "Response from Google Payments missing descriptive name";
 
   return scoped_ptr<MaskedInstrument>(new MaskedInstrument(descriptive_name,
                                                            type,
@@ -362,19 +362,19 @@ scoped_ptr<WalletItems::LegalDocument>
     const base::DictionaryValue& dictionary) {
   std::string id;
   if (!dictionary.GetString("legal_document_id", &id)) {
-    DLOG(ERROR) << "Response from Google Wallet missing legal document id";
+    DLOG(ERROR) << "Response from Google Payments missing legal document id";
     return scoped_ptr<LegalDocument>();
   }
 
   base::string16 display_name;
   if (!dictionary.GetString("display_name", &display_name)) {
-    DLOG(ERROR) << "Response from Google Wallet missing display name";
+    DLOG(ERROR) << "Response from Google Payments missing display name";
     return scoped_ptr<LegalDocument>();
   }
 
   std::string url;
   if (!dictionary.GetString("url", &url)) {
-    DLOG(ERROR) << "Response from Google Wallet missing URL";
+    DLOG(ERROR) << "Response from Google Payments missing URL";
     return scoped_ptr<LegalDocument>();
   }
 

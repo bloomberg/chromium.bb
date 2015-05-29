@@ -28,21 +28,21 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
   std::string country_name_code;
   if (!dictionary.GetString("postal_address.country_name_code",
                             &country_name_code)) {
-    DLOG(ERROR) << "Response from Google Wallet missing country name";
+    DLOG(ERROR) << "Response from Google Payments missing country name";
     return NULL;
   }
 
   base::string16 recipient_name;
   if (!dictionary.GetString("postal_address.recipient_name",
                             &recipient_name)) {
-    DLOG(ERROR) << "Response from Google Wallet missing recipient name";
+    DLOG(ERROR) << "Response from Google Payments missing recipient name";
     return NULL;
   }
 
   base::string16 postal_code_number;
   if (!dictionary.GetString("postal_address.postal_code_number",
                             &postal_code_number)) {
-    DLOG(ERROR) << "Response from Google Wallet missing postal code number";
+    DLOG(ERROR) << "Response from Google Payments missing postal code number";
     return NULL;
   }
   // TODO(estade): what about postal_code_number_extension?
@@ -50,12 +50,12 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
   base::string16 sorting_code;
   if (!dictionary.GetString("postal_address.sorting_code",
                             &sorting_code)) {
-    DVLOG(1) << "Response from Google Wallet missing sorting code";
+    DVLOG(1) << "Response from Google Payments missing sorting code";
   }
 
   base::string16 phone_number;
   if (!dictionary.GetString("phone_number", &phone_number))
-    DVLOG(1) << "Response from Google Wallet missing phone number";
+    DVLOG(1) << "Response from Google Payments missing phone number";
 
   std::vector<base::string16> street_address;
   const base::ListValue* address_line_list;
@@ -66,31 +66,32 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
       street_address.push_back(line);
     }
   } else {
-    DVLOG(1) << "Response from Google Wallet missing address lines";
+    DVLOG(1) << "Response from Google Payments missing address lines";
   }
 
   base::string16 locality_name;
   if (!dictionary.GetString("postal_address.locality_name",
                             &locality_name)) {
-    DVLOG(1) << "Response from Google Wallet missing locality name";
+    DVLOG(1) << "Response from Google Payments missing locality name";
   }
 
   base::string16 dependent_locality_name;
   if (!dictionary.GetString("postal_address.dependent_locality_name",
                             &dependent_locality_name)) {
-    DVLOG(1) << "Response from Google Wallet missing dependent locality name";
+    DVLOG(1) << "Response from Google Payments missing dependent locality name";
   }
 
   base::string16 administrative_area_name;
   if (!dictionary.GetString("postal_address.administrative_area_name",
                             &administrative_area_name)) {
-    DVLOG(1) << "Response from Google Wallet missing administrative area name";
+    DVLOG(1)
+        << "Response from Google Payments missing administrative area name";
   }
 
   std::string language_code;
   if (!dictionary.GetString("postal_address.language_code",
                             &language_code)) {
-    DVLOG(1) << "Response from Google Wallet missing language code";
+    DVLOG(1) << "Response from Google Payments missing language code";
   }
 
   Address* address = new Address(country_name_code,
@@ -109,7 +110,7 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
   if (dictionary.GetBoolean("is_minimal_address", &is_minimal_address))
     address->set_is_complete_address(!is_minimal_address);
   else
-    DVLOG(1) << "Response from Google Wallet missing is_minimal_address bit";
+    DVLOG(1) << "Response from Google Payments missing is_minimal_address bit";
 
   return address;
 }
@@ -170,7 +171,7 @@ scoped_ptr<Address> Address::CreateAddressWithID(
     const base::DictionaryValue& dictionary) {
   std::string object_id;
   if (!dictionary.GetString("id", &object_id)) {
-    DLOG(ERROR) << "Response from Google Wallet missing object id";
+    DLOG(ERROR) << "Response from Google Payments missing object id";
     return scoped_ptr<Address>();
   }
   return scoped_ptr<Address>(CreateAddressInternal(dictionary, object_id));
@@ -189,25 +190,25 @@ scoped_ptr<Address> Address::CreateDisplayAddress(
     const base::DictionaryValue& dictionary) {
   std::string country_code;
   if (!dictionary.GetString("country_code", &country_code)) {
-    DLOG(ERROR) << "Reponse from Google Wallet missing country code";
+    DLOG(ERROR) << "Reponse from Google Payments missing country code";
     return scoped_ptr<Address>();
   }
 
   base::string16 name;
   if (!dictionary.GetString("name", &name)) {
-    DLOG(ERROR) << "Reponse from Google Wallet missing name";
+    DLOG(ERROR) << "Reponse from Google Payments missing name";
     return scoped_ptr<Address>();
   }
 
   base::string16 postal_code;
   if (!dictionary.GetString("postal_code", &postal_code)) {
-    DLOG(ERROR) << "Reponse from Google Wallet missing postal code";
+    DLOG(ERROR) << "Reponse from Google Payments missing postal code";
     return scoped_ptr<Address>();
   }
 
   base::string16 sorting_code;
   if (!dictionary.GetString("sorting_code", &sorting_code)) {
-    DVLOG(1) << "Reponse from Google Wallet missing sorting code";
+    DVLOG(1) << "Reponse from Google Payments missing sorting code";
   }
 
   std::vector<base::string16> street_address;
@@ -215,41 +216,41 @@ scoped_ptr<Address> Address::CreateDisplayAddress(
   if (dictionary.GetString("address1", &address1))
     street_address.push_back(address1);
   else
-    DVLOG(1) << "Reponse from Google Wallet missing address1";
+    DVLOG(1) << "Reponse from Google Payments missing address1";
 
   base::string16 address2;
   if (dictionary.GetString("address2", &address2) && !address2.empty()) {
     street_address.resize(2);
     street_address[1] = address2;
   } else {
-    DVLOG(1) << "Reponse from Google Wallet missing or empty address2";
+    DVLOG(1) << "Reponse from Google Payments missing or empty address2";
   }
 
   base::string16 city;
   if (!dictionary.GetString("city", &city))
-    DVLOG(1) << "Reponse from Google Wallet missing city";
+    DVLOG(1) << "Reponse from Google Payments missing city";
 
   base::string16 dependent_locality_name;
   if (!dictionary.GetString("dependent_locality_name",
                             &dependent_locality_name)) {
-    DVLOG(1) << "Reponse from Google Wallet missing district";
+    DVLOG(1) << "Reponse from Google Payments missing district";
   }
 
   base::string16 state;
   if (!dictionary.GetString("state", &state))
-    DVLOG(1) << "Reponse from Google Wallet missing state";
+    DVLOG(1) << "Reponse from Google Payments missing state";
 
   base::string16 phone_number;
   if (!dictionary.GetString("phone_number", &phone_number))
-    DVLOG(1) << "Reponse from Google Wallet missing phone number";
+    DVLOG(1) << "Reponse from Google Payments missing phone number";
 
   std::string address_state;
   if (!dictionary.GetString("type", &address_state))
-    DVLOG(1) << "Response from Google Wallet missing type/state of address";
+    DVLOG(1) << "Response from Google Payments missing type/state of address";
 
   std::string language_code;
   if (!dictionary.GetString("language_code", &language_code))
-    DVLOG(1) << "Response from Google Wallet missing language code";
+    DVLOG(1) << "Response from Google Payments missing language code";
 
   scoped_ptr<Address> address(
       new Address(country_code,

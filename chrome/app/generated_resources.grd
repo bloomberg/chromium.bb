@@ -5858,10 +5858,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Direction
       </message>
       <message name="IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_NAME" desc="Title for the flag to use the Online Wallet sandbox servers (instead of production).">
-        Use Wallet sandbox servers
+        Use Google Payments sandbox servers
       </message>
       <message name="IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_DESCRIPTION" desc="Description of the flag to use the Online Wallet sandbox servers.">
-        For developers: use the sandbox service for Wallet API calls for requestAutocomplete().
+        For developers: use the sandbox service for Google Payments API calls for requestAutocomplete().
       </message>
       <message name="IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_NAME" desc="Title for the flag for history navigation from horizontal overscroll.">
         Overscroll history navigation
@@ -10564,7 +10564,7 @@ Dead Jim feedback.
           Add a credit card
         </message>
         <message name="IDS_AUTOFILL_USE_WALLET_DATA" desc="The text for the checkbox that controls the Autofill/Wallet integration feature.">
-          Show addresses and credit cards from Google Wallet
+          Show addresses and credit cards from Google Payments
         </message>
 
         <message name="IDS_AUTOFILL_FIELD_LABEL_EMAIL" desc="The label of the Email entry.">
@@ -10973,13 +10973,13 @@ Dead Jim feedback.
           Pay
         </message>
         <message name="IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET" desc="This text is shown in a payment method chooser as a way for a user to pay with local Chrome Autofill data instead of using Wallet.">
-          Disable Google Wallet
+          Disable Google Payments
         </message>
         <message name="IDS_AUTOFILL_DIALOG_PAYING_WITHOUT_WALLET" desc="This text is shown as the click target for a dormant payment method chooser when using Chrome Autofill data instead of Wallet.">
-          Google Wallet disabled
+          Google Payments disabled
         </message>
         <message name="IDS_AUTOFILL_DIALOG_SIGN_IN" desc="This link text is shown when the user is not signed in to a GAIA account.">
-          Sign in to pay with Google Wallet
+          Sign in to pay with Google Payments
         </message>
         <message name="IDS_AUTOFILL_DIALOG_ADD_ACCOUNT" desc="This text is shown to allow the user to sign in to a different GAIA account (for multi-login).">
           Add account
@@ -10987,37 +10987,37 @@ Dead Jim feedback.
         <message name="IDS_AUTOFILL_DIALOG_CANCEL_SIGN_IN" desc="This link text is shown when the user is signing in to a GAIA account as a way to cancel sign in.">
           Back
         </message>
-        <message name="IDS_AUTOFILL_DIALOG_GOOGLE_WALLET" desc="The menu item that allows a user to select Google Wallet as their payment backend.">
-          Google Wallet
+        <message name="IDS_AUTOFILL_DIALOG_GOOGLE_WALLET" desc="The menu item that allows a user to select Google Payments as their payment backend.">
+          Google Payments
         </message>
 
         <!-- Autofill dialog: notification area -->
-        <message name="IDS_AUTOFILL_DIALOG_USE_WALLET" desc="Text that shows on top of the autofill dialog when using data Google Wallet already knows about the user.">
-          Protect your payment with Google Wallet.
+        <message name="IDS_AUTOFILL_DIALOG_USE_WALLET" desc="Text that shows on top of the autofill dialog when using data Google Payments already knows about the user.">
+          Protect your payment with Google Payments.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_USE_WALLET_LINK" desc="Text that shows as a link at the top of the autofill dialog to select to use Google wallet.">
-          Use Google Wallet
+          Use Google Payments
         </message>
-        <message name="IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET" desc="Text that shows on the top of the autofill dialog promoting saving info in Google Wallet.">
-          Save and protect your details with Google Wallet.
+        <message name="IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET" desc="Text that shows on the top of the autofill dialog promoting saving info in Google Payments.">
+          Save and protect your details with Google Payments.
         </message>
-        <message name="IDS_AUTOFILL_DIALOG_SAVE_IN_WALLET_TOOLTIP" desc="Tooltip text that explains how Google Wallet integration works.">
-          A Google Wallet Virtual Card will be used for this transaction. A Virtual Card is a new card number so the seller never sees your real credit card number.
+        <message name="IDS_AUTOFILL_DIALOG_SAVE_IN_WALLET_TOOLTIP" desc="Tooltip text that explains how Google Payments integration works.">
+          A Google Payments Virtual Card will be used for this transaction. A Virtual Card is a new card number so the seller never sees your real credit card number.
         </message>
-        <message name="IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET" desc="An error notification shown to users when Google Wallet is found to be unavailable.">
-          Oops, <ph name="WALLET_ERROR">$1<ex>Google Wallet is unavailable at this time.</ex></ph> You can complete this transaction without Google Wallet.
+        <message name="IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET" desc="An error notification shown to users when Google Payments is found to be unavailable.">
+          Oops, <ph name="WALLET_ERROR">$1<ex>Google Payments is unavailable at this time.</ex></ph> You can complete this transaction without Google Payments.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_SITE_WARNING" desc="Text that explains that user data will be sent to the site.">
           The following details will be shared with <ph name="SITE">$1<ex>www.shopping.com</ex></ph>
         </message>
-        <message name="IDS_AUTOFILL_DIALOG_VERIFY_CVV" desc="Text explaining a user must enter their CVV to continuing submitting for security purposes (while using Google Wallet).">
+        <message name="IDS_AUTOFILL_DIALOG_VERIFY_CVV" desc="Text explaining a user must enter their CVV to continuing submitting for security purposes (while using Google Payments).">
           For your security, please verify your card details.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_NOT_PROD_WARNING" desc="Text warning the user that they're not using the Online Wallet production server, so their purchases probably wont succeed.">
-          Warning: You are not connected to production Wallet servers. Issued cards will be invalid.
+          Warning: You are not connected to production Google Payments servers. Issued cards will be invalid.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_FAILED_TO_SAVE_WALLET_DATA" desc="Text advising the user that there was an unrecoverable validation error on the wallet server.">
-          Could not save data to Wallet.
+          Could not save data to Google Payments.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_CHOOSE_DIFFERENT_WALLET_INSTRUMENT" desc="Text asking the user to choose a different payment method or address when using wallet.">
           More information is needed to complete this purchase.
@@ -11028,7 +11028,7 @@ Dead Jim feedback.
           Loading payment details
         </message>
         <message name="IDS_AUTOFILL_DIALOG_CARD_GENERATION_IN_PROGRESS" desc="Text the user sees while waiting for the wallet servers to respond with a generated card number.">
-          Generating Google Wallet Virtual Card...
+          Generating Google Payments Virtual Card...
         </message>
         <message name="IDS_AUTOFILL_DIALOG_CARD_GENERATION_DONE" desc="Text the user sees after the wallet servers respond with a generated card number.">
           Your Virtual Card is ready.
@@ -11036,28 +11036,28 @@ Dead Jim feedback.
 
         <!--- Autofill dialog: Wallet error messages -->
         <message name="IDS_AUTOFILL_WALLET_BUYER_ACCOUNT_ERROR" desc="Text explaining that the user's Wallet account cannot be used.">
-          There's something wrong with your Google Wallet account.
+          There's something wrong with your Google Payments account.
         </message>
         <message name="IDS_AUTOFILL_WALLET_BUYER_COUNTRY_NOT_SUPPORTED" desc="Text explaining that the user's Wallet Buyer Legal Address has a country which is unsupported. The text inside the |bars| is link text.">
-          Unfortunately, Google Wallet can only be used at this merchant by buyers with a US address. If you are a US resident, please |change your home address with Wallet| or pay without using Google Wallet.
+          Unfortunately, Google Payments can only be used at this merchant by buyers with a US address. If you are a US resident, please |change your home address with Google Payments| or pay without using Google Payments.
         </message>
-        <message name="IDS_AUTOFILL_WALLET_UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS" desc="Text explaining that Google Wallet failed/pending Know Your Customer (KYC) check. The text inside the |bars| is link text.">
+        <message name="IDS_AUTOFILL_WALLET_UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS" desc="Text explaining that Google Payments failed/pending Know Your Customer (KYC) check. The text inside the |bars| is link text.">
           We were unable to verify your account information. |Fix this problem|
         </message>
-        <message name="IDS_AUTOFILL_WALLET_UNSUPPORTED_MERCHANT" desc="Text explaining that the merchant is blacklisted for Google Wallet Chrome Payments due to compliance violation.">
-          Google Wallet is not supported with this merchant.
+        <message name="IDS_AUTOFILL_WALLET_UNSUPPORTED_MERCHANT" desc="Text explaining that the merchant is blacklisted for Google Payments Chrome Payments due to compliance violation.">
+          Google Payments is not supported with this merchant.
         </message>
         <message name="IDS_AUTOFILL_WALLET_SERVICE_UNAVAILABLE_ERROR" desc="Text explaining that Wallet is currently unavailable.">
-          Google Wallet is currently unavailable.
+          Google Payments is currently unavailable.
         </message>
         <message name="IDS_AUTOFILL_WALLET_UNKNOWN_ERROR" desc="Text explaining that Wallet encountered an unknown error.">
-          Google Wallet has encountered an error.
+          Google Payments has encountered an error.
         </message>
         <message name="IDS_AUTOFILL_WALLET_UNSUPPORTED_AGENT_OR_API_KEY" desc="Text explaining that Wallet encountered an error with the Chrome version or Google API key.">
-          Google Wallet doesn't support this version of Chrome or doesn't recognize your Google API key.
+          Google Payments doesn't support this version of Chrome or doesn't recognize your Google API key.
         </message>
         <message name="IDS_AUTOFILL_WALLET_BAD_TRANSACTION_AMOUNT" desc="Text explaining that the transaction amoutn is too big or otherwise unrecognized.">
-          Wallet can't handle this transaction.
+          Google Payments can't handle this transaction.
         </message>
         <message name="IDS_AUTOFILL_WALLET_ERROR_CODE_TOOLTIP" desc="Text shown in a (?) tooltip to explain which error Chrome encountered when trying to communicate with Online Wallet.">
           Error code: <ph name="ERROR_CODE">$1<ex>54</ex></ph>
@@ -11125,31 +11125,31 @@ Dead Jim feedback.
         </message>
 
         <!-- Autofill dialog: legal documents -->
-        <message name="IDS_AUTOFILL_DIALOG_LOCATION_DISCLOSURE" desc="Text at the bottom of the autofill dialog which stands alone to inform the user that they'll be sharing their location with Google Wallet if they choose to proceed.">
-          By clicking Continue you agree to use Google Wallet. To protect you from fraud, information about your computer (including its location) will be shared with Google Wallet.
+        <message name="IDS_AUTOFILL_DIALOG_LOCATION_DISCLOSURE" desc="Text at the bottom of the autofill dialog which stands alone to inform the user that they'll be sharing their location with Google Payments if they choose to proceed.">
+          By clicking Continue you agree to use Google Payments. To protect you from fraud, information about your computer (including its location) will be shared with Google Payments.
         </message>
-        <message name="IDS_AUTOFILL_DIALOG_LOCATION_DISCLOSURE_WITH_LEGAL_DOCS" desc="Text at the bottom of the autofill dialog which informs the user that they'll be sharing their location with Google Wallet if they choose to proceed, appended to a message about accepting other legal documents like Terms of Service.">
-          <ph name="LEGAL_DOC_AGREEMENT">$1<ex>By clicking Continue you agree to the Google Wallet Terms of Service and Privacy Policy.</ex></ph> To protect you from fraud, information about your computer (including its location) will be shared with Google Wallet.
+        <message name="IDS_AUTOFILL_DIALOG_LOCATION_DISCLOSURE_WITH_LEGAL_DOCS" desc="Text at the bottom of the autofill dialog which informs the user that they'll be sharing their location with Google Payments if they choose to proceed, appended to a message about accepting other legal documents like Terms of Service.">
+          <ph name="LEGAL_DOC_AGREEMENT">$1<ex>By clicking Continue you agree to the Google Payments Terms of Service and Privacy Policy.</ex></ph> To protect you from fraud, information about your computer (including its location) will be shared with Google Payments.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_LEGAL_LINKS_2" desc="Label at the bottom of the autofill dialog that is shown when a user needs to accept legal documents (ex: Privacy Policy, Terms Of Service).">
-          By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Wallet Terms Of Service</ex></ph> and <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Privacy Policy</ex></ph>.
+          By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Payments Terms Of Service</ex></ph> and <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Privacy Policy</ex></ph>.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_LEGAL_LINKS_3" desc="Label at the bottom of the autofill dialog that is shown when a user needs to accept legal documents (ex: Privacy Policy, Terms Of Service).">
-          By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Wallet Terms Of Service</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Terms of Use</ex></ph>, and <ph name="LEGAL_DOC_LINK_TEXT_3">$3<ex>Privacy Policy</ex></ph>.
+          By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Payments Terms Of Service</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Terms of Use</ex></ph>, and <ph name="LEGAL_DOC_LINK_TEXT_3">$3<ex>Privacy Policy</ex></ph>.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_LEGAL_LINKS_4" desc="Label at the bottom of the autofill dialog that is shown when a user needs to accept legal documents (ex: Privacy Policy, Terms Of Service).">
-          By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Wallet Terms Of Service</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_3">$3<ex>Further Terms of Use</ex></ph>, and <ph name="LEGAL_DOC_LINK_TEXT_4">$4<ex>Privacy Policy</ex></ph>.
+          By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Payments Terms Of Service</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_3">$3<ex>Further Terms of Use</ex></ph>, and <ph name="LEGAL_DOC_LINK_TEXT_4">$4<ex>Privacy Policy</ex></ph>.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_LEGAL_LINKS_5" desc="Label at the bottom of the autofill dialog that is shown when a user needs to accept legal documents (ex: Privacy Policy, Terms Of Service).">
-          By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Wallet Terms Of Service</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_3">$3<ex>Further Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_4">$4<ex>Further Terms of Use</ex></ph>, and <ph name="LEGAL_DOC_LINK_TEXT_5">$5<ex>Privacy Policy</ex></ph>.
+          By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Payments Terms Of Service</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_3">$3<ex>Further Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_4">$4<ex>Further Terms of Use</ex></ph>, and <ph name="LEGAL_DOC_LINK_TEXT_5">$5<ex>Privacy Policy</ex></ph>.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_LEGAL_LINKS_6" desc="Label at the bottom of the autofill dialog that is shown when a user needs to accept legal documents (ex: Privacy Policy, Terms Of Service).">
-          By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Wallet Terms Of Service</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_3">$3<ex>Further Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_4">$4<ex>Further Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_5">$5<ex>Further Terms of Use</ex></ph>, and <ph name="LEGAL_DOC_LINK_TEXT_6">$6<ex>Privacy Policy</ex></ph>.
+          By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1">$1<ex>Google Payments Terms Of Service</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_2">$2<ex>Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_3">$3<ex>Further Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_4">$4<ex>Further Terms of Use</ex></ph>, <ph name="LEGAL_DOC_LINK_TEXT_5">$5<ex>Further Terms of Use</ex></ph>, and <ph name="LEGAL_DOC_LINK_TEXT_6">$6<ex>Privacy Policy</ex></ph>.
         </message>
 
         <!-- Autofill dialog: validation messages -->
         <message name="IDS_AUTOFILL_DIALOG_VALIDATION_WALLET_REQUIRES_TWO_NAMES" desc="Message displayed to user when card holder name validation for Wallet fails.">
-          Google Wallet requires at least a first and last name.
+          Google Payments requires at least a first and last name.
         </message>
         <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_EMAIL_ADDRESS" desc="Message displayed to user when email address validation fails.">
           Invalid email address. Please check and try again.
@@ -11187,12 +11187,12 @@ Dead Jim feedback.
 
         <!-- Autofill dialog post-submit bubbles -->
         <message name="IDS_AUTOFILL_GENERATED_CREDIT_CARD_BUBBLE_TITLE" desc="Title of a bubble shown directly after a new card has been generated via Online Wallet using the Autofill dialog.">
-          Google Wallet is protecting your card
+          Google Payments is protecting your card
         </message>
-        <message name="IDS_AUTOFILL_GENERATED_CREDIT_CARD_BUBBLE_CONTENTS" desc="Text in the bubble explaining that a temporary card has been generated for the user's security by Google Wallet.">
-          Your card has been protected with the Google Wallet Virtual Card (<ph name="FRONTING_CREDIT_CARD">|$1|<ex>Visa - 1234</ex></ph>) and this number will appear on your receipt. This purchase will still be charged to your <ph name="BACKING_CREDIT_CARD">|$2|<ex>Visa - 5678</ex></ph>.
+        <message name="IDS_AUTOFILL_GENERATED_CREDIT_CARD_BUBBLE_CONTENTS" desc="Text in the bubble explaining that a temporary card has been generated for the user's security by Google Payments.">
+          Your card has been protected with the Google Payments Virtual Card (<ph name="FRONTING_CREDIT_CARD">|$1|<ex>Visa - 1234</ex></ph>) and this number will appear on your receipt. This purchase will still be charged to your <ph name="BACKING_CREDIT_CARD">|$2|<ex>Visa - 5678</ex></ph>.
         </message>
-        <message name="IDS_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_LINK" desc="The text of a link at the bottom of the autofill dialog bubble that sends users to a Google Wallet billing/card management page.">
+        <message name="IDS_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_LINK" desc="The text of a link at the bottom of the autofill dialog bubble that sends users to a Google Payments billing/card management page.">
           Manage credit cards
         </message>
       </if>
@@ -11222,7 +11222,7 @@ Dead Jim feedback.
         New card?
       </message>
       <message name="IDS_AUTOFILL_FROM_GOOGLE_ACCOUNT" desc="The name of the Google product that stores user addresses or credit cards in the cloud." formatter_data="android_java">
-        Google Wallet
+        Google Payments
       </message>
       <message name="IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON" desc="The label of the button that clears the local copy of a Wallet Credit Card." formatter_data="android_java">
         Clear copy
@@ -14292,10 +14292,10 @@ After you create a new supervised user, you can manage their settings at any tim
         Enables using Google information to populate the profile name and icon in the avatar menu.
       </message>
       <message name="IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS" desc="Name of the flag to force show the checkbox to save Wallet cards locally.">
-        Enable Wallet card saving checkbox
+        Enable Google Payments card saving checkbox
       </message>
       <message name="IDS_FLAGS_ENABLE_OFFER_STORE_UNMASKED_WALLET_CARDS_DESCRIPTION" desc="Name of the flag to force show the checkbox to save Wallet cards locally.">
-        Show the checkbox to offer local saving of a Wallet credit card downloaded from the server.
+        Show the checkbox to offer local saving of a credit card downloaded from the server.
       </message>
       <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_NAME" desc="Name of the flag to make pages which failed to load while offline auto-reload">
         Enable Offline Auto-Reload Mode
@@ -15003,13 +15003,6 @@ After you create a new supervised user, you can manage their settings at any tim
       </message>
       <message name="IDS_FLAGS_ENABLE_SINGLE_CLICK_AUTOFILL_DESCRIPTION" desc="Description of the single click autofill lab">
         Make autofill suggestions on initial mouse click on a form element.
-      </message>
-
-      <message name="IDS_FLAGS_ENABLE_WALLET_CARD_IMPORT_NAME" desc="Name of a lab">
-        Import Wallet cards
-      </message>
-      <message name="IDS_FLAGS_ENABLE_WALLET_CARD_IMPORT_DESCRIPTION" desc="Description of a lab">
-        Import cards from my Wallet.
       </message>
 
       <if expr="is_android">

@@ -120,11 +120,11 @@
     </message>
   </if>
 
-  <message name="IDS_AUTOFILL_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET" desc="Message displayed to user when user entered a credit card number that is not supported by Google Wallet.">
-    This type of card is not supported by Google Wallet. Please select a different card.
+  <message name="IDS_AUTOFILL_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET" desc="Message displayed to user when user entered a credit card number that is not supported by Google Payments.">
+    This type of card is not supported by Google Payments. Please select a different card.
   </message>
-  <message name="IDS_AUTOFILL_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET_FOR_MERCHANT" desc="Message displayed to user when user entered a credit card number that is not supported by Google Wallet for the particular merchant site the user is on.">
-    This type of card is not supported by Google Wallet for this merchant. Please select a different card.
+  <message name="IDS_AUTOFILL_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET_FOR_MERCHANT" desc="Message displayed to user when user entered a credit card number that is not supported by Google Payments for the particular merchant site the user is on.">
+    This type of card is not supported by Google Payments for this merchant. Please select a different card.
   </message>
 
   <!-- Autofill on OSX -->
