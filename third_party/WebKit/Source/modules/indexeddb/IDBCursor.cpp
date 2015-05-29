@@ -162,6 +162,11 @@ void IDBCursor::continueFunction(ScriptState* scriptState, const ScriptValue& ke
 void IDBCursor::continuePrimaryKey(ScriptState* scriptState, const ScriptValue& keyValue, const ScriptValue& primaryKeyValue, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continuePrimaryKey");
+    if (m_source->type() != IDBAny::IDBIndexType) {
+        exceptionState.throwDOMException(InvalidAccessError, "The cursor's source is not an index.");
+        return;
+    }
+
     IDBKey* key = ScriptValue::to<IDBKey*>(scriptState->isolate(), keyValue, exceptionState);
     if (exceptionState.hadException())
         return;

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<title>IndexedDB: IDBCursor continuePrimaryKey() method</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+
+async_test(function(t) {
+    var dbname = document.location + '-' + t.name;
+    var del = indexedDB.deleteDatabase(dbname);
+    del.onerror = t.unreached_func('deleteDatabase should succeed');
+    var open = indexedDB.open(dbname);
+    open.onerror = t.unreached_func('open should succeed');
+
+    open.onupgradeneeded = t.step_func(function() {
+        var db = open.result;
+        var store = db.createObjectStore('store');
+        store.put('a', 1).onerror = t.unreached_func('put should not fail');
+        var request = store.openCursor();
+        request.onerror = t.unreached_func('openCursor should not fail');
+        request.onsuccess = function() {
+            var cursor = request.result;
+            assert_class_string(cursor, 'IDBCursorWithValue',
+                'result should be a cursor');
+
+            assert_throws('InvalidAccessError', function() {
+                cursor.continuePrimaryKey(2, 2);
+            }, 'continuePrimaryKey() should throw if source is not an index');
+        };
+    });
+
+    open.onsuccess = t.step_func(function() {
+        var db = open.result;
+        db.close();
+        t.done();
+    });
+
+}, 'IDBCursor continuePrimaryKey() on object store cursor');
+
+</script>
