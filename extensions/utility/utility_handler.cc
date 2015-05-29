@@ -16,6 +16,7 @@
 #include "extensions/utility/unpacker.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/zlib/google/zip.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace extensions {
@@ -29,6 +30,9 @@ bool Send(IPC::Message* message) {
 void ReleaseProcessIfNeeded() {
   content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
+
+const char kExtensionHandlerUnzipError[] =
+    "Could not unzip extension for install.";
 
 }  // namespace
 
@@ -49,9 +53,10 @@ void UtilityHandler::UtilityThreadStarted() {
 bool UtilityHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(UtilityHandler, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_UnpackExtension, OnUnpackExtension)
     IPC_MESSAGE_HANDLER(ExtensionUtilityMsg_ParseUpdateManifest,
                         OnParseUpdateManifest)
+    IPC_MESSAGE_HANDLER(ExtensionUtilityMsg_UnzipToDir, OnUnzipToDir)
+    IPC_MESSAGE_HANDLER(ExtensionUtilityMsg_UnpackExtension, OnUnpackExtension)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -69,6 +74,18 @@ void UtilityHandler::OnParseUpdateManifest(const std::string& xml) {
   ReleaseProcessIfNeeded();
 }
 
+void UtilityHandler::OnUnzipToDir(const base::FilePath& zip_path,
+                                  const base::FilePath& dir) {
+  if (!zip::Unzip(zip_path, dir)) {
+    Send(new ExtensionUtilityHostMsg_UnzipToDir_Failed(
+        std::string(kExtensionHandlerUnzipError)));
+  } else {
+    Send(new ExtensionUtilityHostMsg_UnzipToDir_Succeeded(dir));
+  }
+
+  ReleaseProcessIfNeeded();
+}
+
 void UtilityHandler::OnUnpackExtension(
     const base::FilePath& extension_path,
     const std::string& extension_id,
@@ -83,10 +100,10 @@ void UtilityHandler::OnUnpackExtension(
                     creation_flags);
   if (unpacker.Run() && unpacker.DumpImagesToFile() &&
       unpacker.DumpMessageCatalogsToFile()) {
-    Send(new ChromeUtilityHostMsg_UnpackExtension_Succeeded(
+    Send(new ExtensionUtilityHostMsg_UnpackExtension_Succeeded(
         *unpacker.parsed_manifest()));
   } else {
-    Send(new ChromeUtilityHostMsg_UnpackExtension_Failed(
+    Send(new ExtensionUtilityHostMsg_UnpackExtension_Failed(
         unpacker.error_message()));
   }
 

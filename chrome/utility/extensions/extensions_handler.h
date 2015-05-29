@@ -35,7 +35,6 @@ class ExtensionsHandler : public UtilityMessageHandler {
 
  private:
   // IPC message handlers.
-  void OnUnzipToDir(const base::FilePath& zip_path, const base::FilePath& dir);
   void OnCheckMediaFile(int64 milliseconds_of_decoding,
                         const IPC::PlatformFileForTransit& media_file);
 

@@ -41,9 +41,15 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_CONTROL1(ExtensionUtilityMsg_ParseUpdateManifest,
                      std::string /* xml document contents */)
 
+// Tell the utility process to unzip the zipfile at a given path into a
+// directory at the second given path.
+IPC_MESSAGE_CONTROL2(ExtensionUtilityMsg_UnzipToDir,
+                     base::FilePath /* zip_file */,
+                     base::FilePath /* dir */)
+
 // Tells the utility process to unpack the given extension file in its
 // directory and verify that it is valid.
-IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_UnpackExtension,
+IPC_MESSAGE_CONTROL4(ExtensionUtilityMsg_UnpackExtension,
                      base::FilePath /* extension_filename */,
                      std::string /* extension_id */,
                      int /* Manifest::Location */,
@@ -63,6 +69,16 @@ IPC_MESSAGE_CONTROL1(ExtensionUtilityHostMsg_ParseUpdateManifest_Succeeded,
 IPC_MESSAGE_CONTROL1(ExtensionUtilityHostMsg_ParseUpdateManifest_Failed,
                      std::string /* error_message, if any */)
 
+// Reply when the utility process is done unzipping a file. |unpacked_path|
+// is the directory which contains the unzipped contents.
+IPC_MESSAGE_CONTROL1(ExtensionUtilityHostMsg_UnzipToDir_Succeeded,
+                     base::FilePath /* unpacked_path */)
+
+// Reply when the utility process failed to unzip a file. |error| contains
+// an error string to be reported to the user.
+IPC_MESSAGE_CONTROL1(ExtensionUtilityHostMsg_UnzipToDir_Failed,
+                     std::string /* error */)
+
 // Reply when the utility process is done unpacking an extension.  |manifest|
 // is the parsed manifest.json file.
 // The unpacker should also have written out files containing the decoded
@@ -70,10 +86,10 @@ IPC_MESSAGE_CONTROL1(ExtensionUtilityHostMsg_ParseUpdateManifest_Failed,
 // DecodedImages struct into a file named kDecodedImagesFilename in the
 // directory that was passed in. This is done because the data is too large to
 // pass over IPC.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Succeeded,
+IPC_MESSAGE_CONTROL1(ExtensionUtilityHostMsg_UnpackExtension_Succeeded,
                      base::DictionaryValue /* manifest */)
 
 // Reply when the utility process has failed while unpacking an extension.
 // |error_message| is a user-displayable explanation of what went wrong.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackExtension_Failed,
+IPC_MESSAGE_CONTROL1(ExtensionUtilityHostMsg_UnpackExtension_Failed,
                      base::string16 /* error_message, if any */)

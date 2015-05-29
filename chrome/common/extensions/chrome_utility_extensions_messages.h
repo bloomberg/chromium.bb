@@ -75,9 +75,6 @@ IPC_STRUCT_TRAITS_END()
 // Utility process messages:
 // These are messages from the browser to the utility process.
 
-IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_UnzipToDir,
-                     base::FilePath /* zip_file */,
-                     base::FilePath /* dir */)
 
 #if defined(OS_WIN)
 // Tell the utility process to parse the iTunes preference XML file contents
@@ -148,16 +145,6 @@ IPC_MESSAGE_CONTROL0(ChromeUtilityMsg_ImageWriter_Cancel)
 //------------------------------------------------------------------------------
 // Utility process host messages:
 // These are messages from the utility process to the browser.
-
-// Reply when the utility process is done unzipping a file. |unpacked_path|
-// is the directory which contains the unzipped contents.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnzipToDir_Succeeded,
-                     base::FilePath /* unpacked_path */)
-
-// Reply when the utility process failed to unzip a file. |error| contains
-// an error string to be reported to the user.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnzipToDir_Failed,
-                     std::string /* error */)
 
 #if defined(OS_WIN)
 // Reply after parsing the iTunes preferences XML file contents with either the
