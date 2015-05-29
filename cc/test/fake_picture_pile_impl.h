@@ -47,7 +47,8 @@ class FakePicturePileImpl : public PicturePileImpl {
 
   // Hi-jack the PlaybackToCanvas method to delay its completion.
   void PlaybackToCanvas(SkCanvas* canvas,
-                        const gfx::Rect& canvas_rect,
+                        const gfx::Rect& canvas_bitmap_rect,
+                        const gfx::Rect& canvas_playback_rect,
                         float contents_scale) const override;
 
   const TilingData& tiling() { return tiling_; }

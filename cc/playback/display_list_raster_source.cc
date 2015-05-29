@@ -87,33 +87,39 @@ void DisplayListRasterSource::PlaybackToSharedCanvas(
     SkCanvas* canvas,
     const gfx::Rect& canvas_rect,
     float contents_scale) const {
-  RasterCommon(canvas, NULL, canvas_rect, contents_scale);
+  RasterCommon(canvas, NULL, canvas_rect, canvas_rect, contents_scale);
 }
 
 void DisplayListRasterSource::RasterForAnalysis(skia::AnalysisCanvas* canvas,
                                                 const gfx::Rect& canvas_rect,
                                                 float contents_scale) const {
-  RasterCommon(canvas, canvas, canvas_rect, contents_scale);
+  RasterCommon(canvas, canvas, canvas_rect, canvas_rect, contents_scale);
 }
 
-void DisplayListRasterSource::PlaybackToCanvas(SkCanvas* canvas,
-                                               const gfx::Rect& canvas_rect,
-                                               float contents_scale) const {
+void DisplayListRasterSource::PlaybackToCanvas(
+    SkCanvas* canvas,
+    const gfx::Rect& canvas_bitmap_rect,
+    const gfx::Rect& canvas_playback_rect,
+    float contents_scale) const {
   RasterSourceHelper::PrepareForPlaybackToCanvas(
-      canvas, canvas_rect, gfx::Rect(size_), contents_scale, background_color_,
-      clear_canvas_with_debug_color_, requires_clear_);
+      canvas, canvas_bitmap_rect, canvas_playback_rect, gfx::Rect(size_),
+      contents_scale, background_color_, clear_canvas_with_debug_color_,
+      requires_clear_);
 
-  RasterCommon(canvas, NULL, canvas_rect, contents_scale);
+  RasterCommon(canvas, NULL, canvas_bitmap_rect, canvas_playback_rect,
+               contents_scale);
 }
 
-void DisplayListRasterSource::RasterCommon(SkCanvas* canvas,
-                                           SkPicture::AbortCallback* callback,
-                                           const gfx::Rect& canvas_rect,
-                                           float contents_scale) const {
-  canvas->translate(-canvas_rect.x(), -canvas_rect.y());
+void DisplayListRasterSource::RasterCommon(
+    SkCanvas* canvas,
+    SkPicture::AbortCallback* callback,
+    const gfx::Rect& canvas_bitmap_rect,
+    const gfx::Rect& canvas_playback_rect,
+    float contents_scale) const {
+  canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());
   gfx::Rect content_rect =
       gfx::ToEnclosingRect(gfx::ScaleRect(gfx::Rect(size_), contents_scale));
-  content_rect.Intersect(canvas_rect);
+  content_rect.Intersect(canvas_playback_rect);
 
   canvas->clipRect(gfx::RectToSkRect(content_rect), SkRegion::kIntersect_Op);
 
@@ -129,7 +135,7 @@ skia::RefPtr<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {
   SkCanvas* canvas = recorder.beginRecording(display_list_rect.width(),
                                              display_list_rect.height());
   if (!display_list_rect.IsEmpty())
-    PlaybackToCanvas(canvas, display_list_rect, 1.0);
+    PlaybackToCanvas(canvas, display_list_rect, display_list_rect, 1.0);
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(recorder.endRecordingAsPicture());
 

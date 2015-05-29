@@ -36,14 +36,15 @@ class RasterBufferImpl : public RasterBuffer {
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
-                const gfx::Rect& rect,
+                const gfx::Rect& raster_full_rect,
+                const gfx::Rect& raster_dirty_rect,
                 float scale) override {
     if (!memory_)
       return;
 
-    TileTaskWorkerPool::PlaybackToMemory(memory_, resource_->format(),
-                                         resource_->size(), stride_,
-                                         raster_source, rect, scale);
+    TileTaskWorkerPool::PlaybackToMemory(
+        memory_, resource_->format(), resource_->size(), stride_, raster_source,
+        raster_full_rect, raster_full_rect, scale);
   }
 
  private:
@@ -312,7 +313,9 @@ ResourceFormat PixelBufferTileTaskWorkerPool::GetResourceFormat() {
 }
 
 scoped_ptr<RasterBuffer> PixelBufferTileTaskWorkerPool::AcquireBufferForRaster(
-    const Resource* resource) {
+    const Resource* resource,
+    uint64_t new_content_id,
+    uint64_t previous_content_id) {
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(resource_provider_, resource));
 }

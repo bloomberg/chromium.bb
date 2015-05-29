@@ -161,7 +161,8 @@ class PerfRasterTaskImpl : public RasterTask {
 
   // Overridden from TileTask:
   void ScheduleOnOriginThread(TileTaskClient* client) override {
-    raster_buffer_ = client->AcquireBufferForRaster(resource());
+    // No tile ids are given to support partial updates.
+    raster_buffer_ = client->AcquireBufferForRaster(resource(), 0, 0);
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
@@ -270,7 +271,8 @@ class TileTaskWorkerPoolPerfTest
         tile_task_worker_pool_ = OneCopyTileTaskWorkerPool::Create(
             task_runner_.get(), task_graph_runner_.get(),
             context_provider_.get(), resource_provider_.get(),
-            staging_resource_pool_.get(), std::numeric_limits<size_t>::max());
+            staging_resource_pool_.get(), std::numeric_limits<size_t>::max(),
+            false);
         break;
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();

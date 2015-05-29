@@ -2136,7 +2136,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
         task_runner, task_graph_runner, context_provider,
         resource_provider_.get(), staging_resource_pool_.get(),
-        settings_.max_bytes_per_copy_operation);
+        settings_.max_bytes_per_copy_operation,
+        settings_.use_persistent_map_for_gpu_memory_buffers);
     return;
   }
 
@@ -2209,7 +2210,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
       proxy_->blocking_main_thread_task_runner(),
       settings_.renderer_settings.highp_threshold_min,
       settings_.renderer_settings.use_rgba_4444_textures,
-      settings_.renderer_settings.texture_id_allocation_chunk_size);
+      settings_.renderer_settings.texture_id_allocation_chunk_size,
+      settings_.use_persistent_map_for_gpu_memory_buffers);
 
   CreateAndSetRenderer();
 

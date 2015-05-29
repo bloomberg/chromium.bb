@@ -41,7 +41,8 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // It is assumed that the canvas passed here will only be rasterized by
   // this raster source via this call.
   virtual void PlaybackToCanvas(SkCanvas* canvas,
-                                const gfx::Rect& canvas_rect,
+                                const gfx::Rect& canvas_bitmap_rect,
+                                const gfx::Rect& canvas_playback_rect,
                                 float contents_scale) const = 0;
 
   // Similar to above, except that the canvas passed here can (or was already)

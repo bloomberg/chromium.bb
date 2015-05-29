@@ -159,7 +159,8 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
                                           const gfx::Size& size,
                                           int stride,
                                           const RasterSource* raster_source,
-                                          const gfx::Rect& rect,
+                                          const gfx::Rect& canvas_bitmap_rect,
+                                          const gfx::Rect& canvas_playback_rect,
                                           float scale) {
   DCHECK(IsSupportedPlaybackToMemoryFormat(format)) << format;
 
@@ -184,14 +185,16 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
     skia::RefPtr<SkSurface> surface = skia::AdoptRef(
         SkSurface::NewRasterDirect(info, memory, stride, &surface_props));
     skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
-    raster_source->PlaybackToCanvas(canvas.get(), rect, scale);
+    raster_source->PlaybackToCanvas(canvas.get(), canvas_bitmap_rect,
+                                    canvas_playback_rect, scale);
     return;
   }
 
   skia::RefPtr<SkSurface> surface =
       skia::AdoptRef(SkSurface::NewRaster(info, &surface_props));
   skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
-  raster_source->PlaybackToCanvas(canvas.get(), rect, scale);
+  raster_source->PlaybackToCanvas(canvas.get(), canvas_bitmap_rect,
+                                  canvas_playback_rect, scale);
 
   SkImageInfo dst_info =
       SkImageInfo::Make(info.width(), info.height(), buffer_color_type,

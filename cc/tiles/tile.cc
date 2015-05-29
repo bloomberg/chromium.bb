@@ -13,7 +13,7 @@
 
 namespace cc {
 
-Tile::Id Tile::s_next_id_ = 0;
+Tile::Id Tile::s_next_id_ = 1;
 
 Tile::Tile(TileManager* tile_manager,
            const gfx::Size& desired_texture_size,
@@ -34,6 +34,7 @@ Tile::Tile(TileManager* tile_manager,
       required_for_activation_(false),
       required_for_draw_(false),
       id_(s_next_id_++),
+      invalidated_id_(0),
       scheduled_priority_(0) {
 }
 

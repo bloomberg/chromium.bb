@@ -27,7 +27,9 @@ class CC_EXPORT ResourcePool {
 
   scoped_ptr<ScopedResource> AcquireResource(const gfx::Size& size,
                                              ResourceFormat format);
-  void ReleaseResource(scoped_ptr<ScopedResource>);
+  scoped_ptr<ScopedResource> TryAcquireResourceWithContentId(uint64 content_id);
+  void ReleaseResource(scoped_ptr<ScopedResource> resource,
+                       uint64_t content_id);
 
   void SetResourceUsageLimits(size_t max_memory_usage_bytes,
                               size_t max_unused_memory_usage_bytes,
@@ -55,7 +57,7 @@ class CC_EXPORT ResourcePool {
   bool ResourceUsageTooHigh();
 
  private:
-  void DidFinishUsingResource(ScopedResource* resource);
+  void DidFinishUsingResource(ScopedResource* resource, uint64_t content_id);
 
   ResourceProvider* resource_provider_;
   const GLenum target_;
@@ -66,7 +68,13 @@ class CC_EXPORT ResourcePool {
   size_t unused_memory_usage_bytes_;
   size_t resource_count_;
 
-  typedef std::list<ScopedResource*> ResourceList;
+  struct PoolResource {
+    PoolResource(ScopedResource* resource, uint64_t content_id)
+        : resource(resource), content_id(content_id) {}
+    ScopedResource* resource;
+    uint64_t content_id;
+  };
+  typedef std::list<PoolResource> ResourceList;
   ResourceList unused_resources_;
   ResourceList busy_resources_;
 

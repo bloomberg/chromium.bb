@@ -104,12 +104,15 @@ scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateFromPile(
       new FakePicturePileImpl(other, playback_allowed_event));
 }
 
-void FakePicturePileImpl::PlaybackToCanvas(SkCanvas* canvas,
-                                           const gfx::Rect& canvas_rect,
-                                           float contents_scale) const {
+void FakePicturePileImpl::PlaybackToCanvas(
+    SkCanvas* canvas,
+    const gfx::Rect& canvas_bitmap_rect,
+    const gfx::Rect& canvas_playback_rect,
+    float contents_scale) const {
   if (playback_allowed_event_)
     playback_allowed_event_->Wait();
-  PicturePileImpl::PlaybackToCanvas(canvas, canvas_rect, contents_scale);
+  PicturePileImpl::PlaybackToCanvas(canvas, canvas_bitmap_rect,
+                                    canvas_playback_rect, contents_scale);
 }
 
 bool FakePicturePileImpl::HasRecordingAt(int x, int y) const {

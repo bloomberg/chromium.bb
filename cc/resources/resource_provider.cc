@@ -395,11 +395,13 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
-    size_t id_allocation_chunk_size) {
+    size_t id_allocation_chunk_size,
+    bool use_persistent_map_for_gpu_memory_buffers) {
   scoped_ptr<ResourceProvider> resource_provider(new ResourceProvider(
       output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
       blocking_main_thread_task_runner, highp_threshold_min,
-      use_rgba_4444_texture_format, id_allocation_chunk_size));
+      use_rgba_4444_texture_format, id_allocation_chunk_size,
+      use_persistent_map_for_gpu_memory_buffers));
   resource_provider->Initialize();
   return resource_provider;
 }
@@ -1079,13 +1081,16 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
 
 gfx::GpuMemoryBuffer*
 ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
-  if (!gpu_memory_buffer_) {
-    scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
-        gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
-            size_, ToGpuMemoryBufferFormat(format_), gfx::GpuMemoryBuffer::MAP);
-    gpu_memory_buffer_ = gpu_memory_buffer.release();
-  }
-
+  if (gpu_memory_buffer_)
+    return gpu_memory_buffer_;
+  gfx::GpuMemoryBuffer::Usage usage =
+      resource_provider_->use_persistent_map_for_gpu_memory_buffers()
+          ? gfx::GpuMemoryBuffer::PERSISTENT_MAP
+          : gfx::GpuMemoryBuffer::MAP;
+  scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+      gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
+          size_, ToGpuMemoryBufferFormat(format_), usage);
+  gpu_memory_buffer_ = gpu_memory_buffer.release();
   return gpu_memory_buffer_;
 }
 
@@ -1182,7 +1187,8 @@ ResourceProvider::ResourceProvider(
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
-    size_t id_allocation_chunk_size)
+    size_t id_allocation_chunk_size,
+    bool use_persistent_map_for_gpu_memory_buffers)
     : output_surface_(output_surface),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
@@ -1201,7 +1207,9 @@ ResourceProvider::ResourceProvider(
       best_texture_format_(RGBA_8888),
       use_rgba_4444_texture_format_(use_rgba_4444_texture_format),
       id_allocation_chunk_size_(id_allocation_chunk_size),
-      use_sync_query_(false) {
+      use_sync_query_(false),
+      use_persistent_map_for_gpu_memory_buffers_(
+          use_persistent_map_for_gpu_memory_buffers) {
   DCHECK(output_surface_->HasClient());
   DCHECK(id_allocation_chunk_size_);
 }

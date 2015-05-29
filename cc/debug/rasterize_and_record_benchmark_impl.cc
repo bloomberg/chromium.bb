@@ -51,7 +51,8 @@ void RunBenchmark(RasterSource* raster_source,
 
       raster_source->PerformSolidColorAnalysis(content_rect, contents_scale,
                                                &analysis);
-      raster_source->PlaybackToCanvas(&canvas, content_rect, contents_scale);
+      raster_source->PlaybackToCanvas(&canvas, content_rect, content_rect,
+                                      contents_scale);
 
       *is_solid_color = analysis.is_solid_color;
 

@@ -100,12 +100,14 @@ void PicturePileImpl::RasterForAnalysis(skia::AnalysisCanvas* canvas,
 }
 
 void PicturePileImpl::PlaybackToCanvas(SkCanvas* canvas,
-                                       const gfx::Rect& canvas_rect,
+                                       const gfx::Rect& canvas_bitmap_rect,
+                                       const gfx::Rect& canvas_playback_rect,
                                        float contents_scale) const {
   RasterSourceHelper::PrepareForPlaybackToCanvas(
-      canvas, canvas_rect, gfx::Rect(tiling_.tiling_size()), contents_scale,
-      background_color_, clear_canvas_with_debug_color_, requires_clear_);
-  RasterCommon(canvas, NULL, canvas_rect, contents_scale);
+      canvas, canvas_bitmap_rect, canvas_bitmap_rect,
+      gfx::Rect(tiling_.tiling_size()), contents_scale, background_color_,
+      clear_canvas_with_debug_color_, requires_clear_);
+  RasterCommon(canvas, NULL, canvas_bitmap_rect, contents_scale);
 }
 
 void PicturePileImpl::CoalesceRasters(const gfx::Rect& canvas_rect,
@@ -266,7 +268,7 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   SkCanvas* canvas =
       recorder.beginRecording(tiling_rect.width(), tiling_rect.height());
   if (!tiling_rect.IsEmpty())
-    PlaybackToCanvas(canvas, tiling_rect, 1.0);
+    PlaybackToCanvas(canvas, tiling_rect, tiling_rect, 1.0);
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(recorder.endRecordingAsPicture());
 

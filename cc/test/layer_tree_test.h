@@ -219,6 +219,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   TestWebGraphicsContext3D* TestContext();
 
+  TestGpuMemoryBufferManager* GetTestGpuMemoryBufferManager() {
+    return gpu_memory_buffer_manager_.get();
+  }
+
  private:
   LayerTreeSettings settings_;
   LayerSettings layer_settings_;

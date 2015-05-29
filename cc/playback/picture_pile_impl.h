@@ -39,7 +39,8 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   // reported rasterize time (in stats_instrumentation) is the minimum measured
   // value over all runs.
   void PlaybackToCanvas(SkCanvas* canvas,
-                        const gfx::Rect& canvas_rect,
+                        const gfx::Rect& canvas_bitmap_rect,
+                        const gfx::Rect& canvas_playback_rect,
                         float contents_scale) const override;
   void PlaybackToSharedCanvas(SkCanvas* canvas,
                               const gfx::Rect& canvas_rect,

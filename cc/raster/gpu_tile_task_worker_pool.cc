@@ -30,7 +30,8 @@ class RasterBufferImpl : public RasterBuffer {
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
-                const gfx::Rect& rect,
+                const gfx::Rect& raster_full_rect,
+                const gfx::Rect& raster_dirty_rect,
                 float scale) override {
     TRACE_EVENT0("cc", "RasterBufferImpl::Playback");
     ContextProvider* context_provider = rasterizer_->resource_provider()
@@ -44,8 +45,10 @@ class RasterBufferImpl : public RasterBuffer {
     // Allow this worker thread to bind to context_provider.
     context_provider->DetachFromThread();
 
+    // TODO(danakj): Implement partial raster with raster_dirty_rect.
     // Rasterize source into resource.
-    rasterizer_->RasterizeSource(&lock_, raster_source, rect, scale);
+    rasterizer_->RasterizeSource(&lock_, raster_source, raster_full_rect,
+                                 scale);
 
     // Barrier to sync worker context output to cc context.
     context_provider->ContextGL()->OrderingBarrierCHROMIUM();
@@ -207,7 +210,9 @@ void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {
 }
 
 scoped_ptr<RasterBuffer> GpuTileTaskWorkerPool::AcquireBufferForRaster(
-    const Resource* resource) {
+    const Resource* resource,
+    uint64_t new_content_id,
+    uint64_t previous_content_id) {
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(rasterizer_.get(), resource));
 }

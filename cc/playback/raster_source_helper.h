@@ -16,7 +16,8 @@ namespace cc {
 class CC_EXPORT RasterSourceHelper {
  public:
   static void PrepareForPlaybackToCanvas(SkCanvas* canvas,
-                                         const gfx::Rect& canvas_rect,
+                                         const gfx::Rect& canvas_bitmap_rect,
+                                         const gfx::Rect& canvas_playback_rect,
                                          const gfx::Rect& source_rect,
                                          float contents_scale,
                                          SkColor background_color,

@@ -185,7 +185,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
 
       *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
           task_runner, task_graph_runner(), context_provider, resource_provider,
-          staging_resource_pool->get(), max_bytes_per_copy_operation);
+          staging_resource_pool->get(), max_bytes_per_copy_operation, false);
       break;
     case PIXEL_BUFFER_TILE_TASK_WORKER_POOL:
       EXPECT_TRUE(context_provider);

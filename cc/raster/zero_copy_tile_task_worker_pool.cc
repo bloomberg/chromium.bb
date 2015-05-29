@@ -25,20 +25,21 @@ class RasterBufferImpl : public RasterBuffer {
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
-                const gfx::Rect& rect,
+                const gfx::Rect& raster_full_rect,
+                const gfx::Rect& raster_dirty_rect,
                 float scale) override {
     gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_.GetGpuMemoryBuffer();
     if (!gpu_memory_buffer)
       return;
-
     void* data = NULL;
     bool rv = gpu_memory_buffer->Map(&data);
     DCHECK(rv);
     int stride;
     gpu_memory_buffer->GetStride(&stride);
-    TileTaskWorkerPool::PlaybackToMemory(data, resource_->format(),
-                                         resource_->size(), stride,
-                                         raster_source, rect, scale);
+    // TODO(danakj): Implement partial raster with raster_dirty_rect.
+    TileTaskWorkerPool::PlaybackToMemory(
+        data, resource_->format(), resource_->size(), stride, raster_source,
+        raster_full_rect, raster_full_rect, scale);
     gpu_memory_buffer->Unmap();
   }
 
@@ -176,7 +177,9 @@ ResourceFormat ZeroCopyTileTaskWorkerPool::GetResourceFormat() {
 }
 
 scoped_ptr<RasterBuffer> ZeroCopyTileTaskWorkerPool::AcquireBufferForRaster(
-    const Resource* resource) {
+    const Resource* resource,
+    uint64_t new_content_id,
+    uint64_t previous_content_id) {
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(resource_provider_, resource));
 }

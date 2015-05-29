@@ -54,13 +54,18 @@ class CC_EXPORT TileTaskWorkerPool {
       unsigned priority);
 
   // Utility function that will create a temporary bitmap and copy pixels to
-  // |memory| when necessary.
+  // |memory| when necessary. The |canvas_bitmap_rect| is the rect of the bitmap
+  // being played back in the pixel space of the source, ie a rect in the source
+  // that will cover the resulting |memory|. The |canvas_playback_rect| can be a
+  // smaller contained rect inside the |canvas_bitmap_rect| if the |memory| is
+  // already partially complete, and only the subrect needs to be played back.
   static void PlaybackToMemory(void* memory,
                                ResourceFormat format,
                                const gfx::Size& size,
                                int stride,
                                const RasterSource* raster_source,
-                               const gfx::Rect& rect,
+                               const gfx::Rect& canvas_bitmap_rect,
+                               const gfx::Rect& canvas_playback_rect,
                                float scale);
 
   // Type-checking downcast routine.

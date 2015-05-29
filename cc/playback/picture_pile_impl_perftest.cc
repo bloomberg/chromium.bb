@@ -55,7 +55,8 @@ class PicturePileImplPerfTest : public testing::Test {
 
     timer_.Reset();
     do {
-      pile->PlaybackToCanvas(&canvas, content_rect, contents_scale);
+      pile->PlaybackToCanvas(&canvas, content_rect, content_rect,
+                             contents_scale);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

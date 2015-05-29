@@ -9,6 +9,8 @@
 #include <limits>
 #include <set>
 
+#include "base/containers/hash_tables.h"
+#include "base/containers/small_map.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -265,39 +267,53 @@ void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_invalidation,
   // twin, so it's slated for removal in the future.
   if (live_tiles_rect_.IsEmpty())
     return;
-  std::vector<TileMapKey> new_tile_keys;
+  // Pick 16 for the size of the SmallMap before it promotes to a hash_map.
+  // 4x4 tiles should cover most small invalidations, and walking a vector of
+  // 16 is fast enough. If an invalidation is huge we will fall back to a
+  // hash_map instead of a vector in the SmallMap.
+  base::SmallMap<base::hash_map<TileMapKey, gfx::Rect>, 16> remove_tiles;
   gfx::Rect expanded_live_tiles_rect =
       tiling_data_.ExpandRectIgnoringBordersToTileBounds(live_tiles_rect_);
   for (Region::Iterator iter(layer_invalidation); iter.has_rect();
        iter.next()) {
     gfx::Rect layer_rect = iter.rect();
-    gfx::Rect content_rect =
+    // The pixels which are invalid in content space.
+    gfx::Rect invalid_content_rect =
         gfx::ScaleToEnclosingRect(layer_rect, contents_scale_);
     // Consider tiles inside the live tiles rect even if only their border
     // pixels intersect the invalidation. But don't consider tiles outside
     // the live tiles rect with the same conditions, as they won't exist.
+    gfx::Rect coverage_content_rect = invalid_content_rect;
     int border_pixels = tiling_data_.border_texels();
-    content_rect.Inset(-border_pixels, -border_pixels);
+    coverage_content_rect.Inset(-border_pixels, -border_pixels);
     // Avoid needless work by not bothering to invalidate where there aren't
     // tiles.
-    content_rect.Intersect(expanded_live_tiles_rect);
-    if (content_rect.IsEmpty())
+    coverage_content_rect.Intersect(expanded_live_tiles_rect);
+    if (coverage_content_rect.IsEmpty())
       continue;
     // Since the content_rect includes border pixels already, don't include
     // borders when iterating to avoid double counting them.
     bool include_borders = false;
-    for (
-        TilingData::Iterator iter(&tiling_data_, content_rect, include_borders);
-        iter; ++iter) {
-      if (RemoveTileAt(iter.index_x(), iter.index_y())) {
-        if (recreate_tiles)
-          new_tile_keys.push_back(TileMapKey(iter.index()));
-      }
+    for (TilingData::Iterator iter(&tiling_data_, coverage_content_rect,
+                                   include_borders);
+         iter; ++iter) {
+      // This also adds the TileMapKey to the map.
+      remove_tiles[TileMapKey(iter.index())].Union(invalid_content_rect);
     }
   }
 
-  for (const auto& key : new_tile_keys)
-    CreateTile(key.index_x, key.index_y);
+  for (const auto& pair : remove_tiles) {
+    const TileMapKey& key = pair.first;
+    const gfx::Rect& invalid_content_rect = pair.second;
+    // TODO(danakj): This old_tile will not exist if we are committing to a
+    // pending tree since there is no tile there to remove, which prevents
+    // tiles from knowing the invalidation rect and content id. crbug.com/490847
+    ScopedTilePtr old_tile = TakeTileAt(key.index_x, key.index_y);
+    if (recreate_tiles && old_tile) {
+      if (Tile* tile = CreateTile(key.index_x, key.index_y))
+        tile->SetInvalidated(invalid_content_rect, old_tile->id());
+    }
+  }
 }
 
 bool PictureLayerTiling::ShouldCreateTileAt(int i, int j) const {
@@ -493,6 +509,13 @@ gfx::RectF PictureLayerTiling::CoverageIterator::texture_rect() const {
   texture_rect.Offset(-tex_origin.OffsetFromOrigin());
 
   return texture_rect;
+}
+
+ScopedTilePtr PictureLayerTiling::TakeTileAt(int i, int j) {
+  TileMap::iterator found = tiles_.find(TileMapKey(i, j));
+  if (found == tiles_.end())
+    return nullptr;
+  return tiles_.take_and_erase(found);
 }
 
 bool PictureLayerTiling::RemoveTileAt(int i, int j) {

@@ -17,7 +17,8 @@ class CC_EXPORT RasterBuffer {
   virtual ~RasterBuffer();
 
   virtual void Playback(const RasterSource* raster_source,
-                        const gfx::Rect& rect,
+                        const gfx::Rect& raster_full_rect,
+                        const gfx::Rect& raster_dirty_rect,
                         float scale) = 0;
 };
 

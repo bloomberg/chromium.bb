@@ -79,6 +79,7 @@ class CC_EXPORT LayerTreeSettings {
   bool strict_layer_property_change_checking;
   bool use_one_copy;
   bool use_zero_copy;
+  bool use_persistent_map_for_gpu_memory_buffers;
   bool enable_elastic_overscroll;
   unsigned use_image_texture_target;
   bool ignore_root_layer_flings;

@@ -21,7 +21,8 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider, GLenum target)
 
 ResourcePool::~ResourcePool() {
   while (!busy_resources_.empty()) {
-    DidFinishUsingResource(busy_resources_.front());
+    auto const& front = busy_resources_.front();
+    DidFinishUsingResource(front.resource, front.content_id);
     busy_resources_.pop_front();
   }
 
@@ -37,7 +38,7 @@ scoped_ptr<ScopedResource> ResourcePool::AcquireResource(
   for (ResourceList::iterator it = unused_resources_.begin();
        it != unused_resources_.end();
        ++it) {
-    ScopedResource* resource = *it;
+    ScopedResource* resource = it->resource;
     DCHECK(resource_provider_->CanLockForWrite(resource->id()));
 
     if (resource->format() != format)
@@ -59,8 +60,28 @@ scoped_ptr<ScopedResource> ResourcePool::AcquireResource(
   return resource.Pass();
 }
 
-void ResourcePool::ReleaseResource(scoped_ptr<ScopedResource> resource) {
-  busy_resources_.push_back(resource.release());
+scoped_ptr<ScopedResource> ResourcePool::TryAcquireResourceWithContentId(
+    uint64_t content_id) {
+  DCHECK(content_id);
+
+  auto it = std::find_if(unused_resources_.begin(), unused_resources_.end(),
+                         [content_id](const PoolResource& pool_resource) {
+                           return pool_resource.content_id == content_id;
+                         });
+  if (it == unused_resources_.end())
+    return nullptr;
+
+  ScopedResource* resource = it->resource;
+  DCHECK(resource_provider_->CanLockForWrite(resource->id()));
+
+  unused_resources_.erase(it);
+  unused_memory_usage_bytes_ -= resource->bytes();
+  return make_scoped_ptr(resource);
+}
+
+void ResourcePool::ReleaseResource(scoped_ptr<ScopedResource> resource,
+                                   uint64_t content_id) {
+  busy_resources_.push_back(PoolResource(resource.release(), content_id));
 }
 
 void ResourcePool::SetResourceUsageLimits(size_t max_memory_usage_bytes,
@@ -85,7 +106,7 @@ void ResourcePool::ReduceResourceUsage() {
     // can't be locked for write might also not be truly free-able.
     // We can free the resource here but it doesn't mean that the
     // memory is necessarily returned to the OS.
-    ScopedResource* resource = unused_resources_.front();
+    ScopedResource* resource = unused_resources_.front().resource;
     unused_resources_.pop_front();
     memory_usage_bytes_ -= resource->bytes();
     unused_memory_usage_bytes_ -= resource->bytes();
@@ -108,13 +129,13 @@ void ResourcePool::CheckBusyResources(bool wait_if_needed) {
   ResourceList::iterator it = busy_resources_.begin();
 
   while (it != busy_resources_.end()) {
-    ScopedResource* resource = *it;
+    ScopedResource* resource = it->resource;
 
     if (wait_if_needed)
       resource_provider_->WaitReadLockIfNeeded(resource->id());
 
     if (resource_provider_->CanLockForWrite(resource->id())) {
-      DidFinishUsingResource(resource);
+      DidFinishUsingResource(resource, it->content_id);
       it = busy_resources_.erase(it);
     } else {
       ++it;
@@ -122,9 +143,10 @@ void ResourcePool::CheckBusyResources(bool wait_if_needed) {
   }
 }
 
-void ResourcePool::DidFinishUsingResource(ScopedResource* resource) {
+void ResourcePool::DidFinishUsingResource(ScopedResource* resource,
+                                          uint64_t content_id) {
   unused_memory_usage_bytes_ += resource->bytes();
-  unused_resources_.push_back(resource);
+  unused_resources_.push_back(PoolResource(resource, content_id));
 }
 
 }  // namespace cc

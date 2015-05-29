@@ -68,6 +68,17 @@ class CC_EXPORT Tile {
   int tiling_i_index() const { return tiling_i_index_; }
   int tiling_j_index() const { return tiling_j_index_; }
 
+  void SetInvalidated(const gfx::Rect& invalid_content_rect,
+                      Id previous_tile_id) {
+    invalidated_content_rect_ = invalid_content_rect;
+    invalidated_id_ = previous_tile_id;
+  }
+
+  Id invalidated_id() const { return invalidated_id_; }
+  const gfx::Rect& invalidated_content_rect() const {
+    return invalidated_content_rect_;
+  }
+
  private:
   friend class TileManager;
   friend class FakeTileManager;
@@ -102,6 +113,12 @@ class CC_EXPORT Tile {
 
   Id id_;
   static Id s_next_id_;
+
+  // The rect bounding the changes in this Tile vs the previous tile it
+  // replaced.
+  gfx::Rect invalidated_content_rect_;
+  // The |id_| of the Tile that was invalidated and replaced by this tile.
+  Id invalidated_id_;
 
   unsigned scheduled_priority_;
 

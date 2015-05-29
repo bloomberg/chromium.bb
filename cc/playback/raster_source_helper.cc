@@ -14,16 +14,28 @@ namespace cc {
 
 void RasterSourceHelper::PrepareForPlaybackToCanvas(
     SkCanvas* canvas,
-    const gfx::Rect& canvas_rect,
+    const gfx::Rect& canvas_bitmap_rect,
+    const gfx::Rect& canvas_playback_rect,
     const gfx::Rect& source_rect,
     float contents_scale,
     SkColor background_color,
     bool clear_canvas_with_debug_color,
     bool requires_clear) {
-  canvas->discard();
+  bool partial_update = canvas_bitmap_rect != canvas_playback_rect;
+
+  if (!partial_update)
+    canvas->discard();
   if (clear_canvas_with_debug_color) {
     // Any non-painted areas in the content bounds will be left in this color.
-    canvas->clear(DebugColors::NonPaintedFillColor());
+    if (!partial_update) {
+      canvas->clear(DebugColors::NonPaintedFillColor());
+    } else {
+      canvas->save();
+      canvas->clipRect(gfx::RectToSkRect(
+          canvas_playback_rect - canvas_bitmap_rect.OffsetFromOrigin()));
+      canvas->drawColor(DebugColors::NonPaintedFillColor());
+      canvas->restore();
+    }
   }
 
   // If this raster source has opaque contents, it is guaranteeing that it will
@@ -33,7 +45,15 @@ void RasterSourceHelper::PrepareForPlaybackToCanvas(
     TRACE_EVENT_INSTANT0("cc", "SkCanvas::clear", TRACE_EVENT_SCOPE_THREAD);
     // Clearing is about ~4x faster than drawing a rect even if the content
     // isn't covering a majority of the canvas.
-    canvas->clear(SK_ColorTRANSPARENT);
+    if (!partial_update) {
+      canvas->clear(SK_ColorTRANSPARENT);
+    } else {
+      canvas->save();
+      canvas->clipRect(gfx::RectToSkRect(
+          canvas_playback_rect - canvas_bitmap_rect.OffsetFromOrigin()));
+      canvas->drawColor(SK_ColorTRANSPARENT);
+      canvas->restore();
+    }
   } else {
     // Even if completely covered, for rasterizations that touch the edge of the
     // layer, we also need to raster the background color underneath the last
@@ -47,14 +67,14 @@ void RasterSourceHelper::PrepareForPlaybackToCanvas(
     // covered by content.
     gfx::Rect deflated_content_rect = content_rect;
     deflated_content_rect.Inset(0, 0, 1, 1);
-    if (!deflated_content_rect.Contains(canvas_rect)) {
+    if (!deflated_content_rect.Contains(canvas_playback_rect)) {
       if (clear_canvas_with_debug_color) {
         // Any non-painted areas outside of the content bounds are left in
         // this color.  If this is seen then it means that cc neglected to
         // rerasterize a tile that used to intersect with the content rect
         // after the content bounds grew.
         canvas->save();
-        canvas->translate(-canvas_rect.x(), -canvas_rect.y());
+        canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());
         canvas->clipRect(gfx::RectToSkRect(content_rect),
                          SkRegion::kDifference_Op);
         canvas->drawColor(DebugColors::MissingResizeInvalidations(),
@@ -65,7 +85,7 @@ void RasterSourceHelper::PrepareForPlaybackToCanvas(
       // Drawing at most 2 x 2 x (canvas width + canvas height) texels is 2-3X
       // faster than clearing, so special case this.
       canvas->save();
-      canvas->translate(-canvas_rect.x(), -canvas_rect.y());
+      canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());
       gfx::Rect inflated_content_rect = content_rect;
       inflated_content_rect.Inset(0, 0, -1, -1);
       canvas->clipRect(gfx::RectToSkRect(inflated_content_rect),

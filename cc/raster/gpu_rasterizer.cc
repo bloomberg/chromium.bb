@@ -50,7 +50,7 @@ void GpuRasterizer::RasterizeSource(
   skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
       recorder.beginRecording(size.width(), size.height(), NULL, flags));
   canvas->save();
-  raster_source->PlaybackToCanvas(canvas.get(), rect, scale);
+  raster_source->PlaybackToCanvas(canvas.get(), rect, rect, scale);
   canvas->restore();
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(recorder.endRecordingAsPicture());

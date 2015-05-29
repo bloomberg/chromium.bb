@@ -25,11 +25,13 @@ class RasterBufferImpl : public RasterBuffer {
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
-                const gfx::Rect& rect,
+                const gfx::Rect& raster_full_rect,
+                const gfx::Rect& raster_dirty_rect,
                 float scale) override {
-    TileTaskWorkerPool::PlaybackToMemory(lock_.sk_bitmap().getPixels(),
-                                         resource_->format(), resource_->size(),
-                                         0, raster_source, rect, scale);
+    // TODO(danakj): Implement partial raster using raster_dirty_rect.
+    TileTaskWorkerPool::PlaybackToMemory(
+        lock_.sk_bitmap().getPixels(), resource_->format(), resource_->size(),
+        0, raster_source, raster_full_rect, raster_full_rect, scale);
   }
 
  private:
@@ -166,7 +168,9 @@ ResourceFormat BitmapTileTaskWorkerPool::GetResourceFormat() {
 }
 
 scoped_ptr<RasterBuffer> BitmapTileTaskWorkerPool::AcquireBufferForRaster(
-    const Resource* resource) {
+    const Resource* resource,
+    uint64_t new_content_id,
+    uint64_t previous_content_id) {
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(resource_provider_, resource));
 }

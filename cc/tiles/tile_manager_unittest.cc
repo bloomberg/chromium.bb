@@ -1421,7 +1421,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   host_impl_.tile_manager()->CheckIfMoreTilesNeedToBePreparedForTesting();
   EXPECT_FALSE(host_impl_.is_likely_to_require_a_draw());
 
-  host_impl_.resource_pool()->ReleaseResource(resource.Pass());
+  host_impl_.resource_pool()->ReleaseResource(resource.Pass(), 0);
 }
 
 }  // namespace

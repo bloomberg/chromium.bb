@@ -345,7 +345,7 @@ TEST(PicturePileImplTest, RasterFullContents) {
       SkCanvas canvas(bitmap);
       canvas.clear(SK_ColorTRANSPARENT);
 
-      pile->PlaybackToCanvas(&canvas, canvas_rect, contents_scale);
+      pile->PlaybackToCanvas(&canvas, canvas_rect, canvas_rect, contents_scale);
 
       SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
       int num_pixels = bitmap.width() * bitmap.height();
@@ -390,7 +390,7 @@ TEST(PicturePileImpl, RasterContentsTransparent) {
   bitmap.allocN32Pixels(canvas_rect.width(), canvas_rect.height());
   SkCanvas canvas(bitmap);
 
-  pile->PlaybackToCanvas(&canvas, canvas_rect, contents_scale);
+  pile->PlaybackToCanvas(&canvas, canvas_rect, canvas_rect, contents_scale);
 
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
   int num_pixels = bitmap.width() * bitmap.height();
@@ -437,7 +437,8 @@ TEST_P(OverlapTest, NoOverlap) {
   bitmap.allocN32Pixels(content_bounds.width(), content_bounds.height());
   SkCanvas canvas(bitmap);
 
-  pile->PlaybackToCanvas(&canvas, gfx::Rect(content_bounds), contents_scale);
+  pile->PlaybackToCanvas(&canvas, gfx::Rect(content_bounds),
+                         gfx::Rect(content_bounds), contents_scale);
 
   for (int y = 0; y < bitmap.height(); y++) {
     for (int x = 0; x < bitmap.width(); x++) {

@@ -141,12 +141,10 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   // crbug.com/490362
   gfx::GpuMemoryBuffer::Format format = gfx::GpuMemoryBuffer::BGRA_8888;
 
-  gfx::GpuMemoryBuffer::Usage usage = gfx::GpuMemoryBuffer::MAP;
-  // TODO(danakj): Do this for partial raster:
   // Use PERSISTENT_MAP memory buffers to support partial tile raster for
   // software raster into GpuMemoryBuffers.
-  // gfx::GpuMemoryBuffer::Usage usage = gfx::GpuMemoryBuffer::PERSISTENT_MAP;
-  // settings.use_persistent_map_gpu_memory_buffer_usage = true;
+  gfx::GpuMemoryBuffer::Usage usage = gfx::GpuMemoryBuffer::PERSISTENT_MAP;
+  settings.use_persistent_map_for_gpu_memory_buffers = true;
 
   settings.use_image_texture_target =
       context_factory_->GetImageTextureTarget(format, usage);

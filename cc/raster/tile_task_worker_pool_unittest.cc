@@ -69,12 +69,15 @@ class TestRasterTaskImpl : public RasterTask {
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
-    raster_buffer_->Playback(picture_pile_.get(), gfx::Rect(0, 0, 1, 1), 1.0);
+    raster_buffer_->Playback(picture_pile_.get(), gfx::Rect(1, 1),
+                             gfx::Rect(1, 1), 1.0);
   }
 
   // Overridden from TileTask:
   void ScheduleOnOriginThread(TileTaskClient* client) override {
-    raster_buffer_ = client->AcquireBufferForRaster(resource());
+    // The raster buffer has no tile ids associated with it for partial update,
+    // so doesn't need to provide a valid dirty rect.
+    raster_buffer_ = client->AcquireBufferForRaster(resource(), 0, 0);
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
@@ -166,7 +169,7 @@ class TileTaskWorkerPoolTest
         tile_task_worker_pool_ = OneCopyTileTaskWorkerPool::Create(
             base::ThreadTaskRunnerHandle::Get().get(), &task_graph_runner_,
             context_provider_.get(), resource_provider_.get(),
-            staging_resource_pool_.get(), kMaxBytesPerCopyOperation);
+            staging_resource_pool_.get(), kMaxBytesPerCopyOperation, false);
         break;
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
@@ -290,8 +293,8 @@ class TileTaskWorkerPoolTest
 
  private:
   void Create3dOutputSurfaceAndResourceProvider() {
-    output_surface_ = FakeOutputSurface::Create3d(
-                          context_provider_, worker_context_provider_).Pass();
+    output_surface_ = FakeOutputSurface::Create3d(context_provider_,
+                                                  worker_context_provider_);
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
     context3d->set_support_sync_query(true);

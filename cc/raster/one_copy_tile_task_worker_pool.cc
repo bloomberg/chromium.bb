@@ -27,17 +27,35 @@ class RasterBufferImpl : public RasterBuffer {
                    ResourceProvider* resource_provider,
                    ResourcePool* resource_pool,
                    ResourceFormat resource_format,
-                   const Resource* resource)
+                   const Resource* output_resource,
+                   uint64_t new_content_id,
+                   uint64_t previous_content_id)
       : worker_pool_(worker_pool),
         resource_provider_(resource_provider),
         resource_pool_(resource_pool),
-        resource_(resource),
-        raster_resource_(
-            resource_pool->AcquireResource(resource->size(), resource_format)),
-        lock_(new ResourceProvider::ScopedWriteLockGpuMemoryBuffer(
-            resource_provider_,
-            raster_resource_->id())),
-        sequence_(0) {}
+        output_resource_(output_resource),
+        new_content_id_(new_content_id),
+        previous_content_id_(previous_content_id),
+        reusing_raster_resource_(true),
+        sequence_(0) {
+    if (worker_pool->have_persistent_gpu_memory_buffers() &&
+        previous_content_id) {
+      raster_resource_ =
+          resource_pool->TryAcquireResourceWithContentId(previous_content_id);
+    }
+    if (raster_resource_) {
+      DCHECK_EQ(resource_format, raster_resource_->format());
+      DCHECK_EQ(output_resource->size().ToString(),
+                raster_resource_->size().ToString());
+    } else {
+      raster_resource_ = resource_pool->AcquireResource(output_resource->size(),
+                                                        resource_format);
+      reusing_raster_resource_ = false;
+    }
+
+    lock_.reset(new ResourceProvider::ScopedWriteLockGpuMemoryBuffer(
+        resource_provider_, raster_resource_->id()));
+  }
 
   ~RasterBufferImpl() override {
     // Release write lock in case a copy was never scheduled.
@@ -45,21 +63,24 @@ class RasterBufferImpl : public RasterBuffer {
 
     // Make sure any scheduled copy operations are issued before we release the
     // raster resource.
-    if (sequence_)
+    bool did_playback = sequence_ != 0;
+    if (did_playback)
       worker_pool_->AdvanceLastIssuedCopyTo(sequence_);
 
-    // Return raster resource to pool so it can be used by another RasterBuffer
+    // Return resources to pool so they can be used by another RasterBuffer
     // instance.
-    if (raster_resource_)
-      resource_pool_->ReleaseResource(raster_resource_.Pass());
+    uint64_t id(did_playback ? new_content_id_ : previous_content_id_);
+    resource_pool_->ReleaseResource(raster_resource_.Pass(), id);
   }
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
-                const gfx::Rect& rect,
+                const gfx::Rect& raster_full_rect,
+                const gfx::Rect& raster_dirty_rect,
                 float scale) override {
     sequence_ = worker_pool_->PlaybackAndScheduleCopyOnWorkerThread(
-        lock_.Pass(), raster_resource_.get(), resource_, raster_source, rect,
+        reusing_raster_resource_, lock_.Pass(), raster_resource_.get(),
+        output_resource_, raster_source, raster_full_rect, raster_dirty_rect,
         scale);
   }
 
@@ -67,7 +88,10 @@ class RasterBufferImpl : public RasterBuffer {
   OneCopyTileTaskWorkerPool* worker_pool_;
   ResourceProvider* resource_provider_;
   ResourcePool* resource_pool_;
-  const Resource* resource_;
+  const Resource* output_resource_;
+  uint64_t new_content_id_;
+  uint64_t previous_content_id_;
+  bool reusing_raster_resource_;
   scoped_ptr<ScopedResource> raster_resource_;
   scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> lock_;
   CopySequenceNumber sequence_;
@@ -91,11 +115,11 @@ const int kFailedAttemptsBeforeWaitIfNeeded = 256;
 }  // namespace
 
 OneCopyTileTaskWorkerPool::CopyOperation::CopyOperation(
-    scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
+    scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> src_write_lock,
     const Resource* src,
     const Resource* dst,
     const gfx::Rect& rect)
-    : write_lock(write_lock.Pass()), src(src), dst(dst), rect(rect) {
+    : src_write_lock(src_write_lock.Pass()), src(src), dst(dst), rect(rect) {
 }
 
 OneCopyTileTaskWorkerPool::CopyOperation::~CopyOperation() {
@@ -108,10 +132,12 @@ scoped_ptr<TileTaskWorkerPool> OneCopyTileTaskWorkerPool::Create(
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     ResourcePool* resource_pool,
-    size_t max_bytes_per_copy_operation) {
+    size_t max_bytes_per_copy_operation,
+    bool have_persistent_gpu_memory_buffers) {
   return make_scoped_ptr<TileTaskWorkerPool>(new OneCopyTileTaskWorkerPool(
       task_runner, task_graph_runner, context_provider, resource_provider,
-      resource_pool, max_bytes_per_copy_operation));
+      resource_pool, max_bytes_per_copy_operation,
+      have_persistent_gpu_memory_buffers));
 }
 
 OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
@@ -120,7 +146,8 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     ResourcePool* resource_pool,
-    size_t max_bytes_per_copy_operation)
+    size_t max_bytes_per_copy_operation,
+    bool have_persistent_gpu_memory_buffers)
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner->GetNamespaceToken()),
@@ -128,6 +155,7 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
       resource_provider_(resource_provider),
       resource_pool_(resource_pool),
       max_bytes_per_copy_operation_(max_bytes_per_copy_operation),
+      have_persistent_gpu_memory_buffers_(have_persistent_gpu_memory_buffers),
       last_issued_copy_operation_(0),
       last_flushed_copy_operation_(0),
       lock_(),
@@ -266,12 +294,14 @@ ResourceFormat OneCopyTileTaskWorkerPool::GetResourceFormat() {
 }
 
 scoped_ptr<RasterBuffer> OneCopyTileTaskWorkerPool::AcquireBufferForRaster(
-    const Resource* resource) {
+    const Resource* resource,
+    uint64_t new_content_id,
+    uint64_t previous_content_id) {
   DCHECK_EQ(resource->format(), resource_provider_->best_texture_format());
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(this, resource_provider_, resource_pool_,
-                           resource_provider_->best_texture_format(),
-                           resource));
+                           resource_provider_->best_texture_format(), resource,
+                           new_content_id, previous_content_id));
 }
 
 void OneCopyTileTaskWorkerPool::ReleaseBufferForRaster(
@@ -281,36 +311,49 @@ void OneCopyTileTaskWorkerPool::ReleaseBufferForRaster(
 
 CopySequenceNumber
 OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
-    scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
-    const Resource* src,
-    const Resource* dst,
+    bool reusing_raster_resource,
+    scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer>
+        raster_resource_write_lock,
+    const Resource* raster_resource,
+    const Resource* output_resource,
     const RasterSource* raster_source,
-    const gfx::Rect& rect,
+    const gfx::Rect& raster_full_rect,
+    const gfx::Rect& raster_dirty_rect,
     float scale) {
-  gfx::GpuMemoryBuffer* gpu_memory_buffer = write_lock->GetGpuMemoryBuffer();
+  gfx::GpuMemoryBuffer* gpu_memory_buffer =
+      raster_resource_write_lock->GetGpuMemoryBuffer();
   if (gpu_memory_buffer) {
     void* data = NULL;
     bool rv = gpu_memory_buffer->Map(&data);
     DCHECK(rv);
     int stride;
     gpu_memory_buffer->GetStride(&stride);
-    TileTaskWorkerPool::PlaybackToMemory(data, src->format(), src->size(),
-                                         stride, raster_source, rect, scale);
+
+    gfx::Rect playback_rect = raster_full_rect;
+    if (reusing_raster_resource) {
+      playback_rect.Intersect(raster_dirty_rect);
+    }
+    DCHECK(!playback_rect.IsEmpty())
+        << "Why are we rastering a tile that's not dirty?";
+    TileTaskWorkerPool::PlaybackToMemory(
+        data, raster_resource->format(), raster_resource->size(), stride,
+        raster_source, raster_full_rect, playback_rect, scale);
     gpu_memory_buffer->Unmap();
   }
 
   base::AutoLock lock(lock_);
 
   CopySequenceNumber sequence = 0;
-  size_t bytes_per_row =
-      (BitsPerPixel(src->format()) * src->size().width()) / 8;
+  size_t bytes_per_row = (BitsPerPixel(raster_resource->format()) *
+                          raster_resource->size().width()) /
+                         8;
   size_t chunk_size_in_rows = std::max(
       static_cast<size_t>(1), max_bytes_per_copy_operation_ / bytes_per_row);
   // Align chunk size to 4. Required to support compressed texture formats.
   chunk_size_in_rows =
       MathUtil::RoundUp(chunk_size_in_rows, static_cast<size_t>(4));
   size_t y = 0;
-  size_t height = src->size().height();
+  size_t height = raster_resource->size().height();
   while (y < height) {
     int failed_attempts = 0;
     while ((pending_copy_operations_.size() + issued_copy_operation_count_) >=
@@ -343,12 +386,11 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     // Copy at most |chunk_size_in_rows|.
     size_t rows_to_copy = std::min(chunk_size_in_rows, height - y);
 
-    // |write_lock| is passed to the first copy operation as it needs to be
-    // released before we can issue a copy.
-    pending_copy_operations_.push_back(make_scoped_ptr(
-        new CopyOperation(write_lock.Pass(), src, dst,
-                          gfx::Rect(0, y, src->size().width(), rows_to_copy))));
-
+    // |raster_resource_write_lock| is passed to the first copy operation as it
+    // needs to be released before we can issue a copy.
+    pending_copy_operations_.push_back(make_scoped_ptr(new CopyOperation(
+        raster_resource_write_lock.Pass(), raster_resource, output_resource,
+        gfx::Rect(0, y, raster_resource->size().width(), rows_to_copy))));
     y += rows_to_copy;
 
     // Acquire a sequence number for this copy operation.
@@ -426,7 +468,7 @@ void OneCopyTileTaskWorkerPool::IssueCopyOperations(int64 count) {
     scoped_ptr<CopyOperation> copy_operation = copy_operations.take_front();
 
     // Remove the write lock.
-    copy_operation->write_lock.reset();
+    copy_operation->src_write_lock.reset();
 
     // Copy contents of source resource to destination resource.
     resource_provider_->CopyResource(copy_operation->src->id(),

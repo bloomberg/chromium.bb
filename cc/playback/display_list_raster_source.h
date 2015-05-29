@@ -27,7 +27,8 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
 
   // RasterSource overrides.
   void PlaybackToCanvas(SkCanvas* canvas,
-                        const gfx::Rect& canvas_rect,
+                        const gfx::Rect& canvas_bitmap_rect,
+                        const gfx::Rect& canvas_playback_rect,
                         float contents_scale) const override;
   void PlaybackToSharedCanvas(SkCanvas* canvas,
                               const gfx::Rect& canvas_rect,
@@ -87,7 +88,8 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
 
   void RasterCommon(SkCanvas* canvas,
                     SkPicture::AbortCallback* callback,
-                    const gfx::Rect& canvas_rect,
+                    const gfx::Rect& canvas_bitmap_rect,
+                    const gfx::Rect& canvas_playback_rect,
                     float contents_scale) const;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayListRasterSource);
