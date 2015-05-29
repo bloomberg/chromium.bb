@@ -31,6 +31,11 @@ const CGFloat kMinSwipeXThreshold = 4;
 // immediately if the touches aren't at the edge of the touched view.
 - (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
   [super touchesBegan:touches withEvent:event];
+
+  // Don't interrupt gestures in progress.
+  if (self.state != UIGestureRecognizerStatePossible)
+    return;
+
   UITouch* touch = [[event allTouches] anyObject];
   CGPoint location = [touch locationInView:self.view];
   if (_swipeEdge > 0) {
