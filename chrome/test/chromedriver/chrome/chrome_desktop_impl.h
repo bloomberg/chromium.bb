@@ -52,6 +52,7 @@ class ChromeDesktopImpl : public ChromeImpl {
 
   // Overridden from ChromeImpl:
   bool IsMobileEmulationEnabled() const override;
+  bool HasTouchScreen() const override;
   Status QuitImpl() override;
 
   const base::CommandLine& command() const;

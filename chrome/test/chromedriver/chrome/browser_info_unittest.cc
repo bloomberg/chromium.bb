@@ -56,12 +56,12 @@ TEST(ParseBrowserInfo, BlinkVersionContainsGitHash) {
 
 TEST(ParseBrowserString, KitKatWebView) {
   BrowserInfo browser_info;
-  browser_info.is_android = false;
+  browser_info.is_android = true;
   Status status =
       ParseBrowserString("Version/4.0 Chrome/30.0.0.0", &browser_info);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ("webview", browser_info.browser_name);
-  ASSERT_EQ(std::string(), browser_info.browser_version);
+  ASSERT_EQ("30.0.0.0", browser_info.browser_version);
   ASSERT_EQ(kToTBuildNo, browser_info.build_no);
 }
 
@@ -71,7 +71,7 @@ TEST(ParseBrowserString, LollipopWebView) {
   Status status = ParseBrowserString("Chrome/37.0.0.0", &browser_info);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ("webview", browser_info.browser_name);
-  ASSERT_EQ(std::string(), browser_info.browser_version);
+  ASSERT_EQ("37.0.0.0", browser_info.browser_version);
   ASSERT_EQ(kToTBuildNo, browser_info.build_no);
 }
 

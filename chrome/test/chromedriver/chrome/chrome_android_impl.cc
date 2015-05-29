@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "chrome/test/chromedriver/chrome/device_manager.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
@@ -30,6 +32,24 @@ Status ChromeAndroidImpl::GetAsDesktop(ChromeDesktopImpl** desktop) {
 
 std::string ChromeAndroidImpl::GetOperatingSystemName() {
   return "ANDROID";
+}
+
+bool ChromeAndroidImpl::HasTouchScreen() const {
+  const BrowserInfo* browser_info = GetBrowserInfo();
+  if (browser_info->browser_name == "webview") {
+    std::vector<std::string> version_parts;
+    base::SplitString(browser_info->browser_version, '.', &version_parts);
+    int major_version;
+    if (version_parts.size() != 4 ||
+        !base::StringToInt(version_parts[0], &major_version)) {
+      LOG(WARNING) << "Unrecognized webview version: "
+                   << browser_info->browser_version;
+      return false;
+    }
+    return major_version >= 44;
+  } else {
+    return browser_info->build_no >= 2388;
+  }
 }
 
 Status ChromeAndroidImpl::QuitImpl() {

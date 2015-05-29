@@ -149,6 +149,7 @@ _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
         # The stable channel Chrome for Android does not yet support Synthetic
         # Gesture DevTools commands.
         # TODO(samuong): reenable when it does.
+        'ChromeDriverTest.testHasTouchScreen',
         'ChromeDriverTest.testTouchScrollElement',
         'ChromeDriverTest.testTouchDoubleTapElement',
         'ChromeDriverTest.testTouchLongPressElement',
@@ -159,6 +160,7 @@ _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
         # The beta channel Chrome for Android does not yet support Synthetic
         # Gesture DevTools commands.
         # TODO(samuong): reenable when it does.
+        'ChromeDriverTest.testHasTouchScreen',
         'ChromeDriverTest.testTouchScrollElement',
         'ChromeDriverTest.testTouchDoubleTapElement',
         'ChromeDriverTest.testTouchLongPressElement',
@@ -184,6 +186,14 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testEmulateNetworkConditionsOffline',
         'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
         'ChromeDriverTest.testEmulateNetworkConditionsName',
+        # The WebView shell that we test against (on KitKat) does not yet
+        # support Synthetic Gesture DevTools commands.
+        # TODO(samuong): reenable when it does.
+        'ChromeDriverTest.testHasTouchScreen',
+        'ChromeDriverTest.testTouchScrollElement',
+        'ChromeDriverTest.testTouchDoubleTapElement',
+        'ChromeDriverTest.testTouchLongPressElement',
+        'ChromeDriverTest.testTouchPinch',
     ]
 )
 
@@ -1033,7 +1043,8 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     # TODO(samuong): when this test starts failing, re-enable touch tests and
     # delete this test.
     if _ANDROID_PACKAGE_KEY:
-      if _ANDROID_PACKAGE_KEY in ['chrome_stable', 'chrome_beta']:
+      packages = ['chrome_stable', 'chrome_beta', 'chromedriver_webview_shell']
+      if _ANDROID_PACKAGE_KEY in packages:
         self.assertRaisesRegexp(RuntimeError,
                                 'Server returned error: Not Implemented',
                                 self._driver.TouchPinch, 1, 2, 3.0)

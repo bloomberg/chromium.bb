@@ -11,6 +11,12 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 
+namespace {
+
+const std::string kVersionPrefix = "Chrome/";
+
+}  // namespace
+
 BrowserInfo::BrowserInfo()
     : browser_name(std::string()),
       browser_version(std::string()),
@@ -61,10 +67,9 @@ Status ParseBrowserString(const std::string& browser_string,
     return Status(kOk);
   }
 
-  std::string prefix = "Chrome/";
   int build_no = 0;
-  if (browser_string.find(prefix) == 0u) {
-    std::string version = browser_string.substr(prefix.length());
+  if (browser_string.find(kVersionPrefix) == 0u) {
+    std::string version = browser_string.substr(kVersionPrefix.length());
     std::vector<std::string> version_parts;
     base::SplitString(version, '.', &version_parts);
 
@@ -75,7 +80,8 @@ Status ParseBrowserString(const std::string& browser_string,
 
     if (build_no != 0) {
       browser_info->browser_name = "chrome";
-      browser_info->browser_version = browser_string.substr(prefix.length());
+      browser_info->browser_version =
+          browser_string.substr(kVersionPrefix.length());
       browser_info->build_no = build_no;
       return Status(kOk);
     }
@@ -83,7 +89,12 @@ Status ParseBrowserString(const std::string& browser_string,
 
   if (browser_string.find("Version/") == 0u ||        // KitKat
       (browser_info->is_android && build_no == 0)) {  // Lollipop
-    browser_info->browser_name = "webview";
+    size_t pos = browser_string.find(kVersionPrefix);
+    if (pos != std::string::npos) {
+      browser_info->browser_name = "webview";
+      browser_info->browser_version =
+          browser_string.substr(pos + kVersionPrefix.length());
+    }
     return Status(kOk);
   }
 

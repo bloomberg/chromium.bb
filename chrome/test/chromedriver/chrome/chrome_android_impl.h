@@ -30,6 +30,7 @@ class ChromeAndroidImpl : public ChromeImpl {
   std::string GetOperatingSystemName() override;
 
   // Overridden from ChromeImpl:
+  bool HasTouchScreen() const override;
   Status QuitImpl() override;
 
  private:

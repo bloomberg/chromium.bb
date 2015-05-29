@@ -20,7 +20,7 @@ Status ChromeImpl::GetAsDesktop(ChromeDesktopImpl** desktop) {
   return Status(kUnknownError, "operation unsupported");
 }
 
-const BrowserInfo* ChromeImpl::GetBrowserInfo() {
+const BrowserInfo* ChromeImpl::GetBrowserInfo() const {
   return devtools_http_client_->browser_info();
 }
 
@@ -121,6 +121,10 @@ Status ChromeImpl::ActivateWebView(const std::string& id) {
 }
 
 bool ChromeImpl::IsMobileEmulationEnabled() const {
+  return false;
+}
+
+bool ChromeImpl::HasTouchScreen() const {
   return false;
 }
 

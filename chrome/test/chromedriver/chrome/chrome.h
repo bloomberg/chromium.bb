@@ -19,7 +19,7 @@ class Chrome {
 
   virtual Status GetAsDesktop(ChromeDesktopImpl** desktop) = 0;
 
-  virtual const BrowserInfo* GetBrowserInfo() = 0;
+  virtual const BrowserInfo* GetBrowserInfo() const = 0;
 
   virtual bool HasCrashedWebView() = 0;
 
@@ -42,6 +42,10 @@ class Chrome {
 
   // Return whether the mobileEmulation capability has been enabled.
   virtual bool IsMobileEmulationEnabled() const = 0;
+
+  // Return whether the target device has a touchscreen, and whether touch
+  // actions can be performed on it.
+  virtual bool HasTouchScreen() const = 0;
 
   // Quits Chrome.
   virtual Status Quit() = 0;

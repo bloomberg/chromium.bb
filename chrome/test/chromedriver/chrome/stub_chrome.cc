@@ -14,7 +14,7 @@ Status StubChrome::GetAsDesktop(ChromeDesktopImpl** desktop) {
   return Status(kUnknownError, "not supported");
 }
 
-const BrowserInfo* StubChrome::GetBrowserInfo() {
+const BrowserInfo* StubChrome::GetBrowserInfo() const {
   return &browser_info_;
 }
 
@@ -43,6 +43,10 @@ std::string StubChrome::GetOperatingSystemName() {
 }
 
 bool StubChrome::IsMobileEmulationEnabled() const {
+  return false;
+}
+
+bool StubChrome::HasTouchScreen() const {
   return false;
 }
 

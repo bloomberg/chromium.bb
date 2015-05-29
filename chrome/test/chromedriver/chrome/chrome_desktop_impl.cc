@@ -167,6 +167,10 @@ bool ChromeDesktopImpl::IsMobileEmulationEnabled() const {
   return devtools_http_client_->device_metrics() != NULL;
 }
 
+bool ChromeDesktopImpl::HasTouchScreen() const {
+  return IsMobileEmulationEnabled();
+}
+
 Status ChromeDesktopImpl::QuitImpl() {
   // If the Chrome session uses a custom user data directory, try sending a
   // SIGTERM signal before SIGKILL, so that Chrome has a chance to write
