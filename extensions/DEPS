@@ -49,6 +49,7 @@ specific_include_rules = {
     "+chrome/browser/extensions/test_extension_prefs.h",
     "+chrome/browser/extensions/test_extension_system.h",
     "+chrome/browser/ui/browser.h",
+    "+chrome/common/chrome_switches.h",
     "+chrome/common/extensions/features/feature_channel.h",
     "+chrome/test/base/chrome_render_view_test.h",
     "+chrome/test/base/testing_profile.h",

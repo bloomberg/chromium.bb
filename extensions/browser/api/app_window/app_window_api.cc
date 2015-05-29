@@ -335,8 +335,10 @@ bool AppWindowCreateFunction::RunAsync() {
       AppWindowClient::Get()->CreateAppWindow(browser_context(), extension());
   app_window->Init(url, new AppWindowContentsImpl(app_window), create_params);
 
-  if (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode())
+  if (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode() &&
+      !app_window->is_ime_window()) {
     app_window->ForcedFullscreen();
+  }
 
   content::RenderViewHost* created_view =
       app_window->web_contents()->GetRenderViewHost();
