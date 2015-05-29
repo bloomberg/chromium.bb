@@ -111,13 +111,6 @@ struct amdgpu_context {
 	uint32_t id;
 };
 
-struct amdgpu_ib {
-	amdgpu_context_handle context;
-	amdgpu_bo_handle buf_handle;
-	void *cpu;
-	uint64_t virtual_mc_base_address;
-};
-
 /**
  * Functions.
  */

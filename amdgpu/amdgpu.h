@@ -125,13 +125,6 @@ typedef struct amdgpu_bo *amdgpu_bo_handle;
  */
 typedef struct amdgpu_bo_list *amdgpu_bo_list_handle;
 
-/**
- * Define handle to be used when dealing with command
- * buffers (a.k.a. ibs)
- *
- */
-typedef struct amdgpu_ib *amdgpu_ib_handle;
-
 
 /*--------------------------------------------------------------------------*/
 /* -------------------------- Structures ---------------------------------- */
@@ -305,7 +298,7 @@ struct amdgpu_gds_alloc_info {
 */
 struct amdgpu_cs_ib_alloc_result {
 	/** IB allocation handle */
-	amdgpu_ib_handle handle;
+	amdgpu_bo_handle handle;
 
 	/** Assigned GPU VM MC Address of command buffer */
 	uint64_t	mc_address;
@@ -325,7 +318,7 @@ struct amdgpu_cs_ib_info {
 	uint64_t      flags;
 
 	/** Handle of command buffer */
-	amdgpu_ib_handle ib_handle;
+	amdgpu_bo_handle bo_handle;
 
 	/**
 	 * Size of Command Buffer to be submitted.
@@ -964,7 +957,7 @@ int amdgpu_cs_alloc_ib(amdgpu_context_handle context,
  * \sa amdgpu_cs_alloc_ib()
  *
 */
-int amdgpu_cs_free_ib(amdgpu_ib_handle handle);
+int amdgpu_cs_free_ib(amdgpu_bo_handle handle);
 
 /**
  * Send request to submit command buffers to hardware.

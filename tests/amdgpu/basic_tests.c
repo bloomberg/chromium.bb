@@ -184,7 +184,7 @@ static void amdgpu_command_submission_gfx_separate_ibs(void)
 	ptr[1] = 0;
 	ptr[2] = 0xc0008400;
 	ptr[3] = 1;
-	ib_info[0].ib_handle = ib_result_ce.handle;
+	ib_info[0].bo_handle = ib_result_ce.handle;
 	ib_info[0].size = 4;
 	ib_info[0].flags = AMDGPU_IB_FLAG_CE;
 
@@ -192,7 +192,7 @@ static void amdgpu_command_submission_gfx_separate_ibs(void)
 	ptr = ib_result.cpu;
 	ptr[0] = 0xc0008600;
 	ptr[1] = 0x00000001;
-	ib_info[1].ib_handle = ib_result.handle;
+	ib_info[1].bo_handle = ib_result.handle;
 	ib_info[1].size = 2;
 
 	ibs_request.ip_type = AMDGPU_HW_IP_GFX;
@@ -246,14 +246,14 @@ static void amdgpu_command_submission_gfx_shared_ib(void)
 	ptr[1] = 0;
 	ptr[2] = 0xc0008400;
 	ptr[3] = 1;
-	ib_info[0].ib_handle = ib_result.handle;
+	ib_info[0].bo_handle = ib_result.handle;
 	ib_info[0].size = 4;
 	ib_info[0].flags = AMDGPU_IB_FLAG_CE;
 
 	ptr = (uint32_t *)ib_result.cpu + 4;
 	ptr[0] = 0xc0008600;
 	ptr[1] = 0x00000001;
-	ib_info[1].ib_handle = ib_result.handle;
+	ib_info[1].bo_handle = ib_result.handle;
 	ib_info[1].size = 2;
 	ib_info[1].offset_dw = 4;
 
@@ -312,7 +312,7 @@ static void amdgpu_command_submission_compute(void)
 			ptr[i] = 0xffff1000;
 
 		memset(&ib_info, 0, sizeof(struct amdgpu_cs_ib_info));
-		ib_info.ib_handle = ib_result.handle;
+		ib_info.bo_handle = ib_result.handle;
 		ib_info.size = 16;
 
 		memset(&ibs_request, 0, sizeof(struct amdgpu_cs_request));
@@ -375,7 +375,7 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	ring_ptr = ib_result.cpu;
 	memcpy(ring_ptr, pm4_src, pm4_dw * sizeof(*pm4_src));
 
-	ib_info->ib_handle = ib_result.handle;
+	ib_info->bo_handle = ib_result.handle;
 	ib_info->size = pm4_dw;
 
 	ibs_request->ip_type = AMDGPU_HW_IP_DMA;

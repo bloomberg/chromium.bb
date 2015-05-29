@@ -42,17 +42,21 @@
  *
  * \return  0 on success otherwise POSIX Error code
 */
-static int amdgpu_cs_create_ib(amdgpu_context_handle context,
-			       enum amdgpu_cs_ib_size ib_size,
-			       amdgpu_ib_handle *ib)
+int amdgpu_cs_alloc_ib(amdgpu_context_handle context,
+		       enum amdgpu_cs_ib_size ib_size,
+		       struct amdgpu_cs_ib_alloc_result *output)
 {
-	struct amdgpu_bo_alloc_request alloc_buffer;
+	struct amdgpu_bo_alloc_request alloc_buffer = {};
 	struct amdgpu_bo_alloc_result info;
 	int r;
 	void *cpu;
-	struct amdgpu_ib *new_ib;
 
-	memset(&alloc_buffer, 0, sizeof(alloc_buffer));
+	if (NULL == context)
+		return -EINVAL;
+	if (NULL == output)
+		return -EINVAL;
+	if (ib_size >= AMDGPU_CS_IB_SIZE_NUM)
+		return -EINVAL;
 
 	switch (ib_size) {
 	case amdgpu_cs_ib_size_4K:
@@ -89,18 +93,9 @@ static int amdgpu_cs_create_ib(amdgpu_context_handle context,
 		return r;
 	}
 
-	new_ib = malloc(sizeof(struct amdgpu_ib));
-	if (NULL == new_ib) {
-		amdgpu_bo_cpu_unmap(info.buf_handle);
-		amdgpu_bo_free(info.buf_handle);
-		return -ENOMEM;
-	}
-
-	new_ib->context = context;
-	new_ib->buf_handle = info.buf_handle;
-	new_ib->cpu = cpu;
-	new_ib->virtual_mc_base_address = info.virtual_mc_base_address;
-	*ib = new_ib;
+	output->handle = info.buf_handle;
+	output->cpu = cpu;
+	output->mc_address = info.virtual_mc_base_address;
 	return 0;
 }
 
@@ -111,47 +106,18 @@ static int amdgpu_cs_create_ib(amdgpu_context_handle context,
  *
  * \return  0 on success otherwise POSIX Error code
 */
-int amdgpu_cs_free_ib(amdgpu_ib_handle ib)
+int amdgpu_cs_free_ib(amdgpu_bo_handle bo)
 {
 	int r;
 
-	if (!ib)
+	if (!bo)
 		return -EINVAL;
 
-	r = amdgpu_bo_cpu_unmap(ib->buf_handle);
+	r = amdgpu_bo_cpu_unmap(bo);
 	if (r)
 		return r;
 
-	r = amdgpu_bo_free(ib->buf_handle);
-	if (r)
-		return r;
-
-	free(ib);
-	return 0;
-}
-
-int amdgpu_cs_alloc_ib(amdgpu_context_handle context,
-		       enum amdgpu_cs_ib_size ib_size,
-		       struct amdgpu_cs_ib_alloc_result *output)
-{
-	int r;
-	amdgpu_ib_handle ib;
-
-	if (NULL == context)
-		return -EINVAL;
-	if (NULL == output)
-		return -EINVAL;
-	if (ib_size >= AMDGPU_CS_IB_SIZE_NUM)
-		return -EINVAL;
-
-	r = amdgpu_cs_create_ib(context, ib_size, &ib);
-	if (!r) {
-		output->handle = ib;
-		output->cpu = ib->cpu;
-		output->mc_address = ib->virtual_mc_base_address;
-	}
-
-	return r;
+	return amdgpu_bo_free(bo);
 }
 
 /**
@@ -346,8 +312,8 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 
 		ib = &ibs_request->ibs[i];
 
-		chunk_data[i].ib_data.handle = ib->ib_handle->buf_handle->handle;
-		chunk_data[i].ib_data.va_start = ib->ib_handle->virtual_mc_base_address
+		chunk_data[i].ib_data.handle = ib->bo_handle->handle;
+		chunk_data[i].ib_data.va_start = ib->bo_handle->virtual_mc_base_address
 						+ ib->offset_dw * 4;
 		chunk_data[i].ib_data.ib_bytes = ib->size * 4;
 		chunk_data[i].ib_data.ip_type = ibs_request->ip_type;

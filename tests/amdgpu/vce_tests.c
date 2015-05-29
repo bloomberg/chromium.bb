@@ -61,7 +61,7 @@ static uint32_t minor_version;
 static uint32_t family_id;
 
 static amdgpu_context_handle context_handle;
-static amdgpu_ib_handle ib_handle;
+static amdgpu_bo_handle ib_handle;
 uint32_t *ib_cpu;
 
 struct amdgpu_vce_encode enc;
@@ -135,7 +135,7 @@ static int submit(unsigned ndw, unsigned ip)
 	uint32_t expired;
 	int r;
 
-	ib_info.ib_handle = ib_handle;
+	ib_info.bo_handle = ib_handle;
 	ib_info.size = ndw;
 
 	ibs_request.ip_type = ip;
