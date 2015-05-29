@@ -228,18 +228,6 @@ def GetVSVersion():
   return vs_version
 
 
-def SubversionCmakeArg():
-  # Since cmake's find_program can only find .exe and .com,
-  # svn.bat in depot_tools will be ignored.
-  default_pathext = ('.com', '.exe', '.bat', '.cmd')
-  for path in os.environ.get('PATH', '').split(os.pathsep):
-    for ext in default_pathext:
-      candidate = os.path.join(path, 'svn' + ext)
-      if os.path.isfile(candidate):
-        return '-DSubversion_SVN_EXECUTABLE=%s' % candidate
-  return ''
-
-
 def UpdateClang(args):
   print 'Updating Clang to %s...' % (LLVM_WIN_REVISION)
   if LLVM_WIN_REVISION != 'HEAD' and ReadStampFile() == LLVM_WIN_REVISION:
@@ -272,7 +260,7 @@ def UpdateClang(args):
   cxxflags += ' -DLLVM_FORCE_HEAD_REVISION'
 
   cmake_args = ['-GNinja', '-DCMAKE_BUILD_TYPE=Release',
-                '-DLLVM_ENABLE_ASSERTIONS=ON', SubversionCmakeArg(),
+                '-DLLVM_ENABLE_ASSERTIONS=ON',
                 '-DCMAKE_C_FLAGS=' + cflags,
                 '-DCMAKE_CXX_FLAGS=' + cxxflags,
                 '-DCHROMIUM_TOOLS_SRC=%s' % os.path.join(
