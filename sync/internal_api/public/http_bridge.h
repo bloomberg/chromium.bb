@@ -52,61 +52,8 @@ class SYNC_EXPORT_PRIVATE HttpBridge
       public HttpPostProviderInterface,
       public net::URLFetcherDelegate {
  public:
-  // A request context used for HTTP requests bridged from the sync backend.
-  // A bridged RequestContext has a dedicated in-memory cookie store and does
-  // not use a cache. Thus the same type can be used for incognito mode.
-  class RequestContext : public net::URLRequestContext {
-   public:
-    // |baseline_context| is used to obtain the accept-language
-    // and proxy service information for bridged requests.
-    // Typically |baseline_context| should be the net::URLRequestContext of the
-    // currently active profile.
-    RequestContext(
-        net::URLRequestContext* baseline_context,
-        const scoped_refptr<base::SingleThreadTaskRunner>&
-            network_task_runner,
-        const std::string& user_agent);
-
-    // The destructor MUST be called on the IO thread.
-    ~RequestContext() override;
-
-   private:
-    const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-    scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
-    scoped_ptr<net::URLRequestJobFactory> job_factory_;
-
-    DISALLOW_COPY_AND_ASSIGN(RequestContext);
-  };
-
-  // Lazy-getter for RequestContext objects.
-  class SYNC_EXPORT_PRIVATE RequestContextGetter
-      : public net::URLRequestContextGetter {
-   public:
-    RequestContextGetter(
-        net::URLRequestContextGetter* baseline_context_getter,
-        const std::string& user_agent);
-
-    // net::URLRequestContextGetter implementation.
-    net::URLRequestContext* GetURLRequestContext() override;
-    scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-        const override;
-
-   protected:
-    ~RequestContextGetter() override;
-
-   private:
-    scoped_refptr<net::URLRequestContextGetter> baseline_context_getter_;
-    const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-    // User agent to apply to the net::URLRequestContext.
-    const std::string user_agent_;
-
-    // Lazily initialized by GetURLRequestContext().
-    scoped_ptr<RequestContext> context_;
-
-    DISALLOW_COPY_AND_ASSIGN(RequestContextGetter);
-  };
-
-  HttpBridge(RequestContextGetter* context,
+  HttpBridge(const std::string& user_agent,
+             const scoped_refptr<net::URLRequestContextGetter>& context,
              const NetworkTimeUpdateCallback& network_time_update_callback);
 
   // HttpPostProvider implementation.
@@ -172,6 +119,9 @@ class SYNC_EXPORT_PRIVATE HttpBridge
   // on network IO through curl_easy_perform.
   base::MessageLoop* const created_on_loop_;
 
+  // The user agent for all requests.
+  const std::string user_agent_;
+
   // The URL to POST to.
   GURL url_for_request_;
 
@@ -217,16 +167,13 @@ class SYNC_EXPORT_PRIVATE HttpBridge
   };
 
   // This lock synchronizes use of state involved in the flow to fetch a URL
-  // using URLFetcher, including |fetch_state_| and
-  // |context_getter_for_request_| on any thread, for example, this flow needs
-  // to be synchronized to gracefully clean up URLFetcher and return
-  // appropriate values in |error_code|.
+  // using URLFetcher, including |fetch_state_| and |request_context_getter_| on
+  // any thread, for example, this flow needs to be synchronized to gracefully
+  // clean up URLFetcher and return appropriate values in |error_code|.
   mutable base::Lock fetch_state_lock_;
   URLFetchState fetch_state_;
 
-  // Gets a customized net::URLRequestContext for bridged requests. See
-  // RequestContext definition for details.
-  scoped_refptr<RequestContextGetter> context_getter_for_request_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
@@ -255,21 +202,15 @@ class SYNC_EXPORT HttpBridgeFactory : public HttpPostProviderFactory,
   void OnSignalReceived() override;
 
  private:
-  // Protects |request_context_getter_| and |baseline_request_context_getter_|.
-  base::Lock context_getter_lock_;
+  // The user agent to use in all requests.
+  std::string user_agent_;
 
-  // This request context is the starting point for the request_context_getter_
-  // that we eventually use to make requests.  During shutdown we must drop all
-  // references to it before the ProfileSyncService's Shutdown() call is
-  // complete.
-  scoped_refptr<net::URLRequestContextGetter> baseline_request_context_getter_;
+  // Protects |request_context_getter_| to allow releasing it's reference from
+  // the sync thread, even when it's in use on the IO thread.
+  base::Lock request_context_getter_lock_;
 
-  // This request context is built on top of the baseline context and shares
-  // common components. Takes a reference to the
-  // baseline_request_context_getter_.  It's mostly used on sync thread when
-  // creating connection but is released as soon as possible during shutdown.
-  // Protected by |context_getter_lock_|.
-  scoped_refptr<HttpBridge::RequestContextGetter> request_context_getter_;
+  // The request context getter used for making all requests.
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   NetworkTimeUpdateCallback network_time_update_callback_;
 

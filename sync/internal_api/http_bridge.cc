@@ -7,11 +7,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_fetcher.h"
@@ -36,45 +37,11 @@ void LogTimeout(bool timed_out) {
 
 }  // namespace
 
-HttpBridge::RequestContextGetter::RequestContextGetter(
-    net::URLRequestContextGetter* baseline_context_getter,
-    const std::string& user_agent)
-    : baseline_context_getter_(baseline_context_getter),
-      network_task_runner_(
-          baseline_context_getter_->GetNetworkTaskRunner()),
-      user_agent_(user_agent) {
-  DCHECK(baseline_context_getter_.get());
-  DCHECK(network_task_runner_.get());
-  DCHECK(!user_agent_.empty());
-}
-
-HttpBridge::RequestContextGetter::~RequestContextGetter() {}
-
-net::URLRequestContext*
-HttpBridge::RequestContextGetter::GetURLRequestContext() {
-  // Lazily create the context.
-  if (!context_) {
-    net::URLRequestContext* baseline_context =
-        baseline_context_getter_->GetURLRequestContext();
-    context_.reset(
-        new RequestContext(baseline_context, GetNetworkTaskRunner(),
-                           user_agent_));
-    baseline_context_getter_ = NULL;
-  }
-
-  return context_.get();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-HttpBridge::RequestContextGetter::GetNetworkTaskRunner() const {
-  return network_task_runner_;
-}
-
 HttpBridgeFactory::HttpBridgeFactory(
-    const scoped_refptr<net::URLRequestContextGetter>& baseline_context_getter,
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     const NetworkTimeUpdateCallback& network_time_update_callback,
     CancelationSignal* cancelation_signal)
-    : baseline_request_context_getter_(baseline_context_getter),
+    : request_context_getter_(request_context_getter),
       network_time_update_callback_(network_time_update_callback),
       cancelation_signal_(cancelation_signal) {
   // Registration should never fail.  This should happen on the UI thread during
@@ -89,20 +56,11 @@ HttpBridgeFactory::~HttpBridgeFactory() {
 }
 
 void HttpBridgeFactory::Init(const std::string& user_agent) {
-  base::AutoLock lock(context_getter_lock_);
-
-  if (!baseline_request_context_getter_.get()) {
-    // Uh oh.  We've been aborted before we finished initializing.  There's no
-    // point in initializating further; let's just return right away.
-    return;
-  }
-
-  request_context_getter_ = new HttpBridge::RequestContextGetter(
-      baseline_request_context_getter_.get(), user_agent);
+  user_agent_ = user_agent;
 }
 
 HttpPostProviderInterface* HttpBridgeFactory::Create() {
-  base::AutoLock lock(context_getter_lock_);
+  base::AutoLock lock(request_context_getter_lock_);
 
   // If we've been asked to shut down (something which may happen asynchronously
   // and at pretty much any time), then we won't have a request_context_getter_.
@@ -110,10 +68,10 @@ HttpPostProviderInterface* HttpBridgeFactory::Create() {
   // we've been asked to shut down.
   CHECK(request_context_getter_.get());
 
-  HttpBridge* http = new HttpBridge(request_context_getter_.get(),
-                                    network_time_update_callback_);
+  scoped_refptr<HttpBridge> http = new HttpBridge(
+      user_agent_, request_context_getter_, network_time_update_callback_);
   http->AddRef();
-  return http;
+  return http.get();
 }
 
 void HttpBridgeFactory::Destroy(HttpPostProviderInterface* http) {
@@ -121,68 +79,10 @@ void HttpBridgeFactory::Destroy(HttpPostProviderInterface* http) {
 }
 
 void HttpBridgeFactory::OnSignalReceived() {
-  base::AutoLock lock(context_getter_lock_);
-  // Release |baseline_request_context_getter_| as soon as possible so that it
-  // is destroyed in the right order on its network task runner.  The
-  // |request_context_getter_| has a reference to the baseline, so we must
-  // drop our reference to it, too.
-  baseline_request_context_getter_ = NULL;
+  base::AutoLock lock(request_context_getter_lock_);
+  // Release |request_context_getter_| as soon as possible so that it
+  // is destroyed in the right order on its network task runner.
   request_context_getter_ = NULL;
-}
-
-HttpBridge::RequestContext::RequestContext(
-    net::URLRequestContext* baseline_context,
-    const scoped_refptr<base::SingleThreadTaskRunner>&
-        network_task_runner,
-    const std::string& user_agent)
-    : network_task_runner_(network_task_runner),
-      job_factory_(new net::URLRequestJobFactoryImpl()) {
-  DCHECK(!user_agent.empty());
-
-  // Create empty, in-memory cookie store.
-  set_cookie_store(new net::CookieMonster(NULL, NULL));
-
-  // We don't use a cache for bridged loads, but we do want to share proxy info.
-  set_host_resolver(baseline_context->host_resolver());
-  set_proxy_service(baseline_context->proxy_service());
-  set_ssl_config_service(baseline_context->ssl_config_service());
-
-  // Use its own job factory, which only supports http and https.
-  set_job_factory(job_factory_.get());
-
-  // We want to share the HTTP session data with the network layer factory,
-  // which includes auth_cache for proxies.
-  // Session is not refcounted so we need to be careful to not lose the parent
-  // context.
-  net::HttpNetworkSession* session =
-      baseline_context->http_transaction_factory()->GetSession();
-  DCHECK(session);
-  set_http_transaction_factory(new net::HttpNetworkLayer(session));
-
-  // TODO(timsteele): We don't currently listen for pref changes of these
-  // fields or CookiePolicy; I'm not sure we want to strictly follow the
-  // default settings, since for example if the user chooses to block all
-  // cookies, sync will start failing. Also it seems like accept_lang/charset
-  // should be tied to whatever the sync servers expect (if anything). These
-  // fields should probably just be settable by sync backend; though we should
-  // figure out if we need to give the user explicit control over policies etc.
-  std::string accepted_language_list;
-  if (baseline_context->http_user_agent_settings()) {
-    accepted_language_list =
-        baseline_context->http_user_agent_settings()->GetAcceptLanguage();
-  }
-  http_user_agent_settings_.reset(new net::StaticHttpUserAgentSettings(
-      accepted_language_list,
-      user_agent));
-  set_http_user_agent_settings(http_user_agent_settings_.get());
-
-  set_net_log(baseline_context->net_log());
-}
-
-HttpBridge::RequestContext::~RequestContext() {
-  AssertNoURLRequests();
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  delete http_transaction_factory();
 }
 
 HttpBridge::URLFetchState::URLFetchState()
@@ -196,13 +96,14 @@ HttpBridge::URLFetchState::URLFetchState()
 HttpBridge::URLFetchState::~URLFetchState() {}
 
 HttpBridge::HttpBridge(
-    HttpBridge::RequestContextGetter* context_getter,
+    const std::string& user_agent,
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     const NetworkTimeUpdateCallback& network_time_update_callback)
     : created_on_loop_(base::MessageLoop::current()),
+      user_agent_(user_agent),
       http_post_completed_(false, false),
-      context_getter_for_request_(context_getter),
-      network_task_runner_(
-          context_getter_for_request_->GetNetworkTaskRunner()),
+      request_context_getter_(context_getter),
+      network_task_runner_(request_context_getter_->GetNetworkTaskRunner()),
       network_time_update_callback_(network_time_update_callback) {
 }
 
@@ -301,14 +202,19 @@ void HttpBridge::MakeAsynchronousPost() {
       FROM_HERE, base::TimeDelta::FromSeconds(kMaxHttpRequestTimeSeconds),
       base::Bind(&HttpBridge::OnURLFetchTimedOut, this));
 
-  DCHECK(context_getter_for_request_.get());
+  DCHECK(request_context_getter_.get());
   fetch_state_.url_poster =
       net::URLFetcher::Create(url_for_request_, net::URLFetcher::POST, this)
           .release();
-  fetch_state_.url_poster->SetRequestContext(context_getter_for_request_.get());
+  fetch_state_.url_poster->SetRequestContext(request_context_getter_.get());
   fetch_state_.url_poster->SetUploadData(content_type_, request_content_);
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);
-  fetch_state_.url_poster->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES);
+  fetch_state_.url_poster->AddExtraRequestHeader(base::StringPrintf(
+      "%s: %s", net::HttpRequestHeaders::kUserAgent, user_agent_.c_str()));
+  fetch_state_.url_poster->SetLoadFlags(net::LOAD_BYPASS_CACHE |
+                                        net::LOAD_DISABLE_CACHE |
+                                        net::LOAD_DO_NOT_SAVE_COOKIES |
+                                        net::LOAD_DO_NOT_SEND_COOKIES);
   fetch_state_.start_time = base::Time::Now();
 
   fetch_state_.url_poster->Start();
@@ -345,7 +251,7 @@ void HttpBridge::Abort() {
 
   // Release |request_context_getter_| as soon as possible so that it is
   // destroyed in the right order on its network task runner.
-  context_getter_for_request_ = NULL;
+  request_context_getter_ = NULL;
 
   DCHECK(!fetch_state_.aborted);
   if (fetch_state_.aborted || fetch_state_.request_completed)
@@ -470,7 +376,7 @@ void HttpBridge::OnURLFetchTimedOut() {
 net::URLRequestContextGetter* HttpBridge::GetRequestContextGetterForTest()
     const {
   base::AutoLock lock(fetch_state_lock_);
-  return context_getter_for_request_.get();
+  return request_context_getter_.get();
 }
 
 void HttpBridge::UpdateNetworkTime() {

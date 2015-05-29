@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "net/http/http_response_headers.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -19,6 +21,8 @@ namespace {
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 }
+
+const char kUserAgent[] = "user-agent";
 
 class SyncHttpBridgeTest : public testing::Test {
  public:
@@ -52,11 +56,10 @@ class SyncHttpBridgeTest : public testing::Test {
           new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy());
       fake_default_request_context_getter_->AddRef();
     }
-    HttpBridge* bridge = new HttpBridge(
-        new HttpBridge::RequestContextGetter(
-            fake_default_request_context_getter_,
-            "user agent"),
-        NetworkTimeUpdateCallback());
+    HttpBridge* bridge =
+        new HttpBridge(kUserAgent,
+                       fake_default_request_context_getter_,
+                       NetworkTimeUpdateCallback());
     return bridge;
   }
 
@@ -118,10 +121,9 @@ class ShuntedHttpBridge : public HttpBridge {
   // returns.
   ShuntedHttpBridge(net::URLRequestContextGetter* baseline_context_getter,
                     SyncHttpBridgeTest* test, bool never_finishes)
-      : HttpBridge(
-          new HttpBridge::RequestContextGetter(
-              baseline_context_getter, "user agent"),
-          NetworkTimeUpdateCallback()),
+      : HttpBridge(kUserAgent,
+                   baseline_context_getter,
+                   NetworkTimeUpdateCallback()),
         test_(test), never_finishes_(never_finishes) { }
  protected:
   void MakeAsynchronousPost() override {
@@ -253,7 +255,9 @@ TEST_F(SyncHttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   std::string response(http_bridge->GetResponseContent(),
                        http_bridge->GetResponseContentLength());
   EXPECT_EQ(std::string::npos, response.find("Cookie:"));
-  EXPECT_NE(std::string::npos, response.find("User-Agent: user agent"));
+  EXPECT_NE(std::string::npos,
+            response.find(base::StringPrintf("%s: %s",
+                          net::HttpRequestHeaders::kUserAgent, kUserAgent)));
   EXPECT_NE(std::string::npos, response.find(test_payload.c_str()));
 }
 
