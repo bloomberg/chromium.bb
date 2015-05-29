@@ -16,10 +16,6 @@ namespace gin {
 
 class GIN_EXPORT V8Initializer {
  public:
-  static const int kV8SnapshotBasePathKey;
-  static const char kNativesFileName[];
-  static const char kSnapshotFileName[];
-
   // This should be called by IsolateHolder::Initialize().
   static void Initialize(gin::IsolateHolder::ScriptMode mode);
 
