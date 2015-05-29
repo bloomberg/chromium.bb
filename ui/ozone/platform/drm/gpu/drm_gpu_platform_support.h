@@ -42,7 +42,7 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
  public:
   DrmGpuPlatformSupport(DrmDeviceManager* drm_device_manager,
                         ScreenManager* screen_manager,
-                        scoped_ptr<DrmGpuDisplayManager> ndd);
+                        scoped_ptr<DrmGpuDisplayManager> display_manager);
   ~DrmGpuPlatformSupport() override;
 
   void AddHandler(scoped_ptr<GpuPlatformSupport> handler);

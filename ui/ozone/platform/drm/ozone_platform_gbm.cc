@@ -181,10 +181,11 @@ class OzonePlatformGbm : public OzonePlatform {
     surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
     surface_factory_ozone_->InitializeGpu(drm_device_manager_.get(),
                                           screen_manager_.get());
-    scoped_ptr<DrmGpuDisplayManager> ndd(new DrmGpuDisplayManager(
+    scoped_ptr<DrmGpuDisplayManager> display_manager(new DrmGpuDisplayManager(
         screen_manager_.get(), drm_device_manager_.get()));
     gpu_platform_support_.reset(new DrmGpuPlatformSupport(
-        drm_device_manager_.get(), screen_manager_.get(), ndd.Pass()));
+        drm_device_manager_.get(), screen_manager_.get(),
+        display_manager.Pass()));
   }
 
  private:

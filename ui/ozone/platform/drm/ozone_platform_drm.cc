@@ -97,10 +97,11 @@ class OzonePlatformDrm : public OzonePlatform {
     cursor_.reset(new DrmCursor(window_manager_.get()));
     overlay_manager_.reset(new DrmOverlayManager(false));
     surface_factory_ozone_.reset(new DrmSurfaceFactory(screen_manager_.get()));
-    scoped_ptr<DrmGpuDisplayManager> ndd(new DrmGpuDisplayManager(
+    scoped_ptr<DrmGpuDisplayManager> display_manager(new DrmGpuDisplayManager(
         screen_manager_.get(), drm_device_manager_.get()));
     gpu_platform_support_.reset(new DrmGpuPlatformSupport(
-        drm_device_manager_.get(), screen_manager_.get(), ndd.Pass()));
+        drm_device_manager_.get(), screen_manager_.get(),
+        display_manager.Pass()));
     gpu_platform_support_host_.reset(
         new DrmGpuPlatformSupportHost(cursor_.get()));
     display_manager_.reset(new DrmDisplayHostManager(
