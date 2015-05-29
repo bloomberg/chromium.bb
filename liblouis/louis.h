@@ -477,7 +477,12 @@ extern "C"
   } AllocBuf;
 
   typedef enum
-  { noEncoding, bigEndian, littleEndian, ascii8 } EncodingType;
+  {
+    noEncoding,
+    bigEndianEncoding,
+    littleEndianEncoding,
+    ascii8Encoding
+  } EncodingType;
 
   typedef struct
   {

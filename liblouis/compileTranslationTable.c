@@ -496,7 +496,7 @@ getAChar (FileInfo * nested)
 * 16- or 32-bit unsigned integers */
   int ch1 = 0, ch2 = 0;
   widechar character;
-  if (nested->encoding == ascii8)
+  if (nested->encoding == ascii8Encoding)
     if (nested->status == 2)
       {
 	nested->status++;
@@ -511,14 +511,14 @@ getAChar (FileInfo * nested)
 	{
 	  if (nested->checkencoding[0] == 0xfe
 	      && nested->checkencoding[1] == 0xff)
-	    nested->encoding = bigEndian;
+	    nested->encoding = bigEndianEncoding;
 	  else if (nested->checkencoding[0] == 0xff
 		   && nested->checkencoding[1] == 0xfe)
-	    nested->encoding = littleEndian;
+	    nested->encoding = littleEndianEncoding;
 	  else if (nested->checkencoding[0] < 128
 		   && nested->checkencoding[1] < 128)
 	    {
-	      nested->encoding = ascii8;
+	      nested->encoding = ascii8Encoding;
 	      return nested->checkencoding[0];
 	    }
 	  else
@@ -534,17 +534,17 @@ getAChar (FileInfo * nested)
 	{
 	case noEncoding:
 	  break;
-	case ascii8:
+	case ascii8Encoding:
 	  return ch1;
 	  break;
-	case bigEndian:
+	case bigEndianEncoding:
 	  ch2 = fgetc (nested->in);
 	  if (ch2 == EOF)
 	    break;
 	  character = (ch1 << 8) | ch2;
 	  return (int) character;
 	  break;
-	case littleEndian:
+	case littleEndianEncoding:
 	  ch2 = fgetc (nested->in);
 	  if (ch2 == EOF)
 	    break;
