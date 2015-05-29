@@ -69,8 +69,10 @@ public:
     LayoutUnit m_overrideLogicalContentHeight;
     LayoutUnit m_overrideLogicalContentWidth;
 
-    // Set by LayoutBox::updatePreviousBorderBoxSizeIfNeeded().
+    // Set by LayoutBox::savePreviousBoxSizesIfNeeded().
     LayoutSize m_previousBorderBoxSize;
+    LayoutRect m_previousContentBoxRect;
+    LayoutRect m_previousLayoutOverflowRect;
 
     LayoutUnit m_pageLogicalOffset;
 };
@@ -822,7 +824,8 @@ private:
         return *m_rareData.get();
     }
 
-    void savePreviousBorderBoxSizeIfNeeded();
+    bool needToSavePreviousBoxSizes();
+    void savePreviousBoxSizesIfNeeded();
     LayoutSize computePreviousBorderBoxSize(const LayoutSize& previousBoundsSize) const;
 
     bool logicalHeightComputesAsNone(SizeType) const;
