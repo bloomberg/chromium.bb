@@ -183,7 +183,7 @@ TEST_F(WrappableTest, GetAndSetProperty) {
       "   else obj.value = 191; })");
   EXPECT_FALSE(source.IsEmpty());
 
-  gin::TryCatch try_catch;
+  gin::TryCatch try_catch(isolate);
   v8::Local<v8::Script> script = v8::Script::Compile(source);
   EXPECT_FALSE(script.IsEmpty());
   v8::Local<v8::Value> val = script->Run();
@@ -209,7 +209,7 @@ TEST_F(WrappableTest, WrappableSubclass) {
                                              "(function(obj) {"
                                              "obj.sayHello('Lily');"
                                              "})");
-  gin::TryCatch try_catch;
+  gin::TryCatch try_catch(isolate);
   v8::Local<v8::Script> script = v8::Script::Compile(source);
   v8::Local<v8::Value> val = script->Run();
   v8::Local<v8::Function> func;
@@ -232,7 +232,7 @@ TEST_F(WrappableTest, CallAsFunction) {
                                              "(function(obj) {"
                                              "obj(42, 2, 5);"
                                              "})");
-  gin::TryCatch try_catch;
+  gin::TryCatch try_catch(isolate);
   v8::Local<v8::Script> script = v8::Script::Compile(source);
   v8::Local<v8::Value> val = script->Run();
   v8::Local<v8::Function> func;
@@ -255,7 +255,7 @@ TEST_F(WrappableTest, CallAsConstructor) {
                                              "(function(obj) {"
                                              "new obj(42, 2, 5);"
                                              "})");
-  gin::TryCatch try_catch;
+  gin::TryCatch try_catch(isolate);
   v8::Local<v8::Script> script = v8::Script::Compile(source);
   v8::Local<v8::Value> val = script->Run();
   v8::Local<v8::Function> func;

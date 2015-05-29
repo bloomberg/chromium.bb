@@ -16,13 +16,14 @@ namespace gin {
 // TryCatch is a convenient wrapper around v8::TryCatch.
 class GIN_EXPORT TryCatch {
  public:
-  TryCatch();
+  explicit TryCatch(v8::Isolate* isolate);
   ~TryCatch();
 
   bool HasCaught();
   std::string GetStackTrace();
 
  private:
+  v8::Isolate* isolate_;
   v8::TryCatch try_catch_;
 
   DISALLOW_COPY_AND_ASSIGN(TryCatch);

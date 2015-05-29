@@ -10,13 +10,29 @@ using v8::ArrayBuffer;
 using v8::Boolean;
 using v8::External;
 using v8::Function;
+using v8::Int32;
 using v8::Integer;
 using v8::Isolate;
 using v8::Local;
+using v8::Maybe;
+using v8::MaybeLocal;
 using v8::Number;
 using v8::Object;
 using v8::String;
+using v8::Uint32;
 using v8::Value;
+
+namespace {
+
+template <typename T, typename U>
+bool FromMaybe(Maybe<T> maybe, U* out) {
+  if (maybe.IsNothing())
+    return false;
+  *out = static_cast<U>(maybe.FromJust());
+  return true;
+}
+
+}  // namespace
 
 namespace gin {
 
@@ -25,8 +41,7 @@ Local<Value> Converter<bool>::ToV8(Isolate* isolate, bool val) {
 }
 
 bool Converter<bool>::FromV8(Isolate* isolate, Local<Value> val, bool* out) {
-  *out = val->BooleanValue();
-  return true;
+  return FromMaybe(val->BooleanValue(isolate->GetCurrentContext()), out);
 }
 
 Local<Value> Converter<int32_t>::ToV8(Isolate* isolate, int32_t val) {
@@ -38,7 +53,7 @@ bool Converter<int32_t>::FromV8(Isolate* isolate,
                                 int32_t* out) {
   if (!val->IsInt32())
     return false;
-  *out = val->Int32Value();
+  *out = val.As<Int32>()->Value();
   return true;
 }
 
@@ -51,7 +66,7 @@ bool Converter<uint32_t>::FromV8(Isolate* isolate,
                                  uint32_t* out) {
   if (!val->IsUint32())
     return false;
-  *out = val->Uint32Value();
+  *out = val.As<Uint32>()->Value();
   return true;
 }
 
@@ -66,8 +81,7 @@ bool Converter<int64_t>::FromV8(Isolate* isolate,
     return false;
   // Even though IntegerValue returns int64_t, JavaScript cannot represent
   // the full precision of int64_t, which means some rounding might occur.
-  *out = val->IntegerValue();
-  return true;
+  return FromMaybe(val->IntegerValue(isolate->GetCurrentContext()), out);
 }
 
 Local<Value> Converter<uint64_t>::ToV8(Isolate* isolate, uint64_t val) {
@@ -79,8 +93,7 @@ bool Converter<uint64_t>::FromV8(Isolate* isolate,
                                  uint64_t* out) {
   if (!val->IsNumber())
     return false;
-  *out = static_cast<uint64_t>(val->IntegerValue());
-  return true;
+  return FromMaybe(val->IntegerValue(isolate->GetCurrentContext()), out);
 }
 
 Local<Value> Converter<float>::ToV8(Isolate* isolate, float val) {
@@ -90,7 +103,7 @@ Local<Value> Converter<float>::ToV8(Isolate* isolate, float val) {
 bool Converter<float>::FromV8(Isolate* isolate, Local<Value> val, float* out) {
   if (!val->IsNumber())
     return false;
-  *out = static_cast<float>(val->NumberValue());
+  *out = static_cast<float>(val.As<Number>()->Value());
   return true;
 }
 
@@ -103,14 +116,16 @@ bool Converter<double>::FromV8(Isolate* isolate,
                                double* out) {
   if (!val->IsNumber())
     return false;
-  *out = val->NumberValue();
+  *out = val.As<Number>()->Value();
   return true;
 }
 
 Local<Value> Converter<base::StringPiece>::ToV8(Isolate* isolate,
                                                 const base::StringPiece& val) {
-  return String::NewFromUtf8(isolate, val.data(), String::kNormalString,
-                             static_cast<uint32_t>(val.length()));
+  return String::NewFromUtf8(isolate, val.data(),
+                             v8::NewStringType::kNormal,
+                             static_cast<uint32_t>(val.length()))
+      .ToLocalChecked();
 }
 
 Local<Value> Converter<std::string>::ToV8(Isolate* isolate,
@@ -194,10 +209,10 @@ bool Converter<Local<Value>>::FromV8(Isolate* isolate,
 
 v8::Local<v8::String> StringToSymbol(v8::Isolate* isolate,
                                       const base::StringPiece& val) {
-  return String::NewFromUtf8(isolate,
-                             val.data(),
-                             String::kInternalizedString,
-                             static_cast<uint32_t>(val.length()));
+  return String::NewFromUtf8(isolate, val.data(),
+                             v8::NewStringType::kInternalized,
+                             static_cast<uint32_t>(val.length()))
+      .ToLocalChecked();
 }
 
 std::string V8ToString(v8::Local<v8::Value> value) {

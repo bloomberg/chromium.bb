@@ -47,7 +47,7 @@ class GIN_EXPORT ModuleRegistry {
 
   // Installs the necessary functions needed for modules.
   // WARNING: this may execute script in the page.
-  static void InstallGlobals(v8::Isolate* isolate, v8::Local<v8::Object> obj);
+  static bool InstallGlobals(v8::Isolate* isolate, v8::Local<v8::Object> obj);
 
   void AddObserver(ModuleRegistryObserver* observer);
   void RemoveObserver(ModuleRegistryObserver* observer);
@@ -81,8 +81,8 @@ class GIN_EXPORT ModuleRegistry {
 
   explicit ModuleRegistry(v8::Isolate* isolate);
 
-  void Load(v8::Isolate* isolate, scoped_ptr<PendingModule> pending);
-  void RegisterModule(v8::Isolate* isolate,
+  bool Load(v8::Isolate* isolate, scoped_ptr<PendingModule> pending);
+  bool RegisterModule(v8::Isolate* isolate,
                       const std::string& id,
                       v8::Local<v8::Value> module);
 
