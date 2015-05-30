@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 
 class ChromeLauncherAppMenuItem;
+class LauncherApplicationMenuItemModelTestAPI;
 
 // A list of the elements which makes up a simple menu description.
 typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
@@ -34,7 +35,16 @@ class LauncherApplicationMenuItemModel : public ash::ShelfMenuModel,
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
+  friend class LauncherApplicationMenuItemModelTestAPI;
+
   void Build();
+
+  // Returns the number of menu items that are enabled.
+  int GetNumMenuItemsEnabled() const;
+
+  // Records UMA metrics when a menu item is selected.
+  void RecordMenuItemSelectedMetrics(int command_id,
+                                     int num_menu_items_enabled);
 
   // The list of menu items as returned from the launcher controller.
   ChromeLauncherAppMenuItems launcher_items_;

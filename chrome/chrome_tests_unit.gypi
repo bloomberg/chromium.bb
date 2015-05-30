@@ -915,6 +915,7 @@
       'browser/ui/ash/chrome_screenshot_grabber_unittest.cc',
       'browser/ui/ash/ime_controller_chromeos_unittest.cc',
       'browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc',
+      'browser/ui/ash/launcher/launcher_application_menu_item_model_unittest.cc',
       'browser/ui/ash/launcher/launcher_context_menu_unittest.cc',
       'browser/ui/ash/multi_user/multi_user_context_menu_chromeos_unittest.cc',
       'browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos_unittest.cc',
@@ -922,6 +923,12 @@
       'browser/ui/ash/session_state_delegate_chromeos_unittest.cc',
       'browser/ui/ash/window_positioner_unittest.cc',
       'browser/ui/window_sizer/window_sizer_ash_unittest.cc',
+    ],
+    'chrome_test_support_unit_ash_sources': [
+      'browser/ui/ash/launcher/test/test_chrome_launcher_app_menu_item.cc',
+      'browser/ui/ash/launcher/test/test_chrome_launcher_app_menu_item.h',
+      'browser/ui/ash/launcher/test/launcher_application_menu_item_model_test_api.cc',
+      'browser/ui/ash/launcher/test/launcher_application_menu_item_model_test_api.h',
     ],
     'chrome_unit_tests_task_manager_sources': [
       # New Task Manager Tests Sources:
@@ -2104,6 +2111,9 @@
           'dependencies': [
             'browser/media/router/media_router.gyp:media_router_test_support',
           ],
+        }],
+        ['use_ash==1', {
+          'sources': [ '<@(chrome_test_support_unit_ash_sources)' ],
         }],
       ],
     },

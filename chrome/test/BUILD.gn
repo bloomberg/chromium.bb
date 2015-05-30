@@ -198,26 +198,6 @@ source_set("test_support") {
   }
 }
 
-source_set("test_support_unit") {
-  testonly = true
-  sources = [
-    "../browser/sync/glue/session_sync_test_helper.cc",
-    "../browser/sync/glue/session_sync_test_helper.h",
-    "base/run_all_unittests.cc",
-  ]
-
-  deps = [
-    ":test_support",
-    "//base",
-    "//chrome:resources",
-    "//chrome:strings",
-    "//chrome/browser",
-    "//chrome/common",
-    "//mojo/environment:chromium",
-    "//third_party/mojo/src/mojo/edk/system",
-  ]
-}
-
 if (!is_android) {
   import("//chrome/chrome_tests.gni")
   import("//third_party/protobuf/proto_library.gni")
@@ -1820,5 +1800,32 @@ if (!is_android) {
         deps += [ "//third_party/cld_2:cld2_platform_impl" ]
       }
     }
+  }
+}
+
+source_set("test_support_unit") {
+  testonly = true
+  sources = [
+    "../browser/sync/glue/session_sync_test_helper.cc",
+    "../browser/sync/glue/session_sync_test_helper.h",
+    "base/run_all_unittests.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    "//base",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//chrome/browser",
+    "//chrome/common",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/edk/system",
+  ]
+
+  if (!is_android && use_ash) {
+    sources +=
+        rebase_path(unit_gypi_values.chrome_test_support_unit_ash_sources,
+                    ".",
+                    "//chrome")
   }
 }

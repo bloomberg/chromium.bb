@@ -736,6 +736,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.Shelf.Menu.NumItemsEnabledUponSelection" units="Count">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <summary>
+    Tracks the number of menu items that are enabled in a shelf item's secondary
+    menu. This metric is only recorded when a menu item is selected.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.Menu.SelectedMenuItemIndex" units="Index">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <summary>
+    Tracks the index of the selected menu item in a shelf item's secondary menu.
+    This metric is only recorded when a menu item is selected.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Shelf.NumberOfItems" units="Icons">
   <owner>bruthig@google.com</owner>
   <owner>tdanderson@google.com</owner>
