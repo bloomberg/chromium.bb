@@ -214,7 +214,7 @@ def main():
   # Zip up gold plugin on Linux.
   if sys.platform.startswith('linux'):
     golddir = 'llvmgold-' + stamp
-    shutil.rmtree(pdir, ignore_errors=True)
+    shutil.rmtree(golddir, ignore_errors=True)
     os.makedirs(os.path.join(golddir, 'lib'))
     shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'lib', 'LLVMgold.so'),
                 os.path.join(golddir, 'lib'))
