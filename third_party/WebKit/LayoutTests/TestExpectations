@@ -1055,9 +1055,6 @@ crbug.com/306222 virtual/slimmingpaint/fast/hidpi/image-srcset-relative-svg-canv
 
 crbug.com/362434 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
 
-crbug.com/493516 svg/custom/transformed-outlines.svg [ NeedsRebaseline ]
-crbug.com/493516 virtual/slimmingpaint/svg/custom/transformed-outlines.svg [ NeedsRebaseline ]
-
 crbug.com/362499 [ Mac ] touchadjustment/context-menu-text-subtargets.html [ Failure Pass ]
 crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
 
