@@ -123,11 +123,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
     simulate_history_list_was_cleared_ = cleared;
   }
 
-  // Simulates initialization of the RenderFrame object in the renderer process
-  // and ensures internal state of RenderFrameHost is ready for simulating
-  // RenderFrame originated IPCs.
-  void InitializeRenderFrameIfNeeded();
-
   // Advances the RenderFrameHost (and through it the RenderFrameHostManager) to
   // a state where a new navigation can be committed by a renderer. Currently,
   // this simulates a BeforeUnload ACK from the renderer.

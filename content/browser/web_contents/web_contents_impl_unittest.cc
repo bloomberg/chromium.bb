@@ -1681,7 +1681,6 @@ TEST_F(WebContentsImplTest,
   // Simulate the navigation to the page, that's when the interstitial gets
   // hidden.
   GURL url3("http://www.thepage.com");
-  contents()->GetMainFrame()->PrepareForCommit();
   contents()->GetMainFrame()->SendNavigate(2, 0, true, url3);
 
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
@@ -3015,9 +3014,6 @@ TEST_F(WebContentsImplTest, MediaPowerSaveBlocking) {
 
   TestRenderFrameHost* rfh = contents()->GetMainFrame();
   AudioStateProvider* audio_state = contents()->audio_state_provider();
-
-  // Ensure RenderFrame is initialized before simulating events coming from it.
-  main_test_rfh()->InitializeRenderFrameIfNeeded();
 
   // The audio power save blocker should not be based on having a media player
   // when audio stream monitoring is available.

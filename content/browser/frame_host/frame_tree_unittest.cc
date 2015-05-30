@@ -309,7 +309,7 @@ TEST_F(FrameTreeTest, PreviousSibling) {
 TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
   TreeWalkingWebContentsLogger activity(contents());
   contents()->NavigateAndCommit(GURL("http://www.google.com"));
-  EXPECT_EQ("RenderFrameCreated(1) -> 1: []", activity.GetLog());
+  EXPECT_EQ("", activity.GetLog());
 
   FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
@@ -340,7 +340,7 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
 TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
   TreeWalkingWebContentsLogger activity(contents());
   contents()->NavigateAndCommit(GURL("http://www.google.com"));
-  EXPECT_EQ("RenderFrameCreated(1) -> 1: []", activity.GetLog());
+  EXPECT_EQ("", activity.GetLog());
 
   main_test_rfh()->OnCreateChildFrame(22, blink::WebTreeScopeType::Document,
                                       std::string(),
@@ -362,7 +362,7 @@ TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
   EXPECT_EQ(
       "RenderFrameDeleted(23) -> 1: [22: [], 23*: []]\n"
       "RenderFrameDeleted(22) -> 1: [22*: [], 23*: []]\n"
-      "RenderFrameDeleted(1) -> 1*: []\n"
+      "RenderFrameDeleted(1) -> 1: []\n"  // TODO(nick): Should be "1*:"
       "RenderProcessGone -> 1*: []",
       activity.GetLog());
 }

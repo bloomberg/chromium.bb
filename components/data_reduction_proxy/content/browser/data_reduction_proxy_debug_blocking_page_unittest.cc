@@ -412,7 +412,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, NavigatingBackAndForth) {
 
   // Proceed through the 1st interstitial.
   ProceedThroughInterstitial(interstitial);
-  NavigateCrossSite(kBypassURL, 2, pending_id, true);  // Commit navigation.
+  Navigate(kBypassURL, 2, pending_id, true);  // Commit navigation.
   GoBack(true);
 
   // We are back on the first page.

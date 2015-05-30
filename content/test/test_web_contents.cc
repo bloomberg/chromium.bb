@@ -38,6 +38,7 @@ TestWebContents* TestWebContents::Create(BrowserContext* browser_context,
                                          SiteInstance* instance) {
   TestWebContents* test_web_contents = new TestWebContents(browser_context);
   test_web_contents->Init(WebContents::CreateParams(browser_context, instance));
+  test_web_contents->RenderFrameCreated(test_web_contents->GetMainFrame());
   return test_web_contents;
 }
 
@@ -105,10 +106,9 @@ void TestWebContents::TestDidNavigateWithReferrer(
   params.is_post = false;
   params.page_state = PageState::CreateFromURL(url);
 
-  TestRenderFrameHost* rfh =
-      static_cast<TestRenderFrameHost*>(render_frame_host);
-  rfh->InitializeRenderFrameIfNeeded();
-  rfh->frame_tree_node()->navigator()->DidNavigate(rfh, params);
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(render_frame_host);
+  rfhi->frame_tree_node()->navigator()->DidNavigate(rfhi, params);
 }
 
 const std::string& TestWebContents::GetSaveFrameHeaders() {
