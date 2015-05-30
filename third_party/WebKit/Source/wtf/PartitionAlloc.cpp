@@ -608,20 +608,16 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     // - The first few system pages are the partition page in which the super
     // page metadata is stored. We fault just one system page out of a partition
     // page sized clump.
-    // - We add a trailing guard page.
-    size_t mapSize = size + kPartitionPageSize + kSystemPageSize;
+    // - We add a trailing guard page on 32-bit (on 64-bit we rely on the
+    // massive address space plus randomization instead).
+    size_t mapSize = size + kPartitionPageSize;
+#if !CPU(64BIT)
+    mapSize += kSystemPageSize;
+#endif
     // Round up to the allocation granularity.
     mapSize += kPageAllocationGranularityOffsetMask;
     mapSize &= kPageAllocationGranularityBaseMask;
 
-    // TODO: we may want to let the operating system place these allocations
-    // where it pleases. On 32-bit, this might limit address space
-    // fragmentation and on 64-bit, this might have useful savings for TLB
-    // and page table overhead.
-    // TODO: if upsizing realloc()s are common on large sizes, we could
-    // consider over-allocating address space on 64-bit, "just in case".
-    // TODO: consider pre-populating page tables (e.g. MAP_POPULATE on Linux,
-    // MADV_WILLNEED on POSIX).
     // TODO: these pages will be zero-filled. Consider internalizing an
     // allocZeroed() API so we can avoid a memset() entirely in this case.
     char* ptr = reinterpret_cast<char*>(allocPages(0, mapSize, kSuperPageSize, PageAccessible));
@@ -633,12 +629,11 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     partitionIncreaseCommittedPages(root, committedPageSize);
 
     char* ret = ptr + kPartitionPageSize;
-    // TODO: due to all the guard paging, this arrangement creates 4 mappings.
-    // We could get it down to three by using read-only for the metadata page,
-    // or perhaps two by leaving out the trailing guard page on 64-bit.
-    setSystemPagesInaccessible(ptr, kSystemPageSize);
     setSystemPagesInaccessible(ptr + (kSystemPageSize * 2), kPartitionPageSize - (kSystemPageSize * 2));
+#if !CPU(64BIT)
+    setSystemPagesInaccessible(ptr, kSystemPageSize);
     setSystemPagesInaccessible(ret + size, kSystemPageSize);
+#endif
 
     PartitionSuperPageExtentEntry* extent = reinterpret_cast<PartitionSuperPageExtentEntry*>(partitionSuperPageToMetadataArea(ptr));
     extent->root = root;
