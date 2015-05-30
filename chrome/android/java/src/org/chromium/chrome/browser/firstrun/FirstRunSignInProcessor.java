@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -241,7 +242,8 @@ public class FirstRunSignInProcessor {
      * @param context A context
      * @param isComplete Whether there is no pending sign-in requests from the First Run Experience.
      */
-    private static void setFirstRunFlowSignInComplete(Context context, boolean isComplete) {
+    @VisibleForTesting
+    public static void setFirstRunFlowSignInComplete(Context context, boolean isComplete) {
         PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
                 .putBoolean(FIRST_RUN_FLOW_SIGNIN_COMPLETE, isComplete)

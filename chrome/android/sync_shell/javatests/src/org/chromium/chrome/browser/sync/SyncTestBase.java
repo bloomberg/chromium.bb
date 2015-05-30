@@ -122,8 +122,7 @@ public class SyncTestBase extends ChromeShellTestBase {
         AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolver);
     }
 
-    protected void setupTestAccountAndSignInToSync(
-            final String syncClientIdentifier)
+    protected Account setupTestAccount(final String syncClientIdentifier)
             throws InterruptedException {
         Account defaultTestAccount = SyncTestUtil.setupTestAccountThatAcceptsAllAuthTokens(
                 mAccountManager, SyncTestUtil.DEFAULT_TEST_ACCOUNT, SyncTestUtil.DEFAULT_PASSWORD);
@@ -138,6 +137,13 @@ public class SyncTestBase extends ChromeShellTestBase {
                 }, true);
 
         SyncTestUtil.verifySyncIsSignedOut(getActivity());
+        return defaultTestAccount;
+    }
+
+    protected void setupTestAccountAndSignInToSync(
+            final String syncClientIdentifier)
+            throws InterruptedException {
+        Account defaultTestAccount = setupTestAccount(syncClientIdentifier);
         signIn(defaultTestAccount);
         SyncTestUtil.verifySyncIsSignedIn(mContext, defaultTestAccount);
         assertTrue("Sync everything should be enabled",
