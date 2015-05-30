@@ -454,15 +454,33 @@ static ALWAYS_INLINE uint16_t partitionBucketPartitionPages(const PartitionBucke
 static ALWAYS_INLINE void partitionPageReset(PartitionPage* page, PartitionBucket* bucket)
 {
     ASSERT(page != &PartitionRootGeneric::gSeedPage);
-    page->numAllocatedSlots = 0;
+    ASSERT(page->bucket == bucket);
+    ASSERT(!page->freelistHead);
+    ASSERT(!page->numAllocatedSlots);
+    ASSERT(!page->numUnprovisionedSlots);
+    ASSERT(page->emptyCacheIndex == -1);
+    ASSERT(!page->pageOffset);
+
     page->numUnprovisionedSlots = partitionBucketSlots(bucket);
     ASSERT(page->numUnprovisionedSlots);
+
+    page->nextPage = nullptr;
+}
+
+static ALWAYS_INLINE void partitionPageSetup(PartitionPage* page, PartitionBucket* bucket)
+{
+    // The bucket never changes. We set it up once.
     page->bucket = bucket;
-    page->nextPage = 0;
-    // NULLing the freelist is not strictly necessary but it makes an ASSERT in partitionPageFillFreelist simpler.
-    page->freelistHead = 0;
-    page->pageOffset = 0;
     page->emptyCacheIndex = -1;
+
+    partitionPageReset(page, bucket);
+
+    // If this page has just a single slot, do not set up page offsets for any
+    // page metadata other than the first one. This ensures that attempts to
+    // touch invalid page metadata fail.
+    if (page->numUnprovisionedSlots == 1)
+        return;
+
     uint16_t numPartitionPages = partitionBucketPartitionPages(bucket);
     char* pageCharPtr = reinterpret_cast<char*>(page);
     for (uint16_t i = 1; i < numPartitionPages; ++i) {
@@ -753,14 +771,10 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
     // Second, look in our list of freed but reserved pages.
     newPage = bucket->emptyPagesHead;
     if (LIKELY(newPage != 0)) {
-        ASSERT(newPage != &PartitionRootGeneric::gSeedPage);
-        ASSERT(!newPage->freelistHead);
-        ASSERT(!newPage->numAllocatedSlots);
-        ASSERT(!newPage->numUnprovisionedSlots);
-        ASSERT(newPage->emptyCacheIndex == -1);
         bucket->emptyPagesHead = newPage->nextPage;
         void* addr = partitionPageToPointer(newPage);
         partitionRecommitSystemPages(root, addr, partitionBucketBytes(newPage->bucket));
+        partitionPageReset(newPage, bucket);
     } else {
         // Third. If we get here, we need a brand new page.
         uint16_t numPartitionPages = partitionBucketPartitionPages(bucket);
@@ -769,9 +783,9 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
             goto partitionAllocSlowPathFailed;
         // Skip the alignment check because it depends on page->bucket, which is not yet set.
         newPage = partitionPointerToPageNoAlignmentCheck(rawNewPage);
+        partitionPageSetup(newPage, bucket);
     }
 
-    partitionPageReset(newPage, bucket);
     bucket->activePagesHead = newPage;
     return partitionPageAllocAndFillFreelist(newPage);
 

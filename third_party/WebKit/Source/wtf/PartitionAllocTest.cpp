@@ -1292,6 +1292,25 @@ TEST(PartitionAllocDeathTest, GuardPages)
     TestShutdown();
 }
 
+// Check that a bad free() is caught where the free() refers to an unused
+// partition page of a large allocation.
+TEST(PartitionAllocDeathTest, FreeWrongPartitionPage)
+{
+    TestSetup();
+
+    // This large size will result in a direct mapped allocation with guard
+    // pages at either end.
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), WTF::kPartitionPageSize * 2);
+    EXPECT_TRUE(ptr);
+    char* badPtr = reinterpret_cast<char*>(ptr) + WTF::kPartitionPageSize;
+
+    EXPECT_DEATH(partitionFreeGeneric(genericAllocator.root(), badPtr), "");
+
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    TestShutdown();
+}
+
 #endif // !OS(ANDROID)
 
 // Tests that partitionDumpStatsGeneric and partitionDumpStats runs without
