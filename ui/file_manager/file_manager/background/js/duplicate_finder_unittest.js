@@ -10,13 +10,13 @@ var drive;
 
 /**
  * Map of file URL to hash code.
- * @type {!Object<string, string>}
+ * @type {!Object<string>}
  */
 var hashes = {};
 
 /**
  * Map of hash code to file URL.
- * @type {!Object<string, string>}
+ * @type {!Object<string>}
  */
 var fileUrls = {};
 
@@ -58,7 +58,7 @@ function setUp() {
       /**
        * @param {string} volumeId
        * @param {!Array<string>} hashes
-       * @param {function(!Object<string, Array<string>>)} callback
+       * @param {function(!Object<Array<string>>)} callback
        */
       searchFilesByHashes: function(volumeId, hashes, callback) {
         var result = {};

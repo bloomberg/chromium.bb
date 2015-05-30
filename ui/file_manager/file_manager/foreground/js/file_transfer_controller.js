@@ -130,7 +130,7 @@ function FileTransferController(doc,
   /**
    * File objects for selected files.
    *
-   * @type {Object<string, FileAsyncData>}
+   * @type {Object<FileAsyncData>}
    * @private
    */
   this.selectedAsyncData_ = {};
@@ -330,7 +330,7 @@ FileTransferController.prototype.cutOrCopy_ =
 };
 
 /**
- * @return {Object<string, string>} Drag and drop global data object.
+ * @return {Object<string>} Drag and drop global data object.
  * @private
  */
 FileTransferController.prototype.getDragAndDropGlobalData_ = function() {

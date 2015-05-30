@@ -1076,7 +1076,7 @@ importer.ChromeLocalStorage.prototype.get = function(key, opt_default) {
       function(resolve, reject) {
         chrome.storage.local.get(
             key,
-            /** @param {Object<string, ?>} values */
+            /** @param {Object<?>} values */
             function(values) {
               if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError);

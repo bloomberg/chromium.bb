@@ -194,7 +194,7 @@ TestEntryInfo.prototype.getExpectedRow = function() {
 
 /**
  * Filesystem entries used by the test cases.
- * @type {Object<string, TestEntryInfo>}
+ * @type {Object<TestEntryInfo>}
  * @const
  */
 var ENTRIES = {

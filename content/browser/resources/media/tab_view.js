@@ -23,7 +23,7 @@ var TabView = (function() {
 
     /**
      * A mapping for an id to the tab elements.
-     * @type {!Object<string, !TabDom>}
+     * @type {!Object<!TabDom>}
      * @private
      */
     this.tabElements_ = {};

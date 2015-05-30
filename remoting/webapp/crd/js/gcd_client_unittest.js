@@ -70,7 +70,7 @@ QUnit.module('gcd_client', {
 
 /**
  * @param {number} status
- * @param {!Object<string,string>} headers
+ * @param {!Object<string>} headers
  * @param {string} body
  * @param {function():void=} opt_preconditions
  */

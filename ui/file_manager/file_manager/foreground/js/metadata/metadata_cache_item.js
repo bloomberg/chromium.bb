@@ -10,7 +10,7 @@
 function MetadataCacheItem() {
   /**
    * Map of property name and MetadataCacheItemProperty.
-   * @private {!Object<string, !MetadataCacheItemProperty>}
+   * @private {!Object<!MetadataCacheItemProperty>}
    * @const
    */
   this.properties_ = {};

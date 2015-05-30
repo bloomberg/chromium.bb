@@ -46,7 +46,7 @@ function ListThumbnailLoader(
       opt_thumbnailLoaderConstructor || ThumbnailLoader;
 
   /**
-   * @private {Object<string, !ListThumbnailLoader.Task>}
+   * @private {Object<!ListThumbnailLoader.Task>}
    */
   this.active_ = {};
 

@@ -11,7 +11,7 @@ function AudioPlayerModel() {
 
   /**
    * List of values to be stored into the model.
-   * @type {!Object<string, *>}
+   * @type {!Object<*>}
    * @const
    */
   var VALUES = Object.freeze(

@@ -102,7 +102,7 @@ function FileBrowserBackground() {
 
   /**
    * String assets.
-   * @type {Object<string, string>}
+   * @type {Object<string>}
    */
   this.stringData = null;
 

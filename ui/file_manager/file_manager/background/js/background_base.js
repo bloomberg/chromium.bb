@@ -10,13 +10,13 @@
 function BackgroundBase() {
   /**
    * Map of all currently open app windows. The key is an app ID.
-   * @type {Object<string, chrome.app.window.AppWindow>}
+   * @type {Object<chrome.app.window.AppWindow>}
    */
   this.appWindows = {};
 
   /**
    * Map of all currently open file dialogs. The key is an app ID.
-   * @type {!Object<string, !Window>}
+   * @type {!Object<!Window>}
    */
   this.dialogs = {};
 }

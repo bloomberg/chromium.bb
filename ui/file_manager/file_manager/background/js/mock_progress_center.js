@@ -11,7 +11,7 @@
 function MockProgressCenter() {
   /**
    * Items stored in the progress center.
-   * @type {Object<string, ProgressCenterItem>}
+   * @type {Object<ProgressCenterItem>}
    */
   this.items = {};
 }

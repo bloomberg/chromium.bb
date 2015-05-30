@@ -13,8 +13,8 @@ var test = test || {};
  * @param {Window} contentWindow Window to be tested.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {{attributes:Object<string, string>, text:string,
- *                  styles:Object<string, string>, hidden:boolean}} Element
+ * @return {{attributes:Object<string>, text:string,
+ *                  styles:Object<string>, hidden:boolean}} Element
  *     information that contains contentText, attribute names and
  *     values, hidden attribute, and style names and values.
  */
@@ -78,7 +78,7 @@ test.util.TESTING_EXTENSION_IDS = [
 /**
  * Obtains window information.
  *
- * @return {Object<string, {innerWidth:number, innerHeight:number}>} Map window
+ * @return {Object<{innerWidth:number, innerHeight:number}>} Map window
  *     ID and window information.
  */
 test.util.sync.getWindows = function() {
@@ -167,8 +167,8 @@ test.util.sync.resizeWindow = function(contentWindow, width, height) {
  * @param {?string} iframeQuery Iframe selector or null if no iframe.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {Array<{attributes:Object<string, string>, text:string,
- *                  styles:Object<string, string>, hidden:boolean}>} Element
+ * @return {Array<{attributes:Object<string>, text:string,
+ *                  styles:Object<string>, hidden:boolean}>} Element
  *     information that contains contentText, attribute names and
  *     values, hidden attribute, and style names and values.
  */
@@ -194,8 +194,8 @@ test.util.sync.queryAllElements = function(
  * @param {?string} iframeQuery Iframe selector or null if no iframe.
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
- * @return {?{attributes:Object<string, string>, text:string,
- *                  styles:Object<string, string>, hidden:boolean}} Element
+ * @return {?{attributes:Object<string>, text:string,
+ *                  styles:Object<string>, hidden:boolean}} Element
  *     information that contains contentText, attribute names and
  *     values, hidden attribute, and style names and values. If there is no
  *     active element, returns null.
@@ -402,7 +402,7 @@ test.util.sync.fakeMouseUp = function(
 
 /**
  * Obtains the list of notification ID.
- * @param {function(Object<string, boolean>)} callback Callback function with
+ * @param {function(Object<boolean>)} callback Callback function with
  *     results returned by the script.
  */
 test.util.async.getNotificationIDs = function(callback) {

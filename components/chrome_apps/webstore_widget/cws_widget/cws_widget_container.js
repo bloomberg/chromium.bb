@@ -162,7 +162,7 @@ function CWSWidgetContainer(document, parentNode, delegate, params) {
 
   /**
    * Map of options for the widget.
-   * @type {?Object<string, *>}
+   * @type {?Object<*>}
    * @private
    */
   this.options_ = null;
@@ -392,7 +392,7 @@ CWSWidgetContainer.prototype.ready = function() {
  * Initializes and starts loading the Chrome Web Store widget webview.
  * Must not be called before {@code this.ready()} is resolved.
  *
- * @param {!Object<string, *>} options Map of options for the dialog.
+ * @param {!Object<*>} options Map of options for the dialog.
  * @param {?string} webStoreUrl Url for more results. Null if not supported.
  * @return {!Promise.<CWSWidgetContainer.ResolveReason>} Resolved when app
  *     installation is done, or the installation is cancelled.

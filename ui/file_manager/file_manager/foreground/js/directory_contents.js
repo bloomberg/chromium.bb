@@ -324,7 +324,7 @@ DriveMetadataSearchContentScanner.prototype.scan = function(
  */
 function FileFilter(showHidden) {
   /**
-   * @type {Object<string, Function>}
+   * @type {Object<Function>}
    * @private
    */
   this.filters_ = {};

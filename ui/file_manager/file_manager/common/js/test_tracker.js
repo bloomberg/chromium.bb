@@ -12,7 +12,7 @@ TestTracker = function() {};
 /**
  * @param {!analytics.HitType|!analytics.EventBuilder} hitType
  * @param {(!analytics.ParameterMap|
- *     !Object<string, !analytics.Value>)=} opt_extraParams
+ *     !Object<!analytics.Value>)=} opt_extraParams
  * @return {!goog.async.Deferred}
  */
 TestTracker.prototype.send = function(hitType, opt_extraParams) {

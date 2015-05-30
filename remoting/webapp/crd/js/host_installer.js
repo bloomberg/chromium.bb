@@ -75,7 +75,7 @@ remoting.HostInstaller.isInstalled = function() {
       });
 };
 
-/** @type {Object<string,string>} */
+/** @type {Object<string>} */
 var HOST_DOWNLOAD_URLS = {
   'Win32': 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
                'chromeremotedesktophost.msi',

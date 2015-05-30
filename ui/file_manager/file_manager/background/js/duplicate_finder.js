@@ -155,7 +155,7 @@ importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
             volumeId,
             [hash],
             /**
-             * @param {!Object<string, !Array<string>>} urls
+             * @param {!Object<!Array<string>>} urls
              * @this {importer.DriveDuplicateFinder}
              */
             function(urls) {

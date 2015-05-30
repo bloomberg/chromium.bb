@@ -22,7 +22,7 @@ var remoting = remoting || {};
 remoting.StatsAccumulator = function() {
   /**
    * A map from names to lists of values.
-   * @private {Object<string, Array<number>>}
+   * @private {Object<Array<number>>}
    */
   this.valueLists_ = {};
 
@@ -37,7 +37,7 @@ remoting.StatsAccumulator = function() {
 /**
  * Adds values to this object.
  *
- * @param {Object<string, number>} newValues
+ * @param {Object<number>} newValues
  */
 remoting.StatsAccumulator.prototype.add = function(newValues) {
   for (var key in newValues) {

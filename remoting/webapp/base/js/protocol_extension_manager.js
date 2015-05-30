@@ -18,7 +18,7 @@ var remoting = remoting || {};
 remoting.ProtocolExtensionManager = function(sendExtensionMessage) {
   /** @private */
   this.sendExtensionMessage_ = sendExtensionMessage;
-  /** @private {Object<string,remoting.ProtocolExtension>} */
+  /** @private {Object<remoting.ProtocolExtension>} */
   this.protocolExtensions_ = {};
 
   /**

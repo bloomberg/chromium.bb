@@ -12,7 +12,7 @@ function NewMetadataProvider(validPropertyNames) {
   /**
    * Set of valid property names. Key is the name of property and value is
    * always true.
-   * @private {!Object<string, boolean>}
+   * @private {!Object<boolean>}
    * @const
    */
   this.validPropertyNames_ = {};

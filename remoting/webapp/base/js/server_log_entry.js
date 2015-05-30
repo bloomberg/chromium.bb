@@ -21,7 +21,7 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.ServerLogEntry = function() {
-  /** @type Object<string, string> */ this.dict = {};
+  /** @type Object<string> */ this.dict = {};
 };
 
 /** @private */

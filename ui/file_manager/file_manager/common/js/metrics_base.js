@@ -23,7 +23,7 @@ metricsBase.intervals = {};
  * <p>Values mut be provided by base classes. Values should correspond exactly
  * with values from histograms.xml.
  *
- * @private {!Object<string, !Array<*>|number>}
+ * @private {!Object<!Array<*>|number>}
  */
 metricsBase.validEnumValues_ = {};
 

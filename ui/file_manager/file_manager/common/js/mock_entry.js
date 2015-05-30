@@ -24,7 +24,7 @@ function MockFileSystem(volumeId, opt_rootURL) {
   /** @type {string} */
   this.name = volumeId;
 
-  /** @type {!Object<string, !Entry>} */
+  /** @type {!Object<!Entry>} */
   this.entries = {};
   this.entries['/'] = new MockDirectoryEntry(this, '/');
 

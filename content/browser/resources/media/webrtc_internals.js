@@ -117,8 +117,8 @@ function requestStats() {
 /**
  * A helper function for getting a peer connection element id.
  *
- * @param {!Object<string, number>} data The object containing the pid and lid
- *     of the peer connection.
+ * @param {!Object<number>} data The object containing the pid and lid of the
+ *     peer connection.
  * @return {string} The peer connection element id.
  */
 function getPeerConnectionId(data) {
@@ -174,8 +174,8 @@ function addPeerConnectionUpdate(peerConnectionElement, update) {
 /**
  * Removes all information about a peer connection.
  *
- * @param {!Object<string, number>} data The object containing the pid and lid
- *     of a peer connection.
+ * @param {!Object<number>} data The object containing the pid and lid of a peer
+ *     connection.
  */
 function removePeerConnection(data) {
   var element = $(getPeerConnectionId(data));

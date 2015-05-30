@@ -36,7 +36,7 @@ function ProgressCenterItemGroup(name, quiet) {
   /**
    * Items that are progressing, or completed but still animated.
    * Key is item ID.
-   * @type {Object<string, ProgressCenterItem>}
+   * @type {Object<ProgressCenterItem>}
    * @private
    */
   this.items_ = {};
@@ -44,7 +44,7 @@ function ProgressCenterItemGroup(name, quiet) {
   /**
    * Set of animated state of items. Key is item ID and value is whether the
    * item is animated or not.
-   * @type {Object<string, boolean>}
+   * @type {Object<boolean>}
    * @private
    */
   this.animated_ = {};

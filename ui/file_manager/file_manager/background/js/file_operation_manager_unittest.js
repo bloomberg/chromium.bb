@@ -173,8 +173,8 @@ var DIRECTORY_SIZE = -1;
 /**
  * Creates test file system.
  * @param {string} id File system ID.
- * @param {Object<string, number>} entries Map of entries' paths and their
- *     size. If the size is equals to DIRECTORY_SIZE, the entry is derectory.
+ * @param {Object<number>} entries Map of entries' paths and their size.
+ *     If the size is equals to DIRECTORY_SIZE, the entry is directory.
  */
 function createTestFileSystem(id, entries) {
   var fileSystem = new MockFileSystem(id, 'filesystem:' + id);

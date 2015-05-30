@@ -28,14 +28,14 @@ cr.define('cr.ui.pageManager', function() {
 
     /**
      * Root pages. Maps lower-case page names to the respective page object.
-     * @type {!Object<string, !cr.ui.pageManager.Page>}
+     * @type {!Object<!cr.ui.pageManager.Page>}
      */
     registeredPages: {},
 
     /**
      * Pages which are meant to behave like modal dialogs. Maps lower-case
      * overlay names to the respective overlay object.
-     * @type {!Object<string, !cr.ui.pageManager.Page>}
+     * @type {!Object<!cr.ui.pageManager.Page>}
      * @private
      */
     registeredOverlayPages: {},

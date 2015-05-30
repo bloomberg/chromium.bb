@@ -201,14 +201,14 @@ importer.PersistentImportHistory = function(hashGenerator, storage) {
    * An in-memory representation of local copy history.
    * The first value is the "key" (as generated internally
    * from a file entry).
-   * @private {!Object<string, !Object<!importer.Destination, importer.Urls>>}
+   * @private {!Object<!Object<!importer.Destination, importer.Urls>>}
    */
   this.copiedEntries_ = {};
 
   /**
    * An in-memory index from destination URL to key.
    *
-   * @private {!Object<string, string>}
+   * @private {!Object<string>}
    */
   this.copyKeyIndex_ = {};
 
@@ -216,7 +216,7 @@ importer.PersistentImportHistory = function(hashGenerator, storage) {
    * An in-memory representation of import history.
    * The first value is the "key" (as generated internally
    * from a file entry).
-   * @private {!Object<string, !Array<importer.Destination>>}
+   * @private {!Object<!Array<importer.Destination>>}
    */
   this.importedEntries_ = {};
 

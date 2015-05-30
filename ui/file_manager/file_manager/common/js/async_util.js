@@ -214,7 +214,7 @@ AsyncUtil.Group = function() {
 
 AsyncUtil.Group.prototype = {
   /**
-   * @return {!Object<string, AsyncUtil.GroupTask>} Pending tasks
+   * @return {!Object<AsyncUtil.GroupTask>} Pending tasks
    */
   get pendingTasks() {
     return this.pendingTasks_;

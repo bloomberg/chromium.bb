@@ -152,7 +152,7 @@ remoting.gcd.Client.prototype.insertRegistrationTicket = function() {
  * Updates an existing registration ticket using patch semantics.
  * TODO: Add link to GCD docs.
  * @param {string} ticketId
- * @param {!Object<string,*>} deviceDraft
+ * @param {!Object<*>} deviceDraft
  * @param {string} oauthClientId
  * @return {!Promise<remoting.gcd.RegistrationTicket>}
  */
@@ -258,7 +258,7 @@ remoting.gcd.Client.prototype.deleteDevice = function(deviceId) {
  * Updates a device data using patch semantics.
  * TODO: Add link to GCD docs.
  * @param {string} deviceId
- * @param {!Object<string,*>} patch
+ * @param {!Object<*>} patch
  * @return {!Promise<remoting.gcd.Device>}
  */
 remoting.gcd.Client.prototype.patchDevice = function(deviceId, patch) {

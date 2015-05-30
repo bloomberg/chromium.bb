@@ -219,7 +219,7 @@ function ProgressCenterPanel(element) {
 
   /**
    * Queries to obtains items for each group.
-   * @type {Object<string, string>}
+   * @type {Object<string>}
    * @private
    */
   this.itemQuery_ = Object.preventExtensions({
@@ -229,7 +229,7 @@ function ProgressCenterPanel(element) {
 
   /**
    * Timeout IDs of the inactive state of each group.
-   * @type {Object<string, number?>}
+   * @type {Object<?number>}
    * @private
    */
   this.timeoutId_ = Object.preventExtensions({

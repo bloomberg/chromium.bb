@@ -22,7 +22,7 @@ function EntryListWatcher(list) {
   /**
    * Set of watched URL.
    * Key is watched entry URL. Value is always true.
-   * @type {!Object<string, boolean>}
+   * @type {!Object<boolean>}
    * @private
    */
   this.watchers_ = {};

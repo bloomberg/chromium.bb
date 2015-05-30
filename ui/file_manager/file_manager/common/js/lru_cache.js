@@ -93,7 +93,7 @@ function LRUCache(maxSize) {
   /** @private {!LRUCacheList} */
   this.list_ = new LRUCacheList();
 
-  /** @private {!Object<string, !LRUCacheNode>} */
+  /** @private {!Object<!LRUCacheNode>} */
   this.nodes_ = {};
 }
 

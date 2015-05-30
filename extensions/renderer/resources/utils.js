@@ -27,7 +27,7 @@ function forEach(obj, f, self) {
  * Assuming |array_of_dictionaries| is structured like this:
  * [{id: 1, ... }, {id: 2, ...}, ...], you can use
  * lookup(array_of_dictionaries, 'id', 2) to get the dictionary with id == 2.
- * @param {Array<Object<string, ?>>} array_of_dictionaries
+ * @param {Array<Object<?>>} array_of_dictionaries
  * @param {string} field
  * @param {?} value
  */

@@ -12,7 +12,7 @@ function DeviceHandler() {
 
   /**
    * Map of device path and mount status of devices.
-   * @private {Object<string, DeviceHandler.MountStatus>}
+   * @private {Object<DeviceHandler.MountStatus>}
    */
   this.mountStatus_ = {};
 

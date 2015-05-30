@@ -129,7 +129,7 @@ Banners.prototype.setWarningDismissedCounter_ = function(value) {
 
 /**
  * chrome.storage.onChanged event handler.
- * @param {Object<string, Object>} changes Changes values.
+ * @param {Object<Object>} changes Changes values.
  * @param {string} areaName "local" or "sync".
  * @private
  */

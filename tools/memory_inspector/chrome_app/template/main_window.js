@@ -314,7 +314,7 @@ MemoryInspectorWindow.prototype.storeSettings_ = function() {
  * Listener called when main window settings were retrieved from local storage.
  * It saves them and finally shows the app window.
  * @private
- * @param {Object<string, *>} settings The retrieved settings.
+ * @param {Object<*>} settings The retrieved settings.
  */
 MemoryInspectorWindow.prototype.onSettingsRetrieved_ = function(settings) {
   if (chrome.runtime.lastError === undefined && settings['terminal_visible']) {

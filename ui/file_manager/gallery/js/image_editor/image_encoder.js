@@ -22,8 +22,7 @@ ImageEncoder.MIN_IMAGE_DIMENSION_FOR_THUMBNAIL =
 
 /**
  * Metadata encoders.
- * @type {!Object<string,function(
- *            new:ImageEncoder.MetadataEncoder,!MetadataItem)>}
+ * @type {!Object<function(new:ImageEncoder.MetadataEncoder,!MetadataItem)>}
  * @const
  */
 ImageEncoder.metadataEncoders = {};

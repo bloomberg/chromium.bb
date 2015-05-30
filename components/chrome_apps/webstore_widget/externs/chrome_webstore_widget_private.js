@@ -63,7 +63,7 @@ chrome.webstoreWidgetPrivate.ShowWidgetEvent.prototype.hasListeners =
 chrome.webstoreWidgetPrivate.onShowWidget;
 
 /**
- * @param {function(Object<string, string>)} callback
+ * @param {function(Object<string>)} callback
  */
 chrome.webstoreWidgetPrivate.getStrings = function(callback) {};
 

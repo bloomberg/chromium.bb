@@ -192,7 +192,7 @@ MockAPIEvent.prototype.dispatch = function(var_args) {
  * @struct
  */
 function MockChromeStorageAPI() {
-  /** @type {Object<string, ?>} */
+  /** @type {Object<?>} */
   this.state = {};
 
   window.chrome = window.chrome || {};
@@ -207,7 +207,7 @@ function MockChromeStorageAPI() {
 
 /**
  * @param {Array<string>|string} keys
- * @param {function(Object<string, ?>)} callback
+ * @param {function(Object<?>)} callback
  * @private
  */
 MockChromeStorageAPI.prototype.get_ = function(keys, callback) {
@@ -222,7 +222,7 @@ MockChromeStorageAPI.prototype.get_ = function(keys, callback) {
 };
 
 /**
- * @param {Object<string, ?>} values
+ * @param {Object<?>} values
  * @param {function()=} opt_callback
  * @private
  */

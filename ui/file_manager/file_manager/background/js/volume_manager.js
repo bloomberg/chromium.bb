@@ -49,7 +49,7 @@ function VolumeInfo(
   this.label_ = label;
   this.displayRoot_ = null;
 
-  /** @type {Object<string, !FakeEntry>} */
+  /** @type {Object<!FakeEntry>} */
   this.fakeEntries_ = {};
 
   /** @type {Promise.<!DirectoryEntry>} */
@@ -115,7 +115,7 @@ VolumeInfo.prototype = /** @struct */ {
     return this.displayRoot_;
   },
   /**
-   * @return {Object<string, !FakeEntry>} Fake entries.
+   * @return {Object<!FakeEntry>} Fake entries.
    */
   get fakeEntries() {
     return this.fakeEntries_;
@@ -574,7 +574,7 @@ function VolumeManager() {
   /**
    * The list of archives requested to mount. We will show contents once
    * archive is mounted, but only for mounts from within this filebrowser tab.
-   * @type {Object<string, Object>}
+   * @type {Object<Object>}
    * @private
    */
   this.requests_ = {};

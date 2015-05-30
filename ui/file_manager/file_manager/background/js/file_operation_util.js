@@ -551,7 +551,7 @@ fileOperationUtil.Task = function(
 
   /**
    * An array of map from url to Entry being processed.
-   * @type {Array<Object<string, Entry>>}
+   * @type {Array<Object<Entry>>}
    */
   this.processingEntries = null;
 

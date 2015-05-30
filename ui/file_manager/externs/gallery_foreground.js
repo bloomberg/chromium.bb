@@ -9,7 +9,7 @@
  */
 function BackgroundComponents() {
   /**
-   * @type {!Object<string, string>}
+   * @type {!Object<string>}
    */
   this.stringData;
 

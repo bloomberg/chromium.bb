@@ -38,7 +38,7 @@ var FileOperationHandler = function(background) {
    * If the operation takes more than FileOperationHandler.PENDING_TIME_MS_,
    * we adds the item to the progress center.
    *
-   * @type {Object<string, ProgressCenterItem>}}
+   * @type {Object<ProgressCenterItem>}}
    * @private
    */
   this.pendingItems_ = {};

@@ -8,7 +8,7 @@
  * @param {number} height Height of the CWS widget.
  * @param {string} url Share Url for an entry.
  * @param {string} target Target (scheme + host + port) of the widget.
- * @param {Object<string, *>} options Options to be sent to the dialog host.
+ * @param {Object<*>} options Options to be sent to the dialog host.
  * @param {!CWSWidgetContainer.PlatformDelegate} delegate Delegate for accessing
  *     Chrome platform APIs.
  * @constructor

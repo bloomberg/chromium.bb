@@ -21,7 +21,7 @@ remoting.ClientPluginMessage = function() {
   /** @type {string} */
   this.method = '';
 
-  /** @type {Object<string,*>} */
+  /** @type {Object<*>} */
   this.data = {};
 };
 

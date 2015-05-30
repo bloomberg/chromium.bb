@@ -218,8 +218,8 @@ base.deepCopy = function(value) {
  * Returns a copy of the input object with all null/undefined fields
  * removed.  Returns an empty object for a null/undefined input.
  *
- * @param {Object<string,?T>|undefined} input
- * @return {!Object<string,T>}
+ * @param {Object<?T>|undefined} input
+ * @return {!Object<T>}
  * @template T
  */
 base.copyWithoutNullFields = function(input) {
@@ -275,7 +275,7 @@ base.urlJoin = function(url, opt_params) {
 
 
 /**
- * @return {Object<string, string>} The URL parameters.
+ * @return {Object<string>} The URL parameters.
  */
 base.getUrlParameters = function() {
   var result = {};
@@ -485,7 +485,7 @@ base.EventSource.prototype.removeEventListener = function(type, fn) {};
   * @implements {base.EventSource}
   */
 base.EventSourceImpl = function() {
-  /** @type {Object<string, base.EventEntry>} */
+  /** @type {Object<base.EventEntry>} */
   this.eventMap_;
 };
 

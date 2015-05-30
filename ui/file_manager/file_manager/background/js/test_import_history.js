@@ -15,10 +15,10 @@ var importer = importer || {};
  * @implements {importer.ImportHistory}
  */
 importer.TestImportHistory = function() {
-  /** @type {!Object<string, !Object<!importer.Destination, string>>} */
+  /** @type {!Object<!Object<!importer.Destination, string>>} */
   this.copiedPaths = {};
 
-  /** @type {!Object<string, Array<string>>} */
+  /** @type {!Object<Array<string>>} */
   this.importedPaths = {};
 
   /**

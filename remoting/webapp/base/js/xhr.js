@@ -326,7 +326,7 @@ remoting.Xhr.Response.prototype.getJson = function() {
 /**
  * Takes an associative array of parameters and urlencodes it.
  *
- * @param {Object<string,string>} paramHash The parameter key/value pairs.
+ * @param {Object<string>} paramHash The parameter key/value pairs.
  * @return {string} URLEncoded version of paramHash.
  */
 remoting.Xhr.urlencodeParamHash = function(paramHash) {
@@ -381,11 +381,11 @@ remoting.Xhr.urlencodeParamHash = function(paramHash) {
  * @typedef {{
  *   method: string,
  *   url:string,
- *   urlParams:(string|Object<string,?string>|undefined),
+ *   urlParams:(string|Object<?string>|undefined),
  *   textContent:(string|undefined),
  *   formContent:(Object|undefined),
  *   jsonContent:(*|undefined),
- *   headers:(Object<string,?string>|undefined),
+ *   headers:(Object<?string>|undefined),
  *   withCredentials:(boolean|undefined),
  *   oauthToken:(string|undefined),
  *   useIdentity:(boolean|undefined),

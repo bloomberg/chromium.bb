@@ -26,7 +26,7 @@ function FileOperationManager(volumeManager) {
   /**
    * Map of volume id and running copy task. The key is a volume id and the
    * value is a copy task.
-   * @private {!Object<string,!fileOperationUtil.Task>}
+   * @private {!Object<!fileOperationUtil.Task>}
    */
   this.runningCopyTasks_ = {};
 

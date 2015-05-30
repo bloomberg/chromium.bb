@@ -263,8 +263,8 @@ remoting.OAuth2.prototype.getAuthorizationCode = function(onDone) {
   /**
    * Processes the results of the oauth flow.
    *
-   * @param {Object<string, string>} message Dictionary containing the parsed
-   *   OAuth redirect URL parameters.
+   * @param {Object<string>} message Dictionary containing the parsed OAuth
+   *     redirect URL parameters.
    * @param {function(*)} sendResponse Function to send response.
    */
   function oauth2MessageListener(message, sender, sendResponse) {

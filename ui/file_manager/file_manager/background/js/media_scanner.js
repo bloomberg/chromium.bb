@@ -447,7 +447,7 @@ importer.DefaultScanResult = function(hashGenerator) {
    * Hashcodes of all files included captured by this result object so-far.
    * Used to dedupe newly discovered files against other files withing
    * the ScanResult.
-   * @private {!Object<string, !FileEntry>}
+   * @private {!Object<!FileEntry>}
    */
   this.fileHashcodes_ = {};
 
