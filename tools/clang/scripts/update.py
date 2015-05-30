@@ -453,17 +453,14 @@ def main():
       print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
       return 0
 
+  global LLVM_WIN_REVISION
   if args.print_revision:
-    # gyp runs update.py --print-revision even when clang isn't used.
-    # It won't use the value, but we must not error.
-    if not os.path.exists(LLVM_DIR):
-      print "0"
-    else:
-      # TODO(hans): This needs updating when we move to prebuilt Clang binaries.
+    if use_head_revision:
       print GetSvnRevision(LLVM_DIR)
+    else:
+      print LLVM_WIN_REVISION
     return 0
 
-  global LLVM_WIN_REVISION
   if LLVM_WIN_REVISION == 'HEAD':
     # Use a real revision number rather than HEAD to make sure that the stamp
     # file logic works.
