@@ -13,6 +13,7 @@ PASS touch.screenX is 102
 PASS touch.screenY is 103
 PASS touch.radiusX is 5
 PASS touch.radiusY is 3
+PASS touch.rotationAngle is 10
 PASS touch.force is 10
 PASS touch.webkitRadiusX is 5
 PASS touch.webkitRadiusY is 3
@@ -27,11 +28,12 @@ PASS emptyTouch.screenX is 0
 PASS emptyTouch.screenY is 0
 PASS emptyTouch.radiusX is 0
 PASS emptyTouch.radiusY is 0
-FAIL emptyTouch.force should be NaN. Was 0.
+PASS emptyTouch.rotationAngle is 0
+PASS emptyTouch.force is 0
 PASS emptyTouch.webkitRadiusX is 0
 PASS emptyTouch.webkitRadiusY is 0
-FAIL emptyTouch.webkitRotationAngle should be NaN. Was 0.
-FAIL emptyTouch.webkitForce should be NaN. Was 0.
+PASS emptyTouch.webkitRotationAngle is 0
+PASS emptyTouch.webkitForce is 0
 PASS badParamsTouch is non-null.
 PASS badParamsTouch.target is null
 PASS badParamsTouch.identifier is 0
@@ -41,11 +43,12 @@ PASS badParamsTouch.screenX is 0
 PASS badParamsTouch.screenY is 104
 PASS badParamsTouch.radiusX is 0
 PASS badParamsTouch.radiusY is 0
-FAIL badParamsTouch.force should be NaN. Was 0.
+PASS badParamsTouch.rotationAngle is 0
+PASS badParamsTouch.force is 0
 PASS badParamsTouch.webkitRadiusX is 0
 PASS badParamsTouch.webkitRadiusY is 0
-FAIL badParamsTouch.webkitRotationAngle should be NaN. Was 0.
-FAIL badParamsTouch.webkitForce should be NaN. Was 0.
+PASS badParamsTouch.webkitRotationAngle is 0
+PASS badParamsTouch.webkitForce is 0
 PASS detachedTouch = document.implementation.createDocument('a', 'b').createTouch() is non-null.
 PASS detachedTouch.target is null
 PASS detachedTouch.identifier is 0
@@ -55,11 +58,12 @@ PASS detachedTouch.screenX is 0
 PASS detachedTouch.screenY is 0
 PASS detachedTouch.radiusX is 0
 PASS detachedTouch.radiusY is 0
-FAIL detachedTouch.force should be NaN. Was 0.
+PASS detachedTouch.rotationAngle is 0
+PASS detachedTouch.force is 0
 PASS detachedTouch.webkitRadiusX is 0
 PASS detachedTouch.webkitRadiusY is 0
-FAIL detachedTouch.webkitRotationAngle should be NaN. Was 0.
-FAIL detachedTouch.webkitForce should be NaN. Was 0.
+PASS detachedTouch.webkitRotationAngle is 0
+PASS detachedTouch.webkitForce is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

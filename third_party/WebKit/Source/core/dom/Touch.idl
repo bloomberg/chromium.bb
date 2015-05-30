@@ -42,7 +42,7 @@
     // http://rawgit.com/w3c/touch-events/master/touchevents.html#touch-interface
     readonly attribute float radiusX;
     readonly attribute float radiusY;
-    // readonly attribute float rotationAngle;
+    readonly attribute float rotationAngle;
     readonly attribute float force;
 
     // Non-standard APIs

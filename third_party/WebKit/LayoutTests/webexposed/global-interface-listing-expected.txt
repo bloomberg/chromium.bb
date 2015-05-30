@@ -5484,6 +5484,7 @@ interface Touch
     getter pageY
     getter radiusX
     getter radiusY
+    getter rotationAngle
     getter screenX
     getter screenY
     getter target
