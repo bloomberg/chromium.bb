@@ -184,6 +184,11 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         return;
     }
 
+    // FIXME: When Skia supports annotation rect covering (https://code.google.com/p/skia/issues/detail?id=3872),
+    // this rect may be covered by foreground and descendant drawings. Then we may need a dedicated paint phase.
+    if (paintPhase == PaintPhaseForeground && paintInfo.context->printing())
+        ObjectPainter(m_layoutBlock).addPDFURLRectIfNeeded(paintInfo, paintOffset);
+
     {
         PaintInfo scrolledPaintInfo(paintInfo);
         OwnPtr<ScrollRecorder> scrollRecorder;
