@@ -27,11 +27,12 @@ remoting.AppHostResponse;
 /**
  * @param {Array<string>} appCapabilities Array of application capabilities.
  * @param {remoting.Application} app
+ * @param {remoting.WindowShape} windowShape
  *
  * @constructor
  * @implements {remoting.Activity}
  */
-remoting.AppRemotingActivity = function(appCapabilities, app) {
+remoting.AppRemotingActivity = function(appCapabilities, app, windowShape) {
   /** @private */
   this.sessionFactory_ = new remoting.ClientSessionFactory(
       document.querySelector('#client-container .client-plugin-container'),
@@ -45,6 +46,9 @@ remoting.AppRemotingActivity = function(appCapabilities, app) {
 
   /** @private */
   this.app_ = app;
+
+  /** @private */
+  this.windowShape_ = windowShape;
 };
 
 remoting.AppRemotingActivity.prototype.dispose = function() {
@@ -164,10 +168,12 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
  */
 remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
   var connectedView = new remoting.AppConnectedView(
-      document.getElementById('client-container'), connectionInfo);
+      document.getElementById('client-container'),
+      this.windowShape_, connectionInfo);
 
   var idleDetector = new remoting.IdleDetector(
       document.getElementById('idle-dialog'),
+      this.windowShape_,
       this.app_.getApplicationName(),
       this.stop.bind(this));
 
@@ -219,7 +225,7 @@ remoting.AppRemotingActivity.prototype.onConnectionDropped_ = function() {
     dialog.dispose();
     // Hide the windows of the remote application with setDesktopRects([])
     // before tearing down the plugin.
-    remoting.windowShape.setDesktopRects([]);
+    that.windowShape_.setDesktopRects([]);
     that.cleanup_();
     that.start();
   }).catch(function(){

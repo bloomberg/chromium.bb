@@ -29,8 +29,9 @@ var remoting = remoting || {};
  * @implements {remoting.WindowShape.ClientUI}
  * @implements {remoting.ContextMenuAdapter}
  * @param {HTMLElement} root The root of the context menu DOM.
+ * @param {remoting.WindowShape} windowShape
  */
-remoting.ContextMenuDom = function(root) {
+remoting.ContextMenuDom = function(root, windowShape) {
   /** @private {HTMLElement} */
   this.root_ = root;
   /** @private {HTMLElement} */
@@ -59,6 +60,9 @@ remoting.ContextMenuDom = function(root) {
    */
   this.stubDragged_ = false;
 
+  /** @private */
+  this.windowShape_ = windowShape;
+
   /**
    * @private
    */
@@ -74,11 +78,11 @@ remoting.ContextMenuDom = function(root) {
 
   this.root_.hidden = false;
   this.root_.style.bottom = this.bottom_ + 'px';
-  remoting.windowShape.registerClientUI(this);
+  this.windowShape_.registerClientUI(this);
 };
 
 remoting.ContextMenuDom.prototype.dispose = function() {
-  remoting.windowShape.unregisterClientUI(this);
+  this.windowShape_.unregisterClientUI(this);
 };
 
 /**
@@ -223,7 +227,7 @@ remoting.ContextMenuDom.prototype.getInsertionPointForParent = function(
  * @private
  */
 remoting.ContextMenuDom.prototype.onTransitionEnd_ = function() {
-  remoting.windowShape.updateClientWindowShape();
+  this.windowShape_.updateClientWindowShape();
 };
 
 /**
@@ -285,7 +289,7 @@ remoting.ContextMenuDom.prototype.showMenu_ = function(show) {
   }
 
   this.screen_.hidden = !show;
-  remoting.windowShape.updateClientWindowShape();
+  this.windowShape_.updateClientWindowShape();
 };
 
 /**
@@ -301,7 +305,5 @@ remoting.ContextMenuDom.prototype.onDragUpdate_ = function(deltaX, deltaY) {
   // helps keep the position of the context menu consistent with the window
   // shape (though it's still not perfect).
   window.requestAnimationFrame(
-      function() {
-        remoting.windowShape.updateClientWindowShape();
-      });
+      this.windowShape_.updateClientWindowShape.bind(this.windowShape_));
 };

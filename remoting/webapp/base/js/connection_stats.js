@@ -16,11 +16,12 @@ var remoting = remoting || {};
  * @constructor
  * @param {Element} statsElement The HTML div to which to update stats.
  * @param {remoting.ClientPlugin} plugin
+ * @param {remoting.WindowShape=} opt_windowShape
  *
  * @implements {remoting.WindowShape.ClientUI}
  * @implements {base.Disposable}
  */
-remoting.ConnectionStats = function(statsElement, plugin) {
+remoting.ConnectionStats = function(statsElement, plugin, opt_windowShape) {
   /** @private */
   this.statsElement_ = statsElement;
 
@@ -37,14 +38,20 @@ remoting.ConnectionStats = function(statsElement, plugin) {
     that.update(plugin.getPerfStats());
   }, 1000, true);
 
-  remoting.windowShape.registerClientUI(this);
+  /** @private */
+  this.windowShape_ = opt_windowShape;
+  if (this.windowShape_) {
+    this.windowShape_.registerClientUI(this);
+  }
 };
 
 remoting.ConnectionStats.prototype.dispose = function() {
   base.dispose(this.timer_);
   this.timer_ = null;
   this.plugin_ = null;
-  remoting.windowShape.unregisterClientUI(this);
+  if (this.windowShape_) {
+    this.windowShape_.unregisterClientUI(this);
+  }
 };
 
 /**

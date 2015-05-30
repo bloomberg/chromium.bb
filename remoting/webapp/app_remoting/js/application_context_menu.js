@@ -16,11 +16,13 @@ var remoting = remoting || {};
  * @param {remoting.ContextMenuAdapter} adapter
  * @param {remoting.ClientPlugin} plugin
  * @param {remoting.ClientSession} clientSession
+ * @param {remoting.WindowShape} windowShape
  *
  * @constructor
  * @implements {base.Disposable}
  */
-remoting.ApplicationContextMenu = function(adapter, plugin, clientSession) {
+remoting.ApplicationContextMenu = function(adapter, plugin, clientSession,
+                                           windowShape) {
   /** @private */
   this.adapter_ = adapter;
 
@@ -44,7 +46,7 @@ remoting.ApplicationContextMenu = function(adapter, plugin, clientSession) {
 
   /** @private */
   this.stats_ = new remoting.ConnectionStats(
-      document.getElementById('statistics'), plugin);
+      document.getElementById('statistics'), plugin, windowShape);
 };
 
 remoting.ApplicationContextMenu.prototype.dispose = function() {

@@ -24,6 +24,7 @@ var remoting = remoting || {};
 
 /**
  * @param {HTMLElement} rootElement The idle warning dialog.
+ * @param {remoting.WindowShape} windowShape
  * @param {string} applicationName
  * @param {function():void} callback Called when the idle warning dialog has
  *     timed out or the user has explicitly indicated that they are no longer
@@ -31,7 +32,8 @@ var remoting = remoting || {};
  * @constructor
  * @implements {base.Disposable}
  */
-remoting.IdleDetector = function(rootElement, applicationName, callback) {
+remoting.IdleDetector = function(rootElement, windowShape, applicationName,
+                                 callback) {
   /** @private */
   this.callback_ = callback;
 
@@ -51,7 +53,8 @@ remoting.IdleDetector = function(rootElement, applicationName, callback) {
     dialog: /** @type {HTMLDialogElement} */ (rootElement),
     primaryButton: rootElement.querySelector('.idle-dialog-continue'),
     secondaryButton: rootElement.querySelector('.idle-dialog-disconnect'),
-    closeOnEscape: false
+    closeOnEscape: false,
+    windowShape: windowShape
   });
 
   this.resetTimeout_();

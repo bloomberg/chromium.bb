@@ -146,7 +146,3 @@ remoting.WindowShape.ClientUI = function () {
  *     rects
  */
 remoting.WindowShape.ClientUI.prototype.addToRegion = function(rects) {};
-
-
-/** @type {remoting.WindowShape} */
-remoting.windowShape = new remoting.WindowShape();

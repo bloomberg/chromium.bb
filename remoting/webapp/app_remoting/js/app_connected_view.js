@@ -28,13 +28,15 @@ var DRIVE_ACCESS_TOKEN_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 
 /**
  * @param {HTMLElement} containerElement
+ * @param {remoting.WindowShape} windowShape
  * @param {remoting.ConnectionInfo} connectionInfo
  *
  * @constructor
  * @implements {base.Disposable}
  * @implements {remoting.ProtocolExtension}
  */
-remoting.AppConnectedView = function(containerElement, connectionInfo) {
+remoting.AppConnectedView = function(containerElement, windowShape,
+                                     connectionInfo) {
   /** @private */
   this.plugin_ = connectionInfo.plugin();
 
@@ -45,12 +47,12 @@ remoting.AppConnectedView = function(containerElement, connectionInfo) {
 
   // Initialize the context menus.
   if (!remoting.platformIsChromeOS()) {
-    menuAdapter =
-        new remoting.ContextMenuDom(document.getElementById('context-menu'));
+    menuAdapter = new remoting.ContextMenuDom(
+        document.getElementById('context-menu'), windowShape);
   }
 
   this.contextMenu_ = new remoting.ApplicationContextMenu(
-      menuAdapter, this.plugin_, connectionInfo.session());
+      menuAdapter, this.plugin_, connectionInfo.session(), windowShape);
   this.contextMenu_.setHostId(connectionInfo.host().hostId);
 
   /** @private */
@@ -66,7 +68,7 @@ remoting.AppConnectedView = function(containerElement, connectionInfo) {
   var windowShapeHook = new base.EventHook(
       this.plugin_.hostDesktop(),
       remoting.HostDesktop.Events.shapeChanged,
-      remoting.windowShape.setDesktopRects.bind(remoting.windowShape));
+      windowShape.setDesktopRects.bind(windowShape));
 
   var desktopSizeHook = new base.EventHook(
       this.plugin_.hostDesktop(),

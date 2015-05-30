@@ -16,15 +16,17 @@ var COUNTDOWN_IN_SECONDS = 10;
  *
  * @constructor
  * @param {HTMLElement} rootElement
+ * @param {remoting.WindowShape=} opt_windowShape
  * @implements {base.Disposable}
  */
-remoting.ConnectionDroppedDialog = function(rootElement) {
+remoting.ConnectionDroppedDialog = function(rootElement, opt_windowShape) {
   /** @private */
   this.dialog_ = new remoting.Html5ModalDialog({
     dialog: /** @type {HTMLDialogElement} */ (rootElement),
     primaryButton: rootElement.querySelector('.restart-button'),
     secondaryButton: rootElement.querySelector('.close-button'),
-    closeOnEscape: false
+    closeOnEscape: false,
+    windowShape: opt_windowShape
   });
 
   /** @private {HTMLElement} */

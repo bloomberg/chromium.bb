@@ -191,6 +191,9 @@ remoting.Html5ModalDialog = function(params) {
   /** @private */
   this.closeOnEscape_ = Boolean(params.closeOnEscape);
 
+  /** @private */
+  this.windowShape_ = params.windowShape;
+
   /** @private {base.Deferred} */
   this.deferred_ = null;
 };
@@ -211,8 +214,10 @@ remoting.Html5ModalDialog.prototype.show = function() {
   base.debug.assert(this.deferred_ === null);
   this.deferred_ = new base.Deferred();
   this.dialog_.showModal();
-  remoting.windowShape.registerClientUI(this);
-  remoting.windowShape.centerToDesktop(this.dialog_);
+  if (this.windowShape_) {
+    this.windowShape_.registerClientUI(this);
+    this.windowShape_.centerToDesktop(this.dialog_);
+  }
   return this.deferred_.promise();
 };
 
@@ -234,7 +239,9 @@ remoting.Html5ModalDialog.prototype.close = function(result) {
   this.dialog_.close();
   this.deferred_.resolve(result);
   this.deferred_ = null;
-  remoting.windowShape.unregisterClientUI(this);
+  if (this.windowShape_) {
+    this.windowShape_.unregisterClientUI(this);
+  }
 };
 
 remoting.Html5ModalDialog.prototype.addToRegion = function(rects) {
@@ -311,7 +318,8 @@ remoting.MessageDialog.Result = {
  *   dialog: HTMLDialogElement,
  *   primaryButton:HTMLElement,
  *   secondaryButton:(HTMLElement|undefined),
- *   closeOnEscape:(boolean|undefined)
+ *   closeOnEscape:(boolean|undefined),
+ *   windowShape:(remoting.WindowShape|undefined)
  * }}
  */
 remoting.Html5ModalDialog.Params;
