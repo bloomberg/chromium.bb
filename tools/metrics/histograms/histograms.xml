@@ -786,12 +786,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>tdanderson@google.com</owner>
   <summary>
     The number of seconds between contiguous task switch user actions triggered
-    by the Shelf buttons where the user activates a different user-predicatble
+    by the Shelf buttons where the user activates a different user-predictable
     task. Task switches from other sources are ignored and do not affect this
     metric. In other words, if a user performs the following steps (1) launch
     task 'A' from the Shelf (2) Alt+Tab to task 'Z' (3) launch task 'B' from the
     Shelf, then this will result in a sample recorded for the time delta between
     launching tasks 'A' and 'B'.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.TimeBetweenWindowMinimizedAndActivatedActions"
+    units="milliseconds">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <summary>
+    Tracks the amount of time between a window being minimized by the shelf and
+    subsequently activated. In other words this metric is only recorded if a
+    shelf button pressed action causes a window to be minimized and the very
+    next shelf button pressed action causes the same window to be activated.
   </summary>
 </histogram>
 

@@ -34,6 +34,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/user_action_tester.h"
 #include "base/time/time.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -294,6 +295,9 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
 
 class ShelfViewTest : public AshTestBase {
  public:
+  static const char*
+      kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName;
+
   ShelfViewTest()
       : model_(NULL),
         shelf_view_(NULL),
@@ -640,6 +644,11 @@ class ShelfViewTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTest);
 };
+
+const char*
+    ShelfViewTest::kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName =
+        ShelfButtonPressedMetricTracker::
+            kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName;
 
 class ScopedTextDirectionChange {
  public:
@@ -1809,55 +1818,28 @@ TEST_F(ShelfViewTest, Launcher_TaskUserActionsRecordedWhenItemSelected) {
   EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_LaunchTask"));
 }
 
-// Verifies that a Launcher_ButtonPressed_Mouse UMA user action is recorded when
-// an icon is activated by a mouse event.
+// Verifies that metrics are recorded when an item is minimized and subsequently
+// activated.
 TEST_F(ShelfViewTest,
-       Launcher_ButtonPressed_MouseIsRecordedWhenIconActivatedByMouse) {
-  base::UserActionTester user_action_tester;
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                             base::TimeDelta(), 0, 0);
-  test_api_->RecordIconActivatedSource(mouse_event);
-  EXPECT_EQ(1,
-            user_action_tester.GetActionCount("Launcher_ButtonPressed_Mouse"));
-}
+       VerifyMetricsAreRecordedWhenAnItemIsMinimizedAndActivated) {
+  base::HistogramTester histogram_tester;
 
-// Verifies that a Launcher_ButtonPressed_Touch UMA user action is recorded when
-// an icon is activated by a touch event.
-TEST_F(ShelfViewTest,
-       Launcher_ButtonPressed_MouseIsRecordedWhenIconActivatedByTouch) {
-  base::UserActionTester user_action_tester;
-  ui::TouchEvent touch_event(ui::ET_GESTURE_TAP, gfx::Point(), 0,
-                             base::TimeDelta());
-  test_api_->RecordIconActivatedSource(touch_event);
-  EXPECT_EQ(1,
-            user_action_tester.GetActionCount("Launcher_ButtonPressed_Touch"));
-}
+  ShelfID browser_shelf_id = model_->items()[browser_index_].id;
+  ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
+  item_manager_->SetShelfItemDelegate(
+      browser_shelf_id,
+      scoped_ptr<ShelfItemDelegate>(selection_tracker).Pass());
 
-// Verifies that a Launcher_LaunchTask UMA user action is recorded when
-// selecting an icon causes a new window to be created.
-TEST_F(ShelfViewTest, Launcher_LaunchTaskIsRecordedWhenNewWindowIsCreated) {
-  base::UserActionTester user_action_tester;
-  test_api_->RecordIconActivatedAction(ShelfItemDelegate::kNewWindowCreated);
-  EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_LaunchTask"));
-}
-
-// Verifies that a Launcher_MinimizeTask UMA user action is recorded when
-// selecting an icon causes an existing window to be minimized.
-TEST_F(ShelfViewTest, Launcher_MinimizeTaskIsRecordedWhenWindowIsMinimized) {
-  base::UserActionTester user_action_tester;
-  test_api_->RecordIconActivatedAction(
+  selection_tracker->set_item_selected_action(
       ShelfItemDelegate::kExistingWindowMinimized);
-  EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_MinimizeTask"));
-}
+  SimulateClick(browser_index_);
 
-// Verifies that a Launcher_SwitchTask UMA user action is recorded when
-// selecting an icon causes an existing window to be activated.
-TEST_F(ShelfViewTest,
-       Launcher_SwitchTaskIsRecordedWhenExistingWindowIsActivated) {
-  base::UserActionTester user_action_tester;
-  test_api_->RecordIconActivatedAction(
+  selection_tracker->set_item_selected_action(
       ShelfItemDelegate::kExistingWindowActivated);
-  EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_SwitchTask"));
+  SimulateClick(browser_index_);
+
+  histogram_tester.ExpectTotalCount(
+      kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName, 1);
 }
 
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,

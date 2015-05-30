@@ -25,6 +25,7 @@ class Button;
 namespace ash {
 class OverflowBubble;
 class ShelfButton;
+class ShelfButtonPressedMetricTracker;
 class ShelfDelegate;
 class ShelfView;
 
@@ -82,14 +83,6 @@ class ShelfViewTestAPI {
   // Wrapper for ShelfView::ButtonPressed.
   void ButtonPressed(views::Button* sender, const ui::Event& event);
 
-  // Wrapper for ShelfView::RecordIconActivatedSource(const ui::Event&).
-  void RecordIconActivatedSource(const ui::Event& event);
-
-  // Wrapper for ShelfView::RecordIconActivatedAction(
-  // ShelfItemDelegate::PerformedAction).
-  void RecordIconActivatedAction(
-      ShelfItemDelegate::PerformedAction performed_action);
-
   // Wrapper for ShelfView::SameDragType.
   bool SameDragType(ShelfItemType typea, ShelfItemType typeb) const;
 
@@ -104,6 +97,9 @@ class ShelfViewTestAPI {
 
   // Returns true if an item is ripped off and entered into shelf.
   bool DraggedItemFromOverflowToShelf();
+
+  // An accessor for |shelf_button_pressed_metric_tracker_|.
+  ShelfButtonPressedMetricTracker* shelf_button_pressed_metric_tracker();
 
  private:
   ShelfView* shelf_view_;

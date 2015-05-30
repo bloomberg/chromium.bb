@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/shelf/shelf_button_host.h"
+#include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_model_observer.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
@@ -278,13 +279,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // Records UMA statistics for the input source when an icon was activated.
-  void RecordIconActivatedSource(const ui::Event& event);
-
-  // Records UMA statistics for the action performed by activating an icon.
-  void RecordIconActivatedAction(
-      ShelfItemDelegate::PerformedAction performed_action);
-
   // Show the list of all running items for this |item|. It will return true
   // when the menu was shown and false if there were no possible items to
   // choose from. |source| specifies the view which is responsible for showing
@@ -453,6 +447,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // check if a repost event occurs on the same shelf item as previous one. If
   // so, the repost event should be ignored.
   int last_pressed_index_;
+
+  // Tracks UMA metrics based on shelf button press actions.
+  ShelfButtonPressedMetricTracker shelf_button_pressed_metric_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };
