@@ -79,4 +79,11 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
   session_start_waiter.Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowGuest) {
+  WaitForGaiaPageLoad();
+  JsExpect("!$('guest-user-header-bar-item').hidden");
+  chromeos::CrosSettings::Get()->SetBoolean(kAccountsPrefAllowGuest, false);
+  JsExpect("$('guest-user-header-bar-item').hidden");
+}
+
 }  // namespace chromeos
