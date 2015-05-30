@@ -151,7 +151,7 @@ def main():
                  ])
   if args.gcc_toolchain is not None:
     # Copy the stdlibc++.so.6 we linked Clang against so it can run.
-    want.append('lib/libstdc++.so.6.so')
+    want.append('lib/libstdc++.so.6')
 
   for root, dirs, files in os.walk(LLVM_RELEASE_DIR):
     # root: third_party/llvm-build/Release+Asserts/lib/..., rel_root: lib/...
