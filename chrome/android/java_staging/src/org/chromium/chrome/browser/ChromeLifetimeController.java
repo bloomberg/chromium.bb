@@ -29,9 +29,13 @@ class ChromeLifetimeController implements ApplicationLifetime.Observer,
         ApplicationStatus.ActivityStateListener {
     private static final String TAG = "ChromeLifetimeController";
 
+    // The amount of time to wait for Chrome to destroy all the activities.
+    private static final long WATCHDOG_DELAY = 1000;
+
     private final Context mContext;
     private boolean mRestartChromeOnDestroy;
     private int mRemainingActivitiesCount = 0;
+    private final Handler mHandler;
 
     /**
      * Creates a {@link ChromeLifetimeController} instance.
@@ -41,6 +45,7 @@ class ChromeLifetimeController implements ApplicationLifetime.Observer,
     public ChromeLifetimeController(Context context) {
         mContext = context.getApplicationContext();
         ApplicationLifetime.addObserver(this);
+        mHandler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -61,6 +66,16 @@ class ChromeLifetimeController implements ApplicationLifetime.Observer,
                 activity.finish();
             }
         }
+
+        // Post a watchdog -- if Android is taking a long time to call onDestroy, kill the process.
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (mRemainingActivitiesCount > 0) {
+                    destroyProcess();
+                }
+            }
+        }, WATCHDOG_DELAY);
     }
 
 
@@ -77,8 +92,7 @@ class ChromeLifetimeController implements ApplicationLifetime.Observer,
     }
 
     private void destroyProcess() {
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 if (mRestartChromeOnDestroy) scheduleRestart(mContext);
