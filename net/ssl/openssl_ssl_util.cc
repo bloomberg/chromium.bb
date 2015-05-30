@@ -92,8 +92,6 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
       return ERR_SSL_DECRYPT_ERROR_ALERT;
     case SSL_R_TLSV1_UNRECOGNIZED_NAME:
       return ERR_SSL_UNRECOGNIZED_NAME_ALERT;
-    case SSL_R_UNSAFE_LEGACY_RENEGOTIATION_DISABLED:
-      return ERR_SSL_UNSAFE_NEGOTIATION;
     case SSL_R_BAD_DH_P_LENGTH:
       return ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY;
     // SSL_R_UNKNOWN_PROTOCOL is reported if premature application data is
