@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/time/default_tick_clock.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/copy_output_request.h"
@@ -58,6 +59,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
     : client_(client),
       compositor_(nullptr),
       use_surfaces_(UseSurfacesEnabled()),
+      tick_clock_(new base::DefaultTickClock()),
       last_output_surface_id_(0),
       pending_delegated_ack_count_(0),
       skipped_frames_(false),
@@ -244,9 +246,9 @@ void DelegatedFrameHost::DidReceiveFrameFromRenderer(
   if (!frame_subscriber() || !CanCopyToVideoFrame())
     return;
 
-  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeTicks now = tick_clock_->NowTicks();
   base::TimeTicks present_time;
-  if (vsync_timebase_.is_null() || vsync_interval_ <= base::TimeDelta()) {
+  if (vsync_interval_ <= base::TimeDelta()) {
     present_time = now;
   } else {
     const int64 intervals_elapsed = (now - vsync_timebase_) / vsync_interval_;

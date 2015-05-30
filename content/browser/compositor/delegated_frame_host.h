@@ -23,6 +23,10 @@
 #include "ui/compositor/layer_owner_delegate.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace cc {
 class SurfaceFactory;
 enum class SurfaceDrawStatus;
@@ -165,12 +169,11 @@ class CONTENT_EXPORT DelegatedFrameHost
 
  private:
   friend class DelegatedFrameHostClient;
+  friend class RenderWidgetHostViewAuraCopyRequestTest;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            SkippedDelegatedFrames);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DiscardDelegatedFramesWithLocking);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraCopyRequestTest,
-                           DestroyedAfterCopyRequest);
 
   RenderWidgetHostViewFrameSubscriber* frame_subscriber() const {
     return frame_subscriber_.get();
@@ -253,6 +256,9 @@ class CONTENT_EXPORT DelegatedFrameHost
   // call to SetVSyncParameters().
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
+
+  // Overridable tick clock used for testing functions using current time.
+  scoped_ptr<base::TickClock> tick_clock_;
 
   // With delegated renderer, this is the last output surface, used to
   // disambiguate resources with the same id coming from different output
