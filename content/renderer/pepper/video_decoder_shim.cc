@@ -682,6 +682,8 @@ class VideoDecoderShim::DecoderImpl {
   // corresponding frames before decode is finished. |decode_id_| is used to
   // store id of the current buffer while Decode() call is pending.
   uint32_t decode_id_;
+
+  base::WeakPtrFactory<DecoderImpl> weak_ptr_factory_;
 };
 
 VideoDecoderShim::DecoderImpl::DecoderImpl(
@@ -689,7 +691,8 @@ VideoDecoderShim::DecoderImpl::DecoderImpl(
     : shim_(proxy),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       awaiting_decoder_(false),
-      decode_id_(0) {
+      decode_id_(0),
+      weak_ptr_factory_(this) {
 }
 
 VideoDecoderShim::DecoderImpl::~DecoderImpl() {
@@ -716,16 +719,12 @@ void VideoDecoderShim::DecoderImpl::Initialize(
   // request.
   DCHECK_EQ(decoder_->GetMaxDecodeRequests(), 1);
 
-  // We can use base::Unretained() safely in decoder callbacks because
-  // |decoder_| is owned by DecoderImpl. During Stop(), the |decoder_| will be
-  // destroyed and all outstanding callbacks will be fired.
   decoder_->Initialize(
-      config,
-      true /* low_delay */,
+      config, true /* low_delay */,
       base::Bind(&VideoDecoderShim::DecoderImpl::OnPipelineStatus,
-                 base::Unretained(this)),
+                 weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&VideoDecoderShim::DecoderImpl::OnOutputComplete,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VideoDecoderShim::DecoderImpl::Decode(
@@ -748,7 +747,7 @@ void VideoDecoderShim::DecoderImpl::Reset() {
     pending_decodes_.pop();
   }
   decoder_->Reset(base::Bind(&VideoDecoderShim::DecoderImpl::OnResetComplete,
-                             base::Unretained(this)));
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VideoDecoderShim::DecoderImpl::Stop() {
@@ -792,7 +791,7 @@ void VideoDecoderShim::DecoderImpl::DoDecode() {
   decode_id_ = decode.decode_id;
   decoder_->Decode(decode.buffer,
                    base::Bind(&VideoDecoderShim::DecoderImpl::OnDecodeComplete,
-                              base::Unretained(this)));
+                              weak_ptr_factory_.GetWeakPtr()));
   pending_decodes_.pop();
 }
 
