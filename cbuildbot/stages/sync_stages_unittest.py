@@ -284,10 +284,11 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
       for change in changes:
         change.flags['COMR'] = '2'
     if pre_cq_status is not None:
+      config = constants.PRE_CQ_DEFAULT_CONFIGS[0]
       new_build_id = self.fake_db.InsertBuild('Pre cq group',
                                               constants.WATERFALL_TRYBOT,
                                               1,
-                                              constants.PRE_CQ_GROUP_CONFIG,
+                                              config,
                                               'bot-hostname')
       for change in changes:
         action = clactions.TranslatePreCQStatusToAction(pre_cq_status)

@@ -130,7 +130,7 @@ class MasterSlaveSyncCompletionStageTest(
 
   def _GetTestConfig(self):
     test_config = config_lib.SiteConfig(defaults={})
-    test_config.AddRawConfig(
+    test_config.AddConfigWithoutTemplate(
         'test1',
         manifest_version=True,
         build_type=constants.PFQ_TYPE,
@@ -141,7 +141,7 @@ class MasterSlaveSyncCompletionStageTest(
         internal=False,
         master=False,
     )
-    test_config.AddRawConfig(
+    test_config.AddConfigWithoutTemplate(
         'test2',
         manifest_version=False,
         build_type=constants.PFQ_TYPE,
@@ -152,7 +152,7 @@ class MasterSlaveSyncCompletionStageTest(
         internal=False,
         master=False,
     )
-    test_config.AddRawConfig(
+    test_config.AddConfigWithoutTemplate(
         'test3',
         manifest_version=True,
         build_type=constants.PFQ_TYPE,
@@ -163,7 +163,7 @@ class MasterSlaveSyncCompletionStageTest(
         internal=True,
         master=False,
     )
-    test_config.AddRawConfig(
+    test_config.AddConfigWithoutTemplate(
         'test4',
         manifest_version=True,
         build_type=constants.PFQ_TYPE,
@@ -174,7 +174,7 @@ class MasterSlaveSyncCompletionStageTest(
         internal=True,
         master=False,
     )
-    test_config.AddRawConfig(
+    test_config.AddConfigWithoutTemplate(
         'test5',
         manifest_version=True,
         build_type=constants.PFQ_TYPE,

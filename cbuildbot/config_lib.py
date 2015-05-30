@@ -26,7 +26,6 @@ CONFIG_TYPE_RELEASE_AFDO = 'release-afdo'
 # This is only used for unitests... find a better solution?
 CONFIG_TYPE_DUMP_ORDER = (
     CONFIG_TYPE_PALADIN,
-    constants.PRE_CQ_GROUP_CONFIG,
     CONFIG_TYPE_PRECQ,
     constants.PRE_CQ_LAUNCHER_CONFIG,
     'incremental',
@@ -184,27 +183,6 @@ class BuildConfig(dict):
 
     return new_config
 
-  def HideDefaults(self, default):
-    """Create a duplicate BuildConfig with default values missing.
-
-    Args:
-      default: Dictionary of key/value pairs to remove, if present.
-
-    Returns:
-      A copy BuildConfig, that only contains values different from defaults.
-    """
-    d = BuildConfig()
-    for k, v in self.iteritems():
-      # Recurse to children.
-      if k == 'child_configs':
-        v = [child.HideDefaults(default) for child in v]
-
-      # Only store a value if it's different from default.
-      if k not in default or default[k] != v:
-        d[k] = v
-
-    return d
-
 
 class HWTestConfig(object):
   """Config object for hardware tests suites.
@@ -291,16 +269,24 @@ class HWTestConfig(object):
 class SiteConfig(dict):
   """This holds a set of named BuildConfig values."""
 
-  def __init__(self, defaults=None):
+  # Whether to use templates in config_dump.json.
+  ENABLE_TEMPLATES = False
+
+  def __init__(self, defaults=None, templates=None):
     """Init."""
     super(SiteConfig, self).__init__()
     self._defaults = {} if defaults is None else defaults
+    self._templates = {} if templates is None else templates
 
   def GetDefault(self):
     """Create the cannonical default build configuration."""
     # Enumeration of valid settings; any/all config settings must be in this.
     # All settings must be documented.
     return BuildConfig(**self._defaults)
+
+  def GetTemplates(self):
+    """Create the cannonical default build configuration."""
+    return self._templates
 
   #
   # Methods for searching a SiteConfig's contents.
@@ -403,7 +389,14 @@ class SiteConfig(dict):
       See the docstring of derive.
     """
     inherits, overrides = args, kwargs
+
+    # Overrides 'name' and '_template' so that we consistently use the
+    # provided names and not the names from mix-ins. E.g., If this config
+    # inherits from multiple templates, we only pay attention to the first
+    # one listed. TODO(davidjames): Clean up the inheritance more so that
+    # this isn't needed.
     overrides['name'] = name
+    overrides['_template'] = config.get('_template')
 
     # Add ourselves into the global dictionary, adding in the defaults.
     new_config = config.derive(*inherits, **overrides)
@@ -413,7 +406,7 @@ class SiteConfig(dict):
     # can derive from us without inheriting the defaults.
     return new_config
 
-  def AddRawConfig(self, name, *args, **kwargs):
+  def AddConfigWithoutTemplate(self, name, *args, **kwargs):
     """Add a config containing only explicitly listed values (no defaults)."""
     return self.AddConfig(BuildConfig(), name, *args, **kwargs)
 
@@ -443,15 +436,64 @@ class SiteConfig(dict):
     json_string = self.SaveConfigToString()
     osutils.WriteFile(config_file, json_string)
 
+  def HideDefaults(self, cfg):
+    """Hide the defaults from a given config entry.
+
+    Args:
+      cfg: A config entry.
+
+    Returns:
+      The same config entry, but without any defaults.
+    """
+    my_default = self.GetDefault()
+
+    template = cfg.get('_template')
+    if template:
+      my_default.update(self._templates[template])
+      my_default['_template'] = None
+
+    d = {}
+    for k, v in cfg.iteritems():
+      if my_default.get(k) != v:
+        if k == 'child_configs':
+          d['child_configs'] = [self.HideDefaults(child) for child in v]
+        else:
+          d[k] = v
+
+    return d
+
+  def AddTemplate(self, name, *args, **kwargs):
+    """Create a template named |name|.
+
+    Args:
+      name: The name of the template.
+      args: See the docstring of BuildConfig.derive.
+      kwargs: See the docstring of BuildConfig.derive.
+    """
+    if self.ENABLE_TEMPLATES:
+      kwargs['_template'] = name
+
+    if args:
+      cfg = args[0].derive(*args[1:], **kwargs)
+    else:
+      cfg = BuildConfig(*args, **kwargs)
+
+    if self.ENABLE_TEMPLATES:
+      self._templates[name] = cfg
+
+    return cfg
+
   def SaveConfigToString(self):
     """Save this Config object to a Json format string."""
     default = self.GetDefault()
 
     config_dict = {}
     for k, v in self.iteritems():
-      config_dict[k] = v.HideDefaults(default)
+      config_dict[k] = self.HideDefaults(v)
 
     config_dict['_default'] = default
+    if self.ENABLE_TEMPLATES:
+      config_dict['_templates'] = self._templates
 
     class _JSONEncoder(json.JSONEncoder):
       """Json Encoder that encodes objects as their dictionaries."""
@@ -478,14 +520,15 @@ def CreateConfigFromString(json_string):
 
   # default is a dictionary of default build configuration values.
   defaults = config_dict.pop(DEFAULT_BUILD_CONFIG)
+  templates = config_dict.pop('_templates', None)
 
   defaultBuildConfig = BuildConfig(**defaults)
 
-  builds = {n: _CreateBuildConfig(defaultBuildConfig, v)
+  builds = {n: _CreateBuildConfig(defaultBuildConfig, v, templates)
             for n, v in config_dict.iteritems()}
 
   # config is the struct that holds the complete cbuildbot config.
-  result = SiteConfig(defaults=defaults)
+  result = SiteConfig(defaults=defaults, templates=templates)
   result.update(builds)
 
   return result
@@ -533,19 +576,23 @@ def _CreateHwTestConfig(jsonString):
   return HWTestConfig(**hw_test_config)
 
 
-def _CreateBuildConfig(default, build_dict):
+def _CreateBuildConfig(default, build_dict, templates):
   """Create a BuildConfig object from it's parsed JSON dictionary encoding."""
   # These build config values need special handling.
-  hwtests = build_dict.pop('hw_tests', None)
   child_configs = build_dict.pop('child_configs', None)
+  template = build_dict.get('_template')
 
-  result = default.derive(**build_dict)
+  my_default = default
+  if template:
+    my_default = default.derive(templates[template])
+  result = my_default.derive(**build_dict)
 
+  hwtests = result.pop('hw_tests', None)
   if hwtests is not None:
     result['hw_tests'] = [_CreateHwTestConfig(hwtest) for hwtest in hwtests]
 
   if child_configs is not None:
-    result['child_configs'] = [_CreateBuildConfig(default, child)
+    result['child_configs'] = [_CreateBuildConfig(default, child, templates)
                                for child in child_configs]
 
   return result

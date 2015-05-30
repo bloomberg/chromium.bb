@@ -477,9 +477,6 @@ VALID_BUILD_TYPES = (
     PROJECT_SDK_TYPE,
 )
 
-# The name of the standard pre-cq testing config.
-PRE_CQ_GROUP_CONFIG = 'pre-cq-group'
-
 # The default list of pre-cq configs to use.
 PRE_CQ_DEFAULT_CONFIGS = ['rambi-pre-cq', 'mixed-a-pre-cq', 'mixed-b-pre-cq',
                           'mixed-c-pre-cq']

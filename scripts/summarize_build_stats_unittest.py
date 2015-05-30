@@ -51,7 +51,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
 
     t = itertools.count()
     bot_config = (constants.CQ_MASTER if cq
-                  else constants.PRE_CQ_GROUP_CONFIG)
+                  else constants.PRE_CQ_DEFAULT_CONFIGS[0])
 
     # pylint: disable=bad-continuation
     test_metadata = [

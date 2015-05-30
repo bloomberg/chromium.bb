@@ -20,6 +20,10 @@ CONFIG_FILE = os.path.join(constants.CHROMITE_DIR, 'cbuildbot',
 # Enumeration of valid settings; any/all config settings must be in this.
 # All settings must be documented.
 _settings = dict(
+
+    # The name of the template we inherit settings from.
+    _template=None,
+
     # The name of the config.
     name=None,
 
@@ -759,15 +763,7 @@ no_unittest_builder = config_lib.BuildConfig(
 
 # Builder-specific mixins
 
-binary = config_lib.BuildConfig(
-  # Full builds that build fully from binaries.
-  build_type=constants.BUILD_FROM_SOURCE_TYPE,
-  archive_build_debug=True,
-  images=['test', 'factory_install'],
-  git_sync=True,
-)
-
-full = config_lib.BuildConfig(
+full = _CONFIG.AddTemplate('full',
   # Full builds are test builds to show that we can build from scratch,
   # so use settings to build from scratch, and archive the results.
 
@@ -802,7 +798,7 @@ pfq = config_lib.BuildConfig(
       'TOC-Chrome-PFQ',
 )
 
-paladin = config_lib.BuildConfig(
+paladin = _CONFIG.AddTemplate('paladin',
   important=True,
   build_type=constants.PALADIN_TYPE,
   overlays=constants.PUBLIC_OVERLAYS,
@@ -820,7 +816,7 @@ paladin = config_lib.BuildConfig(
 
 # Incremental builders are intended to test the developer workflow.
 # For that reason, they don't uprev.
-incremental = config_lib.BuildConfig(
+incremental = _CONFIG.AddTemplate('incremental',
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
@@ -852,7 +848,7 @@ moblab = config_lib.BuildConfig(
 )
 
 # Builds for the Project SDK.
-project_sdk = config_lib.BuildConfig(
+project_sdk = _CONFIG.AddTemplate('project-sdk',
   build_type=constants.PROJECT_SDK_TYPE,
   description='Produce Project SDK build artifacts.',
 
@@ -898,7 +894,8 @@ official = official_chrome.derive(
   chromeos_official=True,
 )
 
-_cros_sdk = _CONFIG.AddConfig(full_prebuilts, 'chromiumos-sdk',
+_cros_sdk = _CONFIG.AddConfigWithoutTemplate('chromiumos-sdk',
+  full_prebuilts,
   # The amd64-host has to be last as that is when the toolchains
   # are bundled up for inclusion in the sdk.
   boards=['x86-generic', 'arm-generic', 'amd64-generic', 'mipsel-o32-generic'],
@@ -911,7 +908,7 @@ _cros_sdk = _CONFIG.AddConfig(full_prebuilts, 'chromiumos-sdk',
       'TOC-Continuous',
 )
 
-asan = config_lib.BuildConfig(
+asan = _CONFIG.AddTemplate('asan',
   chroot_replace=True,
   profile='asan',
   disk_layout='2gb-rootfs',
@@ -920,10 +917,10 @@ asan = config_lib.BuildConfig(
   # memory limits. Remove the following line once crbug.com/329248 is fixed.
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
   doc='http://www.chromium.org/chromium-os/build/builder-overview#'
-      'TOC-ChromiumOS-SDK',
+      'TOC-ASAN',
 )
 
-telemetry = config_lib.BuildConfig(
+telemetry = _CONFIG.AddTemplate('telemetry',
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
@@ -931,7 +928,7 @@ telemetry = config_lib.BuildConfig(
   description='Telemetry Builds',
 )
 
-chromium_pfq = config_lib.BuildConfig(
+chromium_pfq = _CONFIG.AddTemplate('chromium-pfq',
   build_type=constants.CHROME_PFQ_TYPE,
   important=True,
   uprev=False,
@@ -961,7 +958,8 @@ _CONFIG.AddConfig(internal_chromium_pfq, 'master-chromium-pfq',
   chrome_sdk=False,
 )
 
-chrome_pfq = internal_chromium_pfq.derive(
+chrome_pfq = _CONFIG.AddTemplate('chrome-pfq',
+  internal_chromium_pfq,
   official,
   important=True,
   overlays=constants.BOTH_OVERLAYS,
@@ -977,23 +975,22 @@ chrome_try = config_lib.BuildConfig(
   manifest_version=False,
 )
 
-chromium_info = chromium_pfq.derive(
+chromium_info = _CONFIG.AddTemplate('chromium-pfq-informational',
+  chromium_pfq,
   chrome_try,
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
   chrome_sdk=False,
   description='Informational Chromium Uprev & Build (public)',
 )
 
-telemetry_info = telemetry.derive(
-  chrome_try,
-)
-
-chrome_info = chromium_info.derive(
+chrome_info = _CONFIG.AddTemplate('chrome-pfq-informational',
+  chromium_info,
   internal, official,
   description='Informational Chrome Uprev & Build (internal)',
 )
 
-chrome_perf = chrome_info.derive(
+chrome_perf = _CONFIG.AddTemplate('chrome-perf',
+  chrome_info,
   description='Chrome Performance test bot',
   vm_tests=[],
   unittests=False,
@@ -1451,7 +1448,8 @@ _telemetry_boards = frozenset([
 
 _CreateConfigsForBoards(telemetry, _telemetry_boards, 'telemetry')
 
-_toolchain_major = _CONFIG.AddConfig(_cros_sdk, 'toolchain-major',
+_toolchain_major = _CONFIG.AddConfigWithoutTemplate('toolchain-major',
+  _cros_sdk,
   latest_toolchain=True,
   prebuilts=False,
   trybot_list=False,
@@ -1459,7 +1457,8 @@ _toolchain_major = _CONFIG.AddConfig(_cros_sdk, 'toolchain-major',
   description='Test next major toolchain revision',
 )
 
-_toolchain_minor = _CONFIG.AddConfig(_cros_sdk, 'toolchain-minor',
+_toolchain_minor = _CONFIG.AddConfigWithoutTemplate('toolchain-minor',
+  _cros_sdk,
   latest_toolchain=True,
   prebuilts=False,
   trybot_list=False,
@@ -1467,30 +1466,32 @@ _toolchain_minor = _CONFIG.AddConfig(_cros_sdk, 'toolchain-minor',
   description='Test next minor toolchain revision',
 )
 
-_CONFIG.AddConfig(incremental, 'x86-generic-asan',
-  asan,
+_CONFIG.AddConfig(asan, 'x86-generic-asan',
+  incremental,
   boards=['x86-generic'],
   description='Build with Address Sanitizer (Clang)',
   trybot_list=True,
 )
 
-_CONFIG.AddConfig(chromium_info, 'x86-generic-tot-asan-informational',
+tot_asan_info = _CONFIG.AddTemplate('tot-asan-informational',
+  chromium_info,
   asan,
-  boards=['x86-generic'],
-  description='Full build with Address Sanitizer (Clang) on TOT',
+  description='Build TOT Chrome with Address Sanitizer (Clang)',
 )
 
-_CONFIG.AddConfig(incremental, 'amd64-generic-asan',
-  asan,
+_CONFIG.AddConfig(tot_asan_info, 'x86-generic-tot-asan-informational',
+  boards=['x86-generic'],
+)
+
+_CONFIG.AddConfig(asan, 'amd64-generic-asan',
+  incremental,
   boards=['amd64-generic'],
   description='Build with Address Sanitizer (Clang)',
   trybot_list=True,
 )
 
-_CONFIG.AddConfig(chromium_info, 'amd64-generic-tot-asan-informational',
-  asan,
+_CONFIG.AddConfig(tot_asan_info, 'amd64-generic-tot-asan-informational',
   boards=['amd64-generic'],
-  description='Build with Address Sanitizer (Clang) on TOT',
 )
 
 incremental_beaglebone = incremental.derive(beaglebone)
@@ -1500,7 +1501,7 @@ _CONFIG.AddConfig(incremental_beaglebone, 'beaglebone-incremental',
   description='Incremental Beaglebone Builder',
 )
 
-_CONFIG.AddRawConfig('refresh-packages',
+_CONFIG.AddConfigWithoutTemplate('refresh-packages',
   boards=['x86-generic', 'arm-generic'],
   builder_class_name='misc_builders.RefreshPackagesBuilder',
   description='Check upstream Gentoo for package updates',
@@ -1536,7 +1537,7 @@ _CONFIG.AddConfig(paladin, 'x86-generic-asan-paladin',
   important=False,
 )
 
-_CONFIG.AddConfig(incremental, 'amd64-generic-asan-paladin',
+_CONFIG.AddConfig(paladin, 'amd64-generic-asan-paladin',
   _base_configs['amd64-generic'],
   asan,
   description='Paladin build with Address Sanitizer (Clang)',
@@ -1552,28 +1553,10 @@ _chrome_perf_boards = frozenset([
 _CreateConfigsForBoards(chrome_perf, _chrome_perf_boards, 'chrome-perf',
                         trybot_list=True)
 
-chromium_info_x86 = \
-_CONFIG.AddConfig(chromium_info, 'x86-generic-tot-chrome-pfq-informational',
-  boards=['x86-generic'],
-)
-
-chromium_info_daisy = \
-_CONFIG.AddConfig(chromium_info, 'daisy-tot-chrome-pfq-informational',
-  vm_tests=[],
-  boards=['daisy'],
-)
-
-chromium_info_amd64 = \
-_CONFIG.AddConfig(chromium_info, 'amd64-generic-tot-chrome-pfq-informational',
-  boards=['amd64-generic'],
-)
-
-_CONFIG.AddConfig(chromium_info, 'x32-generic-tot-chrome-pfq-informational',
-  boards=['x32-generic'],
-)
-
-_CreateConfigsForBoards(telemetry_info, ['x86-generic', 'amd64-generic'],
-                        'telem-chrome-pfq-informational')
+_CreateConfigsForBoards(chromium_info,
+                        ['x86-generic', 'amd64-generic'],
+                        'telem-chromium-pfq-informational',
+                        **telemetry.derive(chrome_try))
 
 _CONFIG.AddConfig(chrome_info, 'alex-tot-chrome-pfq-informational',
   boards=['x86-alex'],
@@ -1596,7 +1579,8 @@ internal_pfq = internal.derive(official_chrome, pfq,
 # Because branch directories may be shared amongst builders on multiple
 # branches, they must delete the chroot every time they run.
 # They also potentially need to build [new] Chrome.
-internal_pfq_branch = internal_pfq.derive(
+internal_pfq_branch = _CONFIG.AddTemplate('pre-flight-branch',
+    internal_pfq,
     branch=True,
     chroot_replace=True,
     trybot_list=False,
@@ -1646,7 +1630,8 @@ _CreateConfigsForBoards(full_compile_paladin,
   'full-compile-paladin',
 )
 
-pre_cq = paladin.derive(
+pre_cq = _CONFIG.AddTemplate('pre-cq',
+  paladin,
   build_type=constants.INCREMENTAL_TYPE,
   build_packages_in_background=True,
   pre_cq=True,
@@ -1672,19 +1657,22 @@ unittest_only_pre_cq = pre_cq.derive(
 )
 
 # Pre-CQ targets that don't run VMTests.
-no_vmtest_pre_cq = pre_cq.derive(
+no_vmtest_pre_cq = _CONFIG.AddTemplate('no-vmtest-pre-cq',
+  pre_cq,
   description='Verifies compilation, building an image, and unit tests '
               'if supported.',
   vm_tests=[],
 )
 
 # Pre-CQ targets that only check compilation.
-compile_only_pre_cq = unittest_only_pre_cq.derive(
+compile_only_pre_cq = _CONFIG.AddTemplate('compile-only-pre-cq',
+  unittest_only_pre_cq,
   description='Verifies compilation only',
   unittests=False,
 )
 
-_CONFIG.AddConfig(internal_paladin, constants.BRANCH_UTIL_CONFIG,
+_CONFIG.AddConfigWithoutTemplate(constants.BRANCH_UTIL_CONFIG,
+  internal_paladin,
   boards=[],
   # Disable postsync_patch to prevent conflicting patches from being applied -
   # e.g., patches from 'master' branch being applied to a branch.
@@ -1718,7 +1706,8 @@ _CONFIG.AddConfig(internal_pfq_branch, 'lumpy-pre-flight-branch',
 # A test-ap image is just a test image with a special profile enabled.
 # Note that each board enabled for test-ap use has to have the testbed-ap
 # profile linked to from its private overlay.
-_test_ap = internal.derive(
+_test_ap = _CONFIG.AddTemplate('test-ap',
+  internal,
   description='WiFi AP images used in testing',
   profile='testbed-ap',
   vm_tests=[],
@@ -1986,7 +1975,8 @@ _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
 _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
 _CreateConfigsForBoards(compile_only_pre_cq, _all_boards, 'compile-only-pre-cq')
 
-_CONFIG.AddConfig(no_vmtest_pre_cq, constants.BINHOST_PRE_CQ,
+_CONFIG.AddConfig(pre_cq, constants.BINHOST_PRE_CQ,
+  no_vmtest_pre_cq,
   internal,
   boards=[],
   binhost_test=True,
@@ -2032,35 +2022,8 @@ _CONFIG.AddGroup('kernel-3_14-c-pre-cq',
   _CONFIG['rush_ryu-no-vmtest-pre-cq']
 )
 
-# TODO (crbug.com/438839): pre-cq-group has been replaced by multiple
-# configs. Remove this config when no active CL has been screened
-# with this config.
-_CONFIG.AddGroup(constants.PRE_CQ_GROUP_CONFIG,
-  # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
-  # the slowest one.
-  _CONFIG['rambi-pre-cq'],
-
-  # daisy_spring w/kernel 3.8.
-  _CONFIG['daisy_spring-compile-only-pre-cq'],
-
-  # brillo config. We set build_packages_in_background=False here, so
-  # that subsequent boards (samus, lumpy, parrot) don't get launched until
-  # after duck finishes BuildPackages.
-  _CONFIG.AddConfig(unittest_only_pre_cq, 'storm-pre-cq',
-                    _base_configs['storm'],
-                    build_packages_in_background=False),
-
-  # samus w/kernel 3.14.
-  _CONFIG['samus-compile-only-pre-cq'],
-
-  # lumpy w/kernel 3.8.
-  _CONFIG['lumpy-compile-only-pre-cq'],
-
-  # arm64 w/kernel 3.4.
-  _CONFIG['rush_ryu-compile-only-pre-cq'],
-)
-
-_CONFIG.AddConfig(internal_paladin, 'pre-cq-launcher',
+_CONFIG.AddConfigWithoutTemplate('pre-cq-launcher',
+  internal_paladin,
   boards=[],
   build_type=constants.PRE_CQ_LAUNCHER_TYPE,
   description='Launcher for Pre-CQ builders',
@@ -2083,21 +2046,24 @@ _CONFIG.AddConfig(internal_incremental, 'lakitu-incremental',
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
 )
 
-_CONFIG.AddConfig(
-  _toolchain_major, 'internal-toolchain-major', internal, official,
+_CONFIG.AddConfigWithoutTemplate('internal-toolchain-major',
+  _toolchain_major, internal, official,
   boards=['x86-alex', 'stumpy', 'daisy'],
   build_tests=True,
   description=_toolchain_major['description'] + ' (internal)',
 )
 
-_CONFIG.AddConfig(
-  _toolchain_minor, 'internal-toolchain-minor', internal, official,
+_CONFIG.AddConfigWithoutTemplate('internal-toolchain-minor',
+  _toolchain_minor, internal, official,
   boards=['x86-alex', 'stumpy', 'daisy'],
   build_tests=True,
   description=_toolchain_minor['description'] + ' (internal)',
 )
 
-_release = full.derive(official, internal,
+_release = _CONFIG.AddTemplate('release',
+  full,
+  official,
+  internal,
   build_type=constants.CANARY_TYPE,
   useflags=append_useflags(['-cros-debug']),
   build_tests=True,
@@ -2181,13 +2147,27 @@ _CONFIG.AddGroup('x86-zgb-release-group',
 
 release_afdo = _release.derive(
   trybot_list=False,
-  hw_tests=HWTestList.DefaultList(pool=constants.HWTEST_SUITES_POOL,
-                                    num=4) +
+  hw_tests=HWTestList.DefaultList(pool=constants.HWTEST_SUITES_POOL, num=4) +
            HWTestList.AFDOList(),
   push_image=False,
   paygen=False,
   dev_installer_prebuilts=False,
 )
+
+release_afdo_generate = _CONFIG.AddTemplate(
+  config_lib.CONFIG_TYPE_RELEASE_AFDO + '-generate',
+  release_afdo,
+  afdo_generate_min=True,
+  afdo_use=False,
+  afdo_update_ebuild=True,
+)
+
+release_afdo_use = _CONFIG.AddTemplate(
+  config_lib.CONFIG_TYPE_RELEASE_AFDO + '-use',
+  release_afdo,
+  afdo_use=True,
+)
+
 
 # Now generate generic release-afdo configs if we haven't created anything more
 # specific above already. release-afdo configs are builders that do AFDO profile
@@ -2195,24 +2175,11 @@ release_afdo = _release.derive(
 # want to measure performance changes caused by their changes.
 def _AddAFDOConfigs():
   for board in _all_release_boards:
-    base = {}
+    base = {'boards': [board]}
     if board in _no_unittest_boards:
       base.update(no_unittest_builder)
     if board in _no_vmtest_boards:
       base.update(vm_tests=[])
-
-    generate_config = config_lib.BuildConfig(
-        base,
-        boards=[board],
-        afdo_generate_min=True,
-        afdo_use=False,
-        afdo_update_ebuild=True,
-    )
-    use_config = config_lib.BuildConfig(
-        base,
-        boards=[board],
-        afdo_use=True,
-    )
 
     config_name = '%s-%s' % (board, config_lib.CONFIG_TYPE_RELEASE_AFDO)
     if config_name not in _CONFIG:
@@ -2224,9 +2191,8 @@ def _AddAFDOConfigs():
                                       'use')
       _CONFIG.AddGroup(
           config_name,
-          _CONFIG.AddConfig(release_afdo, generate_config_name,
-                            generate_config),
-          _CONFIG.AddConfig(release_afdo, use_config_name, use_config))
+          _CONFIG.AddConfig(release_afdo_generate, generate_config_name, base),
+          _CONFIG.AddConfig(release_afdo_use, use_config_name, base))
 
 _AddAFDOConfigs()
 
@@ -2682,7 +2648,8 @@ _AddGroupConfig('oak', 'oak', (
 # Naming conventions also must be followed.  Factory and firmware branches must
 # end in -factory or -firmware suffixes.
 
-_factory_release = _release.derive(
+_factory_release = _CONFIG.AddTemplate('factory',
+  _release,
   upload_hw_test_artifacts=False,
   upload_symbols=False,
   hw_tests=[],
@@ -2712,16 +2679,20 @@ _firmware = config_lib.BuildConfig(
   image_test=False,
 )
 
-_firmware_release = _release.derive(_firmware,
+_firmware_release = _CONFIG.AddTemplate('firmware',
+  _release,
+  _firmware,
   description='Firmware Canary',
   manifest=constants.DEFAULT_MANIFEST,
   afdo_use=False,
 )
 
-_depthcharge_release = _firmware_release.derive(
+_depthcharge_release = _CONFIG.AddTemplate('depthcharge-firmware',
+  _firmware_release,
   useflags=append_useflags(['depthcharge']))
 
-_depthcharge_full_internal = full.derive(
+_depthcharge_full_internal = _CONFIG.AddTemplate('depthcharge-full-firmware',
+  full,
   internal,
   _firmware,
   useflags=append_useflags(['depthcharge']),
@@ -2837,7 +2808,8 @@ _CONFIG.AddConfig(_factory_release, 'x86-mario-factory',
   boards=['x86-mario'],
 )
 
-_payloads = internal.derive(
+_payloads = _CONFIG.AddTemplate('payloads',
+  internal,
   build_type=constants.PAYLOADS_TYPE,
   builder_class_name='release_builders.GeneratePayloadsBuilder',
   description='Regenerate release payloads.',

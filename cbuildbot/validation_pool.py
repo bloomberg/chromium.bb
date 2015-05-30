@@ -51,11 +51,13 @@ PRE_CQ = constants.PRE_CQ
 CQ = constants.CQ
 
 CQ_CONFIG = constants.CQ_MASTER
-PRE_CQ_GROUP_CONFIG = constants.PRE_CQ_GROUP_CONFIG
 PRE_CQ_LAUNCHER_CONFIG = constants.PRE_CQ_LAUNCHER_CONFIG
 
 # Set of configs that can reject a CL from the pre-CQ / CQ pipeline.
-CQ_PIPELINE_CONFIGS = {CQ_CONFIG, PRE_CQ_GROUP_CONFIG, PRE_CQ_LAUNCHER_CONFIG}
+# TODO(davidjames): Any Pre-CQ config can reject CLs now, so this is wrong.
+# This is only used for fail counts. Maybe it makes sense to just get rid of
+# the fail count?
+CQ_PIPELINE_CONFIGS = {CQ_CONFIG, PRE_CQ_LAUNCHER_CONFIG}
 
 # The gerrit-on-borg team tells us that delays up to 2 minutes can be
 # normal.  Setting timeout to 3 minutes to be safe-ish.

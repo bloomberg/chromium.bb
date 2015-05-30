@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import copy
 import cPickle
+import json
 
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import config_lib
@@ -324,33 +325,41 @@ class ConfigClassTest(cros_test_lib.TestCase):
     src_str = """{
     "_default": {
         "bar": true,
+        "baz": false,
         "child_configs": [],
         "foo": false,
         "hw_tests": []
     },
     "diff_build": {
         "bar": false,
-        "foo": true
+        "foo": true,
+        "name": "diff_build"
     },
-    "match_build": {},
+    "match_build": {
+        "name": "match_build"
+    },
     "parent_build": {
         "child_configs": [
-            {},
+            {
+                "name": "empty_build"
+            },
             {
                 "bar": false,
+                "name": "child_build",
                 "hw_tests": [
                     "{\\n    \\"async\\": true,\\n    \\"blocking\\": false,\\n    \\"critical\\": false,\\n    \\"file_bugs\\": true,\\n    \\"max_retries\\": null,\\n    \\"minimum_duts\\": 4,\\n    \\"num\\": 2,\\n    \\"pool\\": \\"bvt\\",\\n    \\"priority\\": \\"PostBuild\\",\\n    \\"retry\\": false,\\n    \\"suite\\": \\"bvt-perbuild\\",\\n    \\"suite_min_duts\\": 1,\\n    \\"timeout\\": 13200,\\n    \\"warn_only\\": false\\n}"
                 ]
             }
-        ]
+        ],
+        "name": "parent_build"
     }
 }"""
 
     config = config_lib.CreateConfigFromString(src_str)
     config_str = config.SaveConfigToString()
 
-    # Verify that the dumped string matches the source string.
-    self.assertEqual(src_str, config_str)
+    # Verify that the dumped object matches the source object.
+    self.assertEqual(json.loads(src_str), json.loads(config_str))
 
     # Verify assorted stuff in the loaded config to make sure it matches
     # expectations.

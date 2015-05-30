@@ -771,3 +771,36 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
     for config in self.all_configs.values():
       if config.binhost_test:
         self.assertEqual(config.boards, [])
+
+
+class TemplateTest(GenerateChromeosConfigTestBase):
+  """Tests for templates."""
+
+  def testTemplatesUsed(self):
+    """Test that all templates are used."""
+    templates_used = set(cfg['_template'] for cfg in self.all_configs.values())
+    templates = set([None] + self.all_configs.GetTemplates().keys())
+    self.assertEqual(templates, templates_used)
+
+  def testConfigNamesMatchTemplate(self):
+    """Test that all configs have names that match their templates."""
+    for name, config in self.all_configs.iteritems():
+      template = config._template
+      if template:
+        child_configs = config.child_configs
+        if not child_configs:
+          msg = '%s should end with %s to match its template'
+          self.assertTrue(name.endswith(template), msg % (name, template))
+        else:
+          msg = 'Child config of %s has name that does not match its template'
+          self.assertTrue(child_configs[0].name.endswith(template),
+                          msg % name)
+
+      for other in self.all_configs.GetTemplates():
+        if name.endswith(other) and other != template:
+          if template:
+            msg = '%s has more specific template: %s' % (name, other)
+            self.assertGreater(len(template), len(other), msg)
+          else:
+            msg = '%s should have %s as template' % (name, other)
+            self.assertFalse(name, msg)

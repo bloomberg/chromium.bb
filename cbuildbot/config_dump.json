@@ -1,5 +1,6 @@
 {
     "_default": {
+        "_template": null,
         "active_waterfall": null,
         "afdo_generate": false,
         "afdo_generate_min": false,
@@ -158,7 +159,7 @@
         "chroot_replace": true,
         "description": "Build with Address Sanitizer (Clang)",
         "disk_layout": "2gb-rootfs",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ChromiumOS-SDK",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "name": "amd64-generic-asan",
         "profile": "asan",
         "trybot_list": true,
@@ -171,14 +172,24 @@
         "boards": [
             "amd64-generic"
         ],
-        "build_type": "binary",
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
         "chroot_replace": true,
         "description": "Paladin build with Address Sanitizer (Clang)",
         "disk_layout": "2gb-rootfs",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ChromiumOS-SDK",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ASAN",
+        "image_test": true,
+        "images": [
+            "base",
+            "test"
+        ],
+        "manifest_version": true,
         "name": "amd64-generic-asan-paladin",
+        "prebuilts": "public",
         "profile": "asan",
-        "uprev": false,
+        "trybot_list": true,
+        "upload_standalone_images": false,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -389,14 +400,15 @@
             "smoke_suite"
         ]
     },
-    "amd64-generic-telem-chrome-pfq-informational": {
+    "amd64-generic-telem-chromium-pfq-informational": {
         "boards": [
             "amd64-generic"
         ],
         "build_type": "chrome",
         "chrome_rev": "tot",
+        "chroot_replace": true,
         "description": "Telemetry Builds",
-        "name": "amd64-generic-telem-chrome-pfq-informational",
+        "name": "amd64-generic-telem-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
         "vm_tests": [
@@ -422,26 +434,11 @@
         "build_type": "chrome",
         "chrome_rev": "tot",
         "chroot_replace": true,
-        "description": "Build with Address Sanitizer (Clang) on TOT",
+        "description": "Build TOT Chrome with Address Sanitizer (Clang)",
         "disk_layout": "2gb-rootfs",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ChromiumOS-SDK",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ASAN",
         "name": "amd64-generic-tot-asan-informational",
         "profile": "asan",
-        "uprev": false,
-        "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
-    },
-    "amd64-generic-tot-chrome-pfq-informational": {
-        "boards": [
-            "amd64-generic"
-        ],
-        "build_type": "chrome",
-        "chrome_rev": "tot",
-        "chroot_replace": true,
-        "description": "Informational Chromium Uprev & Build (public)",
-        "name": "amd64-generic-tot-chrome-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
         "vm_tests": [
@@ -14188,11 +14185,19 @@
         ],
         "build_type": "chrome",
         "chrome_rev": "tot",
+        "chromeos_official": true,
         "chroot_replace": true,
-        "description": "Informational Chromium Uprev & Build (public)",
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "name": "daisy-tot-chrome-pfq-informational",
+        "overlays": "both",
         "uprev": false,
         "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "daisy-tot-chromium-pfq-informational": {
@@ -46555,286 +46560,6 @@
             "cros_vm_test"
         ]
     },
-    "pre-cq-group": {
-        "archive": false,
-        "boards": [
-            "rambi"
-        ],
-        "build_packages_in_background": true,
-        "build_type": "binary",
-        "child_configs": [
-            {
-                "archive": false,
-                "boards": [
-                    "rambi"
-                ],
-                "build_packages_in_background": true,
-                "build_type": "binary",
-                "chrome_sdk_build_chrome": false,
-                "chroot_replace": true,
-                "cpe_export": false,
-                "debug_symbols": false,
-                "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
-                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-                "grouped": true,
-                "health_alert_recipients": [
-                    "chromeos-infra-eng@grotations.appspotmail.com"
-                ],
-                "health_threshold": 3,
-                "image_test": true,
-                "images": [
-                    "base",
-                    "test"
-                ],
-                "important": true,
-                "internal": true,
-                "manifest": "official.xml",
-                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-                "manifest_version": true,
-                "name": "rambi-pre-cq",
-                "overlays": "both",
-                "pre_cq": true,
-                "trybot_list": true,
-                "upload_standalone_images": false,
-                "useflags": [
-                    "chrome_internal"
-                ],
-                "vm_tests": [
-                    "smoke_suite"
-                ]
-            },
-            {
-                "archive": false,
-                "boards": [
-                    "daisy_spring"
-                ],
-                "build_packages_in_background": true,
-                "build_type": "binary",
-                "chrome_sdk_build_chrome": false,
-                "chroot_replace": true,
-                "compilecheck": true,
-                "cpe_export": false,
-                "debug_symbols": false,
-                "description": "Verifies compilation only",
-                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-                "grouped": true,
-                "health_alert_recipients": [
-                    "chromeos-infra-eng@grotations.appspotmail.com"
-                ],
-                "health_threshold": 3,
-                "image_test": true,
-                "images": [
-                    "base",
-                    "test"
-                ],
-                "important": true,
-                "internal": true,
-                "manifest": "official.xml",
-                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-                "manifest_version": true,
-                "name": "daisy_spring-compile-only-pre-cq",
-                "overlays": "both",
-                "pre_cq": true,
-                "trybot_list": true,
-                "unittests": false,
-                "upload_standalone_images": false,
-                "useflags": [
-                    "chrome_internal"
-                ],
-                "vm_tests": []
-            },
-            {
-                "archive": false,
-                "boards": [
-                    "storm"
-                ],
-                "build_type": "binary",
-                "chrome_sdk_build_chrome": false,
-                "chroot_replace": true,
-                "compilecheck": true,
-                "cpe_export": false,
-                "debug_symbols": false,
-                "description": "Verifies compilation and unit tests only",
-                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-                "grouped": true,
-                "health_alert_recipients": [
-                    "chromeos-infra-eng@grotations.appspotmail.com"
-                ],
-                "health_threshold": 3,
-                "image_test": true,
-                "images": [
-                    "base",
-                    "test"
-                ],
-                "important": true,
-                "internal": true,
-                "manifest": "official.xml",
-                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-                "manifest_version": true,
-                "name": "storm-pre-cq",
-                "overlays": "both",
-                "pre_cq": true,
-                "sync_chrome": false,
-                "trybot_list": true,
-                "upload_standalone_images": false,
-                "useflags": [
-                    "chrome_internal"
-                ],
-                "vm_tests": []
-            },
-            {
-                "archive": false,
-                "boards": [
-                    "samus"
-                ],
-                "build_packages_in_background": true,
-                "build_type": "binary",
-                "chrome_sdk_build_chrome": false,
-                "chroot_replace": true,
-                "compilecheck": true,
-                "cpe_export": false,
-                "debug_symbols": false,
-                "description": "Verifies compilation only",
-                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-                "grouped": true,
-                "health_alert_recipients": [
-                    "chromeos-infra-eng@grotations.appspotmail.com"
-                ],
-                "health_threshold": 3,
-                "image_test": true,
-                "images": [
-                    "base",
-                    "test"
-                ],
-                "important": true,
-                "internal": true,
-                "manifest": "official.xml",
-                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-                "manifest_version": true,
-                "name": "samus-compile-only-pre-cq",
-                "overlays": "both",
-                "pre_cq": true,
-                "trybot_list": true,
-                "unittests": false,
-                "upload_standalone_images": false,
-                "useflags": [
-                    "chrome_internal"
-                ],
-                "vm_tests": []
-            },
-            {
-                "archive": false,
-                "boards": [
-                    "lumpy"
-                ],
-                "build_packages_in_background": true,
-                "build_type": "binary",
-                "chrome_sdk_build_chrome": false,
-                "chroot_replace": true,
-                "compilecheck": true,
-                "cpe_export": false,
-                "debug_symbols": false,
-                "description": "Verifies compilation only",
-                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-                "grouped": true,
-                "health_alert_recipients": [
-                    "chromeos-infra-eng@grotations.appspotmail.com"
-                ],
-                "health_threshold": 3,
-                "image_test": true,
-                "images": [
-                    "base",
-                    "test"
-                ],
-                "important": true,
-                "internal": true,
-                "manifest": "official.xml",
-                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-                "manifest_version": true,
-                "name": "lumpy-compile-only-pre-cq",
-                "overlays": "both",
-                "pre_cq": true,
-                "trybot_list": true,
-                "unittests": false,
-                "upload_standalone_images": false,
-                "useflags": [
-                    "chrome_internal"
-                ],
-                "vm_tests": []
-            },
-            {
-                "archive": false,
-                "boards": [
-                    "rush_ryu"
-                ],
-                "build_packages_in_background": true,
-                "build_type": "binary",
-                "chrome_sdk_build_chrome": false,
-                "chroot_replace": true,
-                "compilecheck": true,
-                "cpe_export": false,
-                "debug_symbols": false,
-                "description": "Verifies compilation only",
-                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-                "grouped": true,
-                "health_alert_recipients": [
-                    "chromeos-infra-eng@grotations.appspotmail.com"
-                ],
-                "health_threshold": 3,
-                "image_test": true,
-                "images": [
-                    "base",
-                    "test"
-                ],
-                "important": true,
-                "internal": true,
-                "manifest": "official.xml",
-                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-                "manifest_version": true,
-                "name": "rush_ryu-compile-only-pre-cq",
-                "overlays": "both",
-                "pre_cq": true,
-                "trybot_list": true,
-                "unittests": false,
-                "upload_standalone_images": false,
-                "useflags": [
-                    "chrome_internal"
-                ],
-                "vm_tests": []
-            }
-        ],
-        "chrome_sdk_build_chrome": false,
-        "chroot_replace": true,
-        "cpe_export": false,
-        "debug_symbols": false,
-        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
-        "health_alert_recipients": [
-            "chromeos-infra-eng@grotations.appspotmail.com"
-        ],
-        "health_threshold": 3,
-        "image_test": true,
-        "images": [
-            "base",
-            "test"
-        ],
-        "important": true,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "manifest_version": true,
-        "name": "pre-cq-group",
-        "overlays": "both",
-        "pre_cq": true,
-        "trybot_list": true,
-        "upload_standalone_images": false,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
-    },
     "pre-cq-launcher": {
         "active_waterfall": "chromeos",
         "boards": [],
@@ -57059,13 +56784,13 @@
         "boards": [
             "storm"
         ],
+        "build_packages_in_background": true,
         "build_type": "binary",
         "chrome_sdk_build_chrome": false,
         "chroot_replace": true,
-        "compilecheck": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation and unit tests only",
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com"
@@ -74377,21 +74102,6 @@
             "smoke_suite"
         ]
     },
-    "x32-generic-tot-chrome-pfq-informational": {
-        "boards": [
-            "x32-generic"
-        ],
-        "build_type": "chrome",
-        "chrome_rev": "tot",
-        "chroot_replace": true,
-        "description": "Informational Chromium Uprev & Build (public)",
-        "name": "x32-generic-tot-chrome-pfq-informational",
-        "uprev": false,
-        "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
-    },
     "x32-generic-tot-chromium-pfq-informational": {
         "boards": [
             "x32-generic"
@@ -76869,7 +76579,7 @@
         "chroot_replace": true,
         "description": "Build with Address Sanitizer (Clang)",
         "disk_layout": "2gb-rootfs",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ChromiumOS-SDK",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "name": "x86-generic-asan",
         "profile": "asan",
         "trybot_list": true,
@@ -76888,7 +76598,7 @@
         "chroot_replace": true,
         "description": "Paladin build with Address Sanitizer (Clang)",
         "disk_layout": "2gb-rootfs",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ChromiumOS-SDK",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ASAN",
         "image_test": true,
         "images": [
             "base",
@@ -77111,14 +76821,15 @@
             "smoke_suite"
         ]
     },
-    "x86-generic-telem-chrome-pfq-informational": {
+    "x86-generic-telem-chromium-pfq-informational": {
         "boards": [
             "x86-generic"
         ],
         "build_type": "chrome",
         "chrome_rev": "tot",
+        "chroot_replace": true,
         "description": "Telemetry Builds",
-        "name": "x86-generic-telem-chrome-pfq-informational",
+        "name": "x86-generic-telem-chromium-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
         "vm_tests": [
@@ -77144,26 +76855,11 @@
         "build_type": "chrome",
         "chrome_rev": "tot",
         "chroot_replace": true,
-        "description": "Full build with Address Sanitizer (Clang) on TOT",
+        "description": "Build TOT Chrome with Address Sanitizer (Clang)",
         "disk_layout": "2gb-rootfs",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ChromiumOS-SDK",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ASAN",
         "name": "x86-generic-tot-asan-informational",
         "profile": "asan",
-        "uprev": false,
-        "use_lkgm": true,
-        "vm_tests": [
-            "smoke_suite"
-        ]
-    },
-    "x86-generic-tot-chrome-pfq-informational": {
-        "boards": [
-            "x86-generic"
-        ],
-        "build_type": "chrome",
-        "chrome_rev": "tot",
-        "chroot_replace": true,
-        "description": "Informational Chromium Uprev & Build (public)",
-        "name": "x86-generic-tot-chrome-pfq-informational",
         "uprev": false,
         "use_lkgm": true,
         "vm_tests": [
