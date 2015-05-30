@@ -1683,7 +1683,7 @@ void PrintPreviewHandler::FillPrinterDescription(
 #endif  // defined(ENABLE_SERVICE_DISCOVERY)
 
 void PrintPreviewHandler::EnsureExtensionPrinterHandlerSet() {
-  if (extension_printer_handler_)
+  if (extension_printer_handler_.get())
     return;
 
   extension_printer_handler_ =
