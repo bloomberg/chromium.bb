@@ -329,6 +329,20 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      'target_name': 'boringssl_refcount_test',
+      'type': 'executable',
+      'dependencies': [
+        'boringssl.gyp:boringssl',
+      ],
+      'sources': [
+        'src/crypto/refcount_test.c',
+        '<@(boringssl_test_support_sources)',
+      ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
       'target_name': 'boringssl_rsa_test',
       'type': 'executable',
       'dependencies': [
@@ -402,6 +416,7 @@
   'variables': {
     'boringssl_test_support_sources': [
       'src/crypto/test/file_test.cc',
+      'src/crypto/test/malloc.cc',
     ],
     'boringssl_test_targets': [
       'boringssl_aead_test',
@@ -429,6 +444,7 @@
       'boringssl_pkcs12_test',
       'boringssl_pkcs7_test',
       'boringssl_pqueue_test',
+      'boringssl_refcount_test',
       'boringssl_rsa_test',
       'boringssl_ssl_test',
       'boringssl_thread_test',
