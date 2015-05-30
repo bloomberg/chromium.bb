@@ -118,11 +118,10 @@ void AudioInputDevice::OnStreamCreated(
     int length,
     int total_segments) {
   DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK(base::SharedMemory::IsHandleValid(handle));
 #if defined(OS_WIN)
-  DCHECK(handle);
   DCHECK(socket_handle);
 #else
-  DCHECK_GE(handle.fd, 0);
   DCHECK_GE(socket_handle, 0);
 #endif
   DCHECK_GT(length, 0);
