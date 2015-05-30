@@ -59,8 +59,8 @@ namespace component_updater {
 
 namespace {
 
-// These values are used to send UMA information and are replicated in the
-// histograms.xml file, so the order MUST NOT CHANGE.
+// These two sets of values are used to send UMA information and are replicated
+// in the histograms.xml file, so the order MUST NOT CHANGE.
 enum SwReporterUmaValue {
   SW_REPORTER_EXPLICIT_REQUEST = 0,        // Deprecated.
   SW_REPORTER_STARTUP_RETRY = 1,           // Deprecated.
@@ -71,6 +71,12 @@ enum SwReporterUmaValue {
   SW_REPORTER_RESET_RETRIES = 6,  // Deprecated.
   SW_REPORTER_DOWNLOAD_START = 7,
   SW_REPORTER_MAX,
+};
+enum SRTCompleted {
+  SRT_COMPLETED_NOT_YET = 0,
+  SRT_COMPLETED_YES = 1,
+  SRT_COMPLETED_LATER = 2,
+  SRT_COMPLETED_MAX,
 };
 
 // The maximum number of times to retry a download on startup.
@@ -113,6 +119,11 @@ const int kDelayedPostRebootCleanupNeeded = 15;
 
 void ReportUmaStep(SwReporterUmaValue value) {
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Step", value, SW_REPORTER_MAX);
+}
+
+void SRTHasCompleted(SRTCompleted value) {
+  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.HasCompleted", value,
+                            SRT_COMPLETED_MAX);
 }
 
 void ReportVersionWithUma(const base::Version& version) {
@@ -404,58 +415,67 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
   base::win::RegKey cleaner_key(
       HKEY_CURRENT_USER, cleaner_key_name.c_str(), KEY_ALL_ACCESS);
   // Cleaner is assumed to have run if we have a start time.
-  if (cleaner_key.Valid() && cleaner_key.HasValue(kStartTimeValueName)) {
-    // Get version number.
-    if (cleaner_key.HasValue(kVersionValueName)) {
-      DWORD version;
-      cleaner_key.ReadValueDW(kVersionValueName, &version);
-      UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.Version", version);
-      cleaner_key.DeleteValue(kVersionValueName);
-    }
-    // Get start & end time. If we don't have an end time, we can assume the
-    // cleaner has not completed.
-    int64 start_time_value;
-    cleaner_key.ReadInt64(kStartTimeValueName, &start_time_value);
+  if (cleaner_key.Valid()) {
+    if (cleaner_key.HasValue(kStartTimeValueName)) {
+      // Get version number.
+      if (cleaner_key.HasValue(kVersionValueName)) {
+        DWORD version;
+        cleaner_key.ReadValueDW(kVersionValueName, &version);
+        UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.Version",
+                                    version);
+        cleaner_key.DeleteValue(kVersionValueName);
+      }
+      // Get start & end time. If we don't have an end time, we can assume the
+      // cleaner has not completed.
+      int64 start_time_value;
+      cleaner_key.ReadInt64(kStartTimeValueName, &start_time_value);
 
-    bool completed = cleaner_key.HasValue(kEndTimeValueName);
-    UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.Cleaner.HasCompleted", completed);
-    if (completed) {
-      int64 end_time_value;
-      cleaner_key.ReadInt64(kEndTimeValueName, &end_time_value);
-      cleaner_key.DeleteValue(kEndTimeValueName);
-      base::TimeDelta run_time(base::Time::FromInternalValue(end_time_value) -
-          base::Time::FromInternalValue(start_time_value));
-      UMA_HISTOGRAM_LONG_TIMES("SoftwareReporter.Cleaner.RunningTime",
-          run_time);
-    }
-    // Get exit code. Assume nothing was found if we can't read the exit code.
-    DWORD exit_code = kNothingFound;
-    if (cleaner_key.HasValue(kExitCodeValueName)) {
-      cleaner_key.ReadValueDW(kExitCodeValueName, &exit_code);
-      UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.ExitCode",
-          exit_code);
-      cleaner_key.DeleteValue(kExitCodeValueName);
-    }
-    cleaner_key.DeleteValue(kStartTimeValueName);
+      bool completed = cleaner_key.HasValue(kEndTimeValueName);
+      SRTHasCompleted(completed ? SRT_COMPLETED_YES : SRT_COMPLETED_NOT_YET);
+      if (completed) {
+        int64 end_time_value;
+        cleaner_key.ReadInt64(kEndTimeValueName, &end_time_value);
+        cleaner_key.DeleteValue(kEndTimeValueName);
+        base::TimeDelta run_time(
+            base::Time::FromInternalValue(end_time_value) -
+            base::Time::FromInternalValue(start_time_value));
+        UMA_HISTOGRAM_LONG_TIMES("SoftwareReporter.Cleaner.RunningTime",
+                                 run_time);
+      }
+      // Get exit code. Assume nothing was found if we can't read the exit code.
+      DWORD exit_code = kNothingFound;
+      if (cleaner_key.HasValue(kExitCodeValueName)) {
+        cleaner_key.ReadValueDW(kExitCodeValueName, &exit_code);
+        UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.ExitCode",
+                                    exit_code);
+        cleaner_key.DeleteValue(kExitCodeValueName);
+      }
+      cleaner_key.DeleteValue(kStartTimeValueName);
 
-    if (exit_code == kPostRebootCleanupNeeded ||
-        exit_code == kDelayedPostRebootCleanupNeeded) {
-      // Check if we are running after the user has rebooted.
-      base::TimeDelta elapsed(base::Time::Now() -
-                              base::Time::FromInternalValue(start_time_value));
-      DCHECK_GT(elapsed.InMilliseconds(), 0);
-      UMA_HISTOGRAM_BOOLEAN(
-          "SoftwareReporter.Cleaner.HasRebooted",
-          static_cast<uint64>(elapsed.InMilliseconds()) > ::GetTickCount());
-    }
+      if (exit_code == kPostRebootCleanupNeeded ||
+          exit_code == kDelayedPostRebootCleanupNeeded) {
+        // Check if we are running after the user has rebooted.
+        base::TimeDelta elapsed(
+            base::Time::Now() -
+            base::Time::FromInternalValue(start_time_value));
+        DCHECK_GT(elapsed.InMilliseconds(), 0);
+        UMA_HISTOGRAM_BOOLEAN(
+            "SoftwareReporter.Cleaner.HasRebooted",
+            static_cast<uint64>(elapsed.InMilliseconds()) > ::GetTickCount());
+      }
 
-    if (cleaner_key.HasValue(kUploadResultsValueName)) {
-      base::string16 upload_results;
-      cleaner_key.ReadValue(kUploadResultsValueName, &upload_results);
-      ReportUploadsWithUma(upload_results);
+      if (cleaner_key.HasValue(kUploadResultsValueName)) {
+        base::string16 upload_results;
+        cleaner_key.ReadValue(kUploadResultsValueName, &upload_results);
+        ReportUploadsWithUma(upload_results);
+      }
+    } else {
+      if (cleaner_key.HasValue(kEndTimeValueName)) {
+        SRTHasCompleted(SRT_COMPLETED_LATER);
+        cleaner_key.DeleteValue(kEndTimeValueName);
+      }
     }
   }
-
   ReportFoundUwS();
 
   // Install the component.

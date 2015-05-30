@@ -40503,11 +40503,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="SoftwareReporter.Cleaner.HasCompleted" enum="BooleanCompleted">
+<histogram name="SoftwareReporter.Cleaner.HasCompleted" enum="SRTCompleted">
   <owner>mad@chromium.org</owner>
   <summary>
-    Whether the software reporter cleaner tool has finished execution, otherwise
-    assume it has crashed.
+    The state of software reporter cleaner tool runs. A value of &quot;Not
+    Completed&quot; can mean either the tool crashed, or the tool was still
+    running when Chrome checked.
   </summary>
 </histogram>
 
@@ -64731,6 +64732,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="4" label="DEPRECATION_RAZED">Raze succeeded.</int>
   <int value="5" label="DEPRECATION_RAZE_FAILED">Raze failed.</int>
+</enum>
+
+<enum name="SRTCompleted" type="int">
+  <int value="0" label="Not Completed"/>
+  <int value="1" label="Completed"/>
+  <int value="2" label="Completed Later"/>
 </enum>
 
 <enum name="SRTPromptUsage" type="int">
