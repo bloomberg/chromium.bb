@@ -60,11 +60,25 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(JNIEnv* env,
   ScopedJavaLocalRef<jstring> j_class =
       ConvertUTF8ToJavaString(env, node->GetClassName());
   const gfx::Rect& location = node->GetLocation();
+  // The style attributes exists and valid if size attribute exists. Otherwise,
+  // they are not. Use a negative size information to indicate the existence
+  // of style information.
+  float size = -1.0;
+  int color = 0;
+  int bgcolor = 0;
+  int text_style = 0;
+  if (node->HasFloatAttribute(ui::AX_ATTR_FONT_SIZE)) {
+    color = node->GetIntAttribute(ui::AX_ATTR_COLOR);
+    bgcolor = node->GetIntAttribute(ui::AX_ATTR_BACKGROUND_COLOR);
+    size =  node->GetFloatAttribute(ui::AX_ATTR_FONT_SIZE);
+    text_style = node->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
+  }
+
   ScopedJavaLocalRef<jobject> j_node =
       Java_WebContentsImpl_createAccessibilitySnapshotNode(env,
           location.x(), location.y(), node->GetScrollX(),
           node->GetScrollY(), location.width(), location.height(),
-          j_text.obj(), j_class.obj());
+          j_text.obj(), color, bgcolor, size, text_style, j_class.obj());
 
   for(uint32 i = 0; i < node->PlatformChildCount(); i++) {
     BrowserAccessibilityAndroid* child =

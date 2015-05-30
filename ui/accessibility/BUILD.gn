@@ -5,6 +5,9 @@
 import("//build/config/ui.gni")
 import("//build/json_schema_api.gni")
 import("//testing/test.gni")
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
 
 component("accessibility") {
   sources = [
@@ -62,6 +65,22 @@ component("accessibility") {
       "//build/config/linux:atk_warnings",
       "//build/config/linux:gconf",
       "//build/config/linux:glib",
+    ]
+  }
+}
+
+if (is_android) {
+  android_library("ui_accessibility_java") {
+    deps = []
+    srcjar_deps = [ ":ax_enumerations_srcjar" ]
+  }
+
+  java_cpp_enum("ax_enumerations_srcjar") {
+    sources = [
+      "ax_enums.idl",
+    ]
+    outputs = [
+      "org/chromium/ui/accessibility/AXTextStyle.java",
     ]
   }
 }

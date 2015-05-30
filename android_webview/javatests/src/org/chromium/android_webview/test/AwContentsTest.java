@@ -544,30 +544,31 @@ public class AwContentsTest extends AwTestBase {
                 script));
     }
 
-    /**
-     * Verifies that AX tree is returned.
-     */
-    @Feature({"AndroidWebView"})
-    @SmallTest
-    public void testRequestAccessibilitySnapshot() throws Throwable {
+    private static class AccessibilityCallbackHelper extends CallbackHelper {
+
+        private AccessibilitySnapshotNode mRoot;
+
+        public void notifyCalled(AccessibilitySnapshotNode root) {
+            mRoot = root;
+            super.notifyCalled();
+        }
+
+        public AccessibilitySnapshotNode getValue() {
+            return mRoot;
+        }
+    }
+
+    private AccessibilitySnapshotNode receiveAccessibilitySnapshot(String data) throws Throwable {
         final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
         final CallbackHelper loadHelper = mContentsClient.getOnPageFinishedHelper();
-        loadDataSync(awContents, loadHelper, "<button>Click</button>", "text/html", false);
+        loadDataSync(awContents, loadHelper, data, "text/html", false);
 
-        final CallbackHelper callbackHelper = new CallbackHelper();
+        final AccessibilityCallbackHelper callbackHelper = new AccessibilityCallbackHelper();
         final AccessibilitySnapshotCallback callback = new AccessibilitySnapshotCallback() {
             @Override
             public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
-                assertEquals(1, root.children.size());
-                assertEquals("", root.text);
-                AccessibilitySnapshotNode child = root.children.get(0);
-                assertEquals(1, child.children.size());
-                assertEquals("", child.text);
-                AccessibilitySnapshotNode grandChild = child.children.get(0);
-                assertEquals(0, grandChild.children.size());
-                assertEquals("Click", grandChild.text);
-                callbackHelper.notifyCalled();
+                callbackHelper.notifyCalled(root);
             }
         };
 
@@ -578,5 +579,84 @@ public class AwContentsTest extends AwTestBase {
             }
         });
         callbackHelper.waitForCallback(callbackHelper.getCallCount());
+        return callbackHelper.getValue();
+    }
+
+    /**
+     * Verifies that AX tree is returned.
+     */
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testRequestAccessibilitySnapshot() throws Throwable {
+        final String data = "<button>Click</button>";
+        AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data);
+        assertEquals(1, root.children.size());
+        assertEquals("", root.text);
+        AccessibilitySnapshotNode child = root.children.get(0);
+        assertEquals(1, child.children.size());
+        assertEquals("", child.text);
+        AccessibilitySnapshotNode grandChild = child.children.get(0);
+        assertEquals(0, grandChild.children.size());
+        assertEquals("Click", grandChild.text);
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testRequestAccessibilitySnapshotColors() throws Throwable {
+        final String data = "<p style=\"color:#123456;background:#abcdef\">color</p>";
+        AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data);
+        assertEquals(1, root.children.size());
+        assertEquals("", root.text);
+        AccessibilitySnapshotNode child = root.children.get(0);
+        assertEquals("color", child.text);
+        assertTrue(child.hasStyle);
+        assertEquals("ff123456", Integer.toHexString(child.color));
+        assertEquals("ffabcdef", Integer.toHexString(child.bgcolor));
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testRequestAccessibilitySnapshotFontSize() throws Throwable {
+        final String data =
+                "<html><head><style> "
+                + "    body { font-size:11px; }"
+                + "    </style></head><body><p>foo</p></body></html>";
+        AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data);
+        assertEquals(1, root.children.size());
+        assertEquals("", root.text);
+        AccessibilitySnapshotNode child = root.children.get(0);
+        assertTrue(child.hasStyle);
+        assertEquals("foo", child.text);
+        assertEquals(11.0, child.textSize, 0.01);
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testRequestAccessibilitySnapshotStyles() throws Throwable {
+        final String data =
+                "<html><head><style> "
+                + "    body { font: italic bold 12px Courier; }"
+                + "    </style></head><body><p>foo</p></body></html>";
+        AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data);
+        assertEquals(1, root.children.size());
+        assertEquals("", root.text);
+        AccessibilitySnapshotNode child = root.children.get(0);
+        assertEquals("foo", child.text);
+        assertTrue(child.hasStyle);
+        assertTrue(child.bold);
+        assertTrue(child.italic);
+        assertFalse(child.lineThrough);
+        assertFalse(child.underline);
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testRequestAccessibilitySnapshotNoStyle() throws Throwable {
+        final String data = "<table><thead></thead></table>";
+        AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data);
+        assertEquals(1, root.children.size());
+        assertEquals("", root.text);
+        AccessibilitySnapshotNode grandChild = root.children.get(0).children.get(0);
+        assertFalse(grandChild.hasStyle);
     }
 }

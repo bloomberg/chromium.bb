@@ -14,6 +14,7 @@ import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.accessibility.AXTextStyle;
 
 /**
  * The WebContentsImpl Java wrapper to allow communicating with the native WebContentsImpl
@@ -234,9 +235,19 @@ import org.chromium.content_public.browser.WebContentsObserver;
     @CalledByNative
     private static AccessibilitySnapshotNode createAccessibilitySnapshotNode(int x,
             int y, int scrollX, int scrollY, int width, int height, String text,
-            String className) {
-        return new AccessibilitySnapshotNode(x, y, scrollX, scrollY, width, height, text,
-                className);
+            int color, int bgcolor, float size, int textStyle, String className) {
+
+        AccessibilitySnapshotNode node = new AccessibilitySnapshotNode(x, y, scrollX,
+                scrollY, width, height, text, className);
+        // if size is smaller than 0, then style information does not exist.
+        if (size >= 0.0) {
+            boolean bold = (textStyle & AXTextStyle.text_style_bold) > 0;
+            boolean italic = (textStyle & AXTextStyle.text_style_italic) > 0;
+            boolean underline = (textStyle & AXTextStyle.text_style_underline) > 0;
+            boolean lineThrough = (textStyle & AXTextStyle.text_style_line_through) > 0;
+            node.setStyle(color, bgcolor, size, bold, italic, underline, lineThrough);
+        }
+        return node;
     }
 
     @Override

@@ -18,8 +18,15 @@ import java.util.ArrayList;
 public class AccessibilitySnapshotNode {
 
     public int x, y, scrollX, scrollY, width, height;
+    public float textSize;
     public String text;
     public String className;
+    // True if the style information exists, false if not.
+    public boolean hasStyle;
+    // Style parameters, valid only if hasStyle is true.
+    public int color, bgcolor;
+    public boolean bold, italic, underline, lineThrough;
+
     public ArrayList<AccessibilitySnapshotNode> children =
             new ArrayList<AccessibilitySnapshotNode>();
 
@@ -33,6 +40,18 @@ public class AccessibilitySnapshotNode {
         this.height = height;
         this.text = text;
         this.className = className;
+    }
+
+    public void setStyle(int color, int bgcolor, float textSize, boolean bold, boolean italic,
+            boolean underline, boolean lineThrough) {
+        this.color = color;
+        this.bgcolor = bgcolor;
+        this.textSize = textSize;
+        this.bold = bold;
+        this.italic = italic;
+        this.underline = underline;
+        this.lineThrough = lineThrough;
+        hasStyle = true;
     }
 
     public void addChild(AccessibilitySnapshotNode node) {

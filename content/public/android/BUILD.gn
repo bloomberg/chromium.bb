@@ -41,6 +41,7 @@ android_library("content_java") {
     "//third_party/android_tools:android_support_v13_java",
     "//third_party/mojo/src/mojo/public/java:bindings",
     "//third_party/mojo/src/mojo/public/java:system",
+    "//ui/accessibility:ui_accessibility_java",
     "//ui/android:ui_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/WebKit/public:blink_headers_java",

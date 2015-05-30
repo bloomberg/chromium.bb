@@ -428,11 +428,13 @@
     text_direction_btt
   };
 
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.accessibility
   [cpp_enum_prefix_override="ax"] enum AXTextStyle {
-    text_style_bold,
-    text_style_italic,
-    text_style_underline,
-    text_style_line_through
+    text_style_bold  = 1,
+    text_style_italic = 2,
+    text_style_underline = 4,
+    text_style_line_through = 8
   };
 
   [cpp_enum_prefix_override="ax"] enum AXInvalidState {

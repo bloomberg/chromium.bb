@@ -84,6 +84,11 @@
             'platform/atk_util_auralinux.h',
           ],
         }],
+        ['OS=="android"', {
+          'dependencies': [
+            'ui_accessibility_java'
+          ],
+        }],
       ],
     },
     {
@@ -118,7 +123,7 @@
         'ax_text_utils_unittest.cc',
         'ax_tree_serializer_unittest.cc',
         'ax_tree_unittest.cc',
-	'platform/ax_platform_node_win_unittest.cc'
+        'platform/ax_platform_node_win_unittest.cc'
       ],
       'conditions': [
         ['OS=="win"', {
@@ -179,6 +184,30 @@
               ],
             }],
           ],
+        },
+      ],
+    }],
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'ui_accessibility_java',
+          'type': 'none',
+          'variables': {
+            'java_in_dir': '<(DEPTH)/build/android/empty',
+            'has_java_resources': 0,
+          },
+          'dependencies': [
+            'ax_enumerations_java',
+          ],
+          'includes': [ '../../build/java.gypi' ],
+        },
+        {
+          'target_name': 'ax_enumerations_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'ax_enums.idl',
+          },
+          'includes': [ '../../build/android/java_cpp_enum.gypi' ],
         },
       ],
     }],
