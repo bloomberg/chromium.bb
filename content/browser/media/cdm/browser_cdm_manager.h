@@ -25,6 +25,8 @@
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
 
+struct CdmHostMsg_CreateSessionAndGenerateRequest_Params;
+
 namespace media {
 class BrowserCdm;
 }
@@ -116,11 +118,13 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
                               uint32_t promise_id,
                               const std::vector<uint8_t>& certificate);
   void OnCreateSessionAndGenerateRequest(
+      const CdmHostMsg_CreateSessionAndGenerateRequest_Params& params);
+  void OnLoadSession(
       int render_frame_id,
       int cdm_id,
       uint32_t promise_id,
-      CdmHostMsg_CreateSession_InitDataType init_data_type,
-      const std::vector<uint8>& init_data);
+      media::MediaKeys::SessionType session_type,
+      const std::string& session_id);
   void OnUpdateSession(int render_frame_id,
                        int cdm_id,
                        uint32_t promise_id,
@@ -130,6 +134,10 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
                       int cdm_id,
                       uint32_t promise_id,
                       const std::string& session_id);
+  void OnRemoveSession(int render_frame_id,
+                       int cdm_id,
+                       uint32_t promise_id,
+                       const std::string& session_id);
   void OnDestroyCdm(int render_frame_id, int cdm_id);
 
   // Adds a new CDM identified by |cdm_id| for the given |key_system| and
@@ -167,10 +175,20 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   void CreateSessionAndGenerateRequestIfPermitted(
       int render_frame_id,
       int cdm_id,
+      media::MediaKeys::SessionType session_type,
       media::EmeInitDataType init_data_type,
       const std::vector<uint8>& init_data,
       scoped_ptr<media::NewSessionCdmPromise> promise,
       bool permission_was_allowed);
+
+  // Calls LoadSession() on the CDM if |permission_was_allowed| is true.
+  // Otherwise rejects |promise|.
+  void LoadSessionIfPermitted(int render_frame_id,
+                              int cdm_id,
+                              media::MediaKeys::SessionType session_type,
+                              const std::string& session_id,
+                              scoped_ptr<media::NewSessionCdmPromise> promise,
+                              bool permission_was_allowed);
 
   const int render_process_id_;
 

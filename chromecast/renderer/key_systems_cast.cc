@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "components/cdm/renderer/widevine_key_systems.h"
 #include "media/base/eme_constants.h"
@@ -31,8 +32,13 @@ void AddKeySystemWithCodecs(
       ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1;
   info.max_audio_robustness = ::media::EmeRobustness::EMPTY;
   info.max_video_robustness = ::media::EmeRobustness::EMPTY;
+#if defined(OS_ANDROID)
   info.persistent_license_support =
       ::media::EmeSessionTypeSupport::NOT_SUPPORTED;
+#else
+  info.persistent_license_support =
+      ::media::EmeSessionTypeSupport::SUPPORTED;
+#endif
   info.persistent_release_message_support =
       ::media::EmeSessionTypeSupport::NOT_SUPPORTED;
   info.persistent_state_support = ::media::EmeFeatureSupport::ALWAYS_ENABLED;

@@ -24,6 +24,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::CdmKeyInformation::KeyStatus,
                           media::CdmKeyInformation::KEY_STATUS_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::Exception,
                           media::MediaKeys::EXCEPTION_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::SessionType,
+                          media::MediaKeys::SESSION_TYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::MessageType,
                           media::MediaKeys::MESSAGE_TYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(CdmHostMsg_CreateSession_InitDataType,
@@ -41,6 +43,17 @@ IPC_STRUCT_TRAITS_BEGIN(media::CdmKeyInformation)
   IPC_STRUCT_TRAITS_MEMBER(system_code)
 IPC_STRUCT_TRAITS_END()
 
+// Parameter structure for CdmHostMsg_CreateSessionAndGenerateRequest.
+IPC_STRUCT_BEGIN(CdmHostMsg_CreateSessionAndGenerateRequest_Params)
+  IPC_STRUCT_MEMBER(int, render_frame_id)
+  IPC_STRUCT_MEMBER(int, cdm_id)
+  IPC_STRUCT_MEMBER(uint32_t, promise_id)
+  IPC_STRUCT_MEMBER(media::MediaKeys::SessionType, session_type)
+  IPC_STRUCT_MEMBER(CdmHostMsg_CreateSession_InitDataType, init_data_type)
+  IPC_STRUCT_MEMBER(std::vector<uint8_t>, init_data)
+IPC_STRUCT_END()
+
+
 // Messages from render to browser.
 
 IPC_MESSAGE_CONTROL4(CdmHostMsg_InitializeCdm,
@@ -55,12 +68,15 @@ IPC_MESSAGE_CONTROL4(CdmHostMsg_SetServerCertificate,
                      uint32_t /* promise_id */,
                      std::vector<uint8_t> /* certificate */)
 
-IPC_MESSAGE_CONTROL5(CdmHostMsg_CreateSessionAndGenerateRequest,
+IPC_MESSAGE_CONTROL1(CdmHostMsg_CreateSessionAndGenerateRequest,
+                     CdmHostMsg_CreateSessionAndGenerateRequest_Params)
+
+IPC_MESSAGE_CONTROL5(CdmHostMsg_LoadSession,
                      int /* render_frame_id */,
                      int /* cdm_id */,
                      uint32_t /* promise_id */,
-                     CdmHostMsg_CreateSession_InitDataType /* init_data_type */,
-                     std::vector<uint8_t> /* init_data */)
+                     media::MediaKeys::SessionType /* session_type */,
+                     std::string /* session_id */)
 
 IPC_MESSAGE_CONTROL5(CdmHostMsg_UpdateSession,
                      int /* render_frame_id */,
@@ -70,6 +86,12 @@ IPC_MESSAGE_CONTROL5(CdmHostMsg_UpdateSession,
                      std::vector<uint8_t> /* response */)
 
 IPC_MESSAGE_CONTROL4(CdmHostMsg_CloseSession,
+                     int /* render_frame_id */,
+                     int /* cdm_id */,
+                     uint32_t /* promise_id */,
+                     std::string /* session_id */)
+
+IPC_MESSAGE_CONTROL4(CdmHostMsg_RemoveSession,
                      int /* render_frame_id */,
                      int /* cdm_id */,
                      uint32_t /* promise_id */,

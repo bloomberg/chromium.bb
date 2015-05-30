@@ -54,16 +54,6 @@ void BrowserCdmCast::UnregisterPlayer(int registration_id) {
   player_tracker_impl_->UnregisterPlayer(registration_id);
 }
 
-void BrowserCdmCast::LoadSession(
-    ::media::MediaKeys::SessionType session_type,
-    const std::string& session_id,
-    scoped_ptr<::media::NewSessionCdmPromise> promise) {
-  NOTREACHED() << "LoadSession not supported";
-  legacy_session_error_cb_.Run(
-      session_id, ::media::MediaKeys::Exception::NOT_SUPPORTED_ERROR, 0,
-      std::string());
-}
-
 ::media::CdmContext* BrowserCdmCast::GetCdmContext() {
   NOTREACHED();
   return nullptr;

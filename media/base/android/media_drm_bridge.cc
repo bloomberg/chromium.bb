@@ -316,6 +316,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
   DVLOG(1) << __FUNCTION__;
 
   if (session_type != media::MediaKeys::TEMPORARY_SESSION) {
+    NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
     promise->reject(NOT_SUPPORTED_ERROR, 0,
                     "Only the temporary session type is supported.");
     return;
@@ -367,6 +368,7 @@ void MediaDrmBridge::LoadSession(
     SessionType session_type,
     const std::string& session_id,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
+  NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
   promise->reject(NOT_SUPPORTED_ERROR, 0, "LoadSession() is not supported.");
 }
 
@@ -402,6 +404,7 @@ void MediaDrmBridge::CloseSession(const std::string& session_id,
 void MediaDrmBridge::RemoveSession(
     const std::string& session_id,
     scoped_ptr<media::SimpleCdmPromise> promise) {
+  NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
   promise->reject(NOT_SUPPORTED_ERROR, 0, "RemoveSession() is not supported.");
 }
 

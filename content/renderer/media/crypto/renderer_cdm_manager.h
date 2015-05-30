@@ -46,8 +46,13 @@ class RendererCdmManager : public RenderFrameObserver {
   void CreateSessionAndGenerateRequest(
       int cdm_id,
       uint32_t promise_id,
+      media::MediaKeys::SessionType session_type,
       CdmHostMsg_CreateSession_InitDataType init_data_type,
       const std::vector<uint8>& init_data);
+  void LoadSession(int cdm_id,
+                   uint32_t promise_id,
+                   media::MediaKeys::SessionType session_type,
+                   const std::string& session_id);
   void UpdateSession(int cdm_id,
                      uint32_t promise_id,
                      const std::string& session_id,
@@ -55,6 +60,9 @@ class RendererCdmManager : public RenderFrameObserver {
   void CloseSession(int cdm_id,
                     uint32_t promise_id,
                     const std::string& session_id);
+  void RemoveSession(int cdm_id,
+                     uint32_t promise_id,
+                     const std::string& session_id);
   void DestroyCdm(int cdm_id);
 
   // Registers a ProxyMediaKeys object. Returns allocated CDM ID.

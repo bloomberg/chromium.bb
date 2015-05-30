@@ -74,11 +74,28 @@ void RendererCdmManager::SetServerCertificate(
 void RendererCdmManager::CreateSessionAndGenerateRequest(
     int cdm_id,
     uint32_t promise_id,
+    media::MediaKeys::SessionType session_type,
     CdmHostMsg_CreateSession_InitDataType init_data_type,
     const std::vector<uint8_t>& init_data) {
   DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
-  Send(new CdmHostMsg_CreateSessionAndGenerateRequest(
-      routing_id(), cdm_id, promise_id, init_data_type, init_data));
+  CdmHostMsg_CreateSessionAndGenerateRequest_Params params;
+  params.render_frame_id = routing_id();
+  params.cdm_id = cdm_id;
+  params.promise_id = promise_id;
+  params.session_type = session_type;
+  params.init_data_type = init_data_type;
+  params.init_data = init_data;
+  Send(new CdmHostMsg_CreateSessionAndGenerateRequest(params));
+}
+
+void RendererCdmManager::LoadSession(
+    int cdm_id,
+    uint32_t promise_id,
+    media::MediaKeys::SessionType session_type,
+    const std::string& session_id) {
+  DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
+  Send(new CdmHostMsg_LoadSession(routing_id(), cdm_id, promise_id,
+                                  session_type, session_id));
 }
 
 void RendererCdmManager::UpdateSession(int cdm_id,
@@ -96,6 +113,14 @@ void RendererCdmManager::CloseSession(int cdm_id,
   DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
   Send(new CdmHostMsg_CloseSession(routing_id(), cdm_id, promise_id,
                                    session_id));
+}
+
+void RendererCdmManager::RemoveSession(int cdm_id,
+                                      uint32_t promise_id,
+                                      const std::string& session_id) {
+  DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
+  Send(new CdmHostMsg_RemoveSession(routing_id(), cdm_id, promise_id,
+                                    session_id));
 }
 
 void RendererCdmManager::DestroyCdm(int cdm_id) {
