@@ -116,6 +116,20 @@ class BASE_EXPORT SharedMemory {
   // Returns the maximum number of handles that can be open at once per process.
   static size_t GetHandleLimit();
 
+  // The copy shares the same underlying OS primitives. The new
+  // SharedMemoryHandle will not clean up the OS primitives when destroyed. The
+  // original must outlive the copy.
+  static SharedMemoryHandle ShallowCopyHandle(const SharedMemoryHandle& handle);
+
+#if defined(OS_POSIX)
+  // The underlying OS primitives are duplicated.
+  // |clean_up_resources_on_destruction| indicates whether the underlying OS
+  // primitives are cleaned up on destruction.
+  static SharedMemoryHandle DeepCopyHandle(
+      const SharedMemoryHandle& handle,
+      bool clean_up_resources_on_destruction);
+#endif
+
   // Creates a shared memory object as described by the options struct.
   // Returns true on success and false on failure.
   bool Create(const SharedMemoryCreateOptions& options);

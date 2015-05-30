@@ -100,6 +100,11 @@ size_t SharedMemory::GetHandleLimit() {
   return static_cast<size_t>(1 << 23);
 }
 
+SharedMemoryHandle SharedMemory::ShallowCopyHandle(
+    const SharedMemoryHandle& handle) {
+  return handle;
+}
+
 bool SharedMemory::CreateAndMapAnonymous(size_t size) {
   return CreateAnonymous(size) && Map(size);
 }
