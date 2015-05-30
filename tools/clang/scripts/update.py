@@ -7,12 +7,15 @@
 update.sh. This script should replace update.sh on all platforms eventually."""
 
 import argparse
+import contextlib
+import cStringIO
 import os
 import re
 import shutil
 import subprocess
 import stat
 import sys
+import tarfile
 import time
 import urllib2
 import zipfile
@@ -21,15 +24,20 @@ import zipfile
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
 # Note: this revision is only used for Windows. Other platforms use update.sh.
-LLVM_WIN_REVISION = 'HEAD'
+# TODO(thakis): Use the same revision on Windows and non-Windows.
+# TODO(thakis): Remove update.sh, use update.py everywhere.
+LLVM_WIN_REVISION = '238562'
 
-# ASan on Windows is useful enough to use it even while the clang/win is still
-# in bringup. Use a pinned revision to make it slightly more stable.
-use_head_revision = ('LLVM_FORCE_HEAD_REVISION' in os.environ or
-  not re.search(r'\b(asan)=1', os.environ.get('GYP_DEFINES', '')))
+# TODO(thakis): ASan should just use LLVM_WIN_REVISION once that's pinned and
+# crbug.com/487929 is figured out.
+LLVM_WIN_ASAN_REVISION = '235968'
 
-if not use_head_revision:
-  LLVM_WIN_REVISION = '235968'
+use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
+if use_head_revision:
+  LLVM_WIN_REVISION = 'HEAD'
+elif re.search(r'\b(asan)=1', os.environ.get('GYP_DEFINES', '')):
+  LLVM_WIN_REVISION = LLVM_WIN_ASAN_REVISION
+
 
 # Path constants. (All of these should be absolute paths.)
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -67,19 +75,18 @@ def DownloadUrl(url, output_file):
   sys.stdout.flush()
   response = urllib2.urlopen(url)
   total_size = int(response.info().getheader('Content-Length').strip())
-  with open(output_file, 'wb') as f:
-    bytes_done = 0
-    dots_printed = 0
-    while True:
-      chunk = response.read(CHUNK_SIZE)
-      if not chunk:
-        break
-      f.write(chunk)
-      bytes_done += len(chunk)
-      num_dots = TOTAL_DOTS * bytes_done / total_size
-      sys.stdout.write('.' * (num_dots - dots_printed))
-      sys.stdout.flush()
-      dots_printed = num_dots
+  bytes_done = 0
+  dots_printed = 0
+  while True:
+    chunk = response.read(CHUNK_SIZE)
+    if not chunk:
+      break
+    output_file.write(chunk)
+    bytes_done += len(chunk)
+    num_dots = TOTAL_DOTS * bytes_done / total_size
+    sys.stdout.write('.' * (num_dots - dots_printed))
+    sys.stdout.flush()
+    dots_printed = num_dots
   print ' Done.'
 
 
@@ -201,10 +208,11 @@ def AddCMakeToPath():
   if not os.path.exists(cmake_dir):
     if not os.path.exists(LLVM_BUILD_TOOLS_DIR):
       os.makedirs(LLVM_BUILD_TOOLS_DIR)
-    DownloadUrl(CDS_URL + '/tools/cmake-3.2.2-win32-x86.zip',
-                os.path.join(LLVM_BUILD_TOOLS_DIR, 'cmake.zip'))
-    fh = open(os.path.join(LLVM_BUILD_TOOLS_DIR, 'cmake.zip'), 'rb')
-    zipfile.ZipFile(fh).extractall(path=LLVM_BUILD_TOOLS_DIR)
+    # The cmake archive is smaller than 20 MB, small enough to keep in memory:
+    with contextlib.closing(cStringIO.StringIO()) as f:
+      DownloadUrl(CDS_URL + '/tools/cmake-3.2.2-win32-x86.zip', f)
+      f.seek(0)
+      zipfile.ZipFile(f).extractall(path=LLVM_BUILD_TOOLS_DIR)
   os.environ['PATH'] = cmake_dir + os.pathsep + os.environ.get('PATH', '')
 
 vs_version = None
@@ -233,9 +241,33 @@ def UpdateClang(args):
     print 'Already up to date.'
     return 0
 
-  AddCMakeToPath()
   # Reset the stamp file in case the build is unsuccessful.
   WriteStampFile('')
+
+  if not args.force_local_build:
+    # TODO(thakis): To make this work on posix, add a -1 suffix and use some
+    # PACKAGE_VERSION-like thing here instead. Also, don't hardcode Win.
+    cds_file = "clang-%s.tgz" %  LLVM_WIN_REVISION
+    cds_full_url = CDS_URL + '/Win/' + cds_file
+
+    # Check if there's a prebuilt binary and if so just fetch that. That's
+    # faster, and goma relies on having matching binary hashes on client and
+    # server too.
+    print 'Trying to download prebuilt clang'
+
+    # clang packages are smaller than 50 MB, small enough to keep in memory.
+    with contextlib.closing(cStringIO.StringIO()) as f:
+      try:
+        DownloadUrl(cds_full_url, f)
+        f.seek(0)
+        tarfile.open(mode='r:gz', fileobj=f).extractall(path=LLVM_BUILD_DIR)
+        print 'clang %s unpacked' % LLVM_WIN_REVISION
+        WriteStampFile(LLVM_WIN_REVISION)
+        return 0
+      except urllib2.HTTPError:
+        print 'Did not find prebuilt clang %s, building locally' % cds_file
+
+  AddCMakeToPath()
 
   DeleteChromeToolsShim();
   Checkout('LLVM', LLVM_REPO_URL + '/llvm/trunk', LLVM_DIR)
@@ -397,6 +429,8 @@ def main():
                       help='first build clang with CC, then with itself.')
   parser.add_argument('--if-needed', action='store_true',
                       help="run only if the script thinks clang is needed")
+  parser.add_argument('--force-local-build', action='store_true',
+                      help="don't try to download prebuild binaries")
   parser.add_argument('--print-revision', action='store_true',
                       help='print current clang revision and exit.')
   parser.add_argument('--run-tests', action='store_true',
@@ -406,8 +440,6 @@ def main():
                       default=['plugins', 'blink_gc_plugin'])
   # For now, these flags are only used for the non-Windows flow, but argparser
   # gets mad if it sees a flag it doesn't recognize.
-  parser.add_argument('--force-local-build', action='store_true',
-                      help="don't try to download prebuild binaries")
   parser.add_argument('--no-stdin-hack', action='store_true')
 
   args = parser.parse_args()
