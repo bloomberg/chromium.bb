@@ -68,8 +68,6 @@ public:
     BLINK_EXPORT static const double textSizeMultiplierRatio;
     BLINK_EXPORT static const double minTextSizeMultiplier;
     BLINK_EXPORT static const double maxTextSizeMultiplier;
-    BLINK_EXPORT static const float minPageScaleFactor;
-    BLINK_EXPORT static const float maxPageScaleFactor;
 
     enum StyleInjectionTarget {
         InjectStyleInAllFrames,
