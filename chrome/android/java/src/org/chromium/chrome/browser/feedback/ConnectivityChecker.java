@@ -23,12 +23,15 @@ import java.net.URL;
  */
 @JNINamespace("chrome::android")
 public final class ConnectivityChecker {
-    private static final String TAG = "ConnectivityChecker";
+    private static final String TAG = "Feedback";
 
     private static final String DEFAULT_HTTP_NO_CONTENT_URL =
             "http://clients4.google.com/generate_204";
     private static final String DEFAULT_HTTPS_NO_CONTENT_URL =
             "https://clients4.google.com/generate_204";
+
+    private static String sHttpNoContentUrl = DEFAULT_HTTP_NO_CONTENT_URL;
+    private static String sHttpsNoContentUrl = DEFAULT_HTTPS_NO_CONTENT_URL;
 
     /**
      * A callback for whether the device is currently connected to the Internet.
@@ -38,6 +41,13 @@ public final class ConnectivityChecker {
          * Called when the result of the connectivity check is ready.
          */
         void onResult(boolean connected);
+    }
+
+    @VisibleForTesting
+    static void overrideUrlsForTest(String httpUrl, String httpsUrl) {
+        ThreadUtils.assertOnUiThread();
+        sHttpNoContentUrl = httpUrl;
+        sHttpsNoContentUrl = httpsUrl;
     }
 
     /**
@@ -57,8 +67,7 @@ public final class ConnectivityChecker {
     public static void checkConnectivitySystemNetworkStack(
             boolean useHttps, int timeoutMs, final ConnectivityCheckerCallback callback) {
         try {
-            URL url = useHttps ? new URL(DEFAULT_HTTPS_NO_CONTENT_URL)
-                               : new URL(DEFAULT_HTTP_NO_CONTENT_URL);
+            URL url = useHttps ? new URL(sHttpsNoContentUrl) : new URL(sHttpNoContentUrl);
             checkConnectivitySystemNetworkStack(url, timeoutMs, callback);
         } catch (MalformedURLException e) {
             Log.w(TAG, "Failed to predefined URL: " + e);
@@ -117,8 +126,8 @@ public final class ConnectivityChecker {
      * @param callback the callback which will get the result.
      */
     public static void checkConnectivityChromeNetworkStack(Profile profile, boolean useHttps,
-            long timeoutMs, ConnectivityCheckerCallback callback) {
-        String url = useHttps ? DEFAULT_HTTPS_NO_CONTENT_URL : DEFAULT_HTTP_NO_CONTENT_URL;
+            int timeoutMs, ConnectivityCheckerCallback callback) {
+        String url = useHttps ? sHttpsNoContentUrl : sHttpNoContentUrl;
         checkConnectivityChromeNetworkStack(profile, url, timeoutMs, callback);
     }
 
