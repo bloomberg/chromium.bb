@@ -645,8 +645,10 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     context->getIntegerv(GL_MAX_VIEWPORT_DIMS, m_maxViewportDims);
 
     RefPtr<DrawingBuffer> buffer = createDrawingBuffer(context);
-    if (!buffer)
+    if (!buffer) {
+        m_contextLostMode = SyntheticLostContext;
         return;
+    }
 
 #if ENABLE(OILPAN)
     m_sharedWebGraphicsContext3D = WebGLSharedWebGraphicsContext3D::create(buffer.release());
