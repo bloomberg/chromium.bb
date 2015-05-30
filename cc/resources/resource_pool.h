@@ -5,7 +5,7 @@
 #ifndef CC_RESOURCES_RESOURCE_POOL_H_
 #define CC_RESOURCES_RESOURCE_POOL_H_
 
-#include <list>
+#include <deque>
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
@@ -74,7 +74,7 @@ class CC_EXPORT ResourcePool {
     ScopedResource* resource;
     uint64_t content_id;
   };
-  typedef std::list<PoolResource> ResourceList;
+  typedef std::deque<PoolResource> ResourceList;
   ResourceList unused_resources_;
   ResourceList busy_resources_;
 
