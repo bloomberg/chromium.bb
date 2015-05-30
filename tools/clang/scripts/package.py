@@ -216,7 +216,7 @@ def main():
     golddir = 'llvmgold-' + stamp
     shutil.rmtree(pdir, ignore_errors=True)
     os.makedirs(os.path.join(golddir, 'lib'))
-    shutil.copy(os.path.join(LLVM_LIB_DIR, 'LLVMgold.so'),
+    shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'lib', 'LLVMgold.so'),
                 os.path.join(golddir, 'lib'))
     with tarfile.open(golddir + '.tgz', 'w:gz') as tar:
       tar.add(os.path.join(golddir, 'lib'), arcname='lib',
