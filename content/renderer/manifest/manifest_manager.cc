@@ -126,10 +126,12 @@ void ManifestManager::FetchManifest() {
   }
 
   fetcher_.reset(new ManifestFetcher(url));
-  fetcher_->Start(render_frame()->GetWebFrame(),
-                  base::Bind(&ManifestManager::OnManifestFetchComplete,
-                             base::Unretained(this),
-                             render_frame()->GetWebFrame()->document().url()));
+  fetcher_->Start(
+      render_frame()->GetWebFrame(),
+      render_frame()->GetWebFrame()->document().manifestUseCredentials(),
+      base::Bind(&ManifestManager::OnManifestFetchComplete,
+                 base::Unretained(this),
+                 render_frame()->GetWebFrame()->document().url()));
 }
 
 void ManifestManager::OnManifestFetchComplete(

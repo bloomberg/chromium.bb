@@ -4,6 +4,8 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/manifest.h"
@@ -13,6 +15,9 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+
 
 namespace content {
 
@@ -413,6 +418,121 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, AnchorNavigation) {
   GetManifestAndWait();
   EXPECT_FALSE(manifest().IsEmpty());
   EXPECT_EQ(0u, console_error_count());
+}
+
+namespace {
+
+scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForCookies(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url == "/index.html") {
+    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse());
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content_type("text/html");
+    http_response->set_content(
+        "<html><head>"
+        "<link rel=manifest crossorigin='use-credentials' href=/manifest.json>"
+        "</head></html>");
+    return http_response.Pass();
+  }
+
+  const auto& iter = request.headers.find("Cookie");
+  if (iter == request.headers.end() || request.relative_url != "/manifest.json")
+    return scoped_ptr<net::test_server::HttpResponse>();
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse());
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content_type("application/json");
+  http_response->set_content(
+      base::StringPrintf("{\"name\": \"%s\"}", iter->second.c_str()));
+
+  return http_response.Pass();
+}
+
+}  // anonymous namespace
+
+// This tests that when fetching a Manifest with 'use-credentials' set, the
+// cookies associated with it are passed along the request.
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, UseCredentialsSendCookies) {
+  scoped_ptr<net::test_server::EmbeddedTestServer> custom_embedded_test_server(
+      new net::test_server::EmbeddedTestServer());
+  custom_embedded_test_server->RegisterRequestHandler(
+      base::Bind(&CustomHandleRequestForCookies));
+
+  ASSERT_TRUE(custom_embedded_test_server->InitializeAndWaitUntilReady());
+
+  ASSERT_TRUE(SetCookie(shell()->web_contents()->GetBrowserContext(),
+                        custom_embedded_test_server->base_url(),
+                        "foobar"));
+
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+  shell()->LoadURL(custom_embedded_test_server->GetURL("/index.html"));
+  navigation_observer.Wait();
+
+  GetManifestAndWait();
+  EXPECT_FALSE(manifest().IsEmpty());
+  EXPECT_EQ(0u, console_error_count());
+
+  // The custom embedded test server will fill the name field with the cookie
+  // content.
+  EXPECT_TRUE(EqualsASCII(manifest().name.string(), "foobar"));
+}
+
+namespace {
+
+scoped_ptr<net::test_server::HttpResponse> CustomHandleRequestForNoCookies(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url == "/index.html") {
+    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse());
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content_type("text/html");
+    http_response->set_content(
+        "<html><head><link rel=manifest href=/manifest.json></head></html>");
+    return http_response.Pass();
+  }
+
+  const auto& iter = request.headers.find("Cookie");
+  if (iter != request.headers.end() || request.relative_url != "/manifest.json")
+    return scoped_ptr<net::test_server::HttpResponse>();
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse());
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content_type("application/json");
+  http_response->set_content("{\"name\": \"no cookies\"}");
+
+  return http_response.Pass();
+}
+
+}  // anonymous namespace
+
+// This tests that when fetching a Manifest without 'use-credentials' set, the
+// cookies associated with it are not passed along the request.
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, NoUseCredentialsNoCookies) {
+  scoped_ptr<net::test_server::EmbeddedTestServer> custom_embedded_test_server(
+      new net::test_server::EmbeddedTestServer());
+  custom_embedded_test_server->RegisterRequestHandler(
+      base::Bind(&CustomHandleRequestForNoCookies));
+
+  ASSERT_TRUE(custom_embedded_test_server->InitializeAndWaitUntilReady());
+
+  ASSERT_TRUE(SetCookie(shell()->web_contents()->GetBrowserContext(),
+                        custom_embedded_test_server->base_url(),
+                        "foobar"));
+
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+  shell()->LoadURL(custom_embedded_test_server->GetURL("/index.html"));
+  navigation_observer.Wait();
+
+  GetManifestAndWait();
+  EXPECT_FALSE(manifest().IsEmpty());
+  EXPECT_EQ(0u, console_error_count());
+
+  // The custom embedded test server will fill set the name to 'no cookies' if
+  // it did not find cookies.
+  EXPECT_TRUE(EqualsASCII(manifest().name.string(), "no cookies"));
 }
 
 } // namespace content
