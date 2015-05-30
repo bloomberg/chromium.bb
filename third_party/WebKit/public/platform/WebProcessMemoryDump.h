@@ -29,11 +29,18 @@ public:
         return nullptr;
     }
 
+    // Gets a previously created MemoryAllocatorDump given its name.
+    virtual WebMemoryAllocatorDump* getMemoryAllocatorDump(const WebString& absoluteName) const
+    {
+        return nullptr;
+    }
+
     // Removes all the WebMemoryAllocatorDump(s) contained in this instance.
     // This WebProcessMemoryDump can be safely reused as if it was new once this
     // method returns.
     virtual void clear()
     {
+        BLINK_ASSERT_NOT_REACHED();
     }
 
     // Merges all WebMemoryAllocatorDump(s) contained in |other| inside this
@@ -42,6 +49,7 @@ public:
     // and can be reused as if it was new.
     virtual void takeAllDumpsFrom(WebProcessMemoryDump* other)
     {
+        BLINK_ASSERT_NOT_REACHED();
     }
 };
 
