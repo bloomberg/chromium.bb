@@ -177,7 +177,7 @@ def main():
                          '@executable_path/' + os.path.basename(dest), dest])
         subprocess.call(['strip', '-x', dest])
       elif (sys.platform.startswith('linux') and
-            sys.path.splitext(f)[1] in ['.so', '.a']):
+            os.path.splitext(f)[1] in ['.so', '.a']):
         subprocess.call(['strip', '-g', dest])
 
   # Set up symlinks.
