@@ -405,8 +405,14 @@ void TextureDefinition::UpdateTextureInternal(Texture* texture) const {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter_);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s_);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t_);
-  if (image_buffer_.get())
-    image_buffer_->BindToTexture(target_);
+
+  if (image_buffer_.get()) {
+    gfx::GLImage* existing_image = texture->GetLevelImage(target_, 0);
+    // Don't need to re-bind if already bound before.
+    if (!existing_image || !image_buffer_->IsClient(existing_image)) {
+      image_buffer_->BindToTexture(target_);
+    }
+  }
 
   if (defined_) {
     texture->face_infos_.resize(1);
