@@ -338,6 +338,27 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     EXPECT_TRUE(scored_c.can_inline);
     EXPECT_FALSE(scored_c.match_in_scheme);
   }
+
+  {
+    history::URLRow row(
+        MakeURLRow("http://www.xn--1lq90ic7f1rc.cn/xnblah", "abcd", 3, 30, 1));
+    PopulateWordStarts(row, &word_starts);
+    ScoredHistoryMatch scored_a(row, visits, "zh-CN", ASCIIToUTF16("x"),
+                                Make1Term("x"), one_word_no_offset, word_starts,
+                                false, now);
+    EXPECT_FALSE(scored_a.can_inline);
+    EXPECT_FALSE(scored_a.match_in_scheme);
+    ScoredHistoryMatch scored_b(row, visits, "zh-CN", ASCIIToUTF16("xn"),
+                                Make1Term("xn"), one_word_no_offset,
+                                word_starts, false, now);
+    EXPECT_FALSE(scored_b.can_inline);
+    EXPECT_FALSE(scored_b.match_in_scheme);
+    ScoredHistoryMatch scored_c(row, visits, "zh-CN", ASCIIToUTF16("w"),
+                                Make1Term("w"), one_word_no_offset,
+                                word_starts, false, now);
+    EXPECT_TRUE(scored_c.can_inline);
+    EXPECT_FALSE(scored_c.match_in_scheme);
+  }
 }
 
 TEST_F(ScoredHistoryMatchTest, GetTopicalityScoreTrailingSlash) {
