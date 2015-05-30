@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HTML_VIEWER_WEB_MEDIA_PLAYER_FACTORY_H_
-#define COMPONENTS_HTML_VIEWER_WEB_MEDIA_PLAYER_FACTORY_H_
+#ifndef COMPONENTS_HTML_VIEWER_MEDIA_FACTORY_H_
+#define COMPONENTS_HTML_VIEWER_MEDIA_FACTORY_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -18,6 +18,7 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 class WebContentDecryptionModule;
+class WebEncryptedMediaClient;
 class WebMediaPlayer;
 class WebLocalFrame;
 class WebURL;
@@ -29,6 +30,7 @@ class AudioManager;
 class AudioRendererSink;
 class CdmFactory;
 class MediaPermission;
+class WebEncryptedMediaClientImpl;
 }
 
 namespace mojo {
@@ -40,37 +42,47 @@ namespace html_viewer {
 // Helper class used to create blink::WebMediaPlayer objects.
 // This class stores the "global state" shared across all WebMediaPlayer
 // instances.
-class WebMediaPlayerFactory {
+class MediaFactory {
  public:
-  explicit WebMediaPlayerFactory(const scoped_refptr<
-      base::SingleThreadTaskRunner>& compositor_task_runner,
-      bool enable_mojo_media_renderer);
-  ~WebMediaPlayerFactory();
+  explicit MediaFactory(const scoped_refptr<base::SingleThreadTaskRunner>&
+                            compositor_task_runner);
+  ~MediaFactory();
 
   blink::WebMediaPlayer* CreateMediaPlayer(
       blink::WebLocalFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
-      media::MediaPermission* media_permission,
-      media::CdmFactory* cdm_factory,
       blink::WebContentDecryptionModule* initial_cdm,
       mojo::Shell* shell);
 
+  blink::WebEncryptedMediaClient* GetEncryptedMediaClient();
+
  private:
+  media::MediaPermission* GetMediaPermission();
+  media::CdmFactory* GetCdmFactory();
+
+#if !defined(OS_ANDROID)
   const media::AudioHardwareConfig& GetAudioHardwareConfig();
   scoped_refptr<media::AudioRendererSink> CreateAudioRendererSink();
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaThreadTaskRunner();
 
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  const bool enable_mojo_media_renderer_;
   base::Thread media_thread_;
   media::FakeAudioLogFactory fake_audio_log_factory_;
   scoped_ptr<media::AudioManager> audio_manager_;
   media::AudioHardwareConfig audio_hardware_config_;
+#endif
 
-  DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerFactory);
+  const bool enable_mojo_media_renderer_;
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+
+  // Lazily initialized objects.
+  scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
+  scoped_ptr<media::MediaPermission> media_permission_;
+  scoped_ptr<media::CdmFactory> cdm_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaFactory);
 };
 
 }  // namespace html_viewer
 
-#endif  // COMPONENTS_HTML_VIEWER_WEB_MEDIA_PLAYER_FACTORY_H_
+#endif  // COMPONENTS_HTML_VIEWER_MEDIA_FACTORY_H_

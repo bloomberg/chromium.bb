@@ -9,7 +9,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "components/html_viewer/blink_platform_impl.h"
-#include "components/html_viewer/web_media_player_factory.h"
+#include "components/html_viewer/media_factory.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "gin/v8_initializer.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -27,10 +27,6 @@
 namespace html_viewer {
 
 namespace {
-
-// Enable MediaRenderer in media pipeline instead of using the internal
-// media::Renderer implementation.
-const char kEnableMojoMediaRenderer[] = "enable-mojo-media-renderer";
 
 // Disables support for (unprefixed) Encrypted Media Extensions.
 const char kDisableEncryptedMedia[] = "disable-encrypted-media";
@@ -142,16 +138,9 @@ void Setup::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   }
 
   compositor_thread_.Start();
-#if defined(OS_ANDROID)
-  // TODO(sky): Get WebMediaPlayerFactory working on android.
-  NOTIMPLEMENTED();
-#else
-  bool enable_mojo_media_renderer =
-      command_line->HasSwitch(kEnableMojoMediaRenderer);
 
-  web_media_player_factory_.reset(new WebMediaPlayerFactory(
-      compositor_thread_.message_loop_proxy(), enable_mojo_media_renderer));
-#endif
+  media_factory_.reset(
+      new MediaFactory(compositor_thread_.message_loop_proxy()));
 }
 
 }  // namespace html_viewer

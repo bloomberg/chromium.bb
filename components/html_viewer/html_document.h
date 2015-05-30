@@ -31,12 +31,6 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace media {
-class CdmFactory;
-class MediaPermission;
-class WebEncryptedMediaClientImpl;
-}
-
 namespace mojo {
 class ViewManager;
 class View;
@@ -132,9 +126,6 @@ class HTMLDocument : public blink::WebViewClient,
 
   void Load(mojo::URLResponsePtr response);
 
-  media::MediaPermission* GetMediaPermission();
-  media::CdmFactory* GetCdmFactory();
-
   scoped_ptr<mojo::AppRefCount> app_refcount_;
   mojo::URLResponsePtr response_;
   mojo::ServiceProviderImpl exported_services_;
@@ -146,12 +137,6 @@ class HTMLDocument : public blink::WebViewClient,
   mojo::ViewManagerClientFactory view_manager_client_factory_;
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
   scoped_refptr<base::MessageLoopProxy> compositor_thread_;
-
-  // EncryptedMediaClient attached to this frame; lazily initialized.
-  scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
-
-  scoped_ptr<media::MediaPermission> media_permission_;
-  scoped_ptr<media::CdmFactory> cdm_factory_;
 
   // HTMLDocument owns these pointers; binding requests after document load.
   std::set<mojo::InterfaceRequest<mojo::AxProvider>*> ax_provider_requests_;

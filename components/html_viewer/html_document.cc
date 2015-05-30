@@ -14,16 +14,13 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
+#include "components/html_viewer/media_factory.h"
 #include "components/html_viewer/setup.h"
 #include "components/html_viewer/web_layer_tree_view_impl.h"
-#include "components/html_viewer/web_media_player_factory.h"
 #include "components/html_viewer/web_storage_namespace_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
-#include "media/blink/webencryptedmediaclient_impl.h"
-#include "media/cdm/default_cdm_factory.h"
-#include "media/filters/default_media_permission.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
@@ -97,12 +94,6 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 
   // Otherwise we don't know if we're the right app to handle this request. Ask
   // host to do the navigation for us.
-  return false;
-}
-
-bool AreSecureCodecsSupported() {
-  // Hardware-secure codecs are not currently supported by HTML Viewer on any
-  // platform.
   return false;
 }
 
@@ -249,13 +240,8 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     blink::WebContentDecryptionModule* initial_cdm) {
-  blink::WebMediaPlayer* player =
-      setup_->web_media_player_factory()
-          ? setup_->web_media_player_factory()->CreateMediaPlayer(
-                frame, url, client, GetMediaPermission(), GetCdmFactory(),
-                initial_cdm, shell_.get())
-          : nullptr;
-  return player;
+  return setup_->media_factory()->CreateMediaPlayer(frame, url, client,
+                                                    initial_cdm, shell_.get());
 }
 
 blink::WebFrame* HTMLDocument::createChildFrame(
@@ -324,12 +310,7 @@ void HTMLDocument::didNavigateWithinPage(
 }
 
 blink::WebEncryptedMediaClient* HTMLDocument::encryptedMediaClient() {
-  if (!web_encrypted_media_client_) {
-    web_encrypted_media_client_.reset(new media::WebEncryptedMediaClientImpl(
-        base::Bind(&AreSecureCodecsSupported), GetCdmFactory(),
-        GetMediaPermission()));
-  }
-  return web_encrypted_media_client_.get();
+  return setup_->media_factory()->GetEncryptedMediaClient();
 }
 
 void HTMLDocument::OnViewBoundsChanged(View* view,
@@ -373,18 +354,6 @@ void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
       event.To<scoped_ptr<blink::WebInputEvent>>();
   if (web_event)
     web_view_->handleInputEvent(*web_event);
-}
-
-media::MediaPermission* HTMLDocument::GetMediaPermission() {
-  if (!media_permission_)
-    media_permission_.reset(new media::DefaultMediaPermission(true));
-  return media_permission_.get();
-}
-
-media::CdmFactory* HTMLDocument::GetCdmFactory() {
-  if (!cdm_factory_)
-    cdm_factory_.reset(new media::DefaultCdmFactory());
-  return cdm_factory_.get();
 }
 
 }  // namespace html_viewer
