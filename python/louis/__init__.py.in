@@ -275,15 +275,18 @@ def hyphenate(tableList, inbuf, mode=0):
 
 def checkTable(tableList):
     """Check if the specified tables can be found and compiled.
+        This can be used to check if a list of tables contains errors
+        before sending it to other liblouis functions
+        that accept a list of tables.
     @param tableList: A list of translation tables.
     @type tableList: list of str
-    @return: True if all tables were found and successfully compiled, False otherwise.
-    @rtype: bool
+    @raise RuntimeError: If compilation failed.
     @see: lou_getTable in the liblouis documentation
     """
     # TODO: Add this function to the C API and use that instead.
     tablesString = _createTablesString(tableList)
-    return bool(liblouis.lou_getTable(tablesString))
+    if not liblouis.lou_getTable(tablesString):
+        raise RuntimeError("Can't compile: tables %s" % tableList)
 
 def compileString(tableList, inString):
     """Compile a table entry on the fly at run-time.
