@@ -126,37 +126,37 @@
     "prefix": "slimmingpaint",
     "base": "fast",
     "args": ["--enable-slimming-paint"],
-    "reference_args": []
+    "references_use_default_args": "True"
   },
   {
     "prefix": "slimmingpaint",
     "base": "paint",
     "args": ["--enable-slimming-paint"],
-    "reference_args": []
+    "references_use_default_args": "True"
   },
   {
     "prefix": "slimmingpaint",
     "base": "svg",
     "args": ["--enable-slimming-paint"],
-    "reference_args": []
+    "references_use_default_args": "True"
   },
   {
     "prefix": "slimmingpaint",
     "base": "css3/filters",
     "args": ["--enable-slimming-paint"],
-    "reference_args": []
+    "references_use_default_args": "True"
   },
   {
     "prefix": "slimmingpaint",
     "base": "compositing",
     "args": ["--enable-slimming-paint"],
-    "reference_args": []
+    "references_use_default_args": "True"
   },
   {
     "prefix": "slimmingpaint",
     "base": "printing",
     "args": ["--enable-slimming-paint"],
-    "reference_args": []
+    "references_use_default_args": "True"
   },
   {
     "prefix": "rootlayerscrolls",

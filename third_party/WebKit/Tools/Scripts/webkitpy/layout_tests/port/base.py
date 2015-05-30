@@ -1733,15 +1733,16 @@ class Port(object):
             platform = self.name()
         return self.path_from_webkit_base('LayoutTests', 'platform', platform)
 
+
 class VirtualTestSuite(object):
-    def __init__(self, prefix=None, base=None, args=None, reference_args=None):
+    def __init__(self, prefix=None, base=None, args=None, references_use_default_args=False):
         assert base
         assert args
         assert prefix.find('/') == -1, "Virtual test suites prefixes cannot contain /'s: %s" % prefix
         self.name = 'virtual/' + prefix + '/' + base
         self.base = base
         self.args = args
-        self.reference_args = args if reference_args is None else reference_args
+        self.reference_args = [] if references_use_default_args else args
         self.tests = {}
 
     def __repr__(self):
