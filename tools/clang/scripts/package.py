@@ -102,7 +102,7 @@ def main():
                  '--bootstrap', '--force-local-build', '--run-tests',
                  '--no-stdin-hack']
     if args.gcc_toolchain is not None:
-      build_cmd.append(['--gcc-toolchain', args.gcc_toolchain])
+      build_cmd.extend(['--gcc-toolchain', args.gcc_toolchain])
     TeeCmd(build_cmd, log)
 
   stamp = open(STAMP_FILE).read().rstrip()
