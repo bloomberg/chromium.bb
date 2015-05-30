@@ -11,6 +11,7 @@ import os
 import shutil
 import time
 
+from chromite.cbuildbot import config_lib_unittest
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -33,11 +34,13 @@ class RemoteTryTests(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     # pylint: disable=protected-access
+    self.site_config = config_lib_unittest.MockSiteConfig()
     self.parser = cbuildbot._CreateParser()
     args = ['-r', '/tmp/test_build1', '-g', '5555', '-g',
             '6666', '--remote']
     args.extend(self.BOTS)
-    self.options, args = cbuildbot._ParseCommandLine(self.parser, args)
+    self.options, args = cbuildbot._ParseCommandLine(
+        self.parser, args, self.site_config)
     self.options.cache_dir = self.tempdir
     self.checkout_dir = os.path.join(self.tempdir, 'test_checkout')
     self.int_mirror, self.ext_mirror = None, None

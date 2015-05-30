@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+from chromite.cbuildbot import config_lib_unittest
 from chromite.cbuildbot import constants
 from chromite.lib import cros_test_lib
 from chromite.scripts import cbuildbot
@@ -17,9 +18,11 @@ class IsDistributedBuilderTest(cros_test_lib.TestCase):
   # pylint: disable=W0212
   def testIsDistributedBuilder(self):
     """Tests for _IsDistributedBuilder() under various configurations."""
+    site_config = config_lib_unittest.MockSiteConfig()
+
     parser = cbuildbot._CreateParser()
     argv = ['x86-generic-paladin']
-    (options, _) = cbuildbot._ParseCommandLine(parser, argv)
+    (options, _) = cbuildbot._ParseCommandLine(parser, argv, site_config)
     options.buildbot = False
     options.pre_cq = False
 

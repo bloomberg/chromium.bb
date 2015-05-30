@@ -20,8 +20,8 @@ import pickle
 import sys
 
 from chromite.cbuildbot import builders
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import generate_chromeos_config
 from chromite.cbuildbot import manifest_version
@@ -56,15 +56,16 @@ _BUILDBOT_REQUIRED_BINARIES = ('pbzip2',)
 _API_VERSION_ATTR = 'api_version'
 
 
-def _PrintValidConfigs(display_all=False):
+def _PrintValidConfigs(site_config, display_all=False):
   """Print a list of valid buildbot configs.
 
   Args:
+    site_config: config_lib.SiteConfig containing all config info.
     display_all: Print all configs.  Otherwise, prints only configs with
                  trybot_list=True.
   """
   def _GetSortKey(config_name):
-    config_dict = cbuildbot_config.GetConfig()[config_name]
+    config_dict = site_config[config_name]
     return (not config_dict['trybot_list'], config_dict['description'],
             config_name)
 
@@ -72,21 +73,15 @@ def _PrintValidConfigs(display_all=False):
   print()
   print('config'.ljust(COLUMN_WIDTH), 'description')
   print('------'.ljust(COLUMN_WIDTH), '-----------')
-  config_names = cbuildbot_config.GetConfig().keys()
+  config_names = site_config.keys()
   config_names.sort(key=_GetSortKey)
   for name in config_names:
-    if display_all or cbuildbot_config.GetConfig()[name]['trybot_list']:
-      desc = cbuildbot_config.GetConfig()[name].get('description')
+    if display_all or site_config[name]['trybot_list']:
+      desc = site_config[name].get('description')
       desc = desc if desc else ''
       print(name.ljust(COLUMN_WIDTH), desc)
 
   print()
-
-
-def _GetConfig(config_name):
-  """Gets the configuration for the build if it exists, None otherwise."""
-  if cbuildbot_config.GetConfig().has_key(config_name):
-    return cbuildbot_config.GetConfig()[config_name]
 
 
 def _ConfirmBuildRoot(buildroot):
@@ -835,13 +830,14 @@ def _FinishParsing(options, args):
 
 
 # pylint: disable=W0613
-def _PostParseCheck(parser, options, args):
+def _PostParseCheck(parser, options, args, site_config):
   """Perform some usage validation after we've parsed the arguments
 
   Args:
     parser: Option parser that was used to parse arguments.
     options: The options returned by optparse.
     args: The args returned by optparse.
+    site_config: config_lib.SiteConfig containing all config info.
   """
   if not options.branch:
     options.branch = git.GetChromiteTrackingBranch()
@@ -890,12 +886,12 @@ def _PostParseCheck(parser, options, args):
   # Ensure that all args are legitimate config targets.
   invalid_targets = []
   for arg in args:
-    build_config = _GetConfig(arg)
-
-    if not build_config:
+    if arg not in site_config:
       invalid_targets.append(arg)
       logging.error('No such configuraton target: "%s".', arg)
       continue
+
+    build_config = site_config[arg]
 
     is_payloads_build = build_config.build_type == constants.PAYLOADS_TYPE
 
@@ -923,7 +919,7 @@ def _PostParseCheck(parser, options, args):
                        '`cbuildbot --list --all`')
 
 
-def _ParseCommandLine(parser, argv):
+def _ParseCommandLine(parser, argv, site_config):
   """Completely parse the commandline arguments"""
   (options, args) = parser.parse_args(argv)
 
@@ -939,7 +935,7 @@ def _ParseCommandLine(parser, argv):
   if options.list:
     if args:
       cros_build_lib.Die('No arguments expected with the --list options.')
-    _PrintValidConfigs(options.print_all)
+    _PrintValidConfigs(site_config, options.print_all)
     sys.exit(0)
 
   if not args:
@@ -1029,6 +1025,12 @@ def _SetupConnections(options, build_config):
 
 # TODO(build): This function is too damn long.
 def main(argv):
+
+  # The location of the SiteConfig is still hardcoded in a Chrome OS specific
+  # way... for now.
+  site_config = config_lib.CreateConfigFromFile(
+      generate_chromeos_config.CONFIG_FILE)
+
   # Turn on strict sudo checks.
   cros_build_lib.STRICT_SUDO = True
 
@@ -1036,9 +1038,9 @@ def main(argv):
   os.umask(0o22)
 
   parser = _CreateParser()
-  (options, args) = _ParseCommandLine(parser, argv)
+  (options, args) = _ParseCommandLine(parser, argv, site_config)
 
-  _PostParseCheck(parser, options, args)
+  _PostParseCheck(parser, options, args, site_config)
 
   cros_build_lib.AssertOutsideChroot()
 
@@ -1049,7 +1051,7 @@ def main(argv):
     # If hwtest flag is enabled, post a warning that HWTest step may fail if the
     # specified board is not a released platform or it is a generic overlay.
     for bot in args:
-      build_config = _GetConfig(bot)
+      build_config = site_config[bot]
       if options.hwtest:
         logging.warning(
             'If %s is not a released platform or it is a generic overlay, '
@@ -1082,7 +1084,7 @@ def main(argv):
 
   # Only one config arg is allowed in this mode, which was confirmed earlier.
   bot_id = args[-1]
-  build_config = _GetConfig(bot_id)
+  build_config = site_config[bot_id]
 
   # TODO: Re-enable this block when reference_repo support handles this
   #       properly. (see chromium:330775)

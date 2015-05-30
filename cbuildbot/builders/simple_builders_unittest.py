@@ -47,7 +47,8 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
 
   def _initConfig(self, bot_id, extra_argv=None):
     """Return normal options/build_config for |bot_id|"""
-    build_config = copy.deepcopy(cbuildbot_config.GetConfig()[bot_id])
+    site_config = cbuildbot_config.GetConfig()
+    build_config = copy.deepcopy(site_config[bot_id])
     build_config['master'] = False
     build_config['important'] = False
 
@@ -55,7 +56,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     parser = cbuildbot._CreateParser()
     argv = (['-r', self.buildroot, '--buildbot', '--debug', '--nochromesdk'] +
             (extra_argv if extra_argv else []) + [bot_id])
-    (options, _) = cbuildbot._ParseCommandLine(parser, argv)
+    options, _ = cbuildbot._ParseCommandLine(parser, argv, site_config)
 
     # Yikes.
     options.managed_chrome = build_config['sync_chrome']
