@@ -128,7 +128,7 @@ class ManifestVersionedSyncStageTest(
         ('cp', manifest, 'gs://brillo-releases/sdk-releases/test_version.xml'))
 
     gs_mock.assertCommandContains(
-        ('cp', 'gs://brillo-releases/sdk-releases/latest'))
+        ('cp', 'gs://brillo-releases/sdk-releases/LATEST'))
 
 class MockPatch(mock.MagicMock):
   """MagicMock for a GerritPatch-like object."""
