@@ -350,6 +350,34 @@ TEST_F(VideoFrameCompositorTest, BackgroundRenderTicks) {
   StopVideoRendererSink(true);
 }
 
+TEST_F(VideoFrameCompositorTest,
+       UpdateCurrentFrameWorksWhenBackgroundRendered) {
+  scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
+  compositor_->set_background_rendering_for_testing(true);
+
+  // Background render a frame that succeeds immediately.
+  EXPECT_CALL(*this, Render(_, _, true)).WillOnce(Return(opaque_frame));
+  StartVideoRendererSink();
+
+  // The background render completes immediately, so the next call to
+  // UpdateCurrentFrame is expected to return true to account for the frame
+  // rendered in the background.
+  EXPECT_CALL(*this, Render(_, _, false))
+      .WillOnce(Return(scoped_refptr<VideoFrame>(opaque_frame)));
+  EXPECT_TRUE(
+      compositor()->UpdateCurrentFrame(base::TimeTicks(), base::TimeTicks()));
+  RenderFrame();
+
+  // Second call to UpdateCurrentFrame will return false as no new frame has
+  // been created since the last call.
+  EXPECT_CALL(*this, Render(_, _, false))
+      .WillOnce(Return(scoped_refptr<VideoFrame>(opaque_frame)));
+  EXPECT_FALSE(
+      compositor()->UpdateCurrentFrame(base::TimeTicks(), base::TimeTicks()));
+
+  StopVideoRendererSink(true);
+}
+
 TEST_F(VideoFrameCompositorTest, GetCurrentFrameAndUpdateIfStale) {
   scoped_refptr<VideoFrame> opaque_frame_1 = CreateOpaqueFrame();
   scoped_refptr<VideoFrame> opaque_frame_2 = CreateOpaqueFrame();

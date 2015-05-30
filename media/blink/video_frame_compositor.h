@@ -159,6 +159,7 @@ class MEDIA_EXPORT VideoFrameCompositor
   bool rendering_;
   bool rendered_last_frame_;
   bool is_background_rendering_;
+  bool new_background_frame_;
   base::TimeDelta last_interval_;
   base::TimeTicks last_background_render_;
 
