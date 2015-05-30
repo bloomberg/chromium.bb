@@ -117,6 +117,7 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
     , m_forcedSandboxFlags(SandboxNone)
+    , m_dispatchingDidClearWindowObjectInMainWorld(false)
 {
 }
 
@@ -1375,6 +1376,10 @@ void FrameLoader::dispatchDidClearWindowObjectInMainWorld()
     if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return;
 
+    if (m_dispatchingDidClearWindowObjectInMainWorld)
+        return;
+    TemporaryChange<bool>
+        inDidClearWindowObject(m_dispatchingDidClearWindowObjectInMainWorld, true);
     client()->dispatchDidClearWindowObjectInMainWorld();
 }
 
