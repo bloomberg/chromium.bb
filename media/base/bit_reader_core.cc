@@ -4,8 +4,10 @@
 
 #include "media/base/bit_reader_core.h"
 
-#include <base/port.h>
-#include <base/sys_byteorder.h>
+#include <stdint.h>
+
+#include "base/port.h"
+#include "base/sys_byteorder.h"
 
 namespace {
 const int kRegWidthInBits = sizeof(uint64) * 8;
@@ -35,7 +37,7 @@ bool BitReaderCore::ReadFlag(bool* flag) {
   if (nbits_ == 0 && !Refill(1))
     return false;
 
-  *flag = (reg_ & (GG_UINT64_C(1) << (kRegWidthInBits - 1))) != 0;
+  *flag = (reg_ & (UINT64_C(1) << (kRegWidthInBits - 1))) != 0;
   reg_ <<= 1;
   nbits_--;
   bits_read_++;
