@@ -13,11 +13,13 @@ namespace blink {
 class SafePointScope final {
     WTF_MAKE_NONCOPYABLE(SafePointScope);
 public:
-    explicit SafePointScope(ThreadState::StackState stackState)
-        : m_state(ThreadState::current())
+    explicit SafePointScope(ThreadState::StackState stackState, ThreadState* state = ThreadState::current())
+        : m_state(state)
     {
-        RELEASE_ASSERT(!m_state->isAtSafePoint());
-        m_state->enterSafePoint(stackState, this);
+        if (m_state) {
+            RELEASE_ASSERT(!m_state->isAtSafePoint());
+            m_state->enterSafePoint(stackState, this);
+        }
     }
 
     ~SafePointScope()

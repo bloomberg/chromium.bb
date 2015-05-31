@@ -725,7 +725,6 @@ void unexpectedGCState(ThreadState::GCState gcState)
         UNEXPECTED_GCSTATE(IdleGCScheduled);
         UNEXPECTED_GCSTATE(PreciseGCScheduled);
         UNEXPECTED_GCSTATE(FullGCScheduled);
-        UNEXPECTED_GCSTATE(StoppingOtherThreads);
         UNEXPECTED_GCSTATE(GCRunning);
         UNEXPECTED_GCSTATE(EagerSweepScheduled);
         UNEXPECTED_GCSTATE(LazySweepScheduled);
@@ -749,18 +748,14 @@ void ThreadState::setGCState(GCState gcState)
     switch (gcState) {
     case NoGCScheduled:
         checkThread();
-        VERIFY_STATE_TRANSITION(m_gcState == StoppingOtherThreads || m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled);
+        VERIFY_STATE_TRANSITION(m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled);
         break;
     case IdleGCScheduled:
     case PreciseGCScheduled:
     case FullGCScheduled:
         checkThread();
-        VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == FullGCScheduled || m_gcState == StoppingOtherThreads || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
+        VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == FullGCScheduled || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
         completeSweep();
-        break;
-    case StoppingOtherThreads:
-        checkThread();
-        VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == FullGCScheduled || m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
         break;
     case GCRunning:
         ASSERT(!isInGC());
@@ -773,12 +768,12 @@ void ThreadState::setGCState(GCState gcState)
         break;
     case Sweeping:
         checkThread();
-        VERIFY_STATE_TRANSITION(m_gcState == StoppingOtherThreads || m_gcState == EagerSweepScheduled || m_gcState == LazySweepScheduled);
+        VERIFY_STATE_TRANSITION(m_gcState == EagerSweepScheduled || m_gcState == LazySweepScheduled);
         break;
     case SweepingAndIdleGCScheduled:
     case SweepingAndPreciseGCScheduled:
         checkThread();
-        VERIFY_STATE_TRANSITION(m_gcState == StoppingOtherThreads || m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
+        VERIFY_STATE_TRANSITION(m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -808,6 +803,14 @@ void ThreadState::runScheduledGC(StackState stackState)
 {
     checkThread();
     if (stackState != NoHeapPointersOnStack)
+        return;
+
+    // If a safe point is entered while initiating a GC, we clearly do
+    // not want to do another as part that -- the safe point is only
+    // entered after checking if a scheduled GC ought to run first.
+    // Prevent that from happening by marking GCs as forbidden while
+    // one is initiated and later running.
+    if (isGCForbidden())
         return;
 
     switch (gcState()) {
@@ -1107,7 +1110,6 @@ void ThreadState::enterSafePoint(StackState stackState, void* scopeMarker)
         scopeMarker = adjustScopeMarkerForAdressSanitizer(scopeMarker);
 #endif
     ASSERT(stackState == NoHeapPointersOnStack || scopeMarker);
-    ASSERT(!isGCForbidden());
     runScheduledGC(stackState);
     ASSERT(!m_atSafePoint);
     m_atSafePoint = true;

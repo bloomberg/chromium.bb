@@ -196,7 +196,6 @@ public:
         IdleGCScheduled,
         PreciseGCScheduled,
         FullGCScheduled,
-        StoppingOtherThreads,
         GCRunning,
         EagerSweepScheduled,
         LazySweepScheduled,
@@ -356,7 +355,11 @@ public:
     void leaveNoAllocationScope() { m_noAllocationCount--; }
     bool isGCForbidden() const { return m_gcForbiddenCount; }
     void enterGCForbiddenScope() { m_gcForbiddenCount++; }
-    void leaveGCForbiddenScope() { m_gcForbiddenCount--; }
+    void leaveGCForbiddenScope()
+    {
+        ASSERT(m_gcForbiddenCount > 0);
+        m_gcForbiddenCount--;
+    }
     bool sweepForbidden() const { return m_sweepForbidden; }
 
     void prepareRegionTree();
@@ -563,7 +566,6 @@ public:
     }
     void leaveGCForbiddenScopeIfNeeded(GarbageCollectedMixinConstructorMarker* gcMixinMarker)
     {
-        ASSERT(m_gcForbiddenCount > 0);
         if (m_gcMixinMarker == gcMixinMarker) {
             leaveGCForbiddenScope();
             m_gcMixinMarker = nullptr;
