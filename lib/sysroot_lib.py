@@ -50,6 +50,10 @@ export PKG_CONFIG_LIBDIR
 
 export PKG_CONFIG_SYSROOT_DIR="{sysroot}"
 
+# Portage will get confused and try to "help" us by exporting this.
+# Undo that logic.
+unset PKG_CONFIG_PATH
+
 exec pkg-config "$@"
 """
 
