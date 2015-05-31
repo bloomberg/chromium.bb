@@ -1703,8 +1703,8 @@ crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
 crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-41-t.svg [ ImageOnlyFailure ]
 #crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-46-t.svg [ ImageOnlyFailure ]
 
-crbug.com/321237 crbug.com/478014 [ SnowLeopard ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
-crbug.com/321237 crbug.com/478014 [ Win SnowLeopard ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
+#crbug.com/321237 crbug.com/478014 [ SnowLeopard ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
+#crbug.com/321237 crbug.com/478014 [ Win SnowLeopard ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/490995 webmidi/permission.html [ Failure Pass ]
 crbug.com/487671 http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Pass Timeout ]
 
@@ -4130,3 +4130,14 @@ crbug.com/321237 [ Mac ] fast/text-autosizing/inherited-multiplier.html [ ImageO
 crbug.com/321237 [ Mac ] virtual/stable/fast/css3-text/css3-text-decoration/stable/first-letter-text-decoration.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Win ] fast/multicol/span/pseudo-before-after-in-content.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Win ] fast/selectors/004.html [ ImageOnlyFailure ]
+
+# Rebaselines that got missed in the first pass
+crbug.com/321327 [ Linux ] fast/transforms/transformed-caret.html [ NeedsRebaseline ]
+crbug.com/321327 [ Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ NeedsRebaseline ]
+crbug.com/321237 [ Mac ] css2.1/t1202-counter-04-b.html [ NeedsRebaseline ]
+crbug.com/321237 [ Mac ] fast/text/international/bidi-neutral-directionality-paragraph-start.html [ NeedsRebaseline ]
+crbug.com/321237 [ Mac ] fast/text/international/thai-baht-space.html [ NeedsRebaseline ]
+crbug.com/321237 [ Mac ] svg/repaint/modify-transferred-listitem-different-attr.html [ NeedsRebaseline ]
+crbug.com/321237 [ Mac ] virtual/antialiasedtext/fast/text/international/thai-baht-space.html [ NeedsRebaseline ]
+crbug.com/321237 [ Mac ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
+crbug.com/321237 [ Mac ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
