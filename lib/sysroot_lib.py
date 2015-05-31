@@ -527,14 +527,11 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     The best make.conf possible is the ARCH-specific make.conf. If it does not
     exist, we use the generic make.conf.
     """
-    for key in (self.GetStandardField('ARCH'), 'generic'):
-      make_conf = os.path.join(
-          constants.SOURCE_ROOT, constants.CHROMIUMOS_OVERLAY_DIR, 'chromeos',
-          'config', 'make.conf.%s-target' % key)
-      if os.path.exists(make_conf):
-        link = os.path.join(self.path, 'etc', 'make.conf')
-        osutils.SafeSymlink(make_conf, link, sudo=True)
-        return
+    make_conf = os.path.join(
+        constants.SOURCE_ROOT, constants.CHROMIUMOS_OVERLAY_DIR, 'chromeos',
+        'config', 'make.conf.generic-target')
+    link = os.path.join(self.path, 'etc', 'make.conf')
+    osutils.SafeSymlink(make_conf, link, sudo=True)
 
   def _GenerateProfile(self):
     """Generates the portage profile for this sysroot.
