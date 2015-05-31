@@ -26,7 +26,6 @@
 #include "core/CoreExport.h"
 #include "core/dom/Text.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/line/FloatToLayoutUnit.h"
 #include "platform/LengthFunctions.h"
 #include "platform/text/TextPath.h"
 #include "wtf/Forward.h"
@@ -87,18 +86,18 @@ public:
     unsigned textLength() const { return m_text.length(); } // non virtual implementation of length()
     void positionLineBox(InlineBox*);
 
-    virtual float width(unsigned from, unsigned len, const Font&, float xPos, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
-    virtual float width(unsigned from, unsigned len, float xPos, TextDirection, bool firstLine = false, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
+    virtual float width(unsigned from, unsigned len, const Font&, LayoutUnit xPos, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
+    virtual float width(unsigned from, unsigned len, LayoutUnit xPos, TextDirection, bool firstLine = false, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
 
     float minLogicalWidth() const;
     float maxLogicalWidth() const;
 
-    void trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
-        FloatWillBeLayoutUnit& firstLineMinWidth, bool& hasBreakableStart,
-        FloatWillBeLayoutUnit& lastLineMinWidth, bool& hasBreakableEnd,
+    void trimmedPrefWidths(LayoutUnit leadWidth,
+        LayoutUnit& firstLineMinWidth, bool& hasBreakableStart,
+        LayoutUnit& lastLineMinWidth, bool& hasBreakableEnd,
         bool& hasBreakableChar, bool& hasBreak,
-        FloatWillBeLayoutUnit& firstLineMaxWidth, FloatWillBeLayoutUnit& lastLineMaxWidth,
-        FloatWillBeLayoutUnit& minWidth, FloatWillBeLayoutUnit& maxWidth, bool& stripFrontSpaces,
+        LayoutUnit& firstLineMaxWidth, LayoutUnit& lastLineMaxWidth,
+        LayoutUnit& minWidth, LayoutUnit& maxWidth, bool& stripFrontSpaces,
         TextDirection);
 
     virtual IntRect linesBoundingBox() const;

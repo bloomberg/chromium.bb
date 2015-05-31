@@ -21,7 +21,7 @@
 
 namespace blink {
 
-TextPainter::TextPainter(GraphicsContext* context, const Font& font, const TextRun& run, const FloatPoint& textOrigin, const FloatRect& textBounds, bool horizontal)
+TextPainter::TextPainter(GraphicsContext* context, const Font& font, const TextRun& run, const LayoutPoint& textOrigin, const LayoutRect& textBounds, bool horizontal)
     : m_graphicsContext(context)
     , m_font(font)
     , m_run(run)
@@ -191,10 +191,10 @@ void TextPainter::paintInternalRun(TextRunPaintInfo& textRunPaintInfo, int from,
 
     if (step == PaintEmphasisMark) {
         m_graphicsContext->drawEmphasisMarks(m_font, textRunPaintInfo, m_emphasisMark,
-            m_textOrigin + IntSize(0, m_emphasisMarkOffset));
+            FloatPoint(m_textOrigin) + IntSize(0, m_emphasisMarkOffset));
     } else {
         ASSERT(step == PaintText);
-        m_graphicsContext->drawText(m_font, textRunPaintInfo, m_textOrigin);
+        m_graphicsContext->drawText(m_font, textRunPaintInfo, FloatPoint(m_textOrigin));
     }
 }
 
@@ -219,7 +219,7 @@ void TextPainter::paintEmphasisMarkForCombinedText()
 {
     ASSERT(m_combinedText);
     DEFINE_STATIC_LOCAL(TextRun, placeholderTextRun, (&ideographicFullStopCharacter, 1));
-    FloatPoint emphasisMarkTextOrigin(m_textBounds.x(), m_textBounds.y() + m_font.fontMetrics().ascent() + m_emphasisMarkOffset);
+    FloatPoint emphasisMarkTextOrigin(m_textBounds.x().toFloat(), m_textBounds.y().toFloat() + m_font.fontMetrics().ascent() + m_emphasisMarkOffset);
     TextRunPaintInfo textRunPaintInfo(placeholderTextRun);
     textRunPaintInfo.bounds = m_textBounds;
     m_graphicsContext->concatCTM(rotation(m_textBounds, Clockwise));

@@ -65,15 +65,15 @@ void SVGRootInlineBox::computePerCharacterLayoutInformation()
 
     // Perform SVG text layout phase four
     // Position & resize all SVGInlineText/FlowBoxes in the inline box tree, resize the root box as well as the LayoutSVGText parent block.
-    FloatRectWillBeLayoutRect childRect;
+    LayoutRect childRect;
     layoutChildBoxes(this, &childRect);
     layoutRootBox(childRect);
 }
 
-void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, FloatRectWillBeLayoutRect* childRect)
+void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, LayoutRect* childRect)
 {
     for (InlineBox* child = start->firstChild(); child; child = child->nextOnLine()) {
-        FloatRectWillBeLayoutRect boxRect;
+        LayoutRect boxRect;
         if (child->isSVGInlineTextBox()) {
             ASSERT(child->layoutObject().isSVGInlineText());
 
@@ -102,14 +102,14 @@ void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, FloatRectWillBeLay
     }
 }
 
-void SVGRootInlineBox::layoutRootBox(const FloatRectWillBeLayoutRect& childRect)
+void SVGRootInlineBox::layoutRootBox(const LayoutRect& childRect)
 {
     LayoutBlockFlow& parentBlock = block();
 
     // Finally, assign the root block position, now that all content is laid out.
     // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once
     // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-    LayoutRect boundingRect = childRect.enclosingLayoutRect();
+    LayoutRect boundingRect = enclosingLayoutRect(childRect);
     parentBlock.setLocation(boundingRect.location());
     parentBlock.setSize(boundingRect.size());
 

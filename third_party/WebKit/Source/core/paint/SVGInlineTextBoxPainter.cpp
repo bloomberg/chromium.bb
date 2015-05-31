@@ -63,7 +63,7 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         DrawingRecorder recorder(*paintInfo.context, m_svgInlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), paintInfo.rect);
         if (!recorder.canUseCachedDrawing()) {
             InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
-                paintInfo.context, FloatPoint(paintOffset), style,
+                paintInfo.context, paintOffset, style,
                 textLayoutObject.scaledFont(), true);
 
             if (!m_svgInlineTextBox.textFragments().isEmpty())
@@ -403,7 +403,7 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, const Comput
         paintTextWithShadows(paintInfo, style, textRun, fragment, endPosition, fragment.length, resourceMode);
 }
 
-void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* context, const FloatPoint&, DocumentMarker* marker, const ComputedStyle& style, const Font& font)
+void SVGInlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* context, const LayoutPoint&, DocumentMarker* marker, const ComputedStyle& style, const Font& font)
 {
     // SVG is only interested in the TextMatch markers.
     if (marker->type() != DocumentMarker::TextMatch)

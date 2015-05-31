@@ -74,11 +74,11 @@ LayoutUnit InlineFlowBox::getFlowSpacingLogicalWidth()
 IntRect InlineFlowBox::roundedFrameRect() const
 {
     // Begin by snapping the x and y coordinates to the nearest pixel.
-    int snappedX = lroundf(x());
-    int snappedY = lroundf(y());
+    int snappedX = x().round();
+    int snappedY = y().round();
 
-    int snappedMaxX = lroundf(x() + width());
-    int snappedMaxY = lroundf(y() + height());
+    int snappedMaxX = (x() + width()).round();
+    int snappedMaxY = (y() + height()).round();
 
     return IntRect(snappedX, snappedY, snappedMaxX - snappedX, snappedMaxY - snappedY);
 }
@@ -254,7 +254,7 @@ void InlineFlowBox::attachLineBoxToLayoutObject()
     lineBoxes()->attachLineBox(this);
 }
 
-void InlineFlowBox::adjustPosition(FloatWillBeLayoutUnit dx, FloatWillBeLayoutUnit dy)
+void InlineFlowBox::adjustPosition(LayoutUnit dx, LayoutUnit dy)
 {
     InlineBox::adjustPosition(dx, dy);
     for (InlineBox* child = firstChild(); child; child = child->nextOnLine()) {
@@ -362,16 +362,16 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
     }
 }
 
-FloatWillBeLayoutUnit InlineFlowBox::placeBoxesInInlineDirection(FloatWillBeLayoutUnit logicalLeft, bool& needsWordSpacing)
+LayoutUnit InlineFlowBox::placeBoxesInInlineDirection(LayoutUnit logicalLeft, bool& needsWordSpacing)
 {
     // Set our x position.
     beginPlacingBoxRangesInInlineDirection(logicalLeft);
 
-    FloatWillBeLayoutUnit startLogicalLeft = logicalLeft;
+    LayoutUnit startLogicalLeft = logicalLeft;
     logicalLeft += borderLogicalLeft() + paddingLogicalLeft();
 
-    FloatWillBeLayoutUnit minLogicalLeft = startLogicalLeft;
-    FloatWillBeLayoutUnit maxLogicalRight = logicalLeft;
+    LayoutUnit minLogicalLeft = startLogicalLeft;
+    LayoutUnit maxLogicalRight = logicalLeft;
 
     placeBoxRangeInInlineDirection(firstChild(), 0, logicalLeft, minLogicalLeft, maxLogicalRight, needsWordSpacing);
 
@@ -380,14 +380,14 @@ FloatWillBeLayoutUnit InlineFlowBox::placeBoxesInInlineDirection(FloatWillBeLayo
     return logicalLeft;
 }
 
-FloatWillBeLayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, InlineBox* lastChild,
-    FloatWillBeLayoutUnit& logicalLeft, FloatWillBeLayoutUnit& minLogicalLeft, FloatWillBeLayoutUnit& maxLogicalRight, bool& needsWordSpacing)
+LayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, InlineBox* lastChild,
+    LayoutUnit& logicalLeft, LayoutUnit& minLogicalLeft, LayoutUnit& maxLogicalRight, bool& needsWordSpacing)
 {
     for (InlineBox* curr = firstChild; curr && curr != lastChild; curr = curr->nextOnLine()) {
         if (curr->layoutObject().isText()) {
             InlineTextBox* text = toInlineTextBox(curr);
             LayoutText& rt = text->layoutObject();
-            FloatWillBeLayoutUnit space;
+            LayoutUnit space;
             if (rt.textLength()) {
                 if (needsWordSpacing && isSpaceOrNewline(rt.characterAt(text->start())))
                     space = rt.style(isFirstLineStyle())->font().fontDescription().wordSpacing();
@@ -556,8 +556,8 @@ void InlineFlowBox::computeLogicalBoxHeights(RootInlineBox* rootBox, LayoutUnit&
             // means is that ascent and descent (including leading), can end up being negative.  The setMaxAscent and
             // setMaxDescent booleans are used to ensure that we're willing to initially set maxAscent/Descent to negative
             // values.
-            ascent -= curr->logicalTop();
-            descent += curr->logicalTop();
+            ascent -= curr->logicalTop().round();
+            descent += curr->logicalTop().round();
             if (affectsAscent && (maxAscent < ascent || !setMaxAscent)) {
                 maxAscent = ascent;
                 setMaxAscent = true;
@@ -708,7 +708,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
     }
 }
 
-void InlineFlowBox::computeMaxLogicalTop(FloatWillBeLayoutUnit& maxLogicalTop) const
+void InlineFlowBox::computeMaxLogicalTop(LayoutUnit& maxLogicalTop) const
 {
     for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
         if (curr->layoutObject().isOutOfFlowPositioned())
@@ -717,11 +717,11 @@ void InlineFlowBox::computeMaxLogicalTop(FloatWillBeLayoutUnit& maxLogicalTop) c
         if (descendantsHaveSameLineHeightAndBaseline())
             continue;
 
-        maxLogicalTop = std::max<FloatWillBeLayoutUnit>(maxLogicalTop, curr->y());
-        FloatWillBeLayoutUnit localMaxLogicalTop;
+        maxLogicalTop = std::max<LayoutUnit>(maxLogicalTop, curr->y());
+        LayoutUnit localMaxLogicalTop;
         if (curr->isInlineFlowBox())
             toInlineFlowBox(curr)->computeMaxLogicalTop(localMaxLogicalTop);
-        maxLogicalTop = std::max<FloatWillBeLayoutUnit>(maxLogicalTop, localMaxLogicalTop);
+        maxLogicalTop = std::max<LayoutUnit>(maxLogicalTop, localMaxLogicalTop);
     }
 }
 
@@ -758,7 +758,7 @@ inline void InlineFlowBox::addBoxShadowVisualOverflow(LayoutRect& logicalVisualO
     // the line is "upside down" in terms of block coordinates.
     LayoutRectOutsets logicalOutsets(outsets.logicalOutsetsWithFlippedLines(writingMode));
 
-    LayoutRect shadowBounds(logicalFrameRect().toLayoutRect());
+    LayoutRect shadowBounds(logicalFrameRect());
     shadowBounds.expand(logicalOutsets);
     logicalVisualOverflow.unite(shadowBounds);
 }
@@ -782,7 +782,7 @@ inline void InlineFlowBox::addBorderOutsetVisualOverflow(LayoutRect& logicalVisu
     if (!includeLogicalRightEdge())
         logicalOutsets.setRight(LayoutUnit());
 
-    LayoutRect borderOutsetBounds(logicalFrameRect().toLayoutRect());
+    LayoutRect borderOutsetBounds(logicalFrameRect());
     borderOutsetBounds.expand(logicalOutsets);
     logicalVisualOverflow.unite(borderOutsetBounds);
 }
@@ -898,7 +898,7 @@ void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, G
     // transforms, relative positioning, etc.
     // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once
     // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-    LayoutRect logicalLayoutOverflow(logicalFrameRectIncludingLineHeight(lineTop, lineBottom).enclosingLayoutRect());
+    LayoutRect logicalLayoutOverflow(enclosingLayoutRect(logicalFrameRectIncludingLineHeight(lineTop, lineBottom)));
     LayoutRect logicalVisualOverflow(logicalLayoutOverflow);
 
     addBoxShadowVisualOverflow(logicalVisualOverflow);
@@ -916,7 +916,7 @@ void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, G
                 continue;
             // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once
             // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-            LayoutRect textBoxOverflow(text->logicalFrameRect().enclosingLayoutRect());
+            LayoutRect textBoxOverflow(enclosingLayoutRect(text->logicalFrameRect()));
             addTextBoxVisualOverflow(text, textBoxDataMap, textBoxOverflow);
             logicalVisualOverflow.unite(textBoxOverflow);
         } else if (curr->layoutObject().isLayoutInline()) {
@@ -961,7 +961,7 @@ void InlineFlowBox::setOverflowFromLogicalRects(const LayoutRect& logicalLayoutO
 {
     // FIXME: the call to enclosingLayoutRect() below is temporary and should be removed once
     // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-    LayoutRect frameBox = frameRectIncludingLineHeight(lineTop, lineBottom).enclosingLayoutRect();
+    LayoutRect frameBox = enclosingLayoutRect(frameRectIncludingLineHeight(lineTop, lineBottom));
 
     LayoutRect layoutOverflow(isHorizontal() ? logicalLayoutOverflow : logicalLayoutOverflow.transposedRect());
     setLayoutOverflow(layoutOverflow, frameBox);
@@ -1099,9 +1099,9 @@ bool InlineFlowBox::canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsis
     return true;
 }
 
-FloatWillBeLayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr, FloatWillBeLayoutUnit blockLeftEdge, FloatWillBeLayoutUnit blockRightEdge, FloatWillBeLayoutUnit ellipsisWidth, FloatWillBeLayoutUnit &truncatedWidth, bool& foundBox)
+LayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr, LayoutUnit blockLeftEdge, LayoutUnit blockRightEdge, LayoutUnit ellipsisWidth, LayoutUnit &truncatedWidth, bool& foundBox)
 {
-    FloatWillBeLayoutUnit result = -1;
+    LayoutUnit result = -1;
     // We iterate over all children, the foundBox variable tells us when we've found the
     // box containing the ellipsis.  All boxes after that one in the flow are hidden.
     // If our flow is ltr then iterate over the boxes from left to right, otherwise iterate
@@ -1118,10 +1118,10 @@ FloatWillBeLayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr, FloatWillBeLayou
             result = currResult;
 
         if (ltr) {
-            visibleLeftEdge += box->logicalWidth();
+            visibleLeftEdge += box->logicalWidth().round();
             box = box->nextOnLine();
         } else {
-            visibleRightEdge -= box->logicalWidth();
+            visibleRightEdge -= box->logicalWidth().round();
             box = box->prevOnLine();
         }
     }

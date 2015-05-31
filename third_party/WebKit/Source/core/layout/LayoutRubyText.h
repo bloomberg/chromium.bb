@@ -50,7 +50,7 @@ private:
     virtual bool avoidsFloats() const override;
 
     virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const override;
-    virtual void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const override;
+    virtual void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, LayoutUnit& logicalLeft, LayoutUnit& logicalWidth) const override;
 };
 
 } // namespace blink

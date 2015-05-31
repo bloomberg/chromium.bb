@@ -1728,7 +1728,7 @@ void LayoutBox::positionLineBox(InlineBox* box)
             // our object was inline originally, since otherwise it would have ended up underneath
             // the inlines.
             RootInlineBox& root = box->root();
-            root.block().setStaticInlinePositionForChild(*this, LayoutUnit::fromFloatRound(box->logicalLeft()));
+            root.block().setStaticInlinePositionForChild(*this, box->logicalLeft());
         } else {
             // Our object was a block originally, so we make our normal flow position be
             // just below the line box (as though all the inlines that came before us got
@@ -1746,7 +1746,7 @@ void LayoutBox::positionLineBox(InlineBox* box)
     } else if (isReplaced()) {
         // FIXME: the call to roundedLayoutPoint() below is temporary and should be removed once
         // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-        setLocationAndUpdateOverflowControlsIfNeeded(box->topLeft().roundedLayoutPoint());
+        setLocationAndUpdateOverflowControlsIfNeeded(box->topLeft());
         setInlineBoxWrapper(box);
     }
 }
@@ -3797,11 +3797,11 @@ LayoutRect LayoutBox::localCaretRect(InlineBox* box, int caretOffset, LayoutUnit
     // They never refer to children.
     // FIXME: Paint the carets inside empty blocks differently than the carets before/after elements.
 
-    LayoutRect rect(location(), LayoutSize(caretWidth, size().height()));
+    LayoutRect rect(location(), LayoutSize(caretWidth(), size().height()));
     bool ltr = box ? box->isLeftToRightDirection() : style()->isLeftToRightDirection();
 
     if ((!caretOffset) ^ ltr)
-        rect.move(LayoutSize(size().width() - caretWidth, 0));
+        rect.move(LayoutSize(size().width() - caretWidth(), 0));
 
     if (box) {
         RootInlineBox& rootBox = box->root();

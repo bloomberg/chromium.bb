@@ -87,7 +87,7 @@ LayoutRect AbstractInlineTextBox::bounds() const
     if (!m_inlineTextBox || !m_layoutText)
         return LayoutRect();
 
-    FloatRect boundaries = m_inlineTextBox->calculateBoundaries().toFloatRect();
+    FloatRect boundaries = m_inlineTextBox->calculateBoundaries();
     return LayoutRect(m_layoutText->localToAbsoluteQuad(boundaries).enclosingBoundingBox());
 }
 
@@ -109,7 +109,7 @@ AbstractInlineTextBox::Direction AbstractInlineTextBox::direction() const
     return (m_inlineTextBox->direction() == RTL ? BottomToTop : TopToBottom);
 }
 
-void AbstractInlineTextBox::characterWidths(Vector<FloatWillBeLayoutUnit>& widths) const
+void AbstractInlineTextBox::characterWidths(Vector<float>& widths) const
 {
     if (!m_inlineTextBox)
         return;

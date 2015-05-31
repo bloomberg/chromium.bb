@@ -121,19 +121,19 @@ LayoutRect LayoutSVGInlineText::localCaretRect(InlineBox* box, int caretOffset, 
     if (static_cast<unsigned>(caretOffset) < textBox->start() + textBox->len()) {
         LayoutRect rect = textBox->localSelectionRect(caretOffset, caretOffset + 1);
         LayoutUnit x = box->isLeftToRightDirection() ? rect.x() : rect.maxX();
-        return LayoutRect(x, rect.y(), caretWidth, rect.height());
+        return LayoutRect(x, rect.y(), caretWidth(), rect.height());
     }
 
     LayoutRect rect = textBox->localSelectionRect(caretOffset - 1, caretOffset);
     LayoutUnit x = box->isLeftToRightDirection() ? rect.maxX() : rect.x();
-    return LayoutRect(x, rect.y(), caretWidth, rect.height());
+    return LayoutRect(x, rect.y(), caretWidth(), rect.height());
 }
 
 FloatRect LayoutSVGInlineText::floatLinesBoundingBox() const
 {
     FloatRect boundingBox;
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
-        boundingBox.unite(box->calculateBoundaries().toFloatRect());
+        boundingBox.unite(FloatRect(box->calculateBoundaries()));
     return boundingBox;
 }
 

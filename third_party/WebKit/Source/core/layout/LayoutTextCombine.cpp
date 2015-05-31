@@ -52,7 +52,7 @@ void LayoutTextCombine::setTextInternal(PassRefPtr<StringImpl> text)
     updateIsCombined();
 }
 
-float LayoutTextCombine::width(unsigned from, unsigned length, const Font& font, float xPosition, TextDirection direction, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
+float LayoutTextCombine::width(unsigned from, unsigned length, const Font& font, LayoutUnit xPosition, TextDirection direction, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
     if (!length)
         return 0;
@@ -71,7 +71,7 @@ void scaleHorizontallyAndTranslate(GraphicsContext& context, float scaleX, float
     context.concatCTM(AffineTransform(scaleX, 0, 0, 1, centerX * (1.0f - scaleX) + offsetX * scaleX, offsetY));
 }
 
-void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context, const FloatRect& boxRect) const
+void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context, const LayoutRect& boxRect) const
 {
     ASSERT(!m_needsFontUpdate);
     ASSERT(m_isCombined);
@@ -82,11 +82,11 @@ void LayoutTextCombine::transformToInlineCoordinates(GraphicsContext& context, c
         return;
     }
     ASSERT(m_scaleX > 0.0f);
-    const float centerX = boxRect.x() + boxRect.width() / 2;
+    float centerX = boxRect.x() + boxRect.width().toFloat() / 2;
     scaleHorizontallyAndTranslate(context, m_scaleX, centerX, offsetX(boxRect), 0);
 }
 
-void LayoutTextCombine::transformLayoutRect(FloatRect& boxRect) const
+void LayoutTextCombine::transformLayoutRect(LayoutRect& boxRect) const
 {
     ASSERT(!m_needsFontUpdate);
     ASSERT(m_isCombined);

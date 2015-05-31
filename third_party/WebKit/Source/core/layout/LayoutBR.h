@@ -38,8 +38,8 @@ public:
 
     virtual LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* /*paintInvalidationContainer*/) const override { return LayoutRect(); }
 
-    virtual float width(unsigned /*from*/, unsigned /*len*/, const Font&, float /*xPos*/, TextDirection, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/ , GlyphOverflow* = 0) const override { return 0; }
-    virtual float width(unsigned /*from*/, unsigned /*len*/, float /*xpos*/, TextDirection, bool = false /*firstLine*/, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/, GlyphOverflow* = 0) const override { return 0; }
+    virtual float width(unsigned /*from*/, unsigned /*len*/, const Font&, LayoutUnit /*xPos*/, TextDirection, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/ , GlyphOverflow* = 0) const override { return 0; }
+    virtual float width(unsigned /*from*/, unsigned /*len*/, LayoutUnit /*xpos*/, TextDirection, bool = false /*firstLine*/, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/, GlyphOverflow* = 0) const override { return 0; }
 
     int lineHeight(bool firstLine) const;
 

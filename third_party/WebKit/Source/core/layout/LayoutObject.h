@@ -105,7 +105,7 @@ enum MapCoordinatesMode {
 };
 typedef unsigned MapCoordinatesFlags;
 
-const int caretWidth = 1;
+const LayoutUnit& caretWidth();
 
 struct AnnotatedRegionValue {
     bool operator==(const AnnotatedRegionValue& o) const

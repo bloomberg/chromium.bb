@@ -106,6 +106,12 @@ static bool gDisablePaintInvalidationStateAsserts = false;
 
 using namespace HTMLNames;
 
+const LayoutUnit& caretWidth()
+{
+    static LayoutUnit gCaretWidth(1);
+    return gCaretWidth;
+}
+
 #if ENABLE(ASSERT)
 
 LayoutObject::SetLayoutNeededForbiddenScope::SetLayoutNeededForbiddenScope(LayoutObject& layoutObject)

@@ -22,7 +22,6 @@
 #ifndef SVGInlineTextBox_h
 #define SVGInlineTextBox_h
 
-#include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/svg/SVGTextLayoutEngine.h"
 
@@ -34,18 +33,18 @@ public:
 
     virtual bool isSVGInlineTextBox() const override { return true; }
 
-    virtual FloatWillBeLayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
-    void setLogicalHeight(FloatWillBeLayoutUnit height) { m_logicalHeight = height; }
+    virtual LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
+    void setLogicalHeight(LayoutUnit height) { m_logicalHeight = height; }
 
-    virtual int offsetForPosition(FloatWillBeLayoutUnit x, bool includePartialGlyphs = true) const override;
-    virtual FloatWillBeLayoutUnit positionForOffset(int offset) const override;
+    virtual int offsetForPosition(LayoutUnit x, bool includePartialGlyphs = true) const override;
+    virtual LayoutUnit positionForOffset(int offset) const override;
 
     virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
     virtual LayoutRect localSelectionRect(int startPosition, int endPosition) override;
 
     bool mapStartEndPositionsIntoFragmentCoordinates(const SVGTextFragment&, int& startPosition, int& endPosition) const;
 
-    virtual FloatRectWillBeLayoutRect calculateBoundaries() const override;
+    virtual LayoutRect calculateBoundaries() const override;
 
     void clearTextFragments() { m_textFragments.clear(); }
     Vector<SVGTextFragment>& textFragments() { return m_textFragments; }
@@ -56,17 +55,17 @@ public:
     bool startsNewTextChunk() const { return m_startsNewTextChunk; }
     void setStartsNewTextChunk(bool newTextChunk) { m_startsNewTextChunk = newTextChunk; }
 
-    int offsetForPositionInFragment(const SVGTextFragment&, FloatWillBeLayoutUnit position, bool includePartialGlyphs) const;
+    int offsetForPositionInFragment(const SVGTextFragment&, LayoutUnit position, bool includePartialGlyphs) const;
     FloatRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, const ComputedStyle&);
     TextRun constructTextRun(const ComputedStyle&, const SVGTextFragment&) const;
 
 private:
-    virtual void paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&, bool) override final;
-    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&) override final;
+    virtual void paintDocumentMarker(GraphicsContext*, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&, bool) override final;
+    virtual void paintTextMatchMarker(GraphicsContext*, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&) override final;
 
     virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 
-    FloatWillBeLayoutUnit m_logicalHeight;
+    LayoutUnit m_logicalHeight;
     bool m_startsNewTextChunk : 1;
     Vector<SVGTextFragment> m_textFragments;
 };

@@ -275,7 +275,7 @@ LayoutRect LayoutInline::localCaretRect(InlineBox* inlineBox, int, LayoutUnit* e
     if (InlineBox* firstBox = firstLineBox()) {
         // FIXME: the call to roundedLayoutPoint() below is temporary and should be removed once
         // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-        caretRect.moveBy(firstBox->topLeft().roundedLayoutPoint());
+        caretRect.moveBy(firstBox->topLeft());
     }
 
     return caretRect;
@@ -561,9 +561,9 @@ void LayoutInline::generateLineBoxRects(GeneratorContext& yield) const
         generateCulledLineBoxRects(yield, this);
     } else if (InlineFlowBox* curr = firstLineBox()) {
         for (; curr; curr = curr->nextLineBox())
-            yield(FloatRect(curr->topLeft().toFloatPoint(), curr->size().toFloatSize()));
+            yield(LayoutRect(curr->topLeft(), curr->size()));
     } else {
-        yield(FloatRect());
+        yield(LayoutRect());
     }
 }
 
@@ -571,7 +571,7 @@ template<typename GeneratorContext>
 void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const LayoutInline* container) const
 {
     if (!culledInlineFirstLineBox()) {
-        yield(FloatRect());
+        yield(LayoutRect());
         return;
     }
 
@@ -590,9 +590,9 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
                 int logicalTop = rootBox.logicalTop() + (rootBox.layoutObject().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
                 int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
                 if (isHorizontal)
-                    yield(FloatRect(currBox->inlineBoxWrapper()->x() - currBox->marginLeft(), logicalTop, (currBox->size().width() + currBox->marginWidth()).toFloat(), logicalHeight));
+                    yield(LayoutRect(currBox->inlineBoxWrapper()->x() - currBox->marginLeft(), logicalTop, currBox->size().width() + currBox->marginWidth(), logicalHeight));
                 else
-                    yield(FloatRect(logicalTop, currBox->inlineBoxWrapper()->y() - currBox->marginTop(), logicalHeight, (currBox->size().height() + currBox->marginHeight()).toFloat()));
+                    yield(LayoutRect(logicalTop, currBox->inlineBoxWrapper()->y() - currBox->marginTop(), logicalHeight, currBox->size().height() + currBox->marginHeight()));
             }
         } else if (curr->isLayoutInline()) {
             // If the child doesn't need line boxes either, then we can recur.
@@ -605,12 +605,12 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
                     int logicalTop = rootBox.logicalTop() + (rootBox.layoutObject().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
                     int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
                     if (isHorizontal) {
-                        yield(FloatRect(childLine->x() - childLine->marginLogicalLeft(),
+                        yield(LayoutRect(childLine->x() - childLine->marginLogicalLeft(),
                             logicalTop,
                             childLine->logicalWidth() + childLine->marginLogicalLeft() + childLine->marginLogicalRight(),
                             logicalHeight));
                     } else {
-                        yield(FloatRect(logicalTop,
+                        yield(LayoutRect(logicalTop,
                             childLine->y() - childLine->marginLogicalLeft(),
                             logicalHeight,
                             childLine->logicalWidth() + childLine->marginLogicalLeft() + childLine->marginLogicalRight()));
@@ -624,9 +624,9 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
                 int logicalTop = rootBox.logicalTop() + (rootBox.layoutObject().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
                 int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
                 if (isHorizontal)
-                    yield(FloatRect(childText->x(), logicalTop, childText->logicalWidth(), logicalHeight));
+                    yield(LayoutRect(childText->x(), logicalTop, childText->logicalWidth(), logicalHeight));
                 else
-                    yield(FloatRect(logicalTop, childText->y(), logicalHeight, childText->logicalWidth()));
+                    yield(LayoutRect(logicalTop, childText->y(), logicalHeight, childText->logicalWidth()));
             }
         }
     }
@@ -640,7 +640,7 @@ public:
         : m_rects(rects)
         , m_accumulatedOffset(accumulatedOffset) { }
 
-    void operator()(const FloatRect& rect)
+    void operator()(const LayoutRect& rect)
     {
         IntRect intRect = enclosingIntRect(rect);
         intRect.move(m_accumulatedOffset.x(), m_accumulatedOffset.y());
@@ -704,9 +704,7 @@ LayoutUnit LayoutInline::offsetLeft() const
 {
     LayoutPoint topLeft;
     if (InlineBox* firstBox = firstLineBoxIncludingCulling()) {
-        // FIXME: the call to flooredLayoutPoint() below is temporary and should be removed once
-        // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-        topLeft = firstBox->topLeft().flooredLayoutPoint();
+        topLeft = firstBox->topLeft();
     }
     return adjustedPositionRelativeToOffsetParent(topLeft).x();
 }
@@ -715,9 +713,7 @@ LayoutUnit LayoutInline::offsetTop() const
 {
     LayoutPoint topLeft;
     if (InlineBox* firstBox = firstLineBoxIncludingCulling()) {
-        // FIXME: the call to flooredLayoutPoint() below is temporary and should be removed once
-        // the transition to LayoutUnit-based types is complete (crbug.com/321237)
-        topLeft = firstBox->topLeft().flooredLayoutPoint();
+        topLeft = firstBox->topLeft();
     }
     return adjustedPositionRelativeToOffsetParent(topLeft).y();
 }
@@ -879,8 +875,8 @@ IntRect LayoutInline::linesBoundingBox() const
     ASSERT(!firstLineBox() == !lastLineBox()); // Either both are null or both exist.
     if (firstLineBox() && lastLineBox()) {
         // Return the width of the minimal left side and the maximal right side.
-        float logicalLeftSide = 0;
-        float logicalRightSide = 0;
+        LayoutUnit logicalLeftSide = 0;
+        LayoutUnit logicalRightSide = 0;
         for (InlineFlowBox* curr = firstLineBox(); curr; curr = curr->nextLineBox()) {
             if (curr == firstLineBox() || curr->logicalLeft() < logicalLeftSide)
                 logicalLeftSide = curr->logicalLeft();
@@ -890,11 +886,11 @@ IntRect LayoutInline::linesBoundingBox() const
 
         bool isHorizontal = style()->isHorizontalWritingMode();
 
-        float x = isHorizontal ? logicalLeftSide : firstLineBox()->x().toFloat();
-        float y = isHorizontal ? firstLineBox()->y().toFloat() : logicalLeftSide;
-        float width = isHorizontal ? logicalRightSide - logicalLeftSide : lastLineBox()->logicalBottom() - x;
-        float height = isHorizontal ? lastLineBox()->logicalBottom() - y : logicalRightSide - logicalLeftSide;
-        result = enclosingIntRect(FloatRect(x, y, width, height));
+        LayoutUnit x = isHorizontal ? logicalLeftSide : firstLineBox()->x();
+        LayoutUnit y = isHorizontal ? firstLineBox()->y() : logicalLeftSide;
+        LayoutUnit width = isHorizontal ? logicalRightSide - logicalLeftSide : lastLineBox()->logicalBottom() - x;
+        LayoutUnit height = isHorizontal ? lastLineBox()->logicalBottom() - y : logicalRightSide - logicalLeftSide;
+        result = enclosingIntRect(LayoutRect(x, y, width, height));
     }
 
     return result;
@@ -1334,7 +1330,7 @@ LayoutSize LayoutInline::offsetForInFlowPositionedInline(const LayoutBox& child)
     LayoutUnit inlinePosition;
     LayoutUnit blockPosition;
     if (firstLineBox()) {
-        inlinePosition = LayoutUnit::fromFloatRound(firstLineBox()->logicalLeft());
+        inlinePosition = firstLineBox()->logicalLeft();
         blockPosition = firstLineBox()->logicalTop();
     } else {
         inlinePosition = layer()->staticInlinePosition();

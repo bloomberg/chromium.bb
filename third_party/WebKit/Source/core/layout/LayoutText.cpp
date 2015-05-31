@@ -322,7 +322,7 @@ String LayoutText::plainText() const
 void LayoutText::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const
 {
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
-        rects.append(enclosingIntRect(FloatRect(FloatPoint(accumulatedOffset) + box->topLeft().toFloatPoint(), box->size().toFloatSize())));
+        rects.append(enclosingIntRect(LayoutRect(LayoutPoint(accumulatedOffset) + box->topLeft(), box->size())));
 }
 
 static FloatRect localQuadForTextBox(InlineTextBox* box, unsigned start, unsigned end, bool useSelectionHeight)
@@ -361,7 +361,7 @@ void LayoutText::absoluteRectsForRange(Vector<IntRect>& rects, unsigned start, u
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
         // Note: box->end() returns the index of the last character, not the index past it
         if (start <= box->start() && box->end() < end) {
-            FloatRect r = box->calculateBoundaries().toFloatRect();
+            FloatRect r(box->calculateBoundaries());
             if (useSelectionHeight) {
                 LayoutRect selectionRect = box->localSelectionRect(start, end);
                 if (box->isHorizontal()) {
@@ -409,7 +409,7 @@ static IntRect ellipsisRectForBox(InlineTextBox* box, unsigned startPos, unsigne
 void LayoutText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed, ClippingOption option) const
 {
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-        FloatRect boundaries = box->calculateBoundaries().toFloatRect();
+        FloatRect boundaries(box->calculateBoundaries());
 
         // Shorten the width of this text box if it ends in an ellipsis.
         // FIXME: ellipsisRectForBox should switch to return FloatRect soon with the subpixellayout branch.
@@ -444,18 +444,18 @@ void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads, unsigned start,
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
         // Note: box->end() returns the index of the last character, not the index past it
         if (start <= box->start() && box->end() < end) {
-            FloatRect r = box->calculateBoundaries().toFloatRect();
+            LayoutRect r(box->calculateBoundaries());
             if (useSelectionHeight) {
                 LayoutRect selectionRect = box->localSelectionRect(start, end);
                 if (box->isHorizontal()) {
-                    r.setHeight(selectionRect.height().toFloat());
-                    r.setY(selectionRect.y().toFloat());
+                    r.setHeight(selectionRect.height());
+                    r.setY(selectionRect.y());
                 } else {
-                    r.setWidth(selectionRect.width().toFloat());
-                    r.setX(selectionRect.x().toFloat());
+                    r.setWidth(selectionRect.width());
+                    r.setX(selectionRect.x());
                 }
             }
-            quads.append(localToAbsoluteQuad(r, 0, wasFixed));
+            quads.append(localToAbsoluteQuad(FloatRect(r), 0, wasFixed));
         } else {
             FloatRect rect = localQuadForTextBox(box, start, end, useSelectionHeight);
             if (!rect.isZero())
@@ -645,17 +645,17 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
     int top = box->root().selectionTop();
 
     // Go ahead and round left to snap it to the nearest pixel.
-    float left = box->positionForOffset(caretOffset);
+    LayoutUnit left = box->positionForOffset(caretOffset);
 
     // Distribute the caret's width to either side of the offset.
-    int caretWidthLeftOfOffset = caretWidth / 2;
+    LayoutUnit caretWidthLeftOfOffset = caretWidth() / 2;
     left -= caretWidthLeftOfOffset;
-    int caretWidthRightOfOffset = caretWidth - caretWidthLeftOfOffset;
+    LayoutUnit caretWidthRightOfOffset = caretWidth() - caretWidthLeftOfOffset;
 
-    left = roundf(left);
+    left = left.round();
 
-    float rootLeft = box->root().logicalLeft();
-    float rootRight = box->root().logicalRight();
+    LayoutUnit rootLeft = box->root().logicalLeft();
+    LayoutUnit rootRight = box->root().logicalRight();
 
     // FIXME: should we use the width of the root inline box or the
     // width of the containing block for this?
@@ -665,10 +665,10 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
     LayoutBlock* cb = containingBlock();
     const ComputedStyle& cbStyle = cb->styleRef();
 
-    float leftEdge;
-    float rightEdge;
-    leftEdge = std::min<float>(0, rootLeft);
-    rightEdge = std::max<float>(cb->logicalWidth().toFloat(), rootRight);
+    LayoutUnit leftEdge;
+    LayoutUnit rightEdge;
+    leftEdge = std::min(LayoutUnit(), rootLeft);
+    rightEdge = std::max(cb->logicalWidth(), rootRight);
 
     bool rightAligned = false;
     switch (cbStyle.textAlign()) {
@@ -698,13 +698,13 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
 
     if (rightAligned) {
         left = std::max(left, leftEdge);
-        left = std::min(left, rootRight - caretWidth);
+        left = std::min(left, rootRight - caretWidth());
     } else {
         left = std::min(left, rightEdge - caretWidthRightOfOffset);
         left = std::max(left, rootLeft);
     }
 
-    return LayoutRect(style()->isHorizontalWritingMode() ? IntRect(left, top, caretWidth, height) : IntRect(top, left, height, caretWidth));
+    return LayoutRect(style()->isHorizontalWritingMode() ? IntRect(left, top, caretWidth(), height) : IntRect(top, left, height, caretWidth()));
 }
 
 ALWAYS_INLINE float LayoutText::widthFromCache(const Font& f, int start, int len, float xPos, TextDirection textDirection, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
@@ -724,15 +724,18 @@ ALWAYS_INLINE float LayoutText::widthFromCache(const Font& f, int start, int len
     return f.width(run, fallbackFonts, glyphOverflow);
 }
 
-void LayoutText::trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
-    FloatWillBeLayoutUnit& firstLineMinWidth, bool& hasBreakableStart,
-    FloatWillBeLayoutUnit& lastLineMinWidth, bool& hasBreakableEnd,
+void LayoutText::trimmedPrefWidths(LayoutUnit leadWidthLayoutUnit,
+    LayoutUnit& firstLineMinWidth, bool& hasBreakableStart,
+    LayoutUnit& lastLineMinWidth, bool& hasBreakableEnd,
     bool& hasBreakableChar, bool& hasBreak,
-    FloatWillBeLayoutUnit& firstLineMaxWidth, FloatWillBeLayoutUnit& lastLineMaxWidth,
-    FloatWillBeLayoutUnit& minWidth, FloatWillBeLayoutUnit& maxWidth, bool& stripFrontSpaces,
+    LayoutUnit& firstLineMaxWidth, LayoutUnit& lastLineMaxWidth,
+    LayoutUnit& minWidth, LayoutUnit& maxWidth, bool& stripFrontSpaces,
     TextDirection direction)
 {
     float floatMinWidth = 0.0f, floatMaxWidth = 0.0f;
+
+    // Convert leadWidth to a float here, to avoid multiple implict conversions below.
+    float leadWidth = leadWidthLayoutUnit.toFloat();
 
     bool collapseWhiteSpace = style()->collapseWhiteSpace();
     if (!collapseWhiteSpace)
@@ -747,12 +750,12 @@ void LayoutText::trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
     int len = textLength();
 
     if (!len || (stripFrontSpaces && text().impl()->containsOnlyWhitespace())) {
-        firstLineMinWidth = FloatWillBeLayoutUnit();
-        lastLineMinWidth = FloatWillBeLayoutUnit();
-        firstLineMaxWidth = FloatWillBeLayoutUnit();
-        lastLineMaxWidth = FloatWillBeLayoutUnit();
-        minWidth = FloatWillBeLayoutUnit();
-        maxWidth = FloatWillBeLayoutUnit();
+        firstLineMinWidth = LayoutUnit();
+        lastLineMinWidth = LayoutUnit();
+        firstLineMaxWidth = LayoutUnit();
+        lastLineMaxWidth = LayoutUnit();
+        minWidth = LayoutUnit();
+        maxWidth = LayoutUnit();
         hasBreak = false;
         return;
     }
@@ -801,20 +804,20 @@ void LayoutText::trimmedPrefWidths(FloatWillBeLayoutUnit leadWidth,
                 lastLineMaxWidth = widthFromCache(f, i, linelen, leadWidth + lastLineMaxWidth, direction, 0, 0);
                 if (firstLine) {
                     firstLine = false;
-                    leadWidth = FloatWillBeLayoutUnit();
+                    leadWidth = 0.f;
                     firstLineMaxWidth = lastLineMaxWidth;
                 }
                 i += linelen;
             } else if (firstLine) {
-                firstLineMaxWidth = FloatWillBeLayoutUnit();
+                firstLineMaxWidth = LayoutUnit();
                 firstLine = false;
-                leadWidth = FloatWillBeLayoutUnit();
+                leadWidth = 0.f;
             }
 
             if (i == len - 1) {
                 // A <pre> run that ends with a newline, as in, e.g.,
                 // <pre>Some text\n\n<span>More text</pre>
-                lastLineMaxWidth = FloatWillBeLayoutUnit();
+                lastLineMaxWidth = LayoutUnit();
             }
         }
     }
@@ -1457,7 +1460,7 @@ void LayoutText::positionLineBox(InlineBox* box)
     m_containsReversedText |= !s->isLeftToRightDirection();
 }
 
-float LayoutText::width(unsigned from, unsigned len, float xPos, TextDirection textDirection, bool firstLine, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
+float LayoutText::width(unsigned from, unsigned len, LayoutUnit xPos, TextDirection textDirection, bool firstLine, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
     if (from >= textLength())
         return 0;
@@ -1468,7 +1471,7 @@ float LayoutText::width(unsigned from, unsigned len, float xPos, TextDirection t
     return width(from, len, style(firstLine)->font(), xPos, textDirection, fallbackFonts, glyphOverflow);
 }
 
-float LayoutText::width(unsigned from, unsigned len, const Font& f, float xPos, TextDirection textDirection, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
+float LayoutText::width(unsigned from, unsigned len, const Font& f, LayoutUnit xPos, TextDirection textDirection, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
     ASSERT(from + len <= textLength());
     if (!textLength())
@@ -1491,7 +1494,7 @@ float LayoutText::width(unsigned from, unsigned len, const Font& f, float xPos, 
                 w = maxLogicalWidth();
             }
         } else {
-            w = widthFromCache(f, from, len, xPos, textDirection, fallbackFonts, glyphOverflow);
+            w = widthFromCache(f, from, len, xPos.toFloat(), textDirection, fallbackFonts, glyphOverflow);
         }
     } else {
         TextRun run = constructTextRun(const_cast<LayoutText*>(this), f, this, from, len, styleRef(), textDirection);
@@ -1500,7 +1503,7 @@ float LayoutText::width(unsigned from, unsigned len, const Font& f, float xPos, 
 
         run.setCodePath(canUseSimpleFontCodePath() ? TextRun::ForceSimple : TextRun::ForceComplex);
         run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
-        run.setXPos(xPos);
+        run.setXPos(xPos.toFloat());
         w = f.width(run, fallbackFonts, glyphOverflow);
     }
 
@@ -1518,9 +1521,9 @@ IntRect LayoutText::linesBoundingBox() const
         float logicalRightSide = 0;
         for (InlineTextBox* curr = firstTextBox(); curr; curr = curr->nextTextBox()) {
             if (curr == firstTextBox() || curr->logicalLeft() < logicalLeftSide)
-                logicalLeftSide = curr->logicalLeft();
+                logicalLeftSide = curr->logicalLeft().toFloat();
             if (curr == firstTextBox() || curr->logicalRight() > logicalRightSide)
-                logicalRightSide = curr->logicalRight();
+                logicalRightSide = curr->logicalRight().toFloat();
         }
 
         bool isHorizontal = style()->isHorizontalWritingMode();

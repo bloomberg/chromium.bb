@@ -134,14 +134,14 @@ ETextAlign LayoutRubyBase::textAlignmentForLine(bool /* endsWithSoftBreak */) co
     return JUSTIFY;
 }
 
-void LayoutRubyBase::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const
+void LayoutRubyBase::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, LayoutUnit& logicalLeft, LayoutUnit& logicalWidth) const
 {
     int maxPreferredLogicalWidth = this->maxPreferredLogicalWidth();
     if (maxPreferredLogicalWidth >= logicalWidth)
         return;
 
     // Inset the ruby base by half the inter-ideograph expansion amount.
-    float inset = (logicalWidth - maxPreferredLogicalWidth) / (expansionOpportunityCount + 1);
+    LayoutUnit inset = (logicalWidth - maxPreferredLogicalWidth) / (expansionOpportunityCount + 1);
 
     logicalLeft += inset / 2;
     logicalWidth -= inset;

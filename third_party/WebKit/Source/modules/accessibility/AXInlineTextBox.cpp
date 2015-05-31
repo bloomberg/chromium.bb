@@ -31,7 +31,6 @@
 
 #include "core/dom/Range.h"
 #include "core/layout/LayoutText.h"
-#include "core/layout/line/FloatToLayoutUnit.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/LayoutUnit.h"
 
@@ -97,15 +96,15 @@ void AXInlineTextBox::textCharacterOffsets(Vector<int>& offsets) const
         return;
 
     unsigned len = m_inlineTextBox->len();
-    Vector<FloatWillBeLayoutUnit> widths;
+    Vector<float> widths;
     m_inlineTextBox->characterWidths(widths);
     ASSERT(widths.size() == len);
     offsets.resize(len);
 
-    FloatWillBeLayoutUnit widthSoFar = 0;
+    float widthSoFar = 0;
     for (unsigned i = 0; i < len; i++) {
         widthSoFar += widths[i];
-        offsets[i] = widthSoFar.round();
+        offsets[i] = roundf(widthSoFar);
     }
 }
 

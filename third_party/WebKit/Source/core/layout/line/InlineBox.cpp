@@ -39,8 +39,8 @@ namespace blink {
 struct SameSizeAsInlineBox {
     virtual ~SameSizeAsInlineBox() { }
     void* a[4];
-    FloatPointWillBeLayoutPoint b;
-    FloatWillBeLayoutUnit c;
+    LayoutPoint b;
+    LayoutUnit c;
     uint32_t d : 32;
 #if ENABLE(ASSERT)
     bool f;
@@ -129,20 +129,20 @@ void InlineBox::showBox(int printedCharacters) const
 }
 #endif
 
-FloatWillBeLayoutUnit InlineBox::logicalHeight() const
+LayoutUnit InlineBox::logicalHeight() const
 {
     if (hasVirtualLogicalHeight())
         return virtualLogicalHeight();
 
     if (layoutObject().isText())
-        return m_bitfields.isText() ? FloatWillBeLayoutUnit(layoutObject().style(isFirstLineStyle())->fontMetrics().height()) : FloatWillBeLayoutUnit();
+        return m_bitfields.isText() ? LayoutUnit(layoutObject().style(isFirstLineStyle())->fontMetrics().height()) : LayoutUnit();
     if (layoutObject().isBox() && parent())
         return isHorizontal() ? toLayoutBox(layoutObject()).size().height() : toLayoutBox(layoutObject()).size().width();
 
     ASSERT(isInlineFlowBox());
     LayoutBoxModelObject* flowObject = boxModelObject();
     const FontMetrics& fontMetrics = layoutObject().style(isFirstLineStyle())->fontMetrics();
-    FloatWillBeLayoutUnit result = fontMetrics.height();
+    LayoutUnit result = fontMetrics.height();
     if (parent())
         result += flowObject->borderAndPaddingLogicalHeight();
     return result;
@@ -196,7 +196,7 @@ void InlineBox::attachLine()
         toLayoutBox(layoutObject()).setInlineBoxWrapper(this);
 }
 
-void InlineBox::adjustPosition(FloatWillBeLayoutUnit dx, FloatWillBeLayoutUnit dy)
+void InlineBox::adjustPosition(LayoutUnit dx, LayoutUnit dy)
 {
     m_topLeft.move(dx, dy);
 
@@ -314,7 +314,7 @@ bool InlineBox::canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidt
     return !(boxRect.intersects(ellipsisRect));
 }
 
-FloatWillBeLayoutUnit InlineBox::placeEllipsisBox(bool, FloatWillBeLayoutUnit, FloatWillBeLayoutUnit, FloatWillBeLayoutUnit, FloatWillBeLayoutUnit& truncatedWidth, bool&)
+LayoutUnit InlineBox::placeEllipsisBox(bool, LayoutUnit, LayoutUnit, LayoutUnit, LayoutUnit& truncatedWidth, bool&)
 {
     // Use -1 to mean "we didn't set the position."
     truncatedWidth += logicalWidth();
@@ -328,21 +328,21 @@ void InlineBox::clearKnownToHaveNoOverflow()
         parent()->clearKnownToHaveNoOverflow();
 }
 
-FloatPointWillBeLayoutPoint InlineBox::locationIncludingFlipping()
+LayoutPoint InlineBox::locationIncludingFlipping()
 {
-    return logicalPositionToPhysicalPoint(m_topLeft.toFloatPoint(), size().toFloatSize());
+    return logicalPositionToPhysicalPoint(m_topLeft, size());
 }
 
-FloatPointWillBeLayoutPoint InlineBox::logicalPositionToPhysicalPoint(const FloatPoint& point, const FloatSize& size)
+LayoutPoint InlineBox::logicalPositionToPhysicalPoint(const LayoutPoint& point, const LayoutSize& size)
 {
     if (!UNLIKELY(layoutObject().hasFlippedBlocksWritingMode()))
-        return FloatPointWillBeLayoutPoint(point.x(), point.y());
+        return LayoutPoint(point.x(), point.y());
 
     LayoutBlockFlow& block = root().block();
     if (block.style()->isHorizontalWritingMode())
-        return FloatPointWillBeLayoutPoint(point.x(), block.size().height() - size.height() - point.y());
+        return LayoutPoint(point.x(), block.size().height() - size.height() - point.y());
 
-    return FloatPointWillBeLayoutPoint(block.size().width() - size.width() - point.x(), point.y());
+    return LayoutPoint(block.size().width() - size.width() - point.x(), point.y());
 }
 
 LayoutRect InlineBox::logicalRectToPhysicalRect(const LayoutRect& current)
@@ -351,7 +351,7 @@ LayoutRect InlineBox::logicalRectToPhysicalRect(const LayoutRect& current)
     if (!isHorizontal()) {
         retval = retval.transposedRect();
     }
-    retval.setLocation(logicalPositionToPhysicalPoint(FloatPoint(retval.location()), FloatSize(retval.size())).toLayoutPoint());
+    retval.setLocation(logicalPositionToPhysicalPoint(retval.location(), retval.size()));
     return retval;
 }
 

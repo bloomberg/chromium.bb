@@ -410,7 +410,7 @@ static void writeTextRun(TextStream& ts, const LayoutText& o, const InlineTextBo
     // to detect any changes caused by the conversion to floating point. :(
     int x = run.x();
     int y = run.y();
-    int logicalWidth = ceilf(run.left() + run.logicalWidth()) - x;
+    int logicalWidth = (run.left() + run.logicalWidth()).ceil() - x;
 
     // FIXME: Table cell adjustment is temporary until results can be updated.
     if (o.containingBlock()->isTableCell())

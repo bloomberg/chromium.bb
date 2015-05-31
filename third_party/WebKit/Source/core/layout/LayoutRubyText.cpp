@@ -60,7 +60,7 @@ ETextAlign LayoutRubyText::textAlignmentForLine(bool endsWithSoftBreak) const
     return JUSTIFY;
 }
 
-void LayoutRubyText::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const
+void LayoutRubyText::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, LayoutUnit& logicalLeft, LayoutUnit& logicalWidth) const
 {
     ETextAlign textAlign = style()->textAlign();
     // FIXME: This check is bogus since user can set the initial value.
@@ -73,9 +73,9 @@ void LayoutRubyText::adjustInlineDirectionLineBounds(unsigned expansionOpportuni
 
     // Inset the ruby text by half the inter-ideograph expansion amount, but no more than a full-width
     // ruby character on each side.
-    float inset = (logicalWidth - maxPreferredLogicalWidth) / (expansionOpportunityCount + 1);
+    LayoutUnit inset = (logicalWidth - maxPreferredLogicalWidth) / (expansionOpportunityCount + 1);
     if (expansionOpportunityCount)
-        inset = std::min<float>(2 * style()->fontSize(), inset);
+        inset = std::min(LayoutUnit(2 * style()->fontSize()), inset);
 
     logicalLeft += inset / 2;
     logicalWidth -= inset;

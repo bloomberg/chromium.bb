@@ -32,7 +32,6 @@
 #include "core/layout/line/RootInlineBox.h"
 #include "core/style/ShapeValue.h"
 #include "platform/text/TextBreakIterator.h"
-#include "platform/text/TextRun.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 
@@ -271,7 +270,7 @@ public:
     virtual void paintSelection(const PaintInfo&, const LayoutPoint&) { }
 
 protected:
-    virtual void adjustInlineDirectionLineBounds(unsigned /* expansionOpportunityCount */, float& /* logicalLeft */, float& /* logicalWidth */) const { }
+    virtual void adjustInlineDirectionLineBounds(unsigned /* expansionOpportunityCount */, LayoutUnit& /* logicalLeft */, LayoutUnit& /* logicalWidth */) const { }
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
     virtual void computePreferredLogicalWidths() override;

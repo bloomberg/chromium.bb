@@ -6,11 +6,11 @@
 #define TextPainter_h
 
 #include "core/CoreExport.h"
-#include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/fonts/TextBlob.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/text/AtomicString.h"
@@ -31,7 +31,7 @@ class CORE_EXPORT TextPainter {
 public:
     struct Style;
 
-    TextPainter(GraphicsContext*, const Font&, const TextRun&, const FloatPoint& textOrigin, const FloatRect& textBounds, bool horizontal);
+    TextPainter(GraphicsContext*, const Font&, const TextRun&, const LayoutPoint& textOrigin, const LayoutRect& textBounds, bool horizontal);
     ~TextPainter();
 
     void setEmphasisMark(const AtomicString&, TextEmphasisPosition);
@@ -64,7 +64,7 @@ public:
     static Style selectionPaintingStyle(LayoutObject&, bool haveSelection, bool forceBlackText, bool isPrinting, const Style& textStyle);
 
     enum RotationDirection { Counterclockwise, Clockwise };
-    static AffineTransform rotation(const FloatRectWillBeLayoutRect& boxRect, RotationDirection);
+    static AffineTransform rotation(const LayoutRect& boxRect, RotationDirection);
 
 private:
     void updateGraphicsContext(const Style& style, GraphicsContextStateSaver& saver)
@@ -85,15 +85,15 @@ private:
     GraphicsContext* m_graphicsContext;
     const Font& m_font;
     const TextRun& m_run;
-    FloatPoint m_textOrigin;
-    FloatRect m_textBounds;
+    LayoutPoint m_textOrigin;
+    LayoutRect m_textBounds;
     bool m_horizontal;
     AtomicString m_emphasisMark;
     int m_emphasisMarkOffset;
     LayoutTextCombine* m_combinedText;
 };
 
-inline AffineTransform TextPainter::rotation(const FloatRectWillBeLayoutRect& boxRect, RotationDirection rotationDirection)
+inline AffineTransform TextPainter::rotation(const LayoutRect& boxRect, RotationDirection rotationDirection)
 {
     // Why this matrix is correct: consider the case of a clockwise rotation.
 

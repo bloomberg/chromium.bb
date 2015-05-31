@@ -33,9 +33,9 @@ void SVGInlineFlowBox::paint(const PaintInfo& paintInfo, const LayoutPoint& pain
     SVGInlineFlowBoxPainter(*this).paint(paintInfo, paintOffset);
 }
 
-FloatRectWillBeLayoutRect SVGInlineFlowBox::calculateBoundaries() const
+LayoutRect SVGInlineFlowBox::calculateBoundaries() const
 {
-    FloatRectWillBeLayoutRect childRect;
+    LayoutRect childRect;
     for (InlineBox* child = firstChild(); child; child = child->nextOnLine()) {
         if (!child->isSVGInlineTextBox() && !child->isSVGInlineFlowBox())
             continue;

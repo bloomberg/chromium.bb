@@ -109,7 +109,7 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
     } else {
         // We have a fill image that spans multiple lines.
         // FIXME: frameSize ought to be the same as rect.size().
-        LayoutSize frameSize(m_inlineFlowBox.width().toLayoutUnit(), m_inlineFlowBox.height().toLayoutUnit());
+        LayoutSize frameSize(m_inlineFlowBox.width(), m_inlineFlowBox.height());
         LayoutRect imageStripPaintRect = paintRectForImageStrip(rect.location(), frameSize, m_inlineFlowBox.layoutObject().style()->direction());
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
         paintInfo.context->clip(LayoutRect(rect.x(), rect.y(), m_inlineFlowBox.width(), m_inlineFlowBox.height()));

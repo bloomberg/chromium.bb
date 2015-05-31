@@ -385,7 +385,7 @@ static void writeLayoutSVGTextBox(TextStream& ts, const LayoutSVGText& text)
     if (!box)
         return;
 
-    ts << " " << enclosingIntRect(FloatRect(FloatPoint(text.location()), FloatSize(box->logicalWidth(), box->logicalHeight())));
+    ts << " " << enclosingIntRect(LayoutRect(LayoutPoint(text.location()), LayoutSize(box->logicalWidth(), box->logicalHeight())));
 
     // FIXME: Remove this hack, once the new text layout engine is completly landed. We want to preserve the old layout test results for now.
     ts << " contains 1 chunk(s)";

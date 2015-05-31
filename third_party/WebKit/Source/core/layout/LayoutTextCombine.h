@@ -37,21 +37,21 @@ public:
     bool isCombined() const { return m_isCombined; }
     float combinedTextWidth(const Font& font) const { return font.fontDescription().computedSize(); }
     const Font& originalFont() const { return parent()->style()->font(); }
-    void transformToInlineCoordinates(GraphicsContext&, const FloatRect& boxRect) const;
-    void transformLayoutRect(FloatRect& boxRect) const;
-    float inlineWidthForLayout() const;
+    void transformToInlineCoordinates(GraphicsContext&, const LayoutRect& boxRect) const;
+    void transformLayoutRect(LayoutRect& boxRect) const;
+    LayoutUnit inlineWidthForLayout() const;
 
     virtual const char* name() const override { return "LayoutTextCombine"; }
 
 private:
     virtual bool isCombineText() const override { return true; }
-    virtual float width(unsigned from, unsigned length, const Font&, float xPosition, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const override;
+    virtual float width(unsigned from, unsigned length, const Font&, LayoutUnit xPosition, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const override;
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     virtual void setTextInternal(PassRefPtr<StringImpl>) override;
     void updateIsCombined();
 
-    float offsetX(const FloatRect& boxRect) const;
-    float offsetXNoScale(const FloatRect& boxRect) const;
+    float offsetX(const LayoutRect& boxRect) const;
+    float offsetXNoScale(const LayoutRect& boxRect) const;
 
     float m_combinedTextWidth;
     float m_scaleX;
@@ -61,19 +61,19 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextCombine, isCombineText());
 
-inline float LayoutTextCombine::inlineWidthForLayout() const
+inline LayoutUnit LayoutTextCombine::inlineWidthForLayout() const
 {
     ASSERT(!m_needsFontUpdate);
-    return m_combinedTextWidth;
+    return LayoutUnit::fromFloatCeil(m_combinedTextWidth);
 }
 
-inline float LayoutTextCombine::offsetX(const FloatRect& boxRect) const
+inline float LayoutTextCombine::offsetX(const LayoutRect& boxRect) const
 {
     ASSERT(!m_needsFontUpdate);
     return (boxRect.height() - m_combinedTextWidth / m_scaleX) / 2;
 }
 
-inline float LayoutTextCombine::offsetXNoScale(const FloatRect& boxRect) const
+inline float LayoutTextCombine::offsetXNoScale(const LayoutRect& boxRect) const
 {
     ASSERT(!m_needsFontUpdate);
     return (boxRect.height() - m_combinedTextWidth) / 2;

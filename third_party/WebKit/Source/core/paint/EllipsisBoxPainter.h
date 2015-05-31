@@ -25,7 +25,7 @@ public:
 
 private:
     void paintEllipsis(const PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle&);
-    void paintSelection(GraphicsContext*, const FloatPoint&, const ComputedStyle&, const Font&);
+    void paintSelection(GraphicsContext*, const LayoutPoint&, const ComputedStyle&, const Font&);
 
     EllipsisBox& m_ellipsisBox;
 };

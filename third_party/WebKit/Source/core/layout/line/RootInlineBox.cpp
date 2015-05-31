@@ -113,7 +113,7 @@ bool RootInlineBox::lineCanAccommodateEllipsis(bool ltr, int blockEdge, int line
     return InlineFlowBox::canAccommodateEllipsis(ltr, blockEdge, ellipsisWidth);
 }
 
-FloatWillBeLayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool ltr, FloatWillBeLayoutUnit blockLeftEdge, FloatWillBeLayoutUnit blockRightEdge, FloatWillBeLayoutUnit ellipsisWidth)
+LayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool ltr, LayoutUnit blockLeftEdge, LayoutUnit blockRightEdge, LayoutUnit ellipsisWidth)
 {
     // Create an ellipsis box.
     EllipsisBox* ellipsisBox = new EllipsisBox(layoutObject(), ellipsisStr, this,
@@ -134,15 +134,15 @@ FloatWillBeLayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisS
     // of that glyph.  Mark all of the objects that intersect the ellipsis box as not painting (as being
     // truncated).
     bool foundBox = false;
-    FloatWillBeLayoutUnit truncatedWidth = 0;
-    FloatWillBeLayoutUnit position = placeEllipsisBox(ltr, blockLeftEdge, blockRightEdge, ellipsisWidth, truncatedWidth, foundBox);
+    LayoutUnit truncatedWidth = 0;
+    LayoutUnit position = placeEllipsisBox(ltr, blockLeftEdge, blockRightEdge, ellipsisWidth, truncatedWidth, foundBox);
     ellipsisBox->setLogicalLeft(position);
     return truncatedWidth;
 }
 
-FloatWillBeLayoutUnit RootInlineBox::placeEllipsisBox(bool ltr, FloatWillBeLayoutUnit blockLeftEdge, FloatWillBeLayoutUnit blockRightEdge, FloatWillBeLayoutUnit ellipsisWidth, FloatWillBeLayoutUnit &truncatedWidth, bool& foundBox)
+LayoutUnit RootInlineBox::placeEllipsisBox(bool ltr, LayoutUnit blockLeftEdge, LayoutUnit blockRightEdge, LayoutUnit ellipsisWidth, LayoutUnit &truncatedWidth, bool& foundBox)
 {
-    FloatWillBeLayoutUnit result = InlineFlowBox::placeEllipsisBox(ltr, blockLeftEdge, blockRightEdge, ellipsisWidth, truncatedWidth, foundBox);
+    LayoutUnit result = InlineFlowBox::placeEllipsisBox(ltr, blockLeftEdge, blockRightEdge, ellipsisWidth, truncatedWidth, foundBox);
     if (result == -1) {
         result = ltr ? blockRightEdge - ellipsisWidth : blockLeftEdge;
         truncatedWidth = blockRightEdge - blockLeftEdge;
@@ -166,7 +166,7 @@ bool RootInlineBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
     return InlineFlowBox::nodeAtPoint(result, locationInContainer, accumulatedOffset, lineTop, lineBottom);
 }
 
-void RootInlineBox::adjustPosition(FloatWillBeLayoutUnit dx, FloatWillBeLayoutUnit dy)
+void RootInlineBox::adjustPosition(LayoutUnit dx, LayoutUnit dy)
 {
     InlineFlowBox::adjustPosition(dx, dy);
     LayoutUnit blockDirectionDelta = isHorizontal() ? dy : dx; // The block direction delta is a LayoutUnit.
@@ -241,9 +241,9 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     return heightOfBlock + maxHeight;
 }
 
-FloatWillBeLayoutUnit RootInlineBox::maxLogicalTop() const
+LayoutUnit RootInlineBox::maxLogicalTop() const
 {
-    FloatWillBeLayoutUnit maxLogicalTop;
+    LayoutUnit maxLogicalTop;
     computeMaxLogicalTop(maxLogicalTop);
     return maxLogicalTop;
 }
