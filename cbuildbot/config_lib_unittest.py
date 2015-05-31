@@ -310,7 +310,8 @@ class ConfigClassTest(cros_test_lib.TestCase):
 
     config_str = config.SaveConfigToString()
     self.assertEqual(config_str, """{
-    "_default": {}
+    "_default": {},
+    "_templates": {}
 }""")
 
     loaded = config_lib.CreateConfigFromString(config_str)
@@ -330,7 +331,13 @@ class ConfigClassTest(cros_test_lib.TestCase):
         "foo": false,
         "hw_tests": []
     },
+    "_templates": {
+       "build": {
+            "baz": true
+       }
+    },
     "diff_build": {
+        "_template": "build",
         "bar": false,
         "foo": true,
         "name": "diff_build"
@@ -365,8 +372,10 @@ class ConfigClassTest(cros_test_lib.TestCase):
     # expectations.
     self.assertFalse(config['match_build'].foo)
     self.assertTrue(config['match_build'].bar)
+    self.assertFalse(config['match_build'].baz)
     self.assertTrue(config['diff_build'].foo)
     self.assertFalse(config['diff_build'].bar)
+    self.assertTrue(config['diff_build'].baz)
     self.assertTrue(config['parent_build'].bar)
     self.assertTrue(config['parent_build'].child_configs[0].bar)
     self.assertFalse(config['parent_build'].child_configs[1].bar)

@@ -47,6 +47,12 @@ class ConfigDumpTest(GenerateChromeosConfigTestBase):
         'configs defined in generate_chromeos_config.py. Run '
         'bin/cbuildbot_view_config > cbuildbot/config_dump.json')
 
+  def testSaveLoadReload(self):
+    """Make sure that loading and reloading the config is a no-op."""
+    dump = self.all_configs.SaveConfigToString()
+    loaded = config_lib.CreateConfigFromString(dump)
+    self.assertEqual(self.all_configs, loaded)
+
 
 class ConfigPickleTest(GenerateChromeosConfigTestBase):
   """Test that a config object is pickleable."""

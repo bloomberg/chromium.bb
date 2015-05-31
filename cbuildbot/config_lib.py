@@ -269,9 +269,6 @@ class HWTestConfig(object):
 class SiteConfig(dict):
   """This holds a set of named BuildConfig values."""
 
-  # Whether to use templates in config_dump.json.
-  ENABLE_TEMPLATES = False
-
   def __init__(self, defaults=None, templates=None):
     """Init."""
     super(SiteConfig, self).__init__()
@@ -397,6 +394,8 @@ class SiteConfig(dict):
     # this isn't needed.
     overrides['name'] = name
     overrides['_template'] = config.get('_template')
+    if config:
+      assert overrides['_template'], '%s inherits from non-template' % (name,)
 
     # Add ourselves into the global dictionary, adding in the defaults.
     new_config = config.derive(*inherits, **overrides)
@@ -470,16 +469,14 @@ class SiteConfig(dict):
       args: See the docstring of BuildConfig.derive.
       kwargs: See the docstring of BuildConfig.derive.
     """
-    if self.ENABLE_TEMPLATES:
-      kwargs['_template'] = name
+    kwargs['_template'] = name
 
     if args:
       cfg = args[0].derive(*args[1:], **kwargs)
     else:
       cfg = BuildConfig(*args, **kwargs)
 
-    if self.ENABLE_TEMPLATES:
-      self._templates[name] = cfg
+    self._templates[name] = cfg
 
     return cfg
 
@@ -492,8 +489,7 @@ class SiteConfig(dict):
       config_dict[k] = self.HideDefaults(v)
 
     config_dict['_default'] = default
-    if self.ENABLE_TEMPLATES:
-      config_dict['_templates'] = self._templates
+    config_dict['_templates'] = self._templates
 
     class _JSONEncoder(json.JSONEncoder):
       """Json Encoder that encodes objects as their dictionaries."""
