@@ -29,6 +29,7 @@
 #include "core/events/Event.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
@@ -254,6 +255,19 @@ FileList* FileInputType::createFileList(const Vector<FileChooserFileInfo>& files
         }
     }
     return fileList;
+}
+
+void FileInputType::countUsage()
+{
+    // It is required by isPrivilegedContext() but isn't
+    // actually used. This could be used later if a warning is shown in the
+    // developer console.
+    String insecureOriginMsg;
+    Document* document = &element().document();
+    if (document->isPrivilegedContext(insecureOriginMsg))
+        UseCounter::count(*document, UseCounter::InputTypeFileInsecureOrigin);
+    else
+        UseCounter::count(*document, UseCounter::InputTypeFileSecureOrigin);
 }
 
 void FileInputType::createShadowSubtree()

@@ -50,6 +50,8 @@ public:
     static Vector<FileChooserFileInfo> filesFromFormControlState(const FormControlState&);
     static FileList* createFileList(const Vector<FileChooserFileInfo>& files, bool hasWebkitDirectoryAttr);
 
+    void countUsage() override;
+
 private:
     FileInputType(HTMLInputElement&);
     const AtomicString& formControlType() const override;
