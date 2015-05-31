@@ -1,6 +1,6 @@
 ## visualmetrics
 
-Calculate visual performance metrics from a video (Speed Index, Visual Complete, Incremental progress, etc).  This is a command-line port of the [WebPagetest](https://github.com/WPO-Foundation/webpagetest) mobile video processing and metrics code.
+Calculate visual performance metrics from a video (Speed Index, Perceptual Speed Index, Visual Complete, Incremental progress, etc).  This is a command-line port of the [WebPagetest](https://github.com/WPO-Foundation/webpagetest) mobile video processing and metrics code.
 
 ## Requirements
 
@@ -10,6 +10,7 @@ visualmetrics requires several image processing tools be installed and available
 * **[compare](http://www.imagemagick.org/)**: Part of [Imagemagick](http://www.imagemagick.org/)
 * **[convert](http://www.imagemagick.org/)**: Part of [Imagemagick](http://www.imagemagick.org/)
 * **[Pillow](https://github.com/python-pillow/Pillow)**: Python imaging library
+* **[pyssim](https://github.com/jterrace/pyssim)**: Python module for Structural Similarity Image Metric (SSIM)
 
 The dependencies can be verified by running:
 ```bash
@@ -18,6 +19,7 @@ ffmpeg:   OK
 convert:  OK
 compare:  OK
 Pillow:   OK
+SSIM:     OK
 ```
 
 ## Command Line
@@ -40,6 +42,7 @@ $ python visualmetrics.py -h
 * **-s, --start**: Specify a starting time (in milliseconds) for calculating the various metrics.  All of the metrics except for Speed Index will still report an absolute time but will process the video frames in the requested interval.  Speed Index will be calculated relative to the starting point.
 * **-e, --end**: Specify an ending time (in milliseconds) for calculating the various metrics.
 * **-v, --verbose**: Display debug messages while processing. Specify multiple times (up to 4) to increase detail.
+* **-k, --perceptual**: Calculates perceptual speed Index for a given input video.
 
 ## Examples
 
@@ -50,4 +53,21 @@ Last Visual Change: 1955
 Visually Complete: 1955
 Speed Index: 1835
 Visual Progress: 0=0%, 1806=45%, 1827=48%, 1844=53%, 1861=99%, 1879=99%, 1901=98%, 1922=99%, 1938=99%, 1955=100%
+```
+
+```bash
+$ python visualmetrics.py --video tests/data/lemons/video.mp4 --dir frames --histogram histograms.json.gz --orange --viewport
+First Visual Change: 768
+Last Visual Change: 2884
+Speed Index: 1840
+Visual Progress: 0=0%, 768=23%, 785=24%, 1510=61%, 1545=61%, 1981=61%, 2015=61%, 2033=61%, 2069=61%, 2086=61%, 2105=61%, 2140=61%, 2175=61%, 2572=61%, 2589=61%, 2606=62%, 2623=62%, 2641=63%, 2658=57%, 2676=58%, 2694=58%, 2713=57%, 2731=58%, 2749=58%, 2770=89%, 2789=87%, 2809=87%, 2828=87%, 2884=100%
+```
+
+```bash
+$ python visualmetrics.py --video tests/data/lemons/video.mp4 --dir frames --histogram histograms.json.gz --orange --viewport --perceptual
+First Visual Change: 768
+Last Visual Change: 2884
+Speed Index: 1840
+Perceptual Speed Index: 892
+Visual Progress: 0=0%, 768=23%, 785=24%, 1510=61%, 1545=61%, 1981=61%, 2015=61%, 2033=61%, 2069=61%, 2086=61%, 2105=61%, 2140=61%, 2175=61%, 2572=61%, 2589=61%, 2606=62%, 2623=62%, 2641=63%, 2658=57%, 2676=58%, 2694=58%, 2713=57%, 2731=58%, 2749=58%, 2770=89%, 2789=87%, 2809=87%, 2828=87%, 2884=100%
 ```

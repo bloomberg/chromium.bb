@@ -35,7 +35,6 @@ import unittest
 
 
 class TestExec(unittest.TestCase):
-
     temp_dir = None
 
     def setUp(self):
@@ -57,17 +56,19 @@ class TestExec(unittest.TestCase):
         command = self._GetResourceFilename('../visualmetrics.py')
         return subprocess.Popen(['python', command] + args, **kwargs)
 
-    def _runTest(self, data_dir):
+    def _runTest(self, data_dir, check, add_args=None):
         video_path = self._GetResourceFilename(os.path.join(data_dir, 'video.mp4'))
         timeline_path = self._GetResourceFilename(os.path.join(data_dir, 'timeline.json'))
-        test_stdout_path = self._GetResourceFilename(os.path.join(data_dir, 'test_stdout.txt'))
+        test_stdout_path = self._GetResourceFilename(os.path.join(data_dir, check))
         args = [
-                '--force',
-                '-vv',
-                '--orange',
-                '--dir', self.temp_dir,
-                '--video', video_path,
-                '--timeline', timeline_path]
+            '--force',
+            '-vv',
+            '--orange',
+            '--dir', self.temp_dir,
+            '--video', video_path,
+            '--timeline', timeline_path]
+        if add_args:
+            args.append(add_args)
         process = self._Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         sys.stdout.write(stdout)
@@ -79,13 +80,16 @@ class TestExec(unittest.TestCase):
             sys.stdout.write(stdout)
             sys.stderr.write(stderr)
         self.assertEqual(retcode, 0)
-        #self.assertEqual(stderr, '')
+        # self.assertEqual(stderr, '')
         with open(test_stdout_path) as logfile:
             expected_stdout = logfile.read()
         self.assertEqual(stdout, expected_stdout)
 
     def test_lemons(self):
-        self._runTest('data/lemons')
+        self._runTest('data/lemons', check='test_stdout.txt')
+
+    def test_lemons_perceptual(self):
+        self._runTest('data/lemons', check='test_stdout_perceptual.txt', add_args='--perceptual')
 
 
 if __name__ == '__main__':
