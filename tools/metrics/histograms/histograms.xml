@@ -54681,6 +54681,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="785" label="CSSKeyframesRuleAnonymousIndexedGetter"/>
   <int value="786" label="V8Screen_AvailLeft_AttributeGetter"/>
   <int value="787" label="V8Screen_AvailTop_AttributeGetter"/>
+  <int value="788" label="ObjectObserve"/>
+  <int value="789" label="V8SVGAnimationElement_HasExtension_Method"/>
+  <int value="790" label="V8SVGCursorElement_HasExtension_Method"/>
+  <int value="791"
+      label="V8SVGFEConvolveMatrixElement_PreserveAlpha_AttributeGetter"/>
+  <int value="792" label="V8SVGFilterElement_FilterResX_AttributeGetter"/>
+  <int value="793" label="V8SVGFilterElement_FilterResY_AttributeGetter"/>
+  <int value="794" label="V8SVGFilterElement_SetFilterRes_Method"/>
+  <int value="795" label="V8SVGGraphicsElement_HasExtension_Method"/>
+  <int value="796" label="V8SVGMaskElement_HasExtension_Method"/>
+  <int value="797" label="V8SVGPatternElement_HasExtension_Method"/>
+  <int value="798" label="V8SVGStyleElement_Disabled_AttributeGetter"/>
+  <int value="799" label="V8SVGStyleElement_Disabled_AttributeSetter"/>
+  <int value="800"
+      label="ElementCreateShadowRootMultipleWithUserAgentShadowRoot"/>
+  <int value="801" label="InputTypeFileSecureOrigin"/>
+  <int value="802" label="InputTypeFileInsecureOrigin"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
