@@ -1351,8 +1351,14 @@ def _CreateConfigsForBoards(config_base, boards, name_suffix, **kwargs):
     config_name = '%s-%s' % (board, name_suffix)
     if config_name not in _CONFIG:
       base = config_lib.BuildConfig()
-      _CONFIG.AddConfig(config_base, config_name, base, _base_configs[board],
-                         **kwargs)
+      config = _CONFIG.AddConfig(config_base, config_name, base,
+                                 _base_configs[board], **kwargs)
+      if board in _nofactory_boards:
+        try:
+          config.get('images', []).remove('factory_install')
+        except ValueError:
+          pass
+
 
 _chromium_pfq_important_boards = frozenset([
   'arm-generic_freon',

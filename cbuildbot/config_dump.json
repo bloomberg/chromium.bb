@@ -17533,8 +17533,7 @@
         "images": [
             "base",
             "recovery",
-            "test",
-            "factory_install"
+            "test"
         ],
         "name": "daisy_winter-full",
         "prebuilts": "public",
@@ -17712,8 +17711,7 @@
         "images": [
             "base",
             "recovery",
-            "test",
-            "factory_install"
+            "test"
         ],
         "internal": true,
         "manifest": "official.xml",
@@ -56656,8 +56654,7 @@
         "images": [
             "base",
             "recovery",
-            "test",
-            "factory_install"
+            "test"
         ],
         "name": "smaug-full",
         "prebuilts": "public",
@@ -56836,8 +56833,7 @@
         "images": [
             "base",
             "recovery",
-            "test",
-            "factory_install"
+            "test"
         ],
         "internal": true,
         "manifest": "official.xml",
