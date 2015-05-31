@@ -27,6 +27,7 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
+import itertools
 import logging
 import re
 
@@ -74,10 +75,27 @@ class _W3CTestConverter(HTMLParser):
         # These settings might vary between WebKit and Blink
         self._css_property_file = self.path_from_webkit_root('Source', 'core', 'css', 'CSSProperties.in')
 
+        # prefixed_properties is a list of properties where we will add "-webkit-" on the front of each name.
+        # prefixed_values is a map of properties where we we will prefix each value.
+        # Property name can be also prefixed if included in the prefixed_properties.
+        # renamed_properties and renamed_values is a map where simply adding a prefix isn't good enough.
+        # TODO(kojii): other than prefixed_properties need to hard-code here, clean this up when we unprefix.
         self.prefixed_properties = self.read_webkit_prefixed_css_property_list()
+        self.prefixed_values = {
+            'unicode-bidi': ['isolate', 'isolate-override', 'plaintext']
+        }
+        self.renamed_properties = {
+            'text-combine-upright': '-webkit-text-combine'
+        }
+        self.renamed_values = {
+            'text-combine-upright': {'all': 'horizontal'}
+        }
 
-        self.prefixed_properties = self.read_webkit_prefixed_css_property_list()
-        prop_regex = '([\s{]|^)(' + "|".join(prop.replace('-webkit-', '') for prop in self.prefixed_properties) + ')(\s+:|:)'
+        prop_regex = '([\s{]|^)(' + "|".join(itertools.chain(
+            self.renamed_properties.iterkeys(),
+            self.renamed_values.iterkeys(),
+            self.prefixed_values.iterkeys(),
+            (prop.replace('-webkit-', '') for prop in self.prefixed_properties))) + ')(\s+:|:[^;]*)'
         self.prop_re = re.compile(prop_regex)
 
     def output(self):
@@ -103,6 +121,12 @@ class _W3CTestConverter(HTMLParser):
             else:
                 unprefixed_properties.add(prop.strip())
 
+        # SVG writing-mode exists, but CSS writing-mode is still prefixed.
+        # They are two separate properties, so we need to pick one unless we calculates which elements it applies to.
+        # Using file type can mitigate the issue, but we still can't support HTML/SVG mixed files at this moment.
+        # TODO(kojii): Clean this up when we unprefix writing-mode.
+        unprefixed_properties.discard('writing-mode')
+
         # Ignore any prefixed properties for which an unprefixed version is supported
         return [prop for prop in prefixed_properties if prop not in unprefixed_properties]
 
@@ -115,8 +139,17 @@ class _W3CTestConverter(HTMLParser):
         text_chunks = []
         cur_pos = 0
         for m in self.prop_re.finditer(text):
-            text_chunks.extend([text[cur_pos:m.start()], m.group(1), '-webkit-', m.group(2), m.group(3)])
-            converted_properties.add(m.group(2))
+            text_chunks.extend([text[cur_pos:m.start()], m.group(1)])
+            property = m.group(2)
+            oldProperty = self.renamed_properties.get(property)
+            if oldProperty:
+                text_chunks.append(oldProperty)
+            elif property in self.prefixed_properties:
+                text_chunks.extend(['-webkit-', property])
+            else:
+                text_chunks.append(property)
+            text_chunks.append(self.add_webkit_prefix_to_unprefixed_value(property, m.group(3)))
+            converted_properties.add(property)
             cur_pos = m.end()
         text_chunks.append(text[cur_pos:])
 
@@ -125,6 +158,15 @@ class _W3CTestConverter(HTMLParser):
 
         # FIXME: Handle the JS versions of these properties and GetComputedStyle, too.
         return (converted_properties, ''.join(text_chunks))
+
+    def add_webkit_prefix_to_unprefixed_value(self, property, text):
+        renamed_values = self.renamed_values.get(property)
+        if renamed_values:
+            text = re.sub("|".join(renamed_values.iterkeys()), lambda m: renamed_values[m.group(0)], text)
+        prefixed_values = self.prefixed_values.get(property)
+        if prefixed_values:
+            text = re.sub("|".join(prefixed_values), lambda m: '-webkit-' + m.group(0), text)
+        return text
 
     def convert_reference_relpaths(self, text):
         """ Searches |text| for instances of files in reference_support_info and updates the relative path to be correct for the new ref file location"""
