@@ -46,8 +46,8 @@ layer at (8,8) size 769x1376 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutInline {CODE} at (0,0) size 63x30
                 LayoutText {#text} at (153,8) size 63x30
                   text run at (153,8) width 63: "BODY"
-              LayoutText {#text} at (215,1) size 69x36
-                text run at (215,1) width 69: " and "
+              LayoutText {#text} at (215,1) size 68x36
+                text run at (215,1) width 68: " and "
               LayoutInline {CODE} at (0,0) size 63x30
                 LayoutText {#text} at (283,8) size 63x30
                   text run at (283,8) width 63: "HEAD"

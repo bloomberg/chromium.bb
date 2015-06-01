@@ -51,19 +51,19 @@ layer at (0,0) size 800x492
                 text run at (3,3) width 11 RTL: "\x{5D0}"
                 text run at (13,3) width 6: "."
               LayoutBR {BR} at (18,18) size 1x0
-              LayoutText {#text} at (3,21) size 10x18
-                text run at (3,21) width 10 RTL: "\x{5D1}"
+              LayoutText {#text} at (3,21) size 9x18
+                text run at (3,21) width 9 RTL: "\x{5D1}"
             LayoutTableCell {TD} at (94,64) size 33x41 [border: (1px solid #008000)] [r=2 c=2 rs=1 cs=1]
               LayoutText {#text} at (3,3) size 16x36
                 text run at (3,3) width 16 RTL: "\x{5D0}."
-                text run at (3,21) width 10 RTL: "\x{5D1}"
+                text run at (3,21) width 9 RTL: "\x{5D1}"
             LayoutTableCell {TD} at (127,64) size 45x41 [border: (1px solid #008000)] [r=2 c=3 rs=1 cs=1]
               LayoutBlockFlow {P} at (3,3) size 40x18
                 LayoutText {#text} at (0,0) size 16x18
                   text run at (0,0) width 16 LTR override: ".\x{5D0}"
               LayoutBlockFlow {P} at (3,21) size 40x18
-                LayoutText {#text} at (0,0) size 10x18
-                  text run at (0,0) width 10 LTR override: "\x{5D1}"
+                LayoutText {#text} at (0,0) size 9x18
+                  text run at (0,0) width 9 LTR override: "\x{5D1}"
           LayoutTableRow {TR} at (0,105) size 172x41
             LayoutTableCell {TD} at (0,114) size 49x23 [border: (1px solid #008000)] [r=3 c=0 rs=1 cs=1]
               LayoutText {#text} at (3,3) size 11x18

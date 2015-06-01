@@ -154,10 +154,10 @@ layer at (0,0) size 800x424
         LayoutInline {CODE} at (0,0) size 32x15
           LayoutText {#text} at (31,20) size 32x15
             text run at (31,20) width 32: "auto"
-        LayoutText {#text} at (62,18) size 198x18
-          text run at (62,18) width 198: " (with 70% margin-right), and "
-        LayoutInline {CODE} at (0,0) size 32x15
-          LayoutText {#text} at (259,20) size 32x15
-            text run at (259,20) width 32: "auto"
+        LayoutText {#text} at (62,18) size 197x18
+          text run at (62,18) width 197: " (with 70% margin-right), and "
+        LayoutInline {CODE} at (0,0) size 33x15
+          LayoutText {#text} at (258,20) size 33x15
+            text run at (258,20) width 33: "auto"
         LayoutText {#text} at (290,18) size 5x18
           text run at (290,18) width 5: "."

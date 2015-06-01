@@ -44,9 +44,9 @@ layer at (0,0) size 785x1314 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (460,36) width 51: "Header"
         LayoutText {#text} at (510,36) size 182x17
           text run at (510,36) width 182: " cells by default are aligned "
-        LayoutInline {B} at (0,0) size 68x17
-          LayoutText {#text} at (691,36) size 68x17
-            text run at (691,36) width 68: "CENTER"
+        LayoutInline {B} at (0,0) size 67x17
+          LayoutText {#text} at (691,36) size 67x17
+            text run at (691,36) width 67: "CENTER"
         LayoutText {#text} at (0,54) size 64x17
           text run at (0,54) width 64: "while the "
         LayoutInline {B} at (0,0) size 33x17

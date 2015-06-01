@@ -283,7 +283,7 @@ layer at (0,0) size 785x1340 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                                   LayoutText {#text} at (0,0) size 62x90
                                     text run at (0,0) width 50: "Internet"
                                     text run at (0,18) width 62: "exploring"
-                                    text run at (0,36) width 25: "still"
+                                    text run at (0,36) width 24: "still"
                                     text run at (0,54) width 45: "doesn't"
                                     text run at (0,72) width 37: "work."
                                 LayoutBlockFlow {P} at (1,195) size 63x72

@@ -415,8 +415,8 @@ layer at (0,0) size 785x2466 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutTableSection {TFOOT} at (0,371) size 198x17
           LayoutTableRow {TR} at (0,0) size 198x15
             LayoutTableCell {TD} at (2,0) size 96x15 [r=0 c=0 rs=1 cs=2]
-              LayoutText {#text} at (1,1) size 46x13
-                text run at (1,1) width 46: "FOOTER"
+              LayoutText {#text} at (1,1) size 45x13
+                text run at (1,1) width 45: "FOOTER"
         LayoutBlockFlow {CAPTION} at (0,406) size 198x18
           LayoutText {#text} at (4,0) size 190x18
             text run at (4,0) width 190: "Table 5 has a scrolling tbody."

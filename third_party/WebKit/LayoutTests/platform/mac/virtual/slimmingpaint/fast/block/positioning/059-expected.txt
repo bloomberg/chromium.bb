@@ -19,7 +19,7 @@ layer at (8,8) size 784x54
         text run at (395,18) width 269: "This is a test of section 10.3.7 in CSS2.1. "
         text run at (663,18) width 118: "In particular it is a"
         text run at (0,36) width 224: "test of the shrink-to-fit algorithm's "
-        text run at (223,36) width 255: "preferred minimum width computation."
+        text run at (223,36) width 254: "preferred minimum width computation."
 layer at (8,62) size 0x0
   LayoutBlockFlow (positioned) {DIV} at (0,54) size 0x0
 layer at (8,62) size 100x108

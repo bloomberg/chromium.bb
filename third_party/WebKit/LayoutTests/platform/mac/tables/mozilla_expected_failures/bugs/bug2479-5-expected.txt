@@ -46,8 +46,8 @@ layer at (8,8) size 769x1410 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutInline {CODE} at (0,0) size 63x30
                 LayoutText {#text} at (153,6) size 63x30
                   text run at (153,6) width 63: "BODY"
-              LayoutText {#text} at (215,1) size 69x37
-                text run at (215,1) width 69: " and "
+              LayoutText {#text} at (215,1) size 68x37
+                text run at (215,1) width 68: " and "
               LayoutInline {CODE} at (0,0) size 63x30
                 LayoutText {#text} at (283,6) size 63x30
                   text run at (283,6) width 63: "HEAD"
@@ -98,9 +98,9 @@ layer at (8,8) size 769x1410 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (1,73) width 403: "document title, and another dotted bordered box containing the"
                 text run at (1,91) width 191: "stylesheet, also shown below:"
             LayoutBlockFlow {PRE} at (21,575) size 456x17 [border: (1px dotted #FFFF00)]
-              LayoutText {#text} at (1,1) size 40x15
-                text run at (1,1) width 40: "  ..."
-                text run at (40,1) width 1: " "
+              LayoutText {#text} at (1,1) size 39x15
+                text run at (1,1) width 39: "  ..."
+                text run at (40,1) width 0: " "
             LayoutBlockFlow {P} at (21,608) size 456x38 [border: (1px dotted #FFFF00)]
               LayoutText {#text} at (1,1) size 419x36
                 text run at (1,1) width 419: "The dotted borders and lines and the text in the left cell should be"

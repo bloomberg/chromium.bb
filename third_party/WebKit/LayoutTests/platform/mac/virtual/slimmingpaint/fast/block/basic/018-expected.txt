@@ -22,8 +22,8 @@ layer at (0,0) size 800x258
       LayoutBlockFlow {P} at (0,208) size 784x18
         LayoutText {#text} at (0,0) size 55x18
           text run at (0,0) width 55: "(W3C: \x{201C}"
-        LayoutInline {A} at (0,0) size 202x18 [color=#0000EE]
-          LayoutText {#text} at (54,0) size 202x18
-            text run at (54,0) width 202: "By default, the rule is centered."
+        LayoutInline {A} at (0,0) size 201x18 [color=#0000EE]
+          LayoutText {#text} at (54,0) size 201x18
+            text run at (54,0) width 201: "By default, the rule is centered."
         LayoutText {#text} at (255,0) size 13x18
           text run at (255,0) width 13: "\x{201D})"

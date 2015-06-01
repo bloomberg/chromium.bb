@@ -105,7 +105,7 @@ layer at (0,0) size 800x600
           LayoutBlockFlow {P} at (0,0) size 744x18
             LayoutListMarker (anonymous) at (-20,0) size 16x17: "6"
             LayoutText {#text} at (0,0) size 638x17
-              text run at (0,0) width 448: "The following text should show that fontconfig can be used to enable "
+              text run at (0,0) width 447: "The following text should show that fontconfig can be used to enable "
               text run at (447,0) width 191: "or disable subpixel rendering."
           LayoutBlockFlow {P} at (0,34) size 744x18
             LayoutInline {SPAN} at (0,0) size 55x17

@@ -189,8 +189,8 @@ layer at (0,0) size 785x1198 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (18,2) size 16x18
                 text run at (18,2) width 16: "hu"
             LayoutTableCell {TD} at (56,225) size 711x23 [border: (1px solid #EEEEEE)] [r=6 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,3) size 120x18
-                text run at (2,3) width 120: "11-ei London\x{2011}ban"
+              LayoutText {#text} at (2,3) size 119x18
+                text run at (2,3) width 119: "11-ei London\x{2011}ban"
           LayoutTableRow {TR} at (0,250) size 769x22
             LayoutTableCell {TH} at (2,250) size 52x22 [bgcolor=#F8F8F8] [border: (1px solid #EEEEEE)] [r=7 c=0 rs=1 cs=1]
               LayoutText {#text} at (19,2) size 14x18

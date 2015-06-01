@@ -4,9 +4,9 @@ layer at (0,0) size 800x148
   LayoutBlockFlow {html} at (0,0) size 800x148
     LayoutBlockFlow {body} at (8,16) size 784x124
       LayoutBlockFlow {p} at (0,0) size 784x18
-        LayoutText {#text} at (0,0) size 432x18
+        LayoutText {#text} at (0,0) size 431x18
           text run at (0,0) width 385: "No side of the frame surrounding the table below should be "
-          text run at (384,0) width 48: "visible."
+          text run at (384,0) width 47: "visible."
       LayoutTable {table} at (0,34) size 185x90
         LayoutTableCol {colgroup} at (0,0) size 0x0
           LayoutTableCol {col} at (0,0) size 0x0

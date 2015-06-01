@@ -76,9 +76,9 @@ layer at (0,0) size 785x2766 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (1,1) size 31x17
                 text run at (1,1) width 31: "Data"
       LayoutBlockFlow {P} at (0,478.44) size 769x18
-        LayoutText {#text} at (0,0) size 695x17
+        LayoutText {#text} at (0,0) size 694x17
           text run at (0,0) width 370: "The next four tables should have their caption on the top, "
-          text run at (369,0) width 326: "with a 20px gap between the table and the caption."
+          text run at (369,0) width 325: "with a 20px gap between the table and the caption."
       LayoutTable {TABLE} at (0,516.44) size 92x108 [border: (10px solid #008000)]
         LayoutBlockFlow {CAPTION} at (0,0) size 92x42 [border: (3px solid #800080)]
           LayoutText {#text} at (11,3) size 70x35

@@ -96,8 +96,8 @@ layer at (0,0) size 785x1460 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (14,14) size 50x27
                 text run at (14,14) width 50: "TD E"
             LayoutTableCell {TD} at (144,38) size 220x31 [border: (1px dotted #FFFFFF)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 49x27
-                text run at (2,2) width 49: "TD F"
+              LayoutText {#text} at (2,2) size 48x27
+                text run at (2,2) width 48: "TD F"
             LayoutTableCell {TD} at (371,30) size 118x47 [border: (9px dashed #FFFFFF)] [r=0 c=2 rs=1 cs=1]
               LayoutText {#text} at (10,10) size 52x27
                 text run at (10,10) width 52: "TD G"
@@ -106,14 +106,14 @@ layer at (0,0) size 785x1460 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 52: "TD H"
           LayoutTableRow {TR} at (0,115) size 624x84 [bgcolor=#000000] [border: (5px dashed #FFFFFF)]
             LayoutTableCell {TD} at (144,141) size 220x31 [border: (1px dotted #FFFFFF)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 49x27
-                text run at (2,2) width 49: "TD J"
+              LayoutText {#text} at (2,2) size 48x27
+                text run at (2,2) width 48: "TD J"
             LayoutTableCell {TD} at (371,137) size 118x39 [border: (5px dashed #FFFFFF)] [r=1 c=2 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 52x27
                 text run at (6,6) width 52: "TD K"
             LayoutTableCell {TD} at (496,141) size 121x31 [border: (1px dotted #FFFFFF)] [r=1 c=3 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 49x27
-                text run at (2,2) width 49: "TD L"
+              LayoutText {#text} at (2,2) size 48x27
+                text run at (2,2) width 48: "TD L"
       LayoutTable {TABLE} at (0,921.78) size 590x461 [color=#FFFFFF] [border: (6px dotted #FFFFFF)]
         LayoutBlockFlow {CAPTION} at (0,0) size 590x27
           LayoutText {#text} at (130,0) size 330x27
@@ -155,8 +155,8 @@ layer at (0,0) size 785x1460 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (8,8) size 50x27
                 text run at (8,8) width 50: "TD E"
             LayoutTableCell {TD} at (137,37) size 207x40 [border: (7px dotted #FFFFFF)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (8,8) size 49x27
-                text run at (8,8) width 49: "TD F"
+              LayoutText {#text} at (8,8) size 48x27
+                text run at (8,8) width 48: "TD F"
             LayoutTableCell {TD} at (344,38) size 125x38 [border: (5px dashed #FFFFFF)] [r=0 c=2 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 52x27
                 text run at (6,6) width 52: "TD G"
@@ -165,14 +165,14 @@ layer at (0,0) size 785x1460 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (6,6) width 52: "TD H"
           LayoutTableRow {TR} at (0,115) size 585x89 [bgcolor=#000000] [border: (5px dashed #FFFFFF)]
             LayoutTableCell {TD} at (137,141) size 207x36 [border: (5px dotted #FFFFFF)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (8,6) size 49x27
-                text run at (8,6) width 49: "TD J"
+              LayoutText {#text} at (8,6) size 48x27
+                text run at (8,6) width 48: "TD J"
             LayoutTableCell {TD} at (344,141) size 125x36 [border: (5px dashed #FFFFFF)] [r=1 c=2 rs=1 cs=1]
               LayoutText {#text} at (4,6) size 52x27
                 text run at (4,6) width 52: "TD K"
             LayoutTableCell {TD} at (469,141) size 116x36 [border: (5px dotted #FFFFFF)] [r=1 c=3 rs=1 cs=1]
-              LayoutText {#text} at (4,6) size 49x27
-                text run at (4,6) width 49: "TD L"
+              LayoutText {#text} at (4,6) size 48x27
+                text run at (4,6) width 48: "TD L"
       LayoutBlockFlow {DIV} at (0,1382.78) size 769x35
         LayoutInline {A} at (0,0) size 88x16 [color=#FFFF00]
           LayoutImage {IMG} at (0,0) size 88x31

@@ -418,13 +418,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "16.00"
             LayoutBlockFlow {DIV} at (67.39,5) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "339.74"
+                text run at (29,0) width 34: "339.73"
             LayoutBlockFlow {DIV} at (134.78,5) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,5) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 341x17
               LayoutText {#text} at (269,0) size 341x17
                 text run at (269,0) width 341: "Amazingly few discotheques provide jukeboxes."
@@ -437,10 +437,10 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (29,0) width 34: "345.05"
             LayoutBlockFlow {DIV} at (134.78,6) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,6) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 346x18
               LayoutText {#text} at (269,0) size 346x18
                 text run at (269,0) width 346: "Amazingly few discotheques provide jukeboxes."
@@ -450,13 +450,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "16.50"
             LayoutBlockFlow {DIV} at (67.39,6) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "350.36"
+                text run at (29,0) width 34: "350.34"
             LayoutBlockFlow {DIV} at (134.78,6) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,6) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 351x18
               LayoutText {#text} at (269,0) size 351x18
                 text run at (269,0) width 351: "Amazingly few discotheques provide jukeboxes."
@@ -466,13 +466,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "16.75"
             LayoutBlockFlow {DIV} at (67.39,6) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "355.67"
+                text run at (29,0) width 34: "355.66"
             LayoutBlockFlow {DIV} at (134.78,6) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,6) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 357x19
               LayoutText {#text} at (269,0) size 357x19
                 text run at (269,0) width 357: "Amazingly few discotheques provide jukeboxes."
@@ -482,13 +482,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "17.00"
             LayoutBlockFlow {DIV} at (67.39,6) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "360.98"
+                text run at (29,0) width 34: "360.97"
             LayoutBlockFlow {DIV} at (134.78,6) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,6) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 362x19
               LayoutText {#text} at (269,0) size 362x19
                 text run at (269,0) width 362: "Amazingly few discotheques provide jukeboxes."
@@ -501,10 +501,10 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (29,0) width 34: "366.28"
             LayoutBlockFlow {DIV} at (134.78,7) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,7) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 367x20
               LayoutText {#text} at (269,0) size 367x20
                 text run at (269,0) width 367: "Amazingly few discotheques provide jukeboxes."
@@ -514,13 +514,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "17.50"
             LayoutBlockFlow {DIV} at (67.39,7) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "371.59"
+                text run at (29,0) width 34: "371.58"
             LayoutBlockFlow {DIV} at (134.78,7) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,7) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 373x20
               LayoutText {#text} at (269,0) size 373x20
                 text run at (269,0) width 373: "Amazingly few discotheques provide jukeboxes."
@@ -530,13 +530,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "17.75"
             LayoutBlockFlow {DIV} at (67.39,7) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "376.90"
+                text run at (29,0) width 34: "376.89"
             LayoutBlockFlow {DIV} at (134.78,7) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,7) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 378x20
               LayoutText {#text} at (269,0) size 378x20
                 text run at (269,0) width 378: "Amazingly few discotheques provide jukeboxes."
@@ -546,13 +546,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "18.00"
             LayoutBlockFlow {DIV} at (67.39,7) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "382.21"
+                text run at (29,0) width 34: "382.20"
             LayoutBlockFlow {DIV} at (134.78,7) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,7) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 383x20
               LayoutText {#text} at (269,0) size 383x20
                 text run at (269,0) width 383: "Amazingly few discotheques provide jukeboxes."
@@ -565,10 +565,10 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (29,0) width 34: "387.52"
             LayoutBlockFlow {DIV} at (134.78,8) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,8) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 389x21
               LayoutText {#text} at (269,0) size 389x21
                 text run at (269,0) width 389: "Amazingly few discotheques provide jukeboxes."
@@ -578,13 +578,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "18.50"
             LayoutBlockFlow {DIV} at (67.39,8) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "392.83"
+                text run at (29,0) width 34: "392.81"
             LayoutBlockFlow {DIV} at (134.78,8) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,8) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 394x21
               LayoutText {#text} at (269,0) size 394x21
                 text run at (269,0) width 394: "Amazingly few discotheques provide jukeboxes."
@@ -594,13 +594,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "18.75"
             LayoutBlockFlow {DIV} at (67.39,8) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "398.14"
+                text run at (29,0) width 34: "398.13"
             LayoutBlockFlow {DIV} at (134.78,8) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,8) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 399x21
               LayoutText {#text} at (269,0) size 399x21
                 text run at (269,0) width 399: "Amazingly few discotheques provide jukeboxes."
@@ -613,13 +613,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (29,0) width 34: "403.44"
             LayoutBlockFlow {DIV} at (134.78,8) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,8) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
-            LayoutInline {SPAN} at (0,0) size 405x21
-              LayoutText {#text} at (269,0) size 405x21
-                text run at (269,0) width 405: "Amazingly few discotheques provide jukeboxes."
+                text run at (38,0) width 25: "-6.20"
+            LayoutInline {SPAN} at (0,0) size 404x21
+              LayoutText {#text} at (269,0) size 404x21
+                text run at (269,0) width 404: "Amazingly few discotheques provide jukeboxes."
           LayoutBlockFlow {DIV} at (0,626) size 795.11x22
             LayoutBlockFlow {DIV} at (0,8) size 67.39x11
               LayoutText {#text} at (35,0) size 28x11
@@ -642,13 +642,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "19.50"
             LayoutBlockFlow {DIV} at (67.39,9) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "414.06"
+                text run at (29,0) width 34: "414.05"
             LayoutBlockFlow {DIV} at (134.78,9) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,9) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 415x22
               LayoutText {#text} at (269,0) size 415x22
                 text run at (269,0) width 415: "Amazingly few discotheques provide jukeboxes."
@@ -658,13 +658,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "19.75"
             LayoutBlockFlow {DIV} at (67.39,9) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "419.37"
+                text run at (29,0) width 34: "419.36"
             LayoutBlockFlow {DIV} at (134.78,9) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,9) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 420x22
               LayoutText {#text} at (269,0) size 420x22
                 text run at (269,0) width 420: "Amazingly few discotheques provide jukeboxes."
@@ -674,13 +674,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "20.00"
             LayoutBlockFlow {DIV} at (67.39,9) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "424.68"
+                text run at (29,0) width 34: "424.67"
             LayoutBlockFlow {DIV} at (134.78,9) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,9) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 426x22
               LayoutText {#text} at (269,0) size 426x22
                 text run at (269,0) width 426: "Amazingly few discotheques provide jukeboxes."
@@ -690,7 +690,7 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "20.25"
             LayoutBlockFlow {DIV} at (67.39,9) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "429.99"
+                text run at (29,0) width 34: "429.98"
             LayoutBlockFlow {DIV} at (134.78,9) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
                 text run at (29,0) width 34: "254.81"
@@ -706,13 +706,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "20.50"
             LayoutBlockFlow {DIV} at (67.39,10) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "435.29"
+                text run at (29,0) width 34: "435.28"
             LayoutBlockFlow {DIV} at (134.78,10) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,10) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 436x23
               LayoutText {#text} at (269,0) size 436x23
                 text run at (269,0) width 436: "Amazingly few discotheques provide jukeboxes."
@@ -722,13 +722,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "20.75"
             LayoutBlockFlow {DIV} at (67.39,10) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "440.60"
+                text run at (29,0) width 34: "440.59"
             LayoutBlockFlow {DIV} at (134.78,10) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,10) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 442x23
               LayoutText {#text} at (269,0) size 442x23
                 text run at (269,0) width 442: "Amazingly few discotheques provide jukeboxes."
@@ -741,10 +741,10 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (29,0) width 34: "445.91"
             LayoutBlockFlow {DIV} at (134.78,10) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,10) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 447x23
               LayoutText {#text} at (269,0) size 447x23
                 text run at (269,0) width 447: "Amazingly few discotheques provide jukeboxes."
@@ -770,13 +770,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "21.50"
             LayoutBlockFlow {DIV} at (67.39,10) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "456.53"
+                text run at (29,0) width 34: "456.52"
             LayoutBlockFlow {DIV} at (134.78,10) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,10) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 458x24
               LayoutText {#text} at (269,0) size 458x24
                 text run at (269,0) width 458: "Amazingly few discotheques provide jukeboxes."
@@ -786,13 +786,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "21.75"
             LayoutBlockFlow {DIV} at (67.39,11) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "461.84"
+                text run at (29,0) width 34: "461.83"
             LayoutBlockFlow {DIV} at (134.78,11) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,11) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 463x25
               LayoutText {#text} at (269,0) size 463x25
                 text run at (269,0) width 463: "Amazingly few discotheques provide jukeboxes."
@@ -802,13 +802,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "22.00"
             LayoutBlockFlow {DIV} at (67.39,11) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "467.15"
+                text run at (29,0) width 34: "467.14"
             LayoutBlockFlow {DIV} at (134.78,11) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,11) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 468x25
               LayoutText {#text} at (269,0) size 468x25
                 text run at (269,0) width 468: "Amazingly few discotheques provide jukeboxes."
@@ -834,13 +834,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "22.50"
             LayoutBlockFlow {DIV} at (67.39,11) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "477.76"
+                text run at (29,0) width 34: "477.75"
             LayoutBlockFlow {DIV} at (134.78,11) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,11) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 479x25
               LayoutText {#text} at (269,0) size 479x25
                 text run at (269,0) width 479: "Amazingly few discotheques provide jukeboxes."
@@ -850,13 +850,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "22.75"
             LayoutBlockFlow {DIV} at (67.39,12) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "483.07"
+                text run at (29,0) width 34: "483.06"
             LayoutBlockFlow {DIV} at (134.78,12) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,12) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 484x26
               LayoutText {#text} at (269,0) size 484x26
                 text run at (269,0) width 484: "Amazingly few discotheques provide jukeboxes."
@@ -869,10 +869,10 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (29,0) width 34: "488.38"
             LayoutBlockFlow {DIV} at (134.78,12) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,12) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 489x26
               LayoutText {#text} at (269,0) size 489x26
                 text run at (269,0) width 489: "Amazingly few discotheques provide jukeboxes."
@@ -898,13 +898,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "23.50"
             LayoutBlockFlow {DIV} at (67.39,12) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "499.00"
+                text run at (29,0) width 34: "498.98"
             LayoutBlockFlow {DIV} at (134.78,12) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,12) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 500x26
               LayoutText {#text} at (269,0) size 500x26
                 text run at (269,0) width 500: "Amazingly few discotheques provide jukeboxes."
@@ -917,10 +917,10 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (29,0) width 34: "504.30"
             LayoutBlockFlow {DIV} at (134.78,13) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,13) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 505x27
               LayoutText {#text} at (269,0) size 505x27
                 text run at (269,0) width 505: "Amazingly few discotheques provide jukeboxes."
@@ -933,10 +933,10 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (29,0) width 34: "509.61"
             LayoutBlockFlow {DIV} at (134.78,13) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,13) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 511x27
               LayoutText {#text} at (269,0) size 511x27
                 text run at (269,0) width 511: "Amazingly few discotheques provide jukeboxes."
@@ -946,13 +946,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "24.25"
             LayoutBlockFlow {DIV} at (67.39,13) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "514.92"
+                text run at (29,0) width 34: "514.91"
             LayoutBlockFlow {DIV} at (134.78,13) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,13) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 516x27
               LayoutText {#text} at (269,0) size 516x27
                 text run at (269,0) width 516: "Amazingly few discotheques provide jukeboxes."
@@ -962,13 +962,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "24.50"
             LayoutBlockFlow {DIV} at (67.39,13) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "520.23"
+                text run at (29,0) width 34: "520.22"
             LayoutBlockFlow {DIV} at (134.78,13) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,13) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 521x27
               LayoutText {#text} at (269,0) size 521x27
                 text run at (269,0) width 521: "Amazingly few discotheques provide jukeboxes."
@@ -978,13 +978,13 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (35,0) width 28: "24.75"
             LayoutBlockFlow {DIV} at (67.39,13) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "525.54"
+                text run at (29,0) width 34: "525.53"
             LayoutBlockFlow {DIV} at (134.78,13) size 67.39x11
               LayoutText {#text} at (29,0) size 34x11
-                text run at (29,0) width 34: "254.81"
+                text run at (29,0) width 34: "254.80"
             LayoutBlockFlow {DIV} at (202.17,13) size 67.39x11 [color=#FF0000]
               LayoutText {#text} at (38,0) size 25x11
-                text run at (38,0) width 25: "-6.19"
+                text run at (38,0) width 25: "-6.20"
             LayoutInline {SPAN} at (0,0) size 527x27
               LayoutText {#text} at (269,0) size 527x27
                 text run at (269,0) width 527: "Amazingly few discotheques provide jukeboxes."

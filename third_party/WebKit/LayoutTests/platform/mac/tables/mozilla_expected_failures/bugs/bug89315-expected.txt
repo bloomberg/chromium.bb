@@ -49,10 +49,10 @@ layer at (0,0) size 785x4619 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       LayoutInline {SPAN} at (0,0) size 1x16
                         LayoutInline {O:P} at (0,0) size 1x16
                 LayoutBlockFlow {P} at (7.19,17) size 85x17
-                  LayoutInline {B} at (0,0) size 37x15
-                    LayoutInline {SPAN} at (0,0) size 37x16
-                      LayoutText {#text} at (24,0) size 37x16
-                        text run at (24,0) width 37: "Plane"
+                  LayoutInline {B} at (0,0) size 36x15
+                    LayoutInline {SPAN} at (0,0) size 36x16
+                      LayoutText {#text} at (24,0) size 36x16
+                        text run at (24,0) width 36: "Plane"
               LayoutTableCell {TD} at (367,21) size 106x34 [r=1 c=3 rs=1 cs=1]
                 LayoutBlockFlow {P} at (7.19,0) size 92x17
                   LayoutInline {B} at (0,0) size 66x15

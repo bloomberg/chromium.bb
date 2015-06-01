@@ -87,8 +87,8 @@ layer at (0,0) size 785x1326 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (14,14) size 50x27
                 text run at (14,14) width 50: "TD E"
             LayoutTableCell {TD} at (144,38) size 220x31 [border: (1px dotted #FFFFFF)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 49x27
-                text run at (2,2) width 49: "TD F"
+              LayoutText {#text} at (2,2) size 48x27
+                text run at (2,2) width 48: "TD F"
             LayoutTableCell {TD} at (371,34) size 118x39 [border: (5px dashed #FFFFFF)] [r=0 c=2 rs=1 cs=1]
               LayoutText {#text} at (6,6) size 52x27
                 text run at (6,6) width 52: "TD G"
@@ -97,14 +97,14 @@ layer at (0,0) size 785x1326 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (2,2) width 52: "TD H"
           LayoutTableRow {TR} at (0,115) size 616x84
             LayoutTableCell {TD} at (144,141) size 220x31 [border: (1px dotted #FFFFFF)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 49x27
-                text run at (2,2) width 49: "TD J"
+              LayoutText {#text} at (2,2) size 48x27
+                text run at (2,2) width 48: "TD J"
             LayoutTableCell {TD} at (371,141) size 118x31 [border: (1px dotted #FFFFFF)] [r=1 c=2 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 52x27
                 text run at (2,2) width 52: "TD K"
             LayoutTableCell {TD} at (496,141) size 113x31 [border: (1px dotted #FFFFFF)] [r=1 c=3 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 49x27
-                text run at (2,2) width 49: "TD L"
+              LayoutText {#text} at (2,2) size 48x27
+                text run at (2,2) width 48: "TD L"
       LayoutTable {TABLE} at (0,807.78) size 591x441 [color=#FFFFFF] [border: (6px dotted #FFFFFF)]
         LayoutBlockFlow {CAPTION} at (0,0) size 591x27
           LayoutText {#text} at (131,0) size 329x27
@@ -143,8 +143,8 @@ layer at (0,0) size 785x1326 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (8,8) size 50x27
                 text run at (8,8) width 50: "TD E"
             LayoutTableCell {TD} at (137,35) size 207x36 [border: (7px dotted #FFFFFF)] [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (8,8) size 49x27
-                text run at (8,8) width 49: "TD F"
+              LayoutText {#text} at (8,8) size 48x27
+                text run at (8,8) width 48: "TD F"
             LayoutTableCell {TD} at (344,36) size 127x34 [border: (3px dashed #FFFFFF)] [r=0 c=2 rs=1 cs=1]
               LayoutText {#text} at (6,4) size 52x27
                 text run at (6,4) width 52: "TD G"
@@ -153,14 +153,14 @@ layer at (0,0) size 785x1326 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (6,2) width 52: "TD H"
           LayoutTableRow {TR} at (0,107) size 588x83
             LayoutTableCell {TD} at (137,132) size 207x32 [border: (1px dotted #FFFFFF)] [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (8,2) size 49x27
-                text run at (8,2) width 49: "TD J"
+              LayoutText {#text} at (8,2) size 48x27
+                text run at (8,2) width 48: "TD J"
             LayoutTableCell {TD} at (344,131) size 127x34 [border: (3px dotted #FFFFFF)] [r=1 c=2 rs=1 cs=1]
               LayoutText {#text} at (6,4) size 52x27
                 text run at (6,4) width 52: "TD K"
             LayoutTableCell {TD} at (471,133) size 117x30 [border: (1px dotted #FFFFFF)] [r=1 c=3 rs=1 cs=1]
-              LayoutText {#text} at (6,2) size 49x27
-                text run at (6,2) width 49: "TD L"
+              LayoutText {#text} at (6,2) size 48x27
+                text run at (6,2) width 48: "TD L"
       LayoutBlockFlow {DIV} at (0,1248.78) size 769x35
         LayoutInline {A} at (0,0) size 88x16 [color=#FFFF00]
           LayoutImage {IMG} at (0,0) size 88x31
