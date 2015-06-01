@@ -6,6 +6,7 @@
 
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/common/guest_view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -29,8 +30,31 @@ GuestViewMessageFilter::GuestViewMessageFilter(int render_process_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
+GuestViewMessageFilter::GuestViewMessageFilter(
+    const uint32* message_classes_to_filter,
+    size_t num_message_classes_to_filter,
+    int render_process_id,
+    BrowserContext* context)
+    : BrowserMessageFilter(message_classes_to_filter,
+                           num_message_classes_to_filter),
+      render_process_id_(render_process_id),
+      browser_context_(context),
+      weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
 GuestViewMessageFilter::~GuestViewMessageFilter() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
+
+GuestViewManager* GuestViewMessageFilter::GetOrCreateGuestViewManager() {
+  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
+  if (!manager) {
+    manager = GuestViewManager::CreateWithDelegate(
+        browser_context_,
+        scoped_ptr<GuestViewManagerDelegate>(new GuestViewManagerDelegate()));
+  }
+  return manager;
 }
 
 void GuestViewMessageFilter::OverrideThreadForMessage(
@@ -50,9 +74,17 @@ bool GuestViewMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GuestViewMessageFilter, message)
     IPC_MESSAGE_HANDLER(GuestViewHostMsg_AttachGuest, OnAttachGuest)
+    IPC_MESSAGE_HANDLER(GuestViewHostMsg_ViewGarbageCollected,
+                        OnViewGarbageCollected)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void GuestViewMessageFilter::OnViewGarbageCollected(int view_instance_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetOrCreateGuestViewManager()->ViewGarbageCollected(render_process_id_,
+                                                      view_instance_id);
 }
 
 void GuestViewMessageFilter::OnAttachGuest(

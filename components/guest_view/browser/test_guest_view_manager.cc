@@ -13,7 +13,8 @@ TestGuestViewManager::TestGuestViewManager(
     content::BrowserContext* context,
     scoped_ptr<GuestViewManagerDelegate> delegate)
     : GuestViewManager(context, delegate.Pass()),
-      num_guests_created_(0) {
+      num_guests_created_(0),
+      num_views_garbage_collected_(0) {
 }
 
 TestGuestViewManager::~TestGuestViewManager() {
@@ -60,6 +61,16 @@ content::WebContents* TestGuestViewManager::WaitForSingleGuestCreated() {
   return GetLastGuestCreated();
 }
 
+void TestGuestViewManager::WaitForViewGarbageCollected() {
+  gc_message_loop_runner_ = new content::MessageLoopRunner;
+  gc_message_loop_runner_->Run();
+}
+
+void TestGuestViewManager::WaitForSingleViewGarbageCollected() {
+  if (!num_views_garbage_collected())
+    WaitForViewGarbageCollected();
+}
+
 void TestGuestViewManager::AddGuest(int guest_instance_id,
                                     content::WebContents* guest_web_contents) {
   GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
@@ -76,6 +87,13 @@ void TestGuestViewManager::AddGuest(int guest_instance_id,
 
 void TestGuestViewManager::RemoveGuest(int guest_instance_id) {
   GuestViewManager::RemoveGuest(guest_instance_id);
+}
+
+void TestGuestViewManager::ViewGarbageCollected(int embedder_process_id,
+                                                int view_instance_id) {
+  ++num_views_garbage_collected_;
+  if (gc_message_loop_runner_.get())
+    gc_message_loop_runner_->Quit();
 }
 
 // Test factory for creating test instances of GuestViewManager.

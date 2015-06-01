@@ -25,18 +25,20 @@ using content::RenderFrameHost;
 using content::WebContents;
 using guest_view::GuestViewManager;
 using guest_view::GuestViewManagerDelegate;
+using guest_view::GuestViewMessageFilter;
 
 namespace extensions {
+
+const uint32 ExtensionsGuestViewMessageFilter::kFilteredMessageClasses[] =
+    {GuestViewMsgStart, ExtensionsGuestViewMsgStart};
 
 ExtensionsGuestViewMessageFilter::ExtensionsGuestViewMessageFilter(
     int render_process_id,
     BrowserContext* context)
-    : BrowserMessageFilter(ExtensionsGuestViewMsgStart),
-      render_process_id_(render_process_id),
-      browser_context_(context),
-      weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
+    : GuestViewMessageFilter(kFilteredMessageClasses,
+                             arraysize(kFilteredMessageClasses),
+                             render_process_id,
+                             context) {}
 
 ExtensionsGuestViewMessageFilter::~ExtensionsGuestViewMessageFilter() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -51,14 +53,8 @@ void ExtensionsGuestViewMessageFilter::OverrideThreadForMessage(
       *thread = BrowserThread::UI;
       break;
     default:
-      break;
+      GuestViewMessageFilter::OverrideThreadForMessage(message, thread);
   }
-}
-
-void ExtensionsGuestViewMessageFilter::OnDestruct() const {
-  // Destroy the filter on the IO thread since that's where its weak pointers
-  // are being used.
-  BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
 bool ExtensionsGuestViewMessageFilter::OnMessageReceived(
@@ -70,9 +66,22 @@ bool ExtensionsGuestViewMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionsGuestViewHostMsg_CreateMimeHandlerViewGuest,
                         OnCreateMimeHandlerViewGuest)
     IPC_MESSAGE_HANDLER(ExtensionsGuestViewHostMsg_ResizeGuest, OnResizeGuest)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_UNHANDLED(
+        handled = GuestViewMessageFilter::OnMessageReceived(message))
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+GuestViewManager* ExtensionsGuestViewMessageFilter::
+    GetOrCreateGuestViewManager() {
+  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
+  if (!manager) {
+    manager = GuestViewManager::CreateWithDelegate(
+        browser_context_,
+        scoped_ptr<GuestViewManagerDelegate>(
+            new ExtensionsGuestViewManagerDelegate(browser_context_)));
+  }
+  return manager;
 }
 
 void ExtensionsGuestViewMessageFilter::OnCanExecuteContentScript(
@@ -93,15 +102,7 @@ void ExtensionsGuestViewMessageFilter::OnCreateMimeHandlerViewGuest(
     int element_instance_id,
     const gfx::Size& element_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Since we are creating a new guest, we will create a GuestViewManager
-  // if we don't already have one.
-  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
-  if (!manager) {
-    manager = GuestViewManager::CreateWithDelegate(
-        browser_context_,
-        scoped_ptr<GuestViewManagerDelegate>(
-            new ExtensionsGuestViewManagerDelegate(browser_context_)));
-  }
+  auto manager = GetOrCreateGuestViewManager();
 
   auto rfh = RenderFrameHost::FromID(render_process_id_, render_frame_id);
   auto embedder_web_contents = WebContents::FromRenderFrameHost(rfh);

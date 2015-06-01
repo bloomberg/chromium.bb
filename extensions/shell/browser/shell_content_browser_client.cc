@@ -94,9 +94,6 @@ void ShellContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(
       new IOThreadExtensionMessageFilter(render_process_id, browser_context));
   host->AddFilter(
-      new guest_view::GuestViewMessageFilter(
-          render_process_id, browser_context));
-  host->AddFilter(
       new ExtensionsGuestViewMessageFilter(
           render_process_id, browser_context));
   // PluginInfoMessageFilter is not required because app_shell does not have

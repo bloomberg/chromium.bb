@@ -2727,3 +2727,9 @@ IN_PROC_BROWSER_TEST_F(WebViewCommonTest, BasicPostMessage) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/post_message/basic"))
       << message_;
 }
+
+// Tests that webviews do get garbage collected.
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGarbageCollect) {
+  TestHelper("testGarbageCollect", "web_view/shim", NO_TEST_SERVER);
+  GetGuestViewManager()->WaitForSingleViewGarbageCollected();
+}

@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_RENDERER_GUEST_VIEW_GUEST_VIEW_INTERNAL_CUSTOM_BINDINGS_H_
 #define EXTENSIONS_RENDERER_GUEST_VIEW_GUEST_VIEW_INTERNAL_CUSTOM_BINDINGS_H_
 
+#include <map>
+
 #include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
@@ -14,8 +16,13 @@ class Dispatcher;
 class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {
  public:
   explicit GuestViewInternalCustomBindings(ScriptContext* context);
+  ~GuestViewInternalCustomBindings() override;
 
  private:
+  // ResetMapEntry is called as a callback to SetWeak(). It resets the
+  // weak view reference held in |view_map_|.
+  static void ResetMapEntry(const v8::WeakCallbackInfo<int>& data);
+
   // AttachGuest attaches a GuestView to a provided container element. Once
   // attached, the GuestView will participate in layout of the container page
   // and become visible on screen.
@@ -44,6 +51,10 @@ class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {
   // Window JavaScript object for that RenderView.
   void GetContentWindow(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // GetViewFromID takes a view ID, and returns the GuestView element associated
+  // with that ID, if one exists. Otherwise, null is returned.
+  void GetViewFromID(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // RegisterDestructionCallback registers a JavaScript callback function to be
   // called when the guestview's container is destroyed.
   // RegisterDestructionCallback takes in a single paramater, |callback|.
@@ -55,6 +66,11 @@ class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {
   // a single parameter, |callback|.
   void RegisterElementResizeCallback(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // RegisterView takes in a view ID and a GuestView element, and stores the
+  // pair as an entry in |view_map_|. The view can then be retrieved using
+  // GetViewFromID.
+  void RegisterView(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Runs a JavaScript function with user gesture.
   //

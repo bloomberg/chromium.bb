@@ -2679,6 +2679,13 @@ function testPlugin() {
   document.body.appendChild(webview);
 }
 
+function testGarbageCollect() {
+  var webview = new WebView();
+  webview = null;
+  window.gc();
+  embedder.test.succeed();
+}
+
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
@@ -2777,6 +2784,7 @@ embedder.test.testList = {
   'testDisabledZoomMode': testDisabledZoomMode,
   'testZoomBeforeNavigation': testZoomBeforeNavigation,
   'testPlugin': testPlugin,
+  'testGarbageCollect': testGarbageCollect
 };
 
 onload = function() {

@@ -5,6 +5,7 @@
 // Event management for GuestViewContainers.
 
 var EventBindings = require('event_bindings');
+var GuestViewInternalNatives = requireNative('guest_view_internal');
 
 var CreateEvent = function(name) {
   var eventOpts = {supportsListeners: true, supportsFilters: true};
@@ -12,6 +13,8 @@ var CreateEvent = function(name) {
 };
 
 function GuestViewEvents(view) {
+  view.events = this;
+
   this.view = view;
   this.on = {};
 
@@ -68,9 +71,9 @@ GuestViewEvents.prototype.setupEvent = function(eventName, eventInfo) {
 
   var listenerOpts = { instanceId: this.view.viewInstanceId };
   if (eventInfo.handler) {
-    eventInfo.evt.addListener(function(e) {
+    eventInfo.evt.addListener(this.weakWrapper(function(e) {
       this[eventInfo.handler](e, eventName);
-    }.bind(this), listenerOpts);
+    }), listenerOpts);
     return;
   }
 
@@ -79,10 +82,10 @@ GuestViewEvents.prototype.setupEvent = function(eventName, eventInfo) {
     return;
   }
 
-  eventInfo.evt.addListener(function(e) {
+  eventInfo.evt.addListener(this.weakWrapper(function(e) {
     var domEvent = this.makeDomEvent(e, eventName);
     this.view.dispatchEvent(domEvent);
-  }.bind(this), listenerOpts);
+  }), listenerOpts);
 };
 
 // Constructs a DOM event based on the info for the |eventName| event provided
@@ -131,6 +134,18 @@ GuestViewEvents.prototype.setupEventProperty = function(eventName) {
     }.bind(this),
     enumerable: true
   });
+};
+
+// returns a wrapper for |func| with a weak reference to |this|.
+GuestViewEvents.prototype.weakWrapper = function(func) {
+  var viewInstanceId = this.view.viewInstanceId;
+  return function() {
+    var view = GuestViewInternalNatives.GetViewFromID(viewInstanceId);
+    if (!view) {
+      return;
+    }
+    return $Function.apply(func, view.events, $Array.slice(arguments));
+  };
 };
 
 // Implemented by the derived event manager, if one exists.

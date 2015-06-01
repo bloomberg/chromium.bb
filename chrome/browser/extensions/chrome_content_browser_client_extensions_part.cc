@@ -380,7 +380,6 @@ void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
   host->AddFilter(new ExtensionMessageFilter(id, profile));
   host->AddFilter(new IOThreadExtensionMessageFilter(id, profile));
   host->AddFilter(new ExtensionsGuestViewMessageFilter(id, profile));
-  host->AddFilter(new guest_view::GuestViewMessageFilter(id, profile));
   extension_web_request_api_helpers::SendExtensionWebRequestStatusToHost(host);
 }
 

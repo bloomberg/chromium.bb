@@ -21,7 +21,10 @@ class TestGuestViewManager : public GuestViewManager {
   ~TestGuestViewManager() override;
 
   void WaitForAllGuestsDeleted();
+
   content::WebContents* WaitForSingleGuestCreated();
+
+  void WaitForSingleViewGarbageCollected();
 
   content::WebContents* GetLastGuestCreated();
 
@@ -44,6 +47,12 @@ class TestGuestViewManager : public GuestViewManager {
   // this GuestViewManager.
   int num_guests_created() const { return num_guests_created_; }
 
+  // Returns the number of GuestViews that have been garbage collected in
+  // JavaScript since the creation of this GuestViewManager.
+  int num_views_garbage_collected() const {
+    return num_views_garbage_collected_;
+  }
+
   // Returns the last guest instance ID removed from the manager.
   int last_instance_id_removed() const { return last_instance_id_removed_; }
 
@@ -54,17 +63,24 @@ class TestGuestViewManager : public GuestViewManager {
   void AddGuest(int guest_instance_id,
                 content::WebContents* guest_web_contents) override;
   void RemoveGuest(int guest_instance_id) override;
+  void ViewGarbageCollected(int embedder_process_id,
+                            int view_instance_id) override;
 
   void WaitForGuestCreated();
+
+  void WaitForViewGarbageCollected();
 
   using GuestViewManager::last_instance_id_removed_;
   using GuestViewManager::removed_instance_ids_;
 
   int num_guests_created_;
 
+  int num_views_garbage_collected_;
+
   std::vector<linked_ptr<content::WebContentsDestroyedWatcher>>
       guest_web_contents_watchers_;
   scoped_refptr<content::MessageLoopRunner> created_message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> gc_message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGuestViewManager);
 };

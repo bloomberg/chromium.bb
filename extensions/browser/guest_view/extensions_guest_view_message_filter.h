@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/guest_view/browser/guest_view_message_filter.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace content {
@@ -20,12 +21,17 @@ namespace gfx {
 class Size;
 }
 
+namespace guest_view {
+class GuestViewManager;
+}
+
 namespace extensions {
 
 // This class filters out incoming extensions GuestView-specific IPC messages
 // from thw renderer process. It is created on the UI thread. Messages may be
 // handled on the IO thread or the UI thread.
-class ExtensionsGuestViewMessageFilter : public content::BrowserMessageFilter {
+class ExtensionsGuestViewMessageFilter
+    : public guest_view::GuestViewMessageFilter {
  public:
   ExtensionsGuestViewMessageFilter(int render_process_id,
                                    content::BrowserContext* context);
@@ -36,17 +42,16 @@ class ExtensionsGuestViewMessageFilter : public content::BrowserMessageFilter {
 
   ~ExtensionsGuestViewMessageFilter() override;
 
-  // content::BrowserMessageFilter implementation.
+  // GuestViewMessageFilter implementation.
   void OverrideThreadForMessage(const IPC::Message& message,
                                 content::BrowserThread::ID* thread) override;
-  void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
+  guest_view::GuestViewManager* GetOrCreateGuestViewManager() override;
 
   // Message handlers on the UI thread.
   void OnCanExecuteContentScript(int render_view_id,
                                  int script_id,
                                  bool* allowed);
-
   void OnCreateMimeHandlerViewGuest(int render_frame_id,
                                     const std::string& view_id,
                                     int element_instance_id,
@@ -62,13 +67,7 @@ class ExtensionsGuestViewMessageFilter : public content::BrowserMessageFilter {
                                            const gfx::Size& element_size,
                                            content::WebContents* web_contents);
 
-  const int render_process_id_;
-
-  // Should only be accessed on the UI thread.
-  content::BrowserContext* const browser_context_;
-
-  // Weak pointers produced by this factory are bound to the IO thread.
-  base::WeakPtrFactory<ExtensionsGuestViewMessageFilter> weak_ptr_factory_;
+  static const uint32 kFilteredMessageClasses[];
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsGuestViewMessageFilter);
 };

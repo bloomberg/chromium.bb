@@ -10,6 +10,7 @@ var ChromeWebViewSchema =
     requireNative('schema_registry').GetSchema('chromeWebViewInternal');
 var CreateEvent = require('guestViewEvents').CreateEvent;
 var EventBindings = require('event_bindings');
+var GuestViewInternalNatives = requireNative('guest_view_internal');
 var idGeneratorNatives = requireNative('id_generator');
 var Utils = require('utils');
 var WebViewImpl = require('webView').WebViewImpl;
@@ -51,17 +52,16 @@ function ContextMenusOnClickedEvent(opt_eventName,
 
 ContextMenusOnClickedEvent.prototype.__proto__ = EventBindings.Event.prototype;
 
-function ContextMenusOnContextMenuEvent(webViewImpl,
+function ContextMenusOnContextMenuEvent(webViewInstanceId,
                                         opt_eventName,
                                         opt_argSchemas,
-                                        opt_eventOptions,
-                                        opt_webViewInstanceId) {
+                                        opt_eventOptions) {
   var subEventName = GetUniqueSubEventName(opt_eventName);
   EventBindings.Event.call(this,
                            subEventName,
                            opt_argSchemas,
                            opt_eventOptions,
-                           opt_webViewInstanceId);
+                           webViewInstanceId);
   var defaultPrevented = false;
   ContextMenusHandlerEvent.addListener(function(e) {
     var defaultPrevented = false;
@@ -77,10 +77,11 @@ function ContextMenusOnContextMenuEvent(webViewImpl,
       // ChromeWebView.showContextMenu as we don't do anything useful with it
       // currently.
       var items = [];
-      ChromeWebView.showContextMenu(
-          webViewImpl.guest.getId(), e.requestId, items);
+      var guestInstanceId = GuestViewInternalNatives.
+          GetViewFromID(webViewInstanceId).guest.getId();
+      ChromeWebView.showContextMenu(guestInstanceId, e.requestId, items);
     }
-  }.bind(this), {instanceId: opt_webViewInstanceId || 0});
+  }.bind(this), {instanceId: webViewInstanceId || 0});
 }
 
 ContextMenusOnContextMenuEvent.prototype.__proto__ =
@@ -127,11 +128,11 @@ WebViewImpl.prototype.maybeSetupContextMenus = function() {
         Utils.lookup(ChromeWebViewSchema.events, 'name', 'onShow');
     var eventOptions = {supportsListeners: true};
     this.contextMenusOnContextMenuEvent_ = new ContextMenusOnContextMenuEvent(
-        this, eventName, eventSchema, eventOptions, this.viewInstanceId);
+        this.viewInstanceId, eventName, eventSchema, eventOptions);
   }
 
   var createContextMenus = function() {
-    return function() {
+    return this.weakWrapper(function() {
       if (this.contextMenus_) {
         return this.contextMenus_;
       }
@@ -140,7 +141,7 @@ WebViewImpl.prototype.maybeSetupContextMenus = function() {
 
       // Define 'onClicked' event property on |this.contextMenus_|.
       var getOnClickedEvent = function() {
-        return function() {
+        return this.weakWrapper(function() {
           if (!this.contextMenusOnClickedEvent_) {
             var eventName = 'chromeWebViewInternal.onClicked';
             var eventSchema =
@@ -152,7 +153,7 @@ WebViewImpl.prototype.maybeSetupContextMenus = function() {
             return onClickedEvent;
           }
           return this.contextMenusOnClickedEvent_;
-        }.bind(this);
+        });
       }.bind(this);
       $Object.defineProperty(
           this.contextMenus_,
@@ -162,13 +163,13 @@ WebViewImpl.prototype.maybeSetupContextMenus = function() {
           this.contextMenus_,
           'onShow',
           {
-            get: function() {
+            get: this.weakWrapper(function() {
               return this.contextMenusOnContextMenuEvent_;
-            }.bind(this),
+            }),
             enumerable: true
           });
       return this.contextMenus_;
-    }.bind(this);
+    });
   }.bind(this);
 
   // Expose <webview>.contextMenus object.

@@ -151,7 +151,7 @@ WebViewEvents.EVENTS = {
 WebViewEvents.prototype.setupWebRequestEvents = function() {
   var request = {};
   var createWebRequestEvent = function(webRequestEvent) {
-    return function() {
+    return this.weakWrapper(function() {
       if (!this[webRequestEvent.name]) {
         this[webRequestEvent.name] =
             new WebRequestEvent(
@@ -161,11 +161,11 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
                 this.view.viewInstanceId);
       }
       return this[webRequestEvent.name];
-    }.bind(this);
+    });
   }.bind(this);
 
   var createDeclarativeWebRequestEvent = function(webRequestEvent) {
-    return function() {
+    return this.weakWrapper(function() {
       if (!this[webRequestEvent.name]) {
         // The onMessage event gets a special event type because we want
         // the listener to fire only for messages targeted for this particular
@@ -180,7 +180,7 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
                 this.view.viewInstanceId);
       }
       return this[webRequestEvent.name];
-    }.bind(this);
+    });
   }.bind(this);
 
   for (var i = 0; i < DeclarativeWebRequestSchema.events.length; ++i) {

@@ -26,6 +26,8 @@ function GuestViewContainer(element, viewType) {
   this.setupFocusPropagation();
   var shadowRoot = this.element.createShadowRoot();
   shadowRoot.appendChild(privates(this).browserPluginElement);
+
+  GuestViewInternalNatives.RegisterView(this.viewInstanceId, this);
 }
 
 // Forward public API methods from |proto| to their internal implementations.
@@ -99,14 +101,14 @@ GuestViewContainer.prototype.setupFocusPropagation = function() {
     // See http://crbug.com/231664.
     this.element.setAttribute('tabIndex', -1);
   }
-  this.element.addEventListener('focus', function(e) {
+  this.element.addEventListener('focus', this.weakWrapper(function(e) {
     // Focus the BrowserPlugin when the GuestViewContainer takes focus.
     privates(this).browserPluginElement.focus();
-  }.bind(this));
-  this.element.addEventListener('blur', function(e) {
+  }));
+  this.element.addEventListener('blur', this.weakWrapper(function(e) {
     // Blur the BrowserPlugin when the GuestViewContainer loses focus.
     privates(this).browserPluginElement.blur();
-  }.bind(this));
+  }));
 };
 
 GuestViewContainer.prototype.attachWindow = function() {
@@ -165,6 +167,17 @@ GuestViewContainer.prototype.buildParams = function() {
 GuestViewContainer.prototype.dispatchEvent = function(event) {
   return this.element.dispatchEvent(event);
 }
+
+// Returns a wrapper function for |func| with a weak reference to |this|.
+GuestViewContainer.prototype.weakWrapper = function(func) {
+  var viewInstanceId = this.viewInstanceId;
+  return function() {
+    var view = GuestViewInternalNatives.GetViewFromID(viewInstanceId);
+    if (view) {
+      return $Function.apply(func, view, $Array.slice(arguments));
+    }
+  };
+};
 
 // Implemented by the specific view type, if needed.
 GuestViewContainer.prototype.buildContainerParams = function() { return {}; };

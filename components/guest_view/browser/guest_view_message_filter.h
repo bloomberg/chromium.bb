@@ -25,6 +25,7 @@ class Size;
 }
 
 namespace guest_view {
+class GuestViewManager;
 
 // This class filters out incoming GuestView-specific IPC messages from the
 // renderer process. It is created on the UI thread. Messages may be handled on
@@ -34,11 +35,17 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   GuestViewMessageFilter(int render_process_id,
                          content::BrowserContext* context);
 
- private:
-  friend class content::BrowserThread;
-  friend class base::DeleteHelper<GuestViewMessageFilter>;
+ protected:
+  GuestViewMessageFilter(const uint32* message_classes_to_filter,
+                         size_t num_message_classes_to_filter,
+                         int render_process_id,
+                         content::BrowserContext* context);
 
   ~GuestViewMessageFilter() override;
+
+  // Returns the GuestViewManager for |browser_context_| if one already exists,
+  // or creates and returns one for |browser_context_| otherwise.
+  virtual GuestViewManager* GetOrCreateGuestViewManager();
 
   // content::BrowserMessageFilter implementation.
   void OverrideThreadForMessage(const IPC::Message& message,
@@ -47,9 +54,7 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers on the UI thread.
-  void OnAttachGuest(int element_instance_id,
-                     int guest_instance_id,
-                     const base::DictionaryValue& attach_params);
+  void OnViewGarbageCollected(int view_instance_id);
 
   const int render_process_id_;
 
@@ -58,6 +63,15 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
 
   // Weak pointers produced by this factory are bound to the IO thread.
   base::WeakPtrFactory<GuestViewMessageFilter> weak_ptr_factory_;
+
+ private:
+  friend class content::BrowserThread;
+  friend class base::DeleteHelper<GuestViewMessageFilter>;
+
+  // Message handlers on the UI thread.
+  void OnAttachGuest(int element_instance_id,
+                     int guest_instance_id,
+                     const base::DictionaryValue& attach_params);
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewMessageFilter);
 };

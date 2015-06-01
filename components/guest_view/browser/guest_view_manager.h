@@ -119,13 +119,14 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
  protected:
   friend class GuestViewBase;
   friend class GuestViewEvent;
+  friend class GuestViewMessageFilter;
 
   // Can be overriden in tests.
   virtual void AddGuest(int guest_instance_id,
                         content::WebContents* guest_web_contents);
-
-  // Can be overriden in tests.
   virtual void RemoveGuest(int guest_instance_id);
+  virtual void ViewGarbageCollected(int embedder_process_id,
+                                    int view_instance_id) {}
 
   // Creates a guest of the provided |view_type|.
   GuestViewBase* CreateGuestInternal(content::WebContents* owner_web_contents,

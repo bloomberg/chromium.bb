@@ -5,11 +5,14 @@
 #include "extensions/renderer/guest_view/guest_view_internal_custom_bindings.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "components/guest_view/common/guest_view_constants.h"
+#include "components/guest_view/common/guest_view_messages.h"
 #include "components/guest_view/renderer/guest_view_request.h"
 #include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
@@ -21,6 +24,17 @@
 #include "v8/include/v8.h"
 
 using content::V8ValueConverter;
+
+namespace {
+
+// A map from view instance ID to view object (stored via weak V8 reference).
+// Views are registered into this map via
+// GuestViewInternalCustomBindings::RegisterView(), and accessed via
+// GuestViewInternalCustomBindings::GetViewFromID().
+using ViewMap = std::map<int, v8::Global<v8::Object>*>;
+static base::LazyInstance<ViewMap> weak_view_map = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 namespace extensions {
 
@@ -36,6 +50,9 @@ GuestViewInternalCustomBindings::GuestViewInternalCustomBindings(
   RouteFunction("GetContentWindow",
                 base::Bind(&GuestViewInternalCustomBindings::GetContentWindow,
                            base::Unretained(this)));
+  RouteFunction("GetViewFromID",
+                base::Bind(&GuestViewInternalCustomBindings::GetViewFromID,
+                           base::Unretained(this)));
   RouteFunction(
       "RegisterDestructionCallback",
       base::Bind(&GuestViewInternalCustomBindings::RegisterDestructionCallback,
@@ -45,10 +62,37 @@ GuestViewInternalCustomBindings::GuestViewInternalCustomBindings(
       base::Bind(
           &GuestViewInternalCustomBindings::RegisterElementResizeCallback,
           base::Unretained(this)));
+  RouteFunction("RegisterView",
+                base::Bind(&GuestViewInternalCustomBindings::RegisterView,
+                           base::Unretained(this)));
   RouteFunction(
       "RunWithGesture",
       base::Bind(&GuestViewInternalCustomBindings::RunWithGesture,
                  base::Unretained(this)));
+}
+
+GuestViewInternalCustomBindings::~GuestViewInternalCustomBindings() {}
+
+// static
+void GuestViewInternalCustomBindings::ResetMapEntry(
+    const v8::WeakCallbackInfo<int>& data) {
+  int* param = data.GetParameter();
+  int view_instance_id = *param;
+  delete param;
+  ViewMap& view_map = weak_view_map.Get();
+  auto entry = view_map.find(view_instance_id);
+  if (entry == view_map.end())
+    return;
+
+  // V8 says we need to explicitly reset weak handles from their callbacks.
+  // It is not implicit as one might expect.
+  entry->second->Reset();
+  delete entry->second;
+  view_map.erase(entry);
+
+  // Let the GuestViewManager know that a GuestView has been garbage collected.
+  content::RenderThread::Get()->Send(
+      new GuestViewHostMsg_ViewGarbageCollected(view_instance_id));
 }
 
 void GuestViewInternalCustomBindings::AttachGuest(
@@ -155,6 +199,26 @@ void GuestViewInternalCustomBindings::GetContentWindow(
   args.GetReturnValue().Set(window);
 }
 
+void GuestViewInternalCustomBindings::GetViewFromID(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // Default to returning null.
+  args.GetReturnValue().SetNull();
+  // There is one argument.
+  CHECK(args.Length() == 1);
+  // The view ID.
+  CHECK(args[0]->IsInt32());
+  int view_id = args[0]->Int32Value();
+
+  ViewMap& view_map = weak_view_map.Get();
+  auto map_entry = view_map.find(view_id);
+  if (map_entry == view_map.end())
+    return;
+
+  auto return_object = v8::Handle<v8::Object>::New(args.GetIsolate(),
+                                                   *map_entry->second);
+  args.GetReturnValue().Set(return_object);
+}
+
 void GuestViewInternalCustomBindings::RegisterDestructionCallback(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // There are two parameters.
@@ -199,6 +263,30 @@ void GuestViewInternalCustomBindings::RegisterElementResizeCallback(
       args[1].As<v8::Function>(), args.GetIsolate());
 
   args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
+}
+
+void GuestViewInternalCustomBindings::RegisterView(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // There are two parameters.
+  CHECK(args.Length() == 2);
+  // View Instance ID.
+  CHECK(args[0]->IsInt32());
+  // View element.
+  CHECK(args[1]->IsObject());
+
+  // A reference to the view object is stored in |weak_view_map| using its view
+  // ID as the key. The reference is made weak so that it will not extend the
+  // lifetime of the object.
+  int view_id = args[0]->Int32Value();
+  auto object =
+      new v8::Global<v8::Object>(args.GetIsolate(), args[1].As<v8::Object>());
+  weak_view_map.Get().insert(std::make_pair(view_id, object));
+
+  // The view_id is given to the SetWeak callback so that that view's entry in
+  // |weak_view_map| can be cleared when the view object is garbage collected.
+  object->SetWeak(new int(view_id),
+                  &GuestViewInternalCustomBindings::ResetMapEntry,
+                  v8::WeakCallbackType::kParameter);
 }
 
 void GuestViewInternalCustomBindings::RunWithGesture(

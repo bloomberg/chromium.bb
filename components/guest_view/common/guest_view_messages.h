@@ -33,3 +33,8 @@ IPC_MESSAGE_CONTROL3(GuestViewHostMsg_AttachGuest,
                      int /* element_instance_id */,
                      int /* guest_instance_id */,
                      base::DictionaryValue /* attach_params */)
+
+// Sent by the renderer when a GuestView (identified by |view_instance_id|) has
+// been garbage collected in JavaScript.
+IPC_MESSAGE_CONTROL1(GuestViewHostMsg_ViewGarbageCollected,
+                     int /* view_instance_id */)
