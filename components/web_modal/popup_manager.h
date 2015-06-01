@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/web_modal/single_popup_manager.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 class WebContents;
@@ -22,40 +22,35 @@ namespace web_modal {
 class WebContentsModalDialogHost;
 
 // Per-Browser class to manage popups (bubbles, web-modal dialogs).
-class PopupManager : public SinglePopupManagerDelegate {
+class PopupManager {
  public:
   // |host| may be null.
-  PopupManager(WebContentsModalDialogHost* host);
+  explicit PopupManager(WebContentsModalDialogHost* host);
 
-  ~PopupManager() override;
+  ~PopupManager();
 
   // Returns the native view which will be the parent of managed popups.
-  virtual gfx::NativeView GetHostView() const;
-
-  // Schedules a popup governed by the |manager| to be shown. The popup
-  // may be shown inline with this call, at a later time, or not at all.
-  virtual void ShowPopup(scoped_ptr<SinglePopupManager> manager);
+  gfx::NativeView GetHostView() const;
 
   // Temporary method: Provides compatibility with existing
   // WebContentsModalDialogManager code.
-  virtual void ShowModalDialog(gfx::NativeWindow popup,
-                               content::WebContents* web_contents);
+  void ShowModalDialog(gfx::NativeWindow popup,
+                       content::WebContents* web_contents);
 
   // Returns true if a web modal dialog is active and not closed in the
   // given |web_contents|. Note: this is intended for legacy use only; it will
   // be deleted at some point -- new code shouldn't use it.
-  virtual bool IsWebModalDialogActive(
-      const content::WebContents* web_contents) const;
+  bool IsWebModalDialogActive(const content::WebContents* web_contents) const;
 
   // Called when a native popup we own is about to be closed.
-  void WillClose(gfx::NativeWindow popup) override;
+  void WillClose(gfx::NativeWindow popup);
 
   // Called by views code to re-activate popups anchored to a particular tab
   // when that tab gets focus. Note that depending on the situation, more than
   // one popup may actually be shown (depending on overlappability). The
   // semantics are that the popups that would have been displayed had the tab
   // never lost focus are re-focused when tab focus is regained.
-  virtual void WasFocused(const content::WebContents* web_contents);
+  void WasFocused(const content::WebContents* web_contents);
 
   // WebContentsUserData-alike API for retrieving the associated window
   // PopupManager from a |web_contents|. Any window which doesn't have a popup
@@ -68,7 +63,7 @@ class PopupManager : public SinglePopupManagerDelegate {
   void UnregisterWith(content::WebContents* web_contents);
 
   // DEPRECATED.
-  virtual void CloseAllDialogsForTesting(content::WebContents* web_contents);
+  void CloseAllDialogsForTesting(content::WebContents* web_contents);
 
  private:
   WebContentsModalDialogHost* host_;

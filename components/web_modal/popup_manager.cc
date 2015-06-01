@@ -40,17 +40,6 @@ PopupManager::PopupManager(WebContentsModalDialogHost* host)
 PopupManager::~PopupManager() {
 }
 
-void PopupManager::ShowPopup(scoped_ptr<SinglePopupManager> manager) {
-  content::WebContents* web_contents = manager->GetBoundWebContents();
-  // TODO(gbillock): get rid of this when we handle bubbles
-  DCHECK(web_contents);
-
-  WebContentsModalDialogManager* wm_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents);
-  DCHECK(wm_manager);
-  wm_manager->ShowModalDialog(manager->popup());
-}
-
 void PopupManager::ShowModalDialog(gfx::NativeWindow popup,
                                    content::WebContents* web_contents) {
   // TODO make a new native popup manager and call ShowPopup.

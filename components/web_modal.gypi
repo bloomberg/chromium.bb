@@ -22,7 +22,6 @@
         'web_modal/modal_dialog_host.h',
         'web_modal/popup_manager.cc',
         'web_modal/popup_manager.h',
-        'web_modal/single_popup_manager.h',
         'web_modal/single_web_contents_dialog_manager.h',
         'web_modal/web_contents_modal_dialog_host.cc',
         'web_modal/web_contents_modal_dialog_host.h',
