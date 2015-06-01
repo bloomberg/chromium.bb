@@ -69,9 +69,6 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(PopupContainerBorder);
         DEBUG_STRING_CASE(PopupListBoxBackground);
         DEBUG_STRING_CASE(PopupListBoxRow);
-        DEBUG_STRING_CASE(PrintedContentBackground);
-        DEBUG_STRING_CASE(PrintedContentLineBoundary);
-        DEBUG_STRING_CASE(PrintedContentPDFURLRect);
         DEBUG_STRING_CASE(Resizer);
         DEBUG_STRING_CASE(SVGClip);
         DEBUG_STRING_CASE(SVGFilter);
@@ -94,6 +91,8 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(TableCellBackgroundFromSelfPaintingRow);
         DEBUG_STRING_CASE(VideoBitmap);
         DEBUG_STRING_CASE(WebPlugin);
+        DEBUG_STRING_CASE(PrintedContentBackground);
+        DEBUG_STRING_CASE(PrintedContentLineBoundary);
         DEBUG_STRING_CASE(WebFont);
 
         DEFAULT_CASE;

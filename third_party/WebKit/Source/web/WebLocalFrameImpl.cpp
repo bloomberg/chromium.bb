@@ -454,7 +454,7 @@ protected:
 
         frame()->view()->paintContents(&context, pageRect);
 
-        outputLinkedDestinations(context, pageRect);
+        outputLinkAndLinkedDestinations(context, pageRect);
 
         return scale;
     }

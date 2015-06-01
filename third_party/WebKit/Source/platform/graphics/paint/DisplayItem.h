@@ -67,9 +67,6 @@ public:
         PopupContainerBorder,
         PopupListBoxBackground,
         PopupListBoxRow,
-        PrintedContentBackground,
-        PrintedContentLineBoundary,
-        PrintedContentPDFURLRect,
         Resizer,
         SVGClip,
         SVGFilter,
@@ -92,6 +89,8 @@ public:
         TableCellBackgroundFromSelfPaintingRow, // FIXME: To be deprecated.
         VideoBitmap,
         WebPlugin,
+        PrintedContentBackground,
+        PrintedContentLineBoundary,
         WebFont,
         DrawingLast = WebFont,
 

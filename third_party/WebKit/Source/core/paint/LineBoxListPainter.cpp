@@ -10,20 +10,9 @@
 #include "core/layout/line/LineBoxList.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/InlinePainter.h"
-#include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 
 namespace blink {
-
-static void addPDFURLRectsForInlineChildrenRecursively(LayoutObject* layoutObject, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    for (LayoutObject* child = layoutObject->slowFirstChild(); child; child = child->nextSibling()) {
-        if (!child->isLayoutInline() || toLayoutBoxModelObject(child)->hasSelfPaintingLayer())
-            continue;
-        ObjectPainter(*child).addPDFURLRectIfNeeded(paintInfo, paintOffset);
-        addPDFURLRectsForInlineChildrenRecursively(child, paintInfo, paintOffset);
-    }
-}
 
 void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
@@ -34,11 +23,6 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintIn
         return;
 
     ASSERT(layoutObject->isLayoutBlock() || (layoutObject->isLayoutInline() && layoutObject->hasLayer())); // The only way an inline could paint like this is if it has a layer.
-
-    // FIXME: When Skia supports annotation rect covering (https://code.google.com/p/skia/issues/detail?id=3872),
-    // these rects may be covered line box drawings. Then we may need a dedicated paint phase.
-    if (paintInfo.phase == PaintPhaseForeground && paintInfo.context->printing())
-        addPDFURLRectsForInlineChildrenRecursively(layoutObject, paintInfo, paintOffset);
 
     // If we have no lines then we have no work to do.
     if (!m_lineBoxList.firstLineBox())

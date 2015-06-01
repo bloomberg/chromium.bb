@@ -23,6 +23,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURLHash.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
@@ -77,20 +78,21 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    void outputLinkedDestinations(GraphicsContext&, const IntRect& pageRect);
+    void outputLinkAndLinkedDestinations(GraphicsContext&, const IntRect& pageRect);
 
     RawPtrWillBeMember<LocalFrame> m_frame;
     Vector<IntRect> m_pageRects;
 
 private:
     void computePageRectsWithPageSizeInternal(const FloatSize& pageSizeInPixels);
-    void collectLinkedDestinations(Node*);
+    void collectLinkAndLinkedDestinations(Node*);
 
     // Used to prevent misuses of begin() and end() (e.g., call end without begin).
     bool m_isPrinting;
 
+    WillBeHeapHashMap<RawPtrWillBeMember<Element>, KURL> m_linkDestinations;
     WillBeHeapHashMap<String, RawPtrWillBeMember<Element>> m_linkedDestinations;
-    bool m_linkedDestinationsValid;
+    bool m_linkAndLinkedDestinationsValid;
 };
 
 }

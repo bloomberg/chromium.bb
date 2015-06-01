@@ -44,7 +44,7 @@ const float printingMaximumShrinkFactor = 2;
 PrintContext::PrintContext(LocalFrame* frame)
     : m_frame(frame)
     , m_isPrinting(false)
-    , m_linkedDestinationsValid(false)
+    , m_linkAndLinkedDestinationsValid(false)
 {
 }
 
@@ -167,7 +167,8 @@ void PrintContext::end()
     m_isPrinting = false;
     m_frame->setPrinting(false, FloatSize(), FloatSize(), 0);
     m_linkedDestinations.clear();
-    m_linkedDestinationsValid = false;
+    m_linkDestinations.clear();
+    m_linkAndLinkedDestinationsValid = false;
 }
 
 static LayoutBoxModelObject* enclosingBoxModelObject(LayoutObject* object)
@@ -209,10 +210,10 @@ int PrintContext::pageNumberForElement(Element* element, const FloatSize& pageSi
     return -1;
 }
 
-void PrintContext::collectLinkedDestinations(Node* node)
+void PrintContext::collectLinkAndLinkedDestinations(Node* node)
 {
     for (Node* i = node->firstChild(); i; i = i->nextSibling())
-        collectLinkedDestinations(i);
+        collectLinkAndLinkedDestinations(i);
 
     if (!node->isLink() || !node->isElementNode())
         return;
@@ -223,20 +224,51 @@ void PrintContext::collectLinkedDestinations(Node* node)
     if (!url.isValid())
         return;
 
+    bool linkIsValid = true;
     if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, node->document().baseURL())) {
-        String name = url.fragmentIdentifier();
-        if (Element* element = node->document().findAnchor(name))
-            m_linkedDestinations.set(name, element);
+        // Only output anchors and links to anchors in the top-level frame because our PrintContext
+        // supports only one namespace for the anchors.
+        if (node->document().frame() == m_frame.get()) {
+            String name = url.fragmentIdentifier();
+            if (Element* element = node->document().findAnchor(name))
+                m_linkedDestinations.set(name, element);
+            else
+                linkIsValid = false;
+        } else {
+            linkIsValid = false;
+        }
     }
+
+    if (linkIsValid)
+        m_linkDestinations.set(toElement(node), url);
 }
 
-void PrintContext::outputLinkedDestinations(GraphicsContext& graphicsContext, const IntRect& pageRect)
+void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsContext, const IntRect& pageRect)
 {
-    if (!m_linkedDestinationsValid) {
-        // Collect anchors in the top-level frame only because our PrintContext
-        // supports only one namespace for the anchors.
-        collectLinkedDestinations(frame()->document());
-        m_linkedDestinationsValid = true;
+    if (!m_linkAndLinkedDestinationsValid) {
+        for (Frame* currentFrame = frame(); currentFrame; currentFrame = currentFrame->tree().traverseNext(frame())) {
+            if (currentFrame->isLocalFrame())
+                collectLinkAndLinkedDestinations(toLocalFrame(currentFrame)->document());
+        }
+        m_linkAndLinkedDestinationsValid = true;
+    }
+
+    for (const auto& entry : m_linkDestinations) {
+        LayoutObject* layoutObject = entry.key->layoutObject();
+        if (!layoutObject || !layoutObject->frameView())
+            continue;
+        KURL url = entry.value;
+        IntRect boundingBox = layoutObject->absoluteFocusRingBoundingBoxRect();
+        boundingBox = layoutObject->frameView()->convertToContainingWindow(boundingBox);
+        if (!pageRect.intersects(boundingBox))
+            continue;
+        if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, layoutObject->document().baseURL())) {
+            String name = url.fragmentIdentifier();
+            ASSERT(layoutObject->document().findAnchor(name));
+            graphicsContext.setURLFragmentForRect(name, boundingBox);
+        } else {
+            graphicsContext.setURLForRect(url, boundingBox);
+        }
     }
 
     for (const auto& entry : m_linkedDestinations) {
@@ -311,6 +343,7 @@ DEFINE_TRACE(PrintContext)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_frame);
+    visitor->trace(m_linkDestinations);
     visitor->trace(m_linkedDestinations);
 #endif
 }

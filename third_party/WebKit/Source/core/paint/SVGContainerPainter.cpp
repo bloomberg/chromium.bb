@@ -54,16 +54,10 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
         }
     }
 
-    if (paintInfoBeforeFiltering.phase != PaintPhaseForeground)
-        return;
-
-    if (m_layoutSVGContainer.style()->outlineWidth() && m_layoutSVGContainer.style()->visibility() == VISIBLE) {
+    if (paintInfoBeforeFiltering.phase == PaintPhaseForeground && m_layoutSVGContainer.style()->outlineWidth() && m_layoutSVGContainer.style()->visibility() == VISIBLE) {
         LayoutRect layoutBoundingBox(boundingBox);
         ObjectPainter(m_layoutSVGContainer).paintOutline(paintInfoBeforeFiltering, layoutBoundingBox, layoutBoundingBox);
     }
-
-    if (paintInfoBeforeFiltering.context->printing())
-        ObjectPainter(m_layoutSVGContainer).addPDFURLRectIfNeeded(paintInfoBeforeFiltering, LayoutPoint());
 }
 
 } // namespace blink
