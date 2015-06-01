@@ -44,6 +44,21 @@ def GetValueOfType(a_dict, key, value_type, value_description):
   return value
 
 
+def PopValueOfType(a_dict, key, value_type, value_description):
+  """Raise an exception if we cannnot pop |key| from |a_dict| with |value_type|.
+
+  Args:
+    a_dict: a dictionary.
+    key: string key that should be in the dictionary.
+    value_type: expected type of the value at a_dict[key].
+    value_description: string describing the value used in error reporting.
+  """
+  ret = GetValueOfType(a_dict, key, value_type, value_description)
+  # We were able to get that value, so the key must exist.
+  a_dict.pop(key)
+  return ret
+
+
 def ParseJsonFileWithComments(path):
   """Parse a JSON file with bash style comments.
 

@@ -41,6 +41,17 @@ class JsonHelpersTest(cros_test_lib.MockTestCase):
         json_lib.GetValueOfType({'key': 1}, 'key', int, 'good value'),
         1)
 
+  def testPopValueOfType(self):
+    """Test that PopValueOfType is correct."""
+    input_dict = {'key': 'value'}
+    self.assertEqual(
+        'value',
+        json_lib.GetValueOfType(input_dict, 'key', str, 'value'))
+    self.assertEqual(
+        'value',
+        json_lib.PopValueOfType(input_dict, 'key', str, 'value'))
+    self.assertFalse(input_dict)
+
   def testParseJsonFileWithComments(self):
     """Test that we can parse a JSON file with comments."""
     JSON_WITH_COMMENTS = """
