@@ -162,7 +162,6 @@ extern const char kEnableTabAudioMuting[];
 extern const char kEnableThumbnailRetargeting[];
 extern const char kEnableUserAlternateProtocolPorts[];
 extern const char kEnableWebAppFrame[];
-extern const char kEnableWebsiteSettingsManager[];
 extern const char kEnableWifiCredentialSync[];
 extern const char kEnhancedBookmarksExperiment[];
 extern const char kExtensionContentVerificationBootstrap[];

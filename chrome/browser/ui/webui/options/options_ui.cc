@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/webui/options/search_engine_manager_handler.h"
 #include "chrome/browser/ui/webui/options/startup_pages_handler.h"
 #include "chrome/browser/ui/webui/options/sync_setup_handler.h"
-#include "chrome/browser/ui/webui/options/website_settings_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -309,7 +308,6 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
                           new SupervisedUserLearnMoreHandler());
 #endif
   AddOptionsPageUIHandler(localized_strings, new SyncSetupHandler());
-  AddOptionsPageUIHandler(localized_strings, new WebsiteSettingsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::AccountsOptionsHandler());

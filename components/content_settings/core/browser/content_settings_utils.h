@@ -30,9 +30,6 @@ typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
 
 std::string GetTypeName(ContentSettingsType type);
 
-bool GetTypeFromName(const std::string& name,
-                     ContentSettingsType* return_setting) WARN_UNUSED_RESULT;
-
 std::string ContentSettingToString(ContentSetting setting);
 
 ContentSetting ContentSettingFromString(const std::string& name);

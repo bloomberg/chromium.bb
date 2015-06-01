@@ -2018,13 +2018,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-website-settings-manager",
-    IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_NAME,
-    IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableWebsiteSettingsManager)
-  },
-  {
     "remember-cert-error-decisions",
     IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_NAME,
     IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_DESCRIPTION,

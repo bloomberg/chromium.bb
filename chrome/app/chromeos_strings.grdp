@@ -2091,12 +2091,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_BATTERY_STATUS_LABEL" desc="The label for the battery information in the 'Power' overlay.">
     Battery:
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_BATTERY_DESCRIPTION" desc="The 'Battery' button on the chrome://settings page.">
-    Battery...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_DESCRIPTION" desc="The 'Storage' button on the chrome://settings page.">
-    Stored data...
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_SET_TIME_BUTTON" desc="In the settings tab, the prompt on the button to open a dialog to set date and time.">
     Set date and time
   </message>

@@ -300,12 +300,6 @@ cr.define('options', function() {
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_ShowPowerSettings']);
         };
-        $('battery-button').onclick = function(evt) {
-          WebsiteSettingsManager.showWebsiteSettings('battery');
-        };
-        $('stored-data-button').onclick = function(evt) {
-          WebsiteSettingsManager.showWebsiteSettings('storage');
-        };
         $('keyboard-settings-button').onclick = function(evt) {
           PageManager.showPageByName('keyboard-overlay');
           chrome.send('coreOptionsUserMetricsAction',
@@ -591,14 +585,6 @@ cr.define('options', function() {
       }
       $('easy-unlock-enable-proximity-detection').hidden =
           !loadTimeData.getBoolean('easyUnlockProximityDetectionAllowed');
-
-      // Website Settings section.
-      if (loadTimeData.getBoolean('websiteSettingsManagerEnabled')) {
-        $('website-settings-section').hidden = false;
-        $('website-management-button').onclick = function(event) {
-          PageManager.showPageByName('websiteSettings');
-        };
-      }
 
       // Web Content section.
       $('fontSettingsCustomizeFontsButton').onclick = function(event) {

@@ -884,7 +884,6 @@
       'browser/ui/webui/options/settings_app_browsertest.js',
       'browser/ui/webui/options/settings_format_browsertest.js',
       'browser/ui/webui/options/startup_page_list_browsertest.js',
-      'browser/ui/webui/options/website_settings_browsertest.js',
       'browser/ui/webui/sync_internals_browsertest.js',
       'browser/ui/webui/sync_setup_browsertest.js',
       'test/data/chromeos/oobe_webui_browsertest.js',

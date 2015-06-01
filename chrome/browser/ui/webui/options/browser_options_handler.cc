@@ -415,7 +415,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_LONG },
     { "autoclickDelayVeryShort",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_SHORT },
-    { "batteryButton", IDS_OPTIONS_SETTINGS_BATTERY_DESCRIPTION},
     { "changePicture", IDS_OPTIONS_CHANGE_PICTURE },
     { "changePictureCaption", IDS_OPTIONS_CHANGE_PICTURE_CAPTION },
     { "consumerManagementDescription",
@@ -457,7 +456,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION },
     { "sectionTitleDevice", IDS_OPTIONS_DEVICE_GROUP_NAME },
     { "sectionTitleInternet", IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL },
-    { "storageButton", IDS_OPTIONS_SETTINGS_STORAGE_DESCRIPTION},
     { "syncButtonTextStart", IDS_SYNC_SETUP_BUTTON_LABEL },
     { "thirdPartyImeConfirmDisable", IDS_CANCEL },
     { "thirdPartyImeConfirmEnable", IDS_OK },
@@ -664,10 +662,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("showSetDefault", ShouldShowSetDefaultBrowser());
 
   values->SetBoolean("allowAdvancedSettings", ShouldAllowAdvancedSettings());
-
-  values->SetBoolean("websiteSettingsManagerEnabled",
-                     base::CommandLine::ForCurrentProcess()->HasSwitch(
-                         switches::kEnableWebsiteSettingsManager));
 
   values->SetBoolean("usingNewProfilesUI", switches::IsNewAvatarMenu());
 

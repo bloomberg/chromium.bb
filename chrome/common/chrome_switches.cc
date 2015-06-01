@@ -559,9 +559,6 @@ const char kEnableUserAlternateProtocolPorts[] =
 // apps).
 extern const char kEnableWebAppFrame[] = "enable-web-app-frame";
 
-// Enables the Website Settings page on the Settings page.
-const char kEnableWebsiteSettingsManager[]  = "enable-website-settings-manager";
-
 // Enables synchronizing WiFi credentials across devices, using Chrome Sync.
 const char kEnableWifiCredentialSync[]      = "enable-wifi-credential-sync";
 

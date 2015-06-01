@@ -1898,8 +1898,6 @@
       'browser/ui/webui/options/supervised_user_learn_more_handler.h',
       'browser/ui/webui/options/sync_setup_handler.cc',
       'browser/ui/webui/options/sync_setup_handler.h',
-      'browser/ui/webui/options/website_settings_handler.cc',
-      'browser/ui/webui/options/website_settings_handler.h',
       'browser/ui/webui/plugins_ui.cc',
       'browser/ui/webui/plugins_ui.h',
       'browser/ui/webui/profile_info_watcher.cc',

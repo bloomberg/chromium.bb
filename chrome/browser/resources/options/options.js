@@ -45,8 +45,6 @@ var SupervisedUserCreateConfirmOverlay =
 var SupervisedUserImportOverlay = options.SupervisedUserImportOverlay;
 var SupervisedUserLearnMoreOverlay = options.SupervisedUserLearnMoreOverlay;
 var SyncSetupOverlay = options.SyncSetupOverlay;
-var WebsiteSettingsEditor = options.WebsiteSettings.WebsiteSettingsEditor;
-var WebsiteSettingsManager = options.ContentSettings.WebsiteSettingsManager;
 var ThirdPartyImeConfirmOverlay = options.ThirdPartyImeConfirmOverlay;
 
 /**
@@ -116,10 +114,6 @@ function load() {
   PageManager.registerOverlay(ContentSettings.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);
-  PageManager.registerOverlay(WebsiteSettingsManager.getInstance(),
-                              ContentSettings.getInstance());
-  PageManager.registerOverlay(WebsiteSettingsEditor.getInstance(),
-                              WebsiteSettingsManager.getInstance());
   PageManager.registerOverlay(ContentSettingsExceptionsArea.getInstance(),
                               ContentSettings.getInstance());
   PageManager.registerOverlay(CookiesView.getInstance(),
