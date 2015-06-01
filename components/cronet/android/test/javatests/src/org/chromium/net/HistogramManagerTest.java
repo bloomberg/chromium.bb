@@ -24,7 +24,6 @@ public class HistogramManagerTest extends CronetTestBase {
     public void testHistogramManager() throws Exception {
         mActivity = launchCronetTestApp();
         byte delta1[] = mActivity.mHistogramManager.getHistogramDeltas();
-        assertEquals(0, delta1.length);
 
         TestUrlRequestListener listener = new TestUrlRequestListener();
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
