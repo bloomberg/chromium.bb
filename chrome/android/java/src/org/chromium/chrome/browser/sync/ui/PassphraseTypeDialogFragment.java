@@ -24,6 +24,7 @@ import org.chromium.sync.internal_api.pub.PassphraseType;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -37,40 +38,12 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
         void onPassphraseTypeSelected(PassphraseType type);
     }
 
-    private static class PassphraseTypeUiElement {
-        private final PassphraseType mPassphraseType;
-        private final String mDisplayName;
-        private int mPosition;
-
-        private PassphraseTypeUiElement(PassphraseType passphraseType, String displayName) {
-            mPassphraseType = passphraseType;
-            mDisplayName = displayName;
-            // Default position to an invalid value.
-            mPosition = -1;
+    private String[] getDisplayNames(List<PassphraseType> passphraseTypes) {
+        String[] displayNames = new String[passphraseTypes.size()];
+        for (int i = 0; i < displayNames.length; i++) {
+            displayNames[i] = textForPassphraseType(passphraseTypes.get(i));
         }
-    }
-
-    private static class PassphraseTypeUiElementContainer {
-        private final ArrayList<PassphraseTypeUiElement> mElements =
-                new ArrayList<PassphraseTypeUiElement>();
-
-        public void add(PassphraseTypeUiElement element) {
-            // Now that we know where we will insert the element, we can update its position member.
-            element.mPosition = mElements.size();
-            mElements.add(element);
-        }
-
-        public ArrayList<PassphraseTypeUiElement> getElements() {
-            return mElements;
-        }
-
-        public String[] getDisplayNames() {
-            String[] strings = new String[mElements.size()];
-            for (int i = 0; i < mElements.size(); i++) {
-                strings[i] = mElements.get(i).mDisplayName;
-            }
-            return strings;
-        }
+        return displayNames;
     }
 
     private String textForPassphraseType(PassphraseType type) {
@@ -90,11 +63,9 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
     }
 
     private Adapter createAdapter(PassphraseType currentType) {
-        PassphraseTypeUiElementContainer container = new PassphraseTypeUiElementContainer();
-        for (PassphraseType type : currentType.getVisibleTypes()) {
-            container.add(new PassphraseTypeUiElement(type, textForPassphraseType(type)));
-        }
-        return new Adapter(container, container.getDisplayNames());
+        List<PassphraseType> passphraseTypes =
+                new ArrayList<PassphraseType>(currentType.getVisibleTypes());
+        return new Adapter(passphraseTypes, getDisplayNames(passphraseTypes));
     }
 
     /**
@@ -103,16 +74,15 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
     @VisibleForTesting
     public class Adapter extends ArrayAdapter<String> {
 
-        private final PassphraseTypeUiElementContainer mElementsContainer;
+        private final List<PassphraseType> mPassphraseTypes;
 
         /**
          * Do not call this constructor directly. Instead use
          * {@link PassphraseTypeDialogFragment#createAdapter}.
          */
-        private Adapter(PassphraseTypeUiElementContainer elementsContainer,
-                        String[] elementStrings) {
-            super(getActivity(), R.layout.passphrase_type_item, elementStrings);
-            mElementsContainer = elementsContainer;
+        private Adapter(List<PassphraseType> passphraseTypes, String[] displayStrings) {
+            super(getActivity(), R.layout.passphrase_type_item, displayStrings);
+            mPassphraseTypes = passphraseTypes;
         }
 
         @Override
@@ -126,16 +96,11 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
         }
 
         public PassphraseType getType(int position) {
-            return mElementsContainer.getElements().get(position).mPassphraseType;
+            return mPassphraseTypes.get(position);
         }
 
         public int getPositionForType(PassphraseType type) {
-            for (PassphraseTypeUiElement element : mElementsContainer.getElements()) {
-                if (element.mPassphraseType == type) {
-                    return element.mPosition;
-                }
-            }
-            return -1;
+            return mPassphraseTypes.indexOf(type);
         }
 
         @Override
