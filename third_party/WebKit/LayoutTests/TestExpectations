@@ -4142,3 +4142,4 @@ crbug.com/321237 [ Mac ] svg/repaint/modify-transferred-listitem-different-attr.
 crbug.com/321237 [ Mac ] virtual/antialiasedtext/fast/text/international/thai-baht-space.html [ NeedsRebaseline ]
 crbug.com/321237 [ Mac ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Mac ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
+crbug.com/321237 [ Win ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
