@@ -126,7 +126,6 @@ per-file json_schema.gypi=mpcomplete@chromium.org
 
 per-file keyed_service.gypi=erg@chromium.org
 per-file keyed_service.gypi=phajdan.jr@chromium.org
-per-file keyed_service.gypi=rlp@chromium.org
 
 per-file leveldb_proto*=cjhopman@chromium.org
 per-file leveldb_proto*=mathp@chromium.org
