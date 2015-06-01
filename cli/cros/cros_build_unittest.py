@@ -10,7 +10,6 @@ from chromite.cli import command
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_build
 from chromite.lib import chroot_util
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
@@ -52,7 +51,8 @@ class FakeWorkonHelper(object):
     self.use_workon_only = kwargs.get('use_workon_only')
 
 
-class BuildCommandTest(cros_test_lib.MockTempDirTestCase):
+class BuildCommandTest(cros_test_lib.MockTempDirTestCase,
+                       cros_test_lib.OutputTestCase):
   """Test class for our BuildCommand class."""
 
   def testBrilloBuildOperationCalled(self):
@@ -106,5 +106,7 @@ class BuildCommandTest(cros_test_lib.MockTempDirTestCase):
     with MockBuildCommand(args) as build:
       cmd = partial_mock.In('--backtrack=0')
       build.rc_mock.AddCmdResult(cmd=cmd, returncode=1, error='error\n')
-      ex = self.assertRaises2(cros_build_lib.RunCommandError, build.inst.Run)
-      self.assertTrue(cros_build.BuildCommand._BAD_DEPEND_MSG in ex.msg)
+      with self.OutputCapturer():
+        build.inst.Run()
+      self.AssertOutputContainsError(cros_build.BuildCommand._BAD_DEPEND_MSG,
+                                     check_stderr=True)
