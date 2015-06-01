@@ -5,31 +5,28 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALL_HELPER_H_
 #define CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALL_HELPER_H_
 
-#include <vector>
+#include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
-#include "content/public/browser/utility_process_host_client.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;
-class ListValue;
+class Value;
 }
 
 namespace chrome {
 class BitmapFetcher;
 }
 
-namespace content {
-class UtilityProcessHost;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
+
+class SafeJsonParser;
 
 namespace extensions {
 
@@ -37,7 +34,7 @@ namespace extensions {
 // sending work to the utility process for parsing manifests and
 // fetching/decoding icon data. Clients must implement the
 // WebstoreInstallHelper::Delegate interface to receive the parsed data.
-class WebstoreInstallHelper : public content::UtilityProcessHostClient,
+class WebstoreInstallHelper : public base::RefCounted<WebstoreInstallHelper>,
                               public chrome::BitmapFetcherDelegate {
  public:
   class Delegate {
@@ -75,21 +72,18 @@ class WebstoreInstallHelper : public content::UtilityProcessHostClient,
   void Start();
 
  private:
+  friend class base::RefCounted<WebstoreInstallHelper>;
+
   ~WebstoreInstallHelper() override;
 
-  void StartWorkOnIOThread();
-  void ReportResultsIfComplete();
-  void ReportResultFromUIThread();
-
-  // Implementing pieces of the UtilityProcessHostClient interface.
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  // Message handlers.
-  void OnJSONParseSucceeded(const base::ListValue& wrapper);
+  // Callbacks for the SafeJsonParser.
+  void OnJSONParseSucceeded(scoped_ptr<base::Value> result);
   void OnJSONParseFailed(const std::string& error_message);
 
   // Implementing the chrome::BitmapFetcherDelegate interface.
   void OnFetchComplete(const GURL& url, const SkBitmap* image) override;
+
+  void ReportResultsIfComplete();
 
   // The client who we'll report results back to.
   Delegate* delegate_;
@@ -100,13 +94,13 @@ class WebstoreInstallHelper : public content::UtilityProcessHostClient,
   // The manifest to parse.
   std::string manifest_;
 
+  scoped_refptr<SafeJsonParser> json_parser_;
+
   // If |icon_url_| is non-empty, it needs to be fetched and decoded into an
   // SkBitmap.
   GURL icon_url_;
   net::URLRequestContextGetter* context_getter_; // Only usable on UI thread.
   scoped_ptr<chrome::BitmapFetcher> icon_fetcher_;
-
-  base::WeakPtr<content::UtilityProcessHost> utility_host_;
 
   // Flags for whether we're done doing icon decoding and manifest parsing.
   bool icon_decode_complete_;

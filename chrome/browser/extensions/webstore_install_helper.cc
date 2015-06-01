@@ -4,23 +4,15 @@
 
 #include "chrome/browser/extensions/webstore_install_helper.h"
 
-#include <string>
-
 #include "base/bind.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
-#include "chrome/common/chrome_utility_messages.h"
-#include "chrome/common/extensions/chrome_utility_extensions_messages.h"
-#include "chrome/grit/generated_resources.h"
+#include "chrome/browser/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_host.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
-using content::UtilityProcessHost;
 
 namespace {
 
@@ -51,6 +43,20 @@ WebstoreInstallHelper::~WebstoreInstallHelper() {}
 void WebstoreInstallHelper::Start() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // No existing |json_parser_| to avoid unbalanced AddRef().
+  CHECK(!json_parser_.get());
+  AddRef();  // Balanced in OnJSONParseSucceeded()/OnJSONParseFailed().
+  // Use base::Unretained so that base::Bind won't AddRef() on us. Otherwise,
+  // we'll have two callbacks holding references to us, only one of which will
+  // ever be called.
+  json_parser_ = new SafeJsonParser(
+      manifest_,
+      base::Bind(&WebstoreInstallHelper::OnJSONParseSucceeded,
+                 base::Unretained(this)),
+      base::Bind(&WebstoreInstallHelper::OnJSONParseFailed,
+                 base::Unretained(this)));
+  json_parser_->Start();
+
   if (icon_url_.is_empty()) {
     icon_decode_complete_ = true;
   } else {
@@ -63,34 +69,6 @@ void WebstoreInstallHelper::Start() {
         net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
         net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
   }
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&WebstoreInstallHelper::StartWorkOnIOThread, this));
-}
-
-void WebstoreInstallHelper::StartWorkOnIOThread() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  utility_host_ = UtilityProcessHost::Create(
-      this, base::ThreadTaskRunnerHandle::Get().get())->AsWeakPtr();
-  utility_host_->SetName(l10n_util::GetStringUTF16(
-      IDS_UTILITY_PROCESS_JSON_PARSER_NAME));
-  utility_host_->StartBatchMode();
-
-  utility_host_->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
-}
-
-bool WebstoreInstallHelper::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(WebstoreInstallHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Succeeded,
-                        OnJSONParseSucceeded)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Failed,
-                        OnJSONParseFailed)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void WebstoreInstallHelper::OnFetchComplete(const GURL& url,
@@ -108,57 +86,41 @@ void WebstoreInstallHelper::OnFetchComplete(const GURL& url,
     parse_error_ = Delegate::ICON_ERROR;
   }
   icon_fetcher_.reset();
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&WebstoreInstallHelper::ReportResultsIfComplete, this));
+
+  ReportResultsIfComplete();
   Release();  // Balanced in Start().
 }
 
 void WebstoreInstallHelper::OnJSONParseSucceeded(
-    const base::ListValue& wrapper) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    scoped_ptr<base::Value> result) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   manifest_parse_complete_ = true;
-  const base::Value* value = NULL;
-  CHECK(wrapper.Get(0, &value));
-  if (value->IsType(base::Value::TYPE_DICTIONARY)) {
-    parsed_manifest_.reset(
-        static_cast<const base::DictionaryValue*>(value)->DeepCopy());
-  } else {
+  const base::DictionaryValue* value;
+  if (result->GetAsDictionary(&value))
+    parsed_manifest_.reset(value->DeepCopy());
+  else
     parse_error_ = Delegate::MANIFEST_ERROR;
-  }
+
   ReportResultsIfComplete();
+  Release();  // Balanced in Start().
 }
 
 void WebstoreInstallHelper::OnJSONParseFailed(
     const std::string& error_message) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   manifest_parse_complete_ = true;
   error_ = error_message;
   parse_error_ = Delegate::MANIFEST_ERROR;
   ReportResultsIfComplete();
+  Release();  // Balanced in Start().
 }
 
 void WebstoreInstallHelper::ReportResultsIfComplete() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!icon_decode_complete_ || !manifest_parse_complete_)
     return;
 
-  // The utility_host_ will take care of deleting itself after this call.
-  if (utility_host_.get()) {
-    utility_host_->EndBatchMode();
-    utility_host_.reset();
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&WebstoreInstallHelper::ReportResultFromUIThread, this));
-}
-
-void WebstoreInstallHelper::ReportResultFromUIThread() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (error_.empty() && parsed_manifest_)
     delegate_->OnWebstoreParseSuccess(id_, icon_, parsed_manifest_.release());
   else
