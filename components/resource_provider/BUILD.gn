@@ -14,6 +14,9 @@ if (is_android) {
   mojo_android_application("resource_provider") {
     input_so = "$root_out_dir/lib.stripped/libresource_provider_lib.so"
     input_dex_jar = java_library_path
+    deps = [
+      ":java_library",
+    ]
   }
 
   shared_library("resource_provider_lib") {

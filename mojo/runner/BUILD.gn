@@ -283,7 +283,10 @@ if (is_android) {
     clear_dir = true
     dest = mojo_runner_assets_dir
     deps = [
+      ":bootstrap",
+      ":bootstrap_java",
       ":copy_mojo_runner",
+      "//mojo/services/network",
     ]
     sources = [
       "$root_out_dir/lib.stripped/libbootstrap.so",
@@ -315,6 +318,10 @@ if (is_android) {
       "$root_out_dir/test_app.mojo",
       "$root_out_dir/test_request_tracker_app.mojo",
     ]
+    deps = [
+      "//mojo/services/test_service:test_app",
+      "//mojo/services/test_service:test_request_tracker_app",
+    ]
   }
 
   android_apk("mojo_runner_apk") {
@@ -328,6 +335,7 @@ if (is_android) {
 
     deps = [
       ":build_mojo_runner_assets",
+      ":copy_mojo_runner",
       ":java",
       ":resources",
       "//base:base_java",
@@ -398,7 +406,7 @@ test("tests") {
     "//url",
   ]
 
-  datadeps = [
+  data_deps = [
     "//mojo/services/test_service:test_app",
     "//mojo/services/test_service:test_request_tracker_app",
   ]

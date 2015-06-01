@@ -17,6 +17,9 @@ if (is_android) {
   mojo_android_application("core_services") {
     input_so = "$root_out_dir/lib.stripped/libcore_services.so"
     input_dex_jar = java_library_path
+    deps = [
+      ":java_library",
+    ]
   }
 
   shared_library("native_library") {

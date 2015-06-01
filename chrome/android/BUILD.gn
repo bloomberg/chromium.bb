@@ -318,12 +318,14 @@ copy_ex("chrome_shell_assets") {
 
   if (icu_use_data_file) {
     sources += [ "$root_build_dir/icudtl.dat" ]
+    deps += [ "//third_party/icu:icudata" ]
   }
   if (v8_use_external_startup_data) {
     sources += [
       "$root_build_dir/natives_blob.bin",
       "$root_build_dir/snapshot_blob.bin",
     ]
+    deps += [ "//v8" ]
   }
 }
 

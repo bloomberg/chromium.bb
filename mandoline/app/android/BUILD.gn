@@ -52,7 +52,10 @@ copy_ex("copy_mandoline_assets") {
   deps = [
     "//components/html_viewer",
     "//components/view_manager",
+    "//components/view_manager/surfaces",
     "//mandoline/services/core_services",
+    "//mojo/runner:bootstrap_java",
+    "//mojo/services/network",
   ]
   sources = [
     "$root_out_dir/core_services.mojo",

@@ -295,6 +295,9 @@ if (is_android) {
   # Variables:
   #   input_so: the .so file to bundle
   #   input_dex_jar: the .dex.jar file to bundle
+  #   deps / public_deps / data_deps (optional):
+  #       Dependencies. The targets that generate the .so/jar inputs should be
+  #       listed in either deps or public_deps.
   #   output_name (optional): override for the output file name
   template("mojo_android_application") {
     assert(defined(invoker.input_so))
@@ -302,7 +305,9 @@ if (is_android) {
 
     zip_action_name = "${target_name}_zip"
     zip_action_output = "$target_gen_dir/${target_name}.zip"
+    prepend_action_name = target_name
     action(zip_action_name) {
+      visibility = [ ":$prepend_action_name" ]
       script = "//build/android/gn/zip.py"
 
       inputs = [
@@ -321,6 +326,16 @@ if (is_android) {
         "--inputs=$rebase_inputs",
         "--output=$rebase_output",
       ]
+
+      if (defined(invoker.deps)) {
+        deps = invoker.deps
+      }
+      if (defined(invoker.public_deps)) {
+        public_deps = invoker.public_deps
+      }
+      if (defined(invoker.data_deps)) {
+        data_deps = invoker.data_deps
+      }
     }
 
     if (defined(invoker.output_name)) {
@@ -348,6 +363,10 @@ if (is_android) {
         "--input=$rebase_input",
         "--output=$rebase_output",
         "--line=#!mojo mojo:android_handler",
+      ]
+
+      public_deps = [
+        ":$zip_action_name",
       ]
     }
   }
