@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
@@ -332,29 +333,23 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
     ssl_config_service_->RemoveObserver(this);
   }
 
-  int ChannelIDCount() {
-    return channel_id_service_->cert_count();
-  }
+  int ChannelIDCount() { return channel_id_service_->channel_id_count(); }
 
   // Add a server bound cert for |server| with specific creation and expiry
   // times.  The cert and key data will be filled with dummy values.
   void AddChannelIDWithTimes(const std::string& server_identifier,
-                                   base::Time creation_time,
-                                   base::Time expiration_time) {
-    GetChannelIDStore()->SetChannelID(server_identifier,
-                                      creation_time,
-                                      expiration_time,
-                                      "a",
-                                      "b");
+                             base::Time creation_time) {
+    GetChannelIDStore()->SetChannelID(
+        make_scoped_ptr(new net::ChannelIDStore::ChannelID(
+            server_identifier, creation_time,
+            make_scoped_ptr(crypto::ECPrivateKey::Create()))));
   }
 
   // Add a server bound cert for |server|, with the current time as the
   // creation time.  The cert and key data will be filled with dummy values.
   void AddChannelID(const std::string& server_identifier) {
     base::Time now = base::Time::Now();
-    AddChannelIDWithTimes(server_identifier,
-                          now,
-                          now + base::TimeDelta::FromDays(1));
+    AddChannelIDWithTimes(server_identifier, now);
   }
 
   void GetChannelIDList(net::ChannelIDStore::ChannelIDList* channel_ids) {
@@ -1059,8 +1054,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveChannelIDLastHour) {
   base::Time now = base::Time::Now();
   tester.AddChannelID(kTestOrigin1);
   tester.AddChannelIDWithTimes(kTestOrigin2,
-                                     now - base::TimeDelta::FromHours(2),
-                                     now);
+                               now - base::TimeDelta::FromHours(2));
   EXPECT_EQ(0, tester.ssl_config_changed_count());
   EXPECT_EQ(2, tester.ChannelIDCount());
 

@@ -631,17 +631,11 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
 // channel id.
 class FailingChannelIDStore : public ChannelIDStore {
   int GetChannelID(const std::string& server_identifier,
-                   base::Time* expiration_time,
-                   std::string* private_key_result,
-                   std::string* cert_result,
+                   scoped_ptr<crypto::ECPrivateKey>* key_result,
                    const GetChannelIDCallback& callback) override {
     return ERR_UNEXPECTED;
   }
-  void SetChannelID(const std::string& server_identifier,
-                    base::Time creation_time,
-                    base::Time expiration_time,
-                    const std::string& private_key,
-                    const std::string& cert) override {}
+  void SetChannelID(scoped_ptr<ChannelID> channel_id) override {}
   void DeleteChannelID(const std::string& server_identifier,
                        const base::Closure& completion_callback) override {}
   void DeleteAllCreatedBetween(
@@ -658,20 +652,14 @@ class FailingChannelIDStore : public ChannelIDStore {
 // channel id.
 class AsyncFailingChannelIDStore : public ChannelIDStore {
   int GetChannelID(const std::string& server_identifier,
-                   base::Time* expiration_time,
-                   std::string* private_key_result,
-                   std::string* cert_result,
+                   scoped_ptr<crypto::ECPrivateKey>* key_result,
                    const GetChannelIDCallback& callback) override {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, ERR_UNEXPECTED,
-                              server_identifier, base::Time(), "", ""));
+        FROM_HERE,
+        base::Bind(callback, ERR_UNEXPECTED, server_identifier, nullptr));
     return ERR_IO_PENDING;
   }
-  void SetChannelID(const std::string& server_identifier,
-                    base::Time creation_time,
-                    base::Time expiration_time,
-                    const std::string& private_key,
-                    const std::string& cert) override {}
+  void SetChannelID(scoped_ptr<ChannelID> channel_id) override {}
   void DeleteChannelID(const std::string& server_identifier,
                        const base::Closure& completion_callback) override {}
   void DeleteAllCreatedBetween(

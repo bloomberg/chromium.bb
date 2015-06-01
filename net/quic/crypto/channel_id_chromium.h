@@ -19,7 +19,8 @@ class ChannelIDService;
 
 class NET_EXPORT_PRIVATE ChannelIDKeyChromium: public ChannelIDKey {
  public:
-  explicit ChannelIDKeyChromium(crypto::ECPrivateKey* ec_private_key);
+  explicit ChannelIDKeyChromium(
+      scoped_ptr<crypto::ECPrivateKey> ec_private_key);
   ~ChannelIDKeyChromium() override;
 
   // ChannelIDKey interface

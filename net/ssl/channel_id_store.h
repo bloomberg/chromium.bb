@@ -9,13 +9,15 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
+#include "crypto/ec_private_key.h"
 #include "net/base/net_export.h"
 
 namespace net {
 
-// An interface for storing and retrieving server bound certs.
+// An interface for storing and retrieving channel ID keypairs.
 // There isn't a domain bound certs spec yet, but the old origin bound
 // certificates are specified in
 // http://balfanz.github.com/tls-obc-spec/draft-balfanz-tls-obc-01.html.
@@ -26,79 +28,61 @@ namespace net {
 class NET_EXPORT ChannelIDStore
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  // The ChannelID class contains a private key in addition to the cert.
+  // The ChannelID class contains a keypair, along with the corresponding
+  // hostname (server identifier) and creation time.
   class NET_EXPORT ChannelID {
    public:
     ChannelID();
     ChannelID(const std::string& server_identifier,
               base::Time creation_time,
-              base::Time expiration_time,
-              const std::string& private_key,
-              const std::string& cert);
+              scoped_ptr<crypto::ECPrivateKey> key);
+    ChannelID(const ChannelID& other);
+    ChannelID& operator=(const ChannelID& other);
     ~ChannelID();
 
-    // Server identifier.  For domain bound certs, for instance "verisign.com".
+    // Server identifier.
     const std::string& server_identifier() const { return server_identifier_; }
-    // The time the certificate was created, also the start of the certificate
-    // validity period.
+    // The time the keypair was created.
     base::Time creation_time() const { return creation_time_; }
-    // The time after which this certificate is no longer valid.
-    base::Time expiration_time() const { return expiration_time_; }
-    // The encoding of the private key depends on the type.
-    // rsa_sign: DER-encoded PrivateKeyInfo struct.
-    // ecdsa_sign: DER-encoded EncryptedPrivateKeyInfo struct.
-    const std::string& private_key() const { return private_key_; }
-    // DER-encoded certificate.
-    const std::string& cert() const { return cert_; }
+    // Returns the keypair for the channel ID. This pointer is only valid for
+    // the lifetime of the ChannelID object - the ECPrivateKey object remains
+    // owned by the ChannelID object; no ownership is transferred.
+    crypto::ECPrivateKey* key() const { return key_.get(); }
 
    private:
     std::string server_identifier_;
     base::Time creation_time_;
-    base::Time expiration_time_;
-    std::string private_key_;
-    std::string cert_;
+    scoped_ptr<crypto::ECPrivateKey> key_;
   };
 
   typedef std::list<ChannelID> ChannelIDList;
 
-  typedef base::Callback<void(
-      int,
-      const std::string&,
-      base::Time,
-      const std::string&,
-      const std::string&)> GetChannelIDCallback;
+  typedef base::Callback<
+      void(int, const std::string&, scoped_ptr<crypto::ECPrivateKey>)>
+      GetChannelIDCallback;
   typedef base::Callback<void(const ChannelIDList&)> GetChannelIDListCallback;
 
   virtual ~ChannelIDStore() {}
 
   // GetChannelID may return the result synchronously through the
-  // output parameters, in which case it will return either OK if a cert is
+  // output parameters, in which case it will return either OK if a keypair is
   // found in the store, or ERR_FILE_NOT_FOUND if none is found.  If the
   // result cannot be returned synchronously, GetChannelID will
   // return ERR_IO_PENDING and the callback will be called with the result
   // asynchronously.
-  virtual int GetChannelID(
-      const std::string& server_identifier,
-      base::Time* expiration_time,
-      std::string* private_key_result,
-      std::string* cert_result,
-      const GetChannelIDCallback& callback) = 0;
+  virtual int GetChannelID(const std::string& server_identifier,
+                           scoped_ptr<crypto::ECPrivateKey>* key_result,
+                           const GetChannelIDCallback& callback) = 0;
 
-  // Adds a server bound cert and the corresponding private key to the store.
-  virtual void SetChannelID(
-      const std::string& server_identifier,
-      base::Time creation_time,
-      base::Time expiration_time,
-      const std::string& private_key,
-      const std::string& cert) = 0;
+  // Adds the keypair for a hostname to the store.
+  virtual void SetChannelID(scoped_ptr<ChannelID> channel_id) = 0;
 
-  // Removes a server bound cert and the corresponding private key from the
-  // store.
+  // Removes a keypair from the store.
   virtual void DeleteChannelID(
       const std::string& server_identifier,
       const base::Closure& completion_callback) = 0;
 
-  // Deletes all of the server bound certs that have a creation_date greater
+  // Deletes all of the channel ID keypairs that have a creation_date greater
   // than or equal to |delete_begin| and less than |delete_end|.  If a
   // base::Time value is_null, that side of the comparison is unbounded.
   virtual void DeleteAllCreatedBetween(
@@ -106,17 +90,16 @@ class NET_EXPORT ChannelIDStore
       base::Time delete_end,
       const base::Closure& completion_callback) = 0;
 
-  // Removes all server bound certs and the corresponding private keys from
-  // the store.
+  // Removes all channel ID keypairs from the store.
   virtual void DeleteAll(const base::Closure& completion_callback) = 0;
 
-  // Returns all server bound certs and the corresponding private keys.
+  // Returns all channel ID keypairs.
   virtual void GetAllChannelIDs(const GetChannelIDListCallback& callback) = 0;
 
-  // Helper function that adds all certs from |list| into this instance.
+  // Helper function that adds all keypairs from |list| into this instance.
   void InitializeFrom(const ChannelIDList& list);
 
-  // Returns the number of certs in the store.  May return 0 if the backing
+  // Returns the number of keypairs in the store.  May return 0 if the backing
   // store is not loaded yet.
   // Public only for unit testing.
   virtual int GetChannelIDCount() = 0;

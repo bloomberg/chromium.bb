@@ -699,7 +699,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
 
   // The service for retrieving Channel ID keys.  May be NULL.
   ChannelIDService* channel_id_service_;
-  ChannelIDService::RequestHandle domain_bound_cert_request_handle_;
+  ChannelIDService::RequestHandle channel_id_request_handle_;
 
   // The information about NSS task runner.
   int unhandled_buffer_size_;
@@ -785,8 +785,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // prior to invoking OnHandshakeIOComplete.
   // Read on the NSS task runner when once OnHandshakeIOComplete is invoked
   // on the NSS task runner.
-  std::string domain_bound_private_key_;
-  std::string domain_bound_cert_;
+  scoped_ptr<crypto::ECPrivateKey> channel_id_key_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -955,7 +954,7 @@ void SSLClientSocketNSS::Core::Detach() {
 
   network_handshake_state_.Reset();
 
-  domain_bound_cert_request_handle_.Cancel();
+  channel_id_request_handle_.Cancel();
 }
 
 int SSLClientSocketNSS::Core::Read(IOBuffer* buf, int buf_len,
@@ -1964,34 +1963,11 @@ SECStatus SSLClientSocketNSS::Core::ClientChannelIDHandler(
 
 int SSLClientSocketNSS::Core::ImportChannelIDKeys(SECKEYPublicKey** public_key,
                                                   SECKEYPrivateKey** key) {
-  // Set the certificate.
-  SECItem cert_item;
-  cert_item.data = (unsigned char*) domain_bound_cert_.data();
-  cert_item.len = domain_bound_cert_.size();
-  ScopedCERTCertificate cert(CERT_NewTempCertificate(CERT_GetDefaultCertDB(),
-                                                     &cert_item,
-                                                     NULL,
-                                                     PR_FALSE,
-                                                     PR_TRUE));
-  if (cert == NULL)
-    return MapNSSError(PORT_GetError());
+  if (!channel_id_key_)
+    return SECFailure;
 
-  crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());
-  // Set the private key.
-  if (!crypto::ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
-          slot.get(),
-          ChannelIDService::kEPKIPassword,
-          reinterpret_cast<const unsigned char*>(
-              domain_bound_private_key_.data()),
-          domain_bound_private_key_.size(),
-          &cert->subjectPublicKeyInfo,
-          false,
-          false,
-          key,
-          public_key)) {
-    int error = MapNSSError(PORT_GetError());
-    return error;
-  }
+  *public_key = SECKEY_CopyPublicKey(channel_id_key_->public_key());
+  *key = SECKEY_CopyPrivateKey(channel_id_key_->key());
 
   return OK;
 }
@@ -2235,11 +2211,9 @@ int SSLClientSocketNSS::Core::DoGetChannelID(const std::string& host) {
   weak_net_log_->BeginEvent(NetLog::TYPE_SSL_GET_DOMAIN_BOUND_CERT);
 
   int rv = channel_id_service_->GetOrCreateChannelID(
-      host,
-      &domain_bound_private_key_,
-      &domain_bound_cert_,
+      host, &channel_id_key_,
       base::Bind(&Core::OnGetChannelIDComplete, base::Unretained(this)),
-      &domain_bound_cert_request_handle_);
+      &channel_id_request_handle_);
 
   if (rv != ERR_IO_PENDING && !OnNSSTaskRunner()) {
     nss_task_runner_->PostTask(

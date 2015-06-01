@@ -35,10 +35,10 @@ class TestChannelIDSource : public ChannelIDSource {
  private:
   typedef std::map<string, crypto::ECPrivateKey*> HostnameToKeyMap;
 
-  crypto::ECPrivateKey* HostnameToKey(const string& hostname) {
+  scoped_ptr<crypto::ECPrivateKey> HostnameToKey(const string& hostname) {
     HostnameToKeyMap::const_iterator it = hostname_to_key_.find(hostname);
     if (it != hostname_to_key_.end()) {
-      return it->second->Copy();
+      return make_scoped_ptr(it->second->Copy());
     }
 
     crypto::ECPrivateKey* keypair = crypto::ECPrivateKey::Create();
@@ -46,7 +46,7 @@ class TestChannelIDSource : public ChannelIDSource {
       return nullptr;
     }
     hostname_to_key_[hostname] = keypair;
-    return keypair->Copy();
+    return make_scoped_ptr(keypair->Copy());
   }
 
   HostnameToKeyMap hostname_to_key_;

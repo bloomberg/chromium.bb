@@ -17,8 +17,9 @@
 namespace net {
 
 ChannelIDKeyChromium::ChannelIDKeyChromium(
-    crypto::ECPrivateKey* ec_private_key)
-    : ec_private_key_(ec_private_key) {}
+    scoped_ptr<crypto::ECPrivateKey> ec_private_key)
+    : ec_private_key_(ec_private_key.Pass()) {
+}
 
 ChannelIDKeyChromium::~ChannelIDKeyChromium() {}
 
@@ -87,8 +88,7 @@ class ChannelIDSourceChromium::Job {
 
   ChannelIDService* const channel_id_service_;
 
-  std::string channel_id_private_key_;
-  std::string channel_id_cert_;
+  scoped_ptr<crypto::ECPrivateKey> channel_id_crypto_key_;
   ChannelIDService::RequestHandle channel_id_request_handle_;
 
   // |hostname| specifies the hostname for which we need a channel ID.
@@ -178,9 +178,7 @@ int ChannelIDSourceChromium::Job::DoGetChannelIDKey(int result) {
   next_state_ = STATE_GET_CHANNEL_ID_KEY_COMPLETE;
 
   return channel_id_service_->GetOrCreateChannelID(
-      hostname_,
-      &channel_id_private_key_,
-      &channel_id_cert_,
+      hostname_, &channel_id_crypto_key_,
       base::Bind(&ChannelIDSourceChromium::Job::OnIOComplete,
                  base::Unretained(this)),
       &channel_id_request_handle_);
@@ -193,28 +191,13 @@ int ChannelIDSourceChromium::Job::DoGetChannelIDKeyComplete(int result) {
     return result;
   }
 
-  std::vector<uint8> encrypted_private_key_info(
-      channel_id_private_key_.size());
-  memcpy(&encrypted_private_key_info[0], channel_id_private_key_.data(),
-         channel_id_private_key_.size());
-
-  base::StringPiece spki_piece;
-  if (!asn1::ExtractSPKIFromDERCert(channel_id_cert_, &spki_piece)) {
-    return ERR_UNEXPECTED;
-  }
-  std::vector<uint8> subject_public_key_info(spki_piece.size());
-  memcpy(&subject_public_key_info[0], spki_piece.data(), spki_piece.size());
-
-  crypto::ECPrivateKey* ec_private_key =
-      crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
-          ChannelIDService::kEPKIPassword, encrypted_private_key_info,
-          subject_public_key_info);
-  if (!ec_private_key) {
+  if (!channel_id_crypto_key_) {
     // TODO(wtc): use the new error code ERR_CHANNEL_ID_IMPORT_FAILED to be
     // added in https://codereview.chromium.org/338093012/.
     return ERR_UNEXPECTED;
   }
-  channel_id_key_.reset(new ChannelIDKeyChromium(ec_private_key));
+  channel_id_key_.reset(
+      new ChannelIDKeyChromium(channel_id_crypto_key_.Pass()));
 
   return result;
 }

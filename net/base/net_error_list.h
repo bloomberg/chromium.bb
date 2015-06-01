@@ -759,8 +759,7 @@ NET_ERROR(PKCS12_IMPORT_UNSUPPORTED, -709)
 // Key generation failed.
 NET_ERROR(KEY_GENERATION_FAILED, -710)
 
-// Server-bound certificate generation failed.
-NET_ERROR(ORIGIN_BOUND_CERT_GENERATION_FAILED, -711)
+// Error -711 was removed (ORIGIN_BOUND_CERT_GENERATION_FAILED)
 
 // Failure to export private key.
 NET_ERROR(PRIVATE_KEY_EXPORT_FAILED, -712)

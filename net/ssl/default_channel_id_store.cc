@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "crypto/ec_private_key.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -61,16 +62,13 @@ DefaultChannelIDStore::GetChannelIDTask::~GetChannelIDTask() {
 
 void DefaultChannelIDStore::GetChannelIDTask::Run(
     DefaultChannelIDStore* store) {
-  base::Time expiration_time;
-  std::string private_key_result;
-  std::string cert_result;
-  int err = store->GetChannelID(
-      server_identifier_, &expiration_time, &private_key_result,
-      &cert_result, GetChannelIDCallback());
+  scoped_ptr<crypto::ECPrivateKey> key_result;
+  int err = store->GetChannelID(server_identifier_, &key_result,
+                                GetChannelIDCallback());
   DCHECK(err != ERR_IO_PENDING);
 
   InvokeCallback(base::Bind(callback_, err, server_identifier_,
-                            expiration_time, private_key_result, cert_result));
+                            base::Passed(key_result.Pass())));
 }
 
 // --------------------------------------------------------------------------
@@ -78,33 +76,17 @@ void DefaultChannelIDStore::GetChannelIDTask::Run(
 class DefaultChannelIDStore::SetChannelIDTask
     : public DefaultChannelIDStore::Task {
  public:
-  SetChannelIDTask(const std::string& server_identifier,
-                   base::Time creation_time,
-                   base::Time expiration_time,
-                   const std::string& private_key,
-                   const std::string& cert);
+  SetChannelIDTask(scoped_ptr<ChannelID> channel_id);
   ~SetChannelIDTask() override;
   void Run(DefaultChannelIDStore* store) override;
 
  private:
-  std::string server_identifier_;
-  base::Time creation_time_;
-  base::Time expiration_time_;
-  std::string private_key_;
-  std::string cert_;
+  scoped_ptr<ChannelID> channel_id_;
 };
 
 DefaultChannelIDStore::SetChannelIDTask::SetChannelIDTask(
-    const std::string& server_identifier,
-    base::Time creation_time,
-    base::Time expiration_time,
-    const std::string& private_key,
-    const std::string& cert)
-    : server_identifier_(server_identifier),
-      creation_time_(creation_time),
-      expiration_time_(expiration_time),
-      private_key_(private_key),
-      cert_(cert) {
+    scoped_ptr<ChannelID> channel_id)
+    : channel_id_(channel_id.Pass()) {
 }
 
 DefaultChannelIDStore::SetChannelIDTask::~SetChannelIDTask() {
@@ -112,8 +94,7 @@ DefaultChannelIDStore::SetChannelIDTask::~SetChannelIDTask() {
 
 void DefaultChannelIDStore::SetChannelIDTask::Run(
     DefaultChannelIDStore* store) {
-  store->SyncSetChannelID(server_identifier_, creation_time_,
-                          expiration_time_, private_key_, cert_);
+  store->SyncSetChannelID(channel_id_.Pass());
 }
 
 // --------------------------------------------------------------------------
@@ -213,10 +194,10 @@ DefaultChannelIDStore::GetAllChannelIDsTask::
 
 void DefaultChannelIDStore::GetAllChannelIDsTask::Run(
     DefaultChannelIDStore* store) {
-  ChannelIDList cert_list;
-  store->SyncGetAllChannelIDs(&cert_list);
+  ChannelIDList key_list;
+  store->SyncGetAllChannelIDs(&key_list);
 
-  InvokeCallback(base::Bind(callback_, cert_list));
+  InvokeCallback(base::Bind(callback_, key_list));
 }
 
 // --------------------------------------------------------------------------
@@ -231,9 +212,7 @@ DefaultChannelIDStore::DefaultChannelIDStore(
 
 int DefaultChannelIDStore::GetChannelID(
     const std::string& server_identifier,
-    base::Time* expiration_time,
-    std::string* private_key_result,
-    std::string* cert_result,
+    scoped_ptr<crypto::ECPrivateKey>* key_result,
     const GetChannelIDCallback& callback) {
   DCHECK(CalledOnValidThread());
   InitIfNecessary();
@@ -250,22 +229,14 @@ int DefaultChannelIDStore::GetChannelID(
     return ERR_FILE_NOT_FOUND;
 
   ChannelID* channel_id = it->second;
-  *expiration_time = channel_id->expiration_time();
-  *private_key_result = channel_id->private_key();
-  *cert_result = channel_id->cert();
+  key_result->reset(channel_id->key()->Copy());
 
   return OK;
 }
 
-void DefaultChannelIDStore::SetChannelID(
-    const std::string& server_identifier,
-    base::Time creation_time,
-    base::Time expiration_time,
-    const std::string& private_key,
-    const std::string& cert) {
-  RunOrEnqueueTask(scoped_ptr<Task>(new SetChannelIDTask(
-      server_identifier, creation_time, expiration_time, private_key,
-      cert)));
+void DefaultChannelIDStore::SetChannelID(scoped_ptr<ChannelID> channel_id) {
+  auto task = new SetChannelIDTask(channel_id.Pass());
+  RunOrEnqueueTask(scoped_ptr<Task>(task));
 }
 
 void DefaultChannelIDStore::DeleteChannelID(
@@ -363,21 +334,12 @@ void DefaultChannelIDStore::OnLoaded(
   waiting_tasks_.clear();
 }
 
-void DefaultChannelIDStore::SyncSetChannelID(
-    const std::string& server_identifier,
-    base::Time creation_time,
-    base::Time expiration_time,
-    const std::string& private_key,
-    const std::string& cert) {
+void DefaultChannelIDStore::SyncSetChannelID(scoped_ptr<ChannelID> channel_id) {
   DCHECK(CalledOnValidThread());
   DCHECK(loaded_);
 
-  InternalDeleteChannelID(server_identifier);
-  InternalInsertChannelID(
-      server_identifier,
-      new ChannelID(
-          server_identifier, creation_time, expiration_time, private_key,
-          cert));
+  InternalDeleteChannelID(channel_id->server_identifier());
+  InternalInsertChannelID(channel_id.Pass());
 }
 
 void DefaultChannelIDStore::SyncDeleteChannelID(
@@ -454,14 +416,14 @@ void DefaultChannelIDStore::InternalDeleteChannelID(
 }
 
 void DefaultChannelIDStore::InternalInsertChannelID(
-    const std::string& server_identifier,
-    ChannelID* channel_id) {
+    scoped_ptr<ChannelID> channel_id) {
   DCHECK(CalledOnValidThread());
   DCHECK(loaded_);
 
   if (store_.get())
-    store_->AddChannelID(*channel_id);
-  channel_ids_[server_identifier] = channel_id;
+    store_->AddChannelID(*(channel_id.get()));
+  const std::string& server_identifier = channel_id->server_identifier();
+  channel_ids_[server_identifier] = channel_id.release();
 }
 
 DefaultChannelIDStore::PersistentStore::PersistentStore() {}

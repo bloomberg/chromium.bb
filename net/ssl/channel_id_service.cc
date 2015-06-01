@@ -35,12 +35,6 @@ namespace net {
 
 namespace {
 
-const int kValidityPeriodInDays = 365;
-// When we check the system time, we add this many days to the end of the check
-// so the result will still hold even after chrome has been running for a
-// while.
-const int kSystemTimeValidityBufferInDays = 90;
-
 // Used by the GetDomainBoundCertResult histogram to record the final
 // outcome of each GetChannelID or GetOrCreateChannelID call.
 // Do not re-use values.
@@ -54,7 +48,7 @@ enum GetChannelIDResult {
   ASYNC_CANCELLED = 2,
   // Cert generation failed.
   ASYNC_FAILURE_KEYGEN = 3,
-  ASYNC_FAILURE_CREATE_CERT = 4,
+  // Result code 4 was removed (ASYNC_FAILURE_CREATE_CERT)
   ASYNC_FAILURE_EXPORT_KEY = 5,
   ASYNC_FAILURE_UNKNOWN = 6,
   // GetChannelID or GetOrCreateChannelID was called with
@@ -88,45 +82,21 @@ void RecordGetChannelIDTime(base::TimeDelta request_time) {
 // unjoined thread, due to relying on a non-leaked LazyInstance
 scoped_ptr<ChannelIDStore::ChannelID> GenerateChannelID(
     const std::string& server_identifier,
-    uint32 serial_number,
     int* error) {
   scoped_ptr<ChannelIDStore::ChannelID> result;
 
   base::TimeTicks start = base::TimeTicks::Now();
-  base::Time not_valid_before = base::Time::Now();
-  base::Time not_valid_after =
-      not_valid_before + base::TimeDelta::FromDays(kValidityPeriodInDays);
-  std::string der_cert;
-  std::vector<uint8> private_key_info;
-  scoped_ptr<crypto::ECPrivateKey> key;
-  if (!x509_util::CreateKeyAndChannelIDEC(server_identifier,
-                                          serial_number,
-                                          not_valid_before,
-                                          not_valid_after,
-                                          &key,
-                                          &der_cert)) {
-    DLOG(ERROR) << "Unable to create x509 cert for client";
-    *error = ERR_ORIGIN_BOUND_CERT_GENERATION_FAILED;
+  base::Time creation_time = base::Time::Now();
+  scoped_ptr<crypto::ECPrivateKey> key(crypto::ECPrivateKey::Create());
+
+  if (!key) {
+    DLOG(ERROR) << "Unable to create channel ID key pair";
+    *error = ERR_KEY_GENERATION_FAILED;
     return result.Pass();
   }
 
-  if (!key->ExportEncryptedPrivateKey(ChannelIDService::kEPKIPassword,
-                                      1, &private_key_info)) {
-    DLOG(ERROR) << "Unable to export private key";
-    *error = ERR_PRIVATE_KEY_EXPORT_FAILED;
-    return result.Pass();
-  }
-
-  // TODO(rkn): Perhaps ExportPrivateKey should be changed to output a
-  // std::string* to prevent this copying.
-  std::string key_out(private_key_info.begin(), private_key_info.end());
-
-  result.reset(new ChannelIDStore::ChannelID(
-      server_identifier,
-      not_valid_before,
-      not_valid_after,
-      key_out,
-      der_cert));
+  result.reset(new ChannelIDStore::ChannelID(server_identifier, creation_time,
+                                             key.Pass()));
   UMA_HISTOGRAM_CUSTOM_TIMES("DomainBoundCerts.GenerateCertTime",
                              base::TimeTicks::Now() - start,
                              base::TimeDelta::FromMilliseconds(1),
@@ -143,27 +113,18 @@ class ChannelIDServiceRequest {
  public:
   ChannelIDServiceRequest(base::TimeTicks request_start,
                           const CompletionCallback& callback,
-                          std::string* private_key,
-                          std::string* cert)
-      : request_start_(request_start),
-        callback_(callback),
-        private_key_(private_key),
-        cert_(cert) {
-  }
+                          scoped_ptr<crypto::ECPrivateKey>* key)
+      : request_start_(request_start), callback_(callback), key_(key) {}
 
   // Ensures that the result callback will never be made.
   void Cancel() {
     RecordGetChannelIDResult(ASYNC_CANCELLED);
     callback_.Reset();
-    private_key_ = NULL;
-    cert_ = NULL;
   }
 
-  // Copies the contents of |private_key| and |cert| to the caller's output
-  // arguments and calls the callback.
-  void Post(int error,
-            const std::string& private_key,
-            const std::string& cert) {
+  // Copies the contents of |key| to the caller's output argument and calls the
+  // callback.
+  void Post(int error, scoped_ptr<crypto::ECPrivateKey> key) {
     switch (error) {
       case OK: {
         base::TimeDelta request_time = base::TimeTicks::Now() - request_start_;
@@ -179,9 +140,6 @@ class ChannelIDServiceRequest {
       case ERR_KEY_GENERATION_FAILED:
         RecordGetChannelIDResult(ASYNC_FAILURE_KEYGEN);
         break;
-      case ERR_ORIGIN_BOUND_CERT_GENERATION_FAILED:
-        RecordGetChannelIDResult(ASYNC_FAILURE_CREATE_CERT);
-        break;
       case ERR_PRIVATE_KEY_EXPORT_FAILED:
         RecordGetChannelIDResult(ASYNC_FAILURE_EXPORT_KEY);
         break;
@@ -193,8 +151,8 @@ class ChannelIDServiceRequest {
         break;
     }
     if (!callback_.is_null()) {
-      *private_key_ = private_key;
-      *cert_ = cert;
+      if (key)
+        *key_ = key.Pass();
       callback_.Run(error);
     }
     delete this;
@@ -205,8 +163,7 @@ class ChannelIDServiceRequest {
  private:
   base::TimeTicks request_start_;
   CompletionCallback callback_;
-  std::string* private_key_;
-  std::string* cert_;
+  scoped_ptr<crypto::ECPrivateKey>* key_;
 };
 
 // ChannelIDServiceWorker runs on a worker thread and takes care of the
@@ -223,7 +180,6 @@ class ChannelIDServiceWorker {
       const std::string& server_identifier,
       const WorkerDoneCallback& callback)
       : server_identifier_(server_identifier),
-        serial_number_(base::RandInt(0, std::numeric_limits<int>::max())),
         origin_loop_(base::MessageLoopProxy::current()),
         callback_(callback) {
   }
@@ -243,9 +199,8 @@ class ChannelIDServiceWorker {
   void Run() {
     // Runs on a worker thread.
     int error = ERR_FAILED;
-    scoped_ptr<ChannelIDStore::ChannelID> cert =
-        GenerateChannelID(server_identifier_, serial_number_, &error);
-    DVLOG(1) << "GenerateCert " << server_identifier_ << " returned " << error;
+    scoped_ptr<ChannelIDStore::ChannelID> channel_id =
+        GenerateChannelID(server_identifier_, &error);
 #if !defined(USE_OPENSSL)
     // Detach the thread from NSPR.
     // Calling NSS functions attaches the thread to NSPR, which stores
@@ -258,13 +213,10 @@ class ChannelIDServiceWorker {
 #endif
     origin_loop_->PostTask(FROM_HERE,
                            base::Bind(callback_, server_identifier_, error,
-                                      base::Passed(&cert)));
+                                      base::Passed(&channel_id)));
   }
 
   const std::string server_identifier_;
-  // Note that serial_number_ must be initialized on a non-worker thread
-  // (see documentation for GenerateCert).
-  uint32 serial_number_;
   scoped_refptr<base::SequencedTaskRunner> origin_loop_;
   WorkerDoneCallback callback_;
 
@@ -291,24 +243,23 @@ class ChannelIDServiceJob {
     requests_.push_back(request);
   }
 
-  void HandleResult(int error,
-                    const std::string& private_key,
-                    const std::string& cert) {
-    PostAll(error, private_key, cert);
+  void HandleResult(int error, scoped_ptr<crypto::ECPrivateKey> key) {
+    PostAll(error, key.Pass());
   }
 
   bool CreateIfMissing() const { return create_if_missing_; }
 
  private:
-  void PostAll(int error,
-               const std::string& private_key,
-               const std::string& cert) {
+  void PostAll(int error, scoped_ptr<crypto::ECPrivateKey> key) {
     std::vector<ChannelIDServiceRequest*> requests;
     requests_.swap(requests);
 
     for (std::vector<ChannelIDServiceRequest*>::iterator
          i = requests.begin(); i != requests.end(); i++) {
-      (*i)->Post(error, private_key, cert);
+      scoped_ptr<crypto::ECPrivateKey> key_copy;
+      if (key)
+        key_copy.reset(key->Copy());
+      (*i)->Post(error, key_copy.Pass());
       // Post() causes the ChannelIDServiceRequest to delete itself.
     }
   }
@@ -370,14 +321,10 @@ ChannelIDService::ChannelIDService(
     : channel_id_store_(channel_id_store),
       task_runner_(task_runner),
       requests_(0),
-      cert_store_hits_(0),
+      key_store_hits_(0),
       inflight_joins_(0),
       workers_created_(0),
       weak_ptr_factory_(this) {
-  base::Time start = base::Time::Now();
-  base::Time end = start + base::TimeDelta::FromDays(
-      kValidityPeriodInDays + kSystemTimeValidityBufferInDays);
-  is_system_time_valid_ = x509_util::IsSupportedValidityRange(start, end);
 }
 
 ChannelIDService::~ChannelIDService() {
@@ -396,15 +343,14 @@ std::string ChannelIDService::GetDomainForHost(const std::string& host) {
 
 int ChannelIDService::GetOrCreateChannelID(
     const std::string& host,
-    std::string* private_key,
-    std::string* cert,
+    scoped_ptr<crypto::ECPrivateKey>* key,
     const CompletionCallback& callback,
     RequestHandle* out_req) {
   DVLOG(1) << __FUNCTION__ << " " << host;
   DCHECK(CalledOnValidThread());
   base::TimeTicks request_start = base::TimeTicks::Now();
 
-  if (callback.is_null() || !private_key || !cert || host.empty()) {
+  if (callback.is_null() || !key || host.empty()) {
     RecordGetChannelIDResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;
   }
@@ -419,15 +365,15 @@ int ChannelIDService::GetOrCreateChannelID(
 
   // See if a request for the same domain is currently in flight.
   bool create_if_missing = true;
-  if (JoinToInFlightRequest(request_start, domain, private_key, cert,
-                            create_if_missing, callback, out_req)) {
+  if (JoinToInFlightRequest(request_start, domain, key, create_if_missing,
+                            callback, out_req)) {
     return ERR_IO_PENDING;
   }
 
-  int err = LookupChannelID(request_start, domain, private_key, cert,
-                                  create_if_missing, callback, out_req);
+  int err = LookupChannelID(request_start, domain, key, create_if_missing,
+                            callback, out_req);
   if (err == ERR_FILE_NOT_FOUND) {
-    // Sync lookup did not find a valid cert.  Start generating a new one.
+    // Sync lookup did not find a valid channel ID.  Start generating a new one.
     workers_created_++;
     ChannelIDServiceWorker* worker = new ChannelIDServiceWorker(
         domain,
@@ -439,16 +385,14 @@ int ChannelIDService::GetOrCreateChannelID(
       RecordGetChannelIDResult(WORKER_FAILURE);
       return ERR_INSUFFICIENT_RESOURCES;
     }
-    // We are waiting for cert generation.  Create a job & request to track it.
+    // We are waiting for key generation.  Create a job & request to track it.
     ChannelIDServiceJob* job = new ChannelIDServiceJob(create_if_missing);
     inflight_[domain] = job;
 
     ChannelIDServiceRequest* request = new ChannelIDServiceRequest(
-        request_start,
-        base::Bind(&RequestHandle::OnRequestComplete,
-                   base::Unretained(out_req)),
-        private_key,
-        cert);
+        request_start, base::Bind(&RequestHandle::OnRequestComplete,
+                                  base::Unretained(out_req)),
+        key);
     job->AddRequest(request);
     out_req->RequestStarted(this, request, callback);
     return ERR_IO_PENDING;
@@ -457,17 +401,15 @@ int ChannelIDService::GetOrCreateChannelID(
   return err;
 }
 
-int ChannelIDService::GetChannelID(
-    const std::string& host,
-    std::string* private_key,
-    std::string* cert,
-    const CompletionCallback& callback,
-    RequestHandle* out_req) {
+int ChannelIDService::GetChannelID(const std::string& host,
+                                   scoped_ptr<crypto::ECPrivateKey>* key,
+                                   const CompletionCallback& callback,
+                                   RequestHandle* out_req) {
   DVLOG(1) << __FUNCTION__ << " " << host;
   DCHECK(CalledOnValidThread());
   base::TimeTicks request_start = base::TimeTicks::Now();
 
-  if (callback.is_null() || !private_key || !cert || host.empty()) {
+  if (callback.is_null() || !key || host.empty()) {
     RecordGetChannelIDResult(INVALID_ARGUMENT);
     return ERR_INVALID_ARGUMENT;
   }
@@ -482,22 +424,19 @@ int ChannelIDService::GetChannelID(
 
   // See if a request for the same domain currently in flight.
   bool create_if_missing = false;
-  if (JoinToInFlightRequest(request_start, domain, private_key, cert,
-                            create_if_missing, callback, out_req)) {
+  if (JoinToInFlightRequest(request_start, domain, key, create_if_missing,
+                            callback, out_req)) {
     return ERR_IO_PENDING;
   }
 
-  int err = LookupChannelID(request_start, domain, private_key, cert,
-                            create_if_missing, callback, out_req);
+  int err = LookupChannelID(request_start, domain, key, create_if_missing,
+                            callback, out_req);
   return err;
 }
 
-void ChannelIDService::GotChannelID(
-    int err,
-    const std::string& server_identifier,
-    base::Time expiration_time,
-    const std::string& key,
-    const std::string& cert) {
+void ChannelIDService::GotChannelID(int err,
+                                    const std::string& server_identifier,
+                                    scoped_ptr<crypto::ECPrivateKey> key) {
   DCHECK(CalledOnValidThread());
 
   std::map<std::string, ChannelIDServiceJob*>::iterator j;
@@ -508,21 +447,21 @@ void ChannelIDService::GotChannelID(
   }
 
   if (err == OK) {
-    // Async DB lookup found a valid cert.
-    DVLOG(1) << "Cert store had valid cert for " << server_identifier;
-    cert_store_hits_++;
+    // Async DB lookup found a valid channel ID.
+    key_store_hits_++;
     // ChannelIDServiceRequest::Post will do the histograms and stuff.
-    HandleResult(OK, server_identifier, key, cert);
+    HandleResult(OK, server_identifier, key.Pass());
     return;
   }
-  // Async lookup failed or the certificate was missing. Return the error
-  // directly, unless the certificate was missing and a request asked to create
+  // Async lookup failed or the channel ID was missing. Return the error
+  // directly, unless the channel ID was missing and a request asked to create
   // one.
   if (err != ERR_FILE_NOT_FOUND || !j->second->CreateIfMissing()) {
-    HandleResult(err, server_identifier, key, cert);
+    HandleResult(err, server_identifier, key.Pass());
     return;
   }
-  // At least one request asked to create a cert => start generating a new one.
+  // At least one request asked to create a channel ID => start generating a new
+  // one.
   workers_created_++;
   ChannelIDServiceWorker* worker = new ChannelIDServiceWorker(
       server_identifier,
@@ -531,10 +470,7 @@ void ChannelIDService::GotChannelID(
   if (!worker->Start(task_runner_)) {
     // TODO(rkn): Log to the NetLog.
     LOG(ERROR) << "ChannelIDServiceWorker couldn't be started.";
-    HandleResult(ERR_INSUFFICIENT_RESOURCES,
-                 server_identifier,
-                 std::string(),
-                 std::string());
+    HandleResult(ERR_INSUFFICIENT_RESOURCES, server_identifier, nullptr);
   }
 }
 
@@ -550,30 +486,20 @@ void ChannelIDService::CancelRequest(ChannelIDServiceRequest* req) {
 void ChannelIDService::GeneratedChannelID(
     const std::string& server_identifier,
     int error,
-    scoped_ptr<ChannelIDStore::ChannelID> cert) {
+    scoped_ptr<ChannelIDStore::ChannelID> channel_id) {
   DCHECK(CalledOnValidThread());
 
+  scoped_ptr<crypto::ECPrivateKey> key;
   if (error == OK) {
-    // TODO(mattm): we should just Pass() the cert object to
-    // SetChannelID().
-    channel_id_store_->SetChannelID(
-        cert->server_identifier(),
-        cert->creation_time(),
-        cert->expiration_time(),
-        cert->private_key(),
-        cert->cert());
-
-    HandleResult(error, server_identifier, cert->private_key(), cert->cert());
-  } else {
-    HandleResult(error, server_identifier, std::string(), std::string());
+    key.reset(channel_id->key()->Copy());
+    channel_id_store_->SetChannelID(channel_id.Pass());
   }
+  HandleResult(error, server_identifier, key.Pass());
 }
 
-void ChannelIDService::HandleResult(
-    int error,
-    const std::string& server_identifier,
-    const std::string& private_key,
-    const std::string& cert) {
+void ChannelIDService::HandleResult(int error,
+                                    const std::string& server_identifier,
+                                    scoped_ptr<crypto::ECPrivateKey> key) {
   DCHECK(CalledOnValidThread());
 
   std::map<std::string, ChannelIDServiceJob*>::iterator j;
@@ -585,15 +511,14 @@ void ChannelIDService::HandleResult(
   ChannelIDServiceJob* job = j->second;
   inflight_.erase(j);
 
-  job->HandleResult(error, private_key, cert);
+  job->HandleResult(error, key.Pass());
   delete job;
 }
 
 bool ChannelIDService::JoinToInFlightRequest(
     const base::TimeTicks& request_start,
     const std::string& domain,
-    std::string* private_key,
-    std::string* cert,
+    scoped_ptr<crypto::ECPrivateKey>* key,
     bool create_if_missing,
     const CompletionCallback& callback,
     RequestHandle* out_req) {
@@ -602,16 +527,15 @@ bool ChannelIDService::JoinToInFlightRequest(
       inflight_.find(domain);
   if (j != inflight_.end()) {
     // A request for the same domain is in flight already. We'll attach our
-    // callback, but we'll also mark it as requiring a cert if one's mising.
+    // callback, but we'll also mark it as requiring a channel ID if one's
+    // mising.
     job = j->second;
     inflight_joins_++;
 
     ChannelIDServiceRequest* request = new ChannelIDServiceRequest(
-        request_start,
-        base::Bind(&RequestHandle::OnRequestComplete,
-                   base::Unretained(out_req)),
-        private_key,
-        cert);
+        request_start, base::Bind(&RequestHandle::OnRequestComplete,
+                                  base::Unretained(out_req)),
+        key);
     job->AddRequest(request, create_if_missing);
     out_req->RequestStarted(this, request, callback);
     return true;
@@ -619,29 +543,21 @@ bool ChannelIDService::JoinToInFlightRequest(
   return false;
 }
 
-int ChannelIDService::LookupChannelID(
-    const base::TimeTicks& request_start,
-    const std::string& domain,
-    std::string* private_key,
-    std::string* cert,
-    bool create_if_missing,
-    const CompletionCallback& callback,
-    RequestHandle* out_req) {
-  // Check if a domain bound cert already exists for this domain. Note that
-  // |expiration_time| is ignored, and expired certs are considered valid.
-  base::Time expiration_time;
+int ChannelIDService::LookupChannelID(const base::TimeTicks& request_start,
+                                      const std::string& domain,
+                                      scoped_ptr<crypto::ECPrivateKey>* key,
+                                      bool create_if_missing,
+                                      const CompletionCallback& callback,
+                                      RequestHandle* out_req) {
+  // Check if a channel ID key already exists for this domain.
   int err = channel_id_store_->GetChannelID(
-      domain,
-      &expiration_time  /* ignored */,
-      private_key,
-      cert,
-      base::Bind(&ChannelIDService::GotChannelID,
-                 weak_ptr_factory_.GetWeakPtr()));
+      domain, key, base::Bind(&ChannelIDService::GotChannelID,
+                              weak_ptr_factory_.GetWeakPtr()));
 
   if (err == OK) {
-    // Sync lookup found a valid cert.
-    DVLOG(1) << "Cert store had valid cert for " << domain;
-    cert_store_hits_++;
+    // Sync lookup found a valid channel ID.
+    DVLOG(1) << "Channel ID store had valid key for " << domain;
+    key_store_hits_++;
     RecordGetChannelIDResult(SYNC_SUCCESS);
     base::TimeDelta request_time = base::TimeTicks::Now() - request_start;
     UMA_HISTOGRAM_TIMES("DomainBoundCerts.GetCertTimeSync", request_time);
@@ -655,11 +571,9 @@ int ChannelIDService::LookupChannelID(
     inflight_[domain] = job;
 
     ChannelIDServiceRequest* request = new ChannelIDServiceRequest(
-        request_start,
-        base::Bind(&RequestHandle::OnRequestComplete,
-                   base::Unretained(out_req)),
-        private_key,
-        cert);
+        request_start, base::Bind(&RequestHandle::OnRequestComplete,
+                                  base::Unretained(out_req)),
+        key);
     job->AddRequest(request);
     out_req->RequestStarted(this, request, callback);
     return ERR_IO_PENDING;
@@ -668,7 +582,7 @@ int ChannelIDService::LookupChannelID(
   return err;
 }
 
-int ChannelIDService::cert_count() {
+int ChannelIDService::channel_id_count() {
   return channel_id_store_->GetChannelIDCount();
 }
 

@@ -10,10 +10,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "crypto/ec_private_key.h"
 #include "net/base/test_data_directory.h"
+#include "net/cert/asn1_util.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/channel_id_test_util.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,33 +46,53 @@ class SQLiteChannelIDStoreTest : public testing::Test {
   }
 
  protected:
-  static void ReadTestKeyAndCert(std::string* key, std::string* cert) {
+  static void ReadTestKeyAndCert(std::string* key_data,
+                                 std::string* cert_data,
+                                 scoped_ptr<crypto::ECPrivateKey>* key) {
     base::FilePath key_path =
         GetTestCertsDirectory().AppendASCII("unittest.originbound.key.der");
     base::FilePath cert_path =
         GetTestCertsDirectory().AppendASCII("unittest.originbound.der");
-    ASSERT_TRUE(base::ReadFileToString(key_path, key));
-    ASSERT_TRUE(base::ReadFileToString(cert_path, cert));
+    ASSERT_TRUE(base::ReadFileToString(key_path, key_data));
+    ASSERT_TRUE(base::ReadFileToString(cert_path, cert_data));
+    std::vector<uint8> private_key(key_data->size());
+    memcpy(vector_as_array(&private_key), key_data->data(), key_data->size());
+    base::StringPiece spki;
+    ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(*cert_data, &spki));
+    std::vector<uint8> public_key(spki.size());
+    memcpy(vector_as_array(&public_key), spki.data(), spki.size());
+    key->reset(crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
+        ChannelIDService::kEPKIPassword, private_key, public_key));
   }
 
   static base::Time GetTestCertExpirationTime() {
-    // Cert expiration time from 'dumpasn1 unittest.originbound.der':
-    // GeneralizedTime 19/11/2111 02:23:45 GMT
+    // Cert expiration time from 'openssl asn1parse -inform der -in
+    // unittest.originbound.der':
+    // UTCTIME           :160507022239Z
     // base::Time::FromUTCExploded can't generate values past 2038 on 32-bit
     // linux, so we use the raw value here.
-    return base::Time::FromInternalValue(GG_INT64_C(16121816625000000));
+    base::Time::Exploded exploded_time;
+    exploded_time.year = 2016;
+    exploded_time.month = 5;
+    exploded_time.day_of_week = 0;  // Unused.
+    exploded_time.day_of_month = 7;
+    exploded_time.hour = 2;
+    exploded_time.minute = 22;
+    exploded_time.second = 39;
+    exploded_time.millisecond = 0;
+    return base::Time::FromUTCExploded(exploded_time);
   }
 
   static base::Time GetTestCertCreationTime() {
-    // UTCTime 13/12/2011 02:23:45 GMT
+    // UTCTIME           :150508022239Z
     base::Time::Exploded exploded_time;
-    exploded_time.year = 2011;
-    exploded_time.month = 12;
+    exploded_time.year = 2015;
+    exploded_time.month = 5;
     exploded_time.day_of_week = 0;  // Unused.
-    exploded_time.day_of_month = 13;
+    exploded_time.day_of_month = 8;
     exploded_time.hour = 2;
-    exploded_time.minute = 23;
-    exploded_time.second = 45;
+    exploded_time.minute = 22;
+    exploded_time.second = 39;
     exploded_time.millisecond = 0;
     return base::Time::FromUTCExploded(exploded_time);
   }
@@ -82,27 +106,24 @@ class SQLiteChannelIDStoreTest : public testing::Test {
     Load(&channel_ids);
     ASSERT_EQ(0u, channel_ids.size());
     // Make sure the store gets written at least once.
-    store_->AddChannelID(
-        DefaultChannelIDStore::ChannelID("google.com",
-                                         base::Time::FromInternalValue(1),
-                                         base::Time::FromInternalValue(2),
-                                         "a",
-                                         "b"));
+    google_key_.reset(crypto::ECPrivateKey::Create());
+    store_->AddChannelID(DefaultChannelIDStore::ChannelID(
+        "google.com", base::Time::FromInternalValue(1),
+        make_scoped_ptr(google_key_->Copy())));
   }
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLiteChannelIDStore> store_;
   ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids_;
+  scoped_ptr<crypto::ECPrivateKey> google_key_;
 };
 
 // Test if data is stored as expected in the SQLite database.
 TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
-  store_->AddChannelID(
-      DefaultChannelIDStore::ChannelID("foo.com",
-                                       base::Time::FromInternalValue(3),
-                                       base::Time::FromInternalValue(4),
-                                       "c",
-                                       "d"));
+  scoped_ptr<crypto::ECPrivateKey> foo_key(crypto::ECPrivateKey::Create());
+  store_->AddChannelID(DefaultChannelIDStore::ChannelID(
+      "foo.com", base::Time::FromInternalValue(3),
+      make_scoped_ptr(foo_key->Copy())));
 
   ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
@@ -128,17 +149,13 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
     foo_channel_id = channel_ids[0];
   }
   ASSERT_EQ("google.com", goog_channel_id->server_identifier());
-  ASSERT_STREQ("a", goog_channel_id->private_key().c_str());
-  ASSERT_STREQ("b", goog_channel_id->cert().c_str());
+  EXPECT_TRUE(KeysEqual(google_key_.get(), goog_channel_id->key()));
   ASSERT_EQ(1, goog_channel_id->creation_time().ToInternalValue());
-  ASSERT_EQ(2, goog_channel_id->expiration_time().ToInternalValue());
   ASSERT_EQ("foo.com", foo_channel_id->server_identifier());
-  ASSERT_STREQ("c", foo_channel_id->private_key().c_str());
-  ASSERT_STREQ("d", foo_channel_id->cert().c_str());
+  EXPECT_TRUE(KeysEqual(foo_key.get(), foo_channel_id->key()));
   ASSERT_EQ(3, foo_channel_id->creation_time().ToInternalValue());
-  ASSERT_EQ(4, foo_channel_id->expiration_time().ToInternalValue());
 
-  // Now delete the cert and check persistence again.
+  // Now delete the keypair and check persistence again.
   store_->DeleteChannelID(*channel_ids[0]);
   store_->DeleteChannelID(*channel_ids[1]);
   store_ = NULL;
@@ -149,7 +166,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
       new SQLiteChannelIDStore(temp_dir_.path().Append(kTestChannelIDFilename),
                                base::MessageLoopProxy::current());
 
-  // Reload and check if the cert has been removed.
+  // Reload and check if the keypair has been removed.
   Load(&channel_ids);
   ASSERT_EQ(0U, channel_ids.size());
   // Close the store.
@@ -160,12 +177,9 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
 
 // Test if data is stored as expected in the SQLite database.
 TEST_F(SQLiteChannelIDStoreTest, TestDeleteAll) {
-  store_->AddChannelID(
-      DefaultChannelIDStore::ChannelID("foo.com",
-                                       base::Time::FromInternalValue(3),
-                                       base::Time::FromInternalValue(4),
-                                       "c",
-                                       "d"));
+  store_->AddChannelID(DefaultChannelIDStore::ChannelID(
+      "foo.com", base::Time::FromInternalValue(3),
+      make_scoped_ptr(crypto::ECPrivateKey::Create())));
 
   ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
@@ -214,7 +228,8 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
 
   std::string key_data;
   std::string cert_data;
-  ReadTestKeyAndCert(&key_data, &cert_data);
+  scoped_ptr<crypto::ECPrivateKey> key;
+  ASSERT_NO_FATAL_FAILURE(ReadTestKeyAndCert(&key_data, &cert_data, &key));
 
   // Create a version 1 database.
   {
@@ -267,7 +282,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
       sql::Statement smt(db.GetUniqueStatement(
           "SELECT value FROM meta WHERE key = \"version\""));
       ASSERT_TRUE(smt.Step());
-      EXPECT_EQ(4, smt.ColumnInt(0));
+      EXPECT_EQ(5, smt.ColumnInt(0));
       EXPECT_FALSE(smt.Step());
     }
   }
@@ -281,7 +296,8 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
 
   std::string key_data;
   std::string cert_data;
-  ReadTestKeyAndCert(&key_data, &cert_data);
+  scoped_ptr<crypto::ECPrivateKey> key;
+  ASSERT_NO_FATAL_FAILURE(ReadTestKeyAndCert(&key_data, &cert_data, &key));
 
   // Create a version 2 database.
   {
@@ -307,6 +323,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
     add_smt.BindInt64(3, 64);
     ASSERT_TRUE(add_smt.Run());
 
+    // Malformed certs will be ignored and not migrated.
     ASSERT_TRUE(db.Execute(
         "INSERT INTO \"origin_bound_certs\" VALUES("
         "'foo.com',X'AA',X'BB',64);"));
@@ -324,18 +341,11 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
 
     // Load the database and ensure the certs can be read.
     Load(&channel_ids);
-    ASSERT_EQ(2U, channel_ids.size());
+    ASSERT_EQ(1U, channel_ids.size());
 
     ASSERT_EQ("google.com", channel_ids[0]->server_identifier());
-    ASSERT_EQ(GetTestCertExpirationTime(), channel_ids[0]->expiration_time());
-    ASSERT_EQ(key_data, channel_ids[0]->private_key());
-    ASSERT_EQ(cert_data, channel_ids[0]->cert());
-
-    ASSERT_EQ("foo.com", channel_ids[1]->server_identifier());
-    // Undecodable cert, expiration time will be uninitialized.
-    ASSERT_EQ(base::Time(), channel_ids[1]->expiration_time());
-    ASSERT_STREQ("\xaa", channel_ids[1]->private_key().c_str());
-    ASSERT_STREQ("\xbb", channel_ids[1]->cert().c_str());
+    ASSERT_EQ(GetTestCertCreationTime(), channel_ids[0]->creation_time());
+    EXPECT_TRUE(KeysEqual(key.get(), channel_ids[0]->key()));
 
     store_ = NULL;
     // Make sure we wait until the destructor has run.
@@ -348,7 +358,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
       sql::Statement smt(db.GetUniqueStatement(
           "SELECT value FROM meta WHERE key = \"version\""));
       ASSERT_TRUE(smt.Step());
-      EXPECT_EQ(4, smt.ColumnInt(0));
+      EXPECT_EQ(5, smt.ColumnInt(0));
       EXPECT_FALSE(smt.Step());
     }
   }
@@ -362,7 +372,8 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
 
   std::string key_data;
   std::string cert_data;
-  ReadTestKeyAndCert(&key_data, &cert_data);
+  scoped_ptr<crypto::ECPrivateKey> key;
+  ASSERT_NO_FATAL_FAILURE(ReadTestKeyAndCert(&key_data, &cert_data, &key));
 
   // Create a version 3 database.
   {
@@ -390,6 +401,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
     add_smt.BindInt64(4, 1000);
     ASSERT_TRUE(add_smt.Run());
 
+    // Malformed certs will be ignored and not migrated.
     ASSERT_TRUE(db.Execute(
         "INSERT INTO \"origin_bound_certs\" VALUES("
         "'foo.com',X'AA',X'BB',64,2000);"));
@@ -407,20 +419,11 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
 
     // Load the database and ensure the certs can be read.
     Load(&channel_ids);
-    ASSERT_EQ(2U, channel_ids.size());
+    ASSERT_EQ(1U, channel_ids.size());
 
     ASSERT_EQ("google.com", channel_ids[0]->server_identifier());
-    ASSERT_EQ(1000, channel_ids[0]->expiration_time().ToInternalValue());
     ASSERT_EQ(GetTestCertCreationTime(), channel_ids[0]->creation_time());
-    ASSERT_EQ(key_data, channel_ids[0]->private_key());
-    ASSERT_EQ(cert_data, channel_ids[0]->cert());
-
-    ASSERT_EQ("foo.com", channel_ids[1]->server_identifier());
-    ASSERT_EQ(2000, channel_ids[1]->expiration_time().ToInternalValue());
-    // Undecodable cert, creation time will be uninitialized.
-    ASSERT_EQ(base::Time(), channel_ids[1]->creation_time());
-    ASSERT_STREQ("\xaa", channel_ids[1]->private_key().c_str());
-    ASSERT_STREQ("\xbb", channel_ids[1]->cert().c_str());
+    EXPECT_TRUE(KeysEqual(key.get(), channel_ids[0]->key()));
 
     store_ = NULL;
     // Make sure we wait until the destructor has run.
@@ -433,23 +436,24 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
       sql::Statement smt(db.GetUniqueStatement(
           "SELECT value FROM meta WHERE key = \"version\""));
       ASSERT_TRUE(smt.Step());
-      EXPECT_EQ(4, smt.ColumnInt(0));
+      EXPECT_EQ(5, smt.ColumnInt(0));
       EXPECT_FALSE(smt.Step());
     }
   }
 }
 
-TEST_F(SQLiteChannelIDStoreTest, TestRSADiscarded) {
+TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV4) {
   // Reset the store.  We'll be using a different database for this test.
   store_ = NULL;
 
-  base::FilePath v4_db_path(temp_dir_.path().AppendASCII("v4dbrsa"));
+  base::FilePath v4_db_path(temp_dir_.path().AppendASCII("v4db"));
 
   std::string key_data;
   std::string cert_data;
-  ReadTestKeyAndCert(&key_data, &cert_data);
+  scoped_ptr<crypto::ECPrivateKey> key;
+  ASSERT_NO_FATAL_FAILURE(ReadTestKeyAndCert(&key_data, &cert_data, &key));
 
-  // Create a version 4 database with a mix of RSA and ECDSA certs.
+  // Create a version 4 database.
   {
     sql::Connection db;
     ASSERT_TRUE(db.Open(v4_db_path));
@@ -467,17 +471,17 @@ TEST_F(SQLiteChannelIDStoreTest, TestRSADiscarded) {
         "creation_time INTEGER);"));
 
     sql::Statement add_smt(db.GetUniqueStatement(
-        "INSERT INTO origin_bound_certs "
-        "(origin, private_key, cert, cert_type, expiration_time, creation_time)"
-        " VALUES (?,?,?,?,?,?)"));
+        "INSERT INTO origin_bound_certs (origin, private_key, cert, cert_type, "
+        "expiration_time, creation_time) VALUES (?,?,?,?,?,?)"));
     add_smt.BindString(0, "google.com");
     add_smt.BindBlob(1, key_data.data(), key_data.size());
     add_smt.BindBlob(2, cert_data.data(), cert_data.size());
     add_smt.BindInt64(3, 64);
-    add_smt.BindInt64(4, GetTestCertExpirationTime().ToInternalValue());
-    add_smt.BindInt64(5, base::Time::Now().ToInternalValue());
+    add_smt.BindInt64(4, 1000);
+    add_smt.BindInt64(5, GetTestCertCreationTime().ToInternalValue());
     ASSERT_TRUE(add_smt.Run());
 
+    // Add an RSA cert to the db. This cert should be ignored in the migration.
     add_smt.Clear();
     add_smt.Assign(db.GetUniqueStatement(
         "INSERT INTO origin_bound_certs "
@@ -490,25 +494,46 @@ TEST_F(SQLiteChannelIDStoreTest, TestRSADiscarded) {
     add_smt.BindInt64(4, GetTestCertExpirationTime().ToInternalValue());
     add_smt.BindInt64(5, base::Time::Now().ToInternalValue());
     ASSERT_TRUE(add_smt.Run());
+
+    // Malformed certs will be ignored and not migrated.
+    ASSERT_TRUE(db.Execute(
+        "INSERT INTO \"origin_bound_certs\" VALUES("
+        "'bar.com',X'AA',X'BB',64,2000,3000);"));
   }
 
-  ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
-  store_ =
-      new SQLiteChannelIDStore(v4_db_path, base::MessageLoopProxy::current());
+  // Load and test the DB contents twice.  First time ensures that we can use
+  // the updated values immediately.  Second time ensures that the updated
+  // values are saved and read correctly on next load.
+  for (int i = 0; i < 2; ++i) {
+    SCOPED_TRACE(i);
 
-  // Load the database and ensure the certs can be read.
-  Load(&channel_ids);
-  // Only the ECDSA cert (for google.com) is read, the RSA one is discarded.
-  ASSERT_EQ(1U, channel_ids.size());
+    ScopedVector<DefaultChannelIDStore::ChannelID> channel_ids;
+    store_ =
+        new SQLiteChannelIDStore(v4_db_path, base::MessageLoopProxy::current());
 
-  ASSERT_EQ("google.com", channel_ids[0]->server_identifier());
-  ASSERT_EQ(GetTestCertExpirationTime(), channel_ids[0]->expiration_time());
-  ASSERT_EQ(key_data, channel_ids[0]->private_key());
-  ASSERT_EQ(cert_data, channel_ids[0]->cert());
+    // Load the database and ensure the certs can be read.
+    Load(&channel_ids);
+    ASSERT_EQ(1U, channel_ids.size());
 
-  store_ = NULL;
-  // Make sure we wait until the destructor has run.
-  base::RunLoop().RunUntilIdle();
+    ASSERT_EQ("google.com", channel_ids[0]->server_identifier());
+    ASSERT_EQ(GetTestCertCreationTime(), channel_ids[0]->creation_time());
+    EXPECT_TRUE(KeysEqual(key.get(), channel_ids[0]->key()));
+
+    store_ = NULL;
+    // Make sure we wait until the destructor has run.
+    base::RunLoop().RunUntilIdle();
+
+    // Verify the database version is updated.
+    {
+      sql::Connection db;
+      ASSERT_TRUE(db.Open(v4_db_path));
+      sql::Statement smt(db.GetUniqueStatement(
+          "SELECT value FROM meta WHERE key = \"version\""));
+      ASSERT_TRUE(smt.Step());
+      EXPECT_EQ(5, smt.ColumnInt(0));
+      EXPECT_FALSE(smt.Step());
+    }
+  }
 }
 
 }  // namespace net

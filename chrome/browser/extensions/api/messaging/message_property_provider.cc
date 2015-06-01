@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/ec_private_key.h"
 #include "extensions/common/api/runtime.h"
 #include "net/base/completion_callback.h"
 #include "net/cert/asn1_util.h"
@@ -46,8 +47,7 @@ void MessagePropertyProvider::GetChannelID(Profile* profile,
 // ChannelIDService::GetChannelID to the callback provided to
 // MessagePropertyProvider::GetChannelID.
 struct MessagePropertyProvider::GetChannelIDOutput {
-  std::string domain_bound_private_key;
-  std::string domain_bound_cert;
+  scoped_ptr<crypto::ECPrivateKey> channel_id_key;
   net::ChannelIDService::RequestHandle request_handle;
 };
 
@@ -67,12 +67,9 @@ void MessagePropertyProvider::GetChannelIDOnIOThread(
                  original_task_runner,
                  base::Owned(output),
                  reply);
-  int status = channel_id_service->GetChannelID(
-      host,
-      &output->domain_bound_private_key,
-      &output->domain_bound_cert,
-      net_completion_callback,
-      &output->request_handle);
+  int status = channel_id_service->GetChannelID(host, &output->channel_id_key,
+                                                net_completion_callback,
+                                                &output->request_handle);
   if (status == net::ERR_IO_PENDING)
     return;
   GotChannelID(original_task_runner, output, reply, status);
@@ -89,11 +86,13 @@ void MessagePropertyProvider::GotChannelID(
     original_task_runner->PostTask(FROM_HERE, no_tls_channel_id_closure);
     return;
   }
-  base::StringPiece spki;
-  if (!net::asn1::ExtractSPKIFromDERCert(output->domain_bound_cert, &spki)) {
+  std::vector<uint8> spki_vector;
+  if (!output->channel_id_key->ExportPublicKey(&spki_vector)) {
     original_task_runner->PostTask(FROM_HERE, no_tls_channel_id_closure);
     return;
   }
+  base::StringPiece spki(reinterpret_cast<char*>(vector_as_array(&spki_vector)),
+                         spki_vector.size());
   base::DictionaryValue jwk_value;
   if (!net::JwkSerializer::ConvertSpkiFromDerToJwk(spki, &jwk_value)) {
     original_task_runner->PostTask(FROM_HERE, no_tls_channel_id_closure);

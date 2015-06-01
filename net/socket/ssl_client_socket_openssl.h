@@ -295,8 +295,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   NextProtoStatus npn_status_;
   std::string npn_proto_;
   // Written by the |channel_id_service_|.
-  std::string channel_id_private_key_;
-  std::string channel_id_cert_;
+  scoped_ptr<crypto::ECPrivateKey> channel_id_key_;
   // True if a channel ID was sent.
   bool channel_id_sent_;
   // True if the initial handshake has completed.

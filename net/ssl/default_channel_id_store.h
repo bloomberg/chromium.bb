@@ -18,6 +18,10 @@
 #include "net/base/net_export.h"
 #include "net/ssl/channel_id_store.h"
 
+namespace crypto {
+class ECPrivateKey;
+}  // namespace crypto
+
 namespace net {
 
 // This class is the system for storing and retrieving server bound certs.
@@ -45,15 +49,9 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
 
   // ChannelIDStore implementation.
   int GetChannelID(const std::string& server_identifier,
-                   base::Time* expiration_time,
-                   std::string* private_key_result,
-                   std::string* cert_result,
+                   scoped_ptr<crypto::ECPrivateKey>* key_result,
                    const GetChannelIDCallback& callback) override;
-  void SetChannelID(const std::string& server_identifier,
-                    base::Time creation_time,
-                    base::Time expiration_time,
-                    const std::string& private_key,
-                    const std::string& cert) override;
+  void SetChannelID(scoped_ptr<ChannelID> channel_id) override;
   void DeleteChannelID(const std::string& server_identifier,
                        const base::Closure& callback) override;
   void DeleteAllCreatedBetween(base::Time delete_begin,
@@ -100,12 +98,7 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
 
   // Syncronous methods which do the actual work. Can only be called after
   // initialization is complete.
-  void SyncSetChannelID(
-      const std::string& server_identifier,
-      base::Time creation_time,
-      base::Time expiration_time,
-      const std::string& private_key,
-      const std::string& cert);
+  void SyncSetChannelID(scoped_ptr<ChannelID> channel_id);
   void SyncDeleteChannelID(const std::string& server_identifier);
   void SyncDeleteAllCreatedBetween(base::Time delete_begin,
                                    base::Time delete_end);
@@ -122,11 +115,9 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   // is not NULL.
   void InternalDeleteChannelID(const std::string& server);
 
-  // Takes ownership of *channel_id.
-  // Adds the channel id for the specified server to the in-memory store.
-  // Deletes it from |store_| if |store_| is not NULL.
-  void InternalInsertChannelID(const std::string& server_identifier,
-                               ChannelID* channel_id);
+  // Adds the channel id to the in-memory store and adds it to |store_| if
+  // |store_| is not NULL.
+  void InternalInsertChannelID(scoped_ptr<ChannelID> channel_id);
 
   // Indicates whether the channel id store has been initialized. This happens
   // lazily in InitIfNecessary().

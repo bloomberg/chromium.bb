@@ -20,7 +20,11 @@
 
 namespace base {
 class TaskRunner;
-}
+}  // namespace base
+
+namespace crypto {
+class ECPrivateKey;
+}  // namespace crypto
 
 namespace net {
 
@@ -28,13 +32,7 @@ class ChannelIDServiceJob;
 class ChannelIDServiceRequest;
 class ChannelIDServiceWorker;
 
-// A class for creating and fetching domain bound certs. They are used
-// to identify users' machines; their public keys are used as channel IDs in
-// http://tools.ietf.org/html/draft-balfanz-tls-channelid-00.
-// As a result although certs are set to be invalid after one year, we don't
-// actually expire them. Once generated, certs are valid as long as the users
-// want. Users can delete existing certs, and new certs will be generated
-// automatically.
+// A class for creating and fetching Channel IDs.
 
 // Inherits from NonThreadSafe in order to use the function
 // |CalledOnValidThread|.
@@ -72,7 +70,7 @@ class NET_EXPORT ChannelIDService
   static const char kEPKIPassword[];
 
   // This object owns |channel_id_store|.  |task_runner| will
-  // be used to post certificate generation worker tasks.  The tasks are
+  // be used to post channel ID generation worker tasks.  The tasks are
   // safe for use with WorkerPool and SequencedWorkerPool::CONTINUE_ON_SHUTDOWN.
   ChannelIDService(
       ChannelIDStore* channel_id_store,
@@ -85,19 +83,12 @@ class NET_EXPORT ChannelIDService
   // the origin otherwise.
   static std::string GetDomainForHost(const std::string& host);
 
-  // Tests whether the system time is within the supported range for
-  // certificate generation.  This value is cached when ChannelIDService
-  // is created, so if the system time is changed by a huge amount, this may no
-  // longer hold.
-  bool IsSystemTimeValid() const { return is_system_time_valid_; }
-
-  // Fetches the domain bound cert for the specified host if one exists and
+  // Fetches the channel ID for the specified host if one exists and
   // creates one otherwise. Returns OK if successful or an error code upon
   // failure.
   //
-  // On successful completion, |private_key| stores a DER-encoded
-  // PrivateKeyInfo struct, and |cert| stores a DER-encoded certificate.
-  // The PrivateKeyInfo is always an ECDSA private key.
+  // On successful completion, |key| holds the ECDSA keypair used for this
+  // channel ID.
   //
   // |callback| must not be null. ERR_IO_PENDING is returned if the operation
   // could not be completed immediately, in which case the result code will
@@ -106,45 +97,40 @@ class NET_EXPORT ChannelIDService
   // |*out_req| will be initialized with a handle to the async request. This
   // RequestHandle object must be cancelled or destroyed before the
   // ChannelIDService is destroyed.
-  int GetOrCreateChannelID(
-      const std::string& host,
-      std::string* private_key,
-      std::string* cert,
-      const CompletionCallback& callback,
-      RequestHandle* out_req);
+  int GetOrCreateChannelID(const std::string& host,
+                           scoped_ptr<crypto::ECPrivateKey>* key,
+                           const CompletionCallback& callback,
+                           RequestHandle* out_req);
 
-  // Fetches the domain bound cert for the specified host if one exists.
+  // Fetches the channel ID for the specified host if one exists.
   // Returns OK if successful, ERR_FILE_NOT_FOUND if none exists, or an error
   // code upon failure.
   //
-  // On successful completion, |private_key| stores a DER-encoded
-  // PrivateKeyInfo struct, and |cert| stores a DER-encoded certificate.
-  // The PrivateKeyInfo is always an ECDSA private key.
+  // On successful completion, |key| holds the ECDSA keypair used for this
+  // channel ID.
   //
   // |callback| must not be null. ERR_IO_PENDING is returned if the operation
   // could not be completed immediately, in which case the result code will
   // be passed to the callback when available. If an in-flight
-  // GetChannelID is pending, and a new GetOrCreateDomainBoundCert
+  // GetChannelID is pending, and a new GetOrCreateChannelID
   // request arrives for the same domain, the GetChannelID request will
-  // not complete until a new cert is created.
+  // not complete until a new channel ID is created.
   //
   // |*out_req| will be initialized with a handle to the async request. This
   // RequestHandle object must be cancelled or destroyed before the
   // ChannelIDService is destroyed.
-  int GetChannelID(
-      const std::string& host,
-      std::string* private_key,
-      std::string* cert,
-      const CompletionCallback& callback,
-      RequestHandle* out_req);
+  int GetChannelID(const std::string& host,
+                   scoped_ptr<crypto::ECPrivateKey>* key,
+                   const CompletionCallback& callback,
+                   RequestHandle* out_req);
 
   // Returns the backing ChannelIDStore.
   ChannelIDStore* GetChannelIDStore();
 
   // Public only for unit testing.
-  int cert_count();
+  int channel_id_count();
   uint64 requests() const { return requests_; }
-  uint64 cert_store_hits() const { return cert_store_hits_; }
+  uint64 key_store_hits() const { return key_store_hits_; }
   uint64 inflight_joins() const { return inflight_joins_; }
   uint64 workers_created() const { return workers_created_; }
 
@@ -156,37 +142,32 @@ class NET_EXPORT ChannelIDService
 
   void GotChannelID(int err,
                     const std::string& server_identifier,
-                    base::Time expiration_time,
-                    const std::string& key,
-                    const std::string& cert);
+                    scoped_ptr<crypto::ECPrivateKey> key);
   void GeneratedChannelID(
       const std::string& server_identifier,
       int error,
       scoped_ptr<ChannelIDStore::ChannelID> channel_id);
   void HandleResult(int error,
                     const std::string& server_identifier,
-                    const std::string& private_key,
-                    const std::string& cert);
+                    scoped_ptr<crypto::ECPrivateKey> key);
 
   // Searches for an in-flight request for the same domain. If found,
   // attaches to the request and returns true. Returns false if no in-flight
   // request is found.
   bool JoinToInFlightRequest(const base::TimeTicks& request_start,
                              const std::string& domain,
-                             std::string* private_key,
-                             std::string* cert,
+                             scoped_ptr<crypto::ECPrivateKey>* key,
                              bool create_if_missing,
                              const CompletionCallback& callback,
                              RequestHandle* out_req);
 
-  // Looks for the domain bound cert for |domain| in this service's store.
+  // Looks for the channel ID for |domain| in this service's store.
   // Returns OK if it can be found synchronously, ERR_IO_PENDING if the
   // result cannot be obtained synchronously, or a network error code on
-  // failure (including failure to find a domain-bound cert of |domain|).
+  // failure (including failure to find a channel ID of |domain|).
   int LookupChannelID(const base::TimeTicks& request_start,
                       const std::string& domain,
-                      std::string* private_key,
-                      std::string* cert,
+                      scoped_ptr<crypto::ECPrivateKey>* key,
                       bool create_if_missing,
                       const CompletionCallback& callback,
                       RequestHandle* out_req);
@@ -199,11 +180,9 @@ class NET_EXPORT ChannelIDService
   std::map<std::string, ChannelIDServiceJob*> inflight_;
 
   uint64 requests_;
-  uint64 cert_store_hits_;
+  uint64 key_store_hits_;
   uint64 inflight_joins_;
   uint64 workers_created_;
-
-  bool is_system_time_valid_;
 
   base::WeakPtrFactory<ChannelIDService> weak_ptr_factory_;
 

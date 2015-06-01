@@ -143,6 +143,7 @@ void SSLClientSocket::RecordChannelIDSupport(
     CLIENT_ONLY = 1,
     CLIENT_AND_SERVER = 2,
     CLIENT_NO_ECC = 3,
+    // CLIENT_BAD_SYSTEM_TIME is unused now.
     CLIENT_BAD_SYSTEM_TIME = 4,
     CLIENT_NO_CHANNEL_ID_SERVICE = 5,
     CHANNEL_ID_USAGE_MAX
@@ -154,8 +155,6 @@ void SSLClientSocket::RecordChannelIDSupport(
       supported = CLIENT_NO_CHANNEL_ID_SERVICE;
     else if (!supports_ecc)
       supported = CLIENT_NO_ECC;
-    else if (!channel_id_service->IsSystemTimeValid())
-      supported = CLIENT_BAD_SYSTEM_TIME;
     else
       supported = CLIENT_ONLY;
   }
@@ -175,11 +174,6 @@ bool SSLClientSocket::IsChannelIDEnabled(
   }
   if (!crypto::ECPrivateKey::IsSupported()) {
     DVLOG(1) << "Elliptic Curve not supported, not enabling channel ID.";
-    return false;
-  }
-  if (!channel_id_service->IsSystemTimeValid()) {
-    DVLOG(1) << "System time is not within the supported range for certificate "
-                "generation, not enabling channel ID.";
     return false;
   }
   return true;

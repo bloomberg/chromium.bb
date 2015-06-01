@@ -1028,9 +1028,7 @@ int SSLClientSocketOpenSSL::DoChannelIDLookup() {
   net_log_.AddEvent(NetLog::TYPE_SSL_CHANNEL_ID_REQUESTED);
   GotoState(STATE_CHANNEL_ID_LOOKUP_COMPLETE);
   return channel_id_service_->GetOrCreateChannelID(
-      host_and_port_.host(),
-      &channel_id_private_key_,
-      &channel_id_cert_,
+      host_and_port_.host(), &channel_id_key_,
       base::Bind(&SSLClientSocketOpenSSL::OnHandshakeIOComplete,
                  base::Unretained(this)),
       &channel_id_request_handle_);
@@ -1040,22 +1038,7 @@ int SSLClientSocketOpenSSL::DoChannelIDLookupComplete(int result) {
   if (result < 0)
     return result;
 
-  DCHECK_LT(0u, channel_id_private_key_.size());
-  // Decode key.
-  std::vector<uint8> encrypted_private_key_info;
-  std::vector<uint8> subject_public_key_info;
-  encrypted_private_key_info.assign(
-      channel_id_private_key_.data(),
-      channel_id_private_key_.data() + channel_id_private_key_.size());
-  subject_public_key_info.assign(
-      channel_id_cert_.data(),
-      channel_id_cert_.data() + channel_id_cert_.size());
-  scoped_ptr<crypto::ECPrivateKey> ec_private_key(
-      crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
-          ChannelIDService::kEPKIPassword,
-          encrypted_private_key_info,
-          subject_public_key_info));
-  if (!ec_private_key) {
+  if (!channel_id_key_) {
     LOG(ERROR) << "Failed to import Channel ID.";
     return ERR_CHANNEL_ID_IMPORT_FAILED;
   }
@@ -1063,7 +1046,7 @@ int SSLClientSocketOpenSSL::DoChannelIDLookupComplete(int result) {
   // Hand the key to OpenSSL. Check for error in case OpenSSL rejects the key
   // type.
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  int rv = SSL_set1_tls_channel_id(ssl_, ec_private_key->key());
+  int rv = SSL_set1_tls_channel_id(ssl_, channel_id_key_->key());
   if (!rv) {
     LOG(ERROR) << "Failed to set Channel ID.";
     int err = SSL_get_error(ssl_, rv);

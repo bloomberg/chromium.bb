@@ -33,51 +33,6 @@ namespace net {
 
 namespace {
 
-class ChannelIDOIDWrapper {
- public:
-  static ChannelIDOIDWrapper* GetInstance() {
-    // Instantiated as a leaky singleton to allow the singleton to be
-    // constructed on a worker thead that is not joined when a process
-    // shuts down.
-    return Singleton<ChannelIDOIDWrapper,
-                     LeakySingletonTraits<ChannelIDOIDWrapper> >::get();
-  }
-
-  SECOidTag domain_bound_cert_oid_tag() const {
-    return domain_bound_cert_oid_tag_;
-  }
-
- private:
-  friend struct DefaultSingletonTraits<ChannelIDOIDWrapper>;
-
-  ChannelIDOIDWrapper();
-
-  SECOidTag domain_bound_cert_oid_tag_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChannelIDOIDWrapper);
-};
-
-ChannelIDOIDWrapper::ChannelIDOIDWrapper()
-    : domain_bound_cert_oid_tag_(SEC_OID_UNKNOWN) {
-  // 1.3.6.1.4.1.11129.2.1.6
-  // (iso.org.dod.internet.private.enterprises.google.googleSecurity.
-  //  certificateExtensions.originBoundCertificate)
-  static const uint8 kObCertOID[] = {
-    0x2b, 0x06, 0x01, 0x04, 0x01, 0xd6, 0x79, 0x02, 0x01, 0x06
-  };
-  SECOidData oid_data;
-  memset(&oid_data, 0, sizeof(oid_data));
-  oid_data.oid.data = const_cast<uint8*>(kObCertOID);
-  oid_data.oid.len = sizeof(kObCertOID);
-  oid_data.offset = SEC_OID_UNKNOWN;
-  oid_data.desc = "Origin Bound Certificate";
-  oid_data.mechanism = CKM_INVALID_MECHANISM;
-  oid_data.supportedExtension = SUPPORTED_CERT_EXTENSION;
-  domain_bound_cert_oid_tag_ = SECOID_AddEntry(&oid_data);
-  if (domain_bound_cert_oid_tag_ == SEC_OID_UNKNOWN)
-    LOG(ERROR) << "OB_CERT OID tag creation failed";
-}
-
 // Creates a Certificate object that may be passed to the SignCertificate
 // method to generate an X509 certificate.
 // Returns NULL if an error is encountered in the certificate creation
@@ -236,83 +191,6 @@ bool IsSupportedValidityRange(base::Time not_valid_before,
     return false;
 
   CERT_DestroyValidity(validity);
-  return true;
-}
-
-bool CreateChannelIDEC(crypto::ECPrivateKey* key,
-                       DigestAlgorithm alg,
-                       const std::string& domain,
-                       uint32 serial_number,
-                       base::Time not_valid_before,
-                       base::Time not_valid_after,
-                       std::string* der_cert) {
-  DCHECK(key);
-
-  CERTCertificate* cert = CreateCertificate(key->public_key(),
-                                            "CN=anonymous.invalid",
-                                            serial_number,
-                                            not_valid_before,
-                                            not_valid_after);
-
-  if (!cert)
-    return false;
-
-  // Create opaque handle used to add extensions later.
-  void* cert_handle;
-  if ((cert_handle = CERT_StartCertExtensions(cert)) == NULL) {
-    LOG(ERROR) << "Unable to get opaque handle for adding extensions";
-    CERT_DestroyCertificate(cert);
-    return false;
-  }
-
-  // Create SECItem for IA5String encoding.
-  SECItem domain_string_item = {
-    siAsciiString,
-    (unsigned char*)domain.data(),
-    static_cast<unsigned>(domain.size())
-  };
-
-  // IA5Encode and arena allocate SECItem
-  SECItem* asn1_domain_string = SEC_ASN1EncodeItem(
-      cert->arena, NULL, &domain_string_item,
-      SEC_ASN1_GET(SEC_IA5StringTemplate));
-  if (asn1_domain_string == NULL) {
-    LOG(ERROR) << "Unable to get ASN1 encoding for domain in domain_bound_cert"
-                  " extension";
-    CERT_DestroyCertificate(cert);
-    return false;
-  }
-
-  // Add the extension to the opaque handle
-  if (CERT_AddExtension(
-      cert_handle,
-      ChannelIDOIDWrapper::GetInstance()->domain_bound_cert_oid_tag(),
-      asn1_domain_string,
-      PR_TRUE,
-      PR_TRUE) != SECSuccess){
-    LOG(ERROR) << "Unable to add domain bound cert extension to opaque handle";
-    CERT_DestroyCertificate(cert);
-    return false;
-  }
-
-  // Copy extension into x509 cert
-  if (CERT_FinishExtensions(cert_handle) != SECSuccess){
-    LOG(ERROR) << "Unable to copy extension to X509 cert";
-    CERT_DestroyCertificate(cert);
-    return false;
-  }
-
-  if (!SignCertificate(cert, key->key(), ToSECOid(alg))) {
-    CERT_DestroyCertificate(cert);
-    return false;
-  }
-
-  DCHECK(cert->derCert.len);
-  // XXX copied from X509Certificate::GetDEREncoded
-  der_cert->clear();
-  der_cert->append(reinterpret_cast<char*>(cert->derCert.data),
-                   cert->derCert.len);
-  CERT_DestroyCertificate(cert);
   return true;
 }
 

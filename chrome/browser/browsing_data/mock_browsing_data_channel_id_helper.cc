@@ -30,9 +30,9 @@ void MockBrowsingDataChannelIDHelper::DeleteChannelID(
 void MockBrowsingDataChannelIDHelper::AddChannelIDSample(
     const std::string& server_id) {
   ASSERT_TRUE(channel_ids_.find(server_id) == channel_ids_.end());
+  scoped_ptr<crypto::ECPrivateKey> key(crypto::ECPrivateKey::Create());
   channel_id_list_.push_back(
-      net::ChannelIDStore::ChannelID(
-          server_id, base::Time(), base::Time(), "key", "cert"));
+      net::ChannelIDStore::ChannelID(server_id, base::Time(), key.Pass()));
   channel_ids_[server_id] = true;
 }
 

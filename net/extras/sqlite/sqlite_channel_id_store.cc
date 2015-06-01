@@ -17,8 +17,11 @@
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
+#include "crypto/ec_private_key.h"
+#include "net/cert/asn1_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cookies/cookie_util.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
@@ -29,29 +32,8 @@
 namespace {
 
 // Version number of the database.
-const int kCurrentVersionNumber = 4;
-const int kCompatibleVersionNumber = 1;
-
-// Initializes the certs table, returning true on success.
-bool InitTable(sql::Connection* db) {
-  // The table is named "origin_bound_certs" for backwards compatability before
-  // we renamed this class to SQLiteChannelIDStore.  Likewise, the primary
-  // key is "origin", but now can be other things like a plain domain.
-  if (!db->DoesTableExist("origin_bound_certs")) {
-    if (!db->Execute(
-            "CREATE TABLE origin_bound_certs ("
-            "origin TEXT NOT NULL UNIQUE PRIMARY KEY,"
-            "private_key BLOB NOT NULL,"
-            "cert BLOB NOT NULL,"
-            "cert_type INTEGER,"
-            "expiration_time INTEGER,"
-            "creation_time INTEGER)")) {
-      return false;
-    }
-  }
-
-  return true;
-}
+const int kCurrentVersionNumber = 5;
+const int kCompatibleVersionNumber = 5;
 
 }  // namespace
 
@@ -212,7 +194,7 @@ void SQLiteChannelIDStore::Backend::LoadInBackground(
     return;
   }
 
-  if (!EnsureDatabaseVersion() || !InitTable(db_.get())) {
+  if (!EnsureDatabaseVersion()) {
     NOTREACHED() << "Unable to open cert DB.";
     if (corruption_detected_)
       KillDatabase();
@@ -225,8 +207,7 @@ void SQLiteChannelIDStore::Backend::LoadInBackground(
 
   // Slurp all the certs into the out-vector.
   sql::Statement smt(db_->GetUniqueStatement(
-      "SELECT origin, private_key, cert, cert_type, expiration_time, "
-      "creation_time FROM origin_bound_certs"));
+      "SELECT host, private_key, public_key, creation_time FROM channel_id"));
   if (!smt.is_valid()) {
     if (corruption_detected_)
       KillDatabase();
@@ -236,19 +217,19 @@ void SQLiteChannelIDStore::Backend::LoadInBackground(
   }
 
   while (smt.Step()) {
-    SSLClientCertType type = static_cast<SSLClientCertType>(smt.ColumnInt(3));
-    if (type != CLIENT_CERT_ECDSA_SIGN)
+    std::vector<uint8> private_key_from_db, public_key_from_db;
+    smt.ColumnBlobAsVector(1, &private_key_from_db);
+    smt.ColumnBlobAsVector(2, &public_key_from_db);
+    scoped_ptr<crypto::ECPrivateKey> key(
+        crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
+            ChannelIDService::kEPKIPassword, private_key_from_db,
+            public_key_from_db));
+    if (!key)
       continue;
-    std::string private_key_from_db, cert_from_db;
-    smt.ColumnBlobAsString(1, &private_key_from_db);
-    smt.ColumnBlobAsString(2, &cert_from_db);
     scoped_ptr<DefaultChannelIDStore::ChannelID> channel_id(
         new DefaultChannelIDStore::ChannelID(
-            smt.ColumnString(0),  // origin
-            base::Time::FromInternalValue(smt.ColumnInt64(5)),
-            base::Time::FromInternalValue(smt.ColumnInt64(4)),
-            private_key_from_db,
-            cert_from_db));
+            smt.ColumnString(0),  // host
+            base::Time::FromInternalValue(smt.ColumnInt64(3)), key.Pass()));
     channel_ids->push_back(channel_id.release());
   }
 
@@ -278,94 +259,64 @@ bool SQLiteChannelIDStore::Backend::EnsureDatabaseVersion() {
   }
 
   int cur_version = meta_table_.GetVersionNumber();
-  if (cur_version == 1) {
-    sql::Transaction transaction(db_.get());
-    if (!transaction.Begin())
-      return false;
+
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin())
+    return false;
+
+  // Create new table if it doesn't already exist
+  if (!db_->DoesTableExist("channel_id")) {
     if (!db_->Execute(
-            "ALTER TABLE origin_bound_certs ADD COLUMN cert_type "
-            "INTEGER")) {
-      LOG(WARNING) << "Unable to update server bound cert database to "
-                   << "version 2.";
+            "CREATE TABLE channel_id ("
+            "host TEXT NOT NULL UNIQUE PRIMARY KEY,"
+            "private_key BLOB NOT NULL,"
+            "public_key BLOB NOT NULL,"
+            "creation_time INTEGER)")) {
       return false;
     }
-    // All certs in version 1 database are rsa_sign, which are unsupported.
-    // Just discard them all.
-    if (!db_->Execute("DELETE from origin_bound_certs")) {
-      LOG(WARNING) << "Unable to update server bound cert database to "
-                   << "version 2.";
-      return false;
-    }
-    ++cur_version;
-    meta_table_.SetVersionNumber(cur_version);
-    meta_table_.SetCompatibleVersionNumber(
-        std::min(cur_version, kCompatibleVersionNumber));
-    transaction.Commit();
   }
 
-  if (cur_version <= 3) {
-    sql::Transaction transaction(db_.get());
-    if (!transaction.Begin())
-      return false;
-
-    if (cur_version == 2) {
-      if (!db_->Execute(
-              "ALTER TABLE origin_bound_certs ADD COLUMN "
-              "expiration_time INTEGER")) {
-        LOG(WARNING) << "Unable to update server bound cert database to "
-                     << "version 4.";
-        return false;
-      }
-    }
-
-    if (!db_->Execute(
-            "ALTER TABLE origin_bound_certs ADD COLUMN "
-            "creation_time INTEGER")) {
+  // Migrate from previous versions to new version if possible
+  if (cur_version >= 2 && cur_version <= 4) {
+    sql::Statement statement(db_->GetUniqueStatement(
+        "SELECT origin, cert, private_key, cert_type FROM origin_bound_certs"));
+    sql::Statement insert_statement(db_->GetUniqueStatement(
+        "INSERT INTO channel_id (host, private_key, public_key, creation_time) "
+        "VALUES (?, ?, ?, ?)"));
+    if (!statement.is_valid() || !insert_statement.is_valid()) {
       LOG(WARNING) << "Unable to update server bound cert database to "
-                   << "version 4.";
-      return false;
-    }
-
-    sql::Statement statement(
-        db_->GetUniqueStatement("SELECT origin, cert FROM origin_bound_certs"));
-    sql::Statement update_expires_statement(db_->GetUniqueStatement(
-        "UPDATE origin_bound_certs SET expiration_time = ? WHERE origin = ?"));
-    sql::Statement update_creation_statement(db_->GetUniqueStatement(
-        "UPDATE origin_bound_certs SET creation_time = ? WHERE origin = ?"));
-    if (!statement.is_valid() || !update_expires_statement.is_valid() ||
-        !update_creation_statement.is_valid()) {
-      LOG(WARNING) << "Unable to update server bound cert database to "
-                   << "version 4.";
+                   << "version 5.";
       return false;
     }
 
     while (statement.Step()) {
+      if (statement.ColumnInt64(3) != CLIENT_CERT_ECDSA_SIGN)
+        continue;
       std::string origin = statement.ColumnString(0);
       std::string cert_from_db;
       statement.ColumnBlobAsString(1, &cert_from_db);
+      std::string private_key;
+      statement.ColumnBlobAsString(2, &private_key);
       // Parse the cert and extract the real value and then update the DB.
       scoped_refptr<X509Certificate> cert(X509Certificate::CreateFromBytes(
           cert_from_db.data(), static_cast<int>(cert_from_db.size())));
       if (cert.get()) {
-        if (cur_version == 2) {
-          update_expires_statement.Reset(true);
-          update_expires_statement.BindInt64(
-              0, cert->valid_expiry().ToInternalValue());
-          update_expires_statement.BindString(1, origin);
-          if (!update_expires_statement.Run()) {
-            LOG(WARNING) << "Unable to update server bound cert database to "
-                         << "version 4.";
-            return false;
-          }
+        insert_statement.Reset(true);
+        insert_statement.BindString(0, origin);
+        insert_statement.BindBlob(1, private_key.data(),
+                                  static_cast<int>(private_key.size()));
+        base::StringPiece spki;
+        if (!asn1::ExtractSPKIFromDERCert(cert_from_db, &spki)) {
+          LOG(WARNING) << "Unable to extract SPKI from cert when migrating "
+                          "channel id database to version 5.";
+          return false;
         }
-
-        update_creation_statement.Reset(true);
-        update_creation_statement.BindInt64(
-            0, cert->valid_start().ToInternalValue());
-        update_creation_statement.BindString(1, origin);
-        if (!update_creation_statement.Run()) {
-          LOG(WARNING) << "Unable to update server bound cert database to "
-                       << "version 4.";
+        insert_statement.BindBlob(2, spki.data(),
+                                  static_cast<int>(spki.size()));
+        insert_statement.BindInt64(3, cert->valid_start().ToInternalValue());
+        if (!insert_statement.Run()) {
+          LOG(WARNING) << "Unable to update channel id database to "
+                       << "version 5.";
           return false;
         }
       } else {
@@ -375,21 +326,21 @@ bool SQLiteChannelIDStore::Backend::EnsureDatabaseVersion() {
                      << statement.ColumnString(0);
       }
     }
-
-    cur_version = 4;
-    meta_table_.SetVersionNumber(cur_version);
-    meta_table_.SetCompatibleVersionNumber(
-        std::min(cur_version, kCompatibleVersionNumber));
-    transaction.Commit();
   }
 
-  // Put future migration cases here.
+  if (cur_version < kCurrentVersionNumber) {
+    sql::Statement statement(
+        db_->GetUniqueStatement("DROP TABLE origin_bound_certs"));
+    if (!statement.Run()) {
+      LOG(WARNING) << "Error dropping old origin_bound_certs table";
+      return false;
+    }
+    meta_table_.SetVersionNumber(kCurrentVersionNumber);
+    meta_table_.SetCompatibleVersionNumber(kCompatibleVersionNumber);
+  }
+  transaction.Commit();
 
-  // When the version is too old, we just try to continue anyway, there should
-  // not be a released product that makes a database too old for us to handle.
-  LOG_IF(WARNING, cur_version < kCurrentVersionNumber)
-      << "Server bound cert database version " << cur_version
-      << " is too old to handle.";
+  // Put future migration cases here.
 
   return true;
 }
@@ -519,13 +470,13 @@ void SQLiteChannelIDStore::Backend::Commit() {
 
   sql::Statement add_statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
-      "INSERT INTO origin_bound_certs (origin, private_key, cert, cert_type, "
-      "expiration_time, creation_time) VALUES (?,?,?,?,?,?)"));
+      "INSERT INTO channel_id (host, private_key, public_key, "
+      "creation_time) VALUES (?,?,?,?)"));
   if (!add_statement.is_valid())
     return;
 
   sql::Statement del_statement(db_->GetCachedStatement(
-      SQL_FROM_HERE, "DELETE FROM origin_bound_certs WHERE origin=?"));
+      SQL_FROM_HERE, "DELETE FROM channel_id WHERE host=?"));
   if (!del_statement.is_valid())
     return;
 
@@ -541,16 +492,18 @@ void SQLiteChannelIDStore::Backend::Commit() {
       case PendingOperation::CHANNEL_ID_ADD: {
         add_statement.Reset(true);
         add_statement.BindString(0, po->channel_id().server_identifier());
-        const std::string& private_key = po->channel_id().private_key();
+        std::vector<uint8> private_key, public_key;
+        if (!po->channel_id().key()->ExportEncryptedPrivateKey(
+                ChannelIDService::kEPKIPassword, 1, &private_key))
+          continue;
+        if (!po->channel_id().key()->ExportPublicKey(&public_key))
+          continue;
         add_statement.BindBlob(
             1, private_key.data(), static_cast<int>(private_key.size()));
-        const std::string& cert = po->channel_id().cert();
-        add_statement.BindBlob(2, cert.data(), static_cast<int>(cert.size()));
-        add_statement.BindInt(3, CLIENT_CERT_ECDSA_SIGN);
+        add_statement.BindBlob(2, public_key.data(),
+                               static_cast<int>(public_key.size()));
         add_statement.BindInt64(
-            4, po->channel_id().expiration_time().ToInternalValue());
-        add_statement.BindInt64(
-            5, po->channel_id().creation_time().ToInternalValue());
+            3, po->channel_id().creation_time().ToInternalValue());
         if (!add_statement.Run())
           NOTREACHED() << "Could not add a server bound cert to the DB.";
         break;
@@ -596,7 +549,7 @@ void SQLiteChannelIDStore::Backend::BackgroundDeleteAllInList(
   PrunePendingOperationsForDeletes(server_identifiers);
 
   sql::Statement del_smt(db_->GetCachedStatement(
-      SQL_FROM_HERE, "DELETE FROM origin_bound_certs WHERE origin=?"));
+      SQL_FROM_HERE, "DELETE FROM channel_id WHERE host=?"));
   if (!del_smt.is_valid()) {
     LOG(WARNING) << "Unable to delete channel ids.";
     return;

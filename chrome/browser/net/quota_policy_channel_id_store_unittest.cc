@@ -20,6 +20,7 @@
 #include "net/cookies/cookie_util.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/channel_id_test_util.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,13 +56,6 @@ class QuotaPolicyChannelIDStoreTest : public testing::Test {
     ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
     Load(&channel_ids);
     ASSERT_EQ(0u, channel_ids.size());
-    // Make sure the store gets written at least once.
-    store_->AddChannelID(
-        net::DefaultChannelIDStore::ChannelID("google.com",
-                                              base::Time::FromInternalValue(1),
-                                              base::Time::FromInternalValue(2),
-                                              "a",
-                                              "b"));
   }
 
   void TearDown() override {
@@ -77,12 +71,14 @@ class QuotaPolicyChannelIDStoreTest : public testing::Test {
 
 // Test if data is stored as expected in the QuotaPolicy database.
 TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
-  store_->AddChannelID(
-      net::DefaultChannelIDStore::ChannelID("foo.com",
-                                            base::Time::FromInternalValue(3),
-                                            base::Time::FromInternalValue(4),
-                                            "c",
-                                            "d"));
+  scoped_ptr<crypto::ECPrivateKey> goog_key(crypto::ECPrivateKey::Create());
+  scoped_ptr<crypto::ECPrivateKey> foo_key(crypto::ECPrivateKey::Create());
+  store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
+      "google.com", base::Time::FromInternalValue(1),
+      make_scoped_ptr(goog_key->Copy())));
+  store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
+      "foo.com", base::Time::FromInternalValue(3),
+      make_scoped_ptr(foo_key->Copy())));
 
   ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
@@ -109,15 +105,11 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
     foo_channel_id = channel_ids[0];
   }
   ASSERT_EQ("google.com", goog_channel_id->server_identifier());
-  ASSERT_STREQ("a", goog_channel_id->private_key().c_str());
-  ASSERT_STREQ("b", goog_channel_id->cert().c_str());
+  EXPECT_TRUE(net::KeysEqual(goog_key.get(), goog_channel_id->key()));
   ASSERT_EQ(1, goog_channel_id->creation_time().ToInternalValue());
-  ASSERT_EQ(2, goog_channel_id->expiration_time().ToInternalValue());
   ASSERT_EQ("foo.com", foo_channel_id->server_identifier());
-  ASSERT_STREQ("c", foo_channel_id->private_key().c_str());
-  ASSERT_STREQ("d", foo_channel_id->cert().c_str());
+  EXPECT_TRUE(net::KeysEqual(foo_key.get(), foo_channel_id->key()));
   ASSERT_EQ(3, foo_channel_id->creation_time().ToInternalValue());
-  ASSERT_EQ(4, foo_channel_id->expiration_time().ToInternalValue());
 
   // Now delete the channel ID and check persistence again.
   store_->DeleteChannelID(*channel_ids[0]);
@@ -138,12 +130,12 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
 
 // Test if data is stored as expected in the QuotaPolicy database.
 TEST_F(QuotaPolicyChannelIDStoreTest, TestPolicy) {
-  store_->AddChannelID(
-      net::DefaultChannelIDStore::ChannelID("nonpersistent.com",
-                                            base::Time::FromInternalValue(3),
-                                            base::Time::FromInternalValue(4),
-                                            "c",
-                                            "d"));
+  store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
+      "google.com", base::Time::FromInternalValue(1),
+      make_scoped_ptr(crypto::ECPrivateKey::Create())));
+  store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
+      "nonpersistent.com", base::Time::FromInternalValue(3),
+      make_scoped_ptr(crypto::ECPrivateKey::Create())));
 
   ScopedVector<net::DefaultChannelIDStore::ChannelID> channel_ids;
   // Replace the store effectively destroying the current one and forcing it
@@ -172,10 +164,10 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPolicy) {
   // being committed to disk.
   store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
       "nonpersistent.com", base::Time::FromInternalValue(5),
-      base::Time::FromInternalValue(6), "e", "f"));
+      make_scoped_ptr(crypto::ECPrivateKey::Create())));
   store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
       "persistent.com", base::Time::FromInternalValue(7),
-      base::Time::FromInternalValue(8), "g", "h"));
+      make_scoped_ptr(crypto::ECPrivateKey::Create())));
 
   // Now close the store, and the nonpersistent.com channel IDs should be
   // deleted according to policy.

@@ -166,37 +166,6 @@ bool SignAndDerEncodeCert(X509* cert,
   return DerEncodeCert(cert, der_encoded);
 }
 
-// There is no OpenSSL NID for the 'originBoundCertificate' extension OID yet,
-// so create a global ASN1_OBJECT lazily with the right parameters.
-class DomainBoundOid {
- public:
-  DomainBoundOid() : obj_(OBJ_txt2obj(kDomainBoundOidText, 1)) { CHECK(obj_); }
-
-  ~DomainBoundOid() {
-    if (obj_)
-      ASN1_OBJECT_free(obj_);
-  }
-
-  ASN1_OBJECT* obj() const { return obj_; }
-
- private:
-  static const char kDomainBoundOidText[];
-
-  ASN1_OBJECT* obj_;
-};
-
-// 1.3.6.1.4.1.11129.2.1.6
-// (iso.org.dod.internet.private.enterprises.google.googleSecurity.
-//  certificateExtensions.originBoundCertificate)
-const char DomainBoundOid::kDomainBoundOidText[] = "1.3.6.1.4.1.11129.2.1.6";
-
-ASN1_OBJECT* GetDomainBoundOid() {
-  static base::LazyInstance<DomainBoundOid>::Leaky s_lazy =
-      LAZY_INSTANCE_INITIALIZER;
-  return s_lazy.Get().obj();
-}
-
-
 struct DERCache {
   std::string data;
 };
@@ -259,58 +228,6 @@ bool IsSupportedValidityRange(base::Time not_valid_before,
     return false;
 
   return true;
-}
-
-bool CreateChannelIDEC(
-    crypto::ECPrivateKey* key,
-    DigestAlgorithm alg,
-    const std::string& domain,
-    uint32 serial_number,
-    base::Time not_valid_before,
-    base::Time not_valid_after,
-    std::string* der_cert) {
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  // Create certificate.
-  ScopedX509 cert(CreateCertificate(key->key(),
-                                    alg,
-                                    "CN=anonymous.invalid",
-                                    serial_number,
-                                    not_valid_before,
-                                    not_valid_after));
-  if (!cert.get())
-    return false;
-
-  // Add TLS-Channel-ID extension to the certificate before signing it.
-  // The value must be stored DER-encoded, as a ASN.1 IA5String.
-  ScopedASN1_STRING domain_ia5(ASN1_IA5STRING_new());
-  if (!domain_ia5.get() ||
-      !ASN1_STRING_set(domain_ia5.get(), domain.data(), domain.size()))
-    return false;
-
-  std::string domain_der;
-  int domain_der_len = i2d_ASN1_IA5STRING(domain_ia5.get(), NULL);
-  if (domain_der_len < 0)
-    return false;
-
-  domain_der.resize(domain_der_len);
-  unsigned char* domain_der_data =
-      reinterpret_cast<unsigned char*>(&domain_der[0]);
-  if (i2d_ASN1_IA5STRING(domain_ia5.get(), &domain_der_data) < 0)
-    return false;
-
-  ScopedASN1_OCTET_STRING domain_str(ASN1_OCTET_STRING_new());
-  if (!domain_str.get() ||
-      !ASN1_STRING_set(domain_str.get(), domain_der.data(), domain_der.size()))
-    return false;
-
-  ScopedX509_EXTENSION ext(X509_EXTENSION_create_by_OBJ(
-      NULL, GetDomainBoundOid(), 1 /* critical */, domain_str.get()));
-  if (!ext.get() || !X509_add_ext(cert.get(), ext.get(), -1)) {
-    return false;
-  }
-
-  // Sign and encode it.
-  return SignAndDerEncodeCert(cert.get(), key->key(), alg, der_cert);
 }
 
 bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
