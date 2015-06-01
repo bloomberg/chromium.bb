@@ -53,8 +53,8 @@ layer at (0,0) size 800x731 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutText {#text} at (347,0) size 163x18
           text run at (347,0) width 163: ", which should be purple."
       LayoutBlockFlow {H3} at (0,290.88) size 784x22 [color=#0000FF]
-        LayoutText {#text} at (0,0) size 288x22
-          text run at (0,0) width 288: "This should be blue and underlined."
+        LayoutText {#text} at (0,0) size 287x22
+          text run at (0,0) width 287: "This should be blue and underlined."
       LayoutBlockFlow {P} at (0,331.59) size 784x18
         LayoutText {#text} at (0,0) size 299x18
           text run at (0,0) width 299: "This sentence should be underlined, including "
@@ -141,8 +141,8 @@ layer at (0,0) size 800x731 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                 LayoutText {#text} at (347,0) size 163x18
                   text run at (347,0) width 163: ", which should be purple."
               LayoutBlockFlow {H3} at (4,122.16) size 596x22 [color=#0000FF]
-                LayoutText {#text} at (0,0) size 288x22
-                  text run at (0,0) width 288: "This should be blue and underlined."
+                LayoutText {#text} at (0,0) size 287x22
+                  text run at (0,0) width 287: "This should be blue and underlined."
               LayoutBlockFlow {P} at (4,162.88) size 596x18
                 LayoutText {#text} at (0,0) size 299x18
                   text run at (0,0) width 299: "This sentence should be underlined, including "

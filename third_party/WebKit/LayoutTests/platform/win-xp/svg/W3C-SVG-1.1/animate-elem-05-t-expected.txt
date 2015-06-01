@@ -2,14 +2,14 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (3,3) size 474x354
-    LayoutSVGContainer {g} at (42,3) size 402x308
+    LayoutSVGContainer {g} at (42,3) size 402x307
       LayoutSVGText {text} at (8,0) size 66x10 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 66x10
           chunk 1 text run 1 at (8.00,8.00) startOffset 0 endOffset 18 width 66.00: "Test a motion path"
       LayoutSVGText {text} at (11,10) size 60x10 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 60x10
           chunk 1 text run 1 at (11.00,18.00) startOffset 0 endOffset 19 width 59.50: "'values' attribute."
-      LayoutSVGContainer {g} at (42,117) size 381x194
+      LayoutSVGContainer {g} at (42,117) size 381x193
         LayoutSVGPath {path} at (88,177) size 302x84 [stroke={[type=SOLID] [color=#000000]}] [data="M 15 43 L 40 30 L 65 30"]
         LayoutSVGRect {rect} at (57,195) size 66x66 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFCCCC]}] [x=10.00] [y=33.00] [width=10.00] [height=10.00]
         LayoutSVGText {text} at (7,42) size 22x10 contains 1 chunk(s)

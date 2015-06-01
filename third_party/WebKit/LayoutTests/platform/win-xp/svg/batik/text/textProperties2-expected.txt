@@ -52,7 +52,7 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (360,308) size 104x19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 104x19
           chunk 1 text run 1 at (360.00,323.00) startOffset 0 endOffset 18 width 104.00: "none, inline, none"
-      LayoutSVGContainer {g} at (25,82) size 340x223 [transform={m=((1.25,0.00)(0.00,1.25)) t=(0.00,12.50)}]
+      LayoutSVGContainer {g} at (25,83) size 340x222 [transform={m=((1.25,0.00)(0.00,1.25)) t=(0.00,12.50)}]
         LayoutSVGText {text} at (20,56) size 272x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 32x18
             chunk 1 text run 1 at (20.00,70.00) startOffset 0 endOffset 5 width 32.00: "Text "

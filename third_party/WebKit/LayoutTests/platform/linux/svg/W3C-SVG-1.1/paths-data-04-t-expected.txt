@@ -2,8 +2,8 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (14,33) size 402x264
-      LayoutSVGContainer {g} at (14,33) size 402x264 [transform={m=((1.80,0.00)(0.00,1.80)) t=(0.00,0.00)}]
+    LayoutSVGContainer {g} at (14,34) size 402x263
+      LayoutSVGContainer {g} at (14,34) size 402x263 [transform={m=((1.80,0.00)(0.00,1.80)) t=(0.00,0.00)}]
         LayoutSVGText {text} at (88,18) size 68x15 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 68x14
             chunk 1 text run 1 at (88.00,30.00) startOffset 0 endOffset 14 width 67.78: "M, L, L, L, Z,"

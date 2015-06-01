@@ -1,7 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (50,3) size 375x59
+  LayoutSVGRoot {svg} at (50,4) size 375x58
     LayoutSVGContainer {g} at (299,4) size 34x58
       LayoutSVGPath {svg:line} at (299,4) size 6x58 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=60.40] [y1=0.80] [x2=60.40] [y2=12.40]
       LayoutSVGPath {svg:line} at (327,4) size 6x58 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=66.00] [y1=0.80] [x2=66.00] [y2=12.40]

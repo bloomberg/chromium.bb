@@ -123,9 +123,9 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,943) size 769x36
         LayoutText {#text} at (0,0) size 568x18
           text run at (0,0) width 568: "This paragraph should have a solid gray background (or a white grid), because in CSS1, "
-        LayoutInline {CODE} at (0,0) size 56x15
-          LayoutText {#text} at (567,2) size 56x15
-            text run at (567,2) width 56: "inherit"
+        LayoutInline {CODE} at (0,0) size 55x15
+          LayoutText {#text} at (567,2) size 55x15
+            text run at (567,2) width 55: "inherit"
         LayoutText {#text} at (622,0) size 769x36
           text run at (622,0) width 147: " is an invalid keyword,"
           text run at (0,18) width 530: "and in CSS2, it will cause the gray background (not the white grid) to be inherited."
@@ -344,9 +344,9 @@ layer at (0,0) size 785x4053 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow {P} at (4,72) size 747x36
                 LayoutText {#text} at (0,0) size 568x18
                   text run at (0,0) width 568: "This paragraph should have a solid gray background (or a white grid), because in CSS1, "
-                LayoutInline {CODE} at (0,0) size 56x15
-                  LayoutText {#text} at (567,2) size 56x15
-                    text run at (567,2) width 56: "inherit"
+                LayoutInline {CODE} at (0,0) size 55x15
+                  LayoutText {#text} at (567,2) size 55x15
+                    text run at (567,2) width 55: "inherit"
                 LayoutText {#text} at (622,0) size 705x36
                   text run at (622,0) width 83: " is an invalid"
                   text run at (0,18) width 594: "keyword, and in CSS2, it will cause the gray background (not the white grid) to be inherited."

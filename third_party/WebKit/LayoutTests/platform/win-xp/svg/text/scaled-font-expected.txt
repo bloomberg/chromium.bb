@@ -1,9 +1,9 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (0,187) size 487x331
-    LayoutSVGContainer {g} at (0,187) size 487x331
-      LayoutSVGContainer {g} at (0,187) size 487x137 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,70.00)}]
+  LayoutSVGRoot {svg} at (0,187) size 486x331
+    LayoutSVGContainer {g} at (0,187) size 486x331
+      LayoutSVGContainer {g} at (0,187) size 486x137 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,70.00)}]
         LayoutSVGText {text} at (0,-39) size 175x50 contains 1 chunk(s)
           LayoutSVGTSpan {tspan} at (0,0) size 9x16
             LayoutSVGInlineText {#text} at (0,26) size 9x16
@@ -44,7 +44,7 @@ layer at (0,0) size 800x600
             LayoutSVGInlineText {#text} at (144,0) size 31x49
               chunk 1 text run 1 at (144.00,0.00) startOffset 0 endOffset 1 width 30.96: "A"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
-      LayoutSVGContainer {g} at (0,381) size 487x137 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,140.00)}]
+      LayoutSVGContainer {g} at (0,382) size 486x136 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,140.00)}]
         LayoutSVGText {text} at (0,-4) size 18x6 contains 1 chunk(s)
           LayoutSVGTSpan {tspan} at (0,0) size 1x3
             LayoutSVGInlineText {#text} at (0,2) size 1x2
@@ -61,7 +61,7 @@ layer at (0,0) size 800x600
               chunk 1 text run 1 at (2.66,0.00) startOffset 0 endOffset 1 width 1.33: "A"
           LayoutSVGInlineText {#text} at (3,2) size 1x2
             chunk 1 text run 1 at (4.00,0.00) startOffset 0 endOffset 1 width 0.32: " "
-          LayoutSVGTSpan {tspan} at (0,0) size 3x4
+          LayoutSVGTSpan {tspan} at (0,0) size 2x4
             LayoutSVGInlineText {#text} at (4,1) size 2x3
               chunk 1 text run 1 at (4.32,0.00) startOffset 0 endOffset 1 width 1.69: "A"
           LayoutSVGInlineText {#text} at (6,2) size 1x2

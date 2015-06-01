@@ -85,7 +85,7 @@ layer at (0,0) size 785x4233 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,889.33) size 769x144
         LayoutText {#text} at (0,7) size 733x129
           text run at (0,7) width 733: "This element should be in a monospace font, italicized and small caps, with a weight of"
-          text run at (0,43) width 55: "900. "
+          text run at (0,43) width 54: "900. "
           text run at (54,43) width 672: "Its font-size should be 150% the base font size, and its line-height should be"
           text run at (0,79) width 605: "2em, or twice the element's font size (18px and 36px, respectively). "
           text run at (604,79) width 111: "Extra text is"
@@ -196,7 +196,7 @@ layer at (0,0) size 785x4233 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,164) width 105: "effectively."
               LayoutBlockFlow {P} at (4,1274.33) size 747x384
                 LayoutText {#text} at (0,34) size 726x316
-                  text run at (0,34) width 713: "This element should be in a sans-serif font, italicized and small caps,"
+                  text run at (0,34) width 712: "This element should be in a sans-serif font, italicized and small caps,"
                   text run at (0,130) width 227: "with a weight of 500. "
                   text run at (226,130) width 500: "Its font-size should be 150% the base font size,"
                   text run at (0,226) width 438: "or 18px, and its line-height should be 1in. "

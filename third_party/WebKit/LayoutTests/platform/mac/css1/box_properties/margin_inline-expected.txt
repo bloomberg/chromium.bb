@@ -36,7 +36,7 @@ layer at (0,0) size 800x714 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (266,18) width 504: "Margins on inline elements does not affect line-height calculations, so all lines"
           text run at (0,36) width 317: "in this element should have the same line-height. "
           text run at (316,36) width 467: "However, there should be a 25px margin to the left side of the inline box"
-          text run at (0,54) width 763: "in the first line it appears, and a 25px margin to the right side of the inline element box in the last line where it appears."
+          text run at (0,54) width 762: "in the first line it appears, and a 25px margin to the right side of the inline element box in the last line where it appears."
       LayoutBlockFlow {P} at (0,224) size 784x18 [bgcolor=#C0C0C0]
         LayoutText {#text} at (0,0) size 208x18
           text run at (0,0) width 208: "This element has a class of zero."
@@ -113,9 +113,9 @@ layer at (0,0) size 800x714 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   LayoutText {#text} at (651,0) size 733x36
                     text run at (651,0) width 82: ", giving it an"
                     text run at (0,18) width 239: "aqua background and a -10px margin"
-                LayoutText {#text} at (228,18) size 757x72
+                LayoutText {#text} at (228,18) size 756x72
                   text run at (228,18) width 9: ". "
-                  text run at (236,18) width 521: "Margins on inline elements does not affect line-height calculations, so all lines in"
+                  text run at (236,18) width 520: "Margins on inline elements does not affect line-height calculations, so all lines in"
                   text run at (0,36) width 301: "this element should have the same line-height. "
                   text run at (300,36) width 443: "However, there should be a -10px margin to the left side of the inline"
                   text run at (0,54) width 739: "box in the first line it appears, and a -10px margin to the right side of the inline element box in the last line where it"

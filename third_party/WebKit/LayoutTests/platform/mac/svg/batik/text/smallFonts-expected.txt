@@ -7,11 +7,11 @@ layer at (0,0) size 450x500
         [feGaussianBlur stdDeviation="0.04, 0.04"]
           [SourceGraphic]
       LayoutSVGPath {path} at (14,0) size 122x45 [transform={m=((0.00,0.00)(0.00,0.00)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#008000] [stroke width=5.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
-    LayoutSVGContainer {g} at (0,36) size 386x428
-      LayoutSVGText {text} at (1,0) size 7x2 contains 1 chunk(s)
+    LayoutSVGContainer {g} at (0,37) size 385x427
+      LayoutSVGText {text} at (1,0) size 6x2 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 6x1
           chunk 1 (middle anchor) text run 1 at (1.98,1.00) startOffset 0 endOffset 41 width 5.04: "Small font size test (viewBox=\"0 0 9 10\")"
-      LayoutSVGContainer {g} at (0,71) size 386x393
+      LayoutSVGContainer {g} at (0,72) size 385x392
         LayoutSVGText {text} at (0,1) size 8x2 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 3x1
             chunk 1 text run 1 at (0.90,2.00) startOffset 0 endOffset 16 width 2.04: "Text can change "
@@ -103,7 +103,7 @@ layer at (0,0) size 450x500
           LayoutSVGTSpan {tspan} at (0,0) size 2x1
             LayoutSVGInlineText {#text} at (2,0) size 2x1
               chunk 1 text run 1 at (3.67,6.20) startOffset 0 endOffset 12 width 1.23: "fill colors "
-          LayoutSVGInlineText {#text} at (3,0) size 1x1
+          LayoutSVGInlineText {#text} at (4,0) size 1x1
             chunk 1 text run 1 at (4.90,6.20) startOffset 0 endOffset 4 width 0.51: "and "
           LayoutSVGTSpan {tspan} at (0,0) size 2x1
             LayoutSVGInlineText {#text} at (4,0) size 2x1
@@ -138,7 +138,7 @@ layer at (0,0) size 450x500
           LayoutSVGText {text} at (0,-1) size 3x2 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 3x1
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 2.58: "Shadow"
-        LayoutSVGContainer {g} at (256,395) size 130x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(5.00,8.00)}]
+        LayoutSVGContainer {g} at (257,396) size 128x49 [transform={m=((1.00,0.00)(0.00,1.00)) t=(5.00,8.00)}]
           LayoutSVGContainer {use} at (264,400) size 121x45
             LayoutSVGPath {path} at (264,400) size 121x45 [transform={m=((0.00,0.00)(0.00,0.00)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#008000] [stroke width=5.00]}] [data="M 100 200 C 200 100 300 0 400 100 C 500 200 600 300 700 200 C 800 100 900 100 900 100"]
           LayoutSVGText {text} at (0,-1) size 3x2 contains 1 chunk(s)

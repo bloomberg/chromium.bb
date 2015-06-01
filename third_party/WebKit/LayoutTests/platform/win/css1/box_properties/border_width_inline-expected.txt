@@ -34,12 +34,12 @@ layer at (0,0) size 800x600
           text run at (562,25) width 191: ", which should result in a thin"
           text run at (25,43) width 382: "solid border on each side of each box in the inline element. "
           text run at (406,43) width 106: "There is also an "
-        LayoutInline {SPAN} at (0,0) size 189x17
-          LayoutText {#text} at (511,43) size 149x17
-            text run at (511,43) width 149: "inline element of class "
-          LayoutInline {TT} at (0,0) size 41x16
-            LayoutText {#text} at (659,45) size 41x16
-              text run at (659,45) width 41: "three"
+        LayoutInline {SPAN} at (0,0) size 188x17
+          LayoutText {#text} at (511,43) size 148x17
+            text run at (511,43) width 148: "inline element of class "
+          LayoutInline {TT} at (0,0) size 40x16
+            LayoutText {#text} at (659,45) size 40x16
+              text run at (659,45) width 40: "three"
         LayoutText {#text} at (699,43) size 722x35
           text run at (699,43) width 48: ", which"
           text run at (25,61) width 393: "should have no border width because no border style was set."

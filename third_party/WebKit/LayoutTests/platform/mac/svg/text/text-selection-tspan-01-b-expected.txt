@@ -20,7 +20,7 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (0,0) size 210x18
             chunk 1 text run 1 at (65.25,90.75) startOffset 0 endOffset 29 width 209.67: "Text: \"You are not a banana.\""
         LayoutSVGText {text} at (65,93) size 287x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 287x18
+          LayoutSVGInlineText {#text} at (0,0) size 286x18
             chunk 1 text run 1 at (65.25,108.00) startOffset 0 endOffset 43 width 286.01: "'tspan' changes visual attributes of \"not\","
         LayoutSVGText {text} at (65,110) size 85x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 85x18

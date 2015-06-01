@@ -36,8 +36,8 @@ layer at (0,0) size 800x600
         LayoutInline {STRONG} at (0,0) size 25x17
           LayoutText {#text} at (232,21) size 25x17
             text run at (232,21) width 25: "last"
-        LayoutText {#text} at (256,21) size 721x35
-          text run at (256,21) width 468: " box of the inline element (and the UA's default border on the other three"
+        LayoutText {#text} at (256,21) size 720x35
+          text run at (256,21) width 467: " box of the inline element (and the UA's default border on the other three"
           text run at (3,39) width 46: "sides). "
           text run at (48,39) width 106: "There is also an "
         LayoutInline {SPAN} at (0,0) size 188x17
@@ -82,8 +82,8 @@ layer at (0,0) size 800x600
                 LayoutInline {STRONG} at (0,0) size 25x17
                   LayoutText {#text} at (232,21) size 25x17
                     text run at (232,21) width 25: "last"
-                LayoutText {#text} at (256,21) size 721x35
-                  text run at (256,21) width 468: " box of the inline element (and the UA's default border on the other three"
+                LayoutText {#text} at (256,21) size 720x35
+                  text run at (256,21) width 467: " box of the inline element (and the UA's default border on the other three"
                   text run at (3,39) width 46: "sides). "
                   text run at (48,39) width 106: "There is also an "
                 LayoutInline {SPAN} at (0,0) size 188x17

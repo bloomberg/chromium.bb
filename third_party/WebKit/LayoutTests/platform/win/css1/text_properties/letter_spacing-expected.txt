@@ -35,7 +35,7 @@ layer at (0,0) size 785x1389 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 712x71
           text run at (0,0) width 692: "This letters in this"
           text run at (0,18) width 712: "sentence should have"
-          text run at (0,36) width 677: "extra space between"
+          text run at (0,36) width 676: "extra space between"
           text run at (0,54) width 180: "them."
       LayoutBlockFlow {P} at (0,329) size 769x54
         LayoutText {#text} at (0,0) size 723x53
@@ -94,7 +94,7 @@ layer at (0,0) size 785x1389 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 712x71
                   text run at (0,0) width 692: "This letters in this"
                   text run at (0,18) width 712: "sentence should have"
-                  text run at (0,36) width 677: "extra space between"
+                  text run at (0,36) width 676: "extra space between"
                   text run at (0,54) width 180: "them."
               LayoutBlockFlow {P} at (4,92) size 747x54
                 LayoutText {#text} at (0,0) size 723x53
@@ -125,11 +125,11 @@ layer at (0,0) size 785x1389 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (0,0) size 693x35
                   text run at (0,0) width 693: "This letters in this sentence should have extra space between"
                   text run at (0,18) width 510: "them, but the last few words in the sentence "
-                LayoutInline {SPAN} at (0,0) size 184x17
-                  LayoutText {#text} at (509,18) size 184x17
-                    text run at (509,18) width 184: "should show normal spacing"
-                LayoutText {#text} at (692,18) size 10x17
-                  text run at (692,18) width 10: "."
+                LayoutInline {SPAN} at (0,0) size 183x17
+                  LayoutText {#text} at (509,18) size 183x17
+                    text run at (509,18) width 183: "should show normal spacing"
+                LayoutText {#text} at (692,18) size 9x17
+                  text run at (692,18) width 9: "."
               LayoutBlockFlow {P} at (4,474) size 747x36
                 LayoutText {#text} at (0,0) size 746x35
                   text run at (0,0) width 746: "This letters in this sentence should have normal space between them, since percentage values are not allowed on this"

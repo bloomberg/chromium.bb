@@ -50,10 +50,10 @@ layer at (0,0) size 800x600
                     text run at (0,18) width 24: "one"
                 LayoutText {#text} at (33,18) size 369x18
                   text run at (33,18) width 369: ", which should result in a 10-pixel outset teal border; and "
-                LayoutInline {SPAN} at (0,0) size 81x38 [border: (10px inset #808000)]
-                  LayoutText {#text} at (411,18) size 61x18
-                    text run at (411,18) width 61: "class two"
-                LayoutText {#text} at (481,18) size 734x36
-                  text run at (481,18) width 253: ", which should result in a 10-pixel inset"
+                LayoutInline {SPAN} at (0,0) size 80x38 [border: (10px inset #808000)]
+                  LayoutText {#text} at (411,18) size 60x18
+                    text run at (411,18) width 60: "class two"
+                LayoutText {#text} at (480,18) size 734x36
+                  text run at (480,18) width 254: ", which should result in a 10-pixel inset"
                   text run at (0,36) width 86: "olive border. "
                   text run at (85,36) width 438: "The line-height of the parent element should not change on any line."

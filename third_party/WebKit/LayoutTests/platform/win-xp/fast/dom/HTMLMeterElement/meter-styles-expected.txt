@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {H2} at (3.19,0) size 777.63x20
         LayoutText {#text} at (0,0) size 343x19
           text run at (0,0) width 343: "Horizontal meters with the non-themed default style"
-      LayoutBlockFlow {UL} at (3.19,23.19) size 777.63x64.19
+      LayoutBlockFlow {UL} at (3.19,23.19) size 777.63x65.19
         LayoutListItem {LI} at (43.19,0) size 731.25x20
           LayoutBlockFlow {METER} at (0,2.19) size 80x16
             LayoutMeter {DIV} at (0,0) size 80x16
@@ -24,28 +24,28 @@ layer at (0,0) size 800x600
             LayoutMeter {DIV} at (0,0) size 80x16
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 60x16
-        LayoutListItem {LI} at (43.19,23.19) size 731.25x41
-          LayoutBlockFlow {METER} at (0,-0.81) size 30x40
+        LayoutListItem {LI} at (43.19,23.19) size 731.25x42
+          LayoutBlockFlow {METER} at (0,0.19) size 30x40
             LayoutMeter {DIV} at (0,0) size 30x40
               LayoutBlockFlow {DIV} at (0,0) size 30x40
                 LayoutBlockFlow {DIV} at (0,0) size 7.50x40
-          LayoutText {#text} at (30,21) size 4x19
-            text run at (30,21) width 4: " "
-          LayoutBlockFlow {METER} at (34,-0.81) size 30x40
+          LayoutText {#text} at (30,22) size 4x19
+            text run at (30,22) width 4: " "
+          LayoutBlockFlow {METER} at (34,0.19) size 30x40
             LayoutMeter {DIV} at (0,0) size 30x40
               LayoutBlockFlow {DIV} at (0,0) size 30x40
                 LayoutBlockFlow {DIV} at (0,0) size 13.50x40
-          LayoutText {#text} at (64,21) size 4x19
-            text run at (64,21) width 4: " "
-          LayoutBlockFlow {METER} at (68,-0.81) size 30x40
+          LayoutText {#text} at (64,22) size 4x19
+            text run at (64,22) width 4: " "
+          LayoutBlockFlow {METER} at (68,0.19) size 30x40
             LayoutMeter {DIV} at (0,0) size 30x40
               LayoutBlockFlow {DIV} at (0,0) size 30x40
                 LayoutBlockFlow {DIV} at (0,0) size 22.50x40
-      LayoutBlockFlow {H2} at (3.19,90.56) size 777.63x20
+      LayoutBlockFlow {H2} at (3.19,91.56) size 777.63x20
         LayoutText {#text} at (0,0) size 149x19
           text run at (0,0) width 149: "Providing meter styles"
-      LayoutBlockFlow {DIV} at (0,113.75) size 784x96.56 [bgcolor=#EEEEEE]
-        LayoutBlockFlow {UL} at (3.19,0) size 777.63x96.56
+      LayoutBlockFlow {DIV} at (0,114.75) size 784x97.56 [bgcolor=#EEEEEE]
+        LayoutBlockFlow {UL} at (3.19,0) size 777.63x97.56
           LayoutListItem {LI} at (43.19,0) size 731.25x20
             LayoutBlockFlow {METER} at (0,2.19) size 80x16 [bgcolor=#AAAACC] [border: (5px solid #222244) (20px solid #222244) (5px solid #222244) (10px solid #222244)]
               LayoutMeter {DIV} at (10,5) size 50x6
@@ -60,24 +60,24 @@ layer at (0,0) size 800x600
                   LayoutBlockFlow {DIV} at (0,0) size 40x6
             LayoutText {#text} at (80,0) size 76x19
               text run at (80,0) width 76: " has padding"
-          LayoutListItem {LI} at (43.19,46.38) size 731.25x27
-            LayoutBlockFlow {METER} at (10,4.19) size 80x16 [bgcolor=#AAAACC]
+          LayoutListItem {LI} at (43.19,46.38) size 731.25x28
+            LayoutBlockFlow {METER} at (10,5.19) size 80x16 [bgcolor=#AAAACC]
               LayoutMeter {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 80x16
                   LayoutBlockFlow {DIV} at (0,0) size 64x16
-            LayoutText {#text} at (110,7) size 68x19
-              text run at (110,7) width 68: " has margin"
-          LayoutListItem {LI} at (43.19,76.56) size 731.25x20
+            LayoutText {#text} at (110,8) size 68x19
+              text run at (110,8) width 68: " has margin"
+          LayoutListItem {LI} at (43.19,77.56) size 731.25x20
             LayoutBlockFlow {METER} at (0,2.19) size 80x16
               LayoutMeter {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 80x16
                   LayoutBlockFlow {DIV} at (0,0) size 0x16
             LayoutText {#text} at (80,0) size 104x19
               text run at (80,0) width 104: " has box-shadow"
-      LayoutBlockFlow {H2} at (3.19,213.50) size 777.63x20
+      LayoutBlockFlow {H2} at (3.19,215.50) size 777.63x20
         LayoutText {#text} at (0,0) size 218x19
           text run at (0,0) width 218: "Providing bar and/or value styles"
-      LayoutBlockFlow {DIV} at (0,236.69) size 784x182.31 [bgcolor=#EEEEEE]
+      LayoutBlockFlow {DIV} at (0,238.69) size 784x182.31 [bgcolor=#EEEEEE]
         LayoutBlockFlow {UL} at (3.19,0) size 777.63x89.56
           LayoutBlockFlow (anonymous) at (40,0) size 737.63x20
             LayoutText {#text} at (0,0) size 456x19
@@ -128,10 +128,10 @@ layer at (0,0) size 800x600
                   LayoutBlockFlow {DIV} at (2,2) size 60.80x12 [bgcolor=#008000] [border: (2px solid #77CC77)]
             LayoutText {#text} at (80,0) size 224x19
               text run at (80,0) width 224: " should have solid bar and value part."
-      LayoutBlockFlow {H2} at (3.19,422.19) size 777.63x20
+      LayoutBlockFlow {H2} at (3.19,424.19) size 777.63x20
         LayoutText {#text} at (0,0) size 151x19
           text run at (0,0) width 151: "Providing appearances"
-      LayoutBlockFlow {DIV} at (0,445.38) size 784x43.19 [bgcolor=#EEEEEE]
+      LayoutBlockFlow {DIV} at (0,447.38) size 784x43.19 [bgcolor=#EEEEEE]
         LayoutBlockFlow {UL} at (3.19,0) size 777.63x43.19
           LayoutListItem {LI} at (43.19,0) size 731.25x20
             LayoutBlockFlow {METER} at (0,2.19) size 80x16
@@ -147,10 +147,10 @@ layer at (0,0) size 800x600
                   LayoutBlockFlow {DIV} at (0,0) size 64x16
             LayoutText {#text} at (80,0) size 264x19
               text run at (80,0) width 264: " has \"meter\" appearance, should be themed."
-      LayoutBlockFlow {H2} at (3.19,491.75) size 777.63x20
+      LayoutBlockFlow {H2} at (3.19,493.75) size 777.63x20
         LayoutText {#text} at (0,0) size 152x19
           text run at (0,0) width 152: "Providing bar paddings"
-      LayoutBlockFlow {DIV} at (0,514.94) size 784x20 [bgcolor=#EEEEEE]
+      LayoutBlockFlow {DIV} at (0,516.94) size 784x20 [bgcolor=#EEEEEE]
         LayoutBlockFlow {METER} at (0,2.19) size 80x16
           LayoutMeter {DIV} at (0,0) size 80x16
             LayoutBlockFlow {DIV} at (0,0) size 80x16

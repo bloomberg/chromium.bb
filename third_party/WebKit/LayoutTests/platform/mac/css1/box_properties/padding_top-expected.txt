@@ -41,7 +41,7 @@ layer at (0,0) size 785x1464 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,98) width 362: "background and the padding should be aqua (light blue)."
       LayoutBlockFlow {P} at (0,498) size 769x228.25 [bgcolor=#00FFFF]
         LayoutText {#text} at (0,192) size 747x36
-          text run at (0,192) width 743: "This element should have a top padding of 25%, which is calculated with respect to the width of the parent element."
+          text run at (0,192) width 742: "This element should have a top padding of 25%, which is calculated with respect to the width of the parent element."
           text run at (0,210) width 475: "Both the content background and the padding should be aqua (light blue). "
           text run at (475,210) width 272: "This will require extra text in order to test."
       LayoutBlockFlow {P} at (0,742.25) size 769x36 [bgcolor=#00FFFF]
@@ -81,7 +81,7 @@ layer at (0,0) size 785x1464 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,98) width 362: "background and the padding should be aqua (light blue)."
               LayoutBlockFlow {P} at (4,347) size 747x222.75 [bgcolor=#00FFFF]
                 LayoutText {#text} at (0,187) size 747x36
-                  text run at (0,187) width 743: "This element should have a top padding of 25%, which is calculated with respect to the width of the parent element."
+                  text run at (0,187) width 742: "This element should have a top padding of 25%, which is calculated with respect to the width of the parent element."
                   text run at (0,205) width 475: "Both the content background and the padding should be aqua (light blue). "
                   text run at (475,205) width 272: "This will require extra text in order to test."
               LayoutBlockFlow {P} at (4,585.75) size 747x36 [bgcolor=#00FFFF]

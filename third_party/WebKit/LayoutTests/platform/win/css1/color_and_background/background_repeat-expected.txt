@@ -186,9 +186,9 @@ layer at (0,0) size 800x1853 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutInline {CODE} at (0,0) size 153x16
                   LayoutText {#text} at (71,20) size 153x16
                     text run at (71,20) width 153: "background-position"
-                LayoutText {#text} at (223,18) size 763x35
+                LayoutText {#text} at (223,18) size 762x35
                   text run at (223,18) width 327: " is '0% 0%' and that property is not declared here). "
-                  text run at (549,18) width 214: "This is extra text included for the"
+                  text run at (549,18) width 213: "This is extra text included for the"
                   text run at (0,36) width 295: "sole purpose of making the paragraph longer. "
                   text run at (294,36) width 224: "Thank you for your understanding."
               LayoutBlockFlow {P} at (4,74) size 762x54
@@ -198,9 +198,9 @@ layer at (0,0) size 800x1853 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutInline {CODE} at (0,0) size 153x16
                   LayoutText {#text} at (71,20) size 153x16
                     text run at (71,20) width 153: "background-position"
-                LayoutText {#text} at (223,18) size 763x35
+                LayoutText {#text} at (223,18) size 762x35
                   text run at (223,18) width 327: " is '0% 0%' and that property is not declared here). "
-                  text run at (549,18) width 214: "This is extra text included for the"
+                  text run at (549,18) width 213: "This is extra text included for the"
                   text run at (0,36) width 295: "sole purpose of making the paragraph longer. "
                   text run at (294,36) width 224: "Thank you for your understanding."
               LayoutBlockFlow {P} at (4,144) size 762x54
@@ -281,11 +281,11 @@ layer at (0,0) size 800x1853 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   text run at (0,36) width 59: "obvious. "
                   text run at (58,36) width 670: "A background color is present, although if it is visible, then the image may not have been tiled correctly."
               LayoutBlockFlow {P} at (4,478) size 762x54 [bgcolor=#FF0000]
-                LayoutText {#text} at (0,0) size 739x53
+                LayoutText {#text} at (0,0) size 738x53
                   text run at (0,0) width 499: "This sentence should have a fully tiled background which starts at its top left. "
                   text run at (498,0) width 229: "I'll fill it with extra text to make the"
                   text run at (0,18) width 291: "conformance (or lack thereof) more obvious. "
-                  text run at (290,18) width 449: "A background color is present, although if it is visible, then the image"
+                  text run at (290,18) width 448: "A background color is present, although if it is visible, then the image"
                   text run at (0,36) width 218: "may not have been tiled correctly."
               LayoutBlockFlow {P} at (4,548) size 762x72 [bgcolor=#FF0000]
                 LayoutText {#text} at (0,0) size 760x71

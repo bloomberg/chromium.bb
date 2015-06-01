@@ -73,7 +73,7 @@ layer at (0,0) size 800x600
                       text run at (517,5) width 25: "two"
                 LayoutText {#text} at (544,3) size 732x53
                   text run at (544,3) width 191: ", which should result in a thin"
-                  text run at (3,21) width 717: "solid border on the bottom side of each box in the inline element (and the UA's default border on the other three"
+                  text run at (3,21) width 716: "solid border on the bottom side of each box in the inline element (and the UA's default border on the other three"
                   text run at (3,39) width 46: "sides). "
                   text run at (48,39) width 106: "There is also an "
                 LayoutInline {SPAN} at (0,0) size 188x17

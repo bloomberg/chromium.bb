@@ -154,7 +154,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (130,1) width 416: "contains many images"
         LayoutText {#text} at (545,26) size 6x21
           text run at (545,26) width 6: " "
-        LayoutImage {IMG} at (550.08,26) size 15x50
+        LayoutImage {IMG} at (550.05,26) size 15x50
         LayoutText {#text} at (565,26) size 5x21
           text run at (565,26) width 5: " "
         LayoutInline {BIG} at (0,0) size 156x24
@@ -162,7 +162,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (569,24) width 156: "of varying heights"
         LayoutText {#text} at (724,26) size 6x21
           text run at (724,26) width 6: " "
-        LayoutImage {IMG} at (729.61,26) size 3x10
+        LayoutImage {IMG} at (729.56,26) size 3x10
         LayoutText {#text} at (732,26) size 6x21
           text run at (732,26) width 6: " "
         LayoutInline {SMALL} at (0,0) size 761x113
@@ -182,10 +182,10 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (176,106) width 264: "should be aligned"
         LayoutText {#text} at (439,122) size 6x21
           text run at (439,122) width 6: " "
-        LayoutImage {IMG} at (444.45,122) size 11x35
+        LayoutImage {IMG} at (444.42,122) size 11x35
         LayoutText {#text} at (455,122) size 120x21
           text run at (455,122) width 120: " with the top of "
-        LayoutImage {IMG} at (574.14,122) size 9x30
+        LayoutImage {IMG} at (574.09,122) size 9x30
         LayoutText {#text} at (583,122) size 5x21
           text run at (583,122) width 5: " "
         LayoutInline {SPAN} at (0,0) size 701x142
@@ -199,7 +199,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (143,225) width 146: " text element"
         LayoutText {#text} at (288,233) size 6x21
           text run at (288,233) width 6: " "
-        LayoutImage {IMG} at (293.16,233) size 15x50
+        LayoutImage {IMG} at (293.14,233) size 15x50
         LayoutText {#text} at (308,233) size 5x21
           text run at (308,233) width 5: " "
         LayoutInline {SMALL} at (0,0) size 195x17
@@ -207,7 +207,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (312,236) width 195: "regardless of the line in which"
         LayoutText {#text} at (506,233) size 5x21
           text run at (506,233) width 5: " "
-        LayoutImage {IMG} at (510.77,233) size 5x15
+        LayoutImage {IMG} at (510.72,233) size 5x15
         LayoutText {#text} at (515,233) size 6x21
           text run at (515,233) width 6: " "
         LayoutInline {BIG} at (0,0) size 160x24
@@ -215,7 +215,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (520,231) width 160: "the images appear."
         LayoutText {#text} at (679,233) size 6x21
           text run at (679,233) width 6: " "
-        LayoutImage {IMG} at (684.41,233) size 27x90
+        LayoutImage {IMG} at (684.33,233) size 27x90
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,1802.31) size 769x36
         LayoutText {#text} at (0,0) size 765x35
@@ -250,7 +250,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (43.09,76) size 20x65
         LayoutText {#text} at (63,98) size 121x17
           text run at (63,98) width 121: " should be aligned "
-        LayoutImage {IMG} at (183.97,91) size 11x35
+        LayoutImage {IMG} at (183.95,91) size 11x35
         LayoutText {#text} at (194,98) size 5x17
           text run at (194,98) width 5: " "
         LayoutInline {SPAN} at (0,0) size 237x36
@@ -258,7 +258,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (198,83) width 237: "with the middle of"
         LayoutText {#text} at (434,98) size 5x17
           text run at (434,98) width 5: " "
-        LayoutImage {IMG} at (438.48,83) size 15x50
+        LayoutImage {IMG} at (438.47,83) size 15x50
         LayoutText {#text} at (453,98) size 5x17
           text run at (453,98) width 5: " "
         LayoutInline {SPAN} at (0,0) size 720x104
@@ -280,7 +280,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (98,176) width 195: "regardless of the line in which"
         LayoutText {#text} at (292,176) size 5x17
           text run at (292,176) width 5: " "
-        LayoutImage {IMG} at (296.23,179) size 5x15
+        LayoutImage {IMG} at (296.22,179) size 5x15
         LayoutText {#text} at (301,176) size 5x17
           text run at (301,176) width 5: " "
         LayoutInline {BIG} at (0,0) size 160x24
@@ -288,11 +288,11 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (305,171) width 160: "the images appear."
         LayoutText {#text} at (464,176) size 5x17
           text run at (464,176) width 5: " "
-        LayoutImage {IMG} at (468.53,141) size 27x90
+        LayoutImage {IMG} at (468.52,141) size 27x90
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,2101.31) size 769x36
-        LayoutText {#text} at (0,0) size 751x35
-          text run at (0,0) width 751: "In the following paragraph, all elements should be aligned with the top of the tallest element on the line, whether that"
+        LayoutText {#text} at (0,0) size 750x35
+          text run at (0,0) width 750: "In the following paragraph, all elements should be aligned with the top of the tallest element on the line, whether that"
           text run at (0,18) width 178: "element is an image or not. "
           text run at (177,18) width 565: "Each fragment of text has been SPANned appropriately in order to cause this to happen."
       LayoutBlockFlow {P} at (0,2153.31) size 769x202
@@ -350,7 +350,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (175,47) width 114: "should be aligned"
         LayoutText {#text} at (288,47) size 5x17
           text run at (288,47) width 5: " "
-        LayoutImage {IMG} at (292.17,47) size 11x35
+        LayoutImage {IMG} at (292.16,47) size 11x35
         LayoutText {#text} at (303,47) size 5x17
           text run at (303,47) width 5: " "
         LayoutInline {SPAN} at (0,0) size 188x36
@@ -358,7 +358,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (307,47) width 188: "with the top of"
         LayoutText {#text} at (494,47) size 5x17
           text run at (494,47) width 5: " "
-        LayoutImage {IMG} at (498.70,47) size 15x50
+        LayoutImage {IMG} at (498.69,47) size 15x50
         LayoutText {#text} at (513,47) size 5x17
           text run at (513,47) width 5: " "
         LayoutInline {SPAN} at (0,0) size 134x17
@@ -366,7 +366,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (517,47) width 134: "the tallest element in"
         LayoutText {#text} at (650,47) size 5x17
           text run at (650,47) width 5: " "
-        LayoutImage {IMG} at (654.55,47) size 5x15
+        LayoutImage {IMG} at (654.53,47) size 5x15
         LayoutText {#text} at (659,47) size 5x17
           text run at (659,47) width 5: " "
         LayoutInline {BIG} at (0,0) size 753x89
@@ -500,7 +500,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (130,1) width 416: "contains many images"
                 LayoutText {#text} at (545,26) size 6x21
                   text run at (545,26) width 6: " "
-                LayoutImage {IMG} at (550.08,26) size 15x50
+                LayoutImage {IMG} at (550.05,26) size 15x50
                 LayoutText {#text} at (565,26) size 5x21
                   text run at (565,26) width 5: " "
                 LayoutInline {BIG} at (0,0) size 156x24
@@ -508,17 +508,17 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (569,24) width 156: "of varying heights"
                 LayoutText {#text} at (724,26) size 6x21
                   text run at (724,26) width 6: " "
-                LayoutImage {IMG} at (729.61,26) size 3x10
+                LayoutImage {IMG} at (729.56,26) size 3x10
                 LayoutText {#text} at (0,0) size 0x0
                 LayoutInline {SMALL} at (0,0) size 70x17
                   LayoutText {#text} at (0,125) size 70x17
                     text run at (0,125) width 70: "and widths"
                 LayoutText {#text} at (69,122) size 6x21
                   text run at (69,122) width 6: " "
-                LayoutImage {IMG} at (74.44,122) size 6x20
+                LayoutImage {IMG} at (74.42,122) size 6x20
                 LayoutText {#text} at (80,122) size 99x21
                   text run at (80,122) width 99: " all of which "
-                LayoutImage {IMG} at (178.89,122) size 20x65
+                LayoutImage {IMG} at (178.88,122) size 20x65
                 LayoutText {#text} at (198,122) size 6x21
                   text run at (198,122) width 6: " "
                 LayoutInline {SPAN} at (0,0) size 264x41
@@ -526,10 +526,10 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (203,106) width 264: "should be aligned"
                 LayoutText {#text} at (466,122) size 6x21
                   text run at (466,122) width 6: " "
-                LayoutImage {IMG} at (471.55,122) size 11x35
+                LayoutImage {IMG} at (471.52,122) size 11x35
                 LayoutText {#text} at (482,122) size 120x21
                   text run at (482,122) width 120: " with the top of "
-                LayoutImage {IMG} at (601.23,122) size 9x30
+                LayoutImage {IMG} at (601.19,122) size 9x30
                 LayoutText {#text} at (610,122) size 5x21
                   text run at (610,122) width 5: " "
                 LayoutInline {SPAN} at (0,0) size 728x142
@@ -543,7 +543,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (143,225) width 146: " text element"
                 LayoutText {#text} at (288,233) size 6x21
                   text run at (288,233) width 6: " "
-                LayoutImage {IMG} at (293.16,233) size 15x50
+                LayoutImage {IMG} at (293.14,233) size 15x50
                 LayoutText {#text} at (308,233) size 5x21
                   text run at (308,233) width 5: " "
                 LayoutInline {SMALL} at (0,0) size 195x17
@@ -551,7 +551,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (312,236) width 195: "regardless of the line in which"
                 LayoutText {#text} at (506,233) size 5x21
                   text run at (506,233) width 5: " "
-                LayoutImage {IMG} at (510.77,233) size 5x15
+                LayoutImage {IMG} at (510.72,233) size 5x15
                 LayoutText {#text} at (515,233) size 6x21
                   text run at (515,233) width 6: " "
                 LayoutInline {BIG} at (0,0) size 160x24
@@ -559,7 +559,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (520,231) width 160: "the images appear."
                 LayoutText {#text} at (679,233) size 6x21
                   text run at (679,233) width 6: " "
-                LayoutImage {IMG} at (684.41,233) size 27x90
+                LayoutImage {IMG} at (684.33,233) size 27x90
                 LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {P} at (4,1453.31) size 747x36
                 LayoutText {#text} at (0,0) size 746x35
@@ -594,7 +594,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutImage {IMG} at (43.09,76) size 20x65
                 LayoutText {#text} at (63,98) size 121x17
                   text run at (63,98) width 121: " should be aligned "
-                LayoutImage {IMG} at (183.97,91) size 11x35
+                LayoutImage {IMG} at (183.95,91) size 11x35
                 LayoutText {#text} at (194,98) size 5x17
                   text run at (194,98) width 5: " "
                 LayoutInline {SPAN} at (0,0) size 237x36
@@ -602,7 +602,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (198,83) width 237: "with the middle of"
                 LayoutText {#text} at (434,98) size 5x17
                   text run at (434,98) width 5: " "
-                LayoutImage {IMG} at (438.48,83) size 15x50
+                LayoutImage {IMG} at (438.47,83) size 15x50
                 LayoutText {#text} at (453,98) size 5x17
                   text run at (453,98) width 5: " "
                 LayoutInline {SPAN} at (0,0) size 720x104
@@ -624,7 +624,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (98,176) width 195: "regardless of the line in which"
                 LayoutText {#text} at (292,176) size 5x17
                   text run at (292,176) width 5: " "
-                LayoutImage {IMG} at (296.23,179) size 5x15
+                LayoutImage {IMG} at (296.22,179) size 5x15
                 LayoutText {#text} at (301,176) size 5x17
                   text run at (301,176) width 5: " "
                 LayoutInline {BIG} at (0,0) size 160x24
@@ -632,7 +632,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (305,171) width 160: "the images appear."
                 LayoutText {#text} at (464,176) size 5x17
                   text run at (464,176) width 5: " "
-                LayoutImage {IMG} at (468.53,141) size 27x90
+                LayoutImage {IMG} at (468.52,141) size 27x90
                 LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {P} at (4,1752.31) size 747x54
                 LayoutText {#text} at (0,0) size 723x53
@@ -695,7 +695,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (175,47) width 114: "should be aligned"
                 LayoutText {#text} at (288,47) size 5x17
                   text run at (288,47) width 5: " "
-                LayoutImage {IMG} at (292.17,47) size 11x35
+                LayoutImage {IMG} at (292.16,47) size 11x35
                 LayoutText {#text} at (303,47) size 5x17
                   text run at (303,47) width 5: " "
                 LayoutInline {SPAN} at (0,0) size 188x36
@@ -703,7 +703,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (307,47) width 188: "with the top of"
                 LayoutText {#text} at (494,47) size 5x17
                   text run at (494,47) width 5: " "
-                LayoutImage {IMG} at (498.70,47) size 15x50
+                LayoutImage {IMG} at (498.69,47) size 15x50
                 LayoutText {#text} at (513,47) size 5x17
                   text run at (513,47) width 5: " "
                 LayoutInline {SPAN} at (0,0) size 134x17
@@ -711,7 +711,7 @@ layer at (0,0) size 785x4443 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (517,47) width 134: "the tallest element in"
                 LayoutText {#text} at (650,47) size 5x17
                   text run at (650,47) width 5: " "
-                LayoutImage {IMG} at (654.55,47) size 5x15
+                LayoutImage {IMG} at (654.53,47) size 5x15
                 LayoutText {#text} at (0,0) size 0x0
                 LayoutInline {BIG} at (0,0) size 307x24
                   LayoutText {#text} at (0,112) size 307x24

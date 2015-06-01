@@ -39,7 +39,7 @@ layer at (0,0) size 480x360
         [filter="BlendDarken"] LayoutSVGResourceFilter {filter} at (30,75) size 120x10
       LayoutSVGRect {rect} at (90,264) size 360x30 [opacity=0.50] [fill={[type=SOLID] [color=#0000FF]}] [x=30.00] [y=88.00] [width=120.00] [height=10.00]
         [filter="BlendLighten"] LayoutSVGResourceFilter {filter} at (30,88) size 120x10
-      LayoutSVGContainer {g} at (15,33) size 72x258
+      LayoutSVGContainer {g} at (15,33) size 72x257
         LayoutSVGText {text} at (5,11) size 22x8 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 22x8
             chunk 1 text run 1 at (5.00,17.00) startOffset 0 endOffset 6 width 21.33: "Normal"

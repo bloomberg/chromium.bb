@@ -2,8 +2,8 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (5,5) size 790x590
-    LayoutSVGContainer {g} at (30,7) size 732x501
-      LayoutSVGContainer {g} at (30,7) size 732x501
+    LayoutSVGContainer {g} at (30,8) size 731x500
+      LayoutSVGContainer {g} at (30,8) size 731x500
         LayoutSVGText {text} at (3,0) size 55x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 55x9
             chunk 1 text run 1 at (3.00,8.00) startOffset 0 endOffset 16 width 54.40: "letter-spacing:0"

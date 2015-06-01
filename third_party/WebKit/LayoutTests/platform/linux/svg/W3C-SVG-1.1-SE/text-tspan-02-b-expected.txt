@@ -108,7 +108,7 @@ layer at (0,0) size 480x360
               chunk 1 text run 3 at (48.00,180.00) startOffset 2 endOffset 3 width 16.00: "x"
               chunk 1 text run 4 at (64.00,180.00) startOffset 3 endOffset 4 width 10.00: "t"
               chunk 1 text run 5 at (74.00,180.00) startOffset 4 endOffset 5 width 10.00: " "
-          LayoutSVGInlineText {#text} at (64,60) size 134x43
+          LayoutSVGInlineText {#text} at (63,60) size 134x43
             chunk 1 text run 1 at (84.00,180.00) startOffset 0 endOffset 1 width 19.00: "h"
             chunk 1 text run 2 at (103.00,180.00) startOffset 1 endOffset 2 width 18.00: "a"
             chunk 1 text run 3 at (121.00,180.00) startOffset 2 endOffset 3 width 17.00: "v"

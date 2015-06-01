@@ -45,9 +45,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (723,0) size 767x36
           text run at (723,0) width 44: " which"
           text run at (0,18) width 523: "should result in -10px left padding (which should also be a light blue) only in the "
-        LayoutInline {STRONG} at (0,0) size 30x18
-          LayoutText {#text} at (522,18) size 30x18
-            text run at (522,18) width 30: "first"
+        LayoutInline {STRONG} at (0,0) size 29x18
+          LayoutText {#text} at (522,18) size 29x18
+            text run at (522,18) width 29: "first"
         LayoutText {#text} at (551,18) size 731x36
           text run at (551,18) width 180: " line in which the inline box"
           text run at (0,36) width 53: "appears."

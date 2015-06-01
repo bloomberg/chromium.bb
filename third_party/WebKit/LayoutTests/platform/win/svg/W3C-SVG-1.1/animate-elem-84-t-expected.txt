@@ -11,7 +11,7 @@ layer at (0,0) size 480x360
           LayoutSVGRect {rect} at (319,22) size 110x110 [fill={[type=SOLID] [color=#000000]}] [x=240.00] [y=0.00] [width=100.00] [height=100.00]
         LayoutSVGContainer {g} at (319,187) size 110x110
           LayoutSVGRect {rect} at (319,187) size 110x110 [fill={[type=SOLID] [color=#000000]}] [x=240.00] [y=150.00] [width=100.00] [height=100.00]
-        LayoutSVGContainer {g} at (72,69) size 321x101
+        LayoutSVGContainer {g} at (72,69) size 320x101
           LayoutSVGText {text} at (16,118) size 68x16 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 68x16
               chunk 1 (middle anchor) text run 1 at (16.36,130.00) startOffset 0 endOffset 12 width 67.27: "currentColor"

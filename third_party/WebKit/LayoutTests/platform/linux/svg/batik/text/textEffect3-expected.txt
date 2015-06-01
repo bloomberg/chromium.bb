@@ -82,7 +82,7 @@ layer at (0,0) size 450x500
             chunk 1 (middle anchor) text run 1 at (361.50,240.00) startOffset 0 endOffset 1 width 38.00: "K"
         LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutSVGText {text} at (54,292) size 146x80 contains 1 chunk(s)
-        [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (39.97,284) size 174.38x96
+        [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (39.97,284) size 174.36x96
         LayoutSVGInlineText {#text} at (0,20) size 35x60
           [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (51,306) size 42x72
           chunk 1 (middle anchor) text run 1 at (54.50,360.00) startOffset 0 endOffset 1 width 35.00: "B"
@@ -101,7 +101,7 @@ layer at (0,0) size 450x500
         LayoutSVGInlineText {#text} at (0,0) size 0x0
           [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (-45,-50) size 540x600
       LayoutSVGText {text} at (260,292) size 154x81 contains 1 chunk(s)
-        [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (245.19,283.90) size 183.77x97.20
+        [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (245.19,283.90) size 183.73x97.20
         LayoutSVGInlineText {#text} at (0,20) size 36x61
           [filter="dropShadow"] LayoutSVGResourceFilter {filter} at (256.90,305.90) size 43.20x73.20
           chunk 1 (middle anchor) text run 1 at (260.50,360.00) startOffset 0 endOffset 1 width 36.00: "B"

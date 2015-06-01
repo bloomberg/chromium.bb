@@ -125,7 +125,7 @@ layer at (0,0) size 450x500
               chunk 1 (middle anchor) text run 3 at (44.77,21.36) startOffset 2 endOffset 3 width 10.00: "x"
               chunk 1 (middle anchor) text run 4 at (51.51,17.47) startOffset 3 endOffset 4 width 5.56: "t"
               chunk 1 (middle anchor) text run 5 at (56.40,15.51) startOffset 4 endOffset 5 width 5.00: " "
-            LayoutSVGTSpan {tspan} at (0,0) size 27x25
+            LayoutSVGTSpan {tspan} at (0,0) size 26x25
               LayoutSVGInlineText {#text} at (39,0) size 26x25
                 chunk 1 (middle anchor) text run 1 at (63.65,13.58) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 (middle anchor) text run 2 at (73.60,12.52) startOffset 1 endOffset 2 width 10.00: "n"
@@ -149,7 +149,7 @@ layer at (0,0) size 450x500
         LayoutSVGContainer {use} at (329,170) size 92x50
           LayoutSVGPath {path} at (329,170) size 92x50 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 100 C 100 0 400 0 400 100"]
         LayoutSVGText {text} at (17,-16) size 122x67 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (0,0) size 121x67
+          LayoutSVGTextPath {textPath} at (0,0) size 121x66
             LayoutSVGInlineText {#text} at (0,11) size 50x43
               chunk 1 (end anchor) text run 1 at (35.91,30.21) startOffset 0 endOffset 1 width 12.22: "T"
               chunk 1 (end anchor) text run 2 at (43.14,22.58) startOffset 1 endOffset 2 width 8.88: "e"
@@ -160,7 +160,7 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (46,0) size 25x23
                 chunk 1 (end anchor) text run 1 at (71.00,12.63) startOffset 0 endOffset 1 width 10.00: "o"
                 chunk 1 (end anchor) text run 2 at (81.01,12.80) startOffset 1 endOffset 2 width 10.00: "n"
-            LayoutSVGTSpan {tspan} at (0,0) size 54x56
+            LayoutSVGTSpan {tspan} at (0,0) size 54x55
               LayoutSVGInlineText {#text} at (67,11) size 54x55
                 chunk 1 (end anchor) text run 1 at (88.42,14.02) startOffset 0 endOffset 1 width 5.00: " "
                 chunk 1 (end anchor) text run 2 at (95.07,16.03) startOffset 1 endOffset 2 width 8.88: "a"

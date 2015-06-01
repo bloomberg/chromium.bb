@@ -92,7 +92,7 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (657,0) size 730x36
                     text run at (657,0) width 73: ", giving the"
                     text run at (0,18) width 378: "inline element an aqua background and a -10px top margin"
-                LayoutText {#text} at (377,18) size 719x36
+                LayoutText {#text} at (377,18) size 718x36
                   text run at (377,18) width 9: ". "
-                  text run at (385,18) width 334: "Margins on inline elements do not affect line-height"
+                  text run at (385,18) width 333: "Margins on inline elements do not affect line-height"
                   text run at (0,36) width 470: "calculations, so all lines in this element should have the same line-height."

@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {UL} at (0,113) size 784x57
         LayoutListItem {LI} at (40,0) size 744x19
           LayoutListMarker (anonymous) at (-22,0) size 15x15
-          LayoutText {#text} at (0,1) size 65x17
-            text run at (0,1) width 65: "This list..."
+          LayoutText {#text} at (0,1) size 64x17
+            text run at (0,1) width 64: "This list..."
         LayoutListItem {LI} at (40,19) size 744x19
           LayoutListMarker (anonymous) at (-22,0) size 15x15
           LayoutText {#text} at (0,1) size 116x17
@@ -30,8 +30,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {UL} at (0,186) size 784x54
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
-          LayoutText {#text} at (0,0) size 65x17
-            text run at (0,0) width 65: "This list..."
+          LayoutText {#text} at (0,0) size 64x17
+            text run at (0,0) width 64: "This list..."
         LayoutListItem {LI} at (40,18) size 744x18
           LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 116x17
@@ -55,8 +55,8 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {UL} at (4,4) size 278x57
                 LayoutListItem {LI} at (40,0) size 238x19
                   LayoutListMarker (anonymous) at (-22,0) size 15x15
-                  LayoutText {#text} at (0,1) size 65x17
-                    text run at (0,1) width 65: "This list..."
+                  LayoutText {#text} at (0,1) size 64x17
+                    text run at (0,1) width 64: "This list..."
                 LayoutListItem {LI} at (40,19) size 238x19
                   LayoutListMarker (anonymous) at (-22,0) size 15x15
                   LayoutText {#text} at (0,1) size 116x17
@@ -68,8 +68,8 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {UL} at (4,77) size 278x54
                 LayoutListItem {LI} at (40,0) size 238x18
                   LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
-                  LayoutText {#text} at (0,0) size 65x17
-                    text run at (0,0) width 65: "This list..."
+                  LayoutText {#text} at (0,0) size 64x17
+                    text run at (0,0) width 64: "This list..."
                 LayoutListItem {LI} at (40,18) size 238x18
                   LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
                   LayoutText {#text} at (0,0) size 116x17

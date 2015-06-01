@@ -16,7 +16,7 @@ layer at (0,0) size 800x1195 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 778x90
           text run at (0,0) width 778: "This document should have a green grid-pattern line across the top of the page (or at least a tiled background) which does"
           text run at (0,18) width 204: "NOT scroll with the document. "
-          text run at (203,18) width 564: "It should, instead, appear to be a fixed pattern past which the content scrolls, even when"
+          text run at (203,18) width 563: "It should, instead, appear to be a fixed pattern past which the content scrolls, even when"
           text run at (0,36) width 199: "the end of the page is reached. "
           text run at (198,36) width 575: "In addition, the default Test Suite background should NOT appear, as it's been overridden"
           text run at (0,54) width 176: "by the styles shown above. "

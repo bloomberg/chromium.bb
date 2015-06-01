@@ -28,9 +28,9 @@ layer at (0,0) size 785x1378 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 683x18
           text run at (0,0) width 683: "The square above should be half as wide as the image's parent element (either the BODY or the table cell)."
       LayoutBlockFlow {P} at (0,637) size 384.50x108
-        LayoutText {#text} at (0,0) size 376x72
+        LayoutText {#text} at (0,0) size 375x72
           text run at (0,0) width 336: "This paragraph should be half the width of its parent"
-          text run at (0,18) width 376: "element (either the BODY or the table, which should itself"
+          text run at (0,18) width 375: "element (either the BODY or the table, which should itself"
           text run at (0,36) width 255: "be half as wide as the BODY element). "
           text run at (254,36) width 108: "This is extra text"
           text run at (0,54) width 329: "included to ensure that this will be a fair test of the "

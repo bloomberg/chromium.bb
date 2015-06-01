@@ -2,15 +2,15 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (1,1) size 478x358
-    LayoutSVGContainer {g} at (4,3) size 472x332
+    LayoutSVGContainer {g} at (4,3) size 472x331
       LayoutSVGText {text} at (14,1) size 108x11 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 108x11
           chunk 1 text run 1 at (14.00,10.00) startOffset 0 endOffset 26 width 107.77: "Basic test of 'textLength'"
-      LayoutSVGText {text} at (10,11) size 126x11 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 126x11
+      LayoutSVGText {text} at (10,11) size 125x11 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 125x11
           chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 30 width 125.01: "and 'lengthAdjust' attributes."
-      LayoutSVGContainer {g} at (4,67) size 472x70
-        LayoutSVGContainer {g} at (9,67) size 466x29
+      LayoutSVGContainer {g} at (4,68) size 472x68
+        LayoutSVGContainer {g} at (9,68) size 466x28
           LayoutSVGText {text} at (3,22) size 52x10 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 52x9
               chunk 1 text run 1 at (3.00,30.00) startOffset 0 endOffset 15 width 51.59: "Line to Stretch"
@@ -24,7 +24,7 @@ layer at (0,0) size 480x360
           LayoutSVGPath {line} at (222,94) size 252x4 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=74.00] [y1=32.00] [x2=158.00] [y2=32.00]
           LayoutSVGPath {line} at (220,96) size 4x12 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=74.00] [y1=32.00] [x2=74.00] [y2=36.00]
           LayoutSVGPath {line} at (472,96) size 4x12 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=158.00] [y1=32.00] [x2=158.00] [y2=36.00]
-        LayoutSVGContainer {g} at (18,97) size 374x40
+        LayoutSVGContainer {g} at (18,98) size 374x38
           LayoutSVGText {text} at (6,32) size 50x8 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 50x7
               chunk 1 text run 1 at (6.00,38.00) startOffset 0 endOffset 19 width 49.37: "textLength: default"
@@ -37,8 +37,8 @@ layer at (0,0) size 480x360
           LayoutSVGText {text} at (76,38) size 55x8 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 55x7
               chunk 1 text run 1 at (76.00,44.00) startOffset 0 endOffset 21 width 54.37: "lengthAdjust: default"
-      LayoutSVGContainer {g} at (4,133) size 421x70 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,22.00)}]
-        LayoutSVGContainer {g} at (9,133) size 414x29
+      LayoutSVGContainer {g} at (4,134) size 421x68 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,22.00)}]
+        LayoutSVGContainer {g} at (9,134) size 414x28
           LayoutSVGText {text} at (3,22) size 65x10 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 65x9
               chunk 1 text run 1 at (3.00,30.00) startOffset 0 endOffset 1 width 4.45: "L"
@@ -90,7 +90,7 @@ layer at (0,0) size 480x360
           LayoutSVGPath {line} at (222,160) size 201x4 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=74.00] [y1=32.00] [x2=141.00] [y2=32.00]
           LayoutSVGPath {line} at (220,162) size 4x12 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=74.00] [y1=32.00] [x2=74.00] [y2=36.00]
           LayoutSVGPath {line} at (421,162) size 4x12 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=141.00] [y1=32.00] [x2=141.00] [y2=36.00]
-        LayoutSVGContainer {g} at (18,163) size 402x40
+        LayoutSVGContainer {g} at (18,164) size 402x38
           LayoutSVGText {text} at (6,32) size 62x8 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 62x7
               chunk 1 text run 1 at (6.00,38.00) startOffset 0 endOffset 22 width 61.71: "textLength: 25% longer"
@@ -103,8 +103,8 @@ layer at (0,0) size 480x360
           LayoutSVGText {text} at (76,38) size 55x8 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 55x7
               chunk 1 text run 1 at (76.00,44.00) startOffset 0 endOffset 21 width 54.37: "lengthAdjust: default"
-      LayoutSVGContainer {g} at (4,199) size 421x70 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,44.00)}]
-        LayoutSVGContainer {g} at (9,199) size 414x29
+      LayoutSVGContainer {g} at (4,200) size 421x68 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,44.00)}]
+        LayoutSVGContainer {g} at (9,200) size 414x28
           LayoutSVGText {text} at (3,22) size 65x10 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 65x9
               chunk 1 text run 1 at (3.00,30.00) startOffset 0 endOffset 1 width 4.45: "L"
@@ -156,7 +156,7 @@ layer at (0,0) size 480x360
           LayoutSVGPath {line} at (222,226) size 201x4 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=74.00] [y1=32.00] [x2=141.00] [y2=32.00]
           LayoutSVGPath {line} at (220,228) size 4x12 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=74.00] [y1=32.00] [x2=74.00] [y2=36.00]
           LayoutSVGPath {line} at (421,228) size 4x12 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=141.00] [y1=32.00] [x2=141.00] [y2=36.00]
-        LayoutSVGContainer {g} at (9,229) size 411x40
+        LayoutSVGContainer {g} at (9,230) size 411x38
           LayoutSVGText {text} at (3,32) size 62x8 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 62x7
               chunk 1 text run 1 at (3.00,38.00) startOffset 0 endOffset 22 width 61.71: "textLength: 25% longer"
@@ -169,8 +169,8 @@ layer at (0,0) size 480x360
           LayoutSVGText {text} at (76,38) size 58x8 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 58x7
               chunk 1 text run 1 at (76.00,44.00) startOffset 0 endOffset 21 width 57.04: "lengthAdjust: spacing"
-      LayoutSVGContainer {g} at (4,265) size 421x70 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,66.00)}]
-        LayoutSVGContainer {g} at (9,265) size 411x29
+      LayoutSVGContainer {g} at (4,266) size 421x68 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,66.00)}]
+        LayoutSVGContainer {g} at (9,266) size 411x28
           LayoutSVGText {text} at (3,22) size 65x10 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 65x9
               chunk 1 text run 1 at (3.00,30.00) startOffset 0 endOffset 15 width 51.59: "Line to Stretch"
@@ -184,7 +184,7 @@ layer at (0,0) size 480x360
           LayoutSVGPath {line} at (222,292) size 201x4 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=74.00] [y1=32.00] [x2=141.00] [y2=32.00]
           LayoutSVGPath {line} at (220,294) size 4x12 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=74.00] [y1=32.00] [x2=74.00] [y2=36.00]
           LayoutSVGPath {line} at (421,294) size 4x12 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=141.00] [y1=32.00] [x2=141.00] [y2=36.00]
-        LayoutSVGContainer {g} at (18,295) size 402x40
+        LayoutSVGContainer {g} at (18,296) size 402x38
           LayoutSVGText {text} at (6,32) size 62x8 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 62x7
               chunk 1 text run 1 at (6.00,38.00) startOffset 0 endOffset 22 width 61.71: "textLength: 25% longer"

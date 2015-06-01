@@ -37,8 +37,8 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (240,551) size 39x14 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 39x13
           chunk 1 text run 1 at (240.00,562.00) startOffset 0 endOffset 7 width 38.49: "Flowers"
-      LayoutSVGText {text} at (240,571) size 199x14 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 199x13
+      LayoutSVGText {text} at (240,571) size 198x14 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 198x13
           chunk 1 text run 1 at (240.00,582.00) startOffset 0 endOffset 43 width 198.00: "Click on this text to deselect all elements"
       LayoutSVGText {text} at (240,586) size 186x14 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 186x13

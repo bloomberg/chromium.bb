@@ -52,7 +52,7 @@ layer at (0,0) size 785x2299 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutImage {IMG} at (265.17,40) size 200x200
         LayoutText {#text} at (465,223) size 28x17
           text run at (465,223) width 28: " and "
-        LayoutImage {IMG} at (492.39,223) size 200x200
+        LayoutImage {IMG} at (492.38,223) size 200x200
         LayoutText {#text} at (692,223) size 769x218
           text run at (692,223) width 8: ". "
           text run at (699,223) width 39: "This is"

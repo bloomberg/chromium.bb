@@ -96,8 +96,8 @@ layer at (0,0) size 785x1151 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutInline {SPAN} at (0,0) size 83x18 [color=#0000FF]
           LayoutText {#text} at (207,0) size 83x18
             text run at (207,0) width 83: "this sentence"
-        LayoutText {#text} at (289,0) size 71x18
-          text run at (289,0) width 71: " should be "
+        LayoutText {#text} at (289,0) size 70x18
+          text run at (289,0) width 70: " should be "
         LayoutInline {SPAN} at (0,0) size 215x18 [color=#808080]
           LayoutText {#text} at (359,0) size 215x18
             text run at (359,0) width 215: "the same as that of the parent text"
@@ -189,8 +189,8 @@ layer at (0,0) size 785x1151 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutInline {SPAN} at (0,0) size 83x18 [color=#0000FF]
                   LayoutText {#text} at (207,0) size 83x18
                     text run at (207,0) width 83: "this sentence"
-                LayoutText {#text} at (289,0) size 71x18
-                  text run at (289,0) width 71: " should be "
+                LayoutText {#text} at (289,0) size 70x18
+                  text run at (289,0) width 70: " should be "
                 LayoutInline {SPAN} at (0,0) size 215x18 [color=#808080]
                   LayoutText {#text} at (359,0) size 215x18
                     text run at (359,0) width 215: "the same as that of the parent text"

@@ -35,8 +35,8 @@ layer at (0,0) size 785x725 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,36) width 183: "handling these declarations. "
           text run at (182,36) width 313: "Hey, I didn't say the page would be pretty, did I?"
       LayoutBlockFlow {P} at (0,269) size 769x54 [bgcolor=#00FF00]
-        LayoutText {#text} at (0,0) size 767x53
-          text run at (0,0) width 767: "This paragraph should have a lime background and an orange strip which starts at the center top and runs to the bottom."
+        LayoutText {#text} at (0,0) size 766x53
+          text run at (0,0) width 766: "This paragraph should have a lime background and an orange strip which starts at the center top and runs to the bottom."
           text run at (0,18) width 718: "Therefore, extra text would be in order, so that we can intelligently evaluate the performance of your browser in"
           text run at (0,36) width 183: "handling these declarations. "
           text run at (182,36) width 313: "Hey, I didn't say the page would be pretty, did I?"

@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 4 width 40.80: "1234"
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGRect {rect} at (0,0) size 7x7 [fill={[type=SOLID] [color=#000000]}] [x=-4.00] [y=-4.00] [width=8.00] [height=8.00]
-      LayoutSVGContainer {g} at (118,104) size 250x38 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,80.00)}]
+      LayoutSVGContainer {g} at (118,104) size 249x38 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,80.00)}]
         LayoutSVGText {text} at (-59,-15) size 29x20 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 29x19
             chunk 1 (end anchor) text run 1 at (-58.80,0.00) startOffset 0 endOffset 5 width 28.80: "x all"
@@ -42,9 +42,9 @@ layer at (0,0) size 800x600
             chunk 1 text run 1 at (40.00,0.00) startOffset 0 endOffset 1 width 10.20: "2"
             chunk 1 text run 1 at (60.00,0.00) startOffset 0 endOffset 1 width 10.20: "3"
             chunk 1 text run 1 at (80.00,0.00) startOffset 0 endOffset 1 width 10.20: "4"
-      LayoutSVGContainer {g} at (91,170) size 299x39 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,120.00)}]
-        LayoutSVGText {text} at (-75,-15) size 46x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 46x19
+      LayoutSVGContainer {g} at (91,171) size 299x37 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,120.00)}]
+        LayoutSVGText {text} at (-75,-15) size 45x20 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 45x19
             chunk 1 (end anchor) text run 1 at (-75.00,0.00) startOffset 0 endOffset 6 width 45.00: "x more"
         LayoutSVGContainer {use} at (210,193) size 14x14
           LayoutSVGRect {rect} at (210,193) size 14x14 [fill={[type=SOLID] [color=#FF0000]}] [x=-4.00] [y=-4.00] [width=8.00] [height=8.00]
@@ -65,8 +65,8 @@ layer at (0,0) size 800x600
             chunk 1 text run 1 at (60.00,0.00) startOffset 0 endOffset 1 width 10.20: "3"
             chunk 1 text run 1 at (80.00,0.00) startOffset 0 endOffset 1 width 10.20: "4"
       LayoutSVGContainer {g} at (86,237) size 265x38 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,160.00)}]
-        LayoutSVGText {text} at (-78,-15) size 49x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 49x19
+        LayoutSVGText {text} at (-78,-15) size 48x20 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 48x19
             chunk 1 (end anchor) text run 1 at (-78.00,0.00) startOffset 0 endOffset 7 width 48.00: "x fewer"
         LayoutSVGContainer {use} at (210,260) size 14x14
           LayoutSVGRect {rect} at (210,260) size 14x14 [fill={[type=SOLID] [color=#FF0000]}] [x=-4.00] [y=-4.00] [width=8.00] [height=8.00]
@@ -83,7 +83,7 @@ layer at (0,0) size 800x600
             chunk 1 text run 1 at (20.00,0.00) startOffset 0 endOffset 1 width 10.20: "1"
             chunk 1 text run 1 at (40.00,0.00) startOffset 0 endOffset 1 width 10.20: "2"
             chunk 1 text run 1 at (60.00,0.00) startOffset 0 endOffset 2 width 20.40: "34"
-      LayoutSVGContainer {g} at (118,287) size 181x72 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,200.00)}]
+      LayoutSVGContainer {g} at (118,287) size 181x71 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,200.00)}]
         LayoutSVGText {text} at (-59,-15) size 29x20 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 29x19
             chunk 1 (end anchor) text run 1 at (-58.80,0.00) startOffset 0 endOffset 5 width 28.80: "y all"
@@ -101,9 +101,9 @@ layer at (0,0) size 800x600
             chunk 1 text run 1 at (10.20,-5.00) startOffset 0 endOffset 1 width 10.20: "2"
             chunk 1 text run 1 at (20.40,5.00) startOffset 0 endOffset 1 width 10.20: "3"
             chunk 1 text run 1 at (30.60,10.00) startOffset 0 endOffset 1 width 10.20: "4"
-      LayoutSVGContainer {g} at (91,370) size 208x72 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,250.00)}]
-        LayoutSVGText {text} at (-75,-15) size 46x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 46x19
+      LayoutSVGContainer {g} at (91,371) size 208x71 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,250.00)}]
+        LayoutSVGText {text} at (-75,-15) size 45x20 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 45x19
             chunk 1 (end anchor) text run 1 at (-75.00,0.00) startOffset 0 endOffset 6 width 45.00: "y more"
         LayoutSVGContainer {use} at (210,393) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,-10.00)}]
           LayoutSVGRect {rect} at (210,393) size 14x14 [fill={[type=SOLID] [color=#8888FF]}] [x=-4.00] [y=-4.00] [width=8.00] [height=8.00]
@@ -120,8 +120,8 @@ layer at (0,0) size 800x600
             chunk 1 text run 1 at (20.40,5.00) startOffset 0 endOffset 1 width 10.20: "3"
             chunk 1 text run 1 at (30.60,10.00) startOffset 0 endOffset 1 width 10.20: "4"
       LayoutSVGContainer {g} at (86,454) size 213x63 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,300.00)}]
-        LayoutSVGText {text} at (-78,-15) size 49x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 49x19
+        LayoutSVGText {text} at (-78,-15) size 48x20 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 48x19
             chunk 1 (end anchor) text run 1 at (-78.00,0.00) startOffset 0 endOffset 7 width 48.00: "y fewer"
         LayoutSVGContainer {use} at (210,476) size 14x14 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,-10.00)}]
           LayoutSVGRect {rect} at (210,476) size 14x14 [fill={[type=SOLID] [color=#8888FF]}] [x=-4.00] [y=-4.00] [width=8.00] [height=8.00]
@@ -137,7 +137,7 @@ layer at (0,0) size 800x600
             chunk 1 text run 1 at (10.20,-5.00) startOffset 0 endOffset 1 width 10.20: "2"
             chunk 1 text run 1 at (20.40,5.00) startOffset 0 endOffset 2 width 20.40: "34"
       LayoutSVGContainer {g} at (398,87) size 359x338 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,0.00)}]
-        LayoutSVGContainer {g} at (464,87) size 270x72 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,80.00)}]
+        LayoutSVGContainer {g} at (464,87) size 270x71 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,80.00)}]
           LayoutSVGText {text} at (-72,-15) size 42x20 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 42x19
               chunk 1 (end anchor) text run 1 at (-71.40,0.00) startOffset 0 endOffset 7 width 41.40: "x/y all"
@@ -179,7 +179,7 @@ layer at (0,0) size 800x600
               chunk 1 text run 1 at (40.00,-5.00) startOffset 0 endOffset 1 width 10.20: "2"
               chunk 1 text run 1 at (60.00,5.00) startOffset 0 endOffset 1 width 10.20: "3"
               chunk 1 text run 1 at (80.00,10.00) startOffset 0 endOffset 1 width 10.20: "4"
-        LayoutSVGContainer {g} at (432,220) size 286x64 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,160.00)}]
+        LayoutSVGContainer {g} at (432,221) size 286x62 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,160.00)}]
           LayoutSVGText {text} at (-91,-15) size 61x20 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 61x19
               chunk 1 (end anchor) text run 1 at (-90.60,0.00) startOffset 0 endOffset 9 width 60.60: "x/y fewer"
@@ -219,8 +219,8 @@ layer at (0,0) size 800x600
               chunk 1 text run 1 at (60.00,5.00) startOffset 0 endOffset 1 width 10.20: "3"
               chunk 1 text run 1 at (80.00,5.00) startOffset 0 endOffset 1 width 10.20: "4"
         LayoutSVGContainer {g} at (398,354) size 322x71 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,240.00)}]
-          LayoutSVGText {text} at (-112,-15) size 82x20 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 82x19
+          LayoutSVGText {text} at (-111,-15) size 81x20 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 81x19
               chunk 1 (end anchor) text run 1 at (-111.00,0.00) startOffset 0 endOffset 13 width 81.00: "x fewer y all"
           LayoutSVGContainer {use} at (576,393) size 14x14
             LayoutSVGRect {rect} at (576,393) size 14x14 [fill={[type=SOLID] [color=#FF0000]}] [x=-4.00] [y=-4.00] [width=8.00] [height=8.00]

@@ -47,9 +47,9 @@ layer at (0,0) size 785x759 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {P} at (0,405) size 769x18
         LayoutText {#text} at (0,0) size 534x18
           text run at (0,0) width 534: "This paragraph should have no border and no extra \"padding\" on its top side, as no "
-        LayoutInline {CODE} at (0,0) size 95x15
-          LayoutText {#text} at (533,2) size 95x15
-            text run at (533,2) width 95: "border-style"
+        LayoutInline {CODE} at (0,0) size 94x15
+          LayoutText {#text} at (533,2) size 94x15
+            text run at (533,2) width 94: "border-style"
         LayoutText {#text} at (627,0) size 55x18
           text run at (627,0) width 55: " was set."
       LayoutTable {TABLE} at (0,439) size 704x304 [border: (1px outset #808080)]
@@ -90,8 +90,8 @@ layer at (0,0) size 785x759 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutBlockFlow {P} at (4,254) size 682x18
                 LayoutText {#text} at (0,0) size 534x18
                   text run at (0,0) width 534: "This paragraph should have no border and no extra \"padding\" on its top side, as no "
-                LayoutInline {CODE} at (0,0) size 95x15
-                  LayoutText {#text} at (533,2) size 95x15
-                    text run at (533,2) width 95: "border-style"
+                LayoutInline {CODE} at (0,0) size 94x15
+                  LayoutText {#text} at (533,2) size 94x15
+                    text run at (533,2) width 94: "border-style"
                 LayoutText {#text} at (627,0) size 55x18
                   text run at (627,0) width 55: " was set."

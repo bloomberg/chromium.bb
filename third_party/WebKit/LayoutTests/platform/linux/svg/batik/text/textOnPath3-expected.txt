@@ -57,7 +57,7 @@ layer at (0,0) size 450x500
           chunk 1 text run 1 at (-10.00,-120.00) startOffset 0 endOffset 40 width 234.00: "Text with one textPath child and x=\"100\""
       LayoutSVGContainer {use} at (139,205) size 142x125
         LayoutSVGPath {path} at (139,205) size 142x125 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 0 C 100 -125 240 -125 240 0"]
-      LayoutSVGText {text} at (181,-107) size 75x106 contains 1 chunk(s)
+      LayoutSVGText {text} at (181,-107) size 74x106 contains 1 chunk(s)
         LayoutSVGTextPath {textPath} at (0,0) size 74x106
           LayoutSVGInlineText {#text} at (0,0) size 74x106
             chunk 1 (middle anchor) text run 1 at (187.24,-91.18) startOffset 0 endOffset 1 width 9.00: "T"

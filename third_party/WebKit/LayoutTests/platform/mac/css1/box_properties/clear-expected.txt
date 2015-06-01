@@ -31,8 +31,8 @@ layer at (0,0) size 785x961 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBR {BR} at (0,0) size 0x18
         LayoutImage (floating) {IMG} at (754,18) size 15x50
       LayoutBlockFlow {P} at (0,329) size 769x18
-        LayoutText {#text} at (0,0) size 671x18
-          text run at (0,0) width 671: "This paragraph should appear below the tall orange rectangle above and to the right, and not flow past it."
+        LayoutText {#text} at (0,0) size 670x18
+          text run at (0,0) width 670: "This paragraph should appear below the tall orange rectangle above and to the right, and not flow past it."
       LayoutBlockFlow (anonymous) at (0,363) size 769x18
         LayoutBR {BR} at (0,0) size 0x18
         LayoutImage (floating) {IMG} at (0,18) size 15x50
@@ -73,8 +73,8 @@ layer at (0,0) size 785x961 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutBR {BR} at (0,0) size 0x18
                 LayoutImage (floating) {IMG} at (656,18) size 15x50
               LayoutBlockFlow {P} at (4,208) size 671x18
-                LayoutText {#text} at (0,0) size 671x18
-                  text run at (0,0) width 671: "This paragraph should appear below the tall orange rectangle above and to the right, and not flow past it."
+                LayoutText {#text} at (0,0) size 670x18
+                  text run at (0,0) width 670: "This paragraph should appear below the tall orange rectangle above and to the right, and not flow past it."
               LayoutBlockFlow (anonymous) at (4,242) size 671x18
                 LayoutBR {BR} at (0,0) size 0x18
                 LayoutImage (floating) {IMG} at (0,18) size 15x50

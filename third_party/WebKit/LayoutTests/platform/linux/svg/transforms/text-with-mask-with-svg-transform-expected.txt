@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,83) size 430x460
     LayoutSVGContainer {g} at (0,83) size 430x460 [transform={m=((0.43,0.25)(-0.25,0.43)) t=(50.00,50.00)}]
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (10,5) size 145x19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 145x18
+      LayoutSVGText {text} at (10,5) size 144x19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 144x18
           chunk 1 text run 1 at (10.00,20.00) startOffset 0 endOffset 21 width 144.00: "Test for mask support"
       LayoutSVGRect {rect} at (0,109) size 151x230 [fill={[type=SOLID] [color=#FF0000]}] [x=10.00] [y=30.00] [width=100.00] [height=260.00]
       LayoutSVGResourceMasker {mask} [id="mask1"] [maskUnits=userSpaceOnUse] [maskContentUnits=userSpaceOnUse]
@@ -49,7 +49,7 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (200,228) size 110x16 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 110x16
           chunk 1 text run 1 at (200.00,240.00) startOffset 0 endOffset 20 width 109.20: "of various opacities"
-      LayoutSVGText {text} at (10,305) size 259x45 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 259x45
+      LayoutSVGText {text} at (10,305) size 258x45 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 258x45
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 258.00: "$Revision: 1.7 $"
       LayoutSVGRect {rect} at (0,83) size 430x460 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

@@ -178,7 +178,7 @@ layer at (0,0) size 785x6353 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (199,5) width 180: "This is text within the DIV. "
           text run at (378,5) width 186: "The floating elements within"
           text run at (199,23) width 357: "this DIV should not go beyond the top side of this DIV,"
-          text run at (199,41) width 344: "which means that the borders of the floating elements"
+          text run at (199,41) width 343: "which means that the borders of the floating elements"
           text run at (199,59) width 356: "should not overlap the top or side borders of the DIV in"
           text run at (199,77) width 62: "any way. "
           text run at (260,77) width 272: "In addition, the top of the left-floating box"
@@ -215,7 +215,7 @@ layer at (0,0) size 785x6353 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (697,23) size 722x108
           text run at (697,23) width 30: "This"
           text run at (199,41) width 352: "means that the top side of each float can be, at most, as"
-          text run at (199,59) width 360: "high as the top edge of the inline element containing the"
+          text run at (199,59) width 359: "high as the top edge of the inline element containing the"
           text run at (199,77) width 337: "content just before the floating elements occur in the"
           text run at (5,95) width 50: "source. "
           text run at (54,95) width 495: "In order to mark these points clearly, an asterisk has been inserted just before"
@@ -297,9 +297,9 @@ layer at (0,0) size 785x6353 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (35,23) width 330: "containing the inline content which precedes them. "
           text run at (364,23) width 13: "* "
         LayoutImage (floating) {IMG} at (745,23) size 15x36 [border: (3px solid #000000)]
-        LayoutText {#text} at (376,23) size 326x18
-          text run at (376,23) width 318: "This means that the top side of each float can be, "
-          text run at (693,23) width 9: "*"
+        LayoutText {#text} at (376,23) size 325x18
+          text run at (376,23) width 317: "This means that the top side of each float can be, "
+          text run at (693,23) width 8: "*"
         LayoutImage (floating) {IMG} at (20,23) size 15x36 [border: (3px solid #000000)]
         LayoutText {#text} at (701,23) size 720x54
           text run at (701,23) width 16: " at"
@@ -649,9 +649,9 @@ layer at (0,0) size 785x6353 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (35,23) width 330: "containing the inline content which precedes them. "
                   text run at (364,23) width 13: "* "
                 LayoutImage (floating) {IMG} at (723,23) size 15x36 [border: (3px solid #000000)]
-                LayoutText {#text} at (376,23) size 326x18
-                  text run at (376,23) width 318: "This means that the top side of each float can be, "
-                  text run at (693,23) width 9: "*"
+                LayoutText {#text} at (376,23) size 325x18
+                  text run at (376,23) width 317: "This means that the top side of each float can be, "
+                  text run at (693,23) width 8: "*"
                 LayoutImage (floating) {IMG} at (20,23) size 15x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (701,23) size 697x54
                   text run at (701,23) width 16: " at"

@@ -255,9 +255,9 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 LayoutInline {EM} at (0,0) size 18x18
                   LayoutText {#text} at (305,18) size 18x18
                     text run at (305,18) width 18: "all"
-                LayoutText {#text} at (322,18) size 753x36
+                LayoutText {#text} at (322,18) size 752x36
                   text run at (322,18) width 371: " directions, regardless of the position of the origin image. "
-                  text run at (692,18) width 61: "Note that"
+                  text run at (692,18) width 60: "Note that"
                   text run at (0,36) width 302: "this test is only valid if the user agent supports "
                 LayoutInline {CODE} at (0,0) size 149x15
                   LayoutText {#text} at (301,38) size 149x15
@@ -281,11 +281,11 @@ layer at (0,0) size 800x1838 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   text run at (0,36) width 59: "obvious. "
                   text run at (58,36) width 670: "A background color is present, although if it is visible, then the image may not have been tiled correctly."
               LayoutBlockFlow {P} at (4,478) size 762x54 [bgcolor=#FF0000]
-                LayoutText {#text} at (0,0) size 739x54
+                LayoutText {#text} at (0,0) size 738x54
                   text run at (0,0) width 499: "This sentence should have a fully tiled background which starts at its top left. "
                   text run at (498,0) width 229: "I'll fill it with extra text to make the"
                   text run at (0,18) width 291: "conformance (or lack thereof) more obvious. "
-                  text run at (290,18) width 449: "A background color is present, although if it is visible, then the image"
+                  text run at (290,18) width 448: "A background color is present, although if it is visible, then the image"
                   text run at (0,36) width 218: "may not have been tiled correctly."
               LayoutBlockFlow {P} at (4,548) size 762x72 [bgcolor=#FF0000]
                 LayoutText {#text} at (0,0) size 760x72

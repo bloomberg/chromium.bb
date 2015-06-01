@@ -130,7 +130,7 @@ layer at (0,0) size 800x600
         LayoutSVGContainer {use} at (552,179) size 5x17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(710.00,239.67)}]
           LayoutSVGViewportContainer {svg} at (552,179) size 5x17
             LayoutSVGPath {line} at (552,179) size 5x17 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
-        LayoutSVGText {text} at (716,232) size 76x17 contains 1 chunk(s)
+        LayoutSVGText {text} at (716,232) size 76x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 76x16
             chunk 1 text run 1 at (716.00,244.17) startOffset 0 endOffset 14 width 75.52: "Saturation (%)"
         LayoutSVGRect {rect} at (470,205) size 85x7 [fill={[type=LINEAR-GRADIENT] [id="colourPicker3_valGradient"]}] [x=602.00] [y=262.58] [width=108.00] [height=7.50]

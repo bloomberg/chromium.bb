@@ -5,8 +5,8 @@ layer at (0,0) size 800x245
     LayoutBlockFlow {BODY} at (8,8) size 784x229
       LayoutBlockFlow {DIV} at (0,0) size 784x22
         LayoutBlockFlow {P} at (5,0) size 774x22 [color=#FF000066]
-          LayoutText {#text} at (0,0) size 482x22
-            text run at (0,0) width 482: "Check if the underline is thick enough for 20px"
+          LayoutText {#text} at (0,0) size 481x22
+            text run at (0,0) width 481: "Check if the underline is thick enough for 20px"
       LayoutBlockFlow {DIV} at (0,27) size 784x46
         LayoutBlockFlow {P} at (5,0) size 774x46 [color=#FF000066]
           LayoutText {#text} at (0,0) size 963x46
