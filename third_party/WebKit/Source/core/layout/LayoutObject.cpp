@@ -1938,8 +1938,7 @@ void LayoutObject::styleDidChange(StyleDifference diff, const ComputedStyle* old
         if (needsOverflowRecalcAfterStyleChange() && oldStyle->position() != m_style->position())
             markContainingBlocksForOverflowRecalc();
 
-        if (diff.needsFullLayout())
-            setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
+        setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
     } else if (diff.needsPositionedMovementLayout()) {
         setNeedsPositionedMovementLayout();
     }
