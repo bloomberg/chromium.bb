@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// TODO(ksakamoto): Remove this interface when FontFaceSet is made Set-like.
+// crbug.com/392075
 callback interface FontFaceSetForEachCallback {
     [CallWith=ThisValue] boolean handleItem(FontFace fontFace, FontFace fontFaceAgain, FontFaceSet set);
     boolean handleItem(FontFace fontFace, FontFace fontFaceAgain, FontFaceSet set);

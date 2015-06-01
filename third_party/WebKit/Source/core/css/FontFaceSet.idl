@@ -28,28 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://dev.w3.org/csswg/css-font-loading/#FontFaceSet-interface
+
 enum FontFaceSetLoadStatus { "loading", "loaded" };
 
+// TODO(philipj): This interface should be [Exposed=Window,Worker] and should
+// have a constructor, and thus not have [NoInterfaceObject].
 [
     ActiveDOMObject,
     SetWrapperReferenceFrom=document,
     NoInterfaceObject,
 ] interface FontFaceSet : EventTarget {
+    // TODO(ksakamoto): Make FontFaceSet Set-like. crbug.com/392075
+    // setlike<FontFace>;
+    void forEach(FontFaceSetForEachCallback callback, optional any thisArg);
+    [RaisesException] boolean has(FontFace fontFace);
+    readonly attribute unsigned long size;
+    // TODO(philipj): add() should return the FontFaceSet.
+    [RaisesException] void add(FontFace fontFace);
+    [RaisesException, ImplementedAs=remove] boolean delete(FontFace fontFace);
+    void clear();
 
+    // events for when loading state changes
     attribute EventHandler onloading;
     attribute EventHandler onloadingdone;
     attribute EventHandler onloadingerror;
 
+    // check and start loads if appropriate
+    // and fulfill promise when all loads complete
+    [CallWith=ScriptState] Promise<sequence<FontFace>> load(DOMString font, optional DOMString text = " ");
+
+    // return whether all fonts in the fontlist are loaded
+    // (does not initiate load if not available)
     [RaisesException] boolean check(DOMString font, optional DOMString text = " ");
-    [CallWith=ScriptState] Promise load(DOMString font, optional DOMString text = " ");
-    [CallWith=ScriptState] readonly attribute Promise ready;
 
-    [RaisesException] void add(FontFace fontFace);
-    void clear();
-    [RaisesException, ImplementedAs=remove] boolean delete(FontFace fontFace);
-    void forEach(FontFaceSetForEachCallback callback, optional any thisArg);
-    [RaisesException] boolean has(FontFace fontFace);
+    // async notification that font loading and layout operations are done
+    [CallWith=ScriptState] readonly attribute Promise<FontFaceSet> ready;
 
-    readonly attribute unsigned long size;
+    // loading state, "loading" while one or more fonts loading, "loaded" otherwise
     readonly attribute FontFaceSetLoadStatus status;
 };

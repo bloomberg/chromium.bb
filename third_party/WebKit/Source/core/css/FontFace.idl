@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/csswg/css-font-loading/#dom-fontface
+// http://dev.w3.org/csswg/css-font-loading/#fontface-interface
 
 enum FontFaceLoadStatus {
     "unloaded",
@@ -37,6 +37,7 @@ enum FontFaceLoadStatus {
     "error"
 };
 
+// TODO(philipj): This interface should be [Exposed=Window,Worker].
 [
     ActiveDOMObject,
     // FIXME: This should be (DOMString or BinaryData), where BinaryData is typedef of (ArrayBuffer or ArrayBufferView)
@@ -44,7 +45,6 @@ enum FontFaceLoadStatus {
     ConstructorCallWith=ExecutionContext,
     WillBeGarbageCollected,
 ] interface FontFace {
-
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString family;
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString style;
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString weight;
@@ -54,7 +54,7 @@ enum FontFaceLoadStatus {
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString featureSettings;
 
     readonly attribute FontFaceLoadStatus status;
-    [CallWith=ScriptState] readonly attribute Promise loaded;
 
-    [CallWith=ScriptState] Promise load();
+    [CallWith=ScriptState] Promise<FontFace> load();
+    [CallWith=ScriptState] readonly attribute Promise<FontFace> loaded;
 };

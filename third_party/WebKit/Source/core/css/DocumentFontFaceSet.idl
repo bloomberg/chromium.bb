@@ -28,6 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://dev.w3.org/csswg/css-font-loading/#font-face-source
+
+// TODO(philipj): This should be a FontFaceSource interface implemented by
+// Document and WorkerGlobalScope.
 partial interface Document {
     [MeasureAs=DocumentFonts] readonly attribute FontFaceSet fonts;
 };
