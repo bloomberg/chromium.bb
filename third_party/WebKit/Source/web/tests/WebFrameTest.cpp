@@ -7134,7 +7134,11 @@ public:
     WebRemoteFrame* m_remoteFrame;
 };
 
-TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterRemoteToLocalSwap)
+// The commit type should be Initial if we are swapping a RemoteFrame to a
+// LocalFrame as it is first being created.  This happens when another frame
+// exists in the same process, such that we create the RemoteFrame before the
+// first navigation occurs.
+TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterNewRemoteToLocalSwap)
 {
     WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, nullptr);
     WebFrame* targetFrame = mainFrame()->firstChild();
@@ -7146,6 +7150,31 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterRemoteToLocalSwap)
     RemoteToLocalSwapWebFrameClient client(remoteFrame);
     WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
     localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
+    EXPECT_EQ(WebInitialCommitInChildFrame, client.historyCommitType());
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated
+    // TestWebFrameClient.
+    reset();
+    remoteFrame->close();
+}
+
+// The commit type should be Standard if we are swapping a RemoteFrame to a
+// LocalFrame after commits have already happened in the frame.  The browser
+// process will inform us via setCommittedFirstRealLoad.
+TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterExistingRemoteToLocalSwap)
+{
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, nullptr);
+    WebFrame* targetFrame = mainFrame()->firstChild();
+    ASSERT_TRUE(targetFrame);
+    targetFrame->swap(remoteFrame);
+    ASSERT_TRUE(mainFrame()->firstChild());
+    ASSERT_EQ(mainFrame()->firstChild(), remoteFrame);
+
+    RemoteToLocalSwapWebFrameClient client(remoteFrame);
+    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &client);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    localFrame->setCommittedFirstRealLoad();
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
     EXPECT_EQ(WebStandardCommit, client.historyCommitType());
 
