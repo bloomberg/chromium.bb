@@ -253,7 +253,7 @@ class WebSocketBasicStreamSocketWriteTest
     header.final = true;
     header.masked = true;
     header.payload_length = payload_size;
-    frames_.push_back(frame.release());
+    frames_.push_back(frame.Pass());
   }
 
   // Creates a stream that expects the listed writes.
@@ -896,7 +896,7 @@ TEST_F(WebSocketBasicStreamSocketWriteTest, WriteNullPong) {
   header.masked = true;
   header.payload_length = 0;
   ScopedVector<WebSocketFrame> frames;
-  frames.push_back(frame.release());
+  frames.push_back(frame.Pass());
   EXPECT_EQ(OK, stream_->WriteFrames(&frames, cb_.callback()));
 }
 
@@ -920,7 +920,7 @@ TEST_F(WebSocketBasicStreamSocketTest, WriteNonNulMask) {
   header.final = true;
   header.masked = true;
   header.payload_length = payload_size;
-  frames_.push_back(frame.release());
+  frames_.push_back(frame.Pass());
 
   EXPECT_EQ(OK, stream_->WriteFrames(&frames_, cb_.callback()));
 }

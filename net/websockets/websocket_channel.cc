@@ -150,7 +150,7 @@ class WebSocketChannel::SendBuffer {
 
 void WebSocketChannel::SendBuffer::AddFrame(scoped_ptr<WebSocketFrame> frame) {
   total_bytes_ += frame->header.payload_length;
-  frames_.push_back(frame.release());
+  frames_.push_back(frame.Pass());
 }
 
 // Implementation of WebSocketStream::ConnectDelegate that simply forwards the

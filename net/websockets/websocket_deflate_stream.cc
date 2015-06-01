@@ -129,7 +129,7 @@ int WebSocketDeflateStream::Deflate(ScopedVector<WebSocketFrame>* frames) {
       if (frame->header.final)
         writing_state_ = NOT_WRITING;
       predictor_->RecordWrittenDataFrame(frame.get());
-      frames_to_write.push_back(frame.release());
+      frames_to_write.push_back(frame.Pass());
       current_writing_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
     } else {
       if (frame->data.get() &&
@@ -158,7 +158,7 @@ int WebSocketDeflateStream::Deflate(ScopedVector<WebSocketFrame>* frames) {
       } else {
         DCHECK_EQ(WRITING_POSSIBLY_COMPRESSED_MESSAGE, writing_state_);
         bool final = frame->header.final;
-        frames_of_message.push_back(frame.release());
+        frames_of_message.push_back(frame.Pass());
         if (final) {
           int result = AppendPossiblyCompressedMessage(&frames_of_message,
                                                        &frames_to_write);
@@ -220,7 +220,7 @@ int WebSocketDeflateStream::AppendCompressedFrame(
 
   current_writing_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
   predictor_->RecordWrittenDataFrame(compressed.get());
-  frames_to_write->push_back(compressed.release());
+  frames_to_write->push_back(compressed.Pass());
   return OK;
 }
 
@@ -270,7 +270,7 @@ int WebSocketDeflateStream::AppendPossiblyCompressedMessage(
   compressed->header.payload_length = compressed_payload->size();
 
   predictor_->RecordWrittenDataFrame(compressed.get());
-  frames_to_write->push_back(compressed.release());
+  frames_to_write->push_back(compressed.Pass());
   return OK;
 }
 
@@ -287,7 +287,7 @@ int WebSocketDeflateStream::Inflate(ScopedVector<WebSocketFrame>* frames) {
              << " payload_length=" << frame->header.payload_length;
 
     if (!WebSocketFrameHeader::IsKnownDataOpCode(frame->header.opcode)) {
-      frames_to_output.push_back(frame.release());
+      frames_to_output.push_back(frame.Pass());
       continue;
     }
 
@@ -309,7 +309,7 @@ int WebSocketDeflateStream::Inflate(ScopedVector<WebSocketFrame>* frames) {
       if (frame->header.final)
         reading_state_ = NOT_READING;
       current_reading_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
-      frames_to_output.push_back(frame.release());
+      frames_to_output.push_back(frame.Pass());
     } else {
       DCHECK_EQ(reading_state_, READING_COMPRESSED_MESSAGE);
       if (frame->data.get() &&
@@ -353,7 +353,7 @@ int WebSocketDeflateStream::Inflate(ScopedVector<WebSocketFrame>* frames) {
                  << " final=" << inflated->header.final
                  << " reserved1=" << inflated->header.reserved1
                  << " payload_length=" << inflated->header.payload_length;
-        frames_to_output.push_back(inflated.release());
+        frames_to_output.push_back(inflated.Pass());
         current_reading_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
         if (is_final)
           break;

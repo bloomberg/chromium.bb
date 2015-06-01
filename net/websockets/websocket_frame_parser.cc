@@ -72,7 +72,7 @@ bool WebSocketFrameParser::Decode(
     scoped_ptr<WebSocketFrameChunk> frame_chunk =
         DecodeFramePayload(first_chunk);
     DCHECK(frame_chunk.get());
-    frame_chunks->push_back(frame_chunk.release());
+    frame_chunks->push_back(frame_chunk.Pass());
 
     if (current_frame_header_.get()) {
       DCHECK(current_read_pos_ == buffer_.size());

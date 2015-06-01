@@ -1127,9 +1127,9 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateSuccess) {
   ssl_data->cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
   ASSERT_TRUE(ssl_data->cert.get());
-  ssl_data_.push_back(ssl_data.release());
+  ssl_data_.push_back(ssl_data.Pass());
   ssl_data.reset(new SSLSocketDataProvider(ASYNC, OK));
-  ssl_data_.push_back(ssl_data.release());
+  ssl_data_.push_back(ssl_data.Pass());
   url_request_context_host_.AddRawExpectations(BuildNullSocketData());
   CreateAndConnectStandard("wss://localhost/", "localhost", "/",
                            NoSubProtocols(), "http://localhost", "", "");

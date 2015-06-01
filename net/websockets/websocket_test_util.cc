@@ -137,14 +137,14 @@ void WebSocketDeterministicMockClientSocketFactoryMaker::SetExpectations(
 void WebSocketDeterministicMockClientSocketFactoryMaker::AddRawExpectations(
     scoped_ptr<DeterministicSocketData> socket_data) {
   detail_->factory.AddSocketDataProvider(socket_data.get());
-  detail_->socket_data_vector.push_back(socket_data.release());
+  detail_->socket_data_vector.push_back(socket_data.Pass());
 }
 
 void
 WebSocketDeterministicMockClientSocketFactoryMaker::AddSSLSocketDataProvider(
     scoped_ptr<SSLSocketDataProvider> ssl_socket_data) {
   detail_->factory.AddSSLSocketDataProvider(ssl_socket_data.get());
-  detail_->ssl_socket_data_vector.push_back(ssl_socket_data.release());
+  detail_->ssl_socket_data_vector.push_back(ssl_socket_data.Pass());
 }
 
 WebSocketTestURLRequestContextHost::WebSocketTestURLRequestContextHost()

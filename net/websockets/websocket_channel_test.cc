@@ -334,7 +334,7 @@ ScopedVector<WebSocketFrame> CreateFrameVector(
       result_frame->data = new IOBuffer(frame_length);
       memcpy(result_frame->data->data(), source_frame.data, frame_length);
     }
-    result_frames.push_back(result_frame.release());
+    result_frames.push_back(result_frame.Pass());
   }
   return result_frames.Pass();
 }
@@ -2858,7 +2858,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ReadBinaryFramesAre8BitClean) {
   frame->data = new IOBuffer(kBinaryBlobSize);
   memcpy(frame->data->data(), kBinaryBlob, kBinaryBlobSize);
   ScopedVector<WebSocketFrame> frames;
-  frames.push_back(frame.release());
+  frames.push_back(frame.Pass());
   scoped_ptr<ReadableFakeWebSocketStream> stream(
       new ReadableFakeWebSocketStream);
   stream->PrepareRawReadFrames(

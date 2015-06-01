@@ -263,7 +263,7 @@ int WebSocketBasicStream::ConvertChunksToFrames(
     if (result != OK)
       return result;
     if (frame)
-      frames->push_back(frame.release());
+      frames->push_back(frame.Pass());
   }
   // All the elements of |frame_chunks| are now NULL, so there is no point in
   // calling delete on them all.
