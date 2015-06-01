@@ -344,6 +344,70 @@ remoting.Xhr.urlencodeParamHash = function(paramHash) {
   return '';
 };
 
+/**
+ * An object that will retry an XHR request upon network failures until
+ * |opt_maxRetryAttempts| is reached.
+ *
+ * According to http://www.w3.org/TR/XMLHttpRequest/#the-status-attribute, the
+ * HTTP status would be 0 when the STATE is UNSENT, which occurs when we have
+ * lost network connectivity.
+ *
+ * @param {remoting.Xhr.Params} params
+ * @param {number=} opt_maxRetryAttempts
+ * @constructor
+ */
+remoting.AutoRetryXhr = function(params, opt_maxRetryAttempts) {
+  /** @private */
+  this.xhrParams_ = params;
+  /**
+   * Retry for 60 x 250ms = 15s by default.
+   * @private
+   */
+  this.retryAttemptsRemaining_ =
+      Number.isInteger(opt_maxRetryAttempts) ? opt_maxRetryAttempts : 60;
+  /** @private */
+  this.deferred_ = new base.Deferred();
+};
+
+/**
+ * Calling this method multiple times will return the same promise and will not
+ * start a new request.
+ *
+ * @return {!Promise<!remoting.Xhr.Response>}
+ */
+remoting.AutoRetryXhr.prototype.start = function() {
+  this.doXhr_();
+  return this.deferred_.promise();
+};
+
+/** @private */
+remoting.AutoRetryXhr.prototype.onNetworkFailure_ = function() {
+  if (--this.retryAttemptsRemaining_ > 0) {
+    var timer = new base.OneShotTimer(this.doXhr_.bind(this), 250);
+  } else {
+    this.deferred_.reject(
+        new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE));
+  }
+};
+
+/** @private */
+remoting.AutoRetryXhr.prototype.doXhr_ = function() {
+  if (!base.isOnline()) {
+    this.deferred_.reject(
+        new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE));
+  }
+
+  var that = this;
+  var xhr = new remoting.Xhr(this.xhrParams_);
+  return xhr.start().then(function(response){
+    if (response.status === 0) {
+      that.onNetworkFailure_();
+    } else {
+      that.deferred_.resolve(response);
+    }
+  });
+};
+
 })();
 
 /**

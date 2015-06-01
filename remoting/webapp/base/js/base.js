@@ -782,6 +782,15 @@ base.timestamp = function() {
   return '[' + new Date().toISOString() + ']';
 };
 
+
+/**
+ * A online function that can be stubbed by unit tests.
+ * @return {boolean}
+ */
+base.isOnline = function() {
+  return navigator.onLine;
+};
+
 /**
  * Size the current window to fit its content.
  * @param {boolean=} opt_centerWindow If true, position the window in the

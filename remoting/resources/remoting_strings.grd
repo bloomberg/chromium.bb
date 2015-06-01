@@ -566,11 +566,8 @@
       <message desc="Button to restart the app after the connection is dropped." name="IDS_RESTART_BUTTON">
         Restart now
       </message>
-      <message desc="Text displayed in the connection dropped dialog indicating the time remaining in seconds till an auto restart." name="IDS_RESTART_TIMER">
-        Restarting in <ph name="TIMEOUT">$1<ex>0:30</ex></ph>
-      </message>
       <message desc="Message show to the user when the connection is dropped." name="IDS_ERROR_CONNECTION_DROPPED">
-        Connection to the remote server has been lost.  This app is not available offline.
+        A network error occurred. We will restart the app when your device is on-line again.
       </message>
 
       <if expr="is_android or is_ios">

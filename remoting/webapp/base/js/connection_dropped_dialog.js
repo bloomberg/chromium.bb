@@ -9,8 +9,6 @@ var remoting = remoting || {};
 
 'use strict';
 
-var COUNTDOWN_IN_SECONDS = 10;
-
 /**
  * A Dialog that is shown to the user when the connection is dropped.
  *
@@ -29,27 +27,13 @@ remoting.ConnectionDroppedDialog = function(rootElement, opt_windowShape) {
     windowShape: opt_windowShape
   });
 
-  /** @private {HTMLElement} */
-  this.countdownElement_ = rootElement.querySelector('.restart-timer');
-  this.countdownElement_.hidden = true;
-
-  /** @private {base.Disposable} */
-  this.reconnectTimer_ = null;
-
-  /** @private {number} */
-  this.countdown_;
-
-  /** @private {base.Disposable} */
-  this.onlineEventHook_;
+  /** @private */
+  this.disposables_ = new base.Disposables(this.dialog_);
 };
 
 remoting.ConnectionDroppedDialog.prototype.dispose = function() {
-  base.dispose(this.reconnectTimer_);
-  this.onlineEventHook_ = null;
-  base.dispose(this.reconnectTimer_);
-  this.reconnectTimer_ = null;
-  base.dispose(this.dialog_);
-  this.dialog_ = null;
+  base.dispose(this.disposables_);
+  this.disposables_ = null;
 };
 
 /**
@@ -61,7 +45,7 @@ remoting.ConnectionDroppedDialog.prototype.dispose = function() {
 remoting.ConnectionDroppedDialog.prototype.show = function() {
   var promise = this.dialog_.show();
   this.waitForOnline_().then(
-    this.startReconnectTimer_.bind(this)
+    this.dialog_.close.bind(this.dialog_, remoting.MessageDialog.Result.PRIMARY)
   );
   return promise.then(function(/** remoting.MessageDialog.Result */ result) {
     if (result === remoting.MessageDialog.Result.PRIMARY) {
@@ -77,34 +61,14 @@ remoting.ConnectionDroppedDialog.prototype.show = function() {
  * @return {Promise}
  */
 remoting.ConnectionDroppedDialog.prototype.waitForOnline_ = function() {
-  if (navigator.onLine) {
+  if (base.isOnline()) {
     return Promise.resolve();
   }
 
   var deferred = new base.Deferred();
-  this.onlineEventHook_ = new base.DomEventHook(
-      window, 'online', deferred.resolve.bind(deferred), false);
+  this.disposables_.add(new base.DomEventHook(
+      window, 'online', deferred.resolve.bind(deferred), false));
   return deferred.promise();
-};
-
-/** @private */
-remoting.ConnectionDroppedDialog.prototype.onCountDown_ = function() {
-  if (this.countdown_ === 0) {
-    base.dispose(this.reconnectTimer_);
-    this.dialog_.close(remoting.MessageDialog.Result.PRIMARY);
-  }
-
-  this.countdown_--;
-  var pad = (this.countdown_ < 10) ? '0:0' : '0:';
-  l10n.localizeElement(this.countdownElement_, pad + this.countdown_);
-};
-
-/** @private */
-remoting.ConnectionDroppedDialog.prototype.startReconnectTimer_ = function() {
-  this.countdown_ = COUNTDOWN_IN_SECONDS;
-  this.countdownElement_.hidden = false;
-  this.reconnectTimer_ =
-      new base.RepeatingTimer(this.onCountDown_.bind(this), 1000, true);
 };
 
 })();

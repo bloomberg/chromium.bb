@@ -29,6 +29,7 @@ QUnit.module('xhr', {
   },
   afterEach: function() {
     remoting.identity = null;
+    fakeXhrCtrl.restore();
   }
 });
 
@@ -397,6 +398,137 @@ QUnit.test('GET with non-HTTP response', function(assert) {
     assert.ok(response.isError());
   });
   fakeXhr.respond(0, {}, null);
+  return promise;
+});
+
+QUnit.module('AutoRetryXhr', {
+  beforeEach: function() {
+    fakeXhr = null;
+    fakeXhrCtrl = sinon.useFakeXMLHttpRequest();
+    fakeXhrCtrl.onCreate = function(/** sinon.FakeXhr */ xhr) {
+      fakeXhr = xhr;
+    };
+  },
+  afterEach: function() {
+    fakeXhrCtrl.restore();
+  }
+});
+
+/**
+ * A class allows you to specify a sequence of canned responses, to be returned
+ * in order in response to XHRs.
+ *
+ * @param {Array<Array>} cannedResponses
+ * @constructor
+ */
+var CannedXhrResponder = function(cannedResponses) {
+  /** @private */
+  this.mockXhr_ = sinon.useFakeXMLHttpRequest();
+  this.cannedResponses_ = cannedResponses;
+  this.mockXhr_.onCreate = this.onCreate_.bind(this);
+};
+
+/** @private */
+CannedXhrResponder.prototype.onCreate_ = function(/** sinon.FakeXhr */ xhr) {
+  var that = this;
+  var response = that.cannedResponses_.shift();
+  Promise.resolve().then(function() {
+    xhr.respond.apply(xhr, response);
+  });
+};
+
+CannedXhrResponder.prototype.dispose = function() {
+  this.mockXhr_.restore();
+};
+
+QUnit.test('retries on status code equals 0',
+  /**
+   * 'this' is not defined for jscompile, so it can't figure out the type of
+   * this.clock.
+   * @suppress {reportUnknownTypes|checkVars|checkTypes}
+   */
+  function(assert) {
+    this.clock.restore();
+    fakeXhrCtrl.restore();
+    var responder = new CannedXhrResponder([
+      [0, {}, null],
+      [0, {}, null],
+      [200, {}, 'body']
+    ]);
+    var promise = new remoting.AutoRetryXhr({
+      method: 'GET',
+      url: 'http://foo.com'
+    }).start().then(function(response) {
+      assert.ok(!response.isError());
+    }).catch(function(){
+      throw new Error('Expect retry to succeed.');
+    });
+    return promise;
+});
+
+QUnit.test('respects opt_maxRetryAttempts',
+  /**
+   * 'this' is not defined for jscompile, so it can't figure out the type of
+   * this.clock.
+   * @suppress {reportUnknownTypes|checkVars|checkTypes}
+   */
+  function(assert) {
+    this.clock.restore();
+    fakeXhrCtrl.restore();
+    var responder = new CannedXhrResponder([
+      [0, {}, null],
+      [0, {}, null],
+      [0, {}, null],
+      [200, {}, 'body']
+    ]);
+    var promise = new remoting.AutoRetryXhr({
+      method: 'GET',
+      url: 'http://foo.com'
+    }, 2).start().then(function(response) {
+      throw new Error('Expect retry to fail.');
+    }).catch(function(){
+      assert.ok(true);
+    });
+    return promise;
+});
+
+QUnit.test('does not retry when offline', function(assert) {
+  var isOnlineStub = sinon.stub(base, 'isOnline');
+  isOnlineStub.returns(false);
+
+  var promise = new remoting.AutoRetryXhr({
+    method: 'GET',
+    url: 'http://foo.com'
+  }).start().then(function(response) {
+    assert.ok(false, 'Expect failure');
+  }).catch(function(/** remoting.Error */ error) {
+    assert.equal(error.getTag(), remoting.Error.Tag.NETWORK_FAILURE);
+  });
+  isOnlineStub.restore();
+  return promise;
+});
+
+QUnit.test('resolves with successful responses', function(assert) {
+  var promise = new remoting.AutoRetryXhr({
+    method: 'GET',
+    url: 'http://foo.com'
+  }).start().then(function(response) {
+    assert.ok(!response.isError());
+    assert.equal(response.getText(), 'body');
+  });
+  fakeXhr.respond(200, {}, 'body');
+  return promise;
+});
+
+QUnit.test('rejects with failed responses', function(assert) {
+  var promise = new remoting.AutoRetryXhr({
+    method: 'GET',
+    url: 'http://foo.com'
+  }).start().then(function(response) {
+    assert.ok(response.isError());
+    assert.equal(response.getText(), 'failure');
+  });
+  fakeXhr.respond(500, {}, 'failure');
   return promise;
 });
 
