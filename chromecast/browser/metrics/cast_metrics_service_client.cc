@@ -15,7 +15,6 @@
 #include "chromecast/common/pref_names.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
-#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -33,7 +32,11 @@ namespace chromecast {
 namespace metrics {
 
 namespace {
+
 const int kStandardUploadIntervalMinutes = 5;
+
+const char kMetricsOldClientID[] = "user_experience_metrics.client_id";
+
 }  // namespace
 
 // static
@@ -72,8 +75,7 @@ scoped_ptr< ::metrics::ClientInfo> CastMetricsServiceClient::LoadClientInfo() {
   if (!pref_service_->GetBoolean(prefs::kMetricsIsNewClientID)) {
     // If the old client id exists, the device must be on pre-v1.2 build,
     // instead of just being FDR'ed.
-    if (!pref_service_->GetString(::metrics::prefs::kMetricsOldClientID)
-        .empty()) {
+    if (!pref_service_->GetString(kMetricsOldClientID).empty()) {
       // Force old client id to be regenerated. See b/9487011.
       client_info->client_id = base::GenerateGUID();
       pref_service_->SetBoolean(prefs::kMetricsIsNewClientID, true);

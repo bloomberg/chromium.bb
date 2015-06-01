@@ -124,14 +124,9 @@ void MetricsStateManager::ForceClientIdCreation() {
   client_id_ = base::GenerateGUID();
   local_state_->SetString(prefs::kMetricsClientID, client_id_);
 
-  if (local_state_->GetString(prefs::kMetricsOldClientID).empty()) {
-    // Record the timestamp of when the user opted in to UMA.
-    local_state_->SetInt64(prefs::kMetricsReportingEnabledTimestamp,
-                           base::Time::Now().ToTimeT());
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("UMA.ClientIdMigrated", true);
-  }
-  local_state_->ClearPref(prefs::kMetricsOldClientID);
+  // Record the timestamp of when the user opted in to UMA.
+  local_state_->SetInt64(prefs::kMetricsReportingEnabledTimestamp,
+                         base::Time::Now().ToTimeT());
 
   BackUpCurrentClientInfo();
 }
@@ -208,11 +203,6 @@ void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
   ClonedInstallDetector::RegisterPrefs(registry);
   CachingPermutedEntropyProvider::RegisterPrefs(registry);
-
-  // TODO(asvitkine): Remove these once a couple of releases have passed.
-  // http://crbug.com/357704
-  registry->RegisterStringPref(prefs::kMetricsOldClientID, std::string());
-  registry->RegisterIntegerPref(prefs::kMetricsOldLowEntropySource, 0);
 }
 
 void MetricsStateManager::BackUpCurrentClientInfo() {
@@ -283,7 +273,6 @@ int MetricsStateManager::GetLowEntropySource() {
   low_entropy_source_ = GenerateLowEntropySource();
   local_state_->SetInteger(prefs::kMetricsLowEntropySource,
                            low_entropy_source_);
-  local_state_->ClearPref(prefs::kMetricsOldLowEntropySource);
   CachingPermutedEntropyProvider::ClearCache(local_state_);
 
   return low_entropy_source_;

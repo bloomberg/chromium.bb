@@ -32,14 +32,6 @@ const char kMetricsLowEntropySource[] =
 // stored locally and never transmitted in metrics reports.
 const char kMetricsMachineId[] = "user_experience_metrics.machine_id";
 
-// Old client id and low entropy source values, cleared the first time this
-// version is launched.
-// TODO(asvitkine): Delete these after a few releases have gone by and old
-// values have been cleaned up. http://crbug.com/357704
-const char kMetricsOldClientID[] = "user_experience_metrics.client_id";
-const char kMetricsOldLowEntropySource[] =
-    "user_experience_metrics.low_entropy_source";
-
 // Array of strings that are each UMA logs that were not sent because the
 // browser terminated before these accumulated metrics could be sent.  These
 // logs typically include histograms and memory reports, as well as ongoing

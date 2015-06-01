@@ -44004,6 +44004,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="UMA.ClientIdMigrated" enum="BooleanMigrated">
+  <obsolete>
+    Removed in M45.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
     Recorded when the one-time UMA client id reset was performed (and the client
