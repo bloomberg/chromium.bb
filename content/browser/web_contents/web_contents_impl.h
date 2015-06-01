@@ -1112,6 +1112,9 @@ class CONTENT_EXPORT WebContentsImpl
   // The last published theme color.
   SkColor last_sent_theme_color_;
 
+  // Whether the first visually non-empty paint has occurred.
+  bool did_first_visually_non_empty_paint_;
+
   // Data for misc internal state ----------------------------------------------
 
   // When > 0, the WebContents is currently being captured (e.g., for

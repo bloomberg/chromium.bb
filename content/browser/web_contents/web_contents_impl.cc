@@ -315,6 +315,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
       has_accessed_initial_document_(false),
       theme_color_(SK_ColorTRANSPARENT),
       last_sent_theme_color_(SK_ColorTRANSPARENT),
+      did_first_visually_non_empty_paint_(false),
       capturer_count_(0),
       should_normally_be_visible_(true),
       is_being_destroyed_(false),
@@ -2735,6 +2736,8 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     if (rwhvb)
       rwhvb->OnDidNavigateMainFrameToNewPage();
 
+    did_first_visually_non_empty_paint_ = false;
+
     // Reset theme color on navigation to new page.
     theme_color_ = SK_ColorTRANSPARENT;
   }
@@ -2789,9 +2792,16 @@ bool WebContentsImpl::CanOverscrollContent() const {
 }
 
 void WebContentsImpl::OnThemeColorChanged(SkColor theme_color) {
-  // Update the theme color. This is to be published to observers on visually
-  // non empty paint.
+  // Update the theme color. This is to be published to observers after the
+  // first visually non-empty paint.
   theme_color_ = theme_color;
+
+  if (did_first_visually_non_empty_paint_ &&
+      last_sent_theme_color_ != theme_color_) {
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                      DidChangeThemeColor(theme_color_));
+    last_sent_theme_color_ = theme_color_;
+  }
 }
 
 void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
@@ -3189,6 +3199,8 @@ void WebContentsImpl::OnMediaPausedNotification(int64 player_cookie) {
 void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFirstVisuallyNonEmptyPaint());
+
+  did_first_visually_non_empty_paint_ = true;
 
   if (theme_color_ != last_sent_theme_color_) {
     // Theme color should have updated by now if there was one.

@@ -678,13 +678,7 @@ public class DocumentActivity extends CompositorChromeActivity {
 
             @Override
             public void onSSLStateUpdated(Tab tab) {
-                int securityLevel = tab.getSecurityLevel();
-                if (securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
-                        || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING
-                        || securityLevel
-                           == ConnectionSecurityHelperSecurityLevel.SECURITY_POLICY_WARNING) {
-                    resetThemeColorAndIcon();
-                }
+                if (hasSecurityWarningOrError(tab)) resetThemeColorAndIcon();
             }
 
             @Override
@@ -705,6 +699,7 @@ public class DocumentActivity extends CompositorChromeActivity {
 
             @Override
             public void onDidChangeThemeColor(int color) {
+                if (hasSecurityWarningOrError(mDocumentTab)) return;
                 if (color == Color.TRANSPARENT) color = mDefaultThemeColor;
 
                 // Ignore any transparency value.
@@ -748,6 +743,14 @@ public class DocumentActivity extends CompositorChromeActivity {
             @Override
             public void onSetCoveredByChildActivity() {
                 mTabModel.updateEntry(getIntent(), mDocumentTab);
+            }
+
+            private boolean hasSecurityWarningOrError(Tab tab) {
+                int securityLevel = tab.getSecurityLevel();
+                return securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR
+                        || securityLevel == ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING
+                        || securityLevel
+                                   == ConnectionSecurityHelperSecurityLevel.SECURITY_POLICY_WARNING;
             }
         });
 
