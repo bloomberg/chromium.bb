@@ -21,9 +21,9 @@ TEST(SSLClientSessionCacheOpenSSLTest, Basic) {
   ScopedSSL_SESSION session1(SSL_SESSION_new());
   ScopedSSL_SESSION session2(SSL_SESSION_new());
   ScopedSSL_SESSION session3(SSL_SESSION_new());
-  EXPECT_EQ(1u, session1->references);
-  EXPECT_EQ(1u, session2->references);
-  EXPECT_EQ(1u, session3->references);
+  EXPECT_EQ(1, session1->references);
+  EXPECT_EQ(1, session2->references);
+  EXPECT_EQ(1, session3->references);
 
   EXPECT_EQ(nullptr, cache.Lookup("key1"));
   EXPECT_EQ(nullptr, cache.Lookup("key2"));
@@ -39,17 +39,17 @@ TEST(SSLClientSessionCacheOpenSSLTest, Basic) {
   EXPECT_EQ(session2.get(), cache.Lookup("key2"));
   EXPECT_EQ(2u, cache.size());
 
-  EXPECT_EQ(2u, session1->references);
-  EXPECT_EQ(2u, session2->references);
+  EXPECT_EQ(2, session1->references);
+  EXPECT_EQ(2, session2->references);
 
   cache.Insert("key1", session3.get());
   EXPECT_EQ(session3.get(), cache.Lookup("key1"));
   EXPECT_EQ(session2.get(), cache.Lookup("key2"));
   EXPECT_EQ(2u, cache.size());
 
-  EXPECT_EQ(1u, session1->references);
-  EXPECT_EQ(2u, session2->references);
-  EXPECT_EQ(2u, session3->references);
+  EXPECT_EQ(1, session1->references);
+  EXPECT_EQ(2, session2->references);
+  EXPECT_EQ(2, session3->references);
 
   cache.Flush();
   EXPECT_EQ(nullptr, cache.Lookup("key1"));
@@ -57,9 +57,9 @@ TEST(SSLClientSessionCacheOpenSSLTest, Basic) {
   EXPECT_EQ(nullptr, cache.Lookup("key3"));
   EXPECT_EQ(0u, cache.size());
 
-  EXPECT_EQ(1u, session1->references);
-  EXPECT_EQ(1u, session2->references);
-  EXPECT_EQ(1u, session3->references);
+  EXPECT_EQ(1, session1->references);
+  EXPECT_EQ(1, session2->references);
+  EXPECT_EQ(1, session3->references);
 }
 
 // Test that a session may be inserted at two different keys. This should never
@@ -69,7 +69,7 @@ TEST(SSLClientSessionCacheOpenSSLTest, DoubleInsert) {
   SSLClientSessionCacheOpenSSL cache(config);
 
   ScopedSSL_SESSION session(SSL_SESSION_new());
-  EXPECT_EQ(1u, session->references);
+  EXPECT_EQ(1, session->references);
 
   EXPECT_EQ(nullptr, cache.Lookup("key1"));
   EXPECT_EQ(nullptr, cache.Lookup("key2"));
@@ -80,21 +80,21 @@ TEST(SSLClientSessionCacheOpenSSLTest, DoubleInsert) {
   EXPECT_EQ(nullptr, cache.Lookup("key2"));
   EXPECT_EQ(1u, cache.size());
 
-  EXPECT_EQ(2u, session->references);
+  EXPECT_EQ(2, session->references);
 
   cache.Insert("key2", session.get());
   EXPECT_EQ(session.get(), cache.Lookup("key1"));
   EXPECT_EQ(session.get(), cache.Lookup("key2"));
   EXPECT_EQ(2u, cache.size());
 
-  EXPECT_EQ(3u, session->references);
+  EXPECT_EQ(3, session->references);
 
   cache.Flush();
   EXPECT_EQ(nullptr, cache.Lookup("key1"));
   EXPECT_EQ(nullptr, cache.Lookup("key2"));
   EXPECT_EQ(0u, cache.size());
 
-  EXPECT_EQ(1u, session->references);
+  EXPECT_EQ(1, session->references);
 }
 
 // Tests that the session cache's size is correctly bounded.
