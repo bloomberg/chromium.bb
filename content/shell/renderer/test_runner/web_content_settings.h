@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_PERMISSIONS_H_
-#define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_PERMISSIONS_H_
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_CONTENT_SETTINGS_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_CONTENT_SETTINGS_H_
 
 #include "base/macros.h"
 #include "third_party/WebKit/public/web/WebContentSettingsClient.h"
@@ -64,4 +64,4 @@ class WebContentSettings : public blink::WebContentSettingsClient {
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_PERMISSIONS_H_
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEB_CONTENT_SETTINGS_H_
