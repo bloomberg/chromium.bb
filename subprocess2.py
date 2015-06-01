@@ -40,7 +40,7 @@ class CalledProcessError(subprocess.CalledProcessError):
     self.cwd = cwd
 
   def __str__(self):
-    out = 'Command %s returned non-zero exit status %s' % (
+    out = 'Command %r returned non-zero exit status %s' % (
         ' '.join(self.cmd), self.returncode)
     if self.cwd:
       out += ' in ' + self.cwd

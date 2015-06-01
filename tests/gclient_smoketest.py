@@ -517,8 +517,8 @@ class GClientSmokeGIT(GClientSmokeBase):
         ('running', self.root_dir),                 # pre-deps hook
         ('running', self.root_dir),                 # pre-deps hook (fails)
     ]
-    expected_stderr = ('Error: Command /usr/bin/python -c import sys; '
-                       'sys.exit(1) returned non-zero exit status 1 in %s\n'
+    expected_stderr = ("Error: Command '/usr/bin/python -c import sys; "
+                       "sys.exit(1)' returned non-zero exit status 1 in %s\n"
                        % self.root_dir)
     stdout, stderr, retcode = self.gclient(['sync', '--deps', 'mac', '--jobs=1',
                                             '--revision',
