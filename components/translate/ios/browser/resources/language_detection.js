@@ -77,7 +77,7 @@ __gCrWeb.languageDetection['getTextContent'] = function(node, maxLen) {
 
   var txt = '';
   // Formatting and filtering.
-  if (node.nodeType === document.ELEMENT_NODE) {
+  if (node.nodeType === Node.ELEMENT_NODE) {
     // Reject non-text nodes such as scripts.
     if (__gCrWeb.languageDetection.nonTextNodeNames[node.nodeName]) {
       return '';
@@ -103,7 +103,7 @@ __gCrWeb.languageDetection['getTextContent'] = function(node, maxLen) {
       txt += __gCrWeb.languageDetection.getTextContent(
           node.childNodes[childIdx], maxLen - txt.length);
     }
-  } else if (node.nodeType === document.TEXT_NODE && node.textContent) {
+  } else if (node.nodeType === Node.TEXT_NODE && node.textContent) {
     txt += node.textContent.substring(0, maxLen - txt.length);
   }
 

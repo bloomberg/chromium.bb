@@ -695,7 +695,7 @@ __gCrWeb.autofill.webFormElementToFormData = function(
  * @return {boolean} Whether the tag of node is tag.
  */
 __gCrWeb.autofill.hasTagName = function(node, tag) {
-  return node.nodeType === document.ELEMENT_NODE &&
+  return node.nodeType === Node.ELEMENT_NODE &&
          /** @type {Element} */(node).tagName === tag.toUpperCase();
 };
 
@@ -811,17 +811,16 @@ __gCrWeb.autofill.findChildTextInner = function(node, depth) {
   }
 
   // Skip over comments.
-  if (node.nodeType === document.COMMENT_NODE) {
+  if (node.nodeType === Node.COMMENT_NODE) {
     return __gCrWeb.autofill.findChildTextInner(node.nextSibling, depth - 1);
   }
 
-  if (node.nodeType !== document.ELEMENT_NODE &&
-      node.nodeType !== document.TEXT_NODE) {
+  if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.TEXT_NODE) {
     return '';
   }
 
   // Ignore elements known not to contain inferable labels.
-  if (node.nodeType === document.ELEMENT_NODE) {
+  if (node.nodeType === Node.ELEMENT_NODE) {
     if (node.tagName === 'OPTION' ||
         node.tagName === 'SCRIPT' ||
         node.tagName === 'NOSCRIPT') {
@@ -837,7 +836,7 @@ __gCrWeb.autofill.findChildTextInner = function(node, depth) {
 
   // Extract the text exactly at this node.
   var nodeText = __gCrWeb.autofill.nodeValue(node);
-  if (node.nodeType === document.TEXT_NODE && !nodeText) {
+  if (node.nodeType === Node.TEXT_NODE && !nodeText) {
     // In the C++ version, this text node would have been stripped completely.
     // Just pass the buck.
     return __gCrWeb.autofill.findChildTextInner(node.nextSibling, depth);
@@ -847,7 +846,7 @@ __gCrWeb.autofill.findChildTextInner = function(node, depth) {
   // Preserve inter-element whitespace separation.
   var childText =
       __gCrWeb.autofill.findChildTextInner(node.firstChild, depth - 1);
-  var addSpace = node.nodeType === document.TEXT_NODE && !nodeText;
+  var addSpace = node.nodeType === Node.TEXT_NODE && !nodeText;
   // Emulate apparently incorrect Chromium behavior tracked in crbug 239819.
   addSpace = false;
   nodeText = __gCrWeb.autofill.combineAndCollapseWhitespace(nodeText,
@@ -857,7 +856,7 @@ __gCrWeb.autofill.findChildTextInner = function(node, depth) {
   // Again, preserve inter-element whitespace separation.
   var siblingText =
       __gCrWeb.autofill.findChildTextInner(node.nextSibling, depth - 1);
-  addSpace = node.nodeType === document.TEXT_NODE && !nodeText;
+  addSpace = node.nodeType === Node.TEXT_NODE && !nodeText;
   // Emulate apparently incorrect Chromium behavior tracked in crbug 239819.
   addSpace = false;
   nodeText = __gCrWeb.autofill.combineAndCollapseWhitespace(nodeText,
@@ -880,10 +879,10 @@ __gCrWeb.autofill.findChildTextInner = function(node, depth) {
  * @return {string} The child text.
  */
 __gCrWeb.autofill.findChildText = function(node) {
-  if (node.nodeType === document.TEXT_NODE)
+  if (node.nodeType === Node.TEXT_NODE)
     return __gCrWeb.autofill.nodeValue(node);
-  var child = node.firstChild;
 
+  var child = node.firstChild;
   var kChildSearchDepth = 10;
   var nodeText = __gCrWeb.autofill.findChildTextInner(child, kChildSearchDepth);
   nodeText = nodeText.trim();
@@ -922,13 +921,12 @@ __gCrWeb.autofill.inferLabelFromPrevious = function(element) {
 
     // Skip over comments.
     var nodeType = previous.nodeType;
-    if (nodeType === document.COMMENT_NODE_NODE) {
+    if (nodeType === Node.COMMENT_NODE) {
       continue;
     }
 
     // Otherwise, only consider normal HTML elements and their contents.
-    if (nodeType != document.TEXT_NODE &&
-        nodeType != document.ELEMENT_NODE) {
+    if (nodeType != Node.TEXT_NODE && nodeType != Node.ELEMENT_NODE) {
       break;
     }
 
@@ -936,15 +934,14 @@ __gCrWeb.autofill.inferLabelFromPrevious = function(element) {
     // Coalesce any text contained in multiple consecutive
     //  (a) plain text nodes or
     //  (b) inline HTML elements that are essentially equivalent to text nodes.
-    if (nodeType === document.TEXT_NODE ||
+    if (nodeType === Node.TEXT_NODE ||
         __gCrWeb.autofill.hasTagName(previous, 'b') ||
         __gCrWeb.autofill.hasTagName(previous, 'strong') ||
         __gCrWeb.autofill.hasTagName(previous, 'span') ||
         __gCrWeb.autofill.hasTagName(previous, 'font')) {
       var value = __gCrWeb.autofill.findChildText(previous);
       // A text node's value will be empty if it is for a line break.
-      var addSpace = nodeType === document.TEXT_NODE &&
-          value.length === 0;
+      var addSpace = nodeType === Node.TEXT_NODE && value.length === 0;
       inferredLabel =
           __gCrWeb.autofill.combineAndCollapseWhitespace(
               value, inferredLabel, addSpace);
@@ -1013,7 +1010,7 @@ __gCrWeb.autofill.inferLabelFromListItem = function(element) {
 
   var parentNode = element.parentNode;
   while (parentNode &&
-         parentNode.nodeType === document.ELEMENT_NODE &&
+         parentNode.nodeType === Node.ELEMENT_NODE &&
          !__gCrWeb.autofill.hasTagName(parentNode, 'li')) {
     parentNode = parentNode.parentNode;
   }
@@ -1046,7 +1043,7 @@ __gCrWeb.autofill.inferLabelFromTableColumn = function(element) {
 
   var parentNode = element.parentNode;
   while (parentNode &&
-         parentNode.nodeType === document.ELEMENT_NODE &&
+         parentNode.nodeType === Node.ELEMENT_NODE &&
          !__gCrWeb.autofill.hasTagName(parentNode, 'td')) {
     parentNode = parentNode.parentNode;
   }
@@ -1089,7 +1086,7 @@ __gCrWeb.autofill.inferLabelFromTableRow = function(element) {
 
   var parentNode = element.parentNode;
   while (parentNode &&
-         parentNode.nodeType === document.ELEMENT_NODE &&
+         parentNode.nodeType === Node.ELEMENT_NODE &&
          !__gCrWeb.autofill.hasTagName(parentNode, 'tr')) {
     parentNode = parentNode.parentNode;
   }
@@ -1181,7 +1178,7 @@ __gCrWeb.autofill.inferLabelFromDefinitionList = function(element) {
 
   var parentNode = element.parentNode;
   while (parentNode &&
-         parentNode.nodeType === document.ELEMENT_NODE &&
+         parentNode.nodeType === Node.ELEMENT_NODE &&
          !__gCrWeb.autofill.hasTagName(parentNode, 'dd')) {
     parentNode = parentNode.parentNode;
   }
@@ -1192,8 +1189,7 @@ __gCrWeb.autofill.inferLabelFromDefinitionList = function(element) {
 
   // Skip by any intervening text nodes.
   var previous = parentNode.previousSibling;
-  while (previous &&
-         previous.nodeType === document.TEXT_NODE) {
+  while (previous && previous.nodeType === Node.TEXT_NODE) {
     previous = previous.previousSibling;
   }
 

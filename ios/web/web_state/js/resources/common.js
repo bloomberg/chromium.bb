@@ -50,7 +50,7 @@ new function() {
     /** @type {Node} */
     var node = element;
     while (node && node !== document) {
-      if (node.nodeType === document.ELEMENT_NODE) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
         var style = window.getComputedStyle(/** @type {Element} */(node));
         if (style.display === 'none' || style.visibility === 'hidden') {
           return false;
