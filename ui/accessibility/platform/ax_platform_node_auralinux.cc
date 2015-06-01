@@ -188,6 +188,9 @@ static AtkStateSet* ax_platform_node_auralinux_ref_state_set(
 //
 
 static gfx::Point FindAtkObjectParentCoords(AtkObject* atk_object) {
+  if (!atk_object)
+    return gfx::Point(0, 0);
+
   if (atk_object_get_role(atk_object) == ATK_ROLE_WINDOW) {
     int x, y;
     atk_component_get_extents(ATK_COMPONENT(atk_object),
@@ -501,12 +504,13 @@ void AXPlatformNodeAuraLinux::SetExtentsRelativeToAtkCoordinateType(
     *height = extents.height();
 
   if (coord_type == ATK_XY_WINDOW) {
-    AtkObject* atk_object = GetParent();
-    gfx::Point window_coords = FindAtkObjectParentCoords(atk_object);
-    if (x)
-      *x -= window_coords.x();
-    if (y)
-      *y -= window_coords.y();
+    if (AtkObject* atk_object = GetParent()) {
+      gfx::Point window_coords = FindAtkObjectParentCoords(atk_object);
+      if (x)
+        *x -= window_coords.x();
+      if (y)
+        *y -= window_coords.y();
+    }
   }
 }
 
