@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_AUTHENTICATION_CONSTANTS_H_
-#define IOS_CHROME_BROWSER_AUTHENTICATION_CONSTANTS_H_
+#ifndef IOS_CHROME_BROWSER_SIGNIN_CONSTANTS_H_
+#define IOS_CHROME_BROWSER_SIGNIN_CONSTANTS_H_
 
 #include <Foundation/Foundation.h>
 
@@ -72,7 +72,7 @@ typedef enum {
   POST_SIGNIN_ACTION_START_SYNC,
 } PostSignInAction;
 
-namespace authentication_ui {
+namespace signin_ui {
 
 // Completion callback for a sign-in operation.
 // |signedIn| is true if the operation was successful and the user is now
@@ -82,6 +82,6 @@ typedef void (^CompletionCallback)(
     BOOL signedIn,
     ios::ChromeBrowserState* signedInBrowserState);
 
-}  // namespace authentication_ui
+}  // namespace signin_ui
 
-#endif  // IOS_CHROME_BROWSER_AUTHENTICATION_CONSTANTS_H_
+#endif  // IOS_CHROME_BROWSER_SIGNIN_CONSTANTS_H_

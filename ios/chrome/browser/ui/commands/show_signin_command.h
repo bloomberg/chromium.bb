@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/authentication/constants.h"
+#include "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 
 typedef void (^ShowSigninCommandCompletionCallback)(BOOL succeeded,
