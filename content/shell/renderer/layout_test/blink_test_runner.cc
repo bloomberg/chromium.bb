@@ -36,6 +36,7 @@
 #include "content/shell/renderer/layout_test/gc_controller.h"
 #include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
 #include "content/shell/renderer/layout_test/leak_detector.h"
+#include "content/shell/renderer/layout_test/test_plugin_placeholder.h"
 #include "content/shell/renderer/test_runner/app_banner_client.h"
 #include "content/shell/renderer/test_runner/gamepad_controller.h"
 #include "content/shell/renderer/test_runner/mock_screen_orientation_client.h"
@@ -672,12 +673,19 @@ void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
   callback.Run(reply == blink::WebAppBannerPromptReply::Cancel);
 }
 
-  void BlinkTestRunner::ResolveBeforeInstallPromptPromise(
+void BlinkTestRunner::ResolveBeforeInstallPromptPromise(
       int request_id, const std::string& platform) {
   WebTestInterfaces* interfaces =
       LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->GetTestInterfaces()->GetAppBannerClient()->ResolvePromise(
       request_id, platform);
+}
+
+blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
+    blink::WebLocalFrame* frame, const blink::WebPluginParams& params) {
+  if (params.mimeType == "application/x-plugin-placeholder-test")
+    return (new TestPluginPlaceholder(frame, params))->plugin();
+  return 0;
 }
 
 // RenderViewObserver  --------------------------------------------------------

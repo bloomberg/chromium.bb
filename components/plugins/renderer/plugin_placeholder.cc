@@ -4,6 +4,7 @@
 
 #include "components/plugins/renderer/plugin_placeholder.h"
 
+#include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_frame.h"
 
 namespace plugins {
@@ -19,7 +20,9 @@ PluginPlaceholder::PluginPlaceholder(content::RenderFrame* render_frame,
       frame_(frame),
       plugin_params_(params),
       plugin_(WebViewPlugin::Create(this,
-                                    render_frame->GetWebkitPreferences(),
+                                    render_frame
+                                        ? render_frame->GetWebkitPreferences()
+                                        : content::WebPreferences(),
                                     html_data,
                                     placeholderDataUrl)) {
   DCHECK(placeholderDataUrl.is_valid())

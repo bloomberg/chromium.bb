@@ -26,6 +26,9 @@ class WebGamepad;
 class WebGamepads;
 class WebHistoryItem;
 class WebLayer;
+class WebLocalFrame;
+class WebPlugin;
+struct WebPluginParams;
 class WebURLResponse;
 class WebView;
 struct WebRect;
@@ -250,6 +253,10 @@ class WebTestDelegate {
   virtual void ResolveBeforeInstallPromptPromise(
       int request_id,
       const std::string& platform) = 0;
+
+  virtual blink::WebPlugin* CreatePluginPlaceholder(
+    blink::WebLocalFrame* frame,
+    const blink::WebPluginParams& params) = 0;
 };
 
 }  // namespace content
