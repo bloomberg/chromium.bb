@@ -72,24 +72,18 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
     canvas->FillRect(entry_rect, kHoveredBackgroundColor);
 
   const bool is_rtl = controller_->IsRTL();
-  const int value_text_width =
-      gfx::GetStringWidth(controller_->GetElidedValueAt(index),
-                          controller_->GetValueFontListForRow(index));
-  const int value_content_x = is_rtl ?
-      entry_rect.width() - value_text_width - kEndPadding : kEndPadding;
-
+  const int text_align =
+      is_rtl ? gfx::Canvas::TEXT_ALIGN_RIGHT : gfx::Canvas::TEXT_ALIGN_LEFT;
+  gfx::Rect value_rect = entry_rect;
+  value_rect.Inset(kEndPadding, 0);
   canvas->DrawStringRectWithFlags(
       controller_->GetElidedValueAt(index),
       controller_->GetValueFontListForRow(index),
       controller_->IsWarning(index) ? kWarningTextColor : kValueTextColor,
-      gfx::Rect(value_content_x,
-                entry_rect.y(),
-                value_text_width,
-                entry_rect.height()),
-      gfx::Canvas::TEXT_ALIGN_CENTER);
+      value_rect, text_align);
 
   // Use this to figure out where all the other Autofill items should be placed.
-  int x_align_left = is_rtl ? kEndPadding : entry_rect.width() - kEndPadding;
+  int x_align_left = is_rtl ? kEndPadding : entry_rect.right() - kEndPadding;
 
   // Draw the Autofill icon, if one exists
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -116,14 +110,10 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
     x_align_left -= label_width;
 
   canvas->DrawStringRectWithFlags(
-      controller_->GetElidedLabelAt(index),
-      controller_->GetLabelFontList(),
+      controller_->GetElidedLabelAt(index), controller_->GetLabelFontList(),
       kItemTextColor,
-      gfx::Rect(x_align_left,
-                entry_rect.y(),
-                label_width,
-                entry_rect.height()),
-      gfx::Canvas::TEXT_ALIGN_CENTER);
+      gfx::Rect(x_align_left, entry_rect.y(), label_width, entry_rect.height()),
+      text_align);
 }
 
 AutofillPopupView* AutofillPopupView::Create(
