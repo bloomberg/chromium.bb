@@ -498,6 +498,10 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
       StartsWithASCII(board, "daisy", true /* case_sensitive */)) {
     timeout *= 2;
   }
+// Times out on ASAN bots.
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
+  timeout *= 2;
+#endif
 #endif
   lock_fail_timer_.Start(
       FROM_HERE, timeout, this, &LockStateController::OnLockFailTimeout);
