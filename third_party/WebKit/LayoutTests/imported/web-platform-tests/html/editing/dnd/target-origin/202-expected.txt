@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL allowTargetOrigin with fake dataTransfer should block events Failed to execute 'createEvent' on 'Document': The provided event type ('DragEvent') is invalid.
+Harness: the test ran to completion.
+

@@ -1,0 +1,6 @@
+ 
+This is a testharness.js-based test.
+FAIL focusing on a focusable element fires a focus event at the element assert_true: focus event is trusted expected true got undefined
+FAIL focusing on a focusable element fires a blur event at the previous focussed element assert_true: blur event is trusted expected true got undefined
+Harness: the test ran to completion.
+

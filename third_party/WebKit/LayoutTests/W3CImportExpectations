@@ -88,7 +88,6 @@ imported/web-platform-tests/geolocation-API [ Skip ]
 imported/web-platform-tests/hr-time [ Skip ]
 ## Owners: tkent
 # imported/web-platform-tests/html [ Pass ]
-imported/web-platform-tests/html/editing [ Skip ]
 imported/web-platform-tests/html/iana [ Skip ]
 imported/web-platform-tests/html/infrastructure [ Skip ]
 imported/web-platform-tests/html/introduction [ Skip ]
@@ -174,6 +173,7 @@ imported/web-platform-tests/html/dom/reflection-text.html [ Skip ]
 imported/web-platform-tests/html/browsers/browsing-the-web/read-text/load-text-plain.html [ Skip ]
 imported/web-platform-tests/html/browsers/history/the-location-interface/location-stringifier.html [ Skip ]
 imported/web-platform-tests/html/dom/documents/dom-tree-accessors/document.title-07.html [ Skip ]
+imported/web-platform-tests/html/editing/dnd/the-draggable-attribute/draggable_attribute.html [ Skip ]
 
 # crbug.com/490940: Needs to load extra HTML resources.
 imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/001.html [ Skip ]
@@ -203,6 +203,9 @@ imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/016.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-03.html [ Skip ]
 
+# crbug.com/493537: Need to support SVG reference tests
+imported/web-platform-tests/html/editing/the-hidden-attribute/hidden-2.svg [ Skip ]
+
 # https://github.com/w3c/web-platform-tests/issues/1861: A function can be
 # called before it's defined.
 # crbug.com/493465: Requires wptserve
@@ -211,6 +214,9 @@ imported/web-platform-tests/html/browsers/the-window-object/security-window/wind
 # https://github.com/w3c/web-platform-tests/issues/1862:
 # The test doesn't handle ':' after a drive letter in file: URL on Windows.
 imported/web-platform-tests/html/browsers/history/the-location-interface/location_hostname.html [ Skip ]
+
+# It contains only manual SVG tests.
+imported/web-platform-tests/html/editing/dnd/svg [ Skip ]
 
 # these contain an extraneous debug log div ..
 imported/web-platform-tests/html-imports/link-import-null.html [ Skip ]

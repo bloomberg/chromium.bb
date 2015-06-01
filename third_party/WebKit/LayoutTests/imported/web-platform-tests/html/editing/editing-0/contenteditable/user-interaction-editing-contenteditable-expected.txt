@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+PASS no contentEditable attribute 
+FAIL empty contentEditable attribute assert_true: check for testElement.isContentEditable value expected true got false
+FAIL set contentEditable = "true" assert_true: check for testElement.isContentEditable value expected true got false
+PASS set contentEditable = "false" 
+PASS set contentEditable = "inherit" 
+FAIL set parent element contentEditable = "true" assert_true: check for testElement.isContentEditable value expected true got false
+PASS set parent element contentEditable = "false" 
+Harness: the test ran to completion.
+
