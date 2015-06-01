@@ -1070,7 +1070,7 @@ You are signing in with a managed account and giving its administrator control o
 
       <!-- DownloadOverwriteInfoBar -->
       <message name="IDS_DOWNLOAD_OVERWRITE_INFOBAR_TEXT" desc="Prompt text for the confirmation dialog asking whether the user really wants to replace a file when there already exists a file with the same name">
-        Do you want to replace the existing <ph name="FILE_NAME">^1<ex>specialfile.pdf</ex></ph> in your <ph name="DIRECTORY_NAME">^2<ex>Downloads</ex></ph> directory?
+        Do you want to replace the existing <ph name="FILE_NAME">^1<ex>specialfile.pdf</ex></ph> in <ph name="DIRECTORY_NAME">^2<ex>Downloads</ex></ph>?
       </message>
       <message name="IDS_DOWNLOAD_OVERWRITE_INFOBAR_REPLACE_FILE_BUTTON" desc="Label for choosing 'Replace file' in the prompt for replacing a file.[CHAR-LIMIT=32]">
         Replace file
