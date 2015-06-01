@@ -101,6 +101,8 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
 - (void)languageSelectionDone;
 // Dismisses the language selection view.
 - (void)dismissLanguageSelectionView;
+// Changes the text on the view to match the language.
+- (void)updateInfobarLabelOnView:(UIView<InfoBarViewProtocol>*)view;
 
 @end
 
@@ -137,7 +139,7 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
     [infoBarView addLeftIcon:icon.ToUIImage()];
 
   // Main text.
-  [self updateInfobarLabel];
+  [self updateInfobarLabelOnView:infoBarView];
 
   // Close button.
   [infoBarView addCloseButtonWithTag:TranslateInfoBarIOSTag::BEFORE_DENY
@@ -155,7 +157,7 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
   return infoBarView;
 }
 
-- (void)updateInfobarLabel {
+- (void)updateInfobarLabelOnView:(UIView<InfoBarViewProtocol>*)view {
   NSString* originalLanguage =
       base::SysUTF16ToNSString(_translateInfoBarDelegate->language_name_at(
           _translateInfoBarDelegate->original_language_index()));
@@ -163,17 +165,16 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
       base::SysUTF16ToNSString(_translateInfoBarDelegate->language_name_at(
           _translateInfoBarDelegate->target_language_index()));
   base::string16 originalLanguageWithLink =
-      base::SysNSStringToUTF16([[self.view class]
+      base::SysNSStringToUTF16([[view class]
           stringAsLink:originalLanguage
                    tag:TranslateInfoBarIOSTag::BEFORE_SOURCE_LANGUAGE]);
-  base::string16 targetLanguageWithLink =
-      base::SysNSStringToUTF16([[self.view class]
-          stringAsLink:targetLanguage
-                   tag:TranslateInfoBarIOSTag::BEFORE_TARGET_LANGUAGE]);
+  base::string16 targetLanguageWithLink = base::SysNSStringToUTF16([[view class]
+      stringAsLink:targetLanguage
+               tag:TranslateInfoBarIOSTag::BEFORE_TARGET_LANGUAGE]);
   NSString* label =
       l10n_util::GetNSStringF(IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE_IOS,
                               originalLanguageWithLink, targetLanguageWithLink);
-  [self.view addLabel:label target:self action:@selector(infobarLinkDidPress:)];
+  [view addLabel:label target:self action:@selector(infobarLinkDidPress:)];
 }
 
 - (void)languageSelectionDone {
@@ -188,7 +189,7 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
       selectedRow != _translateInfoBarDelegate->original_language_index()) {
     _translateInfoBarDelegate->UpdateTargetLanguageIndex(selectedRow);
   }
-  [self updateInfobarLabel];
+  [self updateInfobarLabelOnView:self.view];
   [self dismissLanguageSelectionView];
 }
 
