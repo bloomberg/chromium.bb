@@ -50,6 +50,10 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   void GetRegistrations(BackgroundSyncPeriodicity periodicity,
                         int64_t serviceWorkerRegistrationId,
                         const GetRegistrationsCallback& callback) override;
+  void GetPermissionStatus(
+      BackgroundSyncPeriodicity periodicity,
+      int64_t serviceWorkerRegistrationId,
+      const GetPermissionStatusCallback& callback) override;
 
   void OnRegisterResult(
       const RegisterCallback& callback,

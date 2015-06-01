@@ -47,6 +47,10 @@ class BackgroundSyncProvider : public blink::WebSyncProvider {
       blink::WebSyncRegistration::Periodicity periodicity,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncGetRegistrationsCallbacks* callbacks);
+  void getPermissionStatus(
+      blink::WebSyncRegistration::Periodicity periodicity,
+      blink::WebServiceWorkerRegistration* service_worker_registration,
+      blink::WebSyncGetPermissionStatusCallbacks* callbacks);
 
  private:
   // Callback handlers
@@ -65,6 +69,10 @@ class BackgroundSyncProvider : public blink::WebSyncProvider {
       scoped_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
       BackgroundSyncError error,
       const mojo::Array<SyncRegistrationPtr>& registrations);
+  void GetPermissionStatusCallback(
+      scoped_ptr<blink::WebSyncGetPermissionStatusCallbacks> callbacks,
+      BackgroundSyncError error,
+      PermissionStatus status);
 
   // Helper method that returns an initialized BackgroundSyncServicePtr.
   BackgroundSyncServicePtr& GetBackgroundSyncServicePtr();

@@ -149,6 +149,23 @@ void BackgroundSyncProviderThreadProxy::getRegistrations(
                      WorkerTaskRunner::Instance()->CurrentWorkerId())));
 }
 
+void BackgroundSyncProviderThreadProxy::getPermissionStatus(
+    blink::WebSyncRegistration::Periodicity periodicity,
+    blink::WebServiceWorkerRegistration* service_worker_registration,
+    blink::WebSyncGetPermissionStatusCallbacks* callbacks) {
+  DCHECK(service_worker_registration);
+  DCHECK(callbacks);
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BackgroundSyncProvider::getPermissionStatus,
+                 base::Unretained(sync_provider_), periodicity,
+                 service_worker_registration,
+                 new CallbackThreadAdapter<blink::WebSyncPermissionStatus,
+                                           blink::WebSyncError>(
+                     make_scoped_ptr(callbacks),
+                     WorkerTaskRunner::Instance()->CurrentWorkerId())));
+}
+
 void BackgroundSyncProviderThreadProxy::OnWorkerRunLoopStopped() {
   delete this;
 }

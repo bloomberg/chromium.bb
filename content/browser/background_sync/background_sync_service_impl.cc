@@ -182,6 +182,18 @@ void BackgroundSyncServiceImpl::GetRegistrations(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void BackgroundSyncServiceImpl::GetPermissionStatus(
+    BackgroundSyncPeriodicity periodicity,
+    int64_t serviceWorkerRegistrationId,
+    const GetPermissionStatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // TODO(iclelland): Implement a real policy. This is a stub implementation.
+  // OneShot: crbug.com/482091
+  // Periodic: crbug.com/482093
+  callback.Run(BACKGROUND_SYNC_ERROR_NONE, PERMISSION_STATUS_GRANTED);
+}
+
 void BackgroundSyncServiceImpl::OnRegisterResult(
     const RegisterCallback& callback,
     BackgroundSyncManager::ErrorType error,

@@ -51,6 +51,10 @@ class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
       blink::WebSyncRegistration::Periodicity periodicity,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncGetRegistrationsCallbacks* callbacks);
+  void getPermissionStatus(
+      blink::WebSyncRegistration::Periodicity periodicity,
+      blink::WebServiceWorkerRegistration* service_worker_registration,
+      blink::WebSyncGetPermissionStatusCallbacks* callbacks);
 
   // WorkerTaskRunner::Observer implementation.
   void OnWorkerRunLoopStopped() override;
