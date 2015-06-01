@@ -34,14 +34,14 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,113) size 784x18
         LayoutButton {BUTTON} at (0,0) size 75.02x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,2) size 59.02x13
-            LayoutText {#text} at (0,0) size 60x13
-              text run at (0,0) width 60: "test button"
+            LayoutText {#text} at (0,0) size 59x13
+              text run at (0,0) width 59: "test button"
       LayoutBlockFlow {DIV} at (0,131) size 784x18
         LayoutButton {BUTTON} at (0,0) size 75.02x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,2) size 59.02x13
-            LayoutText {#text} at (0,0) size 60x13
+            LayoutText {#text} at (0,0) size 59x13
               text run at (0,0) width 24: "test "
-              text run at (23,0) width 37: "button"
+              text run at (23,0) width 36: "button"
       LayoutBlockFlow {DIV} at (0,149) size 784x18
         LayoutText {#text} at (0,0) size 353x18
           text run at (0,0) width 353: "Buttons should look identical (ignore vertical spacing):"

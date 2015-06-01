@@ -85,8 +85,8 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (278,4) size 201x17
             text run at (278,4) width 201: "Center div inside align=left div"
         LayoutBlockFlow {DIV} at (6,84) size 757x26 [border: (2px solid #0000FF)]
-          LayoutText {#text} at (559,4) size 194x17
-            text run at (559,4) width 194: "Right div inside align=left div"
+          LayoutText {#text} at (560,4) size 193x17
+            text run at (560,4) width 193: "Right div inside align=left div"
         LayoutBlockFlow {CENTER} at (6,110) size 757x26 [border: (2px solid #0000FF)]
           LayoutText {#text} at (278,4) size 201x17
             text run at (278,4) width 201: "Center tag inside align=left div"
@@ -377,8 +377,8 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (279,4) size 193x17
                   text run at (279,4) width 193: "Center div inside align=left td"
               LayoutBlockFlow {DIV} at (5,83) size 751x26 [border: (2px solid #0000FF)]
-                LayoutText {#text} at (561,4) size 186x17
-                  text run at (561,4) width 186: "Right div inside align=left td"
+                LayoutText {#text} at (562,4) size 185x17
+                  text run at (562,4) width 185: "Right div inside align=left td"
               LayoutBlockFlow {CENTER} at (5,109) size 751x26 [border: (2px solid #0000FF)]
                 LayoutText {#text} at (279,4) size 193x17
                   text run at (279,4) width 193: "Center tag inside align=left td"
@@ -675,8 +675,8 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutText {#text} at (276,4) size 201x17
               text run at (276,4) width 201: "Center div inside align=left div"
           LayoutBlockFlow {DIV} at (6,84) size 753x26 [border: (2px solid #0000FF)]
-            LayoutText {#text} at (555,4) size 194x17
-              text run at (555,4) width 194: "Right div inside align=left div"
+            LayoutText {#text} at (556,4) size 193x17
+              text run at (556,4) width 193: "Right div inside align=left div"
           LayoutBlockFlow {CENTER} at (6,110) size 753x26 [border: (2px solid #0000FF)]
             LayoutText {#text} at (276,4) size 201x17
               text run at (276,4) width 201: "Center tag inside align=left div"
@@ -984,8 +984,8 @@ layer at (0,0) size 785x7588 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   LayoutText {#text} at (277,4) size 193x17
                     text run at (277,4) width 193: "Center div inside align=left td"
                 LayoutBlockFlow {DIV} at (5,83) size 747x26 [border: (2px solid #0000FF)]
-                  LayoutText {#text} at (557,4) size 186x17
-                    text run at (557,4) width 186: "Right div inside align=left td"
+                  LayoutText {#text} at (558,4) size 185x17
+                    text run at (558,4) width 185: "Right div inside align=left td"
                 LayoutBlockFlow {CENTER} at (5,109) size 747x26 [border: (2px solid #0000FF)]
                   LayoutText {#text} at (277,4) size 193x17
                     text run at (277,4) width 193: "Center tag inside align=left td"

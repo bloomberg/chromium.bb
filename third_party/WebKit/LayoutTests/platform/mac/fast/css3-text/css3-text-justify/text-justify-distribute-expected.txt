@@ -21,10 +21,10 @@ layer at (0,0) size 800x86
         LayoutInline {SPAN} at (0,0) size 30x14
           LayoutText {#text} at (88,1) size 30x14
             text run at (88,1) width 30: "e"
-        LayoutInline {SPAN} at (0,0) size 31x14
-          LayoutText {#text} at (117,1) size 31x14
-            text run at (117,1) width 31: "m"
-        LayoutText {#text} at (147,1) size 154x14
-          text run at (147,1) width 154: " ipsum"
+        LayoutInline {SPAN} at (0,0) size 30x14
+          LayoutText {#text} at (117,1) size 30x14
+            text run at (117,1) width 30: "m"
+        LayoutText {#text} at (146,1) size 155x14
+          text run at (146,1) width 155: " ipsum"
       LayoutBlockFlow (anonymous) at (0,52) size 784x18
         LayoutBR {BR} at (0,0) size 0x18

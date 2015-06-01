@@ -12,11 +12,11 @@ layer at (0,0) size 800x600
         LayoutInline {SPAN} at (0,0) size 78x53 [textFillColor=#FFFFFF] [textStrokeWidth=1.00]
           LayoutText {#text} at (102,1) size 78x53
             text run at (102,1) width 78: "text"
-        LayoutText {#text} at (180,1) size 12x53
-          text run at (180,1) width 12: " "
-        LayoutInline {SPAN} at (0,0) size 99x53 [color=#0000004C]
-          LayoutText {#text} at (192,1) size 99x53
-            text run at (192,1) width 99: "casts"
+        LayoutText {#text} at (179,1) size 13x53
+          text run at (179,1) width 13: " "
+        LayoutInline {SPAN} at (0,0) size 100x53 [color=#0000004C]
+          LayoutText {#text} at (191,1) size 100x53
+            text run at (191,1) width 100: "casts"
         LayoutText {#text} at (290,1) size 13x53
           text run at (290,1) width 13: " "
         LayoutInline {SPAN} at (0,0) size 172x53

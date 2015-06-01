@@ -13,9 +13,9 @@ layer at (0,0) size 800x600
           LayoutInline {SPAN} at (0,0) size 711x36
             LayoutText {#text} at (62,2) size 206x36
               text run at (62,2) width 206: "Bold+Underline"
-            LayoutInline {SPAN} at (0,0) size 284x36
-              LayoutText {#text} at (267,2) size 284x36
-                text run at (267,2) width 284: "Bold+Underline+Italic"
+            LayoutInline {SPAN} at (0,0) size 283x36
+              LayoutText {#text} at (267,2) size 283x36
+                text run at (267,2) width 283: "Bold+Underline+Italic"
             LayoutText {#text} at (550,2) size 223x36
               text run at (550,2) width 223: "Bold+Uunderline"
           LayoutText {#text} at (772,2) size 61x36
@@ -36,9 +36,9 @@ layer at (0,0) size 800x600
           LayoutInline {SPAN} at (0,0) size 711x36
             LayoutText {#text} at (62,2) size 206x36
               text run at (62,2) width 206: "Bold+Underline"
-            LayoutInline {SPAN} at (0,0) size 284x36
-              LayoutText {#text} at (267,2) size 284x36
-                text run at (267,2) width 284: "Bold+Underline+Italic"
+            LayoutInline {SPAN} at (0,0) size 283x36
+              LayoutText {#text} at (267,2) size 283x36
+                text run at (267,2) width 283: "Bold+Underline+Italic"
             LayoutText {#text} at (550,2) size 223x36
               text run at (550,2) width 223: "Bold+Uunderline"
           LayoutText {#text} at (772,2) size 61x36

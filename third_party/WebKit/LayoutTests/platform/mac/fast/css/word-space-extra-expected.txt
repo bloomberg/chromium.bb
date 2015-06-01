@@ -378,20 +378,20 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (457,90) width 282: "too. (with comment (no trailing"
             text run at (0,108) width 296: "space) between elements and too)"
           LayoutBR {BR} at (315,122) size 1x0
-          LayoutInline {SPAN} at (0,0) size 315x15
+          LayoutInline {SPAN} at (0,0) size 314x15
             LayoutText {#text} at (0,128) size 201x15
-              text run at (0,128) width 60: "Word "
+              text run at (0,128) width 59: "Word "
               text run at (59,128) width 142: "spacing test "
             LayoutInline {EM} at (0,0) size 24x15
               LayoutText {#text} at (200,128) size 24x15
                 text run at (200,128) width 24: "for"
             LayoutText {#text} at (243,128) size 9x15
               text run at (243,128) width 9: " "
-            LayoutInline {STRONG} at (0,0) size 64x15
-              LayoutText {#text} at (251,128) size 64x15
-                text run at (251,128) width 64: "elements"
-          LayoutText {#text} at (334,126) size 5x18
-            text run at (334,126) width 5: " "
+            LayoutInline {STRONG} at (0,0) size 63x15
+              LayoutText {#text} at (251,128) size 63x15
+                text run at (251,128) width 63: "elements"
+          LayoutText {#text} at (334,126) size 4x18
+            text run at (334,126) width 4: " "
           LayoutInline {TT} at (0,0) size 47x15
             LayoutText {#text} at (338,128) size 47x15
               text run at (338,128) width 47: "within"
@@ -449,11 +449,11 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       LayoutBlockFlow {H2} at (0,758.06) size 784x28
         LayoutText {#text} at (0,0) size 140x28
           text run at (0,0) width 140: "letter-spacing"
-      LayoutBlockFlow (floating) {PRE} at (0,818.97) size 1497.80x167.41
-        LayoutBlockFlow {H3} at (0,15.20) size 1497.80x17
+      LayoutBlockFlow (floating) {PRE} at (0,818.97) size 1497.78x167.41
+        LayoutBlockFlow {H3} at (0,15.20) size 1497.78x17
           LayoutText {#text} at (0,0) size 227x17
             text run at (0,0) width 227: "In a floated pre"
-        LayoutBlockFlow (anonymous) at (0,47.41) size 1497.80x120
+        LayoutBlockFlow (anonymous) at (0,47.41) size 1497.78x120
           LayoutText {#text} at (0,0) size 282x30
             text run at (0,0) width 0: " "
             text run at (0,15) width 282: "Letter   spacing test "
@@ -823,9 +823,9 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (0,108) width 517: "(no trailing space) between elements and too)"
           LayoutBR {BR} at (516,122) size 1x0
           LayoutInline {SPAN} at (0,0) size 410x15
-            LayoutText {#text} at (0,128) size 257x15
+            LayoutText {#text} at (0,128) size 256x15
               text run at (0,128) width 90: "Letter "
-              text run at (89,128) width 168: "spacing test "
+              text run at (89,128) width 167: "spacing test "
             LayoutInline {EM} at (0,0) size 39x15
               LayoutText {#text} at (256,128) size 39x15
                 text run at (256,128) width 39: "for"
@@ -893,11 +893,11 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
       LayoutBlockFlow {H2} at (0,1547.13) size 784x28
         LayoutText {#text} at (0,0) size 133x28
           text run at (0,0) width 133: "both-spacing"
-      LayoutBlockFlow (floating) {PRE} at (0,1608.03) size 1953x167.41
-        LayoutBlockFlow {H3} at (0,15.20) size 1953x17
+      LayoutBlockFlow (floating) {PRE} at (0,1608.03) size 1952.98x167.41
+        LayoutBlockFlow {H3} at (0,15.20) size 1952.98x17
           LayoutText {#text} at (0,0) size 287x17
             text run at (0,0) width 287: "In a floated pre"
-        LayoutBlockFlow (anonymous) at (0,47.41) size 1953x120
+        LayoutBlockFlow (anonymous) at (0,47.41) size 1952.98x120
           LayoutText {#text} at (0,0) size 537x30
             text run at (0,0) width 0: " "
             text run at (0,15) width 537: "Word and letter   spacing test "
@@ -1032,7 +1032,7 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (1026,105) width 704: ". (with monospace font from elements to too)"
             text run at (1749,105) width 1: " "
       LayoutBlockFlow (anonymous) at (0,1595.03) size 784x193.41
-        LayoutBR {BR} at (1953,0) size 0x18
+        LayoutBR {BR} at (1952,0) size 1x18
       LayoutBlockFlow {PRE} at (0,1803.64) size 784x152.20
         LayoutBlockFlow {H3} at (0,0) size 784x17
           LayoutText {#text} at (0,0) size 343x17

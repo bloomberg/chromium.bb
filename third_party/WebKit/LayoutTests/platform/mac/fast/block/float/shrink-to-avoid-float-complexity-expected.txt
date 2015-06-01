@@ -94,9 +94,9 @@ layer at (208,414) size 569x162
         text run at (96,18) width 196: "new block formating context"
     LayoutText {#text} at (291,18) size 198x18
       text run at (291,18) width 198: " thanks to the CSS declaration "
-    LayoutInline {CODE} at (0,0) size 560x33
-      LayoutText {#text} at (488,20) size 560x33
-        text run at (488,20) width 72: "overflow:"
+    LayoutInline {CODE} at (0,0) size 559x33
+      LayoutText {#text} at (488,20) size 559x33
+        text run at (488,20) width 71: "overflow:"
         text run at (0,38) width 47: "hidden"
     LayoutText {#text} at (46,36) size 6x18
       text run at (46,36) width 6: ";"
@@ -115,9 +115,9 @@ layer at (208,414) size 569x162
         text run at (96,108) width 196: "new block formating context"
     LayoutText {#text} at (291,108) size 198x18
       text run at (291,108) width 198: " thanks to the CSS declaration "
-    LayoutInline {CODE} at (0,0) size 560x33
-      LayoutText {#text} at (488,110) size 560x33
-        text run at (488,110) width 72: "overflow:"
+    LayoutInline {CODE} at (0,0) size 559x33
+      LayoutText {#text} at (488,110) size 559x33
+        text run at (488,110) width 71: "overflow:"
         text run at (0,128) width 47: "hidden"
     LayoutText {#text} at (46,126) size 6x18
       text run at (46,126) width 6: ";"

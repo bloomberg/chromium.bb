@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutText {#text} at (0,0) size 781x36
         text run at (0,0) width 215: "This tests clipping of the outline. "
-        text run at (214,0) width 294: "It should not be clipped by the overflow rect. "
+        text run at (214,0) width 293: "It should not be clipped by the overflow rect. "
         text run at (507,0) width 274: "The inner div has a green outline and a red"
         text run at (0,18) width 46: "border."
       LayoutText {#text} at (0,0) size 0x0

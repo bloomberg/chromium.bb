@@ -97,7 +97,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 88x56
                   text run at (0,0) width 26: "style:"
                   text run at (0,14) width 88: "\"overflow:hidden;"
-                  text run at (0,28) width 59: "width:60px;"
+                  text run at (0,28) width 58: "width:60px;"
                   text run at (0,42) width 66: "height:60px\","
               LayoutBR {BR} at (81,43) size 0x14
             LayoutBlockFlow {DIV} at (490,196) size 82x127 [border: (1px solid #0000FF)]
@@ -105,7 +105,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 82x56
                   text run at (0,0) width 26: "style:"
                   text run at (0,14) width 82: "\"overflow:scroll;"
-                  text run at (0,28) width 59: "width:60px;"
+                  text run at (0,28) width 58: "width:60px;"
                   text run at (0,42) width 66: "height:60px\","
               LayoutBR {BR} at (81,43) size 0x14
             LayoutBlockFlow {DIV} at (572,210) size 82x113 [border: (1px solid #0000FF)]
@@ -275,7 +275,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {DIV} at (3,3) size 45x156
           LayoutText {#text} at (0,0) size 45x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -295,7 +295,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {DIV} at (21,21) size 45x156
           LayoutText {#text} at (0,0) size 45x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -315,7 +315,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {DIV} at (1,1) size 45x156
           LayoutText {#text} at (0,0) size 45x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -345,7 +345,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {DIV} at (3,3) size 45x156
           LayoutText {#text} at (0,0) size 45x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -385,7 +385,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {DIV} at (3,3) size 60x130
           LayoutText {#text} at (0,0) size 60x130
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -403,7 +403,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {DIV} at (3,3) size 45x156
           LayoutText {#text} at (0,0) size 45x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -423,7 +423,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {DIV} at (3,3) size 45x156
           LayoutText {#text} at (0,0) size 45x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -443,7 +443,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {DIV} at (3,3) size 45x156
           LayoutText {#text} at (0,0) size 45x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -463,7 +463,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {DIV} at (3,3) size 45x156
           LayoutText {#text} at (0,0) size 45x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -525,7 +525,7 @@ layer at (0,0) size 785x742 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutBlockFlow {DIV} at (3,3) size 49x143
           LayoutText {#text} at (0,0) size 47x143
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -746,7 +746,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
                 LayoutText {#text} at (0,0) size 88x56
                   text run at (0,0) width 26: "style:"
                   text run at (0,14) width 88: "\"overflow:hidden;"
-                  text run at (0,28) width 59: "width:60px;"
+                  text run at (0,28) width 58: "width:60px;"
                   text run at (0,42) width 66: "height:60px\","
               LayoutBR {BR} at (81,54) size 0x0
             LayoutBlockFlow {DIV} at (490,190) size 82x118 [border: (1px solid #0000FF)]
@@ -754,7 +754,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
                 LayoutText {#text} at (0,0) size 82x56
                   text run at (0,0) width 26: "style:"
                   text run at (0,14) width 82: "\"overflow:scroll;"
-                  text run at (0,28) width 59: "width:60px;"
+                  text run at (0,28) width 58: "width:60px;"
                   text run at (0,42) width 66: "height:60px\","
               LayoutBR {BR} at (81,54) size 0x0
             LayoutBlockFlow {DIV} at (572,204) size 82x104 [border: (1px solid #0000FF)]
@@ -924,7 +924,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutBlockFlow {DIV} at (3,3) size 39x156
           LayoutText {#text} at (0,0) size 39x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 7: "  "
             text run at (0,26) width 29: "dolor"
@@ -932,7 +932,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (0,39) width 36: "ABCDE"
             text run at (0,52) width 36: "FGHIJK"
             text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 37: "QRSTU"
+            text run at (0,78) width 36: "QRSTU"
             text run at (0,91) width 37: "VWXYZ"
             text run at (36,91) width 3: " "
             text run at (0,104) width 36: "abcdef"
@@ -1016,7 +1016,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutBlockFlow {DIV} at (1,1) size 43x156
           LayoutText {#text} at (0,0) size 43x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -1046,7 +1046,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutBlockFlow {DIV} at (3,3) size 39x156
           LayoutText {#text} at (0,0) size 39x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 7: "  "
             text run at (0,26) width 29: "dolor"
@@ -1054,7 +1054,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (0,39) width 36: "ABCDE"
             text run at (0,52) width 36: "FGHIJK"
             text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 37: "QRSTU"
+            text run at (0,78) width 36: "QRSTU"
             text run at (0,91) width 37: "VWXYZ"
             text run at (36,91) width 3: " "
             text run at (0,104) width 36: "abcdef"
@@ -1086,7 +1086,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutBlockFlow {DIV} at (3,3) size 54x130
           LayoutText {#text} at (0,0) size 54x130
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"
@@ -1104,7 +1104,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutBlockFlow {DIV} at (3,3) size 39x156
           LayoutText {#text} at (0,0) size 39x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 7: "  "
             text run at (0,26) width 29: "dolor"
@@ -1112,7 +1112,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (0,39) width 36: "ABCDE"
             text run at (0,52) width 36: "FGHIJK"
             text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 37: "QRSTU"
+            text run at (0,78) width 36: "QRSTU"
             text run at (0,91) width 37: "VWXYZ"
             text run at (36,91) width 3: " "
             text run at (0,104) width 36: "abcdef"
@@ -1124,7 +1124,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutBlockFlow {DIV} at (3,3) size 39x156
           LayoutText {#text} at (0,0) size 39x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 7: "  "
             text run at (0,26) width 29: "dolor"
@@ -1132,7 +1132,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (0,39) width 36: "ABCDE"
             text run at (0,52) width 36: "FGHIJK"
             text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 37: "QRSTU"
+            text run at (0,78) width 36: "QRSTU"
             text run at (0,91) width 37: "VWXYZ"
             text run at (36,91) width 3: " "
             text run at (0,104) width 36: "abcdef"
@@ -1144,7 +1144,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutBlockFlow {DIV} at (3,3) size 39x156
           LayoutText {#text} at (0,0) size 39x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 7: "  "
             text run at (0,26) width 29: "dolor"
@@ -1152,7 +1152,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (0,39) width 36: "ABCDE"
             text run at (0,52) width 36: "FGHIJK"
             text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 37: "QRSTU"
+            text run at (0,78) width 36: "QRSTU"
             text run at (0,91) width 37: "VWXYZ"
             text run at (36,91) width 3: " "
             text run at (0,104) width 36: "abcdef"
@@ -1164,7 +1164,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutBlockFlow {DIV} at (3,3) size 39x156
           LayoutText {#text} at (0,0) size 39x156
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 7: "  "
             text run at (0,26) width 29: "dolor"
@@ -1172,7 +1172,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (0,39) width 36: "ABCDE"
             text run at (0,52) width 36: "FGHIJK"
             text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 37: "QRSTU"
+            text run at (0,78) width 36: "QRSTU"
             text run at (0,91) width 37: "VWXYZ"
             text run at (36,91) width 3: " "
             text run at (0,104) width 36: "abcdef"
@@ -1226,7 +1226,7 @@ layer at (0,742) size 785x684 backgroundClip at (0,0) size 785x600 clip at (0,0)
         LayoutBlockFlow {DIV} at (3,3) size 49x143
           LayoutText {#text} at (0,0) size 47x143
             text run at (0,0) width 34: "Lorem"
-            text run at (33,0) width 5: " "
+            text run at (33,0) width 4: " "
             text run at (0,13) width 33: "ipsum"
             text run at (32,13) width 8: "  "
             text run at (0,26) width 29: "dolor"

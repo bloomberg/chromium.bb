@@ -38,7 +38,7 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (8.09,1) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (181,3) size 29x17
           text run at (181,3) width 29: "text "
-        LayoutTextControl {INPUT} at (209.09,1) size 173x22 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (209.08,1) size 173x22 [color=#545454] [bgcolor=#EBEBE4] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (382,3) size 20x17
           text run at (382,3) width 13: "b "
           text run at (394,3) width 8: "a"
@@ -54,7 +54,7 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {INPUT} at (12.09,4) size 13x13
         LayoutText {#text} at (28,3) size 66x17
           text run at (28,3) width 66: "checkbox "
-        LayoutBlockFlow {INPUT} at (97.41,4) size 13x13 [color=#545454]
+        LayoutBlockFlow {INPUT} at (97.39,4) size 13x13 [color=#545454]
         LayoutText {#text} at (113,3) size 9x17
           text run at (113,3) width 9: "b"
       LayoutBlockFlow {DIV} at (10,404) size 450x22 [border: (1px solid #FF0000)]

@@ -9,8 +9,8 @@ layer at (0,0) size 800x196
         LayoutInline {A} at (0,0) size 651x17 [color=#0000EE]
           LayoutText {#text} at (94,29) size 651x17
             text run at (94,29) width 651: "Bug 13174: line-height in font shorthand does not override a previously stated line-height property"
-        LayoutText {#text} at (744,29) size 6x17
-          text run at (744,29) width 6: "."
+        LayoutText {#text} at (744,29) size 5x17
+          text run at (744,29) width 5: "."
       LayoutBlockFlow {P} at (0,90) size 784x76
         LayoutText {#text} at (0,29) size 130x17
           text run at (0,29) width 130: "This text should be "

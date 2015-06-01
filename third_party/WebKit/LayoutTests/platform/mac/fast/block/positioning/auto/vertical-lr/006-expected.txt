@@ -18,7 +18,7 @@ layer at (96,8) size 36x584
       text run at (18,314) width 270: "should begin after the end of this sentence"
     LayoutText {#text} at (0,0) size 0x0
 layer at (114,78) size 340x240
-  LayoutBlockFlow (positioned) {SPAN} at (18,70.30) size 340x240 [border: (20px solid #000000)]
+  LayoutBlockFlow (positioned) {SPAN} at (18,70.31) size 340x240 [border: (20px solid #000000)]
 layer at (234,198) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (120,120) size 100x100 [bgcolor=#008000]
 layer at (134,198) size 100x100

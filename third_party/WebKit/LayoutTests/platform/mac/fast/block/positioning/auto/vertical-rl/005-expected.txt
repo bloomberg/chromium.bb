@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
         text run at (72,0) width 104: "of this sentence."
       LayoutText {#text} at (0,0) size 0x0
 layer at (380,112) size 340x240
-  LayoutBlockFlow (positioned) {SPAN} at (80,111.53) size 340x240 [border: (20px solid #000000)]
+  LayoutBlockFlow (positioned) {SPAN} at (80,111.52) size 340x240 [border: (20px solid #000000)]
 layer at (500,232) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (120,120) size 100x100 [bgcolor=#008000]
 layer at (600,232) size 100x100

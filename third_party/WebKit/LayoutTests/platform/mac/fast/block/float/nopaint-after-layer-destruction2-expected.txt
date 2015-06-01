@@ -24,8 +24,8 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {DIV} at (0,0) size 784x130.72
           LayoutBlockFlow (floating) {DIV} at (3,3) size 75x75 [bgcolor=#008000]
           LayoutBlockFlow {H3} at (0,0) size 784x22
-            LayoutText {#text} at (81,0) size 160x22
-              text run at (81,0) width 160: "Stanley Park Forest"
+            LayoutText {#text} at (81,0) size 159x22
+              text run at (81,0) width 159: "Stanley Park Forest"
           LayoutBlockFlow {P} at (0,40.72) size 784x90
             LayoutText {#text} at (81,0) size 772x90
               text run at (81,0) width 689: "The forest is primarily second and third growth. The area was saved from development because of its status"
