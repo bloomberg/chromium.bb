@@ -26,6 +26,8 @@ std::string TreeToStringHelper(AXNode* node, int indent) {
 
 // Intermediate state to keep track of during a tree update.
 struct AXTreeUpdateState {
+  AXTreeUpdateState() : new_root(nullptr) {}
+
   // During an update, this keeps track of all nodes that have been
   // implicitly referenced as part of this update, but haven't been
   // updated yet. It's an error if there are any pending nodes at the
@@ -34,6 +36,9 @@ struct AXTreeUpdateState {
 
   // Keeps track of new nodes created during this update.
   std::set<AXNode*> new_nodes;
+
+  // The new root in this update, if any.
+  AXNode* new_root;
 };
 
 AXTreeDelegate::AXTreeDelegate() {
@@ -60,7 +65,7 @@ AXTree::AXTree(const AXTreeUpdate& initial_state)
 
 AXTree::~AXTree() {
   if (root_)
-    DestroyNodeAndSubtree(root_);
+    DestroyNodeAndSubtree(root_, nullptr);
 }
 
 void AXTree::SetDelegate(AXTreeDelegate* delegate) {
@@ -84,11 +89,11 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
       return false;
     }
     if (node == root_) {
-      DestroySubtree(root_);
+      DestroySubtree(root_, &update_state);
       root_ = NULL;
     } else {
       for (int i = 0; i < node->child_count(); ++i)
-        DestroySubtree(node->ChildAtIndex(i));
+        DestroySubtree(node->ChildAtIndex(i), &update_state);
       std::vector<AXNode*> children;
       node->SwapChildren(children);
       update_state.pending_nodes.insert(node);
@@ -156,7 +161,6 @@ bool AXTree::UpdateNode(const AXNodeData& src,
   // of the tree is being swapped, or we're out of sync with the source
   // and this is a serious error.
   AXNode* node = GetFromId(src.id);
-  AXNode* new_root = NULL;
   if (node) {
     update_state->pending_nodes.erase(node);
     node->SetData(src);
@@ -166,8 +170,13 @@ bool AXTree::UpdateNode(const AXNodeData& src,
           "%d is not in the tree and not the new root", src.id);
       return false;
     }
-    new_root = CreateNode(NULL, src.id, 0);
-    node = new_root;
+    if (update_state->new_root) {
+      error_ = "Tree update contains two new roots";
+      return false;
+    }
+
+    update_state->new_root = CreateNode(NULL, src.id, 0);
+    node = update_state->new_root;
     update_state->new_nodes.insert(node);
     node->SetData(src);
   }
@@ -177,9 +186,9 @@ bool AXTree::UpdateNode(const AXNodeData& src,
 
   // First, delete nodes that used to be children of this node but aren't
   // anymore.
-  if (!DeleteOldChildren(node, src.child_ids)) {
-    if (new_root)
-      DestroySubtree(new_root);
+  if (!DeleteOldChildren(node, src.child_ids, update_state)) {
+    if (update_state->new_root)
+      DestroySubtree(update_state->new_root, update_state);
     return false;
   }
 
@@ -194,30 +203,36 @@ bool AXTree::UpdateNode(const AXNodeData& src,
   if (src.role == AX_ROLE_ROOT_WEB_AREA &&
       (!root_ || root_->id() != src.id)) {
     if (root_)
-      DestroySubtree(root_);
+      DestroySubtree(root_, update_state);
     root_ = node;
   }
 
   return success;
 }
 
-void AXTree::DestroySubtree(AXNode* node) {
+void AXTree::DestroySubtree(AXNode* node,
+                            AXTreeUpdateState* update_state) {
   if (delegate_)
     delegate_->OnSubtreeWillBeDeleted(node);
-  DestroyNodeAndSubtree(node);
+  DestroyNodeAndSubtree(node, update_state);
 }
 
-void AXTree::DestroyNodeAndSubtree(AXNode* node) {
+void AXTree::DestroyNodeAndSubtree(AXNode* node,
+                                   AXTreeUpdateState* update_state) {
   id_map_.erase(node->id());
   for (int i = 0; i < node->child_count(); ++i)
-    DestroyNodeAndSubtree(node->ChildAtIndex(i));
+    DestroyNodeAndSubtree(node->ChildAtIndex(i), update_state);
   if (delegate_)
     delegate_->OnNodeWillBeDeleted(node);
+  if (update_state) {
+    update_state->pending_nodes.erase(node);
+  }
   node->Destroy();
 }
 
 bool AXTree::DeleteOldChildren(AXNode* node,
-                               const std::vector<int32>& new_child_ids) {
+                               const std::vector<int32>& new_child_ids,
+                               AXTreeUpdateState* update_state) {
   // Create a set of child ids in |src| for fast lookup, and return false
   // if a duplicate is found;
   std::set<int32> new_child_id_set;
@@ -235,7 +250,7 @@ bool AXTree::DeleteOldChildren(AXNode* node,
   for (size_t i = 0; i < old_children.size(); ++i) {
     int old_id = old_children[i]->id();
     if (new_child_id_set.find(old_id) == new_child_id_set.end())
-      DestroySubtree(old_children[i]);
+      DestroySubtree(old_children[i], update_state);
   }
 
   return true;

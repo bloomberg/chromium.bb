@@ -283,6 +283,24 @@ TEST(AXTreeTest, InvalidReparentingFails) {
   ASSERT_EQ("Node 3 reparented from 2 to 1", tree.error());
 }
 
+TEST(AXTreeTest, TwoRootsFails) {
+  AXTreeUpdate initial_state;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  AXTree tree(initial_state);
+
+  // This should fail because there are two new roots.
+  AXTreeUpdate update;
+  update.nodes.resize(2);
+  update.nodes[0].id = 2;
+  update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  update.nodes[1].id = 3;
+  update.nodes[1].role = AX_ROLE_ROOT_WEB_AREA;
+  EXPECT_FALSE(tree.Unserialize(update));
+  ASSERT_EQ("Tree update contains two new roots", tree.error());
+}
+
 TEST(AXTreeTest, TreeDelegateIsCalled) {
   AXTreeUpdate initial_state;
   initial_state.nodes.resize(2);

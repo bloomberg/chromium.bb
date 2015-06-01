@@ -120,17 +120,18 @@ class AX_EXPORT AXTree {
 
   // Notify the delegate that the subtree rooted at |node| will be destroyed,
   // then call DestroyNodeAndSubtree on it.
-  void DestroySubtree(AXNode* node);
+  void DestroySubtree(AXNode* node, AXTreeUpdateState* update_state);
 
   // Call Destroy() on |node|, and delete it from the id map, and then
   // call recursively on all nodes in its subtree.
-  void DestroyNodeAndSubtree(AXNode* node);
+  void DestroyNodeAndSubtree(AXNode* node, AXTreeUpdateState* update_state);
 
   // Iterate over the children of |node| and for each child, destroy the
   // child and its subtree if its id is not in |new_child_ids|. Returns
   // true on success, false on fatal error.
   bool DeleteOldChildren(AXNode* node,
-                         const std::vector<int32>& new_child_ids);
+                         const std::vector<int32>& new_child_ids,
+                         AXTreeUpdateState* update_state);
 
   // Iterate over |new_child_ids| and populate |new_children| with
   // pointers to child nodes, reusing existing nodes already in the tree
