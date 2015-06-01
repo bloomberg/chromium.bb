@@ -29,6 +29,7 @@ KEY_APPS_LIST = 'apps'
 KEY_APP_NAME = 'name'
 KEY_APP_IMAGE = 'image'
 KEY_APP_IMAGE_NAME = 'name'
+KEY_APP_ISOLATORS = 'isolators'
 
 KEY_APP_SUB_APP = 'app'
 KEY_SUB_APP_USER = 'user'
@@ -43,6 +44,13 @@ PORT_SPEC_PROTOCOL = 'protocol'
 PROTOCOL_TCP = 'tcp'
 PROTOCOL_UDP = 'udp'
 VALID_PROTOCOLS = (PROTOCOL_TCP, PROTOCOL_UDP)
+
+ISOLATOR_KEY_NAME = 'name'
+ISOLATOR_KEY_VALUE = 'value'
+ISOLATOR_KEY_VALUE_SET = 'set'
+
+ISOLATOR_NAME_PREFIX = 'os/linux/capabilities-'
+ISOLATOR_NAME_RETAIN_SET = 'os/linux/capabilities-retain-set'
 
 PortSpec = collections.namedtuple('PortSpec', ('allow_all', 'port_list'))
 
@@ -82,7 +90,8 @@ class SandboxSpecWrapper(object):
     self.sandbox_spec.name = name
     self.sandbox_spec.overlay_path = '/bricks/%s' % name
 
-  def AddExecutable(self, uid, gid, command_line, tcp_ports, udp_ports):
+  def AddExecutable(self, uid, gid, command_line, tcp_ports, udp_ports,
+                    linux_caps):
     """Add an executable to the wrapped SandboxSpec.
 
     Args:
@@ -91,6 +100,7 @@ class SandboxSpecWrapper(object):
       command_line: list of strings to run.
       tcp_ports: list of PortSpec tuples.
       udp_ports: list of PortSpec tuples.
+      linux_caps: list of string names of capabilities (e.g. 'CAP_CHOWN').
     """
     executable = self.sandbox_spec.executables.add()
     executable.uid = uid
@@ -103,6 +113,11 @@ class SandboxSpecWrapper(object):
       else:
         listen_ports.allow_all = False
         listen_ports.ports.extend(ports.port_list)
+
+    # Map the names of caps to the appropriate protobuffer values.
+    caps = [self.sandbox_spec.LinuxCaps.Value('LINUX_' + cap_name)
+            for cap_name in linux_caps]
+    executable.capabilities.extend(caps)
 
   def AddEndpointName(self, endpoint_name):
     """Adds the name of an endpoint that'll run inside this sandbox."""
@@ -159,6 +174,52 @@ def _GetPortList(desired_protocol, appc_port_list):
     port_list.append(port)
 
   return PortSpec(allow_all, port_list)
+
+
+def _ExtractLinuxCapNames(app_dict):
+  """Parses the set of Linux capabilities for an executable.
+
+  Args:
+    app_dict: dictionary defining an executable.
+
+  Returns:
+    List of names of Linux capabilities (e.g. ['CAP_CHOWN']).
+  """
+  if KEY_APP_ISOLATORS not in app_dict:
+    return []
+
+  isolator_list = json_lib.GetValueOfType(
+      app_dict, KEY_APP_ISOLATORS, list,
+      'list of isolators for application')
+  linux_cap_isolators = []
+
+  # Look for any isolators related to capability sets.
+  for isolator in isolator_list:
+    json_lib.AssertIsInstance(isolator, dict, 'isolator instance')
+    isolator_name = json_lib.GetValueOfType(
+        isolator, ISOLATOR_KEY_NAME, unicode, 'isolator name')
+    if not isolator_name.startswith(ISOLATOR_NAME_PREFIX):
+      continue
+    if isolator_name != ISOLATOR_NAME_RETAIN_SET:
+      raise ValueError('Capabilities may only be specified as %s' %
+                       ISOLATOR_NAME_RETAIN_SET)
+    linux_cap_isolators.append(isolator)
+
+  # We may have only a single isolator.
+  if len(linux_cap_isolators) > 1:
+    raise ValueError('Found two lists of Linux caps for an executable')
+  if not linux_cap_isolators:
+    return []
+
+  value = json_lib.GetValueOfType(
+      linux_cap_isolators[0], ISOLATOR_KEY_VALUE, dict,
+      'Linux cap isolator value')
+  caps = json_lib.GetValueOfType(
+      value, ISOLATOR_KEY_VALUE_SET, list, 'Linux cap isolator set')
+  for cap in caps:
+    json_lib.AssertIsInstance(cap, unicode, 'Linux capability in set.')
+
+  return caps
 
 
 class SandboxSpecGenerator(object):
@@ -238,7 +299,8 @@ class SandboxSpecGenerator(object):
                           self._user_db.ResolveGroupname(group),
                           cmd,
                           _GetPortList(PROTOCOL_TCP, port_list),
-                          _GetPortList(PROTOCOL_UDP, port_list))
+                          _GetPortList(PROTOCOL_UDP, port_list),
+                          _ExtractLinuxCapNames(sub_app))
 
   def GetSandboxSpec(self, appc_contents, sandbox_spec_name):
     """Create a SandboxSpec encoding the information in an appc pod manifest.

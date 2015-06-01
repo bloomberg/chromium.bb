@@ -24,6 +24,7 @@ SIMPLE_MANIFEST_TCP_PORT = 4000
 SIMPLE_MANIFEST_EXEC_VALUE = [u'/bin/true', u'--quiet']
 SIMPLE_MANIFEST_ENDPOINT_NAME1 = u'com.foo.yay'
 SIMPLE_MANIFEST_ENDPOINT_NAME2 = u'com.foo.boo'
+SIMPLE_MANIFEST_CAPS = [u'CAP_NET_BIND_SERVICE', u'CAP_NET_ADMIN']
 
 # Calls to set information in the wrapper that corresponds to SIMPLE_MANIFEST.
 SIMPLE_MANIFEST_MOCK_WRAPPER_CALLS = [
@@ -31,7 +32,8 @@ SIMPLE_MANIFEST_MOCK_WRAPPER_CALLS = [
         MOCK_UID, MOCK_GID,
         SIMPLE_MANIFEST_EXEC_VALUE,
         sandbox_spec_generator.PortSpec(False, [SIMPLE_MANIFEST_TCP_PORT]),
-        sandbox_spec_generator.PortSpec(False, [])),
+        sandbox_spec_generator.PortSpec(False, []),
+        SIMPLE_MANIFEST_CAPS),
     mock.call.AddEndpointName(SIMPLE_MANIFEST_ENDPOINT_NAME1),
     mock.call.AddEndpointName(SIMPLE_MANIFEST_ENDPOINT_NAME2),
     mock.call.SetName(SANDBOX_NAME),
@@ -56,7 +58,21 @@ SIMPLE_MANIFEST = {
                         'protocol': u'tcp',
                         'socketActivated': False
                     }
-                ]
+                ],
+                'isolators': [
+                    {
+                        'name': u'unrelated/isolator',
+                        'value': {
+                            'i_am': 'a little tea cup',
+                        }
+                    },
+                    {
+                        'name': u'os/linux/capabilities-retain-set',
+                        'value': {
+                            'set': SIMPLE_MANIFEST_CAPS,
+                        }
+                    },
+                ],
             },
         },
     ],
