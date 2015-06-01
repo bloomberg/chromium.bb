@@ -2542,7 +2542,7 @@ void FrameView::updateLayoutAndStyleForPaintingInternal()
 
     LayoutView* view = layoutView();
     if (view) {
-        TRACE_EVENT_INSTANT1("devtools.timeline", "UpdateLayerTree", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
+        TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
 
         view->compositor()->updateIfNeededRecursive();
 
