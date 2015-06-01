@@ -618,6 +618,9 @@ source_set("browser") {
   if (is_android) {
     sources +=
         rebase_path(gypi_values.chrome_browser_android_sources, ".", "//chrome")
+    sources += rebase_path(gypi_values.chrome_browser_bookmark_android_sources,
+                           ".",
+                           "//chrome")
     deps += [
       ":client_discourse_context_proto",
       ":delta_file_proto",
@@ -625,6 +628,7 @@ source_set("browser") {
       "//components/cdm/browser",
       "//components/enhanced_bookmarks",
       "//components/resources:components_resources",
+      "//components/resources/enhanced_bookmarks:enhanced_bookmarks_resources",
       "//components/service_tab_launcher",
       "//components/web_contents_delegate_android",
       "//third_party/android_opengl/etc1",

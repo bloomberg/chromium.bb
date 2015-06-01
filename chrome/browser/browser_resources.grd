@@ -146,9 +146,6 @@
       <include name="IDR_FEEDBACK_MANIFEST" file="resources\feedback\manifest.json" type="BINDATA" />
       <include name="IDR_FLAGS_HTML" file="resources\flags.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FLAGS_JS" file="resources\flags.js" type="BINDATA" />
-      <if expr="is_android">
-        <include name="IDR_GET_SALIENT_IMAGE_URL_JS" file="resources\get_salient_image_url.js" type="BINDATA" />
-      </if>
       <if expr="_google_chrome or enable_hangout_services_extension">
         <!-- Hangout Services extension, included in Google Chrome builds only. -->
         <include name="IDR_HANGOUT_SERVICES_MANIFEST" file="resources\hangout_services\manifest.json" type="BINDATA" />

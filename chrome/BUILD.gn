@@ -568,6 +568,11 @@ repack("packed_extra_resources") {
   } else {
     output = "$root_out_dir/resources.pak"
   }
+
+  if (is_android) {
+    sources += [ "$root_gen_dir/components/resources/enhanced_bookmarks/enhanced_bookmarks_resources.pak" ]
+    deps += [ "//components/resources/enhanced_bookmarks:enhanced_bookmarks_resources" ]
+  }
 }
 
 # GYP version: chrome/chrome_resources.gyp:browser_tests_pak

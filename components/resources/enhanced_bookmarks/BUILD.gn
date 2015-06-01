@@ -1,0 +1,87 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//tools/grit/grit_rule.gni")
+
+closure_out_dir = "$root_gen_dir/closure/components/resources/enhanced_bookmarks"
+
+# GYP version: components/resources/enhanced_bookmarks/enhanced_bookmarks_resources.gyp
+#              (generate_enhanced_bookmarks_resources action)
+grit("enhanced_bookmarks_resources") {
+  source = "enhanced_bookmarks_resources.grd"
+
+  outputs = [
+    "grit/enhanced_bookmarks_resources.h",
+    "enhanced_bookmarks_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/components/resources/enhanced_bookmarks"
+  deps = [
+    "//components/resources/enhanced_bookmarks:document_image_extractor",
+    "//components/resources/enhanced_bookmarks:dom_initializer",
+  ]
+
+  get_salient_image_url_gen_js = "${closure_out_dir}/get_salient_image_url.js"
+  dom_initializer_gen_js = "${closure_out_dir}/dom_initializer.js"
+
+  grit_flags = [
+    "-E",
+    "get_salient_image_url_gen_js=" +
+        rebase_path(get_salient_image_url_gen_js, root_build_dir),
+    "-E",
+    "dom_initializer_gen_js=" +
+        rebase_path(dom_initializer_gen_js, root_build_dir),
+  ]
+}
+
+# GYP version: components/resources/enhanced_bookmarks/enhanced_bookmarks.gypi
+import("//third_party/document_image_extractor/document_image_extractor.gni")
+
+rebased_closure_out_dir = rebase_path(root_gen_dir, "../") +
+    "/closure/components/resources/enhanced_bookmarks/"
+
+action("document_image_extractor") {
+  script = "//third_party/closure_compiler/compile.py"
+  sources = [
+    "get_salient_image_url.js",
+  ]
+  outputs = [
+    "${closure_out_dir}/get_salient_image_url.js",
+  ]
+
+  document_image_extractor_sources =
+      rebase_path(document_image_extractor_js_files, "third_party/", "../")
+
+  args =
+         [ "../../components/resources/enhanced_bookmarks/get_salient_image_url.js" ] +
+         document_image_extractor_sources +
+         [
+           "--out_file=${rebased_closure_out_dir}/get_salient_image_url.js",
+           "--no-single-file",
+           "--output_wrapper",
+           "(function(){%output% return GetSalientImageUrl();})();",
+         ]
+}
+
+action("dom_initializer") {
+  script = "//third_party/closure_compiler/compile.py"
+  sources = [
+    "dom_initializer.js",
+  ]
+  outputs = [
+    "${closure_out_dir}/dom_initializer.js",
+  ]
+
+  dom_controller_sources =
+      rebase_path(dom_controller_js_files, "third_party/", "../")
+
+  args =
+      [ "../../components/resources/enhanced_bookmarks/dom_initializer.js" ] +
+      dom_controller_sources +
+      [
+        "--out_file=${rebased_closure_out_dir}/dom_initializer.js",
+        "--no-single-file",
+        "--output_wrapper",
+        "(function(){%output%})();",
+      ]
+}
