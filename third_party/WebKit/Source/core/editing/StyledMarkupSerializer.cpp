@@ -267,7 +267,6 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
             break;
 
         next = Strategy::next(*n);
-        bool openedTag = false;
 
         if (isBlock(n) && canHaveChildrenForEditing(n) && next == pastEnd) {
             // Don't write out empty block containers that aren't fully selected.
@@ -286,48 +285,49 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
 
             // If node has no children, close the tag now.
             if (Strategy::hasChildren(*n)) {
-                openedTag = true;
                 ancestorsToClose.append(toContainerNode(n));
-            } else {
-                if (shouldEmit && n->isElementNode())
-                    m_markupAccumulator.appendEndTag(toElement(*n));
-                lastClosed = n;
+                continue;
             }
+            if (shouldEmit && n->isElementNode())
+                m_markupAccumulator.appendEndTag(toElement(*n));
+            lastClosed = n;
         }
 
         // If we didn't insert open tag and there's no more siblings or we're at the end of the traversal, take care of ancestors.
         // FIXME: What happens if we just inserted open tag and reached the end?
-        if (!openedTag && (!Strategy::nextSibling(*n) || next == pastEnd)) {
-            // Close up the ancestors.
-            while (!ancestorsToClose.isEmpty()) {
-                ContainerNode* ancestor = ancestorsToClose.last();
-                ASSERT(ancestor);
-                if (next != pastEnd && Strategy::isDescendantOf(*next, *ancestor))
-                    break;
-                // Not at the end of the range, close ancestors up to sibling of next node.
-                if (shouldEmit && ancestor->isElementNode())
-                    m_markupAccumulator.appendEndTag(toElement(*ancestor));
-                lastClosed = ancestor;
-                ancestorsToClose.removeLast();
-            }
+        if (Strategy::nextSibling(*n) && next != pastEnd)
+            continue;
 
-            // Surround the currently accumulated markup with markup for ancestors we never opened as we leave the subtree(s) rooted at those ancestors.
-            ContainerNode* nextParent = next ? Strategy::parent(*next) : nullptr;
-            if (next != pastEnd && n != nextParent) {
-                ASSERT(n);
-                Node* lastAncestorClosedOrSelf = Strategy::isDescendantOf(*n, *lastClosed) ? lastClosed : n;
-                for (ContainerNode* parent = Strategy::parent(*lastAncestorClosedOrSelf); parent && parent != nextParent; parent = Strategy::parent(*parent)) {
-                    // All ancestors that aren't in the ancestorsToClose list should either be a) unrendered:
-                    if (!parent->layoutObject())
-                        continue;
-                    // or b) ancestors that we never encountered during a pre-order traversal starting at startNode:
-                    ASSERT(startNode);
-                    ASSERT(Strategy::isDescendantOf(*startNode, *parent));
-                    if (shouldEmit)
-                        wrapWithNode(*parent);
-                    lastClosed = parent;
-                }
-            }
+        // Close up the ancestors.
+        while (!ancestorsToClose.isEmpty()) {
+            ContainerNode* ancestor = ancestorsToClose.last();
+            ASSERT(ancestor);
+            if (next != pastEnd && Strategy::isDescendantOf(*next, *ancestor))
+                break;
+            // Not at the end of the range, close ancestors up to sibling of next node.
+            if (shouldEmit && ancestor->isElementNode())
+                m_markupAccumulator.appendEndTag(toElement(*ancestor));
+            lastClosed = ancestor;
+            ancestorsToClose.removeLast();
+        }
+
+        // Surround the currently accumulated markup with markup for ancestors we never opened as we leave the subtree(s) rooted at those ancestors.
+        ContainerNode* nextParent = next ? Strategy::parent(*next) : nullptr;
+        if (next == pastEnd || n == nextParent)
+            continue;
+
+        ASSERT(n);
+        Node* lastAncestorClosedOrSelf = Strategy::isDescendantOf(*n, *lastClosed) ? lastClosed : n;
+        for (ContainerNode* parent = Strategy::parent(*lastAncestorClosedOrSelf); parent && parent != nextParent; parent = Strategy::parent(*parent)) {
+            // All ancestors that aren't in the ancestorsToClose list should either be a) unrendered:
+            if (!parent->layoutObject())
+                continue;
+            // or b) ancestors that we never encountered during a pre-order traversal starting at startNode:
+            ASSERT(startNode);
+            ASSERT(Strategy::isDescendantOf(*startNode, *parent));
+            if (shouldEmit)
+                wrapWithNode(*parent);
+            lastClosed = parent;
         }
     }
 
