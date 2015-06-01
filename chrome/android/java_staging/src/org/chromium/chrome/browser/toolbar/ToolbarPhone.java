@@ -1614,13 +1614,20 @@ public class ToolbarPhone extends ToolbarLayout
         updateVisualsForToolbarState(mInTabSwitcherMode);
     }
 
+    private static boolean isVisualStateValidForBrandColorTransition(VisualState state) {
+        return state == VisualState.NORMAL || state == VisualState.BRAND_COLOR;
+    }
+
     @Override
     protected void onPrimaryColorChanged() {
         super.onPrimaryColorChanged();
         if (mBrandColorTransitionActive) mBrandColorTransitionAnimation.cancel();
+        if (!isVisualStateValidForBrandColorTransition(mVisualState)) {
+            return;
+        }
         final int initialColor = mToolbarBackground.getColor();
         final int finalColor = getToolbarDataProvider().getPrimaryColor();
-        if (mInTabSwitcherMode || initialColor == finalColor) return;
+        if (initialColor == finalColor) return;
         boolean shouldUseOpaque = BrandColorUtils.shouldUseOpaqueTextboxBackground(finalColor);
         final int initialAlpha = mUrlBackgroundAlpha;
         final int finalAlpha =
@@ -1737,11 +1744,25 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void updateVisualsForToolbarState(boolean isInTabSwitcherMode) {
-        if (mBrandColorTransitionActive) return;
         final boolean isIncognito = isIncognito();
 
-        VisualState visualState = computeVisualState(isInTabSwitcherMode);
-        boolean visualStateChanged = mVisualState != visualState;
+        VisualState newVisualState = computeVisualState(isInTabSwitcherMode);
+
+        // If we are navigating to or from a brand color, allow the transition animation
+        // to run to completion as it will handle the triggering this path again and committing
+        // the proper visual state when it finishes.  Brand color transitions are only valid
+        // between normal non-incognito pages and brand color pages, so if the visual states
+        // do not match then cancel the animation below.
+        if (mBrandColorTransitionActive
+                && isVisualStateValidForBrandColorTransition(mVisualState)
+                && isVisualStateValidForBrandColorTransition(newVisualState)) {
+            return;
+        } else if (mBrandColorTransitionAnimation != null
+                && mBrandColorTransitionAnimation.isRunning()) {
+            mBrandColorTransitionAnimation.cancel();
+        }
+
+        boolean visualStateChanged = mVisualState != newVisualState;
 
         int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
         if (mVisualState == VisualState.BRAND_COLOR && !visualStateChanged) {
@@ -1758,7 +1779,7 @@ public class ToolbarPhone extends ToolbarLayout
             }
         }
 
-        mVisualState = visualState;
+        mVisualState = newVisualState;
 
         updateOverlayDrawables();
         updateShadowVisibility(isInTabSwitcherMode);
