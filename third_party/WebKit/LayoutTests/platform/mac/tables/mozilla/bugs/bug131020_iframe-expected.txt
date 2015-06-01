@@ -157,8 +157,8 @@ layer at (0,0) size 785x1840 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (32,19) width 454: "Ich habe so eben eine random.cgi f\x{FC}r den Topsites Script geschrieben. "
                   text run at (485,19) width 226: "Die random.cgi f\x{FC}hrt den Besucher"
                 LayoutBR {BR} at (710,33) size 1x0
-                LayoutText {#text} at (257,37) size 229x18
-                  text run at (257,37) width 229: "auf eine zuf\x{E4}llig ausgew\x{E4}hlte Seite."
+                LayoutText {#text} at (257,37) size 228x18
+                  text run at (257,37) width 228: "auf eine zuf\x{E4}llig ausgew\x{E4}hlte Seite."
             LayoutTableRow {TR} at (0,814) size 743x56
               LayoutTableCell {TD} at (0,814) size 743x56 [border: (1px solid #000000)] [r=12 c=0 rs=1 cs=1]
                 LayoutText {#text} at (318,1) size 107x18

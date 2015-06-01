@@ -17,7 +17,7 @@ layer at (0,0) size 480x360
             chunk 1 text run 1 at (336.67,128.00) startOffset 0 endOffset 4 width 73.29: " def"
         LayoutSVGContainer {g} at (10,220) size 430x20
           LayoutSVGRect {rect} at (10,220) size 100x20 [fill={[type=SOLID] [color=#0000FF]}] [x=10.00] [y=160.00] [width=100.00] [height=20.00]
-          LayoutSVGText {text} at (18,161) size 84x18 contains 1 chunk(s)
+          LayoutSVGText {text} at (18,161) size 83x18 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 83x18
               chunk 1 (middle anchor) text run 1 at (18.99,175.00) startOffset 0 endOffset 12 width 82.02: "startIndex++"
           LayoutSVGRect {rect} at (120,220) size 100x20 [fill={[type=SOLID] [color=#0000FF]}] [x=120.00] [y=160.00] [width=100.00] [height=20.00]

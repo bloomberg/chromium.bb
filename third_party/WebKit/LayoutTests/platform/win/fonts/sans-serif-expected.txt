@@ -50,9 +50,9 @@ layer at (0,0) size 785x5610 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,318) size 769x126
         LayoutInline {FONT} at (0,0) size 767x125
-          LayoutText {#text} at (0,0) size 33x17
-            text run at (0,0) width 33: "Arial"
-          LayoutBR {BR} at (32,14) size 1x0
+          LayoutText {#text} at (0,0) size 32x17
+            text run at (0,0) width 32: "Arial"
+          LayoutBR {BR} at (32,14) size 0x0
           LayoutText {#text} at (0,18) size 767x35
             text run at (0,18) width 767: "  ! \" # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F G H I J K L M N O P Q R S T U V W X"
             text run at (0,36) width 453: "Y Z [ \\ ] ^ _ ` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } > "

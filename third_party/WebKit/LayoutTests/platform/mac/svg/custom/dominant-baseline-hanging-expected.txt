@@ -36,8 +36,8 @@ layer at (0,0) size 400x400
             LayoutInline {code} at (0,0) size 48x15
               LayoutText {#text} at (50,38) size 48x15
                 text run at (50,38) width 48: "<rect>"
-            LayoutText {#text} at (97,36) size 353x36
-              text run at (97,36) width 256: " are located at the same coordinates and"
+            LayoutText {#text} at (97,36) size 352x36
+              text run at (97,36) width 255: " are located at the same coordinates and"
               text run at (0,54) width 24: "the "
             LayoutInline {code} at (0,0) size 48x15
               LayoutText {#text} at (23,56) size 48x15

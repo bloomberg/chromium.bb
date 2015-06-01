@@ -38,8 +38,8 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (383,78) size 95x25 [fill={[type=SOLID] [color=#000080]}] [x=491.00] [y=101.00] [width=120.00] [height=30.00]
         LayoutSVGRect {rect} at (382,78) size 95x24 [fill={[type=SOLID] [color=#B0C4DE]}] [x=490.00] [y=100.00] [width=120.00] [height=30.00]
         LayoutSVGText {text} at (504,110) size 91x13 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 91x13
-            LayoutSVGInlineText {#text} at (0,0) size 91x13
+          LayoutSVGTSpan {tspan} at (0,0) size 90x13
+            LayoutSVGInlineText {#text} at (0,0) size 90x13
               chunk 1 (middle anchor) text run 1 at (505.00,120.40) startOffset 0 endOffset 16 width 90.00: "Switch Button on"
       LayoutSVGContainer {g} at (491,77) size 104x26
         LayoutSVGRect {rect} at (491,77) size 102x24 [fill={[type=SOLID] [color=#FFFFFF]}] [x=629.00] [y=99.00] [width=130.00] [height=30.00]
@@ -54,8 +54,8 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (610,78) size 102x25 [fill={[type=SOLID] [color=#000080]}] [x=781.00] [y=101.00] [width=130.00] [height=30.00]
         LayoutSVGRect {rect} at (609,78) size 102x24 [fill={[type=SOLID] [color=#B0C4DE]}] [x=780.00] [y=100.00] [width=130.00] [height=30.00]
         LayoutSVGText {text} at (794,110) size 101x13 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (0,0) size 101x13
-            LayoutSVGInlineText {#text} at (0,0) size 101x13
+          LayoutSVGTSpan {tspan} at (0,0) size 100x13
+            LayoutSVGInlineText {#text} at (0,0) size 100x13
               chunk 1 (middle anchor) text run 1 at (795.00,120.40) startOffset 0 endOffset 18 width 100.01: "Switch Button 4 on"
       LayoutSVGContainer {g} at (155,233) size 120x50
         LayoutSVGRect {rect} at (155,233) size 118x48 [fill={[type=SOLID] [color=#FFFFFF]}] [x=199.00] [y=299.00] [width=150.00] [height=60.00]
@@ -65,11 +65,11 @@ layer at (0,0) size 800x600
           LayoutSVGTSpan {tspan} at (0,0) size 92x13
             LayoutSVGInlineText {#text} at (0,0) size 92x13
               chunk 1 (middle anchor) text run 1 at (229.01,322.20) startOffset 0 endOffset 19 width 91.98: "This is a multiline"
-          LayoutSVGTSpan {tspan} at (0,0) size 78x14
+          LayoutSVGTSpan {tspan} at (0,0) size 78x13
             LayoutSVGInlineText {#text} at (7,13) size 78x13
               chunk 1 (middle anchor) text run 1 at (236.33,335.40) startOffset 0 endOffset 15 width 77.34: "textbutton with"
-          LayoutSVGTSpan {tspan} at (0,0) size 75x14
-            LayoutSVGInlineText {#text} at (8,26) size 74x13
+          LayoutSVGTSpan {tspan} at (0,0) size 74x14
+            LayoutSVGInlineText {#text} at (9,26) size 74x13
               chunk 1 (middle anchor) text run 1 at (238.00,348.60) startOffset 0 endOffset 13 width 74.00: "round corners"
     LayoutSVGContainer {g} at (233,112) size 61x22
       LayoutSVGContainer {g} at (233,116) size 18x18

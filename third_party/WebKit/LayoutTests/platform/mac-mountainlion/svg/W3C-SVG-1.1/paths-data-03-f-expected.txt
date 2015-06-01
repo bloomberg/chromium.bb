@@ -13,8 +13,8 @@ layer at (0,0) size 480x360
       LayoutSVGRect {rect} at (23,68) size 4x4 [fill={[type=SOLID] [color=#00C000]}] [x=23.00] [y=68.00] [width=4.00] [height=4.00]
       LayoutSVGRect {rect} at (23,67) size 4x4 [fill={[type=SOLID] [color=#00C000]}] [x=23.00] [y=67.00] [width=4.00] [height=4.00]
       LayoutSVGPath {path} at (149,27) size 89x86 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#00FF00]}] [data="M 150 100 C 167.553 111.967 193.06 112.777 211.743 101.961 C 230.427 91.1455 237.439 71.5096 228.719 54.4299 C 219.998 37.3502 197.806 27.2579 175 30 Z"]
-      LayoutSVGText {text} at (124,34) size 37x14 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,0) size 37x14
+      LayoutSVGText {text} at (124,34) size 36x14 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 36x14
           chunk 1 text run 1 at (124.00,45.00) startOffset 0 endOffset 7 width 36.01: "m, a, z"
       LayoutSVGRect {rect} at (148,98) size 4x4 [fill={[type=SOLID] [color=#CF0000]}] [x=148.00] [y=98.00] [width=4.00] [height=4.00]
       LayoutSVGRect {rect} at (173,28) size 4x4 [fill={[type=SOLID] [color=#CF0000]}] [x=173.00] [y=28.00] [width=4.00] [height=4.00]

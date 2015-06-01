@@ -15,8 +15,8 @@ layer at (0,0) size 800x357
           text run at (0,0) width 356: "The following TABLE has a COLGROUP structure of:"
       LayoutBlockFlow {PRE} at (15,126.72) size 769x60 [color=#000066]
         LayoutText {#text} at (0,0) size 211x60
-          text run at (0,0) width 79: "<colgroup>"
-          text run at (78,0) width 1: " "
+          text run at (0,0) width 78: "<colgroup>"
+          text run at (78,0) width 0: " "
           text run at (0,15) width 211: " <col width=\"100\" span=\"2\">"
           text run at (210,15) width 1: " "
           text run at (0,30) width 141: " <col width=\"200\">"

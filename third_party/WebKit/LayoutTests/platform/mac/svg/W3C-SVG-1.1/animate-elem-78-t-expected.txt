@@ -44,7 +44,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (-25,189) size 25x14 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 25x14
             chunk 1 (end anchor) text run 1 at (-24.66,200.00) startOffset 0 endOffset 5 width 24.66: "color"
-      LayoutSVGContainer {g} at (171,45) size 246x17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,-20.00)}]
+      LayoutSVGContainer {g} at (171,45) size 245x17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,-20.00)}]
         LayoutSVGText {text} at (1,-10) size 38x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 37x17
             chunk 1 (middle anchor) text run 1 at (1.61,3.00) startOffset 0 endOffset 6 width 36.78: "<text>"
@@ -52,7 +52,7 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 23x17
             chunk 1 (middle anchor) text run 1 at (118.60,3.00) startOffset 0 endOffset 3 width 22.79: "<g>"
         LayoutSVGText {text} at (223,-10) size 23x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 23x17
+          LayoutSVGInlineText {#text} at (0,0) size 22x17
             chunk 1 (middle anchor) text run 1 at (224.00,3.00) startOffset 0 endOffset 3 width 22.00: "<a>"
       LayoutSVGContainer {g} at (155,75) size 285x208 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,0.00)}]
         LayoutSVGRect {rect} at (170,75) size 8x8 [fill={[type=SOLID] [color=#CCCCCC]}] [x=10.00] [y=0.00] [width=8.00] [height=8.00]

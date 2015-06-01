@@ -62,10 +62,10 @@ layer at (0,0) size 785x1582 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutImage {IMG} at (271.28,2) size 88x65
               LayoutText {#text} at (359,53) size 31x17
                 text run at (359,53) width 31: "Four"
-              LayoutImage {IMG} at (389.52,2) size 88x65
+              LayoutImage {IMG} at (389.50,2) size 88x65
               LayoutText {#text} at (477,53) size 29x17
                 text run at (477,53) width 29: "Five"
-              LayoutImage {IMG} at (505.95,2) size 88x65
+              LayoutImage {IMG} at (505.94,2) size 88x65
             LayoutTableCell {TD} at (600,27) size 165x22 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 136x17
                 text run at (2,2) width 136: "Text between images"

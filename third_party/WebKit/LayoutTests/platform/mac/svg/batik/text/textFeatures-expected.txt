@@ -64,7 +64,7 @@ layer at (0,0) size 450x500
           LayoutSVGInlineText {#text} at (209,0) size 95x17
             chunk 1 text run 1 at (254.11,225.00) startOffset 0 endOffset 16 width 94.12: " can be applied."
         LayoutSVGText {text} at (45,262) size 321x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 179x17
+          LayoutSVGInlineText {#text} at (0,0) size 178x17
             chunk 1 text run 1 at (45.00,275.00) startOffset 0 endOffset 30 width 178.01: "\"text decoration\" can include "
           LayoutSVGTSpan {tspan} at (0,0) size 61x17
             LayoutSVGInlineText {#text} at (178,0) size 61x17

@@ -56,9 +56,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutText {#text} at (132,45) size 5x15
                     text run at (132,45) width 5: " "
                   LayoutBR {BR} at (136,57) size 1x0
-                  LayoutInline {A} at (0,0) size 165x15 [color=#0000EE]
-                    LayoutText {#text} at (0,60) size 165x15
-                      text run at (0,60) width 165: "How This Book is Structured"
+                  LayoutInline {A} at (0,0) size 164x15 [color=#0000EE]
+                    LayoutText {#text} at (0,60) size 164x15
+                      text run at (0,60) width 164: "How This Book is Structured"
                   LayoutText {#text} at (164,60) size 4x15
                     text run at (164,60) width 4: " "
                   LayoutBR {BR} at (167,72) size 1x0
@@ -729,9 +729,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutInline {A} at (0,0) size 49x15 [color=#0000EE]
                     LayoutText {#text} at (0,630) size 49x15
                       text run at (0,630) width 49: "Numeric"
-                  LayoutText {#text} at (48,630) size 5x15
-                    text run at (48,630) width 5: " "
-                  LayoutBR {BR} at (52,642) size 1x0
+                  LayoutText {#text} at (48,630) size 4x15
+                    text run at (48,630) width 4: " "
+                  LayoutBR {BR} at (52,642) size 0x0
                   LayoutInline {A} at (0,0) size 35x15 [color=#0000EE]
                     LayoutText {#text} at (0,645) size 35x15
                       text run at (0,645) width 35: "DATE"
@@ -1059,9 +1059,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutInline {A} at (0,0) size 109x15 [color=#0000EE]
                     LayoutText {#text} at (0,1455) size 109x15
                       text run at (0,1455) width 109: "Method Resolution"
-                  LayoutText {#text} at (108,1455) size 5x15
-                    text run at (108,1455) width 5: " "
-                  LayoutBR {BR} at (112,1467) size 1x0
+                  LayoutText {#text} at (108,1455) size 4x15
+                    text run at (108,1455) width 4: " "
+                  LayoutBR {BR} at (112,1467) size 0x0
                   LayoutInline {A} at (0,0) size 186x15 [color=#0000EE]
                     LayoutText {#text} at (0,1470) size 186x15
                       text run at (0,1470) width 186: "Method of Choosing the Best Fit"
@@ -1430,9 +1430,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutInline {A} at (0,0) size 36x15 [color=#0000EE]
                     LayoutText {#text} at (0,405) size 36x15
                       text run at (0,405) width 36: "CLOB"
-                  LayoutText {#text} at (35,405) size 5x15
-                    text run at (35,405) width 5: " "
-                  LayoutBR {BR} at (39,417) size 1x0
+                  LayoutText {#text} at (35,405) size 4x15
+                    text run at (35,405) width 4: " "
+                  LayoutBR {BR} at (39,417) size 0x0
                   LayoutInline {A} at (0,0) size 71x15 [color=#0000EE]
                     LayoutText {#text} at (0,420) size 71x15
                       text run at (0,420) width 71: "COALESCE"
@@ -1496,9 +1496,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutInline {A} at (0,0) size 36x15 [color=#0000EE]
                     LayoutText {#text} at (0,570) size 36x15
                       text run at (0,570) width 36: "DAYS"
-                  LayoutText {#text} at (35,570) size 5x15
-                    text run at (35,570) width 5: " "
-                  LayoutBR {BR} at (39,582) size 1x0
+                  LayoutText {#text} at (35,570) size 4x15
+                    text run at (35,570) width 4: " "
+                  LayoutBR {BR} at (39,582) size 0x0
                   LayoutInline {A} at (0,0) size 54x15 [color=#0000EE]
                     LayoutText {#text} at (0,585) size 54x15
                       text run at (0,585) width 54: "DBCLOB"
@@ -1595,9 +1595,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutText {#text} at (130,810) size 4x15
                     text run at (130,810) width 4: " "
                   LayoutBR {BR} at (133,822) size 1x0
-                  LayoutInline {A} at (0,0) size 27x15 [color=#0000EE]
-                    LayoutText {#text} at (0,825) size 27x15
-                      text run at (0,825) width 27: "EXP"
+                  LayoutInline {A} at (0,0) size 26x15 [color=#0000EE]
+                    LayoutText {#text} at (0,825) size 26x15
+                      text run at (0,825) width 26: "EXP"
                   LayoutText {#text} at (26,825) size 4x15
                     text run at (26,825) width 4: " "
                   LayoutBR {BR} at (29,837) size 1x0
@@ -1685,9 +1685,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutText {#text} at (16,1035) size 5x15
                     text run at (16,1035) width 5: " "
                   LayoutBR {BR} at (20,1047) size 1x0
-                  LayoutInline {A} at (0,0) size 53x15 [color=#0000EE]
-                    LayoutText {#text} at (0,1050) size 53x15
-                      text run at (0,1050) width 53: "LOCATE"
+                  LayoutInline {A} at (0,0) size 52x15 [color=#0000EE]
+                    LayoutText {#text} at (0,1050) size 52x15
+                      text run at (0,1050) width 52: "LOCATE"
                   LayoutText {#text} at (52,1050) size 4x15
                     text run at (52,1050) width 4: " "
                   LayoutBR {BR} at (55,1062) size 1x0
@@ -1823,9 +1823,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutText {#text} at (33,1380) size 5x15
                     text run at (33,1380) width 5: " "
                   LayoutBR {BR} at (37,1392) size 1x0
-                  LayoutInline {A} at (0,0) size 53x15 [color=#0000EE]
-                    LayoutText {#text} at (0,1395) size 53x15
-                      text run at (0,1395) width 53: "REPEAT"
+                  LayoutInline {A} at (0,0) size 52x15 [color=#0000EE]
+                    LayoutText {#text} at (0,1395) size 52x15
+                      text run at (0,1395) width 52: "REPEAT"
                   LayoutText {#text} at (52,1395) size 4x15
                     text run at (52,1395) width 4: " "
                   LayoutBR {BR} at (55,1407) size 1x0
@@ -2018,9 +2018,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutInline {A} at (0,0) size 36x15 [color=#0000EE]
                     LayoutText {#text} at (0,1875) size 36x15
                       text run at (0,1875) width 36: "YEAR"
-                  LayoutText {#text} at (35,1875) size 5x15
-                    text run at (35,1875) width 5: " "
-                  LayoutBR {BR} at (39,1887) size 1x0
+                  LayoutText {#text} at (35,1875) size 4x15
+                    text run at (35,1875) width 4: " "
+                  LayoutBR {BR} at (39,1887) size 0x0
                   LayoutInline {A} at (0,0) size 93x15 [color=#0000EE]
                     LayoutText {#text} at (0,1890) size 93x15
                       text run at (0,1890) width 93: "Table Functions"
@@ -2190,9 +2190,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutInline {A} at (0,0) size 208x15 [color=#0000EE]
                     LayoutText {#text} at (0,60) size 208x15
                       text run at (0,60) width 208: "Dynamic Preparation and Execution"
-                  LayoutText {#text} at (207,60) size 5x15
-                    text run at (207,60) width 5: " "
-                  LayoutBR {BR} at (211,72) size 1x0
+                  LayoutText {#text} at (207,60) size 4x15
+                    text run at (207,60) width 4: " "
+                  LayoutBR {BR} at (211,72) size 0x0
                   LayoutInline {A} at (0,0) size 220x15 [color=#0000EE]
                     LayoutText {#text} at (0,75) size 220x15
                       text run at (0,75) width 220: "Static Invocation of a select-statement"
@@ -2550,9 +2550,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutInline {A} at (0,0) size 62x15 [color=#0000EE]
                     LayoutText {#text} at (0,960) size 62x15
                       text run at (0,960) width 62: "EXECUTE"
-                  LayoutText {#text} at (61,960) size 5x15
-                    text run at (61,960) width 5: " "
-                  LayoutBR {BR} at (65,972) size 1x0
+                  LayoutText {#text} at (61,960) size 4x15
+                    text run at (61,960) width 4: " "
+                  LayoutBR {BR} at (65,972) size 0x0
                   LayoutInline {A} at (0,0) size 138x15 [color=#0000EE]
                     LayoutText {#text} at (0,975) size 138x15
                       text run at (0,975) width 138: "EXECUTE IMMEDIATE"
@@ -2661,9 +2661,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutText {#text} at (106,1230) size 5x15
                     text run at (106,1230) width 5: " "
                   LayoutBR {BR} at (110,1242) size 1x0
-                  LayoutInline {A} at (0,0) size 139x15 [color=#0000EE]
-                    LayoutText {#text} at (0,1245) size 139x15
-                      text run at (0,1245) width 139: "RELEASE (Connection)"
+                  LayoutInline {A} at (0,0) size 138x15 [color=#0000EE]
+                    LayoutText {#text} at (0,1245) size 138x15
+                      text run at (0,1245) width 138: "RELEASE (Connection)"
                   LayoutText {#text} at (138,1245) size 4x15
                     text run at (138,1245) width 4: " "
                   LayoutBR {BR} at (141,1257) size 1x0
@@ -2697,9 +2697,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutText {#text} at (158,1320) size 4x15
                     text run at (158,1320) width 4: " "
                   LayoutBR {BR} at (161,1332) size 1x0
-                  LayoutInline {A} at (0,0) size 178x15 [color=#0000EE]
-                    LayoutText {#text} at (0,1335) size 178x15
-                      text run at (0,1335) width 178: "REVOKE (Package Privileges)"
+                  LayoutInline {A} at (0,0) size 177x15 [color=#0000EE]
+                    LayoutText {#text} at (0,1335) size 177x15
+                      text run at (0,1335) width 177: "REVOKE (Package Privileges)"
                   LayoutText {#text} at (177,1335) size 4x15
                     text run at (177,1335) width 4: " "
                   LayoutBR {BR} at (180,1347) size 1x0
@@ -2897,9 +2897,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutInline {A} at (0,0) size 213x15 [color=#0000EE]
                     LayoutText {#text} at (0,75) size 213x15
                       text run at (0,75) width 213: "ASSOCIATE LOCATORS Statement"
-                  LayoutText {#text} at (212,75) size 5x15
-                    text run at (212,75) width 5: " "
-                  LayoutBR {BR} at (216,87) size 1x0
+                  LayoutText {#text} at (212,75) size 4x15
+                    text run at (212,75) width 4: " "
+                  LayoutBR {BR} at (216,87) size 0x0
                   LayoutInline {A} at (0,0) size 99x15 [color=#0000EE]
                     LayoutText {#text} at (0,90) size 99x15
                       text run at (0,90) width 99: "CASE Statement"
@@ -2989,11 +2989,11 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                         text run at (0,0) width 149: "Appendix A. SQL Limits"
                   LayoutBR {BR} at (148,12) size 1x0
                 LayoutBlockFlow {P} at (0,7643.17) size 708x90
-                  LayoutInline {B} at (0,0) size 274x15
-                    LayoutInline {A} at (0,0) size 274x15 [color=#0000EE]
-                      LayoutText {#text} at (0,0) size 274x15
-                        text run at (0,0) width 274: "Appendix B. SQL Communications (SQLCA)"
-                  LayoutBR {BR} at (273,12) size 1x0
+                  LayoutInline {B} at (0,0) size 273x15
+                    LayoutInline {A} at (0,0) size 273x15 [color=#0000EE]
+                      LayoutText {#text} at (0,0) size 273x15
+                        text run at (0,0) width 273: "Appendix B. SQL Communications (SQLCA)"
+                  LayoutBR {BR} at (273,12) size 0x0
                   LayoutBR {BR} at (0,15) size 0x15
                   LayoutInline {A} at (0,0) size 188x15 [color=#0000EE]
                     LayoutText {#text} at (0,30) size 188x15
@@ -3013,9 +3013,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutText {#text} at (140,60) size 4x15
                     text run at (140,60) width 4: " "
                   LayoutBR {BR} at (143,72) size 1x0
-                  LayoutInline {A} at (0,0) size 324x15 [color=#0000EE]
-                    LayoutText {#text} at (0,75) size 324x15
-                      text run at (0,75) width 324: "DB2 Enterprise - Extended Edition Usage of the SQLCA"
+                  LayoutInline {A} at (0,0) size 323x15 [color=#0000EE]
+                    LayoutText {#text} at (0,75) size 323x15
+                      text run at (0,75) width 323: "DB2 Enterprise - Extended Edition Usage of the SQLCA"
                   LayoutText {#text} at (0,0) size 0x0
                 LayoutBlockFlow {P} at (0,7746.17) size 708x165
                   LayoutInline {B} at (0,0) size 266x15
@@ -3858,9 +3858,9 @@ layer at (0,0) size 785x11400 backgroundClip at (0,0) size 785x600 clip at (0,0)
                   LayoutText {#text} at (172,30) size 5x15
                     text run at (172,30) width 5: " "
                   LayoutBR {BR} at (176,42) size 1x0
-                  LayoutInline {A} at (0,0) size 165x15 [color=#0000EE]
-                    LayoutText {#text} at (0,45) size 165x15
-                      text run at (0,45) width 165: "EXPLAIN_INSTANCE Table"
+                  LayoutInline {A} at (0,0) size 164x15 [color=#0000EE]
+                    LayoutText {#text} at (0,45) size 164x15
+                      text run at (0,45) width 164: "EXPLAIN_INSTANCE Table"
                   LayoutText {#text} at (164,45) size 4x15
                     text run at (164,45) width 4: " "
                   LayoutBR {BR} at (167,57) size 1x0

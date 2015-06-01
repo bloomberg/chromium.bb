@@ -54,8 +54,8 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (-44,-27) size 88x33 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 25x33
             chunk 1 (middle anchor) text run 1 at (-43.32,0.00) startOffset 0 endOffset 2 width 24.99: "sa"
-          LayoutSVGTSpan {tspan} at (0,0) size 26x33
-            LayoutSVGInlineText {#text} at (24,0) size 25x33
+          LayoutSVGTSpan {tspan} at (0,0) size 25x33
+            LayoutSVGInlineText {#text} at (25,0) size 25x33
               chunk 1 (middle anchor) text run 1 at (-18.33,0.00) startOffset 0 endOffset 1 width 24.99: "m"
           LayoutSVGInlineText {#text} at (49,0) size 37x33
             chunk 1 (middle anchor) text run 1 at (6.67,0.00) startOffset 0 endOffset 3 width 36.65: "ple"
@@ -133,7 +133,7 @@ layer at (0,0) size 450x500
           LayoutSVGGradientStop {stop} [offset=1.00] [color=#008000]
       LayoutSVGContainer {g} at (298,345) size 104x43 [transform={m=((1.00,0.00)(0.00,1.00)) t=(350.00,370.00)}]
         LayoutSVGRect {rect} at (307,345) size 86x31 [fill={[type=LINEAR-GRADIENT] [id="gradient"]}] [x=-50.00] [y=-25.00] [width=100.00] [height=50.00]
-          [clipPath="textClip"] LayoutSVGResourceClipper {clipPath} at (-42.50,-27) size 85x33
+          [clipPath="textClip"] LayoutSVGResourceClipper {clipPath} at (-42.48,-27) size 84.97x33
         LayoutSVGText {text} at (-52,1) size 104x17 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 103x17
             chunk 1 (middle anchor) text run 1 at (-51.09,15.00) startOffset 0 endOffset 17 width 102.19: "text as clip-path"
@@ -152,7 +152,7 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (223,441) size 154x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 153x17
           chunk 1 (middle anchor) text run 1 at (223.64,455.00) startOffset 0 endOffset 23 width 152.73: "stroke-linejoin=\"round\""
-      LayoutSVGText {text} at (224,451) size 152x17 contains 1 chunk(s)
+      LayoutSVGText {text} at (224,451) size 151x17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 151x17
           chunk 1 (middle anchor) text run 1 at (224.98,465.00) startOffset 0 endOffset 22 width 150.04: "stroke-linecap=\"round\""
     LayoutSVGContainer {use} at (0,0) size 448x498

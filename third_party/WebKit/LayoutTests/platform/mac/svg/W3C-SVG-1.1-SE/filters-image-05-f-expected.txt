@@ -48,7 +48,7 @@ layer at (0,0) size 480x360
           LayoutSVGInlineText {#text} at (0,0) size 357x18
             chunk 1 (middle anchor) text run 1 at (61.68,0.00) startOffset 0 endOffset 47 width 356.63: "Test preserveAspectRatio on an feImage element."
         LayoutSVGText {text} at (16,22) size 47x10 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 47x10
+          LayoutSVGInlineText {#text} at (0,0) size 46x10
             chunk 1 (middle anchor) text run 1 at (16.99,30.00) startOffset 0 endOffset 13 width 46.02: "Raster to fit"
         LayoutSVGContainer {g} at (20,70) size 40x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,40.00)}]
           LayoutSVGRect {rect} at (20,70) size 40x40 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=40.00] [height=40.00]
@@ -82,8 +82,8 @@ layer at (0,0) size 480x360
             LayoutSVGRect {rect} at (190,80) size 50x30 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=30.00]
               [filter="xMidYMidMeet"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
           LayoutSVGContainer {g} at (120,117) size 50x43 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,50.00)}]
-            LayoutSVGText {text} at (0,-13) size 26x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 26x10
+            LayoutSVGText {text} at (0,-13) size 25x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 25x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 25.00: "xMax*"
             LayoutSVGRect {rect} at (120,130) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
             LayoutSVGRect {rect} at (120,130) size 50x30 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=30.00]
@@ -93,15 +93,15 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 127x10
               chunk 1 text run 1 at (0.00,-20.00) startOffset 0 endOffset 40 width 126.91: "---------- meet ------------------------"
           LayoutSVGContainer {g} at (300,67) size 30x73
-            LayoutSVGText {text} at (0,-13) size 25x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 25x10
+            LayoutSVGText {text} at (0,-13) size 24x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 24x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 24.01: "*YMin"
             LayoutSVGRect {rect} at (300,80) size 30x60 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]
             LayoutSVGRect {rect} at (300,80) size 30x60 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=30.00] [height=60.00]
               [filter="xMinYMinMeet"] LayoutSVGResourceFilter {filter} at (0,0) size 30x60
           LayoutSVGContainer {g} at (350,67) size 30x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,0.00)}]
-            LayoutSVGText {text} at (0,-13) size 25x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 25x10
+            LayoutSVGText {text} at (0,-13) size 24x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 24x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 24.01: "*YMid"
             LayoutSVGRect {rect} at (350,80) size 30x60 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]
             LayoutSVGRect {rect} at (350,80) size 30x60 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=30.00] [height=60.00]
@@ -132,8 +132,8 @@ layer at (0,0) size 480x360
             LayoutSVGRect {rect} at (170,215) size 30x60 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=30.00] [height=60.00]
               [filter="xMidYMidSlice"] LayoutSVGResourceFilter {filter} at (0,0) size 30x60
           LayoutSVGContainer {g} at (220,202) size 30x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,0.00)}]
-            LayoutSVGText {text} at (0,-13) size 26x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 26x10
+            LayoutSVGText {text} at (0,-13) size 25x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 25x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 25.00: "xMax*"
             LayoutSVGRect {rect} at (220,215) size 30x60 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]
             LayoutSVGRect {rect} at (220,215) size 30x60 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=30.00] [height=60.00]
@@ -143,15 +143,15 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 116x10
               chunk 1 text run 1 at (0.00,-20.00) startOffset 0 endOffset 38 width 115.91: "---------- slice ---------------------"
           LayoutSVGContainer {g} at (300,202) size 50x43
-            LayoutSVGText {text} at (0,-13) size 25x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 25x10
+            LayoutSVGText {text} at (0,-13) size 24x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 24x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 24.01: "*YMin"
             LayoutSVGRect {rect} at (300,215) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
             LayoutSVGRect {rect} at (300,215) size 50x30 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=30.00]
               [filter="xMinYMinSlice"] LayoutSVGResourceFilter {filter} at (0,0) size 50x30
           LayoutSVGContainer {g} at (370,202) size 50x43 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,0.00)}]
-            LayoutSVGText {text} at (0,-13) size 25x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 25x10
+            LayoutSVGText {text} at (0,-13) size 24x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 24x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 24.01: "*YMid"
             LayoutSVGRect {rect} at (370,215) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
             LayoutSVGRect {rect} at (370,215) size 50x30 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=30.00]

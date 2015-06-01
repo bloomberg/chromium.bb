@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
             chunk 1 text run 1 at (0.00,30.00) startOffset 0 endOffset 11 width 59.41: "Beta 3, an "
           LayoutSVGInlineText {#cdata-section} at (59,30) size 38x11
             chunk 1 text run 1 at (59.41,30.00) startOffset 0 endOffset 7 width 37.81: "<image>"
-          LayoutSVGInlineText {#text} at (97,30) size 82x11
+          LayoutSVGInlineText {#text} at (97,30) size 81x11
             chunk 1 text run 1 at (97.22,30.00) startOffset 0 endOffset 15 width 81.01: " tag with width"
         LayoutSVGInlineText {#text} at (178,30) size 6x11
           chunk 1 text run 1 at (178.23,30.00) startOffset 0 endOffset 1 width 5.40: " "

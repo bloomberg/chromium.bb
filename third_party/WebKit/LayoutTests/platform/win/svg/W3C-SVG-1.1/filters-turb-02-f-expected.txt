@@ -49,7 +49,7 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (215,80) size 50x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,0.00)}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
           [filter="turbzero"] LayoutSVGResourceFilter {filter} at (0,0) size 50x50
         LayoutSVGText {text} at (169,64) size 11x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 11x20
+          LayoutSVGInlineText {#text} at (0,0) size 10x20
             chunk 1 (middle anchor) text run 1 at (169.99,80.00) startOffset 0 endOffset 1 width 10.01: "0"
         LayoutSVGRect {rect} at (265,80) size 50x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(200.00,0.00)}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
           [filter="turbpos1"] LayoutSVGResourceFilter {filter} at (0,0) size 50x50
@@ -70,7 +70,7 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (65,200) size 50x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
           [filter="turbneg4"] LayoutSVGResourceFilter {filter} at (0,0) size 50x50
         LayoutSVGText {text} at (16,184) size 17x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 17x20
+          LayoutSVGInlineText {#text} at (0,0) size 16x20
             chunk 1 (middle anchor) text run 1 at (17.00,200.00) startOffset 0 endOffset 2 width 16.00: "-1"
         LayoutSVGRect {rect} at (115,200) size 50x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,120.00)}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
           [filter="turbneg5"] LayoutSVGResourceFilter {filter} at (0,0) size 50x50
@@ -81,7 +81,7 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (315,200) size 50x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(250.00,120.00)}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
           [filter="turbneg6"] LayoutSVGResourceFilter {filter} at (0,0) size 50x50
         LayoutSVGText {text} at (266,184) size 17x20 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 17x20
+          LayoutSVGInlineText {#text} at (0,0) size 16x20
             chunk 1 (middle anchor) text run 1 at (267.00,200.00) startOffset 0 endOffset 2 width 16.00: "-2"
         LayoutSVGRect {rect} at (365,200) size 50x50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,120.00)}] [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=50.00] [height=50.00]
           [filter="turbneg7"] LayoutSVGResourceFilter {filter} at (0,0) size 50x50

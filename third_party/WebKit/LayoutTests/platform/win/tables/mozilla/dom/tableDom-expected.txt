@@ -13,19 +13,19 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (143.44,0) size 68x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (211,2) size 42x17
           text run at (211,2) width 42: "   row "
-        LayoutTextControl {INPUT} at (252.33,0) size 68x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (252.31,0) size 68x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (320,2) size 36x17
           text run at (320,2) width 36: "   col "
-        LayoutTextControl {INPUT} at (355.88,0) size 68x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (355.86,0) size 68x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (423,2) size 76x17
           text run at (423,2) width 76: "   row span "
-        LayoutTextControl {INPUT} at (498.08,0) size 68x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (498.06,0) size 68x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (566,2) size 69x17
           text run at (566,2) width 69: "   col span "
-        LayoutTextControl {INPUT} at (634.95,0) size 68x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutTextControl {INPUT} at (634.94,0) size 68x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (702,2) size 21x17
           text run at (702,2) width 21: "     "
-        LayoutButton {INPUT} at (722.95,0) size 43x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        LayoutButton {INPUT} at (722.94,0) size 43x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
           LayoutBlockFlow (anonymous) at (8,3) size 27x16
             LayoutText {#text} at (0,0) size 27x16
               text run at (0,0) width 27: "Do It"

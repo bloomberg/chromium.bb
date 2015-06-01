@@ -35,7 +35,7 @@ layer at (0,0) size 480x360
         LayoutSVGPath {line} at (165,62) size 70x56 [transform={m=((1.00,0.00)(-1.00,1.00)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#C0C0C0] [stroke width=15.00] [line cap=ROUND]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=0.00] [y2=-40.00]
         LayoutSVGPath {line} at (175,65) size 10x50 [stroke={[type=SOLID] [color=#C85050] [stroke width=10.00] [line cap=ROUND]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=0.00] [y2=-40.00]
         LayoutSVGText {text} at (-41,26) size 82x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 82x18
+          LayoutSVGInlineText {#text} at (0,0) size 81x18
             chunk 1 (middle anchor) text run 1 at (-40.50,40.00) startOffset 0 endOffset 10 width 81.01: "type=skewX"
       LayoutSVGContainer {g} at (259,55) size 82x99 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,90.00)}]
         LayoutSVGContainer {g} at (267,55) size 56x70 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,0.00)}]
@@ -44,7 +44,7 @@ layer at (0,0) size 480x360
           LayoutSVGPath {line} at (267,78) size 56x47 [transform={m=((1.00,-0.58)(0.00,1.00)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#C0C0C0] [stroke width=15.00] [line cap=ROUND]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=-40.00] [y2=0.00]
           LayoutSVGPath {line} at (270,85) size 50x10 [stroke={[type=SOLID] [color=#C85050] [stroke width=10.00] [line cap=ROUND]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=-40.00] [y2=0.00]
         LayoutSVGText {text} at (-41,46) size 82x18 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,0) size 82x18
+          LayoutSVGInlineText {#text} at (0,0) size 81x18
             chunk 1 (middle anchor) text run 1 at (-40.50,60.00) startOffset 0 endOffset 10 width 81.01: "type=skewY"
       LayoutSVGContainer {g} at (378,48) size 84x121 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,90.00)}]
         LayoutSVGEllipse {circle} at (378,48) size 84x84 [stroke={[type=SOLID] [color=#C0C0C0] [stroke width=4.00]}] [cx=0.00] [cy=0.00] [r=40.00]

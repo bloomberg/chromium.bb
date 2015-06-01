@@ -19,8 +19,8 @@ layer at (0,0) size 800x600
                   LayoutTableRow {TR} at (0,2) size 81x62
                     LayoutTableCell {TD} at (2,2) size 77x62 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       LayoutBlockFlow {DIV} at (21,21) size 35x20 [border: (1px dashed #FF0000)]
-                        LayoutText {#text} at (1,1) size 33x18
-                          text run at (1,1) width 33: "FOO"
+                        LayoutText {#text} at (1,1) size 32x18
+                          text run at (1,1) width 32: "FOO"
             LayoutTableCell {TD} at (140,2) size 252x122 [r=0 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (10,10) size 232x18
                 LayoutInline {B} at (0,0) size 232x18
@@ -31,8 +31,8 @@ layer at (0,0) size 800x600
                   LayoutTableRow {TR} at (0,2) size 111x62
                     LayoutTableCell {TD} at (2,2) size 107x62 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       LayoutBlockFlow {DIV} at (46,11) size 35x20 [border: (1px dashed #FF0000)]
-                        LayoutText {#text} at (1,1) size 33x18
-                          text run at (1,1) width 33: "FOO"
+                        LayoutText {#text} at (1,1) size 32x18
+                          text run at (1,1) width 32: "FOO"
       LayoutBlockFlow (anonymous) at (0,160) size 784x18
         LayoutBR {BR} at (0,0) size 0x18
       LayoutTable {TABLE} at (0,178) size 703x107
@@ -48,8 +48,8 @@ layer at (0,0) size 800x600
                   LayoutTableRow {TR} at (0,2) size 62x24
                     LayoutTableCell {TD} at (2,2) size 58x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       LayoutBlockFlow {DIV} at (21,2) size 35x20 [border: (1px dashed #FF0000)]
-                        LayoutText {#text} at (1,1) size 33x18
-                          text run at (1,1) width 33: "FOO"
+                        LayoutText {#text} at (1,1) size 32x18
+                          text run at (1,1) width 32: "FOO"
             LayoutTableCell {TD} at (168,2) size 175x84 [r=0 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (10,10) size 155x18
                 LayoutInline {B} at (0,0) size 155x18
@@ -60,8 +60,8 @@ layer at (0,0) size 800x600
                   LayoutTableRow {TR} at (0,2) size 62x24
                     LayoutTableCell {TD} at (2,2) size 58x24 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       LayoutBlockFlow {DIV} at (2,2) size 35x20 [border: (1px dashed #FF0000)]
-                        LayoutText {#text} at (1,1) size 33x18
-                          text run at (1,1) width 33: "FOO"
+                        LayoutText {#text} at (1,1) size 32x18
+                          text run at (1,1) width 32: "FOO"
             LayoutTableCell {TD} at (345,2) size 164x103 [r=0 c=2 rs=1 cs=1]
               LayoutBlockFlow {P} at (10,10) size 144x18
                 LayoutInline {B} at (0,0) size 144x18
@@ -72,8 +72,8 @@ layer at (0,0) size 800x600
                   LayoutTableRow {TR} at (0,2) size 43x43
                     LayoutTableCell {TD} at (2,2) size 39x43 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       LayoutBlockFlow {DIV} at (2,21) size 35x20 [border: (1px dashed #FF0000)]
-                        LayoutText {#text} at (1,1) size 33x18
-                          text run at (1,1) width 33: "FOO"
+                        LayoutText {#text} at (1,1) size 32x18
+                          text run at (1,1) width 32: "FOO"
             LayoutTableCell {TD} at (511,2) size 190x103 [r=0 c=3 rs=1 cs=1]
               LayoutBlockFlow {P} at (10,10) size 170x18
                 LayoutInline {B} at (0,0) size 170x18
@@ -84,8 +84,8 @@ layer at (0,0) size 800x600
                   LayoutTableRow {TR} at (0,2) size 43x43
                     LayoutTableCell {TD} at (2,2) size 39x43 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       LayoutBlockFlow {DIV} at (2,2) size 35x20 [border: (1px dashed #FF0000)]
-                        LayoutText {#text} at (1,1) size 33x18
-                          text run at (1,1) width 33: "FOO"
+                        LayoutText {#text} at (1,1) size 32x18
+                          text run at (1,1) width 32: "FOO"
       LayoutBlockFlow (anonymous) at (0,285) size 784x18
         LayoutBR {BR} at (0,0) size 0x18
       LayoutBlockFlow {P} at (0,319) size 784x18
@@ -97,8 +97,8 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,2) size 51x82
             LayoutTableCell {TD} at (2,2) size 47x82 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,21) size 35x20 [border: (1px dashed #FF0000)]
-                LayoutText {#text} at (1,1) size 33x18
-                  text run at (1,1) width 33: "FOO"
+                LayoutText {#text} at (1,1) size 32x18
+                  text run at (1,1) width 32: "FOO"
       LayoutBlockFlow {P} at (0,457) size 784x18
         LayoutInline {B} at (0,0) size 334x18
           LayoutText {#text} at (0,0) size 334x18
@@ -108,5 +108,5 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,2) size 43x52
             LayoutTableCell {TD} at (2,2) size 39x52 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (2,11) size 35x20 [border: (1px dashed #FF0000)]
-                LayoutText {#text} at (1,1) size 33x18
-                  text run at (1,1) width 33: "FOO"
+                LayoutText {#text} at (1,1) size 32x18
+                  text run at (1,1) width 32: "FOO"

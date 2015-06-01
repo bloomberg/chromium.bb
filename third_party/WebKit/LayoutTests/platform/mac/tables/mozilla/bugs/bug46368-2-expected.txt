@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (2,2) size 100x37
                   text run at (2,2) width 100: "Mozilla"
               LayoutText {#text} at (101,17) size 279x40
-                text run at (101,17) width 153: " code available under a "
+                text run at (101,17) width 152: " code available under a "
                 text run at (253,17) width 28: "dual"
                 text run at (2,39) width 124: "MPL/GPL license. "
                 text run at (125,39) width 141: "See the for more info."

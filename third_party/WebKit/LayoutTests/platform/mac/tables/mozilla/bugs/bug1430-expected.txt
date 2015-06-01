@@ -14,13 +14,13 @@ layer at (0,0) size 800x600
           text run at (406,36) width 377: "areas on the right side of the map. However, in NGLayout,"
           text run at (0,54) width 129: "the right side of the "
           text run at (128,54) width 463: "map isn't \"clickable\" -- the cursor doesn't change and the link cannot be "
-          text run at (590,54) width 80: "\"activated.\" "
-          text run at (669,54) width 43: "I think"
+          text run at (590,54) width 79: "\"activated.\" "
+          text run at (668,54) width 44: "I think"
           text run at (0,72) width 478: "somewhere we're miscalculating where the imagemap's areas are, because "
           text run at (477,72) width 255: "the areas on the left still work, although"
           text run at (0,90) width 240: "clicking on them sometimes crashes. "
           text run at (239,90) width 449: "It's as though NGLayout thinks the Imagemap areas are located a few "
-          text run at (688,90) width 95: "hundred pixels"
+          text run at (687,90) width 96: "hundred pixels"
           text run at (0,108) width 70: "to the left. "
         LayoutBR {BR} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,126) size 648x63

@@ -27,8 +27,8 @@ layer at (0,0) size 480x360
         LayoutSVGContainer {g} at (0,5) size 480x293
           LayoutSVGRect {rect} at (8,5) size 464x290 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=798.00] [height=498.00]
           LayoutSVGRect {rect} at (19,16) size 442x24 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=20.00] [y=20.00] [width=760.00] [height=40.00]
-          LayoutSVGText {text} at (20,55) size 197x49 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 197x49
+          LayoutSVGText {text} at (20,55) size 196x49 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,0) size 196x49
               chunk 1 text run 1 at (20.00,95.00) startOffset 0 endOffset 10 width 196.02: "Unfiltered"
           LayoutSVGRect {rect} at (19,74) size 442x24 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=20.00] [y=120.00] [width=760.00] [height=40.00]
             [filter="Matrix"] LayoutSVGResourceFilter {filter} at (20,120) size 760x40

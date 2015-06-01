@@ -19,7 +19,7 @@ layer at (0,0) size 480x360
               chunk 1 (vertical) text run 1 at (-10.50,99.00) startOffset 0 endOffset 1 height 33.00: "x"
               chunk 1 (vertical) text run 2 at (-10.50,132.00) startOffset 1 endOffset 2 height 33.00: "t"
           LayoutSVGText {text} at (45,0) size 44x264 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (25,0) size 17x66
+            LayoutSVGInlineText {#text} at (26,0) size 17x66
               chunk 1 (vertical) text run 1 at (69.50,0.00) startOffset 0 endOffset 1 height 33.00: "t"
               chunk 1 (vertical) text run 2 at (69.50,33.00) startOffset 1 endOffset 2 height 33.00: "e"
             LayoutSVGTSpan {tspan} at (0,0) size 27x132

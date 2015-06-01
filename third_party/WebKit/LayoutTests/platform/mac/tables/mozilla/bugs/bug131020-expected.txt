@@ -109,10 +109,10 @@ layer at (18,18) size 790x564 backgroundClip at (0,0) size 800x600 clip at (0,0)
                     LayoutText {#text} at (178,37) size 368x18
                       text run at (178,37) width 368: "The Real Topsites, Download Counter, Sponsor Manager"
                     LayoutBR {BR} at (545,51) size 1x0
-                    LayoutText {#text} at (18,55) size 688x18
+                    LayoutText {#text} at (18,55) size 687x18
                       text run at (18,55) width 477: "bitte noch ein mal runter laden und die admin.cgi erneuern, beim Sponsor "
-                      text run at (494,55) width 212: "Manager kommt noch eine Datei"
-                    LayoutBR {BR} at (705,69) size 1x0
+                      text run at (494,55) width 211: "Manager kommt noch eine Datei"
+                    LayoutBR {BR} at (705,69) size 0x0
                     LayoutText {#text} at (302,73) size 120x18
                       text run at (302,73) width 120: "'variable.pl' dazu!!"
                     LayoutBR {BR} at (421,87) size 1x0

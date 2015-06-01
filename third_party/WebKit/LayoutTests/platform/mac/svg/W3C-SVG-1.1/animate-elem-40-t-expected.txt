@@ -154,7 +154,7 @@ layer at (0,0) size 480x360
         LayoutSVGText {text} at (-41,46) size 82x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 81x18
             chunk 1 (middle anchor) text run 1 at (-40.44,60.00) startOffset 0 endOffset 12 width 80.88: "width/height"
-        LayoutSVGText {text} at (-32,61) size 64x18 contains 1 chunk(s)
+        LayoutSVGText {text} at (-31,61) size 63x18 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 63x18
             chunk 1 (middle anchor) text run 1 at (-31.01,75.00) startOffset 0 endOffset 9 width 62.02: "on <rect>"
     LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)

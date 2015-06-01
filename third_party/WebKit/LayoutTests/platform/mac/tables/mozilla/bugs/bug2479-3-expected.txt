@@ -23,8 +23,8 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (0,0) width 697: "Browsers that are subjected to this test should support CSS1 and the CSS2 table model, and multiple classes."
       LayoutBlockFlow {P} at (0,144.44) size 769x98 [border: (5px double #FF0000)]
         LayoutBlockFlow (anonymous) at (13,13) size 743x18
-          LayoutText {#text} at (0,0) size 240x18
-            text run at (0,0) width 240: "If this paragraph breaks the line here:"
+          LayoutText {#text} at (0,0) size 239x18
+            text run at (0,0) width 239: "If this paragraph breaks the line here:"
         LayoutTable {SPAN} at (13,31) size 60x18
           LayoutTableSection (anonymous) at (0,0) size 60x18
             LayoutTableRow (anonymous) at (0,0) size 60x18
@@ -75,10 +75,10 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutInline {LABEL} at (0,0) size 196x18
             LayoutText {#text} at (516,0) size 73x18
               text run at (516,0) width 73: "Comment: "
-            LayoutTextControl {INPUT} at (588.16,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+            LayoutTextControl {INPUT} at (588.14,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (711,0) size 5x18
             text run at (711,0) width 5: " "
-          LayoutButton {INPUT} at (715.16,1) size 53.25x18 [bgcolor=#C0C0C0]
+          LayoutButton {INPUT} at (715.14,1) size 53.25x18 [bgcolor=#C0C0C0]
             LayoutBlockFlow (anonymous) at (8,2) size 37.25x13
               LayoutText {#text} at (0,0) size 38x13
                 text run at (0,0) width 38: "Submit"

@@ -29,8 +29,8 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 112x10
               chunk 1 text run 1 at (0.00,-20.00) startOffset 0 endOffset 36 width 111.90: "---------- meet --------------------"
           LayoutSVGContainer {g} at (120,67) size 50x43
-            LayoutSVGText {text} at (0,-13) size 25x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 25x10
+            LayoutSVGText {text} at (0,-13) size 24x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 24x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 24.00: "xMin*"
             LayoutSVGRect {rect} at (120,80) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
             LayoutSVGViewportContainer {svg} at (120,80) size 23x30
@@ -41,8 +41,8 @@ layer at (0,0) size 480x360
                 LayoutSVGEllipse {circle} at (131,91) size 3x3 [fill={[type=SOLID] [color=#000000]}] [cx=17.00] [cy=12.00] [r=1.50]
                 LayoutSVGPath {path} at (127,97) size 9x5 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 10 19 L 15 23 L 20 19"]
           LayoutSVGContainer {g} at (190,67) size 50x43 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,0.00)}]
-            LayoutSVGText {text} at (0,-13) size 25x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 25x10
+            LayoutSVGText {text} at (0,-13) size 24x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 24x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 24.00: "xMid*"
             LayoutSVGRect {rect} at (190,80) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
             LayoutSVGViewportContainer {svg} at (203,80) size 24x30
@@ -69,8 +69,8 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 124x10
               chunk 1 text run 1 at (0.00,-20.00) startOffset 0 endOffset 40 width 123.89: "---------- meet ------------------------"
           LayoutSVGContainer {g} at (300,67) size 30x73
-            LayoutSVGText {text} at (0,-13) size 27x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 27x10
+            LayoutSVGText {text} at (0,-13) size 26x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 26x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 26.00: "*YMin"
             LayoutSVGRect {rect} at (300,80) size 30x60 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]
             LayoutSVGViewportContainer {svg} at (300,80) size 30x40
@@ -81,8 +81,8 @@ layer at (0,0) size 480x360
                 LayoutSVGEllipse {circle} at (315,95) size 4x4 [fill={[type=SOLID] [color=#000000]}] [cx=17.00] [cy=12.00] [r=1.50]
                 LayoutSVGPath {path} at (309,103) size 12x7 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 10 19 L 15 23 L 20 19"]
           LayoutSVGContainer {g} at (350,67) size 30x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,0.00)}]
-            LayoutSVGText {text} at (0,-13) size 27x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 27x10
+            LayoutSVGText {text} at (0,-13) size 26x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 26x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 26.00: "*YMid"
             LayoutSVGRect {rect} at (350,80) size 30x60 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]
             LayoutSVGViewportContainer {svg} at (350,90) size 30x40
@@ -109,8 +109,8 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 126x10
               chunk 1 text run 1 at (0.00,-20.00) startOffset 0 endOffset 42 width 125.89: "---------- slice -------------------------"
           LayoutSVGContainer {g} at (120,202) size 45x73
-            LayoutSVGText {text} at (0,-13) size 25x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 25x10
+            LayoutSVGText {text} at (0,-13) size 24x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 24x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 24.00: "xMin*"
             LayoutSVGRect {rect} at (120,215) size 30x60 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]
             LayoutSVGViewportContainer {svg} at (120,215) size 45x60
@@ -121,8 +121,8 @@ layer at (0,0) size 480x360
                 LayoutSVGEllipse {circle} at (143,238) size 5x5 [fill={[type=SOLID] [color=#000000]}] [cx=17.00] [cy=12.00] [r=1.50]
                 LayoutSVGPath {path} at (134,249) size 17x10 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 10 19 L 15 23 L 20 19"]
           LayoutSVGContainer {g} at (162,202) size 46x73 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,0.00)}]
-            LayoutSVGText {text} at (0,-13) size 25x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 25x10
+            LayoutSVGText {text} at (0,-13) size 24x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 24x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 24.00: "xMid*"
             LayoutSVGRect {rect} at (170,215) size 30x60 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=29.00] [height=59.00]
             LayoutSVGViewportContainer {svg} at (162,215) size 46x60
@@ -149,8 +149,8 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 114x10
               chunk 1 text run 1 at (0.00,-20.00) startOffset 0 endOffset 38 width 113.90: "---------- slice ---------------------"
           LayoutSVGContainer {g} at (300,202) size 50x80
-            LayoutSVGText {text} at (0,-13) size 27x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 27x10
+            LayoutSVGText {text} at (0,-13) size 26x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 26x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 26.00: "*YMin"
             LayoutSVGRect {rect} at (300,215) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
             LayoutSVGViewportContainer {svg} at (300,215) size 50x67
@@ -161,8 +161,8 @@ layer at (0,0) size 480x360
                 LayoutSVGEllipse {circle} at (325,240) size 6x6 [fill={[type=SOLID] [color=#000000]}] [cx=17.00] [cy=12.00] [r=1.50]
                 LayoutSVGPath {path} at (315,253) size 20x11 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 10 19 L 15 23 L 20 19"]
           LayoutSVGContainer {g} at (370,196) size 50x68 [transform={m=((1.00,0.00)(0.00,1.00)) t=(70.00,0.00)}]
-            LayoutSVGText {text} at (0,-13) size 27x10 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (0,0) size 27x10
+            LayoutSVGText {text} at (0,-13) size 26x10 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (0,0) size 26x10
                 chunk 1 text run 1 at (0.00,-5.00) startOffset 0 endOffset 5 width 26.00: "*YMid"
             LayoutSVGRect {rect} at (370,215) size 50x30 [stroke={[type=SOLID] [color=#0000FF]}] [x=0.50] [y=0.50] [width=49.00] [height=29.00]
             LayoutSVGViewportContainer {svg} at (370,196) size 50x68

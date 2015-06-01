@@ -68,11 +68,11 @@ layer at (0,0) size 785x2031 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (243,2) width 32: "<td>"
         LayoutText {#text} at (274,0) size 41x18
           text run at (274,0) width 41: " have "
-        LayoutInline {CODE} at (0,0) size 290x15
-          LayoutText {#text} at (314,2) size 290x15
-            text run at (314,2) width 290: "style=\"border-top: green 10px solid;\""
-        LayoutText {#text} at (603,0) size 5x18
-          text run at (603,0) width 5: "."
+        LayoutInline {CODE} at (0,0) size 289x15
+          LayoutText {#text} at (314,2) size 289x15
+            text run at (314,2) width 289: "style=\"border-top: green 10px solid;\""
+        LayoutText {#text} at (603,0) size 4x18
+          text run at (603,0) width 4: "."
       LayoutTable {TABLE} at (0,305.44) size 455x109
         LayoutTableSection {TBODY} at (0,0) size 455x109
           LayoutTableRow {TR} at (0,5) size 455x30

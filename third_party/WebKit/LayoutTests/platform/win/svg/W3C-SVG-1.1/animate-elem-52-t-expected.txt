@@ -5,11 +5,11 @@ layer at (0,0) size 480x360
     LayoutSVGText {text} at (65,23) size 22x33 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 22x33
         chunk 1 text run 1 at (65.00,50.00) startOffset 0 endOffset 1 width 21.67: "A"
-    LayoutSVGText {text} at (165,23) size 21x33 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 21x33
+    LayoutSVGText {text} at (165,23) size 20x33 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 20x33
         chunk 1 text run 1 at (165.00,50.00) startOffset 0 endOffset 1 width 20.01: "B"
-    LayoutSVGText {text} at (265,23) size 21x33 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 21x33
+    LayoutSVGText {text} at (265,23) size 20x33 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 20x33
         chunk 1 text run 1 at (265.00,50.00) startOffset 0 endOffset 1 width 20.01: "C"
     LayoutSVGText {text} at (365,23) size 22x33 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (0,0) size 22x33

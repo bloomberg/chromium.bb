@@ -33,7 +33,7 @@ layer at (0,0) size 480x360
             LayoutSVGInlineText {#text} at (0,0) size 88x14
               chunk 1 text run 1 at (315.00,164.00) startOffset 0 endOffset 19 width 87.36: "to link to its view"
         LayoutSVGRect {rect} at (295,36) size 135x68 [fill={[type=SOLID] [color=#800080]}] [x=295.00] [y=36.00] [width=135.00] [height=68.00]
-        LayoutSVGText {text} at (330,103) size 65x16 contains 1 chunk(s)
+        LayoutSVGText {text} at (330,103) size 64x16 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 64x16
             chunk 1 (middle anchor) text run 1 at (330.98,116.00) startOffset 0 endOffset 9 width 63.04: "Rectangle"
         LayoutSVGRect {rect} at (291,28) size 143x93 [stroke={[type=SOLID] [color=#000000]}] [x=292.00] [y=29.00] [width=141.00] [height=91.00]

@@ -14,7 +14,7 @@ layer at (0,0) size 480x360
         LayoutSVGPath {path} at (119,82) size 6x144 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(420.00,-60.00)}] [stroke={[type=LINEAR-GRADIENT] [id="grad"] [stroke width=20.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 0 180 L 480 180"]
         LayoutSVGPath {path} at (68,100) size 108x108 [stroke={[type=LINEAR-GRADIENT] [id="grad"] [stroke width=20.00]}] [fill={[type=SOLID] [color=#000000]}] [data="M 410 10 L 70 350"]
         LayoutSVGRect {rect} at (49,81) size 146x146 [stroke={[type=SOLID] [color=#000000]}] [x=0.00] [y=-60.00] [width=480.00] [height=480.00]
-      LayoutSVGText {text} at (68,234) size 104x20 contains 1 chunk(s)
+      LayoutSVGText {text} at (68,234) size 103x20 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 103x20
           chunk 1 (middle anchor) text run 1 at (68.98,250.00) startOffset 0 endOffset 13 width 102.03: "With fallback"
       LayoutSVGContainer {g} at (279,81) size 146x146 [transform={m=((0.30,0.00)(0.00,0.30)) t=(280.00,100.00)}]

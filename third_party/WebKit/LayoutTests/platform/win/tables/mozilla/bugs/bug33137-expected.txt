@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 70x71
                 text run at (2,2) width 70: "this should"
                 text run at (2,20) width 32: "wrap"
-                text run at (2,38) width 69: "within this"
+                text run at (2,38) width 68: "within this"
                 text run at (2,56) width 22: "TD"
       LayoutBlockFlow (anonymous) at (0,106) size 784x18
         LayoutBR {BR} at (0,0) size 0x17

@@ -61,7 +61,7 @@ layer at (0,0) size 800x600
       LayoutSVGRect {rect} at (182,0) size 236x108 [fill={[type=SOLID] [color=#FF0000]}] [x=202.00] [y=2.00] [width=196.00] [height=96.00]
         [filter="matbad"] LayoutSVGResourceFilter {filter} at (182.40,-7.60) size 235.20x115.20
       LayoutSVGText {text} at (210,18) size 137x28 contains 1 chunk(s)
-        [filter="matbad"] LayoutSVGResourceFilter {filter} at (196.34,15.20) size 163.97x33.60
+        [filter="matbad"] LayoutSVGResourceFilter {filter} at (196.34,15.20) size 163.95x33.60
         LayoutSVGInlineText {#text} at (0,0) size 137x28
           [filter="matbad"] LayoutSVGResourceFilter {filter} at (196.34,15.20) size 163.95x33.60
           chunk 1 text run 1 at (210.00,40.00) startOffset 0 endOffset 14 width 136.63: "Invalid matrix"
@@ -73,9 +73,9 @@ layer at (0,0) size 800x600
       LayoutSVGRect {rect} at (182,92) size 236x116 [fill={[type=SOLID] [color=#FF0000]}] [x=202.00] [y=102.00] [width=196.00] [height=96.00]
         [filter="huebad"] LayoutSVGResourceFilter {filter} at (182.40,92.40) size 235.20x115.20
       LayoutSVGText {text} at (210,118) size 149x28 contains 1 chunk(s)
-        [filter="huebad"] LayoutSVGResourceFilter {filter} at (195.14,115.20) size 178.33x33.60
+        [filter="huebad"] LayoutSVGResourceFilter {filter} at (195.14,115.20) size 178.31x33.60
         LayoutSVGInlineText {#text} at (0,0) size 149x28
-          [filter="huebad"] LayoutSVGResourceFilter {filter} at (195.14,115.20) size 178.33x33.60
+          [filter="huebad"] LayoutSVGResourceFilter {filter} at (195.14,115.20) size 178.31x33.60
           chunk 1 text run 1 at (210.00,140.00) startOffset 0 endOffset 16 width 148.61: "Invalid saturate"
       LayoutSVGText {text} at (210,148) size 154x28 contains 1 chunk(s)
         [filter="huebad"] LayoutSVGResourceFilter {filter} at (194.67,145.20) size 183.94x33.60
@@ -97,12 +97,12 @@ layer at (0,0) size 800x600
       LayoutSVGRect {rect} at (182,292) size 236x116 [fill={[type=SOLID] [color=#FF0000]}] [x=202.00] [y=302.00] [width=196.00] [height=96.00]
         [filter="satrange"] LayoutSVGResourceFilter {filter} at (182.40,292.40) size 235.20x115.20
       LayoutSVGText {text} at (210,318) size 132x28 contains 1 chunk(s)
-        [filter="satrange"] LayoutSVGResourceFilter {filter} at (196.87,315.20) size 157.57x33.60
+        [filter="satrange"] LayoutSVGResourceFilter {filter} at (196.87,315.20) size 157.56x33.60
         LayoutSVGInlineText {#text} at (0,0) size 132x28
-          [filter="satrange"] LayoutSVGResourceFilter {filter} at (196.87,315.20) size 157.57x33.60
+          [filter="satrange"] LayoutSVGResourceFilter {filter} at (196.87,315.20) size 157.56x33.60
           chunk 1 text run 1 at (210.00,340.00) startOffset 0 endOffset 13 width 131.31: "Saturate must"
       LayoutSVGText {text} at (210,348) size 150x28 contains 1 chunk(s)
-        [filter="satrange"] LayoutSVGResourceFilter {filter} at (195,345.20) size 179.93x33.60
+        [filter="satrange"] LayoutSVGResourceFilter {filter} at (195,345.20) size 179.91x33.60
         LayoutSVGInlineText {#text} at (0,0) size 150x28
-          [filter="satrange"] LayoutSVGResourceFilter {filter} at (195,345.20) size 179.92x33.60
+          [filter="satrange"] LayoutSVGResourceFilter {filter} at (195,345.20) size 179.91x33.60
           chunk 1 text run 1 at (210.00,370.00) startOffset 0 endOffset 15 width 149.93: "have one value."

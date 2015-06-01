@@ -28,8 +28,8 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (155,128) size 140x9 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 139x9
             chunk 1 (middle anchor) text run 1 at (155.53,135.00) startOffset 0 endOffset 43 width 138.95: "baseline-shift=\"super\"/baseline-shift=\"sub\""
-      LayoutSVGContainer {g} at (118,149) size 214x33
-        LayoutSVGText {text} at (118,149) size 214x23 contains 1 chunk(s)
+      LayoutSVGContainer {g} at (118,149) size 213x33
+        LayoutSVGText {text} at (118,149) size 213x23 contains 1 chunk(s)
           LayoutSVGTSpan {tspan} at (0,0) size 48x17
             LayoutSVGInlineText {#text} at (0,0) size 48x17
               chunk 1 (middle anchor) text run 1 at (118.99,162.00) startOffset 0 endOffset 8 width 47.50: "positive"

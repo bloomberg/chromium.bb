@@ -8,35 +8,35 @@ layer at (0,0) size 800x600
           text run at (0,0) width 157: "Thead/Tfoot/Tbody"
       LayoutBlockFlow {PRE} at (0,40.72) size 784x108
         LayoutInline {FONT} at (0,0) size 319x108
-          LayoutText {#text} at (0,0) size 7x12
-            text run at (0,0) width 7: " "
-            text run at (6,0) width 1: " "
-          LayoutInline {B} at (0,0) size 31x12
-            LayoutText {#text} at (0,12) size 31x12
-              text run at (0,12) width 31: "thead"
+          LayoutText {#text} at (0,0) size 6x12
+            text run at (0,0) width 6: " "
+            text run at (6,0) width 0: " "
+          LayoutInline {B} at (0,0) size 30x12
+            LayoutText {#text} at (0,12) size 30x12
+              text run at (0,12) width 30: "thead"
           LayoutText {#text} at (30,12) size 319x24
-            text run at (30,12) width 79: " Row 1;      "
-            text run at (108,12) width 1: " "
+            text run at (30,12) width 78: " Row 1;      "
+            text run at (108,12) width 0: " "
             text run at (0,24) width 319: "      background-color: cyan;     text-align: center;"
           LayoutBR {BR} at (318,34) size 1x0
           LayoutText {#text} at (0,36) size 0x12
             text run at (0,36) width 0: " "
-          LayoutInline {B} at (0,0) size 31x12
-            LayoutText {#text} at (0,48) size 31x12
-              text run at (0,48) width 31: "tbody"
+          LayoutInline {B} at (0,0) size 30x12
+            LayoutText {#text} at (0,48) size 30x12
+              text run at (0,48) width 30: "tbody"
           LayoutText {#text} at (30,48) size 313x24
-            text run at (30,48) width 79: " Rows 2,3,4; "
-            text run at (108,48) width 1: " "
+            text run at (30,48) width 78: " Rows 2,3,4; "
+            text run at (108,48) width 0: " "
             text run at (0,60) width 313: "      background-color: #9999ff;  text-align: right;"
           LayoutBR {BR} at (312,70) size 1x0
           LayoutText {#text} at (0,72) size 0x12
             text run at (0,72) width 0: " "
-          LayoutInline {B} at (0,0) size 31x12
-            LayoutText {#text} at (0,84) size 31x12
-              text run at (0,84) width 31: "tfoot"
+          LayoutInline {B} at (0,0) size 30x12
+            LayoutText {#text} at (0,84) size 30x12
+              text run at (0,84) width 30: "tfoot"
           LayoutText {#text} at (30,84) size 319x24
-            text run at (30,84) width 79: " Rows 5, 6;  "
-            text run at (108,84) width 1: " "
+            text run at (30,84) width 78: " Rows 5, 6;  "
+            text run at (108,84) width 0: " "
             text run at (0,96) width 319: "      background-color: #ff99ff;  text-align: center;"
             text run at (318,96) width 1: " "
       LayoutTable {TABLE} at (0,161.72) size 784x210 [border: (1px outset #808080)]

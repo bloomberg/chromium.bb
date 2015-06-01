@@ -28,7 +28,7 @@ layer at (48,38) size 722x542 layerType: foreground only
         LayoutBlockFlow {p} at (14,74.59) size 688x19
           LayoutButton {button} at (0,1) size 62.02x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
             LayoutBlockFlow (anonymous) at (8,2) size 46.02x13
-              LayoutText {#text} at (0,0) size 47x13
-                text run at (0,0) width 47: "Activate!"
+              LayoutText {#text} at (0,0) size 46x13
+                text run at (0,0) width 46: "Activate!"
 layer at (182,82) size 117x13
   LayoutBlockFlow {div} at (3,3) size 117x13

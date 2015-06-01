@@ -5,7 +5,7 @@ layer at (0,0) size 480x360
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
     LayoutSVGContainer {g} at (0,0) size 480x360
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (159,53) size 162x21 contains 1 chunk(s)
+      LayoutSVGText {text} at (159,53) size 161x21 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 161x21
           chunk 1 (middle anchor) text run 1 at (159.98,70.00) startOffset 0 endOffset 17 width 160.04: "SVGStringList DOM"
       LayoutSVGContainer {g} at (80,100) size 320x100
