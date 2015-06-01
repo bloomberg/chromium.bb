@@ -721,6 +721,18 @@
     "dependencies": ["permission:ttsEngine"],
     "contexts": ["blessed_extension"]
   },
+  "usersPrivate": [{
+    "dependencies": ["permission:usersPrivate"],
+    "contexts": ["blessed_extension"]
+  }, {
+    "channel": "trunk",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://md-settings/*",
+      "chrome://settings/*",
+      "chrome://settings-frame/*"
+    ]
+  }],
   "virtualKeyboardPrivate": {
     "dependencies": ["permission:virtualKeyboardPrivate"],
     "contexts": ["blessed_extension"]

@@ -53376,6 +53376,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1042" label="DEVELOPERPRIVATE_SETSHORTCUTHANDLINGSUSPENDED"/>
   <int value="1043" label="DEVELOPERPRIVATE_UPDATEEXTENSIONCOMMAND"/>
   <int value="1044" label="INPUTMETHODPRIVATE_GETENCRYPTSYNCENABLED"/>
+  <int value="1045" label="USERSPRIVATE_GETWHITELISTEDUSERS"/>
+  <int value="1046" label="USERSPRIVATE_ADDWHITELISTEDUSER"/>
+  <int value="1047" label="USERSPRIVATE_REMOVEWHITELISTEDUSER"/>
+  <int value="1048" label="USERSPRIVATE_ISCURRENTUSEROWNER"/>
+  <int value="1049" label="USERSPRIVATE_ISWHITELISTMANAGED"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
