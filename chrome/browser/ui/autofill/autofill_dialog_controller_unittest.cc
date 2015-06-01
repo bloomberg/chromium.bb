@@ -1124,30 +1124,6 @@ TEST_F(AutofillDialogControllerTest, NewAutofillProfileIsDefault) {
   EXPECT_EQ(2, GetMenuModelForSection(SECTION_SHIPPING)->checked_item());
 }
 
-TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
-  SwitchToAutofill();
-  EXPECT_CALL(*controller()->GetView(), ModelChanged());
-  ui::MenuModel* shipping_model =
-      controller()->MenuModelForSection(SECTION_SHIPPING);
-  ASSERT_TRUE(shipping_model);
-  EXPECT_EQ(3, shipping_model->GetItemCount());
-
-  // Set up some variant data.
-  AutofillProfile full_profile(test::GetVerifiedProfile());
-  std::vector<base::string16> names;
-  names.push_back(ASCIIToUTF16("John Doe"));
-  names.push_back(ASCIIToUTF16("Jane Doe"));
-  full_profile.SetRawMultiInfo(NAME_FULL, names);
-  std::vector<base::string16> emails;
-  emails.push_back(ASCIIToUTF16(kFakeEmail));
-  emails.push_back(ASCIIToUTF16("admin@example.com"));
-  full_profile.SetRawMultiInfo(EMAIL_ADDRESS, emails);
-
-  // Non-default variants are ignored by the dialog.
-  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-  EXPECT_EQ(4, shipping_model->GetItemCount());
-}
-
 TEST_F(AutofillDialogControllerTest, SuggestValidEmail) {
   SwitchToAutofill();
   AutofillProfile profile(test::GetVerifiedProfile());

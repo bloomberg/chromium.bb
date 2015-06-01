@@ -769,49 +769,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
       AutofillMetrics::DIALOG_ACCEPTED_SAVE_TO_AUTOFILL, 1);
 }
 
-// This test makes sure that picking a profile variant in the Autofill
-// popup works as expected.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       FillInputFromAutofillVariant) {
-  AutofillProfile full_profile(test::GetFullProfile());
-
-  // Set up some variant data.
-  std::vector<base::string16> names;
-  names.push_back(ASCIIToUTF16("John Doe"));
-  names.push_back(ASCIIToUTF16("Jane Doe"));
-  full_profile.SetRawMultiInfo(NAME_FULL, names);
-  std::vector<base::string16> emails;
-  emails.push_back(ASCIIToUTF16("user@example.com"));
-  emails.push_back(ASCIIToUTF16("admin@example.com"));
-  full_profile.SetRawMultiInfo(EMAIL_ADDRESS, emails);
-  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-
-  const DetailInputs& inputs =
-      controller()->RequestedFieldsForSection(SECTION_BILLING);
-  const ServerFieldType triggering_type = inputs[0].type;
-  EXPECT_EQ(NAME_BILLING_FULL, triggering_type);
-  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
-  view->ActivateInput(triggering_type);
-
-  ASSERT_EQ(triggering_type, controller()->popup_input_type());
-
-  // Choose the variant suggestion.
-  controller()->DidAcceptSuggestion(base::string16(), 1);
-
-  // All inputs should be filled.
-  AutofillProfileWrapper wrapper(
-      &full_profile, AutofillType(NAME_BILLING_FULL), 1);
-  for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_EQ(wrapper.GetInfoForDisplay(AutofillType(inputs[i].type)),
-              view->GetTextContentsOfInput(inputs[i].type));
-  }
-
-  // Make sure the wrapper applies the variant index to the right group.
-  EXPECT_EQ(names[1], wrapper.GetInfo(AutofillType(NAME_BILLING_FULL)));
-  // Make sure the wrapper doesn't apply the variant index to the wrong group.
-  EXPECT_EQ(emails[0], wrapper.GetInfo(AutofillType(EMAIL_ADDRESS)));
-}
-
 // Tests that changing the value of a CC expiration date combobox works as
 // expected when Autofill is used to fill text inputs.
 //

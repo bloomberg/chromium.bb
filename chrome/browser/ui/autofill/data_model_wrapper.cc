@@ -102,17 +102,7 @@ DataModelWrapper::DataModelWrapper() {}
 // AutofillProfileWrapper
 
 AutofillProfileWrapper::AutofillProfileWrapper(const AutofillProfile* profile)
-    : profile_(profile),
-      variant_group_(NO_GROUP),
-      variant_(0) {}
-
-AutofillProfileWrapper::AutofillProfileWrapper(
-    const AutofillProfile* profile,
-    const AutofillType& type,
-    size_t variant)
-    : profile_(profile),
-      variant_group_(type.group()),
-      variant_(variant) {}
+    : profile_(profile) {}
 
 AutofillProfileWrapper::~AutofillProfileWrapper() {}
 
@@ -124,18 +114,15 @@ base::string16 AutofillProfileWrapper::GetInfo(const AutofillType& type) const {
   if (type.GetStorableType() == CREDIT_CARD_NAME)
     effective_type = AutofillType(NAME_BILLING_FULL);
 
-  size_t variant = GetVariantForType(effective_type);
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  return profile_->GetInfoForVariant(effective_type, variant, app_locale);
+  return profile_->GetInfo(effective_type, app_locale);
 }
 
 base::string16 AutofillProfileWrapper::GetInfoForDisplay(
     const AutofillType& type) const {
   // We display the "raw" phone number which contains user-defined formatting.
   if (type.GetStorableType() == PHONE_HOME_WHOLE_NUMBER) {
-    std::vector<base::string16> values;
-    profile_->GetRawMultiInfo(type.GetStorableType(), &values);
-    const base::string16& phone_number = values[GetVariantForType(type)];
+    base::string16 phone_number = profile_->GetRawInfo(type.GetStorableType());
 
     // If there is no user-defined formatting at all, add some standard
     // formatting.
@@ -158,14 +145,6 @@ base::string16 AutofillProfileWrapper::GetInfoForDisplay(
 
 const std::string& AutofillProfileWrapper::GetLanguageCode() const {
   return profile_->language_code();
-}
-
-size_t AutofillProfileWrapper::GetVariantForType(const AutofillType& type)
-    const {
-  if (type.group() == variant_group_)
-    return variant_;
-
-  return 0;
 }
 
 // AutofillShippingAddressWrapper

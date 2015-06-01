@@ -94,27 +94,14 @@ class DataModelWrapper {
 class AutofillProfileWrapper : public DataModelWrapper {
  public:
   explicit AutofillProfileWrapper(const AutofillProfile* profile);
-  AutofillProfileWrapper(const AutofillProfile* profile,
-                         const AutofillType& variant_type,
-                         size_t variant);
   ~AutofillProfileWrapper() override;
 
   base::string16 GetInfo(const AutofillType& type) const override;
   base::string16 GetInfoForDisplay(const AutofillType& type) const override;
   const std::string& GetLanguageCode() const override;
 
- protected:
-  // Returns the variant that should be used when dealing with an element that
-  // has the given |type|.
-  size_t GetVariantForType(const AutofillType& type) const;
-
  private:
   const AutofillProfile* profile_;
-
-  // The profile variant. |variant_| describes which variant of |variant_group_|
-  // to use in the profile.
-  FieldTypeGroup variant_group_;
-  size_t variant_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileWrapper);
 };

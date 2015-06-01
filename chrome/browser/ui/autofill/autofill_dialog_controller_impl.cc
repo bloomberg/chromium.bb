@@ -2396,9 +2396,7 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
           GetManager()->GetCreditCardByGUID(sid.guid)));
     } else {
       wrapper.reset(new AutofillProfileWrapper(
-          GetManager()->GetProfileByGUID(sid.guid),
-          AutofillType(popup_input_type),
-          sid.variant));
+          GetManager()->GetProfileByGUID(sid.guid)));
     }
   } else {
     wrapper.reset(new I18nAddressDataWrapper(
@@ -3056,8 +3054,6 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
           continue;
         }
 
-        // Don't add variants for addresses: name is part of credit card and
-        // we'll just ignore email and phone number variants.
         suggested_shipping_.AddKeyedItem(profile.guid(), labels[i]);
         suggested_shipping_.SetEnabled(
             profile.guid(),

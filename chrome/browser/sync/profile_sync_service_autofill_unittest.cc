@@ -884,29 +884,6 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
   syncer::syncable::Id parent_id_;
 };
 
-namespace {
-
-// Checks if the field of type |field_type| in |profile1| includes all values
-// of the field in |profile2|.
-bool IncludesField(const AutofillProfile& profile1,
-                   const AutofillProfile& profile2,
-                   ServerFieldType field_type) {
-  std::vector<base::string16> values1;
-  profile1.GetRawMultiInfo(field_type, &values1);
-  std::vector<base::string16> values2;
-  profile2.GetRawMultiInfo(field_type, &values2);
-
-  std::set<base::string16> values_set;
-  for (size_t i = 0; i < values1.size(); ++i)
-    values_set.insert(values1[i]);
-  for (size_t i = 0; i < values2.size(); ++i)
-    if (values_set.find(values2[i]) == values_set.end())
-      return false;
-  return true;
-}
-
-} // namespace
-
 // TODO(skrul): Test abort startup.
 // TODO(skrul): Test processing of cloud changes.
 // TODO(tim): Add autofill data type controller test, and a case to cover
@@ -1137,14 +1114,6 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfileCombine) {
   ASSERT_EQ(1U, new_sync_profiles.size());
   // Check that key fields are the same.
   EXPECT_TRUE(new_sync_profiles[0].IsSubsetOf(sync_profile, "en-US"));
-  // Check that multivalued fields of the synced back data include original
-  // data.
-  EXPECT_TRUE(
-      IncludesField(new_sync_profiles[0], sync_profile, autofill::NAME_FULL));
-  EXPECT_TRUE(IncludesField(
-      new_sync_profiles[0], sync_profile, autofill::EMAIL_ADDRESS));
-  EXPECT_TRUE(IncludesField(
-      new_sync_profiles[0], sync_profile, autofill::PHONE_HOME_WHOLE_NUMBER));
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
