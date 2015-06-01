@@ -17,6 +17,7 @@
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/origin_util.h"
 
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
@@ -51,6 +52,11 @@ void PermissionContextBase::RequestPermission(
 ContentSetting PermissionContextBase::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
+  if (IsRestrictedToSecureOrigins() &&
+      !content::IsOriginSecure(requesting_origin)) {
+    return CONTENT_SETTING_BLOCK;
+  }
+
   return profile_->GetHostContentSettingsMap()->GetContentSetting(
       requesting_origin, embedding_origin, permission_type_, std::string());
 }
@@ -99,6 +105,13 @@ void PermissionContextBase::DecidePermission(
         << "," << embedding_origin
         << " (" << content_settings::GetTypeName(permission_type_)
         << " is not supported in popups)";
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, CONTENT_SETTING_BLOCK);
+    return;
+  }
+
+  if (IsRestrictedToSecureOrigins() &&
+      !content::IsOriginSecure(requesting_origin)) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         false /* persist */, CONTENT_SETTING_BLOCK);
     return;

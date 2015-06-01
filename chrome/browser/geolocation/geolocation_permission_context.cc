@@ -81,3 +81,7 @@ void GeolocationPermissionContext::UpdateTabContext(
         ->UserDidOptIntoLocationServices();
   }
 }
+
+bool GeolocationPermissionContext::IsRestrictedToSecureOrigins() const {
+  return false;
+}

@@ -94,6 +94,7 @@ class DesktopNotificationService : public PermissionContextBase
   void UpdateContentSetting(const GURL& requesting_origin,
                             const GURL& embedder_origin,
                             ContentSetting content_setting) override;
+  bool IsRestrictedToSecureOrigins() const override;
 
   // The profile which owns this object.
   Profile* profile_;

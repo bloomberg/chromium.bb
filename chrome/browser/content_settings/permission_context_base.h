@@ -46,6 +46,7 @@ using BrowserPermissionCallback = base::Callback<void(ContentSetting)>;
 // After this you can override several other methods to customize behavior,
 // in particular it is advised to override UpdateTabContext in order to manage
 // the permission from the omnibox.
+// It is mandatory to override IsRestrictedToSecureOrigin.
 // See midi_permission_context.h/cc or push_permission_context.cc/h for some
 // examples.
 
@@ -122,6 +123,9 @@ class PermissionContextBase : public KeyedService {
   virtual void UpdateContentSetting(const GURL& requesting_origin,
                                     const GURL& embedding_origin,
                                     ContentSetting content_setting);
+
+  // Whether the permission should be restricted to secure origins.
+  virtual bool IsRestrictedToSecureOrigins() const = 0;
 
  private:
   // Called when a bubble is no longer used so it can be cleaned up.

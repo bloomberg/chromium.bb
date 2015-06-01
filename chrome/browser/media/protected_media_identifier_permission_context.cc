@@ -173,6 +173,11 @@ void ProtectedMediaIdentifierPermissionContext::UpdateTabContext(
   }
 }
 
+bool
+ProtectedMediaIdentifierPermissionContext::IsRestrictedToSecureOrigins() const {
+  return false;
+}
+
 // TODO(xhwang): We should consolidate the "protected content" related pref
 // across platforms.
 bool ProtectedMediaIdentifierPermissionContext::

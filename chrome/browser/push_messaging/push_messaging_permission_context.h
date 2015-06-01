@@ -34,6 +34,7 @@ class PushMessagingPermissionContext : public PermissionContextBase {
                         const GURL& embedding_origin,
                         bool user_gesture,
                         const BrowserPermissionCallback& callback) override;
+  bool IsRestrictedToSecureOrigins() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PushMessagingPermissionContextTest,

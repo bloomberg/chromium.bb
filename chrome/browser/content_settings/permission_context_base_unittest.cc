@@ -60,6 +60,10 @@ class TestPermissionContext : public PermissionContextBase {
     tab_context_updated_ = true;
   }
 
+  bool IsRestrictedToSecureOrigins() const override {
+    return false;
+  }
+
  private:
    bool permission_set_;
    bool permission_granted_;

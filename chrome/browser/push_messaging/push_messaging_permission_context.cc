@@ -102,6 +102,10 @@ void PushMessagingPermissionContext::DecidePermission(
 #endif
 }
 
+bool PushMessagingPermissionContext::IsRestrictedToSecureOrigins() const {
+  return true;
+}
+
 void PushMessagingPermissionContext::DecidePushPermission(
     const PermissionRequestID& id,
     const GURL& requesting_origin,

@@ -253,6 +253,10 @@ void DesktopNotificationService::UpdateContentSetting(
   }
 }
 
+bool DesktopNotificationService::IsRestrictedToSecureOrigins() const {
+  return false;
+}
+
 void DesktopNotificationService::FirePermissionLevelChangedEvent(
     const NotifierId& notifier_id, bool enabled) {
 #if defined(ENABLE_EXTENSIONS)
