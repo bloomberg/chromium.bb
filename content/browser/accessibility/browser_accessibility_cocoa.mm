@@ -1547,7 +1547,8 @@ bool InitializeAccessibilityTreeSearch(
         NSAccessibilityCellForColumnAndRowParameterizedAttribute,
         nil]];
   }
-  if ([[self role] isEqualToString:NSAccessibilityTextFieldRole]) {
+  if ([[self role] isEqualToString:NSAccessibilityTextFieldRole] ||
+      [[self role] isEqualToString:NSAccessibilityTextAreaRole]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityLineForIndexParameterizedAttribute,
         NSAccessibilityRangeForLineParameterizedAttribute,
@@ -1578,7 +1579,8 @@ bool InitializeAccessibilityTreeSearch(
   NSString* role = [self role];
   // TODO(dtseng): this should only get set when there's a default action.
   if (![role isEqualToString:NSAccessibilityStaticTextRole] &&
-      ![role isEqualToString:NSAccessibilityTextFieldRole]) {
+      ![role isEqualToString:NSAccessibilityTextFieldRole] &&
+      ![role isEqualToString:NSAccessibilityTextAreaRole]) {
     [ret addObject:NSAccessibilityPressAction];
   }
 
@@ -1682,7 +1684,8 @@ bool InitializeAccessibilityTreeSearch(
         @"AXLoaded",
         @"AXLoadingProgress",
         nil]];
-  } else if ([role isEqualToString:NSAccessibilityTextFieldRole]) {
+  } else if ([role isEqualToString:NSAccessibilityTextFieldRole] ||
+             [role isEqualToString:NSAccessibilityTextAreaRole]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityInsertionPointLineNumberAttribute,
         NSAccessibilityNumberOfCharactersAttribute,
@@ -1860,7 +1863,8 @@ bool InitializeAccessibilityTreeSearch(
         ui::AX_ATTR_CAN_SET_VALUE);
   }
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute] &&
-      ([[self role] isEqualToString:NSAccessibilityTextFieldRole]))
+      ([[self role] isEqualToString:NSAccessibilityTextFieldRole] ||
+       [[self role] isEqualToString:NSAccessibilityTextAreaRole]))
     return YES;
 
   return NO;
