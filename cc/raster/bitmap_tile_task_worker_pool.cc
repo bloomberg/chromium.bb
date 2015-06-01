@@ -20,23 +20,34 @@ namespace {
 class RasterBufferImpl : public RasterBuffer {
  public:
   RasterBufferImpl(ResourceProvider* resource_provider,
-                   const Resource* resource)
-      : lock_(resource_provider, resource->id()), resource_(resource) {}
+                   const Resource* resource,
+                   bool resource_has_previous_content)
+      : lock_(resource_provider, resource->id()),
+        resource_(resource),
+        resource_has_previous_content_(resource_has_previous_content) {}
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& raster_full_rect,
                 const gfx::Rect& raster_dirty_rect,
+                uint64_t new_content_id,
                 float scale) override {
-    // TODO(danakj): Implement partial raster using raster_dirty_rect.
+    gfx::Rect playback_rect = raster_full_rect;
+    if (resource_has_previous_content_) {
+      playback_rect.Intersect(raster_dirty_rect);
+    }
+    DCHECK(!playback_rect.IsEmpty())
+        << "Why are we rastering a tile that's not dirty?";
+
     TileTaskWorkerPool::PlaybackToMemory(
         lock_.sk_bitmap().getPixels(), resource_->format(), resource_->size(),
-        0, raster_source, raster_full_rect, raster_full_rect, scale);
+        0, raster_source, raster_full_rect, playback_rect, scale);
   }
 
  private:
   ResourceProvider::ScopedWriteLockSoftware lock_;
   const Resource* resource_;
+  bool resource_has_previous_content_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
 };
@@ -169,10 +180,12 @@ ResourceFormat BitmapTileTaskWorkerPool::GetResourceFormat() {
 
 scoped_ptr<RasterBuffer> BitmapTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource,
-    uint64_t new_content_id,
+    uint64_t resource_content_id,
     uint64_t previous_content_id) {
-  return make_scoped_ptr<RasterBuffer>(
-      new RasterBufferImpl(resource_provider_, resource));
+  bool resource_has_previous_content =
+      resource_content_id && resource_content_id == previous_content_id;
+  return make_scoped_ptr<RasterBuffer>(new RasterBufferImpl(
+      resource_provider_, resource, resource_has_previous_content));
 }
 
 void BitmapTileTaskWorkerPool::ReleaseBufferForRaster(

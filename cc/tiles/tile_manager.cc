@@ -48,6 +48,7 @@ class RasterTaskImpl : public RasterTask {
       const void* tile,
       uint64_t new_content_id,
       uint64_t previous_content_id,
+      uint64_t resource_content_id,
       int source_frame_number,
       bool analyze_picture,
       const base::Callback<void(const RasterSource::SolidColorAnalysis&, bool)>&
@@ -63,6 +64,7 @@ class RasterTaskImpl : public RasterTask {
         tile_(tile),
         new_content_id_(new_content_id),
         previous_content_id_(previous_content_id),
+        resource_content_id_(resource_content_id),
         source_frame_number_(source_frame_number),
         analyze_picture_(analyze_picture),
         reply_(reply) {}
@@ -86,8 +88,8 @@ class RasterTaskImpl : public RasterTask {
   // Overridden from TileTask:
   void ScheduleOnOriginThread(TileTaskClient* client) override {
     DCHECK(!raster_buffer_);
-    raster_buffer_ = client->AcquireBufferForRaster(resource(), new_content_id_,
-                                                    previous_content_id_);
+    raster_buffer_ = client->AcquireBufferForRaster(
+        resource(), resource_content_id_, previous_content_id_);
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
@@ -122,7 +124,8 @@ class RasterTaskImpl : public RasterTask {
     DCHECK(raster_source);
 
     raster_buffer_->Playback(raster_source_.get(), content_rect_,
-                             invalid_content_rect_, contents_scale_);
+                             invalid_content_rect_, new_content_id_,
+                             contents_scale_);
   }
 
   RasterSource::SolidColorAnalysis analysis_;
@@ -135,6 +138,7 @@ class RasterTaskImpl : public RasterTask {
   const void* tile_;
   uint64_t new_content_id_;
   uint64_t previous_content_id_;
+  uint64_t resource_content_id_;
   int source_frame_number_;
   bool analyze_picture_;
   const base::Callback<void(const RasterSource::SolidColorAnalysis&, bool)>
@@ -669,9 +673,23 @@ scoped_refptr<ImageDecodeTask> TileManager::CreateImageDecodeTask(
 scoped_refptr<RasterTask> TileManager::CreateRasterTask(
     const PrioritizedTile& prioritized_tile) {
   Tile* tile = prioritized_tile.tile();
-  scoped_ptr<ScopedResource> resource =
-      resource_pool_->AcquireResource(tile->desired_texture_size(),
-                                      tile_task_runner_->GetResourceFormat());
+  uint64_t resource_content_id = 0;
+  scoped_ptr<ScopedResource> resource;
+  if (tile->invalidated_id()) {
+    // TODO(danakj): For resources that are in use, we should still grab them
+    // and copy from them instead of rastering everything. crbug.com/492754
+    resource =
+        resource_pool_->TryAcquireResourceWithContentId(tile->invalidated_id());
+  }
+  if (resource) {
+    resource_content_id = tile->invalidated_id();
+    DCHECK_EQ(tile_task_runner_->GetResourceFormat(), resource->format());
+    DCHECK_EQ(tile->desired_texture_size().ToString(),
+              resource->size().ToString());
+  } else {
+    resource = resource_pool_->AcquireResource(
+        tile->desired_texture_size(), tile_task_runner_->GetResourceFormat());
+  }
   const ScopedResource* const_resource = resource.get();
 
   // Create and queue all image decode tasks that this tile depends on.
@@ -702,7 +720,8 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
       tile->invalidated_content_rect(), tile->contents_scale(),
       prioritized_tile.priority().resolution, tile->layer_id(),
       static_cast<const void*>(tile), tile->id(), tile->invalidated_id(),
-      tile->source_frame_number(), tile->use_picture_analysis(),
+      resource_content_id, tile->source_frame_number(),
+      tile->use_picture_analysis(),
       base::Bind(&TileManager::OnRasterTaskCompleted, base::Unretained(this),
                  tile->id(), base::Passed(&resource)),
       &decode_tasks));
@@ -742,7 +761,7 @@ void TileManager::OnRasterTaskCompleted(
 
   if (was_canceled) {
     ++update_visible_tiles_stats_.canceled_count;
-    resource_pool_->ReleaseResource(resource.Pass(), Tile::Id(0));
+    resource_pool_->ReleaseResource(resource.Pass(), tile->invalidated_id());
     return;
   }
 
@@ -760,9 +779,9 @@ void TileManager::UpdateTileDrawInfo(
   if (analysis.is_solid_color) {
     draw_info.set_solid_color(analysis.solid_color);
     if (resource) {
-      // Pass no tile id here because the tile is solid color so we did not
+      // Pass the old tile id here because the tile is solid color so we did not
       // raster anything into the tile resource.
-      resource_pool_->ReleaseResource(resource.Pass(), Tile::Id(0));
+      resource_pool_->ReleaseResource(resource.Pass(), tile->invalidated_id());
     }
   } else {
     DCHECK(resource);

@@ -51,7 +51,7 @@ class CC_EXPORT PixelBufferTileTaskWorkerPool : public TileTaskWorkerPool,
   // Overridden from TileTaskClient:
   scoped_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource,
-      uint64_t new_content_id,
+      uint64_t resource_content_id,
       uint64_t previous_content_id) override;
   void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) override;
 

@@ -28,20 +28,18 @@ class RasterBufferImpl : public RasterBuffer {
                    ResourcePool* resource_pool,
                    ResourceFormat resource_format,
                    const Resource* output_resource,
-                   uint64_t new_content_id,
                    uint64_t previous_content_id)
       : worker_pool_(worker_pool),
         resource_provider_(resource_provider),
         resource_pool_(resource_pool),
         output_resource_(output_resource),
-        new_content_id_(new_content_id),
-        previous_content_id_(previous_content_id),
-        reusing_raster_resource_(true),
+        raster_content_id_(0),
         sequence_(0) {
     if (worker_pool->have_persistent_gpu_memory_buffers() &&
         previous_content_id) {
       raster_resource_ =
           resource_pool->TryAcquireResourceWithContentId(previous_content_id);
+      raster_content_id_ = previous_content_id;
     }
     if (raster_resource_) {
       DCHECK_EQ(resource_format, raster_resource_->format());
@@ -50,7 +48,6 @@ class RasterBufferImpl : public RasterBuffer {
     } else {
       raster_resource_ = resource_pool->AcquireResource(output_resource->size(),
                                                         resource_format);
-      reusing_raster_resource_ = false;
     }
 
     lock_.reset(new ResourceProvider::ScopedWriteLockGpuMemoryBuffer(
@@ -63,25 +60,30 @@ class RasterBufferImpl : public RasterBuffer {
 
     // Make sure any scheduled copy operations are issued before we release the
     // raster resource.
-    bool did_playback = sequence_ != 0;
-    if (did_playback)
+    if (sequence_)
       worker_pool_->AdvanceLastIssuedCopyTo(sequence_);
 
     // Return resources to pool so they can be used by another RasterBuffer
     // instance.
-    uint64_t id(did_playback ? new_content_id_ : previous_content_id_);
-    resource_pool_->ReleaseResource(raster_resource_.Pass(), id);
+    resource_pool_->ReleaseResource(raster_resource_.Pass(),
+                                    raster_content_id_);
   }
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& raster_full_rect,
                 const gfx::Rect& raster_dirty_rect,
+                uint64_t new_content_id,
                 float scale) override {
+    // If there's a raster_content_id_, we are reusing a resource with that
+    // content id.
+    bool reusing_raster_resource = raster_content_id_ != 0;
     sequence_ = worker_pool_->PlaybackAndScheduleCopyOnWorkerThread(
-        reusing_raster_resource_, lock_.Pass(), raster_resource_.get(),
+        reusing_raster_resource, lock_.Pass(), raster_resource_.get(),
         output_resource_, raster_source, raster_full_rect, raster_dirty_rect,
         scale);
+    // Store the content id of the resource to return to the pool.
+    raster_content_id_ = new_content_id;
   }
 
  private:
@@ -89,9 +91,7 @@ class RasterBufferImpl : public RasterBuffer {
   ResourceProvider* resource_provider_;
   ResourcePool* resource_pool_;
   const Resource* output_resource_;
-  uint64_t new_content_id_;
-  uint64_t previous_content_id_;
-  bool reusing_raster_resource_;
+  uint64_t raster_content_id_;
   scoped_ptr<ScopedResource> raster_resource_;
   scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> lock_;
   CopySequenceNumber sequence_;
@@ -295,13 +295,15 @@ ResourceFormat OneCopyTileTaskWorkerPool::GetResourceFormat() {
 
 scoped_ptr<RasterBuffer> OneCopyTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource,
-    uint64_t new_content_id,
+    uint64_t resource_content_id,
     uint64_t previous_content_id) {
+  // TODO(danakj): If resource_content_id != 0, we only need to copy/upload
+  // the dirty rect.
   DCHECK_EQ(resource->format(), resource_provider_->best_texture_format());
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(this, resource_provider_, resource_pool_,
                            resource_provider_->best_texture_format(), resource,
-                           new_content_id, previous_content_id));
+                           previous_content_id));
 }
 
 void OneCopyTileTaskWorkerPool::ReleaseBufferForRaster(

@@ -38,6 +38,7 @@ class RasterBufferImpl : public RasterBuffer {
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& raster_full_rect,
                 const gfx::Rect& raster_dirty_rect,
+                uint64_t new_content_id,
                 float scale) override {
     if (!memory_)
       return;
@@ -314,7 +315,7 @@ ResourceFormat PixelBufferTileTaskWorkerPool::GetResourceFormat() {
 
 scoped_ptr<RasterBuffer> PixelBufferTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource,
-    uint64_t new_content_id,
+    uint64_t resource_content_id,
     uint64_t previous_content_id) {
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(resource_provider_, resource));

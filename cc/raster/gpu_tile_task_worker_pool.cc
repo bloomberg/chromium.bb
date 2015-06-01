@@ -32,6 +32,7 @@ class RasterBufferImpl : public RasterBuffer {
   void Playback(const RasterSource* raster_source,
                 const gfx::Rect& raster_full_rect,
                 const gfx::Rect& raster_dirty_rect,
+                uint64_t new_content_id,
                 float scale) override {
     TRACE_EVENT0("cc", "RasterBufferImpl::Playback");
     ContextProvider* context_provider = rasterizer_->resource_provider()
@@ -211,7 +212,7 @@ void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {
 
 scoped_ptr<RasterBuffer> GpuTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource,
-    uint64_t new_content_id,
+    uint64_t resource_content_id,
     uint64_t previous_content_id) {
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(rasterizer_.get(), resource));

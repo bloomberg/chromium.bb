@@ -20,6 +20,7 @@ namespace {
 enum RasterMode {
   PARTIAL_ONE_COPY,
   FULL_ONE_COPY,
+  BITMAP,
 };
 
 class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
@@ -37,6 +38,9 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
         settings->use_one_copy = true;
         settings->use_zero_copy = false;
         settings->use_persistent_map_for_gpu_memory_buffers = false;
+        break;
+      case BITMAP:
+        // This is done via context creation. No settings to change here!
         break;
     }
   }
@@ -64,6 +68,8 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
       case FULL_ONE_COPY:
         test_type = PIXEL_TEST_GL;
         break;
+      case BITMAP:
+        test_type = PIXEL_TEST_SOFTWARE;
     }
 
     if (threaded)
@@ -180,6 +186,13 @@ TEST_F(LayerTreeHostTilesTestPartialInvalidation,
   RunRasterPixelTest(
       true, FULL_ONE_COPY, picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
+}
+
+TEST_F(LayerTreeHostTilesTestPartialInvalidation,
+       PartialRaster_SingleThread_Software) {
+  RunRasterPixelTest(
+      false, BITMAP, picture_layer_,
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
 }
 
 }  // namespace
