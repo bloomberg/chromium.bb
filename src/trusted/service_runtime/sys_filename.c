@@ -67,7 +67,8 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
     goto cleanup;
 
   allowed_flags = (NACL_ABI_O_ACCMODE | NACL_ABI_O_CREAT | NACL_ABI_O_EXCL
-                   | NACL_ABI_O_TRUNC | NACL_ABI_O_APPEND);
+                   | NACL_ABI_O_TRUNC | NACL_ABI_O_APPEND
+                   | NACL_ABI_O_DIRECTORY);
   if (0 != (flags & ~allowed_flags)) {
     NaClLog(LOG_WARNING, "Invalid open flags 0%o, ignoring extraneous bits\n",
             flags);
@@ -119,6 +120,11 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
     }
   } else {
     struct NaClHostDesc  *hd;
+
+    if (flags & NACL_ABI_O_DIRECTORY) {
+      retval = -NACL_ABI_ENOTDIR;
+      goto cleanup;
+    }
 
     hd = malloc(sizeof *hd);
     if (NULL == hd) {

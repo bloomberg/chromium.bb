@@ -24,6 +24,7 @@
 #define NACL_ABI_O_CREAT         0100 /* not fcntl */
 #define NACL_ABI_O_TRUNC        01000 /* not fcntl */
 #define NACL_ABI_O_APPEND       02000
+#define NACL_ABI_O_DIRECTORY  0200000 /* not fcntl */
 
 /*
  * Features not implemented by NaCl, but required by the newlib build.
@@ -38,7 +39,6 @@
 /*
  * Features not implemented by NaCl, but required by nacl_helper_nonsfi.
  */
-#define NACL_ABI_O_DIRECTORY  0200000
 #define NACL_ABI_O_CLOEXEC   02000000
 
 /* XXX close on exec request; must match UF_EXCLOSE in user.h */

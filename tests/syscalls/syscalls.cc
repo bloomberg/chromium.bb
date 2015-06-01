@@ -586,6 +586,24 @@ bool test_open_trunc(const char *test_file) {
   return passed(testname, "all");
 }
 
+// O_DIRECTORY tells open to insist that it's a directory.
+bool test_open_directory(const char *test_file) {
+  const char *testname = "test_open_directory";
+  int fd;
+
+  // file exists and is not a directory
+  fd = open(test_file, O_RDONLY | O_DIRECTORY);
+  ASSERT_EQ_MSG(fd, -1, "open(test_file, O_RDONLY | O_DIRECTORY)");
+  ASSERT_EQ(errno, ENOTDIR);
+
+  // directory OK
+  fd = open(".", O_RDONLY | O_DIRECTORY);
+  ASSERT_NE_MSG(fd, -1, "open(., O_RDONLY | O_DIRECTORY)");
+  close(fd);
+
+  return passed(testname, "all");
+}
+
 // open() returns the new file descriptor, or -1 if an error occurred
 bool test_open(const char *test_file) {
   int fd;
@@ -1136,6 +1154,7 @@ bool testSuite(const char *test_file) {
   ret &= test_stat(test_file);
   ret &= test_open(test_file);
   ret &= test_open_trunc(test_file);
+  ret &= test_open_directory(test_file);
   ret &= test_close(test_file);
   ret &= test_read(test_file);
   ret &= test_write(test_file);
