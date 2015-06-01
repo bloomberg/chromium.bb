@@ -70,3 +70,65 @@ class PowerTop25(perf_benchmark.PerfBenchmark):
     if found:
       user_stories.RemoveUserStory(found)
     return user_stories
+
+
+@benchmark.Enabled('linux', 'mac', 'win', 'chromeos')
+class PowerPPSControlDisabled(perf_benchmark.PerfBenchmark):
+  """A single page with a small-ish non-essential plugin. In this test, Plugin
+  Power Saver (PPS) is disabled, so the plugin should continue animating and
+  taking power."""
+  test = power.QuiescentPower
+  page_set = page_sets.PluginPowerSaverPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--disable-plugin-power-saver'])
+
+  @classmethod
+  def Name(cls):
+    return 'power.pps_control_disabled'
+
+
+@benchmark.Enabled('linux', 'mac', 'win', 'chromeos')
+class PowerPPSControlEnabled(perf_benchmark.PerfBenchmark):
+  """A single page with a small-ish non-essential plugin. In this test, Plugin
+  Power Saver (PPS) is enabled, so the plugin should be throttled (idle with a
+  "Click to play" button)."""
+  test = power.QuiescentPower
+  page_set = page_sets.PluginPowerSaverPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--enable-plugin-power-saver'])
+
+  @classmethod
+  def Name(cls):
+    return 'power.pps_control_enabled'
+
+
+@benchmark.Enabled('linux', 'mac', 'win', 'chromeos')
+class PowerThrottledPlugins(perf_benchmark.PerfBenchmark):
+  """Tests that pages with flash ads take more power without Plugin Power Saver
+  (PPS) throttling them."""
+  test = power.QuiescentPower
+  page_set = page_sets.ThrottledPluginsPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--disable-plugin-power-saver'])
+
+  @classmethod
+  def Name(cls):
+    return 'power.throttled_plugins_pps_disabled'
+
+
+@benchmark.Enabled('linux', 'mac', 'win', 'chromeos')
+class PowerThrottledPluginsPPS(perf_benchmark.PerfBenchmark):
+  """Tests that pages with flash ads take less power with Plugin Power Saver
+  (PPS) enabled to throttle them."""
+  test = power.QuiescentPower
+  page_set = page_sets.ThrottledPluginsPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--enable-plugin-power-saver'])
+
+  @classmethod
+  def Name(cls):
+    return 'power.throttled_plugins_pps_enabled'

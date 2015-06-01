@@ -1,0 +1,11 @@
+{
+    "description": "Describes the Web Page Replay archives for a user story set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "throttled_plugins_004.wpr": [
+            "http://techcrunch.com", 
+            "http://youtube.com", 
+            "http://cnn.com", 
+            "http://wsj.com"
+        ]
+    }
+}
