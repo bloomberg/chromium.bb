@@ -270,7 +270,16 @@ def test_allCases():
         for section in harnessModule['tests']:
             flags = origflags.copy()
             flags.update(section.get('flags', {}))
-            for testData in section['data']:
+            data = []
+            if isinstance(section['data'], basestring):
+                includeFile = section['data']
+                includeFile = os.path.normpath(os.path.join(os.path.dirname(harness), includeFile))
+                f = open(includeFile, 'r')
+                data = json.load(f, encoding="UTF-8")
+                f.close()
+            else:
+                data = section['data']
+            for testData in data:
                 test = flags.copy()
                 testTables = tableList[:]
                 test.update(testData)
