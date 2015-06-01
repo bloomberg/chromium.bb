@@ -44,7 +44,13 @@ enum OperationType {
 @property(nonatomic, assign) CRWBrowsingDataStoreMode mode;
 // Sets the mode iff there are no more stash or restore operations that are
 // still pending. |mode| can only be either |ACTIVE| or |INACTIVE|.
-- (void)setModeIfNotStashingOrRestoring:(CRWBrowsingDataStoreMode)mode;
+// |handler| is called immediately (in the same runloop) with a BOOL indicating
+// whether the mode change was successful or not. |handler| can be nil.
+- (void)finalizeChangeToMode:(CRWBrowsingDataStoreMode)mode
+    andCallCompletionHandler:(void (^)(BOOL modeChangeWasSuccessful))handler;
+
+// The number of stash or restore operations that are still pending.
+@property(nonatomic, assign) NSUInteger numberOfPendingStashOrRestoreOperations;
 
 // Performs operations of type |operationType| on each of the
 // |browsingDataManagers|.
@@ -86,8 +92,10 @@ enum OperationType {
   // The last operation that was enqueued to be run. Can be stash, restore or a
   // delete operation.
   base::scoped_nsobject<NSOperation> _lastDispatchedOperation;
-  // The last stash or restore operations that was dispatched to be run.
-  base::scoped_nsobject<NSOperation> _lastDispatchedStashOrRestoreOperation;
+  // The number of stash or restore operations that are still pending. If this
+  // value > 0 the mode of the CRWBrowsingDataStore is SYNCHRONIZING. The mode
+  // can be made ACTIVE or INACTIVE only be set when this value is 0.
+  NSUInteger _numberOfPendingStashOrRestoreOperations;
 }
 
 + (NSOperationQueue*)operationQueueForStashAndRestoreOperations {
@@ -172,6 +180,18 @@ enum OperationType {
   return result;
 }
 
++ (BOOL)automaticallyNotifiesObserversForKey:(NSString*)key {
+  // It is necessary to override this for |mode| because the default KVO
+  // behavior in NSObject is to fire a notification irrespective of if an actual
+  // change was made to the ivar or not. The |mode| property needs fine grained
+  // control over the actual notifications being fired since observers need to
+  // be notified iff the |mode| actually changed.
+  if ([key isEqual:@"mode"]) {
+    return NO;
+  }
+  return [super automaticallyNotifiesObserversForKey:(NSString*)key];
+}
+
 - (CRWBrowsingDataStoreMode)mode {
   DCHECK([NSThread isMainThread]);
   return _mode;
@@ -179,42 +199,67 @@ enum OperationType {
 
 - (void)setMode:(CRWBrowsingDataStoreMode)mode {
   DCHECK([NSThread isMainThread]);
+  if (_mode == mode) {
+    return;
+  }
+  if (mode == ACTIVE || mode == INACTIVE) {
+    DCHECK(!self.numberOfPendingStashOrRestoreOperations);
+  }
+  [self willChangeValueForKey:@"mode"];
   _mode = mode;
+  [self didChangeValueForKey:@"mode"];
 }
 
-- (void)setModeIfNotStashingOrRestoring:(CRWBrowsingDataStoreMode)mode {
+- (void)finalizeChangeToMode:(CRWBrowsingDataStoreMode)mode
+    andCallCompletionHandler:(void (^)(BOOL modeChangeWasSuccessful))handler {
   DCHECK([NSThread isMainThread]);
   DCHECK_NE(SYNCHRONIZING, mode);
-  if ([_lastDispatchedStashOrRestoreOperation isFinished]) {
-    _mode = mode;
+
+  BOOL modeChangeWasSuccessful = NO;
+  if (!self.numberOfPendingStashOrRestoreOperations) {
+    [self setMode:mode];
+    modeChangeWasSuccessful = YES;
+  }
+  if (handler) {
+    handler(modeChangeWasSuccessful);
   }
 }
 
-- (void)makeActiveWithCompletionHandler:(ProceduralBlock)completionHandler {
+- (NSUInteger)numberOfPendingStashOrRestoreOperations {
+  DCHECK([NSThread isMainThread]);
+  return _numberOfPendingStashOrRestoreOperations;
+}
+
+- (void)setNumberOfPendingStashOrRestoreOperations:
+        (NSUInteger)numberOfPendingStashOrRestoreOperations {
+  DCHECK([NSThread isMainThread]);
+  _numberOfPendingStashOrRestoreOperations =
+      numberOfPendingStashOrRestoreOperations;
+}
+
+- (void)makeActiveWithCompletionHandler:
+        (void (^)(BOOL success))completionHandler {
   DCHECK([NSThread isMainThread]);
 
   base::WeakNSObject<CRWBrowsingDataStore> weakSelf(self);
   [self performOperationWithType:RESTORE
             browsingDataManagers:[self allBrowsingDataManagers]
                completionHandler:^{
-                 [weakSelf setModeIfNotStashingOrRestoring:ACTIVE];
-                 if (completionHandler) {
-                   completionHandler();
-                 }
+                 [weakSelf finalizeChangeToMode:ACTIVE
+                       andCallCompletionHandler:completionHandler];
                }];
 }
 
-- (void)makeInactiveWithCompletionHandler:(ProceduralBlock)completionHandler {
+- (void)makeInactiveWithCompletionHandler:
+        (void (^)(BOOL success))completionHandler {
   DCHECK([NSThread isMainThread]);
 
   base::WeakNSObject<CRWBrowsingDataStore> weakSelf(self);
   [self performOperationWithType:STASH
             browsingDataManagers:[self allBrowsingDataManagers]
                completionHandler:^{
-                 [weakSelf setModeIfNotStashingOrRestoring:INACTIVE];
-                 if (completionHandler) {
-                   completionHandler();
-                 }
+                 [weakSelf finalizeChangeToMode:INACTIVE
+                       andCallCompletionHandler:completionHandler];
                }];
 }
 
@@ -262,9 +307,20 @@ enum OperationType {
       break;
   };
 
+  if (operationType == RESTORE || operationType == STASH) {
+    [self setMode:SYNCHRONIZING];
+    ++self.numberOfPendingStashOrRestoreOperations;
+    completionHandler = ^{
+      --self.numberOfPendingStashOrRestoreOperations;
+      // It is safe to this and does not lead to the block (|completionHandler|)
+      // retaining itself.
+      completionHandler();
+    };
+  }
+
   id callCompletionHandlerOnMainThread = ^{
-    // This can be called on a background thread, hence the need to bounce to
-    // the main thread.
+    // This is called on a background thread, hence the need to bounce to the
+    // main thread.
     dispatch_async(dispatch_get_main_queue(), ^{
       completionHandler();
     });
@@ -274,10 +330,6 @@ enum OperationType {
                                   selector:selector
                          completionHandler:callCompletionHandlerOnMainThread]);
 
-  if (operationType == RESTORE || operationType == STASH) {
-    _mode = SYNCHRONIZING;
-    _lastDispatchedStashOrRestoreOperation.reset([operation retain]);
-  }
 
   NSOperationQueue* queue = nil;
   switch (operationType) {

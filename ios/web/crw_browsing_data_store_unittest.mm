@@ -4,6 +4,7 @@
 
 #import "ios/web/public/crw_browsing_data_store.h"
 
+#include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "base/test/ios/wait_util.h"
@@ -13,6 +14,55 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+// An observer to observe the |mode| key changes to a CRWBrowsingDataStore.
+// Used for testing purposes.
+@interface CRWTestBrowsingDataStoreObserver : NSObject
+// Designated init. |browsingDataStore| cannot be null.
+- (instancetype)initWithBrowsingDataStore:
+        (CRWBrowsingDataStore*)browsingDataStore NS_DESIGNATED_INITIALIZER;
+// The number of times that the mode of the underlying CRWBrowsingDataStore
+// changed.
+@property(nonatomic, assign) NSUInteger modeChangeCount;
+@end
+
+@implementation CRWTestBrowsingDataStoreObserver {
+  // The underlying CRWBrowsingDataStore.
+  __weak CRWBrowsingDataStore* _browsingDataStore;
+}
+
+@synthesize modeChangeCount = _modeChangeCount;
+
+- (instancetype)initWithBrowsingDataStore:
+        (CRWBrowsingDataStore*)browsingDataStore {
+  self = [super init];
+  if (self) {
+    DCHECK(browsingDataStore);
+    [browsingDataStore addObserver:self
+                        forKeyPath:@"mode"
+                           options:0
+                           context:nil];
+    _browsingDataStore = browsingDataStore;
+  }
+  return self;
+}
+
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  DCHECK([keyPath isEqual:@"mode"]);
+  DCHECK_EQ(_browsingDataStore, object);
+
+  ++self.modeChangeCount;
+}
+
+- (void)dealloc {
+  [_browsingDataStore removeObserver:self forKeyPath:@"mode"];
+  [super dealloc];
+}
+
+@end
 
 namespace web {
 namespace {
@@ -56,28 +106,33 @@ TEST_F(BrowsingDataStoreTest, InitialModeAndNoPendingOperations) {
 // Tests that CRWBrowsingDataStore handles several consecutive calls to
 // |makeActive| and |makeInactive| correctly.
 TEST_F(BrowsingDataStoreTest, MakeActiveAndInactiveOperations) {
-  ProceduralBlock makeActiveCallback = ^{
+  base::scoped_nsobject<CRWTestBrowsingDataStoreObserver> observer(
+      [[CRWTestBrowsingDataStoreObserver alloc]
+          initWithBrowsingDataStore:browsing_data_store_]);
+  EXPECT_EQ(0U, [observer modeChangeCount]);
+
+  id unsucessfullCallback = ^(BOOL success) {
     ASSERT_TRUE([NSThread isMainThread]);
     CRWBrowsingDataStoreMode mode = [browsing_data_store_ mode];
-    EXPECT_TRUE((mode == ACTIVE) || (mode == SYNCHRONIZING));
+    EXPECT_FALSE(success);
+    EXPECT_EQ(SYNCHRONIZING, mode);
   };
-  ProceduralBlock makeInactiveCallback = ^{
-    ASSERT_TRUE([NSThread isMainThread]);
-    CRWBrowsingDataStoreMode mode = [browsing_data_store_ mode];
-    EXPECT_TRUE((mode == INACTIVE) || (mode == SYNCHRONIZING));
-  };
-  [browsing_data_store_ makeActiveWithCompletionHandler:makeActiveCallback];
+  [browsing_data_store_ makeActiveWithCompletionHandler:unsucessfullCallback];
+  EXPECT_EQ(SYNCHRONIZING, [browsing_data_store_ mode]);
+  EXPECT_EQ(1U, [observer modeChangeCount]);
+
+  [browsing_data_store_ makeInactiveWithCompletionHandler:unsucessfullCallback];
   EXPECT_EQ(SYNCHRONIZING, [browsing_data_store_ mode]);
 
-  [browsing_data_store_ makeInactiveWithCompletionHandler:makeInactiveCallback];
-  EXPECT_EQ(SYNCHRONIZING, [browsing_data_store_ mode]);
-
-  [browsing_data_store_ makeActiveWithCompletionHandler:makeActiveCallback];
+  [browsing_data_store_ makeActiveWithCompletionHandler:unsucessfullCallback];
   EXPECT_EQ(SYNCHRONIZING, [browsing_data_store_ mode]);
 
   __block BOOL block_was_called = NO;
-  [browsing_data_store_ makeInactiveWithCompletionHandler:^{
-    makeInactiveCallback();
+  [browsing_data_store_ makeInactiveWithCompletionHandler:^(BOOL success) {
+    ASSERT_TRUE([NSThread isMainThread]);
+    CRWBrowsingDataStoreMode mode = [browsing_data_store_ mode];
+    EXPECT_TRUE(success);
+    EXPECT_EQ(INACTIVE, mode);
     block_was_called = YES;
   }];
   EXPECT_EQ(SYNCHRONIZING, [browsing_data_store_ mode]);
@@ -85,6 +140,9 @@ TEST_F(BrowsingDataStoreTest, MakeActiveAndInactiveOperations) {
   base::test::ios::WaitUntilCondition(^bool{
     return block_was_called;
   });
+
+  EXPECT_EQ(INACTIVE, [browsing_data_store_ mode]);
+  EXPECT_EQ(2U, [observer modeChangeCount]);
 }
 
 // Tests that CRWBrowsingDataStore correctly handles |removeDataOfTypes:| call.

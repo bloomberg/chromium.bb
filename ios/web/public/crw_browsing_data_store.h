@@ -47,26 +47,31 @@ enum CRWBrowsingDataStoreMode {
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
-// The mode that the CRWBrowsingDataStore is in.
+// The mode that the CRWBrowsingDataStore is in. KVO compliant.
 @property(nonatomic, assign, readonly) CRWBrowsingDataStoreMode mode;
 
 // TODO(shreyasv): Verify the preconditions for the following 3 methods when
 // web::WebViewCounter class is implemented. crbug.com/480507
 
 // Changes the mode to |ACTIVE|.
-// |completionHandler| is called on the main thread.
+// |completionHandler| is called on the main thread. This block has no return
+// value and takes a single BOOL argument that indicates whether or not the
+// the mode was successfully changed to |ACTIVE|.
+// The mode change to |ACTIVE| can fail if another |makeActive| or
+// |makeInactive| was enqueued after this call.
 // Precondition: There must be no web views associated with the BrowserState.
-// Note: If there is another operation driven to change the mode, the mode will
-// still be |SYNCHRONIZING| rather than |ACTIVE| when the callback is received.
-- (void)makeActiveWithCompletionHandler:(ProceduralBlock)completionHandler;
+- (void)makeActiveWithCompletionHandler:
+        (void (^)(BOOL success))completionHandler;
 
 // Changes the mode to |INACTIVE|.
-// |completionHandler| is called on the main thread.
+// |completionHandler| is called on the main thread. This block has no return
+// value and takes a single BOOL argument that indicates whether or not the
+// the mode was successfully changed to |INACTIVE|.
+// The mode change to |ACTIVE| can fail if another |makeActive| or
+// |makeInactive| was enqueued after this call.
 // Precondition: There must be no web views associated with the BrowserState.
-// Note: If there is another operation driven to change the mode, the mode will
-// still be |SYNCHRONIZING| rather than |INACTIVE| when the callback is
-// received.
-- (void)makeInactiveWithCompletionHandler:(ProceduralBlock)completionHandler;
+- (void)makeInactiveWithCompletionHandler:
+        (void (^)(BOOL success))completionHandler;
 
 // Removes all browsing data of the provided |browsingDataTypes|.
 // |completionHandler| is called on the main thread after the browsing data has
