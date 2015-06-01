@@ -1,4 +1,4 @@
-<?xml-stylesheet type="text/xsl" href="resources/xsl-transformed.xsl"?>
+<?xml-stylesheet type="text/xsl" href="../styles/resources/xsl-transformed.xsl"?>
 <items>
   <item>One</item>
   <item>Two</item>

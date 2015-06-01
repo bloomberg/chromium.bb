@@ -1637,7 +1637,7 @@ crbug.com/469657 fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
 crbug.com/469657 virtual/pointerevent/fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
 crbug.com/469657 virtual/slimmingpaint/fast/events/mouse-event-buttons-attribute.html [ Skip ]
 
-crbug.com/469660 inspector/elements/elements-panel-shadow-selection-on-refresh.html [ Pass Failure ]
+crbug.com/469660 inspector/elements/shadow/elements-panel-shadow-selection-on-refresh.html [ Pass Failure ]
 
 crbug.com/469683 animations/responsive-neutral-keyframes.html [ Slow ]
 crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure Timeout ]

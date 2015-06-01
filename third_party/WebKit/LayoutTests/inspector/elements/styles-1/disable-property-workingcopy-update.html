@@ -1,0 +1,90 @@
+<html>
+<head>
+<link rel="stylesheet" href="../styles/resources/disable-property-workingcopy-update.css">
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    var cssSourceFrame;
+    WebInspector.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 10;
+
+    InspectorTest.runTestSuite([
+        function selectContainer(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+        },
+
+        function showEditor(next)
+        {
+            var headers = InspectorTest.cssModel.styleSheetHeaders();
+            for (var i = 0; i < headers.length; ++i) {
+                if (headers[i].sourceURL.endsWith(".css")) {
+                    var cssLocation = new WebInspector.CSSLocation(InspectorTest.cssModel, headers[i].id, headers[i].sourceURL, 0);
+                    InspectorTest.showUISourceCode(WebInspector.cssWorkspaceBinding.rawLocationToUILocation(cssLocation).uiSourceCode, callback);
+                    break;
+                }
+            }
+
+            function callback(sourceFrame)
+            {
+                cssSourceFrame = sourceFrame;
+                InspectorTest.dumpSourceFrameContents(cssSourceFrame);
+                next();
+            }
+        },
+
+        function togglePropertyOff(next)
+        {
+            toggleProperty(false, next);
+        },
+
+        function dumpDisabledText(next)
+        {
+            InspectorTest.dumpSourceFrameContents(cssSourceFrame);
+            InspectorTest.dumpSelectedElementStyles(true);
+            next();
+        },
+
+        function togglePropertyOn(next)
+        {
+            toggleProperty(true, next);
+        },
+
+        function dumpEnabledText(next)
+        {
+            InspectorTest.dumpSourceFrameContents(cssSourceFrame);
+            InspectorTest.dumpSelectedElementStyles(true);
+            next();
+        }
+    ]);
+
+    function toggleProperty(value, next)
+    {
+        InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", callback);
+        InspectorTest.waitForStyles("inspected", callback);
+        InspectorTest.toggleMatchedStyleProperty("font-weight", value);
+
+        var barrierCounter = 2;
+        function callback()
+        {
+            if (!--barrierCounter)
+                next();
+        }
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that style property disablement is propagated into the stylesheet UISourceCode working copy.
+</p>
+
+<div id="inspected">
+</div>
+
+</body>
+</html>

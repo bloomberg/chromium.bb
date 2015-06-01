@@ -1,0 +1,42 @@
+<html>
+<head>
+
+<style>
+
+body {
+    margin: 0;
+}
+
+#container {
+    position: absolute;
+    overflow: hidden;
+    left: 100px;
+    top: 200px;
+}
+
+iframe {
+    width: 200px;
+    height: 200px;
+    border: none;
+}
+
+</style>
+
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.dumpInspectorHighlightJSON("svg-rect", InspectorTest.completeTest.bind(InspectorTest), "svg-iframe");
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<div id="container">
+    <iframe id="svg-iframe" src="resources/highlight-svg-content-iframe.html"></iframe>
+</div>
+</body>
+</html>

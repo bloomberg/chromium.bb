@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
+    function selectedNodeChanged(event)
+    {
+        var node = event.data;
+        if (!node)
+            return;
+        if (node.getAttribute("id") == "shadow") {
+            InspectorTest.addResult(WebInspector.DOMPresentationUtils.xPath(node, false));
+            InspectorTest.completeTest();
+        }
+    }
+    InspectorTest.evaluateInConsole("inspect(host.shadowRoot.firstChild.firstChild.firstChild)");
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that inspect element action works for deep shadow elements.
+</p>
+
+<div>
+  <div>
+    <div id="host">
+    </div>
+  </div>
+</div>
+
+<script>
+    var host = document.querySelector('#host');
+    var sr = host.createShadowRoot();
+    sr.innerHTML = "<div><div><span id='shadow'>Shadow</span></div></div>";
+</script>
+
+</body>
+</html>

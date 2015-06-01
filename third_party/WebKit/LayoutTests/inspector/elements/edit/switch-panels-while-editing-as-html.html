@@ -1,0 +1,56 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="edit-dom-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function testSetUp(next)
+        {
+            InspectorTest.expandElementsTree(next);
+        },
+
+        function selectNode(next)
+        {
+            InspectorTest.selectNodeWithId("inspected", onNodeSelected)
+
+            function onNodeSelected(node)
+            {
+                var treeOutline = InspectorTest.firstElementsTreeOutline();
+                var treeElement = treeOutline.findTreeElement(node);
+                treeElement.toggleEditAsHTML();
+                InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "setMultilineEditing", next);
+            }
+        },
+
+        function switchPanels(next)
+        {
+            WebInspector.inspectorView.showPanel("sources")
+                .then(next)
+                .catch(onError);
+
+            function onError(error)
+            {
+                InspectorTest.addResult("FAILURE: exception caught while switching panels.");
+                InspectorTest.completeTest();
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies inspector doesn't break when switching panels while editing as HTML. crbug.com/485457
+</p>
+
+<div>
+    <div id="inspected">Inspected Node</div>
+</div>
+</body>
+</html>
