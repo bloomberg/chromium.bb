@@ -57,11 +57,6 @@ declare_args() {
     # The patch is preapplied to the internal toolchain and hence all bots.
     msvs_xtree_patched = false
   }
-
-  # Track where uninitialized memory originates from. From fastest to slowest:
-  # 0 - no tracking, 1 - track only the initial allocation site, 2 - track the
-  # chain of stores leading from allocation site to use site.
-  msan_track_origins = 2
 }
 
 # default_include_dirs ---------------------------------------------------------
@@ -175,8 +170,6 @@ config("compiler") {
         "-fsanitize-memory-track-origins=$msan_track_origins",
         "-fsanitize-blacklist=$msan_blacklist_path",
       ]
-
-      # TODO(GYP): Support instrumented libraries.
     }
 
     if (use_custom_libcxx) {

@@ -94,34 +94,34 @@
           ['msan==1', {
             'conditions': [
               ['msan_track_origins==2', {
-                'archive_name': 'msan-chained-origins-<(_ubuntu_release)',
+                'archive_prefix': 'msan-chained-origins',
               }, {
                 'conditions': [
                   ['msan_track_origins==0', {
-                    'archive_name': 'msan-no-origins-<(_ubuntu_release)',
+                    'archive_prefix': 'msan-no-origins',
                   }, {
-                    'archive_name': 'UNSUPPORTED_CONFIGURATION'
+                    'archive_prefix': 'UNSUPPORTED_CONFIGURATION'
                   }],
               ]}],
           ]}, {
-              'archive_name': 'UNSUPPORTED_CONFIGURATION'
+              'archive_prefix': 'UNSUPPORTED_CONFIGURATION'
           }],
         ],
       },
       'actions': [
         {
-          'action_name': 'unpack_<(archive_name).tgz',
+          'action_name': 'unpack_<(archive_prefix)-<(_ubuntu_release).tgz',
           'inputs': [
-            'binaries/<(archive_name).tgz',
+            'binaries/<(archive_prefix)-<(_ubuntu_release).tgz',
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/instrumented_libraries_prebuilt/<(archive_name).txt',
+            '<(PRODUCT_DIR)/instrumented_libraries_prebuilt/<(archive_prefix).txt',
           ],
           'action': [
-            'scripts/unpack_binaries.sh',
-            'binaries/<(archive_name).tgz',
+            'scripts/unpack_binaries.py',
+            '<(archive_prefix)',
+            'binaries',
             '<(PRODUCT_DIR)/instrumented_libraries_prebuilt/',
-            '<(PRODUCT_DIR)/instrumented_libraries_prebuilt/<(archive_name).txt',
           ],
         },
       ],
