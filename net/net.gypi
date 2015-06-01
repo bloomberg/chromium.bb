@@ -1485,7 +1485,7 @@
       'proxy/proxy_info_unittest.cc',
       'proxy/proxy_list_unittest.cc',
       'proxy/proxy_resolver_error_observer_mojo_unittest.cc',
-      'proxy/proxy_resolver_mojo_unittest.cc',
+      'proxy/proxy_resolver_factory_mojo_unittest.cc',
       'proxy/proxy_resolver_v8_tracing_unittest.cc',
       'proxy/proxy_resolver_v8_unittest.cc',
       'proxy/proxy_script_decider_unittest.cc',

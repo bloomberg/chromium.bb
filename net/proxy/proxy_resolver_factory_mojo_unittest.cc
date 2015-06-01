@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/proxy_resolver_mojo.h"
+#include "net/proxy/proxy_resolver_factory_mojo.h"
 
 #include <list>
 #include <map>
@@ -408,8 +408,8 @@ void MockMojoProxyResolverFactory::CreateResolver(
 
 }  // namespace
 
-class ProxyResolverMojoTest : public testing::Test,
-                              public MojoProxyResolverFactory {
+class ProxyResolverFactoryMojoTest : public testing::Test,
+                                     public MojoProxyResolverFactory {
  public:
   void SetUp() override {
     mock_proxy_resolver_factory_.reset(new MockMojoProxyResolverFactory(
@@ -474,11 +474,11 @@ class ProxyResolverMojoTest : public testing::Test,
   TestClosure on_delete_callback_;
 };
 
-TEST_F(ProxyResolverMojoTest, CreateProxyResolver) {
+TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver) {
   CreateProxyResolver();
 }
 
-TEST_F(ProxyResolverMojoTest, CreateProxyResolver_Empty) {
+TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_Empty) {
   TestCompletionCallback callback;
   scoped_refptr<ProxyResolverScriptData> pac_script(
       ProxyResolverScriptData::FromUTF8(""));
@@ -490,7 +490,7 @@ TEST_F(ProxyResolverMojoTest, CreateProxyResolver_Empty) {
   EXPECT_FALSE(request);
 }
 
-TEST_F(ProxyResolverMojoTest, CreateProxyResolver_Url) {
+TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_Url) {
   TestCompletionCallback callback;
   scoped_refptr<ProxyResolverScriptData> pac_script(
       ProxyResolverScriptData::FromURL(GURL(kExampleUrl)));
@@ -502,7 +502,7 @@ TEST_F(ProxyResolverMojoTest, CreateProxyResolver_Url) {
   EXPECT_FALSE(request);
 }
 
-TEST_F(ProxyResolverMojoTest, CreateProxyResolver_Failed) {
+TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_Failed) {
   mock_proxy_resolver_factory_->AddCreateProxyResolverAction(
       CreateProxyResolverAction::ReturnResult(kScriptData,
                                               ERR_PAC_STATUS_NOT_OK));
@@ -522,7 +522,7 @@ TEST_F(ProxyResolverMojoTest, CreateProxyResolver_Failed) {
   CreateProxyResolver();
 }
 
-TEST_F(ProxyResolverMojoTest, CreateProxyResolver_BothDisconnected) {
+TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_BothDisconnected) {
   mock_proxy_resolver_factory_->AddCreateProxyResolverAction(
       CreateProxyResolverAction::DropBoth(kScriptData));
 
@@ -537,7 +537,7 @@ TEST_F(ProxyResolverMojoTest, CreateProxyResolver_BothDisconnected) {
   EXPECT_TRUE(request);
 }
 
-TEST_F(ProxyResolverMojoTest, CreateProxyResolver_ClientDisconnected) {
+TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_ClientDisconnected) {
   mock_proxy_resolver_factory_->AddCreateProxyResolverAction(
       CreateProxyResolverAction::DropClient(kScriptData));
 
@@ -552,7 +552,7 @@ TEST_F(ProxyResolverMojoTest, CreateProxyResolver_ClientDisconnected) {
   EXPECT_TRUE(request);
 }
 
-TEST_F(ProxyResolverMojoTest, CreateProxyResolver_ResolverDisconnected) {
+TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_ResolverDisconnected) {
   mock_proxy_resolver_factory_->AddCreateProxyResolverAction(
       CreateProxyResolverAction::DropResolver(kScriptData));
 
@@ -568,7 +568,7 @@ TEST_F(ProxyResolverMojoTest, CreateProxyResolver_ResolverDisconnected) {
   on_delete_callback_.WaitForResult();
 }
 
-TEST_F(ProxyResolverMojoTest, CreateProxyResolver_Cancel) {
+TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_Cancel) {
   mock_proxy_resolver_factory_->AddCreateProxyResolverAction(
       CreateProxyResolverAction::WaitForClientDisconnect(kScriptData));
 
@@ -587,7 +587,7 @@ TEST_F(ProxyResolverMojoTest, CreateProxyResolver_Cancel) {
   on_delete_callback_.WaitForResult();
 }
 
-TEST_F(ProxyResolverMojoTest, GetProxyForURL) {
+TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL) {
   mock_proxy_resolver_.AddGetProxyAction(GetProxyForUrlAction::ReturnServers(
       GURL(kExampleUrl), ProxyServersFromPacString("DIRECT")));
   CreateProxyResolver();
@@ -599,7 +599,7 @@ TEST_F(ProxyResolverMojoTest, GetProxyForURL) {
   EXPECT_EQ("DIRECT", request->results().ToPacString());
 }
 
-TEST_F(ProxyResolverMojoTest, GetProxyForURL_LoadState) {
+TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_LoadState) {
   mock_proxy_resolver_.AddGetProxyAction(
       GetProxyForUrlAction::SendLoadStateChanged(GURL(kExampleUrl)));
   CreateProxyResolver();
@@ -614,7 +614,7 @@ TEST_F(ProxyResolverMojoTest, GetProxyForURL_LoadState) {
   EXPECT_EQ(ERR_PAC_SCRIPT_TERMINATED, request->WaitForResult());
 }
 
-TEST_F(ProxyResolverMojoTest, GetProxyForURL_MultipleResults) {
+TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_MultipleResults) {
   static const char kPacString[] =
       "PROXY foo1:80;DIRECT;SOCKS foo2:1234;"
       "SOCKS5 foo3:1080;HTTPS foo4:443;QUIC foo6:8888";
@@ -629,7 +629,7 @@ TEST_F(ProxyResolverMojoTest, GetProxyForURL_MultipleResults) {
   EXPECT_EQ(kPacString, request->results().ToPacString());
 }
 
-TEST_F(ProxyResolverMojoTest, GetProxyForURL_Error) {
+TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_Error) {
   mock_proxy_resolver_.AddGetProxyAction(
       GetProxyForUrlAction::ReturnError(GURL(kExampleUrl), ERR_UNEXPECTED));
   CreateProxyResolver();
@@ -641,7 +641,7 @@ TEST_F(ProxyResolverMojoTest, GetProxyForURL_Error) {
   EXPECT_TRUE(request->results().is_empty());
 }
 
-TEST_F(ProxyResolverMojoTest, GetProxyForURL_Cancel) {
+TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_Cancel) {
   mock_proxy_resolver_.AddGetProxyAction(
       GetProxyForUrlAction::WaitForClientDisconnect(GURL(kExampleUrl)));
   CreateProxyResolver();
@@ -654,7 +654,7 @@ TEST_F(ProxyResolverMojoTest, GetProxyForURL_Cancel) {
   mock_proxy_resolver_.WaitForNextRequest();
 }
 
-TEST_F(ProxyResolverMojoTest, GetProxyForURL_MultipleRequests) {
+TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_MultipleRequests) {
   mock_proxy_resolver_.AddGetProxyAction(GetProxyForUrlAction::ReturnServers(
       GURL(kExampleUrl), ProxyServersFromPacString("DIRECT")));
   mock_proxy_resolver_.AddGetProxyAction(GetProxyForUrlAction::ReturnServers(
@@ -674,7 +674,7 @@ TEST_F(ProxyResolverMojoTest, GetProxyForURL_MultipleRequests) {
   EXPECT_EQ("HTTPS foo:443", request2->results().ToPacString());
 }
 
-TEST_F(ProxyResolverMojoTest, GetProxyForURL_Disconnect) {
+TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_Disconnect) {
   mock_proxy_resolver_.AddGetProxyAction(
       GetProxyForUrlAction::Disconnect(GURL(kExampleUrl)));
   CreateProxyResolver();
@@ -692,7 +692,7 @@ TEST_F(ProxyResolverMojoTest, GetProxyForURL_Disconnect) {
   }
 }
 
-TEST_F(ProxyResolverMojoTest, GetProxyForURL_ClientClosed) {
+TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_ClientClosed) {
   mock_proxy_resolver_.AddGetProxyAction(
       GetProxyForUrlAction::DropRequest(GURL(kExampleUrl)));
   CreateProxyResolver();
@@ -703,7 +703,7 @@ TEST_F(ProxyResolverMojoTest, GetProxyForURL_ClientClosed) {
   EXPECT_EQ(ERR_PAC_SCRIPT_TERMINATED, request1->WaitForResult());
 }
 
-TEST_F(ProxyResolverMojoTest, GetProxyForURL_DeleteInCallback) {
+TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_DeleteInCallback) {
   mock_proxy_resolver_.AddGetProxyAction(GetProxyForUrlAction::ReturnServers(
       GURL(kExampleUrl), ProxyServersFromPacString("DIRECT")));
   CreateProxyResolver();
@@ -712,16 +712,18 @@ TEST_F(ProxyResolverMojoTest, GetProxyForURL_DeleteInCallback) {
   TestCompletionCallback callback;
   ProxyResolver::RequestHandle handle;
   BoundNetLog net_log;
-  EXPECT_EQ(OK,
-            callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
-                GURL(kExampleUrl), &results,
-                base::Bind(&ProxyResolverMojoTest::DeleteProxyResolverCallback,
-                           base::Unretained(this), callback.callback()),
-                &handle, net_log)));
+  EXPECT_EQ(
+      OK,
+      callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
+          GURL(kExampleUrl), &results,
+          base::Bind(&ProxyResolverFactoryMojoTest::DeleteProxyResolverCallback,
+                     base::Unretained(this), callback.callback()),
+          &handle, net_log)));
   on_delete_callback_.WaitForResult();
 }
 
-TEST_F(ProxyResolverMojoTest, GetProxyForURL_DeleteInCallbackFromDisconnect) {
+TEST_F(ProxyResolverFactoryMojoTest,
+       GetProxyForURL_DeleteInCallbackFromDisconnect) {
   mock_proxy_resolver_.AddGetProxyAction(
       GetProxyForUrlAction::Disconnect(GURL(kExampleUrl)));
   CreateProxyResolver();
@@ -730,16 +732,17 @@ TEST_F(ProxyResolverMojoTest, GetProxyForURL_DeleteInCallbackFromDisconnect) {
   TestCompletionCallback callback;
   ProxyResolver::RequestHandle handle;
   BoundNetLog net_log;
-  EXPECT_EQ(ERR_PAC_SCRIPT_TERMINATED,
-            callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
-                GURL(kExampleUrl), &results,
-                base::Bind(&ProxyResolverMojoTest::DeleteProxyResolverCallback,
-                           base::Unretained(this), callback.callback()),
-                &handle, net_log)));
+  EXPECT_EQ(
+      ERR_PAC_SCRIPT_TERMINATED,
+      callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
+          GURL(kExampleUrl), &results,
+          base::Bind(&ProxyResolverFactoryMojoTest::DeleteProxyResolverCallback,
+                     base::Unretained(this), callback.callback()),
+          &handle, net_log)));
   on_delete_callback_.WaitForResult();
 }
 
-TEST_F(ProxyResolverMojoTest, DeleteResolver) {
+TEST_F(ProxyResolverFactoryMojoTest, DeleteResolver) {
   CreateProxyResolver();
   proxy_resolver_mojo_.reset();
   on_delete_callback_.WaitForResult();

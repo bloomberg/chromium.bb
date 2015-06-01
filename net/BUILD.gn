@@ -792,8 +792,8 @@ if (use_v8_in_net && !is_android) {
       "proxy/in_process_mojo_proxy_resolver_factory.cc",
       "proxy/in_process_mojo_proxy_resolver_factory.h",
       "proxy/mojo_proxy_resolver_factory.h",
-      "proxy/proxy_resolver_mojo.cc",
-      "proxy/proxy_resolver_mojo.h",
+      "proxy/proxy_resolver_factory_mojo.cc",
+      "proxy/proxy_resolver_factory_mojo.h",
       "proxy/proxy_service_mojo.cc",
       "proxy/proxy_service_mojo.h",
     ]
@@ -1496,7 +1496,7 @@ if (!is_android && !is_mac) {
         "proxy/mojo_proxy_resolver_factory_impl_unittest.cc",
         "proxy/mojo_proxy_resolver_impl_unittest.cc",
         "proxy/proxy_resolver_error_observer_mojo_unittest.cc",
-        "proxy/proxy_resolver_mojo_unittest.cc",
+        "proxy/proxy_resolver_factory_mojo_unittest.cc",
         "proxy/proxy_service_mojo_unittest.cc",
       ]
     }

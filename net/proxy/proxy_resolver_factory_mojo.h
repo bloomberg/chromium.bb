@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_PROXY_RESOLVER_MOJO_H_
-#define NET_PROXY_PROXY_RESOLVER_MOJO_H_
+#ifndef NET_PROXY_PROXY_RESOLVER_FACTORY_MOJO_H_
+#define NET_PROXY_PROXY_RESOLVER_FACTORY_MOJO_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -48,4 +48,4 @@ class ProxyResolverFactoryMojo : public ProxyResolverFactory {
 
 }  // namespace net
 
-#endif  // NET_PROXY_PROXY_RESOLVER_MOJO_H_
+#endif  // NET_PROXY_PROXY_RESOLVER_FACTORY_MOJO_H_
