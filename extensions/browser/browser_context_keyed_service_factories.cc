@@ -22,7 +22,9 @@
 #include "extensions/browser/api/sockets_udp/udp_socket_event_dispatcher.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/api/system_info/system_info_api.h"
+#include "extensions/browser/api/usb/usb_device_resource.h"
 #include "extensions/browser/api/usb/usb_event_router.h"
+#include "extensions/browser/api/usb/usb_guid_map.h"
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "extensions/browser/api/webcam_private/webcam_private_api.h"
 #include "extensions/browser/extension_message_filter.h"
@@ -39,6 +41,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance();
   ApiResourceManager<SerialConnection>::GetFactoryInstance();
   ApiResourceManager<Socket>::GetFactoryInstance();
+  ApiResourceManager<UsbDeviceResource>::GetFactoryInstance();
   AudioAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
   chromeos::VpnServiceFactory::GetInstance();
@@ -63,6 +66,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   StorageFrontend::GetFactoryInstance();
   SystemInfoAPI::GetFactoryInstance();
   UsbEventRouter::GetFactoryInstance();
+  UsbGuidMap::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
   WebcamPrivateAPI::GetFactoryInstance();
 #endif

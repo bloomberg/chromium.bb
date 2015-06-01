@@ -43,6 +43,7 @@ struct ConfigurationInfo {
 };
 
 struct DeviceInfo {
+  string guid;
   uint16 usb_version;
   uint8 class_code;
   uint8 subclass_code;

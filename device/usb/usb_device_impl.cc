@@ -95,7 +95,6 @@ UsbDeviceImpl::UsbDeviceImpl(
     PlatformUsbDevice platform_device,
     uint16 vendor_id,
     uint16 product_id,
-    uint32 unique_id,
     const base::string16& manufacturer_string,
     const base::string16& product_string,
     const base::string16& serial_number,
@@ -103,7 +102,6 @@ UsbDeviceImpl::UsbDeviceImpl(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : UsbDevice(vendor_id,
                 product_id,
-                unique_id,
                 manufacturer_string,
                 product_string,
                 serial_number),

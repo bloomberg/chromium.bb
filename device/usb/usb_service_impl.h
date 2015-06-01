@@ -47,7 +47,7 @@ class UsbServiceImpl : public UsbService,
   ~UsbServiceImpl() override;
 
   // device::UsbService implementation
-  scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override;
+  scoped_refptr<UsbDevice> GetDevice(const std::string& guid) override;
   void GetDevices(const GetDevicesCallback& callback) override;
 
 #if defined(OS_WIN)
@@ -105,9 +105,6 @@ class UsbServiceImpl : public UsbService,
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  // TODO(reillyg): Figure out a better solution for device IDs.
-  uint32 next_unique_id_ = 0;
-
   // When available the device list will be updated when new devices are
   // connected instead of only when a full enumeration is requested.
   // TODO(reillyg): Support this on all platforms. crbug.com/411715
@@ -119,7 +116,7 @@ class UsbServiceImpl : public UsbService,
   std::vector<GetDevicesCallback> pending_enumerations_;
 
   // The map from unique IDs to UsbDevices.
-  typedef std::map<uint32, scoped_refptr<UsbDeviceImpl>> DeviceMap;
+  typedef std::map<std::string, scoped_refptr<UsbDeviceImpl>> DeviceMap;
   DeviceMap devices_;
 
   // The map from PlatformUsbDevices to UsbDevices.

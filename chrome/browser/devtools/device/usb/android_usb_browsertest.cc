@@ -386,7 +386,6 @@ class MockUsbDevice : public UsbDevice {
   MockUsbDevice()
       : UsbDevice(0,
                   0,
-                  0,
                   base::UTF8ToUTF16(kDeviceManufacturer),
                   base::UTF8ToUTF16(kDeviceModel),
                   base::UTF8ToUTF16(kDeviceSerial)) {
@@ -443,7 +442,7 @@ class MockUsbService : public UsbService {
     devices_.push_back(new MockUsbDevice<AndroidTraits>());
   }
 
-  scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override {
+  scoped_refptr<UsbDevice> GetDevice(const std::string& guid) override {
     NOTIMPLEMENTED();
     return nullptr;
   }

@@ -141,6 +141,7 @@ device::usb::DeviceInfoPtr
 TypeConverter<device::usb::DeviceInfoPtr, device::UsbDevice>::Convert(
     const device::UsbDevice& device) {
   device::usb::DeviceInfoPtr info = device::usb::DeviceInfo::New();
+  info->guid = device.guid();
   info->vendor_id = device.vendor_id();
   info->product_id = device.product_id();
   info->manufacturer = base::UTF16ToUTF8(device.manufacturer_string());

@@ -21,10 +21,10 @@ class MockUsbService : public UsbService {
 
  protected:
   // UsbService implementation:
-  scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) override;
+  scoped_refptr<UsbDevice> GetDevice(const std::string& guid) override;
   void GetDevices(const GetDevicesCallback& callback) override;
 
-  std::map<uint32, scoped_refptr<UsbDevice>> devices_;
+  std::map<std::string, scoped_refptr<UsbDevice>> devices_;
 };
 
 }  // namespace device

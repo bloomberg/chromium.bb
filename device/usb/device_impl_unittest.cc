@@ -17,13 +17,15 @@ namespace {
 
 using DeviceImplTest = testing::Test;
 
-void ExpectDeviceInfoAndThen(uint16_t vendor_id,
+void ExpectDeviceInfoAndThen(const std::string& guid,
+                             uint16_t vendor_id,
                              uint16_t product_id,
                              const std::string& manufacturer,
                              const std::string& product,
                              const std::string& serial_number,
                              const base::Closure& continuation,
                              DeviceInfoPtr device_info) {
+  EXPECT_EQ(guid, device_info->guid);
   EXPECT_EQ(vendor_id, device_info->vendor_id);
   EXPECT_EQ(product_id, device_info->product_id);
   EXPECT_EQ(manufacturer, device_info->manufacturer);
@@ -45,9 +47,9 @@ TEST_F(DeviceImplTest, GetDeviceInfo) {
   new DeviceImpl(fake_device, mojo::GetProxy(&device));
 
   base::RunLoop run_loop;
-  device->GetDeviceInfo(base::Bind(&ExpectDeviceInfoAndThen, 0x1234, 0x5678,
-                                   "ACME", "Frobinator", "ABCDEF",
-                                   run_loop.QuitClosure()));
+  device->GetDeviceInfo(
+      base::Bind(&ExpectDeviceInfoAndThen, fake_device->guid(), 0x1234, 0x5678,
+                 "ACME", "Frobinator", "ABCDEF", run_loop.QuitClosure()));
   run_loop.Run();
 }
 

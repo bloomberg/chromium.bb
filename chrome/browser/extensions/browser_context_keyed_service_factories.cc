@@ -60,7 +60,6 @@
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
 #include "extensions/browser/api/power/power_api.h"
-#include "extensions/browser/api/usb/usb_device_resource.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/declarative_user_script_manager_factory.h"
@@ -82,8 +81,6 @@ namespace chrome_extensions {
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ActivityLog::GetFactoryInstance();
   extensions::ActivityLogAPI::GetFactoryInstance();
-  extensions::ApiResourceManager<
-      extensions::UsbDeviceResource>::GetFactoryInstance();
   extensions::AutofillPrivateEventRouterFactory::GetInstance();
   extensions::BookmarksAPI::GetFactoryInstance();
   extensions::BookmarkManagerPrivateAPI::GetFactoryInstance();

@@ -25,10 +25,13 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   using OpenCallback = base::Callback<void(scoped_refptr<UsbDeviceHandle>)>;
   using ResultCallback = base::Callback<void(bool success)>;
 
+  // A unique identifier which remains stable for the lifetime of this device
+  // object (i.e., until the device is unplugged or the USB service dies.)
+  const std::string& guid() const { return guid_; }
+
   // Accessors to basic information.
   uint16 vendor_id() const { return vendor_id_; }
   uint16 product_id() const { return product_id_; }
-  uint32 unique_id() const { return unique_id_; }
   const base::string16& manufacturer_string() const {
     return manufacturer_string_;
   }
@@ -58,7 +61,6 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
  protected:
   UsbDevice(uint16 vendor_id,
             uint16 product_id,
-            uint32 unique_id,
             const base::string16& manufacturer_string,
             const base::string16& product_string,
             const base::string16& serial_number);
@@ -67,9 +69,9 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
  private:
   friend class base::RefCountedThreadSafe<UsbDevice>;
 
+  const std::string guid_;
   const uint16 vendor_id_;
   const uint16 product_id_;
-  const uint32 unique_id_;
   const base::string16 manufacturer_string_;
   const base::string16 product_string_;
   const base::string16 serial_number_;

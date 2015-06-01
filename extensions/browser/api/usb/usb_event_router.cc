@@ -7,6 +7,7 @@
 #include "device/core/device_client.h"
 #include "device/usb/usb_device.h"
 #include "extensions/browser/api/device_permissions_manager.h"
+#include "extensions/browser/api/usb/usb_guid_map.h"
 #include "extensions/common/api/usb.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -98,7 +99,8 @@ void UsbEventRouter::DispatchEvent(const std::string& event_name,
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
     usb::Device device_obj;
-    device_obj.device = device->unique_id();
+    device_obj.device =
+        UsbGuidMap::Get(browser_context_)->GetIdFromGuid(device->guid());
     device_obj.vendor_id = device->vendor_id();
     device_obj.product_id = device->product_id();
 
@@ -116,6 +118,13 @@ void UsbEventRouter::DispatchEvent(const std::string& event_name,
         base::Bind(&WillDispatchDeviceEvent, device);
     event_router->BroadcastEvent(event.Pass());
   }
+}
+
+template <>
+void BrowserContextKeyedAPIFactory<
+    UsbEventRouter>::DeclareFactoryDependencies() {
+  DependsOn(DevicePermissionsManagerFactory::GetInstance());
+  DependsOn(UsbGuidMap::GetFactoryInstance());
 }
 
 }  // extensions

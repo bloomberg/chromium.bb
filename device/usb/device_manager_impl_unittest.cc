@@ -95,30 +95,30 @@ class DeviceManagerImplTest : public testing::Test {
   scoped_ptr<TestDeviceClient> device_client_;
 };
 
-void VerifyDevicesAndThen(const std::set<std::string>& expected_serials,
-                          scoped_ptr<std::set<std::string>> actual_serials,
+void VerifyDevicesAndThen(const std::set<std::string>& expected_guids,
+                          scoped_ptr<std::set<std::string>> actual_guids,
                           const base::Closure& continuation) {
-  EXPECT_EQ(expected_serials, *actual_serials);
+  EXPECT_EQ(expected_guids, *actual_guids);
   continuation.Run();
 }
 
-void OnGetDeviceInfo(std::set<std::string>* actual_serials,
+void OnGetDeviceInfo(std::set<std::string>* actual_guids,
                      const base::Closure& barrier,
                      DevicePtr device,
                      DeviceInfoPtr info) {
-  actual_serials->insert(info->serial_number.To<std::string>());
+  actual_guids->insert(info->guid);
   barrier.Run();
 }
 
-void ExpectDevicesAndThen(const std::set<std::string>& serials,
+void ExpectDevicesAndThen(const std::set<std::string>& guids,
                           const base::Closure& continuation,
                           mojo::Array<EnumerationResultPtr> results) {
-  EXPECT_EQ(serials.size(), results.size());
+  EXPECT_EQ(guids.size(), results.size());
   scoped_ptr<std::set<std::string>> actual_serials(new std::set<std::string>);
   std::set<std::string>* actual_serials_raw = actual_serials.get();
   base::Closure barrier = base::BarrierClosure(
       static_cast<int>(results.size()),
-      base::Bind(&VerifyDevicesAndThen, serials, base::Passed(&actual_serials),
+      base::Bind(&VerifyDevicesAndThen, guids, base::Passed(&actual_serials),
                  continuation));
   for (size_t i = 0; i < results.size(); ++i) {
     DevicePtr device = results[i]->device.Pass();
@@ -154,10 +154,10 @@ TEST_F(DeviceManagerImplTest, GetDevices) {
   options->filters[0]->has_vendor_id = true;
   options->filters[0]->vendor_id = 0x1234;
 
-  std::set<std::string> serials;
-  serials.insert("ABCDEF");
-  serials.insert("GHIJKL");
-  serials.insert("MNOPQR");
+  std::set<std::string> guids;
+  guids.insert(device0->guid());
+  guids.insert(device1->guid());
+  guids.insert(device2->guid());
 
   EXPECT_CALL(*device0.get(), GetConfiguration());
   EXPECT_CALL(*device1.get(), GetConfiguration());
@@ -166,7 +166,7 @@ TEST_F(DeviceManagerImplTest, GetDevices) {
   base::RunLoop run_loop;
   device_manager->GetDevices(
       options.Pass(),
-      base::Bind(&ExpectDevicesAndThen, serials, run_loop.QuitClosure()));
+      base::Bind(&ExpectDevicesAndThen, guids, run_loop.QuitClosure()));
   run_loop.Run();
 }
 

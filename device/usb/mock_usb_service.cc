@@ -15,17 +15,17 @@ MockUsbService::~MockUsbService() {
 }
 
 void MockUsbService::AddDevice(scoped_refptr<UsbDevice> device) {
-  devices_[device->unique_id()] = device;
+  devices_[device->guid()] = device;
   NotifyDeviceAdded(device);
 }
 
 void MockUsbService::RemoveDevice(scoped_refptr<UsbDevice> device) {
-  devices_.erase(device->unique_id());
+  devices_.erase(device->guid());
   UsbService::NotifyDeviceRemoved(device);
 }
 
-scoped_refptr<UsbDevice> MockUsbService::GetDeviceById(uint32 unique_id) {
-  auto it = devices_.find(unique_id);
+scoped_refptr<UsbDevice> MockUsbService::GetDevice(const std::string& guid) {
+  auto it = devices_.find(guid);
   EXPECT_TRUE(it != devices_.end());
   return it->second;
 }

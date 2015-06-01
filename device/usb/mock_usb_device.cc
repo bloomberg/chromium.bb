@@ -8,19 +8,8 @@
 
 namespace device {
 
-namespace {
-
-static uint32 next_id;
-
-}  // namespace
-
 MockUsbDevice::MockUsbDevice(uint16 vendor_id, uint16 product_id)
-    : UsbDevice(vendor_id,
-                product_id,
-                next_id++,
-                base::string16(),
-                base::string16(),
-                base::string16()) {
+    : MockUsbDevice(vendor_id, product_id, "", "", "") {
 }
 
 MockUsbDevice::MockUsbDevice(uint16 vendor_id,
@@ -30,7 +19,6 @@ MockUsbDevice::MockUsbDevice(uint16 vendor_id,
                              const std::string& serial_number)
     : UsbDevice(vendor_id,
                 product_id,
-                next_id++,
                 base::UTF8ToUTF16(manufacturer_string),
                 base::UTF8ToUTF16(product_string),
                 base::UTF8ToUTF16(serial_number)) {

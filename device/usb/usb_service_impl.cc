@@ -334,9 +334,9 @@ UsbServiceImpl::~UsbServiceImpl() {
   }
 }
 
-scoped_refptr<UsbDevice> UsbServiceImpl::GetDeviceById(uint32 unique_id) {
+scoped_refptr<UsbDevice> UsbServiceImpl::GetDevice(const std::string& guid) {
   DCHECK(CalledOnValidThread());
-  DeviceMap::iterator it = devices_.find(unique_id);
+  DeviceMap::iterator it = devices_.find(guid);
   if (it != devices_.end()) {
     return it->second;
   }
@@ -529,25 +529,19 @@ void UsbServiceImpl::AddDevice(PlatformUsbDevice platform_device,
                                base::string16 product_string,
                                base::string16 serial_number,
                                std::string device_node) {
-  uint32 unique_id;
-  do {
-    unique_id = ++next_unique_id_;
-  } while (devices_.find(unique_id) != devices_.end());
-
-  scoped_refptr<UsbDeviceImpl> device(
-      new UsbDeviceImpl(context_, platform_device, vendor_id, product_id,
-                        unique_id, manufacturer_string, product_string,
-                        serial_number, device_node, blocking_task_runner_));
+  scoped_refptr<UsbDeviceImpl> device(new UsbDeviceImpl(
+      context_, platform_device, vendor_id, product_id, manufacturer_string,
+      product_string, serial_number, device_node, blocking_task_runner_));
 
   platform_devices_[platform_device] = device;
-  devices_[unique_id] = device;
+  DCHECK(!ContainsKey(devices_, device->guid()));
+  devices_[device->guid()] = device;
 
   USB_LOG(USER) << "USB device added: vendor=" << device->vendor_id() << " \""
                 << device->manufacturer_string()
                 << "\", product=" << device->product_id() << " \""
                 << device->product_string() << "\", serial=\""
-                << device->serial_number()
-                << "\", uniqueId=" << device->unique_id();
+                << device->serial_number() << "\", guid=" << device->guid();
 
   if (enumeration_ready_) {
     NotifyDeviceAdded(device);
@@ -558,9 +552,9 @@ void UsbServiceImpl::AddDevice(PlatformUsbDevice platform_device,
 
 void UsbServiceImpl::RemoveDevice(scoped_refptr<UsbDeviceImpl> device) {
   platform_devices_.erase(device->platform_device());
-  devices_.erase(device->unique_id());
+  devices_.erase(device->guid());
 
-  USB_LOG(USER) << "USB device removed: uniqueId=" << device->unique_id();
+  USB_LOG(USER) << "USB device removed: guid=" << device->guid();
 
   NotifyDeviceRemoved(device);
   device->OnDisconnect();

@@ -56,6 +56,10 @@ class UsbEventRouter : public BrowserContextKeyedAPI,
   DISALLOW_COPY_AND_ASSIGN(UsbEventRouter);
 };
 
+template <>
+void BrowserContextKeyedAPIFactory<
+    UsbEventRouter>::DeclareFactoryDependencies();
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_USB_USB_EVENT_ROUTER_H_

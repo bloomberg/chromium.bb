@@ -485,6 +485,8 @@
       'browser/api/usb/usb_device_resource.h',
       'browser/api/usb/usb_event_router.cc',
       'browser/api/usb/usb_event_router.h',
+      'browser/api/usb/usb_guid_map.cc',
+      'browser/api/usb/usb_guid_map.h',
       'browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h',
       'browser/api/virtual_keyboard_private/virtual_keyboard_private_api.cc',
       'browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h',
@@ -821,7 +823,7 @@
       'browser/api/networking_private/networking_private_service_client.cc',
       'browser/api/networking_private/networking_private_service_client.h',
     ],
-    'extensions_browser_sources_linux_nonchromeos': [      
+    'extensions_browser_sources_linux_nonchromeos': [
       'browser/api/networking_private/network_config_dbus_constants_linux.cc',
       'browser/api/networking_private/network_config_dbus_constants_linux.h',
       'browser/api/networking_private/networking_private_event_router_nonchromeos.cc',

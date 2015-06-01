@@ -52,7 +52,6 @@ class UsbDeviceImpl : public UsbDevice {
                 PlatformUsbDevice platform_device,
                 uint16 vendor_id,
                 uint16 product_id,
-                uint32 unique_id,
                 const base::string16& manufacturer_string,
                 const base::string16& product_string,
                 const base::string16& serial_number,
