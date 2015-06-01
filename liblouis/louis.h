@@ -476,33 +476,9 @@ extern "C"
     alloc_prevSrcMapping
   } AllocBuf;
 
-  typedef enum
-  {
-    noEncoding,
-    bigEndianEncoding,
-    littleEndianEncoding,
-    ascii8Encoding
-  } EncodingType;
-
-  typedef struct
-  {
-    const char *fileName;
-    FILE *in;
-    int lineNumber;
-    EncodingType encoding;
-    int status;
-    int linelen;
-    int linepos;
-    int checkencoding[2];
-    widechar line[MAXSTRING];
-  } FileInfo;
-
 /* The following function definitions are hooks into 
 * compileTranslationTable.c. Some are used by other library modules. 
 * Others are used by tools like lou_allround.c and lou_debug.c. */
-
-  int getALine (FileInfo * info);
-/* Read a line of widechar's from an input file */
 
   char * getTablePath();
 /* Comma separated list of directories to search for tables. */
