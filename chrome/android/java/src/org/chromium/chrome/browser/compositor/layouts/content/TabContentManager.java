@@ -157,10 +157,12 @@ public class TabContentManager {
 
             @Override
             protected void onPostExecute(Long resultThumbnailCache) {
-                if (mNativeTabContentManager != 0) {
-                    nativeSetThumbnailCache(mNativeTabContentManager, resultThumbnailCache);
-                } else {
-                    nativeDestroyThumbnailCache(resultThumbnailCache);
+                if (resultThumbnailCache != 0) {
+                    if (mNativeTabContentManager != 0) {
+                        nativeSetThumbnailCache(mNativeTabContentManager, resultThumbnailCache);
+                    } else {
+                        nativeDestroyThumbnailCache(resultThumbnailCache);
+                    }
                 }
             }
         }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
