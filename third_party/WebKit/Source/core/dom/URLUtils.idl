@@ -23,10 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://url.spec.whatwg.org/#urlutils
+// https://url.spec.whatwg.org/#urlutils
 
 [
     NoInterfaceObject, // Always used on target of 'implements'
+    Exposed=(Window,Worker),
 ] interface URLUtils {
     // FIXME: should be stringifier: http://crbug.com/306606
     // stringifier attribute USVString href;
