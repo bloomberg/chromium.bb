@@ -59,13 +59,11 @@ void BrowserCdmCast::UnregisterPlayer(int registration_id) {
   return nullptr;
 }
 
-void BrowserCdmCast::OnSessionMessage(const std::string& session_id,
-                                      const std::vector<uint8_t>& message,
-                                      const GURL& destination_url) {
-  // Note: Message type is not supported in Chromecast. Do our best guess here.
-  ::media::MediaKeys::MessageType message_type =
-      destination_url.is_empty() ? ::media::MediaKeys::LICENSE_REQUEST
-                                 : ::media::MediaKeys::LICENSE_RENEWAL;
+void BrowserCdmCast::OnSessionMessage(
+    const std::string& session_id,
+    const std::vector<uint8_t>& message,
+    const GURL& destination_url,
+    ::media::MediaKeys::MessageType message_type) {
   session_message_cb_.Run(session_id,
                           message_type,
                           message,
