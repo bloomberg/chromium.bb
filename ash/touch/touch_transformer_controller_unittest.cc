@@ -8,7 +8,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/devices/device_data_manager.h"
-#include "ui/events/test/events_test_utils_x11.h"
 #include "ui/gfx/display.h"
 
 namespace ash {
