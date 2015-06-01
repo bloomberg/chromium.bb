@@ -285,6 +285,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "PasswordManager::OnInPageNavigation";
     case SavePasswordProgressLogger::STRING_ON_ASK_USER_OR_SAVE_PASSWORD:
       return "PasswordManager::AskUserOrSavePassword";
+    case SavePasswordProgressLogger::STRING_CAN_PROVISIONAL_MANAGER_SAVE_METHOD:
+      return "PasswordManager::CanProvisionalManagerSave";
     case SavePasswordProgressLogger::STRING_NO_PROVISIONAL_SAVE_MANAGER:
       return "No provisional save manager";
     case SavePasswordProgressLogger::STRING_NUMBER_OF_VISIBLE_FORMS:
@@ -344,7 +346,7 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "The observed form will not be autofilled";
     case SavePasswordProgressLogger::STRING_CHANGE_PASSWORD_FORM:
       return "Not saving password for a change password form";
-    case SavePasswordProgressLogger::PROCESS_FRAME_METHOD:
+    case SavePasswordProgressLogger::STRING_PROCESS_FRAME_METHOD:
       return "PasswordFormManager::ProcessFrame";
     case SavePasswordProgressLogger::STRING_FORM_SIGNATURE:
       return "Signature of form, followed by field signatures";

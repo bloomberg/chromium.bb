@@ -471,6 +471,42 @@ void PasswordManager::CreatePendingLoginManagers(
   }
 }
 
+bool PasswordManager::CanProvisionalManagerSave() {
+  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (client_->IsLoggingActive()) {
+    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+    logger->LogMessage(Logger::STRING_CAN_PROVISIONAL_MANAGER_SAVE_METHOD);
+  }
+
+  if (!provisional_save_manager_.get()) {
+    if (logger) {
+      logger->LogMessage(Logger::STRING_NO_PROVISIONAL_SAVE_MANAGER);
+    }
+    return false;
+  }
+
+  if (!provisional_save_manager_->HasCompletedMatching()) {
+    // We have a provisional save manager, but it didn't finish matching yet.
+    // We just give up.
+    RecordFailure(MATCHING_NOT_COMPLETE,
+                  provisional_save_manager_->observed_form().origin,
+                  logger.get());
+    provisional_save_manager_.reset();
+    return false;
+  }
+
+  // Also get out of here if the user told us to 'never remember' passwords for
+  // this form.
+  if (provisional_save_manager_->IsBlacklisted()) {
+    RecordFailure(FORM_BLACKLISTED,
+                  provisional_save_manager_->observed_form().origin,
+                  logger.get());
+    provisional_save_manager_.reset();
+    return false;
+  }
+  return true;
+}
+
 bool PasswordManager::ShouldPromptUserToSavePassword() const {
   return !client_->IsAutomaticPasswordSavingEnabled() &&
          provisional_save_manager_->IsNewLogin() &&
@@ -489,32 +525,8 @@ void PasswordManager::OnPasswordFormsRendered(
     logger->LogMessage(Logger::STRING_ON_PASSWORD_FORMS_RENDERED_METHOD);
   }
 
-  if (!provisional_save_manager_.get()) {
-    if (logger) {
-      logger->LogMessage(Logger::STRING_NO_PROVISIONAL_SAVE_MANAGER);
-    }
+  if (!CanProvisionalManagerSave())
     return;
-  }
-
-  if (!provisional_save_manager_->HasCompletedMatching()) {
-    // We have a provisional save manager, but it didn't finish matching yet.
-    // We just give up.
-    RecordFailure(MATCHING_NOT_COMPLETE,
-                  provisional_save_manager_->observed_form().origin,
-                  logger.get());
-    provisional_save_manager_.reset();
-    return;
-  }
-
-  // Also get out of here if the user told us to 'never remember' passwords for
-  // this form.
-  if (provisional_save_manager_->IsBlacklisted()) {
-    RecordFailure(FORM_BLACKLISTED,
-                  provisional_save_manager_->observed_form().origin,
-                  logger.get());
-    provisional_save_manager_.reset();
-    return;
-  }
 
   DCHECK(client_->IsSavingEnabledForCurrentPage());
 
@@ -590,12 +602,9 @@ void PasswordManager::OnInPageNavigation(
 
   ProvisionallySavePassword(password_form);
 
-  if (!provisional_save_manager_) {
-    if (logger) {
-      logger->LogMessage(Logger::STRING_NO_PROVISIONAL_SAVE_MANAGER);
-    }
+  if (!CanProvisionalManagerSave())
     return;
-  }
+
   AskUserOrSavePassword();
 }
 

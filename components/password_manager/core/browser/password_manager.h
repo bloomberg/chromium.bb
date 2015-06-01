@@ -144,6 +144,10 @@ class PasswordManager : public LoginModel {
   // the username for the form is ambigious.
   bool OtherPossibleUsernamesEnabled() const;
 
+  // Returns true if |provisional_save_manager_| is ready for saving and
+  // non-blacklisted.
+  bool CanProvisionalManagerSave();
+
   // Returns true if the user needs to be prompted before a password can be
   // saved (instead of automatically saving
   // the password), based on inspecting the state of

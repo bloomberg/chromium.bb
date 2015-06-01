@@ -477,7 +477,7 @@ void PasswordFormManager::ProcessFrame(
       !observed_form_.new_password_element.empty()) {
     if (client_->IsLoggingActive()) {
       BrowserSavePasswordProgressLogger logger(client_);
-      logger.LogMessage(Logger::PROCESS_FRAME_METHOD);
+      logger.LogMessage(Logger::STRING_PROCESS_FRAME_METHOD);
       logger.LogMessage(Logger::STRING_FORM_NOT_AUTOFILLED);
     }
     return;
