@@ -64,7 +64,7 @@ layer at (0,0) size 800x255
             text run at (711,36) width 43: "larger"
         LayoutText {#text} at (753,36) size 784x46
           text run at (753,36) width 31: " font"
-          text run at (0,64) width 252: "size than the rest of the paragraph, and "
+          text run at (0,64) width 251: "size than the rest of the paragraph, and "
         LayoutInline {STRONG} at (0,0) size 39x18
           LayoutText {#text} at (251,64) size 39x18
             text run at (251,64) width 39: "green"

@@ -21,8 +21,8 @@ layer at (0,0) size 800x600
           LayoutBR {BR} at (189,22) size 1x0
           LayoutText {#text} at (0,28) size 708x56
             text run at (0,28) width 708: "The first word should be deleted. The space following it should remain. It"
-            text run at (0,56) width 209: "should look like this: "
-          LayoutBR {BR} at (208,78) size 1x0
+            text run at (0,56) width 208: "should look like this: "
+          LayoutBR {BR} at (208,78) size 0x0
           LayoutText {#text} at (0,84) size 96x28
             text run at (0,84) width 96: "\" bar baz\""
       LayoutBlockFlow {DIV} at (0,236) size 784x32

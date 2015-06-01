@@ -9,9 +9,9 @@ layer at (0,0) size 800x425
         LayoutInline {STRONG} at (0,0) size 59x17
           LayoutText {#text} at (28,0) size 59x17
             text run at (28,0) width 59: "first line"
-        LayoutText {#text} at (86,0) size 306x17
+        LayoutText {#text} at (86,0) size 305x17
           text run at (86,0) width 209: " of this paragraph, and only that "
-          text run at (294,0) width 98: "one, should be "
+          text run at (294,0) width 97: "one, should be "
         LayoutInline {STRONG} at (0,0) size 39x17
           LayoutText {#text} at (391,0) size 39x17
             text run at (391,0) width 39: "green"

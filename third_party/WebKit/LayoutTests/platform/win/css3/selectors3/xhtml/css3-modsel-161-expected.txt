@@ -18,5 +18,5 @@ layer at (0,0) size 800x136
         LayoutTableSection (anonymous) at (0,0) size 438x24
           LayoutTableRow {tr} at (0,2) size 438x20
             LayoutTableCell {td} at (2,2) size 434x20 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (1,1) size 432x17
-                text run at (1,1) width 432: "This line should have a green background (or it might be unstyled)."
+              LayoutText {#text} at (1,1) size 431x17
+                text run at (1,1) width 431: "This line should have a green background (or it might be unstyled)."

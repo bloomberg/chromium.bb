@@ -17,9 +17,9 @@ layer at (0,0) size 800x600
           LayoutBR {BR} at (0,0) size 0x0
           LayoutText {#text} at (0,27) size 113x26
             text run at (0,27) width 113: "Bug fix for "
-          LayoutInline {A} at (0,0) size 258x26 [color=#0000EE]
-            LayoutText {#text} at (112,27) size 258x26
-              text run at (112,27) width 258: "<rdar://problem/4038267>"
+          LayoutInline {A} at (0,0) size 257x26 [color=#0000EE]
+            LayoutText {#text} at (112,27) size 257x26
+              text run at (112,27) width 257: "<rdar://problem/4038267>"
           LayoutText {#text} at (369,27) size 743x53
             text run at (369,27) width 374: " REGRESSION (Mail): Crash copying"
             text run at (0,54) width 285: "and pasting end of paragraph."

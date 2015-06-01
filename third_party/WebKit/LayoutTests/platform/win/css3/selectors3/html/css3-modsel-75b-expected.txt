@@ -29,8 +29,8 @@ layer at (0,0) size 800x384
           LayoutText {#text} at (0,0) size 342x17
             text run at (0,0) width 342: "Second definition that should have green background"
         LayoutBlockFlow {DT} at (0,72) size 784x18 [bgcolor=#00FF00]
-          LayoutText {#text} at (0,0) size 364x17
-            text run at (0,0) width 364: "Third definition term that should have green background"
+          LayoutText {#text} at (0,0) size 363x17
+            text run at (0,0) width 363: "Third definition term that should have green background"
         LayoutBlockFlow {DD} at (40,90) size 744x18 [bgcolor=#00FF00]
           LayoutText {#text} at (0,0) size 330x17
             text run at (0,0) width 330: "Third definition that should have green background"

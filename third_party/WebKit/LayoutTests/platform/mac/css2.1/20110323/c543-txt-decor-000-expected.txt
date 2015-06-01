@@ -49,10 +49,10 @@ layer at (0,0) size 800x432
             text run at (222,3) width 5: " "
         LayoutText {#text} at (226,3) size 315x18
           text run at (226,3) width 315: "spaces (including the space between the images) "
-        LayoutImage {IMG} at (540.70,0) size 17x17 [color=#FF0000]
+        LayoutImage {IMG} at (540.69,0) size 17x17 [color=#FF0000]
         LayoutText {#text} at (557,3) size 5x18
           text run at (557,3) width 5: " "
-        LayoutImage {IMG} at (561.70,0) size 17x17 [color=#FF0000]
+        LayoutImage {IMG} at (561.69,0) size 17x17 [color=#FF0000]
         LayoutText {#text} at (578,3) size 769x36
           text run at (578,3) width 5: " "
           text run at (582,3) width 187: "should be underlined, but the"

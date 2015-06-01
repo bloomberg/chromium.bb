@@ -175,8 +175,8 @@ layer at (0,0) size 785x1717 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,0) width 738: "This sentence should be a shade of blue-green which, on a typical RGB computer display, exactly matches the next"
                   text run at (0,18) width 68: "paragraph."
               LayoutBlockFlow {P} at (4,328) size 747x36 [color=#0080FF]
-                LayoutText {#text} at (0,0) size 707x36
-                  text run at (0,0) width 707: "This sentence should be a shade of blue-green which, on a typical RGB computer display, exactly matches the"
+                LayoutText {#text} at (0,0) size 706x36
+                  text run at (0,0) width 706: "This sentence should be a shade of blue-green which, on a typical RGB computer display, exactly matches the"
                   text run at (0,18) width 128: "previous paragraph."
               LayoutBlockFlow {P} at (4,380) size 747x36 [color=#800099]
                 LayoutText {#text} at (0,0) size 711x36

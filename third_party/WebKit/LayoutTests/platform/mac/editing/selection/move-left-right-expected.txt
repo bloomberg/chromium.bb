@@ -582,9 +582,9 @@ WARNING: Moved in the wrong direction in step 4: from (759, 1539) to (749, 1539)
 Test 40, LTR:
   Moving right: "\n        ABCa"[9, 11, 10, 12, 13], "bcDEF"[1, 2, 4, 3, 5]
 WARNING: Moved in the wrong direction in step 6: from (53, 1571) to (44, 1571).
-WARNING: Moved in the wrong direction in step 8: from (72, 1571) to (63, 1571).
+WARNING: Moved in the wrong direction in step 8: from (71, 1571) to (63, 1571).
   Moving left:  "bcDEF"[5, 3, 4, 2, 1], "\n        ABCa"[13, 12, 10, 11, 9]
-WARNING: Moved in the wrong direction in step 2: from (63, 1571) to (72, 1571).
+WARNING: Moved in the wrong direction in step 2: from (63, 1571) to (71, 1571).
 WARNING: Moved in the wrong direction in step 4: from (44, 1571) to (53, 1571).
 Test 40, RTL:
   Moving left: "\n        ABCa"[9, 10, 11, 12], "bcDEF"[1], "\n        ABCa"[13], "bcDEF"[2, 3, 4, 5]

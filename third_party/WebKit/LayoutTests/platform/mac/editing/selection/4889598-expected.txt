@@ -28,8 +28,8 @@ layer at (0,0) size 800x600
                 LayoutInline {SPAN} at (0,0) size 44x18 [color=#0000FF]
                   LayoutText {#text} at (65,2) size 44x18
                     text run at (65,2) width 44: "should"
-                LayoutText {#text} at (108,2) size 226x18
-                  text run at (108,2) width 226: " always go into the editable region."
+                LayoutText {#text} at (108,2) size 225x18
+                  text run at (108,2) width 225: " always go into the editable region."
         LayoutBlockFlow {DIV} at (0,46) size 784x18
           LayoutText {#text} at (0,0) size 264x18
             text run at (0,0) width 264: "Click anywhere in this line and move up."

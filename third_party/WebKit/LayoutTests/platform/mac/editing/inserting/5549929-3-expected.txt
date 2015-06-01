@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutBlockFlow {P} at (0,0) size 784x36
         LayoutText {#text} at (0,0) size 780x36
-          text run at (0,0) width 360: "This tests inserting a line break at the end of a tab span. "
+          text run at (0,0) width 359: "This tests inserting a line break at the end of a tab span. "
           text run at (359,0) width 421: "Below you should see 'foo' followed by an empty paragraph, with"
           text run at (0,18) width 88: "the caret in it."
       LayoutBlockFlow {DIV} at (0,52) size 784x36

@@ -3,8 +3,8 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x68
   LayoutBlockFlow {test} at (0,0) size 800x68
     LayoutBlockFlow {p} at (0,16) size 800x18 [bgcolor=#00FF00]
-      LayoutText {#text} at (0,0) size 501x18
-        text run at (0,0) width 501: "This paragraph should have green background because its language is \"en-gb\""
+      LayoutText {#text} at (0,0) size 500x18
+        text run at (0,0) width 500: "This paragraph should have green background because its language is \"en-gb\""
     LayoutBlockFlow {address} at (0,50) size 800x18 [bgcolor=#00FF00]
       LayoutInline {span} at (0,0) size 159x18
         LayoutText {#text} at (0,0) size 159x18

@@ -21,17 +21,17 @@ layer at (0,0) size 800x491
             LayoutBlockFlow {DIV} at (13,13) size 50x50 [bgcolor=#D3D3D3]
         LayoutText {#text} at (183,68) size 61x17
           text run at (183,68) width 61: " with the "
-        LayoutBlockFlow {DIV} at (243.33,21) size 72x72
+        LayoutBlockFlow {DIV} at (243.31,21) size 72x72
           LayoutFlexibleBox {DIV} at (0,0) size 72x72 [bgcolor=#FFC0CB] [border: (11px solid #FFC0CB)]
             LayoutBlockFlow {DIV} at (11,11) size 50x50 [bgcolor=#D3D3D3]
         LayoutText {#text} at (315,68) size 71x17
           text run at (315,68) width 71: " bottom of "
-        LayoutBlockFlow {DIV} at (385.98,0) size 72x114
+        LayoutBlockFlow {DIV} at (385.97,0) size 72x114
           LayoutFlexibleBox {DIV} at (0,21) size 72x72 [bgcolor=#FFC0CB] [border: (11px solid #FFC0CB)]
             LayoutBlockFlow {DIV} at (11,11) size 50x50 [bgcolor=#D3D3D3]
         LayoutText {#text} at (457,68) size 61x17
           text run at (457,68) width 61: " the grey "
-        LayoutFlexibleBox {DIV} at (517.97,41) size 52x52 [bgcolor=#D3D3D3] [border: (11px solid #FFC0CB)]
+        LayoutFlexibleBox {DIV} at (517.94,41) size 52x52 [bgcolor=#D3D3D3] [border: (11px solid #FFC0CB)]
         LayoutText {#text} at (569,68) size 33x17
           text run at (569,68) width 33: " box."
       LayoutBlockFlow {DIV} at (0,183) size 784x64

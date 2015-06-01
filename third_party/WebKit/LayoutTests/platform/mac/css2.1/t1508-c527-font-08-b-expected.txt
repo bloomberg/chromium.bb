@@ -10,7 +10,7 @@ layer at (0,0) size 800x324
         LayoutInline {SPAN} at (0,0) size 738x237 [color=#C0C0C0]
           LayoutText {#text} at (201,43) size 738x237
             text run at (201,43) width 526: "dummy text dummy text dummy text dummy text dummy text"
-            text run at (0,79) width 70: "dummy "
+            text run at (0,79) width 69: "dummy "
             text run at (69,79) width 637: "text dummy text dummy text dummy text dummy text dummy text dummy "
             text run at (705,79) width 33: "text"
             text run at (0,115) width 600: "dummy text dummy text dummy text dummy text dummy text dummy "

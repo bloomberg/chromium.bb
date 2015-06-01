@@ -19,12 +19,12 @@ layer at (0,0) size 800x94
               text run at (16,0) width 19: "i.ii"
         LayoutText {#text} at (34,0) size 5x18
           text run at (34,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 23x18
-          LayoutInline {<pseudo:before>} at (0,0) size 23x18
-            LayoutCounter (anonymous) at (38,0) size 23x18
-              text run at (38,0) width 23: "i.iii"
-        LayoutText {#text} at (60,0) size 5x18
-          text run at (60,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 22x18
+          LayoutInline {<pseudo:before>} at (0,0) size 22x18
+            LayoutCounter (anonymous) at (38,0) size 22x18
+              text run at (38,0) width 22: "i.iii"
+        LayoutText {#text} at (60,0) size 4x18
+          text run at (60,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 21x18
           LayoutInline {<pseudo:before>} at (0,0) size 21x18
             LayoutCounter (anonymous) at (64,0) size 21x18
@@ -124,7 +124,7 @@ layer at (0,0) size 800x94
         LayoutText {#text} at (0,0) size 741x18
           text run at (0,0) width 17: "i.i "
           text run at (16,0) width 23: "i.ii "
-          text run at (38,0) width 27: "i.iii "
+          text run at (38,0) width 26: "i.iii "
           text run at (64,0) width 25: "i.iv "
           text run at (88,0) width 22: "i.v "
           text run at (109,0) width 26: "i.vi "
