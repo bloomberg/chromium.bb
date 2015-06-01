@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
@@ -20,11 +19,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/notifications/notification_style.h"
-#include "content/public/browser/notification_service.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -101,21 +103,42 @@ const gfx::Image GetMaskedSmallImage(const gfx::ImageSkia& small_image) {
       background, masked_small_image));
 }
 
-class NotificationsApiDelegate : public NotificationDelegate,
-                                 public content::NotificationObserver {
+class ShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static ShutdownNotifierFactory* GetInstance() {
+    return Singleton<ShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<ShutdownNotifierFactory>;
+
+  ShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "NotificationsApiDelegate") {
+    DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  }
+  ~ShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+};
+
+class NotificationsApiDelegate : public NotificationDelegate {
  public:
   NotificationsApiDelegate(ChromeAsyncExtensionFunction* api_function,
                            Profile* profile,
                            const std::string& extension_id,
                            const std::string& id)
       : api_function_(api_function),
-        profile_(profile),
+        event_router_(EventRouter::Get(profile)),
         extension_id_(extension_id),
         id_(id),
         scoped_id_(CreateScopedIdentifier(extension_id, id)) {
-    DCHECK(api_function_.get());
-    notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                                content::Source<Profile>(profile_));
+    DCHECK(api_function_);
+    shutdown_notifier_subscription_ =
+        ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
+            base::Bind(&NotificationsApiDelegate::Shutdown,
+                       base::Unretained(this)));
   }
 
   void Close(bool by_user) override {
@@ -135,10 +158,10 @@ class NotificationsApiDelegate : public NotificationDelegate,
   }
 
   bool HasClickedListener() override {
-    if (profile_ == nullptr)
+    if (!event_router_)
       return false;
 
-    return EventRouter::Get(profile_)->HasEventListener(
+    return event_router_->HasEventListener(
         notifications::OnClicked::kEventName);
   }
 
@@ -158,21 +181,17 @@ class NotificationsApiDelegate : public NotificationDelegate,
   void SendEvent(const std::string& name,
                  EventRouter::UserGestureState user_gesture,
                  scoped_ptr<base::ListValue> args) {
-    if (profile_ == nullptr)
+    if (!event_router_)
       return;
 
     scoped_ptr<Event> event(new Event(name, args.Pass()));
     event->user_gesture = user_gesture;
-    EventRouter::Get(profile_)->DispatchEventToExtension(extension_id_,
-                                                         event.Pass());
+    event_router_->DispatchEventToExtension(extension_id_, event.Pass());
   }
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
-    profile_ = nullptr;
+  void Shutdown() {
+    event_router_ = nullptr;
+    shutdown_notifier_subscription_.reset();
   }
 
   scoped_ptr<base::ListValue> CreateBaseEventArgs() {
@@ -183,16 +202,17 @@ class NotificationsApiDelegate : public NotificationDelegate,
 
   scoped_refptr<ChromeAsyncExtensionFunction> api_function_;
 
-  // Since this class is refcounted it may outlive |profile_|.  We listen for
-  // profile destruction events and reset to nullptr at that time, so make sure
-  // to check for a valid pointer before use.
-  Profile* profile_;
+  // Since this class is refcounted it may outlive the profile.  We listen for
+  // profile-keyed service shutdown events and reset to nullptr at that time,
+  // so make sure to check for a valid pointer before use.
+  EventRouter* event_router_;
 
   const std::string extension_id_;
   const std::string id_;
   const std::string scoped_id_;
 
-  content::NotificationRegistrar notification_registrar_;
+  scoped_ptr<KeyedServiceShutdownNotifier::Subscription>
+      shutdown_notifier_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationsApiDelegate);
 };

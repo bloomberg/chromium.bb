@@ -21,6 +21,9 @@
 
 namespace chrome {
 
+// NotificationService &c. are deprecated (https://crbug.com/268984).
+// Don't add any new notification types, and migrate existing uses of the
+// notification types below to observers.
 enum NotificationType {
   NOTIFICATION_CHROME_START = PREVIOUS_END,
 
@@ -239,12 +242,16 @@ enum NotificationType {
   // The details are none and the source is the new profile.
   NOTIFICATION_PROFILE_ADDED,
 
+  // Use KeyedServiceShutdownNotifier instead this notification type (you did
+  // read the comment at the top of the file, didn't you?).
   // Sent early in the process of destroying a Profile, at the time a user
   // initiates the deletion of a profile versus the much later time when the
   // profile object is actually destroyed (use NOTIFICATION_PROFILE_DESTROYED).
   // The details are none and the source is a Profile*.
   NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
 
+  // Use KeyedServiceShutdownNotifier instead this notification type (you did
+  // read the comment at the top of the file, didn't you?).
   // Sent before a Profile is destroyed. This notification is sent both for
   // normal and OTR profiles.
   // The details are none and the source is a Profile*.
