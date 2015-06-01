@@ -49,7 +49,6 @@ cr.define('options', function() {
     ALWAYS: 0,
     WIFI_ONLY: 1,
     NEVER: 2,
-    UNSET: 3,
     DEFAULT: 1
   };
 
@@ -1740,12 +1739,7 @@ cr.define('options', function() {
     setNetworkPredictionValue_: function(pref) {
       var checkbox = $('networkPredictionOptions');
       checkbox.disabled = pref.disabled;
-      if (pref.value == NetworkPredictionOptions.UNSET) {
-        checkbox.checked = (NetworkPredictionOptions.DEFAULT !=
-            NetworkPredictionOptions.NEVER);
-      } else {
-        checkbox.checked = (pref.value != NetworkPredictionOptions.NEVER);
-      }
+      checkbox.checked = (pref.value != NetworkPredictionOptions.NEVER);
     },
 
     /**
