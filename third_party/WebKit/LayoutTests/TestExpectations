@@ -1756,10 +1756,6 @@ crbug.com/321237 [ Win ] fast/multicol/span/pseudo-before-after-in-content.html 
 crbug.com/321237 [ Win ] fast/selectors/004.html [ ImageOnlyFailure ]
 
 # Rebaselines that got missed in the first pass
-crbug.com/321237 [ Mac ] fast/text/international/bidi-neutral-directionality-paragraph-start.html [ NeedsRebaseline ]
-crbug.com/321237 [ Mac ] fast/text/international/thai-baht-space.html [ NeedsRebaseline ]
-crbug.com/321237 [ Mac ] svg/repaint/modify-transferred-listitem-different-attr.html [ NeedsRebaseline ]
-crbug.com/321237 [ Mac ] virtual/antialiasedtext/fast/text/international/thai-baht-space.html [ NeedsRebaseline ]
 crbug.com/321237 [ Mac ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Mac ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Win ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
