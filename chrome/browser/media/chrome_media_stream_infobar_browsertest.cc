@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
@@ -27,13 +28,13 @@
 #include "media/base/media_switches.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
+// MediaStreamPermissionTest ---------------------------------------------------
 
-// MediaStreamInfoBarTest -----------------------------------------------------
-
-class MediaStreamInfoBarTest : public WebRtcTestBase {
+class MediaStreamPermissionTest : public WebRtcTestBase,
+                                  public testing::WithParamInterface<bool> {
  public:
-  MediaStreamInfoBarTest() {}
-  ~MediaStreamInfoBarTest() override {}
+  MediaStreamPermissionTest() {}
+  ~MediaStreamPermissionTest() override {}
 
   // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -41,6 +42,15 @@ class MediaStreamInfoBarTest : public WebRtcTestBase {
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream))
         << "Since this test tests the UI we want the real UI!";
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    if (GetParam()) {
+      command_line->AppendSwitch(switches::kEnablePermissionsBubbles);
+      EXPECT_TRUE(PermissionBubbleManager::Enabled());
+    } else {
+      command_line->AppendSwitch(switches::kDisablePermissionsBubbles);
+      EXPECT_FALSE(PermissionBubbleManager::Enabled());
+    }
+#endif
   }
 
  protected:
@@ -99,32 +109,33 @@ class MediaStreamInfoBarTest : public WebRtcTestBase {
                                     content::MediaStreamRequestResult result,
                                     scoped_ptr<content::MediaStreamUI> ui) {}
 
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamInfoBarTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaStreamPermissionTest);
 };
 
 // Actual tests ---------------------------------------------------------------
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestAllowingUserMedia) {
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestAllowingUserMedia) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   EXPECT_TRUE(GetUserMediaAndAccept(tab_contents));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDenyingUserMedia) {
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestDenyingUserMedia) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   GetUserMediaAndDeny(tab_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDismissingInfobar) {
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestDismissingInfobar) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   GetUserMediaAndDismiss(tab_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDenyingUserMediaIncognito) {
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
+                       TestDenyingUserMediaIncognito) {
   content::WebContents* tab_contents = LoadTestPageInIncognitoTab();
   GetUserMediaAndDeny(tab_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
                        TestAcceptThenDenyWhichShouldBeSticky) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
@@ -148,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
   EXPECT_EQ(0u, infobar_service->infobar_count());
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestAcceptIsNotSticky) {
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestAcceptIsNotSticky) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If accept were sticky the second call would hang because it hangs if an
@@ -157,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestAcceptIsNotSticky) {
   EXPECT_TRUE(GetUserMediaAndAccept(tab_contents));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDismissIsNotSticky) {
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestDismissIsNotSticky) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If dismiss were sticky the second call would hang because it hangs if an
@@ -166,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDismissIsNotSticky) {
   GetUserMediaAndDismiss(tab_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
                        TestDenyingThenClearingStickyException) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
@@ -191,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
 #define MAYBE_DenyingMicDoesNotCauseStickyDenyForCameras \
         DenyingMicDoesNotCauseStickyDenyForCameras
 #endif
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
                        MAYBE_DenyingMicDoesNotCauseStickyDenyForCameras) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
@@ -202,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
       tab_contents, kVideoOnlyCallConstraints));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
                        DenyingCameraDoesNotCauseStickyDenyForMics) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
@@ -212,3 +223,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
   EXPECT_TRUE(GetUserMediaWithSpecificConstraintsAndAccept(
       tab_contents, kAudioOnlyCallConstraints));
 }
+
+INSTANTIATE_TEST_CASE_P(MediaStreamPermissionTestWithParams,
+                        MediaStreamPermissionTest,
+                        testing::Values(false, true));

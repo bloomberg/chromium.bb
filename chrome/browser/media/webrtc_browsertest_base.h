@@ -34,6 +34,7 @@ class WebRtcTestBase : public InProcessBrowserTest {
   static const char kAudioVideoCallConstraints360p[];
   static const char kAudioVideoCallConstraints720p[];
 
+  static const char kOkGotStream[];
   static const char kFailedWithPermissionDeniedError[];
   static const char kFailedWithPermissionDismissedError[];
 

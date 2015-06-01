@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_service.h"
@@ -44,6 +46,7 @@ const char WebRtcTestBase::kVideoCallConstraints1080p[] =
     " minHeight: 1080, maxHeight: 1080}}}";
 const char WebRtcTestBase::kAudioOnlyCallConstraints[] = "{audio: true}";
 const char WebRtcTestBase::kVideoOnlyCallConstraints[] = "{video: true}";
+const char WebRtcTestBase::kOkGotStream[] = "ok-got-stream";
 const char WebRtcTestBase::kFailedWithPermissionDeniedError[] =
     "failed-with-error-PermissionDeniedError";
 const char WebRtcTestBase::kFailedWithPermissionDismissedError[] =
@@ -109,15 +112,30 @@ bool WebRtcTestBase::GetUserMediaAndAccept(
 bool WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
     content::WebContents* tab_contents,
     const std::string& constraints) const {
-  infobars::InfoBar* infobar =
-      GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
-  infobar->delegate()->AsConfirmInfoBarDelegate()->Accept();
-  CloseInfoBarInTab(tab_contents, infobar);
-
-  // Wait for WebRTC to call the success callback.
-  const char kOkGotStream[] = "ok-got-stream";
-  return test::PollingWaitUntil("obtainGetUserMediaResult()", kOkGotStream,
-                                tab_contents);
+  if (PermissionBubbleManager::Enabled()) {
+    scoped_ptr<MockPermissionBubbleView> mock_bubble_view(
+        new MockPermissionBubbleView());
+    PermissionBubbleManager::FromWebContents(tab_contents)
+        ->SetView(mock_bubble_view.get());
+    mock_bubble_view->SetBrowserTest(true);
+    GetUserMedia(tab_contents, constraints);
+    if (!mock_bubble_view->IsVisible())
+      content::RunMessageLoop();
+    mock_bubble_view->Accept();
+    // Wait for WebRTC to call the success callback, then remove the view.
+    const bool result = test::PollingWaitUntil("obtainGetUserMediaResult()",
+                                               kOkGotStream, tab_contents);
+    PermissionBubbleManager::FromWebContents(tab_contents)->SetView(NULL);
+    return result;
+  } else {
+    infobars::InfoBar* infobar =
+        GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
+    infobar->delegate()->AsConfirmInfoBarDelegate()->Accept();
+    CloseInfoBarInTab(tab_contents, infobar);
+    // Wait for WebRTC to call the success callback.
+    return test::PollingWaitUntil("obtainGetUserMediaResult()", kOkGotStream,
+                                  tab_contents);
+  }
 }
 
 void WebRtcTestBase::GetUserMediaAndDeny(content::WebContents* tab_contents) {
@@ -128,28 +146,60 @@ void WebRtcTestBase::GetUserMediaAndDeny(content::WebContents* tab_contents) {
 void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
     content::WebContents* tab_contents,
     const std::string& constraints) const {
-  infobars::InfoBar* infobar =
-      GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
-  infobar->delegate()->AsConfirmInfoBarDelegate()->Cancel();
-  CloseInfoBarInTab(tab_contents, infobar);
-
-  // Wait for WebRTC to call the fail callback.
-  EXPECT_TRUE(test::PollingWaitUntil("obtainGetUserMediaResult()",
-                                     kFailedWithPermissionDeniedError,
-                                     tab_contents));
+  if (PermissionBubbleManager::Enabled()) {
+    scoped_ptr<MockPermissionBubbleView> mock_bubble_view(
+        new MockPermissionBubbleView());
+    PermissionBubbleManager::FromWebContents(tab_contents)
+        ->SetView(mock_bubble_view.get());
+    mock_bubble_view->SetBrowserTest(true);
+    GetUserMedia(tab_contents, constraints);
+    if (!mock_bubble_view->IsVisible())
+      content::RunMessageLoop();
+    mock_bubble_view->Deny();
+    // Wait for WebRTC to call the fail callback, then remove the view.
+    EXPECT_TRUE(test::PollingWaitUntil("obtainGetUserMediaResult()",
+                                       kFailedWithPermissionDeniedError,
+                                       tab_contents));
+    PermissionBubbleManager::FromWebContents(tab_contents)->SetView(NULL);
+  } else {
+    infobars::InfoBar* infobar =
+        GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
+    infobar->delegate()->AsConfirmInfoBarDelegate()->Cancel();
+    CloseInfoBarInTab(tab_contents, infobar);
+    // Wait for WebRTC to call the fail callback.
+    EXPECT_TRUE(test::PollingWaitUntil("obtainGetUserMediaResult()",
+                                       kFailedWithPermissionDeniedError,
+                                       tab_contents));
+  }
 }
 
 void WebRtcTestBase::GetUserMediaAndDismiss(
     content::WebContents* tab_contents) const {
-  infobars::InfoBar* infobar =
-      GetUserMediaAndWaitForInfoBar(tab_contents, kAudioVideoCallConstraints);
-  infobar->delegate()->InfoBarDismissed();
-  CloseInfoBarInTab(tab_contents, infobar);
-
-  // A dismiss should be treated like a deny.
-  EXPECT_TRUE(test::PollingWaitUntil("obtainGetUserMediaResult()",
-                                     kFailedWithPermissionDismissedError,
-                                     tab_contents));
+  if (PermissionBubbleManager::Enabled()) {
+    scoped_ptr<MockPermissionBubbleView> mock_bubble_view(
+        new MockPermissionBubbleView());
+    PermissionBubbleManager::FromWebContents(tab_contents)
+        ->SetView(mock_bubble_view.get());
+    mock_bubble_view->SetBrowserTest(true);
+    GetUserMedia(tab_contents, kAudioVideoCallConstraints);
+    if (!mock_bubble_view->IsVisible())
+      content::RunMessageLoop();
+    mock_bubble_view->Close();
+    // A dismiss should be treated like a deny.
+    EXPECT_TRUE(test::PollingWaitUntil("obtainGetUserMediaResult()",
+                                       kFailedWithPermissionDismissedError,
+                                       tab_contents));
+    PermissionBubbleManager::FromWebContents(tab_contents)->SetView(NULL);
+  } else {
+    infobars::InfoBar* infobar =
+        GetUserMediaAndWaitForInfoBar(tab_contents, kAudioVideoCallConstraints);
+    infobar->delegate()->InfoBarDismissed();
+    CloseInfoBarInTab(tab_contents, infobar);
+    // A dismiss should be treated like a deny.
+    EXPECT_TRUE(test::PollingWaitUntil("obtainGetUserMediaResult()",
+                                       kFailedWithPermissionDismissedError,
+                                       tab_contents));
+  }
 }
 
 void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
@@ -206,23 +256,37 @@ content::WebContents* WebRtcTestBase::OpenTestPageAndGetUserMediaInNewTab(
 
 content::WebContents* WebRtcTestBase::OpenPageAndAcceptUserMedia(
     const GURL& url) const {
-  content::WindowedNotificationObserver infobar_added(
-      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-      content::NotificationService::AllSources());
-
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  infobar_added.Wait();
-
   content::WebContents* tab_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::Details<infobars::InfoBar::AddedDetails> details(
-      infobar_added.details());
-  infobars::InfoBar* infobar = details.ptr();
-  EXPECT_TRUE(infobar);
-  infobar->delegate()->AsMediaStreamInfoBarDelegate()->Accept();
+  if (PermissionBubbleManager::Enabled()) {
+    scoped_ptr<MockPermissionBubbleView> mock_bubble_view(
+        new MockPermissionBubbleView());
+    PermissionBubbleManager::FromWebContents(tab_contents)
+        ->SetView(mock_bubble_view.get());
+    mock_bubble_view->SetBrowserTest(true);
+    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url,
+                                                              1);
+    if (!mock_bubble_view->IsVisible())
+      content::RunMessageLoop();
+    mock_bubble_view->Accept();
+    // Wait to make sure the callback is fired before deleting the bubble view.
+    test::PollingWaitUntil("obtainGetUserMediaResult()", kOkGotStream,
+                           tab_contents);
+    PermissionBubbleManager::FromWebContents(tab_contents)->SetView(NULL);
+  } else {
+    content::WindowedNotificationObserver nav(
+        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+        content::NotificationService::AllSources());
+    ui_test_utils::NavigateToURL(browser(), url);
+    nav.Wait();
 
-  CloseInfoBarInTab(tab_contents, infobar);
+    content::Details<infobars::InfoBar::AddedDetails> details(nav.details());
+    infobars::InfoBar* infobar = details.ptr();
+    EXPECT_TRUE(infobar);
+    infobar->delegate()->AsMediaStreamInfoBarDelegate()->Accept();
+
+    CloseInfoBarInTab(tab_contents, infobar);
+  }
   return tab_contents;
 }
 
