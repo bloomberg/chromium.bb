@@ -5,10 +5,11 @@
 
 """Rolls DEPS controlled dependency.
 
-Works only with git checkout and git dependencies.
+Works only with git checkout and git dependencies.  Currently this
+script will always roll to the tip of to origin/master.
 """
 
-import optparse
+import argparse
 import os
 import re
 import subprocess
@@ -53,6 +54,8 @@ def roll(root, deps_dir, key, reviewers, bug):
     raise Error('Ensure %s is clean first.' % root)
 
   full_dir = os.path.normpath(os.path.join(os.path.dirname(root), deps_dir))
+  if not os.path.isdir(full_dir):
+    raise Error('Directory not found: %s' % deps_dir)
   head = check_output(['git', 'rev-parse', 'HEAD'], cwd=full_dir).strip()
 
   if not head in deps_content:
@@ -122,21 +125,19 @@ def roll(root, deps_dir, key, reviewers, bug):
 
 
 def main():
-  parser = optparse.OptionParser(
-      description=sys.modules[__name__].__doc__,
-      usage='roll-dep [flags] <dependency path> <variable>')
-  parser.add_option(
-      '-r', '--reviewer', default='',
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-r', '--reviewer',
       help='To specify multiple reviewers, use comma separated list, e.g. '
            '-r joe,jane,john. Defaults to @chromium.org')
-  parser.add_option('-b', '--bug', default='')
-  options, args = parser.parse_args()
-  if not len(args) or len(args) > 2:
-    parser.error('Expect one or two arguments' % args)
+  parser.add_argument('-b', '--bug')
+  parser.add_argument('dep_path', help='path to dependency')
+  parser.add_argument('key', nargs='?',
+      help='regexp for dependency in DEPS file')
+  args = parser.parse_args()
 
   reviewers = None
-  if options.reviewer:
-    reviewers = options.reviewer.split(',')
+  if args.reviewer:
+    reviewers = args.reviewer.split(',')
     for i, r in enumerate(reviewers):
       if not '@' in r:
         reviewers[i] = r + '@chromium.org'
@@ -144,10 +145,10 @@ def main():
   try:
     roll(
         os.getcwd(),
-        deps_dir=args[0],
-        key=args[1] if len(args) > 1 else None,
+        args.dep_path,
+        args.key,
         reviewers=reviewers,
-        bug=options.bug)
+        bug=args.bug)
 
   except Error as e:
     sys.stderr.write('error: %s\n' % e)
