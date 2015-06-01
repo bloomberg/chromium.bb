@@ -262,9 +262,10 @@ general sanity check. Run make dist. This will produce a tarball.
   ./autogen.sh && ./configure && make && make distcheck && make dist
 
 ** Upload
-Add the tarball to the liblouis web site, i.e. add it under
-$WEBSITE/downloads and add a link to it in $WEBSITE/downloads/index.md.
-See below for instructions on how to update the web site.
+Add the tarball to the github liblouis releases page, i.e. add it
+under https://github.com/liblouis/liblouis/releases with the specific
+release and add a link to it in $WEBSITE/downloads/index.md. See below
+for instructions on how to update the web site.
 
 ** Online documentation
 The online documentation is part of the liblouis web site. To add it to the
