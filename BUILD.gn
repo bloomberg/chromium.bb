@@ -45,8 +45,38 @@ if ((current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm"
   }
 }
 
-if (build_ffmpegsumo) {
-  group("ffmpegsumo") {
+config("ffmpeg_dependent_config") {
+  include_dirs = [
+    platform_config_root,
+    ".",
+  ]
+}
+
+if (is_win) {
+  # Stub generator script and signatures of all functions used by Chrome.
+  generate_stubs_script = "//tools/generate_stubs/generate_stubs.py"
+
+  # Used by ffmpeg_generate_stubs and ffmpeg_generate_def
+  sig_files = [ "chromium/ffmpegsumo.sigs" ]
+
+  action("ffmpeg_generate_def") {
+    script = generate_stubs_script
+    sources = sig_files
+    outputs = [ "$target_gen_dir/ffmpegsumo.def" ]
+    args = [
+  # TODO(ajwong): This was -i <(INTERMEDIATE_DIR). What next?
+      "-i", rebase_path(target_out_dir, root_build_dir),
+      "-o", rebase_path(target_gen_dir, root_build_dir),
+      "-t", "windows_def",
+      "-m", "ffmpegsumo.dll",
+    ] + rebase_path(sources, root_build_dir)
+  }
+}
+
+component("ffmpeg") {
+  public_configs = [ ":ffmpeg_dependent_config" ]
+
+  if (build_ffmpegsumo) {
     sources = ffmpeg_c_sources + ffmpeg_gas_sources + [
       "$platform_config_root/config.h",
       "$platform_config_root/libavutil/avconfig.h",
@@ -324,39 +354,4 @@ if (build_ffmpegsumo) {
       deps += [ ":ffmpeg_yasm" ]
     }
   }
-}
-
-config("ffmpeg_dependent_config") {
-  include_dirs = [
-    platform_config_root,
-    ".",
-  ]
-}
-
-if (is_win) {
-  # Stub generator script and signatures of all functions used by Chrome.
-  generate_stubs_script = "//tools/generate_stubs/generate_stubs.py"
-
-  # Used by ffmpeg_generate_stubs and ffmpeg_generate_def
-  sig_files = [ "chromium/ffmpegsumo.sigs" ]
-
-  action("ffmpeg_generate_def") {
-    script = generate_stubs_script
-    sources = sig_files
-    outputs = [ "$target_gen_dir/ffmpegsumo.def" ]
-    args = [
-  # TODO(ajwong): This was -i <(INTERMEDIATE_DIR). What next?
-      "-i", rebase_path(target_out_dir, root_build_dir),
-      "-o", rebase_path(target_gen_dir, root_build_dir),
-      "-t", "windows_def",
-      "-m", "ffmpegsumo.dll",
-    ] + rebase_path(sources, root_build_dir)
-  }
-}
-
-component("ffmpeg") {
-  public_configs = [ ":ffmpeg_dependent_config" ]
-  public_deps = [
-    ":ffmpegsumo",
-  ]
 }
