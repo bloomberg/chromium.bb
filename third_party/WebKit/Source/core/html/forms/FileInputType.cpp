@@ -34,7 +34,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
 #include "core/layout/LayoutFileUploadControl.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/DragData.h"
 #include "platform/FileMetadata.h"
@@ -154,7 +153,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
     if (!UserGestureIndicator::processingUserGesture())
         return;
 
-    if (Chrome* chrome = this->chrome()) {
+    if (ChromeClient* chromeClient = this->chromeClient()) {
         FileChooserSettings settings;
         HTMLInputElement& input = element();
         settings.allowsDirectoryUpload = input.fastHasAttribute(webkitdirectoryAttr);
@@ -163,7 +162,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
         settings.acceptFileExtensions = input.acceptFileExtensions();
         settings.selectedFiles = m_fileList->pathsForUserVisibleFiles();
         settings.useMediaCapture = RuntimeEnabledFeatures::mediaCaptureEnabled() && input.fastHasAttribute(captureAttr);
-        chrome->runOpenPanel(input.document().frame(), newFileChooser(settings));
+        chromeClient->runOpenPanel(input.document().frame(), newFileChooser(settings));
     }
     event->setDefaultHandled();
 }
@@ -336,7 +335,7 @@ void FileInputType::filesChosen(const Vector<FileChooserFileInfo>& files)
 
 void FileInputType::receiveDropForDirectoryUpload(const Vector<String>& paths)
 {
-    if (Chrome* chrome = this->chrome()) {
+    if (ChromeClient* chromeClient = this->chromeClient()) {
         FileChooserSettings settings;
         HTMLInputElement& input = element();
         settings.allowsDirectoryUpload = true;
@@ -344,7 +343,7 @@ void FileInputType::receiveDropForDirectoryUpload(const Vector<String>& paths)
         settings.selectedFiles.append(paths[0]);
         settings.acceptMIMETypes = input.acceptMIMETypes();
         settings.acceptFileExtensions = input.acceptFileExtensions();
-        chrome->client().enumerateChosenDirectory(newFileChooser(settings));
+        chromeClient->enumerateChosenDirectory(newFileChooser(settings));
     }
 }
 

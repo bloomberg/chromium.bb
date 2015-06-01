@@ -38,7 +38,6 @@
 #include "core/style/ComputedStyle.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/page/Chrome.h"
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FloatClipRecorder.h"
 #include "core/paint/TransformRecorder.h"
@@ -90,7 +89,7 @@ bool SVGImage::isInSVGImage(const Node* node)
     if (!page)
         return false;
 
-    return page->chrome().client().isSVGImageChromeClient();
+    return page->chromeClient().isSVGImageChromeClient();
 }
 
 bool SVGImage::currentFrameHasSingleSecurityOrigin() const

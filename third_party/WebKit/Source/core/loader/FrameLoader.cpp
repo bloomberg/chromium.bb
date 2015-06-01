@@ -70,7 +70,6 @@
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/CreateWindow.h"
 #include "core/page/EventHandler.h"
@@ -988,7 +987,7 @@ void FrameLoader::commitProvisionalLoad()
     m_documentLoader = m_provisionalDocumentLoader.release();
 
     if (isLoadingMainFrame())
-        m_frame->page()->chrome().client().needTouchEvents(false);
+        m_frame->page()->chromeClient().needTouchEvents(false);
 
     client()->transitionToCommittedForNewPage();
     m_frame->navigationScheduler().cancel();
@@ -1162,7 +1161,7 @@ void FrameLoader::scrollToFragmentWithParentBoundary(const KURL& url)
 bool FrameLoader::shouldClose()
 {
     Page* page = m_frame->page();
-    if (!page || !page->chrome().canRunBeforeUnloadConfirmPanel())
+    if (!page || !page->chromeClient().canRunBeforeUnloadConfirmPanel())
         return true;
 
     // Store all references to each subframe in advance since beforeunload's event handler may modify frame
@@ -1183,7 +1182,7 @@ bool FrameLoader::shouldClose()
         for (i = 0; i < targetFrames.size(); i++) {
             if (!targetFrames[i]->tree().isDescendantOf(m_frame))
                 continue;
-            if (!targetFrames[i]->document()->dispatchBeforeUnloadEvent(page->chrome(), didAllowNavigation))
+            if (!targetFrames[i]->document()->dispatchBeforeUnloadEvent(page->chromeClient(), didAllowNavigation))
                 break;
         }
 

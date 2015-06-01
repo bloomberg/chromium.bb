@@ -40,7 +40,6 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutFullScreen.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "platform/UserGestureIndicator.h"
@@ -294,7 +293,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
 
         // 5. Return, and run the remaining steps asynchronously.
         // 6. Optionally, perform some animation.
-        document()->frameHost()->chrome().client().enterFullScreenForElement(&element);
+        document()->frameHost()->chromeClient().enterFullScreenForElement(&element);
 
         // 7. Optionally, display a message indicating how the user can exit displaying the context object fullscreen.
         return;
@@ -406,13 +405,13 @@ void Fullscreen::exitFullscreen()
         // document so we will pass the documentElement in that case.
         // This should be fix by exiting fullscreen for a frame instead of an
         // element, see https://crbug.com/441259
-        host->chrome().client().exitFullScreenForElement(
+        host->chromeClient().exitFullScreenForElement(
             m_fullScreenElement ? m_fullScreenElement.get() : document()->documentElement());
         return;
     }
 
     // Otherwise, notify the chrome of the new full screen element.
-    host->chrome().client().enterFullScreenForElement(newTop);
+    host->chromeClient().enterFullScreenForElement(newTop);
 }
 
 bool Fullscreen::fullscreenEnabled(Document& document)

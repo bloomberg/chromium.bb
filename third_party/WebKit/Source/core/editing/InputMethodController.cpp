@@ -37,7 +37,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 

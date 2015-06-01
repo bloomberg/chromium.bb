@@ -29,7 +29,6 @@
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/PlatformMouseEvent.h"
@@ -68,7 +67,7 @@ void PointerLockController::requestPointerLock(Element* target)
         }
         enqueueEvent(EventTypeNames::pointerlockchange, target);
         m_element = target;
-    } else if (m_page->chrome().client().requestPointerLock()) {
+    } else if (m_page->chromeClient().requestPointerLock()) {
         m_lockPending = true;
         m_element = target;
     } else {
@@ -78,7 +77,7 @@ void PointerLockController::requestPointerLock(Element* target)
 
 void PointerLockController::requestPointerUnlock()
 {
-    return m_page->chrome().client().requestPointerUnlock();
+    return m_page->chromeClient().requestPointerUnlock();
 }
 
 void PointerLockController::elementRemoved(Element* element)

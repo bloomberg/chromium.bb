@@ -50,7 +50,6 @@
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -1184,7 +1183,7 @@ void AXObjectCacheImpl::postPlatformNotification(AXObject* obj, AXNotification n
     if (!obj || !obj->document() || !obj->documentFrameView() || !obj->documentFrameView()->frame().page())
         return;
 
-    ChromeClient& client = obj->document()->axObjectCacheOwner().page()->chrome().client();
+    ChromeClient& client = obj->document()->axObjectCacheOwner().page()->chromeClient();
 
     if (notification == AXActiveDescendantChanged
         && obj->document()->focusedElement()

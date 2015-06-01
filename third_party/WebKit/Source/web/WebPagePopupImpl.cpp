@@ -40,7 +40,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/page/Chrome.h"
 #include "core/page/DOMWindowPagePopup.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"

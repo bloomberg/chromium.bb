@@ -42,7 +42,7 @@
 
 namespace blink {
 
-class Chrome;
+class ChromeClient;
 class DragData;
 class ExceptionState;
 class FileList;
@@ -216,7 +216,7 @@ public:
 
 protected:
     InputType(HTMLInputElement& element) : InputTypeView(element) { }
-    Chrome* chrome() const;
+    ChromeClient* chromeClient() const;
     Locale& locale() const;
     Decimal parseToNumberOrNaN(const String&) const;
     void countUsageIfVisible(UseCounter::Feature) const;

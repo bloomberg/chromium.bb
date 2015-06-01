@@ -34,7 +34,6 @@
 #include "core/frame/Settings.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -82,7 +81,7 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     if (!oldHost)
         return nullptr;
 
-    Page* page = oldHost->chrome().client().createWindow(&openerFrame, request, features, policy, shouldSendReferrer);
+    Page* page = oldHost->chromeClient().createWindow(&openerFrame, request, features, policy, shouldSendReferrer);
     if (!page)
         return nullptr;
     FrameHost* host = &page->frameHost();
@@ -93,13 +92,13 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     if (request.frameName() != "_blank")
         frame.tree().setName(request.frameName());
 
-    host->chrome().setWindowFeatures(features);
+    host->chromeClient().setWindowFeatures(features);
 
     // 'x' and 'y' specify the location of the window, while 'width' and 'height'
     // specify the size of the viewport. We can only resize the window, so adjust
     // for the difference between the window size and the viewport size.
 
-    IntRect windowRect = host->chrome().windowRect();
+    IntRect windowRect = host->chromeClient().windowRect();
     IntSize viewportSize = host->chromeClient().pageRect().size();
 
     if (features.xSet)
@@ -111,7 +110,7 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     if (features.heightSet)
         windowRect.setHeight(features.height + (windowRect.height() - viewportSize.height()));
 
-    host->chrome().setWindowRect(windowRect);
+    host->chromeClient().setWindowRect(windowRect);
     host->chromeClient().show(policy);
 
     // TODO(japhet): There's currently no way to set sandbox flags on a RemoteFrame and have it propagate

@@ -445,10 +445,10 @@ void InputType::dispatchSimulatedClickIfActive(KeyboardEvent* event) const
     event->setDefaultHandled();
 }
 
-Chrome* InputType::chrome() const
+ChromeClient* InputType::chromeClient() const
 {
     if (FrameHost* host = element().document().frameHost())
-        return &host->chrome();
+        return &host->chromeClient();
     return nullptr;
 }
 

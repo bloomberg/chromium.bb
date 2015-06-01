@@ -38,7 +38,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/page/AutoscrollController.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/DragController.h"
@@ -104,7 +103,7 @@ Page::Page(PageClients& pageClients)
     : SettingsDelegate(Settings::create())
     , m_animator(PageAnimator::create(*this))
     , m_autoscrollController(AutoscrollController::create(*this))
-    , m_chrome(Chrome::create(pageClients.chromeClient))
+    , m_chromeClient(pageClients.chromeClient)
     , m_dragCaretController(DragCaretController::create())
     , m_dragController(DragController::create(this, pageClients.dragClient))
     , m_focusController(FocusController::create(this))
@@ -284,11 +283,6 @@ void Page::unmarkAllTextMatches()
     } while (frame);
 }
 
-ChromeClient& Page::chromeClient() const
-{
-    return m_chrome->client();
-}
-
 void Page::setValidationMessageClient(PassOwnPtrWillBeRawPtr<ValidationMessageClient> client)
 {
     m_validationMessageClient = client;
@@ -317,7 +311,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
     if (scale != viewport.scale()) {
         viewport.setScale(scale);
 
-        m_chrome->client().pageScaleFactorChanged();
+        chromeClient().pageScaleFactorChanged();
 
         deprecatedLocalMainFrame()->loader().saveScrollState();
     }

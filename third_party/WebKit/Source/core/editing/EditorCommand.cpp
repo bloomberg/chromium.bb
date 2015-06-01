@@ -57,7 +57,7 @@
 #include "core/html/HTMLHRElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/layout/LayoutBox.h"
-#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
 #include "platform/KillRing.h"
@@ -971,7 +971,7 @@ static bool executePrint(LocalFrame& frame, Event*, EditorCommandSource, const S
     FrameHost* host = frame.host();
     if (!host)
         return false;
-    host->chrome().print(&frame);
+    host->chromeClient().print(&frame);
     return true;
 }
 

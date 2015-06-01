@@ -45,7 +45,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/style/KeyframeList.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -208,7 +207,7 @@ PassOwnPtr<GraphicsLayer> CompositedDeprecatedPaintLayerMapping::createGraphicsL
 {
     GraphicsLayerFactory* graphicsLayerFactory = 0;
     if (Page* page = layoutObject()->frame()->page())
-        graphicsLayerFactory = page->chrome().client().graphicsLayerFactory();
+        graphicsLayerFactory = page->chromeClient().graphicsLayerFactory();
 
     OwnPtr<GraphicsLayer> graphicsLayer = GraphicsLayer::create(graphicsLayerFactory, this);
 

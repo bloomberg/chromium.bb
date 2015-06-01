@@ -69,7 +69,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/AutoscrollController.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
@@ -1094,7 +1093,7 @@ void FrameView::layout()
     // necessitating this check here.
     // ASSERT(frame()->page());
     if (frame().page())
-        frame().page()->chrome().client().layoutUpdated(m_frame.get());
+        frame().page()->chromeClient().layoutUpdated(m_frame.get());
 
     frame().document()->markers().updateRenderedRectsForMarkers();
 }
@@ -1667,11 +1666,11 @@ void FrameView::updateCompositedSelectionIfNeeded()
     CompositedSelection selection;
     LocalFrame* frame = toLocalFrame(page->focusController().focusedOrMainFrame());
     if (!frame || !computeCompositedSelection(*frame, selection)) {
-        page->chrome().client().clearCompositedSelection();
+        page->chromeClient().clearCompositedSelection();
         return;
     }
 
-    page->chrome().client().updateCompositedSelection(selection);
+    page->chromeClient().updateCompositedSelection(selection);
 }
 
 HostWindow* FrameView::hostWindow() const
@@ -2403,7 +2402,7 @@ void FrameView::updateAnnotatedRegions()
         return;
     document->setAnnotatedRegions(newRegions);
     if (Page* page = m_frame->page())
-        page->chrome().client().annotatedRegionsChanged();
+        page->chromeClient().annotatedRegionsChanged();
 }
 
 void FrameView::updateScrollCorner()
@@ -3019,7 +3018,7 @@ void FrameView::setCursor(const Cursor& cursor)
     Page* page = frame().page();
     if (!page || !page->settings().deviceSupportsMouse())
         return;
-    page->chrome().setCursor(cursor);
+    page->chromeClient().setCursor(cursor);
 }
 
 void FrameView::frameRectsChanged()

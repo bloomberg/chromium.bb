@@ -62,7 +62,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/SinkDocument.h"
 #include "core/loader/appcache/ApplicationCache.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/CreateWindow.h"
 #include "core/page/EventHandler.h"
@@ -800,7 +799,7 @@ void LocalDOMWindow::print()
         return;
     }
     m_shouldPrintWhenFinishedLoading = false;
-    host->chrome().print(frame());
+    host->chromeClient().print(frame());
 }
 
 void LocalDOMWindow::stop()
@@ -827,7 +826,7 @@ void LocalDOMWindow::alert(const String& message)
     if (!host)
         return;
 
-    host->chrome().runJavaScriptAlert(frame(), message);
+    host->chromeClient().runJavaScriptAlert(frame(), message);
 }
 
 bool LocalDOMWindow::confirm(const String& message)
@@ -853,7 +852,7 @@ bool LocalDOMWindow::confirm(const String& message)
             return false;
     }
 
-    return host->chrome().runJavaScriptConfirm(frame(), message);
+    return host->chromeClient().runJavaScriptConfirm(frame(), message);
 }
 
 String LocalDOMWindow::prompt(const String& message, const String& defaultValue)
@@ -874,7 +873,7 @@ String LocalDOMWindow::prompt(const String& message, const String& defaultValue)
         return String();
 
     String returnValue;
-    if (host->chrome().runJavaScriptPrompt(frame(), message, defaultValue, returnValue))
+    if (host->chromeClient().runJavaScriptPrompt(frame(), message, defaultValue, returnValue))
         return returnValue;
 
     return String();
@@ -909,8 +908,8 @@ int LocalDOMWindow::outerHeight() const
         return 0;
 
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(host->chrome().windowRect().height() * host->deviceScaleFactor());
-    return host->chrome().windowRect().height();
+        return lroundf(host->chromeClient().windowRect().height() * host->deviceScaleFactor());
+    return host->chromeClient().windowRect().height();
 }
 
 int LocalDOMWindow::outerWidth() const
@@ -923,8 +922,8 @@ int LocalDOMWindow::outerWidth() const
         return 0;
 
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(host->chrome().windowRect().width() * host->deviceScaleFactor());
-    return host->chrome().windowRect().width();
+        return lroundf(host->chromeClient().windowRect().width() * host->deviceScaleFactor());
+    return host->chromeClient().windowRect().width();
 }
 
 static FloatSize getViewportSize(LocalFrame* frame)
@@ -983,8 +982,8 @@ int LocalDOMWindow::screenX() const
         return 0;
 
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(host->chrome().windowRect().x() * host->deviceScaleFactor());
-    return host->chrome().windowRect().x();
+        return lroundf(host->chromeClient().windowRect().x() * host->deviceScaleFactor());
+    return host->chromeClient().windowRect().x();
 }
 
 int LocalDOMWindow::screenY() const
@@ -997,8 +996,8 @@ int LocalDOMWindow::screenY() const
         return 0;
 
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(host->chrome().windowRect().y() * host->deviceScaleFactor());
-    return host->chrome().windowRect().y();
+        return lroundf(host->chromeClient().windowRect().y() * host->deviceScaleFactor());
+    return host->chromeClient().windowRect().y();
 }
 
 double LocalDOMWindow::scrollX() const
@@ -1234,10 +1233,10 @@ void LocalDOMWindow::moveBy(int x, int y, bool hasX, bool hasY) const
     if (!host)
         return;
 
-    IntRect windowRect = host->chrome().windowRect();
+    IntRect windowRect = host->chromeClient().windowRect();
     windowRect.move(x, y);
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    host->chrome().setWindowRect(windowRect);
+    host->chromeClient().setWindowRect(windowRect);
 }
 
 void LocalDOMWindow::moveTo(int x, int y, bool hasX, bool hasY) const
@@ -1252,10 +1251,10 @@ void LocalDOMWindow::moveTo(int x, int y, bool hasX, bool hasY) const
     if (!host)
         return;
 
-    IntRect windowRect = host->chrome().windowRect();
+    IntRect windowRect = host->chromeClient().windowRect();
     windowRect.setLocation(IntPoint(hasX ? x : windowRect.x(), hasY ? y : windowRect.y()));
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    host->chrome().setWindowRect(windowRect);
+    host->chromeClient().setWindowRect(windowRect);
 }
 
 void LocalDOMWindow::resizeBy(int x, int y, bool hasX, bool hasY) const
@@ -1270,10 +1269,10 @@ void LocalDOMWindow::resizeBy(int x, int y, bool hasX, bool hasY) const
     if (!host)
         return;
 
-    IntRect fr = host->chrome().windowRect();
+    IntRect fr = host->chromeClient().windowRect();
     IntSize dest = fr.size() + IntSize(x, y);
     IntRect update(fr.location(), dest);
-    host->chrome().setWindowRect(update);
+    host->chromeClient().setWindowRect(update);
 }
 
 void LocalDOMWindow::resizeTo(int width, int height, bool hasWidth, bool hasHeight) const
@@ -1288,10 +1287,10 @@ void LocalDOMWindow::resizeTo(int width, int height, bool hasWidth, bool hasHeig
     if (!host)
         return;
 
-    IntRect fr = host->chrome().windowRect();
+    IntRect fr = host->chromeClient().windowRect();
     IntSize dest = IntSize(hasWidth ? width : fr.width(), hasHeight ? height : fr.height());
     IntRect update(fr.location(), dest);
-    host->chrome().setWindowRect(update);
+    host->chromeClient().setWindowRect(update);
 }
 
 int LocalDOMWindow::requestAnimationFrame(FrameRequestCallback* callback)

@@ -36,7 +36,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/forms/PopupMenuClient.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/paint/TransformRecorder.h"
@@ -385,7 +384,7 @@ void PopupContainer::paintBorder(GraphicsContext* gc, const IntRect& rect)
 
 ChromeClient& PopupContainer::chromeClient()
 {
-    return m_frameView->frame().page()->chrome().client();
+    return m_frameView->frame().page()->chromeClient();
 }
 
 void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize& controlSize, FrameView* v, int index)

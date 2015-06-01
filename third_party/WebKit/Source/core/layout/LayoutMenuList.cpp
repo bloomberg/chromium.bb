@@ -41,7 +41,6 @@
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/IntSize.h"
@@ -348,7 +347,7 @@ void LayoutMenuList::showPopup()
         return;
 
     if (!m_popup)
-        m_popup = document().frameHost()->chrome().createPopupMenu(*document().frame(), this);
+        m_popup = document().frameHost()->chromeClient().createPopupMenu(*document().frame(), this);
     m_popupIsVisible = true;
 
     FloatQuad quad(localToAbsoluteQuad(FloatQuad(borderBoundingBox())));

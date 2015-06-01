@@ -40,7 +40,6 @@
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -195,7 +194,7 @@ void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
     if (scale != m_scale) {
         m_scale = scale;
         valuesChanged = true;
-        frameHost().chrome().client().pageScaleFactorChanged();
+        frameHost().chromeClient().pageScaleFactorChanged();
     }
 
     // Old-style pinch sets scale here but we shouldn't call into the
@@ -237,7 +236,7 @@ void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
 bool PinchViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoint& anchor)
 {
     const float oldPageScale = scale();
-    const float newPageScale = frameHost().chrome().client().clampPageScaleFactorToLimits(
+    const float newPageScale = frameHost().chromeClient().clampPageScaleFactorToLimits(
         magnifyDelta * oldPageScale);
     if (newPageScale == oldPageScale)
         return false;

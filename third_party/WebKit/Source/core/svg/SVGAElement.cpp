@@ -42,7 +42,6 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/svg/animation/SVGSMILElement.h"
@@ -200,7 +199,7 @@ bool SVGAElement::isKeyboardFocusable() const
         return SVGElement::isKeyboardFocusable();
 
     if (isLink())
-        return document().frameHost()->chrome().client().tabsToLinks();
+        return document().frameHost()->chromeClient().tabsToLinks();
     return SVGElement::isKeyboardFocusable();
 }
 

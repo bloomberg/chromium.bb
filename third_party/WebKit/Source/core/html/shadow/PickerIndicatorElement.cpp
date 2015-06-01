@@ -37,7 +37,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/LayoutDetailsMarker.h"
-#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/LayoutTestSupport.h"
 #include "wtf/TemporaryChange.h"
@@ -139,7 +139,7 @@ void PickerIndicatorElement::openPopup()
     DateTimeChooserParameters parameters;
     if (!m_pickerIndicatorOwner->setupDateTimeChooserParameters(parameters))
         return;
-    m_chooser = document().page()->chrome().openDateTimeChooser(this, parameters);
+    m_chooser = document().page()->chromeClient().openDateTimeChooser(this, parameters);
 }
 
 Element& PickerIndicatorElement::ownerElement() const

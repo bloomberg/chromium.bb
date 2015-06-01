@@ -35,7 +35,6 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "platform/network/NetworkHints.h"
 
@@ -102,7 +101,7 @@ bool HTMLAnchorElement::isKeyboardFocusable() const
     if (isFocusable() && Element::supportsFocus())
         return HTMLElement::isKeyboardFocusable();
 
-    if (isLink() && !document().frameHost()->chrome().client().tabsToLinks())
+    if (isLink() && !document().frameHost()->chromeClient().tabsToLinks())
         return false;
     return HTMLElement::isKeyboardFocusable();
 }

@@ -48,7 +48,6 @@
 #include "core/layout/compositing/GraphicsLayerTreeBuilder.h"
 #include "core/layout/compositing/GraphicsLayerUpdater.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -1083,7 +1082,7 @@ void DeprecatedPaintLayerCompositor::attachRootLayer(RootLayerAttachment attachm
         Page* page = frame.page();
         if (!page)
             return;
-        page->chrome().client().attachRootGraphicsLayer(rootGraphicsLayer(), &frame);
+        page->chromeClient().attachRootGraphicsLayer(rootGraphicsLayer(), &frame);
         break;
     }
     case RootLayerAttachedViaEnclosingFrame: {
@@ -1122,7 +1121,7 @@ void DeprecatedPaintLayerCompositor::detachRootLayer()
         Page* page = frame.page();
         if (!page)
             return;
-        page->chrome().client().attachRootGraphicsLayer(0, &frame);
+        page->chromeClient().attachRootGraphicsLayer(0, &frame);
         break;
     }
     case RootLayerUnattached:
@@ -1146,7 +1145,7 @@ void DeprecatedPaintLayerCompositor::attachCompositorTimeline()
 
     WebCompositorAnimationTimeline* compositorTimeline = frame.document() ? frame.document()->timeline().compositorTimeline() : nullptr;
     if (compositorTimeline)
-        page->chrome().client().attachCompositorAnimationTimeline(compositorTimeline, &frame);
+        page->chromeClient().attachCompositorAnimationTimeline(compositorTimeline, &frame);
 }
 
 void DeprecatedPaintLayerCompositor::detachCompositorTimeline()
@@ -1158,7 +1157,7 @@ void DeprecatedPaintLayerCompositor::detachCompositorTimeline()
 
     WebCompositorAnimationTimeline* compositorTimeline = frame.document() ? frame.document()->timeline().compositorTimeline() : nullptr;
     if (compositorTimeline)
-        page->chrome().client().detachCompositorAnimationTimeline(compositorTimeline, &frame);
+        page->chromeClient().detachCompositorAnimationTimeline(compositorTimeline, &frame);
 }
 
 ScrollingCoordinator* DeprecatedPaintLayerCompositor::scrollingCoordinator() const
@@ -1172,7 +1171,7 @@ ScrollingCoordinator* DeprecatedPaintLayerCompositor::scrollingCoordinator() con
 GraphicsLayerFactory* DeprecatedPaintLayerCompositor::graphicsLayerFactory() const
 {
     if (Page* page = this->page())
-        return page->chrome().client().graphicsLayerFactory();
+        return page->chromeClient().graphicsLayerFactory();
     return 0;
 }
 

@@ -179,7 +179,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ImageLoader.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/EventWithHitTestResults.h"
@@ -2538,7 +2537,7 @@ void Document::implicitClose()
         accessSVGExtensions().startAnimations();
 }
 
-bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, bool& didAllowNavigation)
+bool Document::dispatchBeforeUnloadEvent(ChromeClient& chromeClient, bool& didAllowNavigation)
 {
     if (!m_domWindow)
         return true;
@@ -2566,7 +2565,7 @@ bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, bool& didAllowNavigatio
     }
 
     String text = beforeUnloadEvent->returnValue();
-    if (chrome.runBeforeUnloadConfirmPanel(text, m_frame)) {
+    if (chromeClient.runBeforeUnloadConfirmPanel(text, m_frame)) {
         didAllowNavigation = true;
         return true;
     }
@@ -5404,7 +5403,7 @@ void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)
     WillBeHeapVector<RefPtrWillBeMember<Element>> associatedFormControls;
     copyToVector(m_associatedFormControls, associatedFormControls);
 
-    frame()->page()->chrome().client().didAssociateFormControls(associatedFormControls, frame());
+    frame()->page()->chromeClient().didAssociateFormControls(associatedFormControls, frame());
     m_associatedFormControls.clear();
 }
 

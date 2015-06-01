@@ -33,7 +33,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/LayoutBox.h"
-#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -119,7 +119,7 @@ void SpinButtonElement::defaultEventHandler(Event* event)
                     frame->eventHandler().setCapturingMouseEventsNode(this);
                     m_capturing = true;
                     if (Page* page = document().page())
-                        page->chrome().registerPopupOpeningObserver(this);
+                        page->chromeClient().registerPopupOpeningObserver(this);
                 }
             }
             UpDownState oldUpDownState = m_upDownState;
@@ -195,7 +195,7 @@ void SpinButtonElement::releaseCapture(EventDispatch eventDispatch)
             frame->eventHandler().setCapturingMouseEventsNode(nullptr);
             m_capturing = false;
             if (Page* page = document().page())
-                page->chrome().unregisterPopupOpeningObserver(this);
+                page->chromeClient().unregisterPopupOpeningObserver(this);
         }
     }
     if (m_spinButtonOwner)

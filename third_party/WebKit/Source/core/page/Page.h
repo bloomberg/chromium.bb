@@ -44,7 +44,6 @@
 namespace blink {
 
 class AutoscrollController;
-class Chrome;
 class ChromeClient;
 class ClientRectList;
 class ContextMenuClient;
@@ -130,8 +129,7 @@ public:
     void setOpenedByDOM();
 
     PageAnimator& animator() { return *m_animator; }
-    Chrome& chrome() const { return *m_chrome; }
-    ChromeClient& chromeClient() const;
+    ChromeClient& chromeClient() const { return *m_chromeClient; }
     AutoscrollController& autoscrollController() const { return *m_autoscrollController; }
     DragCaretController& dragCaretController() const { return *m_dragCaretController; }
     DragController& dragController() const { return *m_dragController; }
@@ -215,7 +213,7 @@ private:
 
     RefPtrWillBeMember<PageAnimator> m_animator;
     const OwnPtr<AutoscrollController> m_autoscrollController;
-    const OwnPtr<Chrome> m_chrome;
+    ChromeClient* m_chromeClient;
     const OwnPtrWillBeMember<DragCaretController> m_dragCaretController;
     const OwnPtrWillBeMember<DragController> m_dragController;
     const OwnPtrWillBeMember<FocusController> m_focusController;

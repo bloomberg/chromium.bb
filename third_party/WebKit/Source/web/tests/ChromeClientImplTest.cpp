@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebInputEvent.h"
@@ -87,7 +86,7 @@ protected:
         m_webView = toWebViewImpl(WebView::create(&m_webViewClient));
         m_mainFrame = WebLocalFrame::create(WebTreeScopeType::Document, &m_webFrameClient);
         m_webView->setMainFrame(m_mainFrame);
-        m_chromeClientImpl = toChromeClientImpl(&m_webView->page()->chrome().client());
+        m_chromeClientImpl = toChromeClientImpl(&m_webView->page()->chromeClient());
         m_result = WebNavigationPolicyIgnore;
     }
 

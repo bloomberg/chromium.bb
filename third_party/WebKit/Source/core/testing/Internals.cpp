@@ -108,7 +108,6 @@
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/HistoryItem.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
@@ -682,7 +681,7 @@ DOMWindow* Internals::pagePopupWindow() const
     if (!document)
         return nullptr;
     if (Page* page = document->page())
-        return page->chrome().client().pagePopupWindowForTesting();
+        return page->chromeClient().pagePopupWindowForTesting();
     return nullptr;
 }
 
@@ -1950,7 +1949,7 @@ static const char* cursorTypeToString(Cursor::Type cursorType)
 
 String Internals::getCurrentCursorInfo()
 {
-    Cursor cursor = frame()->page()->chrome().getLastSetCursorForTesting();
+    Cursor cursor = frame()->page()->chromeClient().getLastSetCursorForTesting();
 
     StringBuilder result;
     result.appendLiteral("type=");

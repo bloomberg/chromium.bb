@@ -41,8 +41,6 @@
 #include "core/layout/LayoutPart.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -156,7 +154,7 @@ static ChromeClient& emptyChromeClient()
 ChromeClient& Frame::chromeClient() const
 {
     if (Page* page = this->page())
-        return page->chrome().client();
+        return page->chromeClient();
     return emptyChromeClient();
 }
 

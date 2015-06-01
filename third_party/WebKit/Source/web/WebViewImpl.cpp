@@ -73,7 +73,6 @@
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/Chrome.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/DragController.h"
@@ -1714,7 +1713,7 @@ WebViewImpl* WebViewImpl::fromPage(Page* page)
 {
     if (!page)
         return 0;
-    return static_cast<WebViewImpl*>(page->chrome().client().webView());
+    return static_cast<WebViewImpl*>(page->chromeClient().webView());
 }
 
 // WebWidget ------------------------------------------------------------------
@@ -3935,7 +3934,7 @@ void WebViewImpl::setDomainRelaxationForbidden(bool forbidden, const WebString& 
 
 void WebViewImpl::setWindowFeatures(const WebWindowFeatures& features)
 {
-    m_page->chrome().setWindowFeatures(features);
+    m_page->chromeClient().setWindowFeatures(features);
 }
 
 void WebViewImpl::setOpenedByDOM()

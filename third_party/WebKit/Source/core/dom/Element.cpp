@@ -106,7 +106,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -2231,7 +2230,7 @@ void Element::focus(bool restorePreviousSelection, WebFocusType type)
         // gesture. Since tracking that across arbitrary boundaries (eg.
         // animations) is difficult, for now we match IE's heuristic and bring
         // up the keyboard if there's been any gesture since load.
-        document().page()->chrome().client().showImeIfNeeded();
+        document().page()->chromeClient().showImeIfNeeded();
     }
 }
 

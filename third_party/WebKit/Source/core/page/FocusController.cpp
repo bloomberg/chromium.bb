@@ -48,7 +48,6 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FrameTree.h"
@@ -282,7 +281,7 @@ void FocusController::setFocusedFrame(PassRefPtrWillBeRawPtr<Frame> frame)
 
     m_isChangingFocusedFrame = false;
 
-    m_page->chrome().client().focusedFrameChanged(newFrame.get());
+    m_page->chromeClient().focusedFrameChanged(newFrame.get());
 }
 
 void FocusController::focusDocumentView(PassRefPtrWillBeRawPtr<Frame> frame)
@@ -772,7 +771,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr
     if (oldFocusedElement && oldFocusedElement->isRootEditableElement() && !relinquishesEditingFocus(*oldFocusedElement))
         return false;
 
-    m_page->chrome().client().willSetInputMethodState();
+    m_page->chromeClient().willSetInputMethodState();
 
     RefPtrWillBeRawPtr<Document> newDocument = nullptr;
     if (element)

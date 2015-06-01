@@ -9,7 +9,6 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -177,7 +176,7 @@ void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerCla
             scrollingCoordinator->updateHaveWheelEventHandlers();
         break;
     case TouchEvent:
-        m_frameHost.chrome().client().needTouchEvents(hasActiveHandlers);
+        m_frameHost.chromeClient().needTouchEvents(hasActiveHandlers);
         break;
 #if ENABLE(ASSERT)
     case EventsForTesting:

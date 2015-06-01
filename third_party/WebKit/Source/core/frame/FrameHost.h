@@ -43,7 +43,6 @@
 
 namespace blink {
 
-class Chrome;
 class ChromeClient;
 class ConsoleMessageStorage;
 class EventHandlerRegistry;
@@ -72,7 +71,6 @@ public:
     // Careful: This function will eventually be removed.
     Page& page() const { return *m_page; }
     Settings& settings() const;
-    Chrome& chrome() const;
     ChromeClient& chromeClient() const;
     UseCounter& useCounter() const;
 

@@ -34,8 +34,6 @@
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/TopControls.h"
 #include "core/inspector/ConsoleMessageStorage.h"
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 
 namespace blink {
@@ -64,11 +62,6 @@ FrameHost::~FrameHost()
 Settings& FrameHost::settings() const
 {
     return m_page->settings();
-}
-
-Chrome& FrameHost::chrome() const
-{
-    return m_page->chrome();
 }
 
 ChromeClient& FrameHost::chromeClient() const

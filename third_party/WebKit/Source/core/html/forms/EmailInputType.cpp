@@ -29,7 +29,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
@@ -97,10 +96,10 @@ String EmailInputType::convertEmailAddressToUnicode(const String& address) const
     if (address.find("xn--", atPosition + 1) == kNotFound)
         return address;
 
-    if (!chrome())
+    if (!chromeClient())
         return address;
 
-    String languages = chrome()->client().acceptLanguages();
+    String languages = chromeClient()->acceptLanguages();
     String unicodeHost = Platform::current()->convertIDNToUnicode(address.substring(atPosition + 1), languages);
     StringBuilder builder;
     builder.append(address, 0, atPosition + 1);

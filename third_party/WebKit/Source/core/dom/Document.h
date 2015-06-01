@@ -76,7 +76,7 @@ class CSSStyleDeclaration;
 class CSSStyleSheet;
 class CanvasRenderingContext2D;
 class CanvasRenderingContext2DOrWebGLRenderingContext;
-class Chrome;
+class ChromeClient;
 class Comment;
 class ConsoleMessage;
 class ContextFeatures;
@@ -502,7 +502,7 @@ public:
     // implicitClose() actually does the work of closing the input stream.
     void implicitClose();
 
-    bool dispatchBeforeUnloadEvent(Chrome&, bool&);
+    bool dispatchBeforeUnloadEvent(ChromeClient&, bool&);
     void dispatchUnloadEvents();
 
     enum PageDismissalType {

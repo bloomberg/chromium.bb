@@ -50,7 +50,6 @@
 #include "core/layout/LayoutDetailsMarker.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -88,7 +87,7 @@ private:
             return;
         HTMLInputElement* host = hostInput();
         if (host && !host->isDisabledOrReadOnly()) {
-            document().frameHost()->chrome().openTextDataListChooser(*host);
+            document().frameHost()->chromeClient().openTextDataListChooser(*host);
             event->setDefaultHandled();
         }
     }
@@ -197,8 +196,8 @@ void TextFieldInputType::handleKeydownEvent(KeyboardEvent* event)
 {
     if (!element().focused())
         return;
-    if (Chrome* chrome = this->chrome()) {
-        chrome->client().handleKeyboardEventOnTextField(element(), *event);
+    if (ChromeClient* chromeClient = this->chromeClient()) {
+        chromeClient->handleKeyboardEventOnTextField(element(), *event);
         return;
     }
     event->setDefaultHandled();
@@ -328,8 +327,8 @@ void TextFieldInputType::destroyShadowSubtree()
 
 void TextFieldInputType::listAttributeTargetChanged()
 {
-    if (Chrome* chrome = this->chrome())
-        chrome->client().textFieldDataListChanged(element());
+    if (ChromeClient* chromeClient = this->chromeClient())
+        chromeClient->textFieldDataListChanged(element());
     Element* picker = element().userAgentShadowRoot()->getElementById(ShadowElementNames::pickerIndicator());
     bool didHavePickerIndicator = picker;
     bool willHavePickerIndicator = element().hasValidDataListOptions();
@@ -505,8 +504,8 @@ void TextFieldInputType::didSetValueByUserEdit(ValueChangeState state)
 {
     if (!element().focused())
         return;
-    if (Chrome* chrome = this->chrome())
-        chrome->client().didChangeValueInTextField(element());
+    if (ChromeClient* chromeClient = this->chromeClient())
+        chromeClient->didChangeValueInTextField(element());
 }
 
 void TextFieldInputType::spinButtonStepDown()

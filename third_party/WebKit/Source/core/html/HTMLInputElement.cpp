@@ -68,7 +68,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "platform/Language.h"
 #include "platform/PlatformMouseEvent.h"
@@ -377,7 +376,7 @@ void HTMLInputElement::endEditing()
 
     LocalFrame* frame = document().frame();
     frame->spellChecker().didEndEditingOnTextField(this);
-    frame->host()->chrome().client().didEndEditingOnTextField(*this);
+    frame->host()->chromeClient().didEndEditingOnTextField(*this);
 }
 
 void HTMLInputElement::handleFocusEvent(Element* oldFocusedElement, WebFocusType type)
@@ -1092,7 +1091,7 @@ void HTMLInputElement::setValueInternal(const String& sanitizedValue, TextFieldE
     m_valueIfDirty = sanitizedValue;
     setNeedsValidityCheck();
     if (document().focusedElement() == this)
-        document().frameHost()->chrome().client().didUpdateTextOfFocusedElementByNonUserInput();
+        document().frameHost()->chromeClient().didUpdateTextOfFocusedElementByNonUserInput();
 }
 
 void HTMLInputElement::updateView()

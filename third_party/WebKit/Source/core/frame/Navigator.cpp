@@ -31,7 +31,6 @@
 #include "core/frame/Settings.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "platform/Language.h"
 
@@ -100,7 +99,7 @@ Vector<String> Navigator::languages()
         return languages;
     }
 
-    String acceptLanguages = m_frame->host()->chrome().client().acceptLanguages();
+    String acceptLanguages = m_frame->host()->chromeClient().acceptLanguages();
     acceptLanguages.split(',', languages);
 
     // Sanitizing tokens. We could do that more extensively but we should assume

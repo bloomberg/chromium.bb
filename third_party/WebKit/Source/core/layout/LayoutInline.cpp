@@ -34,13 +34,12 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/style/StyleInheritedData.h"
-#include "core/page/Chrome.h"
-#include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/Region.h"
 #include "platform/geometry/TransformState.h"
 
 namespace blink {

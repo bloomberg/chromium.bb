@@ -29,7 +29,6 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBlockFlow.h"
-#include "core/page/Chrome.h"
 #include "core/page/Page.h"
 
 #include "public/platform/WebScreenInfo.h"

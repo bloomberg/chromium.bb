@@ -30,6 +30,7 @@
 #include "core/frame/Console.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "core/dom/Document.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
@@ -38,8 +39,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/page/Chrome.h"
-#include "core/page/ChromeClient.h"
 #include "platform/TraceEvent.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"

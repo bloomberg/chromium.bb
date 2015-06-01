@@ -33,7 +33,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {
@@ -55,7 +55,7 @@ void BaseChooserOnlyDateAndTimeInputType::handleDOMActivateEvent(Event*)
     DateTimeChooserParameters parameters;
     if (!element().setupDateTimeChooserParameters(parameters))
         return;
-    m_dateTimeChooser = element().document().frameHost()->chrome().openDateTimeChooser(this, parameters);
+    m_dateTimeChooser = element().document().frameHost()->chromeClient().openDateTimeChooser(this, parameters);
 }
 
 void BaseChooserOnlyDateAndTimeInputType::createShadowSubtree()

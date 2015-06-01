@@ -67,7 +67,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/AutoscrollController.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/DragController.h"
 #include "core/page/DragState.h"
@@ -1423,7 +1422,7 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
         frameView->mouseMovedInContentArea();
 
     hoveredNode.setToShadowHostIfInUserAgentShadowRoot();
-    page->chrome().mouseDidMoveOverElement(hoveredNode);
+    page->chromeClient().mouseDidMoveOverElement(hoveredNode);
 
     return result;
 }
@@ -3900,7 +3899,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
 
             TouchAction effectiveTouchAction = computeEffectiveTouchAction(*node);
             if (effectiveTouchAction != TouchActionAuto)
-                m_frame->page()->chrome().client().setTouchAction(effectiveTouchAction);
+                m_frame->page()->chromeClient().setTouchAction(effectiveTouchAction);
         }
     }
 

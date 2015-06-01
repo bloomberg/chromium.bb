@@ -53,7 +53,6 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutPart.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -782,7 +781,7 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
     Page* page = parentView->frame().page();
     if (!page)
         return;
-    toChromeClientImpl(page->chrome().client()).setCursorForPlugin(cursorInfo);
+    toChromeClientImpl(page->chromeClient()).setCursorForPlugin(cursorInfo);
 }
 
 void WebPluginContainerImpl::handleDragEvent(MouseEvent* event)

@@ -47,7 +47,6 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/layout/LayoutTextControlMultiLine.h"
-#include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/StdLibExtras.h"
@@ -282,7 +281,7 @@ void HTMLTextAreaElement::subtreeHasChanged()
     calculateAndAdjustDirectionality();
 
     ASSERT(document().isActive());
-    document().frameHost()->chrome().client().didChangeValueInTextField(*this);
+    document().frameHost()->chromeClient().didChangeValueInTextField(*this);
 }
 
 void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* event) const
@@ -347,7 +346,7 @@ void HTMLTextAreaElement::setValue(const String& value, TextFieldEventBehavior e
     setValueCommon(value, eventBehavior);
     m_isDirty = true;
     if (document().focusedElement() == this)
-        document().frameHost()->chrome().client().didUpdateTextOfFocusedElementByNonUserInput();
+        document().frameHost()->chromeClient().didUpdateTextOfFocusedElementByNonUserInput();
 }
 
 void HTMLTextAreaElement::setNonDirtyValue(const String& value)
