@@ -1,7 +1,7 @@
 {
   "tables": [
     "unicode.dis",
-    "nl-NL-g1.ctb"
+    "nl-BE-g0.utb"
   ], 
   "tests": [
     {

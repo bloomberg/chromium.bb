@@ -1,6 +1,6 @@
 #
-#  Copyright (C) 2010, 2011 by DocArch <http://www.docarch.be>
-#  Copyright (C) 2014 by Bert Frees
+#  Copyright (C) 2010-2011 by DocArch <http://www.docarch.be>
+#  Copyright (C) 2014-2015 by Bert Frees
 #  Copyright (C) 2014 by CBB <http://www.cbb.nl>
 #
 #  This file is part of liblouis.
@@ -21,9 +21,12 @@
 #
 # -------------------------------------------------------------------------------
 #
-#  Dutch Braille (the Netherlands)
+#  Dutch Braille based on the braille standard of 2005
+#
 #     Created by Bert Frees <bertfrees@gmail.com>
-#     Modified and maintained by Henri Apperloo <h.apperloo@cbb.nl>
+#     Modified by Henri Apperloo <h.apperloo@cbb.nl>
+#     Modified by Davy Kager <DavyKager@dedicon.nl>
+#
 #     See also: « Braillestandaard voor algemeen gebruik in het Nederlandse taalgebied,
 #                Van toepassing vanaf 1 september 2005 »
 #              (Federatie Slechtzienden- en Blindenbelang en 
@@ -32,7 +35,7 @@
 #
 # ----------------------------------------------------------------------------------------------
 
-include nl-NL-chardefs.cti
+include nl-chardefs.cti
 include braille-patterns.cti
 
 # §1.58 Drukwijzigingsteken [1]

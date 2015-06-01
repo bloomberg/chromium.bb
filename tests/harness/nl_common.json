@@ -387,11 +387,6 @@
     "output": "⠰⠁ ⠰⠃ ⠰⠛"
   },
   {
-    "comment": "Some Greek uppercase; fails for Belgium Dutch because it uses a different capital sign for special letters",
-    "input": "Α Β Γ",
-    "output": "⠰⠨⠁ ⠰⠨⠃ ⠰⠨⠛"
-  },
-  {
     "input": "'s morgens, baby's, Alex' boeken, de jaren '90",
     "output": "⠄⠎ ⠍⠕⠗⠛⠑⠝⠎⠂ ⠃⠁⠃⠽⠄⠎⠂ ⠨⠁⠇⠑⠭⠄ ⠃⠕⠑⠅⠑⠝⠂ ⠙⠑ ⠚⠁⠗⠑⠝ ⠄⠼⠊⠚"
   },
