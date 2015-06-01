@@ -36,8 +36,6 @@ crbug.com/474117 compositing/overflow/overflow-positioning.html [ ImageOnlyFailu
 
 crbug.com/487281 [ Mac ] virtual/slimmingpaint/fast/forms/menulist-narrow-width.html [ ImageOnlyFailure ]
 
-crbug.com/487278 fast/forms/textarea/textarea-placeholder-paint-order-2.html [ ImageOnlyFailure Pass ]
-
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/mask-box-image.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/transformed-body-background.html [ ImageOnlyFailure ]
