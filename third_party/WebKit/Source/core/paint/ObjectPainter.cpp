@@ -95,6 +95,35 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& o
         graphicsContext->endLayer();
 }
 
+void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    ASSERT(paintInfo.context->printing());
+    if (m_layoutObject.isElementContinuation() || !m_layoutObject.node() || !m_layoutObject.node()->isLink() || m_layoutObject.styleRef().visibility() != VISIBLE)
+        return;
+
+    KURL url = toElement(m_layoutObject.node())->hrefURL();
+    if (!url.isValid())
+        return;
+
+    Vector<LayoutRect> focusRingRects;
+    m_layoutObject.addFocusRingRects(focusRingRects, paintOffset);
+    IntRect rect = pixelSnappedIntRect(unionRect(focusRingRects));
+    if (rect.isEmpty())
+        return;
+
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect, rect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
+    if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, m_layoutObject.document().baseURL())) {
+        String fragmentName = url.fragmentIdentifier();
+        if (m_layoutObject.document().findAnchor(fragmentName))
+            paintInfo.context->setURLFragmentForRect(fragmentName, rect);
+        return;
+    }
+    paintInfo.context->setURLForRect(url, rect);
+}
+
 void ObjectPainter::drawLineForBoxSide(GraphicsContext* graphicsContext, int x1, int y1, int x2, int y2,
     BoxSide side, Color color, EBorderStyle style,
     int adjacentWidth1, int adjacentWidth2, bool antialias)
