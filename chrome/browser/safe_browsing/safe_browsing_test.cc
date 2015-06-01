@@ -295,11 +295,6 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // This test uses loopback. No need to use IPv6 especially it makes
-    // local requests slow on Windows trybot when ipv6 local address [::1]
-    // is not setup.
-    command_line->AppendSwitch(switches::kDisableIPv6);
-
     // TODO(lzheng): The test server does not understand download related
     // requests. We need to fix the server.
     command_line->AppendSwitch(switches::kSbDisableDownloadProtection);

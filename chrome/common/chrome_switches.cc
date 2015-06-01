@@ -267,12 +267,6 @@ const char kDisableExtensionsFileAccessCheck[] =
 const char kDisableExtensionsHttpThrottling[] =
     "disable-extensions-http-throttling";
 
-// Don't resolve hostnames to IPv6 addresses. This can be used when debugging
-// issues relating to IPv6, but shouldn't otherwise be needed. Be sure to file
-// bugs if something isn't working properly in the presence of IPv6. This flag
-// can be overidden by the "enable-ipv6" flag.
-const char kDisableIPv6[]                   = "disable-ipv6";
-
 // Disable the behavior that the second click on a launcher item (the click when
 // the item is already active) minimizes the item.
 const char kDisableMinimizeOnSecondLauncherItemClick[] =
@@ -444,12 +438,6 @@ const char kEnableExtensionActivityLogTesting[] =
 // running a tab's onunload js handler independently of the GUI -
 // crbug.com/142458 .
 const char kEnableFastUnload[]         = "enable-fast-unload";
-
-// Enables IPv6 support, even if probes suggest that it may not be fully
-// supported. Some probes may require internet connections, and this flag will
-// allow support independent of application testing. This flag overrides
-// "disable-ipv6" which appears elswhere in this file.
-const char kEnableIPv6[]                    = "enable-ipv6";
 
 // Enables experimentation with launching ephemeral apps via hyperlinks.
 const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
