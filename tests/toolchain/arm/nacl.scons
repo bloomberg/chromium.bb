@@ -30,5 +30,4 @@ node = env.CommandTestFileDumpCheck('arm_float_abi_test.out',
 
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'nonpexe_tests', 'toolchain_tests'],
-                       'run_arm_float_abi_test',
-                       is_broken=env.Bit('nonsfi_nacl'))
+                       'run_arm_float_abi_test')
