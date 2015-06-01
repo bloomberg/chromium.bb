@@ -87,8 +87,6 @@ const char kReloadSharedWorkerTestPage[] =
 const char kReloadSharedWorkerTestWorker[] =
     "files/workers/debug_shared_worker_initialization.js";
 
-const int kRemoteDebuggingPort = 9225;
-
 void RunTestFunction(DevToolsWindow* window, const char* test_name) {
   std::string result;
 
@@ -967,20 +965,4 @@ IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, PolicyTrue) {
   DevToolsWindow::OpenDevToolsWindow(web_contents);
   DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(agent.get());
   ASSERT_FALSE(window);
-}
-
-class RemoteWebSocketTest : public DevToolsSanityTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DevToolsSanityTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort,
-        base::IntToString(kRemoteDebuggingPort));
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(RemoteWebSocketTest, TestWebSocket) {
-  AndroidDeviceManager::DeviceProviders device_providers;
-  device_providers.push_back(new SelfAsDeviceProvider(kRemoteDebuggingPort));
-  DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile())->
-      set_device_providers_for_test(device_providers);
-  RunTest("testRemoteWebSocket", "about:blank");
 }
