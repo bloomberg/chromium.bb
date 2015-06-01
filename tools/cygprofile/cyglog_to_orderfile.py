@@ -12,9 +12,10 @@ import logging
 import multiprocessing
 import optparse
 import os
-import tempfile
+import re
 import string
 import sys
+import tempfile
 
 import cygprofile_utils
 import symbol_extractor
@@ -125,12 +126,12 @@ def _AllSymbolInfos(object_filenames):
   return result
 
 
-def _GetSymbolToSectionMapFromObjectFiles(obj_dir):
-  """ Creates a mapping from symbol to linker section name by scanning all
-      the object files.
+def GetSymbolToSectionsMapFromObjectFiles(obj_dir):
+  """Creates a mapping from symbol to linker section names by scanning all
+     the object files.
   """
   object_files = _GetObjectFileNames(obj_dir)
-  symbol_to_section_map = {}
+  symbol_to_sections_map = {}
   symbol_warnings = cygprofile_utils.WarningCollector(300)
   symbol_infos = _AllSymbolInfos(object_files)
   for symbol_info in symbol_infos:
@@ -138,18 +139,27 @@ def _GetSymbolToSectionMapFromObjectFiles(obj_dir):
     if symbol.startswith('.LTHUNK'):
       continue
     section = symbol_info.section
-    if ((symbol in symbol_to_section_map) and
-        (symbol_to_section_map[symbol] != symbol_info.section)):
-      symbol_warnings.Write('Symbol ' + symbol +
-                            ' in conflicting sections ' + section +
-                            ' and ' + symbol_to_section_map[symbol])
+    if ((symbol in symbol_to_sections_map) and
+        (not symbol_info.section in symbol_to_sections_map[symbol])):
+      symbol_to_sections_map[symbol].append(section)
+      # Check if this is the understood case of constructor/destructor
+      # signatures. G++ emits up to three types of constructor/destructors:
+      # complete, base, and allocating.  If they're all the same they'll
+      # get folded together.
+      if not (re.match('[CD][123]E', symbol) and
+          (symbol_extractor.Demangle(symbol) ==
+           symbol_extractor.Demangle(symbol_to_sections_map[symbol][0]
+                                     .lstrip('.text.')))):
+        symbol_warnings.Write('Symbol ' + symbol +
+                              ' in conflicting sections ' +
+                              ', '.join(symbol_to_sections_map[symbol]))
     elif not section.startswith('.text'):
       symbol_warnings.Write('Symbol ' + symbol +
                             ' in incorrect section ' + section)
     else:
-      symbol_to_section_map[symbol] = section
+      symbol_to_sections_map[symbol] = [ section ]
   symbol_warnings.WriteEnd('bad sections')
-  return symbol_to_section_map
+  return symbol_to_sections_map
 
 
 def _WarnAboutDuplicates(offsets):
@@ -172,14 +182,14 @@ def _WarnAboutDuplicates(offsets):
   return ok
 
 
-def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_section_map,
+def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_sections_map,
                      output_file):
   """Outputs the orderfile to output_file.
 
   Args:
     offsets: Iterable of offsets to match to section names
     offset_to_symbol_infos: {offset: [SymbolInfo]}
-    symbol_to_section_map: {name: section}
+    symbol_to_sections_map: {name: [section1, section2]}
     output_file: file-like object to write the results to
   """
   success = True
@@ -190,11 +200,12 @@ def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_section_map,
     try:
       symbol_infos = _FindSymbolInfosAtOffset(offset_to_symbol_infos, offset)
       for symbol_info in symbol_infos:
-        if symbol_info.name in symbol_to_section_map:
-          section = symbol_to_section_map[symbol_info.name]
-          if not section in output_sections:
-            output_file.write(section + '\n')
-            output_sections.add(section)
+        if symbol_info.name in symbol_to_sections_map:
+          sections = symbol_to_sections_map[symbol_info.name]
+          for section in sections:
+            if not section in output_sections:
+              output_file.write(section + '\n')
+              output_sections.add(section)
         else:
           unknown_symbol_warnings.Write(
               'No known section for symbol ' + symbol_info.name)
@@ -222,15 +233,14 @@ def main():
   (log_filename, lib_filename, output_filename) = argv[1:]
   symbol_extractor.SetArchitecture(options.arch)
 
-  obj_dir = os.path.abspath(os.path.join(
-      os.path.dirname(lib_filename), '../obj'))
+  obj_dir = cygprofile_utils.GetObjDir(lib_filename)
 
   log_file_lines = map(string.rstrip, open(log_filename).readlines())
   offsets = _ParseLogLines(log_file_lines)
   _WarnAboutDuplicates(offsets)
 
   offset_to_symbol_infos = _GroupLibrarySymbolInfosByOffset(lib_filename)
-  symbol_to_section_map = _GetSymbolToSectionMapFromObjectFiles(obj_dir)
+  symbol_to_sections_map = GetSymbolToSectionsMapFromObjectFiles(obj_dir)
 
   success = False
   temp_filename = None
@@ -239,7 +249,7 @@ def main():
     (fd, temp_filename) = tempfile.mkstemp(dir=os.path.dirname(output_filename))
     output_file = os.fdopen(fd, 'w')
     ok = _OutputOrderfile(
-        offsets, offset_to_symbol_infos, symbol_to_section_map, output_file)
+        offsets, offset_to_symbol_infos, symbol_to_sections_map, output_file)
     output_file.close()
     os.rename(temp_filename, output_filename)
     temp_filename = None

@@ -64,20 +64,24 @@ class TestPatchOrderFile(unittest.TestCase):
     self.assertEquals(symbol_names[1], symbol_name2)
     self.assertEquals(symbol_names[2], "symbolThatShouldntMatch")
 
-  def testPrintSymbolWithPrefixes(self):
+  def testPrintSymbolsAsSections(self):
     class FakeOutputFile(object):
       def __init__(self):
         self.output = ''
       def write(self, s):
         self.output = self.output + s
     test_symbol = "dummySymbol"
-    symbol_names = [test_symbol]
+    test_symbol2 = "otherSymbol"
+    symbol_names = [test_symbol, test_symbol2]
     fake_output = FakeOutputFile()
-    patch_orderfile._PrintSymbolsWithPrefixes(symbol_names, fake_output)
+    patch_orderfile._PrintSymbolsAsSections(symbol_names,
+        {test_symbol2: ['section1', 'section2']}, fake_output)
     expected_output = """.text.startup.dummySymbol
 .text.hot.dummySymbol
 .text.unlikely.dummySymbol
 .text.dummySymbol
+section1
+section2
 """
     self.assertEquals(fake_output.output, expected_output)
 

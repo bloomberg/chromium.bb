@@ -29,6 +29,7 @@ import logging
 import optparse
 import sys
 
+import cyglog_to_orderfile
 import cygprofile_utils
 import symbol_extractor
 
@@ -93,19 +94,33 @@ def _StripPrefix(line):
   Returns:
     The symbol, SymbolName in the example above.
   """
-  line = line.rstrip('\n')
   for prefix in _PREFIXES:
     if line.startswith(prefix):
       return line[len(prefix):]
   return line  # Unprefixed case
 
 
-def _GetSymbolsFromStream(lines):
-  """Get the symbols from an iterable of lines.
+def _SectionNameToSymbols(section_name, section_to_symbols_map):
+  """Returns all symbols which could be referred to by section_name."""
+  if section_name in section_to_symbols_map:
+    for symbol in section_to_symbols_map[section_name]:
+      yield symbol
+  else:
+    section_name = _StripPrefix(section_name)
+    name = _RemoveClone(section_name)
+    if name != '' and name != '*' and name != '.text':
+      yield section_name
+
+
+def _GetSymbolsFromStream(lines, section_to_symbols_map):
+  """Gets the symbols from an iterable of lines.
      Filters out wildcards and lines which do not correspond to symbols.
 
   Args:
     lines: iterable of lines from an orderfile.
+    section_to_symbols_map: The mapping from section to symbol name.  If a
+                            section isn't in the mapping, it is assumed the
+                            section name is the prefixed symbol name.
 
   Returns:
     Same as GetSymbolsFromOrderfile
@@ -114,27 +129,29 @@ def _GetSymbolsFromStream(lines):
   symbols = []
   unique_symbols = set()
   for line in lines:
-    line = _StripPrefix(line)
-    name = _RemoveClone(line)
-    if name == '' or name == '*' or name == '.text':
-      continue
-    if not line in unique_symbols:
-      symbols.append(line)
-      unique_symbols.add(line)
+    line = line.rstrip('\n')
+    for symbol in _SectionNameToSymbols(line, section_to_symbols_map):
+      if not symbol in unique_symbols:
+        symbols.append(symbol)
+        unique_symbols.add(symbol)
   return symbols
 
 
-def GetSymbolsFromOrderfile(filename):
+def GetSymbolsFromOrderfile(filename, section_to_symbols_map):
   """Return the symbols from an orderfile.
 
   Args:
     filename: The name of the orderfile.
+    section_to_symbols_map: The mapping from section to symbol name.  If a
+                            section isn't in the mapping, it is assumed the
+                            section name is the prefixed symbol name.
 
   Returns:
     A list of symbol names.
   """
   with open(filename, 'r') as f:
-    return _GetSymbolsFromStream(f.xreadlines())
+    return _GetSymbolsFromStream(f.xreadlines(), section_to_symbols_map)
+
 
 def _SymbolsWithSameOffset(profiled_symbol, name_to_symbol_info,
                            offset_to_symbol_info):
@@ -194,15 +211,30 @@ def _ExpandSymbols(profiled_symbols, name_to_symbol_infos,
   return all_symbols
 
 
-def _PrintSymbolsWithPrefixes(symbol_names, output_file):
+def _PrintSymbolsAsSections(symbol_names, symbol_to_sections_map, output_file):
   """For each symbol, outputs it to output_file with the prefixes."""
   unique_outputs = set()
   for name in symbol_names:
-    for prefix in _PREFIXES:
-      linker_section = prefix + name
-      if not linker_section in unique_outputs:
-        output_file.write(linker_section + '\n')
-        unique_outputs.add(linker_section)
+    if name in symbol_to_sections_map:
+      for linker_section in symbol_to_sections_map[name]:
+        if not linker_section in unique_outputs:
+          output_file.write(linker_section + '\n')
+          unique_outputs.add(linker_section)
+    else:
+      for prefix in _PREFIXES:
+        linker_section = prefix + name
+        if not linker_section in unique_outputs:
+          output_file.write(linker_section + '\n')
+          unique_outputs.add(linker_section)
+
+
+def InvertMapping(x_to_ys):
+  """Given a map x -> [y1, y2...] return inverse mapping y->[x1, x2...]."""
+  y_to_xs = {}
+  for x, ys in x_to_ys.items():
+    for y in ys:
+      y_to_xs.setdefault(y, []).append(x)
+  return y_to_xs
 
 
 def main(argv):
@@ -222,10 +254,15 @@ def main(argv):
   symbol_extractor.SetArchitecture(options.arch)
   (offset_to_symbol_infos, name_to_symbol_infos) = _GroupSymbolInfosFromBinary(
       binary_filename)
-  profiled_symbols = GetSymbolsFromOrderfile(orderfile_filename)
-  expanded_symbols = _ExpandSymbols(
-      profiled_symbols, name_to_symbol_infos, offset_to_symbol_infos)
-  _PrintSymbolsWithPrefixes(expanded_symbols, sys.stdout)
+  obj_dir = cygprofile_utils.GetObjDir(binary_filename)
+  symbol_to_sections_map = \
+      cyglog_to_orderfile.GetSymbolToSectionsMapFromObjectFiles(obj_dir)
+  section_to_symbols_map = InvertMapping(symbol_to_sections_map)
+  profiled_symbols = GetSymbolsFromOrderfile(orderfile_filename,
+                                             section_to_symbols_map)
+  expanded_symbols = _ExpandSymbols(profiled_symbols,
+      name_to_symbol_infos, offset_to_symbol_infos)
+  _PrintSymbolsAsSections(expanded_symbols, symbol_to_sections_map, sys.stdout)
   # The following is needed otherwise Gold only applies a partial sort.
   print '.text'    # gets methods not in a section, such as assembly
   print '.text.*'  # gets everything else

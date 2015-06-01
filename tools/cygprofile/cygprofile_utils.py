@@ -40,3 +40,9 @@ def DetectArchitecture(default='arm'):
     return match.group(1)
   else:
     return default
+
+
+def GetObjDir(libchrome):
+  """Get the path to the obj directory corresponding to the given libchrome."""
+  return os.path.abspath(os.path.join(
+      os.path.dirname(libchrome), '../obj'))
