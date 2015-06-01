@@ -121,12 +121,9 @@ void PrefProvider::RegisterProfilePrefs(
                                 false);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    if (IsContentSettingsTypeSyncable(ContentSettingsType(i))) {
-      registry->RegisterDictionaryPref(kContentSettingsExceptionsPrefs[i],
-          user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-    } else {
-      registry->RegisterDictionaryPref(kContentSettingsExceptionsPrefs[i]);
-    }
+    registry->RegisterDictionaryPref(
+        kContentSettingsExceptionsPrefs[i],
+        PrefRegistrationFlagsForType(ContentSettingsType(i)));
   }
 }
 

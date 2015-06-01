@@ -430,6 +430,10 @@ void HostContentSettingsMap::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void HostContentSettingsMap::FlushLossyWebsiteSettings() {
+  prefs_->SchedulePendingLossyWrites();
+}
+
 void HostContentSettingsMap::SetPrefClockForTesting(
     scoped_ptr<base::Clock> clock) {
   UsedContentSettingsProviders();
@@ -470,6 +474,7 @@ void HostContentSettingsMap::ClearSettingsForOneType(
        ++provider) {
     provider->second->ClearAllContentSettingsRules(content_type);
   }
+  FlushLossyWebsiteSettings();
 }
 
 bool HostContentSettingsMap::IsValueAllowedForType(

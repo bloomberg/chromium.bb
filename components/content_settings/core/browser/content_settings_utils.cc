@@ -10,12 +10,14 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/prefs/pref_registry.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "url/gurl.h"
 
 namespace {
@@ -225,6 +227,18 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
       CONTENT_SETTINGS_TYPE_JAVASCRIPT,
       ResourceIdentifier(),
       &(rules->script_rules));
+}
+
+uint32 PrefRegistrationFlagsForType(ContentSettingsType content_type) {
+  uint32 flags = PrefRegistry::NO_REGISTRATION_FLAGS;
+
+  if (IsContentSettingsTypeSyncable(content_type))
+    flags |= user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
+
+  if (IsContentSettingsTypeLossy(content_type))
+    flags |= PrefRegistry::LOSSY_PREF;
+
+  return flags;
 }
 
 }  // namespace content_settings

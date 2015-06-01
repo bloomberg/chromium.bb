@@ -76,6 +76,10 @@ base::Value* GetContentSettingValueAndPatterns(
 void GetRendererContentSettingRules(const HostContentSettingsMap* map,
                                     RendererContentSettingRules* rules);
 
+// Get the flags to use when registering the preference to store |content_type|
+// settings.
+uint32 PrefRegistrationFlagsForType(ContentSettingsType content_type);
+
 }  // namespace content_settings
 
 #endif  // COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_UTILS_H_

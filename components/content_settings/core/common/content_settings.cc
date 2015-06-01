@@ -115,6 +115,10 @@ bool IsContentSettingsTypeSyncable(ContentSettingsType content_setting) {
   return false;
 }
 
+bool IsContentSettingsTypeLossy(ContentSettingsType content_setting) {
+  return content_setting == CONTENT_SETTINGS_TYPE_APP_BANNER;
+}
+
 ContentSettingPatternSource::ContentSettingPatternSource(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,

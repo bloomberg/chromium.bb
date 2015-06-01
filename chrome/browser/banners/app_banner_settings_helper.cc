@@ -91,6 +91,7 @@ void AppBannerSettingsHelper::ClearHistoryForURLs(
     settings->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
                                 CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
                                 nullptr);
+    settings->FlushLossyWebsiteSettings();
   }
 }
 
@@ -168,6 +169,14 @@ void AppBannerSettingsHelper::RecordBannerEvent(
   settings->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
                               CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
                               origin_dict.release());
+
+  // App banner content settings are lossy, meaning they will not cause the
+  // prefs to become dirty. This is fine for most events, as if they are lost it
+  // just means the user will have to engage a little bit more. However the
+  // DID_ADD_TO_HOMESCREEN event should always be recorded to prevent
+  // spamminess.
+  if (event == APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
+    settings->FlushLossyWebsiteSettings();
 }
 
 bool AppBannerSettingsHelper::ShouldShowBanner(
