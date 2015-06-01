@@ -70,7 +70,7 @@ class PasswordManagerDriver
 
   // Tells the driver to find the focused password field and report back
   // the corresponding password form, so that it can be saved.
-  virtual void ForceSavePassword() = 0;
+  virtual void ForceSavePassword() {}
 
   // Returns the PasswordGenerationManager associated with this instance.
   virtual PasswordGenerationManager* GetPasswordGenerationManager() = 0;

@@ -40,9 +40,6 @@ void StubPasswordManagerDriver::PreviewSuggestion(
 void StubPasswordManagerDriver::ClearPreviewedForm() {
 }
 
-void StubPasswordManagerDriver::ForceSavePassword() {
-}
-
 PasswordGenerationManager*
 StubPasswordManagerDriver::GetPasswordGenerationManager() {
   return nullptr;

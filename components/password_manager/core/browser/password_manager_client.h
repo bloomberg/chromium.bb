@@ -96,7 +96,7 @@ class PasswordManagerClient {
 
   // Informs the embedder that the user has manually requested to save the
   // password in the focused password field.
-  virtual void ForceSavePassword() = 0;
+  virtual void ForceSavePassword();
 
   // Informs the embedder that automatic signing in just happened. The form
   // returned to the site is |local_forms[0]|. |local_forms| and
