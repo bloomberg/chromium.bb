@@ -37,6 +37,7 @@
 //#include <unistd.h>
 
 #include "louis.h"
+#include "findTable.h"
 #include "config.h"
 
 #define QUOTESUB 28		/*Stand-in for double quotes in strings */
@@ -496,7 +497,7 @@ getAChar (FileInfo * nested)
 * 16- or 32-bit unsigned integers */
   int ch1 = 0, ch2 = 0;
   widechar character;
-  if (nested->encoding == ascii8Encoding)
+  if (nested->encoding == ascii8)
     if (nested->status == 2)
       {
 	nested->status++;
@@ -511,14 +512,14 @@ getAChar (FileInfo * nested)
 	{
 	  if (nested->checkencoding[0] == 0xfe
 	      && nested->checkencoding[1] == 0xff)
-	    nested->encoding = bigEndianEncoding;
+	    nested->encoding = bigEndian;
 	  else if (nested->checkencoding[0] == 0xff
 		   && nested->checkencoding[1] == 0xfe)
-	    nested->encoding = littleEndianEncoding;
+	    nested->encoding = littleEndian;
 	  else if (nested->checkencoding[0] < 128
 		   && nested->checkencoding[1] < 128)
 	    {
-	      nested->encoding = ascii8Encoding;
+	      nested->encoding = ascii8;
 	      return nested->checkencoding[0];
 	    }
 	  else
@@ -534,17 +535,17 @@ getAChar (FileInfo * nested)
 	{
 	case noEncoding:
 	  break;
-	case ascii8Encoding:
+	case ascii8:
 	  return ch1;
 	  break;
-	case bigEndianEncoding:
+	case bigEndian:
 	  ch2 = fgetc (nested->in);
 	  if (ch2 == EOF)
 	    break;
 	  character = (ch1 << 8) | ch2;
 	  return (int) character;
 	  break;
-	case littleEndianEncoding:
+	case littleEndian:
 	  ch2 = fgetc (nested->in);
 	  if (ch2 == EOF)
 	    break;

@@ -23,6 +23,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include "louis.h"
+#include "findTable.h"
 
 /* =============================== LIST =================================== */
 
