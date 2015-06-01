@@ -27,67 +27,65 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This is based on the W3C standard HTML Editing APIs
-// https://dvcs.w3.org/hg/editing/raw-file/tip/editing.html#selection
-//
-// FIXME: Fix discrepancies from the standard, especially
-// * unsigned types where should be unsigned
-// * Nullability
-// * RemoveRange(Range range) method
-// http://crbug.com/391673
+// http://w3c.github.io/selection-api/#idl-def-Selection
+
+// TODO(yoichio): All long types should be unsigned long. crbug.com/391673
 [
     ImplementedAs=DOMSelection,
     WillBeGarbageCollected,
 ] interface Selection {
-    readonly attribute Node anchorNode;
+    readonly attribute Node? anchorNode;
     readonly attribute long anchorOffset;
-    readonly attribute Node focusNode;
+    readonly attribute Node? focusNode;
     readonly attribute long focusOffset;
-
     readonly attribute boolean isCollapsed;
-    [RaisesException] void collapse(Node? node, optional long offset = 0);
-    [RaisesException] void collapseToStart();
-    [RaisesException] void collapseToEnd();
-
-    // We mark offset as optional, defaulting to 0; this differs from spec.
-    // http://crbug.com/384966
-    [RaisesException, TypeChecking=Interface] void extend(Node node, optional long offset = 0);
-
-    [RaisesException, TypeChecking=Interface] void selectAllChildren(Node node);
-    [CustomElementCallbacks] void deleteFromDocument();
-
     readonly attribute long rangeCount;
     [RaisesException] Range getRangeAt(long index);
     void addRange(Range range);
+    // TODO(yoichio): Implement removeRange. crbug.com/391673
+    //void removeRange(Range range);
     void removeAllRanges();
-
-    [NotEnumerable] stringifier;
-
-    // Firefox extensions
-    // https://developer.mozilla.org/En/DOM/Selection
-    //
-    [MeasureAs=SelectionContainsNode] boolean containsNode([Default = Undefined] optional Node node, [Default = Undefined] optional boolean allowPartial);
-
-    // WebKit extensions
-    [MeasureAs=SelectionBaseNode] readonly attribute Node baseNode;
-    [MeasureAs=SelectionBaseOffset] readonly attribute long baseOffset;
-    [MeasureAs=SelectionExtentNode] readonly attribute Node extentNode;
-    [MeasureAs=SelectionExtentOffset] readonly attribute long extentOffset;
-
-    // WebKit's "type" accessor returns "None", "Range" and "Caret"
-    // IE's type accessor returns "none", "text" and "control"
-    [MeasureAs=SelectionType] readonly attribute DOMString type;
-
-    [MeasureAs=SelectionModify] void modify([Default=Undefined] optional DOMString alter,
-                                            [Default=Undefined] optional DOMString direction,
-                                            [Default=Undefined] optional DOMString granularity);
+    // TODO(yoichio): The node argument should not be nullable. crbug.com/391673
+    // TODO(philipj): The offset argument should not have a default value.
+    [RaisesException] void collapse(Node? node, optional long offset = 0);
+    [RaisesException] void collapseToStart();
+    [RaisesException] void collapseToEnd();
+    // TODO(philipj): The offset argument should not have a default value.
+    [RaisesException, TypeChecking=Interface] void extend(Node node, optional long offset = 0);
+    // TODO(philipj): The arguments should be anchorNode, anchorOffset,
+    // focusNode and focusOffset, and none of them should be optional.
     [MeasureAs=SelectionSetBaseAndExtent, RaisesException] void setBaseAndExtent([Default=Undefined] optional Node baseNode,
                                                                                  [Default=Undefined] optional long baseOffset,
                                                                                  [Default=Undefined] optional Node extentNode,
                                                                                  [Default=Undefined] optional long extentOffset);
-    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException] void setPosition(Node? node, optional long offset = 0);
+    [RaisesException, TypeChecking=Interface] void selectAllChildren(Node node);
+    [CustomElementCallbacks] void deleteFromDocument();
+    // TODO(philipj): The arguments should not be optional.
+    [MeasureAs=SelectionContainsNode] boolean containsNode([Default=Undefined] optional Node node, [Default=Undefined] optional boolean allowPartialContainment);
+    // TODO(philipj): The spec does not use [NotEnumerable]. See also:
+    // https://codereview.chromium.org/345983004/
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=26179
+    [NotEnumerable] stringifier DOMString ();
 
-    // IE extensions
-    // http://msdn.microsoft.com/en-us/library/ms535869(VS.85).aspx
+    // Non-standard APIs
+
+    // https://github.com/w3c/selection-api/issues/34
+    [MeasureAs=SelectionBaseNode] readonly attribute Node? baseNode;
+    [MeasureAs=SelectionBaseOffset] readonly attribute long baseOffset;
+    [MeasureAs=SelectionExtentNode] readonly attribute Node? extentNode;
+    [MeasureAs=SelectionExtentOffset] readonly attribute long extentOffset;
+
+    // https://github.com/w3c/selection-api/issues/14
+    [MeasureAs=SelectionType] readonly attribute DOMString type;
+
+    // https://github.com/w3c/selection-api/issues/36
     [MeasureAs=SelectionEmpty] void empty();
+
+    // https://github.com/w3c/selection-api/issues/37
+    [MeasureAs=SelectionModify] void modify([Default=Undefined] optional DOMString alter,
+                                            [Default=Undefined] optional DOMString direction,
+                                            [Default=Undefined] optional DOMString granularity);
+
+    // https://github.com/w3c/selection-api/issues/38
+    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException] void setPosition(Node? node, optional long offset = 0);
 };
