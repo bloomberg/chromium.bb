@@ -154,7 +154,7 @@
       'targets': [
         {
           'target_name': 'ffmpegsumo',
-          'type': '<(component)',
+          'type': 'static_library',
           'sources': [
             '<@(c_sources)',
             '<(platform_config_root)/config.h',
@@ -450,7 +450,7 @@
   'targets': [
     {
       'target_name': 'ffmpeg',
-      'type': 'none',
+      'type': '<(component)',
       'conditions': [
         ['build_ffmpegsumo == 1', {
           'dependencies': [

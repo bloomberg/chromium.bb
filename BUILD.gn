@@ -46,7 +46,7 @@ if ((current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm"
 }
 
 if (build_ffmpegsumo) {
-  component("ffmpegsumo") {
+  group("ffmpegsumo") {
     sources = ffmpeg_c_sources + ffmpeg_gas_sources + [
       "$platform_config_root/config.h",
       "$platform_config_root/libavutil/avconfig.h",
@@ -354,7 +354,7 @@ if (is_win) {
   }
 }
 
-group("ffmpeg") {
+component("ffmpeg") {
   public_configs = [ ":ffmpeg_dependent_config" ]
   public_deps = [
     ":ffmpegsumo",
