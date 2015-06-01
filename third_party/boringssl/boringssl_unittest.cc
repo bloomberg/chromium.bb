@@ -200,43 +200,6 @@ TEST(BoringSSL, ERR) {
   TestSimple("err_test");
 }
 
-TEST(BoringSSL, GCM) {
-  TestSimple("gcm_test");
-}
-
-TEST(BoringSSL, HMAC) {
-  base::FilePath data_file;
-  ASSERT_TRUE(BoringSSLPath(&data_file));
-  data_file = data_file.Append(FILE_PATH_LITERAL("crypto"));
-  data_file = data_file.Append(FILE_PATH_LITERAL("hmac"));
-  data_file = data_file.Append(FILE_PATH_LITERAL("hmac_tests.txt"));
-
-  std::vector<base::CommandLine::StringType> args;
-  args.push_back(data_file.value());
-
-  TestProcess("hmac_test", args);
-}
-
-TEST(BoringSSL, LH) {
-  TestSimple("lhash_test");
-}
-
-TEST(BoringSSL, RSA) {
-  TestSimple("rsa_test");
-}
-
-TEST(BoringSSL, PKCS7) {
-  TestSimple("pkcs7_test");
-}
-
-TEST(BoringSSL, PKCS12) {
-  TestSimple("pkcs12_test");
-}
-
-TEST(BoringSSL, ExampleMul) {
-  TestSimple("example_mul");
-}
-
 TEST(BoringSSL, EVP) {
   base::FilePath data_file;
   ASSERT_TRUE(BoringSSLPath(&data_file));
@@ -268,20 +231,61 @@ TEST(BoringSSL, EVPExtra) {
   TestSimple("evp_extra_test");
 }
 
-TEST(BoringSSL, SSL) {
-  TestSimple("ssl_test");
+TEST(BoringSSL, ExampleMul) {
+  TestSimple("example_mul");
 }
 
-TEST(BoringSSL, PQueue) {
-  TestSimple("pqueue_test");
+TEST(BoringSSL, GCM) {
+  TestSimple("gcm_test");
 }
 
 TEST(BoringSSL, HKDF) {
   TestSimple("hkdf_test");
 }
 
+TEST(BoringSSL, HMAC) {
+  base::FilePath data_file;
+  ASSERT_TRUE(BoringSSLPath(&data_file));
+  data_file = data_file.Append(FILE_PATH_LITERAL("crypto"));
+  data_file = data_file.Append(FILE_PATH_LITERAL("hmac"));
+  data_file = data_file.Append(FILE_PATH_LITERAL("hmac_tests.txt"));
+
+  std::vector<base::CommandLine::StringType> args;
+  args.push_back(data_file.value());
+
+  TestProcess("hmac_test", args);
+}
+
+TEST(BoringSSL, LH) {
+  TestSimple("lhash_test");
+}
+
 TEST(BoringSSL, PBKDF) {
   TestSimple("pbkdf_test");
+}
+
+TEST(BoringSSL, PKCS7) {
+  TestSimple("pkcs7_test");
+}
+
+TEST(BoringSSL, PKCS12) {
+  TestSimple("pkcs12_test");
+}
+
+TEST(BoringSSL, PQueue) {
+  TestSimple("pqueue_test");
+}
+
+TEST(BoringSSL, RefcountTest) {
+  TestSimple("refcount_test");
+}
+
+TEST(BoringSSL, RSA) {
+  TestSimple("rsa_test");
+}
+
+TEST(BoringSSL, SSL) {
+  TestSimple("ssl_test");
 }
 
 TEST(BoringSSL, Thread) {
