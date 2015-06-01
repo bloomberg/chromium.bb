@@ -122,7 +122,9 @@ ScriptPromise PeriodicSyncManager::permissionState(ScriptState* scriptState)
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    resolver->resolve(String::fromUTF8("granted"));
+
+    backgroundSyncProvider()->getPermissionStatus(WebSyncRegistration::PeriodicityPeriodic, m_registration->webRegistration(), new SyncGetPermissionStatusCallbacks(resolver, m_registration));
+
     return promise;
 }
 

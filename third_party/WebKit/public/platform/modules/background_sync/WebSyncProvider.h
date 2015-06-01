@@ -41,6 +41,10 @@ public:
     // Takes ownership of the WebSyncGetRegistrationsCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
     virtual void getRegistrations(blink::WebSyncRegistration::Periodicity, WebServiceWorkerRegistration*, WebSyncGetRegistrationsCallbacks*) = 0;
+
+    // Takes ownership of the WebSyncGetPermissionStatusCallbacks.
+    // Does not take ownership of the WebServiceWorkerRegistration.
+    virtual void getPermissionStatus(blink::WebSyncRegistration::Periodicity, WebServiceWorkerRegistration*, WebSyncGetPermissionStatusCallbacks*) = 0;
 };
 
 } // namespace blink
