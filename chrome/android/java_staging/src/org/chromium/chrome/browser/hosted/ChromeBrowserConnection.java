@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -112,7 +113,14 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
                     ChromiumApplication app = (ChromiumApplication) mApplication;
                     app.startBrowserProcessesAndLoadLibrariesSync(
                             app.getApplicationContext(), true);
-                    ChildProcessLauncher.warmUp(app.getApplicationContext());
+                    final Context context = app.getApplicationContext();
+                    new AsyncTask<Void, Void, Void>() {
+                        @Override
+                        protected Void doInBackground(Void... params) {
+                            ChildProcessLauncher.warmUp(context);
+                            return null;
+                        }
+                    }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 } catch (ProcessInitException e) {
                     Log.e(TAG, "ProcessInitException while starting the browser process.");
                     // Cannot do anything without the native library, and cannot show a
