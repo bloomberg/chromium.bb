@@ -45,7 +45,7 @@ const float kMinMagnifiedScaleThreshold = 1.1f;
 const float kNonMagnifiedScale = 1.0f;
 
 const float kInitialMagnifiedScale = 2.0f;
-const float kScrollScaleChangeFactor = 0.05f;
+const float kScrollScaleChangeFactor = 0.0125f;
 
 // Threadshold of panning. If the cursor moves to within pixels (in DIP) of
 // |kPanningMergin| from the edge, the view-port moves.
