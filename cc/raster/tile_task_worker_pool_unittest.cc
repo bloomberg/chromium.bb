@@ -433,6 +433,21 @@ TEST_P(TileTaskWorkerPoolTest, LostContext) {
   EXPECT_FALSE(completed_tasks()[1].canceled);
 }
 
+TEST_P(TileTaskWorkerPoolTest, ScheduleEmptyStillTriggersCallback) {
+  // Don't append any tasks, just call ScheduleTasks.
+  ScheduleTasks();
+
+  EXPECT_FALSE(completed_task_sets_[REQUIRED_FOR_ACTIVATION]);
+  EXPECT_FALSE(completed_task_sets_[REQUIRED_FOR_DRAW]);
+  EXPECT_FALSE(completed_task_sets_[ALL]);
+
+  RunMessageLoopUntilAllTasksHaveCompleted();
+
+  EXPECT_TRUE(completed_task_sets_[REQUIRED_FOR_ACTIVATION]);
+  EXPECT_TRUE(completed_task_sets_[REQUIRED_FOR_DRAW]);
+  EXPECT_TRUE(completed_task_sets_[ALL]);
+}
+
 INSTANTIATE_TEST_CASE_P(
     TileTaskWorkerPoolTests,
     TileTaskWorkerPoolTest,
