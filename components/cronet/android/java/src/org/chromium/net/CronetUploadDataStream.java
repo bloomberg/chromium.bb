@@ -35,10 +35,20 @@ final class CronetUploadDataStream implements UploadDataSink {
         @Override
         public void run() {
             synchronized (mLock) {
-                if (mReading || mRewinding || mByteBuffer == null
-                        || mUploadDataStreamAdapter == 0) {
+                if (mUploadDataStreamAdapter == 0) {
+                    return;
+                }
+                if (mReading) {
                     throw new IllegalStateException(
-                            "Unexpected readData call.");
+                            "Unexpected readData call. Already reading.");
+                }
+                if (mRewinding) {
+                    throw new IllegalStateException(
+                            "Unexpected readData call. Already rewinding.");
+                }
+                if (mByteBuffer == null) {
+                    throw new IllegalStateException(
+                            "Unexpected readData call. Buffer is null");
                 }
                 mReading = true;
             }
@@ -105,10 +115,16 @@ final class CronetUploadDataStream implements UploadDataSink {
             @Override
             public void run() {
                 synchronized (mLock) {
-                    if (mReading || mRewinding
-                            || mUploadDataStreamAdapter == 0) {
+                    if (mUploadDataStreamAdapter == 0) {
+                        return;
+                    }
+                    if (mReading) {
                         throw new IllegalStateException(
-                                "Unexpected rewind call.");
+                                "Unexpected rewind call. Already reading");
+                    }
+                    if (mRewinding) {
+                        throw new IllegalStateException(
+                                "Unexpected rewind call. Already rewinding");
                     }
                     mRewinding = true;
                 }
