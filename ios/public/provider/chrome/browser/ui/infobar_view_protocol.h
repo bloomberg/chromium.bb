@@ -17,10 +17,6 @@ class InfoBarViewDelegate;
 // showing/hiding animation.
 @property(nonatomic, assign) CGFloat visibleHeight;
 
-// The designated initializer.
-- (instancetype)initWithFrame:(CGRect)frame
-                     delegate:(InfoBarViewDelegate*)delegate;
-
 // Stops propagating events to delegate.
 - (void)resetDelegate;
 

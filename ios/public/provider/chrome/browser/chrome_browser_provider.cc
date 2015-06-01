@@ -40,7 +40,9 @@ ChromeBrowserProvider::GetUpdatableResourceProvider() {
   return nullptr;
 }
 
-InfoBarViewPlaceholder* ChromeBrowserProvider::CreateInfoBarView() {
+InfoBarViewPlaceholder ChromeBrowserProvider::CreateInfoBarView(
+    CGRect frame,
+    InfoBarViewDelegate* delegate) {
   return nullptr;
 }
 

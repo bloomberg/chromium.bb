@@ -8,6 +8,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #import "ios/chrome/browser/infobars/confirm_infobar_controller.h"
+#include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 
 using infobars::InfoBar;

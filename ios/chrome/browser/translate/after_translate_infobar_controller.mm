@@ -30,18 +30,18 @@
 #pragma mark -
 #pragma mark InfoBarControllerProtocol
 
-- (void)layoutForDelegate:(infobars::InfoBarDelegate*)delegate
-                    frame:(CGRect)frame {
+- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
+    viewForDelegate:(infobars::InfoBarDelegate*)delegate
+              frame:(CGRect)frame {
+  base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
   _translateInfoBarDelegate = delegate->AsTranslateInfoBarDelegate();
   DCHECK(_translateInfoBarDelegate);
-  DCHECK(!infoBarView_);
-  infoBarView_.reset([ios::GetChromeBrowserProvider()->CreateInfoBarView()
-      initWithFrame:frame
-           delegate:delegate_]);
+  infoBarView.reset(
+      ios::GetChromeBrowserProvider()->CreateInfoBarView(frame, self.delegate));
   // Icon
   gfx::Image icon = _translateInfoBarDelegate->GetIcon();
   if (!icon.IsEmpty())
-    [infoBarView_ addLeftIcon:icon.ToUIImage()];
+    [infoBarView addLeftIcon:icon.ToUIImage()];
   // Main text.
   const bool autodeterminedSourceLanguage =
       _translateInfoBarDelegate->original_language_index() ==
@@ -65,33 +65,34 @@
   base::scoped_nsobject<NSString> label(
       [[NSString alloc] initWithFormat:@"%@ %@ %@%@ %@.", label1, original,
                                        label2, label3, target]);
-  [infoBarView_ addLabel:label];
+  [infoBarView addLabel:label];
   // Close button.
-  [infoBarView_ addCloseButtonWithTag:TranslateInfoBarIOSTag::CLOSE
-                               target:self
-                               action:@selector(infoBarButtonDidPress:)];
+  [infoBarView addCloseButtonWithTag:TranslateInfoBarIOSTag::CLOSE
+                              target:self
+                              action:@selector(infoBarButtonDidPress:)];
   // Other buttons.
   NSString* buttonRevert = l10n_util::GetNSString(IDS_TRANSLATE_INFOBAR_REVERT);
   NSString* buttonOptions = base::SysUTF16ToNSString(
       ios::GetChromeBrowserProvider()->GetStringProvider()->GetDoneString());
-  [infoBarView_ addButton1:buttonOptions
-                      tag1:TranslateInfoBarIOSTag::AFTER_DONE
-                   button2:buttonRevert
-                      tag2:TranslateInfoBarIOSTag::AFTER_REVERT
-                    target:self
-                    action:@selector(infoBarButtonDidPress:)];
+  [infoBarView addButton1:buttonOptions
+                     tag1:TranslateInfoBarIOSTag::AFTER_DONE
+                  button2:buttonRevert
+                     tag2:TranslateInfoBarIOSTag::AFTER_REVERT
+                   target:self
+                   action:@selector(infoBarButtonDidPress:)];
   // Always translate switch.
   if (_translateInfoBarDelegate->ShouldShowAlwaysTranslateShortcut()) {
     base::string16 alwaysTranslate = l10n_util::GetStringFUTF16(
         IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE, stdOriginal);
     const BOOL switchValue = _translateInfoBarDelegate->ShouldAlwaysTranslate();
-    [infoBarView_
+    [infoBarView
         addSwitchWithLabel:base::SysUTF16ToNSString(alwaysTranslate)
                       isOn:switchValue
                        tag:TranslateInfoBarIOSTag::ALWAYS_TRANSLATE_SWITCH
                     target:self
                     action:@selector(infoBarSwitchDidPress:)];
   }
+  return infoBarView;
 }
 
 #pragma mark - Handling of User Events
@@ -100,17 +101,17 @@
   // This press might have occurred after the user has already pressed a button,
   // in which case the view has been detached from the delegate and this press
   // should be ignored.
-  if (!delegate_) {
+  if (!self.delegate) {
     return;
   }
   if ([sender isKindOfClass:[UIButton class]]) {
     NSUInteger buttonId = static_cast<UIButton*>(sender).tag;
     if (buttonId == TranslateInfoBarIOSTag::CLOSE) {
-      delegate_->InfoBarDidCancel();
+      self.delegate->InfoBarDidCancel();
     } else {
       DCHECK(buttonId == TranslateInfoBarIOSTag::AFTER_REVERT ||
              buttonId == TranslateInfoBarIOSTag::AFTER_DONE);
-      delegate_->InfoBarButtonDidPress(buttonId);
+      self.delegate->InfoBarButtonDidPress(buttonId);
     }
   }
 }

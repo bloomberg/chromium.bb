@@ -4,52 +4,65 @@
 
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 
-#include "base/strings/sys_string_conversions.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #import "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"
-#include "ui/gfx/image/image.h"
+
+@interface InfoBarController () {
+  base::scoped_nsobject<UIView<InfoBarViewProtocol>> _infoBarView;
+}
+@end
 
 @implementation InfoBarController
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithDelegate:(InfoBarViewDelegate*)delegate {
   self = [super init];
   if (self) {
     DCHECK(delegate);
-    delegate_ = delegate;
+    _delegate = delegate;
   }
   return self;
 }
 
 - (void)dealloc {
-  [infoBarView_ removeFromSuperview];
+  [_infoBarView removeFromSuperview];
   [super dealloc];
 }
 
 - (int)barHeight {
-  return CGRectGetHeight([infoBarView_ frame]);
+  return CGRectGetHeight([_infoBarView frame]);
 }
 
 - (void)layoutForDelegate:(infobars::InfoBarDelegate*)delegate
                     frame:(CGRect)bounds {
+  DCHECK(!_infoBarView);
+  _infoBarView = [self viewForDelegate:delegate frame:bounds];
+}
+
+- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
+    viewForDelegate:(infobars::InfoBarDelegate*)delegate
+              frame:(CGRect)bounds {
   // Must be overriden in subclasses.
   NOTREACHED();
+  return _infoBarView;
 }
 
 - (void)onHeightsRecalculated:(int)newHeight {
-  [infoBarView_ setVisibleHeight:newHeight];
+  [_infoBarView setVisibleHeight:newHeight];
 }
 
-- (UIView*)view {
-  return infoBarView_;
+- (UIView<InfoBarViewProtocol>*)view {
+  return _infoBarView;
 }
 
 - (void)removeView {
-  [infoBarView_ removeFromSuperview];
+  [_infoBarView removeFromSuperview];
 }
 
 - (void)detachView {
-  [infoBarView_ resetDelegate];
-  delegate_ = nullptr;
+  [_infoBarView resetDelegate];
+  _delegate = nullptr;
 }
 
 @end

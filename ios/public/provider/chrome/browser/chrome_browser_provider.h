@@ -5,6 +5,9 @@
 #ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_CHROME_BROWSER_PROVIDER_H_
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_CHROME_BROWSER_PROVIDER_H_
 
+#include <CoreGraphics/CoreGraphics.h>
+
+class InfoBarViewDelegate;
 class PrefService;
 
 namespace net {
@@ -20,9 +23,10 @@ class WebState;
 #ifdef __OBJC__
 @class UIView;
 @protocol InfoBarViewProtocol;
-typedef UIView<InfoBarViewProtocol> InfoBarViewPlaceholder;
+typedef UIView<InfoBarViewProtocol>* InfoBarViewPlaceholder;
 #else
-class InfoBarViewPlaceholder;
+class InfoBarViewPlaceholderClass;
+typedef InfoBarViewPlaceholderClass* InfoBarViewPlaceholder;
 class UIView;
 #endif
 
@@ -51,9 +55,11 @@ class ChromeBrowserProvider {
   virtual PrefService* GetLocalState();
   // Returns an UpdatableResourceProvider instance.
   virtual UpdatableResourceProvider* GetUpdatableResourceProvider();
-  // Returns an instance of an infobar view. The caller is responsible for
-  // initializing the returned object and releasing it when appropriate.
-  virtual InfoBarViewPlaceholder* CreateInfoBarView();
+  // Returns an infobar view conforming to the InfoBarViewProtocol. The returned
+  // object is retained.
+  virtual InfoBarViewPlaceholder CreateInfoBarView(
+      CGRect frame,
+      InfoBarViewDelegate* delegate);
   // Returns an instance of a string provider.
   virtual StringProvider* GetStringProvider();
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();

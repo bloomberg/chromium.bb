@@ -28,41 +28,42 @@
 #pragma mark -
 #pragma mark InfoBarControllerProtocol
 
-- (void)layoutForDelegate:(infobars::InfoBarDelegate*)delegate
-                    frame:(CGRect)frame {
+- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
+    viewForDelegate:(infobars::InfoBarDelegate*)delegate
+              frame:(CGRect)frame {
+  base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
   translate::TranslateInfoBarDelegate* translateInfoBarDelegate =
       delegate->AsTranslateInfoBarDelegate();
-  DCHECK(!infoBarView_);
   ios::ChromeBrowserProvider* provider = ios::GetChromeBrowserProvider();
-  infoBarView_.reset([provider->CreateInfoBarView()
-      initWithFrame:frame
-           delegate:delegate_]);
+  infoBarView.reset(
+      ios::GetChromeBrowserProvider()->CreateInfoBarView(frame, self.delegate));
   // Icon
   gfx::Image icon = translateInfoBarDelegate->GetIcon();
   if (!icon.IsEmpty())
-    [infoBarView_ addLeftIcon:icon.ToUIImage()];
+    [infoBarView addLeftIcon:icon.ToUIImage()];
   // Main text.
   base::string16 originalLanguage = translateInfoBarDelegate->language_name_at(
       translateInfoBarDelegate->original_language_index());
-  [infoBarView_ addLabel:l10n_util::GetNSStringF(
-                             IDS_TRANSLATE_INFOBAR_NEVER_MESSAGE_IOS,
-                             provider->GetStringProvider()->GetProductName(),
-                             originalLanguage)];
+  [infoBarView addLabel:l10n_util::GetNSStringF(
+                            IDS_TRANSLATE_INFOBAR_NEVER_MESSAGE_IOS,
+                            provider->GetStringProvider()->GetProductName(),
+                            originalLanguage)];
   // Close button.
-  [infoBarView_ addCloseButtonWithTag:TranslateInfoBarIOSTag::CLOSE
-                               target:self
-                               action:@selector(infoBarButtonDidPress:)];
+  [infoBarView addCloseButtonWithTag:TranslateInfoBarIOSTag::CLOSE
+                              target:self
+                              action:@selector(infoBarButtonDidPress:)];
   // Other buttons.
   NSString* buttonLanguage = l10n_util::GetNSStringF(
       IDS_TRANSLATE_INFOBAR_NEVER_TRANSLATE, originalLanguage);
   NSString* buttonSite = l10n_util::GetNSString(
       IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_SITE);
-  [infoBarView_ addButton1:buttonLanguage
-                      tag1:TranslateInfoBarIOSTag::DENY_LANGUAGE
-                   button2:buttonSite
-                      tag2:TranslateInfoBarIOSTag::DENY_WEBSITE
-                    target:self
-                    action:@selector(infoBarButtonDidPress:)];
+  [infoBarView addButton1:buttonLanguage
+                     tag1:TranslateInfoBarIOSTag::DENY_LANGUAGE
+                  button2:buttonSite
+                     tag2:TranslateInfoBarIOSTag::DENY_WEBSITE
+                   target:self
+                   action:@selector(infoBarButtonDidPress:)];
+  return infoBarView;
 }
 
 #pragma mark - Handling of User Events
@@ -71,17 +72,17 @@
   // This press might have occurred after the user has already pressed a button,
   // in which case the view has been detached from the delegate and this press
   // should be ignored.
-  if (!delegate_) {
+  if (!self.delegate) {
     return;
   }
   if ([sender isKindOfClass:[UIButton class]]) {
     NSUInteger buttonId = static_cast<UIButton*>(sender).tag;
     if (buttonId == TranslateInfoBarIOSTag::CLOSE) {
-      delegate_->InfoBarDidCancel();
+      self.delegate->InfoBarDidCancel();
     } else {
       DCHECK(buttonId == TranslateInfoBarIOSTag::DENY_LANGUAGE ||
              buttonId == TranslateInfoBarIOSTag::DENY_WEBSITE);
-      delegate_->InfoBarButtonDidPress(buttonId);
+      self.delegate->InfoBarButtonDidPress(buttonId);
     }
   }
 }

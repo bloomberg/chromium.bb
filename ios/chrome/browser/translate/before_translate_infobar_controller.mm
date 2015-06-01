@@ -124,34 +124,35 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
 #pragma mark -
 #pragma mark InfoBarControllerProtocol
 
-- (void)layoutForDelegate:(infobars::InfoBarDelegate*)delegate
-                    frame:(CGRect)frame {
+- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
+    viewForDelegate:(infobars::InfoBarDelegate*)delegate
+              frame:(CGRect)frame {
+  base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
   _translateInfoBarDelegate = delegate->AsTranslateInfoBarDelegate();
-  DCHECK(!infoBarView_);
-  infoBarView_.reset([ios::GetChromeBrowserProvider()->CreateInfoBarView()
-      initWithFrame:frame
-           delegate:delegate_]);
+  infoBarView.reset(
+      ios::GetChromeBrowserProvider()->CreateInfoBarView(frame, self.delegate));
   // Icon
   gfx::Image icon = _translateInfoBarDelegate->GetIcon();
   if (!icon.IsEmpty())
-    [infoBarView_ addLeftIcon:icon.ToUIImage()];
+    [infoBarView addLeftIcon:icon.ToUIImage()];
 
   // Main text.
   [self updateInfobarLabel];
 
   // Close button.
-  [infoBarView_ addCloseButtonWithTag:TranslateInfoBarIOSTag::BEFORE_DENY
-                               target:self
-                               action:@selector(infoBarButtonDidPress:)];
+  [infoBarView addCloseButtonWithTag:TranslateInfoBarIOSTag::BEFORE_DENY
+                              target:self
+                              action:@selector(infoBarButtonDidPress:)];
   // Other buttons.
   NSString* buttonAccept = l10n_util::GetNSString(IDS_TRANSLATE_INFOBAR_ACCEPT);
   NSString* buttonDeny = l10n_util::GetNSString(IDS_TRANSLATE_INFOBAR_DENY);
-  [infoBarView_ addButton1:buttonAccept
-                      tag1:TranslateInfoBarIOSTag::BEFORE_ACCEPT
-                   button2:buttonDeny
-                      tag2:TranslateInfoBarIOSTag::BEFORE_DENY
-                    target:self
-                    action:@selector(infoBarButtonDidPress:)];
+  [infoBarView addButton1:buttonAccept
+                     tag1:TranslateInfoBarIOSTag::BEFORE_ACCEPT
+                  button2:buttonDeny
+                     tag2:TranslateInfoBarIOSTag::BEFORE_DENY
+                   target:self
+                   action:@selector(infoBarButtonDidPress:)];
+  return infoBarView;
 }
 
 - (void)updateInfobarLabel {
@@ -162,19 +163,17 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
       base::SysUTF16ToNSString(_translateInfoBarDelegate->language_name_at(
           _translateInfoBarDelegate->target_language_index()));
   base::string16 originalLanguageWithLink =
-      base::SysNSStringToUTF16([[infoBarView_ class]
+      base::SysNSStringToUTF16([[self.view class]
           stringAsLink:originalLanguage
                    tag:TranslateInfoBarIOSTag::BEFORE_SOURCE_LANGUAGE]);
   base::string16 targetLanguageWithLink =
-      base::SysNSStringToUTF16([[infoBarView_ class]
+      base::SysNSStringToUTF16([[self.view class]
           stringAsLink:targetLanguage
                    tag:TranslateInfoBarIOSTag::BEFORE_TARGET_LANGUAGE]);
   NSString* label =
       l10n_util::GetNSStringF(IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE_IOS,
                               originalLanguageWithLink, targetLanguageWithLink);
-  [infoBarView_ addLabel:label
-                  target:self
-                  action:@selector(infobarLinkDidPress:)];
+  [self.view addLabel:label target:self action:@selector(infobarLinkDidPress:)];
 }
 
 - (void)languageSelectionDone {
@@ -236,14 +235,14 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
   // This press might have occurred after the user has already pressed a button,
   // in which case the view has been detached from the delegate and this press
   // should be ignored.
-  if (!delegate_) {
+  if (!self.delegate) {
     return;
   }
   if ([sender isKindOfClass:[UIButton class]]) {
     NSUInteger buttonId = static_cast<UIButton*>(sender).tag;
     DCHECK(buttonId == TranslateInfoBarIOSTag::BEFORE_ACCEPT ||
            buttonId == TranslateInfoBarIOSTag::BEFORE_DENY);
-    delegate_->InfoBarButtonDidPress(buttonId);
+    self.delegate->InfoBarButtonDidPress(buttonId);
   }
 }
 
@@ -329,7 +328,7 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
   [_languagePicker setDataSource:_languagePickerController];
   [_languagePicker setDelegate:_languagePickerController];
   [_languagePicker setShowsSelectionIndicator:YES];
-  [_languagePicker setBackgroundColor:[infoBarView_ backgroundColor]];
+  [_languagePicker setBackgroundColor:[self.view backgroundColor]];
   [_languagePicker selectRow:selectedRow inComponent:0 animated:NO];
 
   auto blockLanguagePicker(_languagePicker);

@@ -21,38 +21,35 @@
 
 @implementation TranslateMessageInfoBarController
 
-#pragma mark -
-#pragma mark InfoBarControllerProtocol
-
-- (void)layoutForDelegate:(infobars::InfoBarDelegate*)delegate
-                    frame:(CGRect)frame {
+- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
+    viewForDelegate:(infobars::InfoBarDelegate*)delegate
+              frame:(CGRect)frame {
+  base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
   translate::TranslateInfoBarDelegate* translateInfoBarDelegate =
       delegate->AsTranslateInfoBarDelegate();
-  DCHECK(!infoBarView_);
-  infoBarView_.reset([ios::GetChromeBrowserProvider()->CreateInfoBarView()
-      initWithFrame:frame
-           delegate:delegate_]);
+  infoBarView.reset(
+      ios::GetChromeBrowserProvider()->CreateInfoBarView(frame, self.delegate));
   // Icon
   gfx::Image icon = translateInfoBarDelegate->GetIcon();
   if (!icon.IsEmpty())
-    [infoBarView_ addLeftIcon:icon.ToUIImage()];
+    [infoBarView addLeftIcon:icon.ToUIImage()];
   // Text.
-  [infoBarView_
-      addLabel:base::SysUTF16ToNSString(
-                   translateInfoBarDelegate->GetMessageInfoBarText())];
+  [infoBarView addLabel:base::SysUTF16ToNSString(
+                            translateInfoBarDelegate->GetMessageInfoBarText())];
   // Close button.
-  [infoBarView_ addCloseButtonWithTag:TranslateInfoBarIOSTag::CLOSE
-                               target:self
-                               action:@selector(infoBarButtonDidPress:)];
+  [infoBarView addCloseButtonWithTag:TranslateInfoBarIOSTag::CLOSE
+                              target:self
+                              action:@selector(infoBarButtonDidPress:)];
   // Other button.
   base::string16 buttonText(
       translateInfoBarDelegate->GetMessageInfoBarButtonText());
   if (!buttonText.empty()) {
-    [infoBarView_ addButton:base::SysUTF16ToNSString(buttonText)
-                        tag:TranslateInfoBarIOSTag::MESSAGE
-                     target:self
-                     action:@selector(infoBarButtonDidPress:)];
+    [infoBarView addButton:base::SysUTF16ToNSString(buttonText)
+                       tag:TranslateInfoBarIOSTag::MESSAGE
+                    target:self
+                    action:@selector(infoBarButtonDidPress:)];
   }
+  return infoBarView;
 }
 
 #pragma mark - Handling of User Events
@@ -61,16 +58,16 @@
   // This press might have occurred after the user has already pressed a button,
   // in which case the view has been detached from the delegate and this press
   // should be ignored.
-  if (!delegate_) {
+  if (!self.delegate) {
     return;
   }
   if ([sender isKindOfClass:[UIButton class]]) {
     NSUInteger buttonId = static_cast<UIButton*>(sender).tag;
     if (buttonId == TranslateInfoBarIOSTag::CLOSE) {
-      delegate_->InfoBarDidCancel();
+      self.delegate->InfoBarDidCancel();
     } else {
       DCHECK(buttonId == TranslateInfoBarIOSTag::MESSAGE);
-      delegate_->InfoBarButtonDidPress(buttonId);
+      self.delegate->InfoBarButtonDidPress(buttonId);
     }
   }
 }

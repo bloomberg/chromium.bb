@@ -7,9 +7,13 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "components/infobars/core/infobar.h"
-#include "components/infobars/core/infobar_delegate.h"
-#include "ios/chrome/browser/infobars/infobar_controller.h"
 #import "ios/public/provider/chrome/browser/ui/infobar_view_delegate.h"
+
+@class InfoBarController;
+@class UIView;
+namespace infobars {
+class InfoBarDelegate;
+}
 
 // InfoBar for iOS acts as a UIViewController for InfoBarView.
 class InfoBarIOS : public infobars::InfoBar, public InfoBarViewDelegate {

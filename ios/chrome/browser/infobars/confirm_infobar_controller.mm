@@ -48,14 +48,13 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
 #pragma mark -
 #pragma mark InfoBarController
 
-- (void)layoutForDelegate:(infobars::InfoBarDelegate*)delegate
-                    frame:(CGRect)frame {
+- (base::scoped_nsobject<UIView<InfoBarViewProtocol>>)
+    viewForDelegate:(infobars::InfoBarDelegate*)delegate
+              frame:(CGRect)frame {
+  base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
   ConfirmInfoBarDelegate* infoBarModel = delegate->AsConfirmInfoBarDelegate();
-  DCHECK(!infoBarView_);
-  infoBarView_.reset([ios::GetChromeBrowserProvider()->CreateInfoBarView()
-      initWithFrame:frame
-           delegate:delegate_]);
-
+  infoBarView.reset(
+      ios::GetChromeBrowserProvider()->CreateInfoBarView(frame, self.delegate));
   // Model data.
   NSString* modelMsg = nil;
   if (infoBarModel->GetMessageText().length())
@@ -73,34 +72,35 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
         infoBarModel->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
   }
 
-  [infoBarView_ addCloseButtonWithTag:ConfirmInfoBarUITags::CLOSE
-                               target:self
-                               action:@selector(infoBarButtonDidPress:)];
+  [infoBarView addCloseButtonWithTag:ConfirmInfoBarUITags::CLOSE
+                              target:self
+                              action:@selector(infoBarButtonDidPress:)];
 
   // Optional left icon.
   if (!modelIcon.IsEmpty())
-    [infoBarView_ addLeftIcon:modelIcon.ToUIImage()];
+    [infoBarView addLeftIcon:modelIcon.ToUIImage()];
 
   // Optional message.
   if (modelMsg)
-    [infoBarView_ addLabel:modelMsg];
+    [infoBarView addLabel:modelMsg];
 
   if (buttonOK && buttonCancel) {
-    [infoBarView_ addButton1:buttonOK
-                        tag1:ConfirmInfoBarUITags::OK
-                     button2:buttonCancel
-                        tag2:ConfirmInfoBarUITags::CANCEL
-                      target:self
-                      action:@selector(infoBarButtonDidPress:)];
-  } else if (buttonOK) {
-    [infoBarView_ addButton:buttonOK
-                        tag:ConfirmInfoBarUITags::OK
+    [infoBarView addButton1:buttonOK
+                       tag1:ConfirmInfoBarUITags::OK
+                    button2:buttonCancel
+                       tag2:ConfirmInfoBarUITags::CANCEL
                      target:self
                      action:@selector(infoBarButtonDidPress:)];
+  } else if (buttonOK) {
+    [infoBarView addButton:buttonOK
+                       tag:ConfirmInfoBarUITags::OK
+                    target:self
+                    action:@selector(infoBarButtonDidPress:)];
   } else {
     // No buttons, only message.
     DCHECK(modelMsg && !buttonCancel);
   }
+  return infoBarView;
 }
 
 #pragma mark - Handling of User Events
@@ -109,15 +109,15 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
   // This press might have occurred after the user has already pressed a button,
   // in which case the view has been detached from the delegate and this press
   // should be ignored.
-  if (!delegate_) {
+  if (!self.delegate) {
     return;
   }
   if ([sender isKindOfClass:[UIButton class]]) {
     NSUInteger tag = static_cast<UIButton*>(sender).tag;
     if (tag == ConfirmInfoBarUITags::CLOSE)
-      delegate_->InfoBarDidCancel();
+      self.delegate->InfoBarDidCancel();
     else
-      delegate_->InfoBarButtonDidPress(UITagToButton(tag));
+      self.delegate->InfoBarButtonDidPress(UITagToButton(tag));
   }
 }
 
