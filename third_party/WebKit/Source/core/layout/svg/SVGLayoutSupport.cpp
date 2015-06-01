@@ -419,19 +419,11 @@ SubtreeContentTransformScope::~SubtreeContentTransformScope()
     currentContentTransformation() = m_savedContentTransformation;
 }
 
-float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(const LayoutObject* layoutObject)
+AffineTransform SVGLayoutSupport::deprecatedCalculateTransformToLayer(const LayoutObject* layoutObject)
 {
-    // FIXME: trying to compute a device space transform at record time is wrong. All clients
-    // should be updated to avoid relying on this information, and the method should be removed.
-
-    ASSERT(layoutObject);
-    // We're about to possibly clear the layoutObject, so save the deviceScaleFactor now.
-    float deviceScaleFactor = layoutObject->document().frameHost()->deviceScaleFactor();
-
-    // Walk up the layout tree, accumulating SVG transforms.
-    AffineTransform ctm = currentContentTransformation();
+    AffineTransform transform;
     while (layoutObject) {
-        ctm = layoutObject->localToParentTransform() * ctm;
+        transform = layoutObject->localToParentTransform() * transform;
         if (layoutObject->isSVGRoot())
             break;
         layoutObject = layoutObject->parent();
@@ -451,12 +443,22 @@ float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(const LayoutObject*
             break;
 
         if (TransformationMatrix* layerTransform = layer->transform())
-            ctm = layerTransform->toAffineTransform() * ctm;
+            transform = layerTransform->toAffineTransform() * transform;
 
         layer = layer->parent();
     }
 
-    ctm.scale(deviceScaleFactor);
+    return transform;
+}
+
+float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(const LayoutObject* layoutObject)
+{
+    ASSERT(layoutObject);
+
+    // FIXME: trying to compute a device space transform at record time is wrong. All clients
+    // should be updated to avoid relying on this information, and the method should be removed.
+    AffineTransform ctm = deprecatedCalculateTransformToLayer(layoutObject) * currentContentTransformation();
+    ctm.scale(layoutObject->document().frameHost()->deviceScaleFactor());
 
     return narrowPrecisionToFloat(sqrt((pow(ctm.xScale(), 2) + pow(ctm.yScale(), 2)) / 2));
 }

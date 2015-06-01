@@ -6,6 +6,7 @@
 #include "core/paint/SVGFilterPainter.h"
 
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/TransformRecorder.h"
@@ -64,7 +65,7 @@ static void endRecordingContent(GraphicsContext* context, FilterData* filterData
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
-static void paintFilteredContent(GraphicsContext* context, FilterData* filterData, SVGFilterElement* filterElement)
+static void paintFilteredContent(LayoutObject& object, GraphicsContext* context, FilterData* filterData, SVGFilterElement* filterElement)
 {
     ASSERT(filterData->m_state == FilterData::ReadyToPaint);
     ASSERT(filterData->builder->getEffectById(SourceGraphic::effectName()));
@@ -96,22 +97,24 @@ static void paintFilteredContent(GraphicsContext* context, FilterData* filterDat
     }
 
 #ifdef SK_SUPPORT_LEGACY_IMAGEFILTER_CTM
-    // See crbug.com/382491.
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        // If the CTM contains rotation or shearing, apply the filter to
-        // the unsheared/unrotated matrix, and do the shearing/rotation
-        // as a final pass.
-        AffineTransform ctm = context->getCTM();
-        if (ctm.b() || ctm.c()) {
-            AffineTransform scaleAndTranslate;
-            scaleAndTranslate.translate(ctm.e(), ctm.f());
-            scaleAndTranslate.scale(ctm.xScale(), ctm.yScale());
-            ASSERT(scaleAndTranslate.isInvertible());
-            AffineTransform shearAndRotate = scaleAndTranslate.inverse();
-            shearAndRotate.multiply(ctm);
+    // TODO: Remove this workaround once skew/rotation support is added in Skia
+    // (https://code.google.com/p/skia/issues/detail?id=3288, crbug.com/446935).
+    // If the CTM contains rotation or shearing, apply the filter to
+    // the unsheared/unrotated matrix, and do the shearing/rotation
+    // as a final pass.
+    AffineTransform ctm = RuntimeEnabledFeatures::slimmingPaintEnabled() ? SVGLayoutSupport::deprecatedCalculateTransformToLayer(&object) : context->getCTM();
+    if (ctm.b() || ctm.c()) {
+        AffineTransform scaleAndTranslate;
+        scaleAndTranslate.translate(ctm.e(), ctm.f());
+        scaleAndTranslate.scale(ctm.xScale(), ctm.yScale());
+        ASSERT(scaleAndTranslate.isInvertible());
+        AffineTransform shearAndRotate = scaleAndTranslate.inverse();
+        shearAndRotate.multiply(ctm);
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+            context->concatCTM(shearAndRotate.inverse());
+        else
             context->setCTM(scaleAndTranslate);
-            imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
-        }
+        imageFilter = builder.buildTransform(shearAndRotate, imageFilter.get());
     }
 #endif
 
@@ -197,7 +200,7 @@ void SVGFilterPainter::finishEffect(LayoutObject& object, GraphicsContext* conte
         return;
 
     if (filterData && filterData->m_state == FilterData::ReadyToPaint)
-        paintFilteredContent(context, filterData, toSVGFilterElement(m_filter.element()));
+        paintFilteredContent(object, context, filterData, toSVGFilterElement(m_filter.element()));
 }
 
 }

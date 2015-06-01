@@ -1692,7 +1692,8 @@ crbug.com/479202 virtual/slimmingpaint/fast/forms/select/select-typeahead-with-s
 crbug.com/353272 virtual/slimmingpaint/svg/batik/text/smallFonts.svg [ Timeout Crash ]
 #crbug.com/353272 virtual/slimmingpaint/svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
 
-crbug.com/446935 virtual/slimmingpaint/svg/batik/filters/feTile.svg [ ImageOnlyFailure ]
+crbug.com/446935 virtual/slimmingpaint/svg/batik/filters/feTile.svg [ NeedsRebaseline ]
+crbug.com/446935 svg/text/text-decorations-in-scaled-pattern.svg [ NeedsRebaseline ]
 
 crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-bg-zoom.html [ Failure ]
 crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]
