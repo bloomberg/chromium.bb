@@ -7,7 +7,7 @@
 namespace gfx {
 
 void GLContextStubWithExtensions::AddExtensionsString(const char* extensions) {
-  if (extensions == NULL)
+  if (extensions == nullptr)
     return;
 
   if (extensions_.size() != 0)

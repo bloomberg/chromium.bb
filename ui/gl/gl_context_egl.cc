@@ -27,9 +27,9 @@ namespace gfx {
 
 GLContextEGL::GLContextEGL(GLShareGroup* share_group)
     : GLContextReal(share_group),
-      context_(NULL),
-      display_(NULL),
-      config_(NULL),
+      context_(nullptr),
+      display_(nullptr),
+      config_(nullptr),
       unbind_fbo_on_makecurrent_(false),
       swap_interval_(1) {
 }
@@ -59,7 +59,7 @@ bool GLContextEGL::Initialize(
   display_ = compatible_surface->GetDisplay();
   config_ = compatible_surface->GetConfig();
 
-  const EGLint* context_attributes = NULL;
+  const EGLint* context_attributes = nullptr;
   if (GLSurfaceEGL::IsCreateContextRobustnessSupported()) {
     DVLOG(1) << "EGL_EXT_create_context_robustness supported.";
     context_attributes = kContextRobustnessAttributes;
@@ -73,7 +73,7 @@ bool GLContextEGL::Initialize(
   context_ = eglCreateContext(
       display_,
       config_,
-      share_group() ? share_group()->GetHandle() : NULL,
+      share_group() ? share_group()->GetHandle() : nullptr,
       context_attributes);
 
   if (!context_) {
@@ -92,7 +92,7 @@ void GLContextEGL::Destroy() {
                  << GetLastEGLErrorString();
     }
 
-    context_ = NULL;
+    context_ = nullptr;
   }
 }
 
@@ -150,7 +150,7 @@ void GLContextEGL::ReleaseCurrent(GLSurface* surface) {
   if (unbind_fbo_on_makecurrent_)
     glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
 
-  SetCurrent(NULL);
+  SetCurrent(nullptr);
   eglMakeCurrent(display_,
                  EGL_NO_SURFACE,
                  EGL_NO_SURFACE,
@@ -183,7 +183,7 @@ void* GLContextEGL::GetHandle() {
 }
 
 void GLContextEGL::OnSetSwapInterval(int interval) {
-  DCHECK(IsCurrent(NULL) && GLSurface::GetCurrent());
+  DCHECK(IsCurrent(nullptr) && GLSurface::GetCurrent());
 
   // This is a surfaceless context. eglSwapInterval doesn't take any effect in
   // this case and will just return EGL_BAD_SURFACE.

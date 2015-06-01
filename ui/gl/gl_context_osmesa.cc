@@ -15,7 +15,7 @@ namespace gfx {
 
 GLContextOSMesa::GLContextOSMesa(GLShareGroup* share_group)
     : GLContextReal(share_group),
-      context_(NULL),
+      context_(nullptr),
       is_released_(false) {
 }
 
@@ -24,7 +24,7 @@ bool GLContextOSMesa::Initialize(GLSurface* compatible_surface,
   DCHECK(!context_);
 
   OSMesaContext share_handle = static_cast<OSMesaContext>(
-      share_group() ? share_group()->GetHandle() : NULL);
+      share_group() ? share_group()->GetHandle() : nullptr);
 
   GLuint format = compatible_surface->GetFormat();
   DCHECK_NE(format, (unsigned)0);
@@ -44,7 +44,7 @@ bool GLContextOSMesa::Initialize(GLSurface* compatible_surface,
 void GLContextOSMesa::Destroy() {
   if (context_) {
     OSMesaDestroyContext(static_cast<OSMesaContext>(context_));
-    context_ = NULL;
+    context_ = nullptr;
   }
 }
 
@@ -90,13 +90,13 @@ void GLContextOSMesa::ReleaseCurrent(GLSurface* surface) {
   if (!IsCurrent(surface))
     return;
 
-  SetCurrent(NULL);
+  SetCurrent(nullptr);
 
-  // Calling |OSMesaMakeCurrent| with NULL here does not work to release the
+  // Calling |OSMesaMakeCurrent| with nullptr here does not work to release the
   // context. As a workaround, keep track of the release state, so that we can
   // correctly determine the state of |IsCurrent|.
   is_released_ = true;
-  OSMesaMakeCurrent(NULL, NULL, GL_UNSIGNED_BYTE, 0, 0);
+  OSMesaMakeCurrent(nullptr, nullptr, GL_UNSIGNED_BYTE, 0, 0);
 }
 
 bool GLContextOSMesa::IsCurrent(GLSurface* surface) {
@@ -119,7 +119,7 @@ bool GLContextOSMesa::IsCurrent(GLSurface* surface) {
     GLint width;
     GLint height;
     GLint format;
-    void* buffer = NULL;
+    void* buffer = nullptr;
     OSMesaGetColorBuffer(context_, &width, &height, &format, &buffer);
     if (buffer != surface->GetHandle())
       return false;
@@ -133,7 +133,7 @@ void* GLContextOSMesa::GetHandle() {
 }
 
 void GLContextOSMesa::OnSetSwapInterval(int interval) {
-  DCHECK(IsCurrent(NULL));
+  DCHECK(IsCurrent(nullptr));
 }
 
 GLContextOSMesa::~GLContextOSMesa() {

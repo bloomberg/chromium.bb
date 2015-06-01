@@ -29,21 +29,21 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLContext> context(new GLContextOSMesa(share_group));
       if (!context->Initialize(compatible_surface, gpu_preference))
-        return NULL;
+        return nullptr;
 
       return context;
     }
     case kGLImplementationEGLGLES2: {
       scoped_refptr<GLContext> context(new GLContextEGL(share_group));
       if (!context->Initialize(compatible_surface, gpu_preference))
-        return NULL;
+        return nullptr;
 
       return context;
     }
     case kGLImplementationDesktopGL: {
       scoped_refptr<GLContext> context(new GLContextWGL(share_group));
       if (!context->Initialize(compatible_surface, gpu_preference))
-        return NULL;
+        return nullptr;
 
       return context;
     }
@@ -51,7 +51,7 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
       return new GLContextStub;
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
 }
 

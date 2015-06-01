@@ -34,7 +34,7 @@ GLContext::ScopedReleaseCurrent::ScopedReleaseCurrent() : canceled_(false) {}
 
 GLContext::ScopedReleaseCurrent::~ScopedReleaseCurrent() {
   if (!canceled_ && GetCurrent()) {
-    GetCurrent()->ReleaseCurrent(NULL);
+    GetCurrent()->ReleaseCurrent(nullptr);
   }
 }
 
@@ -62,7 +62,7 @@ GLContext::GLContext(GLShareGroup* share_group) :
 GLContext::~GLContext() {
   share_group_->RemoveContext(this);
   if (GetCurrent() == this) {
-    SetCurrent(NULL);
+    SetCurrent(nullptr);
   }
 }
 
@@ -84,7 +84,7 @@ void GLContext::SetUnbindFboOnMakeCurrent() {
 }
 
 std::string GLContext::GetExtensions() {
-  DCHECK(IsCurrent(NULL));
+  DCHECK(IsCurrent(nullptr));
   if (gfx::GetGLImplementation() !=
       gfx::kGLImplementationDesktopGLCoreProfile) {
     const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
@@ -97,21 +97,21 @@ std::string GLContext::GetExtensions() {
   for (GLint i = 0; i < num_extensions; ++i) {
     const char* extension = reinterpret_cast<const char*>(
         glGetStringi(GL_EXTENSIONS, i));
-    DCHECK(extension != NULL);
+    DCHECK(extension != nullptr);
     exts.push_back(extension);
   }
   return JoinString(exts, " ");
 }
 
 std::string GLContext::GetGLVersion() {
-  DCHECK(IsCurrent(NULL));
+  DCHECK(IsCurrent(nullptr));
   const char *version =
       reinterpret_cast<const char*>(glGetString(GL_VERSION));
   return std::string(version ? version : "");
 }
 
 std::string GLContext::GetGLRenderer() {
-  DCHECK(IsCurrent(NULL));
+  DCHECK(IsCurrent(nullptr));
   const char *renderer =
       reinterpret_cast<const char*>(glGetString(GL_RENDERER));
   return std::string(renderer ? renderer : "");
@@ -187,7 +187,7 @@ GLContext* GLContext::GetRealCurrent() {
 }
 
 void GLContext::SetCurrent(GLSurface* surface) {
-  current_context_.Pointer()->Set(surface ? this : NULL);
+  current_context_.Pointer()->Set(surface ? this : nullptr);
   GLSurface::SetCurrent(surface);
   // Leave the real GL api current so that unit tests work correctly.
   // TODO(sievers): Remove this, but needs all gpu_unittest classes
@@ -220,7 +220,7 @@ bool GLContext::WasAllocatedUsingRobustnessExtension() {
 }
 
 bool GLContext::InitializeDynamicBindings() {
-  DCHECK(IsCurrent(NULL));
+  DCHECK(IsCurrent(nullptr));
   static bool initialized = false;
   if (initialized)
     return initialized;
@@ -268,7 +268,7 @@ GLContextReal::~GLContextReal() {}
 
 void GLContextReal::SetCurrent(GLSurface* surface) {
   GLContext::SetCurrent(surface);
-  current_real_context_.Pointer()->Set(surface ? this : NULL);
+  current_real_context_.Pointer()->Set(surface ? this : nullptr);
 }
 
 }  // namespace gfx

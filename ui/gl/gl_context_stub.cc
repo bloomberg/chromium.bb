@@ -6,7 +6,7 @@
 
 namespace gfx {
 
-GLContextStub::GLContextStub() : GLContextReal(NULL) {}
+GLContextStub::GLContextStub() : GLContextReal(nullptr) {}
 
 bool GLContextStub::Initialize(
     GLSurface* compatible_surface, GpuPreference gpu_preference) {
@@ -22,7 +22,7 @@ bool GLContextStub::MakeCurrent(GLSurface* surface) {
 }
 
 void GLContextStub::ReleaseCurrent(GLSurface* surface) {
-  SetCurrent(NULL);
+  SetCurrent(nullptr);
 }
 
 bool GLContextStub::IsCurrent(GLSurface* surface) {
@@ -30,7 +30,7 @@ bool GLContextStub::IsCurrent(GLSurface* surface) {
 }
 
 void* GLContextStub::GetHandle() {
-  return NULL;
+  return nullptr;
 }
 
 void GLContextStub::OnSetSwapInterval(int interval) {

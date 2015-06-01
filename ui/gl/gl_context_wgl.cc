@@ -15,7 +15,7 @@
 namespace gfx {
 
 GLContextWGL::GLContextWGL(GLShareGroup* share_group)
-    : GLContextReal(share_group), context_(NULL) {
+    : GLContextReal(share_group), context_(nullptr) {
 }
 
 bool GLContextWGL::Initialize(
@@ -47,7 +47,7 @@ bool GLContextWGL::Initialize(
 void GLContextWGL::Destroy() {
   if (context_) {
     wglDeleteContext(context_);
-    context_ = NULL;
+    context_ = nullptr;
   }
 }
 
@@ -85,8 +85,8 @@ void GLContextWGL::ReleaseCurrent(GLSurface* surface) {
   if (!IsCurrent(surface))
     return;
 
-  SetCurrent(NULL);
-  wglMakeCurrent(NULL, NULL);
+  SetCurrent(nullptr);
+  wglMakeCurrent(nullptr, nullptr);
 }
 
 bool GLContextWGL::IsCurrent(GLSurface* surface) {
@@ -114,7 +114,7 @@ void* GLContextWGL::GetHandle() {
 }
 
 void GLContextWGL::OnSetSwapInterval(int interval) {
-  DCHECK(IsCurrent(NULL));
+  DCHECK(IsCurrent(nullptr));
   if (gfx::g_driver_wgl.ext.b_WGL_EXT_swap_control) {
     wglSwapIntervalEXT(interval);
   } else {
@@ -125,7 +125,7 @@ void GLContextWGL::OnSetSwapInterval(int interval) {
 }
 
 std::string GLContextWGL::GetExtensions() {
-  const char* extensions = NULL;
+  const char* extensions = nullptr;
   if (g_driver_wgl.fn.wglGetExtensionsStringARBFn)
     extensions = wglGetExtensionsStringARB(GLSurfaceWGL::GetDisplayDC());
   else if (g_driver_wgl.fn.wglGetExtensionsStringEXTFn)
