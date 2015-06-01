@@ -130,6 +130,12 @@ class BASE_EXPORT SharedMemory {
       bool clean_up_resources_on_destruction);
 #endif
 
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  // Returns the size of the shared memory region referred to by |handle|.
+  // Returns '-1' on a failure to determine the size.
+  static int GetSizeFromSharedMemoryHandle(const SharedMemoryHandle& handle);
+#endif  // defined(OS_POSIX) && !defined(OS_ANDROID)
+
   // Creates a shared memory object as described by the options struct.
   // Returns true on success and false on failure.
   bool Create(const SharedMemoryCreateOptions& options);

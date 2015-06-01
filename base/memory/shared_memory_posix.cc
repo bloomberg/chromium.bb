@@ -269,6 +269,15 @@ bool SharedMemory::CreateAndMapAnonymous(size_t size) {
 }
 
 #if !defined(OS_ANDROID)
+// static
+int SharedMemory::GetSizeFromSharedMemoryHandle(
+    const SharedMemoryHandle& handle) {
+  struct stat st;
+  if (fstat(handle.fd, &st) != 0)
+    return -1;
+  return st.st_size;
+}
+
 // Chromium mostly only uses the unique/private shmem as specified by
 // "name == L"". The exception is in the StatsTable.
 // TODO(jrg): there is no way to "clean up" all unused named shmem if

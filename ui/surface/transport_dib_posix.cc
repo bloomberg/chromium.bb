@@ -51,7 +51,7 @@ TransportDIB* TransportDIB::CreateWithHandle(Handle handle) {
 
 // static
 bool TransportDIB::is_valid_handle(Handle dib) {
-  return dib.fd >= 0;
+  return base::SharedMemory::IsHandleValid(dib);
 }
 
 // static
@@ -66,7 +66,7 @@ bool TransportDIB::is_valid_id(Id id) {
 skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
   if ((!memory() && !Map()) || !VerifyCanvasSize(w, h))
     return NULL;
-  return skia::CreatePlatformCanvas(w, h, true, 
+  return skia::CreatePlatformCanvas(w, h, true,
                                     reinterpret_cast<uint8_t*>(memory()),
                                     skia::RETURN_NULL_ON_FAILURE);
 }
@@ -82,13 +82,12 @@ bool TransportDIB::Map() {
   if (memory())
     return true;
 
-  struct stat st;
-  if ((fstat(shared_memory_.handle().fd, &st) != 0) ||
-      (!shared_memory_.Map(st.st_size))) {
+  int size = base::SharedMemory::GetSizeFromSharedMemoryHandle(
+      shared_memory_.handle());
+  if (size == -1 || !shared_memory_.Map(size))
     return false;
-  }
 
-  size_ = st.st_size;
+  size_ = size;
 #endif
   return true;
 }
