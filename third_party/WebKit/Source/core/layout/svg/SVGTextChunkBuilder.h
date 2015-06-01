@@ -44,7 +44,9 @@ public:
     void finalizeTransformMatrices(const Vector<SVGInlineTextBox*>&) const;
 
 protected:
-    virtual void handleTextChunk(const Vector<SVGInlineTextBox*>&, unsigned boxStart, unsigned boxEnd);
+    typedef Vector<SVGInlineTextBox*>::const_iterator BoxListConstIterator;
+
+    virtual void handleTextChunk(BoxListConstIterator boxStart, BoxListConstIterator boxEnd);
 
 private:
     void processTextLengthSpacingCorrection(bool isVerticalText, float textLengthShift, Vector<SVGTextFragment>&, unsigned& atCharacter);
@@ -63,7 +65,7 @@ public:
     float totalTextAnchorShift() const { return m_totalTextAnchorShift; }
 
 private:
-    void handleTextChunk(const Vector<SVGInlineTextBox*>&, unsigned boxStart, unsigned boxEnd) override;
+    void handleTextChunk(BoxListConstIterator boxStart, BoxListConstIterator boxEnd) override;
 
     float m_totalLength;
     unsigned m_totalCharacters;

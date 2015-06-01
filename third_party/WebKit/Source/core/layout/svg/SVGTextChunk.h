@@ -20,13 +20,9 @@
 #ifndef SVGTextChunk_h
 #define SVGTextChunk_h
 
-#include "wtf/Vector.h"
-
 namespace blink {
 
-class SVGInlineTextBox;
-
-// A SVGTextChunk describes a range of SVGTextFragments, see the SVG spec definition of a "text chunk".
+// A SVGTextChunk contains properties for a range of SVGTextFragments, see the SVG spec definition of a "text chunk".
 class SVGTextChunk {
 public:
     enum ChunkStyle {
@@ -39,16 +35,16 @@ public:
         LengthAdjustSpacingAndGlyphs = 1 << 6
     };
 
-    SVGTextChunk(unsigned chunkStyle, float desiredTextLength);
+    SVGTextChunk(unsigned chunkStyle, float desiredTextLength)
+        : m_chunkStyle(chunkStyle)
+        , m_desiredTextLength(desiredTextLength)
+    {
+    }
 
-    void calculateLength(float& length, unsigned& characters) const;
     float calculateTextAnchorShift(float length) const;
 
     bool isVerticalText() const { return m_chunkStyle & VerticalText; }
     float desiredTextLength() const { return m_desiredTextLength; }
-
-    Vector<SVGInlineTextBox*>& boxes() { return m_boxes; }
-    const Vector<SVGInlineTextBox*>& boxes() const { return m_boxes; }
 
     bool hasDesiredTextLength() const { return m_desiredTextLength > 0 && ((m_chunkStyle & LengthAdjustSpacing) || (m_chunkStyle & LengthAdjustSpacingAndGlyphs)); }
     bool hasTextAnchor() const {  return m_chunkStyle & RightToLeftText ? !(m_chunkStyle & EndAnchor) : (m_chunkStyle & MiddleAnchor) || (m_chunkStyle & EndAnchor); }
@@ -56,9 +52,6 @@ public:
     bool hasLengthAdjustSpacingAndGlyphs() const { return m_chunkStyle & LengthAdjustSpacingAndGlyphs; }
 
 private:
-    // Contains all SVGInlineTextBoxes this chunk spans.
-    Vector<SVGInlineTextBox*> m_boxes;
-
     unsigned m_chunkStyle;
     float m_desiredTextLength;
 };
