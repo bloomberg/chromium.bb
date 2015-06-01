@@ -57,7 +57,8 @@ base::SharedMemory* OutputDeviceBacking::GetSharedMemory() {
 }
 
 size_t OutputDeviceBacking::GetMaxByteSize() {
-  size_t max_size = 0;
+  // Minimum byte size is 1 because creating a 0-byte-long SharedMemory fails.
+  size_t max_size = 1;
   for (const SoftwareOutputDeviceWin* device : devices_) {
     max_size = std::max(
         max_size,
