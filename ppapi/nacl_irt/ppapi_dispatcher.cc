@@ -7,16 +7,11 @@
 #include <map>
 #include <set>
 
-#include "build/build_config.h"
-// Need to include this before most other files because it defines
-// IPC_MESSAGE_LOG_ENABLED. We need to use it to define
-// IPC_MESSAGE_MACROS_LOG_ENABLED so ppapi_messages.h will generate the
-// ViewMsgLog et al. functions.
-
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "build/build_config.h"
 #include "components/tracing/child_trace_message_filter.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_logging.h"
@@ -29,19 +24,8 @@
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
-#include "ppapi/proxy/resource_reply_thread_registrar.h"
-
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-#include "base/containers/hash_tables.h"
-
-LogFunctionMap g_log_function_mapping;
-
-#define IPC_MESSAGE_MACROS_LOG_ENABLED
-#define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger) \
-  g_log_function_mapping[msg_id] = logger
-
-#endif
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/resource_reply_thread_registrar.h"
 
 namespace ppapi {
 
@@ -53,10 +37,6 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop,
       message_loop_(io_loop),
       shutdown_event_(shutdown_event),
       renderer_ipc_fd_(renderer_ipc_fd) {
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-  IPC::Logging::set_log_function_map(&g_log_function_mapping);
-#endif
-
   IPC::ChannelHandle channel_handle(
       "NaCl IPC", base::FileDescriptor(browser_ipc_fd, false));
 
