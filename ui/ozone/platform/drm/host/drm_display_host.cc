@@ -119,9 +119,12 @@ void DrmDisplayHost::OnChannelDestroyed() {
 }
 
 void DrmDisplayHost::ClearCallbacks() {
-  OnDisplayConfigured(false);
-  OnHDCPStateReceived(false, HDCP_STATE_UNDESIRED);
-  OnHDCPStateUpdated(false);
+  if (!configure_callback_.is_null())
+    OnDisplayConfigured(false);
+  if (!get_hdcp_callback_.is_null())
+    OnHDCPStateReceived(false, HDCP_STATE_UNDESIRED);
+  if (!set_hdcp_callback_.is_null())
+    OnHDCPStateUpdated(false);
 }
 
 }  // namespace ui
