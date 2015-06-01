@@ -250,6 +250,19 @@ void DrmDisplayHostManager::OnChannelEstablished(
     int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> send_runner,
     const base::Callback<void(IPC::Message*)>& send_callback) {
+  // If in the middle of a configuration, just respond with the old list of
+  // displays. This is fine, since after the DRM resources are initialized and
+  // IPC-ed to the GPU NotifyDisplayDelegate() is called to let the display
+  // delegate know that the display configuration changed and it needs to
+  // update it again.
+  if (!get_displays_callback_.is_null()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&DrmDisplayHostManager::RunUpdateDisplaysCallback,
+                   weak_ptr_factory_.GetWeakPtr(), get_displays_callback_));
+    get_displays_callback_.Reset();
+  }
+
   drm_devices_.clear();
   drm_devices_.insert(primary_graphics_card_path_);
   scoped_ptr<DrmDeviceHandle> handle = primary_drm_device_handle_.Pass();
