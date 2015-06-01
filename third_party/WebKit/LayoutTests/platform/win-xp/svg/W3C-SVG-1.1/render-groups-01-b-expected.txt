@@ -17,7 +17,7 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (35,17) size 416x281 [stroke={[type=SOLID] [color=#000000]}] [x=20.00] [y=10.00] [width=230.00] [height=155.00]
         LayoutSVGContainer {g} at (54,0) size 426x279 [opacity=0.50]
           LayoutSVGText {text} at (30,-18) size 240x136 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 241x135
+            LayoutSVGInlineText {#text} at (0,0) size 240x135
               chunk 1 text run 1 at (30.00,90.00) startOffset 0 endOffset 3 width 240.00: "SVG"
           LayoutSVGRect {rect} at (126,99) size 234x126 [fill={[type=SOLID] [color=#820032]}] [x=70.00] [y=55.00] [width=130.00] [height=70.00]
           LayoutSVGImage {image} at (291,135) size 145x144

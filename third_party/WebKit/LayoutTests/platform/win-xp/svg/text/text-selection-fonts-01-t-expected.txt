@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (20,220) size 293x25 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 293x24
             chunk 1 text run 1 at (20.00,240.00) startOffset 0 endOffset 19 width 292.80: "A mono (iW) face \x{753B}\x{50CF}"
-        LayoutSVGContainer {g} at (66,47) size 489x315
+        LayoutSVGContainer {g} at (66,47) size 489x314
           LayoutSVGText {text} at (40,28) size 186x28 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 186x28
               chunk 1 text run 1 at (40.00,50.00) startOffset 0 endOffset 17 width 185.40: "A serifed face \x{753B}\x{50CF}"
