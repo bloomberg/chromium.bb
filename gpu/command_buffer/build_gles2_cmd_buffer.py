@@ -3898,17 +3898,14 @@ def Grouper(n, iterable, fillvalue=None):
 
 
 def SplitWords(input_string):
-  """Transforms a input_string into a list of lower-case components.
+  """Split by '_' if found, otherwise split at uppercase/numeric chars.
 
-  Args:
-    input_string: the input string.
-
-  Returns:
-    a list of lower-case words.
+  Will split "some_TEXT" into ["some", "TEXT"], "CamelCase" into ["Camel",
+  "Case"], and "Vector3" into ["Vector", "3"].
   """
   if input_string.find('_') > -1:
-    # 'some_TEXT_' -> 'some text'
-    return input_string.replace('_', ' ').strip().lower().split()
+    # 'some_TEXT_' -> 'some TEXT'
+    return input_string.replace('_', ' ').strip().split()
   else:
     if re.search('[A-Z]', input_string) and re.search('[a-z]', input_string):
       # mixed case.
@@ -3917,25 +3914,12 @@ def SplitWords(input_string):
       input_string = re.sub('([A-Z])', r' \1', input_string).strip()
       # 'Vector3' -> 'Vector 3'
       input_string = re.sub('([^0-9])([0-9])', r'\1 \2', input_string)
-    return input_string.lower().split()
-
-
-def Lower(words):
-  """Makes a lower-case identifier from words.
-
-  Args:
-    words: a list of lower-case words.
-
-  Returns:
-    the lower-case identifier.
-  """
-  return '_'.join(words)
-
+    return input_string.split()
 
 def ToUnderscore(input_string):
   """converts CamelCase to camel_case."""
   words = SplitWords(input_string)
-  return Lower(words)
+  return '_'.join([word.lower() for word in words])
 
 def CachedStateName(item):
   if item.get('cached', False):
