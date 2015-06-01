@@ -60,6 +60,7 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kDailyContentLengthViaDataReductionProxy);
   registry->RegisterInt64Pref(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
   registry->RegisterInt64Pref(prefs::kSimulatedConfigRetrieveTime, 0L);
+  registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
 }
 
 void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry) {
@@ -107,6 +108,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(
       prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
   registry->RegisterInt64Pref(prefs::kSimulatedConfigRetrieveTime, 0L);
+  registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
 }
 
 void MigrateStatisticsPrefs(PrefService* local_state_prefs,

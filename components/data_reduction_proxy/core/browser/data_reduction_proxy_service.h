@@ -94,6 +94,9 @@ class DataReductionProxyService
   // Stores an int64 value in |prefs_|.
   void SetInt64Pref(const std::string& pref_path, int64 value);
 
+  // Stores a string value in |prefs_|.
+  void SetStringPref(const std::string& pref_path, const std::string& value);
+
   // Bridge methods to safely call to the UI thread objects.
   // Virtual for testing.
   virtual void SetProxyPrefs(bool enabled,

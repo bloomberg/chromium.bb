@@ -69,6 +69,9 @@ const char kDailyOriginalContentLengthWithDataReductionProxyEnabled[] =
 // authentication, if any.
 const char kDataReductionProxy[] = "auth.spdyproxy.origin";
 
+// String that specifies a persisted Data Reduction Proxy configuration.
+const char kDataReductionProxyConfig[] = "data_reduction.config";
+
 // A boolean specifying whether the data reduction proxy is enabled.
 const char kDataReductionProxyEnabled[] = "spdy_proxy.enabled";
 

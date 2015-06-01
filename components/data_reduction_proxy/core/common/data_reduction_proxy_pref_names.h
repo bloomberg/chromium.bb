@@ -23,6 +23,7 @@ extern const char kDailyHttpReceivedContentLength[];
 extern const char kDailyOriginalContentLengthViaDataReductionProxy[];
 extern const char kDailyOriginalContentLengthWithDataReductionProxyEnabled[];
 extern const char kDataReductionProxy[];
+extern const char kDataReductionProxyConfig[];
 extern const char kDataReductionProxyEnabled[];
 extern const char kDataReductionProxyAltEnabled[];
 extern const char kDataReductionProxyWasEnabledBefore[];

@@ -13,6 +13,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 
 namespace data_reduction_proxy {
 
@@ -43,6 +44,19 @@ void DataReductionProxyService::SetIOData(
   initialized_ = true;
   FOR_EACH_OBSERVER(DataReductionProxyServiceObserver,
                     observer_list_, OnServiceInitialized());
+
+  // Load the Data Reduction Proxy configuration from |prefs_| and apply it.
+  if (prefs_) {
+    std::string config_value =
+        prefs_->GetString(prefs::kDataReductionProxyConfig);
+    if (!config_value.empty()) {
+      io_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &DataReductionProxyIOData::SetDataReductionProxyConfiguration,
+              io_data_, config_value));
+    }
+  }
 }
 
 void DataReductionProxyService::Shutdown() {
@@ -109,6 +123,12 @@ void DataReductionProxyService::SetInt64Pref(const std::string& pref_path,
                                              int64 value) {
   if (prefs_)
     prefs_->SetInt64(pref_path, value);
+}
+
+void DataReductionProxyService::SetStringPref(const std::string& pref_path,
+                                              const std::string& value) {
+  if (prefs_)
+    prefs_->SetString(pref_path, value);
 }
 
 void DataReductionProxyService::SetProxyPrefs(bool enabled,

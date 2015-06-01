@@ -85,6 +85,9 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // when DataReductionProxySettings is initialized.
   void SetProxyPrefs(bool enabled, bool alternative_enabled, bool at_startup);
 
+  // Applies a serialized Data Reduction Proxy configuration.
+  void SetDataReductionProxyConfiguration(const std::string& serialized_config);
+
   // Bridge methods to safely call to the UI thread objects.
   void UpdateContentLengths(int64 received_content_length,
                             int64 original_content_length,
@@ -173,6 +176,13 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // Stores an int64 value in preferences storage.
   void SetInt64Pref(const std::string& pref_path, int64 value);
+
+  // Stores a string value in preferences storage.
+  void SetStringPref(const std::string& pref_path, const std::string& value);
+
+  // Stores a serialized Data Reduction Proxy configuration in preferences
+  // storage.
+  void StoreSerializedConfig(const std::string& serialized_config);
 
   // The type of Data Reduction Proxy client.
   Client client_;

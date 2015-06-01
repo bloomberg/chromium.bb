@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -41,6 +42,8 @@ class DataReductionProxyParams;
 class DataReductionProxyRequestOptions;
 class DataReductionProxyService;
 
+typedef base::Callback<void(const std::string&)> ConfigStorer;
+
 // Retrieves the default net::BackoffEntry::Policy for the Data Reduction Proxy
 // configuration service client.
 const net::BackoffEntry::Policy& GetBackoffPolicy();
@@ -66,7 +69,8 @@ class DataReductionProxyConfigServiceClient
       DataReductionProxyMutableConfigValues* config_values,
       DataReductionProxyConfig* config,
       DataReductionProxyEventCreator* event_creator,
-      net::NetLog* net_log);
+      net::NetLog* net_log,
+      ConfigStorer config_storer);
 
   ~DataReductionProxyConfigServiceClient() override;
 
@@ -77,6 +81,12 @@ class DataReductionProxyConfigServiceClient
   // Request the retrieval of the Data Reduction Proxy configuration. This
   // operation takes place asynchronously.
   void RetrieveConfig();
+
+  // Takes a serialized Data Reduction Proxy configuration and sets it as the
+  // current Data Reduction Proxy configuration. If a remote configuration has
+  // already been retrieved, the remote configuration takes precedence. If using
+  // a local configuration, then this method has no effect.
+  void ApplySerializedConfig(const std::string& config_value);
 
   // Examines |response_headers| to determine if an authentication failure
   // occurred on a Data Reduction Proxy.
@@ -159,6 +169,9 @@ class DataReductionProxyConfigServiceClient
   // The caller must ensure that the |net_log_| outlives this instance.
   net::NetLog* net_log_;
 
+  // Used to persist a serialized Data Reduction Proxy configuration.
+  ConfigStorer config_storer_;
+
   // Used to calculate the backoff time on request failures.
   net::BackoffEntry backoff_entry_;
 
@@ -169,6 +182,10 @@ class DataReductionProxyConfigServiceClient
   // or the remote server specified by |config_service_url_|.
   // TODO(jeremyim): Remove this as part of bug 479282.
   bool use_local_config_;
+
+  // True if a remote Data Reduction Proxy configuration has been retrieved and
+  // successfully applied.
+  bool remote_config_applied_;
 
   // Used for setting up |fetcher_|.
   net::URLRequestContextGetter* url_request_context_getter_;

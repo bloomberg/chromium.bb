@@ -23,6 +23,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/log/net_log.h"
 #include "net/url_request/http_user_agent_settings.h"
@@ -136,9 +137,14 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       new DataReductionProxyRequestOptions(client_, config_.get()));
   request_options_->Init();
   if (use_config_client) {
+    // It is safe to use base::Unretained here, since it gets executed
+    // synchronously on the IO thread, and |this| outlives the caller (since the
+    // caller is owned by |this|.
     config_client_.reset(new DataReductionProxyConfigServiceClient(
         params.Pass(), GetBackoffPolicy(), request_options_.get(),
-        raw_mutable_config, config_.get(), event_creator_.get(), net_log_));
+        raw_mutable_config, config_.get(), event_creator_.get(), net_log_,
+        base::Bind(&DataReductionProxyIOData::StoreSerializedConfig,
+                   base::Unretained(this))));
   }
 
   proxy_delegate_.reset(
@@ -252,6 +258,13 @@ void DataReductionProxyIOData::SetProxyPrefs(bool enabled,
   }
 }
 
+void DataReductionProxyIOData::SetDataReductionProxyConfiguration(
+    const std::string& serialized_config) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (config_client_)
+    config_client_->ApplySerializedConfig(serialized_config);
+}
+
 void DataReductionProxyIOData::UpdateContentLengths(
     int64 received_content_length,
     int64 original_content_length,
@@ -314,6 +327,20 @@ void DataReductionProxyIOData::SetInt64Pref(const std::string& pref_path,
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DataReductionProxyService::SetInt64Pref, service_,
                             pref_path, value));
+}
+
+void DataReductionProxyIOData::SetStringPref(const std::string& pref_path,
+                                             const std::string& value) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DataReductionProxyService::SetStringPref, service_,
+                            pref_path, value));
+}
+
+void DataReductionProxyIOData::StoreSerializedConfig(
+    const std::string& serialized_config) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  SetStringPref(prefs::kDataReductionProxyConfig, serialized_config);
 }
 
 }  // namespace data_reduction_proxy

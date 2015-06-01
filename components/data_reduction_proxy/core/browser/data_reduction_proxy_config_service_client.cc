@@ -142,17 +142,20 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
     DataReductionProxyMutableConfigValues* config_values,
     DataReductionProxyConfig* config,
     DataReductionProxyEventCreator* event_creator,
-    net::NetLog* net_log)
+    net::NetLog* net_log,
+    ConfigStorer config_storer)
     : params_(params.Pass()),
       request_options_(request_options),
       config_values_(config_values),
       config_(config),
       event_creator_(event_creator),
       net_log_(net_log),
+      config_storer_(config_storer),
       backoff_entry_(&backoff_policy),
       config_service_url_(AddApiKeyToUrl(
           GetConfigServiceURL(*base::CommandLine::ForCurrentProcess()))),
       use_local_config_(!config_service_url_.is_valid()),
+      remote_config_applied_(false),
       url_request_context_getter_(nullptr),
       previous_request_failed_authentication_(false) {
   DCHECK(request_options);
@@ -193,6 +196,20 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
   }
 
   RetrieveRemoteConfig();
+}
+
+void DataReductionProxyConfigServiceClient::ApplySerializedConfig(
+    const std::string& config_value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (use_local_config_)
+    return;
+
+  if (remote_config_applied_)
+    return;
+
+  ClientConfig config;
+  if (config_parser::ParseClientConfig(config_value, &config))
+    ParseAndApplyProxyConfig(config);
 }
 
 bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
@@ -293,6 +310,7 @@ void DataReductionProxyConfigServiceClient::InvalidateConfig() {
   if (use_local_config_)
     return;
 
+  config_storer_.Run(std::string());
   request_options_->Invalidate();
   config_values_->Invalidate();
   config_->ReloadConfig();
@@ -345,6 +363,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
                                configuration_fetch_latency);
     UMA_HISTOGRAM_COUNTS_100(kUMAConfigServiceFetchFailedAttemptsBeforeSuccess,
                              GetBackoffEntry()->failure_count());
+    config_storer_.Run(config_data);
   }
 
   GetBackoffEntry()->InformOfRequest(succeeded);
@@ -371,6 +390,7 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
     request_options_->SetSecureSession(config.session_key());
     config_values_->UpdateValues(proxies);
     config_->ReloadConfig();
+    remote_config_applied_ = true;
     return true;
   }
 
