@@ -37,7 +37,6 @@ void TabHandleLayer::SetProperties(
     float content_offset_x,
     float close_button_alpha,
     bool is_loading,
-    float spinner_rotation,
     float brightness,
     float border_opacity) {
   if (brightness != brightness_ || foreground != foreground_) {
@@ -147,7 +146,7 @@ void TabHandleLayer::SetProperties(
     title_layer->layer()->SetPosition(gfx::Point(title_x, title_y));
     if (is_loading) {
       title_layer->SetIsLoading(true);
-      title_layer->SetSpinnerRotation(spinner_rotation);
+      title_layer->UpdateThrobber();
     } else {
       title_layer->SetIsLoading(false);
     }

@@ -148,7 +148,6 @@ void TabStripSceneLayer::PutStripTabLayer(JNIEnv* env,
                                           jfloat content_offset_x,
                                           jfloat close_button_alpha,
                                           jboolean is_loading,
-                                          jfloat spinner_rotation,
                                           jfloat border_opacity,
                                           jobject jlayer_title_cache,
                                           jobject jresource_manager) {
@@ -166,7 +165,7 @@ void TabStripSceneLayer::PutStripTabLayer(JNIEnv* env,
   layer->SetProperties(id, close_button_resource, tab_handle_resource,
                        foreground, close_pressed, toolbar_width, x, y, width,
                        height, content_offset_x, close_button_alpha, is_loading,
-                       spinner_rotation, strip_brightness_, border_opacity);
+                       strip_brightness_, border_opacity);
 }
 
 scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(

@@ -45,7 +45,6 @@ class TabHandleLayer : public Layer {
                      float content_offset_x,
                      float close_button_alpha,
                      bool is_loading,
-                     float spinner_rotation,
                      float brightness,
                      float border_opacity);
   scoped_refptr<cc::Layer> layer() override;
