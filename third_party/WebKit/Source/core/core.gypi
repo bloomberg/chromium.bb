@@ -1775,6 +1775,8 @@
             'page/AutoscrollController.cpp',
             'page/AutoscrollController.h',
             'page/Chrome.cpp',
+            'page/ChromeClient.cpp',
+            'page/ChromeClient.h',
             'page/ContextMenuController.cpp',
             'page/ContextMenuProvider.h',
             'page/CreateWindow.cpp',

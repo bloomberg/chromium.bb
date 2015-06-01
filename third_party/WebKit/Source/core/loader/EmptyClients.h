@@ -70,7 +70,7 @@ public:
     virtual void chromeDestroyed() override { }
 
     virtual void* webView() const override { return 0; }
-    virtual void setWindowRect(const IntRect&) override { }
+    virtual void setWindowRectInternal(const IntRect&) override { }
     virtual IntRect windowRect() override { return IntRect(); }
 
     virtual IntRect pageRect() override { return IntRect(); }
@@ -103,16 +103,16 @@ public:
     virtual void addMessageToConsole(LocalFrame*, MessageSource, MessageLevel, const String&, unsigned, const String&, const String&) override { }
 
     virtual bool canRunBeforeUnloadConfirmPanel() override { return false; }
-    virtual bool runBeforeUnloadConfirmPanel(const String&, LocalFrame*) override { return true; }
+    virtual bool runBeforeUnloadConfirmPanelInternal(const String&, LocalFrame*) override { return true; }
 
     virtual void closeWindowSoon() override { }
 
-    virtual void runJavaScriptAlert(LocalFrame*, const String&) override { }
-    virtual bool runJavaScriptConfirm(LocalFrame*, const String&) override { return false; }
-    virtual bool runJavaScriptPrompt(LocalFrame*, const String&, const String&, String&) override { return false; }
+    virtual void runJavaScriptAlertInternal(LocalFrame*, const String&) override { }
+    virtual bool runJavaScriptConfirmInternal(LocalFrame*, const String&) override { return false; }
+    virtual bool runJavaScriptPromptInternal(LocalFrame*, const String&, const String&, String&) override { return false; }
 
     virtual bool hasOpenedPopup() const override { return false; }
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) override;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenuInternal(LocalFrame&, PopupMenuClient*) override;
     virtual DOMWindow* pagePopupWindowForTesting() const override { return nullptr; }
 
     virtual void setStatusbarText(const String&) override { }
@@ -128,21 +128,21 @@ public:
     virtual WebScreenInfo screenInfo() const override { return WebScreenInfo(); }
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const override { }
 
-    virtual void mouseDidMoveOverElement(const HitTestResult&) override { }
+    virtual void showMouseOverURL(const HitTestResult&) override { }
 
     virtual void setToolTip(const String&, TextDirection) override { }
 
-    virtual void print(LocalFrame*) override { }
+    virtual void printInternal(LocalFrame*) override { }
 
     virtual void enumerateChosenDirectory(FileChooser*) override { }
 
-    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
-    virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
-    virtual void openTextDataListChooser(HTMLInputElement&) override;
+    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooserInternal(LocalFrame*, ColorChooserClient*, const Color&) override;
+    virtual PassRefPtr<DateTimeChooser> openDateTimeChooserInternal(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
+    virtual void openTextDataListChooserInternal(HTMLInputElement&) override;
 
-    virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) override;
+    virtual void runOpenPanelInternal(LocalFrame*, PassRefPtr<FileChooser>) override;
 
-    virtual void setCursor(const Cursor&) override { }
+    virtual void setCursorInternal(const Cursor&) override { }
 
     virtual void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override { }
 

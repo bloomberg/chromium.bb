@@ -70,7 +70,7 @@ public:
 
     // ChromeClient methods:
     virtual void chromeDestroyed() override;
-    virtual void setWindowRect(const IntRect&) override;
+    virtual void setWindowRectInternal(const IntRect&) override;
     virtual IntRect windowRect() override;
     virtual IntRect pageRect() override;
     virtual void focus() override;
@@ -96,12 +96,12 @@ public:
         const WTF::String& message, unsigned lineNumber,
         const WTF::String& sourceID, const WTF::String& stackTrace) override;
     virtual bool canRunBeforeUnloadConfirmPanel() override;
-    virtual bool runBeforeUnloadConfirmPanel(
+    virtual bool runBeforeUnloadConfirmPanelInternal(
         const WTF::String& message, LocalFrame*) override;
     virtual void closeWindowSoon() override;
-    virtual void runJavaScriptAlert(LocalFrame*, const WTF::String&) override;
-    virtual bool runJavaScriptConfirm(LocalFrame*, const WTF::String&) override;
-    virtual bool runJavaScriptPrompt(
+    virtual void runJavaScriptAlertInternal(LocalFrame*, const String&) override;
+    virtual bool runJavaScriptConfirmInternal(LocalFrame*, const String&) override;
+    virtual bool runJavaScriptPromptInternal(
         LocalFrame*, const WTF::String& message,
         const WTF::String& defaultValue, WTF::String& result) override;
     virtual void setStatusbarText(const WTF::String& message) override;
@@ -116,16 +116,16 @@ public:
     virtual void pageScaleFactorChanged() const override;
     virtual float clampPageScaleFactorToLimits(float scale) const override;
     virtual void layoutUpdated(LocalFrame*) const override;
-    virtual void mouseDidMoveOverElement(const HitTestResult&) override;
+    virtual void showMouseOverURL(const HitTestResult&) override;
     virtual void setToolTip(const WTF::String& tooltipText, TextDirection) override;
     virtual void dispatchViewportPropertiesDidChange(const ViewportDescription&) const override;
-    virtual void print(LocalFrame*) override;
+    virtual void printInternal(LocalFrame*) override;
     virtual void annotatedRegionsChanged() override;
-    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
-    virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
-    virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) override;
+    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooserInternal(LocalFrame*, ColorChooserClient*, const Color&) override;
+    virtual PassRefPtr<DateTimeChooser> openDateTimeChooserInternal(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
+    virtual void runOpenPanelInternal(LocalFrame*, PassRefPtr<FileChooser>) override;
     virtual void enumerateChosenDirectory(FileChooser*) override;
-    virtual void setCursor(const Cursor&) override;
+    virtual void setCursorInternal(const Cursor&) override;
     virtual void needTouchEvents(bool needTouchEvents) override;
     virtual void setTouchAction(TouchAction) override;
 
@@ -152,7 +152,7 @@ public:
     void setNewWindowNavigationPolicy(WebNavigationPolicy);
 
     virtual bool hasOpenedPopup() const override;
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) override;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenuInternal(LocalFrame&, PopupMenuClient*) override;
     PagePopup* openPagePopup(PagePopupClient*);
     void closePagePopup(PagePopup*);
     virtual DOMWindow* pagePopupWindowForTesting() const override;
@@ -167,7 +167,7 @@ public:
     virtual void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) override;
     virtual void didChangeValueInTextField(HTMLFormControlElement&) override;
     virtual void didEndEditingOnTextField(HTMLInputElement&) override;
-    virtual void openTextDataListChooser(HTMLInputElement&) override;
+    virtual void openTextDataListChooserInternal(HTMLInputElement&) override;
     virtual void textFieldDataListChanged(HTMLInputElement&) override;
     virtual void xhrSucceeded(LocalFrame*) override;
 

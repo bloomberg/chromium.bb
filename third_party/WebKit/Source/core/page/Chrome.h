@@ -24,7 +24,6 @@
 
 #include "core/CoreExport.h"
 #include "core/loader/NavigationPolicy.h"
-#include "core/page/ChromeClient.h"
 #include "platform/Cursor.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFocusType.h"
@@ -32,6 +31,7 @@
 
 namespace blink {
 
+class ChromeClient;
 class ColorChooser;
 class ColorChooserClient;
 class DateTimeChooser;
@@ -75,8 +75,6 @@ public:
 
     void mouseDidMoveOverElement(const HitTestResult&);
 
-    void setToolTip(const HitTestResult&);
-
     void print(LocalFrame*);
 
     PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color& initialColor);
@@ -92,12 +90,8 @@ public:
 
 private:
     Chrome(ChromeClient*);
-    bool canRunModalIfDuringPageDismissal(Frame* mainFrame, ChromeClient::DialogType, const String& message);
-    void notifyPopupOpeningObservers() const;
 
     ChromeClient* m_client;
-    Vector<PopupOpeningObserver*> m_popupOpeningObservers;
-    Cursor m_lastSetMouseCursorForTesting;
 };
 
 } // namespace blink

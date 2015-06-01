@@ -62,6 +62,7 @@ class Node;
 class Page;
 class PagePopupDriver;
 class PopupMenuClient;
+class PopupOpeningObserver;
 class WebCompositorAnimationTimeline;
 
 struct CompositedSelection;
@@ -75,7 +76,7 @@ class CORE_EXPORT ChromeClient : public HostWindow {
 public:
     virtual void chromeDestroyed() = 0;
 
-    virtual void setWindowRect(const IntRect&) = 0;
+    void setWindowRect(const IntRect&);
     virtual IntRect windowRect() = 0;
 
     virtual IntRect pageRect() = 0;
@@ -98,6 +99,8 @@ public:
     virtual Page* createWindow(LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) = 0;
     virtual void show(NavigationPolicy = NavigationPolicyIgnore) = 0;
 
+    void setWindowFeatures(const WindowFeatures&);
+
     virtual void setToolbarsVisible(bool) = 0;
     virtual bool toolbarsVisible() = 0;
 
@@ -116,13 +119,13 @@ public:
     virtual void addMessageToConsole(LocalFrame*, MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String& sourceID, const String& stackTrace) = 0;
 
     virtual bool canRunBeforeUnloadConfirmPanel() = 0;
-    virtual bool runBeforeUnloadConfirmPanel(const String& message, LocalFrame*) = 0;
+    bool runBeforeUnloadConfirmPanel(const String& message, LocalFrame*);
 
     virtual void closeWindowSoon() = 0;
 
-    virtual void runJavaScriptAlert(LocalFrame*, const String&) = 0;
-    virtual bool runJavaScriptConfirm(LocalFrame*, const String&) = 0;
-    virtual bool runJavaScriptPrompt(LocalFrame*, const String& message, const String& defaultValue, String& result) = 0;
+    void runJavaScriptAlert(LocalFrame*, const String&);
+    bool runJavaScriptConfirm(LocalFrame*, const String&);
+    bool runJavaScriptPrompt(LocalFrame*, const String& message, const String& defaultValue, String& result);
     virtual void setStatusbarText(const String&) = 0;
     virtual bool tabsToLinks() = 0;
 
@@ -132,8 +135,9 @@ public:
 
     // Methods used by HostWindow.
     virtual WebScreenInfo screenInfo() const = 0;
-    virtual void setCursor(const Cursor&) = 0;
+    void setCursor(const Cursor&);
     // End methods used by HostWindow.
+    Cursor getLastSetCursorForTesting() const;
 
     virtual void scheduleAnimationForFrame(LocalFrame*) { }
 
@@ -144,15 +148,14 @@ public:
     virtual float clampPageScaleFactorToLimits(float scale) const { return scale; }
     virtual void layoutUpdated(LocalFrame*) const { }
 
-    virtual void mouseDidMoveOverElement(const HitTestResult&) = 0;
-
+    void mouseDidMoveOverElement(const HitTestResult&);
     virtual void setToolTip(const String&, TextDirection) = 0;
 
-    virtual void print(LocalFrame*) = 0;
+    void print(LocalFrame*);
 
     virtual void annotatedRegionsChanged() = 0;
 
-    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) = 0;
+    PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&);
 
     // This function is used for:
     //  - Mandatory date/time choosers if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
@@ -160,11 +163,11 @@ public:
     //    returns true, if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     //  - <datalist> UI for date/time input types regardless of
     //    ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-    virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) = 0;
+    PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&);
 
-    virtual void openTextDataListChooser(HTMLInputElement&) = 0;
+    void openTextDataListChooser(HTMLInputElement&);
 
-    virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) = 0;
+    void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>);
 
     // Asychronous request to enumerate all files in a directory chosen by the user.
     virtual void enumerateChosenDirectory(FileChooser*) = 0;
@@ -192,7 +195,7 @@ public:
 
     // Checks if there is an opened popup, called by LayoutMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) = 0;
+    PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*);
     virtual DOMWindow* pagePopupWindowForTesting() const = 0;
 
     virtual void postAccessibilityNotification(AXObject*, AXObjectCache::AXNotification) { }
@@ -234,8 +237,36 @@ public:
 
     virtual void didUpdateTopControls() const { }
 
+    void registerPopupOpeningObserver(PopupOpeningObserver*);
+    void unregisterPopupOpeningObserver(PopupOpeningObserver*);
+
 protected:
     virtual ~ChromeClient() { }
+
+    virtual void showMouseOverURL(const HitTestResult&) = 0;
+    // TODO(tkent): Adding 'Internal' to virtual functions is not good. We
+    // should give better names, or move out non-internal versions of these
+    // functions.
+    virtual void setWindowRectInternal(const IntRect&) = 0;
+    virtual bool runBeforeUnloadConfirmPanelInternal(const String& message, LocalFrame*) = 0;
+    virtual void runJavaScriptAlertInternal(LocalFrame*, const String&) = 0;
+    virtual bool runJavaScriptConfirmInternal(LocalFrame*, const String&) = 0;
+    virtual bool runJavaScriptPromptInternal(LocalFrame*, const String& message, const String& defaultValue, String& result) = 0;
+    virtual void printInternal(LocalFrame*) = 0;
+    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooserInternal(LocalFrame*, ColorChooserClient*, const Color&) = 0;
+    virtual PassRefPtr<DateTimeChooser> openDateTimeChooserInternal(DateTimeChooserClient*, const DateTimeChooserParameters&) = 0;
+    virtual void openTextDataListChooserInternal(HTMLInputElement&) = 0;
+    virtual void runOpenPanelInternal(LocalFrame*, PassRefPtr<FileChooser>) = 0;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenuInternal(LocalFrame&, PopupMenuClient*) = 0;
+    virtual void setCursorInternal(const Cursor&) = 0;
+
+private:
+    bool canRunModalIfDuringPageDismissal(Frame* mainFrame, DialogType, const String& message);
+    void setToolTip(const HitTestResult&);
+    void notifyPopupOpeningObservers() const;
+
+    Vector<PopupOpeningObserver*> m_popupOpeningObservers;
+    Cursor m_lastSetMouseCursorForTesting;
 };
 
 } // namespace blink

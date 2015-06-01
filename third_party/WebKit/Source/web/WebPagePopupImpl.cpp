@@ -77,7 +77,7 @@ public:
         ASSERT(m_popup->widgetClient());
     }
 
-    virtual void setWindowRect(const IntRect& rect) override
+    virtual void setWindowRectInternal(const IntRect& rect) override
     {
         m_popup->m_windowRectInScreen = rect;
         m_popup->widgetClient()->setWindowRect(m_popup->m_windowRectInScreen);
@@ -144,7 +144,7 @@ private:
         return IntSize(0, 0);
     }
 
-    virtual void setCursor(const Cursor& cursor) override
+    virtual void setCursorInternal(const Cursor& cursor) override
     {
         if (m_popup->m_webView->client())
             m_popup->m_webView->client()->didChangeCursor(WebCursorInfo(cursor));
@@ -301,7 +301,7 @@ AXObject* WebPagePopupImpl::rootAXObject()
 
 void WebPagePopupImpl::setWindowRect(const IntRect& rect)
 {
-    m_chromeClient->setWindowRect(rect);
+    m_chromeClient->setWindowRectInternal(rect);
 }
 
 void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer)

@@ -1424,7 +1424,6 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
 
     hoveredNode.setToShadowHostIfInUserAgentShadowRoot();
     page->chrome().mouseDidMoveOverElement(hoveredNode);
-    page->chrome().setToolTip(hoveredNode);
 
     return result;
 }

@@ -68,26 +68,26 @@ public:
     virtual void disconnectClient() override { }
 };
 
-PassRefPtrWillBeRawPtr<PopupMenu> EmptyChromeClient::createPopupMenu(LocalFrame&, PopupMenuClient*)
+PassRefPtrWillBeRawPtr<PopupMenu> EmptyChromeClient::createPopupMenuInternal(LocalFrame&, PopupMenuClient*)
 {
     return adoptRefWillBeNoop(new EmptyPopupMenu());
 }
 
-PassOwnPtrWillBeRawPtr<ColorChooser> EmptyChromeClient::createColorChooser(LocalFrame*, ColorChooserClient*, const Color&)
+PassOwnPtrWillBeRawPtr<ColorChooser> EmptyChromeClient::createColorChooserInternal(LocalFrame*, ColorChooserClient*, const Color&)
 {
     return nullptr;
 }
 
-PassRefPtr<DateTimeChooser> EmptyChromeClient::openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&)
+PassRefPtr<DateTimeChooser> EmptyChromeClient::openDateTimeChooserInternal(DateTimeChooserClient*, const DateTimeChooserParameters&)
 {
     return PassRefPtr<DateTimeChooser>();
 }
 
-void EmptyChromeClient::openTextDataListChooser(HTMLInputElement&)
+void EmptyChromeClient::openTextDataListChooserInternal(HTMLInputElement&)
 {
 }
 
-void EmptyChromeClient::runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>)
+void EmptyChromeClient::runOpenPanelInternal(LocalFrame*, PassRefPtr<FileChooser>)
 {
 }
 

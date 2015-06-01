@@ -135,7 +135,7 @@ void ChromeClientImpl::chromeDestroyed()
     // Our lifetime is bound to the WebViewImpl.
 }
 
-void ChromeClientImpl::setWindowRect(const IntRect& r)
+void ChromeClientImpl::setWindowRectInternal(const IntRect& r)
 {
     if (m_webView->client())
         m_webView->client()->setWindowRect(r);
@@ -378,7 +378,7 @@ bool ChromeClientImpl::canRunBeforeUnloadConfirmPanel()
     return !!m_webView->client();
 }
 
-bool ChromeClientImpl::runBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame)
+bool ChromeClientImpl::runBeforeUnloadConfirmPanelInternal(const String& message, LocalFrame* frame)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
 
@@ -406,7 +406,7 @@ void ChromeClientImpl::closeWindowSoon()
 
 // Although a LocalFrame is passed in, we don't actually use it, since we
 // already know our own m_webView.
-void ChromeClientImpl::runJavaScriptAlert(LocalFrame* frame, const String& message)
+void ChromeClientImpl::runJavaScriptAlertInternal(LocalFrame* frame, const String& message)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
     if (webframe->client()) {
@@ -417,7 +417,7 @@ void ChromeClientImpl::runJavaScriptAlert(LocalFrame* frame, const String& messa
 }
 
 // See comments for runJavaScriptAlert().
-bool ChromeClientImpl::runJavaScriptConfirm(LocalFrame* frame, const String& message)
+bool ChromeClientImpl::runJavaScriptConfirmInternal(LocalFrame* frame, const String& message)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
     if (webframe->client()) {
@@ -429,10 +429,7 @@ bool ChromeClientImpl::runJavaScriptConfirm(LocalFrame* frame, const String& mes
 }
 
 // See comments for runJavaScriptAlert().
-bool ChromeClientImpl::runJavaScriptPrompt(LocalFrame* frame,
-                                           const String& message,
-                                           const String& defaultValue,
-                                           String& result)
+bool ChromeClientImpl::runJavaScriptPromptInternal(LocalFrame* frame, const String& message, const String& defaultValue, String& result)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
     if (webframe->client()) {
@@ -534,7 +531,7 @@ void ChromeClientImpl::layoutUpdated(LocalFrame* frame) const
     m_webView->layoutUpdated(WebLocalFrameImpl::fromFrame(frame));
 }
 
-void ChromeClientImpl::mouseDidMoveOverElement(const HitTestResult& result)
+void ChromeClientImpl::showMouseOverURL(const HitTestResult& result)
 {
     if (!m_webView->client())
         return;
@@ -570,13 +567,13 @@ void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportDescrip
     m_webView->updatePageDefinedViewportConstraints(description);
 }
 
-void ChromeClientImpl::print(LocalFrame* frame)
+void ChromeClientImpl::printInternal(LocalFrame* frame)
 {
     if (m_webView->client())
         m_webView->client()->printPage(WebLocalFrameImpl::fromFrame(frame));
 }
 
-PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClientImpl::createColorChooser(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
+PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClientImpl::createColorChooserInternal(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
 {
     OwnPtrWillBeRawPtr<ColorChooserUIController> controller = nullptr;
     if (RuntimeEnabledFeatures::pagePopupEnabled())
@@ -587,7 +584,7 @@ PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClientImpl::createColorChooser(LocalF
     return controller.release();
 }
 
-PassRefPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooser(DateTimeChooserClient* pickerClient, const DateTimeChooserParameters& parameters)
+PassRefPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooserInternal(DateTimeChooserClient* pickerClient, const DateTimeChooserParameters& parameters)
 {
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     return DateTimeChooserImpl::create(this, pickerClient, parameters);
@@ -596,7 +593,7 @@ PassRefPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooser(DateTimeChoose
 #endif
 }
 
-void ChromeClientImpl::runOpenPanel(LocalFrame* frame, PassRefPtr<FileChooser> fileChooser)
+void ChromeClientImpl::runOpenPanelInternal(LocalFrame* frame, PassRefPtr<FileChooser> fileChooser)
 {
     WebViewClient* client = m_webView->client();
     if (!client)
@@ -638,7 +635,7 @@ void ChromeClientImpl::enumerateChosenDirectory(FileChooser* fileChooser)
         chooserCompletion->didChooseFile(WebVector<WebString>());
 }
 
-void ChromeClientImpl::setCursor(const Cursor& cursor)
+void ChromeClientImpl::setCursorInternal(const Cursor& cursor)
 {
     setCursor(WebCursorInfo(cursor));
 }
@@ -767,7 +764,7 @@ bool ChromeClientImpl::hasOpenedPopup() const
     return m_webView->hasOpenedPopup();
 }
 
-PassRefPtrWillBeRawPtr<PopupMenu> ChromeClientImpl::createPopupMenu(LocalFrame& frame, PopupMenuClient* client)
+PassRefPtrWillBeRawPtr<PopupMenu> ChromeClientImpl::createPopupMenuInternal(LocalFrame& frame, PopupMenuClient* client)
 {
     if (WebViewImpl::useExternalPopupMenus())
         return adoptRefWillBeNoop(new ExternalPopupMenu(frame, client, *m_webView));
@@ -899,7 +896,7 @@ void ChromeClientImpl::didEndEditingOnTextField(HTMLInputElement& inputElement)
         webframe->autofillClient()->textFieldDidEndEditing(WebInputElement(&inputElement));
 }
 
-void ChromeClientImpl::openTextDataListChooser(HTMLInputElement& input)
+void ChromeClientImpl::openTextDataListChooserInternal(HTMLInputElement& input)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(input.document().frame());
     if (webframe->autofillClient())
