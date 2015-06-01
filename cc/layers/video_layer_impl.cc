@@ -320,6 +320,22 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       ValidateQuadResources(stream_video_quad);
       break;
     }
+    case VideoFrameExternalResources::IO_SURFACE: {
+      DCHECK_EQ(frame_resources_.size(), 1u);
+      if (frame_resources_.size() < 1u)
+        break;
+      IOSurfaceDrawQuad* io_surface_quad =
+          render_pass->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
+      io_surface_quad->SetNew(shared_quad_state,
+                              quad_rect,
+                              opaque_rect,
+                              visible_quad_rect,
+                              visible_rect.size(),
+                              frame_resources_[0],
+                              IOSurfaceDrawQuad::UNFLIPPED);
+      ValidateQuadResources(io_surface_quad);
+      break;
+    }
 #if defined(VIDEO_HOLE)
     // This block and other blocks wrapped around #if defined(VIDEO_HOLE) is not
     // maintained by the general compositor team. Please contact the following

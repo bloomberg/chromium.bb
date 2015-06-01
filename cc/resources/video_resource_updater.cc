@@ -388,6 +388,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
           external_resources.type =
               VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE;
           break;
+        case GL_TEXTURE_RECTANGLE_ARB:
+          external_resources.type = VideoFrameExternalResources::IO_SURFACE;
+          break;
         default:
           NOTREACHED();
           return VideoFrameExternalResources();

@@ -37,6 +37,7 @@ class CC_EXPORT VideoFrameExternalResources {
     RGB_RESOURCE,
     RGBA_RESOURCE,
     STREAM_TEXTURE_RESOURCE,
+    IO_SURFACE,
 
 #if defined(VIDEO_HOLE)
     // TODO(danakj): Implement this with a solid color layer instead of a video
