@@ -3616,3 +3616,9 @@ fun:_ZN5blink13CSSParserImpl18consumeDeclarationENS_19CSSParserTokenRangeENS_13S
    fun:_Znw*
    fun:_ZN7content26RenderFrameHostManagerTest5SetUpEv
 }
+{
+   bug_494811
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content12_GLOBAL__N_129RenderWidgetHostViewGuestTest5SetUpEv
+}
