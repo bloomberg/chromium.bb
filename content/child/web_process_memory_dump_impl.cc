@@ -27,18 +27,39 @@ blink::WebMemoryAllocatorDump*
 WebProcessMemoryDumpImpl::createMemoryAllocatorDump(
     const blink::WebString& absolute_name) {
   // Get a MemoryAllocatorDump from the base/ object.
-  base::trace_event::MemoryAllocatorDump* mad =
+  base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
       process_memory_dump_->CreateAllocatorDump(absolute_name.utf8());
-  if (!mad)
+  if (!memory_allocator_dump)
     return nullptr;
 
   // Wrap it and return to blink.
-  WebMemoryAllocatorDumpImpl* web_mad_impl =
-      new WebMemoryAllocatorDumpImpl(mad);
+  WebMemoryAllocatorDumpImpl* web_memory_allocator_dump_impl =
+      new WebMemoryAllocatorDumpImpl(memory_allocator_dump);
 
-  // memory_allocator_dumps_ will take ownership of |web_mad_impl|.
-  memory_allocator_dumps_.push_back(web_mad_impl);
-  return web_mad_impl;
+  // memory_allocator_dumps_ will take ownership of
+  // |web_memory_allocator_dumpd_impl|.
+  memory_allocator_dumps_.set(memory_allocator_dump,
+                              make_scoped_ptr(web_memory_allocator_dump_impl));
+
+  return web_memory_allocator_dump_impl;
+}
+
+blink::WebMemoryAllocatorDump* WebProcessMemoryDumpImpl::getMemoryAllocatorDump(
+    const blink::WebString& absolute_name) const {
+  // Retrieve the base MemoryAllocatorDump object and then reverse lookup
+  // its wrapper.
+  base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
+      process_memory_dump_->GetAllocatorDump(absolute_name.utf8());
+  if (!memory_allocator_dump)
+    return nullptr;
+
+  // The only case of (memory_allocator_dump && !web_memory_allocator_dump)
+  // is something from blink trying to get a MAD that was created from chromium,
+  // which is an odd use case.
+  blink::WebMemoryAllocatorDump* web_memory_allocator_dump =
+      memory_allocator_dumps_.get(memory_allocator_dump);
+  DCHECK(web_memory_allocator_dump);
+  return web_memory_allocator_dump;
 }
 
 void WebProcessMemoryDumpImpl::clear() {
@@ -55,17 +76,25 @@ void WebProcessMemoryDumpImpl::takeAllDumpsFrom(
   // WebProcessMemoryDumpImpl is a container of WebMemoryAllocatorDump(s) which
   // in turn are wrappers of base::trace_event::MemoryAllocatorDump(s).
   // In order to expose the move and ownership transfer semantics of the
-  // underlying ProcessMemoryDump, we need to
+  // underlying ProcessMemoryDump, we need to:
 
   // 1) Move and transfer the ownership of the wrapped
   // base::trace_event::MemoryAllocatorDump(s) instances.
   process_memory_dump_->TakeAllDumpsFrom(other_impl->process_memory_dump_);
 
   // 2) Move and transfer the ownership of the WebMemoryAllocatorDump wrappers.
-  memory_allocator_dumps_.insert(memory_allocator_dumps_.end(),
-                                 other_impl->memory_allocator_dumps_.begin(),
-                                 other_impl->memory_allocator_dumps_.end());
-  other_impl->memory_allocator_dumps_.weak_clear();
+  const size_t expected_final_size = memory_allocator_dumps_.size() +
+                                     other_impl->memory_allocator_dumps_.size();
+  while (!other_impl->memory_allocator_dumps_.empty()) {
+    auto first_entry = other_impl->memory_allocator_dumps_.begin();
+    base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
+        first_entry->first;
+    memory_allocator_dumps_.set(
+        memory_allocator_dump,
+        other_impl->memory_allocator_dumps_.take_and_erase(first_entry).Pass());
+  }
+  DCHECK_EQ(expected_final_size, memory_allocator_dumps_.size());
+  DCHECK(other_impl->memory_allocator_dumps_.empty());
 }
 
 }  // namespace content

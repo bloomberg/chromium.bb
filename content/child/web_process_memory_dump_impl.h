@@ -5,14 +5,15 @@
 #ifndef CONTENT_CHILD_WEB_PROCESS_MEMORY_DUMP_IMPL_H_
 #define CONTENT_CHILD_WEB_PROCESS_MEMORY_DUMP_IMPL_H_
 
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebProcessMemoryDump.h"
 
 namespace base {
 namespace trace_event {
+class MemoryAllocatorDump;
 class ProcessMemoryDump;
 }  // namespace base
 }  // namespace trace_event
@@ -40,6 +41,8 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
   // blink::WebProcessMemoryDump implementation.
   virtual blink::WebMemoryAllocatorDump* createMemoryAllocatorDump(
       const blink::WebString& absolute_name);
+  virtual blink::WebMemoryAllocatorDump* getMemoryAllocatorDump(
+      const blink::WebString& absolute_name) const;
   virtual void clear();
   virtual void takeAllDumpsFrom(blink::WebProcessMemoryDump* other);
 
@@ -57,11 +60,14 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
   // createMemoryAllocatorDump() calls will be proxied to.
   base::trace_event::ProcessMemoryDump* process_memory_dump_;  // Not owned.
 
+  // Reverse index of MemoryAllocatorDump -> WebMemoryAllocatorDumpImpl wrapper.
   // By design WebMemoryDumpProvider(s) are not supposed to hold the pointer
   // to the WebProcessMemoryDump passed as argument of the onMemoryDump() call.
   // Those pointers are valid only within the scope of the call and can be
   // safely torn down once the WebProcessMemoryDumpImpl itself is destroyed.
-  ScopedVector<WebMemoryAllocatorDumpImpl> memory_allocator_dumps_;
+  base::ScopedPtrHashMap<base::trace_event::MemoryAllocatorDump*,
+                         scoped_ptr<WebMemoryAllocatorDumpImpl>>
+      memory_allocator_dumps_;
 
   DISALLOW_COPY_AND_ASSIGN(WebProcessMemoryDumpImpl);
 };
