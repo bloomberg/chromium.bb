@@ -15,8 +15,10 @@ input::-webkit-input-placeholder {
 </style>
 <p>This test is meaningfull only if LayoutTheme::shouldShowPlaceholderWhenFocused() returns true.</p>
 <p>The green caret in the following text box should painted over the red placeholder text.</p>
-<input autofocus>
+<input>
 <script>
-document.getElementsByTagName('input')[0].placeholder = 'Placeholder';
+var input = document.querySelector('input');
+input.focus();
+input.placeholder = 'Placeholder';
 </script>
 </body>
