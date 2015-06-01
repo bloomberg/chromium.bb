@@ -27,7 +27,7 @@ div.addEventListener("click", appendEventLog, false);
 document.body.insertBefore(div, document.body.firstChild);
 
 function sendEvents(button) {
-    if (!window.eventSender) {
+    if (!window.eventSender || !window.internals) {
         debug("This test requires DumpRenderTree.  Click on the blue rect with the left mouse button to log the mouse coordinates.")
         return;
     }
@@ -43,14 +43,14 @@ function testEvents(button, description, expectedString) {
     clearEventLog();
 }
 
-if (window.eventSender) {
+if (window.eventSender && window.internals) {
     eventSender.mouseMoveTo(10, 10);
     // We are clicking in the same position on screen. As we scale or transform the page,
     // we expect the pageX and pageY event coordinates to change because different
     // parts of the document are under the mouse.
     testEvents(0, "Unscaled", "click(10, 10)");
 
-    window.eventSender.setPageScaleFactorLimits(0.5, 0.5);
-    window.eventSender.setPageScaleFactor(0.5, 0, 0);
+    window.internals.setPageScaleFactorLimits(0.5, 0.5);
+    window.internals.setPageScaleFactor(0.5);
     testEvents(0, "setPageScale(0.5)", "click(20, 20)");
 }

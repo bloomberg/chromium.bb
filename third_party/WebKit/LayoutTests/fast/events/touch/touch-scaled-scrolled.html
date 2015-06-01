@@ -13,8 +13,8 @@ function touched(e) {
 }
 
 function runTest() {
-    if (window.eventSender)
-        window.eventSender.setPageScaleFactor(2, 0, 0);
+    if (window.internals)
+        window.internals.setPageScaleFactor(2);
     window.scrollTo(100,100);
 
     if (window.testRunner) {
@@ -23,7 +23,7 @@ function runTest() {
     }
 
     document.addEventListener("touchstart", touched, false);
-    if (window.eventSender) {
+    if (window.eventSender && window.internals) {
         eventSender.clearTouchPoints();
         eventSender.addTouchPoint(30, 70);
         eventSender.touchStart();

@@ -39,8 +39,8 @@
             setTimeout(scalePage, 20);
         }
         function scalePage() {
-            if (window.eventSender)
-                window.eventSender.setPageScaleFactor(3, 0, 0);
+            if (window.internals)
+                window.internals.setPageScaleFactor(3);
             setTimeout(finish, 20);
         }
         function finish() {

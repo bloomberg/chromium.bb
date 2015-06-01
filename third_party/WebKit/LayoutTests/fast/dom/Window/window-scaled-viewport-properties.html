@@ -17,8 +17,8 @@
   }
 </style>
 <script language="JavaScript" type="text/javascript">
-    if (window.testRunner && window.eventSender) {
-        window.eventSender.setPageScaleFactorLimits(0.5, 4.0);
+    if (window.testRunner && window.internals) {
+        window.internals.setPageScaleFactorLimits(0.5, 4.0);
         window.jsTestIsAsync = true;
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
@@ -36,7 +36,7 @@
         debug('');
         debug('===Pinch Zoom in to 2X===');
         debug('');
-        window.eventSender.setPageScaleFactor(2.0, 0, 0);
+        window.internals.setPageScaleFactor(2.0);
         shouldBe('window.innerWidth', '400');
         shouldBe('window.innerHeight', '300');
         shouldBe('window.scrollX', '0');
@@ -63,7 +63,7 @@
         debug('');
         debug('===Pinch Out to 0.5X===');
         debug('');
-        window.eventSender.setPageScaleFactor(0.5, 0, 0);
+        window.internals.setPageScaleFactor(0.5);
         shouldBe('window.innerWidth', '1600');
         shouldBe('window.innerHeight', '1200');
         shouldBe('window.scrollX', '0');
@@ -90,7 +90,7 @@
         debug('');
         debug('===Test OnScroll===');
         debug('');
-        window.eventSender.setPageScaleFactor(1.0, 0, 0);
+        window.internals.setPageScaleFactor(1.0);
         shouldBe('window.innerWidth', '800');
         shouldBe('window.innerHeight', '600');
         shouldBe('window.scrollX', '0');
@@ -143,7 +143,7 @@
     }
 
     function runTests() {
-        if (window.testRunner && window.eventSender) {
+        if (window.testRunner && window.internals) {
             forceLayout();
             testPinchedIn();
             testMaximallyPinchedOut();

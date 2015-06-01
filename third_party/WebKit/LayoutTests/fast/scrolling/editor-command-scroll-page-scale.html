@@ -8,7 +8,7 @@
   function reset()
   {
     window.scrollTo(0, 0);
-    eventSender.setPageScaleFactor(2, 0, 0);
+    internals.setPageScaleFactor(2);
   }
 
   // Test Document scroll seperately so we ensure it scrolls all the way in one
@@ -57,7 +57,7 @@
         'You should be able to reach the end of the page bounds (i.e. ' +
         'scroll to see the divs at the bounds.)');
 
-    if (window.eventSender) {
+    if (window.internals) {
       reset();
       debug('');
       debug('Testing Document Scrolling:');

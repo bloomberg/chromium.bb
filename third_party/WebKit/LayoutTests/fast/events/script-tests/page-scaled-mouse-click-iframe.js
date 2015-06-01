@@ -52,7 +52,7 @@ function iframeLoaded() {
   div.addEventListener("click", appendEventLog, false);
   iframe.contentWindow.document.body.insertBefore(div, iframe.contentWindow.document.body.firstChild);
 
-  if (window.eventSender) {
+  if (window.eventSender && window.internals) {
     eventSender.mouseMoveTo(10, 10);
     // We are clicking in the same position on screen. As we scale or transform the page,
     // we expect the pageX and pageY event coordinates to change because different
@@ -60,18 +60,18 @@ function iframeLoaded() {
 
     testEvents(0, "Unscaled", "click(10, 10)");
 
-    window.eventSender.setPageScaleFactorLimits(0.5, 0.5);
-    window.eventSender.setPageScaleFactor(0.5, 0, 0);
+    window.internals.setPageScaleFactorLimits(0.5, 0.5);
+    window.internals.setPageScaleFactor(0.5);
     testEvents(0, "setPageScale(0.5)", "click(20, 20)");
 
-    window.eventSender.setPageScaleFactorLimits(1, 1);
-    window.eventSender.setPageScaleFactor(1.0, 0, 0);
+    window.internals.setPageScaleFactorLimits(1, 1);
+    window.internals.setPageScaleFactor(1.0);
     html.style["-webkit-transform"] = "scale(0.5, 2.0)";
     html.style["-webkit-transform-origin"] = "0 0";
     testEvents(0, "CSS scale(0.5, 2.0)", "click(20, 5)");
 
-    window.eventSender.setPageScaleFactorLimits(0.5, 0.5);
-    window.eventSender.setPageScaleFactor(0.5, 0, 0);
+    window.internals.setPageScaleFactorLimits(0.5, 0.5);
+    window.internals.setPageScaleFactor(0.5);
     testEvents(0, "setPageScale(0.5), CSS scale(0.5, 2.0)", "click(40, 10)");
   }
 

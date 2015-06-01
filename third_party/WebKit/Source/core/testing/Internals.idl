@@ -201,6 +201,8 @@
     [RaisesException] DOMString pageSizeAndMarginsInPixels(long pageIndex, long width, long height, long marginTop, long marginRight, long marginBottom, long marginLeft);
 
     [RaisesException] void setDeviceScaleFactor(float scaleFactor);
+    [RaisesException] void setPageScaleFactor(float scaleFactor);
+    [RaisesException] void setPageScaleFactorLimits(float minScaleFactor, float maxScaleFactor);
 
     [RaisesException, TypeChecking=Interface] void setIsCursorVisible(Document document, boolean isVisible);
 

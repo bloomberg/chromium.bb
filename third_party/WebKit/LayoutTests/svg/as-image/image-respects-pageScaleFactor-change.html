@@ -5,19 +5,19 @@
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
     }
-    
+
     function load() {
-        if (!window.eventSender)
+        if (!window.internals)
             return;
 
-        window.eventSender.setPageScaleFactor(2, 0, 0);
-        
+        window.internals.setPageScaleFactor(2);
+
         setTimeout(increasePageScale, 0);
     }
-    
+
     function increasePageScale() {
-        window.eventSender.setPageScaleFactor(4, 0, 0);
-        
+        window.internals.setPageScaleFactor(4);
+
         if (window.testRunner)
             testRunner.notifyDone();
     }

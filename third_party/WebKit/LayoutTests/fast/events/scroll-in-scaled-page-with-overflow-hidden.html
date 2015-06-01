@@ -23,8 +23,8 @@
         // Force a layout.
         document.body.offsetLeft;
 
-        if (window.eventSender)
-            window.eventSender.setPageScaleFactor(2, 0, 0);
+        if (window.internals)
+            window.internals.setPageScaleFactor(2);
 
         // Note that with ScrollTopLeftInterop enabled, document.scrollingElement is
         // null because document.body is potentially scrollable (with overflow:hidden

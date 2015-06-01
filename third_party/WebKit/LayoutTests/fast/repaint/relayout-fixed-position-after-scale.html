@@ -32,10 +32,10 @@ function runTest() {
         window.internals.settings.setFixedElementsLayoutRelativeToFrame(true);
 
         // Force scrollbar to hide and re-layout immediately.
-        window.eventSender.setPageScaleFactor(0.1, 0, 0);
+        window.internals.setPageScaleFactor(0.1);
         document.body.offsetTop;
 
-        window.eventSender.setPageScaleFactor(0.5, 0, 0);
+        window.internals.setPageScaleFactor(0.5);
     }
 }
 </script>

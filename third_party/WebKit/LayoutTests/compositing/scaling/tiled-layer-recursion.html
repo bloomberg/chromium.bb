@@ -16,10 +16,10 @@
 
     function scalePage()
     {
-      if (window.eventSender)
-        window.eventSender.setPageScaleFactor(1.50025, 0, 0);
+      if (window.internals)
+        window.internals.setPageScaleFactor(1.50025);
     }
-  
+
     window.addEventListener('load', scalePage, false);
   </script>
 </head>

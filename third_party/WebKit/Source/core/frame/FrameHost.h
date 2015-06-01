@@ -100,6 +100,9 @@ public:
     void decrementSubframeCount() { ASSERT(m_subframeCount); --m_subframeCount; }
     int subframeCount() const;
 
+    void setDefaultPageScaleLimits(float minScale, float maxScale);
+    void setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints);
+
 private:
     explicit FrameHost(Page&);
 

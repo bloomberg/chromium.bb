@@ -1738,6 +1738,9 @@ crbug.com/492511 [ Mac ] virtual/antialiasedtext/fast/text/international/arabic-
 # Temporary, until [Unforgeable] attributes have the right accessors 'get' and 'set'.
 crbug.com/491006 http/tests/security/cross-origin-access-over-property-descriptor.html [ Failure ]
 
+crbug.com/447667 fast/events/scale-and-scroll-body.html [ NeedsRebaseline ]
+crbug.com/447667 virtual/pointerevent/fast/events/scale-and-scroll-body.html [ NeedsRebaseline ]
+
 crbug.com/493815 inspector/elements/iframe-load-event.html [ Pass Failure ]
 
 crbug.com/493939 [ XP ] http/tests/security/cross-origin-css.html [ Timeout Pass ]

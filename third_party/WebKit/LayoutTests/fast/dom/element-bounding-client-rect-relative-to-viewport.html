@@ -39,10 +39,10 @@
         shouldBe('rect.left', 'xPos');
         shouldBe('rect.top', 'yPos');
 
-        if (window.eventSender) {
+        if (window.internals) {
             window.scrollTo(layoutXScroll, layoutYScroll);
 
-            window.eventSender.setPageScaleFactor(2.0, 0, 0);
+            window.internals.setPageScaleFactor(2.0);
             internals.setVisualViewportOffset(visualXScroll, visualYScroll);
         }
 

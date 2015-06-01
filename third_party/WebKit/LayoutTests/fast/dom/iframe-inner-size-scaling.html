@@ -11,8 +11,8 @@
             originalWidth = frame.contentWindow.innerWidth;
             originalHeight = frame.contentWindow.innerHeight;
 
-            if (window.eventSender)
-                window.eventSender.setPageScaleFactor(2, 0, 0);
+            if (window.internals)
+                window.internals.setPageScaleFactor(2);
 
             shouldBeNonZero("frame.contentWindow.innerWidth");
             shouldBeNonZero("frame.contentWindow.innerHeight");

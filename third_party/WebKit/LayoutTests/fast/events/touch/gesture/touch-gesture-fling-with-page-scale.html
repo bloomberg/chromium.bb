@@ -2,7 +2,7 @@
 
 <script src="../../../../resources/js-test.js"></script>
 <script>
-  if (window.testRunner && window.eventSender) {
+  if (window.testRunner && window.eventSender && window.internals) {
     window.jsTestIsAsync = true;
     testRunner.waitUntilDone();
   }
@@ -42,8 +42,8 @@
     missXInViewport = (missX - pinchViewportContentX)*scale;
     missYInViewport = (missY - pinchViewportContentY)*scale;
 
-    if (window.testRunner && window.eventSender) {
-      eventSender.setPageScaleFactorLimits(1, 4.0);
+    if (window.testRunner && window.eventSender && window.internals) {
+      internals.setPageScaleFactorLimits(1, 4.0);
       runTest();
     }
 
@@ -102,7 +102,7 @@
 
     checkExpectation = null;
 
-    eventSender.setPageScaleFactor(scale, 0, 0);
+    internals.setPageScaleFactor(scale);
 
     // Position the pinch viewport.
     eventSender.gestureScrollBegin(0, 0);

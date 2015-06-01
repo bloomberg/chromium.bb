@@ -546,7 +546,6 @@ private:
     float maximumLegiblePageScale() const;
     void refreshPageScaleFactorAfterLayout();
     void resumeTreeViewCommits();
-    void setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints);
     IntSize contentsSize() const;
 
     void updateLayoutViewportScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll);

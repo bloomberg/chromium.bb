@@ -23,10 +23,10 @@
               'correctly when page is scaled.');
 
   onload = function() {
-    if (window.eventSender)
-      window.eventSender.setPageScaleFactor(2, 0, 0);
+    if (window.internals)
+      window.internals.setPageScaleFactor(2);
     else
-      testFailed('This test requires window.eventSender.setPageScaleFactor to be available.');
+      testFailed('This test requires window.internals.setPageScaleFactor to be available.');
 
     runAfterLayoutAndPaint(function(){
       nonFastScrollableRects = window.internals.nonFastScrollableRects(document);

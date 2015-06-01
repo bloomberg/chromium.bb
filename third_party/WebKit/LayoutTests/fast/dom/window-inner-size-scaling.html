@@ -7,8 +7,8 @@
         var originalHeight = window.innerHeight;
         var scale = 2;
 
-        if (window.eventSender)
-            window.eventSender.setPageScaleFactor(scale, 0, 0);
+        if (window.internals)
+            window.internals.setPageScaleFactor(scale);
 
         shouldBe("window.innerWidth", "Math.floor(originalWidth / scale)");
         shouldBe("window.innerHeight", "Math.floor(originalHeight / scale)");

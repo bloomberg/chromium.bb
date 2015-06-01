@@ -106,15 +106,14 @@ if (window.testRunner)
 function runTest()
 {
     var scaleFactor = 2.0;
-    var scaleOffset = 0;
-    if (window.eventSender)
-      eventSender.setPageScaleFactor(scaleFactor, scaleOffset, scaleOffset);
+    if (window.internals)
+      internals.setPageScaleFactor(scaleFactor);
 
     movingdiv = document.getElementById('movingbox');
     movingdiv.addEventListener("scroll", recordScroll);
     window.addEventListener("mousewheel", recordWheel);
 
-    if (window.eventSender) {
+    if (window.eventSender && window.internals) {
         description('This tests gesture event scrolling of an overflow div with page scale.');
 
         if (checkTestDependencies()) {

@@ -32,6 +32,7 @@
 #include "core/frame/FrameHost.h"
 
 #include "core/frame/EventHandlerRegistry.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/TopControls.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Page.h"
@@ -131,6 +132,48 @@ int FrameHost::subframeCount() const
     checkFrameCountConsistency(m_subframeCount + 1, m_page->mainFrame());
 #endif
     return m_subframeCount;
+}
+
+void FrameHost::setDefaultPageScaleLimits(float minScale, float maxScale)
+{
+    PageScaleConstraints newDefaults = pageScaleConstraintsSet().defaultConstraints();
+    newDefaults.minimumScale = minScale;
+    newDefaults.maximumScale = maxScale;
+
+    if (newDefaults == pageScaleConstraintsSet().defaultConstraints())
+        return;
+
+    pageScaleConstraintsSet().setDefaultConstraints(newDefaults);
+    pageScaleConstraintsSet().computeFinalConstraints();
+    pageScaleConstraintsSet().setNeedsReset(true);
+
+    if (!page().mainFrame() || !page().mainFrame()->isLocalFrame())
+        return;
+
+    FrameView* rootView = page().deprecatedLocalMainFrame()->view();
+
+    if (!rootView)
+        return;
+
+    rootView->setNeedsLayout();
+}
+
+void FrameHost::setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints)
+{
+    if (newConstraints == pageScaleConstraintsSet().userAgentConstraints())
+        return;
+
+    pageScaleConstraintsSet().setUserAgentConstraints(newConstraints);
+
+    if (!page().mainFrame() || !page().mainFrame()->isLocalFrame())
+        return;
+
+    FrameView* rootView = page().deprecatedLocalMainFrame()->view();
+
+    if (!rootView)
+        return;
+
+    rootView->setNeedsLayout();
 }
 
 }

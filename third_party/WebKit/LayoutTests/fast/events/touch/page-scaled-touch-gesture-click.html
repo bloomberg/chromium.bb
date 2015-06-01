@@ -68,9 +68,9 @@ function endTest()
 }
 
 function runTest() {
-    if (window.eventSender) {
-        eventSender.setPageScaleFactorLimits(0.5, 0.5);
-        eventSender.setPageScaleFactor(0.5, 0, 0);
+    if (window.internals) {
+        internals.setPageScaleFactorLimits(0.5, 0.5);
+        internals.setPageScaleFactor(0.5);
     }
 
     var div = document.getElementById('touchtarget');
@@ -83,7 +83,7 @@ function runTest() {
     if (window.testRunner)
         testRunner.waitUntilDone();
 
-    if (window.eventSender) {
+    if (window.eventSender && window.internals) {
         description("This tests basic single touch gesture generation.");
         if (eventSender.clearTouchPoints) {
             eventSender.gestureTap(10, 12);

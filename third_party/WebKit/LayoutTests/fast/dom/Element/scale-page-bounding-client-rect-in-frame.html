@@ -4,13 +4,13 @@
 <script>
 function testRects()
 {
-    if (!window.testRunner || !window.eventSender)
+    if (!window.testRunner || !window.eventSender || !window.internals)
         return;
     testRunner.dumpAsText();
-    
+
     var div = document.getElementById("frame").contentDocument.getElementById("div");
     var rect = div.getBoundingClientRect();
-    window.eventSender.setPageScaleFactor(2, 0, 0);
+    window.internals.setPageScaleFactor(2);
     var scaledRect = div.getBoundingClientRect();
 
     var result = document.getElementById("result");
@@ -21,7 +21,6 @@ function testRects()
         result.innerHTML = "Pass";
     else
         result.innerHTML = "Fail";
-    
 }
 </script>
 </head>

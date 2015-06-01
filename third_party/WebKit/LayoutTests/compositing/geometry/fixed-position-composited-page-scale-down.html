@@ -15,8 +15,8 @@
 <script>
   if (window.internals && window.eventSender) {
     window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-    window.eventSender.setPageScaleFactorLimits(0.5, 0.5);
-    window.eventSender.setPageScaleFactor(0.5, 0, 0);
+    window.internals.setPageScaleFactorLimits(0.5, 0.5);
+    window.internals.setPageScaleFactor(0.5);
   }
   if (window.testRunner)
     testRunner.dumpAsTextWithPixelResults();

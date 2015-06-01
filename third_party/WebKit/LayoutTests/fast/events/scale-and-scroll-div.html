@@ -62,9 +62,8 @@
       }
 
       function scaleWithEventSender(scaleFactor) {
-          var scaleOffset = 0;
-          if (window.eventSender) {
-             window.eventSender.setPageScaleFactor(scaleFactor, scaleOffset, scaleOffset);
+          if (window.internals) {
+             window.internals.setPageScaleFactor(scaleFactor);
           }
       }
 
@@ -86,7 +85,7 @@
       }
 
      function run_test() {
-         if (window.eventSender) {
+         if (window.eventSender && window.internals) {
             description('This tests that a div scrolled by gesture touch while the page is scaled still scrolls at the rate of the touch');
 
             window.internals.settings.setPreferCompositingToLCDTextEnabled(true);

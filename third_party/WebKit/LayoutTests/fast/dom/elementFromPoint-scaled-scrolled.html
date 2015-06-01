@@ -8,8 +8,8 @@
 <div id="result"></div>
 <script>
 function runTest() {
-    if (window.eventSender)
-        window.eventSender.setPageScaleFactor(2, 0, 0);
+    if (window.internals)
+        window.internals.setPageScaleFactor(2);
     window.scrollTo(100,100);
 
     if (window.testRunner)

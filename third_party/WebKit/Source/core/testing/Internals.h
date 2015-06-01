@@ -251,6 +251,8 @@ public:
     String pageSizeAndMarginsInPixels(int, int, int, int, int, int, int, ExceptionState& = ASSERT_NO_EXCEPTION) const;
 
     void setDeviceScaleFactor(float scaleFactor, ExceptionState&);
+    void setPageScaleFactor(float scaleFactor, ExceptionState&);
+    void setPageScaleFactorLimits(float minScaleFactor, float maxScaleFactor, ExceptionState&);
 
     void setIsCursorVisible(Document*, bool, ExceptionState&);
 

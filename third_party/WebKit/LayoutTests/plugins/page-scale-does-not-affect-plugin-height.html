@@ -4,8 +4,8 @@
     if (window.testRunner)
       testRunner.dumpAsText();
 
-    if (window.eventSender)
-      window.eventSender.setPageScaleFactor(1.5, 0, 0);
+    if (window.internals)
+      window.internals.setPageScaleFactor(1.5);
 
     document.body.innerHTML =
       "This test checks that page scale does not affect a plugin object's height when it depends on the window height."

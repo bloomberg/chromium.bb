@@ -21,9 +21,9 @@
         }
         function testScroll(zoomFactor, scaleFactor) {
             debug('Testing at zoom ' + zoomFactor + ' and scale ' + scaleFactor);
-            if (window.testRunner && window.eventSender) {
+            if (window.testRunner && window.eventSender && window.internals) {
                 var y = 221;
-                eventSender.setPageScaleFactor(scaleFactor, 0, 0);
+                internals.setPageScaleFactor(scaleFactor);
                 zoomBy(zoomFactor);
                 window.scrollTo(10, 10);
                 window.scrollBy(0, y);

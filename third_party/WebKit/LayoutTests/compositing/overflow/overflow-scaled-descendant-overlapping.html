@@ -7,9 +7,9 @@
         window.onload = function() {
             if (window.testRunner)
                 testRunner.dumpAsTextWithPixelResults();
-            if (window.eventSender) {
-                window.eventSender.setPageScaleFactorLimits(0.5, 0.5);
-                window.eventSender.setPageScaleFactor(0.5, 0, 0);
+            if (window.internals) {
+                window.internals.setPageScaleFactorLimits(0.5, 0.5);
+                window.internals.setPageScaleFactor(0.5);
             }
         }
     </script>

@@ -14,8 +14,8 @@ function testClick(x, y, expectedHash)
 
 onload = function()
 {
-    if (window.testRunner) {
-        eventSender.setPageScaleFactor(1.25, 0, 0); // pinch scale
+    if (window.testRunner && window.eventSender && window.internals) {
+        internals.setPageScaleFactor(1.25); // pinch scale
         eventSender.setPageZoomFactor(1.5, 0, 0); // browser zoom
         testClick(402, 122, '#?0,0'); // top left border
         testClick(407, 204, '#?0,0'); // top left padding

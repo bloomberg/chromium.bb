@@ -3,9 +3,9 @@
 <head>
 <script type="text/javascript"> 
 window.onload = function() {
-    if (window.eventSender) {
-        window.eventSender.setPageScaleFactorLimits(0.25, 0.25);
-        window.eventSender.setPageScaleFactor(0.25, 0, 0);
+    if (window.internals) {
+        window.internals.setPageScaleFactorLimits(0.25, 0.25);
+        window.internals.setPageScaleFactor(0.25);
     }
 }
 </script> 

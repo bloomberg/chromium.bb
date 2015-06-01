@@ -8,7 +8,7 @@
   function reset()
   {
     window.scrollTo(0, 0);
-    eventSender.setPageScaleFactor(2, 0, 0);
+    internals.setPageScaleFactor(2);
   }
 
   function testArrowKeys()
@@ -107,7 +107,7 @@
         'You should be able to reach the end of the page bounds (i.e. ' +
         'scroll to see the divs at the bounds.)');
 
-    if (window.eventSender) {
+    if (window.eventSender && window.internals) {
       reset();
       debug('Testing arrow keys:');
       testArrowKeys();

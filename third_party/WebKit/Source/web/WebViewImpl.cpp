@@ -3233,36 +3233,9 @@ void WebViewImpl::disableAutoResizeMode()
     configureAutoResizeMode();
 }
 
-void WebViewImpl::setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints)
-{
-    if (newConstraints == pageScaleConstraintsSet().userAgentConstraints())
-        return;
-
-    pageScaleConstraintsSet().setUserAgentConstraints(newConstraints);
-
-    if (!mainFrameImpl() || !mainFrameImpl()->frameView())
-        return;
-
-    mainFrameImpl()->frameView()->setNeedsLayout();
-}
-
 void WebViewImpl::setDefaultPageScaleLimits(float minScale, float maxScale)
 {
-    PageScaleConstraints newDefaults = pageScaleConstraintsSet().defaultConstraints();
-    newDefaults.minimumScale = minScale;
-    newDefaults.maximumScale = maxScale;
-
-    if (newDefaults == pageScaleConstraintsSet().defaultConstraints())
-        return;
-
-    pageScaleConstraintsSet().setDefaultConstraints(newDefaults);
-    pageScaleConstraintsSet().computeFinalConstraints();
-    pageScaleConstraintsSet().setNeedsReset(true);
-
-    if (!mainFrameImpl() || !mainFrameImpl()->frameView())
-        return;
-
-    mainFrameImpl()->frameView()->setNeedsLayout();
+    return page()->frameHost().setDefaultPageScaleLimits(minScale, maxScale);
 }
 
 void WebViewImpl::setInitialPageScaleOverride(float initialPageScaleFactorOverride)
@@ -3274,7 +3247,7 @@ void WebViewImpl::setInitialPageScaleOverride(float initialPageScaleFactorOverri
         return;
 
     pageScaleConstraintsSet().setNeedsReset(true);
-    setUserAgentPageScaleConstraints(constraints);
+    page()->frameHost().setUserAgentPageScaleConstraints(constraints);
 }
 
 void WebViewImpl::setMaximumLegibleScale(float maximumLegibleScale)
@@ -3292,7 +3265,7 @@ void WebViewImpl::setIgnoreViewportTagScaleLimits(bool ignore)
         constraints.minimumScale = -1;
         constraints.maximumScale = -1;
     }
-    setUserAgentPageScaleConstraints(constraints);
+    page()->frameHost().setUserAgentPageScaleConstraints(constraints);
 }
 
 IntSize WebViewImpl::mainFrameSize()

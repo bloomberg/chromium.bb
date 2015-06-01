@@ -3,7 +3,7 @@
 <script>
 function testRects()
 {
-    if (!window.testRunner ||  !window.eventSender)
+    if (!window.testRunner || !window.eventSender || !window.internals)
         return;
     testRunner.dumpAsText();
 
@@ -11,8 +11,8 @@ function testRects()
     range.selectNodeContents(document.getElementById('div'));
     var rectList = range.getClientRects();
     var rect = rectList[0];
-   
-    window.eventSender.setPageScaleFactor(2, 0, 0);
+
+    window.internals.setPageScaleFactor(2);
     var scaledRange = document.createRange();
     scaledRange.selectNodeContents(document.getElementById('div'));
     var scaledRectList = scaledRange.getClientRects();
@@ -26,7 +26,6 @@ function testRects()
         result.innerHTML = "Pass";
     else
         result.innerHTML = "Fail";
-    
 }
 </script>
 </head>

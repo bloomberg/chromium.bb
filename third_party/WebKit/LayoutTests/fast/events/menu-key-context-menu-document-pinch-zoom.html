@@ -74,7 +74,7 @@ function handleContextMenuEditable(e) {
 }
 
 var runTest = function() {
-    eventSender.setPageScaleFactor(scale, 0, 0);
+    internals.setPageScaleFactor(scale);
 
     // Position the pinch viewport.
     eventSender.gestureScrollBegin(0, 0);
@@ -111,7 +111,7 @@ var runTest = function() {
     testRunner.notifyDone();
 }
 
-if (!window.eventSender || !window.testRunner) {
+if (!window.eventSender || !window.testRunner || !window.internals) {
     testFailed('This test needs to run in a test environment.');
     document.addEventListener('contextmenu', handleContextMenuEditable, true);
 } else {

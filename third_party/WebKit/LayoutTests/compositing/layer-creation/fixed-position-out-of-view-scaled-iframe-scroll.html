@@ -10,11 +10,11 @@
     window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
     addEventListener("load", function() {
-      window.eventSender.setPageScaleFactor(0.5, 0, 0);
+      window.internals.setPageScaleFactor(0.5);
       setTimeout(function() {
         var layerTreeScaledDown = internals.layerTreeAsText(document.getElementById("iframe").contentDocument);
 
-        window.eventSender.setPageScaleFactor(1.5, 0, 0);
+        window.internals.setPageScaleFactor(1.5);
         setTimeout(function() {
           var layerTreeScaledUp = internals.layerTreeAsText(document.getElementById("iframe").contentDocument);
           // Because logical size of the frame is unchanged, the layer tree in the frame should not be affected by the page scale.
