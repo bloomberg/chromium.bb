@@ -35,7 +35,7 @@ public class IntentUtils {
     }
 
     /**
-     * Just like {@link Intent.getBooleanExtra()} but doesn't throw exceptions.
+     * Just like {@link Intent#getBooleanExtra(String, boolean)} but doesn't throw exceptions.
      */
     public static boolean safeGetBooleanExtra(Intent intent, String name, boolean defaultValue) {
         try {
@@ -47,7 +47,7 @@ public class IntentUtils {
     }
 
     /**
-     * Just like {@link Intent.getIntExtra()} but doesn't throw exceptions.
+     * Just like {@link Intent#getIntExtra(String, int)} but doesn't throw exceptions.
      */
     public static int safeGetIntExtra(Intent intent, String name, int defaultValue) {
         try {
@@ -59,7 +59,7 @@ public class IntentUtils {
     }
 
     /**
-     * Just like {@link Intent.getLongExtra()} but doesn't throw exceptions.
+     * Just like {@link Intent#getLongExtra(String, long)} but doesn't throw exceptions.
      */
     public static long safeGetLongExtra(Intent intent, String name, long defaultValue) {
         try {
@@ -71,7 +71,7 @@ public class IntentUtils {
     }
 
     /**
-     * Just like {@link Intent.getStringExtra()} but doesn't throw exceptions.
+     * Just like {@link Intent#getStringExtra(String)} but doesn't throw exceptions.
      */
     public static String safeGetStringExtra(Intent intent, String name) {
         try {
@@ -83,7 +83,19 @@ public class IntentUtils {
     }
 
     /**
-     * Just like {@link Intent.getBundleExtra()} but doesn't throw exceptions.
+     * Just like {@link Bundle#getString(String)} but doesn't throw exceptions.
+     */
+    public static String safeGetString(Bundle bundle, String name) {
+        try {
+            return bundle.getString(name);
+        } catch (Exception e) {
+            // Catches un-parceling exceptions.
+            return null;
+        }
+    }
+
+    /**
+     * Just like {@link Intent#getBundleExtra(String)} but doesn't throw exceptions.
      */
     public static Bundle safeGetBundleExtra(Intent intent, String name) {
         try {
@@ -95,7 +107,19 @@ public class IntentUtils {
     }
 
     /**
-     * Just like {@link Intent.getParcelableExtra()} but doesn't throw exceptions.
+     * Just like {@link Bundle#getParcelable(String)} but doesn't throw exceptions.
+     */
+    public static <T extends Parcelable> T safeGetParcelable(Bundle bundle, String name) {
+        try {
+            return bundle.getParcelable(name);
+        } catch (Exception e) {
+            // Catches un-parceling exceptions.
+            return null;
+        }
+    }
+
+    /**
+     * Just like {@link Intent#getParcelableExtra(String)} but doesn't throw exceptions.
      */
     public static <T extends Parcelable> T safeGetParcelableExtra(Intent intent, String name) {
         try {
@@ -107,7 +131,20 @@ public class IntentUtils {
     }
 
     /**
-     * Just like {@link Intent.getStringArrayListExtra()} but doesn't throw exceptions.
+     * Just link {@link Intent#getParcelableArrayListExtra(String)} but doesn't throw exceptions.
+     */
+    public static <T extends Parcelable> ArrayList<T> getParcelableArrayListExtra(
+            Intent intent, String name) {
+        try {
+            return intent.getParcelableArrayListExtra(name);
+        } catch (Exception e) {
+            // Catches un-parceling exceptions.
+            return null;
+        }
+    }
+
+    /**
+     * Just like {@link Intent#getStringArrayListExtra(String)} but doesn't throw exceptions.
      */
     public static ArrayList<String> safeGetStringArrayListExtra(Intent intent, String name) {
         try {

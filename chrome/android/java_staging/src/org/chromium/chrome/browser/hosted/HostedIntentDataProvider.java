@@ -19,6 +19,7 @@ import android.util.Pair;
 import com.google.android.apps.chrome.R;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,32 +112,42 @@ public class HostedIntentDataProvider {
     public HostedIntentDataProvider(Intent intent, Context context) {
         if (intent == null) assert false;
 
-        mSessionId = intent.getLongExtra(EXTRA_HOSTED_SESSION_ID, INVALID_SESSION_ID);
+        mSessionId = IntentUtils.safeGetLongExtra(
+                intent, EXTRA_HOSTED_SESSION_ID, INVALID_SESSION_ID);
         retrieveToolbarColor(intent, context);
-        mKeepAliveServiceIntent = intent.getParcelableExtra(EXTRA_HOSTED_KEEP_ALIVE);
-        Bundle actionButtonBundle = intent.getBundleExtra(EXTRA_HOSTED_ACTION_BUTTON_BUNDLE);
+
+        mKeepAliveServiceIntent = IntentUtils.safeGetParcelableExtra(
+                intent, EXTRA_HOSTED_KEEP_ALIVE);
+
+        Bundle actionButtonBundle = IntentUtils.safeGetBundleExtra(
+                intent, EXTRA_HOSTED_ACTION_BUTTON_BUNDLE);
         if (actionButtonBundle != null) {
-            mIcon = (Bitmap) actionButtonBundle.getParcelable(KEY_HOSTED_ICON);
-            mActionButtonPendingIntent = (PendingIntent) actionButtonBundle.getParcelable(
-                    KEY_HOSTED_PENDING_INTENT);
+            mIcon = IntentUtils.safeGetParcelable(actionButtonBundle, KEY_HOSTED_ICON);
+            mActionButtonPendingIntent = IntentUtils.safeGetParcelable(
+                    actionButtonBundle, KEY_HOSTED_PENDING_INTENT);
         }
-        List<Bundle> menuItems = intent.getParcelableArrayListExtra(EXTRA_HOSTED_MENU_ITEMS);
+
+        List<Bundle> menuItems = IntentUtils.getParcelableArrayListExtra(
+                intent, EXTRA_HOSTED_MENU_ITEMS);
         if (menuItems != null) {
             for (Bundle bundle : menuItems) {
-                String title = bundle.getString(KEY_HOSTED_MENU_TITLE);
-                PendingIntent pendingIntent = bundle.getParcelable(KEY_HOSTED_PENDING_INTENT);
+                String title = IntentUtils.safeGetString(bundle, KEY_HOSTED_MENU_TITLE);
+                PendingIntent pendingIntent = IntentUtils.safeGetParcelable(
+                        bundle, KEY_HOSTED_PENDING_INTENT);
                 if (TextUtils.isEmpty(title) || pendingIntent == null) continue;
                 mMenuEntries.add(new Pair<String, PendingIntent>(title, pendingIntent));
             }
         }
-        mAnimationBundle = intent.getBundleExtra(EXTRA_HOSTED_EXIT_ANIMATION_BUNDLE);
+
+        mAnimationBundle = IntentUtils.safeGetBundleExtra(
+                intent, EXTRA_HOSTED_EXIT_ANIMATION_BUNDLE);
     }
 
     /**
      * Processes the color passed from the client app and updates {@link #mToolbarColor}.
      */
     private void retrieveToolbarColor(Intent intent, Context context) {
-        int color = intent.getIntExtra(EXTRA_HOSTED_TOOLBAR_COLOR,
+        int color = IntentUtils.safeGetIntExtra(intent, EXTRA_HOSTED_TOOLBAR_COLOR,
                 context.getResources().getColor(R.color.default_primary_color));
         int defaultColor = context.getResources().getColor(R.color.default_primary_color);
 
