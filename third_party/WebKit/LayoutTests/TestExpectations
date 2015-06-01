@@ -349,7 +349,7 @@ crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip 
 
 crbug.com/451577 [ Win ] inspector/console [ Slow ]
 
-crbug.com/463023 inspector/sources/debugger/debugger-reload-breakpoints-with-source-maps.html [ Failure Pass ]
+crbug.com/463023 inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Failure Pass ]
 
 crbug.com/451577 [ Win ] inspector-protocol/loading-iframe-document-node.html [ Crash Pass ]
 
@@ -497,13 +497,13 @@ crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ 
 
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 
-crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
+crbug.com/320477 [ Debug ] inspector/sources/debugger-pause/debugger-pause-in-internal.html [ Pass Crash ]
 # crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ ImageOnlyFailure ]
 crbug.com/396823 [ Mac ] virtual/slimmingpaint/fast/multicol/multicol-with-child-renderLayer-for-input.html [ Skip ]
 
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ ImageOnlyFailure ]
 
-crbug.com/442730 inspector/sources/debugger/watch-expressions-preserve-expansion.html [ Pass Failure ]
+crbug.com/442730 inspector/sources/debugger-ui/watch-expressions-preserve-expansion.html [ Pass Failure ]
 
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
@@ -1161,10 +1161,10 @@ crbug.com/30536 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [
 crbug.com/394208 [ Win ] http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Timeout Pass ]
 
 # Assertion failures seen only on Slow Leopard.
-crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-skip-step-in.html [ Crash ]
-crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-steppings.html [ Crash ]
-crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-with-async-callstack.html [ Crash ]
-crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/async-callstack-get-as-string.html [ Crash ]
+crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/frameworks-skip-step-in.html [ Crash ]
+crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/frameworks-steppings.html [ Crash ]
+crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/frameworks-with-async-callstack.html [ Crash ]
+crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-async/async-callstack-get-as-string.html [ Crash ]
 
 # Tiny changes due to optimizations added/fixed in SkImageFilters
 crbug.com/464741 css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline  ]
@@ -1659,7 +1659,7 @@ crbug.com/478109 [ SnowLeopard ] virtual/antialiasedtext/fast/text/bidi-embeddin
 
 crbug.com/470549 inspector/tracing/worker-events.html [ Pass Crash Timeout ]
 
-crbug.com/471093 [ Win Debug ] inspector/sources/debugger/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
+crbug.com/471093 [ Win Debug ] inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
 
 crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Timeout ]
 

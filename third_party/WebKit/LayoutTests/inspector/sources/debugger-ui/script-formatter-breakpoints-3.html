@@ -2,14 +2,13 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script src="resources/unformatted2.js"></script>
+<script src="../debugger/resources/unformatted3.js"></script>
 <script>
 var test = function()
 {
     WebInspector.breakpointManager._storage._breakpoints = {};
     var panel = WebInspector.panels.sources;
     var scriptFormatter;
-    var formattedSourceFrame;
 
     InspectorTest.runDebuggerTestSuite([
         function testSetup(next)
@@ -20,9 +19,9 @@ var test = function()
             });
         },
 
-        function testBreakpointsSetAndRemoveInFormattedSource(next)
+        function testBreakpointsSetInFormattedAndRemoveInOriginalSource(next)
         {
-            InspectorTest.showScriptSource("unformatted2.js", didShowScriptSource);
+            InspectorTest.showScriptSource("unformatted3.js", didShowScriptSource);
 
             function didShowScriptSource(frame)
             {
@@ -32,7 +31,7 @@ var test = function()
                 
             function uiSourceCodeScriptFormatted()
             {
-                formattedSourceFrame = panel.visibleView;
+                var formattedSourceFrame = panel.visibleView;
                 InspectorTest.setBreakpoint(formattedSourceFrame, 3, "", true);
                 InspectorTest.waitUntilPaused(pausedInF2);
                 InspectorTest.evaluateInPageWithTimeout("f2()");
@@ -41,9 +40,9 @@ var test = function()
             function pausedInF2(callFrames)
             {
                 InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
-                InspectorTest.removeBreakpoint(formattedSourceFrame, 3);
                 scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
                 InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
+                // No need to remove breakpoint since formattedUISourceCode was removed.
                 InspectorTest.resumeExecution(next);
             }
         }
