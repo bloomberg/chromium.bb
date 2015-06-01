@@ -11,14 +11,15 @@ import os
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import lab_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import image_test_lib
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
 from chromite.lib import timeout_util
@@ -351,18 +352,15 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
     Args:
       test_results_dir: A path to the directory with perf files.
     """
-    # Import image_test here so that extra imports from image_test does not
-    # affect cbuildbot in bootstrap.
-    from chromite.lib import image_test
     # A dict of list of perf values, keyed by test name.
     perf_entries = collections.defaultdict(list)
     for root, _, filenames in os.walk(test_results_dir):
       for relative_name in filenames:
-        if not image_test.IsPerfFile(relative_name):
+        if not image_test_lib.IsPerfFile(relative_name):
           continue
         full_name = os.path.join(root, relative_name)
         entries = perf_uploader.LoadPerfValues(full_name)
-        test_name = image_test.ImageTestCase.GetTestName(relative_name)
+        test_name = image_test_lib.ImageTestCase.GetTestName(relative_name)
         perf_entries[test_name].extend(entries)
 
     platform_name = self._run.bot_id
