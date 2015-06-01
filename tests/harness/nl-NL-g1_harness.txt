@@ -146,6 +146,11 @@
           "output": "⠖ ⠼⠉⠃ ⠼⠁⠁ ⠼⠉⠃ ⠼⠙⠉ ⠼⠑⠙"
         },
         {
+          "xfail": "Fails because number grouping isn't implemented",
+          "input": "1 297 381 euro",
+          "output": "⠼⠁⠲⠃⠊⠛⠲⠉⠓⠁ ⠑⠥⠗⠕"
+        },
+        {
           "input": "1e, 1ste",
           "output": "⠼⠁⠠⠑⠂ ⠼⠁⠎⠞⠑"
         },
@@ -437,6 +442,14 @@
           "output": "⠼⠑⠛⠈⠴ ⠼⠉⠓⠈⠔ ⠝⠕⠕⠗⠙⠑⠗⠃⠗⠑⠑⠙⠞⠑"
         },
         {
+          "input": "no_reply@skynet.be",
+          "output": "⠝⠕⠸⠗⠑⠏⠇⠽⠜⠎⠅⠽⠝⠑⠞⠲⠃⠑"
+        },
+        {
+          "input": "x_1 = 0",
+          "output": "⠭⠸⠼⠁ ⠶ ⠼⠚"
+        },
+        {
           "xfail": "Fails because handling of emphasis is broken in liblouis",
           "input":    "Landt je vader op Schiphol?",
           "typeform": "000040000000000000000000000",
@@ -468,6 +481,11 @@
           "input":    "BTW-tarieven",
           "typeform": "444400000000",
           "output": "⠸⠘⠃⠞⠺⠤⠠⠞⠁⠗⠊⠑⠧⠑⠝"
+        },
+        {
+          "input":    "3de",
+          "typeform": "044",
+          "output": "⠼⠉⠸⠙⠑"
         },
         {
           "input":    "cursief",
