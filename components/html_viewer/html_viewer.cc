@@ -139,7 +139,7 @@ class HTMLViewer : public mojo::ApplicationDelegate,
                    public mojo::InterfaceFactory<ContentHandler> {
  public:
   HTMLViewer() {}
-  ~HTMLViewer() override { blink::shutdown(); }
+  ~HTMLViewer() override {}
 
  private:
   // Overridden from ApplicationDelegate:

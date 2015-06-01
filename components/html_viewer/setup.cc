@@ -73,6 +73,10 @@ Setup::Setup(mojo::ApplicationImpl* app)
 }
 
 Setup::~Setup() {
+  if (blink_platform_) {
+    renderer_scheduler_->Shutdown();
+    blink::shutdown();
+  }
 }
 
 void Setup::InitHeadless() {

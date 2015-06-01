@@ -38,6 +38,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           helper_.ControlTaskRunner()),
       current_policy_(Policy::NORMAL),
       renderer_hidden_(false),
+      was_shutdown_(false),
       last_input_type_(blink::WebInputEvent::Undefined),
       input_stream_state_(InputStreamState::INACTIVE),
       policy_may_need_update_(&incoming_signals_lock_),
@@ -61,10 +62,15 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
       this);
+  // Ensure the renderer scheduler was shut down explicitly, because otherwise
+  // we could end up having stale pointers to the Blink heap which has been
+  // terminated by this point.
+  DCHECK(was_shutdown_);
 }
 
 void RendererSchedulerImpl::Shutdown() {
   helper_.Shutdown();
+  was_shutdown_ = true;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

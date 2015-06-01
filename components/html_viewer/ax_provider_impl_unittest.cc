@@ -47,7 +47,8 @@ class TestWebViewClient : public WebViewClient {
 class AxProviderImplTest : public testing::Test {
  public:
   AxProviderImplTest()
-      : renderer_scheduler_(scheduler::RendererScheduler::Create()) {
+      : message_loop_(new base::MessageLoopForUI()),
+        renderer_scheduler_(scheduler::RendererScheduler::Create()) {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     gin::V8Initializer::LoadV8Snapshot();
 #endif
@@ -55,10 +56,14 @@ class AxProviderImplTest : public testing::Test {
         new html_viewer::BlinkPlatformImpl(nullptr, renderer_scheduler_.get()));
   }
 
-  ~AxProviderImplTest() override { blink::shutdown(); }
+  ~AxProviderImplTest() override {
+    renderer_scheduler_->Shutdown();
+    message_loop_.reset();
+    blink::shutdown();
+  }
 
  private:
-  base::MessageLoopForUI message_loop;
+  scoped_ptr<base::MessageLoopForUI> message_loop_;
   scoped_ptr<scheduler::RendererScheduler> renderer_scheduler_;
 };
 

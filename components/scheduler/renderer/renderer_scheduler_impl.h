@@ -202,6 +202,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   Policy current_policy_;
   base::TimeTicks current_policy_expiration_time_;
   bool renderer_hidden_;
+  bool was_shutdown_;
 
   base::TimeTicks estimated_next_frame_begin_;
 
