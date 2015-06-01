@@ -99,7 +99,7 @@ public:
     template <typename Return, typename Metadata>
     static Return malloc(size_t size)
     {
-        return reinterpret_cast<Return>(Heap::allocate<Metadata>(size));
+        return reinterpret_cast<Return>(Heap::allocate<Metadata>(size, IsEagerlyFinalizedType<Metadata>::value));
     }
     static void free(void* address) { }
     template<typename T>

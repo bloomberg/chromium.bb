@@ -919,22 +919,25 @@ void ThreadState::preSweep()
     }
 
 #if defined(ADDRESS_SANITIZER)
-// TODO(Oilpan): enable the poisoning always.
-#if ENABLE(OILPAN)
-    for (int i = 0; i < NumberOfHeaps; i++)
-        m_heaps[i]->poisonUnmarkedObjects();
-#endif
+    poisonEagerHeap(SetPoison);
 #endif
 
 #if ENABLE_LAZY_SWEEPING
     if (gcState() == EagerSweepScheduled) {
         // Eager sweeping should happen only in testing.
         setGCState(Sweeping);
+        eagerSweep();
+#if defined(ADDRESS_SANITIZER)
+        poisonAllHeaps();
+#endif
         completeSweep();
     } else {
         // The default behavior is lazy sweeping.
         setGCState(Sweeping);
         eagerSweep();
+#if defined(ADDRESS_SANITIZER)
+        poisonAllHeaps();
+#endif
         scheduleIdleLazySweep();
     }
 #else
@@ -946,6 +949,28 @@ void ThreadState::preSweep()
     snapshotFreeListIfNecessary();
 #endif
 }
+
+#if defined(ADDRESS_SANITIZER)
+void ThreadState::poisonAllHeaps()
+{
+    // TODO(Oilpan): enable the poisoning always.
+#if ENABLE(OILPAN)
+    // Unpoison the live objects remaining in the eager heaps..
+    poisonEagerHeap(ClearPoison);
+    // ..along with poisoning all unmarked objects in the other heaps.
+    for (int i = 1; i < NumberOfHeaps; i++)
+        m_heaps[i]->poisonHeap(UnmarkedOnly, SetPoison);
+#endif
+}
+
+void ThreadState::poisonEagerHeap(Poisoning poisoning)
+{
+    // TODO(Oilpan): enable the poisoning always.
+#if ENABLE(OILPAN)
+    m_heaps[EagerSweepHeapIndex]->poisonHeap(MarkedAndUnmarked, poisoning);
+#endif
+}
+#endif
 
 void ThreadState::eagerSweep()
 {
@@ -990,6 +1015,7 @@ void ThreadState::completeSweep()
         TRACE_EVENT0("blink_gc", "ThreadState::completeSweep");
         double timeStamp = WTF::currentTimeMS();
 
+        static_assert(EagerSweepHeapIndex == 0, "Eagerly swept heaps must be processed first.");
         for (int i = 0; i < NumberOfHeaps; i++)
             m_heaps[i]->completeSweep();
 

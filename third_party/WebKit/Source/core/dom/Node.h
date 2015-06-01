@@ -170,12 +170,12 @@ public:
     GC_PLUGIN_IGNORE("crbug.com/443854")
     void* operator new(size_t size)
     {
-        return allocateObject(size);
+        return allocateObject(size, false);
     }
-    static void* allocateObject(size_t size)
+    static void* allocateObject(size_t size, bool isEager)
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<Node>::Affinity>::state();
-        return Heap::allocateOnHeapIndex(state, size, NodeHeapIndex, GCInfoTrait<EventTarget>::index());
+        return Heap::allocateOnHeapIndex(state, size, isEager ? EagerSweepHeapIndex : NodeHeapIndex, GCInfoTrait<EventTarget>::index());
     }
 #else // !ENABLE(OILPAN)
     // All Nodes are placed in their own heap partition for security.

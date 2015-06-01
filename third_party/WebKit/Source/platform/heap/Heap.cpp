@@ -356,13 +356,29 @@ void BaseHeap::prepareForSweep()
 }
 
 #if defined(ADDRESS_SANITIZER)
-void BaseHeap::poisonUnmarkedObjects()
+void BaseHeap::poisonHeap(ObjectsToPoison objectsToPoison, Poisoning poisoning)
 {
-    // This method is called just before starting sweeping.
-    // Thus all dead objects are in the list of m_firstUnsweptPage.
-    for (BasePage* page = m_firstUnsweptPage; page; page = page->next()) {
-        page->poisonUnmarkedObjects();
+    // TODO(sof): support complete poisoning of all heaps.
+    ASSERT(objectsToPoison != MarkedAndUnmarked || heapIndex() == EagerSweepHeapIndex);
+
+    // This method may either be called to poison (SetPoison) heap
+    // object payloads prior to sweeping, or it may be called at
+    // the completion of a sweep to unpoison (ClearPoison) the
+    // objects remaining in the heap. Those will all be live and unmarked.
+    //
+    // Poisoning may be limited to unmarked objects only, or apply to all.
+    if (poisoning == SetPoison) {
+        ASSERT(!m_firstPage);
+        for (BasePage* page = m_firstUnsweptPage; page; page = page->next())
+            page->poisonObjects(objectsToPoison, poisoning);
+        return;
     }
+    // Support clearing of poisoning after sweeping has completed,
+    // in which case the pages of the live objects are reachable
+    // via m_firstPage.
+    ASSERT(!m_firstUnsweptPage);
+    for (BasePage* page = m_firstPage; page; page = page->next())
+        page->poisonObjects(objectsToPoison, poisoning);
 }
 #endif
 
@@ -796,6 +812,8 @@ Address NormalPageHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIn
 
     // 1. If this allocation is big enough, allocate a large object.
     if (allocationSize >= largeObjectSizeThreshold) {
+        // TODO(sof): support eagerly finalized large objects, if ever needed.
+        RELEASE_ASSERT(heapIndex() != EagerSweepHeapIndex);
         LargeObjectHeap* largeObjectHeap = static_cast<LargeObjectHeap*>(threadState()->heap(LargeObjectHeapIndex));
         Address largeObject = largeObjectHeap->allocateLargeObjectPage(allocationSize, gcInfoIndex);
         ASAN_MARK_LARGE_VECTOR_CONTAINER(this, largeObject);
@@ -1166,7 +1184,6 @@ void NormalPage::sweep()
             headerAddress += size;
             continue;
         }
-
         if (startOfGap != headerAddress)
             heapForNormalPage()->addToFreeList(startOfGap, headerAddress - startOfGap);
         header->unmark();
@@ -1207,7 +1224,7 @@ void NormalPage::makeConsistentForGC()
 }
 
 #if defined(ADDRESS_SANITIZER)
-void NormalPage::poisonUnmarkedObjects()
+void NormalPage::poisonObjects(ObjectsToPoison objectsToPoison, Poisoning poisoning)
 {
     for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
         HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
@@ -1219,8 +1236,11 @@ void NormalPage::poisonUnmarkedObjects()
             continue;
         }
         header->checkHeader();
-        if (!header->isMarked()) {
-            ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
+        if (objectsToPoison == MarkedAndUnmarked || !header->isMarked()) {
+            if (poisoning == SetPoison)
+                ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
+            else
+                ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
         }
         headerAddress += header->size();
     }
@@ -1496,11 +1516,15 @@ void LargeObjectPage::makeConsistentForGC()
 }
 
 #if defined(ADDRESS_SANITIZER)
-void LargeObjectPage::poisonUnmarkedObjects()
+void LargeObjectPage::poisonObjects(ObjectsToPoison objectsToPoison, Poisoning poisoning)
 {
     HeapObjectHeader* header = heapObjectHeader();
-    if (!header->isMarked())
-        ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
+    if (objectsToPoison == MarkedAndUnmarked || !header->isMarked()) {
+        if (poisoning == SetPoison)
+            ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
+        else
+            ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
+    }
 }
 #endif
 

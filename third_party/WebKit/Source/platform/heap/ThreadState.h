@@ -144,11 +144,11 @@ using EphemeronCallback = VisitorCallback;
 #define TypedHeapEnumName(Type) Type##HeapIndex,
 
 enum HeapIndices {
-    NormalPage1HeapIndex = 0,
+    EagerSweepHeapIndex = 0,
+    NormalPage1HeapIndex,
     NormalPage2HeapIndex,
     NormalPage3HeapIndex,
     NormalPage4HeapIndex,
-    EagerSweepHeapIndex,
     Vector1HeapIndex,
     Vector2HeapIndex,
     Vector3HeapIndex,
@@ -160,6 +160,20 @@ enum HeapIndices {
     // Values used for iteration of heap segments.
     NumberOfHeaps,
 };
+
+#if defined(ADDRESS_SANITIZER)
+// Heaps can have their object payloads be poisoned, or cleared
+// of their poisoning.
+enum Poisoning {
+    SetPoison,
+    ClearPoison,
+};
+
+enum ObjectsToPoison {
+    UnmarkedOnly,
+    MarkedAndUnmarked,
+};
+#endif
 
 #if ENABLE(GC_PROFILING)
 const size_t numberOfGenerationsToTrack = 8;
@@ -645,6 +659,11 @@ private:
     void runScheduledGC(StackState);
 
     void eagerSweep();
+
+#if defined(ADDRESS_SANITIZER)
+    void poisonEagerHeap(Poisoning);
+    void poisonAllHeaps();
+#endif
 
     // When ThreadState is detaching from non-main thread its
     // heap is expected to be empty (because it is going away).

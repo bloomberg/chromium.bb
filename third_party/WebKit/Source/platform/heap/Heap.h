@@ -386,8 +386,9 @@ public:
     virtual void removeFromHeap() = 0;
     virtual void sweep() = 0;
     virtual void makeConsistentForGC() = 0;
+
 #if defined(ADDRESS_SANITIZER)
-    virtual void poisonUnmarkedObjects() = 0;
+    virtual void poisonObjects(ObjectsToPoison, Poisoning) = 0;
 #endif
     // Check if the given address points to an object in this
     // heap page. If so, find the start of that object and mark it
@@ -474,7 +475,7 @@ public:
     virtual void sweep() override;
     virtual void makeConsistentForGC() override;
 #if defined(ADDRESS_SANITIZER)
-    virtual void poisonUnmarkedObjects() override;
+    virtual void poisonObjects(ObjectsToPoison, Poisoning) override;
 #endif
     virtual void checkAndMarkPointer(Visitor*, Address) override;
     virtual void markOrphaned() override;
@@ -536,7 +537,7 @@ public:
     virtual void sweep() override;
     virtual void makeConsistentForGC() override;
 #if defined(ADDRESS_SANITIZER)
-    virtual void poisonUnmarkedObjects() override;
+    virtual void poisonObjects(ObjectsToPoison, Poisoning) override;
 #endif
     virtual void checkAndMarkPointer(Visitor*, Address) override;
     virtual void markOrphaned() override;
@@ -700,7 +701,7 @@ public:
     void prepareHeapForTermination();
     void prepareForSweep();
 #if defined(ADDRESS_SANITIZER)
-    void poisonUnmarkedObjects();
+    void poisonHeap(ObjectsToPoison, Poisoning);
 #endif
     Address lazySweep(size_t, size_t gcInfoIndex);
     void sweepUnsweptPage();
@@ -902,7 +903,7 @@ public:
         return allocationSizeFromSize(size) - sizeof(HeapObjectHeader);
     }
     static Address allocateOnHeapIndex(ThreadState*, size_t, int heapIndex, size_t gcInfoIndex);
-    template<typename T> static Address allocate(size_t);
+    template<typename T> static Address allocate(size_t, bool eagerlySweep = false);
     template<typename T> static Address reallocate(void* previous, size_t);
 
     enum GCReason {
@@ -1008,6 +1009,9 @@ private:
     // Reset counters that track live and allocated-since-last-GC sizes.
     static void resetHeapCounters();
 
+    static int heapIndexForObjectSize(size_t);
+    static bool isNormalHeapIndex(int);
+
     static Visitor* s_markingVisitor;
     static CallbackStack* s_markingStack;
     static CallbackStack* s_postMarkingCallbackStack;
@@ -1027,6 +1031,21 @@ private:
     static double s_estimatedMarkingTimePerByte;
 
     friend class ThreadState;
+};
+
+template<typename T>
+struct IsEagerlyFinalizedType {
+private:
+    typedef char YesType;
+    struct NoType {
+        char padding[8];
+    };
+
+    template <typename U> static YesType checkMarker(typename U::IsEagerlyFinalizedMarker*);
+    template <typename U> static NoType checkMarker(...);
+
+public:
+    static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
 };
 
 template<typename T> class GarbageCollected {
@@ -1053,12 +1072,12 @@ public:
 
     void* operator new(size_t size)
     {
-        return allocateObject(size);
+        return allocateObject(size, IsEagerlyFinalizedType<T>::value);
     }
 
-    static void* allocateObject(size_t size)
+    static void* allocateObject(size_t size, bool eagerlySweep)
     {
-        return Heap::allocate<T>(size);
+        return Heap::allocate<T>(size, eagerlySweep);
     }
 
     void operator delete(void* p)
@@ -1074,7 +1093,7 @@ protected:
 
 // Assigning class types to their heaps.
 //
-// We use sized heaps for most 'normal' objcts to improve memory locality.
+// We use sized heaps for most 'normal' objects to improve memory locality.
 // It seems that the same type of objects are likely to be accessed together,
 // which means that we want to group objects by type. That's one reason
 // why we provide dedicated heaps for popular types (e.g., Node, CSSValue),
@@ -1087,24 +1106,26 @@ protected:
 // instances have to be finalized early and cannot be delayed until lazy
 // sweeping kicks in for their heap and page. The EAGERLY_FINALIZE()
 // macro is used to declare a class (and its derived classes) as being
-// in need of eagerly finalized. Must be defined with 'public' visibility
+// in need of eager finalization. Must be defined with 'public' visibility
 // for a class.
 //
-template<typename T, typename Enabled = void>
-class HeapIndexTrait {
-public:
-    static int heapIndexForObject(size_t size)
-    {
-        if (size < 64) {
-            if (size < 32)
-                return NormalPage1HeapIndex;
-            return NormalPage2HeapIndex;
-        }
-        if (size < 128)
-            return NormalPage3HeapIndex;
-        return NormalPage4HeapIndex;
+
+inline int Heap::heapIndexForObjectSize(size_t size)
+{
+    if (size < 64) {
+        if (size < 32)
+            return NormalPage1HeapIndex;
+        return NormalPage2HeapIndex;
     }
-};
+    if (size < 128)
+        return NormalPage3HeapIndex;
+    return NormalPage4HeapIndex;
+}
+
+inline bool Heap::isNormalHeapIndex(int index)
+{
+    return index >= NormalPage1HeapIndex && index <= NormalPage4HeapIndex;
+}
 
 #if ENABLE_LAZY_SWEEPING
 #define EAGERLY_FINALIZE() typedef int IsEagerlyFinalizedMarker
@@ -1115,30 +1136,6 @@ public:
 // sweeping is enabled non-Oilpan.
 #define EAGERLY_FINALIZE_WILL_BE_REMOVED()
 #endif
-
-template<typename T>
-struct IsEagerlyFinalizedType {
-private:
-    typedef char YesType;
-    struct NoType {
-        char padding[8];
-    };
-
-    template <typename U> static YesType checkMarker(typename U::IsEagerlyFinalizedMarker*);
-    template <typename U> static NoType checkMarker(...);
-
-public:
-    static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
-};
-
-template<typename T>
-class HeapIndexTrait<T, typename WTF::EnableIf<IsEagerlyFinalizedType<T>::value>::Type> {
-public:
-    static int heapIndexForObject(size_t)
-    {
-        return EagerSweepHeapIndex;
-    }
-};
 
 NO_SANITIZE_ADDRESS inline
 size_t HeapObjectHeader::size() const
@@ -1264,32 +1261,38 @@ inline Address Heap::allocateOnHeapIndex(ThreadState* state, size_t size, int he
 }
 
 template<typename T>
-Address Heap::allocate(size_t size)
+Address Heap::allocate(size_t size, bool eagerlySweep)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    return Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::heapIndexForObject(size), GCInfoTrait<T>::index());
+    return Heap::allocateOnHeapIndex(state, size, eagerlySweep ? EagerSweepHeapIndex : Heap::heapIndexForObjectSize(size), GCInfoTrait<T>::index());
 }
 
 template<typename T>
 Address Heap::reallocate(void* previous, size_t size)
 {
+    // Not intended to be a full C realloc() substitute;
+    // realloc(nullptr, size) is not a supported alias for malloc(size).
+
+    // TODO(sof): promptly free the previous object.
     if (!size) {
-        // If the new size is 0 this is equivalent to either free(previous) or
-        // malloc(0).  In both cases we do nothing and return nullptr.
+        // If the new size is 0 this is considered equivalent to free(previous).
         return nullptr;
     }
+
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    // TODO(haraken): reallocate() should use the heap that the original object
-    // is using. This won't be a big deal since reallocate() is rarely used.
-    Address address = Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::heapIndexForObject(size), GCInfoTrait<T>::index());
-    if (!previous) {
-        // This is equivalent to malloc(size).
-        return address;
-    }
     HeapObjectHeader* previousHeader = HeapObjectHeader::fromPayload(previous);
+    BasePage* page = pageFromObject(previousHeader);
+    ASSERT(page);
+    int heapIndex = page->heap()->heapIndex();
+    // Recompute the effective heap index if previous allocation
+    // was on the normal heaps or a large object.
+    if (isNormalHeapIndex(heapIndex) || heapIndex == LargeObjectHeapIndex)
+        heapIndex = heapIndexForObjectSize(size);
+
     // TODO(haraken): We don't support reallocate() for finalizable objects.
     ASSERT(!Heap::gcInfo(previousHeader->gcInfoIndex())->hasFinalizer());
     ASSERT(previousHeader->gcInfoIndex() == GCInfoTrait<T>::index());
+    Address address = Heap::allocateOnHeapIndex(state, size, heapIndex, GCInfoTrait<T>::index());
     size_t copySize = previousHeader->payloadSize();
     if (copySize > size)
         copySize = size;

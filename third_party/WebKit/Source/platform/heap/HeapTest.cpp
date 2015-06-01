@@ -1768,7 +1768,7 @@ TEST(HeapTest, BasicFunctionality)
         persistents[i] = 0;
     }
 
-    uint8_t* address = reinterpret_cast<uint8_t*>(Heap::reallocate<DynamicallySizedObject>(0, 100));
+    uint8_t* address = reinterpret_cast<uint8_t*>(Heap::allocate<DynamicallySizedObject>(100));
     for (int i = 0; i < 100; i++)
         address[i] = i;
     address = reinterpret_cast<uint8_t*>(Heap::reallocate<DynamicallySizedObject>(address, 100000));
@@ -1872,6 +1872,7 @@ class SimpleFinalizedEagerObjectBase : public GarbageCollectedFinalized<SimpleFi
 public:
     virtual ~SimpleFinalizedEagerObjectBase() { }
     DEFINE_INLINE_TRACE() { }
+
     EAGERLY_FINALIZE();
 protected:
     SimpleFinalizedEagerObjectBase() { }

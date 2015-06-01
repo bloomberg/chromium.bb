@@ -162,7 +162,7 @@ public:                                                                         
     GC_PLUGIN_IGNORE("crbug.com/456823") NO_SANITIZE_UNRELATED_CAST                     \
     void* operator new(size_t size)                                                     \
     {                                                                                   \
-        void* object = TYPE::allocateObject(size);                                      \
+        void* object = TYPE::allocateObject(size, IsEagerlyFinalizedType<TYPE>::value); \
         ThreadState* state = ThreadStateFor<ThreadingTrait<TYPE>::Affinity>::state();   \
         state->enterGCForbiddenScopeIfNeeded(&(reinterpret_cast<TYPE*>(object)->m_mixinConstructorMarker)); \
         return object;                                                                  \

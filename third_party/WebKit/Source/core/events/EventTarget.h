@@ -196,7 +196,18 @@ private:
 // #if-switch here, in order to avoid a lot of "#if ENABLE(OILPAN)"-s sprinkled in the derived classes.
 #if ENABLE(OILPAN)
 template <typename T>
-class RefCountedGarbageCollectedEventTargetWithInlineData : public EventTargetWithInlineData { };
+class RefCountedGarbageCollectedEventTargetWithInlineData : public EventTargetWithInlineData {
+public:
+    GC_PLUGIN_IGNORE("491488")
+    void* operator new(size_t size)
+    {
+        // If T is eagerly finalized, it needs to be allocated accordingly.
+        // Redefinition of the operator is needed to accomplish that, as otherwise
+        // it would be allocated using GarbageCollected<EventTarget>'s operator new.
+        // EventTarget is not eagerly finalized.
+        return allocateObject(size, IsEagerlyFinalizedType<T>::value);
+    }
+};
 #else
 template <typename T>
 class RefCountedGarbageCollectedEventTargetWithInlineData : public RefCountedGarbageCollected<T>, public EventTargetWithInlineData {
