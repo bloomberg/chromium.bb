@@ -69,7 +69,7 @@ Polymer({
      * @type {?CrOnc.Type}
      */
     networkType:  {
-      type: Object,
+      type: String,
       value: null,
       observer: 'networkTypeChanged_'
     },
@@ -78,8 +78,6 @@ Polymer({
      * If true, the icon is part of a list of networks and may be displayed
      * differently, e.g. the disconnected image will never be shown for
      * list items.
-     *
-     * @type {boolean}
      */
     isListItem:  {
       type: Boolean,
@@ -89,7 +87,6 @@ Polymer({
 
     /**
      * The icon type to use for the base image of the icon.
-     * @type string
      * @private
      */
     iconType_: {
@@ -99,7 +96,6 @@ Polymer({
 
     /**
      * Set to true to show a badge for roaming networks.
-     * @type boolean
      * @private
      */
     roaming_: {
@@ -109,7 +105,6 @@ Polymer({
 
     /**
      * Set to true to show a badge for secure networks.
-     * @type boolean
      * @private
      */
     secure_: {
@@ -119,7 +114,6 @@ Polymer({
 
     /**
      * Set to the name of a technology to show show a badge.
-     * @type string
      * @private
      */
     technology_: {
