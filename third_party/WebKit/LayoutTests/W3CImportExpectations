@@ -4,6 +4,11 @@
 # be found and imported. The only exception is that the manual tests (i.e. those with a
 # filename ending with "-manual.html" or "-manual.htm") are never imported.
 
+# When removing blacklist entries:
+# * Comment out the line rather than deleting it, to show it is intentional
+# * Change [ Skip ] to [ Pass ]
+# * Add a leading comment: ## Owners: user@example.com
+
 imported/csswg-test/compositing-1 [ Skip ]
 imported/csswg-test/css-align-3 [ Skip ]
 imported/csswg-test/css-animations-1 [ Skip ]
@@ -26,6 +31,7 @@ imported/csswg-test/css-namespaces-1 [ Skip ]
 imported/csswg-test/css-page-3 [ Skip ]
 imported/csswg-test/css-regions-1 [ Skip ]
 imported/csswg-test/css-ruby-1 [ Skip ]
+## Owners: bjonesbe@adobe.com
 # imported/csswg-test/css-shapes-1 [ Pass ]
 imported/csswg-test/css-speech-1 [ Skip ]
 imported/csswg-test/css-style-attr-1 [ Skip ]
@@ -60,6 +66,7 @@ imported/csswg-test/.htaccess [ Skip ]
 imported/web-platform-tests/2dcontext [ Skip ]
 imported/web-platform-tests/DOMEvents [ Skip ]
 imported/web-platform-tests/FileAPI [ Skip ]
+## Owners: jsbell@chromium.org
 # imported/web-platform-tests/IndexedDB [ Pass ]
 imported/web-platform-tests/WebCryptoAPI [ Skip ]
 imported/web-platform-tests/WebIDL [ Skip ]
@@ -74,19 +81,24 @@ imported/web-platform-tests/conformance-checkers [ Skip ]
 imported/web-platform-tests/content-security-policy [ Skip ]
 imported/web-platform-tests/cors [ Skip ]
 imported/web-platform-tests/csp [ Skip ]
+## Owners: TBD
 # imported/web-platform-tests/custom-elements [ Pass ]
 imported/web-platform-tests/custom-elements/registering-custom-elements/unresolved-element-pseudoclass [ Skip ]
 imported/web-platform-tests/docs [ Skip ]
 imported/web-platform-tests/dom [ Skip ]
 imported/web-platform-tests/domparsing [ Skip ]
 imported/web-platform-tests/domxpath [ Skip ]
+## Owners: jsbell@chromium.org
+# imported/web-platform-tests/encoding [ Pass ]
 imported/web-platform-tests/eventsource [ Skip ]
 imported/web-platform-tests/ext-xhtml-pubid [ Skip ]
 imported/web-platform-tests/fetch [ Skip ]
 imported/web-platform-tests/fonts [ Skip ]
+## Owners: bajones@chromium.org
+# imported/web-platform-tests/gamepad [ Pass ]
 imported/web-platform-tests/geolocation-API [ Skip ]
 imported/web-platform-tests/hr-time [ Skip ]
-## Owners: tkent
+## Owners: tkent@chromium.org
 # imported/web-platform-tests/html [ Pass ]
 imported/web-platform-tests/html/iana [ Skip ]
 imported/web-platform-tests/html/infrastructure [ Skip ]
@@ -98,6 +110,7 @@ imported/web-platform-tests/html/syntax [ Skip ]
 imported/web-platform-tests/html/the-xhtml-syntax [ Skip ]
 imported/web-platform-tests/html/tools [ Skip ]
 imported/web-platform-tests/html/webappapis [ Skip ]
+## Owners: TBD
 # imported/web-platform-tests/html-imports [ Pass ]
 imported/web-platform-tests/html-longdesc [ Skip ]
 imported/web-platform-tests/html-media-capture [ Skip ]
@@ -110,6 +123,7 @@ imported/web-platform-tests/lint.whitelist [ Skip ]
 imported/web-platform-tests/manifest [ Skip ]
 imported/web-platform-tests/media [ Skip ]
 imported/web-platform-tests/media-source [ Skip ]
+## Owners: phoglund@chromium.org
 # imported/web-platform-tests/mediacapture-streams [ Pass ]
 imported/web-platform-tests/microdata [ Skip ]
 imported/web-platform-tests/navigation-timing [ Skip ]
@@ -117,10 +131,14 @@ imported/web-platform-tests/notifications [ Skip ]
 imported/web-platform-tests/old-tests [ Skip ]
 imported/web-platform-tests/page-visibility [ Skip ]
 imported/web-platform-tests/performance-timeline [ Skip ]
+## Owners: mustaq@chromium.org
+# imported/web-platform-tests/pointerevents [ Pass ]
 imported/web-platform-tests/pointerlock [ Skip ]
 imported/web-platform-tests/progress-events [ Skip ]
 imported/web-platform-tests/proximity [ Skip ]
 imported/web-platform-tests/quirks-mode [ Skip ]
+## Owners: mkwst@chromium.org
+# http://crbug.com/360762: Requires HTTPS server with python.
 imported/web-platform-tests/referrer-policy [ Skip ]
 imported/web-platform-tests/resource-timing [ Skip ]
 imported/web-platform-tests/resources [ Skip ]
@@ -130,7 +148,10 @@ imported/web-platform-tests/serve [ Skip ]
 imported/web-platform-tests/serve.py [ Skip ]
 imported/web-platform-tests/server-side.md [ Skip ]
 imported/web-platform-tests/service-workers [ Skip ]
+## Owners: TBD
 # imported/web-platform-tests/shadow-dom [ Pass ]
+## Owners: mkwst@chromium.org
+# imported/web-platform-tests/subresource-integrity [ Pass ]
 imported/web-platform-tests/tools [ Skip ]
 imported/web-platform-tests/touch-events [ Skip ]
 imported/web-platform-tests/typedarrays [ Skip ]
@@ -142,17 +163,18 @@ imported/web-platform-tests/webaudio [ Skip ]
 imported/web-platform-tests/webdriver [ Skip ]
 imported/web-platform-tests/webgl [ Skip ]
 imported/web-platform-tests/webmessaging [ Skip ]
+## Owners: hta@chromium.org
 # imported/web-platform-tests/webrtc [ Pass ]
 imported/web-platform-tests/websockets [ Skip ]
 imported/web-platform-tests/webstorage [ Skip ]
 imported/web-platform-tests/webvtt [ Skip ]
 imported/web-platform-tests/workers [ Skip ]
-## Owners: mkwst
-# http://crbug.com/360762: Requires HTTPS server with python.
-imported/web-platform-tests/referrer-policy [ Skip ]
 
-# Exceptions for individual files that fail due to bugs in the upstream tests
-# that we shouldn't bother importing until they are fixed.
+# Exceptions for individual files that fail due to bugs in the
+# upstream tests that we shouldn't bother importing until they are
+# fixed. Please include an explanation, ideally with a crbug reference
+# (if it's a blink/test tooling issue) or an upstream bug reference
+# (if the test itself is buggy).
 
 # crbug.com/490694: Needs to support *.headers.
 imported/web-platform-tests/html/dom/documents/resource-metadata-management/document-lastModified.html [ Skip ]
