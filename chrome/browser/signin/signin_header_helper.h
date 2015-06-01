@@ -74,6 +74,14 @@ bool AppendMirrorRequestHeaderIfPossible(
     int child_id,
     int route_id);
 
+// Returns the parameters contained in the X-Chrome-Manage-Accounts response
+// header.
+// If the request does not have a response header or if the header contains
+// garbage, then |service_type| is set to |GAIA_SERVICE_TYPE_NONE|.
+// Must be called on IO thread.
+ManageAccountsParams BuildManageAccountsParamsIfValid(net::URLRequest* request,
+                                                      ProfileIOData* io_data);
+
 // Looks for the X-Chrome-Manage-Accounts response header, and if found,
 // tries to show the avatar bubble in the browser identified by the
 // child/route id. Must be called on IO thread.

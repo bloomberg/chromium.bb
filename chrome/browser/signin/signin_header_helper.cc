@@ -271,31 +271,41 @@ bool AppendMirrorRequestHeaderIfPossible(
   return true;
 }
 
-void ProcessMirrorResponseHeaderIfExists(
-    net::URLRequest* request,
-    ProfileIOData* io_data,
-    int child_id,
-    int route_id) {
-#if defined(OS_IOS)
-  NOTREACHED();
-#else
+ManageAccountsParams BuildManageAccountsParamsIfValid(net::URLRequest* request,
+                                                      ProfileIOData* io_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
-    return;
 
+  ManageAccountsParams empty_params;
+  empty_params.service_type = GAIA_SERVICE_TYPE_NONE;
+  if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
+    return empty_params;
+
+#if !defined(OS_IOS)
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!(info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME))
-    return;
+    return empty_params;
+#endif
 
   std::string header_value;
   if (!request->response_headers()->GetNormalizedHeader(
           kChromeManageAccountsHeader, &header_value)) {
-    return;
+    return empty_params;
   }
 
   DCHECK(switches::IsEnableAccountConsistency() && !io_data->IsOffTheRecord());
-  ManageAccountsParams params(BuildManageAccountsParams(header_value));
+  return BuildManageAccountsParams(header_value);
+}
+
+void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
+                                         ProfileIOData* io_data,
+                                         int child_id,
+                                         int route_id) {
+#if defined(OS_IOS)
+  NOTREACHED();
+#else
+  ManageAccountsParams params =
+      BuildManageAccountsParamsIfValid(request, io_data);
   if (params.service_type == GAIA_SERVICE_TYPE_NONE)
     return;
 
