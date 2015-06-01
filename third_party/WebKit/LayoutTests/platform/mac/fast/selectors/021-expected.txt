@@ -8,11 +8,11 @@ layer at (0,0) size 800x172
           text run at (0,0) width 229: "This paragraph should be unstyled. "
           text run at (228,0) width 463: "The background of the following paragraph should become green when "
           text run at (690,0) width 71: "you follow"
-        LayoutInline {A} at (0,0) size 53x18 [color=#0000EE]
-          LayoutText {#text} at (0,18) size 53x18
-            text run at (0,18) width 53: "this link"
-        LayoutText {#text} at (52,18) size 5x18
-          text run at (52,18) width 5: "."
+        LayoutInline {A} at (0,0) size 52x18 [color=#0000EE]
+          LayoutText {#text} at (0,18) size 52x18
+            text run at (0,18) width 52: "this link"
+        LayoutText {#text} at (52,18) size 4x18
+          text run at (52,18) width 4: "."
       LayoutBlockFlow {P} at (0,52) size 784x36
         LayoutText {#text} at (0,0) size 753x18
           text run at (0,0) width 283: "This paragraph should initially be unstyled. "

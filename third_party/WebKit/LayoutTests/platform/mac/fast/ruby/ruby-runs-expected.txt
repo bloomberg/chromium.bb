@@ -38,8 +38,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 36x10
                 text run at (0,0) width 36: "Language"
             LayoutRubyBase (anonymous) at (0,0) size 35.48x18
-              LayoutText {#text} at (13,0) size 11x18
-                text run at (13,0) width 11: "L"
+              LayoutText {#text} at (13,0) size 10x18
+                text run at (13,0) width 10: "L"
           LayoutRubyRun (anonymous) at (257,10) size 27.25x18
             LayoutRubyText {RT} at (0,-10) size 27.25x10
               LayoutText {#text} at (0,0) size 28x10

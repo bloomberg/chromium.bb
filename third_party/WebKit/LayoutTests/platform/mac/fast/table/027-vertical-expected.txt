@@ -25,9 +25,9 @@ layer at (0,0) size 785x809 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (4,372) width 46: "Layout"
               LayoutText {#text} at (4,417) size 18x14
                 text run at (4,417) width 14: " \x{2022} "
-              LayoutInline {A} at (0,0) size 18x114
-                LayoutText {#text} at (4,431) size 18x114
-                  text run at (4,431) width 114: "Colors & Themes"
+              LayoutInline {A} at (0,0) size 18x115
+                LayoutText {#text} at (4,430) size 18x115
+                  text run at (4,430) width 114: "Colors & Themes"
               LayoutText {#text} at (4,544) size 18x15
                 text run at (4,544) width 14: " \x{2022} "
               LayoutInline {A} at (0,0) size 18x47

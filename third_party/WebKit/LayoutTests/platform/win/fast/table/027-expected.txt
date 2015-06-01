@@ -25,17 +25,17 @@ layer at (0,0) size 800x585
                   text run at (372,4) width 46: "Layout"
               LayoutText {#text} at (417,4) size 14x17
                 text run at (417,4) width 14: " \x{2022} "
-              LayoutInline {A} at (0,0) size 114x17
-                LayoutText {#text} at (431,4) size 114x17
-                  text run at (431,4) width 114: "Colors & Themes"
+              LayoutInline {A} at (0,0) size 115x17
+                LayoutText {#text} at (430,4) size 115x17
+                  text run at (430,4) width 115: "Colors & Themes"
               LayoutText {#text} at (544,4) size 15x17
                 text run at (544,4) width 15: " \x{2022} "
-              LayoutInline {A} at (0,0) size 48x17
-                LayoutText {#text} at (558,4) size 48x17
-                  text run at (558,4) width 48: "Sign In"
-              LayoutText {#text} at (605,4) size 185x17
-                text run at (605,4) width 9: "  "
-                text run at (613,4) width 92: "   My Links:   "
+              LayoutInline {A} at (0,0) size 47x17
+                LayoutText {#text} at (558,4) size 47x17
+                  text run at (558,4) width 47: "Sign In"
+              LayoutText {#text} at (604,4) size 186x17
+                text run at (604,4) width 9: "  "
+                text run at (612,4) width 93: "   My Links:   "
                 text run at (704,4) width 86: "  Lite \x{2022} Email"
           LayoutTableRow {TR} at (0,26) size 793x312
             LayoutTableCell {TD} at (0,178) size 222x8 [border: (1px solid #008000)] [r=1 c=0 rs=1 cs=1]

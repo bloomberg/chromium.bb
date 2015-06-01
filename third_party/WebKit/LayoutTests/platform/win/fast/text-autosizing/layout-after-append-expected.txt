@@ -53,7 +53,7 @@ layer at (0,0) size 800x2041 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (0,1801) width 451: "Autosize Autosize Autosize"
             text run at (0,1846) width 451: "Autosize Autosize Autosize"
             text run at (0,1891) width 451: "Autosize Autosize Autosize"
-            text run at (0,1936) width 308: "Autosize Autosize "
+            text run at (0,1936) width 307: "Autosize Autosize "
           LayoutInline {I} at (0,0) size 75x43
             LayoutText {#text} at (307,1936) size 75x43
               text run at (307,1936) width 75: "test2"

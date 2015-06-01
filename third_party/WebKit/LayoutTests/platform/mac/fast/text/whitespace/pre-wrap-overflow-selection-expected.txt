@@ -28,8 +28,8 @@ layer at (0,0) size 800x600
           text run at (74,19) width 1: " "
           text run at (4,34) width 71: "and   fit"
           text run at (74,34) width 24: "   "
-          text run at (4,49) width 79: "within the"
-          text run at (82,49) width 1: " "
+          text run at (4,49) width 78: "within the"
+          text run at (82,49) width 0: " "
           text run at (4,64) width 32: "box."
           text run at (35,64) width 1: " "
 layer at (8,109) size 108x83 clip at (12,113) size 100x75
@@ -41,8 +41,8 @@ layer at (8,109) size 108x83 clip at (12,113) size 100x75
       text run at (74,19) width 1: " "
       text run at (4,34) width 71: "and   fit"
       text run at (74,34) width 24: "   "
-      text run at (4,49) width 79: "within the"
-      text run at (82,49) width 1: " "
+      text run at (4,49) width 78: "within the"
+      text run at (82,49) width 0: " "
       text run at (4,64) width 32: "box."
       text run at (35,64) width 1: " "
 selection start: position 7 of child 0 {#text} of child 7 {PRE} of body

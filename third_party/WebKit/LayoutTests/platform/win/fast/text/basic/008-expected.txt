@@ -9,9 +9,9 @@ layer at (0,0) size 800x600
           text run at (101,0) width 187: "some code to make sure that "
           text run at (287,0) width 226: "white-space gets properly ignored. "
           text run at (512,0) width 240: "If it does, then this should render the "
-        LayoutInline {A} at (0,0) size 28x17 [color=#0000EE]
-          LayoutText {#text} at (751,0) size 28x17
-            text run at (751,0) width 28: "way"
+        LayoutInline {A} at (0,0) size 27x17 [color=#0000EE]
+          LayoutText {#text} at (751,0) size 27x17
+            text run at (751,0) width 27: "way"
         LayoutText {#text} at (0,18) size 370x17
           text run at (0,18) width 121: "one would expect. "
           text run at (120,18) width 250: "Hopefully it does render the way we w"

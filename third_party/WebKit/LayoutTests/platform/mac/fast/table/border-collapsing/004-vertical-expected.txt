@@ -92,7 +92,7 @@ layer at (0,0) size 800x899 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutTableCell {TD} at (133,357) size 102x192 [border: (1px solid #008000)] [r=2 c=2 rs=1 cs=1]
                 LayoutText {#text} at (5,6) size 72x156
                   text run at (5,6) width 156: "This table should have a"
-                  text run at (23,6) width 146: "1em margin around all"
+                  text run at (23,6) width 145: "1em margin around all"
                   text run at (41,6) width 45: "edges. "
                   text run at (41,50) width 82: "This margin "
                   text run at (41,131) width 11: "is"
@@ -204,7 +204,7 @@ layer at (0,0) size 800x899 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutTableCell {TD} at (196,159) size 138x163 [border: (1px solid #008000)] [r=2 c=1 rs=1 cs=1]
                 LayoutText {#text} at (24,-12) size 72x156
                   text run at (24,-12) width 156: "This table should have a"
-                  text run at (42,-12) width 146: "1em margin around all"
+                  text run at (42,-12) width 145: "1em margin around all"
                   text run at (60,-12) width 45: "edges. "
                   text run at (60,32) width 82: "This margin "
                   text run at (60,113) width 11: "is"

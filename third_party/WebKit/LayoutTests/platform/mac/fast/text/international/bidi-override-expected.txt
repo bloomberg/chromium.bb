@@ -145,7 +145,7 @@ layer at (0,0) size 800x344
                   text run at (77,1) width 38: "ghijkl"
               LayoutBlockFlow {P} at (5,56) size 123x19
                 LayoutText {#text} at (0,1) size 123x18
-                  text run at (0,1) width 51 RTL: "\x{5D6}\x{5D7}\x{5D8}\x{5D9}\x{5DB}\x{5DC}"
+                  text run at (0,1) width 50 RTL: "\x{5D6}\x{5D7}\x{5D8}\x{5D9}\x{5DB}\x{5DC}"
                   text run at (50,1) width 23: "abc"
                   text run at (72,1) width 51 RTL: "\x{5D0}\x{5D1}\x{5D2}\x{5D3}\x{5D4}\x{5D5}"
             LayoutTableCell {TD} at (132,27) size 132x95 [border: (1px solid #008000)] [r=1 c=1 rs=1 cs=1]

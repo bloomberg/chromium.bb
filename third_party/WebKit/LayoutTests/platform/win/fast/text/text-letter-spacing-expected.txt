@@ -81,9 +81,9 @@ layer at (0,0) size 800x1728 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (0,0) width 643: "The next line tests a large positive line spacing, and should be very widely spaced, on a background."
       LayoutBlockFlow {P} at (0,842) size 784x36 [bgcolor=#EEEEEE]
       LayoutBlockFlow {P} at (0,894) size 784x18 [bgcolor=#FFFFFF]
-        LayoutText {#text} at (0,0) size 767x17
+        LayoutText {#text} at (0,0) size 766x17
           text run at (0,0) width 340: "The next line tests a very large positive line spacing, "
-          text run at (339,0) width 428: "and should be very widely spaced but blank, and on a background."
+          text run at (339,0) width 427: "and should be very widely spaced but blank, and on a background."
       LayoutBlockFlow {P} at (0,928) size 784x36 [bgcolor=#EEEEEE]
       LayoutBlockFlow {P} at (0,980) size 784x18 [bgcolor=#FFFFFF]
         LayoutText {#text} at (0,0) size 447x17

@@ -41,7 +41,7 @@ layer at (808,219) size 95x81 backgroundClip at (0,0) size 800x600 clip at (0,0)
   LayoutBlockFlow (positioned) {FONT} at (808,219) size 94.59x81
     LayoutText {#text} at (33,0) size 95x80
       text run at (33,0) width 62: "LTR-"
-      text run at (17,27) width 78: "Right-"
+      text run at (18,27) width 77: "Right-"
       text run at (0,54) width 95: "Aligned"
 layer at (8,223) size 200x27
   LayoutBlockFlow (positioned) {FONT} at (8,223) size 199.52x27

@@ -242,14 +242,14 @@ layer at (0,0) size 785x3324 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               text run at (295,0) width 119: "XHTML <object>"
           LayoutText {#text} at (413,0) size 9x18
             text run at (413,0) width 9: ", "
-          LayoutInline {A} at (0,0) size 118x18 [color=#0000EE]
-            LayoutText {#text} at (421,0) size 118x18
-              text run at (421,0) width 118: "XHTML <frame>"
-          LayoutText {#text} at (538,0) size 9x18
-            text run at (538,0) width 9: ", "
-          LayoutInline {A} at (0,0) size 110x18 [color=#0000EE]
-            LayoutText {#text} at (546,0) size 110x18
-              text run at (546,0) width 110: "HTML <iframe>"
+          LayoutInline {A} at (0,0) size 117x18 [color=#0000EE]
+            LayoutText {#text} at (421,0) size 117x18
+              text run at (421,0) width 117: "XHTML <frame>"
+          LayoutText {#text} at (537,0) size 9x18
+            text run at (537,0) width 9: ", "
+          LayoutInline {A} at (0,0) size 111x18 [color=#0000EE]
+            LayoutText {#text} at (545,0) size 111x18
+              text run at (545,0) width 111: "HTML <iframe>"
           LayoutText {#text} at (655,0) size 9x18
             text run at (655,0) width 9: ", "
           LayoutInline {A} at (0,0) size 709x36 [color=#0000EE]

@@ -51,7 +51,7 @@ layer at (0,0) size 800x600
           text run at (0,23) width 39: "amet"
       LayoutBlockFlow (floating) {DIV} at (8,194) size 200x46 [bgcolor=#FFFFE0]
         LayoutText {#text} at (7,0) size 191x45
-          text run at (7,0) width 114: "Lorem ipsum "
+          text run at (7,0) width 113: "Lorem ipsum "
           text run at (120,0) width 73 RTL: "\x{5D0}\x{5E0}\x{5D8}\x{5E3} \x{5E9}\x{5DC}\x{5D2}\x{5D9}"
           text run at (192,0) width 6: " "
           text run at (80,23) width 40: "amet"
