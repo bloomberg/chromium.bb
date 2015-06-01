@@ -42,6 +42,8 @@ class WebThreadImplForRendererSchedulerTest : public testing::Test {
         work_batch_size);
   }
 
+  void TearDown() override { scheduler_.Shutdown(); }
+
  protected:
   void EatDefaultTask(MockTaskObserver* observer) {
     // The scheduler posts one extra DoWork() task automatically.
