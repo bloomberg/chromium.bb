@@ -5199,7 +5199,6 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -5272,7 +5271,6 @@
         "description": "Release Builds (canary) (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
         "hwqual": true,
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -5553,7 +5551,6 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
                 "grouped": true,
                 "hwqual": true,
-                "image_test": true,
                 "images": [
                     "base",
                     "test"
@@ -5593,7 +5590,6 @@
                 "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
                 "grouped": true,
                 "hwqual": true,
-                "image_test": true,
                 "images": [
                     "base",
                     "test"
@@ -5624,7 +5620,6 @@
         "description": "Release Builds (canary) (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
         "hwqual": true,
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -5840,7 +5835,6 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -5912,7 +5906,6 @@
         "description": "Release Builds (canary) (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
         "hwqual": true,
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -39247,7 +39240,6 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -39279,7 +39271,6 @@
         "description": "Full Builds",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "git_sync": true,
-        "image_test": true,
         "images": [
             "base",
             "recovery",
@@ -39312,7 +39303,6 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -39342,7 +39332,6 @@
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -39395,7 +39384,6 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -39436,7 +39424,6 @@
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}"
         ],
         "hwqual": true,
-        "image_test": true,
         "images": [
             "base",
             "recovery",
@@ -60760,7 +60747,6 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -60792,7 +60778,6 @@
         "description": "Full Builds",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "git_sync": true,
-        "image_test": true,
         "images": [
             "base",
             "recovery",
@@ -60825,7 +60810,6 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -60858,7 +60842,6 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"cq\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab_quick\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
         ],
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -60911,7 +60894,6 @@
             "chromeos-infra-eng@grotations.appspotmail.com"
         ],
         "health_threshold": 3,
-        "image_test": true,
         "images": [
             "base",
             "test"
@@ -60953,7 +60935,6 @@
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": true\n}"
         ],
         "hwqual": true,
-        "image_test": true,
         "images": [
             "base",
             "recovery",

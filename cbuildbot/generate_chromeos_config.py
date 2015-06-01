@@ -847,6 +847,7 @@ brillo = config_lib.BuildConfig(
 )
 
 moblab = config_lib.BuildConfig(
+  image_test=False,
   vm_tests=[],
 )
 
@@ -885,7 +886,7 @@ _project_sdk_boards = frozenset([
     'gizmo',
 ])
 
-beaglebone = brillo.derive(rootfs_verification=False)
+beaglebone = brillo.derive(image_test=False, rootfs_verification=False)
 
 # This adds Chrome branding.
 official_chrome = config_lib.BuildConfig(
