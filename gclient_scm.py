@@ -29,7 +29,7 @@ THIS_FILE_PATH = os.path.abspath(__file__)
 GSUTIL_DEFAULT_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 'gsutil.py')
 
-CHROMIUM_SRC_URL = 'https://chromium.googlesource.com/chromium/src.git'
+
 class DiffFiltererWrapper(object):
   """Simple base class which tracks which file is being diffed and
   replaces instances of its file name in the original and
@@ -830,12 +830,6 @@ class GitWrapper(SCMWrapper):
         'print_func': self.filter,
         'refs': []
     }
-    # TODO(hinoka): This currently just fails because lkcr/lkgr are branches
-    #               not tags. This also adds 20 seconds to every bot_update
-    #               run, so I'm commenting this out until lkcr/lkgr become
-    #               tags.  (2014/4/24)
-    # if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
-    #  mirror_kwargs['refs'].extend(['refs/tags/lkgr', 'refs/tags/lkcr'])
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
       mirror_kwargs['refs'].append('refs/branch-heads/*')
     if hasattr(options, 'with_tags') and options.with_tags:
@@ -1168,6 +1162,25 @@ class GitWrapper(SCMWrapper):
 class SVNWrapper(SCMWrapper):
   """ Wrapper for SVN """
   name = 'svn'
+  _PRINTED_DEPRECATION = False
+
+  _MESSAGE = (
+    'Oh hai! You are using subversion. Chrome infra is eager to get rid of',
+    'svn support so please switch to git.',
+    'Tracking bug: http://crbug.com/475320',
+    'Request a new git repository at: ',
+    '  https://code.google.com/p/chromium/issues/entry?template=Infra-Git',
+    '',
+    'If subversion support is needed, pin your depot_tools to ',
+    'c20f470011e2ea4d81527976f3bded2c13e258af and set the env var',
+    'DEPOT_TOOLS_UPDATE=0',
+    'Thank you for your business!')
+
+  def __init__(self, *args, **kwargs):
+    super(SVNWrapper, self).__init__(*args, **kwargs)
+    if not SVNWrapper._PRINTED_DEPRECATION:
+      SVNWrapper._PRINTED_DEPRECATION = True
+      sys.stderr.write('\n'.join(self._MESSAGE) + '\n')
 
   @staticmethod
   def BinaryExists():
