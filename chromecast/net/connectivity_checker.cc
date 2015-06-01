@@ -87,7 +87,11 @@ bool ConnectivityChecker::Connected() const {
   return connected_;
 }
 
-void ConnectivityChecker::SetConnectivity(bool connected) {
+void ConnectivityChecker::SetConnectedForTesting(bool connected) {
+  SetConnected(connected);
+}
+
+void ConnectivityChecker::SetConnected(bool connected) {
   if (connected_ == connected)
     return;
 
@@ -126,7 +130,7 @@ void ConnectivityChecker::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   VLOG(2) << "OnConnectionTypeChanged " << type;
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
-    SetConnectivity(false);
+    SetConnected(false);
 
   Cancel();
   Check();
@@ -152,7 +156,7 @@ void ConnectivityChecker::OnResponseStarted(net::URLRequest* request) {
   if (http_response_code < 400) {
     VLOG(1) << "Connectivity check succeeded";
     check_errors_ = 0;
-    SetConnectivity(true);
+    SetConnected(true);
     return;
   }
   VLOG(1) << "Connectivity check failed: " << http_response_code;
@@ -170,7 +174,7 @@ void ConnectivityChecker::OnUrlRequestError() {
   ++check_errors_;
   if (check_errors_ > kNumErrorsToNotifyOffline) {
     check_errors_ = kNumErrorsToNotifyOffline;
-    SetConnectivity(false);
+    SetConnected(false);
   }
   url_request_.reset(NULL);
   // Check again.

@@ -57,6 +57,9 @@ class ConnectivityChecker
   // Checks for connectivity
   void Check();
 
+  // TODO(derek): refactor ConnectivityChecker to make a fully functional mock.
+  void SetConnectedForTesting(bool connected);
+
  protected:
   ~ConnectivityChecker() override;
 
@@ -84,7 +87,7 @@ class ConnectivityChecker
   void Cancel();
 
   // Sets connectivity and alerts observers if it has changed
-  void SetConnectivity(bool connected);
+  void SetConnected(bool connected);
 
   // Called when URL request failed.
   void OnUrlRequestError();
