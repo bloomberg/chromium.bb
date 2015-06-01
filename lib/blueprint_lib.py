@@ -13,6 +13,7 @@ from chromite.lib import workspace_lib
 
 
 # Field names for specifying initial configuration.
+APP_ID_FIELD = 'buildTargetId'
 BRICKS_FIELD = 'bricks'
 BSP_FIELD = 'bsp'
 
@@ -119,6 +120,11 @@ class Blueprint(object):
   def GetBSP(self):
     """Returns the BSP field of a blueprint."""
     return self.config.get(BSP_FIELD)
+
+  def GetAppId(self):
+    """Returns the APP_ID from a blueprint."""
+    app_id = self.config.get(APP_ID_FIELD)
+    return app_id
 
   def FriendlyName(self):
     """Returns the friendly name for this blueprint."""

@@ -72,12 +72,14 @@ class ImageCommand(command.CliCommand):
 
     board = None
     packages = None
+    app_id = None
 
     if self.options.blueprint:
       blueprint = blueprint_lib.Blueprint(self.options.blueprint)
       packages = blueprint.GetPackages(with_implicit=False)
       #TODO(stevefung): Support multiple sysroots (brbug.com/676)
       board = blueprint.FriendlyName()
+      app_id = blueprint.GetAppId()
     elif self.options.brick:
       brick = brick_lib.Brick(self.options.brick)
       packages = brick.MainPackages()
@@ -88,6 +90,7 @@ class ImageCommand(command.CliCommand):
     image_lib.BuildImage(
         board,
         adjust_part=self.options.adjust_part,
+        app_id=app_id,
         boot_args=self.options.boot_args,
         enable_bootcache=self.options.enable_bootcache,
         enable_rootfs_verification=self.options.enable_rootfs_verification,

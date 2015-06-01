@@ -44,11 +44,17 @@ LSB_KEY_CHROME_MILESTONE = 'CHROMEOS_RELEASE_CHROME_MILESTONE'
 LSB_KEY_PATCH_NUMBER = 'CHROMEOS_RELEASE_PATCH_NUMBER'
 LSB_KEY_VERSION = 'CHROMEOS_RELEASE_VERSION'
 LSB_KEY_GOOGLE_RELEASE = 'GOOGLE_RELEASE'
+LSB_KEY_APPID_RELEASE = 'CHROMEOS_RELEASE_APPID'
+LSB_KEY_APPID_BOARD = 'CHROMEOS_BOARD_APPID'
+LSB_KEY_APPID_CANARY = 'CHROMEOS_CANARY_APPID'
 
+CANARY_APP_ID = "{90F229CE-83E2-4FAF-8479-E368A34938B1}"
 
 def _ParseArguments(argv):
   parser = commandline.ArgumentParser(description=__doc__)
 
+  parser.add_argument('--app_id', default=None,
+                      help='The APP_ID to install.')
   parser.add_argument('--board', help='The board name.', required=True)
   parser.add_argument('--sysroot', required=True, type='path',
                       help='The sysroot to install the lsb-release file into.')
@@ -108,6 +114,13 @@ def main(argv):
       LSB_KEY_AUSERVER: opts.auserver,
       LSB_KEY_DEVSERVER: opts.devserver,
   }
+
+  if opts.app_id is not None:
+    fields.update({
+        LSB_KEY_APPID_RELEASE: opts.app_id,
+        LSB_KEY_APPID_BOARD: opts.app_id,
+        LSB_KEY_APPID_CANARY: CANARY_APP_ID,
+    })
 
   if opts.official:
     # Official builds (i.e. buildbot).

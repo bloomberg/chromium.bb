@@ -70,6 +70,41 @@ class ImageCommandTest(cros_test_lib.WorkspaceTestCase):
                      '--loglevel=7']
     self.rc_mock.assertCommandContains(expected_args)
 
+  def testBlueprintWithBuildTargetId(self):
+    """Tests running the full image command with a  valid BuildTargetId."""
+    self.CreateBrick(name='brick1', main_package='brick/foo')
+    self.CreateBrick(name='brick2', main_package='brick/bar')
+    self.CreateBrick(name='bsp1', main_package='bsp/baz')
+    self.CreateBlueprint(name='foo.json', bricks=['//brick1', '//brick2'],
+                         bsp='//bsp1',
+                         buildTargetId='{01234567-89AB-CDEF-0123-456789ABCDEF}')
+
+    args = ['--blueprint=//foo.json']
+    self.SetupCommandMock(args)
+    self.cmd_mock.inst.Run()
+
+    expected_args = [os.path.join(constants.CROSUTILS_DIR, 'build_image'),
+                     '--app_id={01234567-89AB-CDEF-0123-456789ABCDEF}',
+                     '--board=foo.json',
+                     '--extra_packages=brick/foo brick/bar bsp/baz',
+                     '--noenable_bootcache', '--enable_rootfs_verification',
+                     '--loglevel=7']
+    self.rc_mock.assertCommandContains(expected_args)
+
+  def testBlueprintWithInvalidBuildTargetId(self):
+    """Tests running the full image command with invalid BuildTargetId."""
+    self.CreateBrick(name='brick1', main_package='brick/foo')
+    self.CreateBrick(name='brick2', main_package='brick/bar')
+    self.CreateBrick(name='bsp1', main_package='bsp/baz')
+    self.CreateBlueprint(name='foo.json', bricks=['//brick1', '//brick2'],
+                         bsp='//bsp1',
+                         buildTargetId='{01234567-89AB-CDEF-0123-45678}')
+
+    args = ['--blueprint=//foo.json']
+    self.SetupCommandMock(args)
+    with self.assertRaises(image_lib.AppIdError):
+      self.cmd_mock.inst.Run()
+
   def testOutputRootInWorkspace(self):
     """Tests running the image command with an output root in the workspace."""
     self.CreateWorkspace()

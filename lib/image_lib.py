@@ -221,6 +221,20 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
       raise
 
 
+class AppIdError(Exception):
+  """Thrown when attempting to install an invalid app_id."""
+
+
+def VerifyAppId(app_id):
+  """Verifies the APP_ID is in the correct format.
+
+  An APP_ID is a UUID in the canonical {8-4-4-4-12} format, e.g.
+  {01234567-89AB-CDEF-0123-456789ABCDEF}.
+  """
+  pattern = re.compile("[{][0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}[}]")
+  return pattern.match(app_id)
+
+
 def WriteLsbRelease(sysroot, fields):
   """Writes out the /etc/lsb-release file into the given sysroot.
 
@@ -244,16 +258,19 @@ def WriteLsbRelease(sysroot, fields):
   osutils.WriteFile(path, content, mode='w', makedirs=True, sudo=True)
 
 
-def BuildImage(board, adjust_part=None, boot_args=None, enable_bootcache=False,
-               enable_rootfs_verification=True, output_root=None,
-               disk_layout=None, enable_serial=None, kernel_log_level=None,
-               packages=None, image_types=None):
+def BuildImage(board, adjust_part=None, app_id=None, boot_args=None,
+               enable_bootcache=False, enable_rootfs_verification=True,
+               output_root=None, disk_layout=None, enable_serial=None,
+               kernel_log_level=None, packages=None, image_types=None):
   """Build an image.
 
   Args:
     board: The board to build an image for.
     adjust_part: Adjustments to apply to partition table
       (LABEL:[+-=]SIZE) e.g. ROOT-A:+1G.
+    app_id: The application ID to install into the image's /etc/lsb-release
+      file.  It is a UUID in the canonical {8-4-4-4-12} format, e.g.
+      {01234567-89AB-CDEF-0123-456789ABCDEF}
     boot_args: Additional boot arguments to pass to the commandline.
     enable_bootcache: Default all bootloaders to use boot cache.
     enable_rootfs_verification: Default all bootloaders to use kernel-based
@@ -268,6 +285,12 @@ def BuildImage(board, adjust_part=None, boot_args=None, enable_bootcache=False,
     image_types: The image types to build.  If None, builds a base image.
   """
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'build_image')]
+
+  if app_id:
+    if VerifyAppId(app_id):
+      cmd.append('--app_id=%s' % app_id)
+    else:
+      raise AppIdError('Invalid APP_ID format: %s' % app_id)
 
   cmd.append('--board=%s' % board)
 

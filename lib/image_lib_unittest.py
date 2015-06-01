@@ -120,6 +120,31 @@ class LoopbackPartitionsTest(cros_test_lib.MockTestCase):
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV])
 
 
+class AppIdTest(cros_test_lib.TestCase):
+  """Tests APP_ID utilities."""
+
+  def testAppIdVerification(self):
+    """Tests image_lib.VerifyAppId(..)."""
+    # Valid APP ID.
+    self.assertTrue(
+        image_lib.VerifyAppId('{01234567-89AB-CDEF-0123-456789ABCDEF}'))
+
+    # Test invalid non-hex character.
+    self.assertFalse(
+        image_lib.VerifyAppId('{01234567-89AB-CGEF-0123-456789ABCDEF}'))
+
+    # Test invalid number of characters.
+    self.assertFalse(
+        image_lib.VerifyAppId('{0123456-89AB-CDEF-0123-456789ABCDEF}'))
+
+    # Test no brackets.
+    self.assertFalse(
+        image_lib.VerifyAppId('01234567-89AB-CDEF-0123-456789ABCDEF'))
+
+    # Test blank string.
+    self.assertFalse(image_lib.VerifyAppId(''))
+
+
 class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
   """Tests the various LSB utilities."""
 
@@ -184,6 +209,23 @@ class BuildImageTest(cros_test_lib.MockTestCase):
                      '--output_root=rootx', '--disk_layout=layoutx',
                      '--enable_serial=ttyx', '--loglevel=5', 'base', 'test']
     self.rc_mock.assertCommandContains(expected_args)
+
+  def testBuildImageInvalidAppId(self):
+    """Tests the BuildImage function throws an exception with invalid APP_ID."""
+    args = {'adjust_part': 'partx',
+            'app_id': '{012304-BADBADBAD}',
+            'boot_args': 'bootx',
+            'enable_bootcache': True,
+            'enable_rootfs_verification': False,
+            'output_root': 'rootx',
+            'disk_layout': 'layoutx',
+            'enable_serial': 'ttyx',
+            'kernel_log_level': 5,
+            'packages': ['cat1/foo', 'cat2/bar'],
+            'image_types': ['base', 'test']}
+
+    with self.assertRaises(image_lib.AppIdError):
+      image_lib.BuildImage('fooboard', **args)
 
 
 class BrilloImageOperationFake(image_lib.BrilloImageOperation):
