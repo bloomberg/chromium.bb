@@ -73,7 +73,6 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
         // Fill the set for the first use.
         // Animatable attributes from http://www.w3.org/TR/SVG/attindex.html
         const QualifiedName* attributes[] = {
-            // TODO(ericwilligers): Support all the animatable attributes.
             &HTMLNames::classAttr,
             &SVGNames::amplitudeAttr,
             &SVGNames::azimuthAttr,
