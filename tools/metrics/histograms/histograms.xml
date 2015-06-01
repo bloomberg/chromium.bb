@@ -41097,6 +41097,67 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Startup.FirstWebContents.UINotResponsive" units="milliseconds">
+  <owner>gayane@chromium.org</owner>
+  <summary>
+    Measures the execution time for a single task to execute on UI if it was not
+    possible to execute UI tasks under 1/60s within certain limits, after
+    WebContents was painted at least once. This is recorded at most once per
+    Chrome launch. Used as a measure of responsiveness on startup.
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstWebContents.UINotResponsive_10sec"
+    units="milliseconds">
+  <owner>gayane@chromium.org</owner>
+  <summary>
+    Measures the elapsed time for a single task to execute on UI if it was not
+    possible to execute it under 1/60s within certain limits, 10 second after
+    first WebContents was painted at least once.  This is recorded at most once
+    per Chrome launch. Used as a measure of responsiveness on startup.
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstWebContents.UINotResponsive_1sec"
+    units="milliseconds">
+  <owner>gayane@chromium.org</owner>
+  <summary>
+    Measures the elapsed time for a single task to execute on UI if it was not
+    possible to execute it under 1/60s within certain limits, 1 second after
+    first WebContents was painted at least once.  This is recorded at most once
+    per Chrome launch. Used as a measure of responsiveness on startup.
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstWebContents.UIResponsive" units="milliseconds">
+  <owner>gayane@chromium.org</owner>
+  <summary>
+    Measures the elapsed time it takes for a task to execute on UI under 1/60s
+    after first WebContents was painted at least once. This is recorded at most
+    once per Chrome launch. Used as a measure of responsiveness on startup.
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstWebContents.UIResponsive_10sec"
+    units="milliseconds">
+  <owner>gayane@chromium.org</owner>
+  <summary>
+    Measures the elapsed time it takes for a task to execute on UI under 1/60s,
+    10 second after the first WebContents was painted.  This is recorded at most
+    once per Chrome launch. Used as a measure of responsiveness on startup.
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstWebContents.UIResponsive_1sec"
+    units="milliseconds">
+  <owner>gayane@chromium.org</owner>
+  <summary>
+    Measures the elapsed time it takes for a task to execute on UI under 1/60s,
+    1 second after the first WebContents was painted. This is recorded at most
+    once per Chrome launch. Used as a measure of responsiveness on startup.
+  </summary>
+</histogram>
+
 <histogram name="Startup.Fling.TimeToDisplayVideo" units="milliseconds">
   <owner>jeremy@chromium.org</owner>
   <summary>
