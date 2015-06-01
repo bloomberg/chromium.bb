@@ -2633,7 +2633,7 @@ tables every time they are used, resulting in great inefficiency.
 @section Python bindings
 
 There are Python bindings for @code{lou_translateString},
-@code{lou_translate} and @code{lou_version}. For installation
+@code{lou_translate}, @code{lou_backTranslateString}, @code{lou_backTranslate}, @code{lou_hyphenate}, @code{lou_getTable} (called @code{checkTable}), @code{lou_compileString} and @code{lou_version}. For installation
 instructions see the the @file{README} file in the @file{python}
 directory. Usage information is included in the Python module itself.
 
