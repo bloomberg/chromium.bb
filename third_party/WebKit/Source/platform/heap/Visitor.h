@@ -299,6 +299,10 @@ public:
     {
         static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Vector");
     }
+    template<typename T, size_t inlineCapacity> void trace(const Vector<T, inlineCapacity>& vector)
+    {
+        static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Vector");
+    }
     template<typename T, size_t N> void trace(const Deque<OwnPtr<T>, N>& deque)
     {
         static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Deque");
@@ -312,6 +316,10 @@ public:
         static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Deque");
     }
     template<typename T, size_t N> void trace(const Deque<WeakPtr<T>, N>& deque)
+    {
+        static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Deque");
+    }
+    template<typename T, size_t N> void trace(const Deque<T, N>& deque)
     {
         static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Deque");
     }
