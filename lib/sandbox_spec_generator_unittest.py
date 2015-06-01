@@ -21,6 +21,8 @@ SANDBOX_NAME = 'sandbox-name'
 
 SIMPLE_MANIFEST_IMAGE_NAME = u'image-name'
 SIMPLE_MANIFEST_TCP_PORT = 4000
+SIMPLE_MANIFEST_PORT_RANGE_BASE = 5000
+SIMPLE_MANIFEST_PORT_RANGE_LEN = 10
 SIMPLE_MANIFEST_EXEC_VALUE = [u'/bin/true', u'--quiet']
 SIMPLE_MANIFEST_ENDPOINT_NAME1 = u'com.foo.yay'
 SIMPLE_MANIFEST_ENDPOINT_NAME2 = u'com.foo.boo'
@@ -31,7 +33,12 @@ SIMPLE_MANIFEST_MOCK_WRAPPER_CALLS = [
     mock.call.AddExecutable(
         MOCK_UID, MOCK_GID,
         SIMPLE_MANIFEST_EXEC_VALUE,
-        sandbox_spec_generator.PortSpec(False, [SIMPLE_MANIFEST_TCP_PORT]),
+        sandbox_spec_generator.PortSpec(
+            False,
+            [SIMPLE_MANIFEST_TCP_PORT] +
+            range(SIMPLE_MANIFEST_PORT_RANGE_BASE,
+                  SIMPLE_MANIFEST_PORT_RANGE_BASE +
+                  SIMPLE_MANIFEST_PORT_RANGE_LEN)),
         sandbox_spec_generator.PortSpec(False, []),
         SIMPLE_MANIFEST_CAPS),
     mock.call.AddEndpointName(SIMPLE_MANIFEST_ENDPOINT_NAME1),
@@ -55,6 +62,13 @@ SIMPLE_MANIFEST = {
                     {
                         'name': u'health',
                         'port': SIMPLE_MANIFEST_TCP_PORT,
+                        'protocol': u'tcp',
+                        'socketActivated': False
+                    },
+                    {
+                        'name': u'port_range_test_port',
+                        'port': SIMPLE_MANIFEST_PORT_RANGE_BASE,
+                        'count': SIMPLE_MANIFEST_PORT_RANGE_LEN,
                         'protocol': u'tcp',
                         'socketActivated': False
                     }

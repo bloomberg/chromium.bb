@@ -10,6 +10,7 @@ https://github.com/appc/spec/blob/master/SPEC.md
 from __future__ import print_function
 
 import collections
+import copy
 import json
 import os
 import re
@@ -37,9 +38,11 @@ KEY_SUB_APP_GROUP = 'group'
 KEY_SUB_APP_EXEC = 'exec'
 KEY_SUB_APP_PORTS = 'ports'
 
+PORT_SPEC_COUNT = 'count'
 PORT_SPEC_NAME = 'name'
 PORT_SPEC_PORT = 'port'
 PORT_SPEC_PROTOCOL = 'protocol'
+PORT_SPEC_SOCKET_ACTIVATED = 'socketActivated'
 
 PROTOCOL_TCP = 'tcp'
 PROTOCOL_UDP = 'udp'
@@ -144,15 +147,29 @@ def _GetPortList(desired_protocol, appc_port_list):
   port_list = []
   for port_dict in appc_port_list:
     json_lib.AssertIsInstance(port_dict, dict, 'port specification')
+    port_dict = copy.deepcopy(port_dict)
+
+    # By default, we open a single specified port.
+    port_dict.setdefault(PORT_SPEC_COUNT, 1)
+    # By default, don't set socket activated.
+    port_dict.setdefault(PORT_SPEC_SOCKET_ACTIVATED, False)
 
     # We don't actually use the port name, but it's handy for documentation
     # and standard adherence to enforce its existence.
-    port_name = json_lib.GetValueOfType(
+    port_name = json_lib.PopValueOfType(
         port_dict, PORT_SPEC_NAME, unicode, 'port name')
     logging.debug('Validating appc specifcation of "%s"', port_name)
-    port = json_lib.GetValueOfType(port_dict, PORT_SPEC_PORT, int, 'port')
-    protocol = json_lib.GetValueOfType(
+    port = json_lib.PopValueOfType(port_dict, PORT_SPEC_PORT, int, 'port')
+    protocol = json_lib.PopValueOfType(
         port_dict, PORT_SPEC_PROTOCOL, unicode, 'protocol')
+
+    count = json_lib.PopValueOfType(
+        port_dict, PORT_SPEC_COUNT, int, 'port range count')
+
+    # We also don't use the socketActivated flag, but we should tolerate safe
+    # values.
+    socket_activated = json_lib.PopValueOfType(
+        port_dict, PORT_SPEC_SOCKET_ACTIVATED, bool, 'socket activated flag')
 
     # Validate everything before acting on it.
     if protocol not in VALID_PROTOCOLS:
@@ -160,6 +177,13 @@ def _GetPortList(desired_protocol, appc_port_list):
                        (VALID_PROTOCOLS, protocol))
     if protocol != desired_protocol:
       continue
+
+    if socket_activated != False:
+      raise ValueError('No support for socketActivated==True in %s' % port_name)
+
+    if port_dict:
+      raise ValueError('Unknown keys found in port spec %s: %r' %
+                       (port_name, port_dict.keys()))
 
     if port == -1:
       # Remember that we're going to return that all ports are opened, but
@@ -171,7 +195,15 @@ def _GetPortList(desired_protocol, appc_port_list):
     # a wildcard for this protocol.
     port = remote_access.NormalizePort(port)
 
-    port_list.append(port)
+    if count < 1:
+      raise ValueError('May only specify positive port ranges for %s' %
+                       port_name)
+    if port + count >= 65536:
+      raise ValueError('Port range extends past max port number for %s' %
+                       port_name)
+
+    for effective_port in xrange(port, port + count):
+      port_list.append(effective_port)
 
   return PortSpec(allow_all, port_list)
 
