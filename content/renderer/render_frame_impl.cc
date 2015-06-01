@@ -2650,7 +2650,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     if (render_thread_impl) {  // Can be NULL in tests.
       render_thread_impl->histogram_customizer()->
           RenderViewNavigatedToHost(GURL(GetLoadingUrl()).host(),
-                                    RenderViewImpl::GetRenderViewCount());
+                                    RenderView::GetRenderViewCount());
     }
   }
 

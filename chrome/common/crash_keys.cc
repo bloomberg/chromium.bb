@@ -130,6 +130,8 @@ const char kKaskoEquivalentGuid[] = "kasko-equivalent-guid";
 
 const char kBug464926CrashKey[] = "bug-464926-info";
 
+const char kViewCount[] = "view-count";
+
 size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
   // but ultimately constitute a single key-value pair.
@@ -192,6 +194,7 @@ size_t RegisterChromeCrashKeys() {
     { kKaskoEquivalentGuid, kSmallSize },
 #endif
     { kBug464926CrashKey, kSmallSize },
+    { kViewCount, kSmallSize },
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering

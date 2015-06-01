@@ -878,7 +878,7 @@ RenderView* RenderView::FromRoutingID(int routing_id) {
 }
 
 /* static */
-size_t RenderViewImpl::GetRenderViewCount() {
+size_t RenderView::GetRenderViewCount() {
   return g_view_map.Get().size();
 }
 

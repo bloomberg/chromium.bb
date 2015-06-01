@@ -177,8 +177,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Returns the RenderViewImpl for the given routing ID.
   static RenderViewImpl* FromRoutingID(int routing_id);
 
-  static size_t GetRenderViewCount();
-
   // May return NULL when the view is closing.
   blink::WebView* webview() const;
 

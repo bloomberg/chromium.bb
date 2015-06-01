@@ -160,6 +160,9 @@ extern const char kKaskoEquivalentGuid[];
 // Used to help investigate bug 464926.
 extern const char kBug464926CrashKey[];
 
+// Numbers of active views.
+extern const char kViewCount[];
+
 }  // namespace crash_keys
 
 #endif  // CHROME_COMMON_CRASH_KEYS_H_
