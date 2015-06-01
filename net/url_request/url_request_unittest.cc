@@ -4073,9 +4073,7 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
   }
 }
 
-// TODO(tbansal): Check why this local server test is failing on Windows
-// (see http://crbug.com/492410).
-TEST_F(URLRequestTestHTTP, DISABLED_NetworkQualityEstimator) {
+TEST_F(URLRequestTestHTTP, NetworkQualityEstimator) {
   ASSERT_TRUE(test_server_.Start());
   // Enable requests to local host to be used for network quality estimation.
   NetworkQualityEstimator estimator(true);

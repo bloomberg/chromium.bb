@@ -5,6 +5,7 @@
 #include "net/base/network_quality_estimator.h"
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -22,9 +23,7 @@ namespace net {
 
 // SpawnedTestServer not supported on iOS (see http://crbug.com/148666).
 #if !defined(OS_IOS)
-// TODO(tbansal): Check why this local server test is failing on Windows
-// (see http://crbug.com/492410).
-TEST(NetworkQualityEstimatorTest, DISABLED_TestPeakKbpsFastestRTTUpdates) {
+TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
   SpawnedTestServer test_server_(
       SpawnedTestServer::TYPE_HTTP, SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));

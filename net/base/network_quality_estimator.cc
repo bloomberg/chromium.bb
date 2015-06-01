@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "net/base/net_util.h"
 #include "net/base/network_quality.h"
@@ -45,8 +46,10 @@ void NetworkQualityEstimator::NotifyDataReceived(const URLRequest& request,
       !request.url().SchemeIsHTTPOrHTTPS() ||
       // Verify that response headers are received, so it can be ensured that
       // response is not cached.
-      request.response_info().response_time.is_null() || request.was_cached())
+      request.response_info().response_time.is_null() || request.was_cached() ||
+      request.creation_time() < last_connection_change_) {
     return;
+  }
 
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeDelta request_duration = now - request.creation_time();
@@ -62,8 +65,7 @@ void NetworkQualityEstimator::NotifyDataReceived(const URLRequest& request,
   // Ignore short duration transfers.
   if (prefilter_bytes_read >= kMinTransferSizeInBytes &&
       request_duration >=
-          base::TimeDelta::FromMicroseconds(kMinRequestDurationMicroseconds) &&
-      request.creation_time() > last_connection_change_) {
+          base::TimeDelta::FromMicroseconds(kMinRequestDurationMicroseconds)) {
     uint64_t kbps = static_cast<uint64_t>(prefilter_bytes_read * 8 * 1000 /
                                           request_duration.InMicroseconds());
     if (kbps > peak_kbps_since_last_connection_change_)
