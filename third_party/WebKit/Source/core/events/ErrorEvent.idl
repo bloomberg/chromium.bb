@@ -32,6 +32,7 @@
 
 [
     Constructor(DOMString type, optional ErrorEventInit eventInitDict),
+    // TODO(philipj): Exposed=(Window,Worker)
 ] interface ErrorEvent : Event {
     readonly attribute DOMString message;
     readonly attribute DOMString filename;
@@ -39,4 +40,3 @@
     readonly attribute unsigned long colno;
     [Custom=Getter] readonly attribute any error;
 };
-

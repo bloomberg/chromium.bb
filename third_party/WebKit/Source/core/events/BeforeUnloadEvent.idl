@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#the-beforeunloadevent-interface
+
 interface BeforeUnloadEvent : Event {
     attribute DOMString returnValue;
 };

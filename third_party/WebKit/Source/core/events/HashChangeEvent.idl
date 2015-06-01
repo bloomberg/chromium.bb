@@ -17,16 +17,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/multipage/browsers.html#hashchangeevent
+// https://html.spec.whatwg.org/multipage/browsers.html#the-hashchangeevent-interface
+
 [
     Constructor(DOMString type, optional HashChangeEventInit eventInitDict),
+    // TODO(philipj): Exposed=(Window,Worker)
 ] interface HashChangeEvent : Event {
-    void initHashChangeEvent([Default=Undefined] optional DOMString type,
-                             [Default=Undefined] optional boolean canBubble,
-                             [Default=Undefined] optional boolean cancelable,
-                             [Default=Undefined] optional DOMString oldURL,
-                             [Default=Undefined] optional DOMString newURL);
     readonly attribute DOMString oldURL;
     readonly attribute DOMString newURL;
-};
 
+    // TODO(philipj): initHashChangeEvent() has been removed from the spec:
+    // https://html5.org/r/6551
+    [Measure] void initHashChangeEvent([Default=Undefined] optional DOMString type,
+                                       [Default=Undefined] optional boolean canBubble,
+                                       [Default=Undefined] optional boolean cancelable,
+                                       [Default=Undefined] optional DOMString oldURL,
+                                       [Default=Undefined] optional DOMString newURL);
+};

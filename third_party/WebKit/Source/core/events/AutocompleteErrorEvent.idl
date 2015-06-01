@@ -24,9 +24,10 @@
 
 // https://html.spec.whatwg.org/multipage/forms.html#the-autocompleteerrorevent-interface
 
+enum AutocompleteErrorReason { "" /* empty string */, "cancel", "disabled", "invalid" };
+
 [
     Constructor(DOMString type, optional AutocompleteErrorEventInit eventInitDict),
 ] interface AutocompleteErrorEvent : Event {
-    readonly attribute DOMString reason;
+    readonly attribute AutocompleteErrorReason reason;
 };
-

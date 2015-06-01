@@ -24,10 +24,11 @@
  *
  */
 
-// https://html.spec.whatwg.org/multipage/browsers.html#popstateevent
+// https://html.spec.whatwg.org/multipage/browsers.html#the-popstateevent-interface
 
 [
     Constructor(DOMString type, optional PopStateEventInit eventInitDict),
+    // TODO(philipj): Exposed=(Window,Worker)
 ] interface PopStateEvent : Event {
     [Custom=Getter] readonly attribute any state;
 };

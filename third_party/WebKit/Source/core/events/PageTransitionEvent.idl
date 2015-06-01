@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/multipage/browsers.html#pagetransitionevent
+// https://html.spec.whatwg.org/multipage/browsers.html#the-pagetransitionevent-interface
 
 [
     Constructor(DOMString type, optional PageTransitionEventInit eventInitDict),
+    // TODO(philipj): Exposed=(Window,Worker)
 ] interface PageTransitionEvent : Event {
     readonly attribute boolean persisted;
 };
-

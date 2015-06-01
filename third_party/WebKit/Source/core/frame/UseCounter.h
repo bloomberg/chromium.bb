@@ -711,6 +711,7 @@ public:
         ElementCreateShadowRootMultipleWithUserAgentShadowRoot = 800,
         InputTypeFileSecureOrigin = 801,
         InputTypeFileInsecureOrigin = 802,
+        V8HashChangeEvent_InitHashChangeEvent_Method = 803,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
