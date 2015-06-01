@@ -10,6 +10,10 @@
 
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
 namespace extensions {
 class Extension;
 }
@@ -43,7 +47,7 @@ void ShowAppInfoInAppList(gfx::NativeWindow parent,
                           const base::Closure& close_callback);
 
 // Shows the chrome app information in a native dialog box of the given |size|.
-void ShowAppInfoInNativeDialog(gfx::NativeWindow parent,
+void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
                                const gfx::Size& size,
                                Profile* profile,
                                const extensions::Extension* app,

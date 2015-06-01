@@ -28,6 +28,12 @@
 
 namespace {
 
+#if defined(OS_MACOSX)
+const ui::ModalType kModalType = ui::MODAL_TYPE_CHILD;
+#else
+const ui::ModalType kModalType = ui::MODAL_TYPE_WINDOW;
+#endif
+
 // The background for App List dialogs, which appears as a rounded rectangle
 // with the same border radius and color as the app list contents.
 class AppListOverlayBackground : public views::Background {
@@ -91,7 +97,7 @@ class BaseDialogContainer : public views::DialogDelegateView {
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
   // Overridden from views::WidgetDelegate:
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
+  ui::ModalType GetModalType() const override { return kModalType; }
   void WindowClosing() override {
     if (!close_callback_.is_null())
       close_callback_.Run();

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -63,17 +64,24 @@ void ShowAppInfoInAppList(gfx::NativeWindow parent,
   dialog_widget->Show();
 }
 
-void ShowAppInfoInNativeDialog(gfx::NativeWindow parent,
+void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
                                const gfx::Size& size,
                                Profile* profile,
                                const extensions::Extension* app,
                                const base::Closure& close_callback) {
-  views::View* app_info_view = new AppInfoDialog(parent, profile, app);
+  gfx::NativeWindow window = web_contents->GetTopLevelNativeWindow();
+  views::View* app_info_view = new AppInfoDialog(window, profile, app);
   views::DialogDelegate* dialog =
       CreateDialogContainerForView(app_info_view, size, close_callback);
-  views::Widget* dialog_widget =
-      constrained_window::CreateBrowserModalDialogViews(dialog, parent);
-  dialog_widget->Show();
+  views::Widget* dialog_widget;
+  if (dialog->GetModalType() == ui::MODAL_TYPE_CHILD) {
+    dialog_widget =
+        constrained_window::ShowWebModalDialogViews(dialog, web_contents);
+  } else {
+    dialog_widget =
+        constrained_window::CreateBrowserModalDialogViews(dialog, window);
+    dialog_widget->Show();
+  }
 }
 
 AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,

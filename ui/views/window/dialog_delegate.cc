@@ -66,9 +66,14 @@ Widget* DialogDelegate::CreateDialogWidgetWithBounds(WidgetDelegate* delegate,
   }
   params.context = context;
   params.parent = parent;
+#if !defined(OS_MACOSX)
   // Web-modal (ui::MODAL_TYPE_CHILD) dialogs with parents are marked as child
   // widgets to prevent top-level window behavior (independent movement, etc).
+  // On Mac, however, the parent may be a native window (not a views::Widget),
+  // and so the dialog must be considered top-level to gain focus and input
+  // method behaviors.
   params.child = parent && (delegate->GetModalType() == ui::MODAL_TYPE_CHILD);
+#endif
   widget->Init(params);
   return widget;
 }
