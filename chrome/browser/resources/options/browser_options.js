@@ -667,6 +667,14 @@ cr.define('options', function() {
             updateAccessibilitySettingsButton;
         updateAccessibilitySettingsButton();
 
+        var updateScreenMagnifierCenterFocus = function() {
+          $('accessibility-screen-magnifier-center-focus-check').disabled =
+              !$('accessibility-screen-magnifier-check').checked;
+        };
+        Preferences.getInstance().addEventListener(
+            $('accessibility-screen-magnifier-check').getAttribute('pref'),
+            updateScreenMagnifierCenterFocus);
+
         var updateDelayDropdown = function() {
           $('accessibility-autoclick-dropdown').disabled =
               !$('accessibility-autoclick-check').checked;

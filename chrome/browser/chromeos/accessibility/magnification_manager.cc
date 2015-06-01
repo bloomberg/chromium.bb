@@ -48,6 +48,7 @@ class MagnificationManagerImpl : public MagnificationManager,
             prefs::kAccessibilityScreenMagnifierScale),
         type_(ui::kDefaultMagnifierType),
         enabled_(false),
+        keep_focus_centered_(false),
         observing_focus_change_in_page_(false) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
@@ -126,6 +127,10 @@ class MagnificationManagerImpl : public MagnificationManager,
           prefs::kAccessibilityScreenMagnifierType,
           base::Bind(&MagnificationManagerImpl::UpdateMagnifierFromPrefs,
                      base::Unretained(this)));
+      pref_change_registrar_->Add(
+          prefs::kAccessibilityScreenMagnifierCenterFocus,
+          base::Bind(&MagnificationManagerImpl::UpdateMagnifierFromPrefs,
+                     base::Unretained(this)));
     }
 
     magnifier_enabled_pref_handler_.HandleProfileChanged(profile_, profile);
@@ -164,6 +169,19 @@ class MagnificationManagerImpl : public MagnificationManager,
     type_ = ui::MAGNIFIER_FULL;  // (leave out for full magnifier)
   }
 
+  virtual void SetMagniferKeepFocusCenteredInternal(bool keep_focus_centered) {
+    if (keep_focus_centered_ == keep_focus_centered)
+      return;
+
+    keep_focus_centered_ = keep_focus_centered;
+
+    if (type_ == ui::MAGNIFIER_FULL) {
+      ash::Shell::GetInstance()
+          ->magnification_controller()
+          ->SetKeepFocusCentered(keep_focus_centered_);
+    }
+  }
+
   void UpdateMagnifierFromPrefs() {
     if (!profile_)
       return;
@@ -172,6 +190,8 @@ class MagnificationManagerImpl : public MagnificationManager,
         prefs::kAccessibilityScreenMagnifierEnabled);
     const int type_integer = profile_->GetPrefs()->GetInteger(
         prefs::kAccessibilityScreenMagnifierType);
+    const bool keep_focus_centered = profile_->GetPrefs()->GetBoolean(
+        prefs::kAccessibilityScreenMagnifierCenterFocus);
 
     ui::MagnifierType type = ui::kDefaultMagnifierType;
     if (type_integer > 0 && type_integer <= ui::kMaxMagnifierType) {
@@ -187,7 +207,9 @@ class MagnificationManagerImpl : public MagnificationManager,
     if (!enabled) {
       SetMagnifierEnabledInternal(enabled);
       SetMagnifierTypeInternal(type);
+      SetMagniferKeepFocusCenteredInternal(keep_focus_centered);
     } else {
+      SetMagniferKeepFocusCenteredInternal(keep_focus_centered);
       SetMagnifierTypeInternal(type);
       SetMagnifierEnabledInternal(enabled);
     }
@@ -267,6 +289,7 @@ class MagnificationManagerImpl : public MagnificationManager,
 
   ui::MagnifierType type_;
   bool enabled_;
+  bool keep_focus_centered_;
   bool observing_focus_change_in_page_;
 
   content::NotificationRegistrar registrar_;

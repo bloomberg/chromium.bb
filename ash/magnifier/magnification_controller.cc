@@ -16,6 +16,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/timer/timer.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
@@ -47,13 +48,25 @@ const float kNonMagnifiedScale = 1.0f;
 const float kInitialMagnifiedScale = 2.0f;
 const float kScrollScaleChangeFactor = 0.0125f;
 
-// Threadshold of panning. If the cursor moves to within pixels (in DIP) of
-// |kPanningMergin| from the edge, the view-port moves.
-const int kPanningMergin = 100;
+// Default animation parameters for redrawing the magnification window.
+const gfx::Tween::Type kDefaultAnimationTweenType = gfx::Tween::EASE_OUT;
+const int kDefaultAnimationDurationInMs = 100;
 
-// Gives a little panning margin for following caret, so that we will move the
-// view-port before the caret is completely out of sight.
-const int kCaretPanningMargin = 10;
+// Use linear transformation to make the magnifier window move smoothly
+// to center the focus when user types in a text input field.
+const gfx::Tween::Type kCenterCaretAnimationTweenType = gfx::Tween::LINEAR;
+
+// The delay of the timer for moving magnifier window for centering the text
+// input focus.
+const int kMoveMagnifierDelayInMs = 10;
+
+// Threadshold of panning. If the cursor moves to within pixels (in DIP) of
+// |kCursorPanningMargin| from the edge, the view-port moves.
+const int kCursorPanningMargin = 100;
+
+// Threadshold of panning. If the caret moves to within pixels (in DIP) of
+// |kCaretPanningMargin| from the edge, the view-port moves.
+const int kCaretPanningMargin = 50;
 
 void MoveCursorTo(aura::WindowTreeHost* host, const gfx::Point& root_location) {
   gfx::Point3F host_location_3f(root_location);
@@ -81,6 +94,8 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   // MagnificationController overrides:
   void SetEnabled(bool enabled) override;
   bool IsEnabled() const override;
+  void SetKeepFocusCentered(bool keep_focus_centered) override;
+  bool KeepFocusCentered() const override;
   void SetScale(float scale, bool animate) override;
   float GetScale() const override { return scale_; }
   void MoveWindow(int x, int y, bool animate) override;
@@ -103,6 +118,10 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   bool IsOnAnimationForTesting() const override { return is_on_animation_; }
 
+  void DisableMoveMagnifierDelayForTesting() override {
+    disable_move_magnifier_delay_ = true;
+  }
+
  private:
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
@@ -118,7 +137,16 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   // These methods should be called internally just after the scale and/or
   // the position are changed to redraw the window.
   bool Redraw(const gfx::PointF& position, float scale, bool animate);
-  bool RedrawDIP(const gfx::PointF& position, float scale, bool animate);
+
+  // Redraws the magnification window with the given origin position in dip and
+  // the given scale. Returns true if the window is changed; otherwise, false.
+  // The last two parameters specify the animation duration and tween type.
+  // If |animation_in_ms| is zero, there will be no animation, and |tween_type|
+  // will be ignored.
+  bool RedrawDIP(const gfx::PointF& position_in_dip,
+                 float scale,
+                 int animation_in_ms,
+                 gfx::Tween::Type tween_type);
 
   // 1) If the screen is scrolling (i.e. animating) and should scroll further,
   // it does nothing.
@@ -166,10 +194,17 @@ class MagnificationControllerImpl : virtual public MagnificationController,
                                       int x_target_margin,
                                       int y_target_margin);
 
+  // Moves the view port to center |point| in magnifier screen.
+  void MoveMagnifierWindowCenterPoint(const gfx::Point& point);
+
   // Moves the viewport so that |rect| is fully visible. If |rect| is larger
   // than the viewport horizontally or vertically, the viewport will be moved
   // to center the |rect| in that dimension.
   void MoveMagnifierWindowFollowRect(const gfx::Rect& rect);
+
+  // Invoked when |move_magnifier_timer_| fires to move the magnifier window to
+  // follow the caret.
+  void OnMoveMagnifierTimer();
 
   // ui::InputMethodObserver:
   void OnTextInputTypeChanged(const ui::TextInputClient* client) override {}
@@ -189,6 +224,8 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   bool is_enabled_;
 
+  bool keep_focus_centered_;
+
   // True if the cursor needs to move the given position after the animation
   // will be finished. When using this, set |position_after_animation_| as well.
   bool move_cursor_after_animation_;
@@ -207,6 +244,16 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   ui::InputMethod* input_method_;  // Not owned.
 
+  // Timer for moving magnifier window when it fires.
+  base::OneShotTimer<MagnificationControllerImpl> move_magnifier_timer_;
+
+  // Most recent caret position in |root_window_| coordinates.
+  gfx::Point caret_point_;
+
+  // Flag for disabling moving magnifier delay. It can only be true in testing
+  // mode.
+  bool disable_move_magnifier_delay_;
+
   DISALLOW_COPY_AND_ASSIGN(MagnificationControllerImpl);
 };
 
@@ -217,10 +264,12 @@ MagnificationControllerImpl::MagnificationControllerImpl()
     : root_window_(Shell::GetPrimaryRootWindow()),
       is_on_animation_(false),
       is_enabled_(false),
+      keep_focus_centered_(false),
       move_cursor_after_animation_(false),
       scale_(kNonMagnifiedScale),
       scroll_direction_(SCROLL_NONE),
-      input_method_(NULL) {
+      input_method_(NULL),
+      disable_move_magnifier_delay_(false) {
   Shell::GetInstance()->AddPreTargetHandler(this);
   root_window_->AddObserver(this);
   point_of_interest_ = root_window_->bounds().CenterPoint();
@@ -248,7 +297,9 @@ void MagnificationControllerImpl::RedrawKeepingMousePosition(
                       (scale_ / scale) * (mouse_in_root.x() - origin_.x()),
                   mouse_in_root.y() -
                       (scale_ / scale) * (mouse_in_root.y() - origin_.y()));
-  bool changed = RedrawDIP(origin, scale, animate);
+  bool changed = RedrawDIP(origin, scale,
+                           animate ? kDefaultAnimationDurationInMs : 0,
+                           kDefaultAnimationTweenType);
   if (changed)
     AfterAnimationMoveCursorTo(mouse_in_root);
 }
@@ -258,12 +309,15 @@ bool MagnificationControllerImpl::Redraw(const gfx::PointF& position,
                                          bool animate) {
   const gfx::PointF position_in_dip =
       ui::ConvertPointToDIP(root_window_->layer(), position);
-  return RedrawDIP(position_in_dip, scale, animate);
+  return RedrawDIP(position_in_dip, scale,
+                   animate ? kDefaultAnimationDurationInMs : 0,
+                   kDefaultAnimationTweenType);
 }
 
 bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
                                             float scale,
-                                            bool animate) {
+                                            int duration_in_ms,
+                                            gfx::Tween::Type tween_type) {
   DCHECK(root_window_);
 
   float x = position_in_dip.x();
@@ -308,9 +362,9 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
   settings.AddObserver(this);
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  settings.SetTweenType(gfx::Tween::EASE_OUT);
+  settings.SetTweenType(tween_type);
   settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(animate ? 100 : 0));
+      base::TimeDelta::FromMilliseconds(duration_in_ms));
 
   gfx::Display display =
       Shell::GetScreen()->GetDisplayNearestWindow(root_window_);
@@ -319,7 +373,7 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
   GetRootWindowController(root_window_)->ash_host()->SetRootWindowTransformer(
       transformer.Pass());
 
-  if (animate)
+  if (duration_in_ms > 0)
     is_on_animation_ = true;
 
   return true;
@@ -352,14 +406,15 @@ void MagnificationControllerImpl::StartOrStopScrollIfNecessary() {
       new_origin.Offset(0, kMoveOffset);
       break;
   }
-  RedrawDIP(new_origin, scale_, true);
+  RedrawDIP(new_origin, scale_, kDefaultAnimationDurationInMs,
+            kDefaultAnimationTweenType);
 }
 
 void MagnificationControllerImpl::OnMouseMove(const gfx::Point& location) {
   DCHECK(root_window_);
 
   gfx::Point mouse(location);
-  int margin = kPanningMergin / scale_;  // No need to consider DPI.
+  int margin = kCursorPanningMargin / scale_;  // No need to consider DPI.
   MoveMagnifierWindowFollowPoint(mouse, margin, margin, margin, margin);
 }
 
@@ -570,6 +625,15 @@ bool MagnificationControllerImpl::IsEnabled() const {
   return is_enabled_;
 }
 
+void MagnificationControllerImpl::SetKeepFocusCentered(
+    bool keep_focus_centered) {
+  keep_focus_centered_ = keep_focus_centered;
+}
+
+bool MagnificationControllerImpl::KeepFocusCentered() const {
+  return keep_focus_centered_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MagnificationControllerImpl: aura::EventFilter implementation
 
@@ -662,15 +726,31 @@ void MagnificationControllerImpl::MoveMagnifierWindowFollowPoint(
   }
   int y = top + y_diff;
   if (start_zoom && !is_on_animation_) {
-    // No animation on panning.
-    bool animate = false;
-    bool ret = RedrawDIP(gfx::Point(x, y), scale_, animate);
+    bool ret = RedrawDIP(gfx::Point(x, y), scale_,
+                         0,  // No animation on panning.
+                         kDefaultAnimationTweenType);
 
     if (ret) {
       // If the magnified region is moved, hides the mouse cursor and moves it.
       if (x_diff != 0 || y_diff != 0)
         MoveCursorTo(root_window_->GetHost(), point);
     }
+  }
+}
+
+void MagnificationControllerImpl::MoveMagnifierWindowCenterPoint(
+    const gfx::Point& point) {
+  DCHECK(root_window_);
+
+  const gfx::Rect window_rect = GetViewportRect();
+  if (point == window_rect.CenterPoint())
+    return;
+
+  if (!is_on_animation_) {
+    // With animation on panning.
+    RedrawDIP(window_rect.origin() + (point - window_rect.CenterPoint()),
+              scale_, kDefaultAnimationDurationInMs,
+              kCenterCaretAnimationTweenType);
   }
 }
 
@@ -707,8 +787,14 @@ void MagnificationControllerImpl::MoveMagnifierWindowFollowRect(
       root_window_->layer()->GetAnimator()->StopAnimating();
       is_on_animation_ = false;
     }
-    RedrawDIP(gfx::Point(x, y), scale_, false);  // No animation on panning.
+    RedrawDIP(gfx::Point(x, y), scale_,
+              0,  // No animation on panning.
+              kDefaultAnimationTweenType);
   }
+}
+
+void MagnificationControllerImpl::OnMoveMagnifierTimer() {
+  MoveMagnifierWindowCenterPoint(caret_point_);
 }
 
 void MagnificationControllerImpl::OnCaretBoundsChanged(
@@ -723,17 +809,41 @@ void MagnificationControllerImpl::OnCaretBoundsChanged(
   if (caret_bounds.width() == 0 && caret_bounds.height() == 0)
     return;
 
-  gfx::Point caret_origin = caret_bounds.origin();
-  // caret_origin in |root_window_| coordinates.
-  wm::ConvertPointFromScreen(root_window_, &caret_origin);
+  caret_point_ = caret_bounds.CenterPoint();
+  // |caret_point_| in |root_window_| coordinates.
+  wm::ConvertPointFromScreen(root_window_, &caret_point_);
 
-  // Visible window_rect in |root_window_| coordinates.
-  const gfx::Rect visible_window_rect = GetViewportRect();
+  // If the feature for centering the text input focus is disabled, the
+  // magnifier window will be moved to follow the focus with a panning margin.
+  if (!KeepFocusCentered()) {
+    // Visible window_rect in |root_window_| coordinates.
+    const gfx::Rect visible_window_rect = GetViewportRect();
+    const int panning_margin = kCaretPanningMargin / scale_;
+    MoveMagnifierWindowFollowPoint(caret_point_,
+                                   panning_margin,
+                                   panning_margin,
+                                   visible_window_rect.width() / 2,
+                                   visible_window_rect.height() / 2);
+    return;
+  }
 
-  const int panning_margin = kCaretPanningMargin / scale_;
-  MoveMagnifierWindowFollowPoint(caret_origin, panning_margin, panning_margin,
-                                 visible_window_rect.width() / 2,
-                                 visible_window_rect.height() / 2);
+  // Move the magnifier window to center the focus with a little delay.
+  // In Gmail compose window, when user types a blank space, it will insert
+  // a non-breaking space(NBSP). NBSP will be replaced with a blank space
+  // character when user types a non-blank space character later, which causes
+  // OnCaretBoundsChanged be called twice. The first call moves the caret back
+  // to the character position just before NBSP, replaces the NBSP with blank
+  // space plus the new character, then the second call will move caret to the
+  // position after the new character. In order to avoid the magnifier window
+  // being moved back and forth with these two OnCaretBoundsChanged events, we
+  // defer moving magnifier window until the |move_magnifier_timer_| fires,
+  // when the caret settles eventually.
+  move_magnifier_timer_.Stop();
+  move_magnifier_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(
+          disable_move_magnifier_delay_ ? 0 : kMoveMagnifierDelayInMs),
+      this, &MagnificationControllerImpl::OnMoveMagnifierTimer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

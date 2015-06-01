@@ -566,6 +566,10 @@ const char kAccessibilityHighContrastEnabled[] =
 // A boolean pref which determines whether screen magnifier is enabled.
 const char kAccessibilityScreenMagnifierEnabled[] =
     "settings.a11y.screen_magnifier";
+// A boolean pref which determines whether screen magnifier should center
+// the text input focus.
+const char kAccessibilityScreenMagnifierCenterFocus[] =
+    "settings.a11y.screen_magnifier_center_focus";
 // A integer pref which determines what type of screen magnifier is enabled.
 // Note that: 'screen_magnifier_type' had been used as string pref. Hence,
 // we are using another name pref here.

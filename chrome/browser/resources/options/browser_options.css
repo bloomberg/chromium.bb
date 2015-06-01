@@ -478,6 +478,10 @@ list:not([disabled]) > .network-group[selected] {
   -webkit-margin-start: 0.6em;
 }
 
+#accessibility-screen-magnifier-center-focus-check {
+  -webkit-margin-start: 0.4em;
+}
+
 #battery-icon {
   display: inline-block;
   height: 25px;

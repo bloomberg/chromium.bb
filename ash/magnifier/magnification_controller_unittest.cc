@@ -78,6 +78,8 @@ class MagnificationControllerTest: public test::AshTestBase {
     EXPECT_EQ(kRootHeight, root_bounds.height());
     EXPECT_EQ(kRootWidth, root_bounds.width());
 #endif
+
+    GetMagnificationController()->DisableMoveMagnifierDelayForTesting();
   }
 
   void TearDown() override { AshTestBase::TearDown(); }
@@ -526,6 +528,7 @@ TEST_F(MagnificationControllerTest, FollowTextInputFieldFocus) {
   GetMagnificationController()->SetEnabled(true);
   EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
   EXPECT_EQ("200,150 400x300", GetViewport().ToString());
+  EXPECT_FALSE(GetMagnificationController()->KeepFocusCentered());
 
   // Move the viewport to (0, 0), so that text input field will be out of
   // the viewport region.
@@ -542,17 +545,29 @@ TEST_F(MagnificationControllerTest, FollowTextInputFieldFocus) {
   EXPECT_TRUE(view_port.Contains(text_input_bounds));
   gfx::Rect caret_bounds = GetCaretBounds();
   EXPECT_TRUE(text_input_bounds.Contains(caret_bounds));
-  EXPECT_EQ(caret_bounds.origin(), view_port.CenterPoint());
+  EXPECT_EQ(caret_bounds.CenterPoint(), view_port.CenterPoint());
 }
 
+// Tests the following case. First the text input field intersects on the right
+// edge with the view port, with focus caret sitting just a little left to the
+// caret panning margin, so that when it gets focus, the view port won't move.
+// Then when user types a character, the caret moves beyond the right panning
+// edge, the view port will be moved to center the caret horizontally.
 TEST_F(MagnificationControllerTest, FollowTextInputFieldKeyPress) {
-  CreateAndShowTextInputView(gfx::Rect(385, 200, 80, 80));
+  const int kCaretPanningMargin = 50;
+  const int kScale = 2.0f;
+  const int kViewportWidth = 400;
+  // Add some extra distance horizontally from text caret to to left edge of
+  // the text input view.
+  int x = kViewportWidth - (kCaretPanningMargin + 20) / kScale;
+  CreateAndShowTextInputView(gfx::Rect(x, 200, 80, 80));
   gfx::Rect text_input_bounds = GetTextInputViewBounds();
 
   // Enables magnifier and confirm the viewport is at center.
   GetMagnificationController()->SetEnabled(true);
   EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
   EXPECT_EQ("200,150 400x300", GetViewport().ToString());
+  EXPECT_FALSE(GetMagnificationController()->KeepFocusCentered());
 
   // Move the viewport to (0, 0), so that text input field intersects the
   // view port at the right edge.
@@ -563,26 +578,98 @@ TEST_F(MagnificationControllerTest, FollowTextInputFieldKeyPress) {
   // Focus on the text input field.
   FocusOnTextInputView();
 
-  // Verify the view port is not moved, and the caret is inside the view port.
+  // Verify the view port is not moved, and the caret is inside the view port
+  // and not beyond the caret right panning margin.
   gfx::Rect view_port = GetViewport();
   EXPECT_EQ("0,0 400x300", view_port.ToString());
-  EXPECT_TRUE(view_port.Intersects(text_input_bounds));
   EXPECT_TRUE(text_input_bounds.Contains(GetCaretBounds()));
+  EXPECT_GT(view_port.right() - kCaretPanningMargin / kScale,
+            GetCaretBounds().x());
 
   // Press keys on text input simulate typing on text field and the caret
-  // moves out of the old view port region. The view port is moved to the place
-  // where caret's x coordinate is centered at the new view port.
+  // moves beyond the caret right panning margin. The view port is moved to the
+  // place where caret's x coordinate is centered at the new view port.
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.PressKey(ui::VKEY_A, 0);
   generator.ReleaseKey(ui::VKEY_A, 0);
   gfx::Rect caret_bounds = GetCaretBounds();
-  EXPECT_FALSE(view_port.Intersects(caret_bounds));
+  EXPECT_LT(view_port.right() - kCaretPanningMargin / kScale,
+            GetCaretBounds().x());
 
   gfx::Rect new_view_port = GetViewport();
-  EXPECT_TRUE(new_view_port.Contains(caret_bounds));
-  EXPECT_EQ(caret_bounds.x(), new_view_port.CenterPoint().x());
-  EXPECT_EQ(view_port.y(), new_view_port.y());
+  EXPECT_EQ(caret_bounds.CenterPoint().x(), new_view_port.CenterPoint().x());
 }
+
+TEST_F(MagnificationControllerTest, CenterTextCaretNotInsideViewport) {
+  CreateAndShowTextInputView(gfx::Rect(500, 300, 50, 30));
+  gfx::Rect text_input_bounds = GetTextInputViewBounds();
+
+  // Enables magnifier and confirm the viewport is at center.
+  GetMagnificationController()->SetKeepFocusCentered(true);
+  GetMagnificationController()->SetEnabled(true);
+  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
+  EXPECT_EQ("200,150 400x300", GetViewport().ToString());
+  EXPECT_TRUE(GetMagnificationController()->KeepFocusCentered());
+
+  // Move the viewport to (0, 0), so that text input field will be out of
+  // the viewport region.
+  GetMagnificationController()->MoveWindow(0, 0, false);
+  EXPECT_EQ("0,0 400x300", GetViewport().ToString());
+  EXPECT_FALSE(GetViewport().Contains(text_input_bounds));
+
+  // Focus on the text input field.
+  FocusOnTextInputView();
+  RunAllPendingInMessageLoop();
+  // Verify the view port has been moved to the place where the text field is
+  // contained in the view port and the caret is at the center of the view port.
+  gfx::Rect view_port = GetViewport();
+  EXPECT_TRUE(view_port.Contains(text_input_bounds));
+  gfx::Rect caret_bounds = GetCaretBounds();
+  EXPECT_EQ(caret_bounds.CenterPoint(), view_port.CenterPoint());
+
+  // Press keys on text input simulate typing on text field and the view port
+  // should be moved to keep the caret centered.
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.PressKey(ui::VKEY_A, 0);
+  generator.ReleaseKey(ui::VKEY_A, 0);
+  RunAllPendingInMessageLoop();
+  gfx::Rect new_caret_bounds = GetCaretBounds();
+  EXPECT_NE(caret_bounds, new_caret_bounds);
+
+  gfx::Rect new_view_port = GetViewport();
+  EXPECT_NE(view_port, new_view_port);
+  EXPECT_TRUE(new_view_port.Contains(new_caret_bounds));
+  EXPECT_EQ(new_caret_bounds.CenterPoint(), new_view_port.CenterPoint());
+}
+
+TEST_F(MagnificationControllerTest, CenterTextCaretInViewport) {
+  CreateAndShowTextInputView(gfx::Rect(250, 200, 50, 30));
+  gfx::Rect text_input_bounds = GetTextInputViewBounds();
+
+  // Enables magnifier and confirm the viewport is at center.
+  GetMagnificationController()->SetKeepFocusCentered(true);
+  GetMagnificationController()->SetEnabled(true);
+  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
+  EXPECT_EQ("200,150 400x300", GetViewport().ToString());
+  EXPECT_TRUE(GetMagnificationController()->KeepFocusCentered());
+
+  // Verify the text input field is inside the view port.
+  gfx::Rect view_port = GetViewport();
+  EXPECT_TRUE(view_port.Contains(text_input_bounds));
+
+  // Focus on the text input field.
+  FocusOnTextInputView();
+  RunAllPendingInMessageLoop();
+
+  // Verify the view port has been moved to the place where the text field is
+  // contained in the view port and the caret is at the center of the view port.
+  gfx::Rect new_view_port = GetViewport();
+  EXPECT_NE(view_port, new_view_port);
+  EXPECT_TRUE(new_view_port.Contains(text_input_bounds));
+  gfx::Rect caret_bounds = GetCaretBounds();
+  EXPECT_EQ(caret_bounds.CenterPoint(), new_view_port.CenterPoint());
+}
+
 
 // Make sure that unified desktop can enter magnified mode.
 TEST_F(MagnificationControllerTest, EnableMagnifierInUnifiedDesktop) {

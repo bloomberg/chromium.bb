@@ -8537,6 +8537,22 @@ should be able to be added at any place in this file.
   <description>Settings: Accessibility: Enable on-screen keyboard</description>
 </action>
 
+<action name="Options_AccessibilityScreenMagnifierCenterFocus_Disable">
+  <owner>jennyz@chromium.org</owner>
+  <description>
+    Settings: Accessibility: Disable centering focus for text input in magnifier
+    screen.
+  </description>
+</action>
+
+<action name="Options_AccessibilityScreenMagnifierCenterFocus_Enable">
+  <owner>jennyz@chromium.org</owner>
+  <description>
+    Settings: Accessibility: Enable centering focus for text input in magnifier
+    screen.
+  </description>
+</action>
+
 <action name="Options_AccessibilityScreenMagnifier_Disable">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Accessibility: Disable screen magnifier</description>

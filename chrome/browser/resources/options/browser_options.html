@@ -885,12 +885,28 @@
       <div class="checkbox controlled-setting-with-label">
         <label>
           <input
+              id="accessibility-screen-magnifier-check"
               pref="settings.a11y.screen_magnifier" type="checkbox"
               metric="Options_AccessibilityScreenMagnifier">
           <span>
             <span i18n-content="accessibilityScreenMagnifier"></span>
             <span class="controlled-setting-indicator"
                 pref="settings.a11y.screen_magnifier"></span>
+          </span>
+        </label>
+      </div>
+      <div class="checkbox controlled-setting-with-label">
+        <!-- No whitespace between elements. -->
+        <input type="checkbox" class="spacer-checkbox">
+        <label>
+          <input
+              id = "accessibility-screen-magnifier-center-focus-check"
+              pref="settings.a11y.screen_magnifier_center_focus" type="checkbox"
+              metric="Options_AccessibilityScreenMagnifierCenterFocus">
+          <span>
+            <span i18n-content="accessibilityScreenMagnifierCenterFocus"></span>
+            <span class="controlled-setting-indicator"
+                pref="settings.a11y.screen_magnifier_center_focus"></span>
           </span>
         </label>
       </div>

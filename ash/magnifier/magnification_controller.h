@@ -40,6 +40,13 @@ class ASH_EXPORT MagnificationController {
   // Returns if the screen magnifier is enabled or not.
   virtual bool IsEnabled() const = 0;
 
+  // Enables or disables the feature for keeping the text input focus centered.
+  virtual void SetKeepFocusCentered(bool keep_focus_centered) = 0;
+
+  // Returns true if magnifier will keep the focus centered in screen for text
+  // input.
+  virtual bool KeepFocusCentered() const = 0;
+
   // Sets the magnification ratio. 1.0f means no magnification.
   virtual void SetScale(float scale, bool animate) = 0;
   // Returns the current magnification ratio.
@@ -70,6 +77,9 @@ class ASH_EXPORT MagnificationController {
   // Returns true if magnifier is still on animation for moving viewport.
   // This is only used for testing purpose.
   virtual bool IsOnAnimationForTesting() const = 0;
+
+  // Disables the delay for moving magnifier window in testing mode.
+  virtual void DisableMoveMagnifierDelayForTesting() = 0;
 
   // Switch the magnified root window to |new_root_window|. This does following:
   //  - Unzoom the current root_window.
