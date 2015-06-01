@@ -63,23 +63,18 @@ class LocalRietveld(object):
     self.test_server = None
     self.port = None
     self.tempdir = None
-
-    # Find the GAE SDK
-    previous_dir = ''
-    self.sdk_path = ''
-    base_dir = self.base_dir
-    while base_dir != previous_dir:
-      previous_dir = base_dir
-      self.sdk_path = os.path.join(base_dir, 'google_appengine')
-      if not os.path.isfile(os.path.join(self.sdk_path, 'VERSION')):
-        base_dir = os.path.dirname(base_dir)
-    self.dev_app = os.path.join(self.sdk_path, 'dev_appserver.py')
+    self.dev_app = None
 
   def install_prerequisites(self):
-    # First, verify the Google AppEngine SDK is available.
-    if not os.path.isfile(self.dev_app):
-      raise Failure(
-          'Install google_appengine sdk in %s or higher up' % self.base_dir)
+    # First, install the Google AppEngine SDK.
+    cmd = [os.path.join(self.base_dir, 'get_appengine.py'),
+           '--dest=%s' % self.base_dir]
+    try:
+      subprocess2.check_call(cmd)
+    except (OSError, subprocess2.CalledProcessError), e:
+      raise Failure('Failed to run %s\n%s' % (cmd, e))
+    sdk_path = os.path.join(self.base_dir, 'google_appengine')
+    self.dev_app = os.path.join(sdk_path, 'dev_appserver.py')
 
     if os.path.isdir(os.path.join(self.rietveld, '.hg')):
       # Left over from mercurial. Delete it.
