@@ -1,9 +1,3 @@
-CONSOLE ERROR: Unrecognized Content-Security-Policy directive 'suborigin'.
-
-CONSOLE ERROR: Unrecognized Content-Security-Policy directive 'suborigin'.
-
-CONSOLE ERROR: Unrecognized Content-Security-Policy directive 'suborigin'.
-
 
 This is a testharness.js-based test.
 FAIL Block a frame in one suborigin from accessing another suborigin Uncaught Error: assert_equals: The parent frame should not be able to get the secret value from the child iframe. expected (string) "" but got (undefined) undefined

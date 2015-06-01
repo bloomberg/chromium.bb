@@ -101,6 +101,10 @@ public:
     // https://w3c.github.io/webappsec/specs/upgrade/
     static const char UpgradeInsecureRequests[];
 
+    // Suborigin Directive
+    // https://metromoxie.github.io/webappsec/specs/suborigins/index.html
+    static const char Suborigin[];
+
     enum ReportingStatus {
         SendReport,
         SuppressReport
@@ -204,6 +208,7 @@ public:
     void reportInvalidPathCharacter(const String& directiveName, const String& value, const char);
     void reportInvalidPluginTypes(const String&);
     void reportInvalidSandboxFlags(const String&);
+    void reportInvalidSuboriginFlags(const String&);
     void reportInvalidSourceExpression(const String& directiveName, const String& source);
     void reportInvalidReflectedXSS(const String&);
     void reportMissingReportURI(const String&);
@@ -212,6 +217,7 @@ public:
     void reportInvalidReferrer(const String&);
     void reportReportOnlyInMeta(const String&);
     void reportMetaOutsideHead(const String&);
+    void reportSuboriginInMeta(const String&);
     void reportValueForEmptyDirective(const String& directiveName, const String& value);
 
     // If a frame is passed in, the report will be sent using it as a context. If no frame is
@@ -223,6 +229,7 @@ public:
 
     const KURL url() const;
     void enforceSandboxFlags(SandboxFlags);
+    void enforceSuborigin(const String&);
     void enforceStrictMixedContentChecking();
     String evalDisabledErrorMessage() const;
 
@@ -279,6 +286,7 @@ private:
 
     // State flags used to configure the environment after parsing a policy.
     SandboxFlags m_sandboxMask;
+    String m_suboriginName;
     bool m_enforceStrictMixedContentChecking;
     ReferrerPolicy m_referrerPolicy;
     String m_disableEvalErrorMessage;

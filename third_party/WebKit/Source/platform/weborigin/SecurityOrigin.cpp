@@ -29,6 +29,7 @@
 #include "config.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -37,6 +38,7 @@
 #include "url/url_canon_ip.h"
 #include "wtf/HexNumber.h"
 #include "wtf/MainThread.h"
+#include "wtf/NotFound.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -126,6 +128,11 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
     , m_enforceFilePathSeparation(false)
     , m_needsDatabaseIdentifierQuirkForFiles(false)
 {
+    // Suborigins are serialized into the host, so extract it if necessary.
+    String suboriginName;
+    if (deserializeSuboriginAndHost(m_host, suboriginName, m_host))
+        addSuborigin(suboriginName);
+
     // document.domain starts as m_host, but can be set by the DOM.
     m_domain = m_host;
 
@@ -140,6 +147,7 @@ SecurityOrigin::SecurityOrigin()
     : m_protocol("")
     , m_host("")
     , m_domain("")
+    , m_suboriginName(WTF::String())
     , m_port(InvalidPort)
     , m_isUnique(true)
     , m_universalAccess(false)
@@ -154,6 +162,7 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
     : m_protocol(other->m_protocol.isolatedCopy())
     , m_host(other->m_host.isolatedCopy())
     , m_domain(other->m_domain.isolatedCopy())
+    , m_suboriginName(other->m_suboriginName)
     , m_port(other->m_port)
     , m_isUnique(other->m_isUnique)
     , m_universalAccess(other->m_universalAccess)
@@ -194,6 +203,16 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::createUnique()
     RefPtr<SecurityOrigin> origin = adoptRef(new SecurityOrigin());
     ASSERT(origin->isUnique());
     return origin.release();
+}
+
+void SecurityOrigin::addSuborigin(const String& suborigin)
+{
+    ASSERT(RuntimeEnabledFeatures::suboriginsEnabled());
+    // Changing suborigins midstream is bad. Very bad. It should not happen.
+    // This is, in fact, one of the very basic invariants that makes suborigins
+    // an effective security tool.
+    RELEASE_ASSERT(m_suboriginName.isNull() || m_suboriginName == suborigin);
+    m_suboriginName = suborigin;
 }
 
 PassRefPtr<SecurityOrigin> SecurityOrigin::isolatedCopy() const
@@ -466,6 +485,25 @@ String SecurityOrigin::toRawString() const
     return result.toString();
 }
 
+// Returns true if and only if a suborigin component was found. If false, no
+// guarantees about the return value |suboriginName| are made.
+bool SecurityOrigin::deserializeSuboriginAndHost(const String& oldHost, String& suboriginName, String& newHost)
+{
+    if (!RuntimeEnabledFeatures::suboriginsEnabled())
+        return false;
+
+    size_t suboriginEnd = oldHost.find('_');
+    // Suborigins cannot be empty
+    if (suboriginEnd == 0 || suboriginEnd == WTF::kNotFound)
+        return false;
+
+    suboriginName = oldHost.substring(0, suboriginEnd);
+    newHost = oldHost.substring(suboriginEnd + 1);
+
+    return true;
+}
+
+
 AtomicString SecurityOrigin::toRawAtomicString() const
 {
     if (m_protocol == "file")
@@ -476,11 +514,14 @@ AtomicString SecurityOrigin::toRawAtomicString() const
     return result.toAtomicString();
 }
 
-inline void SecurityOrigin::buildRawString(StringBuilder& builder) const
+void SecurityOrigin::buildRawString(StringBuilder& builder) const
 {
-    builder.reserveCapacity(m_protocol.length() + m_host.length() + 10);
     builder.append(m_protocol);
     builder.appendLiteral("://");
+    if (hasSuborigin()) {
+        builder.append(m_suboriginName);
+        builder.appendLiteral("_");
+    }
     builder.append(m_host);
 
     if (m_port) {

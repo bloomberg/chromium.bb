@@ -1,14 +1,10 @@
-CONSOLE ERROR: Unrecognized Content-Security-Policy directive 'suborigin'.
-
-CONSOLE ERROR: Unrecognized Content-Security-Policy directive 'suborigin'.
-
 Cross-origin access to 'window.event' should throw a SecurityError.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-FAIL frame.contentWindow.event should throw SecurityError: Blocked a frame with origin "suborigin+foobar+http://127.0.0.1:8000" from accessing a cross-origin frame.. Was undefined.
-FAIL frame.contentWindow.event = 1; should throw SecurityError: Blocked a frame with origin "suborigin+foobar+http://127.0.0.1:8000" from accessing a cross-origin frame.. Was 1.
+FAIL frame.contentWindow.event should throw SecurityError: Blocked a frame with origin "http://foobar_127.0.0.1:8000" from accessing a cross-origin frame.. Was undefined.
+FAIL frame.contentWindow.event = 1; should throw SecurityError: Blocked a frame with origin "http://foobar_127.0.0.1:8000" from accessing a cross-origin frame.. Was 1.
 PASS successfullyParsed is true
 
 TEST COMPLETE

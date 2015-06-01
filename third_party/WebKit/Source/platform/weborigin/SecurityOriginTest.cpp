@@ -31,16 +31,21 @@
 #include "config.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
 using blink::SecurityOrigin;
 
-namespace {
+namespace blink {
 
 const int MaxAllowedPort = 65535;
 
-TEST(SecurityOriginTest, InvalidPortsCreateUniqueOrigins)
+class SecurityOriginTest : public ::testing::Test { };
+
+TEST_F(SecurityOriginTest, InvalidPortsCreateUniqueOrigins)
 {
     int ports[] = { -100, -1, MaxAllowedPort + 1, 1000000 };
 
@@ -50,7 +55,7 @@ TEST(SecurityOriginTest, InvalidPortsCreateUniqueOrigins)
     }
 }
 
-TEST(SecurityOriginTest, ValidPortsCreateNonUniqueOrigins)
+TEST_F(SecurityOriginTest, ValidPortsCreateNonUniqueOrigins)
 {
     int ports[] = { 0, 80, 443, 5000, MaxAllowedPort };
 
@@ -60,7 +65,7 @@ TEST(SecurityOriginTest, ValidPortsCreateNonUniqueOrigins)
     }
 }
 
-TEST(SecurityOriginTest, IsPotentiallyTrustworthy)
+TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy)
 {
     struct TestCase {
         bool accessGranted;
@@ -139,7 +144,7 @@ TEST(SecurityOriginTest, IsPotentiallyTrustworthy)
     EXPECT_EQ("Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).", errorMessage);
 }
 
-TEST(SecurityOriginTest, IsSecure)
+TEST_F(SecurityOriginTest, IsSecure)
 {
     struct TestCase {
         bool isSecure;
@@ -164,6 +169,64 @@ TEST(SecurityOriginTest, IsSecure)
         EXPECT_EQ(test.isSecure, SecurityOrigin::isSecure(blink::KURL(blink::ParsedURLString, test.url))) << "URL: '" << test.url << "'";
 
     EXPECT_FALSE(SecurityOrigin::isSecure(blink::KURL()));
+}
+
+TEST_F(SecurityOriginTest, Suborigins)
+{
+    blink::RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+
+    RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString("https://test.com");
+    EXPECT_FALSE(origin->hasSuborigin());
+    origin->addSuborigin("foobar");
+    EXPECT_TRUE(origin->hasSuborigin());
+    EXPECT_EQ("foobar", origin->suboriginName());
+
+    origin = SecurityOrigin::createFromString("https://foobar_test.com");
+    EXPECT_EQ("https", origin->protocol());
+    EXPECT_EQ("test.com", origin->host());
+    EXPECT_EQ("foobar", origin->suboriginName());
+
+    origin = SecurityOrigin::createFromString("https://foobar_test.com");
+    EXPECT_TRUE(origin->hasSuborigin());
+    EXPECT_EQ("foobar", origin->suboriginName());
+
+    origin = SecurityOrigin::createFromString("https://foobar+test.com");
+    EXPECT_FALSE(origin->hasSuborigin());
+
+    origin = SecurityOrigin::createFromString("https://_test.com");
+    EXPECT_FALSE(origin->hasSuborigin());
+
+    origin = adoptRef<SecurityOrigin>(new SecurityOrigin);
+    EXPECT_FALSE(origin->hasSuborigin());
+
+    origin = SecurityOrigin::createFromString("https://foobar_test.com");
+    EXPECT_DEATH(origin->addSuborigin("shouldhitassert"), "");
+}
+
+TEST_F(SecurityOriginTest, SuboriginsParsing)
+{
+    blink::RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+    String host, realHost, suborigin;
+    host = "test.com";
+    EXPECT_FALSE(SecurityOrigin::deserializeSuboriginAndHost(host, suborigin, realHost));
+
+    host = "foobar_test.com";
+    EXPECT_TRUE(SecurityOrigin::deserializeSuboriginAndHost(host, suborigin, realHost));
+    EXPECT_EQ("test.com", realHost);
+    EXPECT_EQ("foobar", suborigin);
+
+    RefPtr<SecurityOrigin> origin;
+    StringBuilder builder;
+
+    origin = SecurityOrigin::createFromString("https://foobar_test.com");
+    origin->buildRawString(builder);
+    EXPECT_EQ("https://foobar_test.com", builder.toString());
+
+    builder.clear();
+    origin = SecurityOrigin::createFromString("https://test.com");
+    origin->addSuborigin("foobar");
+    origin->buildRawString(builder);
+    EXPECT_EQ("https://foobar_test.com", builder.toString());
 }
 
 } // namespace

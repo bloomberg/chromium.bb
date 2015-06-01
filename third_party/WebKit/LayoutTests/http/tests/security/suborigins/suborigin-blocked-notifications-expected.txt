@@ -1,6 +1,0 @@
-CONSOLE ERROR: Unrecognized Content-Security-Policy directive 'suborigin'.
-
-This is a testharness.js-based test.
-FAIL Notifications are denied in suborigins. Uncaught Error: assert_equals: The notification permission request should not be granted. expected "default" but got "granted"
-Harness: the test ran to completion.
-

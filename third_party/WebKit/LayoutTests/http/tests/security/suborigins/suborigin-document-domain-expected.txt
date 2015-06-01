@@ -1,6 +1,0 @@
-CONSOLE ERROR: Unrecognized Content-Security-Policy directive 'suborigin'.
-
-This is a testharness.js-based test.
-PASS Validate behavior of document.domain 
-Harness: the test ran to completion.
-

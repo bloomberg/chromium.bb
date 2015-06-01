@@ -43,7 +43,8 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     , m_headerType(type)
     , m_headerSource(source)
     , m_reportOnly(false)
-    , m_haveSandboxPolicy(false)
+    , m_hasSandboxPolicy(false)
+    , m_hasSuboriginPolicy(false)
     , m_reflectedXSSDisposition(ReflectedXSSUnset)
     , m_didSetReferrerPolicy(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
@@ -546,11 +547,11 @@ void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sand
         m_policy->reportInvalidInReportOnly(name);
         return;
     }
-    if (m_haveSandboxPolicy) {
+    if (m_hasSandboxPolicy) {
         m_policy->reportDuplicateDirective(name);
         return;
     }
-    m_haveSandboxPolicy = true;
+    m_hasSandboxPolicy = true;
     String invalidTokens;
     m_policy->enforceSandboxFlags(parseSandboxPolicy(sandboxPolicy, invalidTokens));
     if (!invalidTokens.isNull())
@@ -588,6 +589,24 @@ void CSPDirectiveList::enableInsecureRequestsUpgrade(const String& name, const S
     m_policy->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
     if (!value.isEmpty())
         m_policy->reportValueForEmptyDirective(name, value);
+}
+
+void CSPDirectiveList::applySuboriginPolicy(const String& name, const String& suboriginPolicy)
+{
+    ASSERT(RuntimeEnabledFeatures::suboriginsEnabled());
+    if (m_headerSource == ContentSecurityPolicyHeaderSourceMeta) {
+        m_policy->reportSuboriginInMeta(suboriginPolicy);
+        return;
+    }
+
+    if (m_hasSuboriginPolicy) {
+        m_policy->reportDuplicateDirective(name);
+        return;
+    }
+    m_hasSuboriginPolicy = true;
+    String suboriginName = parseSuboriginName(suboriginPolicy);
+    if (!suboriginName.isNull())
+        m_policy->enforceSuborigin(suboriginName);
 }
 
 void CSPDirectiveList::parseReflectedXSS(const String& name, const String& value)
@@ -691,6 +710,38 @@ void CSPDirectiveList::parseReferrer(const String& name, const String& value)
     m_policy->reportInvalidReferrer(value);
 }
 
+String CSPDirectiveList::parseSuboriginName(const String& policy)
+{
+    Vector<UChar> characters;
+    policy.appendTo(characters);
+
+    const UChar* position = characters.data();
+    const UChar* end = position + characters.size();
+
+    // Parse the name of the suborigin (no spaces, single string)
+    skipWhile<UChar, isASCIISpace>(position, end);
+    if (position == end) {
+        m_policy->reportInvalidSuboriginFlags("No suborigin name specified.");
+        return String();
+    }
+
+    const UChar* begin = position;
+
+    skipWhile<UChar, isASCIIAlphanumeric>(position, end);
+    if (position != end && !isASCIISpace(*position)) {
+        m_policy->reportInvalidSuboriginFlags("Invalid character \'" + String(position, 1) + "\' in suborigin.");
+        return String();
+    }
+    size_t length = position - begin;
+    skipWhile<UChar, isASCIISpace>(position, end);
+    if (position != end) {
+        m_policy->reportInvalidSuboriginFlags("Whitespace is not allowed in suborigin names.");
+        return String();
+    }
+
+    return String(begin, length);
+}
+
 void CSPDirectiveList::addDirective(const String& name, const String& value)
 {
     ASSERT(!name.isEmpty());
@@ -739,6 +790,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
         enforceStrictMixedContentChecking(name, value);
     } else if (equalIgnoringCase(name, ContentSecurityPolicy::ManifestSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_manifestSrc);
+    } else if (RuntimeEnabledFeatures::suboriginsEnabled() && equalIgnoringCase(name, ContentSecurityPolicy::Suborigin)) {
+        applySuboriginPolicy(name, value);
     } else {
         m_policy->reportUnsupportedDirective(name);
     }

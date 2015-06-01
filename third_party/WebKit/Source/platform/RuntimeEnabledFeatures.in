@@ -143,6 +143,7 @@ StaleWhileRevalidateCacheControl
 // be shipped would be enabled. Instead, remove the flag from the shipping
 // interface.
 ExperimentalStream status=experimental
+Suborigins status=experimental
 SubresourceIntegrity status=experimental
 TabStopAttribute status=experimental
 TextBlob

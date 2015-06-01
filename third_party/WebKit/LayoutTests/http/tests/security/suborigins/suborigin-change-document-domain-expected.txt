@@ -1,5 +1,3 @@
-CONSOLE ERROR: Unrecognized Content-Security-Policy directive 'suborigin'.
-
 CONSOLE MESSAGE: line 12: secret = I am a secret
 
 This is a testharness.js-based test.

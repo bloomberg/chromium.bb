@@ -98,6 +98,10 @@ const char ContentSecurityPolicy::BlockAllMixedContent[] = "block-all-mixed-cont
 // https://w3c.github.io/webappsec/specs/upgrade/
 const char ContentSecurityPolicy::UpgradeInsecureRequests[] = "upgrade-insecure-requests";
 
+// Suborigin Directive
+// https://metromoxie.github.io/webappsec/specs/suborigins/index.html
+const char ContentSecurityPolicy::Suborigin[] = "suborigin";
+
 bool ContentSecurityPolicy::isDirectiveName(const String& name)
 {
     return (equalIgnoringCase(name, ConnectSrc)
@@ -109,6 +113,7 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name)
         || equalIgnoringCase(name, ObjectSrc)
         || equalIgnoringCase(name, ReportURI)
         || equalIgnoringCase(name, Sandbox)
+        || equalIgnoringCase(name, Suborigin)
         || equalIgnoringCase(name, ScriptSrc)
         || equalIgnoringCase(name, StyleSrc)
         || equalIgnoringCase(name, BaseURI)
@@ -148,6 +153,7 @@ ContentSecurityPolicy::ContentSecurityPolicy()
     , m_scriptHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
     , m_styleHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
     , m_sandboxMask(0)
+    , m_suboriginName(String())
     , m_enforceStrictMixedContentChecking(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
     , m_insecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade)
@@ -180,6 +186,9 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
         }
         if (m_enforceStrictMixedContentChecking)
             document->enforceStrictMixedContentChecking();
+        if (RuntimeEnabledFeatures::suboriginsEnabled()) {
+            document->enforceSuborigin(m_suboriginName);
+        }
         if (m_insecureRequestsPolicy == SecurityContext::InsecureRequestsUpgrade) {
             UseCounter::count(document, UseCounter::UpgradeInsecureRequestsEnabled);
             document->setInsecureRequestsPolicy(m_insecureRequestsPolicy);
@@ -655,6 +664,11 @@ void ContentSecurityPolicy::setInsecureRequestsPolicy(SecurityContext::InsecureR
         m_insecureRequestsPolicy = policy;
 }
 
+void ContentSecurityPolicy::enforceSuborigin(const String& name)
+{
+    m_suboriginName = name;
+}
+
 static String stripURLForUseInReport(Document* document, const KURL& url)
 {
     if (!url.isValid())
@@ -784,6 +798,11 @@ void ContentSecurityPolicy::reportMetaOutsideHead(const String& header)
     logToConsole("The Content Security Policy '" + header + "' was delivered via a <meta> element outside the document's <head>, which is disallowed. The policy has been ignored.");
 }
 
+void ContentSecurityPolicy::reportSuboriginInMeta(const String& suboriginName)
+{
+    logToConsole("The Suborigin name '" + suboriginName + "' was delivered via a Content Security Policy in a <meta> element and not an HTTP header, which is disallowed. The Suborigin has been ignored.");
+}
+
 void ContentSecurityPolicy::reportValueForEmptyDirective(const String& name, const String& value)
 {
     logToConsole("The Content Security Policy directive '" + name + "' should be empty, but was delivered with a value of '" + value + "'. The directive has been applied, and the value ignored.");
@@ -846,6 +865,11 @@ void ContentSecurityPolicy::reportInvalidPluginTypes(const String& pluginType)
 void ContentSecurityPolicy::reportInvalidSandboxFlags(const String& invalidFlags)
 {
     logToConsole("Error while parsing the 'sandbox' Content Security Policy directive: " + invalidFlags);
+}
+
+void ContentSecurityPolicy::reportInvalidSuboriginFlags(const String& invalidFlags)
+{
+    logToConsole("Error while parsing the 'suborigin' Content Security Policy directive: " + invalidFlags);
 }
 
 void ContentSecurityPolicy::reportInvalidReflectedXSS(const String& invalidValue)

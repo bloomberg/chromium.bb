@@ -111,7 +111,7 @@ public:
 
     // ExecutionContextClient
     WorkerEventQueue* eventQueue() const override final;
-    const SecurityContext& securityContext() const override final { return *this; }
+    SecurityContext& securityContext() override final { return *this; }
 
     bool isContextThread() const override final;
     bool isJSExecutionForbidden() const override final;

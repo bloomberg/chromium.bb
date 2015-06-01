@@ -99,7 +99,7 @@ public:
 
     virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) = 0;
 
-    virtual const SecurityContext& securityContext() const = 0;
+    virtual SecurityContext& securityContext() = 0;
     KURL contextURL() const { return virtualURL(); }
     KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
 
@@ -143,6 +143,10 @@ public:
 
     void enforceStrictMixedContentChecking() { m_strictMixedContentCheckingEnforced = true; }
     bool shouldEnforceStrictMixedContentChecking() const { return m_strictMixedContentCheckingEnforced; }
+
+    void enforceSuborigin(const String& name);
+    bool hasSuborigin();
+    String suboriginName();
 
     // Methods related to window interaction. It should be used to manage window
     // focusing and window creation permission for an ExecutionContext.

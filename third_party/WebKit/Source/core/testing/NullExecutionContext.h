@@ -34,7 +34,7 @@ public:
 
     virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) override { }
     virtual void didUpdateSecurityOrigin() override { }
-    virtual const SecurityContext& securityContext() const override { return *this; }
+    virtual SecurityContext& securityContext() override { return *this; }
     virtual DOMTimerCoordinator* timers() override { return nullptr; }
 
     double timerAlignmentInterval() const;

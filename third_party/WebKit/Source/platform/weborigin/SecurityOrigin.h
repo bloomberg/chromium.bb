@@ -172,6 +172,14 @@ public:
     // addition, the SandboxOrigin flag is inherited by iframes.
     bool isUnique() const { return m_isUnique; }
 
+    // Assigns a suborigin namespace to the SecurityOrigin. addSuborigin() must
+    // only ever be called once per SecurityOrigin(). If it is called on a
+    // SecurityOrigin that has already had a suborigin assigned, it will hit a
+    // RELEASE_ASSERT().
+    void addSuborigin(const String&);
+    bool hasSuborigin() const { return !m_suboriginName.isNull(); }
+    const String& suboriginName() const { return m_suboriginName; }
+
     // Marks a file:// origin as being in a domain defined by its path.
     // FIXME 81578: The naming of this is confusing. Files with restricted access to other local files
     // still can have other privileges that can be remembered, thereby not making them unique.
@@ -215,6 +223,12 @@ public:
     void transferPrivilegesFrom(const SecurityOrigin&);
 
 private:
+    // FIXME: After the merge with the Chromium repo, this should be refactored
+    // to use FRIEND_TEST in base/gtest_prod_util.h.
+    friend class SecurityOriginTest;
+    friend class SecurityOriginTest_Suborigins_Test;
+    friend class SecurityOriginTest_SuboriginsParsing_Test;
+
     SecurityOrigin();
     explicit SecurityOrigin(const KURL&);
     explicit SecurityOrigin(const SecurityOrigin*);
@@ -223,9 +237,12 @@ private:
     bool passesFileCheck(const SecurityOrigin*) const;
     void buildRawString(StringBuilder&) const;
 
+    static bool deserializeSuboriginAndHost(const String&, String&, String&);
+
     String m_protocol;
     String m_host;
     String m_domain;
+    String m_suboriginName;
     unsigned short m_port;
     bool m_isUnique;
     bool m_universalAccess;

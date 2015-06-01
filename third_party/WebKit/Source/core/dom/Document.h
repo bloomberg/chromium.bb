@@ -1080,7 +1080,7 @@ private:
     bool isElementNode() const = delete; // This will catch anyone doing an unnecessary check.
 
     ScriptedAnimationController& ensureScriptedAnimationController();
-    virtual const SecurityContext& securityContext() const override final { return *this; }
+    virtual SecurityContext& securityContext() override final { return *this; }
     virtual EventQueue* eventQueue() const override final;
 
     // FIXME: Rename the StyleRecalc state to LayoutTreeUpdate.

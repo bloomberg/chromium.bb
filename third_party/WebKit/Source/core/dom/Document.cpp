@@ -5584,7 +5584,7 @@ v8::Local<v8::Object> Document::associateWithWrapper(v8::Isolate* isolate, const
 
 bool Document::isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck privilegeContextCheck) const
 {
-    if (securityContext().isSandboxed(SandboxOrigin)) {
+    if (SecurityContext::isSandboxed(SandboxOrigin)) {
         if (!SecurityOrigin::create(url())->isPotentiallyTrustworthy(errorMessage))
             return false;
     } else {
