@@ -427,17 +427,14 @@
           "output": "⠨⠙⠑⠵⠑ ⠺⠁⠝⠙⠅⠁⠁⠗⠞ ⠓⠑⠑⠋⠞ ⠑⠑⠝ ⠎⠉⠓⠁⠁⠇ ⠧⠁⠝ ⠼⠁ ⠒ ⠼⠛⠲⠑⠚⠚⠲"
         },
         {
-          "xfail": "Fails because apostrophe and minute sign have different braille notations even though they are represented by the same character in plain text",
           "input": "Een hoek van 27° 30'.",
           "output": "⠨⠑⠑⠝ ⠓⠕⠑⠅ ⠧⠁⠝ ⠼⠃⠛⠈⠴ ⠼⠉⠚⠈⠔⠲"
         },
         {
-          "xfail": "Fails because apostrophe and minute sign have different braille notations even though they are represented by the same character in plain text",
           "input": "Het record is 3' 5''.",
           "output": "⠨⠓⠑⠞ ⠗⠑⠉⠕⠗⠙ ⠊⠎ ⠼⠉⠈⠔ ⠼⠑⠈⠔⠔⠲"
         },
         {
-          "xfail": "Fails because apostrophe and minute sign have different braille notations even though they are represented by the same character in plain text",
           "input": "57° 38' noorderbreedte",
           "output": "⠼⠑⠛⠈⠴ ⠼⠉⠓⠈⠔ ⠝⠕⠕⠗⠙⠑⠗⠃⠗⠑⠑⠙⠞⠑"
         },

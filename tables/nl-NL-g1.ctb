@@ -111,6 +111,10 @@ noback joinnum \x00A5 13456
 # Eén
 context ["E"]"\x00E9"  @123456
 
+# §3.6 Graad-, minuut- en secondeteken [1]
+context $d["''"] @4-35-35
+context $d["'"] @4-35
+
 # Roman page numbers
 replace  \\_
 
