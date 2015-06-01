@@ -517,7 +517,12 @@ by a child template that "extends" this file.
             tools:ignore="ExportedService" />
         <service android:name="org.chromium.chrome.browser.hosted.ChromeConnectionService"
              android:exported="{{ 'true' if channel in ['dev', 'canary', 'default'] else 'false' }}"
-             tools:ignore="ExportedService" />
+             tools:ignore="ExportedService">
+            <intent-filter>
+              <action android:name="android.intent.action.MAIN" />
+              <category android:name="android.intent.category.CUSTOM_TABS" />
+            </intent-filter>
+        </service>
         <service android:name="org.chromium.chrome.browser.crash.MinidumpUploadService"
             android:exported="false"/>
 

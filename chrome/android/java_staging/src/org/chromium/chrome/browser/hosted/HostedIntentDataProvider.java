@@ -31,14 +31,15 @@ public class HostedIntentDataProvider {
     private static final String TAG = "HostedIntentDataProvider";
 
     /**
-     * If true, Chrome is launched into the same Task in hosted mode. This is the only must have
-     * extra for using hosted mode.
+     * The category name that the service intent has to have for hosted mode. This
+     * category can also be used to generically resolve to the service component for custom tabs.
      */
-    public static final String EXTRA_HOSTED_MODE = "com.android.chrome.hosted_mode";
+    public static final String CATEGORY_CUSTOM_TABS = "android.intent.category.CUSTOM_TABS";
 
     /**
-     * Extra used to match the session. Its value is a long returned by
-     * {@link IBrowserConnectionService#newSession}.
+     * Extra used to match the session. This has to be included in the intent to open in
+     * hosted mode. Can be -1 if there is no session id taken. Its value is a long returned
+     * by {@link IBrowserConnectionService#newSession}.
      */
     public static final String EXTRA_HOSTED_SESSION_ID = "hosted:session_id";
 

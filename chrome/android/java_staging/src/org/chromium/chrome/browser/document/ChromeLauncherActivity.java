@@ -27,10 +27,8 @@ import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CommandLine;
 import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.ChromeMobileApplication;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -258,10 +256,7 @@ public class ChromeLauncherActivity extends Activity
     private boolean handleHostedActivityIntent() {
         if (getIntent() == null) return false;
 
-        boolean enabled = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_HOSTED_MODE);
-        boolean hosted = getIntent().getBooleanExtra(
-                HostedIntentDataProvider.EXTRA_HOSTED_MODE, false);
-        if (!hosted || !enabled) return false;
+        if (!getIntent().hasExtra(HostedIntentDataProvider.EXTRA_HOSTED_SESSION_ID)) return false;
 
         String url = IntentHandler.getUrlFromIntent(getIntent());
         if (url == null) return false;

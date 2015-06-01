@@ -6707,12 +6707,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION" desc="Description of about:flags option to enable Enhanced Bookmarks extension.">
         Provides an off switch for enhanced bookmarks experiment
       </message>
-      <message name="IDS_FLAGS_ENABLE_HOSTED_MODE_NAME" desc="Name of about:flags option to enable Hosted Mode.">
-        Enable Hosted Mode
-      </message>
-      <message name="IDS_FLAGS_ENABLE_HOSTED_MODE_DESCRIPTION" desc="Description of about:flags option to enable Hosted Mode.">
-        Provides an on and off switch for hosted mode.
-      </message>
       <message name="IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME" desc="Title for the flag to enable showing permissions requests in bubbles.">
         Use Bubbles for Permission Requests
       </message>
