@@ -342,6 +342,7 @@
           'target_name': 'mojo_public_java',
           'type': 'none',
           'variables': {
+            'chromium_code': 0,
             'java_in_dir': 'src/mojo/public/java/system',
           },
           'includes': [ '../../build/java.gypi' ],
@@ -358,6 +359,7 @@
           'target_name': 'mojo_bindings_java',
           'type': 'none',
           'variables': {
+            'chromium_code': 0,
             'java_in_dir': 'src/mojo/public/java/bindings',
            },
            'dependencies': [
