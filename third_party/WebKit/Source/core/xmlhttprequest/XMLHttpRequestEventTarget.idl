@@ -27,6 +27,8 @@
 // https://xhr.spec.whatwg.org/#xmlhttprequesteventtarget
 
 [
+    // TODO(philipj): The spec has Exposed=(Window,Worker)
+    // https://github.com/whatwg/xhr/issues/19
     Exposed=(Window,DedicatedWorker,SharedWorker)
 ] interface XMLHttpRequestEventTarget : EventTarget {
     // event handlers

@@ -23,8 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/progress-events/#interface-progressevent
+// https://xhr.spec.whatwg.org/#interface-progressevent
 
+// TODO(philipj): The spec has Exposed=(Window,Worker)
+// https://github.com/whatwg/xhr/issues/19
 [
     Constructor(DOMString type, optional ProgressEventInit eventInitDict),
 ] interface ProgressEvent : Event {
@@ -32,4 +34,3 @@
     readonly attribute unsigned long long loaded;
     readonly attribute unsigned long long total;
 };
-

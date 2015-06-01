@@ -26,6 +26,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://xhr.spec.whatwg.org/#xmlhttprequestupload
+
+// TODO(philipj): The spec has Exposed=(Window,Worker)
+// https://github.com/whatwg/xhr/issues/19
 interface XMLHttpRequestUpload : XMLHttpRequestEventTarget {
 };
-

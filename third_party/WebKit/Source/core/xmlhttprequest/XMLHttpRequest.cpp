@@ -700,14 +700,20 @@ void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& exceptionSta
     m_includeCredentials = value;
 }
 
-void XMLHttpRequest::open(const AtomicString& method, const String& url, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const AtomicString& method, const String& urlString, ExceptionState& exceptionState)
 {
-    open(method, url, true, exceptionState);
+    open(method, executionContext()->completeURL(urlString), true, exceptionState);
 }
 
-void XMLHttpRequest::open(const AtomicString& method, const String& urlString, bool async, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const AtomicString& method, const String& urlString, bool async, const String& username, const String& password, ExceptionState& exceptionState)
 {
-    open(method, executionContext()->completeURL(urlString), async, exceptionState);
+    KURL url(executionContext()->completeURL(urlString));
+    if (!username.isNull())
+        url.setUser(username);
+    if (!password.isNull())
+        url.setPass(password);
+
+    open(method, url, async, exceptionState);
 }
 
 void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool async, ExceptionState& exceptionState)
@@ -781,26 +787,6 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
         m_state = OPENED;
 }
 
-void XMLHttpRequest::open(const AtomicString& method, const String& urlString, bool async, const String& user, ExceptionState& exceptionState)
-{
-    KURL urlWithCredentials(executionContext()->completeURL(urlString));
-    if (!user.isNull())
-        urlWithCredentials.setUser(user);
-
-    open(method, urlWithCredentials, async, exceptionState);
-}
-
-void XMLHttpRequest::open(const AtomicString& method, const String& urlString, bool async, const String& user, const String& password, ExceptionState& exceptionState)
-{
-    KURL urlWithCredentials(executionContext()->completeURL(urlString));
-    if (!user.isNull())
-        urlWithCredentials.setUser(user);
-    if (!password.isNull())
-        urlWithCredentials.setPass(password);
-
-    open(method, urlWithCredentials, async, exceptionState);
-}
-
 bool XMLHttpRequest::initSend(ExceptionState& exceptionState)
 {
     if (!executionContext())
@@ -815,47 +801,42 @@ bool XMLHttpRequest::initSend(ExceptionState& exceptionState)
     return true;
 }
 
-void XMLHttpRequest::send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData& data, ExceptionState& exceptionState)
-{
-    if (data.isNull()) {
-        send(exceptionState);
-        return;
-    }
-
-    InspectorInstrumentation::willSendXMLHttpRequest(executionContext(), url());
-    if (data.isArrayBuffer()) {
-        send(data.getAsArrayBuffer().get(), exceptionState);
-        return;
-    }
-
-    if (data.isArrayBufferView()) {
-        send(data.getAsArrayBufferView().get(), exceptionState);
-        return;
-    }
-
-    if (data.isBlob()) {
-        send(data.getAsBlob(), exceptionState);
-        return;
-    }
-
-    if (data.isDocument()) {
-        send(data.getAsDocument().get(), exceptionState);
-        return;
-    }
-
-    if (data.isFormData()) {
-        send(data.getAsFormData(), exceptionState);
-        return;
-    }
-
-    ASSERT(data.isString());
-    send(data.getAsString(), exceptionState);
-}
-
-void XMLHttpRequest::send(ExceptionState& exceptionState)
+void XMLHttpRequest::send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData& body, ExceptionState& exceptionState)
 {
     InspectorInstrumentation::willSendXMLHttpRequest(executionContext(), url());
-    send(String(), exceptionState);
+
+    if (body.isNull()) {
+        send(String(), exceptionState);
+        return;
+    }
+
+    if (body.isArrayBuffer()) {
+        send(body.getAsArrayBuffer().get(), exceptionState);
+        return;
+    }
+
+    if (body.isArrayBufferView()) {
+        send(body.getAsArrayBufferView().get(), exceptionState);
+        return;
+    }
+
+    if (body.isBlob()) {
+        send(body.getAsBlob(), exceptionState);
+        return;
+    }
+
+    if (body.isDocument()) {
+        send(body.getAsDocument().get(), exceptionState);
+        return;
+    }
+
+    if (body.isFormData()) {
+        send(body.getAsFormData(), exceptionState);
+        return;
+    }
+
+    ASSERT(body.isString());
+    send(body.getAsString(), exceptionState);
 }
 
 bool XMLHttpRequest::areMethodAndURLValidForSend()

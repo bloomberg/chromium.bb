@@ -28,8 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://xhr.spec.whatwg.org/#interface-formdata
+// https://xhr.spec.whatwg.org/#interface-formdata
 
+// TODO(philipj): The FormDataEntryValue typedef should use Blob, not File.
 typedef (File or USVString) FormDataEntryValue;
 
 [
@@ -38,6 +39,8 @@ typedef (File or USVString) FormDataEntryValue;
     GarbageCollected,
     ImplementedAs=DOMFormData,
 ] interface FormData {
+    // TODO(philipj): The value argument should be FormDataEntryValue and there
+    // should be no optional filename argument.
     void append(USVString name, Blob value, optional USVString filename);
     void append(USVString name, USVString value);
 
@@ -45,6 +48,8 @@ typedef (File or USVString) FormDataEntryValue;
     [RuntimeEnabled=FormDataNewMethods] FormDataEntryValue? get(USVString name);
     [RuntimeEnabled=FormDataNewMethods] sequence<FormDataEntryValue> getAll(USVString name);
     [RuntimeEnabled=FormDataNewMethods, ImplementedAs=hasEntry] boolean has(USVString name);
+    // TODO(philipj): The value argument should be FormDataEntryValue and there
+    // should be no optional filename argument.
     [RuntimeEnabled=FormDataNewMethods] void set(USVString name, Blob value, optional USVString filename);
     [RuntimeEnabled=FormDataNewMethods] void set(USVString name, USVString value);
     [RuntimeEnabled=FormDataNewMethods] iterable<USVString, FormDataEntryValue>;

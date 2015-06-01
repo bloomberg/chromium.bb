@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://www.w3.org/TR/progress-events/#interface-progressevent
+// https://xhr.spec.whatwg.org/#interface-progressevent
 
 dictionary ProgressEventInit : EventInit {
-    boolean lengthComputable;
-    unsigned long long loaded;
-    unsigned long long total;
+    boolean lengthComputable = false;
+    unsigned long long loaded = 0;
+    unsigned long long total = 0;
 };

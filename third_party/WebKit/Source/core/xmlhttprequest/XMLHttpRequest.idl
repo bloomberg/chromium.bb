@@ -39,11 +39,15 @@ enum XMLHttpRequestResponseType {
     "stream"
 };
 
+// TODO(philipj): Most DOMString types in the XMLHttpRequest interface should be
+// either ByteString or USVString.
 [
     WillBeGarbageCollected,
     ActiveDOMObject,
     Constructor,
     ConstructorCallWith=ScriptState,
+    // TODO(philipj): The spec has Exposed=(Window,Worker)
+    // https://github.com/whatwg/xhr/issues/19
     Exposed=(Window,DedicatedWorker,SharedWorker)
 ] interface XMLHttpRequest : XMLHttpRequestEventTarget {
     // event handler
@@ -58,23 +62,27 @@ enum XMLHttpRequestResponseType {
     readonly attribute unsigned short readyState;
 
     // request
-    [RaisesException] void open(DOMString method, DOMString url, optional boolean async, [TreatUndefinedAs=NullString] optional DOMString? user, [TreatUndefinedAs=NullString] optional DOMString? password);
-    [RaisesException] void setRequestHeader(DOMString header, DOMString value);
+    [RaisesException] void open(DOMString method, DOMString url);
+    [RaisesException] void open(DOMString method, DOMString url, boolean async, optional DOMString? username = null, optional DOMString? password = null);
+    [RaisesException] void setRequestHeader(DOMString name, DOMString value);
     [RaisesException=Setter] attribute unsigned long timeout;
     [RaisesException=Setter] attribute boolean withCredentials;
     readonly attribute XMLHttpRequestUpload upload;
-    [RaisesException] void send(optional (ArrayBuffer or ArrayBufferView or Blob or Document or DOMString or FormData)? data);
+    // TODO(philipj): The data argument should be of type
+    // (Document or BodyInit)?
+    [RaisesException] void send(optional (ArrayBuffer or ArrayBufferView or Blob or Document or DOMString or FormData)? body = null);
     void abort();
 
     // response
     readonly attribute DOMString responseURL;
     readonly attribute unsigned short status;
     readonly attribute DOMString statusText;
-    DOMString? getResponseHeader(DOMString header);
-    [TreatReturnedNullStringAs=Undefined] DOMString getAllResponseHeaders();
-    [RaisesException] void overrideMimeType(DOMString override);
+    DOMString? getResponseHeader(DOMString name);
+    DOMString getAllResponseHeaders();
+    [RaisesException] void overrideMimeType(DOMString mime);
     [RaisesException=Setter] attribute XMLHttpRequestResponseType responseType;
-    [Custom=Getter, RaisesException=Getter] readonly attribute object response;
-    [Custom=Getter, RaisesException=Getter] readonly attribute DOMString? responseText;
-    [RaisesException=Getter] readonly attribute Document responseXML;
+    [Custom=Getter, RaisesException=Getter] readonly attribute any response;
+    [Custom=Getter, RaisesException=Getter] readonly attribute DOMString responseText;
+    // TODO(philipj): responseXML should be [Exposed=Window].
+    [RaisesException=Getter] readonly attribute Document? responseXML;
 };
