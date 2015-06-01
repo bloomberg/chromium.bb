@@ -78,23 +78,6 @@ enum amdgpu_bo_handle_type {
 	amdgpu_bo_handle_type_dma_buf_fd = 2
 };
 
-/**
- * For performance reasons and to simplify logic libdrm_amdgpu will handle
- * IBs only some pre-defined sizes.
- *
- * \sa amdgpu_cs_alloc_ib()
- */
-enum amdgpu_cs_ib_size {
-	amdgpu_cs_ib_size_4K	= 0,
-	amdgpu_cs_ib_size_16K	= 1,
-	amdgpu_cs_ib_size_32K	= 2,
-	amdgpu_cs_ib_size_64K	= 3,
-	amdgpu_cs_ib_size_128K	= 4
-};
-
-/** The number of different IB sizes */
-#define AMDGPU_CS_IB_SIZE_NUM 5
-
 
 /*--------------------------------------------------------------------------*/
 /* -------------------------- Datatypes ----------------------------------- */
@@ -288,23 +271,6 @@ struct amdgpu_gds_alloc_info {
 
 	/** Number of OA resources allocated */
 	uint32_t   oa;
-};
-
-/**
- * Structure to described allocated command buffer (a.k.a. IB)
- *
- * \sa amdgpu_cs_alloc_ib()
- *
-*/
-struct amdgpu_cs_ib_alloc_result {
-	/** IB allocation handle */
-	amdgpu_bo_handle handle;
-
-	/** Assigned GPU VM MC Address of command buffer */
-	uint64_t	mc_address;
-
-	/** Address to be used for CPU access */
-	void		*cpu;
 };
 
 /**
@@ -922,42 +888,6 @@ int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
  * Command Buffers Management
  *
 */
-
-
-/**
- * Allocate memory to be filled with PM4 packets and be served as the first
- * entry point of execution (a.k.a. Indirect Buffer)
- *
- * \param   context - \c [in]  GPU Context which will use IB
- * \param   ib_size - \c [in]  Size of allocation
- * \param   output  - \c [out] Pointer to structure to get information about
- *				   allocated IB
- *
- * \return   0 on success\n
- *          >0 - AMD specific error code\n
- *          <0 - Negative POSIX Error code
- *
- * \sa amdgpu_cs_free_ib()
- *
-*/
-int amdgpu_cs_alloc_ib(amdgpu_context_handle context,
-		       enum amdgpu_cs_ib_size ib_size,
-		       struct amdgpu_cs_ib_alloc_result *output);
-
-/**
- * If UMD has allocates IBs which doesn’t need any more than those IBs must
- * be explicitly freed
- *
- * \param   handle  - \c [in] IB handle
- *
- * \return   0 on success\n
- *          >0 - AMD specific error code\n
- *          <0 - Negative POSIX Error code
- *
- * \sa amdgpu_cs_alloc_ib()
- *
-*/
-int amdgpu_cs_free_ib(amdgpu_bo_handle handle);
 
 /**
  * Send request to submit command buffers to hardware.

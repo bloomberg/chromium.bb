@@ -35,7 +35,7 @@
 #include "vce_ib.h"
 #include "frame.h"
 
-#define IB_SIZE		amdgpu_cs_ib_size_4K
+#define IB_SIZE		4096
 #define MAX_RESOURCES	16
 
 struct amdgpu_vce_bo {
@@ -64,9 +64,9 @@ static amdgpu_context_handle context_handle;
 static amdgpu_bo_handle ib_handle;
 uint32_t *ib_cpu;
 
-struct amdgpu_vce_encode enc;
-amdgpu_bo_handle resources[MAX_RESOURCES];
-unsigned num_resources;
+static struct amdgpu_vce_encode enc;
+static amdgpu_bo_handle resources[MAX_RESOURCES];
+static unsigned num_resources;
 
 static void amdgpu_cs_vce_create(void);
 static void amdgpu_cs_vce_encode(void);
@@ -81,7 +81,6 @@ CU_TestInfo vce_tests[] = {
 
 int suite_vce_tests_init(void)
 {
-	struct amdgpu_cs_ib_alloc_result ib_result = {0};
 	int r;
 
 	r = amdgpu_device_initialize(drm_amdgpu[0], &major_version,
@@ -95,12 +94,12 @@ int suite_vce_tests_init(void)
 	if (r)
 		return CUE_SINIT_FAILED;
 
-        r = amdgpu_cs_alloc_ib(context_handle, IB_SIZE, &ib_result);
+	r = amdgpu_bo_alloc_and_map(device_handle, IB_SIZE, 4096,
+				    AMDGPU_GEM_DOMAIN_GTT, 0,
+				    &ib_handle, (void**)&ib_cpu,
+				    &ib_mc_address);
 	if (r)
 		return CUE_SINIT_FAILED;
-
-	ib_handle = ib_result.handle;
-	ib_cpu = ib_result.cpu;
 
 	memset(&enc, 0, sizeof(struct amdgpu_vce_encode));
 
@@ -111,7 +110,7 @@ int suite_vce_tests_clean(void)
 {
 	int r;
 
-	r = amdgpu_cs_free_ib(ib_handle);
+	r = amdgpu_bo_free(ib_handle);
 	if (r)
 		return CUE_SCLEAN_FAILED;
 
@@ -128,7 +127,6 @@ int suite_vce_tests_clean(void)
 
 static int submit(unsigned ndw, unsigned ip)
 {
-	struct amdgpu_cs_ib_alloc_result ib_result = {0};
 	struct amdgpu_cs_request ibs_request = {0};
 	struct amdgpu_cs_ib_info ib_info = {0};
 	struct amdgpu_cs_query_fence fence_status = {0};
@@ -157,12 +155,12 @@ static int submit(unsigned ndw, unsigned ip)
 	if (r)
 		return r;
 
-	r = amdgpu_cs_alloc_ib(context_handle, IB_SIZE, &ib_result);
+	r = amdgpu_bo_alloc_and_map(device_handle, IB_SIZE, 4096,
+				    AMDGPU_GEM_DOMAIN_GTT, 0,
+				    &ib_handle, (void**)&ib_cpu,
+				    &ib_mc_address);
 	if (r)
 		return r;
-
-	ib_handle = ib_result.handle;
-	ib_cpu = ib_result.cpu;
 
 	fence_status.context = context_handle;
 	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
@@ -374,7 +372,6 @@ static void amdgpu_cs_vce_encode(void)
 
 	vbuf_size = enc.width * enc.height * 1.5;
 	cpb_size = vbuf_size * 10;
-
 	num_resources = 0;
 	alloc_resource(&enc.fb[0], 4096, AMDGPU_GEM_DOMAIN_GTT);
 	resources[num_resources++] = enc.fb[0].handle;

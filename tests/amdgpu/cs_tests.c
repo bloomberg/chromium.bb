@@ -31,7 +31,7 @@
 #include "amdgpu_drm.h"
 #include "amdgpu_internal.h"
 
-#define IB_SIZE		amdgpu_cs_ib_size_4K
+#define IB_SIZE		4096
 #define MAX_RESOURCES	16
 
 static amdgpu_device_handle device_handle;
@@ -59,7 +59,9 @@ CU_TestInfo cs_tests[] = {
 
 int suite_cs_tests_init(void)
 {
-	struct amdgpu_cs_ib_alloc_result ib_result = {0};
+	amdgpu_bo_handle ib_result_handle;
+	void *ib_result_cpu;
+	uint64_t ib_result_mc_address;
 	int r;
 
 	r = amdgpu_device_initialize(drm_amdgpu[0], &major_version,
@@ -73,12 +75,15 @@ int suite_cs_tests_init(void)
 	if (r)
 		return CUE_SINIT_FAILED;
 
-        r = amdgpu_cs_alloc_ib(context_handle, IB_SIZE, &ib_result);
+	r = amdgpu_bo_alloc_and_map(device_handle, IB_SIZE, 4096,
+				    AMDGPU_GEM_DOMAIN_GTT, 0,
+				    &ib_result_handle, &ib_result_cpu,
+				    &ib_result_mc_address);
 	if (r)
 		return CUE_SINIT_FAILED;
 
-	ib_handle = ib_result.handle;
-	ib_cpu = ib_result.cpu;
+	ib_handle = ib_result_handle;
+	ib_cpu = ib_result_cpu;
 
 	return CUE_SUCCESS;
 }
@@ -87,7 +92,7 @@ int suite_cs_tests_clean(void)
 {
 	int r;
 
-	r = amdgpu_cs_free_ib(ib_handle);
+	r = amdgpu_bo_free(ib_handle);
 	if (r)
 		return CUE_SCLEAN_FAILED;
 
@@ -104,7 +109,6 @@ int suite_cs_tests_clean(void)
 
 static int submit(unsigned ndw, unsigned ip)
 {
-	struct amdgpu_cs_ib_alloc_result ib_result = {0};
 	struct amdgpu_cs_request ibs_request = {0};
 	struct amdgpu_cs_ib_info ib_info = {0};
 	struct amdgpu_cs_query_fence fence_status = {0};

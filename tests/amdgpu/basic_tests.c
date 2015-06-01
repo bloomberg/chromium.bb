@@ -156,8 +156,9 @@ static void amdgpu_memory_alloc(void)
 static void amdgpu_command_submission_gfx_separate_ibs(void)
 {
 	amdgpu_context_handle context_handle;
-	struct amdgpu_cs_ib_alloc_result ib_result = {0};
-	struct amdgpu_cs_ib_alloc_result ib_result_ce = {0};
+	amdgpu_bo_handle ib_result_handle, ib_result_ce_handle;
+	void *ib_result_cpu, *ib_result_ce_cpu;
+	uint64_t ib_result_mc_address, ib_result_ce_mc_address;
 	struct amdgpu_cs_request ibs_request = {0};
 	struct amdgpu_cs_ib_info ib_info[2];
 	struct amdgpu_cs_query_fence fence_status = {0};
@@ -168,31 +169,35 @@ static void amdgpu_command_submission_gfx_separate_ibs(void)
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_cs_alloc_ib(context_handle,
-			       amdgpu_cs_ib_size_4K, &ib_result);
+	r = amdgpu_bo_alloc_and_map(device_handle, 4096, 4096,
+				    AMDGPU_GEM_DOMAIN_GTT, 0,
+				    &ib_result_handle, &ib_result_cpu,
+				    &ib_result_mc_address);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_cs_alloc_ib(context_handle,
-			       amdgpu_cs_ib_size_4K, &ib_result_ce);
+	r = amdgpu_bo_alloc_and_map(device_handle, 4096, 4096,
+				    AMDGPU_GEM_DOMAIN_GTT, 0,
+				    &ib_result_ce_handle, &ib_result_ce_cpu,
+				    &ib_result_ce_mc_address);
 	CU_ASSERT_EQUAL(r, 0);
 
 	memset(ib_info, 0, 2 * sizeof(struct amdgpu_cs_ib_info));
 
 	/* IT_SET_CE_DE_COUNTERS */
-	ptr = ib_result_ce.cpu;
+	ptr = ib_result_ce_cpu;
 	ptr[0] = 0xc0008900;
 	ptr[1] = 0;
 	ptr[2] = 0xc0008400;
 	ptr[3] = 1;
-	ib_info[0].bo_handle = ib_result_ce.handle;
+	ib_info[0].bo_handle = ib_result_ce_handle;
 	ib_info[0].size = 4;
 	ib_info[0].flags = AMDGPU_IB_FLAG_CE;
 
 	/* IT_WAIT_ON_CE_COUNTER */
-	ptr = ib_result.cpu;
+	ptr = ib_result_cpu;
 	ptr[0] = 0xc0008600;
 	ptr[1] = 0x00000001;
-	ib_info[1].bo_handle = ib_result.handle;
+	ib_info[1].bo_handle = ib_result_handle;
 	ib_info[1].size = 2;
 
 	ibs_request.ip_type = AMDGPU_HW_IP_GFX;
@@ -210,10 +215,10 @@ static void amdgpu_command_submission_gfx_separate_ibs(void)
 	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_cs_free_ib(ib_result.handle);
+	r = amdgpu_bo_free(ib_result_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_cs_free_ib(ib_result_ce.handle);
+	r = amdgpu_bo_free(ib_result_ce_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
 	r = amdgpu_cs_ctx_free(context_handle);
@@ -223,7 +228,9 @@ static void amdgpu_command_submission_gfx_separate_ibs(void)
 static void amdgpu_command_submission_gfx_shared_ib(void)
 {
 	amdgpu_context_handle context_handle;
-	struct amdgpu_cs_ib_alloc_result ib_result = {0};
+	amdgpu_bo_handle ib_result_handle;
+	void *ib_result_cpu;
+	uint64_t ib_result_mc_address;
 	struct amdgpu_cs_request ibs_request = {0};
 	struct amdgpu_cs_ib_info ib_info[2];
 	struct amdgpu_cs_query_fence fence_status = {0};
@@ -234,26 +241,28 @@ static void amdgpu_command_submission_gfx_shared_ib(void)
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_cs_alloc_ib(context_handle,
-			       amdgpu_cs_ib_size_4K, &ib_result);
+	r = amdgpu_bo_alloc_and_map(device_handle, 4096, 4096,
+				    AMDGPU_GEM_DOMAIN_GTT, 0,
+				    &ib_result_handle, &ib_result_cpu,
+				    &ib_result_mc_address);
 	CU_ASSERT_EQUAL(r, 0);
 
 	memset(ib_info, 0, 2 * sizeof(struct amdgpu_cs_ib_info));
 
 	/* IT_SET_CE_DE_COUNTERS */
-	ptr = ib_result.cpu;
+	ptr = ib_result_cpu;
 	ptr[0] = 0xc0008900;
 	ptr[1] = 0;
 	ptr[2] = 0xc0008400;
 	ptr[3] = 1;
-	ib_info[0].bo_handle = ib_result.handle;
+	ib_info[0].bo_handle = ib_result_handle;
 	ib_info[0].size = 4;
 	ib_info[0].flags = AMDGPU_IB_FLAG_CE;
 
-	ptr = (uint32_t *)ib_result.cpu + 4;
+	ptr = (uint32_t *)ib_result_cpu + 4;
 	ptr[0] = 0xc0008600;
 	ptr[1] = 0x00000001;
-	ib_info[1].bo_handle = ib_result.handle;
+	ib_info[1].bo_handle = ib_result_handle;
 	ib_info[1].size = 2;
 	ib_info[1].offset_dw = 4;
 
@@ -272,7 +281,7 @@ static void amdgpu_command_submission_gfx_shared_ib(void)
 	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_cs_free_ib(ib_result.handle);
+	r = amdgpu_bo_free(ib_result_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
 	r = amdgpu_cs_ctx_free(context_handle);
@@ -290,7 +299,9 @@ static void amdgpu_command_submission_gfx(void)
 static void amdgpu_command_submission_compute(void)
 {
 	amdgpu_context_handle context_handle;
-	struct amdgpu_cs_ib_alloc_result ib_result;
+	amdgpu_bo_handle ib_result_handle;
+	void *ib_result_cpu;
+	uint64_t ib_result_mc_address;
 	struct amdgpu_cs_request ibs_request;
 	struct amdgpu_cs_ib_info ib_info;
 	struct amdgpu_cs_query_fence fence_status;
@@ -302,17 +313,18 @@ static void amdgpu_command_submission_compute(void)
 	CU_ASSERT_EQUAL(r, 0);
 
 	for (instance = 0; instance < 8; instance++) {
-		memset(&ib_result, 0, sizeof(struct amdgpu_cs_ib_alloc_result));
-		r = amdgpu_cs_alloc_ib(context_handle,
-				       amdgpu_cs_ib_size_4K, &ib_result);
+		r = amdgpu_bo_alloc_and_map(device_handle, 4096, 4096,
+					    AMDGPU_GEM_DOMAIN_GTT, 0,
+					    &ib_result_handle, &ib_result_cpu,
+					    &ib_result_mc_address);
 		CU_ASSERT_EQUAL(r, 0);
 
-		ptr = ib_result.cpu;
+		ptr = ib_result_cpu;
 		for (i = 0; i < 16; ++i)
 			ptr[i] = 0xffff1000;
 
 		memset(&ib_info, 0, sizeof(struct amdgpu_cs_ib_info));
-		ib_info.bo_handle = ib_result.handle;
+		ib_info.bo_handle = ib_result_handle;
 		ib_info.size = 16;
 
 		memset(&ibs_request, 0, sizeof(struct amdgpu_cs_request));
@@ -334,7 +346,7 @@ static void amdgpu_command_submission_compute(void)
 		r = amdgpu_cs_query_fence_status(&fence_status, &expired);
 		CU_ASSERT_EQUAL(r, 0);
 
-		r = amdgpu_cs_free_ib(ib_result.handle);
+		r = amdgpu_bo_free(ib_result_handle);
 		CU_ASSERT_EQUAL(r, 0);
 	}
 
@@ -356,7 +368,9 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	int r, i, j;
 	uint32_t expired;
 	uint32_t *ring_ptr;
-	struct amdgpu_cs_ib_alloc_result ib_result = {0};
+	amdgpu_bo_handle ib_result_handle;
+	void *ib_result_cpu;
+	uint64_t ib_result_mc_address;
 	struct amdgpu_cs_query_fence fence_status = {0};
 
 	/* prepare CS */
@@ -367,15 +381,17 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	CU_ASSERT_TRUE(pm4_dw <= 1024);
 
 	/* allocate IB */
-	r = amdgpu_cs_alloc_ib(context_handle,
-			   amdgpu_cs_ib_size_4K, &ib_result);
+	r = amdgpu_bo_alloc_and_map(device_handle, 4096, 4096,
+				    AMDGPU_GEM_DOMAIN_GTT, 0,
+				    &ib_result_handle, &ib_result_cpu,
+				    &ib_result_mc_address);
 	CU_ASSERT_EQUAL(r, 0);
 
 	/* copy PM4 packet to ring from caller */
-	ring_ptr = ib_result.cpu;
+	ring_ptr = ib_result_cpu;
 	memcpy(ring_ptr, pm4_src, pm4_dw * sizeof(*pm4_src));
 
-	ib_info->bo_handle = ib_result.handle;
+	ib_info->bo_handle = ib_result_handle;
 	ib_info->size = pm4_dw;
 
 	ibs_request->ip_type = AMDGPU_HW_IP_DMA;
@@ -407,7 +423,7 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	CU_ASSERT_EQUAL(r, 0);
 	CU_ASSERT_EQUAL(expired, true);
 
-	r = amdgpu_cs_free_ib(ib_result.handle);
+	r = amdgpu_bo_free(ib_result_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }
 

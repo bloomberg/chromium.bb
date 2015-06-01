@@ -131,4 +131,33 @@ static inline amdgpu_bo_handle gpu_mem_alloc(
 	return res.buf_handle;
 }
 
+static inline int
+amdgpu_bo_alloc_and_map(amdgpu_device_handle dev, unsigned size,
+			unsigned alignment, unsigned heap, uint64_t flags,
+			amdgpu_bo_handle *bo, void **cpu, uint64_t *mc_address)
+{
+	struct amdgpu_bo_alloc_request request = {};
+	struct amdgpu_bo_alloc_result out;
+	int r;
+
+	request.alloc_size = size;
+	request.phys_alignment = alignment;
+	request.preferred_heap = heap;
+	request.flags = flags;
+
+	r = amdgpu_bo_alloc(dev, &request, &out);
+	if (r)
+		return r;
+
+	r = amdgpu_bo_cpu_map(out.buf_handle, cpu);
+	if (r) {
+		amdgpu_bo_free(out.buf_handle);
+		return r;
+	}
+
+	*bo = out.buf_handle;
+	*mc_address = out.virtual_mc_base_address;
+	return 0;
+}
+
 #endif  /* #ifdef _AMDGPU_TEST_H_ */
