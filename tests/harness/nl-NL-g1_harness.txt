@@ -410,12 +410,16 @@
           "output": "⠼⠉⠁⠌⠼⠚⠛⠌⠼⠃⠚⠁⠚"
         },
         {
-          "input": "12.30 uur",
-          "output": "⠼⠁⠃⠲⠉⠚ ⠥⠥⠗"
+          "input": "16.30 tot 21.30 uur",
+          "output": "⠼⠁⠋⠲⠉⠚ ⠞⠕⠞ ⠼⠃⠁⠲⠉⠚ ⠥⠥⠗"
         },
         {
-          "input": "12:30 uur",
-          "output": "⠼⠁⠃⠒⠼⠉⠚ ⠥⠥⠗"
+          "input": "16:30 tot 21:30 uur",
+          "output": "⠼⠁⠋⠒⠉⠚ ⠞⠕⠞ ⠼⠃⠁⠒⠉⠚ ⠥⠥⠗"
+        },
+        {
+          "input": "Deze wandkaart heeft een schaal van 1 : 7.500.",
+          "output": "⠨⠙⠑⠵⠑ ⠺⠁⠝⠙⠅⠁⠁⠗⠞ ⠓⠑⠑⠋⠞ ⠑⠑⠝ ⠎⠉⠓⠁⠁⠇ ⠧⠁⠝ ⠼⠁ ⠒ ⠼⠛⠲⠑⠚⠚⠲"
         },
         {
           "xfail": "Fails because apostrophe and minute sign have different braille notations even though they are represented by the same character in plain text",
