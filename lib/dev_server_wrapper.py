@@ -21,6 +21,7 @@ from chromite.cbuildbot import constants
 from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import remote_access
@@ -113,7 +114,6 @@ def GetXbuddyPath(path):
     raise ValueError('Do not support scheme %s.', parsed.scheme)
 
 
-# pylint: disable=import-error
 def GetImagePathWithXbuddy(path, board, version=None,
                            static_dir=DEFAULT_STATIC_DIR, lookup_only=False):
   """Gets image path and resolved XBuddy path using xbuddy.
@@ -136,11 +136,18 @@ def GetImagePathWithXbuddy(path, board, version=None,
     (build-id/version/image_name) as well as the fully resolved XBuddy path (in
     the case where |path| is an XBuddy alias).
   """
+  # Since xbuddy often wants to use gsutil from $PATH, make sure our local copy
+  # shows up first.
+  upath = os.environ['PATH'].split(os.pathsep)
+  upath.insert(0, os.path.dirname(gs.GSContext.GetDefaultGSUtilBin()))
+  os.environ['PATH'] = os.pathsep.join(upath)
+
   # Import xbuddy for translating, downloading and staging the image.
   if not os.path.exists(DEVSERVER_PKG_DIR):
     raise Exception('Cannot find xbuddy module. Devserver package directory '
                     'does not exist: %s' % DEVSERVER_PKG_DIR)
   sys.path.append(DEVSERVER_PKG_DIR)
+  # pylint: disable=import-error
   import xbuddy
   import cherrypy
 
