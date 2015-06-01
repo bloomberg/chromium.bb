@@ -1,0 +1,102 @@
+{
+    "_comment1": "This file is no longer used by CQ. Instead CQ reads",
+    "_comment2": "infra/config/cq.cfg. However, this file is still used by",
+    "_comment3": "git-cl-try and thus this list must be manually kept in sync",
+    "_comment4": "to the list of builders in infra/config/cq.cfg. We apologize",
+    "_comment5": "for the incovenience and are working on a fix that will make",
+    "_comment6": "git-cl-try also read infra/config/cq.cfg.",
+
+    "verifiers_no_patch": {
+        "try_job_verifier": {
+            "launched": {
+                "tryserver.chromium.linux": {
+                    "android_arm64_dbg_recipe": [
+                        "defaulttests"
+                    ],
+                    "android_chromium_gn_compile_dbg": [
+                        "defaulttests"
+                    ],
+                    "android_chromium_gn_compile_rel": [
+                        "defaulttests"
+                    ],
+                    "android_clang_dbg_recipe": [
+                        "defaulttests"
+                    ],
+                    "android_compile_dbg": [
+                        "defaulttests"
+                    ],
+                    "cast_shell_android": [
+                        "defaulttests"
+                    ],
+                    "cast_shell_linux": [
+                        "defaulttests"
+                    ],
+                    "chromium_presubmit": [
+                        "defaulttests"
+                    ],
+                    "linux_android_rel_ng": [
+                        "defaulttests"
+                    ],
+                    "linux_chromium_asan_rel_ng": [
+                        "defaulttests"
+                    ],
+                    "linux_chromium_chromeos_compile_dbg_ng": [
+                        "defaulttests"
+                    ],
+                    "linux_chromium_chromeos_ozone_rel_ng": [
+                        "defaulttests"
+                    ],
+                    "linux_chromium_chromeos_rel_ng": [
+                        "defaulttests"
+                    ],
+                    "linux_chromium_clobber_rel_ng": [
+                        "defaulttests"
+                    ],
+                    "linux_chromium_compile_dbg_32_ng": [
+                        "compile"
+                    ],
+                    "linux_chromium_gn_chromeos_rel": [
+                        "defaulttests"
+                    ],
+                    "linux_chromium_gn_dbg": [
+                        "defaulttests"
+                    ],
+                    "linux_chromium_gn_rel": [
+                        "defaulttests"
+                    ],
+                    "linux_chromium_rel_ng": [
+                        "defaulttests"
+                    ]
+                },
+                "tryserver.chromium.mac": {
+                    "ios_dbg_simulator_ninja": [
+                        "defaulttests"
+                    ],
+                    "ios_rel_device_ninja": [
+                        "defaulttests"
+                    ],
+                    "mac_chromium_compile_dbg_ng": [
+                        "defaulttests"
+                    ],
+                    "mac_chromium_rel_ng": [
+                        "defaulttests"
+                    ]
+                },
+                "tryserver.chromium.win": {
+                    "win8_chromium_rel": [
+                        "defaulttests"
+                    ],
+                    "win_chromium_compile_dbg_ng": [
+                        "defaulttests"
+                    ],
+                    "win_chromium_rel_ng": [
+                        "defaulttests"
+                    ],
+                    "win_chromium_x64_rel_ng": [
+                        "defaulttests"
+                    ]
+                }
+            }
+        }
+    }
+}
