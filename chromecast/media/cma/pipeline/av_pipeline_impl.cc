@@ -221,7 +221,7 @@ void AvPipelineImpl::OnNewFrame(
   pending_read_ = false;
 
   if (audio_config.IsValidConfig() || video_config.IsValidConfig())
-    update_config_cb_.Run(audio_config, video_config);
+    update_config_cb_.Run(buffer->stream_id(), audio_config, video_config);
 
   pending_buffer_ = buffer;
   ProcessPendingBuffer();

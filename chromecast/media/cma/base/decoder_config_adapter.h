@@ -16,10 +16,12 @@ class DecoderConfigAdapter {
  public:
   // Converts ::media::AudioDecoderConfig to chromecast::media::AudioConfig.
   static AudioConfig ToCastAudioConfig(
+      StreamId id,
       const ::media::AudioDecoderConfig& config);
 
   // Converts ::media::VideoDecoderConfig to chromecast::media::VideoConfig.
   static VideoConfig ToCastVideoConfig(
+      StreamId id,
       const ::media::VideoDecoderConfig& config);
 };
 

@@ -110,7 +110,7 @@ void AudioPipelineImpl::Initialize(
     SetCodedFrameProvider(frame_provider.Pass());
 
   if (!audio_device_->SetConfig(
-         DecoderConfigAdapter::ToCastAudioConfig(audio_config)) ||
+         DecoderConfigAdapter::ToCastAudioConfig(kPrimary, audio_config)) ||
       !av_pipeline_impl_->Initialize()) {
     status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
@@ -124,14 +124,15 @@ void AudioPipelineImpl::SetVolume(float volume) {
 }
 
 void AudioPipelineImpl::OnUpdateConfig(
+    StreamId id,
     const ::media::AudioDecoderConfig& audio_config,
     const ::media::VideoDecoderConfig& video_config) {
   if (audio_config.IsValidConfig()) {
-    CMALOG(kLogControl) << "AudioPipelineImpl::OnUpdateConfig "
+    CMALOG(kLogControl) << "AudioPipelineImpl::OnUpdateConfig id:" << id << " "
                         << audio_config.AsHumanReadableString();
 
     bool success = audio_device_->SetConfig(
-        DecoderConfigAdapter::ToCastAudioConfig(audio_config));
+        DecoderConfigAdapter::ToCastAudioConfig(id, audio_config));
     if (!success && !audio_client_.playback_error_cb.is_null())
       audio_client_.playback_error_cb.Run(::media::PIPELINE_ERROR_DECODE);
   }

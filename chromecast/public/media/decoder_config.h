@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <vector>
 
+#include "chromecast/public/media/stream_id.h"
+
 namespace chromecast {
 namespace media {
 
@@ -78,7 +80,8 @@ enum VideoProfile {
 // determine if the configuration is still valid or not.
 struct AudioConfig {
   AudioConfig()
-    : codec(kAudioCodecUnknown),
+    : id(kPrimary),
+      codec(kAudioCodecUnknown),
       bytes_per_channel(0),
       channel_number(0),
       samples_per_second(0),
@@ -86,6 +89,8 @@ struct AudioConfig {
       extra_data_size(0),
       is_encrypted(false) {}
 
+  // Stream id.
+  StreamId id;
   // Audio codec.
   AudioCodec codec;
   // Number of bytes in each channel.
@@ -109,13 +114,16 @@ struct AudioConfig {
 // determine if the configuration is still valid or not.
 struct VideoConfig {
   VideoConfig()
-    : codec(kVideoCodecUnknown),
+    : id(kPrimary),
+      codec(kVideoCodecUnknown),
       profile(kVideoProfileUnknown),
       additional_config(nullptr),
       extra_data(nullptr),
       extra_data_size(0),
       is_encrypted(false) {}
 
+  // Stream Id.
+  StreamId id;
   // Video codec.
   VideoCodec codec;
   // Video codec profile.

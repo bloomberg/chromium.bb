@@ -44,6 +44,7 @@
         'public/graphics_properties_shlib.h',
         'public/graphics_types.h',
         'public/media/decoder_config.h',
+        'public/media/stream_id.h',
         'public/osd_plane.h',
         'public/osd_plane_shlib.h',
         'public/osd_surface.h',

@@ -12,6 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/pipeline/audio_pipeline.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
+#include "chromecast/public/media/stream_id.h"
 
 namespace media {
 class AudioDecoderConfig;
@@ -57,7 +58,8 @@ class AudioPipelineImpl : public AudioPipeline {
 
  private:
   void OnFlushDone(const ::media::PipelineStatusCB& status_cb);
-  void OnUpdateConfig(const ::media::AudioDecoderConfig& audio_config,
+  void OnUpdateConfig(StreamId id,
+                      const ::media::AudioDecoderConfig& audio_config,
                       const ::media::VideoDecoderConfig& video_config);
 
   AudioPipelineDevice* audio_device_;

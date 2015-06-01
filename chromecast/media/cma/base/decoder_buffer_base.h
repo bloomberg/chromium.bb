@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "chromecast/public/media/stream_id.h"
 
 namespace media {
 class DecryptConfig;
@@ -16,11 +17,6 @@ class DecryptConfig;
 
 namespace chromecast {
 namespace media {
-
-enum StreamId {
-  kPrimary = 0,
-  kSecondary
-};
 
 // DecoderBufferBase exposes only the properties of an audio/video buffer.
 // The way a DecoderBufferBase is created and organized in memory

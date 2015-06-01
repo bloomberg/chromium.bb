@@ -114,7 +114,7 @@ void VideoPipelineImpl::Initialize(
     SetCodedFrameProvider(frame_provider.Pass());
 
   if (!video_device_->SetConfig(
-          DecoderConfigAdapter::ToCastVideoConfig(video_config)) ||
+          DecoderConfigAdapter::ToCastVideoConfig(kPrimary, video_config)) ||
       !av_pipeline_impl_->Initialize()) {
     status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
@@ -124,14 +124,15 @@ void VideoPipelineImpl::Initialize(
 }
 
 void VideoPipelineImpl::OnUpdateConfig(
+    StreamId id,
     const ::media::AudioDecoderConfig& audio_config,
     const ::media::VideoDecoderConfig& video_config) {
   if (video_config.IsValidConfig()) {
-    CMALOG(kLogControl) << "VideoPipelineImpl::OnUpdateConfig "
+    CMALOG(kLogControl) << "VideoPipelineImpl::OnUpdateConfig id:" << id << " "
                         << video_config.AsHumanReadableString();
 
     bool success = video_device_->SetConfig(
-        DecoderConfigAdapter::ToCastVideoConfig(video_config));
+        DecoderConfigAdapter::ToCastVideoConfig(id, video_config));
     if (!success &&
         !video_client_.av_pipeline_client.playback_error_cb.is_null()) {
       video_client_.av_pipeline_client.playback_error_cb.Run(

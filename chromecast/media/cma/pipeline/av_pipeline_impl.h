@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/backend/media_component_device.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
+#include "chromecast/public/media/stream_id.h"
 
 namespace media {
 class AudioDecoderConfig;
@@ -42,7 +43,8 @@ class AvPipelineImpl {
   };
 
   typedef base::Callback<
-      void(const ::media::AudioDecoderConfig&,
+      void(StreamId id,
+           const ::media::AudioDecoderConfig&,
            const ::media::VideoDecoderConfig&)> UpdateConfigCB;
 
   AvPipelineImpl(

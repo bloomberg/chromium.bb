@@ -169,7 +169,8 @@ void AudioVideoPipelineDeviceTest::LoadAudioStream(std::string filename) {
       media_pipeline_device_->GetAudioPipelineDevice();
 
   bool success = audio_pipeline_device->SetConfig(
-      DecoderConfigAdapter::ToCastAudioConfig(demux_result.audio_config));
+      DecoderConfigAdapter::ToCastAudioConfig(kPrimary,
+                                              demux_result.audio_config));
   ASSERT_TRUE(success);
 
   VLOG(2) << "Got " << frames.size() << " audio input frames";
@@ -208,8 +209,8 @@ void AudioVideoPipelineDeviceTest::LoadVideoStream(std::string filename,
     DemuxResult demux_result = FFmpegDemuxForTest(file_path,
                                                   /*audio*/ false);
     frames = demux_result.frames;
-    video_config =
-        DecoderConfigAdapter::ToCastVideoConfig(demux_result.video_config);
+    video_config = DecoderConfigAdapter::ToCastVideoConfig(
+        kPrimary, demux_result.video_config);
   }
 
   VideoPipelineDevice* video_pipeline_device =

@@ -87,12 +87,14 @@ VideoProfile ToVideoProfile(const ::media::VideoCodecProfile codec_profile) {
 
 // static
 AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
+    StreamId id,
     const ::media::AudioDecoderConfig& config) {
   AudioConfig audio_config;
   if (!config.IsValidConfig()) {
     return audio_config;
   }
 
+  audio_config.id = id;
   audio_config.codec = ToAudioCodec(config.codec());
   audio_config.bytes_per_channel = config.bytes_per_channel();
   audio_config.channel_number =
@@ -107,12 +109,14 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
 
 // static
 VideoConfig DecoderConfigAdapter::ToCastVideoConfig(
+    StreamId id,
     const ::media::VideoDecoderConfig& config) {
   VideoConfig video_config;
   if (!config.IsValidConfig()) {
     return video_config;
   }
 
+  video_config.id = id;
   video_config.codec = ToVideoCodec(config.codec());
   video_config.profile = ToVideoProfile(config.profile());
   video_config.extra_data = (config.extra_data_size() > 0) ?
