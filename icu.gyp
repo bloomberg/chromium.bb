@@ -198,8 +198,6 @@
               '-Wno-logical-op-parentheses',
               # ICU has some `unsigned < 0` checks.
               '-Wno-tautological-compare',
-              # Looks like a real issue, see http://crbug.com/114660
-              '-Wno-return-type-c-linkage',
             ],
           },
           # Since ICU wants to internally use its own deprecated APIs, don't
