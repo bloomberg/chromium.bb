@@ -1491,8 +1491,14 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
                                           params.referrer);
 
     // Cross-process subframe navigations may leave a pending entry around.
+    // Clear it if it's actually for the subframe.
     // TODO(creis): Don't use pending entries for subframe navigations.
-    DiscardNonCommittedEntriesInternal();
+    // See https://crbug.com/495161.
+    if (pending_entry_ &&
+        pending_entry_->frame_tree_node_id() ==
+            rfh->frame_tree_node()->frame_tree_node_id()) {
+      DiscardPendingEntry(false);
+    }
   }
 
   // We do not need to discard the pending entry in this case, since we will
