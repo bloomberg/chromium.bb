@@ -215,10 +215,12 @@ void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, Scrip
     if (!acceptNoArguments && (!arguments || !arguments->argumentCount()))
         return;
 
+    if (scriptState && !scriptState->contextIsValid())
+        arguments.clear();
     String message;
-    bool gotStringMessage = arguments ? arguments->getFirstArgumentAsString(message) : false;
-
-    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, gotStringMessage? message : String());
+    if (arguments)
+        arguments->getFirstArgumentAsString(message);
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, message);
     consoleMessage->setType(type);
     consoleMessage->setScriptState(scriptState);
     consoleMessage->setScriptArguments(arguments);
