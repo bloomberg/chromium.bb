@@ -15,8 +15,10 @@ textarea::-webkit-input-placeholder {
 </style>
 <p>This test is meaningfull only if LayoutTheme::shouldShowPlaceholderWhenFocused() returns true.</p>
 <p>The green caret in the following text box should painted over the red placeholder text.</p>
-<textarea autofocus></textarea>
+<textarea></textarea>
 <script>
-document.getElementsByTagName('textarea')[0].placeholder = 'Placeholder';
+var textarea = document.querySelector('textarea');
+textarea.focus();
+textarea.placeholder = 'Placeholder';
 </script>
 </body>
