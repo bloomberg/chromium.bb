@@ -54,7 +54,7 @@ void DrmSurfaceTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
   std::vector<uint32_t> crtcs;
   crtcs.push_back(kDefaultCrtc);
-  drm_ = new ui::MockDrmDevice(true, crtcs, kPlanesPerCrtc);
+  drm_ = new ui::MockDrmDevice(false, crtcs, kPlanesPerCrtc);
   buffer_generator_.reset(new ui::DrmBufferGenerator());
   screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
   screen_manager_->AddDisplayController(drm_, kDefaultCrtc, kDefaultConnector);
@@ -86,9 +86,11 @@ void DrmSurfaceTest::TearDown() {
 
 TEST_F(DrmSurfaceTest, CheckFBIDOnSwap) {
   surface_->PresentCanvas(gfx::Rect());
+  drm_->RunCallbacks();
   // Framebuffer ID 1 is allocated in SetUp for the buffer used to modeset.
   EXPECT_EQ(3u, drm_->current_framebuffer());
   surface_->PresentCanvas(gfx::Rect());
+  drm_->RunCallbacks();
   EXPECT_EQ(2u, drm_->current_framebuffer());
 }
 
@@ -100,6 +102,7 @@ TEST_F(DrmSurfaceTest, CheckSurfaceContents) {
   surface_->GetSurface()->getCanvas()->drawRect(rect, paint);
   surface_->PresentCanvas(
       gfx::Rect(0, 0, kDefaultMode.hdisplay / 2, kDefaultMode.vdisplay / 2));
+  drm_->RunCallbacks();
 
   SkBitmap image;
   std::vector<skia::RefPtr<SkSurface>> framebuffers;
@@ -127,6 +130,60 @@ TEST_F(DrmSurfaceTest, CheckSurfaceContents) {
     for (int j = 0; j < image.width(); ++j) {
       if (j < kDefaultMode.hdisplay / 2 && i < kDefaultMode.vdisplay / 2)
         EXPECT_EQ(SK_ColorWHITE, image.getColor(j, i));
+      else
+        EXPECT_EQ(SK_ColorBLACK, image.getColor(j, i));
+    }
+  }
+}
+
+TEST_F(DrmSurfaceTest, CheckSurfaceContentsAfter2QueuedPresents) {
+  gfx::Rect rect;
+  // Present an empty buffer but don't respond with the page flip event since we
+  // want to make sure the following presents will aggregate correctly.
+  surface_->PresentCanvas(rect);
+
+  SkPaint paint;
+  paint.setColor(SK_ColorWHITE);
+  rect.SetRect(0, 0, kDefaultMode.hdisplay / 2, kDefaultMode.vdisplay / 2);
+  surface_->GetSurface()->getCanvas()->drawRect(RectToSkRect(rect), paint);
+  surface_->PresentCanvas(rect);
+
+  paint.setColor(SK_ColorRED);
+  rect.SetRect(0, kDefaultMode.vdisplay / 2, kDefaultMode.hdisplay / 2,
+               kDefaultMode.vdisplay / 2);
+  surface_->GetSurface()->getCanvas()->drawRect(RectToSkRect(rect), paint);
+  surface_->PresentCanvas(rect);
+
+  drm_->RunCallbacks();
+
+  SkBitmap image;
+  std::vector<skia::RefPtr<SkSurface>> framebuffers;
+  for (const auto& buffer : drm_->buffers()) {
+    // Skip cursor buffers.
+    if (buffer->width() == kDefaultCursorSize &&
+        buffer->height() == kDefaultCursorSize)
+      continue;
+
+    framebuffers.push_back(buffer);
+  }
+
+  // Buffer 0 is the modesetting buffer, buffer 1 is the backbuffer and buffer
+  // 2 is the frontbuffer.
+  EXPECT_EQ(3u, framebuffers.size());
+
+  image.setInfo(framebuffers[1]->getCanvas()->imageInfo());
+  EXPECT_TRUE(framebuffers[1]->getCanvas()->readPixels(&image, 0, 0));
+
+  EXPECT_EQ(kDefaultMode.hdisplay, image.width());
+  EXPECT_EQ(kDefaultMode.vdisplay, image.height());
+
+  // Make sure the updates are correctly propagated to the native surface.
+  for (int i = 0; i < image.height(); ++i) {
+    for (int j = 0; j < image.width(); ++j) {
+      if (j < kDefaultMode.hdisplay / 2 && i < kDefaultMode.vdisplay / 2)
+        EXPECT_EQ(SK_ColorWHITE, image.getColor(j, i));
+      else if (j < kDefaultMode.hdisplay / 2)
+        EXPECT_EQ(SK_ColorRED, image.getColor(j, i));
       else
         EXPECT_EQ(SK_ColorBLACK, image.getColor(j, i));
     }

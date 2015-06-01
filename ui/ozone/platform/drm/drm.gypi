@@ -113,6 +113,7 @@
       'dependencies': [
         '../../build/linux/system.gyp:libdrm',
         '../../skia/skia.gyp:skia',
+        '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         'ozone.gyp:ozone',
       ],
