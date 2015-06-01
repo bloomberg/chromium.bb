@@ -483,6 +483,7 @@
           "output": "⠸⠘⠃⠞⠺⠤⠠⠞⠁⠗⠊⠑⠧⠑⠝"
         },
         {
+          "xfail": "Fails because handling of emphasis is broken in liblouis",
           "input":    "3de",
           "typeform": "044",
           "output": "⠼⠉⠸⠙⠑"

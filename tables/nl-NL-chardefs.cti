@@ -113,18 +113,11 @@ punctuation \x003F        26                  ?                   QUESTION MARK
 sign        \x0040        345                 @                   COMMERCIAL AT
 punctuation \x005B        12356               [                   LEFT SQUARE BRACKET
 punctuation \x005D        23456               ]                   RIGHT SQUARE BRACKET
-
-# (!) FIXME: CIRCUMFLEX ACCENT should be dots "34", see §4 Alfabetisch tekenregister, indexingang in machtstekens [1]
-sign        \x005E        6                   ^                   CIRCUMFLEX ACCENT
+sign        \x005E        34                  ^                   CIRCUMFLEX ACCENT
 sign        \x005F        456                 _                   LOW LINE
-
-# (!) FIXME: GRAVE ACCENT should be dots "3" (APOSTROPHE)
-punctuation \x0060        5                   `                   GRAVE ACCENT
+punctuation \x0060        3                   `                   GRAVE ACCENT
 punctuation \x007B        12356               {                   LEFT CURLY BRACKET
-
-# (!) FIXME: VERTICAL LINE missing from braille specification [1]
-# BE does not define VERTICAL LINE
-sign        \x007C        123456              |                   VERTICAL LINE
+sign        \x007C        1456                |                   VERTICAL LINE
 punctuation \x007D        23456               }                   RIGHT CURLY BRACKET
 
 
