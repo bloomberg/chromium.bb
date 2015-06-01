@@ -6,42 +6,42 @@ layer at (0,0) size 785x600
 layer at (8,8) size 202x1622 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (8,8) size 202.02x1622
     LayoutBlockFlow {P} at (0,72) size 202.02x83
-      LayoutInline {A} at (0,0) size 167x80 [color=#0000EE]
-        LayoutText {#text} at (0,1) size 167x80
-          text run at (0,1) width 167: "link 1"
+      LayoutInline {A} at (0,0) size 166x80 [color=#0000EE]
+        LayoutText {#text} at (0,1) size 166x80
+          text run at (0,1) width 166: "link 1"
     LayoutBlockFlow {P} at (0,227) size 202.02x83
-      LayoutInline {A} at (0,0) size 167x80 [color=#0000EE]
-        LayoutText {#text} at (0,1) size 167x80
-          text run at (0,1) width 167: "link 2"
+      LayoutInline {A} at (0,0) size 166x80 [color=#0000EE]
+        LayoutText {#text} at (0,1) size 166x80
+          text run at (0,1) width 166: "link 2"
     LayoutBlockFlow {P} at (0,382) size 202.02x83
-      LayoutInline {A} at (0,0) size 167x80 [color=#0000EE]
-        LayoutText {#text} at (0,1) size 167x80
-          text run at (0,1) width 167: "link 3"
+      LayoutInline {A} at (0,0) size 166x80 [color=#0000EE]
+        LayoutText {#text} at (0,1) size 166x80
+          text run at (0,1) width 166: "link 3"
     LayoutBlockFlow {P} at (0,537) size 202.02x83
-      LayoutInline {A} at (0,0) size 167x80 [color=#0000EE]
-        LayoutText {#text} at (0,1) size 167x80
-          text run at (0,1) width 167: "link 4"
+      LayoutInline {A} at (0,0) size 166x80 [color=#0000EE]
+        LayoutText {#text} at (0,1) size 166x80
+          text run at (0,1) width 166: "link 4"
     LayoutBlockFlow {P} at (0,692) size 202.02x83
-      LayoutInline {A} at (0,0) size 167x80 [color=#0000EE]
-        LayoutText {#text} at (0,1) size 167x80
-          text run at (0,1) width 167: "link 5"
+      LayoutInline {A} at (0,0) size 166x80 [color=#0000EE]
+        LayoutText {#text} at (0,1) size 166x80
+          text run at (0,1) width 166: "link 5"
     LayoutBlockFlow {P} at (0,847) size 202.02x83
-      LayoutInline {A} at (0,0) size 167x80 [color=#0000EE]
-        LayoutText {#text} at (0,1) size 167x80
-          text run at (0,1) width 167: "link 6"
+      LayoutInline {A} at (0,0) size 166x80 [color=#0000EE]
+        LayoutText {#text} at (0,1) size 166x80
+          text run at (0,1) width 166: "link 6"
     LayoutBlockFlow {P} at (0,1002) size 202.02x83
-      LayoutInline {A} at (0,0) size 167x80 [color=#0000EE]
-        LayoutText {#text} at (0,1) size 167x80
-          text run at (0,1) width 167: "link 7"
+      LayoutInline {A} at (0,0) size 166x80 [color=#0000EE]
+        LayoutText {#text} at (0,1) size 166x80
+          text run at (0,1) width 166: "link 7"
     LayoutBlockFlow {P} at (0,1157) size 202.02x83
-      LayoutInline {A} at (0,0) size 167x80 [color=#0000EE]
-        LayoutText {#text} at (0,1) size 167x80
-          text run at (0,1) width 167: "link 8"
+      LayoutInline {A} at (0,0) size 166x80 [color=#0000EE]
+        LayoutText {#text} at (0,1) size 166x80
+          text run at (0,1) width 166: "link 8"
     LayoutBlockFlow {P} at (0,1312) size 202.02x83
-      LayoutInline {A} at (0,0) size 167x80 [color=#0000EE]
-        LayoutText {#text} at (0,1) size 167x80
-          text run at (0,1) width 167: "link 9"
+      LayoutInline {A} at (0,0) size 166x80 [color=#0000EE]
+        LayoutText {#text} at (0,1) size 166x80
+          text run at (0,1) width 166: "link 9"
     LayoutBlockFlow {P} at (0,1467) size 202.02x83
-      LayoutInline {A} at (0,0) size 203x80 [color=#0000EE]
-        LayoutText {#text} at (0,1) size 203x80
-          text run at (0,1) width 203: "link 10"
+      LayoutInline {A} at (0,0) size 202x80 [color=#0000EE]
+        LayoutText {#text} at (0,1) size 202x80
+          text run at (0,1) width 202: "link 10"

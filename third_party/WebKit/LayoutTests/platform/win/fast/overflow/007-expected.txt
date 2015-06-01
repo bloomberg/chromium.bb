@@ -17,8 +17,8 @@ layer at (143,32) size 514x146 clip at (144,33) size 497x144 scrollHeight 324
       LayoutInline {CODE} at (0,0) size 105x16
         LayoutText {#text} at (294,20) size 105x16
           text run at (294,20) width 105: "overflow:auto"
-      LayoutText {#text} at (398,18) size 436x35
-        text run at (398,18) width 38: ", both"
+      LayoutText {#text} at (398,18) size 435x35
+        text run at (398,18) width 37: ", both"
         text run at (0,36) width 176: "when the parent element is "
       LayoutInline {CODE} at (0,0) size 121x16
         LayoutText {#text} at (175,38) size 121x16
