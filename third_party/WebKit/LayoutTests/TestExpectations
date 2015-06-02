@@ -1853,3 +1853,6 @@ crbug.com/495523 fast/text/international/text-spliced-font.html [ Pass Failure ]
 
 crbug.com/495534 [ Win ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001d.html [ Failure ]
 crbug.com/495534 [ Win ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001i.html [ Failure ]
+
+crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
+crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
