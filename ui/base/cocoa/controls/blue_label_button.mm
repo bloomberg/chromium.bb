@@ -93,9 +93,15 @@ const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
   // Fuzz factor to adjust for the drop shadow. Based on visual inspection.
   frame.origin.y -= 1;
 
+  // Ensure LCD font smoothing is enabled when layer backed.
+  // This is safe to do because we know we are drawing on an opaque background.
+  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
+  NSGraphicsContext* context = [NSGraphicsContext currentContext];
+  CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
+  CGContextSetShouldSmoothFonts(cgContext, true);
+
   NSAttributedString* attributedTitle =
       [[self class] generateAttributedString:[self title]];
-  gfx::ScopedNSGraphicsContextSaveGState context;
   [attributedTitle drawInRect:frame];
   return frame;
 }

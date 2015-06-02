@@ -36,6 +36,7 @@ void SadTabCocoa::Close() {
 
 - (id)initWithWebContents:(content::WebContents*)webContents {
   if ((self = [super init])) {
+    DCHECK(webContents);
     webContents_ = webContents;
 
     if (webContents_) {  // NULL in unit_tests.
@@ -52,13 +53,17 @@ void SadTabCocoa::Close() {
 
 - (void)loadView {
   base::scoped_nsobject<SadTabView> sadView([[SadTabView alloc] init]);
-  if (!webContents_)
-    [sadView removeHelpText];
+  [[sadView reloadButton] setTarget:self];
+  [[sadView reloadButton] setAction:@selector(reloadPage:)];
   [self setView:sadView];
 }
 
 - (content::WebContents*)webContents {
   return webContents_;
+}
+
+- (IBAction)reloadPage:(id)sender {
+  webContents_->GetController().Reload(true);
 }
 
 @end

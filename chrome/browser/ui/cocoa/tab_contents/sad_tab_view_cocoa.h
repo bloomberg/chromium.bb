@@ -9,26 +9,19 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class HyperlinkTextView;
-
-// A view that displays the "sad tab" (aka crash page).
-@interface SadTabView : NSView<NSTextViewDelegate> {
- @private
-  base::scoped_nsobject<NSImageView> image_;
-  base::scoped_nsobject<NSTextField> title_;
-  base::scoped_nsobject<NSTextField> message_;
-  base::scoped_nsobject<HyperlinkTextView> help_;
-
-  NSSize messageSize_;
+namespace content {
+class WebContents;
 }
 
-// Designated initializer is -initWithFrame: .
+@class SadTabContainerView;
 
-// Called by SadTabController to remove the help text and link.
-- (void)removeHelpText;
+// A view that displays the "sad tab" (aka crash page).
+@interface SadTabView : NSView {
+ @private
+  base::scoped_nsobject<SadTabContainerView> container_;
+}
 
-// Sets |help_| based on |helpPlaceholder_|, sets |helpPlaceholder_| to nil.
-- (void)initializeHelpText;
+@property(readonly,nonatomic) NSButton* reloadButton;
 
 @end
 

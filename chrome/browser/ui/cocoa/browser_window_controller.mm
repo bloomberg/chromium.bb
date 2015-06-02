@@ -63,7 +63,6 @@
 #import "chrome/browser/ui/cocoa/profiles/avatar_icon_controller.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
-#import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -1931,19 +1930,15 @@ using content::WebContents;
     [self layoutSubviews];
 }
 
-// Handle the openLearnMoreAboutCrashLink: action from SadTabController when
+// Handle the openLearnMoreAboutCrashLink: action from SadTabView when
 // "Learn more" link in "Aw snap" page (i.e. crash page or sad tab) is
 // clicked. Decoupling the action from its target makes unit testing possible.
 - (void)openLearnMoreAboutCrashLink:(id)sender {
-  if (SadTabController* sadTab =
-          base::mac::ObjCCast<SadTabController>(sender)) {
-    WebContents* webContents = [sadTab webContents];
-    if (webContents) {
-      OpenURLParams params(
-          GURL(chrome::kCrashReasonURL), Referrer(), CURRENT_TAB,
-          ui::PAGE_TRANSITION_LINK, false);
-      webContents->OpenURL(params);
-    }
+  if (WebContents* webContents =
+          browser_->tab_strip_model()->GetActiveWebContents()) {
+    OpenURLParams params(GURL(chrome::kCrashReasonURL), Referrer(), CURRENT_TAB,
+                         ui::PAGE_TRANSITION_LINK, false);
+    webContents->OpenURL(params);
   }
 }
 

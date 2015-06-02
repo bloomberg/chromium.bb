@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/debug/debugger.h"
+#import "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
@@ -18,7 +19,12 @@
 
 @implementation SadTabView (ExposedForTesting)
 - (HyperlinkTextView*)helpTextView {
-  return help_.get();
+  NSView* containerView = [[self subviews] lastObject];
+  for (NSView* view in [containerView subviews]) {
+    if (auto textView = base::mac::ObjCCast<HyperlinkTextView>(view))
+      return textView;
+  }
+  return nil;
 }
 @end
 
@@ -73,21 +79,6 @@ class SadTabControllerTest : public ChromeRenderViewHostTestHarness {
 
 // static
 bool SadTabControllerTest::link_clicked_;
-
-TEST_F(SadTabControllerTest, WithTabContents) {
-  base::scoped_nsobject<SadTabController> controller(CreateController());
-  EXPECT_TRUE(controller);
-  HyperlinkTextView* help = GetHelpTextView(controller);
-  EXPECT_TRUE(help);
-}
-
-TEST_F(SadTabControllerTest, WithoutTabContents) {
-  DeleteContents();
-  base::scoped_nsobject<SadTabController> controller(CreateController());
-  EXPECT_TRUE(controller);
-  HyperlinkTextView* help = GetHelpTextView(controller);
-  EXPECT_FALSE(help);
-}
 
 TEST_F(SadTabControllerTest, ClickOnLink) {
   base::scoped_nsobject<SadTabController> controller(CreateController());
