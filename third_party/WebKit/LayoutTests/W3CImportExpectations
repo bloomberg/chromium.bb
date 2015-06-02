@@ -100,8 +100,6 @@ imported/web-platform-tests/geolocation-API [ Skip ]
 imported/web-platform-tests/hr-time [ Skip ]
 ## Owners: tkent@chromium.org
 # imported/web-platform-tests/html [ Pass ]
-imported/web-platform-tests/html/iana [ Skip ]
-imported/web-platform-tests/html/infrastructure [ Skip ]
 imported/web-platform-tests/html/introduction [ Skip ]
 imported/web-platform-tests/html/obsolete [ Skip ]
 imported/web-platform-tests/html/rendering [ Skip ]
@@ -196,6 +194,7 @@ imported/web-platform-tests/html/browsers/browsing-the-web/read-text/load-text-p
 imported/web-platform-tests/html/browsers/history/the-location-interface/location-stringifier.html [ Skip ]
 imported/web-platform-tests/html/dom/documents/dom-tree-accessors/document.title-07.html [ Skip ]
 imported/web-platform-tests/html/editing/dnd/the-draggable-attribute/draggable_attribute.html [ Skip ]
+imported/web-platform-tests/html/infrastructure/urls/terminology-0/document-base-url.html [ Skip ]
 
 # crbug.com/490940: Needs to load extra HTML resources.
 imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/001.html [ Skip ]
@@ -230,8 +229,13 @@ imported/web-platform-tests/html/editing/the-hidden-attribute/hidden-2.svg [ Ski
 
 # https://github.com/w3c/web-platform-tests/issues/1861: A function can be
 # called before it's defined.
-# crbug.com/493465: Requires wptserve
+# crbug.com/493465: Requires the pipe feature of wptserve
 imported/web-platform-tests/html/browsers/the-window-object/security-window/window-security.sub.html [ Skip ]
+
+# crbug.com/493465: Requires the pipe feature of wptserve
+imported/web-platform-tests/html/infrastructure/urls/dynamic-changes-to-base-urls/dynamic-urls.sub.xhtml [ Skip ]
+imported/web-platform-tests/html/infrastructure/urls/resolving-urls [ Skip ]
+imported/web-platform-tests/html/infrastructure/urls/terminology-0/multiple-base.sub.html [ Skip ]
 
 # https://github.com/w3c/web-platform-tests/issues/1862:
 # The test doesn't handle ':' after a drive letter in file: URL on Windows.
@@ -252,6 +256,7 @@ imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-cont
 # Requires http server.
 imported/web-platform-tests/html/browsers/history/the-history-interface/008.html [ Skip ]
 imported/web-platform-tests/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/creating_browsing_context_test_01.html [ Skip ]
+
 # Requires http server. Moved the following test to http/tests/custom-elements/.
 imported/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Skip ]
 
