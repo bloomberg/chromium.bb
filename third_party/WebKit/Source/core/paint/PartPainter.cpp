@@ -13,6 +13,7 @@
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransformRecorder.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -42,7 +43,7 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
         return;
 
     {
-        OwnPtr<RoundedInnerRectClipper> clipper;
+        Optional<RoundedInnerRectClipper> clipper;
         if (m_layoutPart.style()->hasBorderRadius()) {
             if (borderRect.isEmpty())
                 return;
@@ -54,7 +55,7 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
                     -(m_layoutPart.paddingBottom() + m_layoutPart.borderBottom()),
                     -(m_layoutPart.paddingLeft() + m_layoutPart.borderLeft())),
                 true, true);
-            clipper = adoptPtr(new RoundedInnerRectClipper(m_layoutPart, paintInfo, borderRect, roundedInnerRect, ApplyToDisplayListIfEnabled));
+            clipper.emplace(m_layoutPart, paintInfo, borderRect, roundedInnerRect, ApplyToDisplayListIfEnabled);
         }
 
         if (m_layoutPart.widget())

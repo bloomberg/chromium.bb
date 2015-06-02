@@ -14,6 +14,7 @@
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/graphics/paint/ClipRecorder.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -44,10 +45,10 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     PaintInfo paintInfoBeforeFiltering(paintInfo);
 
     // Apply initial viewport clip.
-    OwnPtr<ClipRecorder> clipRecorder;
+    Optional<ClipRecorder> clipRecorder;
     if (m_layoutSVGRoot.shouldApplyViewportClip()) {
         // TODO(pdr): Clip the paint info cull rect here.
-        clipRecorder = adoptPtr(new ClipRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintInfoBeforeFiltering.displayItemTypeForClipping(), LayoutRect(pixelSnappedIntRect(m_layoutSVGRoot.overflowClipRect(paintOffset)))));
+        clipRecorder.emplace(*paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintInfoBeforeFiltering.displayItemTypeForClipping(), LayoutRect(pixelSnappedIntRect(m_layoutSVGRoot.overflowClipRect(paintOffset))));
     }
 
     // Convert from container offsets (html layoutObjects) to a relative transform (svg layoutObjects).

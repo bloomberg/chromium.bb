@@ -20,6 +20,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TextPainter.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -82,13 +83,13 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
 
     // The text clip phase already has a DrawingRecorder. Text clips are initiated only in BoxPainter::paintLayerExtended, which is already
     // within a DrawingRecorder.
-    OwnPtr<DrawingRecorder> drawingRecorder;
+    Optional<DrawingRecorder> drawingRecorder;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled() && paintInfo.phase != PaintPhaseTextClip) {
         LayoutRect paintRect(m_inlineTextBox.logicalRectToPhysicalRect(logicalVisualOverflow));
         if (paintInfo.phase != PaintPhaseSelection && (haveSelection || containsComposition || paintsMarkerHighlights(m_inlineTextBox.layoutObject())))
             paintRect.unite(m_inlineTextBox.localSelectionRect(m_inlineTextBox.start(), m_inlineTextBox.start() + m_inlineTextBox.len()));
         paintRect.moveBy(adjustedPaintOffset);
-        drawingRecorder = adoptPtr(new DrawingRecorder(*paintInfo.context, m_inlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), paintRect));
+        drawingRecorder.emplace(*paintInfo.context, m_inlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), paintRect);
         if (drawingRecorder->canUseCachedDrawing())
             return;
     }

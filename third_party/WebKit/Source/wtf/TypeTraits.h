@@ -276,6 +276,10 @@ namespace WTF {
         typedef T Type;
     };
 
+    template <typename T> struct RemoveReference<T&&> {
+        typedef T Type;
+    };
+
     template <typename T> struct RemoveExtent {
         typedef T Type;
     };

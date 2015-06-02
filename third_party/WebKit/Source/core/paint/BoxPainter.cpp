@@ -30,6 +30,7 @@
 #include "platform/geometry/LayoutRectOutsets.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -393,7 +394,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
 
     // BorderFillBox radius clipping is taken care of by BackgroundBleedClip{Only,Layer}
     bool clipToBorderRadius = hasRoundedBorder && !(isBorderFill && bleedAvoidanceIsClipping(bleedAvoidance));
-    OwnPtr<RoundedInnerRectClipper> clipToBorder;
+    Optional<RoundedInnerRectClipper> clipToBorder;
     if (clipToBorderRadius) {
         FloatRoundedRect border = isBorderFill
             ? backgroundRoundedRectAdjustedForBleedAvoidance(obj, rect, bleedAvoidance, box, boxSize, includeLeftEdge, includeRightEdge)
@@ -412,7 +413,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
             border = obj.style()->getRoundedInnerBorderFor(LayoutRect(border.rect()), includeLeftEdge, includeRightEdge);
         }
 
-        clipToBorder = adoptPtr(new RoundedInnerRectClipper(obj, paintInfo, rect, border, ApplyToContext));
+        clipToBorder.emplace(obj, paintInfo, rect, border, ApplyToContext);
     }
 
     int bLeft = includeLeftEdge ? obj.borderLeft() : 0;

@@ -59,6 +59,7 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "wtf/Optional.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -290,9 +291,9 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         ClipRecorder clipRecorder(paintContext, *this, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
 
         bool hasCompositing = compositeOp != SkXfermode::kSrcOver_Mode;
-        OwnPtr<CompositingRecorder> compositingRecorder;
+        Optional<CompositingRecorder> compositingRecorder;
         if (hasCompositing || opacity < 1)
-            compositingRecorder = adoptPtr(new CompositingRecorder(paintContext, *this, compositeOp, opacity));
+            compositingRecorder.emplace(paintContext, *this, compositeOp, opacity);
 
         // We can only draw the entire frame, clipped to the rect we want. So compute where the top left
         // of the image would be if we were drawing without clipping, and translate accordingly.

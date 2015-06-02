@@ -14,6 +14,7 @@
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGSVGElement.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -36,10 +37,10 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
     paintInfoBeforeFiltering.updateCullRectForSVGTransform(m_layoutSVGContainer.localToParentTransform());
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGContainer, m_layoutSVGContainer.localToParentTransform());
     {
-        OwnPtr<FloatClipRecorder> clipRecorder;
+        Optional<FloatClipRecorder> clipRecorder;
         if (m_layoutSVGContainer.isSVGViewportContainer() && SVGLayoutSupport::isOverflowHidden(&m_layoutSVGContainer)) {
             FloatRect viewport = m_layoutSVGContainer.localToParentTransform().inverse().mapRect(toLayoutSVGViewportContainer(m_layoutSVGContainer).viewport());
-            clipRecorder = adoptPtr(new FloatClipRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGContainer, paintInfoBeforeFiltering.phase, viewport));
+            clipRecorder.emplace(*paintInfoBeforeFiltering.context, m_layoutSVGContainer, paintInfoBeforeFiltering.phase, viewport);
         }
 
         SVGPaintContext paintContext(m_layoutSVGContainer, paintInfoBeforeFiltering);

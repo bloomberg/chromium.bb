@@ -21,6 +21,7 @@
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "platform/graphics/paint/ClipRecorder.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -191,11 +192,11 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
     {
         PaintInfo scrolledPaintInfo(paintInfo);
-        OwnPtr<ScrollRecorder> scrollRecorder;
+        Optional<ScrollRecorder> scrollRecorder;
         if (m_layoutBlock.hasOverflowClip()) {
             IntSize scrollOffset = m_layoutBlock.scrolledContentOffset();
             if (m_layoutBlock.layer()->scrollsOverflow() || !scrollOffset.isZero()) {
-                scrollRecorder = adoptPtr(new ScrollRecorder(*paintInfo.context, m_layoutBlock, paintPhase, scrollOffset));
+                scrollRecorder.emplace(*paintInfo.context, m_layoutBlock, paintPhase, scrollOffset);
                 scrolledPaintInfo.rect.move(scrollOffset);
             }
         }

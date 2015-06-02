@@ -12,6 +12,7 @@
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/RoundedInnerRectClipper.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -56,7 +57,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
             return;
 
     {
-        OwnPtr<RoundedInnerRectClipper> clipper;
+        Optional<RoundedInnerRectClipper> clipper;
         bool completelyClippedOut = false;
         if (m_layoutReplaced.style()->hasBorderRadius()) {
             LayoutRect borderRect = LayoutRect(adjustedPaintOffset, m_layoutReplaced.size());
@@ -73,7 +74,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
                         -(m_layoutReplaced.paddingLeft() + m_layoutReplaced.borderLeft())),
                     true, true);
 
-                clipper = adoptPtr(new RoundedInnerRectClipper(m_layoutReplaced, paintInfo, paintRect, roundedInnerRect, ApplyToDisplayListIfEnabled));
+                clipper.emplace(m_layoutReplaced, paintInfo, paintRect, roundedInnerRect, ApplyToDisplayListIfEnabled);
             }
         }
 

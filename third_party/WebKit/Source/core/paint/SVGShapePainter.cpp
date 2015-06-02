@@ -21,6 +21,7 @@
 #include "platform/graphics/paint/DisplayItemListContextRecorder.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -220,9 +221,9 @@ void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, LayoutSVGResourceM
         markerPaintInfo.rect = LayoutRect::infiniteIntRect();
 
         TransformRecorder transformRecorder(*markerPaintInfo.context, marker, marker.markerTransformation(position.origin, position.angle, strokeWidth));
-        OwnPtr<FloatClipRecorder> clipRecorder;
+        Optional<FloatClipRecorder> clipRecorder;
         if (SVGLayoutSupport::isOverflowHidden(&marker))
-            clipRecorder = adoptPtr(new FloatClipRecorder(*markerPaintInfo.context, marker, markerPaintInfo.phase, marker.viewport()));
+            clipRecorder.emplace(*markerPaintInfo.context, marker, markerPaintInfo.phase, marker.viewport());
 
         SVGContainerPainter(marker).paint(markerPaintInfo);
     }

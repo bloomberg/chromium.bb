@@ -223,6 +223,7 @@ static_assert((!IsSameType<int, RemovePointer<int**>::Type>::value), "RemovePoin
 
 static_assert((IsSameType<int, RemoveReference<int>::Type>::value), "RemoveReference should not modify non-reference types");
 static_assert((IsSameType<int, RemoveReference<int&>::Type>::value), "RemoveReference should produce the corresponding non-reference type");
+static_assert((IsSameType<int, RemoveReference<int&&>::Type>::value), "RemoveReference should produce the corresponding non-reference type");
 
 
 typedef int IntArray[];
