@@ -39,7 +39,7 @@ string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers,
                                                QuicVersion quic_version) {
   SpdyMajorVersion spdy_version = GetSpdyVersionForQuicVersion(quic_version);
 
-  int length = SpdyFramer::GetSerializedLength(spdy_version, &headers);
+  size_t length = SpdyFramer::GetSerializedLength(spdy_version, &headers);
   SpdyFrameBuilder builder(length, spdy_version);
   SpdyFramer::WriteHeaderBlock(&builder, spdy_version, &headers);
   scoped_ptr<SpdyFrame> block(builder.take());
