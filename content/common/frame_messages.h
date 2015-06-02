@@ -17,6 +17,7 @@
 #include "content/common/resource_request_body.h"
 #include "content/public/common/color_suggestion.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/console_message_level.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_message_type.h"
@@ -486,6 +487,11 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DidStopLoading)
 // Request for the renderer to insert CSS into the frame.
 IPC_MESSAGE_ROUTED1(FrameMsg_CSSInsertRequest,
                     std::string  /* css */)
+
+// Add message to the devtools console.
+IPC_MESSAGE_ROUTED2(FrameMsg_AddMessageToConsole,
+                    content::ConsoleMessageLevel /* level */,
+                    std::string /* message */)
 
 // Request for the renderer to execute JavaScript in the frame's context.
 //

@@ -1005,6 +1005,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(InputMsg_ExecuteNoValueEditCommand,
                         OnExecuteNoValueEditCommand)
     IPC_MESSAGE_HANDLER(FrameMsg_CSSInsertRequest, OnCSSInsertRequest)
+    IPC_MESSAGE_HANDLER(FrameMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequest,
                         OnJavaScriptExecuteRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequestForTests,
@@ -1336,6 +1337,12 @@ void RenderFrameImpl::OnReplaceMisspelling(const base::string16& text) {
 
 void RenderFrameImpl::OnCSSInsertRequest(const std::string& css) {
   frame_->document().insertStyleSheet(WebString::fromUTF8(css));
+}
+
+void RenderFrameImpl::OnAddMessageToConsole(ConsoleMessageLevel level,
+                                            const std::string& message) {
+  if (devtools_agent_)
+    devtools_agent_->AddMessageToConsole(level, message);
 }
 
 void RenderFrameImpl::OnJavaScriptExecuteRequest(

@@ -18,6 +18,7 @@
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/mojo/service_registry_impl.h"
+#include "content/public/common/console_message_level.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_frame.h"
@@ -628,6 +629,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnReplace(const base::string16& text);
   void OnReplaceMisspelling(const base::string16& text);
   void OnCSSInsertRequest(const std::string& css);
+  void OnAddMessageToConsole(ConsoleMessageLevel level,
+                             const std::string& message);
   void OnJavaScriptExecuteRequest(const base::string16& javascript,
                                   int id,
                                   bool notify_result);

@@ -265,6 +265,11 @@ gfx::NativeView RenderFrameHostImpl::GetNativeView() {
   return view->GetNativeView();
 }
 
+void RenderFrameHostImpl::AddMessageToConsole(ConsoleMessageLevel level,
+                                              const std::string& message) {
+  Send(new FrameMsg_AddMessageToConsole(routing_id_, level, message));
+}
+
 void RenderFrameHostImpl::ExecuteJavaScript(
     const base::string16& javascript) {
   Send(new FrameMsg_JavaScriptExecuteRequest(routing_id_,

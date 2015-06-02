@@ -379,10 +379,9 @@ void WebContentsAndroid::AddMessageToDevToolsConsole(JNIEnv* env,
   DCHECK_GE(level, 0);
   DCHECK_LE(level, CONSOLE_MESSAGE_LEVEL_LAST);
 
-  web_contents_->GetMainFrame()->Send(new DevToolsAgentMsg_AddMessageToConsole(
-      web_contents_->GetMainFrame()->GetRoutingID(),
+  web_contents_->GetMainFrame()->AddMessageToConsole(
       static_cast<ConsoleMessageLevel>(level),
-      ConvertJavaStringToUTF8(env, message)));
+      ConvertJavaStringToUTF8(env, message));
 }
 
 jboolean WebContentsAndroid::HasAccessedInitialDocument(

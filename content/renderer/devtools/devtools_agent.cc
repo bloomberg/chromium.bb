@@ -89,8 +89,6 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
                         OnDispatchOnInspectorBackend)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_InspectElement, OnInspectElement)
-    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_AddMessageToConsole,
-                        OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(DevToolsMsg_SetupDevToolsClient, OnSetupDevToolsClient)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -230,8 +228,8 @@ void DevToolsAgent::OnInspectElement(
   }
 }
 
-void DevToolsAgent::OnAddMessageToConsole(ConsoleMessageLevel level,
-                                          const std::string& message) {
+void DevToolsAgent::AddMessageToConsole(ConsoleMessageLevel level,
+                                        const std::string& message) {
   WebLocalFrame* web_frame = frame_->GetWebFrame();
   if (!web_frame)
     return;

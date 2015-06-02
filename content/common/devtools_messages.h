@@ -99,11 +99,6 @@ IPC_MESSAGE_ROUTED3(DevToolsAgentMsg_InspectElement,
                     int /* x */,
                     int /* y */)
 
-// Add message to the devtools console.
-IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_AddMessageToConsole,
-                    content::ConsoleMessageLevel /* level */,
-                    std::string /* message */)
-
 //-----------------------------------------------------------------------------
 // These are messages sent from the browser to the renderer.
 

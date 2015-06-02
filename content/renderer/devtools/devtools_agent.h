@@ -44,6 +44,9 @@ class CONTENT_EXPORT DevToolsAgent
 
   bool IsAttached();
 
+  void AddMessageToConsole(ConsoleMessageLevel level,
+                           const std::string& message);
+
  private:
   friend class DevToolsAgentTest;
 
@@ -69,8 +72,6 @@ class CONTENT_EXPORT DevToolsAgent
   void OnDetach();
   void OnDispatchOnInspectorBackend(const std::string& message);
   void OnInspectElement(const std::string& host_id, int x, int y);
-  void OnAddMessageToConsole(ConsoleMessageLevel level,
-                             const std::string& message);
   void ContinueProgram();
   void OnSetupDevToolsClient();
 

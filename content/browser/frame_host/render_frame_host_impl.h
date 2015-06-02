@@ -132,6 +132,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsCrossProcessSubframe() override;
   GURL GetLastCommittedURL() override;
   gfx::NativeView GetNativeView() override;
+  void AddMessageToConsole(ConsoleMessageLevel level,
+                           const std::string& message) override;
   void ExecuteJavaScript(const base::string16& javascript) override;
   void ExecuteJavaScript(const base::string16& javascript,
                          const JavaScriptResultCallback& callback) override;

@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "content/public/common/console_message_level.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
@@ -66,6 +67,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the associated widget's native view.
   virtual gfx::NativeView GetNativeView() = 0;
+
+  // Adds |message| to the DevTools console.
+  virtual void AddMessageToConsole(ConsoleMessageLevel level,
+                                   const std::string& message) = 0;
 
   // Runs some JavaScript in this frame's context. If a callback is provided, it
   // will be used to return the result, when the result is available.
