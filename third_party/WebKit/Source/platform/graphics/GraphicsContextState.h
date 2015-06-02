@@ -99,10 +99,6 @@ public:
     Pattern* fillPattern() const { return m_fillPattern.get(); }
     void setFillPattern(const PassRefPtr<Pattern>, float);
 
-    // Path fill rule
-    WindRule fillRule() const { return m_fillRule; }
-    void setFillRule(WindRule rule) { m_fillRule = rule; }
-
     // Shadow. (This will need tweaking if we use draw loopers for other things.)
     SkDrawLooper* drawLooper() const { return m_looper.get(); }
     void setDrawLooper(PassRefPtr<SkDrawLooper>);
@@ -160,7 +156,6 @@ private:
     RefPtr<Pattern> m_strokePattern;
 
     Color m_fillColor;
-    WindRule m_fillRule;
     RefPtr<Gradient> m_fillGradient;
     RefPtr<Pattern> m_fillPattern;
 

@@ -418,6 +418,7 @@ bool BoxBorderPainter::paintBorderFastPath(GraphicsContext* context, const Layou
         ASSERT(m_visibleEdgeSet != AllBorderEdges);
         // solid, rectangular border => one drawPath()
         Path path;
+        path.setWindRule(RULE_NONZERO);
 
         for (int i = BSTop; i <= BSLeft; ++i) {
             const BorderEdge& currEdge = m_edges[i];
@@ -425,10 +426,8 @@ bool BoxBorderPainter::paintBorderFastPath(GraphicsContext* context, const Layou
                 path.addRect(calculateSideRect(m_outer, currEdge, i));
         }
 
-        context->setFillRule(RULE_NONZERO);
         context->setFillColor(firstEdge().color);
         context->fillPath(path);
-
         return true;
     }
 

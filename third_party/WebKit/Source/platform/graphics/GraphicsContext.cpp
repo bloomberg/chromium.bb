@@ -1114,16 +1114,7 @@ void GraphicsContext::fillPath(const Path& pathToFill)
     if (contextDisabled() || pathToFill.isEmpty())
         return;
 
-    // Use const_cast and temporarily modify the fill type instead of copying the path.
-    SkPath& path = const_cast<SkPath&>(pathToFill.skPath());
-    SkPath::FillType previousFillType = path.getFillType();
-
-    SkPath::FillType temporaryFillType = WebCoreWindRuleToSkFillType(immutableState()->fillRule());
-    path.setFillType(temporaryFillType);
-
-    drawPath(path, immutableState()->fillPaint());
-
-    path.setFillType(previousFillType);
+    drawPath(pathToFill.skPath(), immutableState()->fillPaint());
 }
 
 void GraphicsContext::fillRect(const FloatRect& rect)
@@ -1467,6 +1458,7 @@ void GraphicsContext::fillRectWithRoundedHole(const FloatRect& rect, const Float
         return;
 
     Path path;
+    path.setWindRule(RULE_EVENODD);
     path.addRect(rect);
 
     if (!roundedHoleRect.radii().isZero())
@@ -1474,16 +1466,10 @@ void GraphicsContext::fillRectWithRoundedHole(const FloatRect& rect, const Float
     else
         path.addRect(roundedHoleRect.rect());
 
-    WindRule oldFillRule = immutableState()->fillRule();
-    Color oldFillColor = fillColor();
+    SkPaint paint(immutableState()->fillPaint());
+    paint.setColor(color.rgb());
 
-    setFillRule(RULE_EVENODD);
-    setFillColor(color);
-
-    fillPath(path);
-
-    setFillRule(oldFillRule);
-    setFillColor(oldFillColor);
+    drawPath(path.skPath(), paint);
 }
 
 void GraphicsContext::clearRect(const FloatRect& rect)

@@ -122,8 +122,6 @@ public:
     void setLineJoin(LineJoin join) { mutableState()->setLineJoin(join); }
     void setMiterLimit(float limit) { mutableState()->setMiterLimit(limit); }
 
-    void setFillRule(WindRule fillRule) { mutableState()->setFillRule(fillRule); }
-
     Color fillColor() const { return immutableState()->fillColor(); }
     void setFillColor(const Color& color) { mutableState()->setFillColor(color); }
 

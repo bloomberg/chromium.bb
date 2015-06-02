@@ -66,9 +66,9 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& o
     if (useTransparencyLayer) {
         if (outlineStyle == SOLID) {
             Path path;
+            path.setWindRule(RULE_EVENODD);
             path.addRect(outer);
             path.addRect(inner);
-            graphicsContext->setFillRule(RULE_EVENODD);
             graphicsContext->setFillColor(outlineColor);
             graphicsContext->fillPath(path);
             return;
