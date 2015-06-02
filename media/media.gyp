@@ -412,8 +412,6 @@
         'blink/skcanvas_video_renderer.h',
         'cdm/aes_decryptor.cc',
         'cdm/aes_decryptor.h',
-        'cdm/cenc_utils.cc',
-        'cdm/cenc_utils.h',
         'cdm/default_cdm_factory.cc',
         'cdm/default_cdm_factory.h',
         'cdm/json_web_key.cc',
@@ -983,6 +981,8 @@
         }],
         ['proprietary_codecs==1', {
           'sources': [
+            'cdm/cenc_utils.cc',
+            'cdm/cenc_utils.h',
             'filters/ffmpeg_aac_bitstream_converter.cc',
             'filters/ffmpeg_aac_bitstream_converter.h',
             'filters/ffmpeg_h264_to_annex_b_bitstream_converter.cc',
@@ -1170,7 +1170,6 @@
         'base/yuv_convert_unittest.cc',
         'blink/skcanvas_video_renderer_unittest.cc',
         'cdm/aes_decryptor_unittest.cc',
-        'cdm/cenc_utils_unittest.cc',
         'cdm/json_web_key_unittest.cc',
         'ffmpeg/ffmpeg_common_unittest.cc',
         'filters/audio_clock_unittest.cc',
@@ -1284,6 +1283,7 @@
         }],
         ['proprietary_codecs==1', {
           'sources': [
+            'cdm/cenc_utils_unittest.cc',
             'filters/ffmpeg_aac_bitstream_converter_unittest.cc',
             'filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc',
             'filters/h264_to_annex_b_bitstream_converter_unittest.cc',

@@ -471,12 +471,19 @@ TEST_F(AesDecryptorTest, CreateSessionWithCencInitData) {
       0x7E, 0x57, 0x1D, 0x04, 0x7E, 0x57, 0x1D, 0x04,
       0x00, 0x00, 0x00, 0x00  // datasize
   };
+#if defined(USE_PROPRIETARY_CODECS)
   EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
                                       GURL::EmptyGURL()));
   decryptor_.CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
       std::vector<uint8>(init_data, init_data + arraysize(init_data)),
       CreateSessionPromise(RESOLVED));
+#else
+  decryptor_.CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
+      std::vector<uint8>(init_data, init_data + arraysize(init_data)),
+      CreateSessionPromise(REJECTED));
+#endif
 }
 
 TEST_F(AesDecryptorTest, CreateSessionWithKeyIdsInitData) {

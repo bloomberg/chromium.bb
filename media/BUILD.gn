@@ -88,8 +88,6 @@ component("media") {
     "blink/skcanvas_video_renderer.h",
     "cdm/aes_decryptor.cc",
     "cdm/aes_decryptor.h",
-    "cdm/cenc_utils.cc",
-    "cdm/cenc_utils.h",
     "cdm/default_cdm_factory.cc",
     "cdm/default_cdm_factory.h",
     "cdm/json_web_key.cc",
@@ -395,6 +393,8 @@ component("media") {
 
   if (proprietary_codecs) {
     sources += [
+      "cdm/cenc_utils.cc",
+      "cdm/cenc_utils.h",
       "filters/h264_to_annex_b_bitstream_converter.cc",
       "filters/h264_to_annex_b_bitstream_converter.h",
       "formats/mp2t/es_adapter_video.cc",
@@ -500,7 +500,6 @@ test("media_unittests") {
   sources = [
     "blink/skcanvas_video_renderer_unittest.cc",
     "cdm/aes_decryptor_unittest.cc",
-    "cdm/cenc_utils_unittest.cc",
     "cdm/json_web_key_unittest.cc",
     "filters/audio_clock_unittest.cc",
     "filters/audio_decoder_selector_unittest.cc",
@@ -593,6 +592,7 @@ test("media_unittests") {
 
   if (proprietary_codecs) {
     sources += [
+      "cdm/cenc_utils_unittest.cc",
       "filters/ffmpeg_aac_bitstream_converter_unittest.cc",
       "filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc",
       "filters/h264_to_annex_b_bitstream_converter_unittest.cc",
