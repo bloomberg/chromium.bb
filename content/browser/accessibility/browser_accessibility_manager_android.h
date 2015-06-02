@@ -124,6 +124,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
  protected:
   // AXTreeDelegate overrides.
   void OnAtomicUpdateFinished(
+      ui::AXTree* tree,
       bool root_changed,
       const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 

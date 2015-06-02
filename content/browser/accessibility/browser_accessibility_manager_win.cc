@@ -135,32 +135,6 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
   ::NotifyWinEvent(event, hwnd, OBJID_CLIENT, child_id);
 }
 
-void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXNode* node) {
-  BrowserAccessibilityManager::OnNodeCreated(node);
-  BrowserAccessibility* obj = GetFromAXNode(node);
-  if (!obj)
-    return;
-  if (!obj->IsNative())
-    return;
-  LONG unique_id_win = obj->ToBrowserAccessibilityWin()->unique_id_win();
-  unique_id_to_ax_id_map_[unique_id_win] = obj->GetId();
-}
-
-void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXNode* node) {
-  BrowserAccessibilityManager::OnNodeWillBeDeleted(node);
-  BrowserAccessibility* obj = GetFromAXNode(node);
-  if (!obj)
-    return;
-  if (!obj->IsNative())
-    return;
-  unique_id_to_ax_id_map_.erase(
-      obj->ToBrowserAccessibilityWin()->unique_id_win());
-  if (obj == tracked_scroll_object_) {
-    tracked_scroll_object_->Release();
-    tracked_scroll_object_ = NULL;
-  }
-}
-
 void BrowserAccessibilityManagerWin::OnWindowFocused() {
   // This is called either when this web frame gets focused, or when
   // the root of the accessibility tree changes. In both cases, we need
@@ -300,10 +274,40 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   }
 }
 
+void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
+                                                   ui::AXNode* node) {
+  BrowserAccessibilityManager::OnNodeCreated(tree, node);
+  BrowserAccessibility* obj = GetFromAXNode(node);
+  if (!obj)
+    return;
+  if (!obj->IsNative())
+    return;
+  LONG unique_id_win = obj->ToBrowserAccessibilityWin()->unique_id_win();
+  unique_id_to_ax_id_map_[unique_id_win] = obj->GetId();
+}
+
+void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
+                                                         ui::AXNode* node) {
+  BrowserAccessibilityManager::OnNodeWillBeDeleted(tree, node);
+  BrowserAccessibility* obj = GetFromAXNode(node);
+  if (!obj)
+    return;
+  if (!obj->IsNative())
+    return;
+  unique_id_to_ax_id_map_.erase(
+      obj->ToBrowserAccessibilityWin()->unique_id_win());
+  if (obj == tracked_scroll_object_) {
+    tracked_scroll_object_->Release();
+    tracked_scroll_object_ = NULL;
+  }
+}
+
 void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
+    ui::AXTree* tree,
     bool root_changed,
     const std::vector<ui::AXTreeDelegate::Change>& changes) {
-  BrowserAccessibilityManager::OnAtomicUpdateFinished(root_changed, changes);
+  BrowserAccessibilityManager::OnAtomicUpdateFinished(
+      tree, root_changed, changes);
 
   if (root_changed) {
     // In order to make screen readers aware of the new accessibility root,

@@ -240,11 +240,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   BrowserAccessibility* PreviousInTreeOrder(BrowserAccessibility* node);
 
   // AXTreeDelegate implementation.
-  void OnNodeWillBeDeleted(ui::AXNode* node) override;
-  void OnSubtreeWillBeDeleted(ui::AXNode* node) override;
-  void OnNodeCreated(ui::AXNode* node) override;
-  void OnNodeChanged(ui::AXNode* node) override;
+  void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
+  void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
+  void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
+  void OnNodeChanged(ui::AXTree* tree, ui::AXNode* node) override;
   void OnAtomicUpdateFinished(
+      ui::AXTree* tree,
       bool root_changed,
       const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 

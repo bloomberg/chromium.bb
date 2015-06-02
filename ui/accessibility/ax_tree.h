@@ -14,6 +14,7 @@
 namespace ui {
 
 class AXNode;
+class AXTree;
 struct AXTreeUpdateState;
 
 // Used when you want to be notified when changes happen to the tree.
@@ -39,20 +40,20 @@ class AX_EXPORT AXTreeDelegate {
   // Called just before a node is deleted. Its id and data will be valid,
   // but its links to parents and children are invalid. This is called
   // in the middle of an update, the tree may be in an invalid state!
-  virtual void OnNodeWillBeDeleted(AXNode* node) = 0;
+  virtual void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) = 0;
 
   // Same as OnNodeWillBeDeleted, but only called once for an entire subtree.
   // This is called in the middle of an update, the tree may be in an
   // invalid state!
-  virtual void OnSubtreeWillBeDeleted(AXNode* node) = 0;
+  virtual void OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) = 0;
 
   // Called immediately after a new node is created. The tree may be in
   // the middle of an update, don't walk the parents and children now.
-  virtual void OnNodeCreated(AXNode* node) = 0;
+  virtual void OnNodeCreated(AXTree* tree, AXNode* node) = 0;
 
   // Called when a node changes its data or children. The tree may be in
   // the middle of an update, don't walk the parents and children now.
-  virtual void OnNodeChanged(AXNode* node) = 0;
+  virtual void OnNodeChanged(AXTree* tree, AXNode* node) = 0;
 
   enum ChangeType {
     NODE_CREATED,
@@ -74,7 +75,8 @@ class AX_EXPORT AXTreeDelegate {
   // the type of change - either (1) a node was created, (2) a node was created
   // and it's the root of a new subtree, or (3) a node was changed. Finally,
   // a bool indicates if the root of the tree was changed or not.
-  virtual void OnAtomicUpdateFinished(bool root_changed,
+  virtual void OnAtomicUpdateFinished(AXTree* tree,
+                                      bool root_changed,
                                       const std::vector<Change>& changes) = 0;
 };
 

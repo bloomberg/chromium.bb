@@ -18,23 +18,24 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
  public:
   FakeAXTreeDelegate() : root_changed_(false) {}
 
-  void OnNodeWillBeDeleted(AXNode* node) override {
+  void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override {
     deleted_ids_.push_back(node->id());
   }
 
-  void OnSubtreeWillBeDeleted(AXNode* node) override {
+  void OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) override {
     subtree_deleted_ids_.push_back(node->id());
   }
 
-  void OnNodeCreated(AXNode* node) override {
+  void OnNodeCreated(AXTree* tree, AXNode* node) override {
     created_ids_.push_back(node->id());
   }
 
-  void OnNodeChanged(AXNode* node) override {
+  void OnNodeChanged(AXTree* tree, AXNode* node) override {
     changed_ids_.push_back(node->id());
   }
 
-  void OnAtomicUpdateFinished(bool root_changed,
+  void OnAtomicUpdateFinished(AXTree* tree,
+                              bool root_changed,
                               const std::vector<Change>& changes) override {
     root_changed_ = root_changed;
 

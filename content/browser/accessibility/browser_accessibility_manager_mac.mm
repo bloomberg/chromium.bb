@@ -161,8 +161,11 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
 }
 
 void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
-    bool root_changed, const std::vector<ui::AXTreeDelegate::Change>& changes) {
-  BrowserAccessibilityManager::OnAtomicUpdateFinished(root_changed, changes);
+    ui::AXTree* tree,
+    bool root_changed,
+    const std::vector<ui::AXTreeDelegate::Change>& changes) {
+  BrowserAccessibilityManager::OnAtomicUpdateFinished(
+      tree, root_changed, changes);
 
   bool created_live_region = false;
   for (size_t i = 0; i < changes.size(); ++i) {

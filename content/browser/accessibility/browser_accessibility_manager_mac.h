@@ -32,6 +32,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
 
  private:
   void OnAtomicUpdateFinished(
+      ui::AXTree* tree,
       bool root_changed,
       const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 

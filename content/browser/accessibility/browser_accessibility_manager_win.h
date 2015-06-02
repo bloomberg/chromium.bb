@@ -36,10 +36,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // Calls NotifyWinEvent if the parent window's IAccessible pointer is known.
   void MaybeCallNotifyWinEvent(DWORD event, BrowserAccessibility* node);
 
-  // AXTree methods
-  void OnNodeWillBeDeleted(ui::AXNode* node) override;
-  void OnNodeCreated(ui::AXNode* node) override;
-
   // BrowserAccessibilityManager methods
   void OnWindowFocused() override;
   void UserIsReloading() override;
@@ -59,8 +55,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void OnAccessibleHwndDeleted();
 
  protected:
-  // BrowserAccessibilityManager methods
+  // AXTree methods.
+  void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
+  void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
   void OnAtomicUpdateFinished(
+      ui::AXTree* tree,
       bool root_changed,
       const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 
