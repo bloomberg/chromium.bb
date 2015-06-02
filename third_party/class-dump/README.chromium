@@ -1,0 +1,12 @@
+Name: class-dump
+URL: https://github.com/nygard/class-dump
+Version: 3.5
+License: GPL
+Revision: 93e7c6a5419380d89656dcc511dc60d475199b67
+Security Critical: NO
+
+Description:
+Used to generate Objective C interfaces for things not otherwise documented.
+
+Local Modifications:
+None

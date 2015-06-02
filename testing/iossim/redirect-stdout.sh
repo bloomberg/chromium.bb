@@ -20,4 +20,6 @@ if [ ${#} -ne 2 ] ; then
   exit 2
 fi
 
-$1 | sed /cxx_destruct/d > $2
+echo "// Treat class-dump output as a system header." > $2
+echo "#pragma clang system_header" >> $2
+$1 | sed /cxx_destruct/d >> $2

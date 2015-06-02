@@ -345,8 +345,8 @@ deps_os = {
      Var('chromium_git') + '/chromium/deps/nss.git' + '@' + Var('nss_revision'),
 
     # class-dump utility to generate header files for undocumented SDKs
-    'src/testing/iossim/third_party/class-dump':
-     Var('chromium_git') + '/chromium/deps/class-dump.git' + '@' + '89bd40883c767584240b4dade8b74e6f57b9bdab',
+    'src/third_party/class-dump/src':
+     Var('chromium_git') + '/external/github.com/nygard/class-dump.git' + '@' + '93e7c6a5419380d89656dcc511dc60d475199b67',
 
     # Code that's not needed due to not building everything
     'src/chrome/test/data/perf/canvas_bench': None,

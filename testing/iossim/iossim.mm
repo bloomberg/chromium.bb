@@ -28,15 +28,9 @@
 #import "DVTFoundation.h"
 #endif  // IOSSIM_USE_XCODE_6
 
-@protocol OS_dispatch_queue
-@end
-@protocol OS_dispatch_source
-@end
 // TODO(lliabraa): Once all builders are on Xcode 6 this ifdef can be removed
 // (crbug.com/385030).
 #if defined(IOSSIM_USE_XCODE_6)
-@protocol OS_xpc_object
-@end
 @protocol SimBridge;
 @class SimDeviceSet;
 @class SimDeviceType;
