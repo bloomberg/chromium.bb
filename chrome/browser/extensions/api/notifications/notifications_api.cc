@@ -644,7 +644,7 @@ bool NotificationsGetAllFunction::RunNotificationsApi() {
       g_browser_process->notification_ui_manager();
   std::set<std::string> notification_ids =
       notification_ui_manager->GetAllIdsByProfileAndSourceOrigin(
-          GetProfile(), extension_->url());
+          NotificationUIManager::GetProfileID(GetProfile()), extension_->url());
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
 

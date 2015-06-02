@@ -24,12 +24,12 @@ class ProfileNotification {
   ProfileNotification(Profile* profile, const Notification& notification);
   ~ProfileNotification();
 
-  Profile* profile() const { return profile_; }
+  ProfileID profile_id() const { return profile_id_; }
   const Notification& notification() const { return notification_; }
 
  private:
-  // Weak, guaranteed not to be used after profile removal by parent class.
-  Profile* profile_;
+  // Used for equality comparision in notification maps.
+  ProfileID profile_id_;
 
   Notification notification_;
 };

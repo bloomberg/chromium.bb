@@ -126,7 +126,7 @@ class DownloadNotificationItemTest : public testing::Test {
   size_t NotificationCount() const {
     return ui_manager_
         ->GetAllIdsByProfileAndSourceOrigin(
-              profile_,
+              NotificationUIManager::GetProfileID(profile_),
               GURL(DownloadNotificationItem::kDownloadNotificationOrigin))
         .size();
   }

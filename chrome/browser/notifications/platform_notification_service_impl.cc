@@ -320,8 +320,8 @@ bool PlatformNotificationServiceImpl::GetDisplayedPersistentNotifications(
     return false;  // Tests will not have a message center.
 
   // TODO(peter): Filter for persistent notifications only.
-  *displayed_notifications =
-      GetNotificationUIManager()->GetAllIdsByProfile(profile);
+  *displayed_notifications = GetNotificationUIManager()->GetAllIdsByProfile(
+      NotificationUIManager::GetProfileID(profile));
 
   return true;
 #else

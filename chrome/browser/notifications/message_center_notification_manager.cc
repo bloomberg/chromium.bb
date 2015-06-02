@@ -139,7 +139,8 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
   // route notifications to one of the apps/extensions.
   std::string extension_id = GetExtensionTakingOverNotifications(profile);
   if (!extension_id.empty())
-    AddNotificationToAlternateProvider(profile_notification, extension_id);
+    AddNotificationToAlternateProvider(profile_notification->notification(),
+                                       profile, extension_id);
 
   message_center_->AddNotification(make_scoped_ptr(
       new message_center::Notification(profile_notification->notification())));
@@ -162,7 +163,8 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
     ProfileNotification* old_notification = (*iter).second;
     if (old_notification->notification().tag() == tag &&
         old_notification->notification().origin_url() == origin_url &&
-        old_notification->profile() == profile) {
+        old_notification->profile_id() ==
+            NotificationUIManager::GetProfileID(profile)) {
       // Changing the type from non-progress to progress does not count towards
       // the immediate update allowed in the message center.
       std::string old_id = old_notification->notification().id();
@@ -231,15 +233,12 @@ bool MessageCenterNotificationManager::CancelById(
 
 std::set<std::string>
 MessageCenterNotificationManager::GetAllIdsByProfileAndSourceOrigin(
-    Profile* profile,
+    ProfileID profile_id,
     const GURL& source) {
-  // The profile pointer can be weak, the instance may have been destroyed, so
-  // no profile method should be called inside this function.
-
   std::set<std::string> delegate_ids;
   for (const auto& pair : profile_notifications_) {
     const Notification& notification = pair.second->notification();
-    if (pair.second->profile() == profile &&
+    if (pair.second->profile_id() == profile_id &&
         notification.origin_url() == source) {
       delegate_ids.insert(notification.delegate_id());
     }
@@ -249,13 +248,10 @@ MessageCenterNotificationManager::GetAllIdsByProfileAndSourceOrigin(
 }
 
 std::set<std::string> MessageCenterNotificationManager::GetAllIdsByProfile(
-    Profile* profile) {
-  // The profile pointer can be weak, the instance may have been destroyed, so
-  // no profile method should be called inside this function.
-
+    ProfileID profile_id) {
   std::set<std::string> delegate_ids;
   for (const auto& pair : profile_notifications_) {
-    if (pair.second->profile() == profile)
+    if (pair.second->profile_id() == profile_id)
       delegate_ids.insert(pair.second->notification().delegate_id());
   }
 
@@ -289,8 +285,7 @@ bool MessageCenterNotificationManager::CancelAllByProfile(
   for (NotificationMap::iterator loopiter = profile_notifications_.begin();
        loopiter != profile_notifications_.end(); ) {
     NotificationMap::iterator curiter = loopiter++;
-    if (profile_id == NotificationUIManager::GetProfileID(
-            (*curiter).second->profile())) {
+    if (profile_id == (*curiter).second->profile_id()) {
       const std::string id = curiter->first;
       RemoveProfileNotification(curiter->second);
       message_center_->RemoveNotification(id, /* by_user */ false);
@@ -364,18 +359,16 @@ MessageCenterNotificationManager::GetMessageCenterNotificationIdForTest(
 // private
 
 void MessageCenterNotificationManager::AddNotificationToAlternateProvider(
-    ProfileNotification* profile_notification,
+    const Notification& notification,
+    Profile* profile,
     const std::string& extension_id) const {
-  const Notification& notification = profile_notification->notification();
-
   // Convert data from Notification type to NotificationOptions type.
   extensions::api::notifications::NotificationOptions options;
   NotificationConversionHelper::NotificationToNotificationOptions(notification,
                                                                   &options);
 
   // Send the notification to the alternate provider extension/app.
-  extensions::NotificationProviderEventRouter event_router(
-      profile_notification->profile());
+  extensions::NotificationProviderEventRouter event_router(profile);
   event_router.CreateNotification(extension_id,
                                   notification.notifier_id().id,
                                   notification.delegate_id(),

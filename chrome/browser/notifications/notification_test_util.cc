@@ -34,7 +34,8 @@ void StubNotificationUIManager::SetNotificationAddedCallback(
 
 void StubNotificationUIManager::Add(const Notification& notification,
                                     Profile* profile) {
-  notifications_.push_back(std::make_pair(notification, profile));
+  notifications_.push_back(std::make_pair(
+      notification, NotificationUIManager::GetProfileID(profile)));
 
   if (!notification_added_callback_.is_null()) {
     notification_added_callback_.Run();
@@ -82,21 +83,21 @@ bool StubNotificationUIManager::CancelById(const std::string& delegate_id,
 
 std::set<std::string>
 StubNotificationUIManager::GetAllIdsByProfileAndSourceOrigin(
-    Profile* profile,
+    ProfileID profile_id,
     const GURL& source) {
   std::set<std::string> delegate_ids;
   for (const auto& pair : notifications_) {
-    if (pair.second == profile && pair.first.origin_url() == source)
+    if (pair.second == profile_id && pair.first.origin_url() == source)
       delegate_ids.insert(pair.first.delegate_id());
   }
   return delegate_ids;
 }
 
 std::set<std::string> StubNotificationUIManager::GetAllIdsByProfile(
-    Profile* profile) {
+    ProfileID profile_id) {
   std::set<std::string> delegate_ids;
   for (const auto& pair : notifications_) {
-    if (pair.second == profile)
+    if (pair.second == profile_id)
       delegate_ids.insert(pair.first.delegate_id());
   }
   return delegate_ids;
