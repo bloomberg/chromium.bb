@@ -17,7 +17,7 @@ LayerAnimatorCollection::LayerAnimatorCollection(Compositor* compositor)
 }
 
 LayerAnimatorCollection::~LayerAnimatorCollection() {
-  if (compositor_ && compositor_->HasAnimationObserver(this))
+  if (compositor_)
     compositor_->RemoveAnimationObserver(this);
 }
 
@@ -55,6 +55,13 @@ void LayerAnimatorCollection::OnAnimationStep(base::TimeTicks now) {
   }
   if (!HasActiveAnimators() && compositor_)
     compositor_->RemoveAnimationObserver(this);
+}
+
+void LayerAnimatorCollection::OnCompositingShuttingDown(
+    Compositor* compositor) {
+  DCHECK_EQ(compositor_, compositor);
+  compositor_->RemoveAnimationObserver(this);
+  compositor_ = nullptr;
 }
 
 }  // namespace ui

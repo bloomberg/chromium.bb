@@ -43,7 +43,7 @@ AccessibilityFocusRingController*
 }
 
 AccessibilityFocusRingController::AccessibilityFocusRingController()
-    : compositor_(NULL) {
+    : compositor_(nullptr) {
 }
 
 AccessibilityFocusRingController::~AccessibilityFocusRingController() {
@@ -80,7 +80,7 @@ void AccessibilityFocusRingController::Update() {
       layers_[0]->Set(rings_[0]);
       if (compositor_ && compositor_->HasAnimationObserver(this)) {
         compositor_->RemoveAnimationObserver(this);
-        compositor_ = NULL;
+        compositor_ = nullptr;
       }
       continue;
     }
@@ -309,7 +309,7 @@ void AccessibilityFocusRingController::OnAnimationStep(
   if (delta >= transition_time) {
     layers_[0]->Set(rings_[0]);
     compositor_->RemoveAnimationObserver(this);
-    compositor_ = NULL;
+    compositor_ = nullptr;
     return;
   }
 
@@ -320,6 +320,13 @@ void AccessibilityFocusRingController::OnAnimationStep(
 
   layers_[0]->Set(AccessibilityFocusRing::Interpolate(
       previous_rings_[0], rings_[0], fraction));
+}
+
+void AccessibilityFocusRingController::OnCompositingShuttingDown(
+    ui::Compositor* compositor) {
+  DCHECK_EQ(compositor_, compositor);
+  compositor_->RemoveAnimationObserver(this);
+  compositor_ = nullptr;
 }
 
 }  // namespace chromeos

@@ -107,11 +107,15 @@ class LayerWithRealCompositorTest : public testing::Test {
   }
 
   void TearDown() override {
-    compositor_host_.reset();
+    ResetCompositor();
     TerminateContextFactoryForTests();
   }
 
   Compositor* GetCompositor() { return compositor_host_->GetCompositor(); }
+
+  void ResetCompositor() {
+    compositor_host_.reset();
+  }
 
   Layer* CreateLayer(LayerType type) {
     return new Layer(type);
@@ -352,6 +356,43 @@ class TestCompositorObserver : public CompositorObserver {
   bool aborted_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorObserver);
+};
+
+class TestCompositorAnimationObserver : public CompositorAnimationObserver {
+ public:
+  explicit TestCompositorAnimationObserver(ui::Compositor* compositor)
+      : compositor_(compositor),
+        animation_step_count_(0),
+        shutdown_(false) {
+    DCHECK(compositor_);
+    compositor_->AddAnimationObserver(this);
+  }
+
+  ~TestCompositorAnimationObserver() override {
+    if (compositor_)
+      compositor_->RemoveAnimationObserver(this);
+  }
+
+  size_t animation_step_count() const { return animation_step_count_; }
+  bool shutdown() const { return shutdown_; }
+
+ private:
+  void OnAnimationStep(base::TimeTicks timestamp) override {
+    ++animation_step_count_;
+  }
+
+  void OnCompositingShuttingDown(Compositor* compositor) override {
+    DCHECK_EQ(compositor_, compositor);
+    compositor_->RemoveAnimationObserver(this);
+    compositor_ = nullptr;
+    shutdown_ = true;
+  }
+
+  ui::Compositor* compositor_;
+  size_t animation_step_count_;
+  bool shutdown_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCompositorAnimationObserver);
 };
 
 }  // namespace
@@ -1808,6 +1849,23 @@ TEST(LayerDelegateTest, DelegatedFrameDamage) {
   layer->OnDelegatedFrameDamage(damage_rect);
   EXPECT_TRUE(delegate.delegated_frame_damage_called());
   EXPECT_EQ(damage_rect, delegate.delegated_frame_damage_rect());
+}
+
+TEST_F(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
+  scoped_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
+
+  root->SetAnimator(LayerAnimator::CreateImplicitAnimator());
+
+  TestCompositorAnimationObserver animation_observer(GetCompositor());
+  EXPECT_EQ(0u, animation_observer.animation_step_count());
+
+  root->SetOpacity(0.5f);
+  WaitForSwap();
+  EXPECT_EQ(1u, animation_observer.animation_step_count());
+
+  EXPECT_EQ(false, animation_observer.shutdown());
+  ResetCompositor();
+  EXPECT_EQ(true, animation_observer.shutdown());
 }
 
 }  // namespace ui

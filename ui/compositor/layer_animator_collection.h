@@ -35,6 +35,7 @@ class COMPOSITOR_EXPORT LayerAnimatorCollection
 
   // CompositorAnimationObserver:
   void OnAnimationStep(base::TimeTicks timestamp) override;
+  void OnCompositingShuttingDown(Compositor* compositor) override;
 
  private:
   Compositor* compositor_;

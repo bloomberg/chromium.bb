@@ -10,11 +10,14 @@
 
 namespace ui {
 
+class Compositor;
+
 class COMPOSITOR_EXPORT CompositorAnimationObserver {
  public:
   virtual ~CompositorAnimationObserver() {}
 
   virtual void OnAnimationStep(base::TimeTicks timestamp) = 0;
+  virtual void OnCompositingShuttingDown(Compositor* compositor) = 0;
 };
 
 }  // namespace ui

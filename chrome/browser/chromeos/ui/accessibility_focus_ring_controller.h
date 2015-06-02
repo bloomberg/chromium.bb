@@ -54,6 +54,7 @@ class AccessibilityFocusRingController
 
   // CompositorAnimationObserver.
   void OnAnimationStep(base::TimeTicks timestamp) override;
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
   void Update();
 

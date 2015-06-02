@@ -182,6 +182,9 @@ Compositor::~Compositor() {
   FOR_EACH_OBSERVER(CompositorObserver, observer_list_,
                     OnCompositingShuttingDown(this));
 
+  FOR_EACH_OBSERVER(CompositorAnimationObserver, animation_observer_list_,
+                    OnCompositingShuttingDown(this));
+
   DCHECK(begin_frame_observer_list_.empty());
 
   if (root_layer_)
