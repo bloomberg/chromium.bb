@@ -60,8 +60,6 @@ public:
 
     static void willDecodeImage(const String& imageType);
     static void didDecodeImage();
-    static void willResizeImage(bool shouldCache);
-    static void didResizeImage();
     static void didDrawLazyPixelRef(unsigned long long lazyPixelRefId);
     static void willDecodeLazyPixelRef(unsigned long long lazyPixelRefId);
     static void didDecodeLazyPixelRef();
@@ -78,16 +76,6 @@ inline void PlatformInstrumentation::willDecodeImage(const String& imageType)
 inline void PlatformInstrumentation::didDecodeImage()
 {
     TRACE_EVENT_END0(CategoryName, ImageDecodeEvent);
-}
-
-inline void PlatformInstrumentation::willResizeImage(bool shouldCache)
-{
-    TRACE_EVENT_BEGIN1(CategoryName, ImageResizeEvent, CachedArgument, shouldCache);
-}
-
-inline void PlatformInstrumentation::didResizeImage()
-{
-    TRACE_EVENT_END0(CategoryName, ImageResizeEvent);
 }
 
 inline void PlatformInstrumentation::didDrawLazyPixelRef(unsigned long long lazyPixelRefId)
