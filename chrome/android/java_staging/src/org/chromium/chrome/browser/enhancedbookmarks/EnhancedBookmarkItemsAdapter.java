@@ -122,16 +122,17 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
     /**
-     * Set folders and bookmarks to show. Will trigger animation provided by item animator.
+     * Set folders and bookmarks to show.
      * @param folders This can be null if there is no folders to show.
      */
     void setBookmarks(List<BookmarkId> folders, List<BookmarkId> bookmarks) {
         if (folders == null) folders = new ArrayList<BookmarkId>();
-        notifyItemRangeRemoved(0, getItemCount());
         mFolders = folders;
         mBookmarks = bookmarks;
-        updateEmptyViewCount();
-        notifyItemRangeInserted(0, getItemCount());
+
+        // TODO(kkimlabs): Animation is disabled due to a performance issue on bookmark undo.
+        //                 http://crbug.com/484174
+        updateDataset();
     }
 
     /**
