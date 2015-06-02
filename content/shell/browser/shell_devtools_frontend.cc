@@ -111,7 +111,7 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
       ShellContentBrowserClient::Get()
           ->shell_browser_main_parts()
           ->devtools_http_handler();
-  shell->LoadURL(http_handler->GetFrontendURL("/devtools/devtools.html"));
+  shell->LoadURL(http_handler->GetFrontendURL("/devtools/inspector.html"));
 
   return devtools_frontend;
 }

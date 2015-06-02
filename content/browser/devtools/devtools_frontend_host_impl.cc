@@ -14,6 +14,10 @@
 
 namespace content {
 
+namespace {
+const char kCompatibilityScript[] = "devtools.js";
+}
+
 // static
 DevToolsFrontendHost* DevToolsFrontendHost::Create(
     RenderFrameHost* frontend_main_frame,
@@ -39,8 +43,10 @@ DevToolsFrontendHostImpl::DevToolsFrontendHostImpl(
     : WebContentsObserver(
           WebContents::FromRenderFrameHost(frontend_main_frame)),
       delegate_(delegate) {
-  frontend_main_frame->Send(
-      new DevToolsMsg_SetupDevToolsClient(frontend_main_frame->GetRoutingID()));
+  frontend_main_frame->Send(new DevToolsMsg_SetupDevToolsClient(
+      frontend_main_frame->GetRoutingID(),
+      DevToolsFrontendHost::GetFrontendResource(
+          kCompatibilityScript).as_string()));
 }
 
 DevToolsFrontendHostImpl::~DevToolsFrontendHostImpl() {

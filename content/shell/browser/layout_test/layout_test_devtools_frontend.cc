@@ -49,7 +49,7 @@ GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
   dir_exe = dir_exe.AppendASCII("../../..");
 #endif
   base::FilePath dev_tools_path =
-      dir_exe.AppendASCII("resources/inspector/devtools.html");
+      dir_exe.AppendASCII("resources/inspector/inspector.html");
 
   GURL result = net::FilePathToFileURL(dev_tools_path);
   if (!settings.empty())

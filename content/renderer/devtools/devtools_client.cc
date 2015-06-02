@@ -22,8 +22,11 @@ using blink::WebString;
 
 namespace content {
 
-DevToolsClient::DevToolsClient(RenderFrame* main_render_frame)
-    : RenderFrameObserver(main_render_frame) {
+DevToolsClient::DevToolsClient(
+    RenderFrame* main_render_frame,
+    const std::string& compatibility_script)
+    : RenderFrameObserver(main_render_frame),
+      compatibility_script_(compatibility_script) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   web_tools_frontend_.reset(WebDevToolsFrontend::create(
@@ -32,6 +35,11 @@ DevToolsClient::DevToolsClient(RenderFrame* main_render_frame)
 }
 
 DevToolsClient::~DevToolsClient() {
+}
+
+void DevToolsClient::DidClearWindowObject() {
+  if (!compatibility_script_.empty())
+    render_frame()->ExecuteJavaScript(base::UTF8ToUTF16(compatibility_script_));
 }
 
 void DevToolsClient::sendMessageToBackend(const WebString& message)  {

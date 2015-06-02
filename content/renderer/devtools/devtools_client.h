@@ -29,10 +29,14 @@ class CONTENT_EXPORT DevToolsClient
     : public RenderFrameObserver,
       NON_EXPORTED_BASE(public blink::WebDevToolsFrontendClient) {
  public:
-  explicit DevToolsClient(RenderFrame* main_render_frame);
+  DevToolsClient(RenderFrame* main_render_frame,
+                 const std::string& compatibility_script);
   virtual ~DevToolsClient();
 
  private:
+  // RenderFrameObserver overrides.
+  void DidClearWindowObject() override;
+
   // WebDevToolsFrontendClient implementation.
   virtual void sendMessageToBackend(const blink::WebString&) override;
   virtual void sendMessageToEmbedder(const blink::WebString&) override;
@@ -43,6 +47,7 @@ class CONTENT_EXPORT DevToolsClient
                                      uint32 total_size);
 
   scoped_ptr<blink::WebDevToolsFrontend> web_tools_frontend_;
+  std::string compatibility_script_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsClient);
 };

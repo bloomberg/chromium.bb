@@ -756,7 +756,9 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
     return base_url;
 
   std::string frontend_url(
-      base_url.is_empty() ? chrome::kChromeUIDevToolsURL : base_url.spec());
+      !remote_frontend.empty() ?
+          remote_frontend :
+          base_url.is_empty() ? chrome::kChromeUIDevToolsURL : base_url.spec());
   std::string url_string(
       frontend_url +
       ((frontend_url.find("?") == std::string::npos) ? "?" : "&"));
@@ -764,7 +766,6 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
     url_string += "&isSharedWorker=true";
   if (remote_frontend.size()) {
     url_string += "&remoteFrontend=true";
-    url_string += "&remoteFrontendUrl=" + net::EscapePath(remote_frontend);
   } else {
     url_string += "&remoteBase=" + DevToolsUI::GetRemoteBaseURL().spec();
   }

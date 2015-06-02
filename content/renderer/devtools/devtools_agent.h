@@ -73,7 +73,7 @@ class CONTENT_EXPORT DevToolsAgent
   void OnDispatchOnInspectorBackend(const std::string& message);
   void OnInspectElement(const std::string& host_id, int x, int y);
   void ContinueProgram();
-  void OnSetupDevToolsClient();
+  void OnSetupDevToolsClient(const std::string& compatibility_script);
 
   bool is_attached_;
   bool is_devtools_client_;

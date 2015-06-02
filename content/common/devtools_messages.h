@@ -106,7 +106,8 @@ IPC_MESSAGE_ROUTED3(DevToolsAgentMsg_InspectElement,
 // new renderer to notify it that it will host developer tools UI and should
 // set up all neccessary bindings and create DevToolsClient instance that
 // will handle communication with inspected page DevToolsAgent.
-IPC_MESSAGE_ROUTED0(DevToolsMsg_SetupDevToolsClient)
+IPC_MESSAGE_ROUTED1(DevToolsMsg_SetupDevToolsClient,
+                    std::string /* compatibility script */)
 
 
 //-----------------------------------------------------------------------------

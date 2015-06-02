@@ -35,7 +35,7 @@ const char kChromeUICrashesURL[] = "chrome://crashes/";
 const char kChromeUICreditsURL[] = "chrome://credits/";
 const char kChromeUIDevicesURL[] = "chrome://devices/";
 const char kChromeUIDevToolsURL[] =
-    "chrome-devtools://devtools/bundled/devtools.html";
+    "chrome-devtools://devtools/bundled/inspector.html";
 const char kChromeUIDomainReliabilityInternalsURL[] =
     "chrome://domain-reliability-internals/";
 const char kChromeUIDownloadsURL[] = "chrome://downloads/";
