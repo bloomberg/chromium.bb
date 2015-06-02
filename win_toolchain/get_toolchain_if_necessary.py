@@ -290,7 +290,16 @@ def main():
 
     got_new_toolchain = True
 
-  win_sdk = os.path.join(abs_target_dir, 'win_sdk')
+  data = {
+      'path': abs_target_dir,
+      'win_sdk': os.path.join(abs_target_dir, 'win_sdk'),
+      'wdk': os.path.join(abs_target_dir, 'wdk'),
+      'runtime_dirs': [
+        os.path.join(abs_target_dir, 'sys64'),
+        os.path.join(abs_target_dir, 'sys32'),
+      ],
+  }
+
   try:
     with open(os.path.join(target_dir, 'VS_VERSION'), 'rb') as f:
       vs_version = f.read().strip()
@@ -298,18 +307,10 @@ def main():
     # Older toolchains didn't have the VS_VERSION file, and used 'win8sdk'
     # instead of just 'win_sdk'.
     vs_version = '2013'
-    win_sdk = os.path.join(abs_target_dir, 'win8sdk')
+    data['win8sdk'] = os.path.join(abs_target_dir, 'win8sdk')
 
-  data = {
-      'path': abs_target_dir,
-      'version': vs_version,
-      'win_sdk': win_sdk,
-      'wdk': os.path.join(abs_target_dir, 'wdk'),
-      'runtime_dirs': [
-        os.path.join(abs_target_dir, 'sys64'),
-        os.path.join(abs_target_dir, 'sys32'),
-      ],
-  }
+  data['version'] = vs_version
+
   with open(os.path.join(target_dir, '..', 'data.json'), 'w') as f:
     json.dump(data, f)
 
