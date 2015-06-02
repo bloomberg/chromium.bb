@@ -960,20 +960,6 @@ class SSLClientSocketChannelIDTest : public SSLClientSocketTest {
 
 //-----------------------------------------------------------------------------
 
-// LogContainsSSLConnectEndEvent returns true if the given index in the given
-// log is an SSL connect end event. The NSS sockets will cork in an attempt to
-// merge the first application data record with the Finished message when false
-// starting. However, in order to avoid the server timing out the handshake,
-// they'll give up waiting for application data and send the Finished after a
-// timeout. This means that an SSL connect end event may appear as a socket
-// write.
-static bool LogContainsSSLConnectEndEvent(const TestNetLogEntry::List& log,
-                                          int i) {
-  return LogContainsEndEvent(log, i, NetLog::TYPE_SSL_CONNECT) ||
-         LogContainsEvent(
-             log, i, NetLog::TYPE_SOCKET_BYTES_SENT, NetLog::PHASE_NONE);
-}
-
 bool SupportsAESGCM() {
 #if defined(USE_OPENSSL)
   return true;
@@ -1019,7 +1005,7 @@ TEST_F(SSLClientSocketTest, Connect) {
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(sock->IsConnected());
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
 
   sock->Disconnect();
   EXPECT_FALSE(sock->IsConnected());
@@ -1066,7 +1052,7 @@ TEST_F(SSLClientSocketTest, ConnectExpired) {
   // desirable to disconnect the socket before showing a user prompt, since
   // the user may take indefinitely long to respond.
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
 }
 
 TEST_F(SSLClientSocketTest, ConnectMismatched) {
@@ -1110,7 +1096,7 @@ TEST_F(SSLClientSocketTest, ConnectMismatched) {
   // desirable to disconnect the socket before showing a user prompt, since
   // the user may take indefinitely long to respond.
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
 }
 
 // Attempt to connect to a page which requests a client certificate. It should
@@ -1148,22 +1134,14 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthCertRequested) {
     rv = callback.WaitForResult();
 
   log.GetEntries(&entries);
-  // Because we prematurely kill the handshake at CertificateRequest,
-  // the server may still send data (notably the ServerHelloDone)
-  // after the error is returned. As a result, the SSL_CONNECT may not
-  // be the last entry. See http://crbug.com/54445. We use
-  // ExpectLogContainsSomewhere instead of
-  // LogContainsSSLConnectEndEvent to avoid assuming, e.g., only one
-  // extra read instead of two. This occurs before the handshake ends,
-  // so the corking logic of LogContainsSSLConnectEndEvent isn't
-  // necessary.
+  // Because the handshake is aborted during the CertificateRequest, the server
+  // may still send the ServerHelloDone afterwards. As a result, the SSL_CONNECT
+  // may not be the last entry. See http://crbug.com/54445. Because of this, use
+  // ExpectLogContainsSomewhere, rather than LogContainsEndEvent, to avoid
+  // assuming particular details about the read (e.g. assuming there will only
+  // be one extra read, when there might be more).
   //
-  // TODO(davidben): When SSL_RestartHandshakeAfterCertReq in NSS is
-  // fixed and we can respond to the first CertificateRequest
-  // without closing the socket, add a unit test for sending the
-  // certificate. This test may still be useful as we'll want to close
-  // the socket on a timeout if the user takes a long time to pick a
-  // cert. Related bug: https://bugzilla.mozilla.org/show_bug.cgi?id=542832
+  // TODO(davidben): Is this still possible with memio_GetReadRequest?
   ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_SSL_CONNECT, NetLog::PHASE_END);
   EXPECT_EQ(ERR_SSL_CLIENT_AUTH_CERT_NEEDED, rv);
@@ -1215,7 +1193,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthSendNullCert) {
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(sock->IsConnected());
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
 
   // We responded to the server's certificate request with a Certificate
   // message with no client certificate in it.  ssl_info.client_cert_sent
@@ -2269,8 +2247,8 @@ TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
   // Read event in the NetLog due to TCPClientSocket picking up the EOF. As a
   // result, the SSL connect end event will be the second-to-last entry,
   // rather than the last entry.
-  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1) ||
-              LogContainsSSLConnectEndEvent(entries, -2));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT) ||
+              LogContainsEndEvent(entries, -2, NetLog::TYPE_SSL_CONNECT));
 }
 
 // When creating an SSLClientSocket, it is allowed to pass in a
@@ -2548,7 +2526,7 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(sock->IsConnected());
   log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
 
   SSLInfo ssl_info;
   sock->GetSSLInfo(&ssl_info);
