@@ -450,10 +450,19 @@ bool FillFormOnPasswordReceived(
     std::map<const blink::WebInputElement, blink::WebString>&
         nonscript_modified_values,
     base::Callback<void(blink::WebInputElement*)> registration_callback) {
-  // Do not fill if the password field is in an iframe.
-  DCHECK(password_element.document().frame());
-  if (password_element.document().frame()->parent())
-    return false;
+  // Do not fill if the password field is in a chain of iframes not having
+  // identical origin.
+  blink::WebFrame* cur_frame = password_element.document().frame();
+  blink::WebString bottom_frame_origin =
+          cur_frame->securityOrigin().toString();
+
+  DCHECK(cur_frame);
+
+  while (cur_frame->parent()) {
+    cur_frame = cur_frame->parent();
+    if (!bottom_frame_origin.equals(cur_frame->securityOrigin().toString()))
+      return false;
+  }
 
   // If we can't modify the password, don't try to set the username
   if (!IsElementAutocompletable(password_element))

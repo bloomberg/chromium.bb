@@ -48,6 +48,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -345,9 +346,17 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
   // event loop is spun to allow all other possible events to take place.
   void WaitForElementValue(const std::string& element_id,
                            const std::string& expected_value);
+  // Same as above except the element |element_id| is in iframe |iframe_id|
+  void WaitForElementValue(const std::string& iframe_id,
+                           const std::string& element_id,
+                           const std::string& expected_value);
   // Checks that the current "value" attribute of the HTML element with
   // |element_id| is equal to |expected_value|.
   void CheckElementValue(const std::string& element_id,
+                         const std::string& expected_value);
+  // Same as above except the element |element_id| is in iframe |iframe_id|
+  void CheckElementValue(const std::string& iframe_id,
+                         const std::string& element_id,
                          const std::string& expected_value);
 
   // TODO(dvadym): Remove this once history.pushState() handling is not behind
@@ -366,6 +375,15 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
 void PasswordManagerBrowserTest::WaitForElementValue(
     const std::string& element_id,
     const std::string& expected_value) {
+    PasswordManagerBrowserTest::WaitForElementValue("null",
+                                                    element_id,
+                                                    expected_value);
+}
+
+void PasswordManagerBrowserTest::WaitForElementValue(
+    const std::string& iframe_id,
+    const std::string& element_id,
+    const std::string& expected_value) {
   enum ReturnCodes {  // Possible results of the JavaScript code.
     RETURN_CODE_OK,
     RETURN_CODE_NO_ELEMENT,
@@ -374,9 +392,16 @@ void PasswordManagerBrowserTest::WaitForElementValue(
   };
   const std::string value_check_function = base::StringPrintf(
       "function valueCheck() {"
-      "  var element = document.getElementById('%s');"
+      "  if (%s)"
+      "    var element = document.getElementById("
+      "        '%s').contentDocument.getElementById('%s');"
+      "  else "
+      "    var element = document.getElementById('%s');"
       "  return element && element.value == '%s';"
       "}",
+      iframe_id.c_str(),
+      iframe_id.c_str(),
+      element_id.c_str(),
       element_id.c_str(),
       expected_value.c_str());
   const std::string script =
@@ -386,7 +411,11 @@ void PasswordManagerBrowserTest::WaitForElementValue(
           "  /* Spin the event loop with setTimeout. */"
           "  setTimeout(window.domAutomationController.send(%d), 0);"
           "} else {"
-          "  var element = document.getElementById('%s');"
+          "  if (%s)"
+          "    var element = document.getElementById("
+          "        '%s').contentDocument.getElementById('%s');"
+          "  else "
+          "    var element = document.getElementById('%s');"
           "  if (!element)"
           "    window.domAutomationController.send(%d);"
           "  element.onchange = function() {"
@@ -399,6 +428,9 @@ void PasswordManagerBrowserTest::WaitForElementValue(
           "  };"
           "}",
           RETURN_CODE_OK,
+          iframe_id.c_str(),
+          iframe_id.c_str(),
+          element_id.c_str(),
           element_id.c_str(),
           RETURN_CODE_NO_ELEMENT,
           RETURN_CODE_OK,
@@ -414,9 +446,25 @@ void PasswordManagerBrowserTest::WaitForElementValue(
 void PasswordManagerBrowserTest::CheckElementValue(
     const std::string& element_id,
     const std::string& expected_value) {
+  PasswordManagerBrowserTest::CheckElementValue("null",
+                                                element_id,
+                                                expected_value);
+}
+
+void PasswordManagerBrowserTest::CheckElementValue(
+    const std::string& iframe_id,
+    const std::string& element_id,
+    const std::string& expected_value) {
   const std::string value_check_script = base::StringPrintf(
-      "var element = document.getElementById('%s');"
+      "if (%s)"
+      "  var element = document.getElementById("
+      "      '%s').contentDocument.getElementById('%s');"
+      "else "
+      "  var element = document.getElementById('%s');"
       "window.domAutomationController.send(element && element.value == '%s');",
+      iframe_id.c_str(),
+      iframe_id.c_str(),
+      element_id.c_str(),
       element_id.c_str(),
       expected_value.c_str());
   bool return_value = false;
@@ -1920,4 +1968,154 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, BaseTagWithNoActionTest) {
 
   // Wait until that interaction causes the password value to be revealed.
   WaitForElementValue("password_field", "mypassword");
+}
+
+// Check that a password form in an iframe of different origin will not be
+// filled in until a user interact with the form.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, CrossSiteIframeNotFillTest) {
+  // Setup the mock host resolver
+  host_resolver()->AddRule("*", "127.0.0.1");
+
+  // Here we need to dynamically create the iframe because the port
+  // embedded_test_server ran on was dynamically allocated, so the iframe's src
+  // attribute can only be determined at run time.
+  NavigateToFile("/password/password_form_in_crosssite_iframe.html");
+  NavigationObserver ifrm_observer(WebContents());
+  ifrm_observer.SetPathToWaitFor("/password/crossite_iframe_content.html");
+  std::string create_iframe = base::StringPrintf(
+      "create_iframe("
+          "'http://randomsite.net:%d/password/crossite_iframe_content.html');",
+      embedded_test_server()->port());
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), create_iframe));
+  ifrm_observer.Wait();
+
+  // Store a password for autofill later
+  NavigationObserver init_observer(WebContents());
+  init_observer.SetPathToWaitFor("/password/done.html");
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string init_form = "sendMessage('fill_and_submit');";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), init_form));
+  init_observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+  prompt_observer->Accept();
+
+  // Visit the form again
+  NavigationObserver reload_observer(WebContents());
+  NavigateToFile("/password/password_form_in_crosssite_iframe.html");
+  reload_observer.Wait();
+
+  NavigationObserver ifrm_observer_2(WebContents());
+  ifrm_observer_2.SetPathToWaitFor("/password/crossite_iframe_content.html");
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), create_iframe));
+  ifrm_observer_2.Wait();
+
+  // Verify username is not autofilled
+  std::string empty_username;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(),
+      "sendMessage('get_username');",
+      &empty_username));
+  ASSERT_EQ("", empty_username);
+  // Verify password is not autofilled
+  std::string empty_password;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(),
+      "sendMessage('get_password');",
+      &empty_password));
+  ASSERT_EQ("", empty_password);
+
+  // Simulate the user interaction in the iframe and verify autofill is not
+  // triggered. Note this check is only best-effort because we don't know how
+  // long to wait before we are certain that no autofill will be triggered.
+  // Theoretically unexpected autofill can happen after this check.
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(),
+      "var iframeRect = document.getElementById("
+      "'iframe').getBoundingClientRect();"));
+  int top;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      RenderViewHost(),
+      "window.domAutomationController.send(iframeRect.top);",
+      &top));
+  int left;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      RenderViewHost(),
+      "window.domAutomationController.send(iframeRect.left);",
+      &left));
+
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(left + 1,
+                                                                     top + 1));
+  // Verify username is not autofilled
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(),
+      "sendMessage('get_username');",
+      &empty_username));
+  ASSERT_EQ("", empty_username);
+  // Verify password is not autofilled
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(),
+      "sendMessage('get_password');",
+      &empty_password));
+  ASSERT_EQ("", empty_password);
+}
+
+// Check that a password form in an iframe of same origin will not be
+// filled in until user interact with the iframe.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       SameOriginIframeAutoFillTest) {
+  // Visit the sign-up form to store a password for autofill later
+  NavigateToFile("/password/password_form_in_same_origin_iframe.html");
+  NavigationObserver observer(WebContents());
+  observer.SetPathToWaitFor("/password/done.html");
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+
+  std::string submit =
+      "var ifrmDoc = document.getElementById('iframe').contentDocument;"
+      "ifrmDoc.getElementById('username_field').value = 'temp';"
+      "ifrmDoc.getElementById('password_field').value = 'pa55w0rd';"
+      "ifrmDoc.getElementById('input_submit_button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
+  observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+  prompt_observer->Accept();
+
+  // Visit the form again
+  NavigationObserver reload_observer(WebContents());
+  NavigateToFile("/password/password_form_in_same_origin_iframe.html");
+  reload_observer.Wait();
+
+  // Verify username is autofilled
+  CheckElementValue("iframe", "username_field", "temp");
+
+  // Verify password is not autofilled
+  CheckElementValue("iframe", "password_field", "");
+
+  // Simulate the user interaction in the iframe which should trigger autofill.
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(),
+      "var iframeRect = document.getElementById("
+      "'iframe').getBoundingClientRect();"));
+  int top;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      RenderViewHost(),
+      "window.domAutomationController.send(iframeRect.top);",
+      &top));
+  int left;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      RenderViewHost(),
+      "window.domAutomationController.send(iframeRect.left);",
+      &left));
+
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(left + 1,
+                                                                     top + 1));
+  // Verify password has been autofilled
+  WaitForElementValue("iframe", "password_field", "pa55w0rd");
+
+  // Verify username has been autofilled
+  CheckElementValue("iframe", "username_field", "temp");
+
 }
