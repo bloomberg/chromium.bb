@@ -1,3 +1,7 @@
+CONSOLE WARNING: 'Touch.webkitRadiusX' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.radiusX' instead.
+CONSOLE WARNING: 'Touch.webkitRadiusY' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.radiusY' instead.
+CONSOLE WARNING: 'Touch.webkitRotationAngle' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.rotationAngle' instead.
+CONSOLE WARNING: 'Touch.webkitForce' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.force' instead.
 This tests support for the document.createTouch API.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

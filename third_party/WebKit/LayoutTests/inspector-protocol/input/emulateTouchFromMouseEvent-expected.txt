@@ -4,20 +4,20 @@ type: touchstart
 id: 0
 pageX: 100
 pageY: 200
-webkitRadiusX: 11.5
-webkitRadiusY: 11.5
-webkitRotationAngle: 0
-webkitForce: 1
+radiusX: 11.5
+radiusY: 11.5
+rotationAngle: 0
+force: 1
 -----Event-----
 type: touchmove
 ----Touches----
 id: 0
 pageX: 100
 pageY: 250
-webkitRadiusX: 11.5
-webkitRadiusY: 11.5
-webkitRotationAngle: 0
-webkitForce: 1
+radiusX: 11.5
+radiusY: 11.5
+rotationAngle: 0
+force: 1
 -----Event-----
 type: touchend
 ----Touches----
@@ -27,20 +27,20 @@ type: touchstart
 id: 0
 pageX: 100
 pageY: 200
-webkitRadiusX: 11.5
-webkitRadiusY: 11.5
-webkitRotationAngle: 0
-webkitForce: 1
+radiusX: 11.5
+radiusY: 11.5
+rotationAngle: 0
+force: 1
 -----Event-----
 type: touchmove
 ----Touches----
 id: 0
 pageX: 100
 pageY: 250
-webkitRadiusX: 11.5
-webkitRadiusY: 11.5
-webkitRotationAngle: 0
-webkitForce: 1
+radiusX: 11.5
+radiusY: 11.5
+rotationAngle: 0
+force: 1
 -----Event-----
 type: touchend
 ----Touches----

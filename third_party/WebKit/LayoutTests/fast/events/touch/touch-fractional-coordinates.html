@@ -69,7 +69,7 @@ iframe {
             debug('This test requires eventSender.');
             return;
         }
-        
+
         debug('Testing simple fractional touch');
         eventSender.addTouchPoint(30.33, 4.5, 5.2, 6.3);
         eventSender.touchStart();
@@ -80,8 +80,8 @@ iframe {
             shouldBeCloseTo('lastEvent.changedTouches[0].clientY', 4.5, floatPrecision);
             shouldBeCloseTo('lastEvent.changedTouches[0].pageX', 30.33 + scrollX, floatPrecision);
             shouldBeCloseTo('lastEvent.changedTouches[0].pageY', 4.5 + scrollY, floatPrecision);
-            shouldBeCloseTo('lastEvent.changedTouches[0].webkitRadiusX', 5.2, floatPrecision);
-            shouldBeCloseTo('lastEvent.changedTouches[0].webkitRadiusY', 6.3, floatPrecision);
+            shouldBeCloseTo('lastEvent.changedTouches[0].radiusX', 5.2, floatPrecision);
+            shouldBeCloseTo('lastEvent.changedTouches[0].radiusY', 6.3, floatPrecision);
         }
         eventSender.releaseTouchPoint(0);
         eventSender.touchEnd();

@@ -899,6 +899,18 @@ String UseCounter::deprecationMessage(Feature feature)
     case ElementCreateShadowRootMultipleWithUserAgentShadowRoot:
         return "Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.";
 
+    case PrefixedTouchRadiusX:
+        return "'Touch.webkitRadiusX' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.radiusX' instead.";
+
+    case PrefixedTouchRadiusY:
+        return "'Touch.webkitRadiusY' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.radiusY' instead.";
+
+    case PrefixedTouchRotationAngle:
+        return "'Touch.webkitRotationAngle' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.rotationAngle' instead.";
+
+    case PrefixedTouchForce:
+        return "'Touch.webkitForce' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.force' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

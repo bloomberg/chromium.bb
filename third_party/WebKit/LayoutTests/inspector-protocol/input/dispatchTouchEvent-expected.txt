@@ -4,20 +4,20 @@ type: touchstart
 id: 0
 pageX: 100
 pageY: 200
-webkitRadiusX: 1
-webkitRadiusY: 1
-webkitRotationAngle: 0
-webkitForce: 1
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
 -----Event-----
 type: touchmove
 ----Touches----
 id: 0
 pageX: 100
 pageY: 200
-webkitRadiusX: 1
-webkitRadiusY: 1
-webkitRotationAngle: 0
-webkitForce: 1
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
 -----Event-----
 type: touchend
 ----Touches----
@@ -28,17 +28,17 @@ shiftKey
 id: 0
 pageX: 20
 pageY: 30
-webkitRadiusX: 1
-webkitRadiusY: 1
-webkitRotationAngle: 0
-webkitForce: 1
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
 id: 1
 pageX: 100
 pageY: 200
-webkitRadiusX: 5
-webkitRadiusY: 6
-webkitRotationAngle: 1
-webkitForce: 0
+radiusX: 5
+radiusY: 6
+rotationAngle: 1
+force: 0
 -----Event-----
 type: touchend
 ----Touches----
