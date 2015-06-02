@@ -181,9 +181,6 @@ class SDKPackageBoardToolchainsStageTest(
     generic_stages_unittest.AbstractStageTestCase):
   """Tests board toolchain overlay installation and packaging."""
 
-  fake_packages = (('cat1/package', '1'), ('cat1/package', '2'),
-                   ('cat2/package', '3'), ('cat2/package', '4'))
-
   def setUp(self):
     # Mock out running of cros_setup_toolchains.
     self.PatchObject(commands, 'RunBuildScript', wraps=self.FakeRunBuildScript)
