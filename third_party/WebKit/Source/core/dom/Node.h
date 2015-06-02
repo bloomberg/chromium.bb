@@ -739,7 +739,7 @@ private:
         HasEventTargetDataFlag = 1 << 26,
         AlreadySpellCheckedFlag = 1 << 27,
 
-        DefaultNodeFlags = IsFinishedParsingChildrenFlag | ChildNeedsStyleRecalcFlag | NeedsReattachStyleChange
+        DefaultNodeFlags = IsFinishedParsingChildrenFlag | NeedsReattachStyleChange
     };
 
     // 3 bits remaining.
@@ -753,7 +753,7 @@ protected:
     enum ConstructionType {
         CreateOther = DefaultNodeFlags,
         CreateText = DefaultNodeFlags | IsTextFlag,
-        CreateContainer = DefaultNodeFlags | IsContainerFlag,
+        CreateContainer = DefaultNodeFlags | ChildNeedsStyleRecalcFlag | IsContainerFlag,
         CreateElement = CreateContainer | IsElementFlag,
         CreateShadowRoot = CreateContainer | IsDocumentFragmentFlag | IsInShadowTreeFlag,
         CreateDocumentFragment = CreateContainer | IsDocumentFragmentFlag,

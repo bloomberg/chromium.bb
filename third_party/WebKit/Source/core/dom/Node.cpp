@@ -975,7 +975,6 @@ void Node::detach(const AttachContext& context)
     }
 
     setStyleChange(NeedsReattachStyleChange);
-    setChildNeedsStyleRecalc();
 
     document().styleEngine().styleInvalidator().clearInvalidation(*this);
     clearChildNeedsStyleInvalidation();

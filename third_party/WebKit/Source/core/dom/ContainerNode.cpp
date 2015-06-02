@@ -852,7 +852,7 @@ void ContainerNode::attach(const AttachContext& context)
 void ContainerNode::detach(const AttachContext& context)
 {
     detachChildren(context);
-    clearChildNeedsStyleRecalc();
+    setChildNeedsStyleRecalc();
     Node::detach(context);
 }
 
