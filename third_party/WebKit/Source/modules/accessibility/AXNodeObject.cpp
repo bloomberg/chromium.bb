@@ -437,9 +437,6 @@ AccessibilityRole AXNodeObject::determineAccessibilityRoleUtil()
     if (node()->hasTagName(mainTag))
         return MainRole;
 
-    if (node()->hasTagName(markTag))
-        return MarkRole;
-
     if (node()->hasTagName(navTag))
         return NavigationRole;
 
