@@ -5,19 +5,22 @@
 #ifndef WebPushSubscription_h
 #define WebPushSubscription_h
 
+#include "public/platform/WebCommon.h"
 #include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 
 namespace blink {
 
 struct WebPushSubscription {
-    WebPushSubscription(const WebString& endpoint, const WebString& subscriptionId)
+    explicit WebPushSubscription(const WebURL& endpoint)
         : endpoint(endpoint)
-        , subscriptionId(subscriptionId)
     {
     }
 
-    WebString endpoint;
-    WebString subscriptionId;
+    // TODO(peter): Remove this constructor when the embedder switched over to the one above.
+    BLINK_PLATFORM_EXPORT WebPushSubscription(const WebString& endpointWithoutSubscriptionId, const WebString& subscriptionId);
+
+    WebURL endpoint;
 };
 
 } // namespace blink

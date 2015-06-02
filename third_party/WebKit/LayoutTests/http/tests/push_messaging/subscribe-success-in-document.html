@@ -26,15 +26,8 @@ async_test(function(test) {
             return swRegistration.pushManager.subscribe();
         })
         .then(function(pushSubscription) {
-            assert_will_be_idl_attribute(pushSubscription, 'subscriptionId');
-            assert_equals(typeof pushSubscription.subscriptionId, 'string');
-
             assert_will_be_idl_attribute(pushSubscription, 'endpoint');
             assert_equals(typeof pushSubscription.endpoint, 'string');
-
-            // The |subscriptionId| attribute is being deprecated, and its value
-            // is now the last part of the |endpoint| attribute.
-            assert_true(pushSubscription.endpoint.endsWith(pushSubscription.subscriptionId));
 
             try {
                 var endpointUrl = new URL(pushSubscription.endpoint);

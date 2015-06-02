@@ -9,7 +9,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/WTFString.h"
+#include "platform/weborigin/KURL.h"
 
 namespace blink {
 
@@ -26,8 +26,7 @@ public:
 
     virtual ~PushSubscription();
 
-    String endpoint() const;
-    const String& subscriptionId() const { return m_subscriptionId; }
+    KURL endpoint() const;
     ScriptPromise unsubscribe(ScriptState*);
 
     ScriptValue toJSONForBinding(ScriptState*);
@@ -35,10 +34,9 @@ public:
     DECLARE_TRACE();
 
 private:
-    PushSubscription(const String& endpoint, const String& subscriptionId, ServiceWorkerRegistration*);
+    PushSubscription(const KURL& endpoint, ServiceWorkerRegistration*);
 
-    String m_endpoint;
-    String m_subscriptionId;
+    KURL m_endpoint;
     Member<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 

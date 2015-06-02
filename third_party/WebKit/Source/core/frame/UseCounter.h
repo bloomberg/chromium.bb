@@ -674,7 +674,6 @@ public:
         FullscreenInsecureOrigin = 766,
         DialogInSandboxedContext = 767,
         SVGSMILAnimationInImageRegardlessOfCache = 768,
-        PushSubscriptionId = 769,
         EncryptedMediaSecureOrigin = 770,
         EncryptedMediaInsecureOrigin = 771,
         PerformanceFrameTiming = 772,

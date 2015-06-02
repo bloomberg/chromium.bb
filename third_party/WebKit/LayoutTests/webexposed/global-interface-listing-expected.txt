@@ -3767,7 +3767,6 @@ interface PushManager
     method subscribe
 interface PushSubscription
     getter endpoint
-    getter subscriptionId
     method constructor
     method toJSON
     method unsubscribe

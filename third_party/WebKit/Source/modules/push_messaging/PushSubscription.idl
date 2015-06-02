@@ -10,7 +10,6 @@
     RuntimeEnabled=PushMessaging,
 ] interface PushSubscription {
     readonly attribute USVString endpoint;
-    [DeprecateAs=PushSubscriptionId] readonly attribute DOMString subscriptionId;
     [CallWith=ScriptState] Promise<boolean> unsubscribe();
 
     serializer = { attribute };

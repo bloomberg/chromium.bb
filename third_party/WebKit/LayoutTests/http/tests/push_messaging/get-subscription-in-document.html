@@ -42,8 +42,6 @@ async_test(function(test) {
         .then(function(pushSubscription) {
             assert_equals(previousPushSubscription.endpoint, pushSubscription.endpoint,
                           "Both subscription objects should have the same endpoint.");
-            assert_equals(previousPushSubscription.subscriptionId, pushSubscription.subscriptionId,
-                          "Both subscription objects should have the same id.");
             return pushSubscription.unsubscribe();
         })
         .then(function(unsubscribed) {

@@ -28,7 +28,6 @@ self.addEventListener('message', function(workerEvent) {
                     lastSeenSubscription = subscription;
                     port.postMessage({ command: event.data.command,
                                        success: true,
-                                       subscriptionId: subscription.subscriptionId,
                                        endpoint: subscription.endpoint });
                 }).catch(makeErrorHandler(event.data.command));
                 break;
@@ -36,10 +35,10 @@ self.addEventListener('message', function(workerEvent) {
             case 'getSubscription':
                 self.registration.pushManager.getSubscription().then(function(subscription) {
                     lastSeenSubscription = subscription;
-                    var subscriptionId = subscription ? subscription.subscriptionId : null;
+                    var endpoint = subscription ? subscription.endpoint : null;
                     port.postMessage({ command: event.data.command,
                                        success: true,
-                                       subscriptionId: subscriptionId });
+                                       endpoint: endpoint });
                 }).catch(makeErrorHandler(event.data.command));
                 break;
 

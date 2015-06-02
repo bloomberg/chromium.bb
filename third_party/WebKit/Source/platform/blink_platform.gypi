@@ -299,6 +299,7 @@
       'exported/WebPrerenderingSupport.cpp',
       'exported/WebPresentationController.cpp',
       'exported/WebProcessMemoryDump.cpp',
+      'exported/WebPushSubscription.cpp',
       'exported/WebRTCConfiguration.cpp',
       'exported/WebRTCICECandidate.cpp',
       'exported/WebRTCOfferOptions.cpp',

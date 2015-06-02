@@ -20,7 +20,7 @@ async_test(function(test) {
   var scope = 'resources/scope/' + location.pathname;
   var port;
   var registration;
-  var previousSubscriptionId;
+  var previousEndpoint;
 
   getActiveServiceWorkerWithMessagePort(test, script, scope)
       .then(function(workerInfo) {
@@ -32,22 +32,22 @@ async_test(function(test) {
         return runCommandInServiceWorker(port, 'getSubscription');
       })
       .then(function(data) {
-        assert_equals(data.subscriptionId, null,
+        assert_equals(data.endpoint, null,
             'There must be no subscription after unsubscribing in the document.');
         return runCommandInServiceWorker(port, 'subscribe');
       })
       .then(function(data) {
-        previousSubscriptionId = data.subscriptionId;
+        previousEndpoint = data.endpoint;
         return runCommandInServiceWorker(port, 'getSubscription');
       })
       .then(function(data) {
-        assert_equals(data.subscriptionId, previousSubscriptionId,
-            'Both PushSubscription instances should have the same id.');
+        assert_equals(data.endpoint, previousEndpoint,
+            'Both PushSubscription instances should have the same endpoint.');
         return registration.pushManager.getSubscription();
       })
       .then(function(subscription) {
-        assert_equals(subscription.subscriptionId, previousSubscriptionId,
-            'The ids for the PushSubscription instances from document and worker must match.');
+        assert_equals(subscription.endpoint, previousEndpoint,
+            'The endpoints for the PushSubscription instances from document and worker must match.');
         return runCommandInServiceWorker(port, 'unsubscribe');
       })
       .then(function(data) {
@@ -56,13 +56,12 @@ async_test(function(test) {
         return runCommandInServiceWorker(port, 'getSubscription');
       })
       .then(function(data) {
-        assert_equals(data.subscriptionId, null,
+        assert_equals(data.endpoint, null,
             'There must be no subscription after unsubscribing in the service worker.');
         return runCommandInServiceWorker(port, 'subscribe');
       })
       .then(function(data) {
-        assert_equals(typeof data.subscriptionId, 'string',
-            'Subscribing again should succeed.');
+        assert_equals(typeof data.endpoint, 'string', 'Subscribing again should succeed.');
         return registration.unregister();
       })
       .then(function(unregisterResult) {

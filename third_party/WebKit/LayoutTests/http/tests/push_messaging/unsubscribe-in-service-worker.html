@@ -29,12 +29,12 @@ async_test(function(test) {
         return runCommandInServiceWorker(port, 'getSubscription');
       })
       .then(function(data) {
-        assert_equals(data.subscriptionId, null,
+        assert_equals(data.endpoint, null,
             'There must be no subscription after unsubscribing in the document.');
         return runCommandInServiceWorker(port, 'subscribe');
       })
       .then(function(data) {
-        assert_equals(typeof data.subscriptionId, 'string',
+        assert_equals(typeof data.endpoint, 'string',
             'There must be a subscription after subscribing');
         return runCommandInServiceWorker(port, 'unsubscribe');
       })
@@ -49,7 +49,7 @@ async_test(function(test) {
         return runCommandInServiceWorker(port, 'getSubscription');
       })
       .then(function(data) {
-        assert_equals(data.subscriptionId, null,
+        assert_equals(data.endpoint, null,
             'There must be no subscription after unsubscribing in the service worker.');
         test.done();
       })

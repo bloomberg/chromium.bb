@@ -890,9 +890,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case EncryptedMediaInsecureOrigin:
         return "requestMediaKeySystemAccess() is deprecated on insecure origins in the specification. Support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
-    case PushSubscriptionId:
-        return "'PushSubscription.subscriptionId' is deprecated and is now included in 'PushSubscription.endpoint'. It will be removed in Chrome 45, around August 2015.";
-
     case DocumentGetCSSCanvasContext:
         return "The -webkit-canvas CSS feature is deprecated. Please use a positioned <canvas> element instead.";
 

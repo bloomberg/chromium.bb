@@ -50,7 +50,6 @@ async_test(function(test) {
                 assert_equals(event.data.command, 'subscribe');
                 assert_true(event.data.success,
                             'subscribe should succeed. Error message: ' + event.data.errorMessage);
-                assert_equals(typeof event.data.subscriptionId, 'string');
                 assert_equals(typeof event.data.endpoint, 'string');
                 try {
                   var endpointUrl = new URL(event.data.endpoint);

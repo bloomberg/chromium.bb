@@ -20,7 +20,7 @@ namespace blink {
 PushSubscription* PushSubscription::take(ScriptPromiseResolver*, WebPushSubscription* pushSubscription, ServiceWorkerRegistration* serviceWorkerRegistration)
 {
     OwnPtr<WebPushSubscription> subscription = adoptPtr(pushSubscription);
-    return new PushSubscription(subscription->endpoint, subscription->subscriptionId, serviceWorkerRegistration);
+    return new PushSubscription(subscription->endpoint, serviceWorkerRegistration);
 }
 
 void PushSubscription::dispose(WebPushSubscription* pushSubscription)
@@ -29,9 +29,8 @@ void PushSubscription::dispose(WebPushSubscription* pushSubscription)
         delete pushSubscription;
 }
 
-PushSubscription::PushSubscription(const String& endpoint, const String& subscriptionId, ServiceWorkerRegistration* serviceWorkerRegistration)
+PushSubscription::PushSubscription(const KURL& endpoint, ServiceWorkerRegistration* serviceWorkerRegistration)
     : m_endpoint(endpoint)
-    , m_subscriptionId(subscriptionId)
     , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {
 }
@@ -40,11 +39,9 @@ PushSubscription::~PushSubscription()
 {
 }
 
-String PushSubscription::endpoint() const
+KURL PushSubscription::endpoint() const
 {
-    // TODO(peter): Remove all plumbing which separates the endpoint from the subscriptionId
-    // after the deprecation period has finished. https://crbug.com/477401.
-    return m_endpoint + "/" + m_subscriptionId;
+    return m_endpoint;
 }
 
 ScriptPromise PushSubscription::unsubscribe(ScriptState* scriptState)
@@ -63,7 +60,6 @@ ScriptValue PushSubscription::toJSONForBinding(ScriptState* scriptState)
 {
     V8ObjectBuilder result(scriptState);
     result.addString("endpoint", endpoint());
-    result.addString("subscriptionId", subscriptionId());
 
     return result.scriptValue();
 }
