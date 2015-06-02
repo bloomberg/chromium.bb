@@ -1901,6 +1901,8 @@
             'paint/MediaControlsPainter.h',
             'paint/MultiColumnSetPainter.cpp',
             'paint/MultiColumnSetPainter.h',
+            'paint/NinePieceImagePainter.cpp',
+            'paint/NinePieceImagePainter.h',
             'paint/ObjectPainter.cpp',
             'paint/ObjectPainter.h',
             'paint/PaintInfo.h',
