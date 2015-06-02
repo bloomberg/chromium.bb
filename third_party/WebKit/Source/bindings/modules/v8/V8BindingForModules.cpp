@@ -266,28 +266,6 @@ static bool isImplicitProperty(v8::Isolate* isolate, v8::Local<v8::Value> value,
     return false;
 }
 
-// Get an object's property ("own" or via prototype chain) of the given name.
-// Has a special case for String's length property and otherwise fails for
-// non-objects since it casts to object to call Has() and Get().
-static bool get(v8::Isolate* isolate, v8::Local<v8::Value> value, const String& name, v8::Local<v8::Value>& result)
-{
-    if (value->IsString() && name == "length") {
-        int32_t length = value.As<v8::String>()->Length();
-        result = v8::Number::New(isolate, length);
-        return true;
-    }
-    if (!value->IsObject())
-        return false;
-    v8::Local<v8::Object> object = value.As<v8::Object>();
-    v8::Local<v8::String> key = v8String(isolate, name);
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    if (!v8CallBoolean(object->Has(context, key)))
-        return false;
-    if (!object->Get(context, key).ToLocal(&result))
-        return false;
-    return true;
-}
-
 // Assumes a valid key path.
 static Vector<String> parseKeyPath(const String& keyPath)
 {
@@ -304,13 +282,26 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v
     ASSERT(isolate->InContext());
 
     v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Value> currentValue(v8Value);
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    v8::TryCatch block;
     for (size_t i = 0; i < keyPathElements.size(); ++i) {
-        v8::Local<v8::Value> parentValue(currentValue);
-        if (!get(isolate, parentValue, keyPathElements[i], currentValue))
+        if (v8Value->IsString() && keyPathElements[i] == "length") {
+            int32_t length = v8Value.As<v8::String>()->Length();
+            v8Value = v8::Number::New(isolate, length);
+        } else if (!v8Value->IsObject()) {
             return nullptr;
+        } else {
+            v8::Local<v8::Object> object = v8Value.As<v8::Object>();
+            v8::Local<v8::String> key = v8String(isolate, keyPathElements[i]);
+            if (!v8CallBoolean(object->Has(context, key)))
+                return nullptr;
+            if (!v8Call(object->Get(context, key), v8Value, block)) {
+                exceptionState.rethrowV8Exception(block.Exception());
+                return nullptr;
+            }
+        }
     }
-    return createIDBKeyFromValue(isolate, currentValue, exceptionState, allowExperimentalTypes);
+    return createIDBKeyFromValue(isolate, v8Value, exceptionState, allowExperimentalTypes);
 }
 
 static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v8::Value> value, const IDBKeyPath& keyPath, ExceptionState& exceptionState, bool allowExperimentalTypes = false)
@@ -405,7 +396,8 @@ bool injectV8KeyIntoV8Value(v8::Isolate* isolate, v8::Local<v8::Value> key, v8::
     // For an object o = {} which should have keypath 'a.b.c' and key k, this
     // populates o to be {a:{b:{}}}. This is only applied to deserialized
     // values which were validated before serialization, so various
-    // assumptions can be made.
+    // assumptions can be made, e.g. there are no getters/setters on the
+    // object itself (though there might be on the prototype chain).
     for (size_t i = 0; i < keyPathElements.size() - 1; ++i) {
         const String& keyPathElement = keyPathElements[i];
         ASSERT(value->IsObject());
