@@ -151,8 +151,13 @@ bool PepperTryCatchVar::HasException() {
   if (context_.IsEmpty()) {
     exception_message = "The v8 context has been destroyed.";
   } else if (try_catch_.HasCaught()) {
-    v8::String::Utf8Value utf8(try_catch_.Message()->Get());
-    exception_message = std::string(*utf8, utf8.length());
+    v8::Local<v8::Message> message(try_catch_.Message());
+    if (!message.IsEmpty()) {
+      v8::String::Utf8Value utf8(try_catch_.Message()->Get());
+      exception_message = std::string(*utf8, utf8.length());
+    } else {
+      exception_message = "There was a v8 exception.";
+    }
   }
 
   if (!exception_message.empty()) {
