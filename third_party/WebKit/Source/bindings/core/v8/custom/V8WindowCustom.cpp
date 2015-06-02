@@ -219,10 +219,17 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     exceptionState.throwIfNeeded();
 }
 
-// TODO(arv): Remove this custom method and implement Symbol.toStringTag instead.
+// FIXME(fqian): returning string is cheating, and we should
+// fix this by calling toString function on the receiver.
+// However, V8 implements toString in JavaScript, which requires
+// switching context of receiver. I consider it is dangerous.
 void V8Window::toStringMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValueString(info, "[object Window]", info.GetIsolate());
+    v8::Local<v8::Object> domWrapper = V8Window::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Local<v8::Object> target = domWrapper.IsEmpty() ? info.This() : domWrapper;
+    v8::Local<v8::String> value;
+    if (target->ObjectProtoToString(info.GetIsolate()->GetCurrentContext()).ToLocal(&value))
+        v8SetReturnValue(info, value);
 }
 
 void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
