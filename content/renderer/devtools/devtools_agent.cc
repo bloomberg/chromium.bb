@@ -34,7 +34,6 @@ using blink::WebPoint;
 using blink::WebString;
 
 using base::trace_event::TraceLog;
-using base::trace_event::TraceOptions;
 
 namespace content {
 
@@ -135,8 +134,8 @@ void DevToolsAgent::didExitDebugLoop() {
 void DevToolsAgent::enableTracing(const WebString& category_filter) {
   TraceLog* trace_log = TraceLog::GetInstance();
   trace_log->SetEnabled(
-      base::trace_event::CategoryFilter(category_filter.utf8()),
-      TraceLog::RECORDING_MODE, TraceOptions());
+      base::trace_event::TraceConfig(category_filter.utf8(), ""),
+      TraceLog::RECORDING_MODE);
 }
 
 void DevToolsAgent::disableTracing() {

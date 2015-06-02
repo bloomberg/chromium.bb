@@ -64,7 +64,7 @@ class MemoryDumpManagerTest : public testing::Test {
 
   void EnableTracing(const char* category) {
     TraceLog::GetInstance()->SetEnabled(
-        CategoryFilter(category), TraceLog::RECORDING_MODE, TraceOptions());
+        TraceConfig(category, ""), TraceLog::RECORDING_MODE);
   }
 
   void DisableTracing() { TraceLog::GetInstance()->SetDisabled(); }

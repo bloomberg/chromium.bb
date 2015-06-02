@@ -61,12 +61,10 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void TraceMessageFilter::SendBeginTracing(
-    const base::trace_event::CategoryFilter& category_filter,
-    const base::trace_event::TraceOptions& options) {
+      const base::trace_event::TraceConfig& trace_config) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Send(new TracingMsg_BeginTracing(category_filter.ToString(),
-                                   base::TraceTicks::Now(),
-                                   options.ToString()));
+  Send(new TracingMsg_BeginTracing(trace_config.ToString(),
+                                   base::TraceTicks::Now()));
 }
 
 void TraceMessageFilter::SendEndTracing() {
@@ -77,12 +75,10 @@ void TraceMessageFilter::SendEndTracing() {
 }
 
 void TraceMessageFilter::SendEnableMonitoring(
-    const base::trace_event::CategoryFilter& category_filter,
-    const base::trace_event::TraceOptions& options) {
+      const base::trace_event::TraceConfig& trace_config) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Send(new TracingMsg_EnableMonitoring(category_filter.ToString(),
-                                       base::TraceTicks::Now(),
-                                       options.ToString()));
+  Send(new TracingMsg_EnableMonitoring(trace_config.ToString(),
+                                       base::TraceTicks::Now()));
 }
 
 void TraceMessageFilter::SendDisableMonitoring() {

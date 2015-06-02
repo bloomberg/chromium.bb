@@ -599,7 +599,7 @@ void V8SamplingProfiler::OnTraceLogEnabled() {
   // Jit code events may not be afforded.
   // TODO(alph): add support of infinite recording of meta trace events.
   base::trace_event::TraceRecordMode record_mode =
-      TraceLog::GetInstance()->GetCurrentTraceOptions().record_mode;
+      TraceLog::GetInstance()->GetCurrentTraceConfig().GetTraceRecordMode();
   if (record_mode == base::trace_event::TraceRecordMode::RECORD_CONTINUOUSLY)
     return;
 

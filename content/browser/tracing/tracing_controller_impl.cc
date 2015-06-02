@@ -26,8 +26,7 @@
 #endif
 
 using base::trace_event::TraceLog;
-using base::trace_event::TraceOptions;
-using base::trace_event::CategoryFilter;
+using base::trace_event::TraceConfig;
 
 namespace content {
 
@@ -80,8 +79,7 @@ bool TracingControllerImpl::GetCategories(
   // message. So to get known categories, just begin and end tracing immediately
   // afterwards. This will ping all the child processes for categories.
   pending_get_categories_done_callback_ = callback;
-  if (!EnableRecording(
-          CategoryFilter("*"), TraceOptions(), EnableRecordingDoneCallback())) {
+  if (!EnableRecording(TraceConfig("*", ""), EnableRecordingDoneCallback())) {
     pending_get_categories_done_callback_.Reset();
     return false;
   }
@@ -92,14 +90,13 @@ bool TracingControllerImpl::GetCategories(
 }
 
 void TracingControllerImpl::SetEnabledOnFileThread(
-    const CategoryFilter& category_filter,
+    const TraceConfig& trace_config,
     int mode,
-    const TraceOptions& trace_options,
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   TraceLog::GetInstance()->SetEnabled(
-      category_filter, static_cast<TraceLog::Mode>(mode), trace_options);
+      trace_config, static_cast<TraceLog::Mode>(mode));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
@@ -112,8 +109,7 @@ void TracingControllerImpl::SetDisabledOnFileThread(
 }
 
 bool TracingControllerImpl::EnableRecording(
-    const CategoryFilter& category_filter,
-    const TraceOptions& trace_options,
+    const TraceConfig& trace_config,
     const EnableRecordingDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -126,9 +122,7 @@ bool TracingControllerImpl::EnableRecording(
     TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
 
-  trace_options_ = trace_options;
-
-  if (trace_options.enable_systrace) {
+  if (trace_config.IsSystraceEnabled()) {
 #if defined(OS_CHROMEOS)
     DCHECK(!is_system_tracing_);
     chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
@@ -145,27 +139,25 @@ bool TracingControllerImpl::EnableRecording(
   base::Closure on_enable_recording_done_callback =
       base::Bind(&TracingControllerImpl::OnEnableRecordingDone,
                  base::Unretained(this),
-                 category_filter, trace_options, callback);
+                 trace_config, callback);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
                  base::Unretained(this),
-                 category_filter,
+                 trace_config,
                  base::trace_event::TraceLog::RECORDING_MODE,
-                 trace_options,
                  on_enable_recording_done_callback));
   return true;
 }
 
 void TracingControllerImpl::OnEnableRecordingDone(
-    const CategoryFilter& category_filter,
-    const TraceOptions& trace_options,
+    const TraceConfig& trace_config,
     const EnableRecordingDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
-    it->get()->SendBeginTracing(category_filter, trace_options);
+    it->get()->SendBeginTracing(trace_config);
   }
 
   if (!callback.is_null())
@@ -180,7 +172,6 @@ bool TracingControllerImpl::DisableRecording(
     return false;
 
   trace_data_sink_ = trace_data_sink;
-  trace_options_ = TraceOptions();
   // Disable local trace early to avoid traces during end-tracing process from
   // interfering with the process.
   base::Closure on_disable_recording_done_callback = base::Bind(
@@ -247,8 +238,7 @@ void TracingControllerImpl::OnDisableRecordingDone() {
 }
 
 bool TracingControllerImpl::EnableMonitoring(
-    const CategoryFilter& category_filter,
-    const TraceOptions& trace_options,
+    const TraceConfig& trace_config,
     const EnableMonitoringDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -260,32 +250,28 @@ bool TracingControllerImpl::EnableMonitoring(
   TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
 
-  trace_options_ = trace_options;
-
   base::Closure on_enable_monitoring_done_callback =
       base::Bind(&TracingControllerImpl::OnEnableMonitoringDone,
                  base::Unretained(this),
-                 category_filter, trace_options, callback);
+                 trace_config, callback);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
                  base::Unretained(this),
-                 category_filter,
+                 trace_config,
                  base::trace_event::TraceLog::MONITORING_MODE,
-                 trace_options,
                  on_enable_monitoring_done_callback));
   return true;
 }
 
 void TracingControllerImpl::OnEnableMonitoringDone(
-    const CategoryFilter& category_filter,
-    const TraceOptions& trace_options,
+    const TraceConfig& trace_config,
     const EnableMonitoringDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
-    it->get()->SendEnableMonitoring(category_filter, trace_options);
+    it->get()->SendEnableMonitoring(trace_config);
   }
 
   if (!callback.is_null())
@@ -299,7 +285,6 @@ bool TracingControllerImpl::DisableMonitoring(
   if (!can_disable_monitoring())
     return false;
 
-  trace_options_ = TraceOptions();
   base::Closure on_disable_monitoring_done_callback =
       base::Bind(&TracingControllerImpl::OnDisableMonitoringDone,
                  base::Unretained(this), callback);
@@ -327,11 +312,9 @@ void TracingControllerImpl::OnDisableMonitoringDone(
 
 void TracingControllerImpl::GetMonitoringStatus(
     bool* out_enabled,
-    CategoryFilter* out_category_filter,
-    TraceOptions* out_trace_options) {
+    TraceConfig* out_trace_config) {
   *out_enabled = is_monitoring_;
-  *out_category_filter = TraceLog::GetInstance()->GetCurrentCategoryFilter();
-  *out_trace_options = trace_options_;
+  *out_trace_config = TraceLog::GetInstance()->GetCurrentTraceConfig();
 }
 
 bool TracingControllerImpl::CaptureMonitoringSnapshot(
@@ -466,13 +449,11 @@ void TracingControllerImpl::AddTraceMessageFilter(
   }
   if (can_disable_recording()) {
     trace_message_filter->SendBeginTracing(
-        TraceLog::GetInstance()->GetCurrentCategoryFilter(),
-        TraceLog::GetInstance()->GetCurrentTraceOptions());
+        TraceLog::GetInstance()->GetCurrentTraceConfig());
   }
   if (can_disable_monitoring()) {
     trace_message_filter->SendEnableMonitoring(
-        TraceLog::GetInstance()->GetCurrentCategoryFilter(),
-        TraceLog::GetInstance()->GetCurrentTraceOptions());
+        TraceLog::GetInstance()->GetCurrentTraceConfig());
   }
 }
 

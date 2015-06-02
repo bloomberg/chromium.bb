@@ -50,9 +50,6 @@ class TracingHandler {
   void OnCategoriesReceived(DevToolsCommandId command_id,
                             const std::set<std::string>& category_set);
 
-  base::trace_event::TraceOptions TraceOptionsFromString(
-      const std::string* options);
-
   void SetupTimer(double usage_reporting_interval);
 
   void DisableRecording(bool abort);

@@ -97,9 +97,9 @@ void TraceLog::StartATrace() {
     PLOG(WARNING) << "Couldn't open " << kATraceMarkerFile;
     return;
   }
-  SetEnabled(CategoryFilter(CategoryFilter::kDefaultCategoryFilterString),
-             TraceLog::RECORDING_MODE,
-             TraceOptions(RECORD_CONTINUOUSLY));
+  TraceConfig trace_config;
+  trace_config.SetTraceRecordMode(RECORD_CONTINUOUSLY);
+  SetEnabled(trace_config, TraceLog::RECORDING_MODE);
 }
 
 void TraceLog::StopATrace() {

@@ -91,12 +91,10 @@ bool LibraryLoaded(JNIEnv* env, jclass clazz) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(switches::kTraceStartup)) {
-    base::trace_event::CategoryFilter category_filter(
-        command_line->GetSwitchValueASCII(switches::kTraceStartup));
+    base::trace_event::TraceConfig trace_config(
+        command_line->GetSwitchValueASCII(switches::kTraceStartup), "");
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        category_filter,
-        base::trace_event::TraceLog::RECORDING_MODE,
-        base::trace_event::TraceOptions());
+        trace_config, base::trace_event::TraceLog::RECORDING_MODE);
   }
 
   // Android's main browser loop is custom so we set the browser

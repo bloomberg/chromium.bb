@@ -35,16 +35,14 @@ bool TracingControllerAndroid::StartTracing(JNIEnv* env,
                                             jstring jtraceoptions) {
   std::string categories =
       base::android::ConvertJavaStringToUTF8(env, jcategories);
-  base::trace_event::TraceOptions trace_options;
-  trace_options.SetFromString(
-      base::android::ConvertJavaStringToUTF8(env, jtraceoptions));
+  std::string options =
+      base::android::ConvertJavaStringToUTF8(env, jtraceoptions);
 
   // This log is required by adb_profile_chrome.py.
   LOG(WARNING) << "Logging performance trace to file";
 
   return TracingController::GetInstance()->EnableRecording(
-      base::trace_event::CategoryFilter(categories),
-      trace_options,
+      base::trace_event::TraceConfig(categories, options),
       TracingController::EnableRecordingDoneCallback());
 }
 
@@ -105,9 +103,10 @@ void TracingControllerAndroid::OnKnownCategoriesReceived(
 }
 
 static jstring GetDefaultCategories(JNIEnv* env, jobject obj) {
+  base::trace_event::TraceConfig trace_config;
   return base::android::ConvertUTF8ToJavaString(
              env,
-             base::trace_event::CategoryFilter::kDefaultCategoryFilterString)
+             trace_config.ToCategoryFilterString())
       .Release();
 }
 

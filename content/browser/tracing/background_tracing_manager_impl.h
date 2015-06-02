@@ -34,7 +34,7 @@ class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
   BackgroundTracingManagerImpl();
   ~BackgroundTracingManagerImpl() override;
 
-  void EnableRecording(base::trace_event::CategoryFilter);
+  void EnableRecording(std::string category_filter_str);
   void EnableRecordingIfConfigNeedsIt();
   void OnFinalizeStarted(scoped_refptr<base::RefCountedString>);
   void OnFinalizeComplete();
@@ -46,7 +46,7 @@ class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
   bool IsAbleToTriggerTracing(TriggerHandle handle) const;
   bool IsSupportedConfig(BackgroundTracingConfig* config);
 
-  base::trace_event::CategoryFilter GetCategoryFilterForCategoryPreset(
+  std::string GetCategoryFilterStringForCategoryPreset(
       BackgroundTracingConfig::CategoryPreset) const;
 
   class TraceDataEndpointWrapper

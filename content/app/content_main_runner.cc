@@ -628,13 +628,12 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // Enable startup tracing asap to avoid early TRACE_EVENT calls being
     // ignored.
     if (command_line.HasSwitch(switches::kTraceStartup)) {
-      base::trace_event::CategoryFilter category_filter(
-          command_line.GetSwitchValueASCII(switches::kTraceStartup));
+      base::trace_event::TraceConfig trace_config(
+          command_line.GetSwitchValueASCII(switches::kTraceStartup),
+          base::trace_event::RECORD_UNTIL_FULL);
       base::trace_event::TraceLog::GetInstance()->SetEnabled(
-          category_filter,
-          base::trace_event::TraceLog::RECORDING_MODE,
-          base::trace_event::TraceOptions(
-              base::trace_event::RECORD_UNTIL_FULL));
+          trace_config,
+          base::trace_event::TraceLog::RECORDING_MODE);
     }
 #if defined(OS_WIN)
     // Enable exporting of events to ETW if requested on the command line.

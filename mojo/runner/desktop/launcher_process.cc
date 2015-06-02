@@ -82,11 +82,11 @@ int LauncherProcessMain(int argc, char** argv) {
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kTraceStartup)) {
     g_tracing = true;
-    base::trace_event::CategoryFilter category_filter(
-        command_line.GetSwitchValueASCII(switches::kTraceStartup));
+    base::trace_event::TraceConfig trace_config(
+        command_line.GetSwitchValueASCII(switches::kTraceStartup),
+        base::trace_event::RECORD_UNTIL_FULL);
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        category_filter, base::trace_event::TraceLog::RECORDING_MODE,
-        base::trace_event::TraceOptions(base::trace_event::RECORD_UNTIL_FULL));
+        trace_config, base::trace_event::TraceLog::RECORDING_MODE);
   }
 
   // We want the shell::Context to outlive the MessageLoop so that pipes are

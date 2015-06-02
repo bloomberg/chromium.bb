@@ -4,8 +4,6 @@
 
 source_set("trace_event") {
   sources = [
-    "category_filter.cc",
-    "category_filter.h",
     "java_heap_dump_provider_android.cc",
     "java_heap_dump_provider_android.h",
     "memory_allocator_dump.cc",
@@ -47,8 +45,6 @@ source_set("trace_event") {
     "trace_event_system_stats_monitor.h",
     "trace_event_win.cc",
     "trace_event_win.h",
-    "trace_options.cc",
-    "trace_options.h",
     "winheap_dump_provider_win.cc",
     "winheap_dump_provider_win.h",
   ]
@@ -93,7 +89,6 @@ source_set("trace_event") {
 source_set("trace_event_unittests") {
   testonly = true
   sources = [
-    "category_filter_unittest.cc",
     "java_heap_dump_provider_android_unittest.cc",
     "memory_allocator_dump_unittest.cc",
     "memory_dump_manager_unittest.cc",
@@ -107,7 +102,6 @@ source_set("trace_event_unittests") {
     "trace_event_system_stats_monitor_unittest.cc",
     "trace_event_unittest.cc",
     "trace_event_win_unittest.cc",
-    "trace_options_unittest.cc",
     "winheap_dump_provider_win_unittest.cc",
   ]
 

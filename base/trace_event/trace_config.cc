@@ -44,71 +44,34 @@ TraceConfig::TraceConfig() {
 
 TraceConfig::TraceConfig(const std::string& category_filter_string,
                          const std::string& trace_options_string) {
-  if (!category_filter_string.empty()) {
-    std::vector<std::string> split;
-    std::vector<std::string>::iterator iter;
-    base::SplitString(category_filter_string, ',', &split);
-    for (iter = split.begin(); iter != split.end(); ++iter) {
-      std::string category = *iter;
-      // Ignore empty categories.
-      if (category.empty())
-        continue;
-      // Synthetic delays are of the form 'DELAY(delay;option;option;...)'.
-      if (category.find(kSyntheticDelayCategoryFilterPrefix) == 0 &&
-          category.at(category.size() - 1) == ')') {
-        category = category.substr(
-            strlen(kSyntheticDelayCategoryFilterPrefix),
-            category.size() - strlen(kSyntheticDelayCategoryFilterPrefix) - 1);
-        size_t name_length = category.find(';');
-        if (name_length != std::string::npos && name_length > 0 &&
-            name_length != category.size() - 1) {
-          synthetic_delays_.push_back(category);
-        }
-      } else if (category.at(0) == '-') {
-        // Excluded categories start with '-'.
-        // Remove '-' from category string.
-        category = category.substr(1);
-        excluded_categories_.push_back(category);
-      } else if (category.compare(0, strlen(TRACE_DISABLED_BY_DEFAULT("")),
-                                  TRACE_DISABLED_BY_DEFAULT("")) == 0) {
-        disabled_categories_.push_back(category);
-      } else {
-        included_categories_.push_back(category);
-      }
-    }
-  }
+  InitializeFromStrings(category_filter_string, trace_options_string);
+}
 
-  record_mode_ = RECORD_UNTIL_FULL;
-  enable_sampling_ = false;
-  enable_systrace_ = false;
-  enable_argument_filter_ = false;
-  if(!trace_options_string.empty()) {
-    std::vector<std::string> split;
-    std::vector<std::string>::iterator iter;
-    base::SplitString(trace_options_string, ',', &split);
-    for (iter = split.begin(); iter != split.end(); ++iter) {
-      if (*iter == kRecordUntilFull) {
-        record_mode_ = RECORD_UNTIL_FULL;
-      } else if (*iter == kRecordContinuously) {
-        record_mode_ = RECORD_CONTINUOUSLY;
-      } else if (*iter == kTraceToConsole) {
-        record_mode_ = ECHO_TO_CONSOLE;
-      } else if (*iter == kRecordAsMuchAsPossible) {
-        record_mode_ = RECORD_AS_MUCH_AS_POSSIBLE;
-      } else if (*iter == kEnableSampling) {
-        enable_sampling_ = true;
-      } else if (*iter == kEnableSystrace) {
-        enable_systrace_ = true;
-      } else if (*iter == kEnableArgumentFilter) {
-        enable_argument_filter_ = true;
-      }
-    }
+TraceConfig::TraceConfig(const std::string& category_filter_string,
+                         TraceRecordMode record_mode) {
+  std::string trace_options_string;
+  switch (record_mode) {
+    case RECORD_UNTIL_FULL:
+      trace_options_string = kRecordUntilFull;
+      break;
+    case RECORD_CONTINUOUSLY:
+      trace_options_string = kRecordContinuously;
+      break;
+    case RECORD_AS_MUCH_AS_POSSIBLE:
+      trace_options_string = kRecordAsMuchAsPossible;
+      break;
+    case ECHO_TO_CONSOLE:
+      trace_options_string = kTraceToConsole;
+      break;
+    default:
+      NOTREACHED();
   }
+  InitializeFromStrings(category_filter_string, trace_options_string);
 }
 
 TraceConfig::TraceConfig(const std::string& config_string) {
   if (!config_string.empty())
-    Initialize(config_string);
+    InitializeFromConfigString(config_string);
   else
     InitializeDefault();
 }
@@ -274,7 +237,7 @@ void TraceConfig::InitializeDefault() {
   excluded_categories_.push_back("*Test");
 }
 
-void TraceConfig::Initialize(const std::string& config_string) {
+void TraceConfig::InitializeFromConfigString(const std::string& config_string) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(config_string));
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
     InitializeDefault();
@@ -323,6 +286,71 @@ void TraceConfig::Initialize(const std::string& config_string) {
     SetCategoriesFromExcludedList(*category_list);
   if (dict->GetList(kSyntheticDelaysParam, &category_list))
     SetSyntheticDelaysFromList(*category_list);
+}
+
+void TraceConfig::InitializeFromStrings(
+    const std::string& category_filter_string,
+    const std::string& trace_options_string) {
+  if (!category_filter_string.empty()) {
+    std::vector<std::string> split;
+    std::vector<std::string>::iterator iter;
+    base::SplitString(category_filter_string, ',', &split);
+    for (iter = split.begin(); iter != split.end(); ++iter) {
+      std::string category = *iter;
+      // Ignore empty categories.
+      if (category.empty())
+        continue;
+      // Synthetic delays are of the form 'DELAY(delay;option;option;...)'.
+      if (category.find(kSyntheticDelayCategoryFilterPrefix) == 0 &&
+          category.at(category.size() - 1) == ')') {
+        category = category.substr(
+            strlen(kSyntheticDelayCategoryFilterPrefix),
+            category.size() - strlen(kSyntheticDelayCategoryFilterPrefix) - 1);
+        size_t name_length = category.find(';');
+        if (name_length != std::string::npos && name_length > 0 &&
+            name_length != category.size() - 1) {
+          synthetic_delays_.push_back(category);
+        }
+      } else if (category.at(0) == '-') {
+        // Excluded categories start with '-'.
+        // Remove '-' from category string.
+        category = category.substr(1);
+        excluded_categories_.push_back(category);
+      } else if (category.compare(0, strlen(TRACE_DISABLED_BY_DEFAULT("")),
+                                  TRACE_DISABLED_BY_DEFAULT("")) == 0) {
+        disabled_categories_.push_back(category);
+      } else {
+        included_categories_.push_back(category);
+      }
+    }
+  }
+
+  record_mode_ = RECORD_UNTIL_FULL;
+  enable_sampling_ = false;
+  enable_systrace_ = false;
+  enable_argument_filter_ = false;
+  if(!trace_options_string.empty()) {
+    std::vector<std::string> split;
+    std::vector<std::string>::iterator iter;
+    base::SplitString(trace_options_string, ',', &split);
+    for (iter = split.begin(); iter != split.end(); ++iter) {
+      if (*iter == kRecordUntilFull) {
+        record_mode_ = RECORD_UNTIL_FULL;
+      } else if (*iter == kRecordContinuously) {
+        record_mode_ = RECORD_CONTINUOUSLY;
+      } else if (*iter == kTraceToConsole) {
+        record_mode_ = ECHO_TO_CONSOLE;
+      } else if (*iter == kRecordAsMuchAsPossible) {
+        record_mode_ = RECORD_AS_MUCH_AS_POSSIBLE;
+      } else if (*iter == kEnableSampling) {
+        enable_sampling_ = true;
+      } else if (*iter == kEnableSystrace) {
+        enable_systrace_ = true;
+      } else if (*iter == kEnableArgumentFilter) {
+        enable_argument_filter_ = true;
+      }
+    }
+  }
 }
 
 void TraceConfig::SetCategoriesFromIncludedList(
@@ -390,11 +418,11 @@ void TraceConfig::ToDict(base::DictionaryValue& dict) const {
     case RECORD_CONTINUOUSLY:
       dict.SetString(kRecordModeParam, kRecordContinuously);
       break;
-    case ECHO_TO_CONSOLE:
-      dict.SetString(kRecordModeParam, kTraceToConsole);
-      break;
     case RECORD_AS_MUCH_AS_POSSIBLE:
       dict.SetString(kRecordModeParam, kRecordAsMuchAsPossible);
+      break;
+    case ECHO_TO_CONSOLE:
+      dict.SetString(kRecordModeParam, kTraceToConsole);
       break;
     default:
       NOTREACHED();
@@ -425,12 +453,30 @@ void TraceConfig::ToDict(base::DictionaryValue& dict) const {
 }
 
 std::string TraceConfig::ToTraceOptionsString() const {
-  TraceOptions to;
-  to.record_mode = record_mode_;
-  to.enable_sampling = enable_sampling_;
-  to.enable_systrace = enable_systrace_;
-  to.enable_argument_filter = enable_argument_filter_;
-  return to.ToString();
+  std::string ret;
+  switch (record_mode_) {
+    case RECORD_UNTIL_FULL:
+      ret = kRecordUntilFull;
+      break;
+    case RECORD_CONTINUOUSLY:
+      ret = kRecordContinuously;
+      break;
+    case RECORD_AS_MUCH_AS_POSSIBLE:
+      ret = kRecordAsMuchAsPossible;
+      break;
+    case ECHO_TO_CONSOLE:
+      ret = kTraceToConsole;
+      break;
+    default:
+      NOTREACHED();
+  }
+  if (enable_sampling_)
+    ret = ret + "," + kEnableSampling;
+  if (enable_systrace_)
+    ret = ret + "," + kEnableSystrace;
+  if (enable_argument_filter_)
+    ret = ret + "," + kEnableArgumentFilter;
+  return ret;
 }
 
 void TraceConfig::WriteCategoryFilterString(const StringList& values,

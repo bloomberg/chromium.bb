@@ -24,8 +24,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
-#include "base/trace_event/category_filter.h"
-#include "base/trace_event/trace_options.h"
+#include "base/trace_event/trace_config.h"
 
 // Older style trace macros with explicit id and extra data
 // Only these macros result in publishing data to ETW as currently implemented.
@@ -319,18 +318,14 @@ class BASE_EXPORT TraceLog {
   // reached. The known category groups are inserted into |category_groups|.
   void GetKnownCategoryGroups(std::vector<std::string>* category_groups);
 
-  // Retrieves a copy (for thread-safety) of the current CategoryFilter.
-  CategoryFilter GetCurrentCategoryFilter();
-
-  // Retrieves a copy (for thread-safety) of the current TraceOptions.
-  TraceOptions GetCurrentTraceOptions() const;
+  // Retrieves a copy (for thread-safety) of the current TraceConfig.
+  TraceConfig GetCurrentTraceConfig() const;
 
   // Enables normal tracing (recording trace events in the trace buffer).
-  // See CategoryFilter comments for details on how to control what categories
+  // See TraceConfig comments for details on how to control what categories
   // will be traced. If tracing has already been enabled, |category_filter| will
   // be merged into the current category filter.
-  void SetEnabled(const CategoryFilter& category_filter,
-                  Mode mode, const TraceOptions& options);
+  void SetEnabled(const TraceConfig& trace_config, Mode mode);
 
   // Disables normal tracing for all categories.
   void SetDisabled();
@@ -391,7 +386,7 @@ class BASE_EXPORT TraceLog {
                                 unsigned char flags);
 
   // Enable tracing for EventCallback.
-  void SetEventCallbackEnabled(const CategoryFilter& category_filter,
+  void SetEventCallbackEnabled(const TraceConfig& trace_config,
                                EventCallback cb);
   void SetEventCallbackDisabled();
   void SetArgumentFilterPredicate(
@@ -525,7 +520,7 @@ class BASE_EXPORT TraceLog {
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
                            TraceBufferVectorReportFull);
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
-                           ConvertTraceOptionsToInternalOptions);
+                           ConvertTraceConfigToInternalOptions);
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
                            TraceRecordAsMuchAsPossibleMode);
 
@@ -542,11 +537,11 @@ class BASE_EXPORT TraceLog {
   void UpdateCategoryGroupEnabledFlag(size_t category_index);
 
   // Configure synthetic delays based on the values set in the current
-  // category filter.
-  void UpdateSyntheticDelaysFromCategoryFilter();
+  // trace config.
+  void UpdateSyntheticDelaysFromTraceConfig();
 
-  InternalTraceOptions GetInternalOptionsFromTraceOptions(
-      const TraceOptions& options);
+  InternalTraceOptions GetInternalOptionsFromTraceConfig(
+      const TraceConfig& config);
 
   class ThreadLocalEventBuffer;
   class OptionalAutoLock;
@@ -656,8 +651,8 @@ class BASE_EXPORT TraceLog {
   scoped_ptr<TraceSamplingThread> sampling_thread_;
   PlatformThreadHandle sampling_thread_handle_;
 
-  CategoryFilter category_filter_;
-  CategoryFilter event_callback_category_filter_;
+  TraceConfig trace_config_;
+  TraceConfig event_callback_trace_config_;
 
   ThreadLocalPointer<ThreadLocalEventBuffer> thread_local_event_buffer_;
   ThreadLocalBoolean thread_blocks_message_loop_;

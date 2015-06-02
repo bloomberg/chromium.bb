@@ -25,9 +25,9 @@ void TraceControllerImpl::StartTracing(
   collector_ = collector.Pass();
   std::string categories_str = categories.To<std::string>();
   base::trace_event::TraceLog::GetInstance()->SetEnabled(
-      base::trace_event::CategoryFilter(categories_str),
-      base::trace_event::TraceLog::RECORDING_MODE,
-      base::trace_event::TraceOptions(base::trace_event::RECORD_UNTIL_FULL));
+      base::trace_event::TraceConfig(categories_str,
+                                     base::trace_event::RECORD_UNTIL_FULL),
+      base::trace_event::TraceLog::RECORDING_MODE);
 }
 
 void TraceControllerImpl::StopTracing() {

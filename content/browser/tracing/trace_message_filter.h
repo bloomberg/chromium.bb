@@ -26,12 +26,10 @@ class TraceMessageFilter : public BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void SendBeginTracing(
-      const base::trace_event::CategoryFilter& category_filter_str,
-      const base::trace_event::TraceOptions& options);
+      const base::trace_event::TraceConfig& trace_config);
   void SendEndTracing();
   void SendEnableMonitoring(
-      const base::trace_event::CategoryFilter& category_filter,
-      const base::trace_event::TraceOptions& options);
+      const base::trace_event::TraceConfig& trace_config);
   void SendDisableMonitoring();
   void SendCaptureMonitoringSnapshot();
   void SendGetTraceLogStatus();

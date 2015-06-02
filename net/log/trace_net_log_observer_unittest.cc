@@ -91,8 +91,8 @@ class TraceNetLogObserverTest : public testing::Test {
 
   static void EnableTraceLog() {
     TraceLog::GetInstance()->SetEnabled(
-        base::trace_event::CategoryFilter(kNetLogTracingCategory),
-        TraceLog::RECORDING_MODE, base::trace_event::TraceOptions());
+        base::trace_event::TraceConfig(kNetLogTracingCategory, ""),
+        TraceLog::RECORDING_MODE);
   }
 
   void EndTraceAndFlush() {

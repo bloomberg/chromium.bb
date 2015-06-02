@@ -119,7 +119,7 @@ void BackgroundTracingManagerImpl::EnableRecordingIfConfigNeedsIt() {
     return;
 
   if (config_->mode == BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE) {
-    EnableRecording(GetCategoryFilterForCategoryPreset(
+    EnableRecording(GetCategoryFilterStringForCategoryPreset(
         static_cast<BackgroundTracingPreemptiveConfig*>(config_.get())
             ->category_preset));
   } else {
@@ -228,10 +228,10 @@ void BackgroundTracingManagerImpl::InvalidateTriggerHandlesForTesting() {
 }
 
 void BackgroundTracingManagerImpl::EnableRecording(
-    base::trace_event::CategoryFilter category_filter) {
+    std::string category_filter_str) {
   is_tracing_ = TracingController::GetInstance()->EnableRecording(
-      category_filter,
-      base::trace_event::TraceOptions(base::trace_event::RECORD_CONTINUOUSLY),
+      base::trace_event::TraceConfig(category_filter_str,
+                                     base::trace_event::RECORD_CONTINUOUSLY),
       TracingController::EnableRecordingDoneCallback());
 }
 
@@ -279,21 +279,19 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
     callback.Run(true);
 }
 
-base::trace_event::CategoryFilter
-BackgroundTracingManagerImpl::GetCategoryFilterForCategoryPreset(
+std::string
+BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
     BackgroundTracingConfig::CategoryPreset preset) const {
   switch (preset) {
     case BackgroundTracingConfig::CategoryPreset::BENCHMARK:
-      return base::trace_event::CategoryFilter(
-          "benchmark,"
-          "disabled-by-default-toplevel.flow,"
-          "disabled-by-default-ipc.flow");
+      return "benchmark,"
+             "disabled-by-default-toplevel.flow,"
+             "disabled-by-default-ipc.flow";
     case BackgroundTracingConfig::CategoryPreset::BENCHMARK_DEEP:
-      return base::trace_event::CategoryFilter(
-          "*,disabled-by-default-blink.debug.layout");
+      return "*,disabled-by-default-blink.debug.layout";
   }
   NOTREACHED();
-  return base::trace_event::CategoryFilter();
+  return "";
 }
 
 scoped_ptr<BackgroundTracingConfig> BackgroundTracingConfig::FromDict(

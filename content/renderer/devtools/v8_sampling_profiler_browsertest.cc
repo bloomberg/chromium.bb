@@ -11,9 +11,8 @@
 using base::DictionaryValue;
 using base::ListValue;
 using base::Value;
-using base::trace_event::CategoryFilter;
+using base::trace_event::TraceConfig;
 using base::trace_event::TraceLog;
-using base::trace_event::TraceOptions;
 using base::trace_event::TraceResultBuffer;
 
 namespace content {
@@ -82,8 +81,8 @@ class V8SamplingProfilerTest : public RenderViewTest {
     sampling_profiler_->EnableSamplingEventForTesting(code_added_events,
                                                       sample_events);
     trace_log->SetEnabled(
-        CategoryFilter(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile")),
-        TraceLog::RECORDING_MODE, TraceOptions());
+        TraceConfig(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"), ""),
+        TraceLog::RECORDING_MODE);
     base::RunLoop().RunUntilIdle();
     KickV8();  // Make a call to V8 so it can invoke interrupt request
                // callbacks.
@@ -122,8 +121,8 @@ class V8SamplingProfilerTest : public RenderViewTest {
 TEST_F(V8SamplingProfilerTest, V8SamplingEventFired) {
   sampling_profiler_->EnableSamplingEventForTesting(0, 0);
   TraceLog::GetInstance()->SetEnabled(
-      CategoryFilter(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile")),
-      TraceLog::RECORDING_MODE, TraceOptions());
+      TraceConfig(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"), ""),
+      TraceLog::RECORDING_MODE);
   base::RunLoop().RunUntilIdle();
   sampling_profiler_->WaitSamplingEventForTesting();
   TraceLog::GetInstance()->SetDisabled();

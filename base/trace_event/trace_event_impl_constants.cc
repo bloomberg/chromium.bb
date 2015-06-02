@@ -7,9 +7,6 @@
 namespace base {
 namespace trace_event {
 
-// Enable everything but debug and test categories by default.
-const char CategoryFilter::kDefaultCategoryFilterString[] = "-*Debug,-*Test";
-
 // Constant used by TraceLog's internal implementation of trace_option.
 const TraceLog::InternalTraceOptions
     TraceLog::kInternalNone = 0;

@@ -111,8 +111,7 @@ class TracingController {
   // |options| controls what kind of tracing is enabled.
   typedef base::Callback<void()> EnableRecordingDoneCallback;
   virtual bool EnableRecording(
-      const base::trace_event::CategoryFilter& category_filter,
-      const base::trace_event::TraceOptions& trace_options,
+      const base::trace_event::TraceConfig& trace_config,
       const EnableRecordingDoneCallback& callback) = 0;
 
   // Stop recording on all processes.
@@ -148,8 +147,7 @@ class TracingController {
   // |options| controls what kind of tracing is enabled.
   typedef base::Callback<void()> EnableMonitoringDoneCallback;
   virtual bool EnableMonitoring(
-      const base::trace_event::CategoryFilter& category_filter,
-      const base::trace_event::TraceOptions& trace_options,
+      const base::trace_event::TraceConfig& trace_config,
       const EnableMonitoringDoneCallback& callback) = 0;
 
   // Stop monitoring on all processes.
@@ -163,8 +161,7 @@ class TracingController {
   // Get the current monitoring configuration.
   virtual void GetMonitoringStatus(
       bool* out_enabled,
-      base::trace_event::CategoryFilter* out_category_filter,
-      base::trace_event::TraceOptions* out_trace_options) = 0;
+      base::trace_event::TraceConfig* out_trace_config) = 0;
 
   // Get the current monitoring traced data.
   //

@@ -1154,9 +1154,8 @@ TraceLog::TraceLog()
       watch_category_(0),
       trace_options_(kInternalRecordUntilFull),
       sampling_thread_handle_(0),
-      category_filter_(CategoryFilter::kDefaultCategoryFilterString),
-      event_callback_category_filter_(
-          CategoryFilter::kDefaultCategoryFilterString),
+      trace_config_(TraceConfig()),
+      event_callback_trace_config_(TraceConfig()),
       thread_shared_chunk_index_(0),
       generation_(0),
       use_worker_thread_(false) {
@@ -1191,9 +1190,7 @@ TraceLog::TraceLog()
 
     LOG(ERROR) << "Start " << switches::kTraceToConsole
                << " with CategoryFilter '" << filter << "'.";
-    SetEnabled(CategoryFilter(filter),
-               RECORDING_MODE,
-               TraceOptions(ECHO_TO_CONSOLE));
+    SetEnabled(TraceConfig(filter, ECHO_TO_CONSOLE), RECORDING_MODE);
   }
 #endif
 
@@ -1233,13 +1230,13 @@ void TraceLog::UpdateCategoryGroupEnabledFlag(size_t category_index) {
   unsigned char enabled_flag = 0;
   const char* category_group = g_category_groups[category_index];
   if (mode_ == RECORDING_MODE &&
-      category_filter_.IsCategoryGroupEnabled(category_group))
+      trace_config_.IsCategoryGroupEnabled(category_group))
     enabled_flag |= ENABLED_FOR_RECORDING;
   else if (mode_ == MONITORING_MODE &&
-      category_filter_.IsCategoryGroupEnabled(category_group))
+      trace_config_.IsCategoryGroupEnabled(category_group))
     enabled_flag |= ENABLED_FOR_MONITORING;
   if (event_callback_ &&
-      event_callback_category_filter_.IsCategoryGroupEnabled(category_group))
+      event_callback_trace_config_.IsCategoryGroupEnabled(category_group))
     enabled_flag |= ENABLED_FOR_EVENT_CALLBACK;
 #if defined(OS_WIN)
   if (base::trace_event::TraceEventETWExport::isETWExportEnabled())
@@ -1255,11 +1252,11 @@ void TraceLog::UpdateCategoryGroupEnabledFlags() {
     UpdateCategoryGroupEnabledFlag(i);
 }
 
-void TraceLog::UpdateSyntheticDelaysFromCategoryFilter() {
+void TraceLog::UpdateSyntheticDelaysFromTraceConfig() {
   ResetTraceEventSyntheticDelays();
-  const CategoryFilter::StringList& delays =
-      category_filter_.GetSyntheticDelayValues();
-  CategoryFilter::StringList::const_iterator ci;
+  const TraceConfig::StringList& delays =
+      trace_config_.GetSyntheticDelayValues();
+  TraceConfig::StringList::const_iterator ci;
   for (ci = delays.begin(); ci != delays.end(); ++ci) {
     StringTokenizer tokens(*ci, ";");
     if (!tokens.GetNext())
@@ -1323,7 +1320,7 @@ const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
     g_category_groups[category_index] = new_group;
     DCHECK(!g_category_group_enabled[category_index]);
     // Note that if both included and excluded patterns in the
-    // CategoryFilter are empty, we exclude nothing,
+    // TraceConfig are empty, we exclude nothing,
     // thereby enabling this category group.
     UpdateCategoryGroupEnabledFlag(category_index);
     category_group_enabled = &g_category_group_enabled[category_index];
@@ -1346,9 +1343,7 @@ void TraceLog::GetKnownCategoryGroups(
     category_groups->push_back(g_category_groups[i]);
 }
 
-void TraceLog::SetEnabled(const CategoryFilter& category_filter,
-                          Mode mode,
-                          const TraceOptions& options) {
+void TraceLog::SetEnabled(const TraceConfig& trace_config, Mode mode) {
   std::vector<EnabledStateObserver*> observer_list;
   {
     AutoLock lock(lock_);
@@ -1357,7 +1352,7 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
     DCHECK(!flush_task_runner_);
 
     InternalTraceOptions new_options =
-        GetInternalOptionsFromTraceOptions(options);
+        GetInternalOptionsFromTraceConfig(trace_config);
 
    InternalTraceOptions old_options = trace_options();
 
@@ -1371,7 +1366,7 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
         DLOG(ERROR) << "Attempting to re-enable tracing with a different mode.";
       }
 
-      category_filter_.Merge(category_filter);
+      trace_config_.Merge(trace_config);
       UpdateCategoryGroupEnabledFlags();
       return;
     }
@@ -1391,9 +1386,9 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
 
     num_traces_recorded_++;
 
-    category_filter_ = CategoryFilter(category_filter);
+    trace_config_ = TraceConfig(trace_config);
     UpdateCategoryGroupEnabledFlags();
-    UpdateSyntheticDelaysFromCategoryFilter();
+    UpdateSyntheticDelaysFromTraceConfig();
 
     if (new_options & kInternalEnableSampling) {
       sampling_thread_.reset(new TraceSamplingThread);
@@ -1436,13 +1431,13 @@ void TraceLog::SetArgumentFilterPredicate(
   argument_filter_predicate_ = argument_filter_predicate;
 }
 
-TraceLog::InternalTraceOptions TraceLog::GetInternalOptionsFromTraceOptions(
-    const TraceOptions& options) {
+TraceLog::InternalTraceOptions TraceLog::GetInternalOptionsFromTraceConfig(
+    const TraceConfig& config) {
   InternalTraceOptions ret =
-      options.enable_sampling ? kInternalEnableSampling : kInternalNone;
-  if (options.enable_argument_filter)
+      config.IsSamplingEnabled() ? kInternalEnableSampling : kInternalNone;
+  if (config.IsArgumentFilterEnabled())
     ret |= kInternalEnableArgumentFilter;
-  switch (options.record_mode) {
+  switch (config.GetTraceRecordMode()) {
     case RECORD_UNTIL_FULL:
       return ret | kInternalRecordUntilFull;
     case RECORD_CONTINUOUSLY:
@@ -1456,27 +1451,9 @@ TraceLog::InternalTraceOptions TraceLog::GetInternalOptionsFromTraceOptions(
   return kInternalNone;
 }
 
-CategoryFilter TraceLog::GetCurrentCategoryFilter() {
+TraceConfig TraceLog::GetCurrentTraceConfig() const {
   AutoLock lock(lock_);
-  return category_filter_;
-}
-
-TraceOptions TraceLog::GetCurrentTraceOptions() const {
-  TraceOptions ret;
-  InternalTraceOptions option = trace_options();
-  ret.enable_sampling = (option & kInternalEnableSampling) != 0;
-  ret.enable_argument_filter = (option & kInternalEnableArgumentFilter) != 0;
-  if (option & kInternalRecordUntilFull)
-    ret.record_mode = RECORD_UNTIL_FULL;
-  else if (option & kInternalRecordContinuously)
-    ret.record_mode = RECORD_CONTINUOUSLY;
-  else if (option & kInternalEchoToConsole)
-    ret.record_mode = ECHO_TO_CONSOLE;
-  else if (option & kInternalRecordAsMuchAsPossible)
-    ret.record_mode = RECORD_AS_MUCH_AS_POSSIBLE;
-  else
-    NOTREACHED();
-  return ret;
+  return trace_config_;
 }
 
 void TraceLog::SetDisabled() {
@@ -1508,7 +1485,7 @@ void TraceLog::SetDisabledWhileLocked() {
     sampling_thread_.reset();
   }
 
-  category_filter_.Clear();
+  trace_config_.Clear();
   subtle::NoBarrier_Store(&watch_category_, 0);
   watch_event_name_ = "";
   UpdateCategoryGroupEnabledFlags();
@@ -1623,12 +1600,12 @@ void TraceLog::CheckIfBufferIsFullWhileLocked() {
   }
 }
 
-void TraceLog::SetEventCallbackEnabled(const CategoryFilter& category_filter,
+void TraceLog::SetEventCallbackEnabled(const TraceConfig& trace_config,
                                        EventCallback cb) {
   AutoLock lock(lock_);
   subtle::NoBarrier_Store(&event_callback_,
                           reinterpret_cast<subtle::AtomicWord>(cb));
-  event_callback_category_filter_ = category_filter;
+  event_callback_trace_config_ = trace_config;
   UpdateCategoryGroupEnabledFlags();
 };
 

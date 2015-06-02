@@ -10,14 +10,26 @@
 
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
-#include "base/trace_event/category_filter.h"
-#include "base/trace_event/trace_options.h"
 #include "base/values.h"
 
 namespace base {
 namespace trace_event {
 
-class CategoryFilter;
+// Options determines how the trace buffer stores data.
+enum TraceRecordMode {
+  // Record until the trace buffer is full.
+  RECORD_UNTIL_FULL,
+
+  // Record until the user ends the trace. The trace buffer is a fixed size
+  // and we use it as a ring buffer during recording.
+  RECORD_CONTINUOUSLY,
+
+  // Record until the trace buffer is full, but with a huge buffer size.
+  RECORD_AS_MUCH_AS_POSSIBLE,
+
+  // Echo to console. Events are discarded.
+  ECHO_TO_CONSOLE,
+};
 
 class BASE_EXPORT TraceConfig {
  public:
@@ -71,6 +83,9 @@ class BASE_EXPORT TraceConfig {
   TraceConfig(const std::string& category_filter_string,
               const std::string& trace_options_string);
 
+  TraceConfig(const std::string& category_filter_string,
+              TraceRecordMode record_mode);
+
   // Create TraceConfig object from the trace config string.
   //
   // |config_string| is a dictionary formatted as a JSON string, containing both
@@ -90,10 +105,23 @@ class BASE_EXPORT TraceConfig {
   //   }
   explicit TraceConfig(const std::string& config_string);
 
+  TraceConfig(const TraceConfig& tc);
+
   ~TraceConfig();
+
+  TraceConfig& operator=(const TraceConfig& rhs);
 
   // Return a list of the synthetic delays specified in this category filter.
   const StringList& GetSyntheticDelayValues() const;
+
+  TraceRecordMode GetTraceRecordMode() const { return record_mode_; }
+  bool IsSamplingEnabled() const { return enable_sampling_; }
+  bool IsSystraceEnabled() const { return enable_systrace_; }
+  bool IsArgumentFilterEnabled() const { return enable_argument_filter_; }
+
+  void SetTraceRecordMode(TraceRecordMode mode) { record_mode_ = mode; }
+  void EnableSampling() { enable_sampling_ = true; }
+  void EnableSystrace() { enable_systrace_ = true; }
 
   // Writes the string representation of the TraceConfig. The string is JSON
   // formatted.
@@ -112,28 +140,26 @@ class BASE_EXPORT TraceConfig {
   void Clear();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromValidLegacyStrings);
+  FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromValidLegacyFormat);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest,
                            TraceConfigFromInvalidLegacyStrings);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, ConstructDefaultTraceConfig);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromValidString);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromInvalidString);
-  FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, MergingTraceConfigs);
-  FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, IsCategoryGroupEnabled);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest,
                            IsEmptyOrContainsLeadingOrTrailingWhitespace);
-  friend class CategoryFilter;
-
-  // TODO(zhenw): remove COPY and ASSIGN after CategoryFilter is removed.
-  explicit TraceConfig(const TraceConfig& tc);
-  TraceConfig& operator=(const TraceConfig& rhs);
 
   // The default trace config, used when none is provided.
   // Allows all non-disabled-by-default categories through, except if they end
   // in the suffix 'Debug' or 'Test'.
   void InitializeDefault();
 
-  void Initialize(const std::string& config_string);
+  // Initialize from the config string
+  void InitializeFromConfigString(const std::string& config_string);
+
+  // Initialize from category filter and trace options strings
+  void InitializeFromStrings(const std::string& category_filter_string,
+                             const std::string& trace_options_string);
 
   void SetCategoriesFromIncludedList(const base::ListValue& included_list);
   void SetCategoriesFromExcludedList(const base::ListValue& excluded_list);

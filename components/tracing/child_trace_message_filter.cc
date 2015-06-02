@@ -57,9 +57,8 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 ChildTraceMessageFilter::~ChildTraceMessageFilter() {}
 
 void ChildTraceMessageFilter::OnBeginTracing(
-    const std::string& category_filter_str,
-    base::TraceTicks browser_time,
-    const std::string& options) {
+    const std::string& trace_config_str,
+    base::TraceTicks browser_time) {
 #if defined(__native_client__)
   // NaCl and system times are offset by a bit, so subtract some time from
   // the captured timestamps. The value might be off by a bit due to messaging
@@ -67,12 +66,9 @@ void ChildTraceMessageFilter::OnBeginTracing(
   base::TimeDelta time_offset = base::TraceTicks::Now() - browser_time;
   TraceLog::GetInstance()->SetTimeOffset(time_offset);
 #endif
-  base::trace_event::TraceOptions trace_options;
-  trace_options.SetFromString(options);
   TraceLog::GetInstance()->SetEnabled(
-      base::trace_event::CategoryFilter(category_filter_str),
-      base::trace_event::TraceLog::RECORDING_MODE,
-      trace_options);
+      base::trace_event::TraceConfig(trace_config_str),
+      base::trace_event::TraceLog::RECORDING_MODE);
 }
 
 void ChildTraceMessageFilter::OnEndTracing() {
@@ -87,15 +83,11 @@ void ChildTraceMessageFilter::OnEndTracing() {
 }
 
 void ChildTraceMessageFilter::OnEnableMonitoring(
-    const std::string& category_filter_str,
-    base::TraceTicks browser_time,
-    const std::string& options) {
-  base::trace_event::TraceOptions trace_options;
-  trace_options.SetFromString(options);
+    const std::string& trace_config_str,
+    base::TraceTicks browser_time) {
   TraceLog::GetInstance()->SetEnabled(
-      base::trace_event::CategoryFilter(category_filter_str),
-      base::trace_event::TraceLog::MONITORING_MODE,
-      trace_options);
+      base::trace_event::TraceConfig(trace_config_str),
+      base::trace_event::TraceLog::MONITORING_MODE);
 }
 
 void ChildTraceMessageFilter::OnDisableMonitoring() {

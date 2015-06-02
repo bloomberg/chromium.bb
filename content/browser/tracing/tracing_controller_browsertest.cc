@@ -12,10 +12,9 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 
-using base::trace_event::CategoryFilter;
-using base::trace_event::TraceOptions;
 using base::trace_event::RECORD_CONTINUOUSLY;
 using base::trace_event::RECORD_UNTIL_FULL;
+using base::trace_event::TraceConfig;
 
 namespace content {
 
@@ -165,7 +164,7 @@ class TracingControllerTest : public ContentBrowserTest {
                      base::Unretained(this),
                      run_loop.QuitClosure());
       bool result = controller->EnableRecording(
-          CategoryFilter(), TraceOptions(), callback);
+          TraceConfig(), callback);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
@@ -195,8 +194,7 @@ class TracingControllerTest : public ContentBrowserTest {
       TracingController::EnableRecordingDoneCallback callback =
           base::Bind(&TracingControllerTest::EnableRecordingDoneCallbackTest,
                      base::Unretained(this), run_loop.QuitClosure());
-      bool result = controller->EnableRecording(CategoryFilter(),
-                                                TraceOptions(), callback);
+      bool result = controller->EnableRecording(TraceConfig(), callback);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
@@ -227,8 +225,7 @@ class TracingControllerTest : public ContentBrowserTest {
       TracingController::EnableRecordingDoneCallback callback =
           base::Bind(&TracingControllerTest::EnableRecordingDoneCallbackTest,
                      base::Unretained(this), run_loop.QuitClosure());
-      bool result = controller->EnableRecording(CategoryFilter(),
-                                                TraceOptions(), callback);
+      bool result = controller->EnableRecording(TraceConfig(), callback);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
@@ -261,8 +258,7 @@ class TracingControllerTest : public ContentBrowserTest {
           base::Bind(&TracingControllerTest::EnableRecordingDoneCallbackTest,
                      base::Unretained(this),
                      run_loop.QuitClosure());
-      bool result = controller->EnableRecording(
-          CategoryFilter(), TraceOptions(), callback);
+      bool result = controller->EnableRecording(TraceConfig(), callback);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
@@ -291,15 +287,14 @@ class TracingControllerTest : public ContentBrowserTest {
 
     {
       bool is_monitoring;
-      CategoryFilter category_filter("");
-      TraceOptions options;
+      TraceConfig trace_config("", "");
       controller->GetMonitoringStatus(
-          &is_monitoring, &category_filter, &options);
+          &is_monitoring, &trace_config);
       EXPECT_FALSE(is_monitoring);
-      EXPECT_EQ("-*Debug,-*Test", category_filter.ToString());
-      EXPECT_FALSE(options.record_mode == RECORD_CONTINUOUSLY);
-      EXPECT_FALSE(options.enable_sampling);
-      EXPECT_FALSE(options.enable_systrace);
+      EXPECT_EQ("-*Debug,-*Test", trace_config.ToCategoryFilterString());
+      EXPECT_FALSE(trace_config.GetTraceRecordMode() == RECORD_CONTINUOUSLY);
+      EXPECT_FALSE(trace_config.IsSamplingEnabled());
+      EXPECT_FALSE(trace_config.IsSystraceEnabled());
     }
 
     {
@@ -309,13 +304,9 @@ class TracingControllerTest : public ContentBrowserTest {
                      base::Unretained(this),
                      run_loop.QuitClosure());
 
-      TraceOptions trace_options;
-      trace_options.enable_sampling = true;
-
-      bool result = controller->EnableMonitoring(
-          CategoryFilter("*"),
-          trace_options,
-          callback);
+      TraceConfig trace_config("*", "");
+      trace_config.EnableSampling();
+      bool result = controller->EnableMonitoring(trace_config, callback);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_monitoring_done_callback_count(), 1);
@@ -323,15 +314,13 @@ class TracingControllerTest : public ContentBrowserTest {
 
     {
       bool is_monitoring;
-      CategoryFilter category_filter("");
-      TraceOptions options;
-      controller->GetMonitoringStatus(
-          &is_monitoring, &category_filter, &options);
+      TraceConfig trace_config("", "");
+      controller->GetMonitoringStatus(&is_monitoring, &trace_config);
       EXPECT_TRUE(is_monitoring);
-      EXPECT_EQ("*", category_filter.ToString());
-      EXPECT_FALSE(options.record_mode == RECORD_CONTINUOUSLY);
-      EXPECT_TRUE(options.enable_sampling);
-      EXPECT_FALSE(options.enable_systrace);
+      EXPECT_EQ("*", trace_config.ToCategoryFilterString());
+      EXPECT_FALSE(trace_config.GetTraceRecordMode() == RECORD_CONTINUOUSLY);
+      EXPECT_TRUE(trace_config.IsSamplingEnabled());
+      EXPECT_FALSE(trace_config.IsSystraceEnabled());
     }
 
     {
@@ -361,16 +350,13 @@ class TracingControllerTest : public ContentBrowserTest {
 
     {
       bool is_monitoring;
-      CategoryFilter category_filter("");
-      TraceOptions options;
-      controller->GetMonitoringStatus(&is_monitoring,
-                                      &category_filter,
-                                      &options);
+      TraceConfig trace_config("", "");
+      controller->GetMonitoringStatus(&is_monitoring, &trace_config);
       EXPECT_FALSE(is_monitoring);
-      EXPECT_EQ("", category_filter.ToString());
-      EXPECT_FALSE(options.record_mode == RECORD_CONTINUOUSLY);
-      EXPECT_FALSE(options.enable_sampling);
-      EXPECT_FALSE(options.enable_systrace);
+      EXPECT_EQ("", trace_config.ToCategoryFilterString());
+      EXPECT_FALSE(trace_config.GetTraceRecordMode() == RECORD_CONTINUOUSLY);
+      EXPECT_FALSE(trace_config.IsSamplingEnabled());
+      EXPECT_FALSE(trace_config.IsSystraceEnabled());
     }
   }
 
@@ -431,8 +417,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
 
   TracingController* controller = TracingController::GetInstance();
   EXPECT_TRUE(controller->EnableRecording(
-      CategoryFilter(),
-      TraceOptions(),
+      TraceConfig(),
       TracingController::EnableRecordingDoneCallback()));
   EXPECT_TRUE(controller->DisableRecording(NULL));
   base::RunLoop().RunUntilIdle();
@@ -467,11 +452,10 @@ IN_PROC_BROWSER_TEST_F(
   Navigate(shell());
 
   TracingController* controller = TracingController::GetInstance();
-  TraceOptions trace_options;
-  trace_options.enable_sampling = true;
+  TraceConfig trace_config("*", "");
+  trace_config.EnableSampling();
   EXPECT_TRUE(controller->EnableMonitoring(
-      CategoryFilter("*"),
-      trace_options,
+      trace_config,
       TracingController::EnableMonitoringDoneCallback()));
   controller->CaptureMonitoringSnapshot(NULL);
   base::RunLoop().RunUntilIdle();
