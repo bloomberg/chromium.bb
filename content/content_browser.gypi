@@ -1188,6 +1188,8 @@
       'browser/renderer_host/input/touchpad_tap_suppression_controller.h',
       'browser/renderer_host/input/touchscreen_tap_suppression_controller.cc',
       'browser/renderer_host/input/touchscreen_tap_suppression_controller.h',
+      'browser/renderer_host/input/ui_touch_selection_helper.cc',
+      'browser/renderer_host/input/ui_touch_selection_helper.h',
       'browser/renderer_host/input/web_input_event_builders_android.cc',
       'browser/renderer_host/input/web_input_event_builders_android.h',
       'browser/renderer_host/input/web_input_event_builders_win.cc',
