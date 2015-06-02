@@ -79,6 +79,7 @@ class PowerPPSControlDisabled(perf_benchmark.PerfBenchmark):
   taking power."""
   test = power.QuiescentPower
   page_set = page_sets.PluginPowerSaverPageSet
+  options = {'pageset_repeat': 5}
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--disable-plugin-power-saver'])
@@ -95,6 +96,7 @@ class PowerPPSControlEnabled(perf_benchmark.PerfBenchmark):
   "Click to play" button)."""
   test = power.QuiescentPower
   page_set = page_sets.PluginPowerSaverPageSet
+  options = {'pageset_repeat': 5}
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-plugin-power-saver'])
@@ -110,6 +112,7 @@ class PowerThrottledPlugins(perf_benchmark.PerfBenchmark):
   (PPS) throttling them."""
   test = power.QuiescentPower
   page_set = page_sets.ThrottledPluginsPageSet
+  options = {'pageset_repeat': 5}
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--disable-plugin-power-saver'])
@@ -125,6 +128,7 @@ class PowerThrottledPluginsPPS(perf_benchmark.PerfBenchmark):
   (PPS) enabled to throttle them."""
   test = power.QuiescentPower
   page_set = page_sets.ThrottledPluginsPageSet
+  options = {'pageset_repeat': 5}
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-plugin-power-saver'])
