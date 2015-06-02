@@ -496,9 +496,15 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
             browser_actions_bar()->GetExtensionId(1));
 }
 
+// http://crbug.com/495678
+#if defined(OS_MACOSX)
+#define MAYBE_PageActionPopupsTest DISABLED_PageActionPopupsTest
+#else
+#define MAYBE_PageActionPopupsTest PageActionPopupsTest
+#endif
 // Test that page action popups work with the toolbar redesign.
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
-                       PageActionPopupsTest) {
+                       MAYBE_PageActionPopupsTest) {
   ExtensionTestMessageListener listener("ready", false);
   const extensions::Extension* page_action_extension =
       LoadExtension(test_data_dir_.AppendASCII("trigger_actions").
