@@ -98,7 +98,7 @@ template("midl") {
     sources = process_file_template(invoker.sources,
                                     [ "$out_dir/$interface_identifier_file" ])
 
-    deps = [
+    public_deps = [
       ":$action_name",
     ]
   }
