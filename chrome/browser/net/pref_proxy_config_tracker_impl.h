@@ -57,7 +57,7 @@ class ChromeProxyConfigService
   void RegisterObserver();
 
   scoped_ptr<net::ProxyConfigService> base_service_;
-  ObserverList<net::ProxyConfigService::Observer, true> observers_;
+  base::ObserverList<net::ProxyConfigService::Observer, true> observers_;
 
   // Tracks configuration state of |pref_config_|. |pref_config_| is valid only
   // if |pref_config_state_| is not CONFIG_UNSET.

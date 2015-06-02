@@ -38,7 +38,7 @@ class FakeProfileStore : public ProfileStore {
   typedef std::map<base::FilePath, base::Callback<void(Profile*)> >
       CallbacksByPath;
   CallbacksByPath callbacks_;
-  ObserverList<ProfileInfoCacheObserver> observer_list_;
+  base::ObserverList<ProfileInfoCacheObserver> observer_list_;
   typedef std::map<base::FilePath, Profile*> ProfilesByPath;
   ProfilesByPath loaded_profiles_;
 };

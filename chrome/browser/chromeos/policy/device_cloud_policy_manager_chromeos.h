@@ -146,7 +146,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   scoped_ptr<chromeos::attestation::AttestationPolicyObserver>
       attestation_policy_observer_;
 
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerChromeOS);
 };

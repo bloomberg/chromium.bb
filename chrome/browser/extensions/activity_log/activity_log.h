@@ -161,7 +161,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsCreatedWithBrowserContext = false;
 
-  typedef ObserverListThreadSafe<Observer> ObserverList;
+  typedef base::ObserverListThreadSafe<Observer> ObserverList;
   scoped_refptr<ObserverList> observers_;
 
   // Policy objects are owned by the ActivityLog, but cannot be scoped_ptrs

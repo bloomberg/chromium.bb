@@ -801,7 +801,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
 
   // The CookiesTreeModel maintains a separate list of observers that are
   // specifically of the type CookiesTreeModel::Observer.
-  ObserverList<Observer> cookies_observer_list_;
+  base::ObserverList<Observer> cookies_observer_list_;
 
   // If true, use the CanonicalCookie::Source attribute to group cookies.
   // Otherwise, use the CanonicalCookie::Domain attribute.

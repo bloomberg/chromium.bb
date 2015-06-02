@@ -97,7 +97,7 @@ class LoginUIService : public KeyedService {
   Profile* profile_;
 
   // List of observers.
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   base::string16 last_login_result_;
 

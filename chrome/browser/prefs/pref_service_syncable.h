@@ -105,7 +105,7 @@ class PrefServiceSyncable : public PrefService {
   PrefModelAssociator pref_sync_associator_;
   PrefModelAssociator priority_pref_sync_associator_;
 
-  ObserverList<PrefServiceSyncableObserver> observer_list_;
+  base::ObserverList<PrefServiceSyncableObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceSyncable);
 };

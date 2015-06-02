@@ -184,7 +184,7 @@ class ExtensionManagement : public KeyedService {
 
   PrefService* pref_service_;
 
-  ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true> observer_list_;
   PrefChangeRegistrar pref_change_registrar_;
   ScopedVector<ManagementPolicy::Provider> providers_;
 

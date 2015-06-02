@@ -15,7 +15,7 @@
 class CommandUpdater::Command {
  public:
   bool enabled;
-  ObserverList<CommandObserver> observers;
+  base::ObserverList<CommandObserver> observers;
 
   Command() : enabled(true) {}
 };

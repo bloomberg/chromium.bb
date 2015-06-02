@@ -271,7 +271,7 @@ class VariationsService
   int request_count_;
 
   // List of observers of the VariationsService.
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
 #if defined(OS_WIN)
   // Helper that handles synchronizing Variations with the Registry.

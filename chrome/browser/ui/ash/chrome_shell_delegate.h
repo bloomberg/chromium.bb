@@ -92,7 +92,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   ChromeLauncherController* shelf_delegate_;
 
-  ObserverList<ash::VirtualKeyboardStateObserver> keyboard_state_observer_list_;
+  base::ObserverList<ash::VirtualKeyboardStateObserver>
+      keyboard_state_observer_list_;
 
   // Proxies events from chrome/browser to ash::UserMetricsRecorder.
   scoped_ptr<ChromeUserMetricsRecorder> chrome_user_metrics_recorder_;

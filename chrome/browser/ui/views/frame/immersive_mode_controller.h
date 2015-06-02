@@ -109,7 +109,7 @@ class ImmersiveModeController {
   virtual void RemoveObserver(Observer* observer);
 
  protected:
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeController);

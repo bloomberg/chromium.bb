@@ -222,8 +222,8 @@ class SyncEngine : public RemoteFileSyncService,
   scoped_ptr<WorkerObserver> worker_observer_;
   scoped_ptr<SyncWorkerInterface> sync_worker_;
 
-  ObserverList<SyncServiceObserver> service_observers_;
-  ObserverList<FileStatusObserver> file_status_observers_;
+  base::ObserverList<SyncServiceObserver> service_observers_;
+  base::ObserverList<FileStatusObserver> file_status_observers_;
   leveldb::Env* env_override_;
 
   CallbackTracker callback_tracker_;

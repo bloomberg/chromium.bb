@@ -351,7 +351,7 @@ class SupervisedUserService : public KeyedService,
   // Used to create permission requests.
   ScopedVector<PermissionRequestCreator> permissions_creators_;
 
-  ObserverList<SupervisedUserServiceObserver> observer_list_;
+  base::ObserverList<SupervisedUserServiceObserver> observer_list_;
 
   base::WeakPtrFactory<SupervisedUserService> weak_ptr_factory_;
 };

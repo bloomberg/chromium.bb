@@ -570,7 +570,7 @@ class TabStripModel {
   scoped_ptr<TabStripModelOrderController> order_controller_;
 
   // Our observers.
-  typedef ObserverList<TabStripModelObserver> TabStripModelObservers;
+  typedef base::ObserverList<TabStripModelObserver> TabStripModelObservers;
   TabStripModelObservers observers_;
 
   ui::ListSelectionModel selection_model_;

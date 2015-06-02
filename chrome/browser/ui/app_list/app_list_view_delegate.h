@@ -196,7 +196,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   scoped_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
 #endif
 
-  ObserverList<app_list::AppListViewDelegateObserver> observers_;
+  base::ObserverList<app_list::AppListViewDelegateObserver> observers_;
 
   ScopedObserver<TemplateURLService, AppListViewDelegate>
       template_url_service_observer_;

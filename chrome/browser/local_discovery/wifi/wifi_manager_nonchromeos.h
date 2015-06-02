@@ -56,7 +56,7 @@ class WifiManagerNonChromeos : public WifiManager {
   std::string original_guid_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   WifiServiceWrapper* wifi_wrapper_;  // Owned. Deleted on file thread.
-  ObserverList<NetworkListObserver> network_list_observers_;
+  base::ObserverList<NetworkListObserver> network_list_observers_;
 
   base::WeakPtrFactory<WifiManagerNonChromeos> weak_factory_;
 

@@ -141,7 +141,7 @@ class ConsumerManagementService
   chromeos::CryptohomeClient* client_;
   chromeos::DeviceSettingsService* device_settings_service_;
 
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
   base::WeakPtrFactory<ConsumerManagementService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsumerManagementService);

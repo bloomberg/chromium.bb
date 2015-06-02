@@ -128,7 +128,7 @@ class DirectoryLoader {
   JobScheduler* scheduler_;  // Not owned.
   AboutResourceLoader* about_resource_loader_;  // Not owned.
   LoaderController* loader_controller_;  // Not owned.
-  ObserverList<ChangeListLoaderObserver> observers_;
+  base::ObserverList<ChangeListLoaderObserver> observers_;
   typedef std::map<std::string, std::vector<ReadDirectoryCallbackState> >
       LoadCallbackMap;
   LoadCallbackMap pending_load_callback_;

@@ -57,7 +57,7 @@ class InputServiceProxy {
   void OnDeviceAdded(const device::InputServiceLinux::InputDeviceInfo& info);
   void OnDeviceRemoved(const std::string& id);
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   scoped_ptr<ServiceObserver> service_observer_;
 
   base::ThreadChecker thread_checker_;

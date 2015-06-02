@@ -85,8 +85,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   // For default implementation.
   ::testing::NiceMock<MockLocalChangeProcessor> mock_local_change_processor_;
 
-  ObserverList<Observer> service_observers_;
-  ObserverList<FileStatusObserver> file_status_observers_;
+  base::ObserverList<Observer> service_observers_;
+  base::ObserverList<FileStatusObserver> file_status_observers_;
 
   RemoteServiceState state_;
 

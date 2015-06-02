@@ -255,7 +255,7 @@ class OobeUI : public OobeDisplay,
   std::vector<base::Closure> ready_callbacks_;
 
   // List of registered observers.
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   // Observer of CrosSettings watching the kRebootOnShutdown policy.
   scoped_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;

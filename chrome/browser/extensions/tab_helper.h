@@ -216,7 +216,7 @@ class TabHelper : public content::WebContentsObserver,
 
   // Our content script observers. Declare at top so that it will outlive all
   // other members, since they might add themselves as observers.
-  ObserverList<ScriptExecutionObserver> script_execution_observers_;
+  base::ObserverList<ScriptExecutionObserver> script_execution_observers_;
 
   // If non-null this tab is an app tab and this is the extension the tab was
   // created for.

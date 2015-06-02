@@ -167,7 +167,7 @@ class SafeBrowsingUIManager
   // Only access this whitelist from the UI thread.
   std::vector<WhiteListedEntry> white_listed_entries_;
 
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingUIManager);
 };

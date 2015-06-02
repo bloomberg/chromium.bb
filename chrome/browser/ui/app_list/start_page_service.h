@@ -161,7 +161,7 @@ class StartPageService : public KeyedService,
   scoped_ptr<StartPageWebContentsDelegate> contents_delegate_;
   scoped_ptr<ProfileDestroyObserver> profile_destroy_observer_;
   SpeechRecognitionState state_;
-  ObserverList<StartPageObserver> observers_;
+  base::ObserverList<StartPageObserver> observers_;
   bool speech_button_toggled_manually_;
   bool speech_result_obtained_;
 

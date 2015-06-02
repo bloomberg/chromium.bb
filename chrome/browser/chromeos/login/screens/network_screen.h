@@ -181,7 +181,7 @@ class NetworkScreen : public NetworkModel,
   // The exact language code selected by user in the menu.
   std::string selected_language_code_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<NetworkScreen> weak_factory_;
 

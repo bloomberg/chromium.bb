@@ -394,7 +394,7 @@ class MediaGalleriesPreferences
   // All pref ids in |device_map_| are also in |known_galleries_|.
   DeviceIdPrefIdsMap device_map_;
 
-  ObserverList<GalleryChangeObserver> gallery_change_observers_;
+  base::ObserverList<GalleryChangeObserver> gallery_change_observers_;
 
   base::WeakPtrFactory<MediaGalleriesPreferences> weak_factory_;
 

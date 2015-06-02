@@ -140,10 +140,10 @@ class MediaRouterMojoImpl : public MediaRouter,
   std::vector<base::Closure> pending_requests_;
 
   base::ScopedPtrHashMap<MediaSourceId,
-                         scoped_ptr<ObserverList<MediaSinksObserver>>>
+                         scoped_ptr<base::ObserverList<MediaSinksObserver>>>
       sinks_observers_;
 
-  ObserverList<MediaRoutesObserver> routes_observers_;
+  base::ObserverList<MediaRoutesObserver> routes_observers_;
 
   // Binds |this| to listen for updates from the component extension Media
   // Router.

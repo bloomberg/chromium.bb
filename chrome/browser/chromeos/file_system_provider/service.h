@@ -204,7 +204,7 @@ class Service : public KeyedService,
   Profile* profile_;
   extensions::ExtensionRegistry* extension_registry_;  // Not owned.
   FileSystemFactoryCallback file_system_factory_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   ProvidedFileSystemMap file_system_map_;  // Owns pointers.
   MountPointNameToKeyMap mount_point_name_to_key_map_;
   scoped_ptr<RegistryInterface> registry_;

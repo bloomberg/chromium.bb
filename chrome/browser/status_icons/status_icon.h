@@ -71,7 +71,7 @@ class StatusIcon {
   virtual void UpdatePlatformContextMenu(StatusIconMenuModel* model) = 0;
 
  private:
-  ObserverList<StatusIconObserver> observers_;
+  base::ObserverList<StatusIconObserver> observers_;
 
   // Context menu, if any.
   scoped_ptr<StatusIconMenuModel> context_menu_contents_;

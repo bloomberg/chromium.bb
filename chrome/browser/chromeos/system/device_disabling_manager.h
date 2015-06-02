@@ -119,7 +119,7 @@ class DeviceDisablingManager {
   CrosSettings* cros_settings_;
   user_manager::UserManager* user_manager_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   scoped_ptr<CrosSettings::ObserverSubscription> device_disabled_subscription_;
   scoped_ptr<CrosSettings::ObserverSubscription> disabled_message_subscription_;

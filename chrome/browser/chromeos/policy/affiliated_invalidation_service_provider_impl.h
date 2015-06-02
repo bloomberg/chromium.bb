@@ -85,7 +85,7 @@ class AffiliatedInvalidationServiceProviderImpl
   // for use.
   invalidation::InvalidationService* invalidation_service_;
 
-  ObserverList<Consumer, true> consumers_;
+  base::ObserverList<Consumer, true> consumers_;
   int consumer_count_;
 
   bool is_shut_down_;

@@ -186,7 +186,7 @@ class RequestManager {
   NotificationManagerInterface* notification_manager_;  // Not owned.
   int next_id_;
   base::TimeDelta timeout_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   base::WeakPtrFactory<RequestManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestManager);

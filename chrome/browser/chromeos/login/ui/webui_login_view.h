@@ -184,8 +184,8 @@ class WebUILoginView : public views::View,
   // True to forward keyboard event.
   bool forward_keyboard_event_;
 
-  ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
-  ObserverList<FrameObserver> frame_observer_list_;
+  base::ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
+  base::ObserverList<FrameObserver> frame_observer_list_;
 
   // Manage popups appearing over the login window.
   // TODO(gbillock): See if we can get rid of this. Perhaps in favor of

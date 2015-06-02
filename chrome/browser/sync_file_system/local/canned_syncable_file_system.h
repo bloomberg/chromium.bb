@@ -211,7 +211,8 @@ class CannedSyncableFileSystem
                           const storage::StatusCallback& callback);
 
  private:
-  typedef ObserverListThreadSafe<LocalFileSyncStatus::Observer> ObserverList;
+  typedef base::ObserverListThreadSafe<LocalFileSyncStatus::Observer>
+      ObserverList;
 
   // Callbacks.
   void DidOpenFileSystem(base::SingleThreadTaskRunner* original_task_runner,

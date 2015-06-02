@@ -90,7 +90,7 @@ class WorkAreaWatcherObserver;
   base::TimeTicks reopenTime_;
 
   // Observers that listen to the work area changes.
-  ObserverList<ui::WorkAreaWatcherObserver> workAreaChangeObservers_;
+  base::ObserverList<ui::WorkAreaWatcherObserver> workAreaChangeObservers_;
 
   scoped_ptr<PrefChangeRegistrar> profilePrefRegistrar_;
   PrefChangeRegistrar localPrefRegistrar_;

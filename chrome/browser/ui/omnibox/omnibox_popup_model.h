@@ -154,7 +154,7 @@ class OmniboxPopupModel {
   AutocompleteResult::Selection manually_selected_match_;
 
   // Observers.
-  ObserverList<OmniboxPopupModelObserver> observers_;
+  base::ObserverList<OmniboxPopupModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupModel);
 };

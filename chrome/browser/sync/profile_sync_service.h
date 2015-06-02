@@ -952,9 +952,10 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Manager for the non-blocking data types.
   sync_driver::NonBlockingDataTypeManager non_blocking_data_type_manager_;
 
-  ObserverList<sync_driver::SyncServiceObserver> observers_;
-  ObserverList<browser_sync::ProtocolEventObserver> protocol_event_observers_;
-  ObserverList<syncer::TypeDebugInfoObserver> type_debug_info_observers_;
+  base::ObserverList<sync_driver::SyncServiceObserver> observers_;
+  base::ObserverList<browser_sync::ProtocolEventObserver>
+      protocol_event_observers_;
+  base::ObserverList<syncer::TypeDebugInfoObserver> type_debug_info_observers_;
 
   std::set<SyncTypePreferenceProvider*> preference_providers_;
 

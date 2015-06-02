@@ -146,7 +146,7 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
 
   ApplicationMap applications_;
   extensions::ExtensionList extensions_;
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
   Profile* profile_;
   content::NotificationRegistrar registrar_;
   bool ready_;

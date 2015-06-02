@@ -282,7 +282,7 @@ class DialServiceImpl : public DialService,
   base::TimeDelta request_interval_;
 
   // List of observers.
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   // Thread checker.
   base::ThreadChecker thread_checker_;

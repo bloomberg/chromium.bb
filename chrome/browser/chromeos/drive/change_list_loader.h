@@ -219,7 +219,7 @@ class ChangeListLoader {
   JobScheduler* scheduler_;  // Not owned.
   AboutResourceLoader* about_resource_loader_;  // Not owned.
   LoaderController* loader_controller_;  // Not owned.
-  ObserverList<ChangeListLoaderObserver> observers_;
+  base::ObserverList<ChangeListLoaderObserver> observers_;
   std::vector<FileOperationCallback> pending_load_callback_;
   FileOperationCallback pending_update_check_callback_;
 

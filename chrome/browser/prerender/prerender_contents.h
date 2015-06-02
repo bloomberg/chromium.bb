@@ -330,7 +330,7 @@ class PrerenderContents : public content::NotificationObserver,
   // Message handlers.
   void OnCancelPrerenderForPrinting();
 
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   // The prerender manager owning this object.
   PrerenderManager* prerender_manager_;

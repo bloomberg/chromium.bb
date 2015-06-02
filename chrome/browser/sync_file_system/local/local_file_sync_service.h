@@ -235,7 +235,7 @@ class LocalFileSyncService
   LocalChangeProcessor* local_change_processor_;
   GetLocalChangeProcessorCallback get_local_change_processor_;
 
-  ObserverList<Observer> change_observers_;
+  base::ObserverList<Observer> change_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileSyncService);
 };

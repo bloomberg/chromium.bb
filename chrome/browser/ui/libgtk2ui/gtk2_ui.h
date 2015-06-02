@@ -254,7 +254,7 @@ class Gtk2UI : public views::LinuxUI {
   scoped_ptr<Gtk2KeyBindingsHandler> key_bindings_handler_;
 
   // Objects to notify when the window frame button order changes.
-  ObserverList<views::WindowButtonOrderObserver> observer_list_;
+  base::ObserverList<views::WindowButtonOrderObserver> observer_list_;
 
   // Whether we should lower the window on a middle click to the non client
   // area.

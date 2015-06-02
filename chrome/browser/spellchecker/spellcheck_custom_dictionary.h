@@ -166,7 +166,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   base::FilePath custom_dictionary_path_;
 
   // Observers for changes in dictionary load status and content changes.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Used to send local changes to the sync infrastructure.
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;

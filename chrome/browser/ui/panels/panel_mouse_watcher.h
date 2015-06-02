@@ -50,7 +50,7 @@ class PanelMouseWatcher {
   virtual void Start() = 0;
   virtual void Stop() = 0;
 
-  ObserverList<PanelMouseWatcherObserver> observers_;
+  base::ObserverList<PanelMouseWatcherObserver> observers_;
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_PANEL_MOUSE_WATCHER_H_

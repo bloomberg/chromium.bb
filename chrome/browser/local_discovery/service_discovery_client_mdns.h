@@ -54,7 +54,7 @@ class ServiceDiscoveryClientMdns
   void OnBeforeMdnsDestroy();
   void DestroyMdns();
 
-  ObserverList<Proxy, true> proxies_;
+  base::ObserverList<Proxy, true> proxies_;
 
   scoped_refptr<base::SequencedTaskRunner> mdns_runner_;
 

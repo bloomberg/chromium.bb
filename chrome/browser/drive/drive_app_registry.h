@@ -131,7 +131,7 @@ class DriveAppRegistry {
 
   bool is_updating_;
 
-  ObserverList<DriveAppRegistryObserver> observers_;
+  base::ObserverList<DriveAppRegistryObserver> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

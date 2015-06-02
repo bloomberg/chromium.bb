@@ -251,7 +251,7 @@ class DriveAPIService : public DriveServiceInterface,
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<google_apis::RequestSender> sender_;
-  ObserverList<DriveServiceObserver> observers_;
+  base::ObserverList<DriveServiceObserver> observers_;
   google_apis::DriveApiUrlGenerator url_generator_;
   const std::string custom_user_agent_;
 

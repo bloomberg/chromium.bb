@@ -187,7 +187,7 @@ class WrenchMenu : public views::MenuDelegate,
   // The bit mask of RunFlags.
   const int run_flags_;
 
-  ObserverList<WrenchMenuObserver> observer_list_;
+  base::ObserverList<WrenchMenuObserver> observer_list_;
 
   // Records the time from when menu opens to when the user selects a menu item.
   base::ElapsedTimer menu_opened_timer_;

@@ -94,7 +94,7 @@ class LevelDBPrefStore : public PersistentPrefStore {
 
   bool read_only_;
 
-  ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true> observers_;
 
   scoped_ptr<ReadErrorDelegate> error_delegate_;
 

@@ -175,7 +175,7 @@ class SupervisedUserURLFilter
                      FilteringBehavior behavior,
                      bool uncertain) const;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   FilteringBehavior default_behavior_;
   scoped_ptr<Contents> contents_;

@@ -139,7 +139,7 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   CachedTokens token_cache_;
   ProfileIdentityProvider profile_identity_provider_;
   gaia::AccountTracker account_tracker_;
-  ObserverList<ShutdownObserver> shutdown_observer_list_;
+  base::ObserverList<ShutdownObserver> shutdown_observer_list_;
 };
 
 template <>

@@ -98,7 +98,7 @@ class NetworkStateInformer
   std::string network_path_;
   std::string network_type_;
 
-  ObserverList<NetworkStateInformerObserver> observers_;
+  base::ObserverList<NetworkStateInformerObserver> observers_;
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<NetworkStateInformer> weak_ptr_factory_;

@@ -294,7 +294,7 @@ class VolumeManager : public KeyedService,
   drive::DriveIntegrationService* drive_integration_service_;  // Not owned.
   chromeos::disks::DiskMountManager* disk_mount_manager_;      // Not owned.
   PrefChangeRegistrar pref_change_registrar_;
-  ObserverList<VolumeManagerObserver> observers_;
+  base::ObserverList<VolumeManagerObserver> observers_;
   chromeos::file_system_provider::Service*
       file_system_provider_service_;  // Not owned by this class.
   std::map<std::string, linked_ptr<Volume>> mounted_volumes_;

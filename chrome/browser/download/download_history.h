@@ -148,7 +148,7 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
   // Count the number of items in the history for UMA.
   int64 history_size_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<DownloadHistory> weak_ptr_factory_;
 

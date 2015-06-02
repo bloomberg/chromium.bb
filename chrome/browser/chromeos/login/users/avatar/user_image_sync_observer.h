@@ -96,7 +96,7 @@ class UserImageSyncObserver: public PrefServiceSyncableObserver,
   bool is_synced_;
   // Indicates if local user image changed during initialization.
   bool local_image_changed_;
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 };
 
 }  // namespace chromeos

@@ -213,8 +213,8 @@ void PartnerBookmarksShim::EnablePartnerBookmarksEditing() {
 
 PartnerBookmarksShim::PartnerBookmarksShim(PrefService* prefs)
     : prefs_(prefs),
-      observers_(
-          ObserverList<PartnerBookmarksShim::Observer>::NOTIFY_EXISTING_ONLY) {
+      observers_(base::ObserverList<
+          PartnerBookmarksShim::Observer>::NOTIFY_EXISTING_ONLY) {
 }
 
 PartnerBookmarksShim::~PartnerBookmarksShim() {

@@ -670,7 +670,7 @@ class TabStrip : public views::View,
   bool immersive_style_;
 
   // Our observers.
-  typedef ObserverList<TabStripObserver> TabStripObservers;
+  typedef base::ObserverList<TabStripObserver> TabStripObservers;
   TabStripObservers observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);

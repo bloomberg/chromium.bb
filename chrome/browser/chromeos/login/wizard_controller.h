@@ -380,7 +380,7 @@ class WizardController : public BaseScreenDelegate,
   // user Sign-In completed.
   base::Time time_oobe_started_;
 
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   bool login_screen_started_;
 

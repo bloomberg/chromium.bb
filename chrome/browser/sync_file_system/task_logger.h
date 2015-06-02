@@ -58,7 +58,7 @@ class TaskLogger : public base::SupportsWeakPtr<TaskLogger> {
  private:
   std::deque<TaskLog*> log_history_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskLogger);
 };

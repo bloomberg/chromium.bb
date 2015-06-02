@@ -87,7 +87,7 @@ class InstallTracker : public KeyedService,
   typedef std::map<std::string, ActiveInstallData> ActiveInstallsMap;
   ActiveInstallsMap active_installs_;
 
-  ObserverList<InstallObserver> observers_;
+  base::ObserverList<InstallObserver> observers_;
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

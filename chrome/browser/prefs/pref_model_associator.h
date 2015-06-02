@@ -179,7 +179,7 @@ class PrefModelAssociator
   // Map prefs to lists of observers. Observers will receive notification when
   // a pref changes, including the detail of whether or not the change came
   // from sync.
-  typedef ObserverList<SyncedPrefObserver> SyncedPrefObserverList;
+  typedef base::ObserverList<SyncedPrefObserver> SyncedPrefObserverList;
   typedef base::hash_map<std::string, SyncedPrefObserverList*>
       SyncedPrefObserverMap;
 

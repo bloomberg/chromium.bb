@@ -161,7 +161,7 @@ class SupervisedUserSyncService : public KeyedService,
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> error_handler_;
 
-  ObserverList<SupervisedUserSyncServiceObserver> observers_;
+  base::ObserverList<SupervisedUserSyncServiceObserver> observers_;
 
   std::vector<SupervisedUsersCallback> callbacks_;
 

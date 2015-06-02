@@ -64,9 +64,9 @@ class PluginInstaller : public content::DownloadItem::Observer {
   void DownloadCancelled();
 
   InstallerState state_;
-  ObserverList<PluginInstallerObserver> observers_;
+  base::ObserverList<PluginInstallerObserver> observers_;
   int strong_observer_count_;
-  ObserverList<WeakPluginInstallerObserver> weak_observers_;
+  base::ObserverList<WeakPluginInstallerObserver> weak_observers_;
 
   FRIEND_TEST_ALL_PREFIXES(PluginInstallerTest,
                            StartInstalling_SuccessfulDownload);

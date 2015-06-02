@@ -149,7 +149,7 @@ class AppBannerDataFetcher
 
   const int ideal_icon_size_;
   const base::WeakPtr<Delegate> weak_delegate_;
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
   bool is_active_;
   int event_request_id_;
   scoped_ptr<chrome::BitmapFetcher> bitmap_fetcher_;

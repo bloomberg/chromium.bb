@@ -79,7 +79,7 @@ class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
   ~SigninManagerFactory() override;
 
   // List of observers. Checks that list is empty on destruction.
-  mutable ObserverList<Observer, true> observer_list_;
+  mutable base::ObserverList<Observer, true> observer_list_;
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(

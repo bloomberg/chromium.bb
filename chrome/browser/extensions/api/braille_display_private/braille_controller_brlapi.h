@@ -74,7 +74,7 @@ class BrailleControllerImpl : public BrailleController {
   base::Time retry_connect_horizon_;
 
   // Manipulated on the UI thread.
-  ObserverList<BrailleObserver> observers_;
+  base::ObserverList<BrailleObserver> observers_;
 
   // Manipulated on the FILE thread.
   base::FilePathWatcher file_path_watcher_;

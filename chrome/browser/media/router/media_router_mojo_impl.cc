@@ -196,10 +196,10 @@ void MediaRouterMojoImpl::RegisterMediaSinksObserver(
   // Create an observer list for the media source and add |observer|
   // to it. Fail if |observer| is already registered.
   const std::string& source_id = observer->source().id();
-  ObserverList<MediaSinksObserver>* observer_list =
+  base::ObserverList<MediaSinksObserver>* observer_list =
       sinks_observers_.get(source_id);
   if (!observer_list) {
-    observer_list = new ObserverList<MediaSinksObserver>;
+    observer_list = new base::ObserverList<MediaSinksObserver>;
     sinks_observers_.add(source_id, make_scoped_ptr(observer_list));
   } else {
     DCHECK(!observer_list->HasObserver(observer));

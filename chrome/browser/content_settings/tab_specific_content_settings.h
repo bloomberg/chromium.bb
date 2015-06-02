@@ -402,7 +402,7 @@ class TabSpecificContentSettings
   void MidiDidNavigate(const content::LoadCommittedDetails& details);
 
   // All currently registered |SiteDataObserver|s.
-  ObserverList<SiteDataObserver> observer_list_;
+  base::ObserverList<SiteDataObserver> observer_list_;
 
   // Stores which content setting types actually have blocked content.
   bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];

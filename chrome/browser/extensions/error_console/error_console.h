@@ -168,11 +168,11 @@ class ErrorConsole : public KeyedService,
   // - This is a Dev Channel release.
   bool enabled_;
 
-  // Needed because ObserverList is not thread-safe.
+  // Needed because base::ObserverList is not thread-safe.
   base::ThreadChecker thread_checker_;
 
   // The list of all observers for the ErrorConsole.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // The errors which we have received so far.
   ErrorMap errors_;

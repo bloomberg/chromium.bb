@@ -209,7 +209,7 @@ class ExtensionToolbarModel : public ExtensionActionAPI::Observer,
   void RemoveExtension(const Extension* extension);
 
   // Our observers.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // The Profile this toolbar model is for.
   Profile* profile_;

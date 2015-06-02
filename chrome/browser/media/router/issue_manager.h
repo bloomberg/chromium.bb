@@ -64,7 +64,7 @@ class IssueManager {
   std::vector<Issue> issues_;
 
   // IssueObserver insteances are not owned by the manager.
-  ObserverList<IssuesObserver> issues_observers_;
+  base::ObserverList<IssuesObserver> issues_observers_;
 
   // The ID of the current top issue.
   Issue::IssueId top_issue_id_;

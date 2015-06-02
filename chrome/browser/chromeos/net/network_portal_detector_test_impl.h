@@ -47,7 +47,7 @@ class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
   typedef std::string NetworkId;
   typedef base::hash_map<NetworkId, CaptivePortalState> CaptivePortalStateMap;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   scoped_ptr<NetworkState> default_network_;
   CaptivePortalStateMap portal_state_map_;
   PortalDetectorStrategy::StrategyId strategy_id_;

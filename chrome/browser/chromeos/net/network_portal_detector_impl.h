@@ -222,7 +222,7 @@ class NetworkPortalDetectorImpl
 
   State state_;
   CaptivePortalStateMap portal_state_map_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   base::CancelableClosure attempt_task_;
   base::CancelableClosure attempt_timeout_;

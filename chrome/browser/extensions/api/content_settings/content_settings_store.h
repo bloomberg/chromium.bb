@@ -133,7 +133,7 @@ class ContentSettingsStore
 
   ExtensionEntryMap entries_;
 
-  ObserverList<Observer, false> observers_;
+  base::ObserverList<Observer, false> observers_;
 
   mutable base::Lock lock_;
 

@@ -179,7 +179,7 @@ class SyncFileSystemService
   bool sync_enabled_;
 
   TaskLogger task_logger_;
-  ObserverList<SyncEventObserver> observers_;
+  base::ObserverList<SyncEventObserver> observers_;
 
   bool promoting_demoted_changes_;
   base::Closure idle_callback_;

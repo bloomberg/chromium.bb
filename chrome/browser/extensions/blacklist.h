@@ -135,7 +135,7 @@ class Blacklist : public KeyedService,
   void ReturnBlacklistStateMap(const GetBlacklistedIDsCallback& callback,
                                const std::set<std::string>& blacklisted_ids);
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   content::NotificationRegistrar registrar_;
 

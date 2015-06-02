@@ -221,7 +221,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // currently active; it gets removed and destroyed once it completes.
   std::deque<linked_ptr<SessionManagerOperation>> pending_operations_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // For recoverable load errors how many retries are left before we give up.
   int load_retries_left_;

@@ -247,8 +247,8 @@ class OAuth2LoginManager : public KeyedService,
   // List of observers to notify when token availability changes.
   // Makes sure list is empty on destruction.
   // TODO(zelidrag|gspencer): Figure out how to get rid of ProfileHelper so we
-  // can change the line below to ObserverList<Observer, true>.
-  ObserverList<Observer, false> observer_list_;
+  // can change the line below to base::ObserverList<Observer, true>.
+  base::ObserverList<Observer, false> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginManager);
 };

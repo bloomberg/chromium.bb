@@ -150,7 +150,7 @@ class SpellcheckHunspellDictionary
   SpellcheckService* spellcheck_service_;
 
   // Observers of Hunspell dictionary events.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Status of the dictionary download.
   DownloadStatus download_status_;

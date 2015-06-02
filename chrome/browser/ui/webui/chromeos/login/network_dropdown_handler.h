@@ -53,7 +53,7 @@ class NetworkDropdownHandler : public BaseScreenHandler,
 
   scoped_ptr<NetworkDropdown> dropdown_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDropdownHandler);
 };

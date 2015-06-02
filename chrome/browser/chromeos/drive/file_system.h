@@ -271,7 +271,7 @@ class FileSystem : public FileSystemInterface,
 
   scoped_ptr<internal::SyncClient> sync_client_;
 
-  ObserverList<FileSystemObserver> observers_;
+  base::ObserverList<FileSystemObserver> observers_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

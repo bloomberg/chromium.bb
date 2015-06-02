@@ -231,7 +231,7 @@ class DeviceLocalAccountPolicyService {
   // Notifies the |observers_| that the policy for |user_id| has changed.
   void NotifyPolicyUpdated(const std::string& user_id);
 
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
 
   chromeos::SessionManagerClient* session_manager_client_;
   chromeos::DeviceSettingsService* device_settings_service_;

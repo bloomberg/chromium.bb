@@ -367,7 +367,7 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
   watchdog_apps_active_ =
       profile_->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive);
 
-  observers_ = new ObserverListThreadSafe<Observer>;
+  observers_ = new base::ObserverListThreadSafe<Observer>;
 
   // Check that the right threads exist for logging to the database.
   // If not, we shouldn't try to do things that require them.

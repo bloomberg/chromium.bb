@@ -141,7 +141,7 @@ class ShortcutsBackend : public RefcountedKeyedService,
 
   Profile* profile_;
   CurrentState current_state_;
-  ObserverList<ShortcutsBackendObserver> observer_list_;
+  base::ObserverList<ShortcutsBackendObserver> observer_list_;
   scoped_refptr<ShortcutsDatabase> db_;
 
   // The |temp_shortcuts_map_| and |temp_guid_map_| used for temporary storage

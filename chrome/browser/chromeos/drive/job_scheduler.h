@@ -386,7 +386,7 @@ class JobScheduler
   JobIDMap job_map_;
 
   // The list of observers for the scheduler.
-  ObserverList<JobListObserver> observer_list_;
+  base::ObserverList<JobListObserver> observer_list_;
 
   EventLogger* logger_;
   DriveServiceInterface* drive_service_;

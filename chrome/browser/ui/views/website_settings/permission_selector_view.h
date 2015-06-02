@@ -51,7 +51,7 @@ class PermissionSelectorView : public views::View {
   views::ImageView* icon_;  // Owned by the views hierachy.
   internal::PermissionMenuButton* menu_button_;  // Owned by the views hierachy.
 
-  ObserverList<PermissionSelectorViewObserver, false> observer_list_;
+  base::ObserverList<PermissionSelectorViewObserver, false> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionSelectorView);
 };

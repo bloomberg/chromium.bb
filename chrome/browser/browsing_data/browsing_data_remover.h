@@ -426,7 +426,7 @@ class BrowsingDataRemover
   // From which types of origins should we remove data?
   int origin_set_mask_;
 
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   // Used if we need to clear history.
   base::CancelableTaskTracker history_task_tracker_;

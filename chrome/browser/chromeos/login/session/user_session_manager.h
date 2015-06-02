@@ -429,7 +429,8 @@ class UserSessionManager
   // [user_id] > [user_id_hash]
   SessionManagerClient::ActiveSessionsMap pending_user_sessions_;
 
-  ObserverList<chromeos::UserSessionStateObserver> session_state_observer_list_;
+  base::ObserverList<chromeos::UserSessionStateObserver>
+      session_state_observer_list_;
 
   // OAuth2 session related members.
 

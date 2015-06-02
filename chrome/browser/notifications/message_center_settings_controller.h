@@ -116,7 +116,7 @@ class MessageCenterSettingsController
   void RebuildNotifierGroups(bool notify);
 
   // The views displaying notifier settings.
-  ObserverList<message_center::NotifierSettingsObserver> observers_;
+  base::ObserverList<message_center::NotifierSettingsObserver> observers_;
 
   // The task tracker for loading favicons.
   scoped_ptr<base::CancelableTaskTracker> favicon_tracker_;

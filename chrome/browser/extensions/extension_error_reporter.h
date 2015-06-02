@@ -81,7 +81,7 @@ class ExtensionErrorReporter {
   std::vector<base::string16> errors_;
   bool enable_noisy_errors_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_REPORTER_H_

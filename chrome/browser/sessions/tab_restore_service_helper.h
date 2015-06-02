@@ -178,7 +178,7 @@ class TabRestoreServiceHelper {
   // historical tab.
   bool restoring_;
 
-  ObserverList<TabRestoreServiceObserver> observer_list_;
+  base::ObserverList<TabRestoreServiceObserver> observer_list_;
 
   // Set of delegates that we've received a BrowserClosing method for but no
   // corresponding BrowserClosed. We cache the set of delegates closing to

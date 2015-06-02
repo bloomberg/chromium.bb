@@ -38,7 +38,7 @@ class SyncErrorController : public sync_driver::SyncServiceObserver {
 
  private:
   ProfileSyncService* service_;
-  ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncErrorController);
 };

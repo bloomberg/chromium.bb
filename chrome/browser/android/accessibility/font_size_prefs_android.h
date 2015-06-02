@@ -45,7 +45,7 @@ class FontSizePrefsAndroid {
 
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   PrefService* const pref_service_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(FontSizePrefsAndroid);

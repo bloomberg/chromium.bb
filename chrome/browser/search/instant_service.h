@@ -161,7 +161,7 @@ class InstantService : public KeyedService,
   // text or assets properly with the omnibox.
   int omnibox_start_margin_;
 
-  ObserverList<InstantServiceObserver> observers_;
+  base::ObserverList<InstantServiceObserver> observers_;
 
   content::NotificationRegistrar registrar_;
 

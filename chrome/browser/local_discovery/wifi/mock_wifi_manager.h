@@ -68,7 +68,7 @@ class MockWifiManager : public WifiManager {
   SuccessCallback configure_and_connect_network_callback_;
   SuccessCallback connect_by_id_callback_;
   CredentialsCallback credentials_callback_;
-  ObserverList<NetworkListObserver> network_observers_;
+  base::ObserverList<NetworkListObserver> network_observers_;
 
   base::WeakPtrFactory<MockWifiManager> weak_factory_;
 };

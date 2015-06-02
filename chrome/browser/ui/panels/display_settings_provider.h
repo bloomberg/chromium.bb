@@ -107,15 +107,15 @@ class DisplaySettingsProvider {
   virtual DesktopBarVisibility GetDesktopBarVisibility(
       DesktopBarAlignment alignment) const;
 
-  ObserverList<DisplayObserver>& display_observers() {
+  base::ObserverList<DisplayObserver>& display_observers() {
     return display_observers_;
   }
 
-  ObserverList<DesktopBarObserver>& desktop_bar_observers() {
+  base::ObserverList<DesktopBarObserver>& desktop_bar_observers() {
     return desktop_bar_observers_;
   }
 
-  ObserverList<FullScreenObserver>& full_screen_observers() {
+  base::ObserverList<FullScreenObserver>& full_screen_observers() {
     return full_screen_observers_;
   }
 
@@ -141,9 +141,9 @@ class DisplaySettingsProvider {
 
  private:
   // Observers that listen to various display settings changes.
-  ObserverList<DisplayObserver> display_observers_;
-  ObserverList<DesktopBarObserver> desktop_bar_observers_;
-  ObserverList<FullScreenObserver> full_screen_observers_;
+  base::ObserverList<DisplayObserver> display_observers_;
+  base::ObserverList<DesktopBarObserver> desktop_bar_observers_;
+  base::ObserverList<FullScreenObserver> full_screen_observers_;
 
   // True if full screen mode or presentation mode is entered.
   bool is_full_screen_;

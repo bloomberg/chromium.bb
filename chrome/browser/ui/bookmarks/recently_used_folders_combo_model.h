@@ -88,7 +88,7 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel,
   // The index of the original parent folder.
   int node_parent_index_;
 
-  ObserverList<ui::ComboboxModelObserver> observers_;
+  base::ObserverList<ui::ComboboxModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentlyUsedFoldersComboModel);
 };

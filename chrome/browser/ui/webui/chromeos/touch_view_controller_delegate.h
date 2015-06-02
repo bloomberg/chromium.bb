@@ -42,7 +42,7 @@ class TouchViewControllerDelegate : public ash::ShellObserver {
   void OnMaximizeModeEnded() override;
 
   // Mode state change observers.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchViewControllerDelegate);
 };

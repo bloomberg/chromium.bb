@@ -247,7 +247,7 @@ class ToolbarView : public views::AccessiblePaneView,
   scoped_ptr<WrenchMenu> wrench_menu_;
 
   // A list of listeners to call when the menu opens.
-  ObserverList<views::MenuListener> menu_listeners_;
+  base::ObserverList<views::MenuListener> menu_listeners_;
 
   content::NotificationRegistrar registrar_;
 

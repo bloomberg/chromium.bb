@@ -42,7 +42,7 @@ class SupervisedUserPrefStore : public PrefStore {
 
   scoped_ptr<PrefValueMap> prefs_;
 
-  ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true> observers_;
 
   base::WeakPtrFactory<SupervisedUserPrefStore> weak_ptr_factory_;
 };

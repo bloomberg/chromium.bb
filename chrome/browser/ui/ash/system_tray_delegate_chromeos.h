@@ -304,10 +304,10 @@ class SystemTrayDelegateChromeOS
   scoped_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
   scoped_ptr<ash::VPNDelegate> vpn_delegate_;
 
-  ObserverList<ash::CustodianInfoTrayObserver>
+  base::ObserverList<ash::CustodianInfoTrayObserver>
       custodian_info_changed_observers_;
 
-  ObserverList<ash::ShutdownPolicyObserver> shutdown_policy_observers_;
+  base::ObserverList<ash::ShutdownPolicyObserver> shutdown_policy_observers_;
 
   base::WeakPtrFactory<SystemTrayDelegateChromeOS> weak_ptr_factory_;
 

@@ -347,7 +347,7 @@ class BrowserActionsContainer
   // The extension bubble that is actively showing, if any.
   views::BubbleDelegateView* active_bubble_;
 
-  ObserverList<BrowserActionsContainerObserver> observers_;
+  base::ObserverList<BrowserActionsContainerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };

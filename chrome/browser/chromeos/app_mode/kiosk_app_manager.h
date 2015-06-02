@@ -277,7 +277,7 @@ class KioskAppManager : public KioskAppDataDelegate,
   ScopedVector<KioskAppData> apps_;
   std::string auto_launch_app_id_;
   std::string currently_auto_launched_with_zero_delay_app_;
-  ObserverList<KioskAppManagerObserver, true> observers_;
+  base::ObserverList<KioskAppManagerObserver, true> observers_;
 
   scoped_ptr<CrosSettings::ObserverSubscription>
       local_accounts_subscription_;

@@ -80,7 +80,7 @@ class SessionStateDelegateChromeos
   void TryToSwitchUser(const std::string& user_id);
 
   // List of observers is only used on Chrome OS for now.
-  ObserverList<ash::SessionStateObserver> session_state_observer_list_;
+  base::ObserverList<ash::SessionStateObserver> session_state_observer_list_;
 
   // Session state (e.g. login screen vs. user session).
   SessionState session_state_;

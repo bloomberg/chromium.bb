@@ -101,7 +101,7 @@ class FakeSyncWorker : public SyncWorkerInterface {
 
   scoped_ptr<SyncEngineContext> sync_engine_context_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncWorker);

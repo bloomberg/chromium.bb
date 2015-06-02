@@ -104,7 +104,7 @@ class DnsSdRegistry : public DnsSdDelegate {
 
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
-  ObserverList<DnsSdObserver> observers_;
+  base::ObserverList<DnsSdObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsSdRegistry);
 };

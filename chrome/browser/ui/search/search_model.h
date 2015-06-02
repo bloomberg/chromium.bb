@@ -80,7 +80,7 @@ class SearchModel {
   State state_;
 
   // Observers.
-  ObserverList<SearchModelObserver> observers_;
+  base::ObserverList<SearchModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchModel);
 };

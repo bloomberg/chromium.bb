@@ -510,7 +510,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   scoped_ptr<TaskManagerModelGpuDataManagerObserver>
       video_memory_usage_stats_observer_;
 
-  ObserverList<TaskManagerModelObserver> observer_list_;
+  base::ObserverList<TaskManagerModelObserver> observer_list_;
 
   // How many calls to StartUpdating have been made without matching calls to
   // StopUpdating.

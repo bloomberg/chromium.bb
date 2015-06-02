@@ -17,7 +17,7 @@ using content::BrowserThread;
 namespace extensions {
 
 SyncableSettingsStorage::SyncableSettingsStorage(
-    const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >&
+    const scoped_refptr<base::ObserverListThreadSafe<SettingsObserver>>&
         observers,
     const std::string& extension_id,
     ValueStore* delegate,

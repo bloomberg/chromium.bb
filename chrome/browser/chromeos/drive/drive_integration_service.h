@@ -180,7 +180,7 @@ class DriveIntegrationService : public KeyedService,
   scoped_ptr<DownloadHandler> download_handler_;
   scoped_ptr<DebugInfoCollector> debug_info_collector_;
 
-  ObserverList<DriveIntegrationServiceObserver> observers_;
+  base::ObserverList<DriveIntegrationServiceObserver> observers_;
   scoped_ptr<PreferenceWatcher> preference_watcher_;
   scoped_ptr<content::NotificationRegistrar> profile_notification_registrar_;
 

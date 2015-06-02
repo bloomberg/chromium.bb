@@ -218,7 +218,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   std::vector<std::string> sorted_keys_;
   base::FilePath user_data_dir_;
 
-  mutable ObserverList<ProfileInfoCacheObserver> observer_list_;
+  mutable base::ObserverList<ProfileInfoCacheObserver> observer_list_;
 
   // A cache of gaia/high res avatar profile pictures. This cache is updated
   // lazily so it needs to be mutable.

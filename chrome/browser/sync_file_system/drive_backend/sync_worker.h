@@ -169,7 +169,7 @@ class SyncWorker : public SyncWorkerInterface,
   base::WeakPtr<ExtensionServiceInterface> extension_service_;
 
   scoped_ptr<SyncEngineContext> context_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   base::SequenceChecker sequence_checker_;
 

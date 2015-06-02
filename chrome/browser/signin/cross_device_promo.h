@@ -103,7 +103,7 @@ class CrossDevicePromo : public KeyedService,
   SigninClient* signin_client_;
 
   scoped_ptr<DeviceActivityFetcher> device_activity_fetcher_;
-  ObserverList<CrossDevicePromo::Observer> observer_list_;
+  base::ObserverList<CrossDevicePromo::Observer> observer_list_;
 
   // Maximum time since activity seen on another device that activity is
   // considered within a context switch.
