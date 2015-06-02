@@ -1,0 +1,93 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x412
+  LayoutBlockFlow {HTML} at (0,0) size 800x412
+    LayoutBlockFlow {BODY} at (8,16) size 784x380
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 60x19
+          text run at (0,0) width 60: "locale=tr: "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (60,0) size 42x19
+            text run at (60,0) width 42: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (102,0) size 7x19
+          text run at (102,0) width 7: " :"
+      LayoutBlockFlow {P} at (0,36) size 784x20
+        LayoutText {#text} at (0,0) size 87x19
+          text run at (0,0) width 87: "locale=tr_TR: "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (87,0) size 42x19
+            text run at (87,0) width 42: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (129,0) size 7x19
+          text run at (129,0) width 7: " :"
+      LayoutBlockFlow {P} at (0,72) size 784x20
+        LayoutText {#text} at (0,0) size 85x19
+          text run at (0,0) width 85: "locale=tr-TR: "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (85,0) size 42x19
+            text run at (85,0) width 42: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (127,0) size 7x19
+          text run at (127,0) width 7: " :"
+      LayoutBlockFlow {P} at (0,108) size 784x20
+        LayoutText {#text} at (0,0) size 124x19
+          text run at (0,0) width 124: "locale=tr@foo=bar: "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (124,0) size 42x19
+            text run at (124,0) width 42: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (166,0) size 7x19
+          text run at (166,0) width 7: " :"
+      LayoutBlockFlow {P} at (0,144) size 784x20
+        LayoutText {#text} at (0,0) size 64x19
+          text run at (0,0) width 64: "locale=az: "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (64,0) size 42x19
+            text run at (64,0) width 42: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (106,0) size 7x19
+          text run at (106,0) width 7: " :"
+      LayoutBlockFlow {P} at (0,180) size 784x20
+        LayoutText {#text} at (0,0) size 92x19
+          text run at (0,0) width 92: "locale=az_AZ: "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (92,0) size 42x19
+            text run at (92,0) width 42: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (134,0) size 7x19
+          text run at (134,0) width 7: " :"
+      LayoutBlockFlow {P} at (0,216) size 784x20
+        LayoutText {#text} at (0,0) size 90x19
+          text run at (0,0) width 90: "locale=az-AZ: "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (90,0) size 42x19
+            text run at (90,0) width 42: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (132,0) size 7x19
+          text run at (132,0) width 7: " :"
+      LayoutBlockFlow {P} at (0,252) size 784x20
+        LayoutText {#text} at (0,0) size 128x19
+          text run at (0,0) width 128: "locale=az@foo=bar: "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (128,0) size 42x19
+            text run at (128,0) width 42: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (170,0) size 7x19
+          text run at (170,0) width 7: " :"
+      LayoutBlockFlow {P} at (0,288) size 784x20
+        LayoutText {#text} at (0,0) size 86x19
+          text run at (0,0) width 86: "locale=tr-US: "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (86,0) size 42x19
+            text run at (86,0) width 42: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (128,0) size 7x19
+          text run at (128,0) width 7: " :"
+      LayoutBlockFlow {P} at (0,324) size 784x20
+        LayoutText {#text} at (0,0) size 70x19
+          text run at (0,0) width 70: "locale=TR: "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (70,0) size 42x19
+            text run at (70,0) width 42: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (112,0) size 7x19
+          text run at (112,0) width 7: " :"
+      LayoutBlockFlow {P} at (0,360) size 784x20
+        LayoutText {#text} at (0,0) size 65x19
+          text run at (0,0) width 65: "locale=en: "
+        LayoutInline {SPAN} at (0,0) size 42x19
+          LayoutText {#text} at (65,0) size 42x19
+            text run at (65,0) width 42: "Isi\x{130} \x{130}s\x{131}I"
+        LayoutText {#text} at (107,0) size 7x19
+          text run at (107,0) width 7: " :"
