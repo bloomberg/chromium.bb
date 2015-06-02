@@ -13,9 +13,12 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "device/usb/mock_usb_device.h"
+#include "device/usb/mock_usb_service.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
+#include "extensions/browser/api/usb/usb_guid_map.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/value_builder.h"
@@ -70,6 +73,16 @@ void RecordDictAndRunCallback(std::string* result,
     callback.Run();
 }
 
+// Callback for PrinterProvider::DispatchGrantUsbPrinterAccess calls.
+// It expects |value| to equal |expected_value| and runs |callback|.
+void ExpectValueAndRunCallback(const base::Value* expected_value,
+                               const base::Closure& callback,
+                               const base::DictionaryValue& value) {
+  EXPECT_TRUE(value.Equals(expected_value));
+  if (!callback.is_null())
+    callback.Run();
+}
+
 // Tests for chrome.printerProvider API.
 class PrinterProviderApiTest : public ShellApiTest {
  public:
@@ -88,6 +101,15 @@ class PrinterProviderApiTest : public ShellApiTest {
     PrinterProviderAPIFactory::GetInstance()
         ->GetForBrowserContext(browser_context())
         ->DispatchGetPrintersRequested(callback);
+  }
+
+  void StartGetUsbPrinterInfoRequest(
+      const std::string& extension_id,
+      scoped_refptr<device::UsbDevice> device,
+      const PrinterProviderAPI::GetPrinterInfoCallback& callback) {
+    PrinterProviderAPIFactory::GetInstance()
+        ->GetForBrowserContext(browser_context())
+        ->DispatchGetUsbPrinterInfoRequested(extension_id, device, callback);
   }
 
   void StartPrintRequestWithNoData(
@@ -255,6 +277,32 @@ class PrinterProviderApiTest : public ShellApiTest {
     EXPECT_EQ(expected_result, result);
   }
 
+  // Run a test for the chrome.printerProvider.onGetUsbPrinterInfoRequested
+  // event.
+  // |test_param|: The test that should be run.
+  // |expected_result|: The printer info that the app is expected to report.
+  void RunUsbPrinterInfoRequestTest(const std::string& test_param) {
+    ResultCatcher catcher;
+    scoped_refptr<device::UsbDevice> device =
+        new device::MockUsbDevice(0, 0, "Google", "USB Printer", "");
+    usb_service_.AddDevice(device);
+
+    std::string extension_id;
+    InitializePrinterProviderTestApp("api_test/printer_provider/usb_printers",
+                                     test_param, &extension_id);
+    ASSERT_FALSE(extension_id.empty());
+
+    scoped_ptr<base::Value> expected_printer_info(new base::DictionaryValue());
+    base::RunLoop run_loop;
+    StartGetUsbPrinterInfoRequest(
+        extension_id, device,
+        base::Bind(&ExpectValueAndRunCallback, expected_printer_info.get(),
+                   run_loop.QuitClosure()));
+    run_loop.Run();
+
+    ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+
   bool SimulateExtensionUnload(const std::string& extension_id) {
     ExtensionRegistry* extension_registry =
         ExtensionRegistry::Get(browser_context());
@@ -281,9 +329,12 @@ class PrinterProviderApiTest : public ShellApiTest {
     ASSERT_EQ(expected_printers.size(), printers.GetSize());
     for (const base::Value* printer_value : expected_printers) {
       EXPECT_TRUE(printers.Find(*printer_value) != printers.end())
-          << "Unabe to find " << *printer_value << " in " << printers;
+          << "Unable to find " << *printer_value << " in " << printers;
     }
   }
+
+ protected:
+  device::MockUsbService usb_service_;
 
  private:
   // Initializes |data_dir_| if needed and creates a file in it containing
@@ -756,6 +807,46 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersInvalidPrinterValue) {
   run_loop.Run();
 
   EXPECT_TRUE(printers.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetUsbPrinterInfo) {
+  ResultCatcher catcher;
+  scoped_refptr<device::UsbDevice> device =
+      new device::MockUsbDevice(0, 0, "Google", "USB Printer", "");
+  usb_service_.AddDevice(device);
+
+  std::string extension_id;
+  InitializePrinterProviderTestApp("api_test/printer_provider/usb_printers",
+                                   "OK", &extension_id);
+  ASSERT_FALSE(extension_id.empty());
+
+  UsbGuidMap* guid_map = UsbGuidMap::Get(browser_context());
+  scoped_ptr<base::Value> expected_printer_info(
+      DictionaryBuilder()
+          .Set("description", "This printer is a USB device.")
+          .Set("extensionId", extension_id)
+          .Set("extensionName", "Test USB printer provider")
+          .Set("id",
+               base::StringPrintf("%s:usbDevice-%u", extension_id.c_str(),
+                                  guid_map->GetIdFromGuid(device->guid())))
+          .Set("name", "Test Printer")
+          .Build());
+  base::RunLoop run_loop;
+  StartGetUsbPrinterInfoRequest(
+      extension_id, device,
+      base::Bind(&ExpectValueAndRunCallback, expected_printer_info.get(),
+                 run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetUsbPrinterInfoEmptyResponse) {
+  RunUsbPrinterInfoRequestTest("EMPTY_RESPONSE");
+}
+
+IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetUsbPrinterInfoNoListener) {
+  RunUsbPrinterInfoRequestTest("NO_LISTENER");
 }
 
 }  // namespace

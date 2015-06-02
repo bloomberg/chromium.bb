@@ -1108,6 +1108,7 @@ enum HistogramValue {
   USERSPRIVATE_REMOVEWHITELISTEDUSER,
   USERSPRIVATE_ISCURRENTUSEROWNER,
   USERSPRIVATE_ISWHITELISTMANAGED,
+  PRINTERPROVIDERINTERNAL_REPORTUSBPRINTERINFO,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

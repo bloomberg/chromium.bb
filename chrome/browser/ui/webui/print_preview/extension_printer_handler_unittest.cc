@@ -355,6 +355,13 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
     pending_print_requests_.push_back(request_info);
   }
 
+  void DispatchGetUsbPrinterInfoRequested(
+      const std::string& extension_id,
+      scoped_refptr<device::UsbDevice> device,
+      const PrinterProviderAPI::GetPrinterInfoCallback& callback) override {
+    ADD_FAILURE() << "Not reached.";
+  }
+
   size_t pending_get_printers_count() const {
     return pending_printers_callbacks_.size();
   }

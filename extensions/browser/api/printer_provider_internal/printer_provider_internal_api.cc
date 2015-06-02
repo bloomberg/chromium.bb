@@ -86,6 +86,15 @@ void PrinterProviderInternalAPI::NotifyPrintResult(
                     OnPrintResult(extension, request_id, error));
 }
 
+void PrinterProviderInternalAPI::NotifyGetUsbPrinterInfoResult(
+    const Extension* extension,
+    int request_id,
+    const core_api::printer_provider::PrinterInfo* printer_info) {
+  FOR_EACH_OBSERVER(
+      PrinterProviderInternalAPIObserver, observers_,
+      OnGetUsbPrinterInfoResult(extension, request_id, printer_info));
+}
+
 PrinterProviderInternalReportPrintResultFunction::
     PrinterProviderInternalReportPrintResultFunction() {
 }
@@ -236,6 +245,27 @@ void PrinterProviderInternalGetPrintDataFunction::OnBlob(
   results_ = internal_api::GetPrintData::Results::Create(info);
   SetTransferredBlobUUIDs(uuids);
   SendResponse(true);
+}
+
+PrinterProviderInternalReportUsbPrinterInfoFunction::
+    PrinterProviderInternalReportUsbPrinterInfoFunction() {
+}
+
+PrinterProviderInternalReportUsbPrinterInfoFunction::
+    ~PrinterProviderInternalReportUsbPrinterInfoFunction() {
+}
+
+ExtensionFunction::ResponseAction
+PrinterProviderInternalReportUsbPrinterInfoFunction::Run() {
+  scoped_ptr<internal_api::ReportUsbPrinterInfo::Params> params(
+      internal_api::ReportUsbPrinterInfo::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  PrinterProviderInternalAPI::GetFactoryInstance()
+      ->Get(browser_context())
+      ->NotifyGetUsbPrinterInfoResult(extension(), params->request_id,
+                                      params->printer_info.get());
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

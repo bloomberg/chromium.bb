@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
@@ -17,6 +18,10 @@ class ListValue;
 
 namespace content {
 class BrowserContext;
+}
+
+namespace device {
+class UsbDevice;
 }
 
 namespace extensions {
@@ -35,6 +40,8 @@ class PrinterProviderAPI : public KeyedService {
       base::Callback<void(const base::DictionaryValue& capability)>;
   using PrintCallback =
       base::Callback<void(bool success, const std::string& error)>;
+  using GetPrinterInfoCallback =
+      base::Callback<void(const base::DictionaryValue& printer_info)>;
 
   static PrinterProviderAPI* Create(content::BrowserContext* context);
 
@@ -82,6 +89,14 @@ class PrinterProviderAPI : public KeyedService {
   // It should return NULL if the job for the request does not exist.
   virtual const PrinterProviderPrintJob* GetPrintJob(const Extension* extension,
                                                      int request_id) const = 0;
+
+  // Dispatches a chrome.printerProvider.getUsbPrinterInfo event requesting
+  // information about |device_id|. The event is only dispatched to the
+  // extension identified by |extension_id|.
+  virtual void DispatchGetUsbPrinterInfoRequested(
+      const std::string& extension_id,
+      scoped_refptr<device::UsbDevice> device,
+      const PrinterProviderAPI::GetPrinterInfoCallback& callback) = 0;
 };
 
 }  // namespace extensions

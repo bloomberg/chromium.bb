@@ -39,6 +39,13 @@ namespace printerProviderInternal {
     void reportPrinters(long requestId,
                         optional printerProvider.PrinterInfo[] printers);
 
+    // Runs callback to printerProvider.onUsbAccessGranted event.
+    // |requestId|: Parameter identifying the event instance for which the
+    //     callback is run.
+    // |printerInfo|: Printer information reported by the extension.
+    void reportUsbPrinterInfo(long requestId,
+                              optional printerProvider.PrinterInfo printerInfo);
+
     // Runs callback to printerProvider.onGetCapabilityRequested event.
     // |requestId|: Parameter identifying the event instance for which the
     //     callback is run.
