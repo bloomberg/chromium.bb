@@ -1856,3 +1856,7 @@ crbug.com/495534 [ Win ] imported/csswg-test/css-writing-modes-3/text-orientatio
 
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
+
+crbug.com/495540 [ XP ] svg/custom/pattern-referencing-preserve-aspect-ratio.svg [ Failure ]
+crbug.com/495540 [ XP ] svg/custom/svg-curve-with-relative-cordinates.html [ Failure ]
+crbug.com/495540 [ XP ] svg/wicd/rightsizing-grid.xhtml [ Failure ]
