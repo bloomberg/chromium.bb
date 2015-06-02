@@ -12,7 +12,6 @@ import sys
 import time
 
 from mopy import gtest
-from mopy.android import AndroidShell
 from mopy.config import Config
 
 
@@ -42,6 +41,7 @@ def main():
   shell = None
   extra_args = []
   if config.target_os == Config.OS_ANDROID:
+    from mopy.android import AndroidShell
     shell = AndroidShell(config)
     extra_args.extend(shell.PrepareShellRun('localhost'))
 
