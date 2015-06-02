@@ -201,8 +201,8 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		sizeof(struct drm_amdgpu_cs_chunk) +
 		sizeof(struct drm_amdgpu_cs_chunk_data));
 
-	chunk_array = calloc(1, size);
-	if (NULL == chunk_array)
+	chunk_array = alloca(size);
+	if (!chunk_array)
 		return -ENOMEM;
 
 	chunks = (struct drm_amdgpu_cs_chunk *)(chunk_array + ibs_request->number_of_ibs + 1);
@@ -262,7 +262,6 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 
 error_unlock:
 	pthread_mutex_unlock(&context->sequence_mutex);
-	free(chunk_array);
 	return r;
 }
 

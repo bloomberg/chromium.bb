@@ -27,6 +27,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -639,9 +640,15 @@ int amdgpu_bo_list_create(amdgpu_device_handle dev,
 	unsigned i;
 	int r;
 
-	list = calloc(number_of_resources, sizeof(struct drm_amdgpu_bo_list_entry));
+	if (!number_of_resources)
+		return -EINVAL;
 
-	if (list == NULL)
+	/* overflow check for multiplication */
+	if (number_of_resources > UINT32_MAX / sizeof(struct drm_amdgpu_bo_list_entry))
+		return -EINVAL;
+
+	list = malloc(number_of_resources * sizeof(struct drm_amdgpu_bo_list_entry));
+	if (!list)
 		return -ENOMEM;
 
 	memset(&args, 0, sizeof(args));
@@ -660,15 +667,14 @@ int amdgpu_bo_list_create(amdgpu_device_handle dev,
 
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_BO_LIST,
 				&args, sizeof(args));
+	free(list);
 	if (r)
-		goto out;
+		return r;
 
-	*result = calloc(1, sizeof(struct amdgpu_bo_list));
+	*result = malloc(sizeof(struct amdgpu_bo_list));
 	(*result)->dev = dev;
 	(*result)->handle = args.out.list_handle;
-out:
-	free(list);
-	return r;
+	return 0;
 }
 
 int amdgpu_bo_list_destroy(amdgpu_bo_list_handle list)
@@ -699,11 +705,17 @@ int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
 	unsigned i;
 	int r;
 
-	list = calloc(number_of_resources, sizeof(struct drm_amdgpu_bo_list_entry));
+	if (!number_of_resources)
+		return -EINVAL;
+
+	/* overflow check for multiplication */
+	if (number_of_resources > UINT32_MAX / sizeof(struct drm_amdgpu_bo_list_entry))
+		return -EINVAL;
+
+	list = malloc(number_of_resources * sizeof(struct drm_amdgpu_bo_list_entry));
 	if (list == NULL)
 		return -ENOMEM;
 
-	memset(&args, 0, sizeof(args));
 	args.in.operation = AMDGPU_BO_LIST_OP_UPDATE;
 	args.in.list_handle = handle->handle;
 	args.in.bo_number = number_of_resources;
