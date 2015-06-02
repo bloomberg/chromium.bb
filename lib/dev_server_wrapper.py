@@ -35,20 +35,6 @@ DEVSERVER_PKG_DIR = os.path.join(constants.SOURCE_ROOT, 'src/platform/dev')
 DEFAULT_STATIC_DIR = path_util.FromChrootPath(
     os.path.join(constants.SOURCE_ROOT, 'src', 'platform', 'dev', 'static'))
 
-IMAGE_NAME_TO_TYPE = {
-    'chromiumos_test_image.bin': 'test',
-    'chromiumos_image.bin': 'dev',
-    'chromiumos_base_image.bin': 'base',
-    'recovery_image.bin': 'recovery',
-}
-
-IMAGE_TYPE_TO_NAME = {
-    'test': 'chromiumos_test_image.bin',
-    'dev': 'chromiumos_image.bin',
-    'base': 'chromiumos_base_image.bin',
-    'recovery': 'recovery_image.bin',
-}
-
 XBUDDY_REMOTE = 'remote'
 XBUDDY_LOCAL = 'local'
 
@@ -79,7 +65,7 @@ def ConvertTranslatedPath(original_path, translated_path):
       requests: {local|remote}/build-id/version/image_type
   """
   chunks = translated_path.split(os.path.sep)
-  chunks[-1] = IMAGE_NAME_TO_TYPE[chunks[-1]]
+  chunks[-1] = constants.IMAGE_NAME_TO_TYPE[chunks[-1]]
 
   if GetXbuddyPath(original_path).startswith(XBUDDY_REMOTE):
     chunks = [XBUDDY_REMOTE] + chunks
@@ -284,7 +270,8 @@ def ConvertLocalPathToXbuddyPath(path, image_tempdir, static_tempdir,
   # Rename the image to chromiumos_test_image.bin when copying.
   TEMP_IMAGE_TYPE = 'test'
   shutil.copy(path,
-              os.path.join(tempdir_path, IMAGE_TYPE_TO_NAME[TEMP_IMAGE_TYPE]))
+              os.path.join(tempdir_path,
+                           constants.IMAGE_TYPE_TO_NAME[TEMP_IMAGE_TYPE]))
   chroot_path = path_util.ToChrootPath(tempdir_path,
                                        workspace_path=workspace_path)
   # Create and link static_dir/local_imagexxxx/link to the image

@@ -621,7 +621,7 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
   osutils.RmDir(results_dir_in_chroot, ignore_missing=True)
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
+  image_path = os.path.join(image_dir, constants.TEST_IMAGE_BIN)
 
   cmd = ['bin/ctest',
          '--board=%s' % board,
@@ -663,7 +663,7 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
 def RunDevModeTest(buildroot, board, image_dir):
   """Runs the dev mode testing script to verify dev-mode scripts work."""
   crostestutils = os.path.join(buildroot, 'src', 'platform', 'crostestutils')
-  image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
+  image_path = os.path.join(image_dir, constants.TEST_IMAGE_BIN)
   test_script = 'devmode-test/devinstall_test.py'
   cmd = [os.path.join(crostestutils, test_script), '--verbose', board,
          image_path]
@@ -672,7 +672,7 @@ def RunDevModeTest(buildroot, board, image_dir):
 
 def RunCrosVMTest(board, image_dir):
   """Runs cros_vm_test script to verify cros commands work."""
-  image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
+  image_path = os.path.join(image_dir, constants.TEST_IMAGE_BIN)
   test = cros_vm_test.CrosVMTest(board, image_path)
   test.Run()
 

@@ -816,6 +816,24 @@ VM_DISK_PREFIX = 'chromiumos_qemu_disk.bin'
 VM_MEM_PREFIX = 'chromiumos_qemu_mem.bin'
 VM_TEST_RESULTS = 'vm_test_results_%(attempt)s'
 
+TEST_IMAGE_NAME = 'chromiumos_test_image'
+TEST_IMAGE_TAR = '%s.tar.xz' % TEST_IMAGE_NAME
+TEST_IMAGE_BIN = '%s.bin' % TEST_IMAGE_NAME
+
+DEV_IMAGE_NAME = 'chromiumos_image'
+DEV_IMAGE_BIN = '%s.bin' % DEV_IMAGE_NAME
+
+RECOVERY_IMAGE_NAME = 'recovery_image'
+RECOVERY_IMAGE_BIN = '%s.bin' % RECOVERY_IMAGE_NAME
+
+IMAGE_TYPE_TO_NAME = {
+    'base': BASE_IMAGE_BIN,
+    'dev': DEV_IMAGE_BIN,
+    'recovery': RECOVERY_IMAGE_BIN,
+    'test': TEST_IMAGE_BIN,
+}
+IMAGE_NAME_TO_TYPE = dict((v, k) for k, v in IMAGE_TYPE_TO_NAME.iteritems())
+
 METADATA_JSON = 'metadata.json'
 PARTIAL_METADATA_JSON = 'partial-metadata.json'
 DELTA_SYSROOT_TAR = 'delta_sysroot.tar.xz'
