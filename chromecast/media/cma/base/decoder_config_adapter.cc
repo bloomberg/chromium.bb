@@ -32,6 +32,28 @@ AudioCodec ToAudioCodec(const ::media::AudioCodec audio_codec) {
   return kAudioCodecUnknown;
 }
 
+SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
+  switch (sample_format) {
+    case ::media::kUnknownSampleFormat:
+      return kUnknownSampleFormat;
+    case ::media::kSampleFormatU8:
+      return kSampleFormatU8;
+    case ::media::kSampleFormatS16:
+      return kSampleFormatS16;
+    case ::media::kSampleFormatS32:
+      return kSampleFormatS32;
+    case ::media::kSampleFormatF32:
+      return kSampleFormatF32;
+    case ::media::kSampleFormatPlanarS16:
+      return kSampleFormatPlanarS16;
+    case ::media::kSampleFormatPlanarF32:
+      return kSampleFormatPlanarF32;
+    case ::media::kSampleFormatPlanarS32:
+      return kSampleFormatPlanarS32;
+  }
+  return kUnknownSampleFormat;
+}
+
 // Converts ::media::VideoCodec to chromecast::media::VideoCodec. Any unknown or
 // unsupported codec will be converted to chromecast::media::kCodecUnknown.
 VideoCodec ToVideoCodec(const ::media::VideoCodec video_codec) {
@@ -96,12 +118,13 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
 
   audio_config.id = id;
   audio_config.codec = ToAudioCodec(config.codec());
+  audio_config.sample_format = ToSampleFormat(config.sample_format());
   audio_config.bytes_per_channel = config.bytes_per_channel();
   audio_config.channel_number =
       ::media::ChannelLayoutToChannelCount(config.channel_layout()),
-       audio_config.samples_per_second = config.samples_per_second();
-  audio_config.extra_data = (config.extra_data_size() > 0) ?
-      config.extra_data() : nullptr;
+  audio_config.samples_per_second = config.samples_per_second();
+  audio_config.extra_data =
+      (config.extra_data_size() > 0) ? config.extra_data() : nullptr;
   audio_config.extra_data_size = config.extra_data_size();
   audio_config.is_encrypted = config.is_encrypted();
   return audio_config;

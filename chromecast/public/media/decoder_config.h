@@ -24,10 +24,8 @@ static const int kMaxSampleRate = 192000;
 }  // namespace
 
 enum AudioCodec {
-  kAudioCodecUnknown = -1,
-
-  kAudioCodecMin = 0,
-  kCodecAAC = kAudioCodecMin,
+  kAudioCodecUnknown = 0,
+  kCodecAAC,
   kCodecMP3,
   kCodecPCM,
   kCodecPCM_S16BE,
@@ -36,14 +34,28 @@ enum AudioCodec {
   kCodecEAC3,
   kCodecAC3,
   kCodecDTS,
+
+  kAudioCodecMin = kAudioCodecUnknown,
   kAudioCodecMax = kCodecDTS,
 };
 
-enum VideoCodec {
-  kVideoCodecUnknown = -1,
+enum SampleFormat {
+  kUnknownSampleFormat = 0,
+  kSampleFormatU8,         // Unsigned 8-bit w/ bias of 128.
+  kSampleFormatS16,        // Signed 16-bit.
+  kSampleFormatS32,        // Signed 32-bit.
+  kSampleFormatF32,        // Float 32-bit.
+  kSampleFormatPlanarS16,  // Signed 16-bit planar.
+  kSampleFormatPlanarF32,  // Float 32-bit planar.
+  kSampleFormatPlanarS32,  // Signed 32-bit planar.
 
-  kVideoCodecMin = 0,
-  kCodecH264 = kVideoCodecMin,
+  kSampleFormatMin = kUnknownSampleFormat,
+  kSampleFormatMax = kSampleFormatPlanarS32,
+};
+
+enum VideoCodec {
+  kVideoCodecUnknown = 0,
+  kCodecH264,
   kCodecVC1,
   kCodecMPEG2,
   kCodecMPEG4,
@@ -51,15 +63,15 @@ enum VideoCodec {
   kCodecVP8,
   kCodecVP9,
   kCodecHEVC,
+
+  kVideoCodecMin = kVideoCodecUnknown,
   kVideoCodecMax = kCodecHEVC,
 };
 
 // Profile for Video codec.
 enum VideoProfile {
-  kVideoProfileUnknown = -1,
-
-  kVideoProfileMin = 0,
-  kH264Baseline = kVideoProfileMin,
+  kVideoProfileUnknown = 0,
+  kH264Baseline,
   kH264Main,
   kH264Extended,
   kH264High,
@@ -72,6 +84,8 @@ enum VideoProfile {
   kH264MultiviewHigh,
   kVP8ProfileAny,
   kVP9ProfileAny,
+
+  kVideoProfileMin = kVideoProfileUnknown,
   kVideoProfileMax = kVP9ProfileAny,
 };
 
@@ -80,19 +94,22 @@ enum VideoProfile {
 // determine if the configuration is still valid or not.
 struct AudioConfig {
   AudioConfig()
-    : id(kPrimary),
-      codec(kAudioCodecUnknown),
-      bytes_per_channel(0),
-      channel_number(0),
-      samples_per_second(0),
-      extra_data(nullptr),
-      extra_data_size(0),
-      is_encrypted(false) {}
+      : id(kPrimary),
+        codec(kAudioCodecUnknown),
+        sample_format(kUnknownSampleFormat),
+        bytes_per_channel(0),
+        channel_number(0),
+        samples_per_second(0),
+        extra_data(nullptr),
+        extra_data_size(0),
+        is_encrypted(false) {}
 
   // Stream id.
   StreamId id;
   // Audio codec.
   AudioCodec codec;
+  // The format of each audio sample.
+  SampleFormat sample_format;
   // Number of bytes in each channel.
   int bytes_per_channel;
   // Number of channels in this audio stream.
