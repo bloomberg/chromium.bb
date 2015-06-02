@@ -37,6 +37,7 @@ PACKAGE_NONE = '[none]'
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
 
 CHROMIUMOS_OVERLAY = '/usr/local/portage/chromiumos'
+ECLASS_OVERLAY = '/usr/local/portage/eclass-overlay'
 STABLE_OVERLAY = '/usr/local/portage/stable'
 CROSSDEV_OVERLAY = '/usr/local/portage/crossdev'
 
@@ -144,7 +145,7 @@ class Crossdev(object):
                       '-P', '--usepkgonly',
                       '--without-headers'])
 
-    overlays = '%s %s' % (CHROMIUMOS_OVERLAY, STABLE_OVERLAY)
+    overlays = ' '.join((CHROMIUMOS_OVERLAY, ECLASS_OVERLAY, STABLE_OVERLAY))
     cmdbase.extend(['--overlays', overlays])
     cmdbase.extend(['--ov-output', CROSSDEV_OVERLAY])
 
