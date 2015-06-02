@@ -57,7 +57,7 @@ enum EntityMask {
     EntityMaskInHTMLAttributeValue = EntityAmp | EntityQuot | EntityNbsp,
 };
 
-enum SerializationType {
+enum class SerializationType {
     AsOwnerDocument,
     ForcedXML
 };
@@ -70,7 +70,7 @@ public:
     static void appendCharactersReplacingEntities(StringBuilder&, const String&, unsigned, unsigned, EntityMask);
     static size_t totalLength(const Vector<String>&);
 
-    MarkupAccumulator(EAbsoluteURLs, SerializationType = AsOwnerDocument);
+    MarkupAccumulator(EAbsoluteURLs, SerializationType = SerializationType::AsOwnerDocument);
     virtual ~MarkupAccumulator();
 
     void appendString(const String&);

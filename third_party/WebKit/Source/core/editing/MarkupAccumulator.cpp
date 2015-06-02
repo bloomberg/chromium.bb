@@ -514,7 +514,7 @@ bool MarkupAccumulator::shouldSelfClose(const Element& element) const
 
 bool MarkupAccumulator::serializeAsHTMLDocument(const Node& node) const
 {
-    if (m_serializationType == ForcedXML)
+    if (m_serializationType == SerializationType::ForcedXML)
         return false;
     return node.document().isHTMLDocument();
 }
