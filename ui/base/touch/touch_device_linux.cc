@@ -24,7 +24,7 @@ int MaxTouchPoints() {
   return max_touch;
 }
 
-// TODO(mustaq@chromium.org): Use mouse detection logic. crbug.com/440503
+// TODO(mustaq@chromium.org): Use mouse detection logic. crbug.com/495634
 int GetAvailablePointerTypes() {
   // Assume a mouse is there
   int available_pointer_types = POINTER_TYPE_FINE;
@@ -45,7 +45,7 @@ PointerType GetPrimaryPointerType() {
   return POINTER_TYPE_NONE;
 }
 
-// TODO(mustaq@chromium.org): Use mouse detection logic. crbug.com/440503
+// TODO(mustaq@chromium.org): Use mouse detection logic. crbug.com/495634
 int GetAvailableHoverTypes() {
   // Assume a mouse is there
   int available_hover_types = HOVER_TYPE_HOVER;
