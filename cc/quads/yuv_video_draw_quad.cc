@@ -11,11 +11,8 @@
 
 namespace cc {
 
-YUVVideoDrawQuad::YUVVideoDrawQuad()
-    : y_plane_resource_id(0),
-      u_plane_resource_id(0),
-      v_plane_resource_id(0),
-      a_plane_resource_id(0) {}
+YUVVideoDrawQuad::YUVVideoDrawQuad() {
+}
 YUVVideoDrawQuad::~YUVVideoDrawQuad() {}
 
 void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
@@ -38,10 +35,11 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->uv_tex_coord_rect = uv_tex_coord_rect;
   this->ya_tex_size = ya_tex_size;
   this->uv_tex_size = uv_tex_size;
-  this->y_plane_resource_id = y_plane_resource_id;
-  this->u_plane_resource_id = u_plane_resource_id;
-  this->v_plane_resource_id = v_plane_resource_id;
-  this->a_plane_resource_id = a_plane_resource_id;
+  resources.ids[kYPlaneResourceIdIndex] = y_plane_resource_id;
+  resources.ids[kUPlaneResourceIdIndex] = u_plane_resource_id;
+  resources.ids[kVPlaneResourceIdIndex] = v_plane_resource_id;
+  resources.ids[kAPlaneResourceIdIndex] = a_plane_resource_id;
+  resources.count = a_plane_resource_id ? 4 : 3;
   this->color_space = color_space;
 }
 
@@ -65,20 +63,12 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->uv_tex_coord_rect = uv_tex_coord_rect;
   this->ya_tex_size = ya_tex_size;
   this->uv_tex_size = uv_tex_size;
-  this->y_plane_resource_id = y_plane_resource_id;
-  this->u_plane_resource_id = u_plane_resource_id;
-  this->v_plane_resource_id = v_plane_resource_id;
-  this->a_plane_resource_id = a_plane_resource_id;
+  resources.ids[kYPlaneResourceIdIndex] = y_plane_resource_id;
+  resources.ids[kUPlaneResourceIdIndex] = u_plane_resource_id;
+  resources.ids[kVPlaneResourceIdIndex] = v_plane_resource_id;
+  resources.ids[kAPlaneResourceIdIndex] = a_plane_resource_id;
+  resources.count = resources.ids[kAPlaneResourceIdIndex] ? 4 : 3;
   this->color_space = color_space;
-}
-
-void YUVVideoDrawQuad::IterateResources(
-    const ResourceIteratorCallback& callback) {
-  y_plane_resource_id = callback.Run(y_plane_resource_id);
-  u_plane_resource_id = callback.Run(u_plane_resource_id);
-  v_plane_resource_id = callback.Run(v_plane_resource_id);
-  if (a_plane_resource_id)
-    a_plane_resource_id = callback.Run(a_plane_resource_id);
 }
 
 const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(
@@ -93,10 +83,14 @@ void YUVVideoDrawQuad::ExtendValue(
   MathUtil::AddToTracedValue("uv_tex_coord_rect", uv_tex_coord_rect, value);
   MathUtil::AddToTracedValue("ya_tex_size", ya_tex_size, value);
   MathUtil::AddToTracedValue("uv_tex_size", uv_tex_size, value);
-  value->SetInteger("y_plane_resource_id", y_plane_resource_id);
-  value->SetInteger("u_plane_resource_id", u_plane_resource_id);
-  value->SetInteger("v_plane_resource_id", v_plane_resource_id);
-  value->SetInteger("a_plane_resource_id", a_plane_resource_id);
+  value->SetInteger("y_plane_resource_id",
+                    resources.ids[kYPlaneResourceIdIndex]);
+  value->SetInteger("u_plane_resource_id",
+                    resources.ids[kUPlaneResourceIdIndex]);
+  value->SetInteger("v_plane_resource_id",
+                    resources.ids[kVPlaneResourceIdIndex]);
+  value->SetInteger("a_plane_resource_id",
+                    resources.ids[kAPlaneResourceIdIndex]);
 }
 
 }  // namespace cc

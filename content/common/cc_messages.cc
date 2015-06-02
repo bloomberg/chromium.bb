@@ -6,6 +6,7 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/output/filter_operations.h"
+#include "cc/quads/draw_quad.h"
 #include "cc/quads/largest_draw_quad.h"
 #include "cc/quads/render_pass_id.h"
 #include "content/public/common/common_param_traits.h"
@@ -806,6 +807,46 @@ void ParamTraits<cc::SoftwareFrameData>::Log(const param_type& p,
   l->append(", ");
   LogParam(p.bitmap_id, l);
   l->append(")");
+}
+
+void ParamTraits<cc::DrawQuad::Resources>::Write(Message* m,
+                                                 const param_type& p) {
+  DCHECK_LE(p.count, cc::DrawQuad::Resources::kMaxResourceIdCount);
+  WriteParam(m, p.count);
+  for (size_t i = 0; i < p.count; ++i)
+    WriteParam(m, p.ids[i]);
+}
+
+bool ParamTraits<cc::DrawQuad::Resources>::Read(const Message* m,
+                                                PickleIterator* iter,
+                                                param_type* p) {
+  if (!ReadParam(m, iter, &p->count))
+    return false;
+  if (p->count > cc::DrawQuad::Resources::kMaxResourceIdCount)
+    return false;
+  for (size_t i = 0; i < p->count; ++i) {
+    if (!ReadParam(m, iter, &p->ids[i]))
+      return false;
+  }
+  return true;
+}
+
+void ParamTraits<cc::DrawQuad::Resources>::Log(const param_type& p,
+                                               std::string* l) {
+  l->append("DrawQuad::Resources(");
+  LogParam(p.count, l);
+  l->append(", [");
+  if (p.count > cc::DrawQuad::Resources::kMaxResourceIdCount) {
+    l->append("])");
+    return;
+  }
+
+  for (size_t i = 0; i < p.count; ++i) {
+    LogParam(p.ids[i], l);
+    if (i < (p.count - 1))
+      l->append(", ");
+  }
+  l->append("])");
 }
 
 }  // namespace IPC

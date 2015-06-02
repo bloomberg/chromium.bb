@@ -354,7 +354,7 @@ TEST(SurfaceLibTest, RenderPass) {
   ASSERT_EQ(cc::DrawQuad::TEXTURE_CONTENT, round_trip_quad->material);
   const cc::TextureDrawQuad* round_trip_texture_quad =
       cc::TextureDrawQuad::MaterialCast(round_trip_quad);
-  EXPECT_EQ(resource_id, round_trip_texture_quad->resource_id);
+  EXPECT_EQ(resource_id, round_trip_texture_quad->resource_id());
   EXPECT_EQ(premultiplied_alpha, round_trip_texture_quad->premultiplied_alpha);
   EXPECT_EQ(uv_top_left, round_trip_texture_quad->uv_top_left);
   EXPECT_EQ(uv_bottom_right, round_trip_texture_quad->uv_bottom_right);

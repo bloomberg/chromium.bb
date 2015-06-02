@@ -39,9 +39,6 @@ void CheckerboardDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->scale = scale;
 }
 
-void CheckerboardDrawQuad::IterateResources(
-    const ResourceIteratorCallback& callback) {}
-
 const CheckerboardDrawQuad* CheckerboardDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::CHECKERBOARD);

@@ -20,10 +20,6 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-ResourceId Increment(ResourceId resource_id) {
-  return resource_id + 1;
-}
-
 SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   gfx::Transform quad_transform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
   gfx::Size content_bounds(26, 28);
@@ -88,10 +84,11 @@ class DrawQuadPerfTest : public testing::Test {
     GenerateTextureDrawQuads(quad_count, &quads);
 
     timer_.Reset();
-    DrawQuad::ResourceIteratorCallback callback = base::Bind(&Increment);
     do {
-      for (auto* quad : quads)
-        quad->IterateResources(callback);
+      for (auto* quad : quads) {
+        for (ResourceId& resource_id : quad->resources)
+          ++resource_id;
+      }
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

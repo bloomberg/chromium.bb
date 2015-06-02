@@ -73,12 +73,6 @@ void PictureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->texture_format = texture_format;
 }
 
-void PictureDrawQuad::IterateResources(
-    const ResourceIteratorCallback& callback) {
-  // TODO(danakj): Convert to TextureDrawQuad?
-  NOTIMPLEMENTED();
-}
-
 const PictureDrawQuad* PictureDrawQuad::MaterialCast(const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::PICTURE_CONTENT);
   return static_cast<const PictureDrawQuad*>(quad);

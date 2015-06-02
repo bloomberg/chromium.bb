@@ -35,9 +35,6 @@ void SurfaceDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->surface_id = surface_id;
 }
 
-void SurfaceDrawQuad::IterateResources(
-    const ResourceIteratorCallback& callback) {}
-
 const SurfaceDrawQuad* SurfaceDrawQuad::MaterialCast(const DrawQuad* quad) {
   DCHECK_EQ(quad->material, DrawQuad::SURFACE_CONTENT);
   return static_cast<const SurfaceDrawQuad*>(quad);

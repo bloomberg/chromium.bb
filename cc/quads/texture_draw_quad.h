@@ -43,7 +43,6 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
               bool y_flipped,
               bool nearest_neighbor);
 
-  unsigned resource_id;
   bool premultiplied_alpha;
   gfx::PointF uv_top_left;
   gfx::PointF uv_bottom_right;
@@ -52,11 +51,13 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
   bool y_flipped;
   bool nearest_neighbor;
 
-  void IterateResources(const ResourceIteratorCallback& callback) override;
+  ResourceId resource_id() const { return resources.ids[kResourceIdIndex]; }
 
   static const TextureDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
+  static const size_t kResourceIdIndex = 0;
+
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 

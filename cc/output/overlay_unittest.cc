@@ -347,7 +347,7 @@ TEST_F(SingleOverlayOnTopTest, SuccessfullOverlay) {
       CreateFullscreenCandidateQuad(resource_provider_.get(),
                                     pass->shared_quad_state_list.back(),
                                     pass.get());
-  unsigned original_resource_id = original_quad->resource_id;
+  unsigned original_resource_id = original_quad->resource_id();
 
   // Add something behind it.
   CreateFullscreenCheckeredQuad(resource_provider_.get(),

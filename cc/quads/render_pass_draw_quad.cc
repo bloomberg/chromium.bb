@@ -13,8 +13,7 @@
 namespace cc {
 
 RenderPassDrawQuad::RenderPassDrawQuad()
-    : render_pass_id(RenderPassId(-1, -1)),
-      mask_resource_id(static_cast<ResourceId>(-1)) {
+    : render_pass_id(RenderPassId(-1, -1)) {
 }
 
 RenderPassDrawQuad::~RenderPassDrawQuad() {
@@ -67,18 +66,13 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   DrawQuad::SetAll(shared_quad_state, DrawQuad::RENDER_PASS, rect, opaque_rect,
                    visible_rect, needs_blending);
   this->render_pass_id = render_pass_id;
-  this->mask_resource_id = mask_resource_id;
+  resources.ids[kMaskResourceIdIndex] = mask_resource_id;
+  resources.count = mask_resource_id ? 1 : 0;
   this->mask_uv_scale = mask_uv_scale;
   this->mask_texture_size = mask_texture_size;
   this->filters = filters;
   this->filters_scale = filters_scale;
   this->background_filters = background_filters;
-}
-
-void RenderPassDrawQuad::IterateResources(
-    const ResourceIteratorCallback& callback) {
-  if (mask_resource_id)
-    mask_resource_id = callback.Run(mask_resource_id);
 }
 
 gfx::RectF RenderPassDrawQuad::MaskUVRect() const {
@@ -98,7 +92,7 @@ const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(
 void RenderPassDrawQuad::ExtendValue(
     base::trace_event::TracedValue* value) const {
   TracedValue::SetIDRef(render_pass_id.AsTracingId(), value, "render_pass_id");
-  value->SetInteger("mask_resource_id", mask_resource_id);
+  value->SetInteger("mask_resource_id", resources.ids[kMaskResourceIdIndex]);
   MathUtil::AddToTracedValue("mask_texture_size", mask_texture_size, value);
   MathUtil::AddToTracedValue("mask_uv_scale", mask_uv_scale, value);
 

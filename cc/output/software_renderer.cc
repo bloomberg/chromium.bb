@@ -415,14 +415,14 @@ void SoftwareRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
 
 void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
                                        const TextureDrawQuad* quad) {
-  if (!IsSoftwareResource(quad->resource_id)) {
+  if (!IsSoftwareResource(quad->resource_id())) {
     DrawUnsupportedQuad(frame, quad);
     return;
   }
 
   // TODO(skaslev): Add support for non-premultiplied alpha.
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
-                                                quad->resource_id);
+                                                quad->resource_id());
   if (!lock.valid())
     return;
   const SkBitmap* bitmap = lock.sk_bitmap();
@@ -480,10 +480,10 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
   // |resource_provider_| can be NULL in resourceless software draws, which
   // should never produce tile quads in the first place.
   DCHECK(resource_provider_);
-  DCHECK(IsSoftwareResource(quad->resource_id));
+  DCHECK(IsSoftwareResource(quad->resource_id()));
 
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
-                                                quad->resource_id);
+                                                quad->resource_id());
   if (!lock.valid())
     return;
   DCHECK_EQ(GL_CLAMP_TO_EDGE, lock.wrap_mode());
@@ -560,9 +560,9 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   }
   current_paint_.setShader(shader.get());
 
-  if (quad->mask_resource_id) {
-    ResourceProvider::ScopedReadLockSoftware mask_lock(resource_provider_,
-                                                       quad->mask_resource_id);
+  if (quad->mask_resource_id()) {
+    ResourceProvider::ScopedReadLockSoftware mask_lock(
+        resource_provider_, quad->mask_resource_id());
     if (!lock.valid())
       return;
     SkShader::TileMode mask_tile_mode = WrapModeToTileMode(

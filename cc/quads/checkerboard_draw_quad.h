@@ -33,8 +33,6 @@ class CC_EXPORT CheckerboardDrawQuad : public DrawQuad {
   SkColor color;
   float scale;
 
-  void IterateResources(const ResourceIteratorCallback& callback) override;
-
   static const CheckerboardDrawQuad* MaterialCast(const DrawQuad*);
 
  private:

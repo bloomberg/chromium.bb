@@ -255,7 +255,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       RenderPassQuadStatePtr pass_state = RenderPassQuadState::New();
       pass_state->render_pass_id =
           RenderPassId::From(render_pass_quad->render_pass_id);
-      pass_state->mask_resource_id = render_pass_quad->mask_resource_id;
+      pass_state->mask_resource_id = render_pass_quad->mask_resource_id();
       pass_state->mask_uv_scale = PointF::From(
           gfx::PointAtOffsetFromOrigin(render_pass_quad->mask_uv_scale));
       pass_state->mask_texture_size =
@@ -290,7 +290,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       const cc::TextureDrawQuad* texture_quad =
           cc::TextureDrawQuad::MaterialCast(&input);
       TextureQuadStatePtr texture_state = TextureQuadState::New();
-      texture_state->resource_id = texture_quad->resource_id;
+      texture_state->resource_id = texture_quad->resource_id();
       texture_state->premultiplied_alpha = texture_quad->premultiplied_alpha;
       texture_state->uv_top_left = PointF::From(texture_quad->uv_top_left);
       texture_state->uv_bottom_right =
@@ -314,7 +314,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       tile_state->texture_size = Size::From(tile_quad->texture_size);
       tile_state->swizzle_contents = tile_quad->swizzle_contents;
       tile_state->nearest_neighbor = tile_quad->nearest_neighbor;
-      tile_state->resource_id = tile_quad->resource_id;
+      tile_state->resource_id = tile_quad->resource_id();
       quad->tile_quad_state = tile_state.Pass();
       break;
     }
@@ -326,10 +326,10 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       // TODO(sky): uv_tex_coord_rect
       // TODO(sky): ya_texture_size
       // TODO(sky): uv_texture_size
-      yuv_state->y_plane_resource_id = yuv_quad->y_plane_resource_id;
-      yuv_state->u_plane_resource_id = yuv_quad->u_plane_resource_id;
-      yuv_state->v_plane_resource_id = yuv_quad->v_plane_resource_id;
-      yuv_state->a_plane_resource_id = yuv_quad->a_plane_resource_id;
+      yuv_state->y_plane_resource_id = yuv_quad->y_plane_resource_id();
+      yuv_state->u_plane_resource_id = yuv_quad->u_plane_resource_id();
+      yuv_state->v_plane_resource_id = yuv_quad->v_plane_resource_id();
+      yuv_state->a_plane_resource_id = yuv_quad->a_plane_resource_id();
       yuv_state->color_space =
           static_cast<YUVColorSpace>(yuv_quad->color_space);
       quad->yuv_video_quad_state = yuv_state.Pass();

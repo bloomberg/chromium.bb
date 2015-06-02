@@ -64,13 +64,14 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                            const gfx::Transform& target_transform,
                            const ClipData& clip_rect,
                            RenderPass* dest_render_pass);
-  void CopyQuadsToPass(const QuadList& source_quad_list,
-                       const SharedQuadStateList& source_shared_quad_state_list,
-                       const DrawQuad::ResourceIteratorCallback& remap,
-                       const gfx::Transform& target_transform,
-                       const ClipData& clip_rect,
-                       RenderPass* dest_pass,
-                       SurfaceId surface_id);
+  void CopyQuadsToPass(
+      const QuadList& source_quad_list,
+      const SharedQuadStateList& source_shared_quad_state_list,
+      const base::hash_map<ResourceId, ResourceId>& resource_to_child_map,
+      const gfx::Transform& target_transform,
+      const ClipData& clip_rect,
+      RenderPass* dest_pass,
+      SurfaceId surface_id);
   void CopyPasses(const DelegatedFrameData* frame_data, Surface* surface);
 
   // Remove Surfaces that were referenced before but aren't currently

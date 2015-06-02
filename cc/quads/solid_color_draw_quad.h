@@ -33,8 +33,6 @@ class CC_EXPORT SolidColorDrawQuad : public DrawQuad {
   SkColor color;
   bool force_anti_aliasing_off;
 
-  void IterateResources(const ResourceIteratorCallback& callback) override;
-
   static const SolidColorDrawQuad* MaterialCast(const DrawQuad*);
 
  private:

@@ -11,7 +11,8 @@
 
 namespace cc {
 
-StreamVideoDrawQuad::StreamVideoDrawQuad() : resource_id(0) {}
+StreamVideoDrawQuad::StreamVideoDrawQuad() {
+}
 
 void StreamVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                  const gfx::Rect& rect,
@@ -22,7 +23,8 @@ void StreamVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
-  this->resource_id = resource_id;
+  resources.ids[kResourceIdIndex] = resource_id;
+  resources.count = 1;
   this->matrix = matrix;
 }
 
@@ -35,13 +37,9 @@ void StreamVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                  const gfx::Transform& matrix) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
-  this->resource_id = resource_id;
+  resources.ids[kResourceIdIndex] = resource_id;
+  resources.count = 1;
   this->matrix = matrix;
-}
-
-void StreamVideoDrawQuad::IterateResources(
-    const ResourceIteratorCallback& callback) {
-  resource_id = callback.Run(resource_id);
 }
 
 const StreamVideoDrawQuad* StreamVideoDrawQuad::MaterialCast(
@@ -52,7 +50,7 @@ const StreamVideoDrawQuad* StreamVideoDrawQuad::MaterialCast(
 
 void StreamVideoDrawQuad::ExtendValue(
     base::trace_event::TracedValue* value) const {
-  value->SetInteger("resource_id", resource_id);
+  value->SetInteger("resource_id", resources.ids[kResourceIdIndex]);
   MathUtil::AddToTracedValue("matrix", matrix, value);
 }
 

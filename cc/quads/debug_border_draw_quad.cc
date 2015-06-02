@@ -41,9 +41,6 @@ void DebugBorderDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->width = width;
 }
 
-void DebugBorderDrawQuad::IterateResources(
-    const ResourceIteratorCallback& callback) {}
-
 const DebugBorderDrawQuad* DebugBorderDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::DEBUG_BORDER);

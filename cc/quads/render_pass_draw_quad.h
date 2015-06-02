@@ -45,7 +45,6 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const FilterOperations& background_filters);
 
   RenderPassId render_pass_id;
-  ResourceId mask_resource_id;
   gfx::Vector2dF mask_uv_scale;
   gfx::Size mask_texture_size;
 
@@ -65,11 +64,15 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   // Helper function to generate the normalized uv rect.
   gfx::RectF MaskUVRect() const;
 
-  void IterateResources(const ResourceIteratorCallback& callback) override;
+  ResourceId mask_resource_id() const {
+    return resources.ids[kMaskResourceIdIndex];
+  }
 
   static const RenderPassDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
+  static const size_t kMaskResourceIdIndex = 0;
+
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 

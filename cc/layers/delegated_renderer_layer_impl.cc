@@ -44,24 +44,6 @@ bool DelegatedRendererLayerImpl::HasContributingDelegatedRenderPasses() const {
   return render_passes_in_draw_order_.size() > 1;
 }
 
-static ResourceId ResourceRemapHelper(
-    bool* invalid_frame,
-    const ResourceProvider::ResourceIdMap& child_to_parent_map,
-    ResourceProvider::ResourceIdSet* resources_in_frame,
-    ResourceId id) {
-  ResourceProvider::ResourceIdMap::const_iterator it =
-      child_to_parent_map.find(id);
-  if (it == child_to_parent_map.end()) {
-    *invalid_frame = true;
-    return 0;
-  }
-
-  DCHECK_EQ(it->first, id);
-  ResourceId remapped_id = it->second;
-  resources_in_frame->insert(id);
-  return remapped_id;
-}
-
 void DelegatedRendererLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
 
@@ -134,14 +116,22 @@ void DelegatedRendererLayerImpl::SetFrameData(
   if (reserve_size)
     resources_in_frame.resize(reserve_size);
 #endif
-  DrawQuad::ResourceIteratorCallback remap_resources_to_parent_callback =
-      base::Bind(&ResourceRemapHelper,
-                 &invalid_frame,
-                 resource_map,
-                 &resources_in_frame);
   for (const auto& pass : render_pass_list) {
-    for (const auto& quad : pass->quad_list)
-      quad->IterateResources(remap_resources_to_parent_callback);
+    for (const auto& quad : pass->quad_list) {
+      for (ResourceId& resource_id : quad->resources) {
+        ResourceProvider::ResourceIdMap::const_iterator it =
+            resource_map.find(resource_id);
+        if (it == resource_map.end()) {
+          invalid_frame = true;
+          break;
+        }
+
+        DCHECK_EQ(it->first, resource_id);
+        ResourceId remapped_id = it->second;
+        resources_in_frame.insert(resource_id);
+        resource_id = remapped_id;
+      }
+    }
   }
 
   if (invalid_frame) {

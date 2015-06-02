@@ -31,14 +31,15 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
               unsigned resource_id,
               const gfx::Transform& matrix);
 
-  unsigned resource_id;
   gfx::Transform matrix;
-
-  void IterateResources(const ResourceIteratorCallback& callback) override;
 
   static const StreamVideoDrawQuad* MaterialCast(const DrawQuad*);
 
+  ResourceId resource_id() const { return resources.ids[kResourceIdIndex]; }
+
  private:
+  static const size_t kResourceIdIndex = 0;
+
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 

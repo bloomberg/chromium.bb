@@ -30,10 +30,10 @@ bool OverlayStrategyCommon::IsOverlayQuad(const DrawQuad* draw_quad) {
   unsigned int resource_id;
   switch (draw_quad->material) {
     case DrawQuad::TEXTURE_CONTENT:
-      resource_id = TextureDrawQuad::MaterialCast(draw_quad)->resource_id;
+      resource_id = TextureDrawQuad::MaterialCast(draw_quad)->resource_id();
       break;
     case DrawQuad::STREAM_VIDEO_CONTENT:
-      resource_id = StreamVideoDrawQuad::MaterialCast(draw_quad)->resource_id;
+      resource_id = StreamVideoDrawQuad::MaterialCast(draw_quad)->resource_id();
       break;
     default:
       return false;
@@ -63,7 +63,7 @@ bool OverlayStrategyCommon::GetTextureQuadInfo(const TextureDrawQuad& quad,
       quad.premultiplied_alpha ||
       overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
     return false;
-  quad_info->resource_id = quad.resource_id;
+  quad_info->resource_id = quad.resource_id();
   quad_info->transform = overlay_transform;
   quad_info->uv_rect = BoundingRect(quad.uv_top_left, quad.uv_bottom_right);
   return true;
@@ -80,7 +80,7 @@ bool OverlayStrategyCommon::GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
     // coordinates yet.
     return false;
   }
-  quad_info->resource_id = quad.resource_id;
+  quad_info->resource_id = quad.resource_id();
   quad_info->transform = overlay_transform;
 
   gfx::Point3F uv0 = gfx::Point3F(0, 0, 0);

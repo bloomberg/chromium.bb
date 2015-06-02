@@ -10,8 +10,7 @@
 
 namespace cc {
 
-TileDrawQuad::TileDrawQuad()
-    : resource_id(0) {
+TileDrawQuad::TileDrawQuad() {
 }
 
 TileDrawQuad::~TileDrawQuad() {
@@ -35,7 +34,8 @@ void TileDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                               texture_size,
                               swizzle_contents,
                               nearest_neighbor);
-  this->resource_id = resource_id;
+  resources.ids[kResourceIdIndex] = resource_id;
+  resources.count = 1;
 }
 
 void TileDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -52,12 +52,8 @@ void TileDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               opaque_rect, visible_rect, needs_blending,
                               tex_coord_rect, texture_size, swizzle_contents,
                               nearest_neighbor);
-  this->resource_id = resource_id;
-}
-
-void TileDrawQuad::IterateResources(
-    const ResourceIteratorCallback& callback) {
-  resource_id = callback.Run(resource_id);
+  resources.ids[kResourceIdIndex] = resource_id;
+  resources.count = 1;
 }
 
 const TileDrawQuad* TileDrawQuad::MaterialCast(const DrawQuad* quad) {
@@ -67,7 +63,7 @@ const TileDrawQuad* TileDrawQuad::MaterialCast(const DrawQuad* quad) {
 
 void TileDrawQuad::ExtendValue(base::trace_event::TracedValue* value) const {
   ContentDrawQuadBase::ExtendValue(value);
-  value->SetInteger("resource_id", resource_id);
+  value->SetInteger("resource_id", resources.ids[kResourceIdIndex]);
 }
 
 }  // namespace cc

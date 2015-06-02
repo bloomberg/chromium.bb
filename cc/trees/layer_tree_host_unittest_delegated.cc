@@ -810,10 +810,10 @@ class LayerTreeHostDelegatedTestRemapResourcesInQuads
     // The resources in the quads should be remapped to the parent's namespace.
     const TextureDrawQuad* quad1 = TextureDrawQuad::MaterialCast(
         delegated_impl->RenderPassesInDrawOrder()[0]->quad_list.ElementAt(0));
-    EXPECT_EQ(parent_resource_id1, quad1->resource_id);
+    EXPECT_EQ(parent_resource_id1, quad1->resource_id());
     const TextureDrawQuad* quad2 = TextureDrawQuad::MaterialCast(
         delegated_impl->RenderPassesInDrawOrder()[0]->quad_list.ElementAt(1));
-    EXPECT_EQ(parent_resource_id2, quad2->resource_id);
+    EXPECT_EQ(parent_resource_id2, quad2->resource_id());
 
     EndTest();
   }
@@ -1055,7 +1055,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
     EXPECT_EQ(1u, pass->quad_list.size());
     const TextureDrawQuad* quad =
         TextureDrawQuad::MaterialCast(pass->quad_list.front());
-    EXPECT_EQ(map.find(999)->second, quad->resource_id);
+    EXPECT_EQ(map.find(999)->second, quad->resource_id());
 
     EndTest();
   }
@@ -1167,13 +1167,13 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
     EXPECT_EQ(3u, pass->quad_list.size());
     const TextureDrawQuad* quad1 =
         TextureDrawQuad::MaterialCast(pass->quad_list.ElementAt(0));
-    EXPECT_EQ(map.find(999)->second, quad1->resource_id);
+    EXPECT_EQ(map.find(999)->second, quad1->resource_id());
     const TextureDrawQuad* quad2 =
         TextureDrawQuad::MaterialCast(pass->quad_list.ElementAt(1));
-    EXPECT_EQ(map.find(555)->second, quad2->resource_id);
+    EXPECT_EQ(map.find(555)->second, quad2->resource_id());
     const TextureDrawQuad* quad3 =
         TextureDrawQuad::MaterialCast(pass->quad_list.ElementAt(2));
-    EXPECT_EQ(map.find(444)->second, quad3->resource_id);
+    EXPECT_EQ(map.find(444)->second, quad3->resource_id());
   }
 
   void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
@@ -1286,10 +1286,10 @@ class LayerTreeHostDelegatedTestBadFrame
         EXPECT_EQ(2u, pass->quad_list.size());
         const TextureDrawQuad* quad1 =
             TextureDrawQuad::MaterialCast(pass->quad_list.ElementAt(0));
-        EXPECT_EQ(map.find(999)->second, quad1->resource_id);
+        EXPECT_EQ(map.find(999)->second, quad1->resource_id());
         const TextureDrawQuad* quad2 =
             TextureDrawQuad::MaterialCast(pass->quad_list.ElementAt(1));
-        EXPECT_EQ(map.find(555)->second, quad2->resource_id);
+        EXPECT_EQ(map.find(555)->second, quad2->resource_id());
         break;
       }
       case 2: {
@@ -1308,10 +1308,10 @@ class LayerTreeHostDelegatedTestBadFrame
         EXPECT_EQ(2u, pass->quad_list.size());
         const TextureDrawQuad* quad1 =
             TextureDrawQuad::MaterialCast(pass->quad_list.ElementAt(0));
-        EXPECT_EQ(map.find(999)->second, quad1->resource_id);
+        EXPECT_EQ(map.find(999)->second, quad1->resource_id());
         const TextureDrawQuad* quad2 =
             TextureDrawQuad::MaterialCast(pass->quad_list.ElementAt(1));
-        EXPECT_EQ(map.find(555)->second, quad2->resource_id);
+        EXPECT_EQ(map.find(555)->second, quad2->resource_id());
         break;
       }
       case 3: {
@@ -1326,7 +1326,7 @@ class LayerTreeHostDelegatedTestBadFrame
         EXPECT_EQ(1u, pass->quad_list.size());
         const TextureDrawQuad* quad1 =
             TextureDrawQuad::MaterialCast(pass->quad_list.front());
-        EXPECT_EQ(map.find(999)->second, quad1->resource_id);
+        EXPECT_EQ(map.find(999)->second, quad1->resource_id());
         break;
       }
     }

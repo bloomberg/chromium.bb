@@ -64,17 +64,29 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   gfx::RectF uv_tex_coord_rect;
   gfx::Size ya_tex_size;
   gfx::Size uv_tex_size;
-  unsigned y_plane_resource_id;
-  unsigned u_plane_resource_id;
-  unsigned v_plane_resource_id;
-  unsigned a_plane_resource_id;
   ColorSpace color_space;
-
-  void IterateResources(const ResourceIteratorCallback& callback) override;
 
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
 
+  ResourceId y_plane_resource_id() const {
+    return resources.ids[kYPlaneResourceIdIndex];
+  }
+  ResourceId u_plane_resource_id() const {
+    return resources.ids[kUPlaneResourceIdIndex];
+  }
+  ResourceId v_plane_resource_id() const {
+    return resources.ids[kVPlaneResourceIdIndex];
+  }
+  ResourceId a_plane_resource_id() const {
+    return resources.ids[kAPlaneResourceIdIndex];
+  }
+
  private:
+  static const size_t kYPlaneResourceIdIndex = 0;
+  static const size_t kUPlaneResourceIdIndex = 1;
+  static const size_t kVPlaneResourceIdIndex = 2;
+  static const size_t kAPlaneResourceIdIndex = 3;
+
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 

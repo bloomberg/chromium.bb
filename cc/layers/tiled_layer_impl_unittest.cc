@@ -269,8 +269,8 @@ TEST_F(TiledLayerImplTest, TextureInfoForLayerNoBorders) {
        ++iter) {
     const TileDrawQuad* quad = TileDrawQuad::MaterialCast(*iter);
 
-    EXPECT_NE(0u, quad->resource_id) << LayerTestCommon::quad_string
-                                     << iter.index();
+    EXPECT_NE(0u, quad->resource_id()) << LayerTestCommon::quad_string
+                                       << iter.index();
     EXPECT_EQ(gfx::RectF(gfx::PointF(), tile_size), quad->tex_coord_rect)
         << LayerTestCommon::quad_string << iter.index();
     EXPECT_EQ(tile_size, quad->texture_size) << LayerTestCommon::quad_string

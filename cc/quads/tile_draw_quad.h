@@ -41,13 +41,13 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               bool swizzle_contents,
               bool nearest_neighbor);
 
-  unsigned resource_id;
-
-  void IterateResources(const ResourceIteratorCallback& callback) override;
-
   static const TileDrawQuad* MaterialCast(const DrawQuad*);
 
+  ResourceId resource_id() const { return resources.ids[kResourceIdIndex]; }
+
  private:
+  static const size_t kResourceIdIndex = 0;
+
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 

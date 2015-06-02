@@ -40,14 +40,17 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
               Orientation orientation);
 
   gfx::Size io_surface_size;
-  unsigned io_surface_resource_id;
   Orientation orientation;
 
-  void IterateResources(const ResourceIteratorCallback& callback) override;
+  ResourceId io_surface_resource_id() const {
+    return resources.ids[kIOSurfaceResourceIdIndex];
+  }
 
   static const IOSurfaceDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
+  static const size_t kIOSurfaceResourceIdIndex = 0;
+
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 

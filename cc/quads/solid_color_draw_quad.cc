@@ -39,9 +39,6 @@ void SolidColorDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->force_anti_aliasing_off = force_anti_aliasing_off;
 }
 
-void SolidColorDrawQuad::IterateResources(
-    const ResourceIteratorCallback& callback) {}
-
 const SolidColorDrawQuad* SolidColorDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::SOLID_COLOR);

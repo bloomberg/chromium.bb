@@ -118,6 +118,14 @@ struct CONTENT_EXPORT ParamTraits<cc::SoftwareFrameData> {
   static void Log(const param_type& p, std::string* l);
 };
 
+template <>
+struct CONTENT_EXPORT ParamTraits<cc::DrawQuad::Resources> {
+  typedef cc::DrawQuad::Resources param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
 }  // namespace IPC
 
 #endif  // CONTENT_COMMON_CC_MESSAGES_H_
@@ -159,6 +167,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(opaque_rect)
   IPC_STRUCT_TRAITS_MEMBER(visible_rect)
   IPC_STRUCT_TRAITS_MEMBER(needs_blending)
+  IPC_STRUCT_TRAITS_MEMBER(resources)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::CheckerboardDrawQuad)
@@ -176,14 +185,12 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(cc::IOSurfaceDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(io_surface_size)
-  IPC_STRUCT_TRAITS_MEMBER(io_surface_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(orientation)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::RenderPassDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(render_pass_id)
-  IPC_STRUCT_TRAITS_MEMBER(mask_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(mask_uv_scale)
   IPC_STRUCT_TRAITS_MEMBER(mask_texture_size)
   IPC_STRUCT_TRAITS_MEMBER(filters)
@@ -199,7 +206,6 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::StreamVideoDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
-  IPC_STRUCT_TRAITS_MEMBER(resource_id)
   IPC_STRUCT_TRAITS_MEMBER(matrix)
 IPC_STRUCT_TRAITS_END()
 
@@ -210,7 +216,6 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::TextureDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
-  IPC_STRUCT_TRAITS_MEMBER(resource_id)
   IPC_STRUCT_TRAITS_MEMBER(premultiplied_alpha)
   IPC_STRUCT_TRAITS_MEMBER(uv_top_left)
   IPC_STRUCT_TRAITS_MEMBER(uv_bottom_right)
@@ -225,7 +230,6 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::TileDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
-  IPC_STRUCT_TRAITS_MEMBER(resource_id)
   IPC_STRUCT_TRAITS_MEMBER(tex_coord_rect)
   IPC_STRUCT_TRAITS_MEMBER(texture_size)
   IPC_STRUCT_TRAITS_MEMBER(swizzle_contents)
@@ -238,10 +242,6 @@ IPC_STRUCT_TRAITS_BEGIN(cc::YUVVideoDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(uv_tex_coord_rect)
   IPC_STRUCT_TRAITS_MEMBER(ya_tex_size)
   IPC_STRUCT_TRAITS_MEMBER(uv_tex_size)
-  IPC_STRUCT_TRAITS_MEMBER(y_plane_resource_id)
-  IPC_STRUCT_TRAITS_MEMBER(u_plane_resource_id)
-  IPC_STRUCT_TRAITS_MEMBER(v_plane_resource_id)
-  IPC_STRUCT_TRAITS_MEMBER(a_plane_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(color_space)
 IPC_STRUCT_TRAITS_END()
 

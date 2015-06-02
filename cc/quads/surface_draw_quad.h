@@ -30,8 +30,6 @@ class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
 
   SurfaceId surface_id;
 
-  void IterateResources(const ResourceIteratorCallback& callback) override;
-
   static const SurfaceDrawQuad* MaterialCast(const DrawQuad* quad);
 
  private:

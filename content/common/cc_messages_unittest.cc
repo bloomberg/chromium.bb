@@ -139,13 +139,13 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const IOSurfaceDrawQuad* a, const IOSurfaceDrawQuad* b) {
     EXPECT_EQ(a->io_surface_size.ToString(), b->io_surface_size.ToString());
-    EXPECT_EQ(a->io_surface_resource_id, b->io_surface_resource_id);
+    EXPECT_EQ(a->io_surface_resource_id(), b->io_surface_resource_id());
     EXPECT_EQ(a->orientation, b->orientation);
   }
 
   void Compare(const RenderPassDrawQuad* a, const RenderPassDrawQuad* b) {
     EXPECT_EQ(a->render_pass_id, b->render_pass_id);
-    EXPECT_EQ(a->mask_resource_id, b->mask_resource_id);
+    EXPECT_EQ(a->mask_resource_id(), b->mask_resource_id());
     EXPECT_EQ(a->mask_uv_scale.ToString(), b->mask_uv_scale.ToString());
     EXPECT_EQ(a->mask_texture_size.ToString(), b->mask_texture_size.ToString());
     EXPECT_EQ(a->filters.size(), b->filters.size());
@@ -168,7 +168,7 @@ class CCMessagesTest : public testing::Test {
   }
 
   void Compare(const StreamVideoDrawQuad* a, const StreamVideoDrawQuad* b) {
-    EXPECT_EQ(a->resource_id, b->resource_id);
+    EXPECT_EQ(a->resource_id(), b->resource_id());
     EXPECT_EQ(a->matrix, b->matrix);
   }
 
@@ -177,7 +177,7 @@ class CCMessagesTest : public testing::Test {
   }
 
   void Compare(const TextureDrawQuad* a, const TextureDrawQuad* b) {
-    EXPECT_EQ(a->resource_id, b->resource_id);
+    EXPECT_EQ(a->resource_id(), b->resource_id());
     EXPECT_EQ(a->premultiplied_alpha, b->premultiplied_alpha);
     EXPECT_EQ(a->uv_top_left, b->uv_top_left);
     EXPECT_EQ(a->uv_bottom_right, b->uv_bottom_right);
@@ -191,7 +191,7 @@ class CCMessagesTest : public testing::Test {
   }
 
   void Compare(const TileDrawQuad* a, const TileDrawQuad* b) {
-    EXPECT_EQ(a->resource_id, b->resource_id);
+    EXPECT_EQ(a->resource_id(), b->resource_id());
     EXPECT_EQ(a->tex_coord_rect, b->tex_coord_rect);
     EXPECT_EQ(a->texture_size, b->texture_size);
     EXPECT_EQ(a->swizzle_contents, b->swizzle_contents);
@@ -203,10 +203,10 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->uv_tex_coord_rect, b->uv_tex_coord_rect);
     EXPECT_EQ(a->ya_tex_size, b->ya_tex_size);
     EXPECT_EQ(a->uv_tex_size, b->uv_tex_size);
-    EXPECT_EQ(a->y_plane_resource_id, b->y_plane_resource_id);
-    EXPECT_EQ(a->u_plane_resource_id, b->u_plane_resource_id);
-    EXPECT_EQ(a->v_plane_resource_id, b->v_plane_resource_id);
-    EXPECT_EQ(a->a_plane_resource_id, b->a_plane_resource_id);
+    EXPECT_EQ(a->y_plane_resource_id(), b->y_plane_resource_id());
+    EXPECT_EQ(a->u_plane_resource_id(), b->u_plane_resource_id());
+    EXPECT_EQ(a->v_plane_resource_id(), b->v_plane_resource_id());
+    EXPECT_EQ(a->a_plane_resource_id(), b->a_plane_resource_id());
     EXPECT_EQ(a->color_space, b->color_space);
   }
 

@@ -452,12 +452,6 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
   }
 }
 
-static ResourceId WaitOnResourceSyncPoints(ResourceProvider* resource_provider,
-                                           ResourceId resource_id) {
-  resource_provider->WaitSyncPointIfNeeded(resource_id);
-  return resource_id;
-}
-
 void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   TRACE_EVENT0("cc", "GLRenderer::BeginDrawingFrame");
 
@@ -492,12 +486,12 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
 
   // Insert WaitSyncPointCHROMIUM on quad resources prior to drawing the frame,
   // so that drawing can proceed without GL context switching interruptions.
-  DrawQuad::ResourceIteratorCallback wait_on_resource_syncpoints_callback =
-      base::Bind(&WaitOnResourceSyncPoints, resource_provider_);
-
+  ResourceProvider* resource_provider = resource_provider_;
   for (const auto& pass : *frame->render_passes_in_draw_order) {
-    for (const auto& quad : pass->quad_list)
-      quad->IterateResources(wait_on_resource_syncpoints_callback);
+    for (const auto& quad : pass->quad_list) {
+      for (ResourceId resource_id : quad->resources)
+        resource_provider->WaitSyncPointIfNeeded(resource_id);
+    }
   }
 
   // TODO(enne): Do we need to reinitialize all of this state per frame?
@@ -995,7 +989,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       use_shaders_for_blending = false;
     } else if (background_image) {
       // Reset original background texture if there is not any mask
-      if (!quad->mask_resource_id)
+      if (!quad->mask_resource_id())
         background_texture.reset();
     } else if (CanApplyBlendModeUsingBlendFunc(blend_mode) &&
                ShouldApplyBackgroundFilters(frame, quad)) {
@@ -1006,9 +1000,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   }
   // Need original background texture for mask?
   bool mask_for_background =
-      background_texture &&    // Have original background texture
-      background_image &&      // Have filtered background texture
-      quad->mask_resource_id;  // Have mask texture
+      background_texture &&      // Have original background texture
+      background_image &&        // Have filtered background texture
+      quad->mask_resource_id();  // Have mask texture
   SetBlendEnabled(
       !use_shaders_for_blending &&
       (quad->ShouldDrawWithBlending() || !IsDefaultBlendMode(blend_mode)));
@@ -1045,9 +1039,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   scoped_ptr<ResourceProvider::ScopedSamplerGL> mask_resource_lock;
   unsigned mask_texture_id = 0;
   SamplerType mask_sampler = SAMPLER_TYPE_NA;
-  if (quad->mask_resource_id) {
+  if (quad->mask_resource_id()) {
     mask_resource_lock.reset(new ResourceProvider::ScopedSamplerGL(
-        resource_provider_, quad->mask_resource_id, GL_TEXTURE1, GL_LINEAR));
+        resource_provider_, quad->mask_resource_id(), GL_TEXTURE1, GL_LINEAR));
     mask_texture_id = mask_resource_lock->texture_id();
     mask_sampler = SamplerTypeFromTextureTarget(mask_resource_lock->target());
   }
@@ -1635,7 +1629,7 @@ static void TileUniformLocation(T program, TileProgramUniforms* uniforms) {
 void GLRenderer::DrawTileQuad(const DrawingFrame* frame,
                               const TileDrawQuad* quad,
                               const gfx::QuadF* clip_region) {
-  DrawContentQuad(frame, quad, quad->resource_id, clip_region);
+  DrawContentQuad(frame, quad, quad->resource_id(), clip_region);
 }
 
 void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
@@ -1904,20 +1898,21 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
       highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
-  bool use_alpha_plane = quad->a_plane_resource_id != 0;
+  bool use_alpha_plane = quad->a_plane_resource_id() != 0;
 
   ResourceProvider::ScopedSamplerGL y_plane_lock(
-      resource_provider_, quad->y_plane_resource_id, GL_TEXTURE1, GL_LINEAR);
+      resource_provider_, quad->y_plane_resource_id(), GL_TEXTURE1, GL_LINEAR);
   ResourceProvider::ScopedSamplerGL u_plane_lock(
-      resource_provider_, quad->u_plane_resource_id, GL_TEXTURE2, GL_LINEAR);
+      resource_provider_, quad->u_plane_resource_id(), GL_TEXTURE2, GL_LINEAR);
   DCHECK_EQ(y_plane_lock.target(), u_plane_lock.target());
   ResourceProvider::ScopedSamplerGL v_plane_lock(
-      resource_provider_, quad->v_plane_resource_id, GL_TEXTURE3, GL_LINEAR);
+      resource_provider_, quad->v_plane_resource_id(), GL_TEXTURE3, GL_LINEAR);
   DCHECK_EQ(y_plane_lock.target(), v_plane_lock.target());
   scoped_ptr<ResourceProvider::ScopedSamplerGL> a_plane_lock;
   if (use_alpha_plane) {
     a_plane_lock.reset(new ResourceProvider::ScopedSamplerGL(
-        resource_provider_, quad->a_plane_resource_id, GL_TEXTURE4, GL_LINEAR));
+        resource_provider_, quad->a_plane_resource_id(), GL_TEXTURE4,
+        GL_LINEAR));
     DCHECK_EQ(y_plane_lock.target(), a_plane_lock->target());
   }
 
@@ -2130,7 +2125,7 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
                         false, gl_matrix);
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
-                                          quad->resource_id);
+                                          quad->resource_id());
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id());
 
@@ -2267,7 +2262,7 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
-                                          quad->resource_id);
+                                          quad->resource_id());
   const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
   // Choose the correct texture program binding
   TexTransformTextureProgramBinding binding;
@@ -2287,7 +2282,7 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
     }
   }
 
-  int resource_id = quad->resource_id;
+  int resource_id = quad->resource_id();
 
   if (draw_cache_.program_id != binding.program_id ||
       draw_cache_.resource_id != resource_id ||
@@ -2386,7 +2381,7 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
   gl_->Uniform1fv(binding.vertex_opacity_location, 4, vertex_opacity);
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
-                                          quad->io_surface_resource_id);
+                                          quad->io_surface_resource_id());
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   gl_->BindTexture(GL_TEXTURE_RECTANGLE_ARB, lock.texture_id());
 

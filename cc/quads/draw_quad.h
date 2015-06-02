@@ -96,9 +96,6 @@ class CC_EXPORT DrawQuad {
     return !opaque_rect.Contains(visible_rect);
   }
 
-  typedef base::Callback<ResourceId(ResourceId)> ResourceIteratorCallback;
-  virtual void IterateResources(const ResourceIteratorCallback& callback) = 0;
-
   // Is the left edge of this tile aligned with the originating layer's
   // left edge?
   bool IsLeftEdge() const { return !rect.x(); }
@@ -126,6 +123,22 @@ class CC_EXPORT DrawQuad {
   }
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
+
+  struct CC_EXPORT Resources {
+    enum : size_t { kMaxResourceIdCount = 4 };
+    Resources();
+
+    ResourceId* begin() { return ids; }
+    ResourceId* end() {
+      DCHECK_LE(count, kMaxResourceIdCount);
+      return ids + count;
+    }
+
+    size_t count;
+    ResourceId ids[kMaxResourceIdCount];
+  };
+
+  Resources resources;
 
  protected:
   DrawQuad();

@@ -66,12 +66,6 @@ const RendererCapabilitiesImpl& DelegatingRenderer::Capabilities() const {
   return capabilities_;
 }
 
-static ResourceId AppendToArray(ResourceProvider::ResourceIdArray* array,
-                                ResourceId id) {
-  array->push_back(id);
-  return id;
-}
-
 void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                    float device_scale_factor,
                                    const gfx::Rect& device_viewport_rect,
@@ -89,11 +83,11 @@ void DelegatingRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   // Collect all resource ids in the render passes into a ResourceIdArray.
   ResourceProvider::ResourceIdArray resources;
-  DrawQuad::ResourceIteratorCallback append_to_array =
-      base::Bind(&AppendToArray, &resources);
   for (const auto& render_pass : out_data.render_pass_list) {
-    for (const auto& quad : render_pass->quad_list)
-      quad->IterateResources(append_to_array);
+    for (const auto& quad : render_pass->quad_list) {
+      for (ResourceId resource_id : quad->resources)
+        resources.push_back(resource_id);
+    }
   }
   resource_provider_->PrepareSendToParent(resources, &out_data.resource_list);
 }

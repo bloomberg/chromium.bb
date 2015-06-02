@@ -32,7 +32,6 @@ bool isConstSharedQuadStatePointer(SharedQuadState* ptr) {
 class SimpleDrawQuad : public DrawQuad {
  public:
   ~SimpleDrawQuad() override {}
-  void IterateResources(const ResourceIteratorCallback& callback) override {}
 
   void set_value(int val) { value = val; }
   int get_value() { return value; }

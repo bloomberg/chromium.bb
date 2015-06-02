@@ -53,8 +53,6 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
   scoped_refptr<RasterSource> raster_source;
   ResourceFormat texture_format;
 
-  void IterateResources(const ResourceIteratorCallback& callback) override;
-
   static const PictureDrawQuad* MaterialCast(const DrawQuad* quad);
 
  private:
