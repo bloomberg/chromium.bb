@@ -28,23 +28,21 @@ def main():
                            dest='debug', action='store_false')
   parser.add_argument('--target-cpu', help='CPU architecture to run for.',
                       choices=['x64', 'x86', 'arm'], default='arm')
-  parser.add_argument('--target-device', help='Device to run on.')
+  parser.add_argument('--device', help='Serial number of the target device.')
   parser.add_argument('--gdb', help='Run gdb',
                       default=False, action='store_true')
-  launcher_args, args = parser.parse_known_args()
+  runner_args, args = parser.parse_known_args()
 
   config = Config(target_os=Config.OS_ANDROID,
-                  target_cpu=launcher_args.target_cpu,
-                  is_debug=launcher_args.debug,
+                  target_cpu=runner_args.target_cpu,
+                  is_debug=runner_args.debug,
                   apk_name="Mandoline.apk")
-  shell = AndroidShell(config, launcher_args.target_device)
-
-  extra_shell_args = shell.PrepareShellRun(gdb=launcher_args.gdb)
-  args.extend(extra_shell_args)
+  shell = AndroidShell(config)
+  args.extend(shell.PrepareShellRun(None, runner_args.device, runner_args.gdb))
 
   shell.CleanLogs()
   p = shell.ShowLogs()
-  shell.StartShell(args, sys.stdout, p.terminate, launcher_args.gdb)
+  shell.StartShell(args, sys.stdout, p.terminate, runner_args.gdb)
   return 0
 
 

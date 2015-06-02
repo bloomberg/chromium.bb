@@ -3,16 +3,10 @@
 # found in the LICENSE file.
 
 import atexit
-import datetime
-import email.utils
-import hashlib
 import itertools
 import json
 import logging
-import math
 import os
-import os.path
-import random
 import shutil
 import signal
 import subprocess
@@ -22,17 +16,16 @@ import threading
 import time
 import urlparse
 
-import SimpleHTTPServer
-import SocketServer
-
 from .paths import Paths
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
                              os.pardir, 'build', 'android'))
 from pylib import constants
+from pylib.base import base_test_runner
 from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.utils import apk_helper
+
 
 # Tags used by the mojo shell application logs.
 LOGCAT_TAGS = [
@@ -46,133 +39,6 @@ LOGCAT_TAGS = [
 
 MAPPING_PREFIX = '--map-origin='
 
-ZERO = datetime.timedelta(0)
-
-class UTC_TZINFO(datetime.tzinfo):
-  """UTC time zone representation."""
-
-  def utcoffset(self, _):
-    return ZERO
-
-  def tzname(self, _):
-    return "UTC"
-
-  def dst(self, _):
-     return ZERO
-
-UTC = UTC_TZINFO()
-
-
-class _SilentTCPServer(SocketServer.TCPServer):
-  """
-  A TCPServer that won't display any error, unless debugging is enabled. This is
-  useful because the client might stop while it is fetching an URL, which causes
-  spurious error messages.
-  """
-  def handle_error(self, request, client_address):
-    """Override the base class method to have conditional logging."""
-    if logging.getLogger().isEnabledFor(logging.DEBUG):
-      SocketServer.TCPServer.handle_error(self, request, client_address)
-
-
-def _GetHandlerClassForPath(base_path):
-  class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
-    """
-    Handler for SocketServer.TCPServer that will serve the files from
-    |base_path| directory over http.
-    """
-
-    def __init__(self, *args, **kwargs):
-      self.etag = None
-      SimpleHTTPServer.SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
-
-    def get_etag(self):
-      if self.etag:
-        return self.etag
-
-      path = self.translate_path(self.path)
-      if not os.path.isfile(path):
-        return None
-
-      sha256 = hashlib.sha256()
-      BLOCKSIZE = 65536
-      with open(path, 'rb') as hashed:
-        buf = hashed.read(BLOCKSIZE)
-        while len(buf) > 0:
-          sha256.update(buf)
-          buf = hashed.read(BLOCKSIZE)
-      self.etag = '"%s"' % sha256.hexdigest()
-      return self.etag
-
-    def send_head(self):
-      # Always close the connection after each request, as the keep alive
-      # support from SimpleHTTPServer doesn't like when the client requests to
-      # close the connection before downloading the full response content.
-      # pylint: disable=W0201
-      self.close_connection = 1
-
-      path = self.translate_path(self.path)
-      if os.path.isfile(path):
-        # Handle If-None-Match
-        etag = self.get_etag()
-        if ('If-None-Match' in self.headers and
-            etag == self.headers['If-None-Match']):
-          self.send_response(304)
-          return None
-
-        # Handle If-Modified-Since
-        if ('If-None-Match' not in self.headers and
-            'If-Modified-Since' in self.headers):
-          last_modified = datetime.datetime.fromtimestamp(
-              math.floor(os.stat(path).st_mtime), tz=UTC)
-          ims = datetime.datetime(
-              *email.utils.parsedate(self.headers['If-Modified-Since'])[:6],
-              tzinfo=UTC)
-          if last_modified <= ims:
-            self.send_response(304)
-            return None
-
-      return SimpleHTTPServer.SimpleHTTPRequestHandler.send_head(self)
-
-    def end_headers(self):
-      path = self.translate_path(self.path)
-
-      if os.path.isfile(path):
-        etag = self.get_etag()
-        if etag:
-          self.send_header('ETag', etag)
-          self.send_header('Cache-Control', 'must-revalidate')
-
-      return SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)
-
-    def translate_path(self, path):
-      path_from_current = (
-          SimpleHTTPServer.SimpleHTTPRequestHandler.translate_path(self, path))
-      return os.path.join(base_path, os.path.relpath(path_from_current))
-
-    def log_message(self, *_):
-      """Override the base class method to disable logging."""
-      pass
-
-  RequestHandler.protocol_version = 'HTTP/1.1'
-  return RequestHandler
-
-
-def _IsMapOrigin(arg):
-  """Returns whether arg is a --map-origin argument."""
-  return arg.startswith(MAPPING_PREFIX)
-
-
-def _Split(l, pred):
-  positive = []
-  negative = []
-  for v in l:
-    if pred(v):
-      positive.append(v)
-    else:
-      negative.append(v)
-  return (positive, negative)
-
 
 def _ExitIfNeeded(process):
   """Exits |process| if it is still alive."""
@@ -183,24 +49,19 @@ def _ExitIfNeeded(process):
 class AndroidShell(object):
   """
   Used to set up and run a given mojo shell binary on an Android device.
-
-  Args:
-    config: The mopy.config.Config for the build.
-    target_device: device to run on, if multiple devices are connected
+  |config| is the mopy.config.Config for the build.
   """
-  def __init__(self, config, target_device=None):
+  def __init__(self, config):
     self.adb_path = constants.GetAdbPath()
     self.paths = Paths(config)
-    self.target_device = target_device
+    self.device = None
     self.target_package = apk_helper.GetPackageName(self.paths.apk_path)
     # This is used by decive_utils.Install to check if the apk needs updating.
     constants.SetOutputDirectory(self.paths.build_dir)
 
   # TODO(msw): Use pylib's adb_wrapper and device_utils instead.
   def _CreateADBCommand(self, args):
-    adb_command = [self.adb_path]
-    if self.target_device:
-      adb_command.extend(['-s', self.target_device])
+    adb_command = [self.adb_path, '-s', self.device.adb.GetDeviceSerial()]
     adb_command.extend(args)
     logging.getLogger().debug("Command: %s", " ".join(adb_command))
     return adb_command
@@ -238,49 +99,14 @@ class AndroidShell(object):
     thread = threading.Thread(target=Run, name="StdoutRedirector")
     thread.start()
 
-  def _MapPort(self, device_port, host_port):
-    """
-    Maps the device port to the host port. If |device_port| is 0, a random
-    available port is chosen. Returns the device port.
-    """
-    def _FindAvailablePortOnDevice():
-      opened = subprocess.check_output(
-          self._CreateADBCommand(['shell', 'netstat']))
-      opened = [int(x.strip().split()[3].split(':')[1])
-                for x in opened if x.startswith(' tcp')]
-      while True:
-        port = random.randint(4096, 16384)
-        if port not in opened:
-          return port
-    if device_port == 0:
-      device_port = _FindAvailablePortOnDevice()
-    subprocess.Popen(self._CreateADBCommand([
-                      "reverse",
-                      "tcp:%d" % device_port,
-                      "tcp:%d" % host_port])).wait()
+  def _StartHttpServerForDirectory(self, path):
+    test_server_helper = base_test_runner.BaseTestRunner(self.device, None)
+    ports = test_server_helper.LaunchTestHttpServer(path)
+    atexit.register(test_server_helper.ShutdownHelperToolsForTestSuite)
+    print 'Hosting %s at http://127.0.0.1:%d' % (path, ports[1])
+    return 'http://127.0.0.1:%d/' % ports[0]
 
-    unmap_command = self._CreateADBCommand(["reverse", "--remove",
-                     "tcp:%d" % device_port])
-
-    def _UnmapPort():
-      subprocess.Popen(unmap_command)
-    atexit.register(_UnmapPort)
-    return device_port
-
-  def _StartHttpServerForDirectory(self, path, port=0):
-    """Starts an http server serving from |path|. Returns the local URL."""
-    assert path
-    httpd = _SilentTCPServer(('127.0.0.1', 0), _GetHandlerClassForPath(path))
-    atexit.register(httpd.shutdown)
-
-    http_thread = threading.Thread(target=httpd.serve_forever)
-    http_thread.daemon = True
-    http_thread.start()
-
-    print 'Hosting %s at http://127.0.0.1:%d' % (path, httpd.server_address[1])
-    return 'http://127.0.0.1:%d/' % self._MapPort(port, httpd.server_address[1])
-
-  def _StartHttpServerForOriginMapping(self, mapping, port):
+  def _StartHttpServerForOriginMapping(self, mapping):
     """
     If |mapping| points at a local file starts an http server to serve files
     from the directory and returns the new mapping. This is intended to be
@@ -295,8 +121,7 @@ class AndroidShell(object):
       return mapping
     # Assume the destination is a local file. Start a local server that
     # redirects to it.
-    localUrl = self._StartHttpServerForDirectory(dest, port)
-    print 'started server at %s for %s' % (dest, localUrl)
+    localUrl = self._StartHttpServerForDirectory(dest)
     return parts[0] + '=' + localUrl
 
   def _StartHttpServerForOriginMappings(self, map_parameters):
@@ -309,37 +134,36 @@ class AndroidShell(object):
     sorted(original_values)
     result = []
     for value in original_values:
-      result.append(self._StartHttpServerForOriginMapping(value, 0))
+      result.append(self._StartHttpServerForOriginMapping(value))
     return [MAPPING_PREFIX + ','.join(result)]
 
-  def PrepareShellRun(self, origin=None, gdb=False):
+  def PrepareShellRun(self, origin=None, device=None, gdb=False):
     """
     Prepares for StartShell: runs adb as root and installs the apk as needed.
     If the origin specified is 'localhost', a local http server will be set up
     to serve files from the build directory along with port forwarding.
-
+    |device| is the device to run on, if multiple devices are connected.
     Returns arguments that should be appended to shell argument list.
     """
     devices = device_utils.DeviceUtils.HealthyDevices()
-    if self.target_device:
-      device = next((d for d in devices if d == self.target_device), None)
-      if not device:
-        raise device_errors.DeviceUnreachableError(self.target_device)
+    if device:
+      self.device = next((d for d in devices if d == device), None)
+      if not self.device:
+        raise device_errors.DeviceUnreachableError(device)
     elif devices:
-      device = devices[0]
+      self.device = devices[0]
     else:
       raise device_errors.NoDevicesError()
-    self.target_device = device.adb.GetDeviceSerial()
 
-    logging.getLogger().debug("Using device: %s", device)
-    device.EnableRoot()
-    device.Install(self.paths.apk_path)
+    logging.getLogger().debug("Using device: %s", self.device)
+    self.device.EnableRoot()
+    self.device.Install(self.paths.apk_path)
 
     atexit.register(self.StopShell)
 
     extra_args = []
     if origin is 'localhost':
-      origin = self._StartHttpServerForDirectory(self.paths.build_dir, 0)
+      origin = self._StartHttpServerForDirectory(self.paths.build_dir)
     if origin:
       extra_args.append("--origin=" + origin)
 
@@ -437,11 +261,10 @@ class AndroidShell(object):
       arguments += ['--wait-for-debugger']
       logcat_process = self.ShowLogs(stdout=subprocess.PIPE)
 
-    parameters = []
     if stdout or on_application_stop:
       subprocess.check_call(self._CreateADBCommand(
           ['shell', 'rm', '-f', STDOUT_PIPE]))
-      parameters.append('--fifo-path=%s' % STDOUT_PIPE)
+      arguments.append('--fifo-path=%s' % STDOUT_PIPE)
       max_attempts = 5
       if '--wait-for-debugger' in arguments:
         max_attempts = 200
@@ -449,13 +272,12 @@ class AndroidShell(object):
                      max_attempts=max_attempts)
 
     # Extract map-origin arguments.
-    map_parameters, other_parameters = _Split(arguments, _IsMapOrigin)
-    parameters += other_parameters
+    parameters = [a for a in arguments if not a.startswith(MAPPING_PREFIX)]
+    map_parameters = [a for a in arguments if a.startswith(MAPPING_PREFIX)]
     parameters += self._StartHttpServerForOriginMappings(map_parameters)
 
     if parameters:
-      encodedParameters = json.dumps(parameters)
-      cmd += ['--es', 'encodedParameters', encodedParameters]
+      cmd += ['--es', 'encodedParameters', json.dumps(parameters)]
 
     with open(os.devnull, 'w') as devnull:
       cmd_process = subprocess.Popen(cmd, stdout=devnull)
