@@ -11364,23 +11364,7 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
   }
 }
 
-// Unlike TEST/TEST_F, which are macros that expand to further macros,
-// TEST_P is a macro that expands directly to code that stringizes the
-// arguments. As a result, macros passed as parameters (such as prefix
-// or test_case_name) will not be expanded by the preprocessor. To
-// work around this, indirect the macro for TEST_P, so that the
-// pre-processor will expand macros such as MAYBE_test_name before
-// instantiating the test.
-#define WRAPPED_TEST_P(test_case_name, test_name) \
-  TEST_P(test_case_name, test_name)
-
-// Times out on Win7 dbg(2) bot. http://crbug.com/124776
-#if defined(OS_WIN)
-#define MAYBE_UseIPConnectionPooling DISABLED_UseIPConnectionPooling
-#else
-#define MAYBE_UseIPConnectionPooling UseIPConnectionPooling
-#endif
-WRAPPED_TEST_P(HttpNetworkTransactionTest, MAYBE_UseIPConnectionPooling) {
+TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   session_deps_.use_alternate_protocols = true;
   session_deps_.next_protos = SpdyNextProtos();
 
@@ -11478,7 +11462,6 @@ WRAPPED_TEST_P(HttpNetworkTransactionTest, MAYBE_UseIPConnectionPooling) {
   ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data));
   EXPECT_EQ("hello!", response_data);
 }
-#undef MAYBE_UseIPConnectionPooling
 
 TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   session_deps_.use_alternate_protocols = true;
@@ -11606,21 +11589,8 @@ class OneTimeCachingHostResolver : public HostResolver {
   const HostPortPair host_port_;
 };
 
-// Times out on Win7 dbg(2) bot. http://crbug.com/124776
-#if defined(OS_WIN)
-#define MAYBE_UseIPConnectionPoolingWithHostCacheExpiration \
-    DISABLED_UseIPConnectionPoolingWithHostCacheExpiration
-#else
-#define MAYBE_UseIPConnectionPoolingWithHostCacheExpiration \
-    UseIPConnectionPoolingWithHostCacheExpiration
-#endif
-WRAPPED_TEST_P(HttpNetworkTransactionTest,
-               MAYBE_UseIPConnectionPoolingWithHostCacheExpiration) {
-// Times out on Win7 dbg(2) bot. http://crbug.com/124776 . (MAYBE_
-// prefix doesn't work with parametrized tests).
-#if defined(OS_WIN)
-  return;
-#else
+TEST_P(HttpNetworkTransactionTest,
+       UseIPConnectionPoolingWithHostCacheExpiration) {
   session_deps_.use_alternate_protocols = true;
   session_deps_.next_protos = SpdyNextProtos();
 
@@ -11719,9 +11689,7 @@ WRAPPED_TEST_P(HttpNetworkTransactionTest,
   EXPECT_TRUE(response->was_npn_negotiated);
   ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data));
   EXPECT_EQ("hello!", response_data);
-#endif
 }
-#undef MAYBE_UseIPConnectionPoolingWithHostCacheExpiration
 
 TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
   const std::string https_url = "https://www.example.org:8080/";
