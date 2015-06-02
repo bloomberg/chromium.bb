@@ -6,6 +6,7 @@
 
 var EventBindings = require('event_bindings');
 var GuestViewInternalNatives = requireNative('guest_view_internal');
+var MessagingNatives = requireNative('messaging_natives');
 
 var CreateEvent = function(name) {
   var eventOpts = {supportsListeners: true, supportsFilters: true};
@@ -51,12 +52,33 @@ function GuestViewEvents(view) {
 //     meaningful for DOM events).
 GuestViewEvents.EVENTS = {};
 
+// Attaches |listener| onto the event descriptor object |evt|, and registers it
+// to be removed once this GuestViewEvents object is garbage collected.
+GuestViewEvents.prototype.addScopedListener = function(
+    evt, listener, listenerOpts) {
+  this.listenersToBeRemoved.push({ 'evt': evt, 'listener': listener });
+  evt.addListener(listener, listenerOpts);
+};
+
 // Sets up the handling of events.
 GuestViewEvents.prototype.setupEvents = function() {
+  // An array of registerd event listeners that should be removed when this
+  // GuestViewEvents is garbage collected.
+  this.listenersToBeRemoved = [];
+  MessagingNatives.BindToGC(this, function(listenersToBeRemoved) {
+    for (var i = 0; i != listenersToBeRemoved.length; ++i) {
+      listenersToBeRemoved[i].evt.removeListener(
+          listenersToBeRemoved[i].listener);
+      listenersToBeRemoved[i] = null;
+    }
+  }.bind(undefined, this.listenersToBeRemoved), -1 /* portId */);
+
+  // Set up the GuestView events.
   for (var eventName in GuestViewEvents.EVENTS) {
     this.setupEvent(eventName, GuestViewEvents.EVENTS[eventName]);
   }
 
+  // Set up the derived view's events.
   var events = this.getEvents();
   for (var eventName in events) {
     this.setupEvent(eventName, events[eventName]);
@@ -71,7 +93,7 @@ GuestViewEvents.prototype.setupEvent = function(eventName, eventInfo) {
 
   var listenerOpts = { instanceId: this.view.viewInstanceId };
   if (eventInfo.handler) {
-    eventInfo.evt.addListener(this.weakWrapper(function(e) {
+    this.addScopedListener(eventInfo.evt, this.weakWrapper(function(e) {
       this[eventInfo.handler](e, eventName);
     }), listenerOpts);
     return;
@@ -82,7 +104,7 @@ GuestViewEvents.prototype.setupEvent = function(eventName, eventInfo) {
     return;
   }
 
-  eventInfo.evt.addListener(this.weakWrapper(function(e) {
+  this.addScopedListener(eventInfo.evt, this.weakWrapper(function(e) {
     var domEvent = this.makeDomEvent(e, eventName);
     this.view.dispatchEvent(domEvent);
   }), listenerOpts);

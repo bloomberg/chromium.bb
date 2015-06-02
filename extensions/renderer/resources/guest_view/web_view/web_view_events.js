@@ -9,6 +9,7 @@ var DeclarativeWebRequestSchema =
     requireNative('schema_registry').GetSchema('declarativeWebRequest');
 var EventBindings = require('event_bindings');
 var GuestViewEvents = require('guestViewEvents').GuestViewEvents;
+var GuestViewInternalNatives = requireNative('guest_view_internal');
 var IdGenerator = requireNative('id_generator');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var WebRequestSchema =
@@ -284,8 +285,11 @@ function DeclarativeWebRequestEvent(opt_eventName,
                            opt_eventOptions,
                            opt_webViewInstanceId);
 
-  // TODO(lazyboy): When do we dispose this listener?
-  WebRequestMessageEvent.addListener(function() {
+  var view = GuestViewInternalNatives.GetViewFromID(opt_webViewInstanceId || 0);
+  if (!view) {
+    return;
+  }
+  view.events.addScopedListener(WebRequestMessageEvent, function() {
     // Re-dispatch to subEvent's listeners.
     $Function.apply(this.dispatch, this, $Array.slice(arguments));
   }.bind(this), {instanceId: opt_webViewInstanceId || 0});
