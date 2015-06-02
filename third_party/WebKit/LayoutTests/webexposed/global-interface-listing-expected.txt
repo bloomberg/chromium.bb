@@ -4368,6 +4368,8 @@ interface SVGFEPointLightElement
 interface SVGFESpecularLightingElement
     getter height
     getter in1
+    getter kernelUnitLengthX
+    getter kernelUnitLengthY
     getter result
     getter specularConstant
     getter specularExponent
