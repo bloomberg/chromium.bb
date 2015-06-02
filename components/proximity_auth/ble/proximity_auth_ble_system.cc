@@ -28,14 +28,49 @@ const char kFromPeripheralCharUUID[] = "f4b904a2-a030-43b3-98a8-221c536c03cb";
 
 }  // namespace
 
+ProximityAuthBleSystem::ScreenlockBridgeAdapter::ScreenlockBridgeAdapter(
+    ScreenlockBridge* screenlock_bridge)
+    : screenlock_bridge_(screenlock_bridge) {
+}
+
+ProximityAuthBleSystem::ScreenlockBridgeAdapter::ScreenlockBridgeAdapter() {
+}
+
+ProximityAuthBleSystem::ScreenlockBridgeAdapter::~ScreenlockBridgeAdapter() {
+}
+
+void ProximityAuthBleSystem::ScreenlockBridgeAdapter::AddObserver(
+    ScreenlockBridge::Observer* observer) {
+  screenlock_bridge_->AddObserver(observer);
+}
+
+void ProximityAuthBleSystem::ScreenlockBridgeAdapter::RemoveObserver(
+    ScreenlockBridge::Observer* observer) {
+  screenlock_bridge_->RemoveObserver(observer);
+}
+
+void ProximityAuthBleSystem::ScreenlockBridgeAdapter::Unlock(
+    content::BrowserContext* browser_context) {
+  screenlock_bridge_->Unlock(browser_context);
+}
+
 ProximityAuthBleSystem::ProximityAuthBleSystem(
     ScreenlockBridge* screenlock_bridge,
+    content::BrowserContext* browser_context)
+    : screenlock_bridge_(new ProximityAuthBleSystem::ScreenlockBridgeAdapter(
+          screenlock_bridge)),
+      browser_context_(browser_context),
+      weak_ptr_factory_(this) {
+  VLOG(1) << "Starting Proximity Auth over Bluetooth Low Energy.";
+  screenlock_bridge_->AddObserver(this);
+}
+
+ProximityAuthBleSystem::ProximityAuthBleSystem(
+    ScreenlockBridgeAdapter* screenlock_bridge,
     content::BrowserContext* browser_context)
     : screenlock_bridge_(screenlock_bridge),
       browser_context_(browser_context),
       weak_ptr_factory_(this) {
-  DCHECK(screenlock_bridge_);
-  DCHECK(browser_context_);
   VLOG(1) << "Starting Proximity Auth over Bluetooth Low Energy.";
   screenlock_bridge_->AddObserver(this);
 }
@@ -54,9 +89,7 @@ void ProximityAuthBleSystem::OnScreenDidLock(
       break;
     case ScreenlockBridge::LockHandler::LOCK_SCREEN:
       DCHECK(!connection_finder_);
-      connection_finder_.reset(new BluetoothLowEnergyConnectionFinder(
-          kSmartLockServiceUUID, kToPeripheralCharUUID,
-          kFromPeripheralCharUUID));
+      connection_finder_.reset(CreateConnectionFinder());
       connection_finder_->Find(
           base::Bind(&ProximityAuthBleSystem::OnConnectionFound,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -66,6 +99,11 @@ void ProximityAuthBleSystem::OnScreenDidLock(
       break;
   }
 };
+
+ConnectionFinder* ProximityAuthBleSystem::CreateConnectionFinder() {
+  return new BluetoothLowEnergyConnectionFinder(
+      kSmartLockServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID);
+}
 
 void ProximityAuthBleSystem::OnScreenDidUnlock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {

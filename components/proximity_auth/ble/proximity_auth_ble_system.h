@@ -22,6 +22,7 @@ namespace proximity_auth {
 class BluetoothLowEnergyConnection;
 class BluetoothLowEnergyConnectionFinder;
 class Connection;
+class ConnectionFinder;
 
 // This is the main entry point to start Proximity Auth over Bluetooth Low
 // Energy. This is the underlying system for the Smart Lock features. It will
@@ -40,15 +41,40 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer {
       ScreenlockBridge::LockHandler::ScreenType screen_type) override;
   void OnFocusedUserChanged(const std::string& user_id) override;
 
+ protected:
+  class ScreenlockBridgeAdapter {
+   public:
+    ScreenlockBridgeAdapter(ScreenlockBridge* screenlock_bridge);
+    virtual ~ScreenlockBridgeAdapter();
+
+    virtual void AddObserver(ScreenlockBridge::Observer* observer);
+    virtual void RemoveObserver(ScreenlockBridge::Observer* observer);
+    virtual void Unlock(content::BrowserContext* browser_context);
+
+   protected:
+    ScreenlockBridgeAdapter();
+
+   private:
+    // Not owned. Must outlive this object.
+    ScreenlockBridge* screenlock_bridge_;
+  };
+
+  // Used for testing.
+  ProximityAuthBleSystem(ScreenlockBridgeAdapter* screenlock_bridge,
+                         content::BrowserContext* browser_context);
+
+  // Virtual for testing.
+  virtual ConnectionFinder* CreateConnectionFinder();
+
  private:
   // Handler for a new connection found event.
   void OnConnectionFound(scoped_ptr<Connection> connection);
 
-  ScreenlockBridge* screenlock_bridge_;  // Not owned. Must outlive this object.
+  scoped_ptr<ScreenlockBridgeAdapter> screenlock_bridge_;
   content::BrowserContext*
       browser_context_;  // Not owned. Must outlive this object.
 
-  scoped_ptr<BluetoothLowEnergyConnectionFinder> connection_finder_;
+  scoped_ptr<ConnectionFinder> connection_finder_;
 
   scoped_ptr<Connection> connection_;
 
