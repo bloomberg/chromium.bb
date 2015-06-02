@@ -2094,4 +2094,21 @@ size_t StringImpl::sizeInBytes() const
     return size + sizeof(*this);
 }
 
+UChar32 toUpper(UChar32 c, const AtomicString& localeIdentifier)
+{
+    if (!localeIdentifier.isNull()) {
+        if (localeIdMatchesLang(localeIdentifier, "tr") || localeIdMatchesLang(localeIdentifier, "az")) {
+            if (c == 'i')
+                return latinCapitalLetterIWithDotAbove;
+            if (c == latinSmallLetterDotlessI)
+                return 'I';
+        } else if (localeIdMatchesLang(localeIdentifier, "lt")) {
+            // TODO(rob.buis) implement upper-casing rules for lt
+            // like in StringImpl::upper(locale).
+        }
+    }
+
+    return toUpper(c);
+}
+
 } // namespace WTF
