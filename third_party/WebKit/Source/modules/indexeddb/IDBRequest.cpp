@@ -186,12 +186,12 @@ void IDBRequest::setPendingCursor(IDBCursor* cursor)
 IDBCursor* IDBRequest::getResultCursor() const
 {
     if (!m_result)
-        return 0;
+        return nullptr;
     if (m_result->type() == IDBAny::IDBCursorType)
         return m_result->idbCursor();
     if (m_result->type() == IDBAny::IDBCursorWithValueType)
         return m_result->idbCursorWithValue();
-    return 0;
+    return nullptr;
 }
 
 void IDBRequest::setResultCursor(IDBCursor* cursor, IDBKey* key, IDBKey* primaryKey, PassRefPtr<IDBValue> value)
@@ -308,7 +308,7 @@ static IDBObjectStore* effectiveObjectStore(IDBAny* source)
         return source->idbIndex()->objectStore();
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 #endif
 

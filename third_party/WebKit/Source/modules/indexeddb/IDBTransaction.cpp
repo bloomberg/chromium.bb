@@ -140,7 +140,7 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name, ExceptionState& 
 {
     if (m_state == Finished) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     IDBObjectStoreMap::iterator it = m_objectStoreMap.find(name);
@@ -149,14 +149,14 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name, ExceptionState& 
 
     if (!isVersionChange() && !m_objectStoreNames.contains(name)) {
         exceptionState.throwDOMException(NotFoundError, IDBDatabase::noSuchObjectStoreErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     int64_t objectStoreId = m_database->findObjectStoreId(name);
     if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
         ASSERT(isVersionChange());
         exceptionState.throwDOMException(NotFoundError, IDBDatabase::noSuchObjectStoreErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     const IDBDatabaseMetadata& metadata = m_database->metadata();

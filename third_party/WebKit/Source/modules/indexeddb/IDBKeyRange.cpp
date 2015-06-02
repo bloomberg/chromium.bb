@@ -111,7 +111,7 @@ IDBKeyRange* IDBKeyRange::lowerBound(ExecutionContext* context, const ScriptValu
         return nullptr;
     }
 
-    return IDBKeyRange::create(bound, 0, open ? LowerBoundOpen : LowerBoundClosed, UpperBoundOpen);
+    return IDBKeyRange::create(bound, nullptr, open ? LowerBoundOpen : LowerBoundClosed, UpperBoundOpen);
 }
 
 IDBKeyRange* IDBKeyRange::upperBound(ExecutionContext* context, const ScriptValue& boundValue, bool open, ExceptionState& exceptionState)
@@ -124,7 +124,7 @@ IDBKeyRange* IDBKeyRange::upperBound(ExecutionContext* context, const ScriptValu
         return nullptr;
     }
 
-    return IDBKeyRange::create(0, bound, LowerBoundOpen, open ? UpperBoundOpen : UpperBoundClosed);
+    return IDBKeyRange::create(nullptr, bound, LowerBoundOpen, open ? UpperBoundOpen : UpperBoundClosed);
 }
 
 IDBKeyRange* IDBKeyRange::bound(ExecutionContext* context, const ScriptValue& lowerValue, const ScriptValue& upperValue, bool lowerOpen, bool upperOpen, ExceptionState& exceptionState)

@@ -189,35 +189,35 @@ IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyP
     Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBCreateObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_versionChangeTransaction->isFinished() || m_versionChangeTransaction->isFinishing()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_versionChangeTransaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     if (containsObjectStore(name)) {
         exceptionState.throwDOMException(ConstraintError, "An object store with the specified name already exists.");
-        return 0;
+        return nullptr;
     }
 
     if (!keyPath.isNull() && !keyPath.isValid()) {
         exceptionState.throwDOMException(SyntaxError, "The keyPath option is not a valid key path.");
-        return 0;
+        return nullptr;
     }
 
     if (autoIncrement && ((keyPath.type() == IDBKeyPath::StringType && keyPath.string().isEmpty()) || keyPath.type() == IDBKeyPath::ArrayType)) {
         exceptionState.throwDOMException(InvalidAccessError, "The autoIncrement option was set but the keyPath option was empty or an array.");
-        return 0;
+        return nullptr;
     }
 
     if (!m_backend) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     int64_t objectStoreId = m_metadata.maxObjectStoreId + 1;
@@ -286,21 +286,21 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringO
 
     if (scope.isEmpty()) {
         exceptionState.throwDOMException(InvalidAccessError, "The storeNames parameter was empty.");
-        return 0;
+        return nullptr;
     }
 
     WebIDBTransactionMode mode = IDBTransaction::stringToMode(modeString, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     if (m_versionChangeTransaction) {
         exceptionState.throwDOMException(InvalidStateError, "A version change transaction is running.");
-        return 0;
+        return nullptr;
     }
 
     if (m_closePending) {
         exceptionState.throwDOMException(InvalidStateError, "The database connection is closing.");
-        return 0;
+        return nullptr;
     }
 
     Vector<int64_t> objectStoreIds;
@@ -308,14 +308,14 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringO
         int64_t objectStoreId = findObjectStoreId(name);
         if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
             exceptionState.throwDOMException(NotFoundError, "One of the specified object stores was not found.");
-            return 0;
+            return nullptr;
         }
         objectStoreIds.append(objectStoreId);
     }
 
     if (!m_backend) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     int64_t transactionId = nextTransactionId();

@@ -89,27 +89,27 @@ IDBRequest* IDBCursor::update(ScriptState* scriptState, const ScriptValue& value
 
     if (!m_gotValue) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::noValueErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (isKeyCursor()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::isKeyCursorErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::sourceDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished() || m_transaction->isFinishing()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isReadOnly()) {
         exceptionState.throwDOMException(ReadOnlyError, "The record may not be updated inside a read-only transaction.");
-        return 0;
+        return nullptr;
     }
 
     IDBObjectStore* objectStore = effectiveObjectStore();
@@ -156,7 +156,7 @@ void IDBCursor::continueFunction(ScriptState* scriptState, const ScriptValue& ke
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
     }
-    continueFunction(key, 0, exceptionState);
+    continueFunction(key, nullptr, exceptionState);
 }
 
 void IDBCursor::continuePrimaryKey(ScriptState* scriptState, const ScriptValue& keyValue, const ScriptValue& primaryKeyValue, ExceptionState& exceptionState)
@@ -241,32 +241,32 @@ IDBRequest* IDBCursor::deleteFunction(ScriptState* scriptState, ExceptionState& 
     IDB_TRACE("IDBCursor::delete");
     if (m_transaction->isFinished() || m_transaction->isFinishing()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isReadOnly()) {
         exceptionState.throwDOMException(ReadOnlyError, "The record may not be deleted inside a read-only transaction.");
-        return 0;
+        return nullptr;
     }
 
     if (!m_gotValue) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::noValueErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (isKeyCursor()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::isKeyCursorErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::sourceDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->backendDB()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     IDBKeyRange* keyRange = IDBKeyRange::only(m_primaryKey, exceptionState);

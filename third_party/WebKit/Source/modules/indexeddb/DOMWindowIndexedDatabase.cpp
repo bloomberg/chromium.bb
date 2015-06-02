@@ -84,14 +84,14 @@ IDBFactory* DOMWindowIndexedDatabase::indexedDB()
 {
     Document* document = m_window.document();
     if (!document)
-        return 0;
+        return nullptr;
 
     Page* page = document->page();
     if (!page)
-        return 0;
+        return nullptr;
 
     if (!m_window.isCurrentlyDisplayedInFrame())
-        return 0;
+        return nullptr;
 
     if (!m_idbFactory)
         m_idbFactory = IDBFactory::create(IndexedDBClient::create());
