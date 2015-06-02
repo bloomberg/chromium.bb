@@ -106,8 +106,8 @@ bool SendIPCRequestAndReadReply(int ipc_channel,
             reply_data_buffer_size);
   DCHECK(reply_size);
 
-  if (!UnixDomainSocket::SendMsg(ipc_channel, request_pickle.data(),
-                                 request_pickle.size(), attached_fds)) {
+  if (!base::UnixDomainSocket::SendMsg(ipc_channel, request_pickle.data(),
+                                       request_pickle.size(), attached_fds)) {
     LOG(ERROR) << "SendIPCRequestAndReadReply: SendMsg failed";
     return false;
   }
@@ -115,8 +115,8 @@ bool SendIPCRequestAndReadReply(int ipc_channel,
   // Then read the remote reply.
   ScopedVector<base::ScopedFD> received_fds;
   const ssize_t msg_len =
-      UnixDomainSocket::RecvMsg(ipc_channel, reply_data_buffer,
-                                reply_data_buffer_size, &received_fds);
+      base::UnixDomainSocket::RecvMsg(ipc_channel, reply_data_buffer,
+                                      reply_data_buffer_size, &received_fds);
   if (msg_len <= 0) {
     LOG(ERROR) << "SendIPCRequestAndReadReply: RecvMsg failed";
     return false;

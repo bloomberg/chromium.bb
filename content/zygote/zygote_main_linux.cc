@@ -99,9 +99,8 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
       std::string(reinterpret_cast<char*>(&input), sizeof(input)));
 
   uint8_t reply_buf[512];
-  const ssize_t r = UnixDomainSocket::SendRecvMsg(
-      GetSandboxFD(), reply_buf, sizeof(reply_buf), NULL,
-      request);
+  const ssize_t r = base::UnixDomainSocket::SendRecvMsg(
+      GetSandboxFD(), reply_buf, sizeof(reply_buf), NULL, request);
   if (r == -1) {
     memset(output, 0, sizeof(struct tm));
     return;
@@ -557,10 +556,10 @@ bool ZygoteMain(const MainFunctionParams& params,
 
   if (using_layer1_sandbox) {
     // Let the ZygoteHost know we're booting up.
-    CHECK(UnixDomainSocket::SendMsg(kZygoteSocketPairFd,
-                                    kZygoteBootMessage,
-                                    sizeof(kZygoteBootMessage),
-                                    std::vector<int>()));
+    CHECK(base::UnixDomainSocket::SendMsg(kZygoteSocketPairFd,
+                                          kZygoteBootMessage,
+                                          sizeof(kZygoteBootMessage),
+                                          std::vector<int>()));
   }
 
   VLOG(1) << "ZygoteMain: initializing " << fork_delegates.size()

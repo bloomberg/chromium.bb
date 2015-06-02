@@ -140,7 +140,7 @@ bool HandleRemoteCommand(const BrokerPolicy& policy,
   }
 
   CHECK_LE(write_pickle.size(), kMaxMessageLength);
-  ssize_t sent = UnixDomainSocket::SendMsg(
+  ssize_t sent = base::UnixDomainSocket::SendMsg(
       reply_ipc, write_pickle.data(), write_pickle.size(), opened_files);
 
   // Close anything we have opened in this process.
@@ -176,8 +176,8 @@ BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
   ScopedVector<base::ScopedFD> fds;
   char buf[kMaxMessageLength];
   errno = 0;
-  const ssize_t msg_len =
-      UnixDomainSocket::RecvMsg(ipc_channel_.get(), buf, sizeof(buf), &fds);
+  const ssize_t msg_len = base::UnixDomainSocket::RecvMsg(
+      ipc_channel_.get(), buf, sizeof(buf), &fds);
 
   if (msg_len == 0 || (msg_len == -1 && errno == ECONNRESET)) {
     // EOF from the client, or the client died, we should die.

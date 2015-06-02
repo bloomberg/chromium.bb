@@ -276,8 +276,8 @@ bool HonorRequestAndReply(int reply_fd,
   if (!have_to_reply)
     return false;
   const std::vector<int> empty;  // We never send file descriptors back.
-  if (!UnixDomainSocket::SendMsg(reply_fd, write_pickle.data(),
-                                 write_pickle.size(), empty)) {
+  if (!base::UnixDomainSocket::SendMsg(reply_fd, write_pickle.data(),
+                                       write_pickle.size(), empty)) {
     LOG(ERROR) << "*** send() to zygote failed";
     return false;
   }
@@ -291,7 +291,7 @@ bool HandleZygoteRequest(int zygote_ipc_fd,
                          nacl::NaClSandbox* nacl_sandbox) {
   ScopedVector<base::ScopedFD> fds;
   char buf[kNaClMaxIPCMessageLength];
-  const ssize_t msglen = UnixDomainSocket::RecvMsg(zygote_ipc_fd,
+  const ssize_t msglen = base::UnixDomainSocket::RecvMsg(zygote_ipc_fd,
       &buf, sizeof(buf), &fds);
   // If the Zygote has started handling requests, we should be sandboxed via
   // the setuid sandbox.
@@ -468,9 +468,9 @@ int main(int argc, char* argv[]) {
 
   const std::vector<int> empty;
   // Send the zygote a message to let it know we are ready to help
-  if (!UnixDomainSocket::SendMsg(kNaClZygoteDescriptor,
-                                 kNaClHelperStartupAck,
-                                 sizeof(kNaClHelperStartupAck), empty)) {
+  if (!base::UnixDomainSocket::SendMsg(kNaClZygoteDescriptor,
+                                       kNaClHelperStartupAck,
+                                       sizeof(kNaClHelperStartupAck), empty)) {
     LOG(ERROR) << "*** send() to zygote failed";
   }
 

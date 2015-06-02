@@ -131,7 +131,8 @@ void SandboxIPCHandler::HandleRequestFromRenderer(int fd) {
   // error for a maximum length message.
   char buf[FontConfigIPC::kMaxFontFamilyLength + 128];
 
-  const ssize_t len = UnixDomainSocket::RecvMsg(fd, buf, sizeof(buf), &fds);
+  const ssize_t len =
+      base::UnixDomainSocket::RecvMsg(fd, buf, sizeof(buf), &fds);
   if (len == -1) {
     // TODO: should send an error reply, or the sender might block forever.
     NOTREACHED() << "Sandbox host message is larger than kMaxFontFamilyLength";

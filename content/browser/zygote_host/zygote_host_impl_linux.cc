@@ -64,7 +64,7 @@ bool ReceiveFixedMessage(int fd,
   char buf[expect_len + 1];
   ScopedVector<base::ScopedFD> fds_vec;
 
-  const ssize_t len = UnixDomainSocket::RecvMsgWithPid(
+  const ssize_t len = base::UnixDomainSocket::RecvMsgWithPid(
       fd, buf, sizeof(buf), &fds_vec, sender_pid);
   if (static_cast<size_t>(len) != expect_len)
     return false;
@@ -114,7 +114,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
 
   int fds[2];
   CHECK(socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);
-  CHECK(UnixDomainSocket::EnableReceiveProcessId(fds[0]));
+  CHECK(base::UnixDomainSocket::EnableReceiveProcessId(fds[0]));
   base::FileHandleMappingVector fds_to_map;
   fds_to_map.push_back(std::make_pair(fds[1], kZygoteSocketPairFd));
 
@@ -281,14 +281,14 @@ bool ZygoteHostImpl::SendMessage(const Pickle& data,
   CHECK(data.size() <= kZygoteMaxMessageLength)
       << "Trying to send too-large message to zygote (sending " << data.size()
       << " bytes, max is " << kZygoteMaxMessageLength << ")";
-  CHECK(!fds || fds->size() <= UnixDomainSocket::kMaxFileDescriptors)
+  CHECK(!fds || fds->size() <= base::UnixDomainSocket::kMaxFileDescriptors)
       << "Trying to send message with too many file descriptors to zygote "
       << "(sending " << fds->size() << ", max is "
-      << UnixDomainSocket::kMaxFileDescriptors << ")";
+      << base::UnixDomainSocket::kMaxFileDescriptors << ")";
 
-  return UnixDomainSocket::SendMsg(control_fd_,
-                                   data.data(), data.size(),
-                                   fds ? *fds : std::vector<int>());
+  return base::UnixDomainSocket::SendMsg(control_fd_,
+                                         data.data(), data.size(),
+                                         fds ? *fds : std::vector<int>());
 }
 
 ssize_t ZygoteHostImpl::ReadReply(void* buf, size_t buf_len) {
@@ -320,7 +320,7 @@ pid_t ZygoteHostImpl::ForkRequest(const std::vector<std::string>& argv,
   PCHECK(0 == socketpair(AF_UNIX, SOCK_SEQPACKET, 0, raw_socks));
   base::ScopedFD my_sock(raw_socks[0]);
   base::ScopedFD peer_sock(raw_socks[1]);
-  CHECK(UnixDomainSocket::EnableReceiveProcessId(my_sock.get()));
+  CHECK(base::UnixDomainSocket::EnableReceiveProcessId(my_sock.get()));
 
   pickle.WriteInt(kZygoteCommandFork);
   pickle.WriteString(process_type);
@@ -363,7 +363,7 @@ pid_t ZygoteHostImpl::ForkRequest(const std::vector<std::string>& argv,
       ScopedVector<base::ScopedFD> recv_fds;
       base::ProcessId real_pid;
 
-      ssize_t n = UnixDomainSocket::RecvMsgWithPid(
+      ssize_t n = base::UnixDomainSocket::RecvMsgWithPid(
           my_sock.get(), buf, sizeof(buf), &recv_fds, &real_pid);
       if (n != sizeof(kZygoteChildPingMessage) ||
           0 != memcmp(buf,

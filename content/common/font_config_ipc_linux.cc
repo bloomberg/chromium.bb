@@ -96,9 +96,8 @@ bool FontConfigIPC::matchFamilyName(const char familyName[],
   request.WriteUInt32(requestedStyle);
 
   uint8_t reply_buf[2048];
-  const ssize_t r = UnixDomainSocket::SendRecvMsg(fd_, reply_buf,
-                                                  sizeof(reply_buf), NULL,
-                                                  request);
+  const ssize_t r = base::UnixDomainSocket::SendRecvMsg(
+      fd_, reply_buf, sizeof(reply_buf), NULL, request);
   if (r == -1)
     return false;
 
@@ -145,10 +144,8 @@ SkStreamAsset* FontConfigIPC::openStream(const FontIdentity& identity) {
 
   int result_fd = -1;
   uint8_t reply_buf[256];
-  const ssize_t r = UnixDomainSocket::SendRecvMsg(fd_, reply_buf,
-                                                  sizeof(reply_buf),
-                                                  &result_fd, request);
-
+  const ssize_t r = base::UnixDomainSocket::SendRecvMsg(
+      fd_, reply_buf, sizeof(reply_buf), &result_fd, request);
   if (r == -1)
     return NULL;
 

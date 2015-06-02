@@ -21,13 +21,15 @@
 #include <sys/uio.h>
 #endif
 
+namespace base {
+
 const size_t UnixDomainSocket::kMaxFileDescriptors = 16;
 
 #if !defined(OS_NACL_NONSFI)
 // Creates a connected pair of UNIX-domain SOCK_SEQPACKET sockets, and passes
 // ownership of the newly allocated file descriptors to |one| and |two|.
 // Returns true on success.
-static bool CreateSocketPair(base::ScopedFD* one, base::ScopedFD* two) {
+static bool CreateSocketPair(ScopedFD* one, ScopedFD* two) {
   int raw_socks[2];
   if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0, raw_socks) == -1)
     return false;
@@ -84,7 +86,7 @@ bool UnixDomainSocket::SendMsg(int fd,
 ssize_t UnixDomainSocket::RecvMsg(int fd,
                                   void* buf,
                                   size_t length,
-                                  ScopedVector<base::ScopedFD>* fds) {
+                                  ScopedVector<ScopedFD>* fds) {
   return UnixDomainSocket::RecvMsgWithPid(fd, buf, length, fds, NULL);
 }
 
@@ -92,8 +94,8 @@ ssize_t UnixDomainSocket::RecvMsg(int fd,
 ssize_t UnixDomainSocket::RecvMsgWithPid(int fd,
                                          void* buf,
                                          size_t length,
-                                         ScopedVector<base::ScopedFD>* fds,
-                                         base::ProcessId* pid) {
+                                         ScopedVector<ScopedFD>* fds,
+                                         ProcessId* pid) {
   return UnixDomainSocket::RecvMsgWithFlags(fd, buf, length, 0, fds, pid);
 }
 
@@ -102,8 +104,8 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
                                            void* buf,
                                            size_t length,
                                            int flags,
-                                           ScopedVector<base::ScopedFD>* fds,
-                                           base::ProcessId* out_pid) {
+                                           ScopedVector<ScopedFD>* fds,
+                                           ProcessId* out_pid) {
   fds->clear();
 
   struct msghdr msg = {};
@@ -128,7 +130,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
 
   int* wire_fds = NULL;
   unsigned wire_fds_len = 0;
-  base::ProcessId pid = -1;
+  ProcessId pid = -1;
 
   if (msg.msg_controllen > 0) {
     struct cmsghdr* cmsg;
@@ -163,7 +165,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
 
   if (wire_fds) {
     for (unsigned i = 0; i < wire_fds_len; ++i)
-      fds->push_back(new base::ScopedFD(wire_fds[i]));
+      fds->push_back(new ScopedFD(wire_fds[i]));
   }
 
   if (out_pid) {
@@ -201,7 +203,7 @@ ssize_t UnixDomainSocket::SendRecvMsgWithFlags(int fd,
                                                const Pickle& request) {
   // This socketpair is only used for the IPC and is cleaned up before
   // returning.
-  base::ScopedFD recv_sock, send_sock;
+  ScopedFD recv_sock, send_sock;
   if (!CreateSocketPair(&recv_sock, &send_sock))
     return -1;
 
@@ -217,7 +219,7 @@ ssize_t UnixDomainSocket::SendRecvMsgWithFlags(int fd,
   // return EOF instead of hanging.
   send_sock.reset();
 
-  ScopedVector<base::ScopedFD> recv_fds;
+  ScopedVector<ScopedFD> recv_fds;
   // When porting to OSX keep in mind it doesn't support MSG_NOSIGNAL, so the
   // sender might get a SIGPIPE.
   const ssize_t reply_len = RecvMsgWithFlags(
@@ -239,3 +241,5 @@ ssize_t UnixDomainSocket::SendRecvMsgWithFlags(int fd,
   return reply_len;
 }
 #endif  // !defined(OS_NACL_NONSFI)
+
+}  // namespace base

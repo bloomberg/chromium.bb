@@ -541,7 +541,7 @@ SANDBOX_TEST_ALLOW_NOISE(BrokerProcess, RecvMsgDescriptorLeak) {
   // available, but for good measure we send it fd_limit bogus IPCs anyway.
   for (rlim_t i = 0; i < fd_limit; ++i) {
     SANDBOX_ASSERT(
-        UnixDomainSocket::SendMsg(ipc_fd, kBogus, sizeof(kBogus), fds));
+        base::UnixDomainSocket::SendMsg(ipc_fd, kBogus, sizeof(kBogus), fds));
   }
 
   const int fd = open_broker.Open(kCpuInfo, O_RDONLY);

@@ -78,7 +78,7 @@ int BrokerClient::PathAndFlagsSyscall(IPCCommand syscall_type,
   // temporary socketpair (created internally by SendRecvMsg()).
   // Then read the reply on this new socketpair in reply_buf and put an
   // eventual attached file descriptor in |returned_fd|.
-  ssize_t msg_len = UnixDomainSocket::SendRecvMsgWithFlags(
+  ssize_t msg_len = base::UnixDomainSocket::SendRecvMsgWithFlags(
       ipc_channel_.get(), reply_buf, sizeof(reply_buf), recvmsg_flags,
       &returned_fd, write_pickle);
   if (msg_len <= 0) {

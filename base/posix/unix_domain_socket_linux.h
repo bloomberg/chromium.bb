@@ -15,8 +15,8 @@
 #include "base/process/process_handle.h"
 
 namespace base {
+
 class Pickle;
-}
 
 class BASE_EXPORT UnixDomainSocket {
  public:
@@ -42,7 +42,7 @@ class BASE_EXPORT UnixDomainSocket {
   static ssize_t RecvMsg(int fd,
                          void* msg,
                          size_t length,
-                         ScopedVector<base::ScopedFD>* fds);
+                         ScopedVector<ScopedFD>* fds);
 
   // Same as RecvMsg above, but also returns the sender's process ID (as seen
   // from the caller's namespace).  However, before using this function to
@@ -51,8 +51,8 @@ class BASE_EXPORT UnixDomainSocket {
   static ssize_t RecvMsgWithPid(int fd,
                                 void* msg,
                                 size_t length,
-                                ScopedVector<base::ScopedFD>* fds,
-                                base::ProcessId* pid);
+                                ScopedVector<ScopedFD>* fds,
+                                ProcessId* pid);
 
 #if !defined(OS_NACL_NONSFI)
   // Perform a sendmsg/recvmsg pair.
@@ -77,7 +77,7 @@ class BASE_EXPORT UnixDomainSocket {
                              uint8_t* reply,
                              unsigned reply_len,
                              int* result_fd,
-                             const base::Pickle& request);
+                             const Pickle& request);
 
   // Similar to SendRecvMsg(), but |recvmsg_flags| allows to control the flags
   // of the recvmsg(2) call.
@@ -86,7 +86,7 @@ class BASE_EXPORT UnixDomainSocket {
                                       unsigned reply_len,
                                       int recvmsg_flags,
                                       int* result_fd,
-                                      const base::Pickle& request);
+                                      const Pickle& request);
 #endif  // !defined(OS_NACL_NONSFI)
  private:
   // Similar to RecvMsg, but allows to specify |flags| for recvmsg(2).
@@ -94,8 +94,10 @@ class BASE_EXPORT UnixDomainSocket {
                                   void* msg,
                                   size_t length,
                                   int flags,
-                                  ScopedVector<base::ScopedFD>* fds,
-                                  base::ProcessId* pid);
+                                  ScopedVector<ScopedFD>* fds,
+                                  ProcessId* pid);
 };
+
+}  // namespace base
 
 #endif  // BASE_POSIX_UNIX_DOMAIN_SOCKET_LINUX_H_

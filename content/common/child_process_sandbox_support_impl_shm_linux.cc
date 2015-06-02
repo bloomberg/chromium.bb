@@ -17,9 +17,8 @@ int MakeSharedMemorySegmentViaIPC(size_t length, bool executable) {
   request.WriteBool(executable);
   uint8_t reply_buf[10];
   int result_fd;
-  ssize_t result = UnixDomainSocket::SendRecvMsg(GetSandboxFD(),
-                                                 reply_buf, sizeof(reply_buf),
-                                                 &result_fd, request);
+  ssize_t result = base::UnixDomainSocket::SendRecvMsg(
+      GetSandboxFD(), reply_buf, sizeof(reply_buf), &result_fd, request);
   if (result == -1)
     return -1;
   return result_fd;

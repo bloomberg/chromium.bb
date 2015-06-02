@@ -40,7 +40,7 @@ TEST(UnixDomainSocketTest, SendRecvMsgAbortOnReplyFDClose) {
            static_cast<uint8_t*>(NULL), 0U, static_cast<int*>(NULL), request));
 
   // Receive the message.
-  ScopedVector<base::ScopedFD> message_fds;
+  ScopedVector<ScopedFD> message_fds;
   uint8_t buffer[16];
   ASSERT_EQ(static_cast<int>(request.size()),
             UnixDomainSocket::RecvMsg(fds[0], buffer, sizeof(buffer),
@@ -82,8 +82,8 @@ TEST(UnixDomainSocketTest, SendRecvMsgAvoidsSIGPIPE) {
 TEST(UnixDomainSocketTest, RecvPid) {
   int fds[2];
   ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
-  base::ScopedFD recv_sock(fds[0]);
-  base::ScopedFD send_sock(fds[1]);
+  ScopedFD recv_sock(fds[0]);
+  ScopedFD send_sock(fds[1]);
 
   ASSERT_TRUE(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
@@ -94,8 +94,8 @@ TEST(UnixDomainSocketTest, RecvPid) {
   // Extra receiving buffer space to make sure we really received only
   // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
   char buf[sizeof(kHello) + 1];
-  base::ProcessId sender_pid;
-  ScopedVector<base::ScopedFD> fd_vec;
+  ProcessId sender_pid;
+  ScopedVector<ScopedFD> fd_vec;
   const ssize_t nread = UnixDomainSocket::RecvMsgWithPid(
       recv_sock.get(), buf, sizeof(buf), &fd_vec, &sender_pid);
   ASSERT_EQ(sizeof(kHello), static_cast<size_t>(nread));
@@ -109,8 +109,8 @@ TEST(UnixDomainSocketTest, RecvPid) {
 TEST(UnixDomainSocketTest, RecvPidWithMaxDescriptors) {
   int fds[2];
   ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
-  base::ScopedFD recv_sock(fds[0]);
-  base::ScopedFD send_sock(fds[1]);
+  ScopedFD recv_sock(fds[0]);
+  ScopedFD send_sock(fds[1]);
 
   ASSERT_TRUE(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
@@ -123,8 +123,8 @@ TEST(UnixDomainSocketTest, RecvPidWithMaxDescriptors) {
   // Extra receiving buffer space to make sure we really received only
   // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
   char buf[sizeof(kHello) + 1];
-  base::ProcessId sender_pid;
-  ScopedVector<base::ScopedFD> recv_fds;
+  ProcessId sender_pid;
+  ScopedVector<ScopedFD> recv_fds;
   const ssize_t nread = UnixDomainSocket::RecvMsgWithPid(
       recv_sock.get(), buf, sizeof(buf), &recv_fds, &sender_pid);
   ASSERT_EQ(sizeof(kHello), static_cast<size_t>(nread));
@@ -139,16 +139,16 @@ TEST(UnixDomainSocketTest, RecvPidWithMaxDescriptors) {
 TEST(UnixDomianSocketTest, RecvPidDisconnectedSocket) {
   int fds[2];
   ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
-  base::ScopedFD recv_sock(fds[0]);
-  base::ScopedFD send_sock(fds[1]);
+  ScopedFD recv_sock(fds[0]);
+  ScopedFD send_sock(fds[1]);
 
   ASSERT_TRUE(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
   send_sock.reset();
 
   char ch;
-  base::ProcessId sender_pid;
-  ScopedVector<base::ScopedFD> recv_fds;
+  ProcessId sender_pid;
+  ScopedVector<ScopedFD> recv_fds;
   const ssize_t nread = UnixDomainSocket::RecvMsgWithPid(
       recv_sock.get(), &ch, sizeof(ch), &recv_fds, &sender_pid);
   ASSERT_EQ(0, nread);

@@ -73,7 +73,7 @@ void SendHello(int fd) {
 
   std::vector<int> send_fds;
   send_fds.push_back(write_pipe.get());
-  CHECK(UnixDomainSocket::SendMsg(fd, kHello, sizeof(kHello), send_fds));
+  CHECK(base::UnixDomainSocket::SendMsg(fd, kHello, sizeof(kHello), send_fds));
 
   write_pipe.reset();
 
@@ -96,7 +96,7 @@ void RecvHello(int fd,
   // sizeof(kHello) bytes and it wasn't just truncated to fit the buffer.
   char buf[sizeof(kHello) + 1];
   ScopedVector<base::ScopedFD> message_fds;
-  ssize_t n = UnixDomainSocket::RecvMsgWithPid(
+  ssize_t n = base::UnixDomainSocket::RecvMsgWithPid(
       fd, buf, sizeof(buf), &message_fds, sender_pid);
   CHECK_EQ(sizeof(kHello), static_cast<size_t>(n));
   CHECK_EQ(0, memcmp(buf, kHello, sizeof(kHello)));
@@ -112,7 +112,7 @@ SANDBOX_TEST(UnixDomainSocketTest, Fork) {
   base::ScopedFD recv_sock(fds[0]);
   base::ScopedFD send_sock(fds[1]);
 
-  CHECK(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
+  CHECK(base::UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
   const pid_t pid = fork();
   CHECK_NE(-1, pid);
@@ -142,7 +142,7 @@ SANDBOX_TEST(UnixDomainSocketTest, Namespace) {
   base::ScopedFD recv_sock(fds[0]);
   base::ScopedFD send_sock(fds[1]);
 
-  CHECK(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
+  CHECK(base::UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
   const pid_t pid = sys_clone(CLONE_NEWPID | SIGCHLD, 0, 0, 0, 0);
   CHECK_NE(-1, pid);
@@ -176,7 +176,7 @@ SANDBOX_TEST(UnixDomainSocketTest, DoubleNamespace) {
   base::ScopedFD recv_sock(fds[0]);
   base::ScopedFD send_sock(fds[1]);
 
-  CHECK(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
+  CHECK(base::UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
   const pid_t pid = sys_clone(CLONE_NEWPID | SIGCHLD, 0, 0, 0, 0);
   CHECK_NE(-1, pid);
@@ -242,7 +242,7 @@ SANDBOX_TEST(UnixDomainSocketTest, ImpossiblePid) {
   base::ScopedFD send_sock(fds[0]);
   base::ScopedFD recv_sock(fds[1]);
 
-  CHECK(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
+  CHECK(base::UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
 
   const pid_t pid = sys_clone(CLONE_NEWPID | SIGCHLD, 0, 0, 0, 0);
   CHECK_NE(-1, pid);

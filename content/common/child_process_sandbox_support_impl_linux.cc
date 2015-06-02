@@ -33,8 +33,8 @@ void GetFallbackFontForCharacter(int32_t character,
   request.WriteString(preferred_locale);
 
   uint8_t buf[512];
-  const ssize_t n = UnixDomainSocket::SendRecvMsg(GetSandboxFD(), buf,
-                                                  sizeof(buf), NULL, request);
+  const ssize_t n = base::UnixDomainSocket::SendRecvMsg(
+      GetSandboxFD(), buf, sizeof(buf), NULL, request);
 
   std::string family_name;
   std::string filename;
@@ -85,8 +85,8 @@ void GetRenderStyleForStrike(const char* family,
   request.WriteUInt16(pixel_size);
 
   uint8_t buf[512];
-  const ssize_t n = UnixDomainSocket::SendRecvMsg(GetSandboxFD(), buf,
-                                                  sizeof(buf), NULL, request);
+  const ssize_t n = base::UnixDomainSocket::SendRecvMsg(
+      GetSandboxFD(), buf, sizeof(buf), NULL, request);
   if (n == -1)
     return;
 
@@ -127,8 +127,8 @@ int MatchFontWithFallback(const std::string& face,
   request.WriteUInt32(fallback_family);
   uint8_t reply_buf[64];
   int fd = -1;
-  UnixDomainSocket::SendRecvMsg(GetSandboxFD(), reply_buf, sizeof(reply_buf),
-                                &fd, request);
+  base::UnixDomainSocket::SendRecvMsg(
+      GetSandboxFD(), reply_buf, sizeof(reply_buf), &fd, request);
   return fd;
 }
 
