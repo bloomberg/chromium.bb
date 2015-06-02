@@ -142,19 +142,29 @@
         },
       ] # targets
     }], # (target_arch == "ia32" or target_arch == "x64")
-    ['build_ffmpegsumo == 1', {
-      'includes': [
-        'ffmpeg_generated.gypi',
-        '../../build/util/version.gypi',
-      ],
-      'variables': {
-        # Path to platform configuration files.
-        'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
-      },
-      'targets': [
+  ],
+
+  'targets': [{
+    'target_name': 'ffmpeg',
+    'type': '<(component)',
+    'variables': {
+      # Path to platform configuration files.
+      'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+    },
+    'conditions': [
+      ['build_ffmpegsumo == 1',
         {
-          'target_name': 'ffmpegsumo',
-          'type': 'static_library',
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '../..',  # The chromium 'src' directory.
+              '<(platform_config_root)',
+              '.',
+            ],
+          },
+          'includes': [
+            'ffmpeg_generated.gypi',
+            '../../build/util/version.gypi',
+          ],
           'sources': [
             '<@(c_sources)',
             '<(platform_config_root)/config.h',
@@ -304,12 +314,13 @@
                     '-fvisibility=hidden',
                   ],
                   # Fixes warnings PIC relocation when building as component.
-                  'link_settings': {
-                    'ldflags': [
-                      '-Wl,-Bsymbolic',
-                      '-L<(shared_generated_dir)',
-                    ],
-                  },
+                  # *WARNING* -- DO NOT put this inside of a link_settings
+                  # section or these flags will be propagated outside of the
+                  # ffmpeg target and cause debug allocator crashes.
+                  'ldflags': [
+                    '-Wl,-Bsymbolic',
+                    '-L<(shared_generated_dir)',
+                  ],
                 }],
               ],
             }],  # os_posix == 1 and OS != "mac"
@@ -445,27 +456,6 @@
           ],
         },
       ],
-    }],
-  ],  # conditions
-  'targets': [
-    {
-      'target_name': 'ffmpeg',
-      'type': '<(component)',
-      'conditions': [
-        ['build_ffmpegsumo == 1', {
-          'dependencies': [
-              'ffmpegsumo',
-            ],
-            'direct_dependent_settings': {
-            'include_dirs': [
-              '../..',  # The chromium 'src' directory.
-              '<(platform_config_root)',
-              '.',
-              ],
-            },
-          }
-        ],
-      ],  # conditions
-    },
-  ],  # targets
+    ],
+  }],
 }
