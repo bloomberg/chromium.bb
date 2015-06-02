@@ -229,11 +229,8 @@ void ObjectPainter::drawDoubleBoxSide(GraphicsContext* graphicsContext, int x1, 
             break;
         case BSLeft:
         case BSRight:
-            // FIXME: Why do we offset the border by 1 in this case but not the other one?
-            if (length > 1) {
-                graphicsContext->drawRect(IntRect(x1, y1 + 1, thirdOfThickness, length - 1));
-                graphicsContext->drawRect(IntRect(x2 - thirdOfThickness, y1 + 1, thirdOfThickness, length - 1));
-            }
+            graphicsContext->drawRect(IntRect(x1, y1, thirdOfThickness, length));
+            graphicsContext->drawRect(IntRect(x2 - thirdOfThickness, y1, thirdOfThickness, length));
             break;
         }
 
