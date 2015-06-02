@@ -11,9 +11,9 @@
 #     # Optional display name (otherwise the entry for "test" above is used).
 #     "name": "mojo:test_app_url (more details)",
 #     # Optional test type. Valid values:
-#     #   * "gtest" (default)
-#     #   * "gtest_isolated": like "gtest", but run with fixture isolation,
-#     #      i.e., each test in a fresh mojo_shell)
+#     #   * "gtest": (default)
+#     #   * "gtest_isolated": like "gtest", but run with fixture isolation.
+#     #                       i.e., each test in a fresh mojo_shell
 #     "type": "gtest",
 #     # Optional arguments for the shell or test.
 #     "args": ["--some-flag-for-the-shell", "--some-flag-for-the-test"],
@@ -39,7 +39,6 @@ if config.target_os != config.OS_ANDROID:
   tests += [
     {
       "test": "mojo:html_viewer_apptests",
-      "args": ["--is-headless"],
     },
     {
       "test": "mojo:view_manager_apptests",
