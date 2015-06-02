@@ -797,6 +797,10 @@
                   'media/video/|'\
                   'video.*_accelerat',
     },
+    'webrtc_browser_tests': {
+      'filepath': 'chrome/browser/media/.*webrtc.*browsertest|'\
+                  'content/browser/media/.*webrtc.*browsertest',
+    },
     'website_settings': {
       'filepath': 'chrome/browser/content_settings/'\
                   '|chrome/browser/ui/views/website_settings/'\
@@ -1102,6 +1106,7 @@
     'webrtc_media': ['wjia+watch@chromium.org',
                      'mcasas+watch@chromium.org',
                      'posciak+watch@chromium.org'],
+    'webrtc_browser_tests': ['phoglund+watch@chromium.org'],
     'website_settings': ['markusheintz@chromium.org'],
     'windows_sandboxing': ['wfh+watch@chromium.org'],
     'worker': ['jam@chromium.org'],
