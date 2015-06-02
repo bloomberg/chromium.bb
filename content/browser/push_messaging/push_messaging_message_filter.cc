@@ -217,7 +217,6 @@ void PushMessagingMessageFilter::OnSubscribeFromDocument(
     int64_t service_worker_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mvanouwerkerk): Validate arguments?
-  // TODO(peter): Persist |user_visible| in Service Worker storage.
   RegisterData data;
   data.request_id = request_id;
   data.service_worker_registration_id = service_worker_registration_id;

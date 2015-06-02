@@ -25,8 +25,7 @@ Manifest::RelatedApplication::~RelatedApplication() {
 Manifest::Manifest()
     : display(DISPLAY_MODE_UNSPECIFIED),
       orientation(blink::WebScreenOrientationLockDefault),
-      prefer_related_applications(false),
-      gcm_user_visible_only(false) {
+      prefer_related_applications(false) {
 }
 
 Manifest::~Manifest() {
@@ -41,8 +40,7 @@ bool Manifest::IsEmpty() const {
          icons.empty() &&
          related_applications.empty() &&
          !prefer_related_applications &&
-         gcm_sender_id.is_null() &&
-         !gcm_user_visible_only;
+         gcm_sender_id.is_null();
 }
 
 } // namespace content

@@ -79,7 +79,6 @@ TEST_F(ManifestParserTest, EmptyStringNull) {
   ASSERT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
   ASSERT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
   ASSERT_TRUE(manifest.gcm_sender_id.is_null());
-  ASSERT_FALSE(manifest.gcm_user_visible_only);
 }
 
 TEST_F(ManifestParserTest, ValidNoContentParses) {
@@ -96,15 +95,14 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
   ASSERT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
   ASSERT_TRUE(manifest.gcm_sender_id.is_null());
-  ASSERT_FALSE(manifest.gcm_user_visible_only);
 }
 
 TEST_F(ManifestParserTest, MultipleErrorsReporting) {
   Manifest manifest = ParseManifest("{ \"name\": 42, \"short_name\": 4,"
       "\"orientation\": {}, \"display\": \"foo\", \"start_url\": null,"
-      "\"icons\": {}, \"gcm_user_visible_only\": 42 }");
+      "\"icons\": {} }");
 
-  EXPECT_EQ(7u, GetErrorCount());
+  EXPECT_EQ(6u, GetErrorCount());
 
   EXPECT_EQ("Manifest parsing error: property 'name' ignored,"
             " type string expected.",
@@ -123,9 +121,6 @@ TEST_F(ManifestParserTest, MultipleErrorsReporting) {
   EXPECT_EQ("Manifest parsing error: property 'icons' ignored, "
             "type array expected.",
             errors()[5]);
-  EXPECT_EQ("Manifest parsing error: property 'gcm_user_visible_only' ignored, "
-            "type boolean expected.",
-            errors()[6]);
 }
 
 TEST_F(ManifestParserTest, NameParseRules) {
@@ -1010,52 +1005,6 @@ TEST_F(ManifestParserTest, GCMSenderIDParseRules) {
     EXPECT_EQ("Manifest parsing error: property 'gcm_sender_id' ignored,"
               " type string expected.",
               errors()[0]);
-  }
-}
-
-TEST_F(ManifestParserTest, GCMUserVisibleOnlyParseRules) {
-  // Smoke test.
-  {
-    Manifest manifest = ParseManifest("{ \"gcm_user_visible_only\": true }");
-    EXPECT_TRUE(manifest.gcm_user_visible_only);
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Don't parse if the property isn't a boolean.
-  {
-    Manifest manifest = ParseManifest("{ \"gcm_user_visible_only\": {} }");
-    EXPECT_FALSE(manifest.gcm_user_visible_only);
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ(
-        "Manifest parsing error: property 'gcm_user_visible_only' ignored,"
-            " type boolean expected.",
-        errors()[0]);
-  }
-  {
-    Manifest manifest = ParseManifest(
-        "{ \"gcm_user_visible_only\": \"true\" }");
-    EXPECT_FALSE(manifest.gcm_user_visible_only);
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ(
-        "Manifest parsing error: property 'gcm_user_visible_only' ignored,"
-            " type boolean expected.",
-        errors()[0]);
-  }
-  {
-    Manifest manifest = ParseManifest("{ \"gcm_user_visible_only\": 1 }");
-    EXPECT_FALSE(manifest.gcm_user_visible_only);
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ(
-        "Manifest parsing error: property 'gcm_user_visible_only' ignored,"
-            " type boolean expected.",
-        errors()[0]);
-  }
-
-  // "False" should set the boolean false without throwing errors.
-  {
-    Manifest manifest = ParseManifest("{ \"gcm_user_visible_only\": false }");
-    EXPECT_FALSE(manifest.gcm_user_visible_only);
-    EXPECT_EQ(0u, GetErrorCount());
   }
 }
 

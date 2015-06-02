@@ -194,36 +194,12 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PushMessagingBrowserTest);
 };
 
-class PushMessagingBadManifestBrowserTest : public PushMessagingBrowserTest {
-  std::string GetTestURL() override {
-    return "files/push_messaging/test_bad_manifest.html";
-  }
-};
-
-class PushMessagingManifestUserVisibleOnlyTrueTest
-    : public PushMessagingBrowserTest {
-  std::string GetTestURL() override {
-    return "files/push_messaging/test_user_visible_only_manifest.html";
-  }
-};
-
 class PushMessagingBrowserTestEmptySubscriptionOptions
     : public PushMessagingBrowserTest {
   std::string GetTestURL() override {
     return "files/push_messaging/test_no_subscription_options.html";
   }
 };
-
-IN_PROC_BROWSER_TEST_F(PushMessagingBadManifestBrowserTest,
-                       SubscribeFailsNotVisibleMessages) {
-  std::string script_result;
-
-  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
-  ASSERT_EQ("ok - service worker registered", script_result);
-  ASSERT_TRUE(RunScript("subscribePush()", &script_result));
-  EXPECT_EQ("AbortError - Registration failed - permission denied",
-            script_result);
-}
 
 void PushMessagingBrowserTest::TryToSubscribeSuccessfully(
     const std::string& expected_push_subscription_id) {
@@ -339,44 +315,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTestEmptySubscriptionOptions,
   ASSERT_TRUE(RunScript("subscribePush()", &script_result));
   EXPECT_EQ("AbortError - Registration failed - permission denied",
             script_result);
-}
-
-IN_PROC_BROWSER_TEST_F(PushMessagingBadManifestBrowserTest,
-                       RegisterFailsNotVisibleMessages) {
-  std::string script_result;
-
-  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
-  ASSERT_EQ("ok - service worker registered", script_result);
-  ASSERT_TRUE(RunScript("subscribePush()", &script_result));
-  EXPECT_EQ("AbortError - Registration failed - permission denied",
-            script_result);
-}
-
-IN_PROC_BROWSER_TEST_F(PushMessagingManifestUserVisibleOnlyTrueTest,
-                       ManifestKeyConsidered) {
-  // Chrome 42 introduced the "gcm_user_visible_only" manifest key, but Chrome
-  // 43 supersedes this by the standardized PushSubscriptionOptions.userVisible
-  // option. We maintain support for the manifest key without specifying the
-  // subscription option, so verify that it is still being considered.
-  std::string script_result;
-
-  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
-  ASSERT_EQ("ok - service worker registered", script_result);
-
-  InfoBarResponder accepting_responder(GetInfoBarService(), true);
-  ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
-  EXPECT_EQ("permission status - granted", script_result);
-
-  ASSERT_TRUE(RunScript("subscribePush()", &script_result));
-  EXPECT_EQ(GetEndpointForSubscriptionId("1-0"), script_result);
-
-  // permissionState has been introduced later so it does not
-  // respect the manifest key.
-  ASSERT_TRUE(RunScript("permissionState()", &script_result));
-  EXPECT_EQ(
-      "NotSupportedError - Push subscriptions that don't enable"
-      " userVisibleOnly are not supported.",
-      script_result);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribePersisted) {

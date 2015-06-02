@@ -130,7 +130,6 @@ void ManifestParser::Parse() {
   manifest_.prefer_related_applications =
       ParsePreferRelatedApplications(*dictionary);
   manifest_.gcm_sender_id = ParseGCMSenderID(*dictionary);
-  manifest_.gcm_user_visible_only = ParseGCMUserVisibleOnly(*dictionary);
 
   ManifestUmaUtil::ParseSucceeded(manifest_);
 }
@@ -407,11 +406,6 @@ bool ManifestParser::ParsePreferRelatedApplications(
 base::NullableString16 ManifestParser::ParseGCMSenderID(
     const base::DictionaryValue& dictionary)  {
   return ParseString(dictionary, "gcm_sender_id", Trim);
-}
-
-bool ManifestParser::ParseGCMUserVisibleOnly(
-    const base::DictionaryValue& dictionary) {
-  return ParseBoolean(dictionary, "gcm_user_visible_only", false);
 }
 
 } // namespace content

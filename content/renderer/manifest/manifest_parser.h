@@ -161,11 +161,6 @@ class CONTENT_EXPORT ManifestParser {
   base::NullableString16 ParseGCMSenderID(
       const base::DictionaryValue& dictionary);
 
-  // Parses the 'gcm_user_visible_only' field of the manifest.
-  // This is a proprietary extension of the Web Manifest specification.
-  // Returns true iff the string could be parsed as the boolean true.
-  bool ParseGCMUserVisibleOnly(const base::DictionaryValue& dictionary);
-
   const base::StringPiece& data_;
   GURL manifest_url_;
   GURL document_url_;

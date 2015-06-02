@@ -23,12 +23,6 @@ using blink::WebString;
 
 namespace content {
 
-const char kManifestDeprecationWarning[] =
-    "The 'gcm_user_visible_only' manifest key is deprecated and will be "
-    "removed in Chrome 45, around August 2015. Use pushManager.subscribe({"
-    "userVisibleOnly: true}) instead. See https://goo.gl/RHFwWx for more "
-    "details.";
-
 PushMessagingDispatcher::PushMessagingDispatcher(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
 }
@@ -82,26 +76,12 @@ void PushMessagingDispatcher::DoSubscribe(
     return;
   }
 
-  // Support for the "gcm_user_visible_only" Manifest key has been deprecated
-  // in favor of the userVisibleOnly subscription option, and will be removed
-  // in a future Chrome release. Inform developers of this deprecation.
-  if (manifest.gcm_user_visible_only && !options.userVisibleOnly) {
-    blink::WebConsoleMessage message(
-        blink::WebConsoleMessage::LevelWarning,
-        blink::WebString::fromUTF8(kManifestDeprecationWarning));
-
-    render_frame()->GetWebFrame()->addMessageToConsole(message);
-  }
-
-  const bool user_visible = manifest.gcm_user_visible_only ||
-                            options.userVisibleOnly;
-
   Send(new PushMessagingHostMsg_SubscribeFromDocument(
       routing_id(), request_id,
       manifest.gcm_sender_id.is_null()
           ? std::string()
           : base::UTF16ToUTF8(manifest.gcm_sender_id.string()),
-      user_visible, service_worker_registration_id));
+      options.userVisibleOnly, service_worker_registration_id));
 }
 
 void PushMessagingDispatcher::OnSubscribeFromDocumentSuccess(

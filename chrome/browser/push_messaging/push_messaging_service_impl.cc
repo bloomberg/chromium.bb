@@ -41,6 +41,14 @@
 namespace {
 const int kMaxRegistrations = 1000000;
 
+// Chrome does not yet support silent push messages, and requires websites to
+// indicate that they will only send user-visible messages.
+const char kSilentPushUnsupportedMessage[] =
+    "Chrome currently only supports the Push API for subscriptions that will "
+    "result in user-visible messages. You can indicate this by calling "
+    "pushManager.subscribe({userVisibleOnly: true}) instead. See "
+    "https://goo.gl/yqv4Q4 for more details.";
+
 void RecordDeliveryStatus(content::PushDeliveryStatus status) {
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus",
                             status,
@@ -331,8 +339,13 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
   PushMessagingPermissionContext* permission_context =
       PushMessagingPermissionContextFactory::GetForProfile(profile_);
+  DCHECK(permission_context);
 
-  if (permission_context == NULL || !user_visible) {
+  if (!user_visible) {
+    web_contents->GetMainFrame()->AddMessageToConsole(
+        content::CONSOLE_MESSAGE_LEVEL_ERROR,
+        kSilentPushUnsupportedMessage);
+
     SubscribeEnd(callback,
                  std::string(),
                  content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
