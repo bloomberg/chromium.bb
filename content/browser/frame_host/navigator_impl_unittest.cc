@@ -986,16 +986,11 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, DataUrls) {
   contents()->NavigateAndCommit(kUrl1);
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
 
-  // Navigate to a data url.
+  // Navigate to a data url. The request should not have been sent to the IO
+  // thread but committed immediately.
   int entry_id = RequestNavigation(node, kUrl2);
   NavigationRequest* navigation_request = node->navigation_request();
   ASSERT_TRUE(navigation_request);
-  EXPECT_EQ(NavigationRequest::WAITING_FOR_RENDERER_RESPONSE,
-            navigation_request->state());
-  main_test_rfh()->SendBeforeUnloadACK(true);
-
-  // The request should not have been sent to the IO thread but committed
-  // immediately.
   EXPECT_EQ(NavigationRequest::RESPONSE_STARTED,
             navigation_request->state());
   EXPECT_FALSE(navigation_request->loader_for_testing());

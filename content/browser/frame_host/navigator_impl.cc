@@ -717,6 +717,11 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
   render_frame_host->CommitNavigation(response, body.Pass(),
                                       navigation_request->common_params(),
                                       navigation_request->request_params());
+
+  // When navigating to a Javascript url, no commit is expected from the
+  // RenderFrameHost, therefore the NavigationRequest should be reset right now.
+  if (navigation_request->common_params().url.SchemeIs(url::kJavaScriptScheme))
+    frame_tree_node->ResetNavigationRequest(true);
 }
 
 // PlzNavigate
@@ -820,12 +825,19 @@ void NavigatorImpl::RequestNavigation(
                                                 navigation_type,
                                                 navigation_start, controller_);
   frame_tree_node->SetNavigationRequest(navigation_request.Pass());
+  frame_tree_node->navigation_request()->SetWaitingForRendererResponse();
 
   // Have the current renderer execute its beforeUnload event if needed. If it
   // is not needed (eg. the renderer is not live), BeginNavigation should get
-  // called.
-  frame_tree_node->navigation_request()->SetWaitingForRendererResponse();
-  frame_tree_node->current_frame_host()->DispatchBeforeUnload(true);
+  // called. If the navigation is synchronous and same-site, then it can be sent
+  // directly to the renderer (currently this is the case for navigations that
+  // do not make network requests such as data urls or Javascript urls).
+  if (NavigationRequest::ShouldMakeNetworkRequest(
+          frame_tree_node->navigation_request()->common_params().url)) {
+    frame_tree_node->current_frame_host()->DispatchBeforeUnload(true);
+  } else {
+    BeginNavigation(frame_tree_node);
+  }
 }
 
 void NavigatorImpl::BeginNavigation(FrameTreeNode* frame_tree_node) {
