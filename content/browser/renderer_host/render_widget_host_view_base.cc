@@ -84,10 +84,6 @@ void NotifyPluginProcessHostHelper(HWND window, HWND parent, int tries) {
 // parent which is typically the RVH window which turns on user gesture.
 LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
                                          WPARAM wparam, LPARAM lparam) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 PluginWrapperWindowProc"));
-
   if (message == WM_PARENTNOTIFY) {
     switch (LOWORD(wparam)) {
       case WM_LBUTTONDOWN:

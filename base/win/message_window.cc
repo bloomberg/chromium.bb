@@ -121,10 +121,6 @@ LRESULT CALLBACK MessageWindow::WindowProc(HWND hwnd,
                                            UINT message,
                                            WPARAM wparam,
                                            LPARAM lparam) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 MessageWindow::WindowProc"));
-
   MessageWindow* self = reinterpret_cast<MessageWindow*>(
       GetWindowLongPtr(hwnd, GWLP_USERDATA));
 

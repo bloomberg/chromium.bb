@@ -372,11 +372,6 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
 }
 
 bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 MessagePumpForUI::ProcessMessageHelper1"));
-
   TRACE_EVENT1("base", "MessagePumpForUI::ProcessMessageHelper",
                "message", msg.message);
   if (WM_QUIT == msg.message) {
@@ -391,18 +386,8 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   if (msg.message == kMsgHaveWork && msg.hwnd == message_hwnd_)
     return ProcessPumpReplacementMessage();
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 MessagePumpForUI::ProcessMessageHelper2"));
-
   if (CallMsgFilter(const_cast<MSG*>(&msg), kMessageFilterCode))
     return true;
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 MessagePumpForUI::ProcessMessageHelper3"));
 
   uint32_t action = MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT;
   if (state_->dispatcher) {
@@ -416,18 +401,7 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   if (action & MessagePumpDispatcher::POST_DISPATCH_QUIT_LOOP)
     state_->should_quit = true;
   if (action & MessagePumpDispatcher::POST_DISPATCH_PERFORM_DEFAULT) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-    tracked_objects::ScopedTracker tracking_profile5(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "440919 MessagePumpForUI::ProcessMessageHelper5"));
-
     TranslateMessage(&msg);
-
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-    tracked_objects::ScopedTracker tracking_profile6(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "440919 MessagePumpForUI::ProcessMessageHelper6"));
-
     DispatchMessage(&msg);
   }
 

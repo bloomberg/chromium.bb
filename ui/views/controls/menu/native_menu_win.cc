@@ -346,10 +346,6 @@ class NativeMenuWin::MenuHostWindow {
                                              UINT message,
                                              WPARAM w_param,
                                              LPARAM l_param) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 MenuHostWindowProc"));
-
     MenuHostWindow* host =
         reinterpret_cast<MenuHostWindow*>(gfx::GetWindowUserData(window));
     // host is null during initial construction.

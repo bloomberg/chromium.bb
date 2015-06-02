@@ -259,10 +259,6 @@ HICON WindowImpl::GetSmallWindowIcon() const {
 }
 
 LRESULT WindowImpl::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WindowImpl DefWindowProc1"));
-
   LRESULT result = 0;
 
   HWND hwnd = hwnd_;
@@ -271,13 +267,8 @@ LRESULT WindowImpl::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
 
   // Handle the message if it's in our message map; otherwise, let the system
   // handle it.
-  if (!ProcessWindowMessage(hwnd, message, w_param, l_param, result)) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WindowImpl DefWindowProc2"));
-
+  if (!ProcessWindowMessage(hwnd, message, w_param, l_param, result))
     result = DefWindowProc(hwnd, message, w_param, l_param);
-  }
 
   return result;
 }

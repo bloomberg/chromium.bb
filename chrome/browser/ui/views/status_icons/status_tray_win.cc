@@ -167,10 +167,6 @@ LRESULT CALLBACK StatusTrayWin::WndProcStatic(HWND hwnd,
                                               UINT message,
                                               WPARAM wparam,
                                               LPARAM lparam) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 StatusTrayWin::WndProcStatic"));
-
   StatusTrayWin* msg_wnd = reinterpret_cast<StatusTrayWin*>(
       GetWindowLongPtr(hwnd, GWLP_USERDATA));
   if (msg_wnd)
