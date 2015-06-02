@@ -197,7 +197,6 @@ public:
     virtual void setDefaultPageScaleLimits(float minScale, float maxScale) override;
     virtual void setInitialPageScaleOverride(float) override;
     virtual void setMaximumLegibleScale(float) override;
-    virtual void setMainFrameScrollOffset(const WebPoint&) override;
     virtual void setPageScaleFactor(float) override;
     virtual void setPinchViewportOffset(const WebFloatPoint&) override;
     virtual WebFloatPoint pinchViewportOffset() const override;
@@ -274,6 +273,8 @@ public:
     // WebViewImpl
     void enableViewport();
     void disableViewport();
+
+    void setMainFrameScrollOffset(const WebPoint&);
 
     float defaultMinimumPageScaleFactor() const;
     float defaultMaximumPageScaleFactor() const;

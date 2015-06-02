@@ -2317,7 +2317,7 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
     EXPECT_FALSE(view->layoutView()->compositor()->layerForVerticalScrollbar());
 }
 
-void setScaleAndScrollAndLayout(WebView* webView, WebPoint scroll, float scale)
+void setScaleAndScrollAndLayout(WebViewImpl* webView, WebPoint scroll, float scale)
 {
     webView->setPageScaleFactor(scale);
     webView->setMainFrameScrollOffset(WebPoint(scroll.x, scroll.y));
@@ -2824,13 +2824,13 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     webViewHelper.webView()->advanceFocus(false);
     // Set the caret to the end of the input box.
     webViewHelper.webView()->mainFrame()->document().getElementById("EditBoxWithText").to<WebInputElement>().setSelectionRange(1000, 1000);
-    setScaleAndScrollAndLayout(webViewHelper.webView(), WebPoint(0, 0), 1);
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), 1);
     WebRect rect, caret;
     webViewHelper.webViewImpl()->selectionBounds(caret, rect);
 
     // Set the page scale to be smaller than the minimal readable scale.
     float initialScale = minReadableCaretHeight / caret.height * 0.5f;
-    setScaleAndScrollAndLayout(webViewHelper.webView(), WebPoint(0, 0), initialScale);
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), initialScale);
 
     float scale;
     IntPoint scroll;
@@ -2848,7 +2848,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     viewportWidth = 200;
     viewportHeight = 150;
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
-    setScaleAndScrollAndLayout(webViewHelper.webView(), WebPoint(0, 0), initialScale);
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), initialScale);
     webViewHelper.webViewImpl()->computeScaleAndScrollForFocusedNode(webViewHelper.webViewImpl()->focusedElement(), scale, scroll, needAnimation);
     EXPECT_TRUE(needAnimation);
     // The caret should be right aligned since the caret would be offscreen when the edit box is left aligned.
@@ -2856,7 +2856,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     EXPECT_NEAR(hScroll, scroll.x(), 2);
     EXPECT_NEAR(minReadableCaretHeight / caret.height, scale, 0.1);
 
-    setScaleAndScrollAndLayout(webViewHelper.webView(), WebPoint(0, 0), initialScale);
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), initialScale);
     // Move focus to edit box with text.
     webViewHelper.webView()->advanceFocus(false);
     webViewHelper.webViewImpl()->computeScaleAndScrollForFocusedNode(webViewHelper.webViewImpl()->focusedElement(), scale, scroll, needAnimation);
@@ -2954,13 +2954,13 @@ TEST_F(WebFrameTest, DivScrollIntoEditablePreservePageScaleTest)
     webViewHelper.webView()->advanceFocus(false);
     // Set the caret to the begining of the input box.
     webViewHelper.webView()->mainFrame()->document().getElementById("EditBoxWithText").to<WebInputElement>().setSelectionRange(0, 0);
-    setScaleAndScrollAndLayout(webViewHelper.webView(), WebPoint(0, 0), 1);
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), 1);
     WebRect rect, caret;
     webViewHelper.webViewImpl()->selectionBounds(caret, rect);
 
     // Set the page scale to be twice as large as the minimal readable scale.
     float newScale = minReadableCaretHeight / caret.height * 2.0;
-    setScaleAndScrollAndLayout(webViewHelper.webView(), WebPoint(0, 0), newScale);
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), newScale);
 
     float scale;
     IntPoint scroll;
@@ -2978,7 +2978,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditablePreservePageScaleTest)
     // Set page scale and scroll such that edit box will be under the screen
     newScale = 3.0;
     hScroll = 200;
-    setScaleAndScrollAndLayout(webViewHelper.webView(), WebPoint(hScroll, 0), newScale);
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(hScroll, 0), newScale);
     webViewHelper.webViewImpl()->computeScaleAndScrollForFocusedNode(webViewHelper.webViewImpl()->focusedElement(), scale, scroll, needAnimation);
     EXPECT_TRUE(needAnimation);
     // Horizontal scroll have to be the same

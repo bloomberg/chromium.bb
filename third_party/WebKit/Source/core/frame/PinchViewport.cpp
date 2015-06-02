@@ -197,25 +197,15 @@ void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
         frameHost().chromeClient().pageScaleFactorChanged();
     }
 
-    // Old-style pinch sets scale here but we shouldn't call into the
-    // location code below. Can be removed when there's no old-style pinch.
-    // FIXME(bokan): Remove when cleaning up old pinch code.
-    if (!m_innerViewportScrollLayer) {
-        if (valuesChanged)
-            mainFrame()->loader().saveScrollState();
-
-        return;
-    }
-
     FloatPoint clampedOffset(clampOffsetToBoundaries(location));
 
     if (clampedOffset != m_offset) {
         m_offset = clampedOffset;
         scrollAnimator()->setCurrentPosition(m_offset);
 
-        ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();
-        ASSERT(coordinator);
-        coordinator->scrollableAreaScrollLayerDidChange(this);
+        // SVG runs with accelerated compositing disabled so no ScrollingCoordinator.
+        if (ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator())
+            coordinator->scrollableAreaScrollLayerDidChange(this);
 
         Document* document = mainFrame()->document();
         document->enqueueScrollEventForNode(document);

@@ -202,10 +202,6 @@ public:
     virtual void setPerTilePaintingEnabled(bool) = 0;
     virtual void setPictographFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setPinchOverlayScrollbarThickness(int) = 0;
-
-    // TODO(bokan): Temporary, need to remove Chromium side users.
-    virtual void setPinchVirtualViewportEnabled(bool) { }
-
     virtual void setPluginsEnabled(bool) = 0;
     virtual void setAvailablePointerTypes(int) = 0;
     virtual void setPrimaryPointerType(PointerType) = 0;

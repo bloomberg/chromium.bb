@@ -228,12 +228,6 @@ public:
     // On the other hand, zooming affects layout of the page.
     virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) { setPageScaleFactor(scaleFactor); }
 
-    // TODO: Reevaluate if this is needed once all users are converted to using the
-    // virtual viewport pinch model.
-    // Temporary to keep old style pinch viewport working while we gradually bring up
-    // virtual viewport pinch.
-    virtual void setMainFrameScrollOffset(const WebPoint& origin) = 0;
-
     // Scales the page without affecting layout by using the pinch-to-zoom viewport.
     virtual void setPageScaleFactor(float) = 0;
 
