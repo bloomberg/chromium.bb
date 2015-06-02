@@ -36,6 +36,8 @@ class ComponentExtensionIMEManagerImpl
               const std::string& extension_id,
               const base::FilePath& file_path) override;
 
+  static bool IsIMEExtensionID(const std::string& id);
+
  private:
   // Reads component extensions and extract their localized information: name,
   // description and ime id. This function fills them into |out_imes|.

@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/component_extensions_whitelist/whitelist.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -51,55 +52,48 @@ bool ExternalComponentLoader::IsModifiable(const Extension* extension) {
 
 void ExternalComponentLoader::StartLoading() {
   prefs_.reset(new base::DictionaryValue());
-  std::string app_id = extension_misc::kInAppPaymentsSupportAppId;
-  prefs_->SetString(app_id + ".external_update_url",
-                    extension_urls::GetWebstoreUpdateUrl().spec());
+  AddExternalExtension(extension_misc::kInAppPaymentsSupportAppId);
 
-  if (HotwordServiceFactory::IsHotwordAllowed(profile_)) {
-    std::string hotword_id = extension_misc::kHotwordSharedModuleId;
-    prefs_->SetString(hotword_id + ".external_update_url",
-                      extension_urls::GetWebstoreUpdateUrl().spec());
-  }
+  if (HotwordServiceFactory::IsHotwordAllowed(profile_))
+    AddExternalExtension(extension_misc::kHotwordSharedModuleId);
 
   {
     std::string extension_id;
-    if (IsEnhancedBookmarksEnabled(&extension_id)) {
-      prefs_->SetString(extension_id + ".external_update_url",
-                        extension_urls::GetWebstoreUpdateUrl().spec());
-    }
+    if (IsEnhancedBookmarksEnabled(&extension_id))
+      AddExternalExtension(extension_id);
   }
 
 #if defined(OS_CHROMEOS)
   {
     base::CommandLine* const command_line =
         base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(chromeos::switches::kDisableNewZIPUnpacker)) {
-      const std::string extension_id = extension_misc::kZIPUnpackerExtensionId;
-      prefs_->SetString(extension_id + ".external_update_url",
-                        extension_urls::GetWebstoreUpdateUrl().spec());
-    }
+    if (!command_line->HasSwitch(chromeos::switches::kDisableNewZIPUnpacker))
+      AddExternalExtension(extension_misc::kZIPUnpackerExtensionId);
   }
 #endif
 
 
 #if defined(ENABLE_MEDIA_ROUTER)
-  if (switches::MediaRouterEnabled()) {
-    std::string media_router_extension_id(
-        extension_misc::kMediaRouterStableExtensionId);
-    prefs_->SetString(media_router_extension_id + ".external_update_url",
-                      extension_urls::GetWebstoreUpdateUrl().spec());
-  }
+  if (switches::MediaRouterEnabled())
+    AddExternalExtension(extension_misc::kMediaRouterStableExtensionId);
 #endif  // defined(ENABLE_MEDIA_ROUTER)
 
 #if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
   std::string google_now_extension_id;
-  if (GetGoogleNowExtensionId(&google_now_extension_id)) {
-    prefs_->SetString(google_now_extension_id + ".external_update_url",
-                      extension_urls::GetWebstoreUpdateUrl().spec());
-  }
+  if (GetGoogleNowExtensionId(&google_now_extension_id))
+    AddExternalExtension(google_now_extension_id);
 #endif
 
   LoadFinished();
+}
+
+void ExternalComponentLoader::AddExternalExtension(
+    const std::string& extension_id) {
+  if (!IsComponentExtensionWhitelisted(extension_id))
+    return;
+
+  prefs_->SetString(extension_id + ".external_update_url",
+                    extension_urls::GetWebstoreUpdateUrl().spec());
 }
 
 }  // namespace extensions

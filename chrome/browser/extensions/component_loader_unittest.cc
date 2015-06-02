@@ -83,7 +83,9 @@ class ComponentLoaderTest : public testing::Test {
         component_loader_(&extension_service_,
                           &prefs_,
                           &local_state_,
-                          &profile_) {}
+                          &profile_) {
+    component_loader_.set_ignore_whitelist_for_testing(true);
+  }
 
   void SetUp() override {
     extension_path_ =

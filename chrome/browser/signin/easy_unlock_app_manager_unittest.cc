@@ -309,6 +309,9 @@ class EasyUnlockAppManagerTest : public testing::Test {
     event_router_ = event_router.get();
     test_extension_system->SetEventRouter(event_router.Pass());
 
+    extension_service_->component_loader()->
+        set_ignore_whitelist_for_testing(true);
+
     return test_extension_system;
   }
 

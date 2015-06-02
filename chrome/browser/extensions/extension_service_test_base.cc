@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_garbage_collector_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -225,6 +226,7 @@ void ExtensionServiceTestBase::CreateExtensionService(
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
   service_->set_install_updates_when_idle_for_test(false);
+  service_->component_loader()->set_ignore_whitelist_for_testing(true);
 
   // When we start up, we want to make sure there is no external provider,
   // since the ExtensionService on Windows will use the Registry as a default

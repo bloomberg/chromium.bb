@@ -35,6 +35,8 @@ class ExternalComponentLoader : public ExternalLoader {
   friend class base::RefCountedThreadSafe<ExternalLoader>;
   ~ExternalComponentLoader() override;
 
+  void AddExternalExtension(const std::string& extension_id);
+
   // The profile that this loader is associated with. It listens for
   // preference changes for that profile.
   Profile* profile_;

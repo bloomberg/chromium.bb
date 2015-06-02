@@ -566,6 +566,8 @@
       'browser/extensions/chrome_url_request_util.h',
       'browser/extensions/component_loader.cc',
       'browser/extensions/component_loader.h',
+      'browser/extensions/component_extensions_whitelist/whitelist.cc',
+      'browser/extensions/component_extensions_whitelist/whitelist.h',
       'browser/extensions/context_menu_matcher.cc',
       'browser/extensions/context_menu_matcher.h',
       'browser/extensions/convert_user_script.cc',

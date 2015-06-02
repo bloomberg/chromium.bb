@@ -15,6 +15,7 @@
 #include "base/profiler/scoped_profile.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/browser/extensions/component_extensions_whitelist/whitelist.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/search/hotword_service.h"
@@ -127,6 +128,7 @@ ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
       local_state_(local_state),
       browser_context_(browser_context),
       extension_service_(extension_service),
+      ignore_whitelist_for_testing_(false),
       weak_factory_(this) {}
 
 ComponentLoader::~ComponentLoader() {
@@ -183,25 +185,41 @@ std::string ComponentLoader::GetExtensionID(
 
 std::string ComponentLoader::Add(int manifest_resource_id,
                                  const base::FilePath& root_directory) {
+  if (!ignore_whitelist_for_testing_ &&
+      !IsComponentExtensionWhitelisted(manifest_resource_id))
+    return std::string();
+
   std::string manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           manifest_resource_id).as_string();
-  return Add(manifest_contents, root_directory);
+  return Add(manifest_contents, root_directory, true);
 }
 
 std::string ComponentLoader::Add(const std::string& manifest_contents,
                                  const base::FilePath& root_directory) {
+  return Add(manifest_contents, root_directory, false);
+}
+
+std::string ComponentLoader::Add(const std::string& manifest_contents,
+                                 const base::FilePath& root_directory,
+                                 bool skip_whitelist) {
   // The Value is kept for the lifetime of the ComponentLoader. This is
   // required in case LoadAll() is called again.
   base::DictionaryValue* manifest = ParseManifest(manifest_contents);
   if (manifest)
-    return Add(manifest, root_directory);
+    return Add(manifest, root_directory, skip_whitelist);
   return std::string();
 }
 
 std::string ComponentLoader::Add(const base::DictionaryValue* parsed_manifest,
-                                 const base::FilePath& root_directory) {
+                                 const base::FilePath& root_directory,
+                                 bool skip_whitelist) {
   ComponentExtensionInfo info(parsed_manifest, root_directory);
+  if (!ignore_whitelist_for_testing_ &&
+      !skip_whitelist &&
+      !IsComponentExtensionWhitelisted(info.extension_id))
+    return std::string();
+
   component_extensions_.push_back(info);
   if (extension_service_->is_ready())
     Load(info);
@@ -220,7 +238,9 @@ std::string ComponentLoader::AddOrReplace(const base::FilePath& path) {
   }
   Remove(GenerateId(manifest.get(), absolute_path));
 
-  return Add(manifest.release(), absolute_path);
+  // We don't check component extensions loaded by path because this is only
+  // used by developers for testing.
+  return Add(manifest.release(), absolute_path, true);
 }
 
 void ComponentLoader::Reload(const std::string& extension_id) {
@@ -401,7 +421,7 @@ void ComponentLoader::AddChromeVoxExtensionWithManifest(
     const base::Closure& done_cb,
     scoped_ptr<base::DictionaryValue> manifest) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::string extension_id = Add(manifest.release(), chromevox_path);
+  std::string extension_id = Add(manifest.release(), chromevox_path, false);
   CHECK_EQ(extension_misc::kChromeVoxExtensionId, extension_id);
   if (!done_cb.is_null())
     done_cb.Run();
@@ -422,6 +442,10 @@ void ComponentLoader::AddWithNameAndDescription(
     const base::FilePath& root_directory,
     int name_string_id,
     int description_string_id) {
+  if (!ignore_whitelist_for_testing_ &&
+      !IsComponentExtensionWhitelisted(manifest_resource_id))
+    return;
+
   std::string manifest_contents =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           manifest_resource_id).as_string();
@@ -435,7 +459,7 @@ void ComponentLoader::AddWithNameAndDescription(
                         l10n_util::GetStringUTF8(name_string_id));
     manifest->SetString(manifest_keys::kDescription,
                         l10n_util::GetStringUTF8(description_string_id));
-    Add(manifest, root_directory);
+    Add(manifest, root_directory, true);
   }
 }
 

@@ -1,0 +1,11 @@
+# Adding new component extensions requires approval from
+# chrome-eng-review@google.com. See comment in whitelist.h
+set noparent
+
+ben@chromium.org
+brettw@chromium.org
+cpu@chromium.org
+darin@chromium.org
+dglazkov@chromium.org
+jam@chromium.org
+jochen@chromium.org
