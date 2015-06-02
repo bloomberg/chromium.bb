@@ -38,17 +38,11 @@ Help w/ Common Tasks:
 The goal of Chromium's FFmpeg repository is to just be a mirror of the upstream
 Git repository.  Which means every change made must be upstreamed.  If you make
 a change, please add an entry to chromium/patches/README with a link to the
-tracking issue and code review for your change.
+tracking issue and code review for your change. Reviews are performed with gerrit
+at https://chromium-review.googlesource.com.
 
-  1) See if you have access to gerrit:
-
-     ssh -p 29418 gerrit.chromium.org gerrit ls-projects
-
-     If you get permission denied, set up your gerrit access and SSH keys:
-     http://www.chromium.org/chromium-os/developer-guide/gerrit-guide/legacy
-
-     Install commit hooks to generate Change-Id fields in commits:
-     scp -p -P 29418 gerrit.chromium.org:hooks/commit-msg .git/hooks/
+  1) Install commit hooks to generate Change-Id fields in commits, run:
+     ./chromium/scripts/install_commit_msg_hook.sh
 
   2) Create a branch and make a local, single commit. Gerrit differs from
      Rietveld in that you must have a single commit, so use git commit --amend
@@ -57,11 +51,9 @@ tracking issue and code review for your change.
      same code review.
 
   3) Upload for review:
+     git push origin HEAD:refs/for/master
 
-     git push ssh://gerrit.chromium.org:29418/chromium/third_party/ffmpeg \
-     HEAD:refs/for/master
-
-  4) Commit via gerrit once approved.
+  4) Commit via https://chromium-review.googlesource.com once approved.
 
   5) If needed, submit a Chromium-side change to update DEPS.
 

@@ -32,9 +32,9 @@
       'conditions': [
         ['OS == "win"', {
           # Setting the optimizations to 'speed' or to 'max' results in a lot of
-          # unresolved symbols. The only supported mode is 'size' (see
+          # unresolved symbols. The only supported mode is 'size_no_ltcg' (see
           # crbug.com/264459).
-          'optimize' :'size',
+          'optimize' :'size_no_ltcg',
         }],
       ],
     },
