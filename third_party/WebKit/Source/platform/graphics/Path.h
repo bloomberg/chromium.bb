@@ -154,6 +154,7 @@ public:
 
 private:
     void addEllipse(const FloatPoint&, float radiusX, float radiusY, float startAngle, float endAngle, bool anticlockwise);
+    SkPath strokePath(const StrokeData&) const;
 
     SkPath m_path;
 };
