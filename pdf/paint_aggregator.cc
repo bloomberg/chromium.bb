@@ -8,6 +8,14 @@
 
 #include "base/logging.h"
 
+namespace {
+
+bool IsNegative(int32_t num) {
+  return num < 0;
+}
+
+}  // namespace
+
 // ----------------------------------------------------------------------------
 // ALGORITHM NOTES
 //
@@ -143,6 +151,25 @@ void PaintAggregator::ScrollRect(const pp::Rect& clip_rect,
       (amount.y() && update_.scroll_delta.x())) {
     InvalidateRect(clip_rect);
     return;
+  }
+
+  // If we scroll in a reverse direction to the direction we originally scrolled
+  // and there were invalidations that happened in-between we may end up
+  // incorrectly clipping the invalidated rects (see crbug.com/488390). This bug
+  // doesn't exist in the original implementation
+  // (ppapi/utility/graphics/paint_aggregator.cc) which uses a different method
+  // of handling invalidations that occur after a scroll. The problem is that
+  // when we scroll the invalidated region, we clip it to the scroll rect. This
+  // can cause us to lose information about what the invalidated region was if
+  // it gets scrolled back into view. We either need to not do this clipping or
+  // disallow combining scrolls that occur in different directions with
+  // invalidations that happen in-between. This code really needs some tests...
+  if (!update_.paint_rects.empty()) {
+    if (IsNegative(amount.x()) != IsNegative(update_.scroll_delta.x()) ||
+        IsNegative(amount.y()) != IsNegative(update_.scroll_delta.y())) {
+      InvalidateRect(clip_rect);
+      return;
+    }
   }
 
   // The scroll rect is new or isn't changing (though the scroll amount may
