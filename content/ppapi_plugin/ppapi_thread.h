@@ -80,6 +80,9 @@ class PpapiThread : public ChildThreadImpl,
       base::PlatformFile handle,
       base::ProcessId peer_pid,
       bool should_close_source) override;
+  base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
+      const base::SharedMemoryHandle& handle,
+      base::ProcessId remote_pid) override;
   uint32 Register(ppapi::proxy::PluginDispatcher* plugin_dispatcher) override;
   void Unregister(uint32 plugin_dispatcher_id) override;
 

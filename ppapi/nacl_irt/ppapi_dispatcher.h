@@ -58,6 +58,9 @@ class PpapiDispatcher : public proxy::PluginDispatcher::PluginDelegate,
       base::PlatformFile handle,
       base::ProcessId peer_pid,
       bool should_close_source) override;
+  base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
+      const base::SharedMemoryHandle& handle,
+      base::ProcessId remote_pid) override;
   std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
   uint32 Register(proxy::PluginDispatcher* plugin_dispatcher) override;
   void Unregister(uint32 plugin_dispatcher_id) override;

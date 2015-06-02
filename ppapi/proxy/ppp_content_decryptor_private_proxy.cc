@@ -49,20 +49,13 @@ PP_Bool ShareHostBufferResourceToPlugin(
   EnterResourceNoLock<PPB_Buffer_API> enter(resource, true);
   if (enter.failed())
     return PP_FALSE;
-  int handle;
-  int32_t result = enter.object()->GetSharedMemory(&handle);
+  base::SharedMemory* shm;
+  int32_t result = enter.object()->GetSharedMemory(&shm);
   if (result != PP_OK)
     return PP_FALSE;
-  base::PlatformFile platform_file =
-  #if defined(OS_WIN)
-      reinterpret_cast<HANDLE>(static_cast<intptr_t>(handle));
-  #elif defined(OS_POSIX)
-      handle;
-  #else
-  #error Not implemented.
-  #endif
 
-  *shared_mem_handle = dispatcher->ShareHandleWithRemote(platform_file, false);
+  *shared_mem_handle =
+      dispatcher->ShareSharedMemoryHandleWithRemote(shm->handle());
   return PP_TRUE;
 }
 

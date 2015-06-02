@@ -87,7 +87,7 @@ void PepperPlatformAudioInput::OnStreamCreated(
   DCHECK(handle);
   DCHECK(socket_handle);
 #else
-  DCHECK_NE(-1, handle.fd);
+  DCHECK(base::SharedMemory::IsHandleValid(handle));
   DCHECK_NE(-1, socket_handle);
 #endif
   DCHECK(length);

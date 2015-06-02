@@ -196,10 +196,8 @@ int32_t PepperVideoDecoderHost::OnHostMsgGetShm(
     shm_buffers_[shm_id] = shm.release();
   }
 
-  base::PlatformFile platform_file =
-      PlatformFileFromSharedMemoryHandle(shm_handle);
   SerializedHandle handle(
-      renderer_ppapi_host_->ShareHandleWithRemote(platform_file, false),
+      renderer_ppapi_host_->ShareSharedMemoryHandleWithRemote(shm_handle),
       shm_size);
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();

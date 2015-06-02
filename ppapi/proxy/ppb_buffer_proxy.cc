@@ -59,7 +59,7 @@ void Buffer::Unmap() {
     shm_.Unmap();
 }
 
-int32_t Buffer::GetSharedMemory(int* out_handle) {
+int32_t Buffer::GetSharedMemory(base::SharedMemory** out_handle) {
   NOTREACHED();
   return PP_ERROR_NOTSUPPORTED;
 }
@@ -132,24 +132,14 @@ void PPB_Buffer_Proxy::OnMsgCreate(
       local_buffer_resource, false);
   if (trusted_buffer.failed())
     return;
-  int local_fd;
-  if (trusted_buffer.object()->GetSharedMemory(&local_fd) != PP_OK)
+  base::SharedMemory* local_shm;
+  if (trusted_buffer.object()->GetSharedMemory(&local_shm) != PP_OK)
     return;
 
   result_resource->SetHostResource(instance, local_buffer_resource);
 
-  // TODO(piman/brettw): Change trusted interface to return a PP_FileHandle,
-  // those casts are ugly.
-  base::PlatformFile platform_file =
-#if defined(OS_WIN)
-      reinterpret_cast<HANDLE>(static_cast<intptr_t>(local_fd));
-#elif defined(OS_POSIX)
-      local_fd;
-#else
-  #error Not implemented.
-#endif
   result_shm_handle->set_shmem(
-      dispatcher->ShareHandleWithRemote(platform_file, false), size);
+      dispatcher->ShareSharedMemoryHandleWithRemote(local_shm->handle()), size);
 }
 
 }  // namespace proxy

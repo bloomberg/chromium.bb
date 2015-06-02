@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_platform_file.h"
@@ -119,6 +120,13 @@ class RendererPpapiHost {
   virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) = 0;
+
+  // Shares a shared memory handle with the remote side. It
+  // returns a handle that should be sent in exactly one IPC message. Upon
+  // receipt, the remote side then owns that handle. Note: if sending the
+  // message fails, the returned handle is properly closed by the IPC system.
+  virtual base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
+      const base::SharedMemoryHandle& handle) = 0;
 
   // Returns true if the plugin is running in process.
   virtual bool IsRunningInProcess() const = 0;

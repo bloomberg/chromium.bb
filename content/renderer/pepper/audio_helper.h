@@ -33,7 +33,7 @@ class AudioHelper {
 
   // To be called by implementations of |PPB_Audio_API|/|PPB_AudioInput_API|.
   int32_t GetSyncSocketImpl(int* sync_socket);
-  int32_t GetSharedMemoryImpl(int* shm_handle, uint32_t* shm_size);
+  int32_t GetSharedMemoryImpl(base::SharedMemory** shm, uint32_t* shm_size);
 
   // To be implemented by subclasses to call their |SetStreamInfo()|.
   virtual void OnSetStreamInfo(base::SharedMemoryHandle shared_memory_handle,

@@ -172,9 +172,10 @@ int32_t PepperAudioInputHost::GetRemoteHandles(
   if (*remote_socket_handle == IPC::InvalidPlatformFileForTransit())
     return PP_ERROR_FAILED;
 
-  *remote_shared_memory_handle = renderer_ppapi_host_->ShareHandleWithRemote(
-      PlatformFileFromSharedMemoryHandle(shared_memory.handle()), false);
-  if (*remote_shared_memory_handle == IPC::InvalidPlatformFileForTransit())
+  *remote_shared_memory_handle =
+      renderer_ppapi_host_->ShareSharedMemoryHandleWithRemote(
+          shared_memory.handle());
+  if (!base::SharedMemory::IsHandleValid(*remote_shared_memory_handle))
     return PP_ERROR_FAILED;
 
   return PP_OK;

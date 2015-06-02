@@ -77,6 +77,13 @@ IPC::PlatformFileForTransit MockRendererPpapiHost::ShareHandleWithRemote(
   return IPC::InvalidPlatformFileForTransit();
 }
 
+base::SharedMemoryHandle
+MockRendererPpapiHost::ShareSharedMemoryHandleWithRemote(
+    const base::SharedMemoryHandle& handle) {
+  NOTIMPLEMENTED();
+  return base::SharedMemory::NULLHandle();
+}
+
 bool MockRendererPpapiHost::IsRunningInProcess() const { return false; }
 
 std::string MockRendererPpapiHost::GetPluginName() const {

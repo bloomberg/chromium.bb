@@ -78,9 +78,8 @@ void PPB_Buffer_Impl::Unmap() {
     shared_memory_->Unmap();
 }
 
-int32_t PPB_Buffer_Impl::GetSharedMemory(int* shm_handle) {
-  *shm_handle = reinterpret_cast<int>(PlatformFileFromSharedMemoryHandle(
-      shared_memory_->handle()));
+int32_t PPB_Buffer_Impl::GetSharedMemory(base::SharedMemory** shm) {
+  *shm = shared_memory_.get();
   return PP_OK;
 }
 

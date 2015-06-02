@@ -20,9 +20,6 @@ namespace content {
 storage::FileSystemType PepperFileSystemTypeToFileSystemType(
     PP_FileSystemType type);
 
-base::PlatformFile PlatformFileFromSharedMemoryHandle(
-    const base::SharedMemoryHandle& shm_handle);
-
 int IntegerFromSyncSocketHandle(
     const base::SyncSocket::Handle& socket_handle);
 

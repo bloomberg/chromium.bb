@@ -36,7 +36,7 @@ class Buffer : public thunk::PPB_Buffer_API, public Resource {
   void Unmap() override;
 
   // Trusted
-  int32_t GetSharedMemory(int* handle) override;
+  int32_t GetSharedMemory(base::SharedMemory** shm) override;
 
  private:
   base::SharedMemory shm_;

@@ -120,15 +120,15 @@ void PepperVideoSourceHost::SendGetFrameReply() {
   // Note: We try to reuse the shared memory for the previous frame here. This
   // means that the previous frame may be overwritten and is no longer valid
   // after calling this function again.
-  IPC::PlatformFileForTransit image_handle;
+  base::SharedMemoryHandle image_handle;
   uint32_t byte_count;
   if (shared_image_.get() && dst_size.width() == shared_image_->width() &&
       dst_size.height() == shared_image_->height()) {
     // We have already allocated the correct size in shared memory. We need to
     // duplicate the handle for IPC however, which will close down the
     // duplicated handle when it's done.
-    int local_fd = 0;
-    if (shared_image_->GetSharedMemory(&local_fd, &byte_count) != PP_OK) {
+    base::SharedMemoryHandle local_handle;
+    if (shared_image_->GetSharedMemory(&local_handle, &byte_count) != PP_OK) {
       SendGetFrameErrorReply(PP_ERROR_FAILED);
       return;
     }
@@ -140,14 +140,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
       return;
     }
 
-#if defined(OS_WIN)
-    image_handle = dispatcher->ShareHandleWithRemote(
-        reinterpret_cast<HANDLE>(static_cast<intptr_t>(local_fd)), false);
-#elif defined(OS_POSIX)
-    image_handle = dispatcher->ShareHandleWithRemote(local_fd, false);
-#else
-#error Not implemented.
-#endif
+    image_handle = dispatcher->ShareSharedMemoryHandleWithRemote(local_handle);
   } else {
     // We need to allocate new shared memory.
     shared_image_ = NULL;  // Release any previous image.

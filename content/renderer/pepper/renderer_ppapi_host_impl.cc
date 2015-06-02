@@ -231,6 +231,20 @@ IPC::PlatformFileForTransit RendererPpapiHostImpl::ShareHandleWithRemote(
   return dispatcher_->ShareHandleWithRemote(handle, should_close_source);
 }
 
+base::SharedMemoryHandle
+RendererPpapiHostImpl::ShareSharedMemoryHandleWithRemote(
+    const base::SharedMemoryHandle& handle) {
+  base::PlatformFile local_platform_file =
+#if defined(OS_POSIX)
+      handle.fd;
+#elif defined(OS_WIN)
+      handle;
+#else
+#error Not implemented.
+#endif
+  return ShareHandleWithRemote(local_platform_file, false);
+}
+
 bool RendererPpapiHostImpl::IsRunningInProcess() const {
   return is_running_in_process_;
 }

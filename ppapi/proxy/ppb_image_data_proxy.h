@@ -48,7 +48,8 @@ class PPAPI_PROXY_EXPORT ImageData
 
   // PPB_ImageData API.
   PP_Bool Describe(PP_ImageDataDesc* desc) override;
-  int32_t GetSharedMemory(int* handle, uint32_t* byte_count) override;
+  int32_t GetSharedMemory(base::SharedMemoryHandle* handle,
+                          uint32_t* byte_count) override;
   void SetIsCandidateForReuse() override;
 
   PPB_ImageData_Shared::ImageDataType type() const { return type_; }
@@ -156,7 +157,7 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
       const PP_Size& size,
       bool init_to_zero,
       PP_ImageDataDesc* desc,
-      IPC::PlatformFileForTransit* image_handle,
+      base::SharedMemoryHandle* image_handle,
       uint32_t* byte_count);
 
   static const ApiID kApiID = API_ID_PPB_IMAGE_DATA;

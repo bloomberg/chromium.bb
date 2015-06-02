@@ -220,21 +220,11 @@ void PepperVideoCaptureHost::AllocBuffers(const gfx::Size& resolution,
     {
       EnterResourceNoLock<PPB_Buffer_API> enter(res, true);
       DCHECK(enter.succeeded());
-      int handle;
-      int32_t result = enter.object()->GetSharedMemory(&handle);
+      base::SharedMemory* shm;
+      int32_t result = enter.object()->GetSharedMemory(&shm);
       DCHECK(result == PP_OK);
-      // TODO(piman/brettw): Change trusted interface to return a PP_FileHandle,
-      // those casts are ugly.
-      base::PlatformFile platform_file =
-#if defined(OS_WIN)
-          reinterpret_cast<HANDLE>(static_cast<intptr_t>(handle));
-#elif defined(OS_POSIX)
-          handle;
-#else
-#error Not implemented.
-#endif
       params.AppendHandle(ppapi::proxy::SerializedHandle(
-          dispatcher->ShareHandleWithRemote(platform_file, false), size));
+          dispatcher->ShareSharedMemoryHandleWithRemote(shm->handle()), size));
     }
   }
 

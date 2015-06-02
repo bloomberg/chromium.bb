@@ -199,6 +199,21 @@ IPC::PlatformFileForTransit PpapiThread::ShareHandleWithRemote(
   return BrokerGetFileHandleForProcess(handle, peer_pid, should_close_source);
 }
 
+base::SharedMemoryHandle PpapiThread::ShareSharedMemoryHandleWithRemote(
+    const base::SharedMemoryHandle& handle,
+    base::ProcessId remote_pid) {
+  base::PlatformFile local_platform_file =
+#if defined(OS_POSIX)
+      handle.fd;
+#elif defined(OS_WIN)
+      handle;
+#else
+#error Not implemented.
+#endif
+  return PpapiThread::ShareHandleWithRemote(local_platform_file, remote_pid,
+                                            false);
+}
+
 std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {
   return &globally_seen_instance_ids_;
 }

@@ -391,9 +391,8 @@ void PepperVideoEncoderHost::RequireBitstreamBuffers(
   for (size_t i = 0; i < shm_buffers_.size(); ++i) {
     encoder_->UseOutputBitstreamBuffer(shm_buffers_[i]->ToBitstreamBuffer());
     handles.push_back(SerializedHandle(
-        renderer_ppapi_host_->ShareHandleWithRemote(
-            PlatformFileFromSharedMemoryHandle(shm_buffers_[i]->shm->handle()),
-            false),
+        renderer_ppapi_host_->ShareSharedMemoryHandleWithRemote(
+            shm_buffers_[i]->shm->handle()),
         output_buffer_size));
   }
 
@@ -601,11 +600,10 @@ void PepperVideoEncoderHost::AllocateVideoFrames() {
   }
 
   DCHECK(get_video_frames_reply_context_.is_valid());
-  get_video_frames_reply_context_.params.AppendHandle(SerializedHandle(
-      renderer_ppapi_host_->ShareHandleWithRemote(
-          PlatformFileFromSharedMemoryHandle(buffer_manager_.shm()->handle()),
-          false),
-      total_size));
+  get_video_frames_reply_context_.params.AppendHandle(
+      SerializedHandle(renderer_ppapi_host_->ShareSharedMemoryHandleWithRemote(
+                           buffer_manager_.shm()->handle()),
+                       total_size));
 
   host()->SendReply(get_video_frames_reply_context_,
                     PpapiPluginMsg_VideoEncoder_GetVideoFramesReply(

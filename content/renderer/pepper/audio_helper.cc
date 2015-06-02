@@ -28,10 +28,10 @@ int32_t AudioHelper::GetSyncSocketImpl(int* sync_socket) {
   return PP_ERROR_FAILED;
 }
 
-int32_t AudioHelper::GetSharedMemoryImpl(int* shm_handle, uint32_t* shm_size) {
+int32_t AudioHelper::GetSharedMemoryImpl(base::SharedMemory** shm,
+                                         uint32_t* shm_size) {
   if (shared_memory_for_create_callback_) {
-    *shm_handle = reinterpret_cast<int>(PlatformFileFromSharedMemoryHandle(
-        shared_memory_for_create_callback_->handle()));
+    *shm = shared_memory_for_create_callback_.get();
     *shm_size = shared_memory_size_for_create_callback_;
     return PP_OK;
   }

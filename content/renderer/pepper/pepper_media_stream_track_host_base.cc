@@ -63,9 +63,7 @@ bool PepperMediaStreamTrackHostBase::InitBuffers(int32_t number_of_buffers,
     return false;
   }
 
-  base::PlatformFile platform_file =
-      PlatformFileFromSharedMemoryHandle(shm_handle);
-  SerializedHandle handle(host_->ShareHandleWithRemote(platform_file, false),
+  SerializedHandle handle(host_->ShareSharedMemoryHandleWithRemote(shm_handle),
                           size.ValueOrDie());
   bool readonly = (track_type == kRead);
   host()->SendUnsolicitedReplyWithHandles(

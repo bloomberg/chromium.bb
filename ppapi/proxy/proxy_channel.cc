@@ -74,6 +74,17 @@ IPC::PlatformFileForTransit ProxyChannel::ShareHandleWithRemote(
                                           should_close_source);
 }
 
+base::SharedMemoryHandle ProxyChannel::ShareSharedMemoryHandleWithRemote(
+    const base::SharedMemoryHandle& handle) {
+#if defined(OS_POSIX)
+  return ShareHandleWithRemote(handle.fd, false);
+#elif defined(OS_WIN)
+  return ShareHandleWithRemote(handle, false);
+#else
+#error Not implemented.
+#endif
+}
+
 bool ProxyChannel::Send(IPC::Message* msg) {
   if (test_sink_)
     return test_sink_->Send(msg);

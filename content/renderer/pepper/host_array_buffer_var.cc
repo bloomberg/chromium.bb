@@ -15,6 +15,7 @@
 #include "content/common/sandbox_util.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/plugin_module.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_instance.h"
 
@@ -74,16 +75,10 @@ bool HostArrayBufferVar::CopyToNewShmem(
   // its handle on us.
   HostGlobals* hg = HostGlobals::Get();
   PluginModule* pm = hg->GetModule(hg->GetModuleForInstance(instance));
-  base::ProcessId p = pm->GetPeerProcessId();
-  if (p == base::kNullProcessId) {
-    // In-process, clone for ourselves.
-    p = base::GetCurrentProcId();
-  }
 
-  base::PlatformFile platform_file =
-      PlatformFileFromSharedMemoryHandle(shm->handle());
-
-  *plugin_shm_handle = BrokerGetFileHandleForProcess(platform_file, p, false);
+  *plugin_shm_handle =
+      pm->renderer_ppapi_host()->ShareSharedMemoryHandleWithRemote(
+          shm->handle());
   *host_shm_handle_id = -1;
   return true;
 }

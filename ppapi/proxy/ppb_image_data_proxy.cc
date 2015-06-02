@@ -347,7 +347,7 @@ PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
   return PP_TRUE;
 }
 
-int32_t ImageData::GetSharedMemory(int* /* handle */,
+int32_t ImageData::GetSharedMemory(base::SharedMemoryHandle* /* handle */,
                                    uint32_t* /* byte_count */) {
   // Not supported in the proxy (this method is for actually implementing the
   // proxy in the host).
@@ -555,7 +555,7 @@ PP_Resource PPB_ImageData_Proxy::CreateImageData(
     const PP_Size& size,
     bool init_to_zero,
     PP_ImageDataDesc* desc,
-    IPC::PlatformFileForTransit* image_handle,
+    base::SharedMemoryHandle* image_handle,
     uint32_t* byte_count) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher)
@@ -593,22 +593,14 @@ PP_Resource PPB_ImageData_Proxy::CreateImageData(
     return 0;
   }
 
-  int local_fd = 0;
-  if (enter_resource.object()->GetSharedMemory(&local_fd,
-                                               byte_count) != PP_OK) {
+  base::SharedMemoryHandle local_handle;
+  if (enter_resource.object()->GetSharedMemory(&local_handle, byte_count) !=
+      PP_OK) {
     DVLOG(1) << "CreateImageData failed: could not GetSharedMemory";
     return 0;
   }
 
-#if defined(OS_WIN)
-  *image_handle = dispatcher->ShareHandleWithRemote(
-      reinterpret_cast<HANDLE>(static_cast<intptr_t>(local_fd)), false);
-#elif defined(OS_POSIX)
-  *image_handle = dispatcher->ShareHandleWithRemote(local_fd, false);
-#else
-  #error Not implemented.
-#endif
-
+  *image_handle = dispatcher->ShareSharedMemoryHandleWithRemote(local_handle);
   return resource.Release();
 }
 
@@ -623,7 +615,7 @@ void PPB_ImageData_Proxy::OnHostMsgCreatePlatform(
   // Clear |desc| so we don't send unitialized memory to the plugin.
   // https://crbug.com/391023.
   *desc = PP_ImageDataDesc();
-  IPC::PlatformFileForTransit image_handle;
+  base::SharedMemoryHandle image_handle;
   uint32_t byte_count;
   PP_Resource resource =
       CreateImageData(instance,
@@ -651,7 +643,7 @@ void PPB_ImageData_Proxy::OnHostMsgCreateSimple(
   // Clear |desc| so we don't send unitialized memory to the plugin.
   // https://crbug.com/391023.
   *desc = PP_ImageDataDesc();
-  IPC::PlatformFileForTransit image_handle;
+  base::SharedMemoryHandle image_handle;
   uint32_t byte_count;
   PP_Resource resource =
       CreateImageData(instance,

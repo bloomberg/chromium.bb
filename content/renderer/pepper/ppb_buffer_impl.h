@@ -36,7 +36,7 @@ class PPB_Buffer_Impl : public ppapi::Resource,
   void Unmap() override;
 
   // Trusted.
-  int32_t GetSharedMemory(int* handle) override;
+  int32_t GetSharedMemory(base::SharedMemory** shm) override;
 
  private:
   ~PPB_Buffer_Impl() override;

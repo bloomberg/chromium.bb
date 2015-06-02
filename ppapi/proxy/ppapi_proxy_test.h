@@ -139,6 +139,9 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
         base::PlatformFile handle,
         base::ProcessId remote_pid,
         bool should_close_source) override;
+    base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
+        const base::SharedMemoryHandle& handle,
+        base::ProcessId remote_pid) override;
 
     // PluginDispatcher::PluginDelegate implementation.
     std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
@@ -279,6 +282,9 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
         base::PlatformFile handle,
         base::ProcessId remote_pid,
         bool should_close_source) override;
+    base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
+        const base::SharedMemoryHandle& handle,
+        base::ProcessId remote_pid) override;
 
    private:
     base::MessageLoopProxy* ipc_message_loop_;  // Weak

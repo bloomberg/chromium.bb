@@ -22,6 +22,9 @@ class PepperProxyChannelDelegateImpl
       base::PlatformFile handle,
       base::ProcessId remote_pid,
       bool should_close_source) override;
+  base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
+      const base::SharedMemoryHandle& handle,
+      base::ProcessId remote_pid) override;
 };
 
 }  // namespace content

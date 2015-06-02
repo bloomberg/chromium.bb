@@ -33,9 +33,8 @@ const int32 kTransferBufferSize = 1024 * 1024;
 base::SharedMemoryHandle TransportSHMHandle(
     Dispatcher* dispatcher,
     const base::SharedMemoryHandle& handle) {
-  base::PlatformFile source = IPC::PlatformFileForTransitToPlatformFile(handle);
   // Don't close the handle, it doesn't belong to us.
-  return dispatcher->ShareHandleWithRemote(source, false);
+  return dispatcher->ShareSharedMemoryHandleWithRemote(handle);
 }
 #endif  // !defined(OS_NACL)
 
@@ -240,7 +239,7 @@ void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
   if (!enter.succeeded())
     return;
 
-  base::SharedMemoryHandle handle = IPC::InvalidPlatformFileForTransit();
+  base::SharedMemoryHandle handle = base::SharedMemory::NULLHandle();
   result->SetHostResource(
       instance,
       enter.functions()->CreateGraphics3DRaw(instance,

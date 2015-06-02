@@ -141,8 +141,9 @@ int32_t PPB_Audio_Impl::GetSyncSocket(int* sync_socket) {
   return GetSyncSocketImpl(sync_socket);
 }
 
-int32_t PPB_Audio_Impl::GetSharedMemory(int* shm_handle, uint32_t* shm_size) {
-  return GetSharedMemoryImpl(shm_handle, shm_size);
+int32_t PPB_Audio_Impl::GetSharedMemory(base::SharedMemory** shm,
+                                        uint32_t* shm_size) {
+  return GetSharedMemoryImpl(shm, shm_size);
 }
 
 void PPB_Audio_Impl::OnSetStreamInfo(

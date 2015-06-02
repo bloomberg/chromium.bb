@@ -7,6 +7,7 @@
 
 #include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
@@ -50,6 +51,15 @@ class PPAPI_PROXY_EXPORT ProxyChannel
         base::PlatformFile handle,
         base::ProcessId remote_pid,
         bool should_close_source) = 0;
+
+    // Duplicates a shared memory handle, returning one that is valid on the
+    // other side of the channel. This is part of the delegate interface
+    // because both sides of the channel may not have sufficient permission to
+    // duplicate handles directly. The implementation must provide the same
+    // guarantees as ProxyChannel::ShareSharedMemoryHandleWithRemote below.
+    virtual base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
+        const base::SharedMemoryHandle& handle,
+        base::ProcessId remote_pid) = 0;
   };
 
   ~ProxyChannel() override;
@@ -69,6 +79,14 @@ class PPAPI_PROXY_EXPORT ProxyChannel
   IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source);
+
+  // Shares a shared memory handle with the remote side. It returns a handle
+  // that should be sent in exactly one IPC message. Upon receipt, the remote
+  // side then owns that handle. Note: if sending the message fails, the
+  // returned handle is properly closed by the IPC system. The original handle
+  // is not closed by this operation.
+  base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
+      const base::SharedMemoryHandle& handle);
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;

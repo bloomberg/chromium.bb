@@ -47,6 +47,8 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   IPC::PlatformFileForTransit ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) override;
+  base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
+      const base::SharedMemoryHandle& handle) override;
   bool IsRunningInProcess() const override;
   std::string GetPluginName() const override;
   void SetToExternalPluginHost() override;
