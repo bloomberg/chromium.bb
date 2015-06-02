@@ -51,6 +51,7 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
     case ::media::kSampleFormatPlanarS32:
       return kSampleFormatPlanarS32;
   }
+  NOTREACHED();
   return kUnknownSampleFormat;
 }
 
