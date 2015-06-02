@@ -1,6 +1,3 @@
-# See http://crbug.com/82391
-URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest
-
 # Times out. See http://crbug.com/134313
 URLRequestTestHTTP.GetTest_ManyCookies
 
@@ -15,10 +12,6 @@ ProxyResolverV8Test.*
 
 # Slow
 CookieMonsterTest.GarbageCollectionTriggers
-
-# Hangs only when built in release mode.
-# http://crbug.com/105762
-ClientSocketPoolBaseTest.DisableCleanupTimer
 
 # Flaky, see http://crbug.com/108422
 SSLClientSocketTest.*
