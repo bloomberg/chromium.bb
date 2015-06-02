@@ -270,6 +270,16 @@ class VersionControlConflictsTest(unittest.TestCase):
     self.assertTrue('3' in errors[1])
     self.assertTrue('5' in errors[2])
 
+  def testIgnoresReadmes(self):
+    lines = ['A First Level Header',
+             '====================',
+             '',
+             'A Second Level Header',
+             '---------------------']
+    errors = PRESUBMIT._CheckForVersionControlConflictsInFile(
+        MockInputApi(), MockFile('some/polymer/README.md', lines))
+    self.assertEqual(0, len(errors))
+
 class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
   def testTypicalCorrectlyMatchedChange(self):
     diff_cc = ['UMA_HISTOGRAM_BOOL("Bla.Foo.Dummy", true)']
