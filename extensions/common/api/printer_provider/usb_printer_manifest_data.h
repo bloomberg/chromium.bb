@@ -10,6 +10,7 @@
 #include "extensions/common/extension.h"
 
 namespace device {
+class UsbDevice;
 class UsbDeviceFilter;
 }
 
@@ -29,6 +30,8 @@ class UsbPrinterManifestData : public Extension::ManifestData {
   // scoped_ptr on failure.
   static scoped_ptr<UsbPrinterManifestData> FromValue(const base::Value& value,
                                                       base::string16* error);
+
+  bool SupportsDevice(const scoped_refptr<device::UsbDevice>& device) const;
 
   const std::vector<device::UsbDeviceFilter>& filters() const {
     return filters_;

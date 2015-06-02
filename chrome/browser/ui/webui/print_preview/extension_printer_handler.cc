@@ -18,12 +18,29 @@
 #include "chrome/browser/local_discovery/pwg_raster_converter.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
+#include "device/core/device_client.h"
+#include "device/usb/usb_device.h"
+#include "device/usb/usb_service.h"
+#include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/api/printer_provider/usb_printer_manifest_data.h"
+#include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/permissions/usb_device_permission.h"
+#include "extensions/common/permissions/usb_device_permission_data.h"
+#include "extensions/common/value_builder.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
 
+using device::UsbDevice;
+using extensions::DevicePermissionsManager;
+using extensions::DictionaryBuilder;
+using extensions::Extension;
+using extensions::ExtensionRegistry;
+using extensions::ListBuilder;
+using extensions::UsbPrinterManifestData;
 using local_discovery::PWGRasterConverter;
 
 namespace {
@@ -66,6 +83,14 @@ void UpdateJobFileInfo(
       callback);
 }
 
+bool HasUsbPrinterProviderPermissions(const Extension* extension) {
+  return extension->permissions_data() &&
+        extension->permissions_data()->HasAPIPermission(
+            extensions::APIPermission::kPrinterProvider) &&
+        extension->permissions_data()->HasAPIPermission(
+            extensions::APIPermission::kUsb);
+}
+
 }  // namespace
 
 ExtensionPrinterHandler::ExtensionPrinterHandler(
@@ -82,11 +107,34 @@ ExtensionPrinterHandler::~ExtensionPrinterHandler() {
 void ExtensionPrinterHandler::Reset() {
   // TODO(tbarzic): Keep track of pending request ids issued by |this| and
   // cancel them from here.
+  pending_enumeration_count_ = 0;
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void ExtensionPrinterHandler::StartGetPrinters(
     const PrinterHandler::GetPrintersCallback& callback) {
+  // Assume that there can only be one printer enumeration occuring at once.
+  DCHECK_EQ(pending_enumeration_count_, 0);
+  pending_enumeration_count_ = 1;
+
+  bool extension_supports_usb_printers = false;
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+  for (const auto& extension : registry->enabled_extensions()) {
+    if (UsbPrinterManifestData::Get(extension.get()) &&
+        HasUsbPrinterProviderPermissions(extension.get())) {
+      extension_supports_usb_printers = true;
+      break;
+    }
+  }
+
+  if (extension_supports_usb_printers) {
+    device::UsbService* service = device::DeviceClient::Get()->GetUsbService();
+    pending_enumeration_count_++;
+    service->GetDevices(
+        base::Bind(&ExtensionPrinterHandler::OnUsbDevicesEnumerated,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
   extensions::PrinterProviderAPIFactory::GetInstance()
       ->GetForBrowserContext(browser_context_)
       ->DispatchGetPrintersRequested(
@@ -192,7 +240,11 @@ void ExtensionPrinterHandler::WrapGetPrintersCallback(
     const PrinterHandler::GetPrintersCallback& callback,
     const base::ListValue& printers,
     bool done) {
-  callback.Run(printers, done);
+  DCHECK_GT(pending_enumeration_count_, 0);
+  if (done)
+    pending_enumeration_count_--;
+
+  callback.Run(printers, pending_enumeration_count_ == 0);
 }
 
 void ExtensionPrinterHandler::WrapGetCapabilityCallback(
@@ -207,4 +259,55 @@ void ExtensionPrinterHandler::WrapPrintCallback(
     bool success,
     const std::string& status) {
   callback.Run(success, status);
+}
+
+void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
+    const PrinterHandler::GetPrintersCallback& callback,
+    const std::vector<scoped_refptr<UsbDevice>>& devices) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+  DevicePermissionsManager* permissions_manager =
+      DevicePermissionsManager::Get(browser_context_);
+
+  ListBuilder printer_list;
+
+  for (const auto& extension : registry->enabled_extensions()) {
+    const UsbPrinterManifestData* manifest_data =
+        UsbPrinterManifestData::Get(extension.get());
+    if (!manifest_data || !HasUsbPrinterProviderPermissions(extension.get()))
+      continue;
+
+    const extensions::DevicePermissions* device_permissions =
+        permissions_manager->GetForExtension(extension->id());
+    for (const auto& device : devices) {
+      if (manifest_data->SupportsDevice(device)) {
+        extensions::UsbDevicePermission::CheckParam param(
+            device->vendor_id(), device->product_id(),
+            extensions::UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
+        if (device_permissions->FindUsbDeviceEntry(device) ||
+            extension->permissions_data()->CheckAPIPermissionWithParam(
+                extensions::APIPermission::kUsbDevice, &param)) {
+          // Skip devices the extension already has permission to access.
+          continue;
+        }
+
+        printer_list.Append(
+            DictionaryBuilder()
+                .Set("id", base::StringPrintf("provisional-usb:%s:%s",
+                                              extension->id().c_str(),
+                                              device->guid().c_str()))
+                .Set("name",
+                     DevicePermissionsManager::GetPermissionMessage(
+                         device->vendor_id(), device->product_id(),
+                         device->manufacturer_string(),
+                         device->product_string(), base::string16(), false))
+                .Set("extensionId", extension->id())
+                .Set("extensionName", extension->name())
+                .Set("provisional", true));
+      }
+    }
+  }
+
+  DCHECK_GT(pending_enumeration_count_, 0);
+  pending_enumeration_count_--;
+  callback.Run(*printer_list.Build().get(), pending_enumeration_count_ == 0);
 }
