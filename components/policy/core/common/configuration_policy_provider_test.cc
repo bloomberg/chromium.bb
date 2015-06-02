@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -193,8 +192,8 @@ void ConfigurationPolicyProviderTest::SetUp() {
                       "cccccccccccccccccccccccccccccccc"),
       extension_schema);
 
-  provider_.reset(test_harness_->CreateProvider(&schema_registry_,
-                                                loop_.message_loop_proxy()));
+  provider_.reset(
+      test_harness_->CreateProvider(&schema_registry_, loop_.task_runner()));
   provider_->Init(&schema_registry_);
   // Some providers do a reload on init. Make sure any notifications generated
   // are fired now.

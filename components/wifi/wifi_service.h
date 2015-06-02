@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "components/wifi/wifi_export.h"
@@ -108,9 +107,9 @@ class WIFI_EXPORT WiFiService {
                                 std::string* error) = 0;
 
   // Set observers to run when |NetworksChanged| and |NetworksListChanged|
-  // events needs to be sent. Notifications are posted on |message_loop_proxy|.
+  // events needs to be sent. Notifications are posted on |task_runner|.
   virtual void SetEventObservers(
-      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const NetworkGuidListCallback& networks_changed_observer,
       const NetworkGuidListCallback& network_list_changed_observer) = 0;
 

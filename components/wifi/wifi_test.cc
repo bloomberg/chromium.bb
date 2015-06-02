@@ -134,7 +134,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
   base::MessageLoopForIO loop;
 
   wifi_service_.reset(WiFiService::Create());
-  wifi_service_->Initialize(loop.message_loop_proxy());
+  wifi_service_->Initialize(loop.task_runner());
 
   if (parsed_command_line.HasSwitch("list")) {
     base::ListValue network_list;
@@ -192,7 +192,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
       }
 
       wifi_service_->SetEventObservers(
-          loop.message_loop_proxy(),
+          loop.task_runner(),
           base::Bind(&WiFiTest::OnNetworksChanged, base::Unretained(this)),
           base::Bind(&WiFiTest::OnNetworkListChanged, base::Unretained(this)));
 
@@ -225,7 +225,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
 
   if (parsed_command_line.HasSwitch("scan")) {
     wifi_service_->SetEventObservers(
-        loop.message_loop_proxy(),
+        loop.task_runner(),
         base::Bind(&WiFiTest::OnNetworksChanged, base::Unretained(this)),
         base::Bind(&WiFiTest::OnNetworkListChanged, base::Unretained(this)));
     wifi_service_->RequestNetworkScan();

@@ -8,9 +8,9 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/update_client/crx_downloader.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_request_interceptor.h"
@@ -96,7 +96,7 @@ CrxDownloaderTest::CrxDownloaderTest()
       num_download_complete_calls_(0),
       num_progress_calls_(0),
       context_(new net::TestURLRequestContextGetter(
-          base::MessageLoopProxy::current())) {
+          base::ThreadTaskRunnerHandle::Get())) {
 }
 
 CrxDownloaderTest::~CrxDownloaderTest() {
@@ -114,13 +114,15 @@ void CrxDownloaderTest::SetUp() {
   download_progress_result_ = CrxDownloader::Result();
 
   // Do not use the background downloader in these tests.
-  crx_downloader_.reset(CrxDownloader::Create(false, context_.get(),
-                                              base::MessageLoopProxy::current(),
-                                              NULL).release());
+  crx_downloader_.reset(
+      CrxDownloader::Create(false, context_.get(),
+                            base::ThreadTaskRunnerHandle::Get(),
+                            NULL).release());
   crx_downloader_->set_progress_callback(progress_callback_);
 
-  get_interceptor_.reset(new GetInterceptor(base::MessageLoopProxy::current(),
-                                            base::MessageLoopProxy::current()));
+  get_interceptor_.reset(
+      new GetInterceptor(base::ThreadTaskRunnerHandle::Get(),
+                         base::ThreadTaskRunnerHandle::Get()));
 }
 
 void CrxDownloaderTest::TearDown() {

@@ -237,17 +237,12 @@ NonBlockingInvalidator::NonBlockingInvalidator(
       weak_ptr_factory_.GetWeakPtr();
   weak_ptr_this.get();  // Bind to this thread.
 
-  core_ = new Core(weak_ptr_this,
-                   base::MessageLoopProxy::current());
+  core_ = new Core(weak_ptr_this, base::ThreadTaskRunnerHandle::Get());
 
-  InitializeOptions initialize_options(network_channel_creator,
-                                       invalidator_client_id,
-                                       saved_invalidations,
-                                       invalidation_bootstrap_data,
-                                       weak_ptr_this,
-                                       base::MessageLoopProxy::current(),
-                                       client_info,
-                                       request_context_getter);
+  InitializeOptions initialize_options(
+      network_channel_creator, invalidator_client_id, saved_invalidations,
+      invalidation_bootstrap_data, weak_ptr_this,
+      base::ThreadTaskRunnerHandle::Get(), client_info, request_context_getter);
 
   if (!network_task_runner_->PostTask(
           FROM_HERE,

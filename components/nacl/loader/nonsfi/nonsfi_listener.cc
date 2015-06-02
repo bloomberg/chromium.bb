@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_types.h"
@@ -50,7 +49,7 @@ void NonSfiListener::Listen() {
           switches::kProcessChannelID),
       IPC::Channel::MODE_CLIENT,
       this,  // As a Listener.
-      io_thread_.message_loop_proxy().get(),
+      io_thread_.task_runner().get(),
       true,  // Create pipe now.
       &shutdown_event_);
   base::MessageLoop::current()->Run();
@@ -112,10 +111,9 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
   // TODO(teravest): Do we plan on using this renderer handle for nexe loading
   // for non-SFI? Right now, passing an empty channel handle instead causes
   // hangs, so we'll keep it.
-  trusted_listener_ = new NaClTrustedListener(
-      params.trusted_service_channel_handle,
-      io_thread_.message_loop_proxy().get(),
-      &shutdown_event_);
+  trusted_listener_ =
+      new NaClTrustedListener(params.trusted_service_channel_handle,
+                              io_thread_.task_runner().get(), &shutdown_event_);
 
   // Ensure that the validation cache key (used as an extra input to the
   // validation cache's hashing) isn't exposed accidentally.

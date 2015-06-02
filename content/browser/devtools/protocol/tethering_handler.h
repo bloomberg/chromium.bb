@@ -25,7 +25,7 @@ class TetheringHandler {
       base::Callback<scoped_ptr<net::ServerSocket>(std::string*)>;
 
   TetheringHandler(const CreateServerSocketCallback& socket_callback,
-                   scoped_refptr<base::MessageLoopProxy> message_loop_proxy);
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~TetheringHandler();
 
   void SetClient(scoped_ptr<Client> client);
@@ -46,7 +46,7 @@ class TetheringHandler {
 
   scoped_ptr<Client> client_;
   CreateServerSocketCallback socket_callback_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool is_active_;
   base::WeakPtrFactory<TetheringHandler> weak_factory_;
 

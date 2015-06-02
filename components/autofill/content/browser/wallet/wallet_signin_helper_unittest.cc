@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_signin_helper_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -51,7 +51,7 @@ class WalletSigninHelperTest : public testing::Test {
  protected:
   WalletSigninHelperTest()
       : request_context_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())) {}
+            base::ThreadTaskRunnerHandle::Get())) {}
   ~WalletSigninHelperTest() override {}
 
   void SetUp() override {

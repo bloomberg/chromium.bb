@@ -17,8 +17,8 @@
 #include "base/memory/ref_counted_delete_on_message_loop.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/common/webdata_export.h"
@@ -59,8 +59,8 @@ class WEBDATA_EXPORT WebDatabaseService
   // Takes the path to the WebDatabase file.
   // WebDatabaseService lives on |ui_thread| and posts tasks to |db_thread|.
   WebDatabaseService(const base::FilePath& path,
-                     const scoped_refptr<base::MessageLoopProxy>& ui_thread,
-                     const scoped_refptr<base::MessageLoopProxy>& db_thread);
+                     scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+                     scoped_refptr<base::SingleThreadTaskRunner> db_thread);
 
   // Adds |table| as a WebDatabaseTable that will participate in
   // managing the database, transferring ownership. All calls to this
@@ -140,7 +140,7 @@ class WEBDATA_EXPORT WebDatabaseService
   // True if the WebDatabase has loaded.
   bool db_loaded_;
 
-  scoped_refptr<base::MessageLoopProxy> db_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
 
   // All vended weak pointers are invalidated in ShutdownDatabase().
   base::WeakPtrFactory<WebDatabaseService> weak_ptr_factory_;

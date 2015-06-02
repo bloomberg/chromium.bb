@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -162,8 +161,8 @@ class CloudPolicyClientTest : public testing::Test {
     if (client_.get())
       client_->RemoveObserver(&observer_);
 
-    request_context_ = new net::TestURLRequestContextGetter(
-        loop_.message_loop_proxy());
+    request_context_ =
+        new net::TestURLRequestContextGetter(loop_.task_runner());
     client_.reset(new CloudPolicyClient(kMachineID, kMachineModel,
                                         kPolicyVerificationKeyHash,
                                         user_affiliation,

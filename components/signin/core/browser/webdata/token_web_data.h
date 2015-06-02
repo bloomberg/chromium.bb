@@ -23,7 +23,7 @@
 #include "components/webdata/common/web_database.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 class TokenWebDataBackend;
@@ -35,12 +35,12 @@ class WebDataServiceConsumer;
 class TokenWebData : public WebDataServiceBase {
  public:
   TokenWebData(scoped_refptr<WebDatabaseService> wdbs,
-               scoped_refptr<base::MessageLoopProxy> ui_thread,
-               scoped_refptr<base::MessageLoopProxy> db_thread,
+               scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+               scoped_refptr<base::SingleThreadTaskRunner> db_thread,
                const ProfileErrorCallback& callback);
 
-  TokenWebData(scoped_refptr<base::MessageLoopProxy> ui_thread,
-               scoped_refptr<base::MessageLoopProxy> db_thread);
+  TokenWebData(scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+               scoped_refptr<base::SingleThreadTaskRunner> db_thread);
 
   // Set a token to use for a specified service.
   void SetTokenForService(const std::string& service,

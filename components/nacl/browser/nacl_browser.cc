@@ -7,11 +7,13 @@
 #include "base/command_line.h"
 #include "base/files/file_proxy.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
@@ -381,7 +383,7 @@ void NaClBrowser::CheckWaiting() {
     // process host.
     for (std::vector<base::Closure>::iterator iter = waiting_.begin();
          iter != waiting_.end(); ++iter) {
-      base::MessageLoop::current()->PostTask(FROM_HERE, *iter);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, *iter);
     }
     waiting_.clear();
   }
@@ -512,11 +514,10 @@ void NaClBrowser::MarkValidationCacheAsModified() {
   if (!validation_cache_is_modified_) {
     // Wait before persisting to disk.  This can coalesce multiple cache
     // modifications info a single disk write.
-    base::MessageLoop::current()->PostDelayedTask(
-         FROM_HERE,
-         base::Bind(&NaClBrowser::PersistValidationCache,
-                    weak_factory_.GetWeakPtr()),
-         base::TimeDelta::FromMilliseconds(kValidationCacheCoalescingTimeMS));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&NaClBrowser::PersistValidationCache,
+                              weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kValidationCacheCoalescingTimeMS));
     validation_cache_is_modified_ = true;
   }
 }

@@ -5,6 +5,8 @@
 #include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/scheduler/child/scheduler_message_loop_delegate.h"
 #include "components/scheduler/child/web_scheduler_impl.h"
@@ -19,7 +21,7 @@ WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
   thread_->Start();
 
   base::WaitableEvent completion(false, false);
-  thread_->message_loop()->PostTask(
+  thread_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&WebThreadImplForWorkerScheduler::InitOnThread,
                             base::Unretained(this), &completion));
   completion.Wait();

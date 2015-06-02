@@ -5,7 +5,7 @@
 #include "components/rappor/log_uploader.h"
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,11 +58,11 @@ class LogUploaderTest : public testing::Test {
  public:
   LogUploaderTest()
       : request_context_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())),
+            base::ThreadTaskRunnerHandle::Get())),
         factory_(NULL) {}
 
  protected:
-  // Required for base::MessageLoopProxy::current().
+  // Required for base::ThreadTaskRunnerHandle::Get().
   base::MessageLoopForUI loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   net::FakeURLFetcherFactory factory_;

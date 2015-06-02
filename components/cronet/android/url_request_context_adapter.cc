@@ -266,7 +266,7 @@ net::URLRequestContext* URLRequestContextAdapter::GetURLRequestContext() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 URLRequestContextAdapter::GetNetworkTaskRunner() const {
-  return network_thread_->message_loop_proxy();
+  return network_thread_->task_runner();
 }
 
 void URLRequestContextAdapter::StartNetLogToFile(const std::string& file_name,

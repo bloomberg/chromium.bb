@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "components/invalidation/invalidation_handler.h"
 #include "google/cacheinvalidation/include/invalidation-client-factory.h"

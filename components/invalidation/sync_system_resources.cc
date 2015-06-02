@@ -9,11 +9,13 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/invalidation/gcm_network_channel.h"
 #include "components/invalidation/gcm_network_channel_delegate.h"
 #include "components/invalidation/invalidation_util.h"
@@ -103,7 +105,7 @@ void SyncInvalidationScheduler::Schedule(invalidation::TimeDelta delay,
   }
 
   posted_tasks_.insert(task);
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&SyncInvalidationScheduler::RunPostedTask,
                             weak_factory_.GetWeakPtr(), task),
       delay);

@@ -7,8 +7,7 @@
 #include <string.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "ipc/ipc_test_sink.h"
@@ -31,7 +30,7 @@ class NaClIPCAdapterTest : public testing::Test {
     // loop instead of using a real IO thread. This should work OK since we do
     // not need real IPC for the tests.
     adapter_ = new NaClIPCAdapter(scoped_ptr<IPC::Channel>(sink_),
-                                  base::MessageLoopProxy::current().get());
+                                  base::ThreadTaskRunnerHandle::Get().get());
   }
   void TearDown() override {
     sink_ = NULL;  // This pointer is actually owned by the IPCAdapter.

@@ -8,15 +8,17 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_country.h"
@@ -100,17 +102,14 @@ class WebDataServiceTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
 
-    wdbs_ = new WebDatabaseService(path,
-                                   base::MessageLoopProxy::current(),
-                                   db_thread_.message_loop_proxy());
+    wdbs_ = new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
+                                   db_thread_.task_runner());
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable("en-US")));
     wdbs_->LoadDatabase();
 
-    wds_ =
-        new AutofillWebDataService(wdbs_,
-                                   base::MessageLoopProxy::current(),
-                                   db_thread_.message_loop_proxy(),
-                                   WebDataServiceBase::ProfileErrorCallback());
+    wds_ = new AutofillWebDataService(
+        wdbs_, base::ThreadTaskRunnerHandle::Get(), db_thread_.task_runner(),
+        WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
 
@@ -121,15 +120,15 @@ class WebDataServiceTest : public testing::Test {
     wdbs_ = NULL;
     WaitForDatabaseThread();
 
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::MessageLoop::QuitClosure());
     base::MessageLoop::current()->Run();
     db_thread_.Stop();
   }
 
   void WaitForDatabaseThread() {
     base::WaitableEvent done(false, false);
-    db_thread_.message_loop()->PostTask(
+    db_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
@@ -163,7 +162,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     void(AutofillWebDataService::*add_observer_func)(
         AutofillWebDataServiceObserverOnDBThread*) =
         &AutofillWebDataService::AddObserver;
-    db_thread_.message_loop()->PostTask(
+    db_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(add_observer_func, wds_, &observer_));
     WaitForDatabaseThread();
   }
@@ -172,7 +171,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     void(AutofillWebDataService::*remove_observer_func)(
         AutofillWebDataServiceObserverOnDBThread*) =
         &AutofillWebDataService::RemoveObserver;
-    db_thread_.message_loop()->PostTask(
+    db_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(remove_observer_func, wds_, &observer_));
     WaitForDatabaseThread();
 

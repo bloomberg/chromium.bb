@@ -9,10 +9,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_constants.h"
@@ -210,11 +211,9 @@ void TopSitesImpl::GetMostVisitedURLs(
     if (!loaded_) {
       // A request came in before we finished loading. Store the callback and
       // we'll run it on current thread when we finish loading.
-      pending_callbacks_.push_back(
-          base::Bind(&RunOrPostGetMostVisitedURLsCallback,
-                     base::MessageLoopProxy::current(),
-                     include_forced_urls,
-                     callback));
+      pending_callbacks_.push_back(base::Bind(
+          &RunOrPostGetMostVisitedURLsCallback,
+          base::ThreadTaskRunnerHandle::Get(), include_forced_urls, callback));
       return;
     }
     if (include_forced_urls) {

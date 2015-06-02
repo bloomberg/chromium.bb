@@ -7,7 +7,7 @@
 namespace sync_driver {
 
 ProxyDataTypeController::ProxyDataTypeController(
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     syncer::ModelType type)
     : DataTypeController(ui_thread, base::Closure()),
       state_(NOT_RUNNING),

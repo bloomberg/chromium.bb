@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/web_cache/common/web_cache_messages.h"
 #include "content/public/browser/notification_service.h"
@@ -415,10 +417,9 @@ void WebCacheManager::ReviseAllocationStrategy() {
 void WebCacheManager::ReviseAllocationStrategyLater() {
   // Ask to be called back in a few milliseconds to actually recompute our
   // allocation.
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(
-          &WebCacheManager::ReviseAllocationStrategy,
-          weak_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&WebCacheManager::ReviseAllocationStrategy,
+                            weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kReviseAllocationDelayMS));
 }
 

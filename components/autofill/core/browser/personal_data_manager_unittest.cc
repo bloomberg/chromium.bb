@@ -11,10 +11,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -95,9 +95,9 @@ class PersonalDataManagerTest : public testing::Test {
     prefs_ = test::PrefServiceForTesting();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
-    web_database_ = new WebDatabaseService(path,
-                                           base::MessageLoopProxy::current(),
-                                           base::MessageLoopProxy::current());
+    web_database_ =
+        new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
+                               base::ThreadTaskRunnerHandle::Get());
 
     // Setup account tracker.
     signin_client_.reset(new TestSigninClient(prefs_.get()));
@@ -110,11 +110,10 @@ class PersonalDataManagerTest : public testing::Test {
     autofill_table_ = new AutofillTable("en-US");
     web_database_->AddTable(scoped_ptr<WebDatabaseTable>(autofill_table_));
     web_database_->LoadDatabase();
-    autofill_database_service_ =
-        new AutofillWebDataService(web_database_,
-                                   base::MessageLoopProxy::current(),
-                                   base::MessageLoopProxy::current(),
-                                   WebDataServiceBase::ProfileErrorCallback());
+    autofill_database_service_ = new AutofillWebDataService(
+        web_database_, base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(),
+        WebDataServiceBase::ProfileErrorCallback());
     autofill_database_service_->Init();
 
     test::DisableSystemServices(prefs_.get());

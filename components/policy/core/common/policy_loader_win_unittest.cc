@@ -738,7 +738,7 @@ class PolicyLoaderWinTest : public PolicyTestBase,
   }
 
   bool Matches(const PolicyBundle& expected) {
-    PolicyLoaderWin loader(loop_.message_loop_proxy(), kTestPolicyKey,
+    PolicyLoaderWin loader(loop_.task_runner(), kTestPolicyKey,
                            gpo_list_provider_);
     scoped_ptr<PolicyBundle> loaded(
         loader.InitialLoad(schema_registry_.schema_map()));

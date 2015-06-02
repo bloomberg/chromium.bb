@@ -10,15 +10,14 @@
 namespace sync_driver {
 
 DeviceInfoDataTypeController::DeviceInfoDataTypeController(
-    const scoped_refptr<base::MessageLoopProxy>& ui_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback,
     SyncApiComponentFactory* sync_factory,
     LocalDeviceInfoProvider* local_device_info_provider)
-    : UIDataTypeController(
-          ui_thread,
-          error_callback,
-          syncer::DEVICE_INFO,
-          sync_factory),
+    : UIDataTypeController(ui_thread,
+                           error_callback,
+                           syncer::DEVICE_INFO,
+                           sync_factory),
       local_device_info_provider_(local_device_info_provider) {
 }
 

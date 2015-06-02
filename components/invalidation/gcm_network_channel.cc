@@ -4,10 +4,13 @@
 
 #include "base/base64.h"
 #include "base/i18n/time_formatting.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #if !defined(OS_ANDROID)
 // channel_common.proto defines ANDROID constant that conflicts with Android
 // build. At the same time TiclInvalidationService is not used on Android so it
@@ -146,10 +149,9 @@ void GCMNetworkChannel::OnRegisterComplete(
       case gcm::GCMClient::TTL_EXCEEDED:
       case gcm::GCMClient::UNKNOWN_ERROR: {
         register_backoff_entry_->InformOfRequest(false);
-        base::MessageLoop::current()->PostDelayedTask(
-            FROM_HERE,
-            base::Bind(&GCMNetworkChannel::Register,
-                       weak_factory_.GetWeakPtr()),
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE, base::Bind(&GCMNetworkChannel::Register,
+                                  weak_factory_.GetWeakPtr()),
             register_backoff_entry_->GetTimeUntilRelease());
         break;
       }

@@ -59,8 +59,8 @@ class Setup {
 
   float device_pixel_ratio() const { return device_pixel_ratio_; }
 
-  scoped_refptr<base::MessageLoopProxy> compositor_thread() {
-    return compositor_thread_.message_loop_proxy();
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_thread() {
+    return compositor_thread_.task_runner();
   }
 
   MediaFactory* media_factory() { return media_factory_.get(); }

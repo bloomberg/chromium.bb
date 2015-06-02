@@ -158,10 +158,10 @@ void FakeWiFiService::GetKeyFromSystem(const std::string& network_guid,
 }
 
 void FakeWiFiService::SetEventObservers(
-    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const NetworkGuidListCallback& networks_changed_observer,
     const NetworkGuidListCallback& network_list_changed_observer) {
-  message_loop_proxy_.swap(message_loop_proxy);
+  task_runner_.swap(task_runner);
   networks_changed_observer_ = networks_changed_observer;
   network_list_changed_observer_ = network_list_changed_observer;
 }
@@ -206,13 +206,13 @@ void FakeWiFiService::NotifyNetworkListChanged(const NetworkList& networks) {
     current_networks.push_back(it->guid);
   }
 
-  message_loop_proxy_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(network_list_changed_observer_, current_networks));
 }
 
 void FakeWiFiService::NotifyNetworkChanged(const std::string& network_guid) {
   WiFiService::NetworkGuidList changed_networks(1, network_guid);
-  message_loop_proxy_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(networks_changed_observer_, changed_networks));
 }
 

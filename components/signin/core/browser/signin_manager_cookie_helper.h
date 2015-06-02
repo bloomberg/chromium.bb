@@ -11,7 +11,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -25,8 +25,8 @@ class SigninManagerCookieHelper
  public:
   explicit SigninManagerCookieHelper(
       net::URLRequestContextGetter* request_context_getter,
-      scoped_refptr<base::MessageLoopProxy> ui_thread,
-      scoped_refptr<base::MessageLoopProxy> io_thread);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread);
 
   // Starts fetching gaia cookies, which will notify its completion via
   // callback.
@@ -56,10 +56,10 @@ class SigninManagerCookieHelper
   // This only mutates on |ui_thread_|.
   base::Callback<void(const net::CookieList& cookies)> completion_callback_;
 
-  // The MessageLoopProxy that this class uses as its UI thread.
-  scoped_refptr<base::MessageLoopProxy> ui_thread_;
-  // The MessageLoopProxy that this class uses as its IO thread.
-  scoped_refptr<base::MessageLoopProxy> io_thread_;
+  // The task runner that this class uses as its UI thread.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+  // The task runner that this class uses as its IO thread.
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
   DISALLOW_COPY_AND_ASSIGN(SigninManagerCookieHelper);
 };
 

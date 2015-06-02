@@ -4,7 +4,7 @@
 
 #include "components/dom_distiller/core/distilled_content_store.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace dom_distiller {
 
@@ -24,8 +24,8 @@ void InMemoryContentStore::SaveContent(
     InMemoryContentStore::SaveCallback callback) {
   InjectContent(entry, proto);
   if (!callback.is_null()) {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, true));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, true));
   }
 }
 
@@ -56,7 +56,7 @@ void InMemoryContentStore::LoadContent(
   } else {
     distilled_article.reset(new DistilledArticleProto());
   }
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, success, base::Passed(&distilled_article)));
 }

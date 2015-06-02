@@ -17,7 +17,7 @@
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace blink {
@@ -39,7 +39,7 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
                              public mojo::OutputSurfaceMojoClient {
  public:
   WebLayerTreeViewImpl(
-      scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       mojo::SurfacePtr surface,
       mojo::GpuPtr gpu_service);
   ~WebLayerTreeViewImpl() override;

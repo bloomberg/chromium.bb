@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/captive_portal/captive_portal_testing_utils.h"
 #include "net/base/net_errors.h"
@@ -55,10 +55,9 @@ class CaptivePortalDetectorTest : public testing::Test,
   ~CaptivePortalDetectorTest() override {}
 
   void SetUp() override {
-    CHECK(base::MessageLoopProxy::current().get());
     scoped_refptr<net::URLRequestContextGetter> request_context_getter(
         new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current()));
+            base::ThreadTaskRunnerHandle::Get()));
 
     detector_.reset(new CaptivePortalDetector(request_context_getter.get()));
     set_detector(detector_.get());

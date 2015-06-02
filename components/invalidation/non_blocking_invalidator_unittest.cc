@@ -5,9 +5,9 @@
 #include "components/invalidation/non_blocking_invalidator.h"
 
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "components/invalidation/fake_invalidation_handler.h"
@@ -38,7 +38,7 @@ class NonBlockingInvalidatorTestDelegate {
     options.message_loop_type = base::MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
     request_context_getter_ =
-        new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy());
+        new net::TestURLRequestContextGetter(io_thread_.task_runner());
     notifier::NotifierOptions notifier_options;
     notifier_options.request_context_getter = request_context_getter_;
     NetworkChannelCreator network_channel_creator =
@@ -67,11 +67,8 @@ class NonBlockingInvalidatorTestDelegate {
 
   void WaitForInvalidator() {
     base::RunLoop run_loop;
-    ASSERT_TRUE(
-        io_thread_.message_loop_proxy()->PostTaskAndReply(
-            FROM_HERE,
-            base::Bind(&base::DoNothing),
-            run_loop.QuitClosure()));
+    ASSERT_TRUE(io_thread_.task_runner()->PostTaskAndReply(
+        FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure()));
     run_loop.Run();
   }
 

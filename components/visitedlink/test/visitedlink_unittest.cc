@@ -7,11 +7,13 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/visitedlink/browser/visitedlink_event_listener.h"
@@ -611,9 +613,8 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
     //
     // TODO(ajwong): This is horrid! What is the right synchronization method?
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        run_loop.QuitClosure(),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
         base::TimeDelta::FromMilliseconds(110));
     run_loop.Run();
   }

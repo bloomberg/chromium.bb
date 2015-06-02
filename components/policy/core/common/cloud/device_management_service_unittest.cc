@@ -6,8 +6,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -51,7 +49,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
  protected:
   DeviceManagementServiceTestBase() {
     request_context_ =
-        new net::TestURLRequestContextGetter(loop_.message_loop_proxy());
+        new net::TestURLRequestContextGetter(loop_.task_runner());
     ResetService();
     InitializeService();
   }

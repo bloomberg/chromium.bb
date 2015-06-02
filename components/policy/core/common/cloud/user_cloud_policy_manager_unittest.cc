@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_user_cloud_policy_store.h"
@@ -53,12 +52,9 @@ class UserCloudPolicyManagerTest : public testing::Test {
     store_ = new MockUserCloudPolicyStore();
     EXPECT_CALL(*store_, Load());
     manager_.reset(new UserCloudPolicyManager(
-        scoped_ptr<UserCloudPolicyStore>(store_),
-        base::FilePath(),
-        scoped_ptr<CloudExternalDataManager>(),
-        loop_.message_loop_proxy(),
-        loop_.message_loop_proxy(),
-        loop_.message_loop_proxy()));
+        scoped_ptr<UserCloudPolicyStore>(store_), base::FilePath(),
+        scoped_ptr<CloudExternalDataManager>(), loop_.task_runner(),
+        loop_.task_runner(), loop_.task_runner()));
     manager_->Init(&schema_registry_);
     manager_->AddObserver(&observer_);
     Mock::VerifyAndClearExpectations(store_);

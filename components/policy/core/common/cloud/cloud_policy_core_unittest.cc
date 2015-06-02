@@ -5,7 +5,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 
 #include "base/basictypes.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -24,7 +23,7 @@ class CloudPolicyCoreTest : public testing::Test,
       : core_(dm_protocol::kChromeUserPolicyType,
               std::string(),
               &store_,
-              loop_.message_loop_proxy()),
+              loop_.task_runner()),
         core_connected_callback_count_(0),
         refresh_scheduler_started_callback_count_(0),
         core_disconnecting_callback_count_(0),

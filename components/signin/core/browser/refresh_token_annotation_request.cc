@@ -4,11 +4,13 @@
 
 #include "components/signin/core/browser/refresh_token_annotation_request.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -121,7 +123,7 @@ void RefreshTokenAnnotationRequest::OnGetTokenFailure(
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Failed to get access token";
   RecordRequestStatusHistogram(false);
-  base::MessageLoop::current()->PostTask(FROM_HERE, request_callback_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, request_callback_);
   request_callback_.Reset();
 }
 
@@ -157,7 +159,7 @@ void RefreshTokenAnnotationRequest::ProcessApiCallSuccess(
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Request succeeded";
   RecordRequestStatusHistogram(true);
-  base::MessageLoop::current()->PostTask(FROM_HERE, request_callback_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, request_callback_);
   request_callback_.Reset();
 }
 
@@ -166,6 +168,6 @@ void RefreshTokenAnnotationRequest::ProcessApiCallFailure(
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Request failed";
   RecordRequestStatusHistogram(false);
-  base::MessageLoop::current()->PostTask(FROM_HERE, request_callback_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, request_callback_);
   request_callback_.Reset();
 }

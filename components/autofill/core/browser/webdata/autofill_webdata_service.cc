@@ -5,8 +5,9 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -27,15 +28,14 @@ namespace autofill {
 
 AutofillWebDataService::AutofillWebDataService(
     scoped_refptr<WebDatabaseService> wdbs,
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
-    scoped_refptr<base::MessageLoopProxy> db_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread,
     const ProfileErrorCallback& callback)
     : WebDataServiceBase(wdbs, callback, ui_thread),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
       autofill_backend_(NULL),
       weak_ptr_factory_(this) {
-
   base::Closure on_changed_callback = Bind(
       &AutofillWebDataService::NotifyAutofillMultipleChangedOnUIThread,
       weak_ptr_factory_.GetWeakPtr());
@@ -45,16 +45,17 @@ AutofillWebDataService::AutofillWebDataService(
 }
 
 AutofillWebDataService::AutofillWebDataService(
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
-    scoped_refptr<base::MessageLoopProxy> db_thread)
-    : WebDataServiceBase(NULL, WebDataServiceBase::ProfileErrorCallback(),
-          ui_thread),
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread)
+    : WebDataServiceBase(NULL,
+                         WebDataServiceBase::ProfileErrorCallback(),
+                         ui_thread),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
       autofill_backend_(new AutofillWebDataBackendImpl(NULL,
-          ui_thread_,
-          db_thread_,
-          base::Closure())),
+                                                       ui_thread_,
+                                                       db_thread_,
+                                                       base::Closure())),
       weak_ptr_factory_(this) {
 }
 

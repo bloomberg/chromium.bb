@@ -7,8 +7,10 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
@@ -140,10 +142,9 @@ void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
     // Refresh is immediately complete if there are no providers. See the note
     // on OnUpdatePolicy() about why this is a posted task.
     update_task_ptr_factory_.InvalidateWeakPtrs();
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&PolicyServiceImpl::MergeAndTriggerUpdates,
-                   update_task_ptr_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&PolicyServiceImpl::MergeAndTriggerUpdates,
+                              update_task_ptr_factory_.GetWeakPtr()));
   } else {
     // Some providers might invoke OnUpdatePolicy synchronously while handling
     // RefreshPolicies. Mark all as pending before refreshing.
@@ -167,10 +168,9 @@ void PolicyServiceImpl::OnUpdatePolicy(ConfigurationPolicyProvider* provider) {
   // MergeAndTriggerUpdates. Also, cancel a pending update if there is any,
   // since both will produce the same PolicyBundle.
   update_task_ptr_factory_.InvalidateWeakPtrs();
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PolicyServiceImpl::MergeAndTriggerUpdates,
-                 update_task_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PolicyServiceImpl::MergeAndTriggerUpdates,
+                            update_task_ptr_factory_.GetWeakPtr()));
 }
 
 void PolicyServiceImpl::NotifyNamespaceUpdated(

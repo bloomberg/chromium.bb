@@ -4,7 +4,9 @@
 
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "components/scheduler/child/scheduler_message_loop_delegate.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -195,7 +197,7 @@ TEST_F(WebThreadImplForRendererSchedulerTest, TestNestedRunLoop) {
     EatDefaultTask(&observer);
   }
 
-  message_loop_.PostTask(
+  message_loop_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&EnterRunLoop, base::Unretained(&message_loop_),
                             base::Unretained(&thread_)));
   message_loop_.RunUntilIdle();

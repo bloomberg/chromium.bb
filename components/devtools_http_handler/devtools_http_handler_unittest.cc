@@ -4,9 +4,11 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
@@ -67,8 +69,8 @@ class DummyServerSocketFactory
 
  protected:
   scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&QuitFromHandlerThread, quit_closure_1_));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&QuitFromHandlerThread, quit_closure_1_));
     return scoped_ptr<net::ServerSocket>(new DummyServerSocket());
   }
 
@@ -85,8 +87,8 @@ class FailingServerSocketFactory : public DummyServerSocketFactory {
 
  private:
   scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&QuitFromHandlerThread, quit_closure_1_));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&QuitFromHandlerThread, quit_closure_1_));
     return scoped_ptr<net::ServerSocket>();
   }
 };

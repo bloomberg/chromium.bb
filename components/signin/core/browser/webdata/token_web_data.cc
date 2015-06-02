@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_delete_on_message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "components/signin/core/browser/webdata/token_service_table.h"
 #include "components/webdata/common/web_database_service.h"
@@ -18,9 +18,8 @@ class TokenWebDataBackend
     : public base::RefCountedDeleteOnMessageLoop<TokenWebDataBackend> {
 
  public:
-  TokenWebDataBackend(scoped_refptr<base::MessageLoopProxy> db_thread)
-      : base::RefCountedDeleteOnMessageLoop<TokenWebDataBackend>(db_thread) {
-  }
+  TokenWebDataBackend(scoped_refptr<base::SingleThreadTaskRunner> db_thread)
+      : base::RefCountedDeleteOnMessageLoop<TokenWebDataBackend>(db_thread) {}
 
   WebDatabase::State RemoveAllTokens(WebDatabase* db) {
     if (TokenServiceTable::FromWebDatabase(db)->RemoveAllTokens()) {
@@ -63,10 +62,11 @@ class TokenWebDataBackend
   friend class base::DeleteHelper<TokenWebDataBackend>;
 };
 
-TokenWebData::TokenWebData(scoped_refptr<WebDatabaseService> wdbs,
-                           scoped_refptr<base::MessageLoopProxy> ui_thread,
-                           scoped_refptr<base::MessageLoopProxy> db_thread,
-                           const ProfileErrorCallback& callback)
+TokenWebData::TokenWebData(
+    scoped_refptr<WebDatabaseService> wdbs,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread,
+    const ProfileErrorCallback& callback)
     : WebDataServiceBase(wdbs, callback, ui_thread),
       token_backend_(new TokenWebDataBackend(db_thread)) {
 }
@@ -96,8 +96,9 @@ WebDataServiceBase::Handle TokenWebData::GetAllTokens(
       Bind(&TokenWebDataBackend::GetAllTokens, token_backend_), consumer);
 }
 
-TokenWebData::TokenWebData(scoped_refptr<base::MessageLoopProxy> ui_thread,
-                           scoped_refptr<base::MessageLoopProxy> db_thread)
+TokenWebData::TokenWebData(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread)
     : WebDataServiceBase(NULL, ProfileErrorCallback(), ui_thread),
       token_backend_(new TokenWebDataBackend(db_thread)) {
 }

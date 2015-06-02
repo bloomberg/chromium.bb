@@ -5,7 +5,9 @@
 #include "components/gcm_driver/gcm_channel_status_request.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/gcm_driver/gcm_backoff_policy.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -142,11 +144,9 @@ void GCMChannelStatusRequest::RetryWithBackoff(bool update_backoff) {
     DVLOG(1) << "Delaying GCM channel request for "
              << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
              << " ms.";
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&GCMChannelStatusRequest::RetryWithBackoff,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   false),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&GCMChannelStatusRequest::RetryWithBackoff,
+                              weak_ptr_factory_.GetWeakPtr(), false),
         backoff_entry_.GetTimeUntilRelease());
     return;
   }

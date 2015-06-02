@@ -21,7 +21,7 @@
 class WebDatabaseService;
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace autofill {
@@ -39,11 +39,11 @@ class CreditCard;
 class AutofillWebDataService : public AutofillWebData,
                                public WebDataServiceBase {
  public:
-  AutofillWebDataService(scoped_refptr<base::MessageLoopProxy> ui_thread,
-                         scoped_refptr<base::MessageLoopProxy> db_thread);
+  AutofillWebDataService(scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+                         scoped_refptr<base::SingleThreadTaskRunner> db_thread);
   AutofillWebDataService(scoped_refptr<WebDatabaseService> wdbs,
-                         scoped_refptr<base::MessageLoopProxy> ui_thread,
-                         scoped_refptr<base::MessageLoopProxy> db_thread,
+                         scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+                         scoped_refptr<base::SingleThreadTaskRunner> db_thread,
                          const ProfileErrorCallback& callback);
 
   // WebDataServiceBase implementation.
@@ -132,11 +132,11 @@ class AutofillWebDataService : public AutofillWebData,
  private:
   ObserverList<AutofillWebDataServiceObserverOnUIThread> ui_observer_list_;
 
-    // The MessageLoopProxy that this class uses as its UI thread.
-  scoped_refptr<base::MessageLoopProxy> ui_thread_;
+  // The task runner that this class uses as its UI thread.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
 
-  // The MessageLoopProxy that this class uses as its DB thread.
-  scoped_refptr<base::MessageLoopProxy> db_thread_;
+  // The task runner that this class uses as its DB thread.
+  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
 
   scoped_refptr<AutofillWebDataBackendImpl> autofill_backend_;
 

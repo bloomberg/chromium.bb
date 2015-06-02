@@ -9,7 +9,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "jni/TestUploadDataStreamHandler_jni.h"
 #include "net/base/net_errors.h"
 

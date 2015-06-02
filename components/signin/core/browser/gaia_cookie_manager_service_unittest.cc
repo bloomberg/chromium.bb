@@ -6,11 +6,13 @@
 #include <string>
 #include <vector>
 
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
@@ -205,9 +207,8 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
   // Transient error incurs a retry after 1 second.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(1100));
   base::MessageLoop::current()->Run();
   SimulateMergeSessionSuccess(&helper, "token");
@@ -228,17 +229,15 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
   // Transient error incurs a retry after 1 second.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(1100));
   base::MessageLoop::current()->Run();
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
   // Next transient error incurs a retry after 3 seconds.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(3100));
   base::MessageLoop::current()->Run();
   SimulateMergeSessionSuccess(&helper, "token");

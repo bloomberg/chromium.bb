@@ -5,7 +5,9 @@
 #include "components/audio_modem/audio_player.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "components/audio_modem/audio_player_impl.h"
 #include "components/audio_modem/public/audio_modem_types.h"
 #include "components/audio_modem/test/random_samples.h"
@@ -52,7 +54,7 @@ class TestAudioOutputStream : public media::AudioOutputStream {
       frames = callback_->OnMoreData(dest.get(), 0);
       total_frames += frames;
       // Send the samples given to us by the player to the gather callback.
-      caller_loop_->PostTask(
+      caller_loop_->task_runner()->PostTask(
           FROM_HERE, base::Bind(gather_callback_, base::Passed(&dest), frames));
     } while (frames && total_frames < max_frame_count_);
   }

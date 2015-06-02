@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/domain_reliability/test_util.h"
 #include "net/base/load_flags.h"

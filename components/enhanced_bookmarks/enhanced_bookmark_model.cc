@@ -8,10 +8,12 @@
 #include <sstream>
 
 #include "base/base64.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_model_observer.h"
@@ -398,10 +400,9 @@ void EnhancedBookmarkModel::RemoveNodeFromMaps(const BookmarkNode* node) {
 
 void EnhancedBookmarkModel::ScheduleResetDuplicateRemoteIds() {
   if (!nodes_to_reset_.empty()) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&EnhancedBookmarkModel::ResetDuplicateRemoteIds,
-                   weak_ptr_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&EnhancedBookmarkModel::ResetDuplicateRemoteIds,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

@@ -9,7 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
@@ -64,14 +65,14 @@ class SyncSharedChangeProcessorTest :
     test_user_share_.SetUp();
     shared_change_processor_ = new SharedChangeProcessor();
     ASSERT_TRUE(backend_thread_.Start());
-    ASSERT_TRUE(backend_thread_.message_loop_proxy()->PostTask(
+    ASSERT_TRUE(backend_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::SetUpDBSyncableService,
                    base::Unretained(this))));
   }
 
   void TearDown() override {
-    EXPECT_TRUE(backend_thread_.message_loop_proxy()->PostTask(
+    EXPECT_TRUE(backend_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::TearDownDBSyncableService,
                    base::Unretained(this))));
@@ -94,15 +95,14 @@ class SyncSharedChangeProcessorTest :
 
   // Connect |shared_change_processor_| on the DB thread.
   void Connect() {
-    EXPECT_TRUE(backend_thread_.message_loop_proxy()->PostTask(
+    EXPECT_TRUE(backend_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::ConnectOnDBThread,
-                   base::Unretained(this),
-                   shared_change_processor_)));
+                   base::Unretained(this), shared_change_processor_)));
   }
 
   void SetAttachmentStore() {
-    EXPECT_TRUE(backend_thread_.message_loop_proxy()->PostTask(
+    EXPECT_TRUE(backend_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::SetAttachmentStoreOnDBThread,
                    base::Unretained(this))));
@@ -110,7 +110,7 @@ class SyncSharedChangeProcessorTest :
 
   bool HasAttachmentService() {
     base::WaitableEvent event(false, false);
-    EXPECT_TRUE(backend_thread_.message_loop_proxy()->PostTask(
+    EXPECT_TRUE(backend_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(
             &SyncSharedChangeProcessorTest::CheckAttachmentServiceOnDBThread,
@@ -122,20 +122,20 @@ class SyncSharedChangeProcessorTest :
  private:
   // Used by SetUp().
   void SetUpDBSyncableService() {
-    DCHECK(backend_thread_.message_loop_proxy()->BelongsToCurrentThread());
+    DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(!db_syncable_service_.get());
     db_syncable_service_.reset(new syncer::FakeSyncableService());
   }
 
   // Used by TearDown().
   void TearDownDBSyncableService() {
-    DCHECK(backend_thread_.message_loop_proxy()->BelongsToCurrentThread());
+    DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(db_syncable_service_.get());
     db_syncable_service_.reset();
   }
 
   void SetAttachmentStoreOnDBThread() {
-    DCHECK(backend_thread_.message_loop_proxy()->BelongsToCurrentThread());
+    DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(db_syncable_service_.get());
     db_syncable_service_->set_attachment_store(
         syncer::AttachmentStore::CreateInMemoryStore());
@@ -146,7 +146,7 @@ class SyncSharedChangeProcessorTest :
   // (in TearDown()).
   void ConnectOnDBThread(
       const scoped_refptr<SharedChangeProcessor>& shared_change_processor) {
-    DCHECK(backend_thread_.message_loop_proxy()->BelongsToCurrentThread());
+    DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
     EXPECT_TRUE(shared_change_processor->Connect(
         this, &processor_factory_, test_user_share_.user_share(),
         &error_handler_, syncer::AUTOFILL,
@@ -155,7 +155,7 @@ class SyncSharedChangeProcessorTest :
   }
 
   void CheckAttachmentServiceOnDBThread(base::WaitableEvent* event) {
-    DCHECK(backend_thread_.message_loop_proxy()->BelongsToCurrentThread());
+    DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(db_syncable_service_.get());
     has_attachment_service_ = !!db_syncable_service_->attachment_service();
     event->Signal();

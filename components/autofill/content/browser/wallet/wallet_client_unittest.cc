@@ -6,13 +6,13 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
@@ -708,7 +708,7 @@ class WalletClientTest : public testing::Test {
  public:
   WalletClientTest()
       : request_context_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())) {}
+            base::ThreadTaskRunnerHandle::Get())) {}
   ~WalletClientTest() override {}
 
   void SetUp() override {

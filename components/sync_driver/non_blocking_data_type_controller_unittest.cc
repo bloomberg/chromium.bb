@@ -87,7 +87,8 @@ class MockSyncContextProxy : public syncer::SyncContextProxy {
       const syncer::UpdateResponseDataList& saved_pending_updates,
       const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_proxy)
       override {
-    // Normally we'd use MessageLoopProxy::current() as the TaskRunner argument
+    // Normally we'd use ThreadTaskRunnerHandle::Get() as the TaskRunner
+    // argument
     // to Connect().  That won't work here in this test, so we use the
     // model_task_runner_ that was injected for this purpose instead.
     sync_task_runner_->PostTask(FROM_HERE,

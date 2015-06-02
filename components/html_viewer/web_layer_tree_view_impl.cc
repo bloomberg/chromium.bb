@@ -19,7 +19,7 @@
 namespace html_viewer {
 
 WebLayerTreeViewImpl::WebLayerTreeViewImpl(
-    scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     mojo::SurfacePtr surface,
     mojo::GpuPtr gpu_service)
     : widget_(NULL),
@@ -47,7 +47,7 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
   params.main_task_runner = main_thread_compositor_task_runner_;
 
   layer_tree_host_ =
-      cc::LayerTreeHost::CreateThreaded(compositor_message_loop_proxy, &params);
+      cc::LayerTreeHost::CreateThreaded(compositor_task_runner, &params);
   DCHECK(layer_tree_host_);
 
   if (surface && gpu_service) {

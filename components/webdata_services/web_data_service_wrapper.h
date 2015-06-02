@@ -29,7 +29,7 @@ class AutofillWebDataService;
 
 namespace base {
 class FilePath;
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 // WebDataServiceWrapper is a KeyedService that owns multiple WebDataServices
@@ -52,12 +52,13 @@ class WebDataServiceWrapper : public KeyedService {
   // Since |flare| will be copied and called multiple times, it cannot bind
   // values using base::Owned nor base::Passed; it should only bind simple or
   // refcounted types.
-  WebDataServiceWrapper(const base::FilePath& context_path,
-                        const std::string& application_locale,
-                        const scoped_refptr<base::MessageLoopProxy>& ui_thread,
-                        const scoped_refptr<base::MessageLoopProxy>& db_thread,
-                        const syncer::SyncableService::StartSyncFlare& flare,
-                        ShowErrorCallback show_error_callback);
+  WebDataServiceWrapper(
+      const base::FilePath& context_path,
+      const std::string& application_locale,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const syncer::SyncableService::StartSyncFlare& flare,
+      ShowErrorCallback show_error_callback);
   ~WebDataServiceWrapper() override;
 
   // For testing.

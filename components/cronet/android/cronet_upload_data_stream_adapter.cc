@@ -10,8 +10,8 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/cronet/android/cronet_url_request_adapter.h"
 #include "jni/CronetUploadDataStream_jni.h"
 
@@ -32,7 +32,7 @@ void CronetUploadDataStreamAdapter::InitializeOnNetworkThread(
   DCHECK(!network_task_runner_.get());
 
   upload_data_stream_ = upload_data_stream;
-  network_task_runner_ = base::MessageLoopProxy::current();
+  network_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DCHECK(network_task_runner_);
 }
 

@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
@@ -84,9 +84,8 @@ class DataReductionProxyDebugBlockingPageTest
     content::RenderViewHostTestHarness::SetUp();
     DataReductionProxyDebugBlockingPage::RegisterFactory(&factory_);
     ui_manager_ = new DataReductionProxyDebugUIManager(
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current(),
-        "en-US");
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(), "en-US");
     ResetUserResponse();
   }
 
@@ -159,8 +158,8 @@ class DataReductionProxyDebugBlockingPageTest
     DataReductionProxyDebugUIManager::BypassResource resource;
     InitResource(&resource, is_subresource, GURL(url));
     DataReductionProxyDebugBlockingPage::ShowBlockingPage(
-        ui_manager_.get(), base::MessageLoopProxy::current(),
-        resource, std::string());
+        ui_manager_.get(), base::ThreadTaskRunnerHandle::Get(), resource,
+        std::string());
   }
 
   // Returns the DataReductionProxyDebugBlockingPage currently showing or NULL

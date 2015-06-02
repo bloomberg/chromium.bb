@@ -9,9 +9,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/test_configurator.h"
@@ -86,10 +86,10 @@ UpdateCheckerTest::~UpdateCheckerTest() {
 }
 
 void UpdateCheckerTest::SetUp() {
-  config_ = new TestConfigurator(base::MessageLoopProxy::current(),
-                                 base::MessageLoopProxy::current());
+  config_ = new TestConfigurator(base::ThreadTaskRunnerHandle::Get(),
+                                 base::ThreadTaskRunnerHandle::Get());
   interceptor_factory_.reset(
-      new InterceptorFactory(base::MessageLoopProxy::current()));
+      new InterceptorFactory(base::ThreadTaskRunnerHandle::Get()));
   post_interceptor_ = interceptor_factory_->CreateInterceptor();
   EXPECT_TRUE(post_interceptor_);
 

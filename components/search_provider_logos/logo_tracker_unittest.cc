@@ -12,12 +12,15 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/search_provider_logos/google_logo_api.h"
@@ -301,7 +304,7 @@ class TestLogoDelegate : public LogoDelegate {
     SkBitmap bitmap =
         gfx::Image::CreateFrom1xPNGBytes(encoded_image->front(),
                                          encoded_image->size()).AsBitmap();
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(image_decoded_callback, bitmap));
   }
 };
@@ -315,12 +318,12 @@ class LogoTrackerTest : public ::testing::Test {
         logo_cache_(new NiceMock<MockLogoCache>()),
         fake_url_fetcher_factory_(NULL) {
     test_clock_->SetNow(base::Time::FromJsTime(INT64_C(1388686828000)));
-    logo_tracker_ = new LogoTracker(
-        base::FilePath(),
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current(),
-        new net::TestURLRequestContextGetter(base::MessageLoopProxy::current()),
-        scoped_ptr<LogoDelegate>(new TestLogoDelegate()));
+    logo_tracker_ =
+        new LogoTracker(base::FilePath(), base::ThreadTaskRunnerHandle::Get(),
+                        base::ThreadTaskRunnerHandle::Get(),
+                        new net::TestURLRequestContextGetter(
+                            base::ThreadTaskRunnerHandle::Get()),
+                        scoped_ptr<LogoDelegate>(new TestLogoDelegate()));
     logo_tracker_->SetServerAPI(logo_url_, base::Bind(&GoogleParseLogoResponse),
                                 base::Bind(&GoogleAppendQueryparamsToLogoURL),
                                 false);
@@ -687,11 +690,9 @@ void EnqueueObservers(LogoTracker* logo_tracker,
     return;
 
   logo_tracker->GetLogo(observers[start_index]);
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(&EnqueueObservers,
-                                                    logo_tracker,
-                                                    base::ConstRef(observers),
-                                                    start_index + 1));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&EnqueueObservers, logo_tracker,
+                            base::ConstRef(observers), start_index + 1));
 }
 
 TEST_F(LogoTrackerTest, SupportOverlappingLogoRequests) {

@@ -19,7 +19,7 @@
 #include "components/webdata/common/web_database.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 class WebDatabaseBackend;
@@ -48,8 +48,8 @@ class AutofillWebDataBackendImpl
   // times).
   AutofillWebDataBackendImpl(
       scoped_refptr<WebDatabaseBackend> web_database_backend,
-      scoped_refptr<base::MessageLoopProxy> ui_thread,
-      scoped_refptr<base::MessageLoopProxy> db_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> db_thread,
       const base::Closure& on_changed_callback);
 
   // AutofillWebDataBackend implementation.
@@ -187,11 +187,11 @@ class AutofillWebDataBackendImpl
     DISALLOW_COPY_AND_ASSIGN(SupportsUserDataAggregatable);
   };
 
-  // The MessageLoopProxy that this class uses as its UI thread.
-  scoped_refptr<base::MessageLoopProxy> ui_thread_;
+  // The task runner that this class uses as its UI thread.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
 
-  // The MessageLoopProxy that this class uses as its DB thread.
-  scoped_refptr<base::MessageLoopProxy> db_thread_;
+  // The task runner that this class uses as its DB thread.
+  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
 
   // Storage for user data to be accessed only on the DB thread. May
   // be used e.g. for SyncableService subclasses that need to be owned

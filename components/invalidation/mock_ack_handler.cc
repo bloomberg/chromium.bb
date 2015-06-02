@@ -4,7 +4,7 @@
 
 #include "components/invalidation/mock_ack_handler.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/invalidation/ack_handle.h"
 #include "components/invalidation/invalidation.h"
 
@@ -35,7 +35,7 @@ MockAckHandler::~MockAckHandler() {}
 
 void MockAckHandler::RegisterInvalidation(Invalidation* invalidation) {
   unacked_invalidations_.push_back(*invalidation);
-  invalidation->SetAckHandler(AsWeakPtr(), base::MessageLoopProxy::current());
+  invalidation->SetAckHandler(AsWeakPtr(), base::ThreadTaskRunnerHandle::Get());
 }
 
 void MockAckHandler::RegisterUnsentInvalidation(Invalidation* invalidation) {

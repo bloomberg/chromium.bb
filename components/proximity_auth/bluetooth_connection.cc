@@ -5,8 +5,10 @@
 #include "components/proximity_auth/bluetooth_connection.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -169,10 +171,9 @@ void BluetoothConnection::OnReceive(int bytes_received,
 
   // Post a task to delay the read until the socket is available, as
   // calling StartReceive at this point would error with ERR_IO_PENDING.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&BluetoothConnection::StartReceive,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BluetoothConnection::StartReceive,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothConnection::OnReceiveError(
@@ -182,10 +183,9 @@ void BluetoothConnection::OnReceiveError(
 
   // Post a task to delay the read until the socket is available, as
   // calling StartReceive at this point would error with ERR_IO_PENDING.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&BluetoothConnection::StartReceive,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BluetoothConnection::StartReceive,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace proximity_auth

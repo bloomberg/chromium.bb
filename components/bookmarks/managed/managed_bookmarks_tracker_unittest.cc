@@ -11,6 +11,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -65,11 +66,9 @@ class ManagedBookmarksTrackerTest : public testing::Test {
     model_.reset(new BookmarkModel(&client_));
     model_->AddObserver(&observer_);
     EXPECT_CALL(observer_, BookmarkModelLoaded(model_.get(), _));
-    model_->Load(&prefs_,
-                 std::string(),
-                 base::FilePath(),
-                 base::MessageLoopProxy::current(),
-                 base::MessageLoopProxy::current());
+    model_->Load(&prefs_, std::string(), base::FilePath(),
+                 base::ThreadTaskRunnerHandle::Get(),
+                 base::ThreadTaskRunnerHandle::Get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_.get());
     Mock::VerifyAndClearExpectations(&observer_);
 

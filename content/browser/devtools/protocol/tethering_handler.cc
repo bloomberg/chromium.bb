@@ -329,16 +329,16 @@ TetheringHandler::TetheringImpl* TetheringHandler::impl_ = nullptr;
 
 TetheringHandler::TetheringHandler(
     const CreateServerSocketCallback& socket_callback,
-    scoped_refptr<base::MessageLoopProxy> message_loop_proxy)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : socket_callback_(socket_callback),
-      message_loop_proxy_(message_loop_proxy),
+      task_runner_(task_runner),
       is_active_(false),
       weak_factory_(this) {
 }
 
 TetheringHandler::~TetheringHandler() {
   if (is_active_) {
-    message_loop_proxy_->DeleteSoon(FROM_HERE, impl_);
+    task_runner_->DeleteSoon(FROM_HERE, impl_);
     impl_ = nullptr;
   }
 }
@@ -370,10 +370,9 @@ Response TetheringHandler::Bind(DevToolsCommandId command_id, int port) {
     return Response::ServerError("Tethering is used by another connection");
 
   DCHECK(impl_);
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&TetheringImpl::Bind, base::Unretained(impl_),
-                 command_id, port));
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&TetheringImpl::Bind, base::Unretained(impl_),
+                            command_id, port));
   return Response::OK();
 }
 
@@ -382,10 +381,9 @@ Response TetheringHandler::Unbind(DevToolsCommandId command_id, int port) {
     return Response::ServerError("Tethering is used by another connection");
 
   DCHECK(impl_);
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&TetheringImpl::Unbind, base::Unretained(impl_),
-                 command_id, port));
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&TetheringImpl::Unbind, base::Unretained(impl_),
+                            command_id, port));
   return Response::OK();
 }
 

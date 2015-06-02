@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -83,8 +84,8 @@ class MockPasswordManagerClient
         local_forms.empty()
             ? password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED
             : password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, info));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, info));
     PromptUserToChooseCredentialsPtr(local_forms.get(), federated_forms.get(),
                                      origin, callback);
     return true;

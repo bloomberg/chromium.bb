@@ -5,14 +5,13 @@
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "components/os_crypt/ie7_password_win.h"
 #include "components/password_manager/core/browser/webdata/logins_table.h"
 #include "components/webdata/common/web_database_service.h"
 
 PasswordWebDataService::PasswordWebDataService(
     scoped_refptr<WebDatabaseService> wdbs,
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const ProfileErrorCallback& callback)
     : WebDataServiceBase(wdbs, callback, ui_thread) {
 }
@@ -64,7 +63,7 @@ scoped_ptr<WDTypedResult> PasswordWebDataService::GetIE7LoginImpl(
 ////////////////////////////////////////////////////////////////////////////////
 
 PasswordWebDataService::PasswordWebDataService(
-    scoped_refptr<base::MessageLoopProxy> ui_thread)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread)
     : WebDataServiceBase(nullptr, ProfileErrorCallback(), ui_thread) {
 }
 

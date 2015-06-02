@@ -187,7 +187,7 @@ class PasswordStore : protected PasswordStoreSync,
     // See GetLogins(). Logins older than this will be removed from the reply.
     base::Time ignore_logins_cutoff_;
 
-    scoped_refptr<base::MessageLoopProxy> origin_loop_;
+    scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
     base::WeakPtr<PasswordStoreConsumer> consumer_weak_;
 
     DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);

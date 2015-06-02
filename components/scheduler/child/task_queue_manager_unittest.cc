@@ -4,6 +4,8 @@
 
 #include "components/scheduler/child/task_queue_manager.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "cc/test/test_now_source.h"
@@ -694,7 +696,7 @@ TEST_F(TaskQueueManagerTest, PostFromThread) {
 
   base::Thread thread("TestThread");
   thread.Start();
-  thread.message_loop()->PostTask(
+  thread.task_runner()->PostTask(
       FROM_HERE, base::Bind(&PostTaskToRunner, runner, &run_order));
   thread.Stop();
 

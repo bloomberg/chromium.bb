@@ -5,7 +5,7 @@
 #include "components/webdata/common/web_data_service_base.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "components/webdata/common/web_database_service.h"
@@ -22,7 +22,7 @@ using base::Time;
 WebDataServiceBase::WebDataServiceBase(
     scoped_refptr<WebDatabaseService> wdbs,
     const ProfileErrorCallback& callback,
-    const scoped_refptr<base::MessageLoopProxy>& ui_thread)
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread)
     : base::RefCountedDeleteOnMessageLoop<WebDataServiceBase>(ui_thread),
       wdbs_(wdbs),
       profile_error_callback_(callback) {

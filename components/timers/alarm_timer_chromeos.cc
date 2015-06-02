@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/pending_task.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 
 namespace timers {
@@ -108,7 +108,7 @@ class AlarmTimer::Delegate
   void Stop();
 
   // Sets a hook that will be called when the timer fires and a task has been
-  // queued on |origin_message_loop_|.  Used by tests to wait until a task is
+  // queued on |origin_task_runner_|.  Used by tests to wait until a task is
   // pending in the MessageLoop.
   void SetTimerFiredCallbackForTest(base::Closure test_callback);
 
@@ -125,14 +125,14 @@ class AlarmTimer::Delegate
   void ResetImpl(base::TimeDelta delay, int reset_sequence_number);
 
   // Callback that is run when the timer fires.  Must be run on
-  // |origin_message_loop_|.
+  // |origin_task_runner_|.
   void OnTimerFired(int reset_sequence_number);
 
   // File descriptor associated with the alarm timer.
   int alarm_fd_;
 
-  // Message loop which initially started the timer.
-  scoped_refptr<base::MessageLoopProxy> origin_message_loop_;
+  // Task runner which initially started the timer.
+  scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
 
   // Callback that should be run when the timer fires.
   base::Closure on_timer_fired_callback_;
@@ -145,7 +145,7 @@ class AlarmTimer::Delegate
   scoped_ptr<base::MessageLoopForIO::FileDescriptorWatcher> fd_watcher_;
 
   // The sequence numbers of the last Reset() call handled respectively on
-  // |origin_message_loop_| and on the MessageLoopForIO used for watching the
+  // |origin_task_runner_| and on the MessageLoopForIO used for watching the
   // timer file descriptor.  Note that these can be the same MessageLoop.
   // OnTimerFired() runs |on_timer_fired_callback_| only if the sequence number
   // it receives from the MessageLoopForIO matches
@@ -177,9 +177,10 @@ bool AlarmTimer::Delegate::CanWakeFromSuspend() {
 }
 
 void AlarmTimer::Delegate::Reset(base::TimeDelta delay) {
-  // Get a proxy for the current message loop.  When the timer fires, we will
+  // Get a task runner for the current message loop.  When the timer fires, we
+  // will
   // post tasks to this proxy to let the parent timer know.
-  origin_message_loop_ = base::MessageLoopProxy::current();
+  origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   // Increment the sequence number.  Used to invalidate any events that have
   // been queued but not yet run since the last time Reset() was called.
@@ -195,7 +196,7 @@ void AlarmTimer::Delegate::Reset(base::TimeDelta delay) {
     // passed a negative delay.  We can sidestep the issue by ensuring that
     // the delay is 0.
     delay = base::TimeDelta::FromMicroseconds(0);
-    origin_message_loop_->PostTask(
+    origin_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&Delegate::OnTimerFired, scoped_refptr<Delegate>(this),
                    origin_reset_sequence_number_));
@@ -239,10 +240,10 @@ void AlarmTimer::Delegate::OnFileCanReadWithoutBlocking(int fd) {
     PLOG(DFATAL) << "Unable to read from timer file descriptor.";
 
   // Make sure that the parent timer is informed on the proper message loop.
-  if (origin_message_loop_->RunsTasksOnCurrentThread()) {
+  if (origin_task_runner_->RunsTasksOnCurrentThread()) {
     OnTimerFired(io_reset_sequence_number_);
   } else {
-    origin_message_loop_->PostTask(
+    origin_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&Delegate::OnTimerFired, scoped_refptr<Delegate>(this),
                    io_reset_sequence_number_));
@@ -291,12 +292,12 @@ void AlarmTimer::Delegate::ResetImpl(base::TimeDelta delay,
 }
 
 void AlarmTimer::Delegate::OnTimerFired(int reset_sequence_number) {
-  DCHECK(origin_message_loop_->RunsTasksOnCurrentThread());
+  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
 
   // If a test wants to be notified when this function is about to run, then
   // re-queue this task in the MessageLoop and run the test's callback.
   if (!on_timer_fired_callback_for_test_.is_null()) {
-    origin_message_loop_->PostTask(
+    origin_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&Delegate::OnTimerFired, scoped_refptr<Delegate>(this),
                    reset_sequence_number));

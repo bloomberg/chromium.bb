@@ -6,9 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/domain_reliability/monitor.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -44,10 +45,9 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
       override {
     DCHECK(!network_task_runner_.get());
 
-    scoped_ptr<DomainReliabilityMonitor> monitor(
-        new DomainReliabilityMonitor(upload_reporter_string_,
-                                     base::MessageLoopProxy::current(),
-                                     network_task_runner));
+    scoped_ptr<DomainReliabilityMonitor> monitor(new DomainReliabilityMonitor(
+        upload_reporter_string_, base::ThreadTaskRunnerHandle::Get(),
+        network_task_runner));
 
     monitor_ = monitor->MakeWeakPtr();
     network_task_runner_ = network_task_runner;

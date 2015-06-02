@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -34,7 +34,7 @@ void CheckForEmptyUsernameAndPassword(const PasswordForm& form) {
 PasswordStore::GetLoginsRequest::GetLoginsRequest(
     PasswordStoreConsumer* consumer)
     : consumer_weak_(consumer->GetWeakPtr()) {
-  origin_loop_ = base::MessageLoopProxy::current();
+  origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 PasswordStore::GetLoginsRequest::~GetLoginsRequest() {
@@ -54,16 +54,16 @@ void PasswordStore::GetLoginsRequest::NotifyConsumerWithResults(
     results = remaining_logins.Pass();
   }
 
-  origin_loop_->PostTask(
+  origin_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PasswordStoreConsumer::OnGetPasswordStoreResults,
                             consumer_weak_, base::Passed(&results)));
 }
 
 void PasswordStore::GetLoginsRequest::NotifyWithSiteStatistics(
     scoped_ptr<InteractionsStats> stats) {
-  origin_loop_->PostTask(FROM_HERE,
-                         base::Bind(&PasswordStoreConsumer::OnGetSiteStatistics,
-                                    consumer_weak_, base::Passed(&stats)));
+  origin_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PasswordStoreConsumer::OnGetSiteStatistics,
+                            consumer_weak_, base::Passed(&stats)));
 }
 
 PasswordStore::PasswordStore(

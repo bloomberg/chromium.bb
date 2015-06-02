@@ -21,7 +21,7 @@ class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
  private:
   friend class DevToolsAgentHost;
   BrowserDevToolsAgentHost(
-      scoped_refptr<base::MessageLoopProxy> tethering_message_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> tethering_task_runner,
       const CreateServerSocketCallback& socket_callback);
   ~BrowserDevToolsAgentHost() override;
 

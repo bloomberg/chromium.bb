@@ -5,8 +5,10 @@
 #include "components/feedback/tracing_manager.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/feedback/feedback_util.h"
 #include "content/public/browser/tracing_controller.h"
 
@@ -66,9 +68,8 @@ bool TracingManager::GetTraceData(int id, const TraceDataCallback& callback) {
       return false;
 
     // Always return the data asychronously, so the behavior is consistant.
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, data->second));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, data->second));
     return true;
   }
 }
@@ -117,10 +118,9 @@ void TracingManager::OnTraceDataCollected(base::RefCountedString* trace_data) {
 
   // Tracing has to be restarted asynchronous, so the TracingController can
   // clean up.
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&TracingManager::StartTracing,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&TracingManager::StartTracing,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 // static

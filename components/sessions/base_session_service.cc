@@ -5,6 +5,9 @@
 #include "components/sessions/base_session_service.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "components/sessions/base_session_service_delegate.h"
 #include "components/sessions/session_backend.h"
@@ -112,10 +115,9 @@ void BaseSessionService::StartSaveTimer() {
   // Don't start a timer when testing.
   if (delegate_->ShouldUseDelayedSave() && base::MessageLoop::current() &&
       !weak_factory_.HasWeakPtrs()) {
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&BaseSessionService::Save,
-                   weak_factory_.GetWeakPtr()),
+        base::Bind(&BaseSessionService::Save, weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kSaveDelayMS));
   }
 }
@@ -157,7 +159,7 @@ BaseSessionService::ScheduleGetLastSessionCommands(
 
   GetCommandsCallback callback_runner =
       base::Bind(&PostOrRunInternalGetCommandsCallback,
-                 base::MessageLoopProxy::current(), run_if_not_canceled);
+                 base::ThreadTaskRunnerHandle::Get(), run_if_not_canceled);
 
   RunTaskOnBackendThread(
       FROM_HERE,

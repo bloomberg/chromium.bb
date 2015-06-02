@@ -13,7 +13,7 @@
 #include "components/metrics/metrics_provider.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace metrics {
@@ -57,7 +57,7 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
 
   // Invoked by the profiler on another thread.
   static void ReceiveCompletedProfiles(
-      scoped_refptr<base::MessageLoopProxy> message_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::WeakPtr<CallStackProfileMetricsProvider> provider,
       const base::StackSamplingProfiler::CallStackProfiles& profiles);
   void AppendCompletedProfiles(

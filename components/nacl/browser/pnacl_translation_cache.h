@@ -13,10 +13,6 @@
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace disk_cache {
 class Backend;
 }

@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/precache.pb.h"
 #include "net/http/http_response_headers.h"
@@ -74,9 +74,10 @@ class PrecacheFetcherTest : public testing::Test {
  public:
   PrecacheFetcherTest()
       : request_context_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())),
-        factory_(NULL, base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                                  base::Unretained(&url_callback_))) {}
+            base::ThreadTaskRunnerHandle::Get())),
+        factory_(NULL,
+                 base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
+                            base::Unretained(&url_callback_))) {}
 
  protected:
   base::MessageLoopForUI loop_;

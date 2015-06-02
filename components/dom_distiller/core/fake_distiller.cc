@@ -7,7 +7,9 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace dom_distiller {
@@ -70,11 +72,9 @@ void FakeDistiller::RunDistillerUpdateCallback(
 
 void FakeDistiller::PostDistillerCallback(
     scoped_ptr<DistilledArticleProto> proto) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeDistiller::RunDistillerCallbackInternal,
-                 base::Unretained(this),
-                 base::Passed(&proto)));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FakeDistiller::RunDistillerCallbackInternal,
+                            base::Unretained(this), base::Passed(&proto)));
 }
 
 void FakeDistiller::RunDistillerCallbackInternal(

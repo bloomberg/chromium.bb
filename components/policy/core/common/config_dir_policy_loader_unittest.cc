@@ -7,8 +7,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -184,8 +182,8 @@ class ConfigDirPolicyLoaderTest : public PolicyTestBase {
 // The preferences dictionary is expected to be empty when there are no files to
 // load.
 TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsEmpty) {
-  ConfigDirPolicyLoader loader(
-      loop_.message_loop_proxy(), harness_.test_dir(), POLICY_SCOPE_MACHINE);
+  ConfigDirPolicyLoader loader(loop_.task_runner(), harness_.test_dir(),
+                               POLICY_SCOPE_MACHINE);
   scoped_ptr<PolicyBundle> bundle(loader.Load());
   ASSERT_TRUE(bundle.get());
   const PolicyBundle kEmptyBundle;
@@ -197,8 +195,8 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsEmpty) {
 TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsNonExistentDirectory) {
   base::FilePath non_existent_dir(
       harness_.test_dir().Append(FILE_PATH_LITERAL("not_there")));
-  ConfigDirPolicyLoader loader(
-      loop_.message_loop_proxy(), non_existent_dir, POLICY_SCOPE_MACHINE);
+  ConfigDirPolicyLoader loader(loop_.task_runner(), non_existent_dir,
+                               POLICY_SCOPE_MACHINE);
   scoped_ptr<PolicyBundle> bundle(loader.Load());
   ASSERT_TRUE(bundle.get());
   const PolicyBundle kEmptyBundle;
@@ -221,8 +219,8 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   for (unsigned int i = 5; i <= 8; ++i)
     harness_.WriteConfigFile(test_dict_bar, base::IntToString(i));
 
-  ConfigDirPolicyLoader loader(
-      loop_.message_loop_proxy(), harness_.test_dir(), POLICY_SCOPE_USER);
+  ConfigDirPolicyLoader loader(loop_.task_runner(), harness_.test_dir(),
+                               POLICY_SCOPE_USER);
   scoped_ptr<PolicyBundle> bundle(loader.Load());
   ASSERT_TRUE(bundle.get());
   PolicyBundle expected_bundle;

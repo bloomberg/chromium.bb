@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "sql/connection.h"
 #include "sql/transaction.h"
@@ -217,11 +219,10 @@ void PrecacheDatabase::MaybePostFlush() {
     return;
   }
 
-  DCHECK(base::MessageLoop::current());
   // Post a delayed task to flush the buffer in 1 second, so that multiple
   // database writes can be buffered up and flushed together in the same
   // transaction.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&PrecacheDatabase::PostedFlush,
                             scoped_refptr<PrecacheDatabase>(this)),
       base::TimeDelta::FromSeconds(1));

@@ -9,8 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -134,13 +132,10 @@ void BrowserPolicyConnector::Init(
   for (size_t i = 0; i < policy_providers_.size(); ++i)
     policy_providers_[i]->Init(GetSchemaRegistry());
 
-  policy_statistics_collector_.reset(
-      new policy::PolicyStatisticsCollector(
-          base::Bind(&GetChromePolicyDetails),
-          GetChromeSchema(),
-          GetPolicyService(),
-          local_state,
-          base::MessageLoop::current()->message_loop_proxy()));
+  policy_statistics_collector_.reset(new policy::PolicyStatisticsCollector(
+      base::Bind(&GetChromePolicyDetails), GetChromeSchema(),
+      GetPolicyService(), local_state,
+      base::MessageLoop::current()->task_runner()));
   policy_statistics_collector_->Initialize();
 
   is_initialized_ = true;

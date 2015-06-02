@@ -5,6 +5,8 @@
 #include "components/search_engines/keyword_web_data_service.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "components/search_engines/keyword_table.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/webdata/common/web_data_results.h"
@@ -33,10 +35,9 @@ KeywordWebDataService::BatchModeScoper::~BatchModeScoper() {
 
 KeywordWebDataService::KeywordWebDataService(
     scoped_refptr<WebDatabaseService> wdbs,
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const ProfileErrorCallback& callback)
-    : WebDataServiceBase(wdbs, callback, ui_thread),
-      batch_mode_level_(0) {
+    : WebDataServiceBase(wdbs, callback, ui_thread), batch_mode_level_(0) {
 }
 
 void KeywordWebDataService::AddKeyword(const TemplateURLData& data) {

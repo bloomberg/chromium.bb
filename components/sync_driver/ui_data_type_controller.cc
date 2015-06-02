@@ -4,9 +4,11 @@
 
 #include "components/sync_driver/ui_data_type_controller.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/shared_change_processor_ref.h"
@@ -98,7 +100,7 @@ void UIDataTypeController::StartAssociating(
 
   start_callback_ = start_callback;
   state_ = ASSOCIATING;
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&UIDataTypeController::Associate, this));
 }
 
@@ -364,7 +366,7 @@ void UIDataTypeController::OnSingleDataTypeUnrecoverableError(
   if (!error_callback_.is_null())
     error_callback_.Run();
   if (!model_load_callback_.is_null()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(model_load_callback_, type(), error));
   }
 }

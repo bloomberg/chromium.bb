@@ -7,8 +7,8 @@
 namespace password_manager {
 
 MockPasswordStore::MockPasswordStore()
-    : PasswordStore(base::MessageLoopProxy::current(),
-                    base::MessageLoopProxy::current()) {
+    : PasswordStore(base::ThreadTaskRunnerHandle::Get(),
+                    base::ThreadTaskRunnerHandle::Get()) {
 }
 
 MockPasswordStore::~MockPasswordStore() {

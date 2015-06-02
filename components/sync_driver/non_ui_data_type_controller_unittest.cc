@@ -8,10 +8,12 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/tracked_objects.h"
 #include "components/sync_driver/data_type_controller_mock.h"
@@ -96,15 +98,14 @@ class NonUIDataTypeControllerFake
       SyncApiComponentFactory* sync_factory,
       NonUIDataTypeControllerMock* mock,
       SharedChangeProcessor* change_processor,
-      scoped_refptr<base::MessageLoopProxy> backend_loop)
-      : NonUIDataTypeController(
-          base::MessageLoopProxy::current(),
-          base::Closure(),
-          sync_factory),
+      scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner)
+      : NonUIDataTypeController(base::ThreadTaskRunnerHandle::Get(),
+                                base::Closure(),
+                                sync_factory),
         blocked_(false),
         mock_(mock),
         change_processor_(change_processor),
-        backend_loop_(backend_loop) {}
+        backend_task_runner_(backend_task_runner) {}
 
   syncer::ModelType type() const override { return AUTOFILL_PROFILE; }
   syncer::ModelSafeGroup model_safe_group() const override {
@@ -139,7 +140,7 @@ class NonUIDataTypeControllerFake
       pending_tasks_.push_back(PendingTask(from_here, task));
       return true;
     } else {
-      return backend_loop_->PostTask(from_here, task);
+      return backend_task_runner_->PostTask(from_here, task);
     }
   }
 
@@ -172,7 +173,7 @@ class NonUIDataTypeControllerFake
   std::vector<PendingTask> pending_tasks_;
   NonUIDataTypeControllerMock* mock_;
   scoped_refptr<SharedChangeProcessor> change_processor_;
-  scoped_refptr<base::MessageLoopProxy> backend_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
 };
 
 class SyncNonUIDataTypeControllerTest : public testing::Test {
@@ -185,21 +186,18 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
     change_processor_ = new SharedChangeProcessorMock();
     // All of these are refcounted, so don't need to be released.
     dtc_mock_ = new StrictMock<NonUIDataTypeControllerMock>();
-    non_ui_dtc_ =
-        new NonUIDataTypeControllerFake(NULL,
-                                        dtc_mock_.get(),
-                                        change_processor_.get(),
-                                        backend_thread_.message_loop_proxy());
+    non_ui_dtc_ = new NonUIDataTypeControllerFake(
+        NULL, dtc_mock_.get(), change_processor_.get(),
+        backend_thread_.task_runner());
   }
 
   void TearDown() override { backend_thread_.Stop(); }
 
   void WaitForDTC() {
     WaitableEvent done(true, false);
-    backend_thread_.message_loop_proxy()->PostTask(
-       FROM_HERE,
-       base::Bind(&SyncNonUIDataTypeControllerTest::SignalDone,
-                  &done));
+    backend_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&SyncNonUIDataTypeControllerTest::SignalDone, &done));
     done.TimedWait(TestTimeouts::action_timeout());
     if (!done.IsSignaled()) {
       ADD_FAILURE() << "Timed out waiting for DB thread to finish.";
@@ -481,11 +479,11 @@ TEST_F(SyncNonUIDataTypeControllerTest, OnSingleDataTypeUnrecoverableError) {
                           syncer::SyncError::DATATYPE_ERROR,
                           "error",
                           non_ui_dtc_->type());
-  backend_thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
-      &NonUIDataTypeControllerFake::
-          OnSingleDataTypeUnrecoverableError,
-      non_ui_dtc_.get(),
-      error));
+  backend_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &NonUIDataTypeControllerFake::OnSingleDataTypeUnrecoverableError,
+          non_ui_dtc_.get(), error));
   WaitForDTC();
 }
 

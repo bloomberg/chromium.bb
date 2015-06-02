@@ -14,10 +14,12 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/url_list_provider.h"
 #include "content/public/test/test_browser_context.h"
@@ -96,8 +98,8 @@ class FakeURLListProvider : public URLListProvider {
       callback.Run(urls_);
     } else {
       // Post the callback to be run later in the message loop.
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::Bind(callback, urls_));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(callback, urls_));
     }
   }
 

@@ -7,10 +7,12 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
@@ -395,11 +397,9 @@ void AutofillAgent::textFieldDidChange(const WebFormControlElement& element) {
   // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
   // it is needed to trigger autofill.
   weak_ptr_factory_.InvalidateWeakPtrs();
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AutofillAgent::TextFieldDidChangeImpl,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 element));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&AutofillAgent::TextFieldDidChangeImpl,
+                            weak_ptr_factory_.GetWeakPtr(), element));
 }
 
 void AutofillAgent::TextFieldDidChangeImpl(

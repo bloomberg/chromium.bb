@@ -28,7 +28,7 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace mojo {
@@ -136,7 +136,7 @@ class HTMLDocument : public blink::WebViewClient,
   mojo::View* root_;
   mojo::ViewManagerClientFactory view_manager_client_factory_;
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
-  scoped_refptr<base::MessageLoopProxy> compositor_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_;
 
   // HTMLDocument owns these pointers; binding requests after document load.
   std::set<mojo::InterfaceRequest<mojo::AxProvider>*> ax_provider_requests_;

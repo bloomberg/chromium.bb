@@ -19,7 +19,6 @@
 
 namespace base {
 class FilePath;
-class MessageLoopProxy;
 class SingleThreadTaskRunner;
 }
 

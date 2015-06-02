@@ -37,7 +37,6 @@ class PrefRegistrySimple;
 namespace base {
 class DictionaryValue;
 class HistogramSamples;
-class MessageLoopProxy;
 class PrefService;
 }
 

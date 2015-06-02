@@ -6,12 +6,14 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/content/renderer/renderer_cld_data_provider.h"
 #include "components/translate/content/renderer/renderer_cld_data_provider_factory.h"
@@ -508,10 +510,9 @@ void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
   }
 
   // The translation is still pending, check again later.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&TranslateHelper::CheckTranslateStatus,
-                 weak_method_factory_.GetWeakPtr(), page_seq_no),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&TranslateHelper::CheckTranslateStatus,
+                            weak_method_factory_.GetWeakPtr(), page_seq_no),
       AdjustDelay(kTranslateStatusCheckDelayMs));
 }
 
@@ -527,11 +528,10 @@ void TranslateHelper::TranslatePageImpl(int page_seq_no, int count) {
       NotifyBrowserTranslationFailed(TranslateErrors::INITIALIZATION_ERROR);
       return;
     }
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&TranslateHelper::TranslatePageImpl,
-                   weak_method_factory_.GetWeakPtr(),
-                   page_seq_no, count),
+                   weak_method_factory_.GetWeakPtr(), page_seq_no, count),
         AdjustDelay(count * kTranslateInitCheckDelayMs));
     return;
   }
@@ -548,10 +548,9 @@ void TranslateHelper::TranslatePageImpl(int page_seq_no, int count) {
     return;
   }
   // Check the status of the translation.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&TranslateHelper::CheckTranslateStatus,
-                 weak_method_factory_.GetWeakPtr(), page_seq_no),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&TranslateHelper::CheckTranslateStatus,
+                            weak_method_factory_.GetWeakPtr(), page_seq_no),
       AdjustDelay(kTranslateStatusCheckDelayMs));
 }
 
@@ -620,12 +619,10 @@ void TranslateHelper::SendCldDataRequest(const int delay_millis,
   // It's only while downloading the file that this will chain for a
   // nontrivial amount of time.
   // Use a weak pointer to avoid keeping this helper object around forever.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&TranslateHelper::SendCldDataRequest,
-                 weak_method_factory_.GetWeakPtr(),
-                 next_delay_millis,
-                 next_delay_millis * 2),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&TranslateHelper::SendCldDataRequest,
+                            weak_method_factory_.GetWeakPtr(),
+                            next_delay_millis, next_delay_millis * 2),
       base::TimeDelta::FromMilliseconds(delay_millis));
 }
 

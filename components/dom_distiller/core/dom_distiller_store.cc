@@ -5,8 +5,10 @@
 #include "components/dom_distiller/core/dom_distiller_store.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "sync/api/sync_change.h"
 #include "sync/protocol/article_specifics.pb.h"
@@ -70,8 +72,8 @@ void DomDistillerStore::UpdateAttachments(
     scoped_ptr<ArticleAttachmentsData> attachments_data,
     const UpdateAttachmentsCallback& callback) {
   if (!GetEntryById(entry_id, nullptr)) {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, false));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, false));
   }
 
   scoped_ptr<sync_pb::ArticleAttachments> article_attachments(
@@ -132,8 +134,8 @@ void DomDistillerStore::OnAttachmentsWrite(
       ApplyChangesToDatabase(changes_applied);
     }
   }
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback, success));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, success));
 }
 
 void DomDistillerStore::GetAttachments(
@@ -142,7 +144,7 @@ void DomDistillerStore::GetAttachments(
   ArticleEntry entry;
   if (!model_.GetEntryById(entry_id, &entry)
       || !entry.has_attachments()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, false, nullptr));
     return;
   }
@@ -176,7 +178,7 @@ void DomDistillerStore::OnAttachmentsRead(
     attachments_data = ArticleAttachmentsData::GetFromAttachmentMap(
         attachments_proto, *attachments);
   }
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, success, base::Passed(&attachments_data)));
 }

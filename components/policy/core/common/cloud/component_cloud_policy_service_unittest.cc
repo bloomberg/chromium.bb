@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -106,20 +105,19 @@ class TestURLRequestContextGetter : public net::URLRequestContextGetter {
 class ComponentCloudPolicyServiceTest : public testing::Test {
  protected:
   ComponentCloudPolicyServiceTest()
-      : request_context_(
-            new TestURLRequestContextGetter(loop_.message_loop_proxy())),
+      : request_context_(new TestURLRequestContextGetter(loop_.task_runner())),
         cache_(nullptr),
         client_(nullptr),
         core_(GetChromeUserPolicyType(),
               std::string(),
               &store_,
-              loop_.message_loop_proxy()) {}
+              loop_.task_runner()) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     owned_cache_.reset(
-        new ResourceCache(temp_dir_.path(), loop_.message_loop_proxy()));
+        new ResourceCache(temp_dir_.path(), loop_.task_runner()));
     cache_ = owned_cache_.get();
 
     builder_.policy_data().set_policy_type(
@@ -153,14 +151,8 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   void Connect() {
     client_ = new MockCloudPolicyClient();
     service_.reset(new ComponentCloudPolicyService(
-        &delegate_,
-        &registry_,
-        &core_,
-        client_,
-        owned_cache_.Pass(),
-        request_context_,
-        loop_.message_loop_proxy(),
-        loop_.message_loop_proxy()));
+        &delegate_, &registry_, &core_, client_, owned_cache_.Pass(),
+        request_context_, loop_.task_runner(), loop_.task_runner()));
 
     client_->SetDMToken(ComponentPolicyBuilder::kFakeToken);
     EXPECT_EQ(1u, client_->types_to_fetch_.size());

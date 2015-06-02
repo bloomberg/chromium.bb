@@ -5,8 +5,10 @@
 #include "components/webdata/common/web_data_request_manager.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -111,10 +113,9 @@ void WebDataRequestManager::CancelRequest(WebDataServiceBase::Handle h) {
 void WebDataRequestManager::RequestCompleted(
     scoped_ptr<WebDataRequest> request) {
   base::MessageLoop* loop = request->GetMessageLoop();
-  loop->PostTask(FROM_HERE,
-                 base::Bind(&WebDataRequestManager::RequestCompletedOnThread,
-                            this,
-                            base::Passed(&request)));
+  loop->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&WebDataRequestManager::RequestCompletedOnThread,
+                            this, base::Passed(&request)));
 }
 
 void WebDataRequestManager::RequestCompletedOnThread(

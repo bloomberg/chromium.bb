@@ -5,11 +5,13 @@
 #include "components/web_resource/web_resource_service.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/google/core/browser/google_util.h"
@@ -92,7 +94,7 @@ void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
 // Delay initial load of resource data into cache so as not to interfere
 // with startup time.
 void WebResourceService::ScheduleFetch(int64 delay_ms) {
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&WebResourceService::StartFetch,
                             weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(delay_ms));

@@ -9,8 +9,9 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -244,14 +245,11 @@ void StartServerOnFile(
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   if (thread->StartWithOptions(options)) {
     base::MessageLoop* message_loop = thread->message_loop();
-    message_loop->PostTask(FROM_HERE,
-        base::Bind(&StartServerOnHandlerThread,
-                   handler,
-                   base::Unretained(thread.release()),
-                   server_socket_factory,
-                   output_directory,
-                   frontend_dir,
-                   bundles_resources));
+    message_loop->task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&StartServerOnHandlerThread, handler,
+                   base::Unretained(thread.release()), server_socket_factory,
+                   output_directory, frontend_dir, bundles_resources));
   }
 }
 
@@ -291,10 +289,9 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
     DispatchProtocolMessage(agent_host, message);
 
     agent_host_ = nullptr;
-    message_loop_->PostTask(
+    message_loop_->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&ServerWrapper::Close,
-                   base::Unretained(server_wrapper_),
+        base::Bind(&ServerWrapper::Close, base::Unretained(server_wrapper_),
                    connection_id_));
   }
 
@@ -302,12 +299,10 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
                                const std::string& message) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(agent_host == agent_host_.get());
-    message_loop_->PostTask(
+    message_loop_->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&ServerWrapper::SendOverWebSocket,
-                   base::Unretained(server_wrapper_),
-                   connection_id_,
-                   message));
+                   base::Unretained(server_wrapper_), connection_id_, message));
   }
 
   void OnMessage(const std::string& message) {
@@ -692,7 +687,7 @@ void DevToolsHttpHandler::OnWebSocketRequest(
   if (browser_pos == 0) {
     scoped_refptr<DevToolsAgentHost> browser_agent =
         DevToolsAgentHost::CreateForBrowser(
-            thread_->message_loop_proxy(),
+            thread_->task_runner(),
             base::Bind(&ServerSocketFactory::CreateForTethering,
                        base::Unretained(socket_factory_)));
     connection_to_client_[connection_id] = new DevToolsAgentHostClientImpl(
@@ -827,12 +822,10 @@ void DevToolsHttpHandler::SendJson(int connection_id,
   net::HttpServerResponseInfo response(status_code);
   response.SetBody(json_value + message, "application/json; charset=UTF-8");
 
-  thread_->message_loop()->PostTask(
+  thread_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&ServerWrapper::SendResponse,
-                 base::Unretained(server_wrapper_),
-                 connection_id,
-                 response));
+                 base::Unretained(server_wrapper_), connection_id, response));
 }
 
 void DevToolsHttpHandler::Send200(int connection_id,
@@ -840,35 +833,28 @@ void DevToolsHttpHandler::Send200(int connection_id,
                                   const std::string& mime_type) {
   if (!thread_)
     return;
-  thread_->message_loop()->PostTask(
+  thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ServerWrapper::Send200,
-                 base::Unretained(server_wrapper_),
-                 connection_id,
-                 data,
-                 mime_type));
+      base::Bind(&ServerWrapper::Send200, base::Unretained(server_wrapper_),
+                 connection_id, data, mime_type));
 }
 
 void DevToolsHttpHandler::Send404(int connection_id) {
   if (!thread_)
     return;
-  thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&ServerWrapper::Send404,
-                 base::Unretained(server_wrapper_),
-                 connection_id));
+  thread_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&ServerWrapper::Send404,
+                            base::Unretained(server_wrapper_), connection_id));
 }
 
 void DevToolsHttpHandler::Send500(int connection_id,
                                   const std::string& message) {
   if (!thread_)
     return;
-  thread_->message_loop()->PostTask(
+  thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ServerWrapper::Send500,
-                 base::Unretained(server_wrapper_),
-                 connection_id,
-                 message));
+      base::Bind(&ServerWrapper::Send500, base::Unretained(server_wrapper_),
+                 connection_id, message));
 }
 
 void DevToolsHttpHandler::AcceptWebSocket(
@@ -876,12 +862,10 @@ void DevToolsHttpHandler::AcceptWebSocket(
     const net::HttpServerRequestInfo& request) {
   if (!thread_)
     return;
-  thread_->message_loop()->PostTask(
+  thread_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&ServerWrapper::AcceptWebSocket,
-                 base::Unretained(server_wrapper_),
-                 connection_id,
-                 request));
+                 base::Unretained(server_wrapper_), connection_id, request));
 }
 
 base::DictionaryValue* DevToolsHttpHandler::SerializeDescriptor(

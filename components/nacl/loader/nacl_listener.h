@@ -16,10 +16,6 @@
 #include "components/nacl/loader/nacl_trusted_listener.h"
 #include "ipc/ipc_listener.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace IPC {
 class SyncChannel;
 class SyncMessageFilter;

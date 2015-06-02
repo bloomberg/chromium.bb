@@ -9,7 +9,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
@@ -392,8 +391,8 @@ class GCMClientImplTest : public testing::Test,
 GCMClientImplTest::GCMClientImplTest()
     : last_event_(NONE),
       last_result_(GCMClient::UNKNOWN_ERROR),
-      url_request_context_getter_(new net::TestURLRequestContextGetter(
-          message_loop_.message_loop_proxy())) {
+      url_request_context_getter_(
+          new net::TestURLRequestContextGetter(message_loop_.task_runner())) {
 }
 
 GCMClientImplTest::~GCMClientImplTest() {}
@@ -525,12 +524,10 @@ void GCMClientImplTest::InitializeGCMClient() {
   // Actual initialization.
   GCMClient::ChromeBuildInfo chrome_build_info;
   chrome_build_info.version = kChromeVersion;
-  gcm_client_->Initialize(chrome_build_info,
-                          temp_directory_.path(),
-                          message_loop_.message_loop_proxy(),
+  gcm_client_->Initialize(chrome_build_info, temp_directory_.path(),
+                          message_loop_.task_runner(),
                           url_request_context_getter_,
-                          make_scoped_ptr<Encryptor>(new FakeEncryptor),
-                          this);
+                          make_scoped_ptr<Encryptor>(new FakeEncryptor), this);
 }
 
 void GCMClientImplTest::StartGCMClient() {

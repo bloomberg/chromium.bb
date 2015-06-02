@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "components/leveldb_proto/leveldb_database.h"
@@ -86,8 +87,7 @@ class ProtoDatabaseImplTest : public testing::Test {
  public:
   void SetUp() override {
     main_loop_.reset(new MessageLoop());
-    db_.reset(
-        new ProtoDatabaseImpl<TestProto>(main_loop_->message_loop_proxy()));
+    db_.reset(new ProtoDatabaseImpl<TestProto>(main_loop_->task_runner()));
   }
 
   void TearDown() override {
@@ -332,8 +332,8 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestruction) {
   base::Thread db_thread("dbthread");
   ASSERT_TRUE(db_thread.Start());
 
-  scoped_ptr<ProtoDatabaseImpl<TestProto> > db(
-      new ProtoDatabaseImpl<TestProto>(db_thread.message_loop_proxy()));
+  scoped_ptr<ProtoDatabaseImpl<TestProto>> db(
+      new ProtoDatabaseImpl<TestProto>(db_thread.task_runner()));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
@@ -343,7 +343,7 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestruction) {
   db.reset();
 
   base::RunLoop run_loop;
-  db_thread.message_loop_proxy()->PostTaskAndReply(
+  db_thread.task_runner()->PostTaskAndReply(
       FROM_HERE, base::Bind(base::DoNothing), run_loop.QuitClosure());
   run_loop.Run();
 }

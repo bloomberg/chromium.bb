@@ -5,12 +5,12 @@
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -56,11 +56,9 @@ BookmarkExpandedStateTrackerTest::~BookmarkExpandedStateTrackerTest() {}
 void BookmarkExpandedStateTrackerTest::SetUp() {
   prefs_ = PrefServiceForTesting();
   model_.reset(new BookmarkModel(&client_));
-  model_->Load(prefs_.get(),
-               std::string(),
-               base::FilePath(),
-               base::MessageLoopProxy::current(),
-               base::MessageLoopProxy::current());
+  model_->Load(prefs_.get(), std::string(), base::FilePath(),
+               base::ThreadTaskRunnerHandle::Get(),
+               base::ThreadTaskRunnerHandle::Get());
   test::WaitForBookmarkModelToLoad(model_.get());
 }
 

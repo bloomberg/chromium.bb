@@ -9,7 +9,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
 #include "components/invalidation/invalidation_util.h"
 #include "components/invalidation/object_id_invalidation_map.h"
@@ -137,7 +140,7 @@ void SyncInvalidationListener::Invalidate(
 
   ObjectIdInvalidationMap invalidations;
   Invalidation inv = Invalidation::Init(id, invalidation.version(), payload);
-  inv.SetAckHandler(AsWeakPtr(), base::MessageLoopProxy::current());
+  inv.SetAckHandler(AsWeakPtr(), base::ThreadTaskRunnerHandle::Get());
   invalidations.Insert(inv);
 
   DispatchInvalidations(invalidations);
@@ -154,7 +157,8 @@ void SyncInvalidationListener::InvalidateUnknownVersion(
 
   ObjectIdInvalidationMap invalidations;
   Invalidation unknown_version = Invalidation::InitUnknownVersion(object_id);
-  unknown_version.SetAckHandler(AsWeakPtr(), base::MessageLoopProxy::current());
+  unknown_version.SetAckHandler(AsWeakPtr(),
+                                base::ThreadTaskRunnerHandle::Get());
   invalidations.Insert(unknown_version);
 
   DispatchInvalidations(invalidations);
@@ -175,7 +179,7 @@ void SyncInvalidationListener::InvalidateAll(
        it != registered_ids_.end(); ++it) {
     Invalidation unknown_version = Invalidation::InitUnknownVersion(*it);
     unknown_version.SetAckHandler(AsWeakPtr(),
-                                  base::MessageLoopProxy::current());
+                                  base::ThreadTaskRunnerHandle::Get());
     invalidations.Insert(unknown_version);
   }
 
@@ -358,7 +362,7 @@ void SyncInvalidationListener::DoRegistrationUpdate() {
       continue;
     }
     map_it->second.ExportInvalidations(AsWeakPtr(),
-                                       base::MessageLoopProxy::current(),
+                                       base::ThreadTaskRunnerHandle::Get(),
                                        &object_id_invalidation_map);
   }
 

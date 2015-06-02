@@ -9,8 +9,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/invalidation/fake_invalidation_state_tracker.h"
 #include "components/invalidation/invalidation_util.h"
 #include "components/invalidation/object_id_invalidation_map.h"
@@ -284,12 +285,8 @@ class SyncInvalidationListenerTest : public testing::Test {
     fake_invalidation_client_ = NULL;
     listener_.Start(
         base::Bind(&CreateFakeInvalidationClient, &fake_invalidation_client_),
-        kClientId,
-        kClientInfo,
-        kState,
-        fake_tracker_.GetSavedInvalidations(),
-        fake_tracker_.AsWeakPtr(),
-        base::MessageLoopProxy::current(),
+        kClientId, kClientInfo, kState, fake_tracker_.GetSavedInvalidations(),
+        fake_tracker_.AsWeakPtr(), base::ThreadTaskRunnerHandle::Get(),
         &fake_delegate_);
     DCHECK(fake_invalidation_client_);
   }

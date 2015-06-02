@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
@@ -260,8 +259,7 @@ class AccountTrackerServiceTest : public testing::Test {
         AccountTrackerService::kAccountTrackerServiceLastUpdate, 0);
     signin_client_.reset(new TestSigninClient(&pref_service_));
     signin_client_.get()->SetURLRequestContext(
-        new net::TestURLRequestContextGetter(
-            message_loop_.message_loop_proxy()));
+        new net::TestURLRequestContextGetter(message_loop_.task_runner()));
 
     account_tracker_.reset(new AccountTrackerService());
     account_tracker_->Initialize(fake_oauth2_token_service_.get(),

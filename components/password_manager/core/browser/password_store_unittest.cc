@@ -158,7 +158,7 @@ ACTION(STLDeleteElements0) {
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
@@ -282,7 +282,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
 TEST_F(PasswordStoreTest, StartSyncFlare) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
   StartSyncFlareMock mock;
   store->Init(
@@ -378,7 +378,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   /* clang-format on */
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
@@ -474,7 +474,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   /* clang-format on */
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare());
 

@@ -6,15 +6,16 @@
 
 #include <vector>
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 
 SigninManagerCookieHelper::SigninManagerCookieHelper(
     net::URLRequestContextGetter* request_context_getter,
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
-    scoped_refptr<base::MessageLoopProxy> io_thread)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread)
     : request_context_getter_(request_context_getter),
       ui_thread_(ui_thread),
       io_thread_(io_thread) {

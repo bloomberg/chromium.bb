@@ -99,7 +99,7 @@ ACTION(STLDeleteElements0) {
 
 TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
@@ -143,7 +143,7 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
 
 TEST_F(PasswordStoreDefaultTest, Notifications) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
@@ -199,7 +199,7 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
 // notifications.
 TEST_F(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   scoped_refptr<PasswordStoreDefault> bad_store(new PasswordStoreDefault(
-      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       make_scoped_ptr<LoginDatabase>(new BadLoginDatabase)));
 
   bad_store->Init(syncer::SyncableService::StartSyncFlare());

@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "sync/api/sync_change_processor.h"
@@ -123,11 +123,11 @@ class SharedChangeProcessor
 
   // The frontend / UI MessageLoop this object is constructed on. May also be
   // destructed and/or disconnected on this loop, see ~SharedChangeProcessor.
-  const scoped_refptr<const base::MessageLoopProxy> frontend_loop_;
+  const scoped_refptr<const base::SingleThreadTaskRunner> frontend_task_runner_;
 
   // The loop that all methods except the constructor, destructor, and
   // Disconnect() should be called on.  Set in Connect().
-  scoped_refptr<base::MessageLoopProxy> backend_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
 
   // Used only on |backend_loop_|.
   GenericChangeProcessor* generic_change_processor_;

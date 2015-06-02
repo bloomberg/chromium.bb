@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/image_manager.h"
 #include "components/suggestions/proto/suggestions.pb.h"
@@ -191,8 +190,8 @@ class SuggestionsServiceTest : public testing::Test {
   ~SuggestionsServiceTest() override {}
 
   void SetUp() override {
-    request_context_ = new net::TestURLRequestContextGetter(
-        io_message_loop_.message_loop_proxy());
+    request_context_ =
+        new net::TestURLRequestContextGetter(io_message_loop_.task_runner());
   }
 
   void FetchSuggestionsDataHelper(SyncState sync_state) {

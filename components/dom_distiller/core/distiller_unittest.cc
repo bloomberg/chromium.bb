@@ -11,8 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/distiller.h"
@@ -236,7 +237,7 @@ class TestDistillerURLFetcher : public DistillerURLFetcher {
   void PostCallbackTask() {
     ASSERT_TRUE(base::MessageLoop::current());
     ASSERT_FALSE(callback_.is_null());
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback_, responses_[url_]));
   }
 

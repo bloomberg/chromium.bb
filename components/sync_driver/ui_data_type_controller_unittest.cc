@@ -5,8 +5,10 @@
 #include "components/sync_driver/ui_data_type_controller.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_generic_change_processor.h"
@@ -35,12 +37,8 @@ class SyncUIDataTypeControllerTest : public testing::Test,
         change_processor_(NULL) {}
 
   void SetUp() override {
-    preference_dtc_ =
-        new UIDataTypeController(
-            base::MessageLoopProxy::current(),
-            base::Closure(),
-            type_,
-            this);
+    preference_dtc_ = new UIDataTypeController(
+        base::ThreadTaskRunnerHandle::Get(), base::Closure(), type_, this);
     SetStartExpectations();
   }
 
@@ -132,9 +130,8 @@ TEST_F(SyncUIDataTypeControllerTest, StartStop) {
 TEST_F(SyncUIDataTypeControllerTest, StartStopBeforeAssociation) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
-  message_loop_.PostTask(FROM_HERE,
-                         base::Bind(&UIDataTypeController::Stop,
-                                    preference_dtc_));
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&UIDataTypeController::Stop, preference_dtc_));
   Start();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());

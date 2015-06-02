@@ -12,7 +12,7 @@
 #include "components/webdata/common/web_database.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 class WDTypedResult;
@@ -57,7 +57,7 @@ class KeywordWebDataService : public WebDataServiceBase {
   };
 
   KeywordWebDataService(scoped_refptr<WebDatabaseService> wdbs,
-                        scoped_refptr<base::MessageLoopProxy> ui_thread,
+                        scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
                         const ProfileErrorCallback& callback);
 
   // As the database processes requests at a later date, all deletion is

@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/dom_distiller/content/web_contents_main_frame_observer.h"
@@ -117,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, RunJsTests) {
   js_test_execution_done_callback_ = run_loop.QuitClosure();
   // Add timeout in case JS Test execution fails. It is safe to call the
   // QuitClosure multiple times.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(15));
   web_contents->GetMainFrame()->ExecuteJavaScript(
       base::UTF8ToUTF16(kRunJsTestsJs),

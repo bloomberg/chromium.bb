@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted_delete_on_message_loop.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/single_thread_task_runner.h"
 #include "components/webdata/common/web_database_service.h"
 #include "components/webdata/common/webdata_export.h"
 
@@ -40,9 +41,10 @@ class WEBDATA_EXPORT WebDatabaseBackend
     virtual void DBLoaded(sql::InitStatus status) = 0;
   };
 
-  WebDatabaseBackend(const base::FilePath& path,
-                     Delegate* delegate,
-                     const scoped_refptr<base::MessageLoopProxy>& db_thread);
+  WebDatabaseBackend(
+      const base::FilePath& path,
+      Delegate* delegate,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread);
 
   // Must call only before InitDatabaseWithCallback.
   void AddTable(scoped_ptr<WebDatabaseTable> table);

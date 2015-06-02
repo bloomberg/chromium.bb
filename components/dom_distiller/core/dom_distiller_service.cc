@@ -5,7 +5,9 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 
 #include "base/guid.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/dom_distiller/core/distilled_content_store.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
@@ -84,8 +86,8 @@ const std::string DomDistillerService::AddToList(
       // TODO(shashishekhar): Change this to check if article is available,
       // An article may not be available for a variety of reasons, e.g.
       // distillation failure or blobs not available locally.
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::Bind(article_cb, true));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(article_cb, true));
       return entry.entry_id();
     }
   } else {

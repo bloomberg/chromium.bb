@@ -6,12 +6,12 @@
 
 #include <list>
 
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -60,7 +60,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
   AutofillDownloadTest()
       : prefs_(test::PrefServiceForTesting()),
         request_context_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())),
+            base::ThreadTaskRunnerHandle::Get())),
         download_manager_(&driver_, prefs_.get(), this) {
     driver_.SetURLRequestContext(request_context_.get());
   }

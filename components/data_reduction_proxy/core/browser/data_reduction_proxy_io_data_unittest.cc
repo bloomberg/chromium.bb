@@ -6,11 +6,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
@@ -69,9 +68,8 @@ class DataReductionProxyIODataTest : public testing::Test {
   void RequestCallback(int err) {
   }
 
-
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy() {
-    return loop_.message_loop_proxy();
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+    return loop_.task_runner();
   }
 
   net::TestDelegate* delegate() {
@@ -101,7 +99,7 @@ class DataReductionProxyIODataTest : public testing::Test {
 TEST_F(DataReductionProxyIODataTest, TestConstruction) {
   scoped_ptr<DataReductionProxyIOData> io_data(new DataReductionProxyIOData(
       Client::UNKNOWN, DataReductionProxyParams::kAllowed, net_log(),
-      message_loop_proxy(), message_loop_proxy(), false /* enabled */,
+      task_runner(), task_runner(), false /* enabled */,
       false /* enable_quic */, std::string() /* user_agent */));
 
   // Check that the SimpleURLRequestContextGetter uses vanilla HTTP.

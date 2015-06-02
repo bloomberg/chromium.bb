@@ -4,13 +4,14 @@
 
 #include "components/password_manager/core/browser/test_password_store.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
 
 namespace password_manager {
 
 TestPasswordStore::TestPasswordStore()
-    : PasswordStore(base::MessageLoopProxy::current(),
-                    base::MessageLoopProxy::current()) {
+    : PasswordStore(base::ThreadTaskRunnerHandle::Get(),
+                    base::ThreadTaskRunnerHandle::Get()) {
 }
 
 TestPasswordStore::~TestPasswordStore() {

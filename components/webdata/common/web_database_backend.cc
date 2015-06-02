@@ -16,7 +16,7 @@ using base::FilePath;
 WebDatabaseBackend::WebDatabaseBackend(
     const FilePath& path,
     Delegate* delegate,
-    const scoped_refptr<base::MessageLoopProxy>& db_thread)
+    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread)
     : base::RefCountedDeleteOnMessageLoop<WebDatabaseBackend>(db_thread),
       db_path_(path),
       request_manager_(new WebDataRequestManager()),

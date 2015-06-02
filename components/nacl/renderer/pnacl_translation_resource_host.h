@@ -8,12 +8,15 @@
 #include <map>
 
 #include "base/callback.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/message_filter.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/private/pp_file_handle.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace nacl {
 struct PnaclCacheInfo;

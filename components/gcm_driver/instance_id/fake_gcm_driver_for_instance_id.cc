@@ -5,9 +5,11 @@
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/gcm_driver/gcm_client.h"
 
 namespace instance_id {
@@ -44,9 +46,8 @@ void FakeGCMDriverForInstanceID::GetInstanceIDData(
     instance_id = iter->second.first;
     extra_data = iter->second.second;
   }
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, instance_id, extra_data));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, instance_id, extra_data));
 }
 
 void FakeGCMDriverForInstanceID::GetToken(
@@ -65,9 +66,8 @@ void FakeGCMDriverForInstanceID::GetToken(
     tokens_[key] = token;
   }
 
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, token, gcm::GCMClient::SUCCESS));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, token, gcm::GCMClient::SUCCESS));
 }
 
 void FakeGCMDriverForInstanceID::DeleteToken(
@@ -77,9 +77,8 @@ void FakeGCMDriverForInstanceID::DeleteToken(
     const DeleteTokenCallback& callback) {
   std::string key = app_id + authorized_entity + scope;
   tokens_.erase(key);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, gcm::GCMClient::SUCCESS));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, gcm::GCMClient::SUCCESS));
 }
 
 }  // namespace instance_id

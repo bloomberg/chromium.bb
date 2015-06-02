@@ -13,14 +13,13 @@ namespace {
 
 class DebugExceptionHandler : public base::PlatformThread::Delegate {
  public:
-  DebugExceptionHandler(
-      base::Process nacl_process,
-      const std::string& startup_info,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
-      const base::Callback<void(bool)>& on_connected)
+  DebugExceptionHandler(base::Process nacl_process,
+                        const std::string& startup_info,
+                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                        const base::Callback<void(bool)>& on_connected)
       : nacl_process_(nacl_process.Pass()),
         startup_info_(startup_info),
-        message_loop_(message_loop),
+        task_runner_(task_runner),
         on_connected_(on_connected) {}
 
   void ThreadMain() override {
@@ -41,7 +40,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
     } else {
       LOG(ERROR) << "Invalid process handle";
     }
-    message_loop_->PostTask(FROM_HERE, base::Bind(on_connected_, attached));
+    task_runner_->PostTask(FROM_HERE, base::Bind(on_connected_, attached));
 
     if (attached) {
       NaClDebugExceptionHandlerRun(
@@ -55,7 +54,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
  private:
   base::Process nacl_process_;
   std::string startup_info_;
-  const scoped_refptr<base::MessageLoopProxy> message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::Callback<void(bool)> on_connected_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugExceptionHandler);
@@ -66,12 +65,12 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
 void NaClStartDebugExceptionHandlerThread(
     base::Process nacl_process,
     const std::string& startup_info,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::Callback<void(bool)>& on_connected) {
   // The new PlatformThread will take ownership of the
   // DebugExceptionHandler object, which will delete itself on exit.
   DebugExceptionHandler* handler = new DebugExceptionHandler(
-      nacl_process.Pass(), startup_info, message_loop, on_connected);
+      nacl_process.Pass(), startup_info, task_runner, on_connected);
   if (!base::PlatformThread::CreateNonJoinable(0, handler)) {
     on_connected.Run(false);
     delete handler;

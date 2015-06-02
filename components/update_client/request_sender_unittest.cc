@@ -6,8 +6,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/update_client/request_sender.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/url_request_post_interceptor.h"
@@ -67,10 +67,10 @@ RequestSenderTest::~RequestSenderTest() {
 }
 
 void RequestSenderTest::SetUp() {
-  config_ = new TestConfigurator(base::MessageLoopProxy::current(),
-                                 base::MessageLoopProxy::current());
+  config_ = new TestConfigurator(base::ThreadTaskRunnerHandle::Get(),
+                                 base::ThreadTaskRunnerHandle::Get());
   interceptor_factory_.reset(
-      new InterceptorFactory(base::MessageLoopProxy::current()));
+      new InterceptorFactory(base::ThreadTaskRunnerHandle::Get()));
   post_interceptor_1 =
       interceptor_factory_->CreateInterceptorForPath(kUrlPath1);
   post_interceptor_2 =

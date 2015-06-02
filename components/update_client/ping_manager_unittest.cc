@@ -4,8 +4,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/ping_manager.h"
@@ -41,8 +41,8 @@ ComponentUpdaterPingManagerTest::ComponentUpdaterPingManagerTest() {
 }
 
 void ComponentUpdaterPingManagerTest::SetUp() {
-  config_ = new TestConfigurator(base::MessageLoopProxy::current(),
-                                 base::MessageLoopProxy::current());
+  config_ = new TestConfigurator(base::ThreadTaskRunnerHandle::Get(),
+                                 base::ThreadTaskRunnerHandle::Get());
   ping_manager_.reset(new PingManager(*config_));
 }
 
@@ -58,7 +58,7 @@ void ComponentUpdaterPingManagerTest::RunThreadsUntilIdle() {
 // Test is flaky: http://crbug.com/349547
 TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   scoped_ptr<InterceptorFactory> interceptor_factory(
-      new InterceptorFactory(base::MessageLoopProxy::current()));
+      new InterceptorFactory(base::ThreadTaskRunnerHandle::Get()));
   URLRequestPostInterceptor* interceptor =
       interceptor_factory->CreateInterceptor();
   EXPECT_TRUE(interceptor);

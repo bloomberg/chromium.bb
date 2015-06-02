@@ -5,10 +5,12 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 namespace {
@@ -44,11 +46,9 @@ void DistilledPagePrefs::RegisterProfilePrefs(
 void DistilledPagePrefs::SetFontFamily(
     DistilledPagePrefs::FontFamily new_font_family) {
   pref_service_->SetInteger(kFontPref, new_font_family);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DistilledPagePrefs::NotifyOnChangeFontFamily,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 new_font_family));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&DistilledPagePrefs::NotifyOnChangeFontFamily,
+                            weak_ptr_factory_.GetWeakPtr(), new_font_family));
 }
 
 DistilledPagePrefs::FontFamily DistilledPagePrefs::GetFontFamily() {
@@ -64,11 +64,9 @@ DistilledPagePrefs::FontFamily DistilledPagePrefs::GetFontFamily() {
 
 void DistilledPagePrefs::SetTheme(DistilledPagePrefs::Theme new_theme) {
   pref_service_->SetInteger(kThemePref, new_theme);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DistilledPagePrefs::NotifyOnChangeTheme,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 new_theme));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&DistilledPagePrefs::NotifyOnChangeTheme,
+                            weak_ptr_factory_.GetWeakPtr(), new_theme));
 }
 
 DistilledPagePrefs::Theme DistilledPagePrefs::GetTheme() {

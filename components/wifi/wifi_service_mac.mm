@@ -71,7 +71,7 @@ class WiFiServiceMac : public WiFiService {
                         std::string* error) override;
 
   void SetEventObservers(
-      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const NetworkGuidListCallback& networks_changed_observer,
       const NetworkGuidListCallback& network_list_changed_observer) override;
 
@@ -140,8 +140,8 @@ class WiFiServiceMac : public WiFiService {
   NetworkGuidListCallback networks_changed_observer_;
   // Observer to get notified when network list has changed.
   NetworkGuidListCallback network_list_changed_observer_;
-  // MessageLoopProxy to which events should be posted.
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  // Task runner to which events should be posted.
+  scoped_refptr<base::SingleThreadTaskRunner> event_task_runner_;
   // Task runner for worker tasks.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   // Cached list of visible networks. Updated by |UpdateNetworks|.
@@ -384,10 +384,10 @@ void WiFiServiceMac::GetKeyFromSystem(const std::string& network_guid,
 }
 
 void WiFiServiceMac::SetEventObservers(
-    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const NetworkGuidListCallback& networks_changed_observer,
     const NetworkGuidListCallback& network_list_changed_observer) {
-  message_loop_proxy_.swap(message_loop_proxy);
+  event_task_runner_.swap(task_runner);
   networks_changed_observer_ = networks_changed_observer;
   network_list_changed_observer_ = network_list_changed_observer;
 
@@ -642,9 +642,8 @@ void WiFiServiceMac::NotifyNetworkListChanged(const NetworkList& networks) {
     current_networks.push_back(it->guid);
   }
 
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(network_list_changed_observer_, current_networks));
+  event_task_runner_->PostTask(
+      FROM_HERE, base::Bind(network_list_changed_observer_, current_networks));
 }
 
 void WiFiServiceMac::NotifyNetworkChanged(const std::string& network_guid) {
@@ -653,9 +652,8 @@ void WiFiServiceMac::NotifyNetworkChanged(const std::string& network_guid) {
 
   DVLOG(1) << "NotifyNetworkChanged: " << network_guid;
   NetworkGuidList changed_networks(1, network_guid);
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(networks_changed_observer_, changed_networks));
+  event_task_runner_->PostTask(
+      FROM_HERE, base::Bind(networks_changed_observer_, changed_networks));
 }
 
 // static

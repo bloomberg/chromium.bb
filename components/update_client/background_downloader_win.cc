@@ -16,9 +16,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/win/scoped_co_mem.h"
 #include "components/update_client/utils.h"
 #include "ui/base/win/atl_module.h"
@@ -393,7 +393,7 @@ BackgroundDownloader::BackgroundDownloader(
     net::URLRequestContextGetter* context_getter,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : CrxDownloader(successor.Pass()),
-      main_task_runner_(base::MessageLoopProxy::current()),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       context_getter_(context_getter),
       task_runner_(task_runner),
       is_completed_(false) {

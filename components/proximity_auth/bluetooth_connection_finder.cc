@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/proximity_auth/bluetooth_connection.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
@@ -134,10 +135,9 @@ void BluetoothConnectionFinder::OnConnectionStatusChanged(
     VLOG(1) << "[BCF] Connection failed! Scheduling another polling iteration.";
     connection_.reset();
     has_delayed_poll_scheduled_ = true;
-    base::MessageLoopProxy::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&BluetoothConnectionFinder::DelayedPollIfReady,
-                   weak_ptr_factory_.GetWeakPtr()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&BluetoothConnectionFinder::DelayedPollIfReady,
+                              weak_ptr_factory_.GetWeakPtr()),
         polling_interval_);
   }
 }

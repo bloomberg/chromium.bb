@@ -6,8 +6,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/google/core/browser/google_util.h"
@@ -46,9 +49,9 @@ GoogleURLTracker::GoogleURLTracker(scoped_ptr<GoogleURLTrackerClient> client,
   // "wakes up", we do nothing at all.
   if (mode == NORMAL_MODE) {
     static const int kStartFetchDelayMS = 5000;
-    base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        base::Bind(&GoogleURLTracker::FinishSleep,
-                   weak_ptr_factory_.GetWeakPtr()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&GoogleURLTracker::FinishSleep,
+                              weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kStartFetchDelayMS));
   }
 }

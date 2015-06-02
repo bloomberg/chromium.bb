@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/webdata/common/web_data_request_manager.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -19,11 +20,9 @@ using base::FilePath;
 class WebDatabaseService::BackendDelegate
     : public WebDatabaseBackend::Delegate {
  public:
-  BackendDelegate(
-      const base::WeakPtr<WebDatabaseService>& web_database_service)
+  BackendDelegate(const base::WeakPtr<WebDatabaseService>& web_database_service)
       : web_database_service_(web_database_service),
-        callback_thread_(base::MessageLoopProxy::current()) {
-  }
+        callback_thread_(base::ThreadTaskRunnerHandle::Get()) {}
 
   void DBLoaded(sql::InitStatus status) override {
     callback_thread_->PostTask(
@@ -34,13 +33,13 @@ class WebDatabaseService::BackendDelegate
   }
  private:
   const base::WeakPtr<WebDatabaseService> web_database_service_;
-  scoped_refptr<base::MessageLoopProxy> callback_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> callback_thread_;
 };
 
 WebDatabaseService::WebDatabaseService(
     const base::FilePath& path,
-    const scoped_refptr<base::MessageLoopProxy>& ui_thread,
-    const scoped_refptr<base::MessageLoopProxy>& db_thread)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread)
     : base::RefCountedDeleteOnMessageLoop<WebDatabaseService>(ui_thread),
       path_(path),
       db_loaded_(false),

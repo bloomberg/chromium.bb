@@ -20,7 +20,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
-using base::MessageLoopProxy;
 using net::HostPortPair;
 using net::ProxyServer;
 using net::ProxyService;

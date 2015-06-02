@@ -17,11 +17,12 @@
 #include "base/files/scoped_file.h"
 #include "base/format_macros.h"
 #include "base/linux_util.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
@@ -415,7 +416,7 @@ void CrashHandlerHostLinux::QueueCrashDumpTask(scoped_ptr<BreakpadInfo> info,
   HANDLE_EINTR(sendmsg(signal_fd, &msg, MSG_DONTWAIT | MSG_NOSIGNAL));
   close(signal_fd);
 
-  uploader_thread_->message_loop()->PostTask(
+  uploader_thread_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&CrashDumpTask, base::Unretained(this), base::Passed(&info)));
 }

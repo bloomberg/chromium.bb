@@ -7,10 +7,10 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker_client.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -83,7 +83,7 @@ class TestGoogleURLTrackerClient : public GoogleURLTrackerClient {
 TestGoogleURLTrackerClient::TestGoogleURLTrackerClient(PrefService* prefs)
     : prefs_(prefs),
       request_context_(new net::TestURLRequestContextGetter(
-          base::MessageLoopProxy::current())) {
+          base::ThreadTaskRunnerHandle::Get())) {
 }
 
 TestGoogleURLTrackerClient::~TestGoogleURLTrackerClient() {

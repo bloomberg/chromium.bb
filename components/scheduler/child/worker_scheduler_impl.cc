@@ -5,7 +5,6 @@
 #include "components/scheduler/child/worker_scheduler_impl.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/scheduler/child/nestable_single_thread_task_runner.h"

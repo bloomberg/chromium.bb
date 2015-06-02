@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/wallet/real_pan_wallet_client.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -28,7 +29,7 @@ class RealPanWalletClientTest : public testing::Test,
         switches::kWalletServiceUseSandbox, "0");
 
     request_context_ = new net::TestURLRequestContextGetter(
-        base::MessageLoopProxy::current());
+        base::ThreadTaskRunnerHandle::Get());
     token_service_.reset(new FakeOAuth2TokenService());
     identity_provider_.reset(new FakeIdentityProvider(token_service_.get()));
     client_.reset(new RealPanWalletClient(request_context_.get(), this));

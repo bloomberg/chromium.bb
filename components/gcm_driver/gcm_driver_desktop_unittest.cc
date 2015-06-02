@@ -8,14 +8,13 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "components/gcm_driver/fake_gcm_app_handler.h"
 #include "components/gcm_driver/fake_gcm_client.h"
@@ -202,10 +201,8 @@ void GCMDriverTest::TearDown() {
 
 void GCMDriverTest::PumpIOLoop() {
   base::RunLoop run_loop;
-  io_thread_.message_loop_proxy()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&PumpCurrentLoop),
-      run_loop.QuitClosure());
+  io_thread_.task_runner()->PostTaskAndReply(
+      FROM_HERE, base::Bind(&PumpCurrentLoop), run_loop.QuitClosure());
   run_loop.Run();
 }
 
@@ -229,20 +226,15 @@ FakeGCMClient* GCMDriverTest::GetGCMClient() {
 
 void GCMDriverTest::CreateDriver() {
   scoped_refptr<net::URLRequestContextGetter> request_context =
-      new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy());
+      new net::TestURLRequestContextGetter(io_thread_.task_runner());
   // TODO(johnme): Need equivalent test coverage of GCMDriverAndroid.
   driver_.reset(new GCMDriverDesktop(
       scoped_ptr<GCMClientFactory>(
-          new FakeGCMClientFactory(base::MessageLoopProxy::current(),
-                                   io_thread_.message_loop_proxy())).Pass(),
-      GCMClient::ChromeBuildInfo(),
-      "http://channel.status.request.url",
-      "user-agent-string",
-      &prefs_,
-      temp_dir_.path(),
-      request_context,
-      base::MessageLoopProxy::current(),
-      io_thread_.message_loop_proxy(),
+          new FakeGCMClientFactory(base::ThreadTaskRunnerHandle::Get(),
+                                   io_thread_.task_runner())).Pass(),
+      GCMClient::ChromeBuildInfo(), "http://channel.status.request.url",
+      "user-agent-string", &prefs_, temp_dir_.path(), request_context,
+      base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner(),
       task_runner_));
 
   gcm_app_handler_.reset(new FakeGCMAppHandler);

@@ -7,13 +7,16 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 void NaClStartDebugExceptionHandlerThread(
     base::Process nacl_process,
     const std::string& startup_info,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::Callback<void(bool)>& on_connected);
 
 #endif  // COMPONENTS_NACL_COMMON_NACL_DEBUG_EXCEPTION_HANDLER_WIN_H_

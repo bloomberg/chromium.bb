@@ -5,11 +5,12 @@
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/signature_verifier.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -185,8 +186,7 @@ void CloudPolicyValidatorBase::PostValidationTask(
       FROM_HERE,
       base::Bind(&CloudPolicyValidatorBase::PerformValidation,
                  base::Passed(scoped_ptr<CloudPolicyValidatorBase>(this)),
-                 base::MessageLoop::current()->message_loop_proxy(),
-                 completion_callback));
+                 base::ThreadTaskRunnerHandle::Get(), completion_callback));
 }
 
 // static

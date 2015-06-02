@@ -169,7 +169,7 @@ MediaFactory::GetMediaThreadTaskRunner() {
   if (!media_thread_.IsRunning())
     media_thread_.Start();
 
-  return media_thread_.message_loop_proxy();
+  return media_thread_.task_runner();
 }
 #endif  // !defined(OS_ANDROID)
 

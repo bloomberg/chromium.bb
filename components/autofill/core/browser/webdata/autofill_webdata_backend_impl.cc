@@ -5,9 +5,10 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend_impl.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -26,8 +27,8 @@ namespace autofill {
 
 AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
     scoped_refptr<WebDatabaseBackend> web_database_backend,
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
-    scoped_refptr<base::MessageLoopProxy> db_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread,
     const base::Closure& on_changed_callback)
     : base::RefCountedDeleteOnMessageLoop<AutofillWebDataBackendImpl>(
           db_thread),

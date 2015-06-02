@@ -7,6 +7,7 @@
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error.h"
@@ -115,12 +116,12 @@ GenericChangeProcessor::GenericChangeProcessor(
         new base::WeakPtrFactory<syncer::AttachmentService>(
             attachment_service_.get()));
     attachment_service_proxy_ = syncer::AttachmentServiceProxy(
-        base::MessageLoopProxy::current(),
+        base::ThreadTaskRunnerHandle::Get(),
         attachment_service_weak_ptr_factory_->GetWeakPtr());
     UploadAllAttachmentsNotOnServer();
   } else {
     attachment_service_proxy_ = syncer::AttachmentServiceProxy(
-        base::MessageLoopProxy::current(),
+        base::ThreadTaskRunnerHandle::Get(),
         base::WeakPtr<syncer::AttachmentService>());
   }
 }

@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/single_thread_task_runner.h"
 #include "components/sync_driver/data_type_controller.h"
 
 namespace sync_driver {
@@ -17,8 +18,8 @@ namespace sync_driver {
 class ProxyDataTypeController : public DataTypeController {
  public:
   explicit ProxyDataTypeController(
-       scoped_refptr<base::MessageLoopProxy> ui_thread,
-       syncer::ModelType type);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+      syncer::ModelType type);
 
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;

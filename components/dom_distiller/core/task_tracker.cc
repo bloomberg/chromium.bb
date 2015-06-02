@@ -5,7 +5,9 @@
 #include "components/dom_distiller/core/task_tracker.h"
 
 #include "base/auto_reset.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/dom_distiller/core/distilled_content_store.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
@@ -82,11 +84,9 @@ scoped_ptr<ViewerHandle> TaskTracker::AddViewer(ViewRequestDelegate* delegate) {
   if (content_ready_) {
     // Distillation for this task has already completed, and so the delegate can
     // be immediately told of the result.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&TaskTracker::NotifyViewer,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   delegate));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&TaskTracker::NotifyViewer,
+                              weak_ptr_factory_.GetWeakPtr(), delegate));
   }
   return scoped_ptr<ViewerHandle>(new ViewerHandle(base::Bind(
       &TaskTracker::RemoveViewer, weak_ptr_factory_.GetWeakPtr(), delegate)));
@@ -130,10 +130,9 @@ void TaskTracker::MaybeCancel() {
 void TaskTracker::CancelSaveCallbacks() { ScheduleSaveCallbacks(false); }
 
 void TaskTracker::ScheduleSaveCallbacks(bool distillation_succeeded) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&TaskTracker::DoSaveCallbacks,
-                 weak_ptr_factory_.GetWeakPtr(),
+      base::Bind(&TaskTracker::DoSaveCallbacks, weak_ptr_factory_.GetWeakPtr(),
                  distillation_succeeded));
 }
 

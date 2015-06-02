@@ -19,7 +19,7 @@ class WebDatabaseTable;
 
 namespace base {
 // TODO(skyostil): Migrate to SingleThreadTaskRunner (crbug.com/465354).
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 class Thread;
 }
 
@@ -49,9 +49,10 @@ class WEBDATA_EXPORT WebDataServiceBase
   // WebDataServiceWrapper handles the initializing and shutting down and of
   // the |wdbs| object.
   // WebDataServiceBase is destroyed on |ui_thread|.
-  WebDataServiceBase(scoped_refptr<WebDatabaseService> wdbs,
-                     const ProfileErrorCallback& callback,
-                     const scoped_refptr<base::MessageLoopProxy>& ui_thread);
+  WebDataServiceBase(
+      scoped_refptr<WebDatabaseService> wdbs,
+      const ProfileErrorCallback& callback,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread);
 
   // Cancel any pending request. You need to call this method if your
   // WebDataServiceConsumer is about to be deleted.

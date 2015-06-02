@@ -140,8 +140,8 @@ class PolicyLoaderMacTest : public PolicyTestBase {
 
   void SetUp() override {
     PolicyTestBase::SetUp();
-    scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderMac(
-        loop_.message_loop_proxy(), base::FilePath(), prefs_));
+    scoped_ptr<AsyncPolicyLoader> loader(
+        new PolicyLoaderMac(loop_.task_runner(), base::FilePath(), prefs_));
     provider_.reset(new AsyncPolicyProvider(&schema_registry_, loader.Pass()));
     provider_->Init(&schema_registry_);
   }

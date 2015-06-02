@@ -9,11 +9,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/profiler/stack_sampling_profiler.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 
@@ -153,10 +155,9 @@ CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {
 }
 
 void CallStackProfileMetricsProvider::OnRecordingEnabled() {
-  StackSamplingProfiler::SetDefaultCompletedCallback(
-      base::Bind(&CallStackProfileMetricsProvider::ReceiveCompletedProfiles,
-                 base::MessageLoopProxy::current(),
-                 weak_factory_.GetWeakPtr()));
+  StackSamplingProfiler::SetDefaultCompletedCallback(base::Bind(
+      &CallStackProfileMetricsProvider::ReceiveCompletedProfiles,
+      base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr()));
 }
 
 void CallStackProfileMetricsProvider::OnRecordingDisabled() {
@@ -195,10 +196,10 @@ bool CallStackProfileMetricsProvider::IsSamplingProfilingReportingEnabled() {
 // static
 // Posts a message back to our own thread to collect the profiles.
 void CallStackProfileMetricsProvider::ReceiveCompletedProfiles(
-    scoped_refptr<base::MessageLoopProxy> message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::WeakPtr<CallStackProfileMetricsProvider> provider,
     const StackSamplingProfiler::CallStackProfiles& profiles) {
-  message_loop->PostTask(
+  task_runner->PostTask(
       FROM_HERE,
       base::Bind(&CallStackProfileMetricsProvider::AppendCompletedProfiles,
                  provider, profiles));

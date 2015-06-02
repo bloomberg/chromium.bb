@@ -8,10 +8,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_debug_exception_handler_win.h"
 #include "components/nacl/common/nacl_messages.h"
@@ -128,7 +128,7 @@ void NaClBrokerListener::OnLaunchDebugExceptionHandler(
     const std::string& startup_info) {
   NaClStartDebugExceptionHandlerThread(
       base::Process(process_handle), startup_info,
-      base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(),
       base::Bind(SendReply, channel_.get(), pid));
 }
 

@@ -38,12 +38,12 @@ PrintMockRenderThread::~PrintMockRenderThread() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 PrintMockRenderThread::GetIOMessageLoopProxy() {
-  return io_message_loop_proxy_;
+  return io_task_runner_;
 }
 
 void PrintMockRenderThread::set_io_message_loop_proxy(
-    const scoped_refptr<base::MessageLoopProxy>& proxy) {
-  io_message_loop_proxy_ = proxy;
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  io_task_runner_ = task_runner;
 }
 
 bool PrintMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
