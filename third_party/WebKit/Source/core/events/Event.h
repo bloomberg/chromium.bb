@@ -107,7 +107,12 @@ public:
         return adoptRefWillBeNoop(new Event(type, true, true));
     }
 
+    // TODO(bashi): Remove this when we remove all [EventConstructor].
     static PassRefPtrWillBeRawPtr<Event> create(const AtomicString& type, const EventInit& initializer)
+    {
+        return adoptRefWillBeNoop(new Event(type, initializer));
+    }
+    static PassRefPtrWillBeRawPtr<Event> create(const AtomicString& type, const EventInitDictionary& initializer)
     {
         return adoptRefWillBeNoop(new Event(type, initializer));
     }

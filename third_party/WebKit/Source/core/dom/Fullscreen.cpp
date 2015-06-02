@@ -113,8 +113,8 @@ static bool isPrefixed(const AtomicString& type)
 
 static PassRefPtrWillBeRawPtr<Event> createEvent(const AtomicString& type, EventTarget& target)
 {
-    EventInit initializer;
-    initializer.bubbles = isPrefixed(type);
+    EventInitDictionary initializer;
+    initializer.setBubbles(isPrefixed(type));
     RefPtrWillBeRawPtr<Event> event = Event::create(type, initializer);
     event->setTarget(&target);
     return event;
