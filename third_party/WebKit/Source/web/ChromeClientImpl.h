@@ -96,8 +96,7 @@ public:
         const WTF::String& message, unsigned lineNumber,
         const WTF::String& sourceID, const WTF::String& stackTrace) override;
     virtual bool canRunBeforeUnloadConfirmPanel() override;
-    virtual bool runBeforeUnloadConfirmPanelInternal(
-        const WTF::String& message, LocalFrame*) override;
+    virtual bool runBeforeUnloadConfirmPanelInternal(LocalFrame*, const String&) override;
     virtual void closeWindowSoon() override;
     virtual void runJavaScriptAlertInternal(LocalFrame*, const String&) override;
     virtual bool runJavaScriptConfirmInternal(LocalFrame*, const String&) override;

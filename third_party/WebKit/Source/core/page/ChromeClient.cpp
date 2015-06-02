@@ -98,62 +98,51 @@ private:
     InspectorInstrumentationCookie m_cookie;
 };
 
-bool ChromeClient::runBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame)
+template<typename ReturnType, typename... Params>
+ReturnType openJavaScriptDialog(
+    ChromeClient* chromeClient,
+    ReturnType(ChromeClient::*function)(LocalFrame*, const String& message, Params&...),
+    LocalFrame& frame,
+    const String& message,
+    Params&... parameters)
 {
     // Defer loads in case the client method runs a new event loop that would
-    // otherwise cause the load to continue while we're in the middle of executing JavaScript.
+    // otherwise cause the load to continue while we're in the middle of
+    // executing JavaScript.
     ScopedPageLoadDeferrer deferrer;
 
-    ScopedJavaScriptDialogInstrumentation instrumentation(*frame, message);
-    return runBeforeUnloadConfirmPanelInternal(message, frame);
+    chromeClient->notifyPopupOpeningObservers();
+    ScopedJavaScriptDialogInstrumentation instrumentation(frame, message);
+    return (chromeClient->*function)(&frame, message, parameters...);
+}
+
+bool ChromeClient::runBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame)
+{
+    return openJavaScriptDialog(this, &ChromeClient::runBeforeUnloadConfirmPanelInternal, *frame, message);
 }
 
 void ChromeClient::runJavaScriptAlert(LocalFrame* frame, const String& message)
 {
+    ASSERT(frame);
     if (!canRunModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::AlertDialog, message))
         return;
-
-    // Defer loads in case the client method runs a new event loop that would
-    // otherwise cause the load to continue while we're in the middle of executing JavaScript.
-    ScopedPageLoadDeferrer deferrer;
-
-    ASSERT(frame);
-    notifyPopupOpeningObservers();
-
-    ScopedJavaScriptDialogInstrumentation instrumentation(*frame, message);
-    runJavaScriptAlertInternal(frame, message);
+    openJavaScriptDialog(this, &ChromeClient::runJavaScriptAlertInternal, *frame, message);
 }
 
 bool ChromeClient::runJavaScriptConfirm(LocalFrame* frame, const String& message)
 {
+    ASSERT(frame);
     if (!canRunModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::ConfirmDialog, message))
         return false;
-
-    // Defer loads in case the client method runs a new event loop that would
-    // otherwise cause the load to continue while we're in the middle of executing JavaScript.
-    ScopedPageLoadDeferrer deferrer;
-
-    ASSERT(frame);
-    notifyPopupOpeningObservers();
-
-    ScopedJavaScriptDialogInstrumentation instrumentation(*frame, message);
-    return runJavaScriptConfirmInternal(frame, message);
+    return openJavaScriptDialog(this, &ChromeClient::runJavaScriptConfirmInternal, *frame, message);
 }
 
 bool ChromeClient::runJavaScriptPrompt(LocalFrame* frame, const String& prompt, const String& defaultValue, String& result)
 {
+    ASSERT(frame);
     if (!canRunModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::PromptDialog, prompt))
         return false;
-
-    // Defer loads in case the client method runs a new event loop that would
-    // otherwise cause the load to continue while we're in the middle of executing JavaScript.
-    ScopedPageLoadDeferrer deferrer;
-
-    ASSERT(frame);
-    notifyPopupOpeningObservers();
-
-    ScopedJavaScriptDialogInstrumentation instrumentation(*frame, prompt);
-    return runJavaScriptPromptInternal(frame, prompt, defaultValue, result);
+    return openJavaScriptDialog(this, &ChromeClient::runJavaScriptPromptInternal, *frame, prompt, defaultValue, result);
 }
 
 void ChromeClient::mouseDidMoveOverElement(const HitTestResult& result)

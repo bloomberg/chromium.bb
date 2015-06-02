@@ -103,7 +103,7 @@ public:
     virtual void addMessageToConsole(LocalFrame*, MessageSource, MessageLevel, const String&, unsigned, const String&, const String&) override { }
 
     virtual bool canRunBeforeUnloadConfirmPanel() override { return false; }
-    virtual bool runBeforeUnloadConfirmPanelInternal(const String&, LocalFrame*) override { return true; }
+    virtual bool runBeforeUnloadConfirmPanelInternal(LocalFrame*, const String&) override { return true; }
 
     virtual void closeWindowSoon() override { }
 

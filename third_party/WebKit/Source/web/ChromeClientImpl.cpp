@@ -378,7 +378,7 @@ bool ChromeClientImpl::canRunBeforeUnloadConfirmPanel()
     return !!m_webView->client();
 }
 
-bool ChromeClientImpl::runBeforeUnloadConfirmPanelInternal(const String& message, LocalFrame* frame)
+bool ChromeClientImpl::runBeforeUnloadConfirmPanelInternal(LocalFrame* frame, const String& message)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
 

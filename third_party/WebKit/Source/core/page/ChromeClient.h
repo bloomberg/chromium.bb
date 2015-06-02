@@ -239,6 +239,7 @@ public:
 
     void registerPopupOpeningObserver(PopupOpeningObserver*);
     void unregisterPopupOpeningObserver(PopupOpeningObserver*);
+    void notifyPopupOpeningObservers() const;
 
 protected:
     virtual ~ChromeClient() { }
@@ -248,7 +249,7 @@ protected:
     // should give better names, or move out non-internal versions of these
     // functions.
     virtual void setWindowRectInternal(const IntRect&) = 0;
-    virtual bool runBeforeUnloadConfirmPanelInternal(const String& message, LocalFrame*) = 0;
+    virtual bool runBeforeUnloadConfirmPanelInternal(LocalFrame*, const String& message) = 0;
     virtual void runJavaScriptAlertInternal(LocalFrame*, const String&) = 0;
     virtual bool runJavaScriptConfirmInternal(LocalFrame*, const String&) = 0;
     virtual bool runJavaScriptPromptInternal(LocalFrame*, const String& message, const String& defaultValue, String& result) = 0;
@@ -263,7 +264,6 @@ protected:
 private:
     bool canRunModalIfDuringPageDismissal(Frame* mainFrame, DialogType, const String& message);
     void setToolTip(const HitTestResult&);
-    void notifyPopupOpeningObservers() const;
 
     Vector<PopupOpeningObserver*> m_popupOpeningObservers;
     Cursor m_lastSetMouseCursorForTesting;
