@@ -373,8 +373,12 @@ void LayerTreeHost::WillCommit() {
 
 void LayerTreeHost::UpdateHudLayer() {
   if (debug_state_.ShowHudInfo()) {
-    if (!hud_layer_.get())
-      hud_layer_ = HeadsUpDisplayLayer::Create(settings_.hud_layer_settings);
+    if (!hud_layer_.get()) {
+      LayerSettings hud_layer_settings;
+      hud_layer_settings.use_compositor_animation_timelines =
+          settings_.use_compositor_animation_timelines;
+      hud_layer_ = HeadsUpDisplayLayer::Create(hud_layer_settings);
+    }
 
     if (root_layer_.get() && !hud_layer_->parent())
       root_layer_->AddChild(hud_layer_);

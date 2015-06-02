@@ -89,7 +89,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_display_lists;
   bool verify_property_trees;
   bool gather_pixel_refs;
-  LayerSettings hud_layer_settings;
+  bool use_compositor_animation_timelines;
   size_t max_bytes_per_copy_operation;
 
   LayerTreeDebugState initial_debug_state;

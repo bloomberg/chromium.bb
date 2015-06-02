@@ -52,6 +52,7 @@
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/compositor_client.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -437,6 +438,10 @@ void CompositorImpl::CreateLayerTreeHost() {
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
   // TODO(enne): Update this this compositor to use the scheduler.
   settings.single_thread_proxy_scheduler = false;
+
+  if (command_line->HasSwitch(
+          switches::kEnableAndroidCompositorAnimationTimelines))
+    settings.use_compositor_animation_timelines = true;
 
   cc::LayerTreeHost::InitParams params;
   params.client = this;

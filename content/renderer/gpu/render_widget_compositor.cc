@@ -233,8 +233,8 @@ void RenderWidgetCompositor::Initialize() {
   settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
   settings.use_display_lists = cmd->HasSwitch(switches::kEnableSlimmingPaint);
-  settings.hud_layer_settings = cc_blink::WebLayerImpl::LayerSettings();
   if (cmd->HasSwitch(switches::kEnableCompositorAnimationTimelines)) {
+    settings.use_compositor_animation_timelines = true;
     blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(true);
   }
 
