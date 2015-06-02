@@ -670,19 +670,19 @@ TEST_F(ViewManagerTest, DeleteViewManager) {
 
 // Verifies two Embed()s in the same view trigger deletion of the first
 // ViewManager.
-TEST_F(ViewManagerTest, DISABLED_DisconnectTriggersDelete) {
+TEST_F(ViewManagerTest, DisconnectTriggersDelete) {
   View* view = window_manager()->CreateView();
   ASSERT_NE(nullptr, view);
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
   ViewManager* view_manager = Embed(window_manager(), view);
+  EXPECT_NE(view_manager, window_manager());
   View* embedded_view = view_manager->CreateView();
   // Embed again, this should trigger disconnect and deletion of view_manager.
   bool got_destroy;
   DestroyedChangedObserver observer(embedded_view, &got_destroy);
   EXPECT_FALSE(got_disconnect());
-  ViewManager* view_manager2 = Embed(window_manager(), view);
-  EXPECT_NE(view_manager, view_manager2);
+  Embed(window_manager(), view);
   EXPECT_TRUE(got_disconnect());
 }
 
