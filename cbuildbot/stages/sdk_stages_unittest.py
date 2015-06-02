@@ -17,6 +17,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
 from chromite.lib import portage_util
+from chromite.lib import toolchain
 
 
 class SDKBuildToolchainsStageTest(
@@ -177,7 +178,7 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.assertEqual(kwargs['revision'], 123456)
 
 
-class SDKPackageBoardToolchainsStageTest(
+class SDKPackageToolchainOverlaysStageTest(
     generic_stages_unittest.AbstractStageTestCase):
   """Tests board toolchain overlay installation and packaging."""
 
@@ -214,28 +215,42 @@ class SDKPackageBoardToolchainsStageTest(
       osutils.Touch(os.path.join(merged_dir, board + '.tmp'))
 
   def ConstructStage(self):
-    return sdk_stages.SDKPackageBoardToolchainsStage(self._run)
+    return sdk_stages.SDKPackageToolchainOverlaysStage(self._run)
 
   def testTarballCreation(self):
     """Tests that tarballs are created for all board toolchains."""
     self._Prepare('chromiumos-sdk')
     self.RunStage()
 
-    # Check that a tarball was created correctly for all boards.
-    for board in self._boards:
-      overlay_tarball = os.path.join(self.build_root,
-                                     constants.DEFAULT_CHROOT_DIR,
-                                     constants.SDK_OVERLAYS_OUTPUT,
-                                     'built-sdk-overlay-%s.tar.xz' % board)
+    # Check that a tarball was created correctly for all toolchain sets.
+    all_toolchain_combos = set()
+    for board in self._run.site_config.GetBoards():
+      try:
+        all_toolchain_combos.add(
+            '-'.join(sorted(toolchain.GetToolchainsForBoard(board).iterkeys())))
+      except portage_util.MissingOverlayException:
+        pass
+
+    for toolchains in all_toolchain_combos:
+      overlay_tarball = os.path.join(
+          self.build_root, constants.DEFAULT_CHROOT_DIR,
+          constants.SDK_OVERLAYS_OUTPUT,
+          'built-sdk-overlay-toolchains-%s.tar.xz' % toolchains)
       output = cros_build_lib.RunCommand(
           ['tar', '-I', 'xz', '-tvf', overlay_tarball],
           capture_output=True).output.splitlines()
-      # First line is './', use it as an anchor, count the chars, and strip as
-      # much from all other lines.
+      # First line is './', use it as an anchor, count the chars, and strip
+      # as much from all other lines.
       stripchars = len(output[0]) - 1
       tar_lines = [x[stripchars:] for x in output[1:]]
-      # Check that the overlay tarball contains the marker file only.
-      self.assertListEqual(['/%s.tmp' % board], tar_lines)
+      # Check that the overlay tarball contains a marker file only, and that
+      # the board recorded by this marker file indeed uses the toolchains for
+      # which the tarball was built.
+      self.assertEqual(1, len(tar_lines))
+      board = tar_lines[0].lstrip('/')[:-len('.tmp')]
+      board_toolchains = '-'.join(sorted(
+          toolchain.GetToolchainsForBoard(board).iterkeys()))
+      self.assertEqual(toolchains, board_toolchains)
 
 
 class SDKTestStageTest(generic_stages_unittest.AbstractStageTestCase):

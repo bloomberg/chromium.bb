@@ -19,6 +19,7 @@ from chromite.lib import osutils
 from chromite.lib import perf_uploader
 from chromite.lib import portage_util
 from chromite.lib import retry_util
+from chromite.lib import toolchain
 
 
 # Version of the Manifest file being generated for SDK artifacts. Should be
@@ -36,7 +37,8 @@ PACKAGE_EXCLUDED_PATHS = (
 
 # Names of various packaged artifacts.
 SDK_TARBALL_NAME = 'built-sdk.tar.xz'
-BOARD_OVERLAY_TARBALL_TEMPLATE = 'built-sdk-overlay-%(board)s.tar.xz'
+TOOLCHAINS_OVERLAY_TARBALL_TEMPLATE = \
+    'built-sdk-overlay-toolchains-%(toolchains)s.tar.xz'
 
 
 def SdkPerfPath(buildroot):
@@ -193,12 +195,13 @@ class SDKPackageStage(generic_stages.BuilderStage):
                          self._run.bot_id)
 
 
-class SDKPackageBoardToolchainsStage(generic_stages.BuilderStage):
+class SDKPackageToolchainOverlaysStage(generic_stages.BuilderStage):
   """Stage that creates and packages per-board toolchain overlays."""
 
   def __init__(self, builder_run, version=None, **kwargs):
     self.sdk_version = version
-    super(SDKPackageBoardToolchainsStage, self).__init__(builder_run, **kwargs)
+    super(SDKPackageToolchainOverlaysStage, self).__init__(builder_run,
+                                                           **kwargs)
 
   def PerformStage(self):
     chroot_dir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
@@ -209,12 +212,23 @@ class SDKPackageBoardToolchainsStage(generic_stages.BuilderStage):
                                       constants.SDK_OVERLAYS_OUTPUT)
     osutils.RmDir(overlay_output_dir, ignore_missing=True, sudo=True)
     osutils.SafeMakedirs(overlay_output_dir, mode=0o777, sudo=True)
-    overlay_tarball_template = os.path.join(overlay_output_dir,
-                                            BOARD_OVERLAY_TARBALL_TEMPLATE)
+    overlay_tarball_template = os.path.join(
+        overlay_output_dir, TOOLCHAINS_OVERLAY_TARBALL_TEMPLATE)
 
-    for board in self._boards:
-      overlay_tarball_path = overlay_tarball_template % {'board': board}
-      with osutils.TempDir(prefix='toolchain-overlay-%s.' % board,
+    # Generate an overlay tarball for each unique toolchain combination.
+    toolchains_generated = set()
+    for board in self._run.site_config.GetBoards():
+      try:
+        toolchains = '-'.join(sorted(
+            toolchain.GetToolchainsForBoard(board).iterkeys()))
+      except portage_util.MissingOverlayException:
+        # The board overlay may not exist, e.g. on external builders.
+        continue
+
+      if toolchains in toolchains_generated:
+        continue
+
+      with osutils.TempDir(prefix='toolchains-overlay-%s.' % toolchains,
                            base_dir=tmp_dir, sudo_rm=True) as overlay_dir:
         # NOTE: We let MountOverlayContext remove the mount point created by
         # the TempDir context below, because it has built-in retries for rmdir
@@ -231,8 +245,10 @@ class SDKPackageBoardToolchainsStage(generic_stages.BuilderStage):
                                     enter_chroot=True, sudo=True,
                                     extra_env=self._portage_extra_env)
 
-        # Create toolchain overlay tarball.
-        CreateTarball(overlay_dir, overlay_tarball_path)
+        CreateTarball(overlay_dir,
+                      overlay_tarball_template % {'toolchains': toolchains})
+
+      toolchains_generated.add(toolchains)
 
 
 class SDKTestStage(generic_stages.BuilderStage):
