@@ -47,8 +47,11 @@ void EventPageWakeComplete(bool success) {
 
 }  // namespace
 
-MediaRouterMojoImpl::MediaRouterMojoImpl()
-    : event_page_tracker_(nullptr), instance_id_(base::GenerateGUID()) {
+MediaRouterMojoImpl::MediaRouterMojoImpl(
+    extensions::EventPageTracker* event_page_tracker)
+    : event_page_tracker_(event_page_tracker),
+      instance_id_(base::GenerateGUID()) {
+  DCHECK(event_page_tracker_);
 }
 
 MediaRouterMojoImpl::~MediaRouterMojoImpl() {
@@ -64,34 +67,19 @@ void MediaRouterMojoImpl::BindToRequest(
       MediaRouterMojoImplFactory::GetApiForBrowserContext(context);
   DCHECK(impl);
 
-  impl->BindToMojoRequest(request.Pass(), extension_id, context);
+  impl->BindToMojoRequest(request.Pass(), extension_id);
 }
 
 void MediaRouterMojoImpl::BindToMojoRequest(
     mojo::InterfaceRequest<interfaces::MediaRouterObserver> request,
-    const std::string& extension_id,
-    content::BrowserContext* context) {
+    const std::string& extension_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(context);
 
   binding_.reset(
       new mojo::Binding<interfaces::MediaRouterObserver>(this, request.Pass()));
   binding_->set_error_handler(this);
 
   mojo_media_router_extension_id_ = extension_id;
-  event_page_tracker_ = extensions::ProcessManager::Get(context);
-}
-
-void MediaRouterMojoImpl::BindToMojoRequestForTest(
-    mojo::InterfaceRequest<interfaces::MediaRouterObserver> request,
-    const std::string& extension_id,
-    extensions::EventPageTracker* event_page_tracker) {
-  binding_.reset(
-      new mojo::Binding<interfaces::MediaRouterObserver>(this, request.Pass()));
-  binding_->set_error_handler(this);
-
-  mojo_media_router_extension_id_ = extension_id;
-  event_page_tracker_ = event_page_tracker;
 }
 
 // TODO(imcheng): If this occurs while there are pending requests, we should
@@ -101,6 +89,7 @@ void MediaRouterMojoImpl::OnConnectionError() {
 
   mojo_media_router_.reset();
   binding_.reset();
+  mojo_media_router_extension_id_.clear();
 }
 
 void MediaRouterMojoImpl::ProvideMediaRouter(
@@ -334,8 +323,11 @@ void MediaRouterMojoImpl::EnqueueTask(const base::Closure& closure) {
 void MediaRouterMojoImpl::RunOrDefer(const base::Closure& request) {
   DCHECK(event_page_tracker_);
 
-  if (event_page_tracker_->IsEventPageSuspended(
-          mojo_media_router_extension_id_)) {
+  if (mojo_media_router_extension_id_.empty()) {
+    DVLOG_WITH_INSTANCE(1) << "Extension ID not known yet.";
+    EnqueueTask(request);
+  } else if (event_page_tracker_->IsEventPageSuspended(
+                 mojo_media_router_extension_id_)) {
     DVLOG_WITH_INSTANCE(1) << "Waking event page.";
     EnqueueTask(request);
     if (!event_page_tracker_->WakeEventPage(
@@ -357,6 +349,7 @@ void MediaRouterMojoImpl::ExecutePendingRequests() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(mojo_media_router_);
   DCHECK(event_page_tracker_);
+  DCHECK(!mojo_media_router_extension_id_.empty());
 
   if (event_page_tracker_->IsEventPageSuspended(
           mojo_media_router_extension_id_)) {

@@ -315,7 +315,7 @@ TEST(MediaRouterMojoExtensionTest, DISABLED_DeferredBindingAndSuspension) {
       extensions::ProcessManager::Get(&profile));
 
   // Create MR and its proxy, so that it can be accessed through Mojo.
-  MediaRouterMojoImpl media_router;
+  MediaRouterMojoImpl media_router(process_manager);
   interfaces::MediaRouterObserverPtr mojo_media_router_observer;
 
   // Create a client object and its Mojo proxy.
@@ -334,7 +334,7 @@ TEST(MediaRouterMojoExtensionTest, DISABLED_DeferredBindingAndSuspension) {
       new mojo::Binding<interfaces::MediaRouter>(
           &mock_mojo_media_router_service, mojo::GetProxy(&mojo_media_router)));
   media_router.BindToMojoRequest(mojo::GetProxy(&mojo_media_router_observer),
-                                 kExtensionId, &profile);
+                                 kExtensionId);
 
   // |mojo_media_router| signals its readiness to the MR by registering
   // itself via ProvideMediaRouter().
@@ -354,7 +354,7 @@ TEST(MediaRouterMojoExtensionTest, DISABLED_DeferredBindingAndSuspension) {
   // Extension is suspended and re-awoken.
   binding.reset();
   media_router.BindToMojoRequest(mojo::GetProxy(&mojo_media_router_observer),
-                                 kExtensionId, &profile);
+                                 kExtensionId);
   EXPECT_CALL(*process_manager, IsEventPageSuspended(kExtensionId))
       .WillOnce(Return(true));
   EXPECT_CALL(*process_manager, WakeEventPage(kExtensionId, _))

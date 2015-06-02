@@ -86,23 +86,15 @@ class MediaRouterMojoImpl : public MediaRouter,
 
   // Standard constructor, used by
   // MediaRouterMojoImplFactory::GetApiForBrowserContext.
-  MediaRouterMojoImpl();
+  explicit MediaRouterMojoImpl(
+      extensions::EventPageTracker* event_page_tracker);
 
   // Binds |this| to a Mojo interface request, so that clients can acquire a
   // handle to a MediaRouterMojoImpl instance via the Mojo service connector.
   // Stores the |extension_id| of the component extension.
-  // Also obtains a reference to the extension's ProcessManager using
-  // |context|, which is a reference to the BrowserContext that owns this
-  // instance and extension.
   void BindToMojoRequest(
       mojo::InterfaceRequest<interfaces::MediaRouterObserver> request,
-      const std::string& extension_id,
-      content::BrowserContext* context);
-
-  void BindToMojoRequestForTest(
-      mojo::InterfaceRequest<interfaces::MediaRouterObserver> request,
-      const std::string& extension_id,
-      extensions::EventPageTracker* event_page_tracker);
+      const std::string& extension_id);
 
   // Enqueues a closure for later execution by ExecutePendingRequests().
   void EnqueueTask(const base::Closure& closure);

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 
 using content::BrowserContext;
@@ -41,7 +42,7 @@ MediaRouterMojoImplFactory::~MediaRouterMojoImplFactory() {
 
 KeyedService* MediaRouterMojoImplFactory::BuildServiceInstanceFor(
     BrowserContext* context) const {
-  return new MediaRouterMojoImpl();
+  return new MediaRouterMojoImpl(extensions::ProcessManager::Get(context));
 }
 
 BrowserContext* MediaRouterMojoImplFactory::GetBrowserContextToUse(

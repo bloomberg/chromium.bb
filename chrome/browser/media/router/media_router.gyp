@@ -67,6 +67,7 @@
       'dependencies': [
         'media_router',
         'media_router_mojo',
+        'media_router_mojo_gen',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/testing/gmock.gyp:gmock',
       ],
