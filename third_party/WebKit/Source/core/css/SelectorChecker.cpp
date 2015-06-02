@@ -295,18 +295,6 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
     return matchSelector(nextContext, result);
 }
 
-static inline Element* parentOrShadowHostButDisallowEscapingUserAgentShadowTree(const Element& element)
-{
-    ContainerNode* parent = element.parentOrShadowHostNode();
-    if (!parent)
-        return nullptr;
-    if (parent->isShadowRoot())
-        return (toShadowRoot(parent)->type() == ShadowRoot::UserAgentShadowRoot) ? nullptr : toShadowRoot(parent)->host();
-    if (!parent->isElementNode())
-        return nullptr;
-    return toElement(parent);
-}
-
 static inline bool isOpenShadowRoot(const Node* node)
 {
     return node && node->isShadowRoot() && toShadowRoot(node)->type() == ShadowRoot::OpenShadowRoot;
@@ -425,8 +413,13 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
     case CSSSelector::ShadowDeep:
         {
+            if (ShadowRoot* root = context.element->containingShadowRoot()) {
+                if (root->type() == ShadowRoot::UserAgentShadowRoot)
+                    return SelectorFailsCompletely;
+            }
+
             if (context.selector->relationIsAffectedByPseudoContent()) {
-                for (Element* element = context.element; element; element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*element)) {
+                for (Element* element = context.element; element; element = element->parentOrShadowHostElement()) {
                     if (matchForShadowDistributed(nextContext, *element, result) == SelectorMatches)
                         return SelectorMatches;
                 }
@@ -435,7 +428,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
             nextContext.isSubSelector = false;
             nextContext.inRightmostCompound = false;
-            for (nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*context.element); nextContext.element; nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*nextContext.element)) {
+            for (nextContext.element = context.element->parentOrShadowHostElement(); nextContext.element; nextContext.element = nextContext.element->parentOrShadowHostElement()) {
                 Match match = matchSelector(nextContext, result);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
                     return match;
