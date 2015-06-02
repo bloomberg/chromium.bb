@@ -318,7 +318,7 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category,
     time.sleep(0.5 + 1.5*try_count)
 
   print '\n'.join(print_text)
-      
+
 
 def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
   """Return the corresponding git ref if |base_url| together with |glob_spec|
@@ -2720,12 +2720,14 @@ def PatchIssue(issue_arg, reject, nocommit, directory, auth_config):
   else:
     # Assume it's a URL to the patch. Default to https.
     issue_url = gclient_utils.UpgradeToHttps(issue_arg)
-    match = re.match(r'.*?/issue(\d+)_(\d+).diff', issue_url)
+    match = re.match(r'(.*?)/download/issue(\d+)_(\d+).diff', issue_url)
     if not match:
       DieWithError('Must pass an issue ID or full URL for '
           '\'Download raw patch set\'')
-    issue = int(match.group(1))
-    patchset = int(match.group(2))
+    issue = int(match.group(2))
+    cl = Changelist(issue=issue, auth_config=auth_config)
+    cl.rietveld_server = match.group(1)
+    patchset = int(match.group(3))
     patch_data = urllib2.urlopen(issue_arg).read()
 
   # Switch up to the top-level directory, if necessary, in preparation for
