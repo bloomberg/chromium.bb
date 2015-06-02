@@ -203,6 +203,10 @@ template("zip") {
     if (defined(invoker.data_deps)) {
       data_deps = invoker.data_deps
     }
+
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
   }
 }
 
@@ -477,6 +481,9 @@ template("process_java_prebuilt") {
   }
 
   group(target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
     public_deps = [
       ":${target_name}__jar_toc",
       ":$_output_jar_target",
@@ -895,12 +902,18 @@ template("compile_java") {
   _rebased_build_config = rebase_path(_build_config, root_build_dir)
   _rebased_jar_path = rebase_path(_intermediate_jar_path, root_build_dir)
 
-  _template_name = target_name
-  _final_deps = [ ":${_template_name}__javac" ]
-  action("${_template_name}__javac") {
+  javac_target_name = "${target_name}__javac"
+  finish_target_name = "${target_name}__finish"
+  final_target_name = target_name
+
+  action(javac_target_name) {
     script = "//build/android/gyp/javac.py"
     depfile = "$target_gen_dir/$target_name.d"
     deps = _srcjar_deps
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+
     outputs = [
       depfile,
       _intermediate_jar_path,
@@ -931,7 +944,9 @@ template("compile_java") {
     args += rebase_path(_java_files, root_build_dir)
   }
 
-  process_java_prebuilt("${_template_name}__finish") {
+  process_java_prebuilt(finish_target_name) {
+    visibility = [ ":$final_target_name" ]
+
     build_config = _build_config
     input_jar_path = _intermediate_jar_path
     output_jar_path = _final_jar_path
@@ -939,12 +954,18 @@ template("compile_java") {
       proguard_preprocess = invoker.proguard_preprocess
       proguard_config = invoker.proguard_config
     }
-    deps = _final_deps
+    deps = [
+      ":$javac_target_name",
+    ]
   }
-  _final_deps += [ ":${_template_name}__finish" ]
 
-  group(target_name) {
-    public_deps = _final_deps
+  group(final_target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
+    public_deps = [
+      ":$finish_target_name",
+    ]
   }
 }
 
@@ -982,12 +1003,24 @@ template("java_library_impl") {
     }
   }
 
+  # Define build_config_deps which will be a list of targets required to
+  # build the _build_config.
   if (defined(invoker.override_build_config)) {
     _build_config = invoker.override_build_config
+
+    # When a custom build config file is specified, we need to use the deps
+    # supplied by the invoker any time we reference the build config file.
+    assert(defined(invoker.deps),
+           "If you specify a build config file for " +
+               "java_library_impl($target_name), you should " +
+               "also specify the target that made it in the deps")
+    build_config_deps = invoker.deps
   } else {
     _build_config = _base_path + ".build_config"
-    _final_deps += [ ":${_template_name}__build_config" ]
-    write_build_config("${_template_name}__build_config") {
+    build_config_target_name = "${_template_name}__build_config"
+    build_config_deps = [ ":$build_config_target_name" ]
+
+    write_build_config(build_config_target_name) {
       type = "java_library"
       supports_android = _supports_android
       requires_android = _requires_android
@@ -1072,6 +1105,8 @@ template("java_library_impl") {
     if (defined(invoker.manifest_entries)) {
       manifest_entries = invoker.manifest_entries
     }
+
+    deps = build_config_deps
   }
 
   if (defined(invoker.main_class)) {
@@ -1099,6 +1134,8 @@ template("java_library_impl") {
         "--main-class",
         invoker.main_class,
       ]
+
+      deps = build_config_deps
     }
   }
 
@@ -1124,6 +1161,7 @@ template("java_library_impl") {
         findbugs("${_template_name}__findbugs") {
           build_config = _build_config
           jar_path = _jar_path
+          deps = build_config_deps
         }
       }
     }

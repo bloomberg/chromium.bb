@@ -253,8 +253,12 @@ template("java_cpp_template") {
     include_path = "//"
   }
 
-  apply_gcc_target = "${target_name}__apply_gcc"
-  action_foreach(apply_gcc_target) {
+  apply_gcc_target_name = "${target_name}__apply_gcc"
+  zip_srcjar_target_name = "${target_name}__zip_srcjar"
+  final_target_name = target_name
+
+  action_foreach(apply_gcc_target_name) {
+    visibility = [ ":$zip_srcjar_target_name" ]
     script = "//build/android/gyp/gcc_preprocess.py"
     if (defined(invoker.inputs)) {
       inputs = invoker.inputs + []
@@ -262,6 +266,16 @@ template("java_cpp_template") {
     depfile = "${target_gen_dir}/${target_name}_{{source_name_part}}.d"
 
     sources = invoker.sources
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+    if (defined(invoker.public_deps)) {
+      public_deps = invoker.public_deps
+    }
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
+    }
 
     gen_dir =
         "${target_gen_dir}/${target_name}/java_cpp_template/${package_name}"
@@ -292,22 +306,26 @@ template("java_cpp_template") {
     }
   }
 
-  apply_gcc_outputs = get_target_outputs(":${target_name}__apply_gcc")
-  base_gen_dir = get_label_info(":${target_name}__apply_gcc", "target_gen_dir")
+  apply_gcc_outputs = get_target_outputs(":$apply_gcc_target_name")
+  base_gen_dir = get_label_info(":$apply_gcc_target_name", "target_gen_dir")
 
   srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
-  zip("${target_name}__zip_srcjar") {
+  zip(zip_srcjar_target_name) {
+    visibility = [ ":$final_target_name" ]
     inputs = apply_gcc_outputs
     output = srcjar_path
     base_dir = base_gen_dir
     deps = [
-      ":$apply_gcc_target",
+      ":$apply_gcc_target_name",
     ]
   }
 
-  group(target_name) {
+  group(final_target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
     deps = [
-      ":${target_name}__zip_srcjar",
+      ":$zip_srcjar_target_name",
     ]
   }
 }
@@ -348,7 +366,13 @@ template("java_cpp_enum") {
   assert(defined(invoker.sources))
   assert(defined(invoker.outputs))
 
-  action("${target_name}__generate_enum") {
+  generate_enum_target_name = "${target_name}__generate_enum"
+  zip_srcjar_target_name = "${target_name}__zip_srcjar"
+  final_target_name = target_name
+
+  action(generate_enum_target_name) {
+    visibility = [ ":$zip_srcjar_target_name" ]
+
     # The sources aren't compiled so don't check their dependencies.
     check_includes = false
 
@@ -369,20 +393,23 @@ template("java_cpp_enum") {
     args += rebase_path(invoker.sources, root_build_dir)
   }
 
-  generate_enum_outputs = get_target_outputs(":${target_name}__generate_enum")
-  base_gen_dir =
-      get_label_info(":${target_name}__generate_enum", "target_gen_dir")
+  generate_enum_outputs = get_target_outputs(":$generate_enum_target_name")
+  base_gen_dir = get_label_info(":$generate_enum_target_name", "target_gen_dir")
 
   srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
-  zip("${target_name}__zip_srcjar") {
+  zip(zip_srcjar_target_name) {
+    visibility = [ ":$final_target_name" ]
     inputs = generate_enum_outputs
     output = srcjar_path
     base_dir = base_gen_dir
   }
 
-  group(target_name) {
+  group(final_target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
     deps = [
-      ":${target_name}__zip_srcjar",
+      ":$zip_srcjar_target_name",
     ]
   }
 }
@@ -410,6 +437,10 @@ template("jinja_template") {
   assert(defined(invoker.output))
 
   action(target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
+
     sources = [
       invoker.input,
     ]
@@ -1372,6 +1403,9 @@ template("android_apk") {
       inputs = [
         _build_config,
       ]
+      deps = [
+        ":$build_config_target",
+      ]
 
       defines = [
         "NATIVE_LIBRARIES_LIST=" +
@@ -1397,6 +1431,10 @@ template("android_apk") {
     supports_android = true
     requires_android = true
     override_build_config = _build_config
+    deps = [
+      ":$build_config_target",
+    ]
+
     android_manifest = _android_manifest
     chromium_code = true
     if (defined(invoker.java_files)) {
@@ -1438,8 +1476,8 @@ template("android_apk") {
       _rebased_jar_path = rebase_path([ jar_path ], root_build_dir)
       args += [ "--inputs=$_rebased_jar_path" ]
       deps = [
-        # This target generates the jar file.
-        ":$java_target",
+        ":$build_config_target",  # Generates the build config file.
+        ":$java_target",  # Generates the jar file.
       ]
     }
   }
@@ -1447,7 +1485,8 @@ template("android_apk") {
   final_deps += [ ":$final_dex_target_name" ]
   dex("$final_dex_target_name") {
     deps = [
-      ":${_template_name}__java",
+      ":$build_config_target",
+      ":$java_target",
     ]
     sources = [
       jar_path,
@@ -1468,8 +1507,13 @@ template("android_apk") {
       outputs = [
         depfile,
       ]
-      inputs = [ _build_config ] + _native_libs
+
+      inputs = _native_libs
       deps = _chromium_linker_dep
+
+      inputs += [ _build_config ]
+      deps += [ ":$build_config_target" ]
+
       skip_packing_list = [
         "gdbserver",
         "libchromium_android_linker.so",
