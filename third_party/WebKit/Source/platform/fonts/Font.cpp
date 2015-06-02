@@ -405,8 +405,7 @@ GlyphData Font::glyphDataForCharacter(UChar32& c, bool mirror, bool normalizeSpa
 
     if (variant == AutoVariant) {
         if (m_fontDescription.variant() == FontVariantSmallCaps) {
-            bool includeDefault = false;
-            UChar32 upperC = toUpper(c, m_fontDescription.locale(includeDefault).characters8());
+            UChar32 upperC = toUpper(c);
             if (upperC != c) {
                 c = upperC;
                 variant = SmallCapsVariant;

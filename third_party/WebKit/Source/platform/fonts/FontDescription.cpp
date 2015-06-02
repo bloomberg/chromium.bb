@@ -131,9 +131,9 @@ static const AtomicString& defaultLocale()
     return locale;
 }
 
-const AtomicString& FontDescription::locale(bool includeDefault) const
+const AtomicString& FontDescription::locale() const
 {
-    if (m_locale.isNull() && includeDefault)
+    if (m_locale.isNull())
         return defaultLocale();
     return m_locale;
 }

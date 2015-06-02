@@ -1864,7 +1864,3 @@ crbug.com/495540 [ XP ] svg/custom/svg-curve-with-relative-cordinates.html [ Fai
 crbug.com/495540 [ XP ] svg/wicd/rightsizing-grid.xhtml [ Failure ]
 
 crbug.com/495542 [ XP ] plugins/webview-plugin-lifecycle.html [ Failure ]
-
-crbug.com/395369 fast/text/small-caps-turkish.html [ NeedsRebaseline ]
-crbug.com/395369 virtual/antialiasedtext/fast/text/small-caps-turkish.html [ NeedsRebaseline ]
-

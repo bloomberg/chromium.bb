@@ -162,7 +162,7 @@ public:
     FontSmoothingMode fontSmoothing() const { return static_cast<FontSmoothingMode>(m_fontSmoothing); }
     TextRenderingMode textRendering() const { return static_cast<TextRenderingMode>(m_textRendering); }
     UScriptCode script() const { return static_cast<UScriptCode>(m_script); }
-    const AtomicString& locale(bool includeDefault = true) const;
+    const AtomicString& locale() const;
     bool isSyntheticBold() const { return m_syntheticBold; }
     bool isSyntheticItalic() const { return m_syntheticItalic; }
     bool useSubpixelPositioning() const { return m_subpixelTextPosition; }

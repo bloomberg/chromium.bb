@@ -756,10 +756,6 @@ inline PassRefPtr<StringImpl> StringImpl::isolatedCopy() const
     return create(characters16(), m_length);
 }
 
-// TODO(rob.buis) possibly find a better place for this method.
-// Turns a UChar32 to uppercase based on localeIdentifier.
-WTF_EXPORT UChar32 toUpper(UChar32, const AtomicString& localeIdentifier);
-
 struct StringHash;
 
 // StringHash is the default hash for StringImpl* and RefPtr<StringImpl>
