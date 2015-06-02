@@ -11,11 +11,10 @@ group("all") {
   ]
 
   if (!is_component_build) {
-    deps += [ "//mandoline/app" ]
-
-    if (!is_win) {
-      deps += [ "//components/filesystem" ]
-    }
+    deps += [
+      "//mandoline/app",
+      "//components/filesystem",
+    ]
   }
 }
 
@@ -29,15 +28,12 @@ group("tests") {
   if (!is_component_build && !is_mac) {
     deps += [
       "//components/clipboard:apptests",
+      "//components/filesystem:apptests",
       "//components/html_viewer:apptests",
       "//components/html_viewer:tests",
       "//components/resource_provider:apptests",
       "//components/resource_provider:tests",
       "//components/view_manager:tests",
     ]
-
-    if (!is_win) {
-      deps += [ "//components/filesystem:apptests" ]
-    }
   }
 }

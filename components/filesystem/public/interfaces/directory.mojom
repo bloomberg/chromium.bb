@@ -19,7 +19,7 @@ interface Directory {
 
   // Reads the contents of this directory.
   // TODO(vtl): Clarify error codes versus |directory_contents|.
-  Read() => (Error error, array<DirectoryEntry>? directory_contents);
+  Read() => (FileError error, array<DirectoryEntry>? directory_contents);
 
   // Operations *in* "this" |Directory|:
 
@@ -27,20 +27,20 @@ interface Directory {
   // optional, mainly for consistency with |OpenDirectory()| (but may be useful,
   // together with |kOpenFlagCreate|, for "touching" a file).
   OpenFile(string path, File&? file, uint32 open_flags)
-      => (Error error);
+      => (FileError error);
 
   // Opens the directory specified by |path|. |directory| is optional, so that
   // this may be used as a simple "mkdir()" with |kOpenFlagCreate|.
   OpenDirectory(string path,
                 Directory&? directory,
-                uint32 open_flags) => (Error error);
+                uint32 open_flags) => (FileError error);
 
   // Renames/moves the file/directory given by |path| to |new_path|.
-  Rename(string path, string new_path) => (Error error);
+  Rename(string path, string new_path) => (FileError error);
 
   // Deletes the given path, which may be a file or a directory (see
   // |kDeleteFlag...| for details).
-  Delete(string path, uint32 delete_flags) => (Error error);
+  Delete(string path, uint32 delete_flags) => (FileError error);
 
   // TODO(vtl): directory "streaming"?
   // TODO(vtl): "make root" (i.e., prevent cd-ing, etc., to parent); note that
