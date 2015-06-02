@@ -14,17 +14,17 @@ namespace blink {
 class PLATFORM_EXPORT PlatformFederatedCredential final : public PlatformCredential {
     WTF_MAKE_NONCOPYABLE(PlatformFederatedCredential);
 public:
-    static PlatformFederatedCredential* create(const String& id, const KURL& federation, const String& name, const KURL& avatarURL);
+    static PlatformFederatedCredential* create(const String& id, const KURL& federation, const String& name, const KURL& iconURL);
     virtual ~PlatformFederatedCredential();
 
-    const KURL& federation() const { return m_federation; }
+    const KURL& provider() const { return m_provider; }
 
     virtual bool isFederated() override { return true; }
 
 private:
-    PlatformFederatedCredential(const String& id, const KURL& federation, const String& name, const KURL& avatarURL);
+    PlatformFederatedCredential(const String& id, const KURL& federation, const String& name, const KURL& iconURL);
 
-    KURL m_federation;
+    KURL m_provider;
 };
 
 } // namespace blink

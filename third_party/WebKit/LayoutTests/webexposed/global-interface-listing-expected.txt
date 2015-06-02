@@ -1442,7 +1442,8 @@ interface EventTarget
     method dispatchEvent
     method removeEventListener
 interface FederatedCredential
-    getter federation
+    getter protocol
+    getter provider
     method constructor
 interface File
     getter lastModified

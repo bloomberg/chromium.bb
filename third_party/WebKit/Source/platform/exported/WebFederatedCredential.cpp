@@ -8,14 +8,8 @@
 #include "platform/credentialmanager/PlatformFederatedCredential.h"
 
 namespace blink {
-WebFederatedCredential::WebFederatedCredential(const WebString& id, const WebURL& federation, const WebString& name, const WebURL& avatarURL)
-    : WebCredential(PlatformFederatedCredential::create(id, federation, name, avatarURL))
-{
-}
-
-// FIXME: Throw this away once it's unused on the Chromium side.
-WebFederatedCredential::WebFederatedCredential(const WebString& id, const WebString& name, const WebURL& avatarURL, const WebURL& federation)
-    : WebCredential(PlatformFederatedCredential::create(id, federation, name, avatarURL))
+WebFederatedCredential::WebFederatedCredential(const WebString& id, const WebURL& provider, const WebString& name, const WebURL& iconURL)
+    : WebCredential(PlatformFederatedCredential::create(id, provider, name, iconURL))
 {
 }
 
@@ -24,9 +18,9 @@ void WebFederatedCredential::assign(const WebFederatedCredential& other)
     m_platformCredential = other.m_platformCredential;
 }
 
-WebURL WebFederatedCredential::federation() const
+WebURL WebFederatedCredential::provider() const
 {
-    return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())->federation();
+    return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())->provider();
 }
 
 WebFederatedCredential::WebFederatedCredential(PlatformCredential* credential)

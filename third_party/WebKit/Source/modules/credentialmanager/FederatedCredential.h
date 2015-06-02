@@ -13,30 +13,24 @@
 
 namespace blink {
 
+class FederatedCredentialData;
 class WebFederatedCredential;
 
 class FederatedCredential final : public Credential {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static FederatedCredential* create(const String& id, const String& federation, ExceptionState& exceptionState)
-    {
-        return create(id, federation, String(), String(), exceptionState);
-    }
-
-    static FederatedCredential* create(const String& id, const String& federation, const String& name, ExceptionState& exceptionState)
-    {
-        return create(id, federation, name, String(), exceptionState);
-    }
-
-    static FederatedCredential* create(const String& id, const String& federation, const String& name, const String& avatar, ExceptionState&);
+    static FederatedCredential* create(const FederatedCredentialData&, ExceptionState&);
     static FederatedCredential* create(WebFederatedCredential*);
 
     // FederatedCredential.idl
-    const KURL& federation() const;
+    const KURL& provider() const;
+
+    // TODO(mkwst): This is a stub, as we don't yet have any support on the Chromium-side.
+    const String protocol() const { return String(); }
 
 private:
     FederatedCredential(WebFederatedCredential*);
-    FederatedCredential(const String& id, const KURL& federation, const String& name, const KURL& avatar);
+    FederatedCredential(const String& id, const KURL& provider, const String& name, const KURL& avatar);
 };
 
 } // namespace blink

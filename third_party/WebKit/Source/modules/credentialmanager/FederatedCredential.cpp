@@ -6,6 +6,7 @@
 #include "modules/credentialmanager/FederatedCredential.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "modules/credentialmanager/FederatedCredentialData.h"
 #include "platform/credentialmanager/PlatformFederatedCredential.h"
 #include "public/platform/WebFederatedCredential.h"
 
@@ -16,13 +17,13 @@ FederatedCredential* FederatedCredential::create(WebFederatedCredential* webFede
     return new FederatedCredential(webFederatedCredential);
 }
 
-FederatedCredential* FederatedCredential::create(const String& id, const String& federation, const String& name, const String& avatar, ExceptionState& exceptionState)
+FederatedCredential* FederatedCredential::create(const FederatedCredentialData& data, ExceptionState& exceptionState)
 {
-    KURL avatarURL = parseStringAsURL(avatar, exceptionState);
-    KURL federationURL = parseStringAsURL(federation, exceptionState);
+    KURL iconURL = parseStringAsURL(data.iconURL(), exceptionState);
+    KURL providerURL = parseStringAsURL(data.provider(), exceptionState);
     if (exceptionState.hadException())
         return nullptr;
-    return new FederatedCredential(id, federationURL, name, avatarURL);
+    return new FederatedCredential(data.id(), providerURL, data.name(), iconURL);
 }
 
 FederatedCredential::FederatedCredential(WebFederatedCredential* webFederatedCredential)
@@ -30,14 +31,14 @@ FederatedCredential::FederatedCredential(WebFederatedCredential* webFederatedCre
 {
 }
 
-FederatedCredential::FederatedCredential(const String& id, const KURL& federation, const String& name, const KURL& avatar)
-    : Credential(PlatformFederatedCredential::create(id, federation, name, avatar))
+FederatedCredential::FederatedCredential(const String& id, const KURL& provider, const String& name, const KURL& icon)
+    : Credential(PlatformFederatedCredential::create(id, provider, name, icon))
 {
 }
 
-const KURL& FederatedCredential::federation() const
+const KURL& FederatedCredential::provider() const
 {
-    return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())->federation();
+    return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())->provider();
 }
 
 } // namespace blink
