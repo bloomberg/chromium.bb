@@ -31,6 +31,10 @@
 #include "ui/base/page_transition_types.h"
 #include "url/url_constants.h"
 
+#if !defined(OS_ANDROID)
+#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
+#endif
+
 namespace content {
 
 class NavigatorTestWithBrowserSideNavigation
@@ -41,8 +45,20 @@ class NavigatorTestWithBrowserSideNavigation
   typedef RenderFrameHostManager::SiteInstanceDescriptor SiteInstanceDescriptor;
 
   void SetUp() override {
+#if !defined(OS_ANDROID)
+    ImageTransportFactory::InitializeForUnitTests(
+        scoped_ptr<ImageTransportFactory>(
+            new NoTransportImageTransportFactory));
+#endif
     EnableBrowserSideNavigation();
     RenderViewHostImplTestHarness::SetUp();
+  }
+
+  void TearDown() override {
+#if !defined(OS_ANDROID)
+    ImageTransportFactory::Terminate();
+#endif
+    RenderViewHostImplTestHarness::TearDown();
   }
 
   TestNavigationURLLoader* GetLoaderForNavigationRequest(
