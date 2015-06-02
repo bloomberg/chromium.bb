@@ -1850,3 +1850,6 @@ crbug.com/321237 [ Mac ] virtual/antialiasedtext/fast/text/international/complex
 crbug.com/321237 [ Win ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 
 crbug.com/495523 fast/text/international/text-spliced-font.html [ Pass Failure ]
+
+crbug.com/495534 [ Win ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001d.html [ Failure ]
+crbug.com/495534 [ Win ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001i.html [ Failure ]
