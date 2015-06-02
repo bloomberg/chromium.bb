@@ -30,29 +30,20 @@
 namespace blink {
 
 CompositionEvent::CompositionEvent()
-    : m_activeSegmentStart(0)
-    , m_activeSegmentEnd(0)
 {
-    initializeSegments();
 }
 
-CompositionEvent::CompositionEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, const Vector<CompositionUnderline>& underlines)
+CompositionEvent::CompositionEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, const String& data)
     : UIEvent(type, true, true, view, 0)
     , m_data(data)
-    , m_activeSegmentStart(0)
-    , m_activeSegmentEnd(0)
 {
-    initializeSegments(&underlines);
 }
 
 CompositionEvent::CompositionEvent(const AtomicString& type, const CompositionEventInit& initializer)
     : UIEvent(type, initializer)
-    , m_activeSegmentStart(0)
-    , m_activeSegmentEnd(0)
 {
     if (initializer.hasData())
         m_data = initializer.data();
-    initializeSegments();
 }
 
 CompositionEvent::~CompositionEvent()
@@ -67,29 +58,6 @@ void CompositionEvent::initCompositionEvent(const AtomicString& type, bool canBu
     initUIEvent(type, canBubble, cancelable, view, 0);
 
     m_data = data;
-    initializeSegments();
-}
-
-void CompositionEvent::initializeSegments(const Vector<CompositionUnderline>* underlines)
-{
-    m_activeSegmentStart = 0;
-    m_activeSegmentEnd = m_data.length();
-
-    if (!underlines || !underlines->size()) {
-        m_segments.append(0);
-        return;
-    }
-
-    for (const auto& underline : *underlines) {
-        if (underline.thick) {
-            m_activeSegmentStart = underline.startOffset;
-            m_activeSegmentEnd = underline.endOffset;
-            break;
-        }
-    }
-
-    for (const auto& underline : *underlines)
-        m_segments.append(underline.startOffset);
 }
 
 const AtomicString& CompositionEvent::interfaceName() const

@@ -51,10 +51,6 @@ interface HTMLElement : Element {
     readonly attribute long offsetWidth;
     readonly attribute long offsetHeight;
 
-    // Input Method Editor API
-    // https://dvcs.w3.org/hg/ime-api/raw-file/default/Overview.html#the-inputmethodcontext-property
-    [RuntimeEnabled=IMEAPI] readonly attribute InputMethodContext? inputMethodContext;
-
     // Non-standard APIs
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute DOMString innerText;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute DOMString outerText;

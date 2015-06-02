@@ -76,7 +76,6 @@ namespace http://www.w3.org/1999/xhtml
     property id
     property innerHTML
     property innerText
-    property inputMethodContext
     property insertAdjacentElement
     property insertAdjacentHTML
     property insertAdjacentText
@@ -1162,7 +1161,6 @@ namespace http://www.w3.org/2000/svg
     property id
     property innerHTML
     property innerText
-    property inputMethodContext
     property insertAdjacentElement
     property insertAdjacentHTML
     property insertAdjacentText

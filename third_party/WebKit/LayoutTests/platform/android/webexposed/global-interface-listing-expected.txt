@@ -588,11 +588,8 @@ interface CloseEvent
 interface Comment
     method constructor
 interface CompositionEvent
-    getter activeSegmentEnd
-    getter activeSegmentStart
     getter data
     method constructor
-    method getSegments
     method initCompositionEvent
 interface CompositorProxy
     getter opacity
@@ -1847,7 +1844,6 @@ interface HTMLElement
     getter draggable
     getter hidden
     getter innerText
-    getter inputMethodContext
     getter isContentEditable
     getter lang
     getter offsetHeight
@@ -3044,19 +3040,6 @@ interface ImageData
     getter height
     getter width
     method constructor
-interface InputMethodContext
-    getter compositionEndOffset
-    getter compositionStartOffset
-    getter locale
-    getter oncandidatewindowhide
-    getter oncandidatewindowshow
-    getter oncandidatewindowupdate
-    getter target
-    method confirmComposition
-    method constructor
-    setter oncandidatewindowhide
-    setter oncandidatewindowshow
-    setter oncandidatewindowupdate
 interface Int16Array
     attribute BYTES_PER_ELEMENT
     getter buffer

@@ -69,7 +69,6 @@ class DataObject;
 class DevToolsEmulator;
 class Frame;
 class FullscreenController;
-class InputMethodContext;
 class InspectorOverlay;
 class InspectorOverlayImpl;
 class LinkHighlight;
@@ -146,9 +145,6 @@ public:
     virtual WebColor backgroundColor() const override;
     virtual WebPagePopup* pagePopup() const override;
     virtual bool selectionBounds(WebRect& anchor, WebRect& focus) const override;
-    virtual void didShowCandidateWindow() override;
-    virtual void didUpdateCandidateWindow() override;
-    virtual void didHideCandidateWindow() override;
     virtual bool selectionTextDirection(WebTextDirection& start, WebTextDirection& end) const override;
     virtual bool isSelectionAnchorFirst() const override;
     virtual bool caretOrSelectionRange(size_t* location, size_t* length) override;
@@ -620,7 +616,6 @@ private:
 
     bool handleSyntheticWheelFromTouchpadPinchEvent(const WebGestureEvent&);
 
-    InputMethodContext* inputMethodContext();
     WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*);
 
     void enablePopupMouseWheelEventListener();

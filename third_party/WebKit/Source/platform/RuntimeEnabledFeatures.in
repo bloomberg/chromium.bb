@@ -71,7 +71,6 @@ HTMLPopupMenu status=stable
 GlobalCacheStorage status=stable
 ImageColorProfiles
 ImageRenderingPixelated status=stable
-IMEAPI status=experimental
 IndexedDBExperimental status=experimental
 InputModeAttribute status=experimental
 KeyboardEventCode status=experimental

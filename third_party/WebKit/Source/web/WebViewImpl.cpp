@@ -66,7 +66,6 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/forms/PopupMenuClient.h"
-#include "core/html/ime/InputMethodContext.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
@@ -2623,46 +2622,12 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
     return true;
 }
 
-InputMethodContext* WebViewImpl::inputMethodContext()
-{
-    if (!m_imeAcceptEvents)
-        return 0;
-
-    LocalFrame* focusedFrame = toLocalFrame(focusedCoreFrame());
-    if (!focusedFrame)
-        return 0;
-
-    Element* target = focusedFrame->document()->focusedElement();
-    if (target && target->hasInputMethodContext())
-        return &target->inputMethodContext();
-
-    return 0;
-}
-
 WebPlugin* WebViewImpl::focusedPluginIfInputMethodSupported(LocalFrame* frame)
 {
     WebPluginContainerImpl* container = WebLocalFrameImpl::pluginContainerFromNode(frame, WebNode(focusedElement()));
     if (container && container->supportsInputMethod())
         return container->plugin();
     return 0;
-}
-
-void WebViewImpl::didShowCandidateWindow()
-{
-    if (InputMethodContext* context = inputMethodContext())
-        context->dispatchCandidateWindowShowEvent();
-}
-
-void WebViewImpl::didUpdateCandidateWindow()
-{
-    if (InputMethodContext* context = inputMethodContext())
-        context->dispatchCandidateWindowUpdateEvent();
-}
-
-void WebViewImpl::didHideCandidateWindow()
-{
-    if (InputMethodContext* context = inputMethodContext())
-        context->dispatchCandidateWindowHideEvent();
 }
 
 bool WebViewImpl::selectionTextDirection(WebTextDirection& start, WebTextDirection& end) const

@@ -138,15 +138,6 @@ bool InputMethodController::confirmCompositionOrInsertText(const String& text, C
     return confirmComposition();
 }
 
-void InputMethodController::confirmCompositionAndResetState()
-{
-    if (!hasComposition())
-        return;
-
-    // ChromeClient::willSetInputMethodState() resets input method and the composition string is committed.
-    frame().chromeClient().willSetInputMethodState();
-}
-
 void InputMethodController::cancelComposition()
 {
     finishComposition(emptyString(), CancelComposition);
@@ -191,14 +182,7 @@ bool InputMethodController::finishComposition(const String& text, FinishComposit
     // We should send this event before sending a TextEvent as written in Section 6.2.2 and 6.2.3 of
     // the DOM Event specification.
     if (Element* target = frame().document()->focusedElement()) {
-        unsigned baseOffset = frame().selection().base().downstream().deprecatedEditingOffset();
-        Vector<CompositionUnderline> underlines;
-        for (auto underline : m_customCompositionUnderlines) {
-            underline.startOffset -= baseOffset;
-            underline.endOffset -= baseOffset;
-            underlines.append(underline);
-        }
-        RefPtrWillBeRawPtr<CompositionEvent> event = CompositionEvent::create(EventTypeNames::compositionend, frame().domWindow(), text, underlines);
+        RefPtrWillBeRawPtr<CompositionEvent> event = CompositionEvent::create(EventTypeNames::compositionend, frame().domWindow(), text);
         target->dispatchEvent(event, IGNORE_EXCEPTION);
     }
 
@@ -257,14 +241,14 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
             // We should send a compositionstart event only when the given text is not empty because this
             // function doesn't create a composition node when the text is empty.
             if (!text.isEmpty()) {
-                target->dispatchEvent(CompositionEvent::create(EventTypeNames::compositionstart, frame().domWindow(), frame().selectedText(), underlines));
-                event = CompositionEvent::create(EventTypeNames::compositionupdate, frame().domWindow(), text, underlines);
+                target->dispatchEvent(CompositionEvent::create(EventTypeNames::compositionstart, frame().domWindow(), frame().selectedText()));
+                event = CompositionEvent::create(EventTypeNames::compositionupdate, frame().domWindow(), text);
             }
         } else {
             if (!text.isEmpty())
-                event = CompositionEvent::create(EventTypeNames::compositionupdate, frame().domWindow(), text, underlines);
+                event = CompositionEvent::create(EventTypeNames::compositionupdate, frame().domWindow(), text);
             else
-                event = CompositionEvent::create(EventTypeNames::compositionend, frame().domWindow(), text, underlines);
+                event = CompositionEvent::create(EventTypeNames::compositionend, frame().domWindow(), text);
         }
         if (event.get())
             target->dispatchEvent(event, IGNORE_EXCEPTION);

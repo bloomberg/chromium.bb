@@ -2690,19 +2690,6 @@ interface ImageData
     getter height
     getter width
     method constructor
-interface InputMethodContext
-    getter compositionEndOffset
-    getter compositionStartOffset
-    getter locale
-    getter oncandidatewindowhide
-    getter oncandidatewindowshow
-    getter oncandidatewindowupdate
-    getter target
-    method confirmComposition
-    method constructor
-    setter oncandidatewindowhide
-    setter oncandidatewindowshow
-    setter oncandidatewindowupdate
 interface Int16Array
     attribute BYTES_PER_ELEMENT
     getter buffer

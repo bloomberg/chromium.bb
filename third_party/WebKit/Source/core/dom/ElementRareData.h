@@ -31,7 +31,6 @@
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
-#include "core/html/ime/InputMethodContext.h"
 #include "core/style/StyleInheritedData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
@@ -112,14 +111,6 @@ public:
         m_elementAnimations = elementAnimations;
     }
 
-    bool hasInputMethodContext() const { return m_inputMethodContext; }
-    InputMethodContext& ensureInputMethodContext(HTMLElement* element)
-    {
-        if (!m_inputMethodContext)
-            m_inputMethodContext = InputMethodContext::create(element);
-        return *m_inputMethodContext;
-    }
-
     bool hasPseudoElements() const;
     void clearPseudoElements();
 
@@ -153,7 +144,6 @@ private:
     OwnPtrWillBeMember<ElementShadow> m_shadow;
     OwnPtrWillBeMember<NamedNodeMap> m_attributeMap;
     OwnPtrWillBeMember<AttrNodeList> m_attrNodeList;
-    OwnPtrWillBeMember<InputMethodContext> m_inputMethodContext;
     OwnPtrWillBeMember<ElementAnimations> m_elementAnimations;
     OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;
 

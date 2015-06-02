@@ -64,7 +64,6 @@ public:
     // Inserts the text that is being composed or specified non-empty text and
     // returns true.
     bool confirmCompositionOrInsertText(const String& text, ConfirmCompositionBehavior);
-    void confirmCompositionAndResetState();
     // Deletes the existing composition text.
     void cancelComposition();
     void cancelCompositionIfSelectionIsInvalid();
