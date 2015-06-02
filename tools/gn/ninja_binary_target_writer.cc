@@ -80,12 +80,13 @@ void NinjaBinaryTargetWriter::Run() {
   WriteCompilerVars();
 
   std::vector<OutputFile> obj_files;
-  WriteSources(&obj_files);
+  std::vector<SourceFile> other_files;
+  WriteSources(&obj_files, &other_files);
 
   if (target_->output_type() == Target::SOURCE_SET)
     WriteSourceSetStamp(obj_files);
   else
-    WriteLinkerStuff(obj_files);
+    WriteLinkerStuff(obj_files, other_files);
 }
 
 void NinjaBinaryTargetWriter::WriteCompilerVars() {
@@ -134,7 +135,8 @@ void NinjaBinaryTargetWriter::WriteCompilerVars() {
 }
 
 void NinjaBinaryTargetWriter::WriteSources(
-    std::vector<OutputFile>* object_files) {
+    std::vector<OutputFile>* object_files,
+    std::vector<SourceFile>* other_files) {
   object_files->reserve(target_->sources().size());
 
   OutputFile input_dep =
@@ -145,9 +147,11 @@ void NinjaBinaryTargetWriter::WriteSources(
   std::vector<OutputFile> tool_outputs;  // Prevent reallocation in loop.
   for (const auto& source : target_->sources()) {
     Toolchain::ToolType tool_type = Toolchain::TYPE_NONE;
-    if (!GetOutputFilesForSource(target_, source,
-                                 &tool_type, &tool_outputs))
+    if (!GetOutputFilesForSource(target_, source, &tool_type, &tool_outputs)) {
+      if (GetSourceFileType(source) == SOURCE_DEF)
+        other_files->push_back(source);
       continue;  // No output for this source.
+    }
 
     if (tool_type != Toolchain::TYPE_NONE) {
       out_ << "build";
@@ -195,7 +199,8 @@ void NinjaBinaryTargetWriter::WriteSources(
 }
 
 void NinjaBinaryTargetWriter::WriteLinkerStuff(
-    const std::vector<OutputFile>& object_files) {
+    const std::vector<OutputFile>& object_files,
+    const std::vector<SourceFile>& other_files) {
   std::vector<OutputFile> output_files;
   SubstitutionWriter::ApplyListToLinkerAsOutputFile(
       target_, tool_, tool_->outputs(), &output_files);
@@ -245,6 +250,18 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
     }
   }
 
+  const SourceFile* optional_def_file = nullptr;
+  if (!other_files.empty()) {
+    for (const SourceFile& src_file : other_files) {
+      if (GetSourceFileType(src_file) == SOURCE_DEF) {
+        optional_def_file = &src_file;
+        implicit_deps.push_back(
+            OutputFile(settings_->build_settings(), src_file));
+        break;  // Only one def file is allowed.
+      }
+    }
+  }
+
   // Append implicit dependencies collected above.
   if (!implicit_deps.empty()) {
     out_ << " |";
@@ -270,13 +287,15 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
   out_ << std::endl;
 
   // These go in the inner scope of the link line.
-  WriteLinkerFlags();
+  WriteLinkerFlags(optional_def_file);
+
   WriteLibs();
   WriteOutputExtension();
   WriteSolibs(solibs);
 }
 
-void NinjaBinaryTargetWriter::WriteLinkerFlags() {
+void NinjaBinaryTargetWriter::WriteLinkerFlags(
+    const SourceFile* optional_def_file) {
   out_ << "  ldflags =";
 
   // First the ldflags from the target and its config.
@@ -299,6 +318,12 @@ void NinjaBinaryTargetWriter::WriteLinkerFlags() {
                                PathOutput::DIR_NO_LAST_SLASH);
     }
   }
+
+  if (optional_def_file) {
+    out_ << " /DEF:";
+    path_output_.WriteFile(out_, *optional_def_file);
+  }
+
   out_ << std::endl;
 }
 

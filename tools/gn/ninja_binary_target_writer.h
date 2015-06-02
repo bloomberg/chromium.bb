@@ -26,9 +26,11 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
   typedef std::set<OutputFile> OutputFileSet;
 
   void WriteCompilerVars();
-  void WriteSources(std::vector<OutputFile>* object_files);
-  void WriteLinkerStuff(const std::vector<OutputFile>& object_files);
-  void WriteLinkerFlags();
+  void WriteSources(std::vector<OutputFile>* object_files,
+                    std::vector<SourceFile>* other_files);
+  void WriteLinkerStuff(const std::vector<OutputFile>& object_files,
+                        const std::vector<SourceFile>& other_files);
+  void WriteLinkerFlags(const SourceFile* optional_def_file);
   void WriteLibs();
   void WriteOutputExtension();
   void WriteSolibs(const std::vector<OutputFile>& solibs);

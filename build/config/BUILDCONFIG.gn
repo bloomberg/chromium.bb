@@ -253,6 +253,7 @@ if (!is_win) {
     "*_win.h",
     "*_win_unittest.cc",
     "*\bwin/*",
+    "*.def",
     "*.rc",
   ]
 }

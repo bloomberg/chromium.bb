@@ -25,6 +25,8 @@ SourceFileType GetSourceFileType(const SourceFile& file) {
     return SOURCE_S;
   if (extension == "o" || extension == "obj")
     return SOURCE_O;
+  if (extension == "def")
+    return SOURCE_DEF;
 
   return SOURCE_UNKNOWN;
 }

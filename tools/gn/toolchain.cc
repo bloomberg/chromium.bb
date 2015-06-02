@@ -116,6 +116,7 @@ Toolchain::ToolType Toolchain::GetToolTypeForSourceType(SourceFileType type) {
     case SOURCE_UNKNOWN:
     case SOURCE_H:
     case SOURCE_O:
+    case SOURCE_DEF:
       return TYPE_NONE;
     default:
       NOTREACHED();
