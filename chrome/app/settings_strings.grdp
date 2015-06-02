@@ -2,7 +2,7 @@
 <!-- Settings-specific strings (included from generated_resources.grd). -->
 <grit-part>
   <!-- Accessibility Page -->
-  <message name="IDS_MD_SETTINGS_ACCESSIBILITY_PAGE_TITLE" desc="Name of the settings page which displays accessibility preferences.">
+  <message name="IDS_SETTINGS_ACCESSIBILITY_PAGE_TITLE" desc="Name of the settings page which displays accessibility preferences.">
     Accessibility
   </message>
   <message name="IDS_SETTINGS_ACCESSIBILITY_MORE_FEATURES_LINK" desc="Link which opens page where users can install extensions which provide additional accessibility features.">
@@ -72,7 +72,7 @@
   </message>
 
   <!-- Downloads Page -->
-  <message name="IDS_MD_SETTINGS_DOWNLOADS_PAGE_TITLE" desc="Name of the settings page which displays download preferences.">
+  <message name="IDS_SETTINGS_DOWNLOADS_PAGE_TITLE" desc="Name of the settings page which displays download preferences.">
     Downloads
   </message>
   <message name="IDS_SETTINGS_DOWNLOADS_LOCATION_LABEL" desc="Label for the input which allows the user to specify the default download directory.">

@@ -15,7 +15,7 @@ const char kLocalizedStringsFile[] = "strings.js";
 
 void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
-      "a11yPageTitle", IDS_MD_SETTINGS_ACCESSIBILITY_PAGE_TITLE);
+      "a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY_PAGE_TITLE);
   html_source->AddLocalizedString(
       "accessibilityMoreFeaturesLink",
       IDS_SETTINGS_ACCESSIBILITY_MORE_FEATURES_LINK);
@@ -85,7 +85,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
 
 void AddDownloadsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
-      "downloadsPageTitle", IDS_MD_SETTINGS_DOWNLOADS_PAGE_TITLE);
+      "downloadsPageTitle", IDS_SETTINGS_DOWNLOADS_PAGE_TITLE);
   html_source->AddLocalizedString(
       "downloadsLocationLabel", IDS_SETTINGS_DOWNLOADS_LOCATION_LABEL);
   html_source->AddLocalizedString(
