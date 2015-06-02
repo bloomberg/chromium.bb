@@ -16,6 +16,8 @@
         '../public/provider/chrome/browser/chrome_browser_provider.h',
         '../public/provider/chrome/browser/geolocation_updater_provider.h',
         '../public/provider/chrome/browser/geolocation_updater_provider.mm',
+        '../public/provider/chrome/browser/keyed_service_provider.cc',
+        '../public/provider/chrome/browser/keyed_service_provider.h',
         '../public/provider/chrome/browser/string_provider.h',
         '../public/provider/chrome/browser/ui/infobar_view_delegate.h',
         '../public/provider/chrome/browser/ui/infobar_view_protocol.h',
@@ -24,6 +26,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../components/components.gyp:autofill_core_browser',
       ],
     },
   ],

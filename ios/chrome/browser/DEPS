@@ -3,6 +3,7 @@ include_rules = [
 
   "+breakpad/src/client/ios",
   "+components/autofill/core/browser",
+  "+components/autofill/core/common",
   "+components/autofill/ios/browser",
   "+components/data_reduction_proxy/core/common",
   "+components/dom_distiller/core",
@@ -11,6 +12,7 @@ include_rules = [
   "+components/keyed_service/core",
   "+components/keyed_service/ios",
   "+components/leveldb_proto",
+  "+components/password_manager/core/browser",
   "+components/pref_registry",
   "+components/search_engines",
   "+components/suggestions",

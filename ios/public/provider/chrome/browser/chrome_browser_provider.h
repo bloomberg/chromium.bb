@@ -7,8 +7,15 @@
 
 #include <CoreGraphics/CoreGraphics.h>
 
+#include <string>
+
 class InfoBarViewDelegate;
 class PrefService;
+
+namespace autofill {
+class CardUnmaskPromptController;
+class CardUnmaskPromptView;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -34,6 +41,7 @@ namespace ios {
 
 class ChromeBrowserProvider;
 class GeolocationUpdaterProvider;
+class KeyedServiceProvider;
 class StringProvider;
 class UpdatableResourceProvider;
 
@@ -71,6 +79,15 @@ class ChromeBrowserProvider {
   virtual const char* GetChromeUIScheme();
   // Sets the alpha property of an UIView with an animation.
   virtual void SetUIViewAlphaWithAnimation(UIView* view, float alpha);
+  // Returns an instance of a CardUnmaskPromptView used to unmask Wallet cards.
+  // The view is responsible for its own lifetime.
+  virtual autofill::CardUnmaskPromptView*
+      CreateCardUnmaskPromptView(
+          autofill::CardUnmaskPromptController* controller);
+  // Returns risk data used in Wallet requests.
+  virtual std::string GetRiskData();
+  // Returns an instance of KeyedServiceProvider.
+  virtual KeyedServiceProvider* GetKeyedServiceProvider();
 };
 
 }  // namespace ios
