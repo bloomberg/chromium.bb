@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_BAD_MESSAGE_H_
-#define EXTENSIONS_BROWSER_BAD_MESSAGE_H_
+#ifndef COMPONENTS_NACL_BROWSER_BAD_MESSAGE_H_
+#define COMPONENTS_NACL_BROWSER_BAD_MESSAGE_H_
 
 namespace content {
-class RenderProcessHost;
+class BrowserMessageFilter;
 }
 
-namespace extensions {
+namespace nacl {
 namespace bad_message {
 
 // The browser process often chooses to terminate a renderer if it receives
@@ -21,23 +21,23 @@ namespace bad_message {
 // end. Items may be renamed but do not change the values. We rely on the enum
 // values in histograms. Also update histograms.xml with any new values.
 enum BadMessageReason {
-  EOG_BAD_ORIGIN = 0,
-  EVG_BAD_ORIGIN = 1,
-  BH_BLOB_NOT_OWNED = 2,
-  EH_BAD_EVENT_ID = 3,
+  NFH_OPEN_EXECUTABLE_BAD_ROUTING_ID = 0,
+  NHMF_LAUNCH_CONTINUATION_BAD_ROUTING_ID = 1,
+  NHMF_GET_NEXE_FD_BAD_URL = 2,
+
   // Please add new elements here. The naming convention is abbreviated class
-  // name (e.g. ExtensionHost becomes EH) plus a unique description of the
-  // reason.
+  // name (e.g. NaclHostMessageFilter becomes NHMF) plus a unique description of
+  // the reason.
   BAD_MESSAGE_MAX
 };
 
-// Called when the browser receives a bad IPC message from an extension process.
-// Logs the event, records a histogram metric for the |reason|, and terminates
-// the process for |host|.
-void ReceivedBadMessage(content::RenderProcessHost* host,
+// Called when a browser message filter receives a bad IPC message from a
+// renderer or other child process. Logs the event, records a histogram metric
+// for the |reason|, and terminates the process for |filter|.
+void ReceivedBadMessage(content::BrowserMessageFilter* filter,
                         BadMessageReason reason);
 
 }  // namespace bad_message
-}  // namespace extensions
+}  // namespace nacl
 
-#endif  // EXTENSIONS_BROWSER_BAD_MESSAGE_H_
+#endif  // COMPONENTS_NACL_BROWSER_BAD_MESSAGE_H_

@@ -176,13 +176,15 @@ bool BrowserMessageFilter::CheckCanDispatchOnUI(const IPC::Message& message,
   return true;
 }
 
-void BrowserMessageFilter::BadMessageReceived() {
+void BrowserMessageFilter::ShutdownForBadMessage() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableKillAfterBadIPC))
     return;
 
   BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
       PROCESS_TYPE_RENDERER);
+
+  // TODO(nick): Shouldn't this call StopChildProcess on Android?
   peer_process_.Terminate(content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
 }
 

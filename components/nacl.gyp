@@ -90,6 +90,8 @@
           'target_name': 'nacl_browser',
           'type': 'static_library',
           'sources': [
+            'nacl/browser/bad_message.cc',
+            'nacl/browser/bad_message.h',
             'nacl/browser/nacl_broker_host_win.cc',
             'nacl/browser/nacl_broker_host_win.h',
             'nacl/browser/nacl_broker_service_win.cc',

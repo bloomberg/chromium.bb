@@ -9,6 +9,7 @@
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_host.h"
@@ -91,8 +92,8 @@ void DOMStorageMessageFilter::OnOpenStorageArea(int connection_id,
                                                 const GURL& origin) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!host_->OpenStorageArea(connection_id, namespace_id, origin)) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_DSMF_1"));
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this, bad_message::DSMF_OPEN_STORAGE);
+    return;
   }
 }
 
@@ -105,8 +106,8 @@ void DOMStorageMessageFilter::OnLoadStorageArea(int connection_id,
                                                 DOMStorageValuesMap* map) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!host_->ExtractAreaValues(connection_id, map)) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_DSMF_2"));
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this, bad_message::DSMF_LOAD_STORAGE);
+    return;
   }
   Send(new DOMStorageMsg_AsyncOperationComplete(true));
 }

@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/cert_store_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -1133,8 +1134,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Reject invalid priority.
   if (request_data.priority < net::MINIMUM_PRIORITY ||
       request_data.priority > net::MAXIMUM_PRIORITY) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RDH"));
-    filter_->BadMessageReceived();
+    bad_message::ReceivedBadMessage(filter_, bad_message::RDH_INVALID_PRIORITY);
     return;
   }
 
@@ -1159,8 +1159,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
       deferred_loader->CompleteTransfer();
     } else {
-      RecordAction(base::UserMetricsAction("BadMessageTerminate_RDH"));
-      filter_->BadMessageReceived();
+      bad_message::ReceivedBadMessage(
+          filter_, bad_message::RDH_REQUEST_NOT_TRANSFERRING);
     }
     return;
   }
@@ -1354,8 +1354,7 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
   if (sync_result) {
     // download_to_file is not supported for synchronous requests.
     if (request_data.download_to_file) {
-      RecordAction(base::UserMetricsAction("BadMessageTerminate_RDH"));
-      filter_->BadMessageReceived();
+      bad_message::ReceivedBadMessage(filter_, bad_message::RDH_BAD_DOWNLOAD);
       return scoped_ptr<ResourceHandler>();
     }
 

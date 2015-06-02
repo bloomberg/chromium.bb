@@ -56,6 +56,8 @@ if (enable_nacl) {
 
   source_set("nacl_browser") {
     sources = [
+      "browser/bad_message.cc",
+      "browser/bad_message.h",
       "browser/nacl_broker_host_win.cc",
       "browser/nacl_broker_host_win.h",
       "browser/nacl_broker_service_win.cc",

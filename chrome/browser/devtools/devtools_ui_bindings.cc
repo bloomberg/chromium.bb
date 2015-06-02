@@ -775,6 +775,7 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
                                                    int boundary_value) {
   if (!(boundary_value >= 0 && boundary_value <= 100 && sample >= 0 &&
         sample < boundary_value)) {
+    // TODO(nick): Replace with chrome::bad_message::ReceivedBadMessage().
     frontend_host_->BadMessageRecieved();
     return;
   }

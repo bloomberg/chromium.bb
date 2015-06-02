@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "content/browser/bad_message.h"
 #include "content/common/database_messages.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/result_codes.h"
@@ -295,8 +296,8 @@ void DatabaseMessageFilter::OnDatabaseOpened(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (!DatabaseUtil::IsValidOriginIdentifier(origin_identifier)) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::DBMF_INVALID_ORIGIN_ON_OPEN);
     return;
   }
 
@@ -314,8 +315,8 @@ void DatabaseMessageFilter::OnDatabaseModified(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::DBMF_DB_NOT_OPEN_ON_MODIFY);
     return;
   }
 
@@ -328,8 +329,8 @@ void DatabaseMessageFilter::OnDatabaseClosed(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::DBMF_DB_NOT_OPEN_ON_CLOSE);
     return;
   }
 
@@ -343,8 +344,8 @@ void DatabaseMessageFilter::OnHandleSqliteError(
     int error) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!DatabaseUtil::IsValidOriginIdentifier(origin_identifier)) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(
+        this, bad_message::DBMF_INVALID_ORIGIN_ON_SQLITE_ERROR);
     return;
   }
 

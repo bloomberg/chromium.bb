@@ -33,9 +33,6 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
  protected:
   ~AppCacheDispatcherHost() override;
 
-  // BrowserMessageFilter override.
-  void BadMessageReceived() override;
-
  private:
   // IPC message handlers
   void OnRegisterHost(int host_id);

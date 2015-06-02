@@ -40800,6 +40800,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Stability.BadMessageTerminated.Chrome"
+    enum="BadMessageReasonChrome">
+  <owner>nick@chromium.org</owner>
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Count of processes killed by chrome/browser because they sent an IPC that
+    couldn't be properly handled. Categories are the reasons (code locations)
+    for the kills.
+  </summary>
+</histogram>
+
 <histogram name="Stability.BadMessageTerminated.Content"
     enum="BadMessageReasonContent">
   <owner>jam@chromium.org</owner>
@@ -40818,6 +40829,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Count of extension processes killed because they sent an IPC that couldn't
     be properly handled. Categories are the reasons (code locations) for the
     kills.
+  </summary>
+</histogram>
+
+<histogram name="Stability.BadMessageTerminated.NaCl"
+    enum="BadMessageReasonNaCl">
+  <owner>nick@chromium.org</owner>
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Count of processes killed because they sent a NaCl IPC that couldn't be
+    properly handled. Categories are the reasons (code locations) for the kills.
   </summary>
 </histogram>
 
@@ -48798,6 +48819,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Failure"/>
 </enum>
 
+<enum name="BadMessageReasonChrome" type="int">
+  <int value="0" label="WRLHH_LOGGING_STOPPED_BAD_STATE"/>
+</enum>
+
 <enum name="BadMessageReasonContent" type="int">
   <int value="0" label="NC_IN_PAGE_NAVIGATION"/>
   <int value="1" label="RFH_CAN_COMMIT_URL_BLOCKED"/>
@@ -48819,6 +48844,64 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="17" label="RFPH_DETACH"/>
   <int value="18" label="DFH_BAD_EMBEDDER_MESSAGE"/>
   <int value="19" label="NC_AUTO_SUBFRAME"/>
+  <int value="20" label="CSDH_NOT_RECOGNIZED"/>
+  <int value="21" label="DSMF_OPEN_STORAGE"/>
+  <int value="22" label="DSMF_LOAD_STORAGE"/>
+  <int value="23" label="DBMF_INVALID_ORIGIN_ON_OPEN"/>
+  <int value="24" label="DBMF_DB_NOT_OPEN_ON_MODIFY"/>
+  <int value="25" label="DBMF_DB_NOT_OPEN_ON_CLOSE"/>
+  <int value="26" label="DBMF_INVALID_ORIGIN_ON_SQLITE_ERROR"/>
+  <int value="27" label="RDH_INVALID_PRIORITY"/>
+  <int value="28" label="RDH_REQUEST_NOT_TRANSFERRING"/>
+  <int value="29" label="RDH_BAD_DOWNLOAD"/>
+  <int value="30" label="NMF_NO_PERMISSION_SHOW"/>
+  <int value="31" label="NMF_NO_PERMISSION_CLOSE"/>
+  <int value="32" label="NMF_NO_PERMISSION_VERIFY"/>
+  <int value="33" label="MH_INVALID_MIDI_PORT"/>
+  <int value="34" label="MH_SYS_EX_PERMISSION"/>
+  <int value="35" label="ACDH_REGISTER"/>
+  <int value="36" label="ACDH_UNREGISTER"/>
+  <int value="37" label="ACDH_SET_SPAWNING"/>
+  <int value="38" label="ACDH_SELECT_CACHE"/>
+  <int value="39" label="ACDH_SELECT_CACHE_FOR_WORKER"/>
+  <int value="40" label="ACDH_SELECT_CACHE_FOR_SHARED_WORKER"/>
+  <int value="41" label="ACDH_MARK_AS_FOREIGN_ENTRY"/>
+  <int value="42" label="ACDH_PENDING_REPLY_IN_GET_STATUS"/>
+  <int value="43" label="ACDH_GET_STATUS"/>
+  <int value="44" label="ACDH_PENDING_REPLY_IN_START_UPDATE"/>
+  <int value="45" label="ACDH_START_UPDATE"/>
+  <int value="46" label="ACDH_PENDING_REPLY_IN_SWAP_CACHE"/>
+  <int value="47" label="ACDH_SWAP_CACHE"/>
+  <int value="48" label="SWDH_NOT_HANDLED"/>
+  <int value="49" label="SWDH_REGISTER_BAD_URL"/>
+  <int value="50" label="SWDH_REGISTER_NO_HOST"/>
+  <int value="51" label="SWDH_REGISTER_CANNOT"/>
+  <int value="52" label="SWDH_UNREGISTER_BAD_URL"/>
+  <int value="53" label="SWDH_UNREGISTER_NO_HOST"/>
+  <int value="54" label="SWDH_UNREGISTER_CANNOT"/>
+  <int value="55" label="SWDH_GET_REGISTRATION_BAD_URL"/>
+  <int value="56" label="SWDH_GET_REGISTRATION_NO_HOST"/>
+  <int value="57" label="SWDH_GET_REGISTRATION_CANNOT"/>
+  <int value="58" label="SWDH_GET_REGISTRATION_FOR_READY_NO_HOST"/>
+  <int value="59" label="SWDH_GET_REGISTRATION_FOR_READY_ALREADY_IN_PROGRESS"/>
+  <int value="60" label="SWDH_POST_MESSAGE"/>
+  <int value="61" label="SWDH_PROVIDER_CREATED_NO_HOST"/>
+  <int value="62" label="SWDH_PROVIDER_DESTROYED_NO_HOST"/>
+  <int value="63" label="SWDH_SET_HOSTED_VERSION_NO_HOST"/>
+  <int value="64" label="SWDH_SET_HOSTED_VERSION"/>
+  <int value="65" label="SWDH_WORKER_SCRIPT_LOAD_NO_HOST"/>
+  <int value="66" label="SWDH_INCREMENT_WORKER_BAD_HANDLE"/>
+  <int value="67" label="SWDH_DECREMENT_WORKER_BAD_HANDLE"/>
+  <int value="68" label="SWDH_INCREMENT_REGISTRATION_BAD_HANDLE"/>
+  <int value="69" label="SWDH_DECREMENT_REGISTRATION_BAD_HANDLE"/>
+  <int value="70" label="SWDH_TERMINATE_BAD_HANDLE"/>
+  <int value="71" label="FAMF_APPEND_ITEM_TO_BLOB"/>
+  <int value="72" label="FAMF_APPEND_SHARED_MEMORY_TO_BLOB"/>
+  <int value="73" label="FAMF_MALFORMED_STREAM_URL"/>
+  <int value="74" label="FAMF_APPEND_ITEM_TO_STREAM"/>
+  <int value="75" label="FAMF_APPEND_SHARED_MEMORY_TO_STREAM"/>
+  <int value="76" label="IDBDH_CAN_READ_FILE"/>
+  <int value="77" label="IDBDH_GET_OR_TERMINATE"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
@@ -48826,6 +48909,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="EVG_BAD_ORIGIN"/>
   <int value="2" label="BH_BLOB_NOT_OWNED"/>
   <int value="3" label="EH_BAD_EVENT_ID"/>
+</enum>
+
+<enum name="BadMessageReasonNaCl" type="int">
+  <int value="0" label="NFH_OPEN_EXECUTABLE_BAD_ROUTING_ID"/>
+  <int value="1" label="NHMF_LAUNCH_CONTINUATION_BAD_ROUTING_ID"/>
+  <int value="2" label="NHMF_GET_NEXE_FD_BAD_URL"/>
 </enum>
 
 <enum name="BadSyncDataReason" type="int">

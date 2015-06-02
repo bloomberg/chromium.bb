@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/blob_storage_host.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
@@ -197,11 +198,6 @@ bool FileAPIMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 FileAPIMessageFilter::~FileAPIMessageFilter() {}
-
-void FileAPIMessageFilter::BadMessageReceived() {
-  RecordAction(base::UserMetricsAction("BadMessageTerminate_FAMF"));
-  BrowserMessageFilter::BadMessageReceived();
-}
 
 void FileAPIMessageFilter::OnOpenFileSystem(int request_id,
                                             const GURL& origin_url,
@@ -537,7 +533,8 @@ void FileAPIMessageFilter::OnAppendBlobDataItemToBlob(
     return;
   }
   if (item.length() == 0) {
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::FAMF_APPEND_ITEM_TO_BLOB);
     return;
   }
   ignore_result(blob_storage_host_->AppendBlobDataItem(uuid, item));
@@ -549,7 +546,8 @@ void FileAPIMessageFilter::OnAppendSharedMemoryToBlob(
     size_t buffer_size) {
   DCHECK(base::SharedMemory::IsHandleValid(handle));
   if (!buffer_size) {
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(
+        this, bad_message::FAMF_APPEND_SHARED_MEMORY_TO_BLOB);
     return;
   }
 #if defined(OS_WIN)
@@ -603,7 +601,8 @@ void FileAPIMessageFilter::OnStartBuildingStream(
   if (!StartsWithASCII(
           url.path(), "blobinternal%3A///", true /* case_sensitive */)) {
     NOTREACHED() << "Malformed Stream URL: " << url.spec();
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::FAMF_MALFORMED_STREAM_URL);
     return;
   }
   // Use an empty security origin for now. Stream accepts a security origin
@@ -627,7 +626,8 @@ void FileAPIMessageFilter::OnAppendBlobDataItemToStream(
 
   // Data for stream is delivered as TYPE_BYTES item.
   if (item.type() != storage::DataElement::TYPE_BYTES) {
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::FAMF_APPEND_ITEM_TO_STREAM);
     return;
   }
   stream->AddData(item.bytes(), item.length());
@@ -637,7 +637,8 @@ void FileAPIMessageFilter::OnAppendSharedMemoryToStream(
     const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size) {
   DCHECK(base::SharedMemory::IsHandleValid(handle));
   if (!buffer_size) {
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(
+        this, bad_message::FAMF_APPEND_SHARED_MEMORY_TO_STREAM);
     return;
   }
 #if defined(OS_WIN)

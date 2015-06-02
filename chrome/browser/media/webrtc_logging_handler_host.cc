@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "chrome/browser/bad_message.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/media/webrtc_log_list.h"
@@ -489,7 +490,8 @@ void WebRtcLoggingHandlerHost::OnLoggingStoppedInRenderer() {
     // and must not be invoked.
     DLOG(ERROR) << "OnLoggingStoppedInRenderer invoked in state "
                 << logging_state_;
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(
+        this, bad_message::WRLHH_LOGGING_STOPPED_BAD_STATE);
     return;
   }
   logging_started_time_ = base::Time();

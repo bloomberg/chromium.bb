@@ -91,10 +91,10 @@ class MidiHostForTesting : public MidiHost {
   ~MidiHostForTesting() override {}
 
   // BrowserMessageFilter implementation.
-  // Override BadMessageReceived() so to do nothing since the original
+  // Override ShutdownForBadMessage() to do nothing since the original
   // implementation to kill a malicious renderer process causes a check failure
   // in unit tests.
-  void BadMessageReceived() override {}
+  void ShutdownForBadMessage() override {}
 };
 
 class MidiHostTest : public testing::Test {

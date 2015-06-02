@@ -5,6 +5,7 @@
 #include "content/browser/notifications/notification_message_filter.h"
 
 #include "base/callback.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/notifications/page_notification_delegate.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/platform_notification_messages.h"
@@ -138,7 +139,7 @@ void NotificationMessageFilter::OnShowPersistentNotification(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetPermissionForOriginOnIO(origin) !=
           blink::WebNotificationPermissionAllowed) {
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this, bad_message::NMF_NO_PERMISSION_SHOW);
     return;
   }
 
@@ -257,7 +258,7 @@ void NotificationMessageFilter::OnClosePersistentNotification(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetPermissionForOriginOnIO(origin) !=
           blink::WebNotificationPermissionAllowed) {
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this, bad_message::NMF_NO_PERMISSION_CLOSE);
     return;
   }
 
@@ -318,7 +319,7 @@ bool NotificationMessageFilter::VerifyNotificationPermissionGranted(
   if (permission == blink::WebNotificationPermissionAllowed)
     return true;
 
-  BadMessageReceived();
+  bad_message::ReceivedBadMessage(this, bad_message::NMF_NO_PERMISSION_VERIFY);
   return false;
 }
 

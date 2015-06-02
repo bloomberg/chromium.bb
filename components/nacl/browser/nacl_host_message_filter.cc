@@ -5,6 +5,7 @@
 #include "components/nacl/browser/nacl_host_message_filter.h"
 
 #include "base/sys_info.h"
+#include "components/nacl/browser/bad_message.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_file_host.h"
 #include "components/nacl/browser/nacl_process_host.h"
@@ -156,7 +157,9 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
   content::RenderViewHost* rvh = content::RenderViewHost::FromID(
       render_process_id(), launch_params.render_view_id);
   if (!rvh) {
-    BadMessageReceived();  // Kill the renderer.
+    bad_message::ReceivedBadMessage(
+        this, bad_message::NHMF_LAUNCH_CONTINUATION_BAD_ROUTING_ID);
+    delete reply_msg;
     return;
   }
 
@@ -358,7 +361,8 @@ void NaClHostMessageFilter::OnGetNexeFd(
   if (!cache_info.pexe_url.is_valid()) {
     LOG(ERROR) << "Bad URL received from GetNexeFd: " <<
         cache_info.pexe_url.possibly_invalid_spec();
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::NHMF_GET_NEXE_FD_BAD_URL);
     return;
   }
 

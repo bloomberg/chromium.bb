@@ -236,6 +236,8 @@
       'browser/autofill/risk_util.h',
       'browser/autofill/validation_rules_storage_factory.cc',
       'browser/autofill/validation_rules_storage_factory.h',
+      'browser/bad_message.cc',
+      'browser/bad_message.h',
       'browser/banners/app_banner_data_fetcher.cc',
       'browser/banners/app_banner_data_fetcher.h',
       'browser/banners/app_banner_debug_log.cc',

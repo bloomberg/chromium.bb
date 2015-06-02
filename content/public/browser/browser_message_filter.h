@@ -92,9 +92,10 @@ class CONTENT_EXPORT BrowserMessageFilter
   static bool CheckCanDispatchOnUI(const IPC::Message& message,
                                    IPC::Sender* sender);
 
-  // Call this if a message couldn't be deserialized.  This kills the renderer.
-  // Can be called on any thread.
-  virtual void BadMessageReceived();
+  // Called by bad_message.h helpers if a message couldn't be deserialized. This
+  // kills the renderer.  Can be called on any thread.  This doesn't log the
+  // error details to UMA, so use the bad_message.h for your module instead.
+  virtual void ShutdownForBadMessage();
 
   const std::vector<uint32>& message_classes_to_filter() const {
     return message_classes_to_filter_;

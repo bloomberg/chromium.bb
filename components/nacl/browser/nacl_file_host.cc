@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/nacl/browser/bad_message.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
 #include "components/nacl/browser/nacl_host_message_filter.h"
@@ -248,7 +249,10 @@ void OpenNaClExecutable(
   content::RenderViewHost* rvh = content::RenderViewHost::FromID(
       nacl_host_message_filter->render_process_id(), render_view_id);
   if (!rvh) {
-    nacl_host_message_filter->BadMessageReceived();  // Kill the renderer.
+    nacl::bad_message::ReceivedBadMessage(
+        nacl_host_message_filter.get(),
+        nacl::bad_message::NFH_OPEN_EXECUTABLE_BAD_ROUTING_ID);
+    delete reply_msg;
     return;
   }
   content::SiteInstance* site_instance = rvh->GetSiteInstance();

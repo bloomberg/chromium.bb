@@ -82,8 +82,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
  protected:
   ~FileAPIMessageFilter() override;
 
-  void BadMessageReceived() override;
-
  private:
   typedef storage::FileSystemOperationRunner::OperationID OperationID;
 

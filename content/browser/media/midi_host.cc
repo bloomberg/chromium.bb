@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/process/process.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/media/media_internals.h"
@@ -92,8 +93,7 @@ void MidiHost::OnSendData(uint32 port,
   {
     base::AutoLock auto_lock(output_port_count_lock_);
     if (output_port_count_ <= port) {
-      RecordAction(base::UserMetricsAction("BadMessageTerminate_MIDIPort"));
-      BadMessageReceived();
+      bad_message::ReceivedBadMessage(this, bad_message::MH_INVALID_MIDI_PORT);
       return;
     }
   }
@@ -106,8 +106,7 @@ void MidiHost::OnSendData(uint32 port,
   // happens here in the browser process.
   if (!has_sys_ex_permission_ &&
       std::find(data.begin(), data.end(), kSysExByte) != data.end()) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_MIDI"));
-    BadMessageReceived();
+    bad_message::ReceivedBadMessage(this, bad_message::MH_SYS_EX_PERMISSION);
     return;
   }
 

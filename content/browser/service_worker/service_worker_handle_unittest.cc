@@ -56,7 +56,7 @@ class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
 
   bool Send(IPC::Message* message) override { return helper_->Send(message); }
 
-  void BadMessageReceived() override { ++bad_message_received_count_; }
+  void ShutdownForBadMessage() override { ++bad_message_received_count_; }
 
   int bad_message_received_count_;
 

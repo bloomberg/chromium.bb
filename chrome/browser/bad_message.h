@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_BAD_MESSAGE_H_
-#define EXTENSIONS_BROWSER_BAD_MESSAGE_H_
+#ifndef CHROME_BROWSER_BAD_MESSAGE_H_
+#define CHROME_BROWSER_BAD_MESSAGE_H_
 
 namespace content {
+class BrowserMessageFilter;
 class RenderProcessHost;
 }
 
-namespace extensions {
 namespace bad_message {
 
 // The browser process often chooses to terminate a renderer if it receives
@@ -21,23 +21,26 @@ namespace bad_message {
 // end. Items may be renamed but do not change the values. We rely on the enum
 // values in histograms. Also update histograms.xml with any new values.
 enum BadMessageReason {
-  EOG_BAD_ORIGIN = 0,
-  EVG_BAD_ORIGIN = 1,
-  BH_BLOB_NOT_OWNED = 2,
-  EH_BAD_EVENT_ID = 3,
+  WRLHH_LOGGING_STOPPED_BAD_STATE = 0,
+
   // Please add new elements here. The naming convention is abbreviated class
-  // name (e.g. ExtensionHost becomes EH) plus a unique description of the
+  // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
   // reason.
   BAD_MESSAGE_MAX
 };
 
-// Called when the browser receives a bad IPC message from an extension process.
-// Logs the event, records a histogram metric for the |reason|, and terminates
-// the process for |host|.
+// Called when the browser receives a bad IPC message from a renderer process on
+// the UI thread. Logs the event, records a histogram metric for the |reason|,
+// and terminates the process for |host|.
 void ReceivedBadMessage(content::RenderProcessHost* host,
                         BadMessageReason reason);
 
-}  // namespace bad_message
-}  // namespace extensions
+// Called when a browser message filter receives a bad IPC message from a
+// renderer or other child process. Logs the event, records a histogram metric
+// for the |reason|, and terminates the process for |filter|.
+void ReceivedBadMessage(content::BrowserMessageFilter* filter,
+                        BadMessageReason reason);
 
-#endif  // EXTENSIONS_BROWSER_BAD_MESSAGE_H_
+}  // namespace bad_message
+
+#endif  // CHROME_BROWSER_BAD_MESSAGE_H_
