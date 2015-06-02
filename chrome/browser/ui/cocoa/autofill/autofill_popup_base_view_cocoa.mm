@@ -153,7 +153,7 @@
       [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
                                   styleMask:NSBorderlessWindowMask
                                     backing:NSBackingStoreBuffered
-                                      defer:YES];
+                                      defer:NO];
   [window setContentView:self];
 
   // Telling Cocoa that the window is opaque enables some drawing optimizations.

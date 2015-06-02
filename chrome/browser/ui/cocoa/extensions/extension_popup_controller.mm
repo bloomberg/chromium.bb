@@ -168,7 +168,7 @@ class ExtensionPopupNotificationBridge : public content::NotificationObserver {
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:NSBorderlessWindowMask
                   backing:NSBackingStoreBuffered
-                    defer:YES]);
+                    defer:NO]);
   if (!window.get())
     return nil;
 

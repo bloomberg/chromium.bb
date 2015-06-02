@@ -541,7 +541,7 @@ NSWindow* NativeWidgetMac::CreateNSWindow(const Widget::InitParams& params) {
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:StyleMaskForParams(params)
                   backing:NSBackingStoreBuffered
-                    defer:YES] autorelease];
+                    defer:NO] autorelease];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

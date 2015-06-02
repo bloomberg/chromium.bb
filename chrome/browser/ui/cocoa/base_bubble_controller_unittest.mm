@@ -94,7 +94,7 @@ class BaseBubbleControllerTest : public CocoaTest {
                                        kBubbleWindowHeight)
                   styleMask:NSBorderlessWindowMask
                     backing:NSBackingStoreBuffered
-                      defer:YES]);
+                      defer:NO]);
     [bubble_window_ setAllowedAnimations:0];
 
     // The bubble controller will release itself when the window closes.
@@ -253,7 +253,7 @@ TEST_F(BaseBubbleControllerTest, ResignKeyCloses) {
       [[NSWindow alloc] initWithContentRect:NSMakeRect(500, 500, 500, 500)
                                   styleMask:NSTitledWindowMask
                                     backing:NSBackingStoreBuffered
-                                      defer:YES]);
+                                      defer:NO]);
 
   base::scoped_nsobject<BaseBubbleController> keep_alive = ShowBubble();
   EXPECT_FALSE([other_window isVisible]);
@@ -364,7 +364,7 @@ TEST_F(BaseBubbleControllerTest, BubbleStaysOpenWithSheet) {
       [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, 100, 50)
                                  styleMask:NSTitledWindowMask
                                    backing:NSBackingStoreBuffered
-                                     defer:YES]);
+                                     defer:NO]);
   EXPECT_FALSE([panel isReleasedWhenClosed]);  // scoped_nsobject releases it.
 
   // With a NSOpenPanel, we would call -[NSSavePanel beginSheetModalForWindow]

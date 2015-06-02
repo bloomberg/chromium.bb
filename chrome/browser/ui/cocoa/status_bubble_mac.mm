@@ -447,7 +447,7 @@ void StatusBubbleMac::Create() {
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:NSBorderlessWindowMask
                   backing:NSBackingStoreBuffered
-                    defer:YES];
+                    defer:NO];
   [window_ setMovableByWindowBackground:NO];
   [window_ setBackgroundColor:[NSColor clearColor]];
   [window_ setLevel:NSNormalWindowLevel];

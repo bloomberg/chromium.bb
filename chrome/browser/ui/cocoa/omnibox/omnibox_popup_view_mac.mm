@@ -197,7 +197,7 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
         [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
                                     styleMask:NSBorderlessWindowMask
                                       backing:NSBackingStoreBuffered
-                                        defer:YES]);
+                                        defer:NO]);
     [popup_ setBackgroundColor:[NSColor clearColor]];
     [popup_ setOpaque:NO];
 

@@ -44,5 +44,5 @@ NSWindow* AppWindowNativeWidgetMac::CreateNSWindow(
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:style_mask
                   backing:NSBackingStoreBuffered
-                    defer:YES] autorelease];
+                    defer:NO] autorelease];
 }

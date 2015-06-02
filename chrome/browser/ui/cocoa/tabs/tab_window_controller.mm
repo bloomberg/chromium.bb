@@ -152,7 +152,7 @@
                          initWithContentRect:[window frame]
                                    styleMask:NSBorderlessWindowMask
                                      backing:NSBackingStoreBuffered
-                                       defer:YES];
+                                       defer:NO];
     [overlayWindow_ setTitle:@"overlay"];
     [overlayWindow_ setBackgroundColor:[NSColor clearColor]];
     [overlayWindow_ setOpaque:NO];

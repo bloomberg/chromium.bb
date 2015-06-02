@@ -460,7 +460,7 @@ TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
           initWithContentRect:NSMakeRect(50, 50, 400, 300)
                     styleMask:NSBorderlessWindowMask
                       backing:NSBackingStoreBuffered
-                        defer:YES]);
+                        defer:NO]);
   [owned_window setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
   bridge()->Init(owned_window, init_params_);  // Transfers ownership.
 

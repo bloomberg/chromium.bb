@@ -103,7 +103,7 @@
                                        styleMask:NSBorderlessWindowMask |
                                                  NSNonactivatingPanelMask
                                          backing:NSBackingStoreBuffered
-                                           defer:YES]);
+                                           defer:NO]);
   if ((self = [super initWithWindow:window])) {
     messageCenter_ = messageCenter;
     popupCollection_ = popupCollection;

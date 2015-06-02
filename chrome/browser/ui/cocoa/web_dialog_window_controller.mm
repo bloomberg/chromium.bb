@@ -319,7 +319,7 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
           initWithContentRect:dialogRect
                     styleMask:style
                       backing:NSBackingStoreBuffered
-                        defer:YES]);
+                        defer:NO]);
   if (!window.get()) {
     return nil;
   }

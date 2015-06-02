@@ -21,7 +21,7 @@
   if ((self = [super initWithContentRect:contentRect
                                styleMask:NSBorderlessWindowMask
                                  backing:NSBackingStoreBuffered
-                                   defer:YES
+                                   defer:NO
                                   screen:screen])) {
     [self setReleasedWhenClosed:NO];
     // Borderless windows don't usually show up in the Windows menu so whine at
