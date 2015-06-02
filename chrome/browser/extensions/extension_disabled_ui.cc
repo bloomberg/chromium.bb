@@ -404,7 +404,10 @@ void ExtensionDisabledGlobalError::Observe(
     user_response_ = REENABLE;
   else if (type == extensions::NOTIFICATION_EXTENSION_REMOVED)
     user_response_ = UNINSTALL;
-  delete this;
+
+  // Delete this object after any running tasks, so that the extension dialog
+  // still has it as a delegate to finish the current tasks.
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 // Globals --------------------------------------------------------------------

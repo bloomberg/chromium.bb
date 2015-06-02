@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
+#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -142,6 +143,27 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, Uninstall) {
   EXPECT_EQ(size_before, registry_->enabled_extensions().size());
   EXPECT_EQ(0u, registry_->disabled_extensions().size());
   ASSERT_FALSE(GetExtensionDisabledGlobalError());
+}
+
+// Tests uninstalling a disabled extension with an uninstall dialog.
+IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, UninstallFromDialog) {
+  extensions::ExtensionUninstallDialog::ScopedAutoConfirm auto_confirm(
+      extensions::ExtensionUninstallDialog::ACCEPT);
+  const Extension* extension = InstallAndUpdateIncreasingPermissionsExtension();
+  ASSERT_TRUE(extension);
+  std::string extension_id = extension->id();
+  GlobalErrorWithStandardBubble* error =
+      static_cast<GlobalErrorWithStandardBubble*>(
+          GetExtensionDisabledGlobalError());
+  ASSERT_TRUE(error);
+
+  // The "cancel" button is the uninstall button on the browser.
+  error->BubbleViewCancelButtonPressed(browser());
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  EXPECT_FALSE(registry_->GetExtensionById(extension_id,
+                                           ExtensionRegistry::EVERYTHING));
+  EXPECT_FALSE(GetExtensionDisabledGlobalError());
 }
 
 // Tests that no error appears if the user disabled the extension.
