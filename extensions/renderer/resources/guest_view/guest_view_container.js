@@ -130,7 +130,7 @@ GuestViewContainer.prototype.handleBrowserPluginAttributeMutation =
 
     // Track when the element resizes using the element resize callback.
     GuestViewInternalNatives.RegisterElementResizeCallback(
-        this.internalInstanceId, this.onElementResize.bind(this));
+        this.internalInstanceId, this.weakWrapper(this.onElementResize));
 
     if (!this.guest.getId()) {
       return;

@@ -130,6 +130,20 @@ GuestViewImpl.prototype.checkState = function(action) {
   return true;
 };
 
+// Returns a wrapper function for |func| with a weak reference to |this|. This
+// implementation of weakWrapper() requires a provided |viewInstanceId| since
+// GuestViewImpl does not store this ID.
+GuestViewImpl.prototype.weakWrapper = function(func, viewInstanceId) {
+  return function() {
+    var view = GuestViewInternalNatives.GetViewFromID(viewInstanceId);
+    if (view && view.guest) {
+      return $Function.apply(func,
+                             privates(view.guest).internal,
+                             $Array.slice(arguments));
+    }
+  };
+};
+
 // Internal implementation of attach().
 GuestViewImpl.prototype.attachImpl = function(
     internalInstanceId, viewInstanceId, attachParams, callback) {
@@ -165,8 +179,8 @@ GuestViewImpl.prototype.attachImpl = function(
   this.state = GUEST_STATE_ATTACHED;
 
   // Detach automatically when the container is destroyed.
-  GuestViewInternalNatives.RegisterDestructionCallback(internalInstanceId,
-                                                       function() {
+  GuestViewInternalNatives.RegisterDestructionCallback(
+      internalInstanceId, this.weakWrapper(function() {
     if (this.state != GUEST_STATE_ATTACHED ||
         this.internalInstanceId != internalInstanceId) {
       return;
@@ -174,7 +188,7 @@ GuestViewImpl.prototype.attachImpl = function(
 
     this.internalInstanceId = 0;
     this.state = GUEST_STATE_CREATED;
-  }.bind(this));
+  }, viewInstanceId));
 };
 
 // Internal implementation of create().
