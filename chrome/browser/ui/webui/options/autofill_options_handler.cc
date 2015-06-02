@@ -524,11 +524,8 @@ void AutofillOptionsHandler::SetAddress(const base::ListValue* args) {
 
   base::string16 value;
   if (args->GetString(arg_counter++, &value)) {
-    // TODO(estade): get rid of this vector wrapper.
-    std::vector<base::string16> values(1, value);
-    AutofillProfile* old_profile = personal_data_->GetProfileByGUID(guid);
-    profile.CopyAndUpdateNameList(values, old_profile,
-                                  g_browser_process->GetApplicationLocale());
+    profile.SetInfo(AutofillType(autofill::NAME_FULL), value,
+                    g_browser_process->GetApplicationLocale());
   }
 
   if (args->GetString(arg_counter++, &value))

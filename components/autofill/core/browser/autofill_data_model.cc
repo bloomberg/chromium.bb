@@ -15,13 +15,6 @@ AutofillDataModel::AutofillDataModel(const std::string& guid,
 }
 AutofillDataModel::~AutofillDataModel() {}
 
-base::string16 AutofillDataModel::GetInfoForVariant(
-    const AutofillType& type,
-    size_t variant,
-    const std::string& app_locale) const {
-  return GetInfo(type, app_locale);
-}
-
 bool AutofillDataModel::IsVerified() const {
   return !origin_.empty() && !GURL(origin_).is_valid();
 }

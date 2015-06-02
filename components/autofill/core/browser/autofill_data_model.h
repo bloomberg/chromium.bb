@@ -23,14 +23,6 @@ class AutofillDataModel : public FormGroup {
   AutofillDataModel(const std::string& guid, const std::string& origin);
   ~AutofillDataModel() override;
 
-  // Returns the string that should be auto-filled into a text field given the
-  // |type| of that field, localized to the given |app_locale| if appropriate.
-  // If the data model supports multiple values for the given |type|, returns
-  // the |variant|th value for the |type|.
-  virtual base::string16 GetInfoForVariant(const AutofillType& type,
-                                           size_t variant,
-                                           const std::string& app_locale) const;
-
   // Returns true if the data in this model was entered directly by the user,
   // rather than automatically aggregated.
   bool IsVerified() const;

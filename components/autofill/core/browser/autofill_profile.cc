@@ -360,22 +360,6 @@ bool AutofillProfile::SetInfo(const AutofillType& type,
   return form_group->SetInfo(type, trimmed_value, app_locale);
 }
 
-base::string16 AutofillProfile::GetInfoForVariant(
-    const AutofillType& type,
-    size_t variant,
-    const std::string& app_locale) const {
-  std::vector<base::string16> values;
-  GetMultiInfo(type, app_locale, &values);
-
-  if (variant >= values.size()) {
-    // If the variant is unavailable, bail. This case is reachable, for
-    // example if Sync updates a profile during the filling process.
-    return base::string16();
-  }
-
-  return values[variant];
-}
-
 void AutofillProfile::SetRawMultiInfo(
     ServerFieldType type,
     const std::vector<base::string16>& values) {
@@ -411,38 +395,6 @@ void AutofillProfile::GetRawMultiInfo(
     ServerFieldType type,
     std::vector<base::string16>* values) const {
   GetMultiInfoImpl(AutofillType(type), std::string(), values);
-}
-
-void AutofillProfile::SetMultiInfo(const AutofillType& type,
-                                   const std::vector<base::string16>& values,
-                                   const std::string& app_locale) {
-  switch (AutofillType(type).group()) {
-    case NAME:
-    case NAME_BILLING:
-      CopyValuesToItems(type, values, NameInfo(), app_locale, &name_);
-      break;
-
-    case EMAIL:
-      CopyValuesToItems(type, values, EmailInfo(), app_locale, &email_);
-      break;
-
-    case PHONE_HOME:
-    case PHONE_BILLING:
-      CopyValuesToItems(
-          type, values, PhoneNumber(this), app_locale, &phone_number_);
-      break;
-
-    default:
-      if (values.size() == 1U) {
-        SetInfo(type, values[0], app_locale);
-      } else if (values.empty()) {
-        SetInfo(type, base::string16(), app_locale);
-      } else {
-        // Shouldn't attempt to set multiple values on single-valued field.
-        NOTREACHED();
-      }
-      break;
-  }
 }
 
 void AutofillProfile::GetMultiInfo(const AutofillType& type,
@@ -596,25 +548,6 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
   }
 
   return true;
-}
-
-void AutofillProfile::CopyAndUpdateNameList(
-    const std::vector<base::string16> names,
-    const AutofillProfile* from,
-    const std::string& locale) {
-  SetMultiInfo(AutofillType(NAME_FULL), names, locale);
-  if (!from)
-    return;
-
-  for (const auto& old_name : from->name_) {
-    for (size_t i = 0; i < name_.size(); ++i) {
-      if (old_name.GetInfo(AutofillType(NAME_FULL), locale) ==
-          name_[i].GetInfo(AutofillType(NAME_FULL), locale)) {
-        name_[i] = old_name;
-        break;
-      }
-    }
-  }
 }
 
 void AutofillProfile::OverwriteOrAppendNames(

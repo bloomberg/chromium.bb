@@ -65,12 +65,6 @@ class AutofillProfile : public AutofillDataModel {
                const base::string16& value,
                const std::string& app_locale) override;
 
-  // AutofillDataModel:
-  base::string16 GetInfoForVariant(
-      const AutofillType& type,
-      size_t variant,
-      const std::string& app_locale) const override;
-
   // How this card is stored.
   RecordType record_type() const { return record_type_; }
   void set_record_type(RecordType type) { record_type_ = type; }
@@ -80,9 +74,6 @@ class AutofillProfile : public AutofillDataModel {
                        const std::vector<base::string16>& values);
   void GetRawMultiInfo(ServerFieldType type,
                        std::vector<base::string16>* values) const;
-  void SetMultiInfo(const AutofillType& type,
-                    const std::vector<base::string16>& values,
-                    const std::string& app_locale);
   void GetMultiInfo(const AutofillType& type,
                     const std::string& app_locale,
                     std::vector<base::string16>* values) const;
@@ -136,13 +127,6 @@ class AutofillProfile : public AutofillDataModel {
   // Profile.  Or, for multi-valued fields append the new values.
   void OverwriteWithOrAddTo(const AutofillProfile& profile,
                             const std::string& app_locale);
-
-  // Sets |name_| to the user-input values in |names|, but uses names in |from|
-  // as a starting point. If the full names are equivalent, the parsing in
-  // |from| will take precedence. |from| can be null.
-  void CopyAndUpdateNameList(const std::vector<base::string16> names,
-                             const AutofillProfile* from,
-                             const std::string& app_locale);
 
   // Returns |true| if |type| accepts multi-values.
   static bool SupportsMultiValue(ServerFieldType type);

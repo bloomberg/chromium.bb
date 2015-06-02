@@ -204,13 +204,12 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
   std::vector<base::string16> string16Container;
 
   if (address->full_names) {
-    autofill::AutofillProfile* old_profile =
-        personal_data->GetProfileByGUID(guid);
-    UTF8VectorToUTF16Vector(*address->full_names, &string16Container);
-    profile.CopyAndUpdateNameList(
-        string16Container,
-        old_profile,
-        g_browser_process->GetApplicationLocale());
+    std::string full_name;
+    if (!address->full_names->empty())
+      full_name = address->full_names->at(0);
+    profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                    base::UTF8ToUTF16(full_name),
+                    g_browser_process->GetApplicationLocale());
   }
 
   if (address->company_name) {
