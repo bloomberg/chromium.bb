@@ -143,7 +143,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
     jinja_paths: An array of paths to search for {%include} directives in
                  addition to the directory containing the manifest template.
     service_environment: Used to point the webapp to one of the
-                         dev/test/staging/prod/prod-testing environments
+                         dev/test/staging/vendor/prod/prod-testing environments
     use_gcd: True if GCD support should be enabled.
   """
 
@@ -227,7 +227,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
       'DIRECTORY_API_HOST', 'https://www.googleapis.com')
 
   is_app_remoting_webapp = webapp_type == 'app_remoting'
-  is_prod_service_environment = service_environment == 'prod' or \
+  is_prod_service_environment = service_environment == 'vendor' or \
+                                service_environment == 'prod' or \
                                 service_environment == 'prod-testing'
   if is_app_remoting_webapp:
     appRemotingApiHost = os.environ.get(
@@ -285,6 +286,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
       appRemotingServicePath = '/appremoting/v1beta1'
     elif service_environment == 'staging':
       appRemotingServicePath = '/appremoting/v1beta1_staging'
+    elif service_environment == 'vendor':
+      appRemotingServicePath = '/appremoting/v1beta1_vendor'
     elif service_environment == 'prod':
       appRemotingServicePath = '/appremoting/v1beta1'
     elif service_environment == 'prod-testing':
@@ -347,8 +350,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
   replaceBool(
       destination, 'XMPP_SERVER_USE_TLS',
       getenvBool('XMPP_SERVER_USE_TLS', True))
-  xmppServer = os.environ.get('XMPP_SERVER',
-                               'talk.google.com:443')
+  xmppServer = os.environ.get('XMPP_SERVER', 'talk.google.com:443')
   replaceString(destination, 'XMPP_SERVER', xmppServer)
   replaceString(destination, 'DIRECTORY_BOT_JID',
                 os.environ.get('DIRECTORY_BOT_JID',
