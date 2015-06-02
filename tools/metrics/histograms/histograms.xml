@@ -57711,6 +57711,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-918618075" label="enable-service-worker"/>
   <int value="-914210146" label="enable-web-based-signin"/>
   <int value="-899334103" label="disable-fast-text-autosizing"/>
+  <int value="-898594349" label="ash-enable-stable-overview-order"/>
   <int value="-898005938" label="disable-pinch-virtual-viewport"/>
   <int value="-885601782" label="enable-contextual-search"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
@@ -57926,6 +57927,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1237297772" label="no-pings"/>
   <int value="1245889469" label="enable-surface-worker"/>
   <int value="1250071868" label="disable-timezone-tracking-option"/>
+  <int value="1253698118" label="ash-disable-stable-overview-order"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>
   <int value="1268470658" label="disable-android-password-link"/>
   <int value="1272699563" label="enable-hosted-mode"/>

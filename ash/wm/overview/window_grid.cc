@@ -122,6 +122,86 @@ gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
   return vector;
 }
 
+// Given |root_window|, calculates the item size necessary to fit |items|
+// items in the window selection. |bounding_rect| is set to the centered
+// rectangle containing the grid and |item_size| is set to the size of each
+// individual item.
+void CalculateOverviewSizes(aura::Window* root_window,
+                            size_t items,
+                            gfx::Rect* bounding_rect,
+                            gfx::Size* item_size) {
+  gfx::Rect total_bounds = ScreenUtil::ConvertRectToScreen(
+      root_window,
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+          Shell::GetContainer(root_window, kShellWindowId_DefaultContainer)));
+
+  // Reserve space at the top for the text filtering textbox to appear.
+  total_bounds.Inset(
+      0, WindowSelector::kTextFilterBottomEdge + kTextFilterBottomMargin, 0, 0);
+
+  // Find the minimum number of windows per row that will fit all of the
+  // windows on screen.
+  int num_columns = std::max(
+      total_bounds.width() > total_bounds.height() ? kMinCardsMajor : 1,
+      static_cast<int>(ceil(sqrt(total_bounds.width() * items /
+                                 (kCardAspectRatio * total_bounds.height())))));
+  int num_rows = ((items + num_columns - 1) / num_columns);
+  item_size->set_width(std::min(
+      static_cast<int>(total_bounds.width() / num_columns),
+      static_cast<int>(total_bounds.height() * kCardAspectRatio / num_rows)));
+  item_size->set_height(item_size->width() / kCardAspectRatio);
+
+  bounding_rect->set_width(std::min(static_cast<int>(items), num_columns) *
+                           item_size->width());
+  bounding_rect->set_height(num_rows * item_size->height());
+  // Calculate the X and Y offsets necessary to center the grid.
+  bounding_rect->set_x(total_bounds.x() +
+                       (total_bounds.width() - bounding_rect->width()) / 2);
+  bounding_rect->set_y(total_bounds.y() +
+                       (total_bounds.height() - bounding_rect->height()) / 2);
+}
+
+// Reorders the list of windows |items| in |root_window| in an attempt to
+// minimize the distance each window will travel to enter overview. For
+// equidistant windows preserves a stable order between overview sessions
+// by comparing window pointers.
+void ReorderItemsGreedyLeastMovement(std::vector<aura::Window*>* items,
+                                     aura::Window* root_window) {
+  if (items->empty())
+    return;
+  gfx::Rect bounding_rect;
+  gfx::Size item_size;
+  CalculateOverviewSizes(root_window, items->size(), &bounding_rect,
+                         &item_size);
+  int num_columns = std::min(static_cast<int>(items->size()),
+                             bounding_rect.width() / item_size.width());
+  for (size_t i = 0; i < items->size(); ++i) {
+    int column = i % num_columns;
+    int row = i / num_columns;
+    gfx::Point overview_item_center(
+        bounding_rect.x() + column * item_size.width() + item_size.width() / 2,
+        bounding_rect.y() + row * item_size.height() + item_size.height() / 2);
+    // Find the nearest window for this position.
+    size_t swap_index = i;
+    int64 shortest_distance = std::numeric_limits<int64>::max();
+    for (size_t j = i; j < items->size(); ++j) {
+      aura::Window* window = (*items)[j];
+      int64 distance = (ScreenUtil::ConvertRectToScreen(
+                            window, window->GetTargetBounds()).CenterPoint() -
+                        overview_item_center).LengthSquared();
+      // We compare raw pointers to create a stable ordering given two windows
+      // with the same center point.
+      if (distance < shortest_distance ||
+          (distance == shortest_distance && window < (*items)[swap_index])) {
+        shortest_distance = distance;
+        swap_index = j;
+      }
+    }
+    if (swap_index > i)
+      std::swap((*items)[i], (*items)[swap_index]);
+  }
+}
+
 }  // namespace
 
 WindowGrid::WindowGrid(aura::Window* root_window,
@@ -129,15 +209,22 @@ WindowGrid::WindowGrid(aura::Window* root_window,
                        WindowSelector* window_selector)
     : root_window_(root_window),
       window_selector_(window_selector) {
+  std::vector<aura::Window*> windows_in_root;
+  for (auto window : windows) {
+    if (window->GetRootWindow() == root_window)
+      windows_in_root.push_back(window);
+  }
 
-  for (aura::Window::Windows::const_iterator iter = windows.begin();
-       iter != windows.end(); ++iter) {
-    if ((*iter)->GetRootWindow() != root_window)
-      continue;
-    (*iter)->AddObserver(this);
-    observed_windows_.insert(*iter);
-
-    window_list_.push_back(new WindowSelectorItem(*iter, window_selector_));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableStableOverviewOrder)) {
+    // Reorder windows to try to minimize movement to target overview positions.
+    // This also creates a stable window ordering.
+    ReorderItemsGreedyLeastMovement(&windows_in_root, root_window_);
+  }
+  for (auto window : windows_in_root) {
+    window->AddObserver(this);
+    observed_windows_.insert(window);
+    window_list_.push_back(new WindowSelectorItem(window, window_selector_));
   }
 }
 
@@ -157,53 +244,23 @@ void WindowGrid::PrepareForOverview() {
 
 void WindowGrid::PositionWindows(bool animate) {
   CHECK(!window_list_.empty());
-
-  gfx::Size window_size;
-  gfx::Rect total_bounds = ScreenUtil::ConvertRectToScreen(
-      root_window_,
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-          Shell::GetContainer(root_window_, kShellWindowId_DefaultContainer)));
-
-  // Reserve space at the top for the text filtering textbox to appear.
-  total_bounds.Inset(
-      0, WindowSelector::kTextFilterBottomEdge + kTextFilterBottomMargin, 0, 0);
-
-  // Find the minimum number of windows per row that will fit all of the
-  // windows on screen.
-  num_columns_ = std::max(
-      total_bounds.width() > total_bounds.height() ? kMinCardsMajor : 1,
-      static_cast<int>(ceil(sqrt(total_bounds.width() * window_list_.size() /
-                                 (kCardAspectRatio * total_bounds.height())))));
-  int num_rows = ((window_list_.size() + num_columns_ - 1) / num_columns_);
-  window_size.set_width(std::min(
-      static_cast<int>(total_bounds.width() / num_columns_),
-      static_cast<int>(total_bounds.height() * kCardAspectRatio / num_rows)));
-  window_size.set_height(window_size.width() / kCardAspectRatio);
-
-  // Calculate the X and Y offsets necessary to center the grid.
-  int x_offset = total_bounds.x() + ((window_list_.size() >= num_columns_ ? 0 :
-      (num_columns_ - window_list_.size()) * window_size.width()) +
-      (total_bounds.width() - num_columns_ * window_size.width())) / 2;
-  int y_offset = total_bounds.y() + (total_bounds.height() -
-      num_rows * window_size.height()) / 2;
-
+  gfx::Rect bounding_rect;
+  gfx::Size item_size;
+  CalculateOverviewSizes(root_window_, window_list_.size(), &bounding_rect,
+                         &item_size);
+  num_columns_ = std::min(static_cast<int>(window_list_.size()),
+                          bounding_rect.width() / item_size.width());
   for (size_t i = 0; i < window_list_.size(); ++i) {
     gfx::Transform transform;
     int column = i % num_columns_;
     int row = i / num_columns_;
-    gfx::Rect target_bounds(window_size.width() * column + x_offset,
-                            window_size.height() * row + y_offset,
-                            window_size.width(),
-                            window_size.height());
+    gfx::Rect target_bounds(item_size.width() * column + bounding_rect.x(),
+                            item_size.height() * row + bounding_rect.y(),
+                            item_size.width(), item_size.height());
     window_list_[i]->SetBounds(target_bounds, animate ?
         OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS :
         OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   }
-
-  // If we have less than |kMinCardsMajor| windows, adjust the column_ value to
-  // reflect how many "real" columns we have.
-  if (num_columns_ > window_list_.size())
-    num_columns_ = window_list_.size();
 
   // If the selection widget is active, reposition it without any animation.
   if (selection_widget_)
@@ -213,6 +270,7 @@ void WindowGrid::PositionWindows(bool animate) {
 bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
   bool recreate_selection_widget = false;
   bool out_of_bounds = false;
+  bool changed_selection_index = false;
   if (!selection_widget_) {
     switch (direction) {
      case WindowSelector::LEFT:
@@ -226,9 +284,11 @@ bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
      case WindowSelector::DOWN:
        selected_index_ = 0;
        break;
-     }
+    }
+    changed_selection_index = true;
   }
-  while (SelectedWindow()->dimmed() || selection_widget_) {
+  while (!changed_selection_index ||
+         (!out_of_bounds && window_list_[selected_index_]->dimmed())) {
     switch (direction) {
       case WindowSelector::RIGHT:
         if (selected_index_ >= window_list_.size() - 1)
@@ -265,9 +325,7 @@ bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
         }
         break;
     }
-    // Exit the loop if we broke free from the grid or found an active item.
-    if (out_of_bounds || !SelectedWindow()->dimmed())
-      break;
+    changed_selection_index = true;
   }
 
   MoveSelectionWidget(direction, recreate_selection_widget,
@@ -276,6 +334,8 @@ bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
 }
 
 WindowSelectorItem* WindowGrid::SelectedWindow() const {
+  if (!selection_widget_)
+    return nullptr;
   CHECK(selected_index_ < window_list_.size());
   return window_list_[selected_index_];
 }

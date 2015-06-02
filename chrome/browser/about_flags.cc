@@ -1064,6 +1064,14 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     MULTI_VALUE_TYPE(kAshScreenRotationAnimationChoices)
   },
+  {
+    "ash-stable-overview-order",
+    IDS_FLAGS_ASH_STABLE_OVERVIEW_ORDER_NAME,
+    IDS_FLAGS_ASH_STABLE_OVERVIEW_ORDER_DESCRIPTION,
+    kOsCrOS,
+    ENABLE_DISABLE_VALUE_TYPE(ash::switches::kAshEnableStableOverviewOrder,
+                              ash::switches::kAshDisableStableOverviewOrder),
+  },
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
   {

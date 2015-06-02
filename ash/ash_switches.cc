@@ -59,6 +59,12 @@ const char kAshEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
 // Enables mirrored screen.
 const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";
 
+// Enables / disables a stable order between overview sessions, independent of
+// the MRU order which attempts to preserve relative window positions.
+const char kAshDisableStableOverviewOrder[] =
+    "ash-disable-stable-overview-order";
+const char kAshEnableStableOverviewOrder[] = "ash-enable-stable-overview-order";
+
 // Enables quick, non-cancellable locking of the screen when in maximize mode.
 const char kAshEnablePowerButtonQuickLock[] =
     "ash-enable-power-button-quick-lock";
