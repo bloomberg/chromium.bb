@@ -56,6 +56,7 @@
 #include "remoting/host/ipc_host_event_logger.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/me2me_desktop_environment.h"
+#include "remoting/host/oauth_token_getter_impl.h"
 #include "remoting/host/pairing_registry_delegate.h"
 #include "remoting/host/policy_watcher.h"
 #include "remoting/host/session_manager_factory.h"
@@ -1320,7 +1321,7 @@ void HostProcess::InitializeSignaling() {
       new OAuthTokenGetter::OAuthCredentials(xmpp_server_config_.username,
                                              oauth_refresh_token_,
                                              use_service_account_));
-  scoped_ptr<OAuthTokenGetter> oauth_token_getter(new OAuthTokenGetter(
+  scoped_ptr<OAuthTokenGetter> oauth_token_getter(new OAuthTokenGetterImpl(
       oauth_credentials.Pass(), context_->url_request_context_getter(), false,
       gcd_device_id_.empty()));
   signaling_connector_.reset(new SignalingConnector(

@@ -56,6 +56,11 @@ void FakeSignalStrategy::ConnectTo(FakeSignalStrategy* peer) {
   }
 }
 
+void FakeSignalStrategy::SetLocalJid(const std::string& jid) {
+  DCHECK(CalledOnValidThread());
+  jid_ = jid;
+}
+
 void FakeSignalStrategy::Connect() {
   DCHECK(CalledOnValidThread());
   FOR_EACH_OBSERVER(Listener, listeners_,
