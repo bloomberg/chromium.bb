@@ -26,20 +26,20 @@
         }
 
         var shouldHaveIntegrity = [
+            'link',
+            'script',
+        ];
+
+        var shouldNotHaveIntegrity = [
             'a',
             'audio',
             'embed',
             'iframe',
             'img',
-            'link',
             'object',
-            'script',
             'source',
             'track',
             'video',
-        ];
-
-        var shouldNotHaveIntegrity = [
             'body',
             'div',
             'html',

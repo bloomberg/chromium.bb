@@ -42,9 +42,4 @@
     [Custom] setter boolean (unsigned long index, Node value);
     [Custom, NotEnumerable] getter Node (DOMString name);
     [Custom] setter Node (DOMString name, Node value);
-
-    // Subresource Integrity
-    // http://w3c.github.io/webappsec/specs/subresourceintegrity/
-    // FIXME: The spec does not extend HTMLEmbedElement.
-    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

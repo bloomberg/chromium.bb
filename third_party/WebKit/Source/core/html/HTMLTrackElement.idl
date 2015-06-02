@@ -40,9 +40,4 @@ interface HTMLTrackElement : HTMLElement {
     readonly attribute unsigned short readyState;
 
     readonly attribute TextTrack track;
-
-    // Subresource Integrity
-    // http://w3c.github.io/webappsec/specs/subresourceintegrity/
-    // FIXME: The spec does not extend HTMLTrackElement.
-    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

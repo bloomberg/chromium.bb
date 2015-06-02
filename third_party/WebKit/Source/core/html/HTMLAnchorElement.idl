@@ -39,11 +39,6 @@ interface HTMLAnchorElement : HTMLElement {
     [Reflect] attribute DOMString name;
     [Reflect] attribute DOMString rev;
     [Reflect] attribute DOMString shape;
-
-    // Subresource Integrity
-    // http://w3c.github.io/webappsec/specs/subresourceintegrity/
-    // FIXME: The spec does not extend HTMLAnchorElement.
-    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };
 
 HTMLAnchorElement implements URLUtils;

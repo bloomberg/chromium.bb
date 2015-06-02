@@ -1600,7 +1600,6 @@ interface HTMLAnchorElement
     getter hostname
     getter href
     getter hreflang
-    getter integrity
     getter name
     getter origin
     getter password
@@ -1626,7 +1625,6 @@ interface HTMLAnchorElement
     setter hostname
     setter href
     setter hreflang
-    setter integrity
     setter name
     setter password
     setter pathname
@@ -2085,7 +2083,6 @@ interface HTMLIFrameElement
     getter contentWindow
     getter frameBorder
     getter height
-    getter integrity
     getter longDesc
     getter marginHeight
     getter marginWidth
@@ -2101,7 +2098,6 @@ interface HTMLIFrameElement
     setter allowFullscreen
     setter frameBorder
     setter height
-    setter integrity
     setter longDesc
     setter marginHeight
     setter marginWidth
@@ -2120,7 +2116,6 @@ interface HTMLImageElement
     getter currentSrc
     getter height
     getter hspace
-    getter integrity
     getter isMap
     getter longDesc
     getter lowsrc
@@ -2142,7 +2137,6 @@ interface HTMLImageElement
     setter crossOrigin
     setter height
     setter hspace
-    setter integrity
     setter isMap
     setter longDesc
     setter lowsrc
@@ -2378,7 +2372,6 @@ interface HTMLMediaElement
     getter duration
     getter ended
     getter error
-    getter integrity
     getter loop
     getter mediaGroup
     getter mediaKeys
@@ -2419,7 +2412,6 @@ interface HTMLMediaElement
     setter currentTime
     setter defaultMuted
     setter defaultPlaybackRate
-    setter integrity
     setter loop
     setter mediaGroup
     setter muted
@@ -2646,14 +2638,12 @@ interface HTMLShadowElement
     method constructor
     method getDistributedNodes
 interface HTMLSourceElement
-    getter integrity
     getter media
     getter sizes
     getter src
     getter srcset
     getter type
     method constructor
-    setter integrity
     setter media
     setter sizes
     setter src
@@ -2852,7 +2842,6 @@ interface HTMLTrackElement
     attribute LOADING
     attribute NONE
     getter default
-    getter integrity
     getter kind
     getter label
     getter readyState
@@ -2861,7 +2850,6 @@ interface HTMLTrackElement
     getter track
     method constructor
     setter default
-    setter integrity
     setter kind
     setter label
     setter src

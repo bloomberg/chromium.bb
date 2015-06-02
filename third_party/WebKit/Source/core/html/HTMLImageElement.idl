@@ -54,9 +54,4 @@
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlimageelement-interface
     [MeasureAs=HTMLImageElementX] readonly attribute long x;
     [MeasureAs=HTMLImageElementY] readonly attribute long y;
-
-    // Subresource Integrity
-    // https://w3c.github.io/webappsec/specs/subresourceintegrity/
-    // FIXME: The spec does not extend HTMLImageElement.
-    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

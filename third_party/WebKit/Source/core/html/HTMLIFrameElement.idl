@@ -42,9 +42,4 @@ interface HTMLIFrameElement : HTMLElement {
 
     [Reflect, TreatNullAs=EmptyString] attribute DOMString marginHeight;
     [Reflect, TreatNullAs=EmptyString] attribute DOMString marginWidth;
-
-    // Subresource Integrity
-    // https://w3c.github.io/webappsec/specs/subresourceintegrity/
-    // FIXME: The spec does not extend HTMLIFrameElement.
-    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

@@ -234,7 +234,6 @@ html element a
     property hostname
     property href
     property hreflang
-    property integrity
     property name
     property origin
     property password
@@ -310,7 +309,6 @@ html element audio
     property duration
     property ended
     property error
-    property integrity
     property load
     property loop
     property mediaGroup
@@ -446,7 +444,6 @@ html element embed
     property align
     property getSVGDocument
     property height
-    property integrity
     property name
     property src
     property type
@@ -545,7 +542,6 @@ html element iframe
     property frameBorder
     property getSVGDocument
     property height
-    property integrity
     property longDesc
     property marginHeight
     property marginWidth
@@ -565,7 +561,6 @@ html element img
     property currentSrc
     property height
     property hspace
-    property integrity
     property isMap
     property longDesc
     property lowsrc
@@ -752,7 +747,6 @@ html element object
     property getSVGDocument
     property height
     property hspace
-    property integrity
     property name
     property reportValidity
     property setCustomValidity
@@ -861,7 +855,6 @@ html element shadow
     property getDistributedNodes
 html element small
 html element source
-    property integrity
     property media
     property sizes
     property src
@@ -1012,7 +1005,6 @@ html element track
     property LOADING
     property NONE
     property default
-    property integrity
     property kind
     property label
     property readyState
@@ -1052,7 +1044,6 @@ html element video
     property error
     property getVideoPlaybackQuality
     property height
-    property integrity
     property load
     property loop
     property mediaGroup
@@ -1329,7 +1320,6 @@ svg element a
     property hostname
     property href
     property hreflang
-    property integrity
     property name
     property origin
     property password

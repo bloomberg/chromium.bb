@@ -35,9 +35,4 @@
     [Reflect] attribute DOMString srcset;
     [Reflect] attribute DOMString sizes;
     [Reflect] attribute DOMString media;
-
-    // Subresource Integrity
-    // https://w3c.github.io/webappsec/specs/subresourceintegrity/
-    // TODO(philipj): The spec does not extend HTMLSourceElement.
-    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

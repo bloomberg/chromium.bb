@@ -90,11 +90,6 @@ enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
     [SameObject] readonly attribute TextTrackList textTracks;
     [RaisesException] TextTrack addTextTrack(TextTrackKind kind, optional DOMString label = "", optional DOMString language = "");
 
-    // Subresource Integrity
-    // http://w3c.github.io/webappsec/specs/subresourceintegrity/
-    // FIXME: The spec does not extend HTMLAnchorElement.
-    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
-
     // Non-standard APIs
     [RuntimeEnabled=PrefixedEncryptedMedia, DeprecateAs=CanPlayTypeKeySystem] DOMString canPlayType(DOMString type, [TreatUndefinedAs=NullString] DOMString? keySystem);
     // The number of bytes consumed by the media decoder.
