@@ -412,6 +412,16 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     showConnectingIndicator: function(show) {
       this.classList.toggle('show-connecting-indicator', show);
       this.onContentChange_();
+    },
+
+    /**
+     * Cancels error screen and drops to user pods.
+     */
+    cancel: function() {
+      // TODO(achuith): Replace with cancel button on this
+      // screen instead of header bar. crbug.com/478547.
+      if (!$('cancel-add-user-button').hidden)
+        Oobe.showUserPods();
     }
   };
 });

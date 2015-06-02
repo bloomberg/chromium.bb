@@ -1286,7 +1286,7 @@ login.createScreen('SupervisedUserCreationScreen',
 
     /**
      * Updates state of login header so that necessary buttons are displayed.
-     **/
+     */
     onBeforeShow: function(data) {
       $('login-header-bar').signinUIState =
           SIGNIN_UI_STATE.SUPERVISED_USER_CREATION_FLOW;
@@ -1357,10 +1357,7 @@ login.createScreen('SupervisedUserCreationScreen',
         // Make sure no manager password is kept:
         this.managerList_.clearPods();
 
-        $('pod-row').loadLastWallpaper();
-
-        Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
-        Oobe.resetSigninUI(true);
+        Oobe.showUserPods();
         return;
       }
       if (postCreationPages.indexOf(this.currentPage_) >= 0) {

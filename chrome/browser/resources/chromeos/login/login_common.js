@@ -188,6 +188,15 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Show user-pods.
+   */
+  Oobe.showUserPods = function() {
+    $('pod-row').loadLastWallpaper();
+    Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
+    Oobe.resetSigninUI(true);
+  };
+
+  /**
    * Clears error bubble as well as optional menus that could be open.
    */
   Oobe.clearErrors = function() {

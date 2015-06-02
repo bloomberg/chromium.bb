@@ -879,10 +879,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         return;
       }
 
-      $('pod-row').loadLastWallpaper();
-      Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
       this.classList.remove('whitelist-error');
-      Oobe.resetSigninUI(true);
+      Oobe.showUserPods();
     },
 
     /**

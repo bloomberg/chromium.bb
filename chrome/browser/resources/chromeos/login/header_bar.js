@@ -173,10 +173,7 @@ cr.define('login', function() {
         return;
       }
 
-      $('pod-row').loadLastWallpaper();
-
-      Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
-      Oobe.resetSigninUI(true);
+      Oobe.showUserPods();
     },
 
     /**
