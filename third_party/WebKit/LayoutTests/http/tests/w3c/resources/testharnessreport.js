@@ -109,14 +109,16 @@ add_completion_callback(function (tests, harness_status) {
             }
         }
 
-        // Add results element to document
+        // Add results element to document.
+        if (!document.body)
+            document.documentElement.appendChild(document.createElement("body"));
         document.body.appendChild(results);
 
         if (self.testRunner)
             testRunner.notifyDone();
     }
 
-    if (!document.body || document.readyState === 'loading') {
+    if (document.readyState === 'loading') {
         window.addEventListener('load', done);
     } else {
         done();
