@@ -82,16 +82,30 @@ void ChromeClient::setWindowFeatures(const WindowFeatures& features)
     setResizable(features.resizable);
 }
 
+class ScopedJavaScriptDialogInstrumentation {
+    STACK_ALLOCATED();
+public:
+    ScopedJavaScriptDialogInstrumentation(LocalFrame& frame, const String& message)
+        : m_cookie(InspectorInstrumentation::willRunJavaScriptDialog(&frame, message))
+    {
+    }
+    ~ScopedJavaScriptDialogInstrumentation()
+    {
+        InspectorInstrumentation::didRunJavaScriptDialog(m_cookie);
+    }
+
+private:
+    InspectorInstrumentationCookie m_cookie;
+};
+
 bool ChromeClient::runBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame)
 {
     // Defer loads in case the client method runs a new event loop that would
     // otherwise cause the load to continue while we're in the middle of executing JavaScript.
     ScopedPageLoadDeferrer deferrer;
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(frame, message);
-    bool ok = runBeforeUnloadConfirmPanelInternal(message, frame);
-    InspectorInstrumentation::didRunJavaScriptDialog(cookie);
-    return ok;
+    ScopedJavaScriptDialogInstrumentation instrumentation(*frame, message);
+    return runBeforeUnloadConfirmPanelInternal(message, frame);
 }
 
 void ChromeClient::runJavaScriptAlert(LocalFrame* frame, const String& message)
@@ -106,9 +120,8 @@ void ChromeClient::runJavaScriptAlert(LocalFrame* frame, const String& message)
     ASSERT(frame);
     notifyPopupOpeningObservers();
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(frame, message);
+    ScopedJavaScriptDialogInstrumentation instrumentation(*frame, message);
     runJavaScriptAlertInternal(frame, message);
-    InspectorInstrumentation::didRunJavaScriptDialog(cookie);
 }
 
 bool ChromeClient::runJavaScriptConfirm(LocalFrame* frame, const String& message)
@@ -123,10 +136,8 @@ bool ChromeClient::runJavaScriptConfirm(LocalFrame* frame, const String& message
     ASSERT(frame);
     notifyPopupOpeningObservers();
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(frame, message);
-    bool ok = runJavaScriptConfirmInternal(frame, message);
-    InspectorInstrumentation::didRunJavaScriptDialog(cookie);
-    return ok;
+    ScopedJavaScriptDialogInstrumentation instrumentation(*frame, message);
+    return runJavaScriptConfirmInternal(frame, message);
 }
 
 bool ChromeClient::runJavaScriptPrompt(LocalFrame* frame, const String& prompt, const String& defaultValue, String& result)
@@ -141,11 +152,8 @@ bool ChromeClient::runJavaScriptPrompt(LocalFrame* frame, const String& prompt, 
     ASSERT(frame);
     notifyPopupOpeningObservers();
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRunJavaScriptDialog(frame, prompt);
-    bool ok = runJavaScriptPromptInternal(frame, prompt, defaultValue, result);
-    InspectorInstrumentation::didRunJavaScriptDialog(cookie);
-
-    return ok;
+    ScopedJavaScriptDialogInstrumentation instrumentation(*frame, prompt);
+    return runJavaScriptPromptInternal(frame, prompt, defaultValue, result);
 }
 
 void ChromeClient::mouseDidMoveOverElement(const HitTestResult& result)
