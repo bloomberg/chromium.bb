@@ -53,7 +53,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, const Sync
         WebSyncRegistration::PeriodicityOneShot,
         options.tag(),
         0 /* minPeriod */,
-        WebSyncRegistration::NetworkStateAny /* networkState */,
+        WebSyncRegistration::NetworkStateOnline /* networkState */,
         WebSyncRegistration::PowerStateAuto /* powerState */
     );
     backgroundSyncProvider()->registerBackgroundSync(webSyncRegistration, m_registration->webRegistration(), new SyncRegistrationCallbacks(resolver, m_registration));
