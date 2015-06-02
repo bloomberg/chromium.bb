@@ -167,6 +167,8 @@ void PushMessagingServiceImpl::ShutdownHandler() {
 void PushMessagingServiceImpl::OnMessage(
     const std::string& app_id,
     const gcm::GCMClient::IncomingMessage& message) {
+  in_flight_message_deliveries_.insert(app_id);
+
   base::Closure message_handled_closure =
       message_callback_for_testing_.is_null() ? base::Bind(&base::DoNothing)
                                               : message_callback_for_testing_;
@@ -217,8 +219,6 @@ void PushMessagingServiceImpl::OnMessage(
       data = it->second;
   }
 
-  in_flight_message_deliveries_.insert(app_identifier.app_id());
-
   content::BrowserContext::DeliverPushMessage(
       profile_,
       app_identifier.origin(),
@@ -240,6 +240,9 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     content::PushDeliveryStatus status) {
   // Remove a single in-flight delivery for |app_id|. This has to be done using
   // an iterator rather than by value, as the latter removes all entries.
+  DCHECK(in_flight_message_deliveries_.find(app_id) !=
+         in_flight_message_deliveries_.end());
+
   in_flight_message_deliveries_.erase(
       in_flight_message_deliveries_.find(app_id));
 

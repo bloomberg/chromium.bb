@@ -165,16 +165,13 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   // To be called when delivery of a push message has finished. The |run_loop|
   // will be told to quit after |messages_required| messages were received.
   void OnDeliveryFinished(std::vector<size_t>* number_of_notifications_shown,
-                          base::RunLoop* run_loop,
-                          size_t messages_required) {
+                          const base::Closure& done_closure) {
     DCHECK(number_of_notifications_shown);
-    DCHECK(run_loop);
 
     number_of_notifications_shown->push_back(
         notification_manager_->GetNotificationCount());
 
-    if (number_of_notifications_shown->size() >= messages_required)
-      run_loop->Quit();
+    done_closure.Run();
   }
 
   StubNotificationUIManager* notification_manager() const {
@@ -601,8 +598,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
         base::Bind(&PushMessagingBrowserTest::OnDeliveryFinished,
                    base::Unretained(this),
                    &number_of_notifications_shown,
-                   &run_loop,
-                   2 /* number of messages required */));
+                   base::BarrierClosure(2 /* num_closures */,
+                                        run_loop.QuitClosure())));
 
     message.data["data"] = "testdata";
     push_service()->OnMessage(app_identifier.app_id(), message);
