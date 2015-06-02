@@ -127,8 +127,8 @@ void PepperVideoSourceHost::SendGetFrameReply() {
     // We have already allocated the correct size in shared memory. We need to
     // duplicate the handle for IPC however, which will close down the
     // duplicated handle when it's done.
-    base::SharedMemoryHandle local_handle;
-    if (shared_image_->GetSharedMemory(&local_handle, &byte_count) != PP_OK) {
+    base::SharedMemory* local_shm;
+    if (shared_image_->GetSharedMemory(&local_shm, &byte_count) != PP_OK) {
       SendGetFrameErrorReply(PP_ERROR_FAILED);
       return;
     }
@@ -140,7 +140,8 @@ void PepperVideoSourceHost::SendGetFrameReply() {
       return;
     }
 
-    image_handle = dispatcher->ShareSharedMemoryHandleWithRemote(local_handle);
+    image_handle =
+        dispatcher->ShareSharedMemoryHandleWithRemote(local_shm->handle());
   } else {
     // We need to allocate new shared memory.
     shared_image_ = NULL;  // Release any previous image.

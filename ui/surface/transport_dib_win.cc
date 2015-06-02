@@ -72,7 +72,7 @@ skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
   // Windows will fail to map the section if the dimensions of the canvas
   // are too large.
   skia::PlatformCanvas* canvas =
-      skia::CreatePlatformCanvas(w, h, true, handle(),
+      skia::CreatePlatformCanvas(w, h, true, shared_memory_.handle(),
                                  skia::RETURN_NULL_ON_FAILURE);
 
   // Calculate the size for the memory region backing the canvas.
@@ -83,7 +83,7 @@ skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
 }
 
 bool TransportDIB::Map() {
-  if (!is_valid_handle(handle()))
+  if (!is_valid_handle(shared_memory_.handle()))
     return false;
   if (memory())
     return true;
@@ -103,10 +103,6 @@ void* TransportDIB::memory() const {
   return shared_memory_.memory();
 }
 
-TransportDIB::Handle TransportDIB::handle() const {
-  return shared_memory_.handle();
-}
-
 TransportDIB::Id TransportDIB::id() const {
-  return Id(handle(), sequence_num_);
+  return Id(shared_memory_.handle(), sequence_num_);
 }

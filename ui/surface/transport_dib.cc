@@ -19,3 +19,6 @@ bool TransportDIB::VerifyCanvasSize(int w, int h) {
   return (stride * h) <= size_;
 }
 
+base::SharedMemory* TransportDIB::shared_memory() {
+  return &shared_memory_;
+}

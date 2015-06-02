@@ -72,7 +72,7 @@ skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
 }
 
 bool TransportDIB::Map() {
-  if (!is_valid_handle(handle()))
+  if (!is_valid_handle(shared_memory_.handle()))
     return false;
 #if defined(OS_ANDROID)
   if (!shared_memory_.Map(0))
@@ -98,12 +98,8 @@ void* TransportDIB::memory() const {
 
 TransportDIB::Id TransportDIB::id() const {
 #if defined(OS_ANDROID)
-  return handle();
+  return shared_memory_.handle();
 #else
   return shared_memory_.id();
 #endif
-}
-
-TransportDIB::Handle TransportDIB::handle() const {
-  return shared_memory_.handle();
 }

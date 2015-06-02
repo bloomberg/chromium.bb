@@ -48,7 +48,7 @@ class PPAPI_PROXY_EXPORT ImageData
 
   // PPB_ImageData API.
   PP_Bool Describe(PP_ImageDataDesc* desc) override;
-  int32_t GetSharedMemory(base::SharedMemoryHandle* handle,
+  int32_t GetSharedMemory(base::SharedMemory** shm,
                           uint32_t* byte_count) override;
   void SetIsCandidateForReuse() override;
 

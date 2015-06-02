@@ -116,20 +116,21 @@ int32_t VerifyCommittedLayer(
       return PP_ERROR_BADARGUMENT;
     }
 
-    base::SharedMemoryHandle handle;
+    base::SharedMemory* shm;
     uint32_t byte_count;
-    if (enter.object()->GetSharedMemory(&handle, &byte_count) != PP_OK)
+    if (enter.object()->GetSharedMemory(&shm, &byte_count) != PP_OK)
       return PP_ERROR_FAILED;
 
 #if defined(OS_WIN)
     base::SharedMemoryHandle shm_handle;
-    if (!::DuplicateHandle(::GetCurrentProcess(), handle, ::GetCurrentProcess(),
-                           &shm_handle, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
+    if (!::DuplicateHandle(::GetCurrentProcess(), shm->handle(),
+                           ::GetCurrentProcess(), &shm_handle, 0, FALSE,
+                           DUPLICATE_SAME_ACCESS)) {
       return PP_ERROR_FAILED;
     }
 #else
     base::SharedMemoryHandle shm_handle =
-        base::SharedMemory::DeepCopyHandle(handle, false);
+        base::SharedMemory::DeepCopyHandle(shm->handle(), false);
 #endif
     image_shm->reset(new base::SharedMemory(shm_handle, true));
     if (!(*image_shm)->Map(desc.stride * desc.size.height)) {

@@ -46,7 +46,7 @@ class CONTENT_EXPORT PPB_ImageData_Impl
     virtual TransportDIB* GetTransportDIB() const = 0;
     virtual void* Map() = 0;
     virtual void Unmap() = 0;
-    virtual int32_t GetSharedMemory(base::SharedMemoryHandle* handle,
+    virtual int32_t GetSharedMemory(base::SharedMemory** shm,
                                     uint32_t* byte_count) = 0;
     virtual SkCanvas* GetPlatformCanvas() = 0;
     virtual SkCanvas* GetCanvas() = 0;
@@ -92,7 +92,7 @@ class CONTENT_EXPORT PPB_ImageData_Impl
   PP_Bool Describe(PP_ImageDataDesc* desc) override;
   void* Map() override;
   void Unmap() override;
-  int32_t GetSharedMemory(base::SharedMemoryHandle* handle,
+  int32_t GetSharedMemory(base::SharedMemory** shm,
                           uint32_t* byte_count) override;
   SkCanvas* GetPlatformCanvas() override;
   SkCanvas* GetCanvas() override;
@@ -128,7 +128,7 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
   TransportDIB* GetTransportDIB() const override;
   void* Map() override;
   void Unmap() override;
-  int32_t GetSharedMemory(base::SharedMemoryHandle* handle,
+  int32_t GetSharedMemory(base::SharedMemory** shm,
                           uint32_t* byte_count) override;
   SkCanvas* GetPlatformCanvas() override;
   SkCanvas* GetCanvas() override;
@@ -162,7 +162,7 @@ class ImageDataSimpleBackend : public PPB_ImageData_Impl::Backend {
   TransportDIB* GetTransportDIB() const override;
   void* Map() override;
   void Unmap() override;
-  int32_t GetSharedMemory(base::SharedMemoryHandle* handle,
+  int32_t GetSharedMemory(base::SharedMemory** shm,
                           uint32_t* byte_count) override;
   SkCanvas* GetPlatformCanvas() override;
   SkCanvas* GetCanvas() override;

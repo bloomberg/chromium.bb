@@ -5,11 +5,14 @@
 #ifndef PPAPI_THUNK_PPB_IMAGE_DATA_API_H_
 #define PPAPI_THUNK_PPB_IMAGE_DATA_API_H_
 
-#include "base/memory/shared_memory.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/ppb_image_data.h"
 
 class SkCanvas;
+
+namespace base {
+class SharedMemory;
+}  // namespace base
 
 namespace ppapi {
 namespace thunk {
@@ -23,7 +26,7 @@ class PPB_ImageData_API {
   virtual void Unmap() = 0;
 
   // Trusted inteface.
-  virtual int32_t GetSharedMemory(base::SharedMemoryHandle* handle,
+  virtual int32_t GetSharedMemory(base::SharedMemory** shm,
                                   uint32_t* byte_count) = 0;
 
   // Get the platform-specific canvas that backs this ImageData, if there is

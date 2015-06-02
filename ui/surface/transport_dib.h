@@ -135,9 +135,8 @@ class SURFACE_EXPORT TransportDIB {
   // on the wire.
   Id id() const;
 
-  // Return a handle to the underlying shared memory. This can be sent over the
-  // wire to give this transport DIB to another process.
-  Handle handle() const;
+  // Returns a pointer to the SharedMemory object that backs the transport dib.
+  base::SharedMemory* shared_memory();
 
  private:
   TransportDIB();

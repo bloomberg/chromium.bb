@@ -347,7 +347,7 @@ PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
   return PP_TRUE;
 }
 
-int32_t ImageData::GetSharedMemory(base::SharedMemoryHandle* /* handle */,
+int32_t ImageData::GetSharedMemory(base::SharedMemory** /* shm */,
                                    uint32_t* /* byte_count */) {
   // Not supported in the proxy (this method is for actually implementing the
   // proxy in the host).
@@ -593,14 +593,15 @@ PP_Resource PPB_ImageData_Proxy::CreateImageData(
     return 0;
   }
 
-  base::SharedMemoryHandle local_handle;
-  if (enter_resource.object()->GetSharedMemory(&local_handle, byte_count) !=
+  base::SharedMemory* local_shm;
+  if (enter_resource.object()->GetSharedMemory(&local_shm, byte_count) !=
       PP_OK) {
     DVLOG(1) << "CreateImageData failed: could not GetSharedMemory";
     return 0;
   }
 
-  *image_handle = dispatcher->ShareSharedMemoryHandleWithRemote(local_handle);
+  *image_handle =
+      dispatcher->ShareSharedMemoryHandleWithRemote(local_shm->handle());
   return resource.Release();
 }
 
