@@ -55,6 +55,8 @@ def print_landmines():
     print "Switched win from VS2010 to VS2013."
     print "Update to VS2013 Update 2."
     print "Update to VS2013 Update 4."
+  if (platform() == 'win' and gyp_msvs_version().startswith('2015')):
+    print 'Switch to VS2015'
   print 'Need to clobber everything due to an IDL change in r154579 (blink)'
   print 'Need to clobber everything due to gen file moves in r175513 (Blink)'
   if (platform() != 'ios'):
