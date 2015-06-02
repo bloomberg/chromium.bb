@@ -126,7 +126,7 @@ crbug.com/240374 virtual/slimmingpaint/compositing/overlap-blending/children-opa
 crbug.com/240374 virtual/slimmingpaint/compositing/overlap-blending/reflection-opacity-huge.html [ Skip ]
 
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass Slow ]
-
+crbug.com/493895 inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Timeout ]
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
@@ -1749,7 +1749,7 @@ crbug.com/478109 [ SnowLeopard ] virtual/antialiasedtext/fast/text/bidi-embeddin
 
 crbug.com/470549 inspector/tracing/worker-events.html [ Pass Crash Timeout ]
 
-crbug.com/471093 [ Win Debug ] inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
+crbug.com/471093 inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
 
 crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Timeout ]
 
