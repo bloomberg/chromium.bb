@@ -368,7 +368,6 @@ void BaseHeap::poisonHeap(ObjectsToPoison objectsToPoison, Poisoning poisoning)
     //
     // Poisoning may be limited to unmarked objects only, or apply to all.
     if (poisoning == SetPoison) {
-        ASSERT(!m_firstPage);
         for (BasePage* page = m_firstUnsweptPage; page; page = page->next())
             page->poisonObjects(objectsToPoison, poisoning);
         return;
