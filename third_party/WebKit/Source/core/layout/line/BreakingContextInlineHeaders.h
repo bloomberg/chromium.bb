@@ -248,10 +248,11 @@ inline void BreakingContext::initializeForCurrentObject()
     m_currWS = m_current.object()->isReplaced() ? m_current.object()->parent()->style()->whiteSpace() : m_currentStyle->whiteSpace();
     m_lastWS = m_lastObject->isReplaced() ? m_lastObject->parent()->style()->whiteSpace() : m_lastObject->style()->whiteSpace();
 
-    m_autoWrap = ComputedStyle::autoWrap(m_currWS);
+    bool isSVGText = m_current.object()->isSVGInlineText();
+    m_autoWrap = !isSVGText && ComputedStyle::autoWrap(m_currWS);
     m_autoWrapWasEverTrueOnLine = m_autoWrapWasEverTrueOnLine || m_autoWrap;
 
-    m_preservesNewline = m_current.object()->isSVGInlineText() ? false : ComputedStyle::preserveNewline(m_currWS);
+    m_preservesNewline = !isSVGText && ComputedStyle::preserveNewline(m_currWS);
 
     m_collapseWhiteSpace = ComputedStyle::collapseWhiteSpace(m_currWS);
 }
