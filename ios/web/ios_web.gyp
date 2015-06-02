@@ -143,6 +143,7 @@
         'public/browser_url_rewriter.h',
         'public/browsing_data_partition.h',
         'public/crw_browsing_data_store.h',
+        'public/crw_browsing_data_store_delegate.h',
         'public/cert_policy.h',
         'public/cert_store.h',
         'public/certificate_policy_cache.h',

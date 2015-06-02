@@ -84,6 +84,8 @@ enum OperationType {
 
 @implementation CRWBrowsingDataStore {
   web::BrowserState* _browserState;  // Weak, owns this object.
+  // The delegate.
+  base::WeakNSProtocol<id<CRWBrowsingDataStoreDelegate>> _delegate;
   // The mode of the CRWBrowsingDataStore.
   CRWBrowsingDataStoreMode _mode;
   // The dictionary that maps a browsing data type to its
@@ -180,6 +182,14 @@ enum OperationType {
   return result;
 }
 
+- (id<CRWBrowsingDataStoreDelegate>)delegate {
+  return _delegate;
+}
+
+- (void)setDelegate:(id<CRWBrowsingDataStoreDelegate>)delegate {
+  _delegate.reset(delegate);
+}
+
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString*)key {
   // It is necessary to override this for |mode| because the default KVO
   // behavior in NSObject is to fire a notification irrespective of if an actual
@@ -241,6 +251,9 @@ enum OperationType {
         (void (^)(BOOL success))completionHandler {
   DCHECK([NSThread isMainThread]);
 
+  // TODO(shreyasv): Consult the delegate here if it wants to |DELETE| instead.
+  // crbug.com/480654.
+
   base::WeakNSObject<CRWBrowsingDataStore> weakSelf(self);
   [self performOperationWithType:RESTORE
             browsingDataManagers:[self allBrowsingDataManagers]
@@ -253,6 +266,9 @@ enum OperationType {
 - (void)makeInactiveWithCompletionHandler:
         (void (^)(BOOL success))completionHandler {
   DCHECK([NSThread isMainThread]);
+
+  // TODO(shreyasv): Consult the delegate here if it wants to |DELETE| instead.
+  // crbug.com/480654.
 
   base::WeakNSObject<CRWBrowsingDataStore> weakSelf(self);
   [self performOperationWithType:STASH

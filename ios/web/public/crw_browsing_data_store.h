@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #import "base/ios/block_types.h"
+#import "ios/web/public/crw_browsing_data_store_delegate.h"
 
 namespace web {
 class BrowserState;
@@ -47,6 +48,9 @@ enum CRWBrowsingDataStoreMode {
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
+// The delegate that is consulted when the mode needs to change.
+@property(nonatomic, weak) id<CRWBrowsingDataStoreDelegate> delegate;
+
 // The mode that the CRWBrowsingDataStore is in. KVO compliant.
 @property(nonatomic, assign, readonly) CRWBrowsingDataStoreMode mode;
 
@@ -54,6 +58,9 @@ enum CRWBrowsingDataStoreMode {
 // web::WebViewCounter class is implemented. crbug.com/480507
 
 // Changes the mode to |ACTIVE|.
+// if there is no delegate present, the default behavior of this method is to
+// restore browsing data from |browserState|'s stash path to the canonical path
+// where web views read/write browsing data to.
 // |completionHandler| is called on the main thread. This block has no return
 // value and takes a single BOOL argument that indicates whether or not the
 // the mode was successfully changed to |ACTIVE|.
@@ -64,6 +71,10 @@ enum CRWBrowsingDataStoreMode {
         (void (^)(BOOL success))completionHandler;
 
 // Changes the mode to |INACTIVE|.
+// if there is no delegate present, the default behavior of this method is to
+// value and takes a single BOOL argument that indicates whether or not the
+// stash browsing data created by the web view in to |browserState|'s stash
+// path.
 // |completionHandler| is called on the main thread. This block has no return
 // value and takes a single BOOL argument that indicates whether or not the
 // the mode was successfully changed to |INACTIVE|.
