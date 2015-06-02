@@ -87,4 +87,38 @@ TEST(NetworkChangeNotifierTest, ConnectionTypeFromInterfaceList) {
   }
 }
 
+TEST(NetworkChangeNotifierTest, IgnoreTeredoOnWindows) {
+  NetworkInterfaceList list;
+  NetworkInterface interface_teredo;
+  interface_teredo.type = NetworkChangeNotifier::CONNECTION_ETHERNET;
+  interface_teredo.friendly_name = "Teredo Tunneling Pseudo-Interface";
+  list.push_back(interface_teredo);
+
+#if defined(OS_WIN)
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::ConnectionTypeFromInterfaceList(list));
+#else
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_ETHERNET,
+            NetworkChangeNotifier::ConnectionTypeFromInterfaceList(list));
+#endif
+}
+
+TEST(NetworkChangeNotifierTest, IgnoreVMInterfaces) {
+  NetworkInterfaceList list;
+  NetworkInterface interface_vmnet_linux;
+  interface_vmnet_linux.type = NetworkChangeNotifier::CONNECTION_ETHERNET;
+  interface_vmnet_linux.name = "vmnet1";
+  interface_vmnet_linux.friendly_name = "vmnet1";
+  list.push_back(interface_vmnet_linux);
+
+  NetworkInterface interface_vmnet_win;
+  interface_vmnet_win.type = NetworkChangeNotifier::CONNECTION_ETHERNET;
+  interface_vmnet_win.name = "virtualdevice";
+  interface_vmnet_win.friendly_name = "VMware Network Adapter VMnet1";
+  list.push_back(interface_vmnet_win);
+
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::ConnectionTypeFromInterfaceList(list));
+}
+
 }  // namespace net

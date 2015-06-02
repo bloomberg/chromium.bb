@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/metrics/histogram.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
@@ -664,6 +665,12 @@ NetworkChangeNotifier::ConnectionTypeFromInterfaceList(
     if (interfaces[i].friendly_name == "Teredo Tunneling Pseudo-Interface")
       continue;
 #endif
+    // Remove VMware network interfaces as they're internal and should not be
+    // used to determine the network connection type.
+    if (base::StringToLowerASCII(interfaces[i].friendly_name).find("vmnet") !=
+        std::string::npos) {
+      continue;
+    }
     if (first) {
       first = false;
       result = interfaces[i].type;
