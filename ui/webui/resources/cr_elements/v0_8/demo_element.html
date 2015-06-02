@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v0_8/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v0_8/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v0_8/cr_collapse/cr_collapse.html">
@@ -18,6 +19,10 @@
     <div>
       <h3>cr-checkbox</h3>
       <cr-checkbox checked="{{checkboxChecked}}">Checkbox</cr-checkbox>
+      <cr-checkbox checked="{{checkboxChecked}}">
+        <span>{{label}}</span>&nbsp;
+        <span>{{subLabel}}</span>
+      </cr-checkbox>
     </div>
     <div>
       <h3>cr-collapse</h3>

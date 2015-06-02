@@ -2,18 +2,19 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#checkbox {
-  -webkit-margin-end: 10px;
-}
-
-core-label {
-  -webkit-margin-end: 10px;
-  -webkit-margin-start: 0;
+:host {
   margin-bottom: 10px;
   margin-top: 10px;
 }
 
+#checkbox {
+  -webkit-margin-end: 10px;
+}
+
+.main-label {
+  -webkit-margin-end: 10px;
+}
+
 .sub-label {
-  -webkit-margin-start: 10px;
   color: rgba(0, 0, 0, .5);
 }

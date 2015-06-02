@@ -26,6 +26,16 @@ Polymer({
       value: '',
       observer: 'inputValueChanged_'
     },
+
+    label: {
+      type: String,
+      value: 'label!',
+    },
+
+    subLabel: {
+      type: String,
+      value: 'sub-label!',
+    },
   },
 
   checkboxCheckedChanged_: function() {

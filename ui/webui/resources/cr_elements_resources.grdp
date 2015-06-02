@@ -111,6 +111,9 @@
   <structure name="IDR_CR_ELEMENTS_08_CR_DEMO_ELEMENT_JS"
              file="../../webui/resources/cr_elements/v0_8/demo_element.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_08_CR_DEMO_CONFIG_JS"
+             file="../../webui/resources/cr_elements/v0_8/demo_config.js"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_08_CR_DEMO_PAGE_HTML"
              file="../../webui/resources/cr_elements/v0_8/demo_page.html"
              type="chrome_html" />
