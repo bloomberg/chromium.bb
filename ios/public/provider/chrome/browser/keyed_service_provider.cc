@@ -14,6 +14,30 @@ KeyedServiceProvider::KeyedServiceProvider() {
 KeyedServiceProvider::~KeyedServiceProvider() {
 }
 
+KeyedServiceBaseFactory*
+KeyedServiceProvider::GetProfileOAuth2TokenServiceFactory() {
+  return nullptr;
+}
+
+ProfileOAuth2TokenService*
+KeyedServiceProvider::GetProfileOAuth2TokenServiceForBrowserState(
+    ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
+KeyedServiceBaseFactory* KeyedServiceProvider::GetSigninManagerFactory() {
+  return nullptr;
+}
+
+SigninManager* KeyedServiceProvider::GetSigninManagerForBrowserState(
+    ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
+KeyedServiceBaseFactory* KeyedServiceProvider::GetAutofillWebDataFactory() {
+  return nullptr;
+}
+
 scoped_refptr<autofill::AutofillWebDataService>
 KeyedServiceProvider::GetAutofillWebDataForBrowserState(
     ChromeBrowserState* browser_state,
@@ -21,9 +45,33 @@ KeyedServiceProvider::GetAutofillWebDataForBrowserState(
   return nullptr;
 }
 
+KeyedServiceBaseFactory* KeyedServiceProvider::GetPersonalDataManagerFactory() {
+  return nullptr;
+}
+
 autofill::PersonalDataManager*
 KeyedServiceProvider::GetPersonalDataManagerForBrowserState(
     ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
+KeyedServiceBaseFactory*
+KeyedServiceProvider::GetEnhancedBookmarkModelFactory() {
+  return nullptr;
+}
+
+enhanced_bookmarks::EnhancedBookmarkModel*
+KeyedServiceProvider::GetEnhancedBookmarkModelForBrowserState(
+    ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
+KeyedServiceBaseFactory* KeyedServiceProvider::GetSyncServiceFactory() {
+  return nullptr;
+}
+
+sync_driver::SyncService* KeyedServiceProvider::GetSyncServiceForBrowserState(
+    ios::ChromeBrowserState* browser_state) {
   return nullptr;
 }
 
