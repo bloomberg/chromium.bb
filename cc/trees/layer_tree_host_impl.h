@@ -251,6 +251,8 @@ class CC_EXPORT LayerTreeHostImpl
   // Resets all of the trees to an empty state.
   void ResetTreesForTesting();
 
+  size_t SourceAnimationFrameNumberForTesting() const;
+
   DrawMode GetDrawMode() const;
 
   // Viewport size in draw space: this size is in physical pixels and is used
@@ -317,7 +319,6 @@ class CC_EXPORT LayerTreeHostImpl
   std::string LayerTreeAsJson() const;
 
   void FinishAllRendering();
-  int SourceAnimationFrameNumber() const;
 
   virtual bool InitializeRenderer(scoped_ptr<OutputSurface> output_surface);
   TileManager* tile_manager() { return tile_manager_.get(); }

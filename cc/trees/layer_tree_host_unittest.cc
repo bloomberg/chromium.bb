@@ -4689,7 +4689,7 @@ class LayerTreeHostTestAbortEvictedTextures : public LayerTreeHostTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    switch (impl->SourceAnimationFrameNumber()) {
+    switch (impl->SourceAnimationFrameNumberForTesting()) {
       case 1:
         // Prevent draws until commit.
         impl->active_tree()->SetContentsTexturesPurged();

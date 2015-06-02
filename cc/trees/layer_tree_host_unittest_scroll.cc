@@ -156,7 +156,7 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
     LayerImpl* scroll_layer =
         impl->active_tree()->LayerById(scroll_layer_->id());
     if (impl->active_tree()->source_frame_number() == 0 &&
-        impl->SourceAnimationFrameNumber() == 1) {
+        impl->SourceAnimationFrameNumberForTesting() == 1) {
       // First draw after first commit.
       EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), gfx::Vector2d());
       scroll_layer->ScrollBy(scroll_amount_);
@@ -165,7 +165,7 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
       EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(), initial_scroll_);
       PostSetNeedsRedrawToMainThread();
     } else if (impl->active_tree()->source_frame_number() == 0 &&
-               impl->SourceAnimationFrameNumber() == 2) {
+               impl->SourceAnimationFrameNumberForTesting() == 2) {
       // Second draw after first commit.
       EXPECT_EQ(scroll_layer->ScrollDelta(), scroll_amount_);
       scroll_layer->ScrollBy(scroll_amount_);
@@ -176,7 +176,7 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
       PostSetNeedsCommitToMainThread();
     } else if (impl->active_tree()->source_frame_number() == 1) {
       // Third or later draw after second commit.
-      EXPECT_GE(impl->SourceAnimationFrameNumber(), 3);
+      EXPECT_GE(impl->SourceAnimationFrameNumberForTesting(), 3u);
       EXPECT_VECTOR_EQ(scroll_layer_->ScrollDelta(), gfx::Vector2d());
       EXPECT_VECTOR_EQ(
           scroll_layer_->scroll_offset(),
@@ -305,7 +305,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
         impl->active_tree()->root_layer()->children()[0];
 
     if (impl->active_tree()->source_frame_number() == 0 &&
-        impl->SourceAnimationFrameNumber() == 1) {
+        impl->SourceAnimationFrameNumberForTesting() == 1) {
       // First draw
       EXPECT_VECTOR_EQ(root_scroll_layer->ScrollDelta(), gfx::Vector2d());
       root_scroll_layer->ScrollBy(impl_scroll_);
@@ -321,7 +321,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
       // To simplify the testing flow, don't redraw here, just commit.
       impl->SetNeedsCommit();
     } else if (impl->active_tree()->source_frame_number() == 0 &&
-               impl->SourceAnimationFrameNumber() == 2) {
+               impl->SourceAnimationFrameNumberForTesting() == 2) {
       // Test a second draw after an aborted commit.
       // The scroll/scale values should be baked into the offset/scale factor
       // since the main thread consumed but aborted the begin frame.
@@ -344,7 +344,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
       // Commit for source frame 1 is aborted.
       NOTREACHED();
     } else if (impl->active_tree()->source_frame_number() == 2 &&
-               impl->SourceAnimationFrameNumber() == 3) {
+               impl->SourceAnimationFrameNumberForTesting() == 3) {
       // Third draw after the second full commit.
       EXPECT_EQ(root_scroll_layer->ScrollDelta(), gfx::Vector2d());
       root_scroll_layer->ScrollBy(impl_scroll_);
@@ -354,7 +354,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
       EXPECT_VECTOR_EQ(root_scroll_layer->BaseScrollOffset(),
                        gfx::ScrollOffsetWithDelta(initial_scroll_, delta));
     } else if (impl->active_tree()->source_frame_number() == 2 &&
-               impl->SourceAnimationFrameNumber() == 4) {
+               impl->SourceAnimationFrameNumberForTesting() == 4) {
       // Final draw after the second aborted commit.
       EXPECT_VECTOR_EQ(root_scroll_layer->ScrollDelta(), gfx::Vector2d());
       gfx::Vector2dF delta =

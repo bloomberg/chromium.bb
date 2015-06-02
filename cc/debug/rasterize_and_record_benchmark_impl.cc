@@ -135,7 +135,7 @@ void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
   result->SetDouble("rasterize_time_ms",
                     rasterize_results_.total_best_time.InMillisecondsF());
   result->SetDouble("total_pictures_in_pile_size",
-                    rasterize_results_.total_memory_usage);
+                    static_cast<int>(rasterize_results_.total_memory_usage));
   result->SetInteger("pixels_rasterized", rasterize_results_.pixels_rasterized);
   result->SetInteger("pixels_rasterized_with_non_solid_color",
                      rasterize_results_.pixels_rasterized_with_non_solid_color);

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -33,10 +34,12 @@ class BitmapSerializer : public SkPixelSerializer {
     // Otherwise encode as PNG.
     bool encoding_succeeded = false;
     if (info.isOpaque()) {
-      encoding_succeeded =
-          gfx::JPEGCodec::Encode(reinterpret_cast<const unsigned char*>(pixels),
-                                 gfx::JPEGCodec::FORMAT_SkBitmap, info.width(),
-                                 info.height(), row_bytes, kJpegQuality, &data);
+      DCHECK_LE(row_bytes,
+                static_cast<size_t>(std::numeric_limits<int>::max()));
+      encoding_succeeded = gfx::JPEGCodec::Encode(
+          reinterpret_cast<const unsigned char*>(pixels),
+          gfx::JPEGCodec::FORMAT_SkBitmap, info.width(), info.height(),
+          static_cast<int>(row_bytes), kJpegQuality, &data);
     } else {
       SkBitmap bm;
       // The cast is ok, since we only read the bm.

@@ -92,9 +92,8 @@ void DebugRectHistory::SavePaintRects(LayerImpl* layer) {
 void DebugRectHistory::SavePropertyChangedRects(
     const LayerImplList& render_surface_layer_list,
     LayerImpl* hud_layer) {
-  for (int surface_index = render_surface_layer_list.size() - 1;
-       surface_index >= 0;
-       --surface_index) {
+  for (size_t i = 0; i < render_surface_layer_list.size(); ++i) {
+    size_t surface_index = render_surface_layer_list.size() - 1 - i;
     LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
     RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
     DCHECK(render_surface);
@@ -126,9 +125,8 @@ void DebugRectHistory::SavePropertyChangedRects(
 
 void DebugRectHistory::SaveSurfaceDamageRects(
     const LayerImplList& render_surface_layer_list) {
-  for (int surface_index = render_surface_layer_list.size() - 1;
-       surface_index >= 0;
-       --surface_index) {
+  for (size_t i = 0; i < render_surface_layer_list.size(); ++i) {
+    size_t surface_index = render_surface_layer_list.size() - 1 - i;
     LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
     RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
     DCHECK(render_surface);
@@ -143,9 +141,8 @@ void DebugRectHistory::SaveSurfaceDamageRects(
 
 void DebugRectHistory::SaveScreenSpaceRects(
     const LayerImplList& render_surface_layer_list) {
-  for (int surface_index = render_surface_layer_list.size() - 1;
-       surface_index >= 0;
-       --surface_index) {
+  for (size_t i = 0; i < render_surface_layer_list.size(); ++i) {
+    size_t surface_index = render_surface_layer_list.size() - 1 - i;
     LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
     RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
     DCHECK(render_surface);

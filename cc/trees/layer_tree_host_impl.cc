@@ -1149,6 +1149,10 @@ void LayerTreeHostImpl::ResetTreesForTesting() {
   recycle_tree_ = nullptr;
 }
 
+size_t LayerTreeHostImpl::SourceAnimationFrameNumberForTesting() const {
+  return fps_counter_->current_frame_number();
+}
+
 void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
 
@@ -3134,10 +3138,6 @@ std::string LayerTreeHostImpl::LayerTreeAsJson() const {
         *json, base::JSONWriter::OPTIONS_PRETTY_PRINT, &str);
   }
   return str;
-}
-
-int LayerTreeHostImpl::SourceAnimationFrameNumber() const {
-  return fps_counter_->current_frame_number();
 }
 
 void LayerTreeHostImpl::StartAnimatingScrollbarAnimationController(

@@ -18,7 +18,7 @@ class FrameRateCounter {
  public:
   static scoped_ptr<FrameRateCounter> Create(bool has_impl_thread);
 
-  int current_frame_number() const { return ring_buffer_.CurrentIndex(); }
+  size_t current_frame_number() const { return ring_buffer_.CurrentIndex(); }
   int dropped_frame_count() const { return dropped_frame_count_; }
   size_t time_stamp_history_size() const { return ring_buffer_.BufferSize(); }
 
