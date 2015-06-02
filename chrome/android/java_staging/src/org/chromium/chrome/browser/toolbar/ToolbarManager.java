@@ -241,6 +241,11 @@ class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
             }
 
             @Override
+            public void onTitleUpdated(Tab tab) {
+                mLocationBar.setTitleToPageTitle();
+            }
+
+            @Override
             public void onUrlUpdated(Tab tab) {
                 // Update the SSL security state as a result of this notification as it will
                 // sometimes be the only update we receive.

@@ -9,10 +9,13 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.text.TextUtils;
+import android.text.TextUtils.TruncateAt;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -20,12 +23,15 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.apps.chrome.R;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.ContextualMenuBar.ActionBarDelegate;
 import org.chromium.chrome.browser.CustomSelectionActionModeCallback;
+import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.document.BrandColorUtils;
@@ -36,7 +42,6 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.omnibox.UrlContainer;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
@@ -50,12 +55,13 @@ import org.chromium.ui.base.WindowAndroid;
  * The Toolbar layout to be used for hosted mode. This is used for both phone and tablet UIs.
  */
 public class HostedToolbar extends ToolbarLayout implements LocationBar {
+    private View mUrlInfoContainer;
     private UrlBar mUrlBar;
+    private TextView mTitleBar;
     private ImageView mSecurityButton;
     private ImageButton mCustomActionButton;
     private int mSecurityIconType;
     private boolean mUseDarkColors;
-    private UrlContainer mUrlContainer;
     private TintedImageButton mBackButton;
     private Animator mSecurityButtonShowAnimator;
     private boolean mBackgroundColorSet;
@@ -75,7 +81,8 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
         mUrlBar.setHint("");
         mUrlBar.setDelegate(this);
         mUrlBar.setEnabled(false);
-        mUrlContainer = (UrlContainer) findViewById(R.id.url_container);
+        mTitleBar = (TextView) findViewById(R.id.title_bar);
+        mUrlInfoContainer = findViewById(R.id.url_info_container);
         mSecurityButton = (ImageButton) findViewById(R.id.security_button);
         mSecurityIconType = ConnectionSecurityHelperSecurityLevel.NONE;
         mCustomActionButton = (ImageButton) findViewById(R.id.action_button);
@@ -93,12 +100,42 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
     }
 
     @Override
+    public void onNativeLibraryReady() {
+        super.onNativeLibraryReady();
+        mSecurityButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Tab currentTab = getToolbarDataProvider().getTab();
+                if (currentTab == null || currentTab.getWebContents() == null) return;
+
+                WebsiteSettingsPopup.show(getContext(), currentTab.getProfile(),
+                        currentTab.getWebContents());
+            }
+        });
+    }
+
+    @Override
     public void setHostedBackClickHandler(OnClickListener listener) {
         mBackButton.setOnClickListener(listener);
     }
 
     @Override
     public void addCustomActionButton(Bitmap buttonSource, OnClickListener listener) {
+        Resources resources = getResources();
+
+        // The height will be scaled to match spec while keeping the aspect ratio, so get the scaled
+        // width through that.
+        int sourceHeight = buttonSource.getHeight();
+        int sourceScaledHeight = resources.getDimensionPixelSize(R.dimen.toolbar_icon_height);
+        int sourceWidth = buttonSource.getWidth();
+        int sourceScaledWidth = sourceWidth * sourceScaledHeight / sourceHeight;
+        int minPadding = resources.getDimensionPixelSize(R.dimen.min_toolbar_icon_side_padding);
+
+        int sidePadding = Math.max((2 * sourceScaledHeight - sourceScaledWidth) / 2, minPadding);
+        int topPadding = mCustomActionButton.getPaddingTop();
+        int bottomPadding = mCustomActionButton.getPaddingBottom();
+        mCustomActionButton.setPadding(sidePadding, topPadding, sidePadding, bottomPadding);
+
         mCustomActionButton.setImageDrawable(new BitmapDrawable(getResources(), buttonSource));
         mCustomActionButton.setOnClickListener(listener);
         mCustomActionButton.setVisibility(VISIBLE);
@@ -126,9 +163,25 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
     }
 
     @Override
+    public void setTitleToPageTitle() {
+        Tab currentTab = getToolbarDataProvider().getTab();
+        if (currentTab == null || TextUtils.isEmpty(currentTab.getTitle())) {
+            mTitleBar.setText("");
+            return;
+        }
+        mTitleBar.setText(currentTab.getTitle());
+    }
+
+    @Override
+    protected void onNavigatedToDifferentPage() {
+        super.onNavigatedToDifferentPage();
+        mTitleBar.setText("");
+    }
+
+    @Override
     public void setUrlToPageUrl() {
         if (getCurrentTab() == null) {
-            mUrlContainer.setUrlText(null, null, "");
+            mUrlBar.setUrl("", null);
             return;
         }
 
@@ -136,13 +189,12 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
 
         if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())) {
             // Don't show anything for Chrome URLs.
-            mUrlContainer.setUrlText(null, null, "");
+            mUrlBar.setUrl("", null);
             return;
         }
         String displayText = getToolbarDataProvider().getText();
         Pair<String, String> urlText = LocationBarLayout.splitPathFromUrlDisplayText(displayText);
         displayText = urlText.first;
-        String path = urlText.second;
 
         if (DomDistillerUrlUtils.isDistilledPage(url)) {
             if (isStoredArticle(url)) {
@@ -160,7 +212,7 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
             }
         }
 
-        if (mUrlContainer.setUrlText(displayText, path, url)) {
+        if (mUrlBar.setUrl(url, displayText)) {
             mUrlBar.deEmphasizeUrl();
             mUrlBar.emphasizeUrl();
         }
@@ -182,12 +234,17 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
 
     @Override
     public void updateVisualsForState() {
+        Resources resources = getResources();
         updateSecurityIcon(getSecurityLevel());
-        ColorStateList colorStateList = getResources().getColorStateList(mUseDarkColors
+        ColorStateList colorStateList = resources.getColorStateList(mUseDarkColors
                 ? R.color.dark_mode_tint : R.color.light_mode_tint);
         mMenuButton.setTint(colorStateList);
         mBackButton.setTint(colorStateList);
-        mUrlContainer.setUseDarkTextColors(mUseDarkColors);
+        mUrlBar.setUseDarkTextColors(mUseDarkColors);
+
+        int titleTextColor = mUseDarkColors ? resources.getColor(R.color.url_emphasis_default_text)
+                : resources.getColor(R.color.url_emphasis_light_default_text);
+        mTitleBar.setTextColor(titleTextColor);
 
         if (getProgressBar() != null) {
             int progressBarResource = !mUseDarkColors
@@ -220,6 +277,13 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
     @Override
     public View getMenuAnchor() {
         return mMenuButton;
+    }
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        setTitleToPageTitle();
+        setUrlToPageUrl();
     }
 
     @Override
@@ -274,18 +338,6 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
     }
 
     @Override
-    protected void onNavigatedToDifferentPage() {
-        super.onNavigatedToDifferentPage();
-        mUrlContainer.setTrailingTextVisible(true);
-    }
-
-    @Override
-    public void setLoadProgress(int progress) {
-        super.setLoadProgress(progress);
-        if (progress == 100) mUrlContainer.setTrailingTextVisible(false);
-    }
-
-    @Override
     public View getContainerView() {
         return this;
     }
@@ -297,7 +349,7 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
 
     private void updateLayoutParams() {
         int startMargin = 0;
-        int urlContainerChildIndex = -1;
+        int urlInfoContainerChildIndex = -1;
         for (int i = 0; i < getChildCount(); i++) {
             View childView = getChildAt(i);
             if (childView.getVisibility() != GONE) {
@@ -306,8 +358,8 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
                     ApiCompatibilityUtils.setMarginStart(childLayoutParams, startMargin);
                     childView.setLayoutParams(childLayoutParams);
                 }
-                if (childView == mUrlContainer) {
-                    urlContainerChildIndex = i;
+                if (childView == mUrlInfoContainer) {
+                    urlInfoContainerChildIndex = i;
                     break;
                 }
                 int widthMeasureSpec;
@@ -337,19 +389,19 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
             }
         }
 
-        assert urlContainerChildIndex != -1;
-        int urlContainerMarginEnd = 0;
-        for (int i = urlContainerChildIndex + 1; i < getChildCount(); i++) {
+        assert urlInfoContainerChildIndex != -1;
+        int urlInfoContainerMarginEnd = 0;
+        for (int i = urlInfoContainerChildIndex + 1; i < getChildCount(); i++) {
             View childView = getChildAt(i);
             if (childView.getVisibility() != GONE) {
-                urlContainerMarginEnd += childView.getMeasuredWidth();
+                urlInfoContainerMarginEnd += childView.getMeasuredWidth();
             }
         }
-        LayoutParams urlLayoutParams = (LayoutParams) mUrlContainer.getLayoutParams();
+        LayoutParams urlLayoutParams = (LayoutParams) mUrlInfoContainer.getLayoutParams();
 
-        if (ApiCompatibilityUtils.getMarginEnd(urlLayoutParams) != urlContainerMarginEnd) {
-            ApiCompatibilityUtils.setMarginEnd(urlLayoutParams, urlContainerMarginEnd);
-            mUrlContainer.setLayoutParams(urlLayoutParams);
+        if (ApiCompatibilityUtils.getMarginEnd(urlLayoutParams) != urlInfoContainerMarginEnd) {
+            ApiCompatibilityUtils.setMarginEnd(urlLayoutParams, urlInfoContainerMarginEnd);
+            mUrlInfoContainer.setLayoutParams(urlLayoutParams);
         }
     }
 
@@ -364,12 +416,30 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
         return this;
     }
 
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        if (changed) {
+            final int availWidth = mUrlInfoContainer.getMeasuredWidth()
+                    - mTitleBar.getPaddingEnd() - mTitleBar.getPaddingStart();
+            String currentText = mTitleBar.getText().toString();
+            String currentTitle;
+            Tab currentTab = getToolbarDataProvider().getTab();
+            if (currentTab == null || TextUtils.isEmpty(currentTab.getTitle())) {
+                currentTitle = "";
+            } else {
+                currentTitle = currentTab.getTitle();
+            }
+            String ellipsizedText = TextUtils.ellipsize(currentTitle,
+                    mTitleBar.getPaint(), availWidth, TruncateAt.END).toString();
+            if (!ellipsizedText.equals(currentText)) mTitleBar.setText(ellipsizedText);
+        }
+        super.onLayout(changed, left, top, right, bottom);
+    }
+
     // Toolbar and LocationBar calls that are not relevant here.
 
     @Override
-    public void setToolbarDataProvider(ToolbarDataProvider model) {
-        assert model.equals(getToolbarDataProvider());
-    }
+    public void setToolbarDataProvider(ToolbarDataProvider model) { }
 
     @Override
     public void onUrlPreFocusChanged(boolean gainFocus) {

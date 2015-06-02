@@ -58,6 +58,11 @@ public interface LocationBar extends UrlBarDelegate {
     void setUrlToPageUrl();
 
     /**
+     * Sets the displayed title to the page title.
+     */
+    void setTitleToPageTitle();
+
+    /**
      * Update the visuals based on a loading state change.
      * @param updateUrl Whether to update the URL as a result of the this call.
      */

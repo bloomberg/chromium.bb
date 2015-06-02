@@ -2391,4 +2391,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     public View getContainerView() {
         return this;
     }
+
+    @Override
+    public void setTitleToPageTitle() { }
 }

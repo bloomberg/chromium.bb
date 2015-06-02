@@ -123,8 +123,13 @@ public class HostedIntentDataProvider {
                 intent, EXTRA_HOSTED_ACTION_BUTTON_BUNDLE);
         if (actionButtonBundle != null) {
             mIcon = IntentUtils.safeGetParcelable(actionButtonBundle, KEY_HOSTED_ICON);
-            mActionButtonPendingIntent = IntentUtils.safeGetParcelable(
-                    actionButtonBundle, KEY_HOSTED_PENDING_INTENT);
+            if (!checkBitmapSizeWithinBounds(context, mIcon)) {
+                mIcon.recycle();
+                mIcon = null;
+            } else {
+                mActionButtonPendingIntent = IntentUtils.safeGetParcelable(
+                        actionButtonBundle, KEY_HOSTED_PENDING_INTENT);
+            }
         }
 
         List<Bundle> menuItems = IntentUtils.getParcelableArrayListExtra(
@@ -273,5 +278,13 @@ public class HostedIntentDataProvider {
         } catch (CanceledException e) {
             Log.e(TAG, "CanceledException while sending pending intent in hosted mode");
         }
+    }
+
+    private boolean checkBitmapSizeWithinBounds(Context context, Bitmap bitmap) {
+        int height = context.getResources().getDimensionPixelSize(R.dimen.toolbar_icon_height);
+        if (bitmap.getHeight() < height) return false;
+        int scaledWidth = bitmap.getWidth() / bitmap.getHeight() * height;
+        if (scaledWidth > 2 * height) return false;
+        return true;
     }
 }

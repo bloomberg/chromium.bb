@@ -19,18 +19,43 @@
         android:alpha="0"
         android:visibility="gone"
         android:contentDescription="@string/accessibility_toolbar_btn_security_lock" />
-    <include
-        android:id="@+id/url_container"
+    <FrameLayout
+        android:id="@+id/url_info_container"
+        android:background="@null"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp"
-        android:layout_gravity="center_vertical"
-        layout="@layout/url_container"
-        />
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical" >
+        <TextView
+            android:id="@+id/title_bar"
+            android:background="@null"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_gravity="top"
+            android:maxLines="1"
+            android:paddingEnd="@dimen/toolbar_edge_padding"
+            android:textSize="@dimen/hosted_title_text_size"
+            android:inputType="none" />
+        <org.chromium.chrome.browser.omnibox.UrlBar
+            android:id="@+id/url_bar"
+            android:background="@null"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity ="bottom"
+            android:maxLines="1"
+            android:paddingEnd="@dimen/toolbar_edge_padding"
+            android:textSize="@dimen/hosted_url_text_size"
+            android:inputType="none" />
+    </FrameLayout>
     <ImageButton
         android:id="@+id/action_button"
         style="@style/ToolbarButton"
+        android:layout_width="wrap_content"
+        android:maxWidth="@dimen/hosted_toolbar_maxWidth"
+        android:paddingTop="@dimen/hosted_toolbar_vertical_padding"
+        android:paddingBottom="@dimen/hosted_toolbar_vertical_padding"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
         android:layout_marginEnd="42dp"
         android:layout_gravity="center_vertical|end"
         android:visibility="gone"

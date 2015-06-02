@@ -145,4 +145,12 @@
     <dimen name="enhanced_bookmark_list_mode_background_margin">10dp</dimen>
     <dimen name="enhanced_bookmark_drawer_drawable_padding">18dp</dimen>
 
+        <!-- Hosted Mode dimensions -->
+    <dimen name="hosted_toolbar_maxWidth">60dp</dimen>
+    <dimen name="hosted_toolbar_vertical_padding">16dp</dimen>
+    <dimen name="toolbar_icon_height">24dp</dimen>
+    <dimen name="min_toolbar_icon_side_padding">6dp</dimen>
+    <dimen name="hosted_url_text_size">12sp</dimen>
+    <dimen name="hosted_title_text_size">16sp</dimen>
+
 </resources>
