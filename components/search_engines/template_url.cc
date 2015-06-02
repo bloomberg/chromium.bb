@@ -16,7 +16,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -105,12 +104,11 @@ std::string FindSearchTermsKey(const std::string& params) {
   query.len = static_cast<int>(params.size());
   while (url::ExtractQueryKeyValue(params.c_str(), &query, &key, &value)) {
     if (key.is_nonempty() && value.is_nonempty()) {
-      const base::StringPiece value_string(params.c_str() + value.begin,
-                                           value.begin + value.len);
+      std::string value_string = params.substr(value.begin, value.len);
       if (value_string.find(kSearchTermsParameterFull, 0) !=
-          base::StringPiece::npos ||
+          std::string::npos ||
           value_string.find(kGoogleUnescapedSearchTermsParameterFull, 0) !=
-          base::StringPiece::npos) {
+          std::string::npos) {
         return params.substr(key.begin, key.len);
       }
     }
@@ -543,18 +541,12 @@ bool TemplateURLRef::ParseParameter(size_t start,
          end != std::string::npos && end > start);
   size_t length = end - start - 1;
   bool optional = false;
-  // Make a copy of |url| that can be referenced in StringPieces below. |url| is
-  // modified, so that can't be used in StringPiece.
-  const std::string original_url(*url);
-  if (original_url[end - 1] == kOptional) {
+  if ((*url)[end - 1] == kOptional) {
     optional = true;
     length--;
   }
-
-  const base::StringPiece parameter(original_url.begin() + start + 1,
-                                    original_url.begin() + start + 1 + length);
-  const base::StringPiece full_parameter(original_url.begin() + start,
-                                         original_url.begin() + end + 1);
+  std::string parameter(url->substr(start + 1, length));
+  std::string full_parameter(url->substr(start, end - start + 1));
   // Remove the parameter from the string.  For parameters who replacement is
   // constant and already known, just replace them directly.  For other cases,
   // like parameters whose values may change over time, use |replacements|.
@@ -670,7 +662,7 @@ bool TemplateURLRef::ParseParameter(size_t start,
     // If it's a prepopulated URL, we know that it's safe to remove unknown
     // parameters, so just ignore this and return true below. Otherwise it could
     // be some garbage but can also be a javascript block. Put it back.
-    url->insert(start, full_parameter.data(), full_parameter.size());
+    url->insert(start, full_parameter);
     return false;
   }
   return true;
