@@ -326,6 +326,14 @@ function testIndex()
     // "Occurs if a request is made on a source object that has been deleted or removed." - covered in deleted-objects.html
 
     debug("");
+    debug("IDBIndex.getAllKeys()");
+    debug("If the key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.");
+    evalAndExpectException("index.getAllKeys({})", "0", "'DataError'");
+    debug("The transaction this IDBIndex belongs to is not active.");
+    evalAndExpectException("indexFromInactiveTransaction.getAllKeys(0)", "0", "'TransactionInactiveError'");
+    // "Occurs if a request is made on a source object that has been deleted or removed." - covered in deleted-objects.html
+
+    debug("");
     debug("IDBIndex.openCursor()");
     debug("If the range parameter is specified but is not a valid key or a key range, this method throws a DOMException of type DataError.");
     evalAndExpectException("index.openCursor({})", "0", "'DataError'");

@@ -76,6 +76,8 @@ function testIndex()
     evalAndExpectException("deletedIndex.get(IDBKeyRange.only(0))", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("deletedIndex.getAll(0)", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("deletedIndex.getAll(IDBKeyRange.only(0))", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
+    evalAndExpectException("deletedIndex.getAllKeys(0)", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
+    evalAndExpectException("deletedIndex.getAllKeys(IDBKeyRange.only(0))", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("deletedIndex.getKey(0)", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("deletedIndex.getKey(IDBKeyRange.only(0))", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("deletedIndex.count()", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
@@ -107,6 +109,8 @@ function testTransitiveDeletion()
     evalAndExpectException("indexOfDeletedStore.openKeyCursor(IDBKeyRange.only(0), 'next')", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("indexOfDeletedStore.get(0)", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("indexOfDeletedStore.get(IDBKeyRange.only(0))", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
+    evalAndExpectException("indexOfDeletedStore.getAllKeys(0)", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
+    evalAndExpectException("indexOfDeletedStore.getAllKeys(IDBKeyRange.only(0))", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("indexOfDeletedStore.getKey(0)", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("indexOfDeletedStore.getKey(IDBKeyRange.only(0))", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");
     evalAndExpectException("indexOfDeletedStore.count()", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");

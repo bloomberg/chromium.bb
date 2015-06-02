@@ -45,5 +45,9 @@
     // Documented at http://w3c.github.io/IndexedDB/#widl-IDBIndex-getAll-IDBRequest-any-query-unsigned-long-count
     [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest getAll([Default=Undefined] optional any range, optional unsigned long maxCount = 0xFFFFFFFF);
     [CallWith=ScriptState, RaisesException] IDBRequest getKey(any key);
+    // getAllKeys is not part of the spec., it is an experimental web feature
+    // TODO(cmumford): 0xFFFFFFFF is not necessary. Remove once crbug.com/335871 is fixed.
+    // Documented at https://w3c.github.io/IndexedDB/#widl-IDBIndex-getAllKeys-IDBRequest-any-query-unsigned-long-count
+    [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest getAllKeys([Default=Undefined] optional any range, [EnforceRange] optional unsigned long maxCount = 0xFFFFFFFF);
     [CallWith=ScriptState, RaisesException] IDBRequest count([Default=Undefined] optional any key);
 };

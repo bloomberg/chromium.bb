@@ -425,6 +425,20 @@ PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'getKey' on 'IDBIndex': The transaction has finished.
 
+IDBIndex.getAllKeys()
+If the key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.
+Expecting exception from index.getAllKeys({})
+PASS Exception was thrown.
+PASS code is 0
+PASS ename is 'DataError'
+Exception message: Failed to execute 'getAllKeys' on 'IDBIndex': The parameter is not a valid key.
+The transaction this IDBIndex belongs to is not active.
+Expecting exception from indexFromInactiveTransaction.getAllKeys(0)
+PASS Exception was thrown.
+PASS code is 0
+PASS ename is 'TransactionInactiveError'
+Exception message: Failed to execute 'getAllKeys' on 'IDBIndex': The transaction has finished.
+
 IDBIndex.openCursor()
 If the range parameter is specified but is not a valid key or a key range, this method throws a DOMException of type DataError.
 Expecting exception from index.openCursor({})

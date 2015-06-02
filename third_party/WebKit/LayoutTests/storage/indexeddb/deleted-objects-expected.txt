@@ -214,6 +214,16 @@ PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
 Exception message: Failed to execute 'getAll' on 'IDBIndex': The index or its object store has been deleted.
+Expecting exception from deletedIndex.getAllKeys(0)
+PASS Exception was thrown.
+PASS code is DOMException.INVALID_STATE_ERR
+PASS ename is 'InvalidStateError'
+Exception message: Failed to execute 'getAllKeys' on 'IDBIndex': The index or its object store has been deleted.
+Expecting exception from deletedIndex.getAllKeys(IDBKeyRange.only(0))
+PASS Exception was thrown.
+PASS code is DOMException.INVALID_STATE_ERR
+PASS ename is 'InvalidStateError'
+Exception message: Failed to execute 'getAllKeys' on 'IDBIndex': The index or its object store has been deleted.
 Expecting exception from deletedIndex.getKey(0)
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
@@ -305,6 +315,16 @@ PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
 Exception message: Failed to execute 'get' on 'IDBIndex': The index or its object store has been deleted.
+Expecting exception from indexOfDeletedStore.getAllKeys(0)
+PASS Exception was thrown.
+PASS code is DOMException.INVALID_STATE_ERR
+PASS ename is 'InvalidStateError'
+Exception message: Failed to execute 'getAllKeys' on 'IDBIndex': The index or its object store has been deleted.
+Expecting exception from indexOfDeletedStore.getAllKeys(IDBKeyRange.only(0))
+PASS Exception was thrown.
+PASS code is DOMException.INVALID_STATE_ERR
+PASS ename is 'InvalidStateError'
+Exception message: Failed to execute 'getAllKeys' on 'IDBIndex': The index or its object store has been deleted.
 Expecting exception from indexOfDeletedStore.getKey(0)
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
