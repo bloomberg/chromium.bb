@@ -24,7 +24,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBDatabase
+// https://w3c.github.io/IndexedDB/#idl-def-IDBDatabase
 
 [
     Exposed=(Window,Worker),
@@ -32,13 +32,15 @@
     GarbageCollected,
 ] interface IDBDatabase : EventTarget {
     readonly attribute DOMString name;
-    // DOMString version is non-standard, to support databases created with old API.
+    // TODO(jsbell): DOMString version is non-standard, to support databases created with old API.
     readonly attribute (unsigned long long or DOMString) version;
     readonly attribute DOMStringList objectStoreNames;
+
     [RaisesException] IDBObjectStore createObjectStore(DOMString name, optional IDBObjectStoreParameters options);
     [RaisesException] void deleteObjectStore(DOMString name);
     [CallWith=ScriptState, RaisesException] IDBTransaction transaction((DOMString or sequence<DOMString> or DOMStringList) storeNames, optional IDBTransactionMode mode = "readonly");
     void close();
+
     attribute EventHandler onabort;
     attribute EventHandler onclose;
     attribute EventHandler onerror;

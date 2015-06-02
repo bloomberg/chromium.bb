@@ -24,7 +24,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBTransactionMode
+// https://w3c.github.io/IndexedDB/#idl-def-IDBTransactionMode
 
 enum IDBTransactionMode {
     "readonly",
@@ -32,7 +32,7 @@ enum IDBTransactionMode {
     "versionchange"
 };
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBTransaction
+// https://w3c.github.io/IndexedDB/#idl-def-IDBTransaction
 
 [
     Exposed=(Window,Worker),
@@ -41,11 +41,10 @@ enum IDBTransactionMode {
 ] interface IDBTransaction : EventTarget {
 
     // Properties
+    [RuntimeEnabled=IndexedDBExperimental] readonly attribute DOMStringList objectStoreNames;
     readonly attribute IDBTransactionMode mode;
     readonly attribute IDBDatabase db;
     readonly attribute DOMError error;
-    // TODO(jsbell): Draft: https://w3c.github.io/IndexedDB/#widl-IDBTransaction-objectStoreNames
-    [RuntimeEnabled=IndexedDBExperimental] readonly attribute DOMStringList objectStoreNames;
 
     // Methods
     [RaisesException] IDBObjectStore objectStore (DOMString name);

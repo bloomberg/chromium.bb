@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBCursorDirection
+// https://w3c.github.io/IndexedDB/#idl-def-IDBCursorDirection
 
 enum IDBCursorDirection {
     "next",
@@ -32,21 +32,21 @@ enum IDBCursorDirection {
     "prevunique"
 };
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBCursor
+// https://w3c.github.io/IndexedDB/#idl-def-IDBCursor
 
 [
     Exposed=(Window,Worker),
     GarbageCollected
 ] interface IDBCursor {
-
+    [CallWith=ScriptState] readonly attribute any source;
     readonly attribute IDBCursorDirection direction;
     [CallWith=ScriptState, CachedAttribute=isKeyDirty] readonly attribute any key;
     [CallWith=ScriptState, CachedAttribute=isPrimaryKeyDirty] readonly attribute any primaryKey;
-    [CallWith=ScriptState] readonly attribute any source;
 
     [CallWith=ScriptState, RaisesException] IDBRequest update(any value);
     [RaisesException] void advance([EnforceRange] unsigned long count);
     [CallWith=ScriptState, ImplementedAs=continueFunction, RaisesException] void continue([Default=Undefined] optional any key);
+    // TODO(jsbell): Proposal: https://github.com/w3c/IndexedDB/issues/14
     [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] void continuePrimaryKey(any key, any primaryKey);
     [CallWith=ScriptState, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete();
 };

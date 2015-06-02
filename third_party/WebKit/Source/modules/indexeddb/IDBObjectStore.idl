@@ -23,13 +23,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBObjectStore
+// https://w3c.github.io/IndexedDB/#idl-def-IDBObjectStore
 
 [
     Exposed=(Window,Worker),
     GarbageCollected,
 ] interface IDBObjectStore {
-    readonly attribute DOMString? name;
+    readonly attribute DOMString name;
     [CallWith=ScriptState] readonly attribute any keyPath;
     readonly attribute DOMStringList indexNames;
     readonly attribute IDBTransaction transaction;
@@ -38,14 +38,14 @@
     [CallWith=ScriptState, RaisesException] IDBRequest put(any value, [Default=Undefined] optional any key);
     [CallWith=ScriptState, RaisesException] IDBRequest add(any value, [Default=Undefined] optional any key);
     [CallWith=ScriptState, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete(any key);
+    [CallWith=ScriptState, RaisesException] IDBRequest clear();
     [CallWith=ScriptState, RaisesException] IDBRequest get(any key);
     // TODO(cmumford): 0xFFFFFFFF is not necessary. Remove once crbug.com/335871 is fixed.
     [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest getAll([Default=Undefined] optional any range, optional unsigned long maxCount = 0xFFFFFFFF);
-    [CallWith=ScriptState, RaisesException] IDBRequest clear();
+    [CallWith=ScriptState, RaisesException] IDBRequest count([Default=Undefined] optional any key);
     [CallWith=ScriptState, RaisesException] IDBRequest openCursor([Default=Undefined] optional any range, optional DOMString direction = "next");
     [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest openKeyCursor([Default=Undefined] optional any range, optional IDBCursorDirection direction = "next");
     [CallWith=ScriptState, RaisesException] IDBIndex createIndex(DOMString name, (DOMString or sequence<DOMString>) keyPath, optional IDBIndexParameters options);
     [RaisesException] IDBIndex index(DOMString name);
     [RaisesException] void deleteIndex(DOMString name);
-    [CallWith=ScriptState, RaisesException] IDBRequest count([Default=Undefined] optional any key);
 };

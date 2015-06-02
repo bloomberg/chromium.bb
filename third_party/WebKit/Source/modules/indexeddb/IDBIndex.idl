@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBIndex
+// https://w3c.github.io/IndexedDB/#idl-def-IDBIndex
 
 [
     Exposed=(Window,Worker),
@@ -32,22 +32,17 @@
     readonly attribute DOMString name;
     readonly attribute IDBObjectStore objectStore;
     [CallWith=ScriptState] readonly attribute any keyPath;
-    readonly attribute boolean unique;
     readonly attribute boolean multiEntry;
+    readonly attribute boolean unique;
 
+    [CallWith=ScriptState, RaisesException] IDBRequest get(any key);
+    [CallWith=ScriptState, RaisesException] IDBRequest getKey(any key);
+    // TODO(cmumford): 0xFFFFFFFF is not necessary. Remove once crbug.com/335871 is fixed.
+    [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest getAll([Default=Undefined] optional any range, optional unsigned long maxCount = 0xFFFFFFFF);
+    // TODO(cmumford): 0xFFFFFFFF is not necessary. Remove once crbug.com/335871 is fixed.
+    [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest getAllKeys([Default=Undefined] optional any range, [EnforceRange] optional unsigned long maxCount = 0xFFFFFFFF);
+    [CallWith=ScriptState, RaisesException] IDBRequest count([Default=Undefined] optional any key);
     [CallWith=ScriptState, RaisesException] IDBRequest openCursor([Default=Undefined] optional any range, optional IDBCursorDirection direction = "next");
     [CallWith=ScriptState, RaisesException] IDBRequest openKeyCursor([Default=Undefined] optional any range, optional IDBCursorDirection direction = "next");
 
-    [CallWith=ScriptState, RaisesException] IDBRequest get(any key);
-    // TODO(cmumford): Standardize or eventually remove.
-    // TODO(cmumford): 0xFFFFFFFF is not necessary. Remove once crbug.com/335871 is fixed.
-    // getAll is non-standard, and therefore experimental. More info at:
-    // Documented at http://w3c.github.io/IndexedDB/#widl-IDBIndex-getAll-IDBRequest-any-query-unsigned-long-count
-    [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest getAll([Default=Undefined] optional any range, optional unsigned long maxCount = 0xFFFFFFFF);
-    [CallWith=ScriptState, RaisesException] IDBRequest getKey(any key);
-    // getAllKeys is not part of the spec., it is an experimental web feature
-    // TODO(cmumford): 0xFFFFFFFF is not necessary. Remove once crbug.com/335871 is fixed.
-    // Documented at https://w3c.github.io/IndexedDB/#widl-IDBIndex-getAllKeys-IDBRequest-any-query-unsigned-long-count
-    [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest getAllKeys([Default=Undefined] optional any range, [EnforceRange] optional unsigned long maxCount = 0xFFFFFFFF);
-    [CallWith=ScriptState, RaisesException] IDBRequest count([Default=Undefined] optional any key);
 };
