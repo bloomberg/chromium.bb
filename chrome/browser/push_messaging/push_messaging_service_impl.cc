@@ -217,6 +217,8 @@ void PushMessagingServiceImpl::OnMessage(
       data = it->second;
   }
 
+  in_flight_message_deliveries_.insert(app_identifier.app_id());
+
   content::BrowserContext::DeliverPushMessage(
       profile_,
       app_identifier.origin(),
@@ -236,6 +238,11 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     const gcm::GCMClient::IncomingMessage& message,
     const base::Closure& message_handled_closure,
     content::PushDeliveryStatus status) {
+  // Remove a single in-flight delivery for |app_id|. This has to be done using
+  // an iterator rather than by value, as the latter removes all entries.
+  in_flight_message_deliveries_.erase(
+      in_flight_message_deliveries_.find(app_id));
+
   // TODO(mvanouwerkerk): Show a warning in the developer console of the
   // Service Worker corresponding to app_id (and/or on an internals page).
   // TODO(mvanouwerkerk): Is there a way to recover from failure?
@@ -247,9 +254,15 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     case content::PUSH_DELIVERY_STATUS_SUCCESS:
     case content::PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED:
 #if defined(ENABLE_NOTIFICATIONS)
-      notification_manager_.EnforceUserVisibleOnlyRequirements(
-          requesting_origin, service_worker_registration_id,
-          message_handled_closure);
+      // Only enforce the user visible requirements after the entire queue of
+      // incoming messages for |app_id| has been flushed.
+      if (!in_flight_message_deliveries_.count(app_id)) {
+        notification_manager_.EnforceUserVisibleOnlyRequirements(
+            requesting_origin, service_worker_registration_id,
+            message_handled_closure);
+      } else {
+        message_handled_closure.Run();
+      }
 #else
       message_handled_closure.Run();
 #endif
@@ -266,6 +279,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
           base::Bind(&UnregisterCallbackToClosure, message_handled_closure));
       break;
   }
+
   RecordDeliveryStatus(status);
 }
 

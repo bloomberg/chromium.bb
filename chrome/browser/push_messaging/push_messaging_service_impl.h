@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_IMPL_H_
 
 #include <stdint.h>
+#include <set>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -172,6 +173,10 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 #if defined(ENABLE_NOTIFICATIONS)
   PushMessagingNotificationManager notification_manager_;
 #endif
+
+  // A multiset containing one entry for each in-flight push message delivery,
+  // keyed by the receiver's app id.
+  std::multiset<std::string> in_flight_message_deliveries_;
 
   base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
 
