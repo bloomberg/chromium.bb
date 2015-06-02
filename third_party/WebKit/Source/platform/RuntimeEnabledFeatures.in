@@ -89,7 +89,6 @@ MediaSource status=stable
 MediaSourceExperimental depends_on=MediaSource, status=experimental
 MediaStreamSpeech status=experimental
 MemoryInfoInWorkers status=experimental
-MouseEventButtonsAttribute status=stable
 NavigatorConnect status=experimental
 NavigatorContentUtils
 NetworkInformation status=stable

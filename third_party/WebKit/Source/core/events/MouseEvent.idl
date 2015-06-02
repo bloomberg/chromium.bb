@@ -32,7 +32,7 @@
     readonly attribute boolean          altKey;
     readonly attribute boolean          metaKey;
     readonly attribute unsigned short   button;
-    [RuntimeEnabled=MouseEventButtonsAttribute] readonly attribute unsigned short   buttons;
+    readonly attribute unsigned short   buttons;
     readonly attribute EventTarget?     relatedTarget;
     [MeasureAs=MouseEventMovementX] readonly attribute long             movementX;
     [MeasureAs=MouseEventMovementY] readonly attribute long             movementY;
