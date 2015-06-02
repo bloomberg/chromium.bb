@@ -429,8 +429,8 @@ class TestMain(cros_test_lib.MockTestCase):
     options.git_sync = True
     options.upload_board_tarball = True
     options.prepackaged_tarball = None
-    options.board_overlay_tarballs = []
-    options.board_overlay_upload_path = ''
+    options.toolchains_overlay_tarballs = []
+    options.toolchains_overlay_upload_path = ''
     options.toolchain_tarballs = []
     options.toolchain_upload_path = ''
     options.upload = 'gs://upload/'
@@ -490,7 +490,7 @@ class TestSdk(cros_test_lib.MockTestCase):
         'gs://foo', self.acl, 'prebuilt', [], '/', [],
         False, 'foo', False, 'x86-foo', [], 'chroot-1234')
 
-  def testSdkUpload(self, bo_tarballs=(), bo_upload_path=None,
+  def testSdkUpload(self, to_tarballs=(), to_upload_path=None,
                     tc_tarballs=(), tc_upload_path=None):
     """Make sure we can upload just an SDK tarball"""
     tar = 'sdk.tar.xz'
@@ -502,10 +502,11 @@ class TestSdk(cros_test_lib.MockTestCase):
                   'gs://chromiumos-sdk/%s.Manifest' % vtar),
         mock.call(tar, 'gs://chromiumos-sdk/%s' % vtar),
     ]
-    for bo in bo_tarballs:
-      bo = bo.split(':')
+    for to in to_tarballs:
+      to = to.split(':')
       calls.append(mock.call(
-          bo[1], ('gs://chromiumos-sdk/' + bo_upload_path) % {'board': bo[0]}))
+          to[1],
+          ('gs://chromiumos-sdk/' + to_upload_path) % {'toolchains': to[0]}))
     for tc in tc_tarballs:
       tc = tc.split(':')
       calls.append(mock.call(
@@ -514,18 +515,22 @@ class TestSdk(cros_test_lib.MockTestCase):
         mock.ANY, 'gs://chromiumos-sdk/cros-sdk-latest.conf'))
 
     self.uploader._UploadSdkTarball('amd64-host', '',
-                                    tar, bo_tarballs, bo_upload_path,
+                                    tar, to_tarballs, to_upload_path,
                                     tc_tarballs, tc_upload_path)
     self.upload_mock.assert_has_calls(calls)
 
   def testBoardOverlayTarballUpload(self):
     """Make sure processing of board-specific overlay tarballs works."""
-    bo_tarballs = (
-        'x86-alex:/some/built-sdk-overlay-x86-alex.tar.xz',
-        'daisy:/some/built-sdk-overlay-daisy.tar.xz',
+    to_tarballs = (
+        ('i686-pc-linux-gnu:'
+         '/some/path/built-sdk-overlay-toolchains-i686-pc-linux-gnu.tar.xz'),
+        ('armv7a-cros-linux-gnueabi-arm-none-eabi:'
+         '/some/path/built-sdk-overlay-toolchains-armv7a-cros-linux-gnueabi-'
+         'arm-none-eabi'),
     )
-    bo_upload_path = '1994/04/cros-sdk-overlay-%(board)s-1994.04.02.tar.xz'
-    self.testSdkUpload(bo_tarballs=bo_tarballs, bo_upload_path=bo_upload_path)
+    to_upload_path = (
+        '1994/04/cros-sdk-overlay-toolchains-%(toolchains)s-1994.04.02.tar.xz')
+    self.testSdkUpload(to_tarballs=to_tarballs, to_upload_path=to_upload_path)
 
   def testToolchainTarballUpload(self):
     """Make sure processing of toolchain tarballs works."""

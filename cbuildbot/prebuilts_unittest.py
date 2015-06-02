@@ -48,19 +48,24 @@ class PrebuiltTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     # A magical date for a magical time.
     version = '1994.04.02.000000'
 
-    # Fake out board overlay tarballs.
+    # Fake out toolchains overlay tarballs.
     tarball_dir = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                                constants.SDK_OVERLAYS_OUTPUT)
     osutils.SafeMakedirs(tarball_dir)
 
-    board_overlay_tarball_args = []
-    for tarball_board in ('x86-alex', 'daisy'):
-      tarball = 'built-sdk-overlay-%s.tar.xz' % tarball_board
+    toolchain_overlay_tarball_args = []
+    # Sample toolchain combos, corresponding to x86-alex and daisy.
+    toolchain_combos = (
+        ('i686-pc-linux-gnu',),
+        ('armv7a-cros-linux-gnueabi', 'arm-none-eabi'),
+    )
+    for toolchains in ['-'.join(sorted(combo)) for combo in toolchain_combos]:
+      tarball = 'built-sdk-overlay-toolchains-%s.tar.xz' % toolchains
       tarball_path = os.path.join(tarball_dir, tarball)
       osutils.Touch(tarball_path)
-      tarball_arg = '%s:%s' % (tarball_board, tarball_path)
-      board_overlay_tarball_args.append(['--board-overlay-tarball',
-                                         tarball_arg])
+      tarball_arg = '%s:%s' % (toolchains, tarball_path)
+      toolchain_overlay_tarball_args.append(['--toolchains-overlay-tarball',
+                                             tarball_arg])
 
     # Fake out toolchain tarballs.
     tarball_dir = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
@@ -78,11 +83,12 @@ class PrebuiltTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self.testUploadPrebuilts(builder_type=constants.CHROOT_BUILDER_TYPE,
                              version=version)
     self.assertCommandContains([
-        '--board-overlay-upload-path',
-        '1994/04/cros-sdk-overlay-%%(board)s-%(version)s.tar.xz'])
+        '--toolchains-overlay-upload-path',
+        '1994/04/cros-sdk-overlay-toolchains-%%(toolchains)s-'
+        '%(version)s.tar.xz'])
     self.assertCommandContains(['--toolchain-upload-path',
                                 '1994/04/%%(target)s-%(version)s.tar.xz'])
-    for args in board_overlay_tarball_args + toolchain_tarball_args:
+    for args in toolchain_overlay_tarball_args + toolchain_tarball_args:
       self.assertCommandContains(args)
     self.assertCommandContains(['--set-version', version])
     self.assertCommandContains(['--prepackaged-tarball',
