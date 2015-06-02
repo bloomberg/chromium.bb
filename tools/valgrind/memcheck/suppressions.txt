@@ -766,30 +766,6 @@
    fun:_ZN5blink8V8Worker19constructorCallbackERKN2v89ArgumentsE
 }
 {
-   bug_42942_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
-   fun:_ZN3sql9MetaTable19PrepareGetStatementEPNS_9StatementEPKc
-   fun:_ZN3sql9MetaTable8GetValueEPKcPi
-   fun:_ZN3sql9MetaTable26GetCompatibleVersionNumberEv
-   ...
-   fun:_ZN3net13CookieMonster9InitStoreEv
-}
-{
-   bug_42942_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
-   fun:_ZN3sql9MetaTable19PrepareSetStatementEPNS_9StatementEPKc
-   fun:_ZN3sql9MetaTable8SetValueEPKci
-   fun:_ZN3sql9MetaTable16SetVersionNumberEi
-   ...
-   fun:_ZN3net13CookieMonster9InitStoreEv
-}
-{
    bug_64887_a
    Memcheck:Uninitialized
    ...
@@ -933,22 +909,6 @@
    ...
    fun:_ZNSt3mapISs13scoped_refptrIK9ExtensionESt4lessISsESaISt4pairIKSsS3_EEEixERS7_
    fun:_ZN16ExtensionInfoMap12AddExtensionEPK9Extension
-}
-{
-   bug_68553
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net25DiskCacheBasedSSLHostInfoC1ERKSsRKNS_9SSLConfigEPNS_12CertVerifierEPNS_9HttpCacheE
-   fun:_ZN3net9HttpCache25SSLHostInfoFactoryAdaptor10GetForHostERKSsRKNS_9SSLConfigE
-   fun:_ZN3net13SSLConnectJob12DoTCPConnectEv
-   fun:_ZN3net13SSLConnectJob6DoLoopEi
-   fun:_ZN3net13SSLConnectJob15ConnectInternalEv
-   fun:_ZN3net10ConnectJob7ConnectEv
-   fun:_ZN3net8internal26ClientSocketPoolBaseHelper21RequestSocketInternalERKSsPKNS1_7RequestE
-   fun:_ZN3net8internal26ClientSocketPoolBaseHelper13RequestSocketERKSsPKNS1_7RequestE
-   fun:_ZN3net20ClientSocketPoolBaseINS_15SSLSocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
-   fun:_ZN3net19SSLClientSocketPool13RequestSocketERKSsPKvNS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
-   fun:_ZN3net18ClientSocketHandle4InitINS_15SSLSocketParamsENS_19SSLClientSocketPoolEEEiRKSsRK13scoped_refptrIT_ENS_15RequestPriorityEP14CallbackRunnerI6Tuple1IiEEPT0_RKNS_11BoundNetLogE
 }
 {
    Bug_69934_a
@@ -1110,16 +1070,6 @@
    fun:_ZNSt5stackI*FilePath*deque*
    fun:_ZN9file_util14FileEnumeratorC1E*
    fun:_ZN7history20ExpireHistoryBackend25DoExpireHistoryIndexFilesEv
-}
-{
-   bug_87423
-   Memcheck:Uninitialized
-   fun:_ZNK3net15HttpBasicStream23LogNumRttVsBytesMetricsEv
-   fun:_ZN3net22HttpNetworkTransaction18DoReadBodyCompleteEi
-   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
-   fun:_ZN3net22HttpNetworkTransaction4ReadEPNS_8IOBufferEiP14CallbackRunnerI6Tuple1IiEE
-   fun:_Z15ReadTransactionPN3net15HttpTransactionEPSs
-   fun:_ZN3net73HttpNetworkTransactionTest_ErrorResponseTofHttpsConnectViaHttpsProxy_Test8TestBodyEv
 }
 {
    bug_90215_c
