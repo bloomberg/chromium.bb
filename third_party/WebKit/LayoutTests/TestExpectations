@@ -423,18 +423,6 @@ crbug.com/489556 virtual/pointerevent/fast/events/domactivate-sets-underlying-cl
 crbug.com/467649 webaudio/audionode-disconnect-audioparam.html [ Pass Failure ]
 crbug.com/467649 webaudio/audiobuffersource-late-start.html [ Pass Failure ]
 
-# http://crrev.com/1146313005
-crbug.com/473119 css1/box_properties/border_left.html [ NeedsRebaseline ]
-crbug.com/473119 css1/box_properties/border_left_inline.html [ NeedsRebaseline ]
-crbug.com/473119 css1/box_properties/border_right.html [ NeedsRebaseline ]
-crbug.com/473119 css1/box_properties/border_right_inline.html [ NeedsRebaseline ]
-crbug.com/473119 css2.1/t0805-c5519-brdr-r-00-a.html [ NeedsRebaseline ]
-crbug.com/473119 css2.1/t0805-c5519-ibrdr-r-00-a.html [ NeedsRebaseline ]
-crbug.com/473119 css2.1/t0805-c5521-brdr-l-00-a.html [ NeedsRebaseline ]
-crbug.com/473119 css2.1/t0805-c5521-ibrdr-l-00-a.html [ NeedsRebaseline ]
-crbug.com/473119 fast/borders/border-mixed-alpha.html [ NeedsRebaseline ]
-crbug.com/473119 virtual/slimmingpaint/fast/borders/border-mixed-alpha.html [ NeedsRebaseline ]
-
 crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
 
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
