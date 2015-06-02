@@ -32,20 +32,14 @@
 
 namespace {
 
-// Switch value that specifies that certificate decisions should be forgotten at
-// the end of the current session.
-const int64 kForgetAtSessionEndSwitchValue = -1;
-
-// The default expiration is one week, unless overidden by an experiment group
-// or a flag. See https://crbug.com/487270.
+// The default expiration is one week, unless overidden by a field trial group.
+// See https://crbug.com/487270.
 const uint64_t kDeltaDefaultExpirationInSeconds = UINT64_C(604800);
 
-// Experiment information
-const char kRememberCertificateErrorDecisionsFieldTrialName[] =
-    "RememberCertificateErrorDecisions";
-const char kRememberCertificateErrorDecisionsFieldTrialDefaultGroup[] =
-    "Default";
-const char kRememberCertificateErrorDecisionsFieldTrialLengthParam[] = "length";
+// Field trial information
+const char kRevertCertificateErrorDecisionsFieldTrialName[] =
+    "RevertCertificateErrorDecisions";
+const char kForgetAtSessionEndGroup[] = "Session";
 
 // Keys for the per-site error + certificate finger to judgment content
 // settings map.
@@ -74,52 +68,15 @@ GURL GetSecureGURLForHost(const std::string& host) {
   return GURL(url);
 }
 
-// This is a helper function that returns the length of time before a
-// certificate decision expires based on the command line flags. Returns a
-// non-negative value in seconds or a value of -1 indicating that decisions
-// should not be remembered after the current session has ended (but should be
-// remembered indefinitely as long as the session does not end), which is the
-// "old" style of certificate decision memory. Uses the experimental group
-// unless overridden by a command line flag.
-int64 GetExpirationDelta() {
-  // Check command line flags first to give them priority, then check
-  // experimental groups.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRememberCertErrorDecisions)) {
-    std::string switch_value =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kRememberCertErrorDecisions);
-    int64 expiration_delta;
-    if (!base::StringToInt64(base::StringPiece(switch_value),
-                             &expiration_delta) ||
-        expiration_delta < kForgetAtSessionEndSwitchValue) {
-      LOG(ERROR) << "Failed to parse the certificate error decision "
-                 << "memory length: " << switch_value;
-      return kDeltaDefaultExpirationInSeconds;
-    }
-
-    return expiration_delta;
-  }
-
-  // If the user is in the field trial, set the expiration to the length
-  // associated with that experimental group.  The default group cannot have
-  // parameters associated with it, so it needs to be handled explictly.
+// By default, certificate exception decisions are remembered for one week.
+// However, there is a field trial group for the "old" style of certificate
+// decision memory that expires decisions at session end. ExpireAtSessionEnd()
+// returns |true| if and only if the user is in that field trial group.
+bool ExpireAtSessionEnd() {
   std::string group_name = base::FieldTrialList::FindFullName(
-      kRememberCertificateErrorDecisionsFieldTrialName);
-  if (!group_name.empty() &&
-      group_name.compare(
-          kRememberCertificateErrorDecisionsFieldTrialDefaultGroup) != 0) {
-    int64 field_trial_param_length;
-    std::string param = variations::GetVariationParamValue(
-        kRememberCertificateErrorDecisionsFieldTrialName,
-        kRememberCertificateErrorDecisionsFieldTrialLengthParam);
-    if (!param.empty() && base::StringToInt64(base::StringPiece(param),
-                                              &field_trial_param_length)) {
-      return field_trial_param_length;
-    }
-  }
-
-  return kDeltaDefaultExpirationInSeconds;
+      kRevertCertificateErrorDecisionsFieldTrialName);
+  return !group_name.empty() &&
+         group_name.compare(kForgetAtSessionEndGroup) == 0;
 }
 
 std::string GetKey(const net::X509Certificate& cert, net::CertStatus error) {
@@ -218,7 +175,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
 
     expired = true;
     base::Time expiration_time =
-        now + default_ssl_cert_decision_expiration_delta_;
+        now + base::TimeDelta::FromSeconds(kDeltaDefaultExpirationInSeconds);
     // Unfortunately, JSON (and thus content settings) doesn't support int64
     // values, only doubles. Since this mildly depends on precision, it is
     // better to store the value as a string.
@@ -263,16 +220,11 @@ ChromeSSLHostStateDelegate::ChromeSSLHostStateDelegate(Profile* profile)
     : clock_(new base::DefaultClock()),
       profile_(profile),
       current_expiration_guid_(base::GenerateGUID()) {
-  int64 expiration_delta = GetExpirationDelta();
-  if (expiration_delta == kForgetAtSessionEndSwitchValue) {
+  if (ExpireAtSessionEnd())
     should_remember_ssl_decisions_ =
         FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END;
-    expiration_delta = 0;
-  } else {
+  else
     should_remember_ssl_decisions_ = REMEMBER_SSL_EXCEPTION_DECISIONS_FOR_DELTA;
-  }
-  default_ssl_cert_decision_expiration_delta_ =
-      base::TimeDelta::FromSeconds(expiration_delta);
 }
 
 ChromeSSLHostStateDelegate::~ChromeSSLHostStateDelegate() {

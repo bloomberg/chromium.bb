@@ -142,34 +142,6 @@ WebsiteSettings::SiteIdentityStatus GetSiteIdentityStatusByCTInfo(
                : WebsiteSettings::SITE_IDENTITY_STATUS_CERT;
 }
 
-const char kRememberCertificateErrorDecisionsFieldTrialName[] =
-    "RememberCertificateErrorDecisions";
-const char kRememberCertificateErrorDecisionsFieldTrialDefaultGroup[] =
-    "Default";
-const char kRememberCertificateErrorDecisionsFieldTrialDisableGroup[] =
-    "Disable";
-// Returns true if the user is in the experimental group or has the flag enabled
-// for remembering SSL error decisions, otherwise false.
-//
-// TODO(jww): The field trial is scheduled to end 2015/02/28. This should be
-// removed at that point unless the field trial or flag continues.
-bool InRememberCertificateErrorDecisionsGroup() {
-  std::string group_name = base::FieldTrialList::FindFullName(
-      kRememberCertificateErrorDecisionsFieldTrialName);
-
-  // The Default and Disable groups are the "old-style" forget-at-session
-  // restart groups, so they do not get the button.
-  bool in_experimental_group = !group_name.empty() &&
-      group_name.compare(
-          kRememberCertificateErrorDecisionsFieldTrialDefaultGroup) != 0 &&
-      group_name.compare(
-          kRememberCertificateErrorDecisionsFieldTrialDisableGroup) != 0;
-  bool has_command_line_switch =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRememberCertErrorDecisions);
-  return in_experimental_group || has_command_line_switch;
-}
-
 }  // namespace
 
 WebsiteSettings::WebsiteSettings(
@@ -658,11 +630,9 @@ void WebsiteSettings::Init(Profile* profile,
   ChromeSSLHostStateDelegate* delegate =
       ChromeSSLHostStateDelegateFactory::GetForProfile(profile);
   DCHECK(delegate);
-  // Only show an SSL decision revoke button if both the user has chosen to
-  // bypass SSL host errors for this host in the past and the user is not using
-  // the traditional "forget-at-session-restart" error decision memory.
-  show_ssl_decision_revoke_button_ = delegate->HasAllowException(url.host()) &&
-                                     InRememberCertificateErrorDecisionsGroup();
+  // Only show an SSL decision revoke button if the user has chosen to bypass
+  // SSL host errors for this host in the past.
+  show_ssl_decision_revoke_button_ = delegate->HasAllowException(url.host());
 
   // By default select the permissions tab that displays all the site
   // permissions. In case of a connection error or an issue with the

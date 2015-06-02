@@ -33,14 +33,17 @@ const char kWWWGoogleHost[] = "www.google.com";
 const char kGoogleHost[] = "google.com";
 const char kExampleHost[] = "example.com";
 
-const char kForgetAtSessionEnd[] = "-1";
-const char kForgetInstantly[] = "0";
-const char kDeltaSecondsString[] = "86400";
 const uint64_t kDeltaOneDayInSeconds = UINT64_C(86400);
 const uint64_t kDeltaOneWeekInSeconds = UINT64_C(604800);
 
 scoped_refptr<net::X509Certificate> GetOkCert() {
   return net::ImportCertFromFile(net::GetTestCertsDirectory(), kOkCertFile);
+}
+
+// Helper function for setting Finch options
+void SetFinchConfig(base::CommandLine* command_line, const std::string& group) {
+  command_line->AppendSwitchASCII("--force-fieldtrials",
+                                  "RevertCertificateErrorDecisions/" + group);
 }
 
 }  // namespace
@@ -209,8 +212,7 @@ class ForgetAtSessionEndSSLHostStateDelegateTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeSSLHostStateDelegateTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kRememberCertErrorDecisions,
-                                    kForgetAtSessionEnd);
+    SetFinchConfig(command_line, "Session");
   }
 };
 
@@ -279,8 +281,7 @@ class IncognitoSSLHostStateDelegateTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeSSLHostStateDelegateTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kRememberCertErrorDecisions,
-                                    kDeltaSecondsString);
+    SetFinchConfig(command_line, "OneWeek");
   }
 };
 
@@ -319,8 +320,8 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, PRE_AfterRestart) {
 }
 
 // AfterRestart ensures that any cert decisions made in an incognito profile are
-// forgetten after a session restart even if given a command line flag to
-// remember cert decisions after restart.
+// forgetten after a session restart even if the field trial group parameter
+// specifies to remember cert decisions after restart.
 IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, AfterRestart) {
   scoped_refptr<net::X509Certificate> cert = GetOkCert();
   content::WebContents* tab =
@@ -346,46 +347,6 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, AfterRestart) {
             incognito_state->QueryPolicy(kGoogleHost, *cert,
                                          net::CERT_STATUS_COMMON_NAME_INVALID,
                                          &unused_value));
-}
-
-// Tests to make sure that if the remember value is set to -1, any decisions
-// won't be remembered over a restart.
-class ForGetSSLHostStateDelegateTest : public ChromeSSLHostStateDelegateTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ChromeSSLHostStateDelegateTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kRememberCertErrorDecisions,
-                                    kForgetAtSessionEnd);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(ForGetSSLHostStateDelegateTest, PRE_AfterRestart) {
-  scoped_refptr<net::X509Certificate> cert = GetOkCert();
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
-  bool unused_value;
-
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
-  EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
-            state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
-}
-
-IN_PROC_BROWSER_TEST_F(ForGetSSLHostStateDelegateTest, AfterRestart) {
-  scoped_refptr<net::X509Certificate> cert = GetOkCert();
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
-  bool unused_value;
-
-  // The cert should now be |DENIED| because the profile is set to forget cert
-  // exceptions after session end.
-  EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
 }
 
 // Tests the default certificate memory, which is one week.
@@ -512,161 +473,6 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
   EXPECT_FALSE(expired_previous_decision);
 }
 
-// Tests to make sure that if the remember value is set to 0, any decisions made
-// will be forgetten immediately.
-class ForgetInstantlySSLHostStateDelegateTest
-    : public ChromeSSLHostStateDelegateTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ChromeSSLHostStateDelegateTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kRememberCertErrorDecisions,
-                                    kForgetInstantly);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(ForgetInstantlySSLHostStateDelegateTest,
-                       MakeAndForgetException) {
-  scoped_refptr<net::X509Certificate> cert = GetOkCert();
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
-  bool unused_value;
-
-  // chrome_state takes ownership of this clock
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  ChromeSSLHostStateDelegate* chrome_state =
-      static_cast<ChromeSSLHostStateDelegate*>(state);
-  chrome_state->SetClock(scoped_ptr<base::Clock>(clock));
-
-  // Start the clock at standard system time but do not advance at all to
-  // emphasize that instant forget works.
-  clock->SetNow(base::Time::NowFromSystemTime());
-
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
-  EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
-}
-
-// Tests to make sure that if the remember value is set to a non-zero value,
-// any decisions will be remembered over a restart, but only for the length
-// specified.
-class RememberSSLHostStateDelegateTest : public ChromeSSLHostStateDelegateTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ChromeSSLHostStateDelegateTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kRememberCertErrorDecisions,
-                                    kDeltaSecondsString);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(RememberSSLHostStateDelegateTest, PRE_AfterRestart) {
-  scoped_refptr<net::X509Certificate> cert = GetOkCert();
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
-  bool unused_value;
-
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
-  EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
-            state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
-}
-
-IN_PROC_BROWSER_TEST_F(RememberSSLHostStateDelegateTest, AfterRestart) {
-  scoped_refptr<net::X509Certificate> cert = GetOkCert();
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
-  bool unused_value;
-
-  // chrome_state takes ownership of this clock
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  ChromeSSLHostStateDelegate* chrome_state =
-      static_cast<ChromeSSLHostStateDelegate*>(state);
-  chrome_state->SetClock(scoped_ptr<base::Clock>(clock));
-
-  // Start the clock at standard system time.
-  clock->SetNow(base::Time::NowFromSystemTime());
-
-  // This should only pass if the cert was allowed before the test was restart
-  // and thus has now been rememebered across browser restarts.
-  EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
-            state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
-
-  // Simulate the clock advancing by the specified delta.
-  clock->Advance(base::TimeDelta::FromSeconds(kDeltaOneDayInSeconds + 1));
-
-  // The cert should now be |DENIED| because the specified delta has passed.
-  EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
-}
-
-// The same test as ChromeSSLHostStateDelegateTest.QueryPolicyExpired but now
-// applied to a browser context that expires based on time, not restart. This
-// unit tests to make sure that if a certificate decision has expired, the
-// return value from QueryPolicy returns the correct vaule.
-IN_PROC_BROWSER_TEST_F(RememberSSLHostStateDelegateTest, QueryPolicyExpired) {
-  scoped_refptr<net::X509Certificate> cert = GetOkCert();
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
-  bool expired_previous_decision;
-
-  // chrome_state takes ownership of this clock
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  ChromeSSLHostStateDelegate* chrome_state =
-      static_cast<ChromeSSLHostStateDelegate*>(state);
-  chrome_state->SetClock(scoped_ptr<base::Clock>(clock));
-
-  // Start the clock at standard system time but do not advance at all to
-  // emphasize that instant forget works.
-  clock->SetNow(base::Time::NowFromSystemTime());
-
-  // The certificate has never been seen before, so it should be UNKONWN and
-  // should also indicate that it hasn't expired.
-  EXPECT_EQ(
-      content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
-                         &expired_previous_decision));
-  EXPECT_FALSE(expired_previous_decision);
-
-  // After allowing the certificate, a query should say that it is allowed and
-  // also specify that it hasn't expired.
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
-  EXPECT_EQ(
-      content::SSLHostStateDelegate::ALLOWED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
-                         &expired_previous_decision));
-  EXPECT_FALSE(expired_previous_decision);
-
-  // Simulate the clock advancing by the specified delta.
-  clock->Advance(base::TimeDelta::FromSeconds(kDeltaOneDayInSeconds + 1));
-
-  // The decision expiration time has come, so it should indicate that the
-  // certificate and error are DENIED but also that they expired since the last
-  // query.
-  EXPECT_EQ(
-      content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
-                         &expired_previous_decision));
-  EXPECT_TRUE(expired_previous_decision);
-
-  // However, with a new query, it should indicate that no new expiration has
-  // occurred.
-  EXPECT_EQ(
-      content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
-                         &expired_previous_decision));
-  EXPECT_FALSE(expired_previous_decision);
-}
-
 // Tests to make sure that if the user deletes their browser history, SSL
 // exceptions will be deleted as well.
 class RemoveBrowsingHistorySSLHostStateDelegateTest
@@ -703,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(RemoveBrowsingHistorySSLHostStateDelegateTest,
 // Tests to make sure that localhost certificate errors are treated as
 // normal errors or ignored, depending on whether the
 // kAllowInsecureLocalhost flag is set.
-
+//
 // When the flag isn't set, requests to localhost with invalid
 // certificates should be denied.
 IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,

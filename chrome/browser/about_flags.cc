@@ -372,30 +372,6 @@ const Experiment::Choice kExtensionContentVerificationChoices[] = {
     switches::kExtensionContentVerificationEnforceStrict },
 };
 
-// Note that the value is specified in seconds (where 0 is equivalent to
-// disabled).
-const Experiment::Choice kRememberCertificateErrorDecisionsChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    switches::kRememberCertErrorDecisions,
-    "-1" },
-  { IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_ONE_DAY,
-    switches::kRememberCertErrorDecisions,
-    "86400" },
-  { IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_THREE_DAYS,
-    switches::kRememberCertErrorDecisions,
-    "259200" },
-  { IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_ONE_WEEK,
-    switches::kRememberCertErrorDecisions,
-    "604800" },
-  { IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_ONE_MONTH,
-    switches::kRememberCertErrorDecisions,
-    "2592000" },
-  { IDS_REMEMBER_CERTIFICATE_ERROR_DECISION_CHOICE_THREE_MONTHS,
-    switches::kRememberCertErrorDecisions,
-    "7776000" },
-};
-
 const Experiment::Choice kAutofillSyncCredentialChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
   { IDS_ALLOW_AUTOFILL_SYNC_CREDENTIAL,
@@ -2010,13 +1986,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableWebAppFrame)
   },
 #endif
-  {
-    "remember-cert-error-decisions",
-    IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_NAME,
-    IDS_FLAGS_REMEMBER_CERTIFICATE_ERROR_DECISIONS_DESCRIPTION,
-    kOsAll,
-    MULTI_VALUE_TYPE(kRememberCertificateErrorDecisionsChoices)
-  },
   {
     "enable-drop-sync-credential",
     IDS_FLAGS_ENABLE_DROP_SYNC_CREDENTIAL_NAME,

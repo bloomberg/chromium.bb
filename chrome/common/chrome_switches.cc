@@ -897,11 +897,6 @@ const char kQuicMaxPacketLength[]           = "quic-max-packet-length";
 // Specifies the version of QUIC to use.
 const char kQuicVersion[]                   = "quic-version";
 
-// Remember user proceeds through SSL interstitials for a specified amount of
-// time. In particular, remember these decisions through session restart. The
-// time delta to remember certificates should be specified in seconds.
-const char kRememberCertErrorDecisions[]    = "remember-cert-error-decisions";
-
 // If set, the app list will forget it has been installed on startup. Note this
 // doesn't prevent the app list from running, it just makes Chrome think the app
 // list hasn't been enabled (as in kEnableAppList) yet.
