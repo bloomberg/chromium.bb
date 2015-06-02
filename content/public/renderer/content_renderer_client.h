@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/public/common/content_client.h"
-#include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebNavigationType.h"
@@ -224,10 +224,6 @@ class CONTENT_EXPORT ContentRendererClient {
                           bool is_initial_navigation,
                           bool is_server_redirect,
                           bool* send_referrer);
-
-  // Returns true if this IPC message belongs to a guest container. Currently,
-  // BrowserPlugin is a guest container.
-  virtual bool ShouldForwardToGuestContainer(const IPC::Message& msg);
 
   // Notifies the embedder that the given frame is requesting the resource at
   // |url|.  If the function returns true, the url is changed to |new_url|.

@@ -4,7 +4,6 @@
 
 #include "extensions/shell/renderer/shell_content_renderer_client.h"
 
-#include "components/guest_view/renderer/guest_view_container.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -16,10 +15,10 @@
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
+#include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/renderer/shell_extensions_renderer_client.h"
-#include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 #if !defined(DISABLE_NACL)
@@ -56,6 +55,10 @@ void ShellContentRendererClient::RenderThreadStarted() {
   extension_dispatcher_.reset(
       new Dispatcher(extension_dispatcher_delegate_.get()));
   thread->AddObserver(extension_dispatcher_.get());
+
+  guest_view_container_dispatcher_.reset(
+      new ExtensionsGuestViewContainerDispatcher());
+  thread->AddObserver(guest_view_container_dispatcher_.get());
 
   // TODO(jamescook): Init WebSecurityPolicy for chrome-extension: schemes.
   // See ChromeContentRendererClient for details.
@@ -94,12 +97,6 @@ blink::WebPlugin* ShellContentRendererClient::CreatePluginReplacement(
     const base::FilePath& plugin_path) {
   // Don't provide a custom "failed to load" plugin.
   return NULL;
-}
-
-bool ShellContentRendererClient::ShouldForwardToGuestContainer(
-    const IPC::Message& msg) {
-  return (IPC_MESSAGE_CLASS(msg) == GuestViewMsgStart) ||
-      (IPC_MESSAGE_CLASS(msg) == ExtensionsGuestViewMsgStart);
 }
 
 bool ShellContentRendererClient::WillSendRequest(

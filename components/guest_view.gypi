@@ -65,6 +65,8 @@
             '..',
           ],
           'sources': [
+            'guest_view/renderer/guest_view_container_dispatcher.cc',
+            'guest_view/renderer/guest_view_container_dispatcher.h',
             'guest_view/renderer/guest_view_container.cc',
             'guest_view/renderer/guest_view_container.h',
             'guest_view/renderer/guest_view_request.cc',

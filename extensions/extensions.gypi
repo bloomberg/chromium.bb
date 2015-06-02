@@ -877,6 +877,8 @@
       'renderer/extensions_renderer_client.h',
       'renderer/file_system_natives.cc',
       'renderer/file_system_natives.h',
+      'renderer/guest_view/extensions_guest_view_container_dispatcher.cc',
+      'renderer/guest_view/extensions_guest_view_container_dispatcher.h',
       'renderer/guest_view/extensions_guest_view_container.cc',
       'renderer/guest_view/extensions_guest_view_container.h',
       'renderer/guest_view/guest_view_internal_custom_bindings.cc',

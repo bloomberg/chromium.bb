@@ -61,7 +61,6 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/dom_distiller/core/url_constants.h"
-#include "components/guest_view/renderer/guest_view_container.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
@@ -124,6 +123,7 @@
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/extensions_render_frame_observer.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
+#include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #include "extensions/renderer/script_context.h"
 #endif
@@ -379,6 +379,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   permissions_policy_delegate_.reset(
       new extensions::RendererPermissionsPolicyDelegate(
           extension_dispatcher_.get()));
+  guest_view_container_dispatcher_.reset(
+      new extensions::ExtensionsGuestViewContainerDispatcher());
 #endif
 
   prescient_networking_dispatcher_.reset(
@@ -406,6 +408,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(web_cache_observer_.get());
 #if defined(ENABLE_EXTENSIONS)
   thread->AddObserver(extension_dispatcher_.get());
+  thread->AddObserver(guest_view_container_dispatcher_.get());
 #endif
 #if defined(FULL_SAFE_BROWSING)
   thread->AddObserver(phishing_classifier_.get());
@@ -1310,17 +1313,6 @@ bool ChromeContentRendererClient::ShouldFork(blink::WebFrame* frame,
 #endif  // defined(ENABLE_EXTENSIONS)
 
   return false;
-}
-
-bool ChromeContentRendererClient::ShouldForwardToGuestContainer(
-    const IPC::Message& msg) {
-  if (IPC_MESSAGE_CLASS(msg) == GuestViewMsgStart)
-    return true;
-#if defined(ENABLE_EXTENSIONS)
-  return IPC_MESSAGE_CLASS(msg) == ExtensionsGuestViewMsgStart;
-#else
-  return false;
-#endif
 }
 
 bool ChromeContentRendererClient::WillSendRequest(

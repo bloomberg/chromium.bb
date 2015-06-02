@@ -8,10 +8,6 @@
 
 namespace content {
 
-bool BrowserPluginDelegate::OnMessageReceived(const IPC::Message& message) {
-  return false;
-}
-
 v8::Local<v8::Object> BrowserPluginDelegate::V8ScriptableObject(
     v8::Isolate* isolate) {
   return v8::Local<v8::Object>();

@@ -8,7 +8,6 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
-#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_message_macros.h"
@@ -87,11 +86,8 @@ void BrowserPluginManager::DidCommitCompositorFrame(
 
 bool BrowserPluginManager::OnControlMessageReceived(
     const IPC::Message& message) {
-  if (!BrowserPlugin::ShouldForwardToBrowserPlugin(message) &&
-      !content::GetContentClient()->renderer()->
-          ShouldForwardToGuestContainer(message)) {
+  if (!BrowserPlugin::ShouldForwardToBrowserPlugin(message))
     return false;
-  }
 
   int browser_plugin_instance_id = browser_plugin::kInstanceIDNone;
   // All allowed messages must have |browser_plugin_instance_id| as their

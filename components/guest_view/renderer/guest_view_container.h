@@ -29,6 +29,10 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   int element_instance_id() const { return element_instance_id_; }
   content::RenderFrame* render_frame() const { return render_frame_; }
 
+  // Called by GuestViewContainerDispatcher to dispatch message to this
+  // container.
+  bool OnMessageReceived(const IPC::Message& message);
+
   // Called when the embedding RenderFrame is destroyed.
   virtual void OnRenderFrameDestroyed() {}
 
@@ -52,7 +56,6 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   void OnHandleCallback(const IPC::Message& message);
 
   // BrowserPluginDelegate implementation.
-  bool OnMessageReceived(const IPC::Message& message) final;
   void Ready() final;
   void SetElementInstanceID(int element_instance_id) final;
 

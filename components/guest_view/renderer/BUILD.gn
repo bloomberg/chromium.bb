@@ -2,8 +2,10 @@ static_library("renderer") {
   sources = [
     "guest_view_container.cc",
     "guest_view_container.h",
+    "guest_view_container_dispatcher.cc",
+    "guest_view_container_dispatcher.h",
     "guest_view_request.cc",
-    "guest_view_request.h"
+    "guest_view_request.h",
   ]
 
   deps = [

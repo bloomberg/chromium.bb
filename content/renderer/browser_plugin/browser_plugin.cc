@@ -102,8 +102,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetTooltipText, OnSetTooltipText)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
-    IPC_MESSAGE_UNHANDLED(
-        handled = delegate_ && delegate_->OnMessageReceived(message))
   IPC_END_MESSAGE_MAP()
   return handled;
 }
