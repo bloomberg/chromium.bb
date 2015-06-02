@@ -153,7 +153,7 @@ void HistoryController::UpdateForInitialLoadInChildFrame(
     return;
   if (HistoryEntry::HistoryNode* parent_history_node =
           current_entry_->GetHistoryNodeForFrame(parent)) {
-    parent_history_node->AddChild(item, frame->GetRoutingID());
+    parent_history_node->AddChild(item);
   }
 }
 
@@ -217,8 +217,7 @@ void HistoryController::CreateNewBackForwardItem(
     const WebHistoryItem& new_item,
     bool clone_children_of_target) {
   if (!current_entry_) {
-    current_entry_.reset(
-        new HistoryEntry(new_item, target_frame->GetRoutingID()));
+    current_entry_.reset(new HistoryEntry(new_item));
   } else {
     current_entry_.reset(current_entry_->CloneAndReplace(
         new_item, clone_children_of_target, target_frame, render_view_));

@@ -38,6 +38,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
@@ -56,14 +57,13 @@ class CONTENT_EXPORT HistoryEntry {
  public:
   class HistoryNode {
    public:
-    HistoryNode(HistoryEntry* entry,
-                const blink::WebHistoryItem& item,
-                int64_t frame_id);
+    HistoryNode(const base::WeakPtr<HistoryEntry>& entry,
+                const blink::WebHistoryItem& item);
     ~HistoryNode();
 
-    HistoryNode* AddChild(const blink::WebHistoryItem& item, int64_t frame_id);
+    HistoryNode* AddChild(const blink::WebHistoryItem& item);
     HistoryNode* AddChild();
-    HistoryNode* CloneAndReplace(HistoryEntry* new_entry,
+    HistoryNode* CloneAndReplace(const base::WeakPtr<HistoryEntry>& new_entry,
                                  const blink::WebHistoryItem& new_item,
                                  bool clone_children_of_target,
                                  RenderFrameImpl* target_frame,
@@ -74,12 +74,20 @@ class CONTENT_EXPORT HistoryEntry {
     void RemoveChildren();
 
    private:
-    HistoryEntry* entry_;
+    // When a HistoryEntry is destroyed, it takes all its HistoryNodes with it.
+    // Use a WeakPtr to ensure that HistoryNodes don't try to illegally access
+    // a dying HistoryEntry, or do unnecessary work when the whole entry is
+    // being destroyed.
+    base::WeakPtr<HistoryEntry> entry_;
     scoped_ptr<ScopedVector<HistoryNode> > children_;
     blink::WebHistoryItem item_;
+    // We need to track multiple names because the name of a frame can change
+    // over its lifetime. This allows us to clean up all of the names this node
+    // has ever known by when it is destroyed.
+    std::vector<std::string> unique_names_;
   };
 
-  HistoryEntry(const blink::WebHistoryItem& root, int64_t frame_id);
+  HistoryEntry(const blink::WebHistoryItem& root);
   HistoryEntry();
   ~HistoryEntry();
 
@@ -94,14 +102,12 @@ class CONTENT_EXPORT HistoryEntry {
   HistoryNode* root_history_node() const { return root_.get(); }
 
  private:
-
   scoped_ptr<HistoryNode> root_;
-
-  typedef base::hash_map<uint64_t, HistoryNode*> FramesToItems;
-  FramesToItems frames_to_items_;
 
   typedef base::hash_map<std::string, HistoryNode*> UniqueNamesToItems;
   UniqueNamesToItems unique_names_to_items_;
+
+  base::WeakPtrFactory<HistoryEntry> weak_ptr_factory_;
 };
 
 }  // namespace content
