@@ -7,6 +7,7 @@
 #include "cc/blink/web_display_item_list_impl.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/playback/display_item_list_settings.h"
 #include "third_party/WebKit/public/platform/WebContentLayerClient.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
@@ -80,9 +81,11 @@ scoped_refptr<cc::DisplayItemList>
 WebContentLayerImpl::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     cc::ContentLayerClient::PaintingControlSetting painting_control) {
-  const bool use_cached_picture = true;
+  cc::DisplayItemListSettings settings;
+  settings.use_cached_picture = true;
+
   scoped_refptr<cc::DisplayItemList> display_list =
-      cc::DisplayItemList::Create(clip, use_cached_picture);
+      cc::DisplayItemList::Create(clip, settings);
   if (client_) {
     WebDisplayItemListImpl list(display_list.get());
     client_->paintContents(&list, clip, PaintingControlToWeb(painting_control));

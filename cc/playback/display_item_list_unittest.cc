@@ -9,6 +9,7 @@
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
 #include "cc/playback/clip_display_item.h"
+#include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/playback/filter_display_item.h"
 #include "cc/playback/transform_display_item.h"
@@ -322,7 +323,9 @@ TEST(DisplayItemListTest, PictureMemoryUsage) {
   // To avoid double counting, we expect zero size to be computed if both the
   // picture and items are retained (currently this only happens due to certain
   // categories being traced).
-  list = new DisplayItemList(layer_rect, true, true);
+  DisplayItemListSettings settings;
+  settings.use_cached_picture = true;
+  list = new DisplayItemList(layer_rect, settings, true);
   item = list->CreateAndAppendItem<DrawingDisplayItem>();
   item->SetNew(picture);
   list->Finalize();

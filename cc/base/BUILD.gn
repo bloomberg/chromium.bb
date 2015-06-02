@@ -25,6 +25,7 @@ source_set("base") {
     "scoped_ptr_algorithm.h",
     "scoped_ptr_deque.h",
     "scoped_ptr_vector.h",
+    "sidecar_list_container.h",
     "simple_enclosed_region.cc",
     "simple_enclosed_region.h",
     "switches.cc",

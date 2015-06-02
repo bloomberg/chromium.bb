@@ -27,6 +27,10 @@ struct WebFloatRect;
 struct WebRect;
 }
 
+namespace cc {
+class DisplayItemListSettings;
+}
+
 namespace cc_blink {
 
 class WebDisplayItemListImpl : public blink::WebDisplayItemList {
