@@ -232,7 +232,7 @@ TEST_F(WorkerThreadTest, GcOccursWhileIdle)
             return false;
         }));
 
-    EXPECT_CALL(*m_workerThread, doIdleGc(_)).Times(1);
+    EXPECT_CALL(*m_workerThread, doIdleGc(_)).Times(testing::AtLeast(1));
 
     startAndWaitForInit();
     postWakeUpTask(500ul);
