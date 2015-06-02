@@ -6,12 +6,14 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/color_suggestion.h"
 #include "jni/ColorChooserAndroid_jni.h"
 #include "ui/android/window_android.h"
 
 using base::android::ConvertUTF16ToJavaString;
+using content::ContentViewCore;
 
 namespace web_contents_delegate_android {
 
@@ -39,12 +41,21 @@ ColorChooserAndroid::ColorChooserAndroid(
           label.obj());
     }
   }
-  j_color_chooser_.Reset(Java_ColorChooserAndroid_createColorChooserAndroid(
-      env,
-      reinterpret_cast<intptr_t>(this),
-      web_contents->GetTopLevelNativeWindow()->GetJavaObject().obj(),
-      initial_color,
-      suggestions_array.obj()));
+
+  ContentViewCore* content_view_core =
+      ContentViewCore::FromWebContents(web_contents);
+  if (content_view_core) {
+    base::android::ScopedJavaLocalRef<jobject> java_content_view_core =
+        content_view_core->GetJavaObject();
+    if (!java_content_view_core.is_null()) {
+      j_color_chooser_.Reset(Java_ColorChooserAndroid_createColorChooserAndroid(
+          env,
+          reinterpret_cast<intptr_t>(this),
+          java_content_view_core.obj(),
+          initial_color,
+          suggestions_array.obj()));
+    }
+  }
   if (j_color_chooser_.is_null())
     OnColorChosen(env, j_color_chooser_.obj(), initial_color);
 }

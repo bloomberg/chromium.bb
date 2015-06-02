@@ -4,15 +4,14 @@
 
 package org.chromium.components.web_contents_delegate_android;
 
-import android.app.Activity;
 import android.content.Context;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.ColorPickerDialog;
 import org.chromium.ui.ColorSuggestion;
 import org.chromium.ui.OnColorChangedListener;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * ColorChooserAndroid communicates with the java ColorPickerDialog and the
@@ -49,13 +48,11 @@ public class ColorChooserAndroid {
     @CalledByNative
     public static ColorChooserAndroid createColorChooserAndroid(
             long nativeColorChooserAndroid,
-            WindowAndroid windowAndroid,
+            ContentViewCore contentViewCore,
             int initialColor,
             ColorSuggestion[] suggestions) {
-        Activity windowAndroidActivity = windowAndroid.getActivity().get();
-        if (windowAndroidActivity == null) return null;
         ColorChooserAndroid chooser = new ColorChooserAndroid(nativeColorChooserAndroid,
-                windowAndroidActivity, initialColor, suggestions);
+                contentViewCore.getContext(), initialColor, suggestions);
         chooser.openColorChooser();
         return chooser;
     }
