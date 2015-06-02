@@ -457,6 +457,7 @@ void TextureDefinition::UpdateTexture(Texture* texture) const {
     if (bound_id == static_cast<GLint>(old_service_id)) {
       glBindTexture(target_, service_id);
     }
+    texture->SetLevelImage(NULL, target_, 0, NULL);
   }
 
   UpdateTextureInternal(texture);
