@@ -207,6 +207,8 @@
         'browser/search_engines/search_engines_util.h',
         'browser/signin/constants.h',
         'browser/signin/constants.mm',
+        'browser/signin/gaia_auth_fetcher_ios.h',
+        'browser/signin/gaia_auth_fetcher_ios.mm',
         'browser/snapshots/snapshot_cache.h',
         'browser/snapshots/snapshot_cache.mm',
         'browser/snapshots/snapshot_manager.h',
