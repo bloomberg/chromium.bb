@@ -176,12 +176,10 @@ source_set("sender") {
       "sender/h264_vt_encoder.h",
     ]
 
-    libs += [ "CoreVideo.framework" ]
-  }
-
-  if (is_mac) {
-    # Required by audio_encoder.cc.
-    libs += [ "AudioToolbox.framework" ]
+    libs += [
+      "AudioToolbox.framework",
+      "CoreVideo.framework",
+    ]
   }
 }
 

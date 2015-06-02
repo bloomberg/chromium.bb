@@ -205,17 +205,11 @@
           ],
           'link_settings': {
             'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/AudioToolbox.framework',
               '$(SDKROOT)/System/Library/Frameworks/CoreVideo.framework',
             ],
           },
         }],  # OS=="ios" or OS=="mac"
-        ['OS=="mac"', {
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/AudioToolbox.framework',
-            ],
-          },
-        }],  # OS=="mac"
       ], # conditions
     },
     {

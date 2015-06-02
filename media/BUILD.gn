@@ -489,6 +489,7 @@ if (is_ios) {
     deps = [
       ":shared_memory_support",
       "//base",
+      "//gpu/command_buffer/common",
       "//media/base:base_for_cast_ios",
       "//media/base/mac",
       "//ui/gfx/geometry",

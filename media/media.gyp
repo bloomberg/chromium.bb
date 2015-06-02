@@ -1860,6 +1860,7 @@
           'type': '<(component)',
           'dependencies': [
             '../base/base.gyp:base',
+            '../gpu/gpu.gyp:command_buffer_common',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             'shared_memory_support',
           ],
