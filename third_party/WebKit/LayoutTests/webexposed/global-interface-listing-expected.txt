@@ -621,6 +621,7 @@ interface Credential
     getter avatarURL
     getter id
     getter name
+    getter type
     method constructor
 interface CredentialsContainer
     method constructor

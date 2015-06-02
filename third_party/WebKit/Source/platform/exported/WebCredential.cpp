@@ -73,6 +73,11 @@ WebURL WebCredential::avatarURL() const
     return m_platformCredential->avatarURL();
 }
 
+WebString WebCredential::type() const
+{
+    return m_platformCredential->type();
+}
+
 bool WebCredential::isLocalCredential() const
 {
     return m_platformCredential->isLocal();

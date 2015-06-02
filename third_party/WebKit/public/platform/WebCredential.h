@@ -26,6 +26,7 @@ public:
     BLINK_PLATFORM_EXPORT WebString id() const;
     BLINK_PLATFORM_EXPORT WebString name() const;
     BLINK_PLATFORM_EXPORT WebURL avatarURL() const;
+    BLINK_PLATFORM_EXPORT WebString type() const;
 
     BLINK_PLATFORM_EXPORT bool isLocalCredential() const;
     BLINK_PLATFORM_EXPORT bool isFederatedCredential() const;

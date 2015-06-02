@@ -16,6 +16,7 @@ PlatformCredential::PlatformCredential(const String& id, const String& name, con
     : m_id(id)
     , m_name(name)
     , m_avatarURL(avatarURL)
+    , m_type("credential")
 {
 }
 

@@ -16,6 +16,7 @@ PlatformFederatedCredential::PlatformFederatedCredential(const String& id, const
     : PlatformCredential(id, name, iconURL)
     , m_provider(provider)
 {
+    setType("federated");
 }
 
 PlatformFederatedCredential::~PlatformFederatedCredential()

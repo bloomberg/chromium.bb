@@ -16,6 +16,7 @@ PlatformLocalCredential::PlatformLocalCredential(const String& id, const String&
     : PlatformCredential(id, name, avatarURL)
     , m_password(password)
 {
+    setType("password");
 }
 
 PlatformLocalCredential::~PlatformLocalCredential()

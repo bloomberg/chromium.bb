@@ -20,6 +20,7 @@ public:
     const String& id() const { return m_id; }
     const String& name() const { return m_name; }
     const KURL& avatarURL() const { return m_avatarURL; }
+    const String& type() const { return m_type; }
 
     virtual bool isLocal() { return false; }
     virtual bool isFederated() { return false; }
@@ -29,10 +30,13 @@ public:
 protected:
     PlatformCredential(const String& id, const String& name, const KURL& avatarURL);
 
+    void setType(const String& type) { m_type = type; }
+
 private:
     String m_id;
     String m_name;
     KURL m_avatarURL;
+    String m_type;
 };
 
 } // namespace blink

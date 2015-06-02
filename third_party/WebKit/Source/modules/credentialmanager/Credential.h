@@ -24,6 +24,7 @@ public:
     const String& id() const { return m_platformCredential->id(); }
     const String& name() const { return m_platformCredential->name(); }
     const KURL& avatarURL() const { return m_platformCredential->avatarURL(); }
+    const String& type() const { return m_platformCredential->type(); }
 
     DECLARE_VIRTUAL_TRACE();
 
