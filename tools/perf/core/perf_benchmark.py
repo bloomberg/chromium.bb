@@ -23,8 +23,13 @@ class PerfBenchmark(benchmark.Benchmark):
     # Subclass of PerfBenchmark should override  SetExtraBrowserOptions to add
     # more browser options rather than overriding CustomizeBrowserOptions.
     super(PerfBenchmark, self).CustomizeBrowserOptions(options)
-    variations = self._GetVariationsBrowserArgs(options.finder_options)
-    options.AppendExtraBrowserArgs(variations)
+    # The current field trial config is used for an older build in the case of
+    # reference. This is a problem because we are then subjecting older builds
+    # to newer configurations that may crash.  To work around this problem,
+    # don't add the field trials to reference builds.
+    if options.browser_type != 'reference':
+      variations = self._GetVariationsBrowserArgs(options.finder_options)
+      options.AppendExtraBrowserArgs(variations)
     self.SetExtraBrowserOptions(options)
 
   @staticmethod
