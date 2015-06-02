@@ -1,0 +1,21 @@
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-material/paper-material.html">
+<link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+
+<dom-module id="cr-settings-appearance-page">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_page/settings_page.css">
+  <template>
+    <paper-material>
+      <cr-settings-checkbox
+          pref="{{prefs.browser.show_home_button}}"
+          i18n-values="label:appearanceShowHomeButtonLabel">
+      </cr-settings-checkbox>
+      <cr-settings-checkbox
+          pref="{{prefs.bookmark_bar.show_on_all_tabs}}"
+          i18n-values="label:appearanceShowBookmarksBarLabel">
+      </cr-settings-checkbox>
+    </paper-material>
+  </template>
+  <script src="appearance_page.js"></script>
+</dom-module>

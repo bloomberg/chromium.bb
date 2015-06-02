@@ -19,6 +19,10 @@ const TypedPrefMap& GetWhitelistedKeys() {
   if (s_whitelist)
     return *s_whitelist;
   s_whitelist = new TypedPrefMap();
+  (*s_whitelist)["browser.show_home_button"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["bookmark_bar.show_on_all_tabs"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["download.default_directory"] =
       settings_private::PrefType::PREF_TYPE_STRING;
   (*s_whitelist)["download.prompt_for_download"] =
