@@ -499,20 +499,29 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
 
-  EXPECT_EQ(1u, notification_manager()->GetNotificationCount());
-  const Notification& forced_notification =
-      notification_manager()->GetNotificationAt(0);
+  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
+  {
+    const Notification& forced_notification =
+        notification_manager()->GetNotificationAt(0);
 
-  EXPECT_EQ(kPushMessagingForcedNotificationTag, forced_notification.tag());
-  EXPECT_TRUE(forced_notification.silent());
+    EXPECT_EQ(kPushMessagingForcedNotificationTag, forced_notification.tag());
+    EXPECT_TRUE(forced_notification.silent());
+  }
 
-  // Currently, this notification will stick around until the user or webapp
-  // explicitly dismisses it (though we may change this later).
+  // The notification will be automatically dismissed when the developer shows
+  // a new notification themselves at a later point in time.
   message.data["data"] = "shownotification";
   SendMessageAndWaitUntilHandled(app_identifier, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("shownotification", script_result);
-  EXPECT_EQ(2u, notification_manager()->GetNotificationCount());
+
+  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
+  {
+    const Notification& first_notification =
+        notification_manager()->GetNotificationAt(0);
+
+    EXPECT_NE(kPushMessagingForcedNotificationTag, first_notification.tag());
+  }
 
   notification_manager()->CancelAll();
   EXPECT_EQ(0u, notification_manager()->GetNotificationCount());

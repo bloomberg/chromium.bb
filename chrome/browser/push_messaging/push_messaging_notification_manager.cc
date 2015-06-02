@@ -149,6 +149,30 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   }
 #endif
 
+  // If more than two notifications are showing for this Service Worker, close
+  // the default notification if it happens to be part of this group.
+  if (notification_count >= 2) {
+    for (const auto& notification_database_data : data) {
+      if (notification_database_data.notification_data.tag !=
+          kPushMessagingForcedNotificationTag)
+        continue;
+
+      PlatformNotificationServiceImpl* platform_notification_service =
+          PlatformNotificationServiceImpl::GetInstance();
+
+      // First close the notification for the user's point of view, and then
+      // manually tell the service that the notification has been closed in
+      // order to avoid duplicating the thread-jump logic.
+      platform_notification_service->ClosePersistentNotification(
+          profile_, notification_database_data.notification_id);
+      platform_notification_service->OnPersistentNotificationClose(
+          profile_, notification_database_data.notification_id,
+          notification_database_data.origin);
+
+      break;
+    }
+  }
+
   // Don't track push messages that didn't show a notification but were exempt
   // from needing to do so.
   if (notification_shown || notification_needed) {
