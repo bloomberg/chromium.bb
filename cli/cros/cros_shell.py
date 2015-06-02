@@ -130,7 +130,7 @@ Quoting can be tricky; the rules are the same as with ssh:
                'Some common reasons for this are:\n'
                ' - Device powerwash.\n'
                ' - Device flash from a USB stick.\n'
-               ' - Device flash using "cros flash --clobber-stateful".\n'
+               ' - Device flash using "--clobber-stateful".\n'
                'Otherwise, please verify that this is the correct device'
                ' before continuing.' % self.device.hostname)
 
@@ -186,16 +186,15 @@ Quoting can be tricky; the rules are the same as with ssh:
           # The full SSH error message has extra info for the user.
           logging.warning('\n%s', e)
           if self._UserConfirmKeyChange():
-            remote_access.RemoveKnownHost(self.ssh_hostname)
+            remote_access.RemoveKnownHost(self.device.hostname)
             # The user already OK'd so we can skip the additional SSH check.
             self.host_key_checking = 'no'
             return self._StartSsh()
           else:
-            raise
-        else:
-          raise
-    except (Exception, KeyboardInterrupt) as e:
-      logging.error('\n%s', e)
-      logging.error('`cros shell` failed.')
+            return 1
+        raise
+    except Exception as e:
+      logging.error(e)
       if self.options.debug:
         raise
+      return 1
