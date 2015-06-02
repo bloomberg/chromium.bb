@@ -145,7 +145,7 @@ void FakeSignalStrategy::OnIncomingMessage(
     return;
   }
 
-  ObserverListBase<Listener>::Iterator it(&listeners_);
+  base::ObserverListBase<Listener>::Iterator it(&listeners_);
   Listener* listener;
   while ((listener = it.GetNext()) != nullptr) {
     if (listener->OnSignalStrategyIncomingStanza(stanza_ptr))

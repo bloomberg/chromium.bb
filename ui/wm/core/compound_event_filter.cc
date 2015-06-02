@@ -129,7 +129,7 @@ void CompoundEventFilter::UpdateCursor(aura::Window* target,
 
 void CompoundEventFilter::FilterKeyEvent(ui::KeyEvent* event) {
   if (handlers_.might_have_observers()) {
-    ObserverListBase<ui::EventHandler>::Iterator it(&handlers_);
+    base::ObserverListBase<ui::EventHandler>::Iterator it(&handlers_);
     ui::EventHandler* handler;
     while (!event->stopped_propagation() && (handler = it.GetNext()) != NULL)
       handler->OnKeyEvent(event);
@@ -138,7 +138,7 @@ void CompoundEventFilter::FilterKeyEvent(ui::KeyEvent* event) {
 
 void CompoundEventFilter::FilterMouseEvent(ui::MouseEvent* event) {
   if (handlers_.might_have_observers()) {
-    ObserverListBase<ui::EventHandler>::Iterator it(&handlers_);
+    base::ObserverListBase<ui::EventHandler>::Iterator it(&handlers_);
     ui::EventHandler* handler;
     while (!event->stopped_propagation() && (handler = it.GetNext()) != NULL)
       handler->OnMouseEvent(event);
@@ -147,7 +147,7 @@ void CompoundEventFilter::FilterMouseEvent(ui::MouseEvent* event) {
 
 void CompoundEventFilter::FilterTouchEvent(ui::TouchEvent* event) {
   if (handlers_.might_have_observers()) {
-    ObserverListBase<ui::EventHandler>::Iterator it(&handlers_);
+    base::ObserverListBase<ui::EventHandler>::Iterator it(&handlers_);
     ui::EventHandler* handler;
     while (!event->stopped_propagation() && (handler = it.GetNext()) != NULL)
       handler->OnTouchEvent(event);
@@ -239,7 +239,7 @@ void CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
 
 void CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   if (handlers_.might_have_observers()) {
-    ObserverListBase<ui::EventHandler>::Iterator it(&handlers_);
+    base::ObserverListBase<ui::EventHandler>::Iterator it(&handlers_);
     ui::EventHandler* handler;
     while (!event->stopped_propagation() && (handler = it.GetNext()) != NULL)
       handler->OnGestureEvent(event);

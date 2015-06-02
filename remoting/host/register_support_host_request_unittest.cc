@@ -150,7 +150,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   result->AddElement(support_id_lifetime);
 
   int consumed = 0;
-  ObserverListBase<SignalStrategy::Listener>::Iterator it(
+  base::ObserverListBase<SignalStrategy::Listener>::Iterator it(
       &signal_strategy_listeners_);
   SignalStrategy::Listener* listener;
   while ((listener = it.GetNext()) != nullptr) {

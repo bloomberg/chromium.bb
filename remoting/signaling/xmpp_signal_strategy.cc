@@ -304,7 +304,7 @@ void XmppSignalStrategy::Core::OnStanza(
     const scoped_ptr<buzz::XmlElement> stanza) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  ObserverListBase<Listener>::Iterator it(&listeners_);
+  base::ObserverListBase<Listener>::Iterator it(&listeners_);
   for (Listener* listener = it.GetNext(); listener; listener = it.GetNext()) {
     if (listener->OnSignalStrategyIncomingStanza(stanza.get()))
       return;

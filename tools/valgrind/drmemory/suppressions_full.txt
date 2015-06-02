@@ -1059,7 +1059,7 @@ name=http://crbug.com/79933 (4)
 *!std::vector<>::_Insert_n
 *!std::vector<>::insert
 *!std::vector<>::push_back
-*!ObserverListBase<>::AddObserver
+*!base::ObserverListBase<>::AddObserver
 ...
 *!net::HttpNetworkSession::HttpNetworkSession
 *!notifier::ProxyResolvingClientSocket::ProxyResolvingClientSocket
@@ -1880,7 +1880,7 @@ name=bug_436131
 
 UNADDRESSABLE ACCESS
 name=bug_436131_b
-views.dll!ObserverListBase<>::RemoveObserver
+views.dll!base::ObserverListBase<>::RemoveObserver
 *!ash::test::ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone
 *!testing::internal::HandleExceptionsInMethodIfSupported<>
 

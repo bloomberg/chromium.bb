@@ -234,7 +234,7 @@ void MockRenderThread::OnCreateChildFrame(int new_frame_routing_id,
 }
 
 bool MockRenderThread::OnControlMessageReceived(const IPC::Message& msg) {
-  ObserverListBase<RenderProcessObserver>::Iterator it(&observers_);
+  base::ObserverListBase<RenderProcessObserver>::Iterator it(&observers_);
   RenderProcessObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
     if (observer->OnControlMessageReceived(msg))

@@ -51,18 +51,20 @@
 //     }
 //
 //    private:
-//     ObserverList<Observer> observer_list_;
+//     base::ObserverList<Observer> observer_list_;
 //   };
 //
 //
 ///////////////////////////////////////////////////////////////////////////////
+
+namespace base {
 
 template <typename ObserverType>
 class ObserverListThreadSafe;
 
 template <class ObserverType>
 class ObserverListBase
-    : public base::SupportsWeakPtr<ObserverListBase<ObserverType> > {
+    : public SupportsWeakPtr<ObserverListBase<ObserverType>> {
  public:
   // Enumeration of which observers are notified.
   enum NotificationType {
@@ -84,7 +86,7 @@ class ObserverListBase
     ObserverType* GetNext();
 
    private:
-    base::WeakPtr<ObserverListBase<ObserverType> > list_;
+    WeakPtr<ObserverListBase<ObserverType>> list_;
     size_t index_;
     size_t max_index_;
   };
@@ -232,12 +234,17 @@ class ObserverList : public ObserverListBase<ObserverType> {
 #define FOR_EACH_OBSERVER(ObserverType, observer_list, func)             \
   do {                                                                   \
     if ((observer_list).might_have_observers()) {                        \
-      ObserverListBase<ObserverType>::Iterator it_inside_observer_macro( \
+      base::ObserverListBase<ObserverType>::Iterator it_inside_observer_macro( \
           &observer_list);                                               \
       ObserverType* obs;                                                 \
-      while ((obs = it_inside_observer_macro.GetNext()) != nullptr)         \
+      while ((obs = it_inside_observer_macro.GetNext()) != nullptr)      \
         obs->func;                                                       \
     }                                                                    \
   } while (0)
+
+}  // namespace base
+
+// TODO(brettw) remove this when callers use the correct namespace.
+using base::ObserverList;
 
 #endif  // BASE_OBSERVER_LIST_H_

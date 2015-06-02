@@ -20,9 +20,10 @@
 #include "net/cert/x509_certificate.h"
 
 namespace base {
+template <class ObserverType>
+class ObserverListThreadSafe;
 class TaskRunner;
 }
-template <class ObserverType> class ObserverListThreadSafe;
 
 namespace net {
 
@@ -301,7 +302,7 @@ class NET_EXPORT NSSCertDatabase {
   // Task runner that should be used in tests if set.
   scoped_refptr<base::TaskRunner> slow_task_runner_for_test_;
 
-  const scoped_refptr<ObserverListThreadSafe<Observer> > observer_list_;
+  const scoped_refptr<base::ObserverListThreadSafe<Observer>> observer_list_;
 
   base::WeakPtrFactory<NSSCertDatabase> weak_factory_;
 

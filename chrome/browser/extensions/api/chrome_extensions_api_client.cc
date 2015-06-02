@@ -39,7 +39,8 @@ ChromeExtensionsAPIClient::~ChromeExtensionsAPIClient() {}
 void ChromeExtensionsAPIClient::AddAdditionalValueStoreCaches(
     content::BrowserContext* context,
     const scoped_refptr<SettingsStorageFactory>& factory,
-    const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >& observers,
+    const scoped_refptr<base::ObserverListThreadSafe<SettingsObserver>>&
+        observers,
     std::map<settings_namespace::Namespace, ValueStoreCache*>* caches) {
   // Add support for chrome.storage.sync.
   (*caches)[settings_namespace::SYNC] =

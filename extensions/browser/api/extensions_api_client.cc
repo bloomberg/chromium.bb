@@ -28,8 +28,10 @@ ExtensionsAPIClient* ExtensionsAPIClient::Get() { return g_instance; }
 void ExtensionsAPIClient::AddAdditionalValueStoreCaches(
     content::BrowserContext* context,
     const scoped_refptr<SettingsStorageFactory>& factory,
-    const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >& observers,
-    std::map<settings_namespace::Namespace, ValueStoreCache*>* caches) {}
+    const scoped_refptr<base::ObserverListThreadSafe<SettingsObserver>>&
+        observers,
+    std::map<settings_namespace::Namespace, ValueStoreCache*>* caches) {
+}
 
 AppViewGuestDelegate* ExtensionsAPIClient::CreateAppViewGuestDelegate() const {
   return NULL;

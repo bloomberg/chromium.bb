@@ -12,7 +12,10 @@
 #include "net/cert/x509_certificate.h"
 
 template <typename T> struct DefaultSingletonTraits;
+
+namespace base {
 template <class ObserverType> class ObserverListThreadSafe;
+}
 
 namespace net {
 
@@ -106,7 +109,7 @@ class NET_EXPORT CertDatabase {
   CertDatabase();
   ~CertDatabase();
 
-  const scoped_refptr<ObserverListThreadSafe<Observer> > observer_list_;
+  const scoped_refptr<base::ObserverListThreadSafe<Observer>> observer_list_;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   class Notifier;
