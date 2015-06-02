@@ -2,23 +2,4 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebScreenOrientationLockType_h
-#define WebScreenOrientationLockType_h
-
-namespace blink {
-
-enum WebScreenOrientationLockType {
-    WebScreenOrientationLockDefault = 0, // Equivalent to unlock.
-    WebScreenOrientationLockPortraitPrimary,
-    WebScreenOrientationLockPortraitSecondary,
-    WebScreenOrientationLockLandscapePrimary,
-    WebScreenOrientationLockLandscapeSecondary,
-    WebScreenOrientationLockAny,
-    WebScreenOrientationLockLandscape,
-    WebScreenOrientationLockPortrait,
-    WebScreenOrientationLockNatural,
-};
-
-} // namespace blink
-
-#endif // WebScreenOrientationLockType_h
+#include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
