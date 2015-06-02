@@ -142,7 +142,7 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
     // the next pending delayed tasks (as currently done in for long idle times)
     idle_helper_.StartIdlePeriod(
         IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, now,
-        estimated_next_frame_begin_, true);
+        estimated_next_frame_begin_);
   }
 }
 
@@ -310,9 +310,7 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
 
 base::TimeTicks RendererSchedulerImpl::CurrentIdleTaskDeadlineForTesting()
     const {
-  base::TimeTicks deadline;
-  idle_helper_.CurrentIdleTaskDeadlineCallback(&deadline);
-  return deadline;
+  return idle_helper_.CurrentIdleTaskDeadline();
 }
 
 RendererSchedulerImpl::Policy RendererSchedulerImpl::SchedulerPolicy() const {
@@ -491,24 +489,6 @@ bool RendererSchedulerImpl::CanEnterLongIdlePeriod(
 
 SchedulerHelper* RendererSchedulerImpl::GetSchedulerHelperForTesting() {
   return &helper_;
-}
-
-RendererSchedulerImpl::PollableNeedsUpdateFlag::PollableNeedsUpdateFlag(
-    base::Lock* write_lock_)
-    : flag_(false), write_lock_(write_lock_) {
-}
-
-RendererSchedulerImpl::PollableNeedsUpdateFlag::~PollableNeedsUpdateFlag() {
-}
-
-void RendererSchedulerImpl::PollableNeedsUpdateFlag::SetWhileLocked(
-    bool value) {
-  write_lock_->AssertAcquired();
-  base::subtle::Release_Store(&flag_, value);
-}
-
-bool RendererSchedulerImpl::PollableNeedsUpdateFlag::IsSet() const {
-  return base::subtle::Acquire_Load(&flag_) != 0;
 }
 
 void RendererSchedulerImpl::SuspendTimerQueue() {

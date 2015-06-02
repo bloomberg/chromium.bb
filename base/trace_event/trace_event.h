@@ -760,6 +760,22 @@
         TRACE_EVENT_FLAG_ASYNC_TTS | TRACE_EVENT_FLAG_COPY, \
         arg1_name, arg1_val, arg2_name, arg2_val)
 
+// Similar to TRACE_EVENT_NESTABLE_ASYNC_{BEGIN,END}x but with a custom
+// |timestamp| provided.
+#define TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(category_group, name, \
+        id, timestamp) \
+  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
+        TRACE_EVENT_PHASE_NESTABLE_ASYNC_BEGIN, category_group, name, id, \
+        static_cast<int>(base::PlatformThread::CurrentId()), timestamp, \
+        TRACE_EVENT_FLAG_NONE)
+
+#define TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(category_group, name, \
+        id, timestamp) \
+  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP( \
+        TRACE_EVENT_PHASE_NESTABLE_ASYNC_END, category_group, name, id, \
+        static_cast<int>(base::PlatformThread::CurrentId()), timestamp, \
+        TRACE_EVENT_FLAG_NONE)
+
 // Records a single NESTABLE_ASYNC_INSTANT event called "name" immediately,
 // with 2 associated arguments. If the category is not enabled, then this
 // does nothing.

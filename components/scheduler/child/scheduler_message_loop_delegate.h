@@ -27,8 +27,7 @@ class SCHEDULER_EXPORT SchedulerMessageLoopDelegate
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;
-  void AddTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) override;
+  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
 

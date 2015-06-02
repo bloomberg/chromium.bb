@@ -7,10 +7,7 @@
 namespace scheduler {
 
 NullIdleTaskRunner::NullIdleTaskRunner()
-    : SingleThreadIdleTaskRunner(nullptr,
-                                 nullptr,
-                                 base::Callback<void(base::TimeTicks*)>(),
-                                 "null.taskrunner") {
+    : SingleThreadIdleTaskRunner(nullptr, nullptr, nullptr, "null.taskrunner") {
 }
 
 NullIdleTaskRunner::~NullIdleTaskRunner() {

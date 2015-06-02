@@ -78,17 +78,37 @@ void RepostingIdleTestTask(SingleThreadIdleTaskRunner* idle_task_runner,
   (*run_count)++;
 }
 
+void RepostingUpdateClockIdleTestTask(
+    SingleThreadIdleTaskRunner* idle_task_runner,
+    int* run_count,
+    scoped_refptr<cc::TestNowSource> clock,
+    base::TimeDelta advance_time,
+    std::vector<base::TimeTicks>* deadlines,
+    base::TimeTicks deadline) {
+  if ((*run_count + 1) < max_idle_task_reposts) {
+    idle_task_runner->PostIdleTask(
+        FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
+                              base::Unretained(idle_task_runner), run_count,
+                              clock, advance_time, deadlines));
+  }
+  deadlines->push_back(deadline);
+  (*run_count)++;
+  clock->AdvanceNow(advance_time);
+}
+
+void WillBeginFrameIdleTask(RendererScheduler* scheduler,
+                            scoped_refptr<cc::TestNowSource> clock,
+                            base::TimeTicks deadline) {
+  scheduler->WillBeginFrame(cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
+}
+
 void UpdateClockToDeadlineIdleTestTask(
     cc::TestNowSource* clock,
-    base::SingleThreadTaskRunner* task_runner,
     int* run_count,
     base::TimeTicks deadline) {
   clock->SetNow(deadline);
-  // Due to the way in which OrderedSimpleTestRunner orders tasks and the fact
-  // that we updated the time within a task, the delayed pending task to call
-  // EndIdlePeriod will not happen until after a TaskQueueManager DoWork, so
-  // post a normal task here to ensure it runs before the next idle task.
-  task_runner->PostTask(FROM_HERE, base::Bind(NullTask));
   (*run_count)++;
 }
 
@@ -386,11 +406,11 @@ TEST_F(RendererSchedulerImplTest, TestIdleTaskExceedsDeadline) {
 
   // Post two UpdateClockToDeadlineIdleTestTask tasks.
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&UpdateClockToDeadlineIdleTestTask, clock_,
-                            default_task_runner_, &run_count));
+      FROM_HERE,
+      base::Bind(&UpdateClockToDeadlineIdleTestTask, clock_, &run_count));
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&UpdateClockToDeadlineIdleTestTask, clock_,
-                            default_task_runner_, &run_count));
+      FROM_HERE,
+      base::Bind(&UpdateClockToDeadlineIdleTestTask, clock_, &run_count));
 
   EnableIdleTasks();
   RunUntilIdle();
@@ -1210,31 +1230,40 @@ TEST_F(RendererSchedulerImplTest,
 }
 
 TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
+  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+  std::vector<base::TimeTicks> actual_deadlines;
   int run_count = 0;
 
   max_idle_task_reposts = 3;
+  base::TimeTicks clock_before(clock_->Now());
+  base::TimeDelta idle_task_runtime(base::TimeDelta::FromMilliseconds(10));
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
-      base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
-
+      base::Bind(&RepostingUpdateClockIdleTestTask, idle_task_runner_,
+                 &run_count, clock_, idle_task_runtime, &actual_deadlines));
   scheduler_->BeginFrameNotExpectedSoon();
   RunUntilIdle();
-  EXPECT_EQ(1, run_count);  // Should only run once per idle period.
+  EXPECT_EQ(3, run_count);
+  EXPECT_THAT(
+      actual_deadlines,
+      testing::ElementsAre(
+          clock_before + maximum_idle_period_duration(),
+          clock_before + idle_task_runtime + maximum_idle_period_duration(),
+          clock_before + (2 * idle_task_runtime) +
+              maximum_idle_period_duration()));
 
-  // Advance time to start of next long idle period and check task reposted task
-  // gets run.
-  clock_->AdvanceNow(maximum_idle_period_duration());
+  // Check that idle tasks don't run after the idle period ends with a
+  // new BeginMainFrame.
+  max_idle_task_reposts = 5;
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&RepostingUpdateClockIdleTestTask, idle_task_runner_,
+                 &run_count, clock_, idle_task_runtime, &actual_deadlines));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&WillBeginFrameIdleTask,
+                            base::Unretained(scheduler_.get()), clock_));
   RunUntilIdle();
-  EXPECT_EQ(2, run_count);
-
-  // Advance time to start of next long idle period then end idle period with a
-  // new BeginMainFrame and check idle task doesn't run.
-  clock_->AdvanceNow(maximum_idle_period_duration());
-  scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
-      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
-  RunUntilIdle();
-  EXPECT_EQ(2, run_count);
+  EXPECT_EQ(4, run_count);
 }
 
 TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodDoesNotWakeScheduler) {
@@ -1355,6 +1384,7 @@ TEST_F(RendererSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
 TEST_F(RendererSchedulerImplTest, TestRendererHiddenIdlePeriod) {
   int run_count = 0;
 
+  max_idle_task_reposts = 2;
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
       base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
@@ -1363,19 +1393,19 @@ TEST_F(RendererSchedulerImplTest, TestRendererHiddenIdlePeriod) {
   RunUntilIdle();
   EXPECT_EQ(0, run_count);
 
-  // When we hide the renderer it should start an idle period.
+  // When we hide the renderer it should start a max deadline idle period, which
+  // will run an idle task and then immediately start a new idle period, which
+  // runs the second idle task.
   scheduler_->OnRendererHidden();
-  RunUntilIdle();
-  EXPECT_EQ(1, run_count);
-
-  // Advance time to start of next long idle period and check task reposted task
-  // gets run.
-  clock_->AdvanceNow(maximum_idle_period_duration());
   RunUntilIdle();
   EXPECT_EQ(2, run_count);
 
   // Advance time by amount of time by the maximum amount of time we execute
   // idle tasks when hidden (plus some slack) - idle period should have ended.
+  max_idle_task_reposts = 3;
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
   clock_->AdvanceNow(end_idle_when_hidden_delay() +
                      base::TimeDelta::FromMilliseconds(10));
   RunUntilIdle();

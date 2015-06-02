@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {
 
@@ -22,12 +23,34 @@ class SingleThreadIdleTaskRunner
  public:
   typedef base::Callback<void(base::TimeTicks)> IdleTask;
 
+  // Used to request idle task deadlines and signal posting of idle tasks.
+  class SCHEDULER_EXPORT Delegate {
+   public:
+    Delegate();
+    virtual ~Delegate();
+
+    // Signals that an idle task has been posted. This will be called on the
+    // posting thread, which may not be the same thread as the
+    // SingleThreadIdleTaskRunner runs on.
+    virtual void OnIdleTaskPosted() = 0;
+
+    // Signals that a new idle task is about to be run and returns the deadline
+    // for this idle task.
+    virtual base::TimeTicks WillProcessIdleTask() = 0;
+
+    // Signals that an idle task has finished being run.
+    virtual void DidProcessIdleTask() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
   // NOTE Category strings must have application lifetime (statics or
   // literals). They may not include " chars.
   SingleThreadIdleTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> after_wakeup_task_runner,
-      base::Callback<void(base::TimeTicks*)> deadline_supplier,
+      Delegate* Delegate,
       const char* tracing_category);
 
   virtual void PostIdleTask(const tracked_objects::Location& from_here,
@@ -53,7 +76,7 @@ class SingleThreadIdleTaskRunner
 
   scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> after_wakeup_task_runner_;
-  base::Callback<void(base::TimeTicks*)> deadline_supplier_;
+  Delegate* delegate_;  // NOT OWNED
   const char* tracing_category_;
   base::WeakPtr<SingleThreadIdleTaskRunner> weak_scheduler_ptr_;
   base::WeakPtrFactory<SingleThreadIdleTaskRunner> weak_factory_;

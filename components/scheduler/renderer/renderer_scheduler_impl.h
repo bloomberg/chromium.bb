@@ -8,6 +8,7 @@
 #include "base/atomicops.h"
 #include "base/synchronization/lock.h"
 #include "components/scheduler/child/idle_helper.h"
+#include "components/scheduler/child/pollable_thread_safe_flag.h"
 #include "components/scheduler/child/scheduler_helper.h"
 #include "components/scheduler/renderer/deadline_task_runner.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
@@ -89,24 +90,6 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
     // Must be the last entry.
     INPUT_STREAM_STATE_COUNT,
     FIRST_INPUT_STREAM_STATE = INACTIVE,
-  };
-
-  class PollableNeedsUpdateFlag {
-   public:
-    PollableNeedsUpdateFlag(base::Lock* write_lock);
-    ~PollableNeedsUpdateFlag();
-
-    // Set the flag. May only be called if |write_lock| is held.
-    void SetWhileLocked(bool value);
-
-    // Returns true iff the flag is set to true.
-    bool IsSet() const;
-
-   private:
-    base::subtle::Atomic32 flag_;
-    base::Lock* write_lock_;  // Not owned.
-
-    DISALLOW_COPY_AND_ASSIGN(PollableNeedsUpdateFlag);
   };
 
   // IdleHelper::Delegate implementation:
@@ -213,7 +196,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   base::TimeTicks last_input_process_time_on_main_;
   blink::WebInputEvent::Type last_input_type_;
   InputStreamState input_stream_state_;
-  PollableNeedsUpdateFlag policy_may_need_update_;
+  PollableThreadSafeFlag policy_may_need_update_;
   int timer_queue_suspend_count_;  // TIMER_TASK_QUEUE suspended if non-zero.
 
   base::WeakPtrFactory<RendererSchedulerImpl> weak_factory_;

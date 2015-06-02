@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SCHEDULER_CHILD_IDLE_HELPER_H_
 #define COMPONENTS_SCHEDULER_CHILD_IDLE_HELPER_H_
 
+#include "base/message_loop/message_loop.h"
 #include "components/scheduler/child/cancelable_closure_holder.h"
 #include "components/scheduler/child/prioritizing_task_queue_selector.h"
 #include "components/scheduler/child/single_thread_idle_task_runner.h"
@@ -15,7 +16,9 @@ namespace scheduler {
 class SchedulerHelper;
 
 // Common scheduler functionality for Idle tasks.
-class SCHEDULER_EXPORT IdleHelper {
+class SCHEDULER_EXPORT IdleHelper
+    : public base::MessageLoop::TaskObserver,
+      public SingleThreadIdleTaskRunner::Delegate {
  public:
   // Used to by scheduler implementations to customize idle behaviour.
   class SCHEDULER_EXPORT Delegate {
@@ -44,7 +47,7 @@ class SCHEDULER_EXPORT IdleHelper {
     IN_SHORT_IDLE_PERIOD,
     IN_LONG_IDLE_PERIOD,
     IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE,
-    ENDING_LONG_IDLE_PERIOD,
+    IN_LONG_IDLE_PERIOD_PAUSED,
     // Must be the last entry.
     IDLE_PERIOD_STATE_COUNT,
     FIRST_IDLE_PERIOD_STATE = NOT_IN_IDLE_PERIOD,
@@ -63,7 +66,7 @@ class SCHEDULER_EXPORT IdleHelper {
       const char* disabled_by_default_tracing_category,
       const char* idle_period_tracing_name,
       base::TimeDelta required_quiescence_duration_before_long_idle_period);
-  ~IdleHelper();
+  ~IdleHelper() override;
 
   // Returns the idle task runner. Tasks posted to this runner may be reordered
   // relative to other task types and may be starved for an arbitrarily long
@@ -80,12 +83,10 @@ class SCHEDULER_EXPORT IdleHelper {
   // NOTE EndIdlePeriod will disable the long idle periods.
   void EnableLongIdlePeriod();
 
-  // Start and end an idle period. If |post_end_idle_period| is true, it will
-  // post a delayed EndIdlePeriod scheduled to occur at |idle_period_deadline|.
+  // Start an idle period with a given idle period deadline.
   void StartIdlePeriod(IdlePeriodState new_idle_period_state,
                        base::TimeTicks now,
-                       base::TimeTicks idle_period_deadline,
-                       bool post_end_idle_period);
+                       base::TimeTicks idle_period_deadline);
 
   // This will end an idle period either started with StartIdlePeriod or
   // EnableLongIdlePeriod.
@@ -101,15 +102,62 @@ class SCHEDULER_EXPORT IdleHelper {
   // Must be called from the thread this class was created on.
   bool CanExceedIdleDeadlineIfRequired() const;
 
+  // Returns the deadline for the current idle task.
+  base::TimeTicks CurrentIdleTaskDeadline() const;
+
+  // SingleThreadIdleTaskRunner::Delegate implementation:
+  void OnIdleTaskPosted() override;
+  base::TimeTicks WillProcessIdleTask() override;
+  void DidProcessIdleTask() override;
+
+  // base::MessageLoop::TaskObserver implementation:
+  void WillProcessTask(const base::PendingTask& pending_task) override;
+  void DidProcessTask(const base::PendingTask& pending_task) override;
+
   IdlePeriodState SchedulerIdlePeriodState() const;
-
-  // IdleTaskDeadlineSupplier Implementation:
-  void CurrentIdleTaskDeadlineCallback(base::TimeTicks* deadline_out) const;
-
   static const char* IdlePeriodStateToString(IdlePeriodState state);
 
  private:
+  friend class BaseIdleHelperTest;
   friend class IdleHelperTest;
+
+  class State {
+   public:
+    State(SchedulerHelper* helper,
+          const char* tracing_category,
+          const char* disabled_by_default_tracing_category,
+          const char* idle_period_tracing_name);
+    virtual ~State();
+
+    void UpdateState(IdlePeriodState new_state,
+                     base::TimeTicks new_deadline,
+                     base::TimeTicks optional_now);
+    bool IsIdlePeriodPaused() const;
+
+    IdlePeriodState idle_period_state() const;
+    base::TimeTicks idle_period_deadline() const;
+
+    void TraceIdleIdleTaskStart();
+    void TraceIdleIdleTaskEnd();
+    void TraceEventIdlePeriodStateChange(IdlePeriodState new_state,
+                                         base::TimeTicks new_deadline,
+                                         base::TimeTicks optional_now);
+
+   private:
+    SchedulerHelper* helper_;  // NOT OWNED
+
+    IdlePeriodState idle_period_state_;
+    base::TimeTicks idle_period_deadline_;
+
+    base::TraceTicks idle_period_deadline_for_tracing_;
+    base::TraceTicks last_idle_task_trace_time_;
+    bool nestable_events_started_;
+    const char* tracing_category_;
+    const char* disabled_by_default_tracing_category_;
+    const char* idle_period_tracing_name_;
+
+    DISALLOW_COPY_AND_ASSIGN(State);
+  };
 
   // The minimum delay to wait between retrying to initiate a long idle time.
   static const int kRetryEnableLongIdlePeriodDelayMillis = 1;
@@ -122,32 +170,34 @@ class SCHEDULER_EXPORT IdleHelper {
       base::TimeDelta* next_long_idle_period_delay_out);
 
   bool ShouldWaitForQuiescence();
-  void EnableLongIdlePeriodAfterWakeup();
+  void OnIdleTaskPostedOnMainThread();
+  void UpdateLongIdlePeriodStateAfterIdleTask();
+
+  void SetIdlePeriodState(IdlePeriodState new_state,
+                          base::TimeTicks new_deadline,
+                          base::TimeTicks optional_now);
 
   // Returns true if |state| represents being within an idle period state.
   static bool IsInIdlePeriod(IdlePeriodState state);
+  // Returns true if |state| represents being within a long idle period state.
+  static bool IsInLongIdlePeriod(IdlePeriodState state);
 
   SchedulerHelper* helper_;  // NOT OWNED
   Delegate* delegate_;       // NOT OWNED
   size_t idle_queue_index_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
 
-  CancelableClosureHolder end_idle_period_closure_;
   CancelableClosureHolder enable_next_long_idle_period_closure_;
-  CancelableClosureHolder enable_next_long_idle_period_after_wakeup_closure_;
+  CancelableClosureHolder on_idle_task_posted_closure_;
 
-  IdlePeriodState idle_period_state_;
+  State state_;
 
   // A bitmap which controls the set of queues that are checked for quiescence
   // before triggering a long idle period.
   uint64 quiescence_monitored_task_queue_mask_;
   base::TimeDelta required_quiescence_duration_before_long_idle_period_;
 
-  base::TimeTicks idle_period_deadline_;
-
-  const char* tracing_category_;
   const char* disabled_by_default_tracing_category_;
-  const char* idle_period_tracing_name_;
 
   base::WeakPtr<IdleHelper> weak_idle_helper_ptr_;
   base::WeakPtrFactory<IdleHelper> weak_factory_;

@@ -89,9 +89,7 @@ bool WorkerSchedulerImpl::CanEnterLongIdlePeriod(base::TimeTicks,
 }
 
 base::TimeTicks WorkerSchedulerImpl::CurrentIdleTaskDeadlineForTesting() const {
-  base::TimeTicks deadline;
-  idle_helper_.CurrentIdleTaskDeadlineCallback(&deadline);
-  return deadline;
+  return idle_helper_.CurrentIdleTaskDeadline();
 }
 
 }  // namespace scheduler

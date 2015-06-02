@@ -19,6 +19,8 @@
       'child/null_idle_task_runner.h',
       'child/null_worker_scheduler.cc',
       'child/null_worker_scheduler.h',
+      'child/pollable_thread_safe_flag.cc',
+      'child/pollable_thread_safe_flag.h',
       'child/prioritizing_task_queue_selector.cc',
       'child/prioritizing_task_queue_selector.h',
       'child/scheduler_helper.cc',
