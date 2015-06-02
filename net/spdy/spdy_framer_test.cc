@@ -3602,12 +3602,14 @@ TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
   EXPECT_LT(kBigValueSize, visitor.header_buffer_length_);
 }
 
-// This test is disabled because Chromium is willing to accept control frames up
-// to the maximum size allowed by the specification, and SpdyFrameBuilder is not
-// capable of building larger frames.
-TEST_P(SpdyFramerTest, DISABLED_ControlFrameTooLarge) {
+TEST_P(SpdyFramerTest, ControlFrameMaximumSize) {
   if (spdy_version_ > SPDY3) {
     // TODO(jgraettinger): This test setup doesn't work with HPACK.
+    return;
+  }
+  if (spdy_version_ < SPDY3) {
+    // Since SPDY/2 uses 16 bit header field lengths, one cannot easily create a
+    // header frame of maximum size.
     return;
   }
   // First find the size of the header value in order to just reach the control
@@ -3619,8 +3621,7 @@ TEST_P(SpdyFramerTest, DISABLED_ControlFrameTooLarge) {
   syn_stream.set_priority(1);
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeSynStream(syn_stream));
   const size_t kBigValueSize =
-      SpdyConstants::GetFrameMaximumSize(spdy_version_) -
-      control_frame->size() + 1;
+      SpdyConstants::GetFrameMaximumSize(spdy_version_) - control_frame->size();
 
   // Create a frame at exatly that size.
   string big_value(kBigValueSize, 'x');
@@ -3631,20 +3632,16 @@ TEST_P(SpdyFramerTest, DISABLED_ControlFrameTooLarge) {
   control_frame.reset(framer.SerializeSynStream(syn_stream));
 
   EXPECT_TRUE(control_frame.get() != NULL);
-  EXPECT_EQ(SpdyConstants::GetFrameMaximumSize(spdy_version_) + 1,
+  EXPECT_EQ(SpdyConstants::GetFrameMaximumSize(spdy_version_),
             control_frame->size());
 
   TestSpdyVisitor visitor(spdy_version_);
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
       control_frame->size());
-  EXPECT_FALSE(visitor.header_buffer_valid_);
-  EXPECT_EQ(1, visitor.error_count_);
-  EXPECT_EQ(SpdyFramer::SPDY_CONTROL_PAYLOAD_TOO_LARGE,
-            visitor.framer_.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
-  EXPECT_EQ(0, visitor.syn_frame_count_);
-  EXPECT_EQ(0u, visitor.header_buffer_length_);
+  EXPECT_TRUE(visitor.header_buffer_valid_);
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(1, visitor.syn_frame_count_);
 }
 
 TEST_P(SpdyFramerTest, TooLargeHeadersFrameUsesContinuation) {
