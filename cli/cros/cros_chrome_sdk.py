@@ -91,8 +91,8 @@ class SDKFetcher(object):
         are available.
     """
     # Delay this import because it is super slow.  http://crbug.com/404575
-    from chromite.cbuildbot import cbuildbot_config
-    all_configs = cbuildbot_config.GetConfig()
+    from chromite.cbuildbot import chromeos_config
+    all_configs = chromeos_config.GetConfig()
 
 
     self.cache_base = os.path.join(cache_dir, COMMAND_NAME)
