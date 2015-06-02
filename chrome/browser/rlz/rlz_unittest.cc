@@ -271,6 +271,10 @@ void RlzLibTest::SimulateHomepageUsage() {
   content::RenderFrameHostTester* rfht =
       content::RenderFrameHostTester::For(main_rfh());
 
+  // Ensure the RenderFrame is initialized before simulating events coming from
+  // it.
+  rfht->InitializeRenderFrameIfNeeded();
+
   // Simulate a navigation to homepage first.
   rfht->SendNavigateWithTransition(
       0, 0, true, home_url, ui::PAGE_TRANSITION_HOME_PAGE);

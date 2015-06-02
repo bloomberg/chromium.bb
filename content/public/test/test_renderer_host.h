@@ -66,6 +66,11 @@ class RenderFrameHostTester {
 
   virtual ~RenderFrameHostTester() {}
 
+  // Simulates initialization of the RenderFrame object in the renderer process
+  // and ensures internal state of RenderFrameHost is ready for simulating
+  // RenderFrame originated IPCs.
+  virtual void InitializeRenderFrameIfNeeded() = 0;
+
   // Gives tests access to RenderFrameHostImpl::OnCreateChild. The returned
   // RenderFrameHost is owned by the parent RenderFrameHost.
   virtual RenderFrameHost* AppendChild(const std::string& frame_name) = 0;

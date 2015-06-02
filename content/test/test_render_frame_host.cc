@@ -56,12 +56,9 @@ TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
       child_creation_observer_(delegate ? delegate->GetAsWebContents() : NULL),
       contents_mime_type_("text/html"),
       simulate_history_list_was_cleared_(false) {
-  if (frame_tree_node_->IsMainFrame())
-    SetRenderFrameCreated(true);
 }
 
 TestRenderFrameHost::~TestRenderFrameHost() {
-  SetRenderFrameCreated(false);
 }
 
 TestRenderViewHost* TestRenderFrameHost::GetRenderViewHost() {
@@ -71,6 +68,13 @@ TestRenderViewHost* TestRenderFrameHost::GetRenderViewHost() {
 
 MockRenderProcessHost* TestRenderFrameHost::GetProcess() {
   return static_cast<MockRenderProcessHost*>(RenderFrameHostImpl::GetProcess());
+}
+
+void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
+  if (!render_view_host()->IsRenderViewLive()) {
+    RenderViewHostTester::For(render_view_host())->CreateRenderView(
+        base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, -1, false);
+  }
 }
 
 TestRenderFrameHost* TestRenderFrameHost::AppendChild(
@@ -132,11 +136,6 @@ void TestRenderFrameHost::SendNavigateWithTransitionAndResponseCode(
   // DidStartProvisionalLoad may delete the pending entry that holds |url|,
   // so we keep a copy of it to use in SendNavigateWithParameters.
   GURL url_copy(url);
-
-  // Ensure that the RenderFrameCreated notification has been sent to observers
-  // before navigating the frame.
-  SetRenderFrameCreated(true);
-
   OnDidStartProvisionalLoadForFrame(url_copy);
   SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry,
                              url_copy, transition, url_copy, response_code, 0,
@@ -149,10 +148,6 @@ void TestRenderFrameHost::SendNavigateWithOriginalRequestURL(
     bool did_create_new_entry,
     const GURL& url,
     const GURL& original_request_url) {
-  // Ensure that the RenderFrameCreated notification has been sent to observers
-  // before navigating the frame.
-  SetRenderFrameCreated(true);
-
   OnDidStartProvisionalLoadForFrame(url);
   SendNavigateWithParameters(page_id, nav_entry_id, did_create_new_entry, url,
                              ui::PAGE_TRANSITION_LINK, original_request_url,
@@ -246,6 +241,10 @@ void TestRenderFrameHost::NavigateAndCommitRendererInitiated(
 void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
     const GURL& url,
     bool has_user_gesture) {
+  // Since this is renderer-initiated navigation, the RenderFrame must be
+  // initialized. Do it if it hasn't happened yet.
+  InitializeRenderFrameIfNeeded();
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
     BeginNavigationParams begin_params("GET", std::string(), net::LOAD_NORMAL,

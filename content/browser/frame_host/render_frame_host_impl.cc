@@ -650,12 +650,13 @@ bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id,
 }
 
 bool RenderFrameHostImpl::IsRenderFrameLive() {
-  // RenderFrames are created for main frames at the same time as RenderViews,
-  // so we rely on IsRenderViewLive.  For subframes, we keep track of each
-  // RenderFrame individually with render_frame_created_.
-  bool is_live = !GetParent() ?
-      render_view_host_->IsRenderViewLive() :
-      GetProcess()->HasConnection() && render_frame_created_;
+  bool is_live = GetProcess()->HasConnection() && render_frame_created_;
+
+  // If the process is for an isolated guest (e.g. <webview>), rely on the
+  // RenderViewHost liveness check. Once https://crbug.com/492830 is fixed,
+  // this can be removed.
+  if (GetProcess()->IsIsolatedGuest())
+    is_live = render_view_host_->IsRenderViewLive();
 
   // Sanity check: the RenderView should always be live if the RenderFrame is.
   DCHECK(!is_live || render_view_host_->IsRenderViewLive());

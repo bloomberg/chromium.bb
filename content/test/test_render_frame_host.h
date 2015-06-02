@@ -51,6 +51,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   MockRenderProcessHost* GetProcess() override;
 
   // RenderFrameHostTester implementation.
+  void InitializeRenderFrameIfNeeded() override;
   TestRenderFrameHost* AppendChild(const std::string& frame_name) override;
   void SendNavigate(int page_id,
                     int nav_entry_id,
