@@ -748,7 +748,7 @@ class AutofillDialogControllerImpl
   // The IDs for the currently showing unverified profiles popup. This will
   // be the first section in the list. The rest of the items will be the
   // i18n_validator_suggestions_.
-  std::vector<autofill::SuggestionBackendID> popup_suggestion_ids_;
+  std::vector<std::string> popup_suggestion_ids_;
 
   // The autofill suggestions based on downloaded i18n validation rules.
   std::vector< ::i18n::addressinput::AddressData> i18n_validator_suggestions_;

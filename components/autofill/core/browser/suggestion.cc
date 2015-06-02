@@ -10,24 +10,6 @@
 
 namespace autofill {
 
-SuggestionBackendID::SuggestionBackendID()
-    : variant(0) {
-}
-
-SuggestionBackendID::SuggestionBackendID(const std::string& g, size_t v)
-    : guid(g),
-      variant(v) {
-}
-
-SuggestionBackendID::~SuggestionBackendID() {
-}
-
-bool SuggestionBackendID::operator<(const SuggestionBackendID& other) const {
-  if (variant != other.variant)
-    return variant < other.variant;
-  return guid < other.guid;
-}
-
 Suggestion::Suggestion()
     : frontend_id(0) {
 }

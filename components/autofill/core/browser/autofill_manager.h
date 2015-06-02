@@ -215,19 +215,19 @@ class AutofillManager : public AutofillDownloadManager::Observer,
       const base::TimeTicks& interaction_time,
       const base::TimeTicks& submission_time);
 
-  // Maps SuggestionBackendID to and from an integer identifying it. Two of
+  // Maps suggestion backend ID to and from an integer identifying it. Two of
   // these intermediate integers are packed by MakeFrontendID to make the IDs
   // that this class generates for the UI and for IPC.
-  virtual int BackendIDToInt(const SuggestionBackendID& backend_id) const;
-  virtual SuggestionBackendID IntToBackendID(int int_id) const;
+  virtual int BackendIDToInt(const std::string& backend_id) const;
+  virtual std::string IntToBackendID(int int_id) const;
 
   // Methods for packing and unpacking credit card and profile IDs for sending
   // and receiving to and from the renderer process.
-  int MakeFrontendID(const SuggestionBackendID& cc_backend_id,
-                     const SuggestionBackendID& profile_backend_id) const;
+  int MakeFrontendID(const std::string& cc_backend_id,
+                     const std::string& profile_backend_id) const;
   void SplitFrontendID(int frontend_id,
-                       SuggestionBackendID* cc_backend_id,
-                       SuggestionBackendID* profile_backend_id) const;
+                       std::string* cc_backend_id,
+                       std::string* profile_backend_id) const;
 
   ScopedVector<FormStructure>* form_structures() { return &form_structures_; }
 
@@ -256,14 +256,12 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // it refers to a profile.
   bool IsCreditCard(int unique_id);
 
-  // Gets the profile referred by |unique_id| and populates |variant|
-  // based on it. Returns true if the profile exists.
-  bool GetProfile(int unique_id,
-                  const AutofillProfile** profile,
-                  size_t* variant);
+  // Gets the profile referred by |unique_id|. Returns true if the profile
+  // exists.
+  bool GetProfile(int unique_id, const AutofillProfile** profile);
 
-  // Gets the credit card referred by |unique_id| and populates |variant|
-  // based on it. Returns true if the credit card exists.
+  // Gets the credit card referred by |unique_id|. Returns true if the credit
+  // card exists.
   bool GetCreditCard(int unique_id, const CreditCard** credit_card);
 
   // Determines whether a fill on |form| initiated from |field| will wind up
@@ -279,18 +277,15 @@ class AutofillManager : public AutofillDownloadManager::Observer,
       int query_id,
       const FormData& form,
       const FormFieldData& field,
-      const CreditCard& credit_card,
-      size_t variant);
+      const CreditCard& credit_card);
 
   // Fills or previews the profile form.
   // Assumes the form and field are valid.
-  void FillOrPreviewProfileForm(
-      AutofillDriver::RendererFormDataAction action,
-      int query_id,
-      const FormData& form,
-      const FormFieldData& field,
-      const AutofillProfile& profile,
-      size_t variant);
+  void FillOrPreviewProfileForm(AutofillDriver::RendererFormDataAction action,
+                                int query_id,
+                                const FormData& form,
+                                const FormFieldData& field,
+                                const AutofillProfile& profile);
 
   // Fills or previews |data_model| in the |form|.
   void FillOrPreviewDataModelForm(AutofillDriver::RendererFormDataAction action,
@@ -298,7 +293,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                                   const FormData& form,
                                   const FormFieldData& field,
                                   const AutofillDataModel& data_model,
-                                  size_t variant,
                                   bool is_credit_card);
 
   // Creates a FormStructure using the FormData received from the renderer. Will
@@ -436,11 +430,11 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // save the card (in the prompt and in the infobar after submit).
   std::vector<CreditCard> recently_unmasked_cards_;
 
-  // SuggestionBackendID to ID mapping. We keep two maps to convert back and
+  // Suggestion backend ID to ID mapping. We keep two maps to convert back and
   // forth. These should be used only by BackendIDToInt and IntToBackendID.
   // Note that the integers are not frontend IDs.
-  mutable std::map<SuggestionBackendID, int> backend_to_int_map_;
-  mutable std::map<int, SuggestionBackendID> int_to_backend_map_;
+  mutable std::map<std::string, int> backend_to_int_map_;
+  mutable std::map<int, std::string> int_to_backend_map_;
 
   // Delegate to perform external processing (display, selection) on
   // our behalf.  Weak.

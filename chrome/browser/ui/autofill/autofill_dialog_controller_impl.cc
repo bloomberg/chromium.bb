@@ -2116,7 +2116,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
     // Filter out ones we don't want.
     for (int i = 0; i < static_cast<int>(popup_suggestions.size()); i++) {
       const autofill::AutofillProfile* profile =
-          GetManager()->GetProfileByGUID(popup_suggestions[i].backend_id.guid);
+          GetManager()->GetProfileByGUID(popup_suggestions[i].backend_id);
       if (!profile || !ShouldSuggestProfile(section, *profile)) {
         popup_suggestions.erase(popup_suggestions.begin() + i);
         i--;
@@ -2390,13 +2390,13 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
   scoped_ptr<DataModelWrapper> wrapper;
 
   if (static_cast<size_t>(identifier) < popup_suggestion_ids_.size()) {
-    const SuggestionBackendID& sid = popup_suggestion_ids_[identifier];
+    const std::string& guid = popup_suggestion_ids_[identifier];
     if (IsCreditCardType(popup_input_type)) {
       wrapper.reset(new AutofillCreditCardWrapper(
-          GetManager()->GetCreditCardByGUID(sid.guid)));
+          GetManager()->GetCreditCardByGUID(guid)));
     } else {
       wrapper.reset(new AutofillProfileWrapper(
-          GetManager()->GetProfileByGUID(sid.guid)));
+          GetManager()->GetProfileByGUID(guid)));
     }
   } else {
     wrapper.reset(new I18nAddressDataWrapper(
