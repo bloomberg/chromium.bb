@@ -94,6 +94,7 @@ public:
         FloatSize m_bottomRight;
     };
 
+    FloatRoundedRect() { }
     explicit FloatRoundedRect(const FloatRect&, const Radii& = Radii());
     FloatRoundedRect(float x, float y, float width, float height);
     FloatRoundedRect(const FloatRect&, const FloatSize& topLeft, const FloatSize& topRight, const FloatSize& bottomLeft, const FloatSize& bottomRight);

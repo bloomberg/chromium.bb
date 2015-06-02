@@ -6,38 +6,66 @@
 #define BoxBorderPainter_h
 
 #include "core/layout/LayoutBoxModelObject.h"
+#include "core/style/BorderEdge.h"
+#include "platform/geometry/FloatRoundedRect.h"
 #include "platform/heap/Heap.h"
 
 namespace blink {
 
 class ComputedStyle;
+class IntRect;
 class LayoutBox;
 class LayoutRect;
 struct PaintInfo;
 
-// TODO(fmalita): this class will evolve into a stateful painter (merged w/ BoxBorderInfo), with no
-// static methods.
 class BoxBorderPainter {
     STACK_ALLOCATED();
 public:
-    void paintBorder(LayoutBoxModelObject&, const PaintInfo&, const LayoutRect&, const ComputedStyle&,
-        BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const;
+    BoxBorderPainter(const LayoutRect& borderRect, const ComputedStyle&, const IntRect& clipRect,
+        BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
+
+    void paintBorder(const PaintInfo&, const LayoutRect& borderRect) const;
 
 private:
-    static void paintTranslucentBorderSides(GraphicsContext*, const ComputedStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
-        const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias = false);
-    static void paintOneBorderSide(GraphicsContext*, const ComputedStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
-        const FloatRect& sideRect, BoxSide, BoxSide adjacentSide1, BoxSide adjacentSide2, const BorderEdge[],
-        const Path*, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias, const Color* overrideColor = 0);
-    static void paintBorderSides(GraphicsContext*, const ComputedStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
-        const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance, bool includeLogicalLeftEdge,
-        bool includeLogicalRightEdge, bool antialias = false, const Color* overrideColor = 0);
-    static void drawBoxSideFromPath(GraphicsContext*, const LayoutRect&, const Path&, const BorderEdge[],
-        float thickness, float drawThickness, BoxSide, const ComputedStyle&,
-        Color, EBorderStyle, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
-    static void clipBorderSidePolygon(GraphicsContext*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
-        BoxSide, bool firstEdgeMatches, bool secondEdgeMatches);
-    static void clipBorderSideForComplexInnerPath(GraphicsContext*, const FloatRoundedRect&, const FloatRoundedRect&, BoxSide, const BorderEdge[]);
+    bool paintBorderFastPath(GraphicsContext*, const LayoutRect& borderRect) const;
+    void drawDoubleBorder(GraphicsContext*, const LayoutRect& borderRect) const;
+
+    void paintTranslucentBorderSides(GraphicsContext*, bool antialias) const;
+    void paintOneBorderSide(GraphicsContext*, const FloatRect& sideRect, BoxSide, BoxSide adjacentSide1,
+        BoxSide adjacentSide2, const Path*, bool antialias, const Color* overrideColor) const;
+    void paintBorderSides(GraphicsContext*, BorderEdgeFlags edgeSet, bool antialias,
+        const Color* overrideColor = 0) const;
+    void drawBoxSideFromPath(GraphicsContext*, const LayoutRect&, const Path&, float thickness,
+        float drawThickness, BoxSide, Color, EBorderStyle) const;
+    void clipBorderSidePolygon(GraphicsContext*, BoxSide, bool firstEdgeMatches,
+        bool secondEdgeMatches) const;
+    void clipBorderSideForComplexInnerPath(GraphicsContext*, BoxSide) const;
+
+    const BorderEdge& firstEdge() const
+    {
+        ASSERT(m_visibleEdgeSet);
+        return m_edges[m_firstVisibleEdge];
+    }
+
+    // const inputs
+    const ComputedStyle& m_style;
+    const BackgroundBleedAvoidance m_bleedAvoidance;
+    const bool m_includeLogicalLeftEdge;
+    const bool m_includeLogicalRightEdge;
+
+    // computed attributes
+    FloatRoundedRect m_outer;
+    FloatRoundedRect m_inner;
+    BorderEdge m_edges[4];
+
+    unsigned m_visibleEdgeCount;
+    unsigned m_firstVisibleEdge;
+    BorderEdgeFlags m_visibleEdgeSet;
+
+    bool m_isUniformStyle;
+    bool m_isUniformWidth;
+    bool m_isUniformColor;
+    bool m_hasAlpha;
 };
 
 } // namespace blink

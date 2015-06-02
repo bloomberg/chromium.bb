@@ -993,9 +993,17 @@ bool BoxPainter::allCornersClippedOut(const FloatRoundedRect& border, const IntR
     return true;
 }
 
-void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, const LayoutRect& rect, const ComputedStyle& style, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
+void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info,
+    const LayoutRect& rect, const ComputedStyle& style, BackgroundBleedAvoidance bleedAvoidance,
+    bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
-    BoxBorderPainter().paintBorder(obj, info, rect, style, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge);
+    // border-image is not affected by border-radius.
+    if (paintNinePieceImage(obj, info.context, rect, style, style.borderImage()))
+        return;
+
+    const BoxBorderPainter borderPainter(rect, style, info.rect, bleedAvoidance,
+        includeLogicalLeftEdge, includeLogicalRightEdge);
+    borderPainter.paintBorder(info, rect);
 }
 
 void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRect, const ComputedStyle& style, ShadowStyle shadowStyle, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
