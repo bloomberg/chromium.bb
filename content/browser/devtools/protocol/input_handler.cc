@@ -150,6 +150,7 @@ Response InputHandler::DispatchKeyEvent(
     const std::string* unmodified_text,
     const std::string* key_identifier,
     const std::string* code,
+    const std::string* key,
     const int* windows_virtual_key_code,
     const int* native_virtual_key_code,
     const bool* auto_repeat,
@@ -204,12 +205,37 @@ Response InputHandler::DispatchKeyEvent(
         ui::KeycodeConverter::CodeStringToDomCode(code->c_str()));
   }
 
+  if (key) {
+    event.domKey = static_cast<int>(
+        ui::KeycodeConverter::KeyStringToDomKey(key->c_str()));
+  }
+
   if (!host_)
     return Response::ServerError("Could not connect to view");
 
   host_->Focus();
   host_->ForwardKeyboardEvent(event);
   return Response::OK();
+}
+
+Response InputHandler::DispatchKeyEvent(
+    const std::string& type,
+    const int* modifiers,
+    const double* timestamp,
+    const std::string* text,
+    const std::string* unmodified_text,
+    const std::string* key_identifier,
+    const std::string* code,
+    const int* windows_virtual_key_code,
+    const int* native_virtual_key_code,
+    const bool* auto_repeat,
+    const bool* is_keypad,
+    const bool* is_system_key) {
+  std::string dom_key;
+  return InputHandler::DispatchKeyEvent(type, modifiers, timestamp, text,
+      unmodified_text, key_identifier, code, &dom_key,
+      windows_virtual_key_code, native_virtual_key_code, auto_repeat,
+      is_keypad, is_system_key);
 }
 
 Response InputHandler::DispatchMouseEvent(
