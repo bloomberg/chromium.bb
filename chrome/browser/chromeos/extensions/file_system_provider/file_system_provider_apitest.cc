@@ -2,9 +2,116 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/file_system_provider/notification_manager_interface.h"
+#include "chrome/browser/chromeos/file_system_provider/observer.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
+#include "chrome/browser/chromeos/file_system_provider/request_manager.h"
+#include "chrome/browser/chromeos/file_system_provider/request_value.h"
+#include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/message_center/message_center.h"
 
 namespace extensions {
+namespace {
+
+using chromeos::file_system_provider::MountContext;
+using chromeos::file_system_provider::NotificationManagerInterface;
+using chromeos::file_system_provider::Observer;
+using chromeos::file_system_provider::ProvidedFileSystemInterface;
+using chromeos::file_system_provider::ProvidedFileSystemInfo;
+using chromeos::file_system_provider::RequestManager;
+using chromeos::file_system_provider::RequestType;
+using chromeos::file_system_provider::RequestValue;
+using chromeos::file_system_provider::Service;
+
+// Clicks the default button on the notification as soon as request timeouts
+// and a unresponsiveness notification is shown.
+class NotificationButtonClicker : public RequestManager::Observer {
+ public:
+  explicit NotificationButtonClicker(
+      const ProvidedFileSystemInfo& file_system_info)
+      : file_system_info_(file_system_info) {}
+  ~NotificationButtonClicker() override {}
+
+  // RequestManager::Observer overrides.
+  void OnRequestCreated(int request_id, RequestType type) override {}
+  void OnRequestDestroyed(int request_id) override {}
+  void OnRequestExecuted(int request_id) override {}
+  void OnRequestFulfilled(int request_id,
+                          const RequestValue& result,
+                          bool has_more) override {}
+  void OnRequestRejected(int request_id,
+                         const RequestValue& result,
+                         base::File::Error error) override {}
+  void OnRequestTimeouted(int request_id) override {
+    // Call asynchronously so the notification is setup is completed.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&NotificationButtonClicker::ClickButton,
+                              base::Unretained(this)));
+  }
+
+ private:
+  void ClickButton() {
+    g_browser_process->message_center()->ClickOnNotificationButton(
+        file_system_info_.mount_path().value(), ui::DIALOG_BUTTON_OK);
+  }
+
+  ProvidedFileSystemInfo file_system_info_;
+  DISALLOW_COPY_AND_ASSIGN(NotificationButtonClicker);
+};
+
+// Simulates clicking on the unresponsive notification's abort button. Also,
+// sets the timeout delay to 0 ms, so the notification is shown faster.
+class AbortOnUnresponsivePerformer : public Observer {
+ public:
+  explicit AbortOnUnresponsivePerformer(Profile* profile)
+      : service_(Service::Get(profile)) {
+    DCHECK(profile);
+    DCHECK(service_);
+    service_->AddObserver(this);
+  }
+
+  ~AbortOnUnresponsivePerformer() override { service_->RemoveObserver(this); }
+
+  // Observer overrides.
+  void OnProvidedFileSystemMount(const ProvidedFileSystemInfo& file_system_info,
+                                 MountContext context,
+                                 base::File::Error error) override {
+    if (error != base::File::FILE_OK)
+      return;
+
+    ProvidedFileSystemInterface* const file_system =
+        service_->GetProvidedFileSystem(file_system_info.extension_id(),
+                                        file_system_info.file_system_id());
+    DCHECK(file_system);
+    file_system->GetRequestManager()->SetTimeoutForTesting(base::TimeDelta());
+
+    scoped_ptr<NotificationButtonClicker> clicker(
+        new NotificationButtonClicker(file_system->GetFileSystemInfo()));
+
+    file_system->GetRequestManager()->AddObserver(clicker.get());
+    clickers_.push_back(clicker.Pass());
+  }
+
+  void OnProvidedFileSystemUnmount(
+      const ProvidedFileSystemInfo& file_system_info,
+      base::File::Error error) override {}
+
+ private:
+  Service* service_;  // Not owned.
+  ScopedVector<NotificationButtonClicker> clickers_;
+  DISALLOW_COPY_AND_ASSIGN(AbortOnUnresponsivePerformer);
+};
+
+}  // namespace
 
 class FileSystemProviderApiTest : public ExtensionApiTest {
  public:
@@ -148,6 +255,20 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Notify) {
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Configure) {
   ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/configure",
                                           kFlagLoadAsComponent))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Unresponsive_Extension) {
+  AbortOnUnresponsivePerformer performer(browser()->profile());
+  ASSERT_TRUE(
+      RunComponentExtensionTest("file_system_provider/unresponsive_extension"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Unresponsive_App) {
+  AbortOnUnresponsivePerformer performer(browser()->profile());
+  ASSERT_TRUE(RunPlatformAppTestWithFlags(
+      "file_system_provider/unresponsive_app", kFlagLoadAsComponent))
       << message_;
 }
 

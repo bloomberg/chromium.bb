@@ -69,7 +69,7 @@ class LoggingObserver : public Observer {
   };
 
   LoggingObserver() {}
-  virtual ~LoggingObserver() {}
+  ~LoggingObserver() override {}
 
   // file_system_provider::Observer overrides.
   void OnProvidedFileSystemMount(const ProvidedFileSystemInfo& file_system_info,

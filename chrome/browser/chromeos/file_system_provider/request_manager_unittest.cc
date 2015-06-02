@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_system_provider/notification_manager_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -310,11 +311,15 @@ class FileSystemProviderRequestManagerTest : public testing::Test {
   ~FileSystemProviderRequestManagerTest() override {}
 
   void SetUp() override {
+    profile_.reset(new TestingProfile);
     notification_manager_.reset(new FakeNotificationManager);
-    request_manager_.reset(new RequestManager(notification_manager_.get()));
+    request_manager_.reset(new RequestManager(profile_.get(),
+                                              std::string() /* extension_id */,
+                                              notification_manager_.get()));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<FakeNotificationManager> notification_manager_;
   scoped_ptr<RequestManager> request_manager_;
 };
@@ -673,7 +678,8 @@ TEST_F(FileSystemProviderRequestManagerTest, AbortOnDestroy) {
   int request_id;
 
   {
-    RequestManager request_manager(NULL);
+    RequestManager request_manager(profile_.get(),
+                                   std::string() /* extension_id */, nullptr);
     request_manager.AddObserver(&observer);
 
     request_id = request_manager.CreateRequest(

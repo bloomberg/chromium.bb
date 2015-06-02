@@ -79,7 +79,7 @@ function runTests() {
 
       chrome.fileManagerPrivate.configureVolume(test_util.volumeId,
           chrome.test.callbackFail('Failed to complete configuration.'));
-    },
+    }
 
   ]);
 }
