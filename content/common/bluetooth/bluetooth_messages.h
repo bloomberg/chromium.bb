@@ -129,6 +129,18 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTError,
                      int /* request_id */,
                      content::BluetoothError /* result */)
 
+// Informs the renderer that primary service request |request_id| succeeded.
+IPC_MESSAGE_CONTROL3(BluetoothMsg_GetPrimaryServiceSuccess,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     std::string /* service_instance_id */)
+
+// Informs the renderer that the primary service request |request_id| failed.
+IPC_MESSAGE_CONTROL3(BluetoothMsg_GetPrimaryServiceError,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     content::BluetoothError /* result */)
+
 // Messages sent from the renderer to the browser.
 
 // Requests a bluetooth device from the browser.
@@ -147,3 +159,10 @@ IPC_MESSAGE_CONTROL3(BluetoothHostMsg_ConnectGATT,
                      int /* thread_id */,
                      int /* request_id */,
                      std::string /* device_instance_id */)
+
+// Gets primary service from bluetooth device.
+IPC_MESSAGE_CONTROL4(BluetoothHostMsg_GetPrimaryService,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     std::string /* device_instance_id */,
+                     std::string /* service_uuid */)

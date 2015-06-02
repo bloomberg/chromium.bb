@@ -26,6 +26,14 @@ void WebBluetoothImpl::connectGATT(const blink::WebString& device_instance_id,
   GetDispatcher()->connectGATT(device_instance_id, callbacks);
 }
 
+void WebBluetoothImpl::getPrimaryService(
+    const blink::WebString& device_instance_id,
+    const blink::WebString& service_uuid,
+    blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks) {
+  GetDispatcher()->getPrimaryService(device_instance_id, service_uuid,
+                                     callbacks);
+}
+
 BluetoothDispatcher* WebBluetoothImpl::GetDispatcher() {
   return BluetoothDispatcher::GetOrCreateThreadSpecificInstance(
       thread_safe_sender_.get());

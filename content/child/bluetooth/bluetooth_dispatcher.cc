@@ -13,14 +13,31 @@
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTService.h"
 
 using blink::WebBluetoothConnectGATTCallbacks;
 using blink::WebBluetoothDevice;
 using blink::WebBluetoothError;
 using blink::WebBluetoothGATTRemoteServer;
+using blink::WebBluetoothGATTService;
 using blink::WebBluetoothRequestDeviceCallbacks;
 using blink::WebString;
 using blink::WebVector;
+
+struct BluetoothPrimaryServiceRequest {
+  BluetoothPrimaryServiceRequest(
+      blink::WebString device_instance_id,
+      blink::WebString service_uuid,
+      blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks)
+      : device_instance_id(device_instance_id),
+        service_uuid(service_uuid),
+        callbacks(callbacks) {}
+  ~BluetoothPrimaryServiceRequest() {}
+
+  blink::WebString device_instance_id;
+  blink::WebString service_uuid;
+  scoped_ptr<blink::WebBluetoothGetPrimaryServiceCallbacks> callbacks;
+};
 
 namespace content {
 
@@ -102,6 +119,10 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
   IPC_MESSAGE_HANDLER(BluetoothMsg_RequestDeviceError, OnRequestDeviceError);
   IPC_MESSAGE_HANDLER(BluetoothMsg_ConnectGATTSuccess, OnConnectGATTSuccess);
   IPC_MESSAGE_HANDLER(BluetoothMsg_ConnectGATTError, OnConnectGATTError);
+  IPC_MESSAGE_HANDLER(BluetoothMsg_GetPrimaryServiceSuccess,
+                      OnGetPrimaryServiceSuccess);
+  IPC_MESSAGE_HANDLER(BluetoothMsg_GetPrimaryServiceError,
+                      OnGetPrimaryServiceError);
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -119,6 +140,18 @@ void BluetoothDispatcher::connectGATT(
   int request_id = pending_connect_requests_.Add(callbacks);
   Send(new BluetoothHostMsg_ConnectGATT(CurrentWorkerId(), request_id,
                                         device_instance_id.utf8()));
+}
+
+void BluetoothDispatcher::getPrimaryService(
+    const blink::WebString& device_instance_id,
+    const blink::WebString& service_uuid,
+    blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks) {
+  int request_id =
+      pending_primary_service_requests_.Add(new BluetoothPrimaryServiceRequest(
+          device_instance_id, service_uuid, callbacks));
+  Send(new BluetoothHostMsg_GetPrimaryService(CurrentWorkerId(), request_id,
+                                              device_instance_id.utf8(),
+                                              service_uuid.utf8()));
 }
 
 void BluetoothDispatcher::OnWorkerRunLoopStopped() {
@@ -177,6 +210,42 @@ void BluetoothDispatcher::OnConnectGATTError(int thread_id,
           // http://crbug.com/490419
           WebBluetoothErrorFromBluetoothError(error_type), ""));
   pending_connect_requests_.Remove(request_id);
+}
+
+void BluetoothDispatcher::OnGetPrimaryServiceSuccess(
+    int thread_id,
+    int request_id,
+    const std::string& service_instance_id) {
+  DCHECK(pending_primary_service_requests_.Lookup(request_id)) << request_id;
+  BluetoothPrimaryServiceRequest* request =
+      pending_primary_service_requests_.Lookup(request_id);
+  request->callbacks->onSuccess(new WebBluetoothGATTService(
+      WebString::fromUTF8(service_instance_id), request->service_uuid,
+      true /* isPrimary */, request->device_instance_id));
+  pending_primary_service_requests_.Remove(request_id);
+}
+
+void BluetoothDispatcher::OnGetPrimaryServiceError(int thread_id,
+                                                   int request_id,
+                                                   BluetoothError error_type) {
+  DCHECK(pending_primary_service_requests_.Lookup(request_id)) << request_id;
+
+  // Since we couldn't find the service return null. See Step 3 of
+  // getPrimaryService algorithm:
+  // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothgattremoteserver-getprimaryservice
+  if (error_type == BluetoothError::NOT_FOUND) {
+    pending_primary_service_requests_.Lookup(request_id)
+        ->callbacks->onSuccess(nullptr);
+    pending_primary_service_requests_.Remove(request_id);
+    return;
+  }
+
+  pending_primary_service_requests_.Lookup(request_id)
+      ->callbacks->onError(new WebBluetoothError(
+          // TODO(ortuno): Return more descriptive error messages.
+          // http://crbug.com/490419
+          WebBluetoothErrorFromBluetoothError(error_type), ""));
+  pending_primary_service_requests_.Remove(request_id);
 }
 
 }  // namespace content

@@ -21,6 +21,8 @@ namespace IPC {
 class Message;
 }
 
+struct BluetoothPrimaryServiceRequest;
+
 namespace content {
 class ThreadSafeSender;
 
@@ -50,6 +52,10 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
   void requestDevice(blink::WebBluetoothRequestDeviceCallbacks* callbacks);
   void connectGATT(const blink::WebString& device_instance_id,
                    blink::WebBluetoothConnectGATTCallbacks* callbacks);
+  void getPrimaryService(
+      const blink::WebString& device_instance_id,
+      const blink::WebString& service_uuid,
+      blink::WebBluetoothGetPrimaryServiceCallbacks* callbacks);
 
   // WorkerTaskRunner::Observer implementation.
   void OnWorkerRunLoopStopped() override;
@@ -70,6 +76,12 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
   void OnConnectGATTError(int thread_id,
                           int request_id,
                           BluetoothError error_type);
+  void OnGetPrimaryServiceSuccess(int thread_id,
+                                  int request_id,
+                                  const std::string& service_instance_id);
+  void OnGetPrimaryServiceError(int thread_id,
+                                int request_id,
+                                BluetoothError error_type);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
@@ -81,6 +93,10 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
   // Owns callback objects.
   IDMap<blink::WebBluetoothConnectGATTCallbacks, IDMapOwnPointer>
       pending_connect_requests_;
+  // Tracks requests to get a primary service from a device.
+  // Owns request objects.
+  IDMap<BluetoothPrimaryServiceRequest, IDMapOwnPointer>
+      pending_primary_service_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDispatcher);
 };

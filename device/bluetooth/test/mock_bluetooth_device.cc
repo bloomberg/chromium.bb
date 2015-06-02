@@ -5,6 +5,7 @@
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 
 namespace device {
@@ -55,5 +56,19 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
 }
 
 MockBluetoothDevice::~MockBluetoothDevice() {}
+
+void MockBluetoothDevice::AddMockService(
+    scoped_ptr<MockBluetoothGattService> mock_service) {
+  mock_services_.push_back(mock_service.Pass());
+}
+
+std::vector<BluetoothGattService*> MockBluetoothDevice::GetMockServices()
+    const {
+  std::vector<BluetoothGattService*> services;
+  for (BluetoothGattService* service : mock_services_) {
+    services.push_back(service);
+  }
+  return services;
+}
 
 }  // namespace device
