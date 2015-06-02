@@ -12,10 +12,6 @@
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/stream_listen_socket.h"
 
-namespace nacl {
-class NaClProcessHost;
-}
-
 namespace net {
 
 namespace test_server {
@@ -39,8 +35,6 @@ class NET_EXPORT TCPListenSocket : public StreamListenSocket {
   // Note that friend classes are temporary until crbug.com/472766 is fixed.
   friend class test_server::EmbeddedTestServer;
   friend class TCPListenSocketTester;
-  friend class TransportClientSocketTest;
-  friend class nacl::NaClProcessHost;
 
   // Listen on port for the specified IP address.  Use 127.0.0.1 to only
   // accept local connections.
