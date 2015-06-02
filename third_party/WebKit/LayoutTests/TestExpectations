@@ -726,6 +726,10 @@ crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 crbug.com/309675 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Skip ]
 
+crbug.com/493745 svg/as-background-image/svg-as-background-5.html [ NeedsRebaseline ]
+crbug.com/493745 svg/zoom/page/zoom-svg-through-object-with-absolute-size-2.xhtml [ NeedsRebaseline ]
+crbug.com/493745 svg/zoom/page/zoom-svg-through-object-with-absolute-size.xhtml [ NeedsRebaseline ]
+
 # Linux uses the system's NSS library for its WebCrypto implementation, whereas
 # Windows, Mac and Android use a statically-linked BoringSSL.
 # As such:
