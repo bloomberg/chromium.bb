@@ -21,10 +21,13 @@ class RasterBufferImpl : public RasterBuffer {
  public:
   RasterBufferImpl(ResourceProvider* resource_provider,
                    const Resource* resource,
-                   bool resource_has_previous_content)
+                   uint64_t resource_content_id,
+                   uint64_t previous_content_id)
       : lock_(resource_provider, resource->id()),
         resource_(resource),
-        resource_has_previous_content_(resource_has_previous_content) {}
+        resource_has_previous_content_(
+            resource_content_id && resource_content_id == previous_content_id) {
+  }
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
@@ -182,10 +185,8 @@ scoped_ptr<RasterBuffer> BitmapTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
-  bool resource_has_previous_content =
-      resource_content_id && resource_content_id == previous_content_id;
-  return make_scoped_ptr<RasterBuffer>(new RasterBufferImpl(
-      resource_provider_, resource, resource_has_previous_content));
+  return scoped_ptr<RasterBuffer>(new RasterBufferImpl(
+      resource_provider_, resource, resource_content_id, previous_content_id));
 }
 
 void BitmapTileTaskWorkerPool::ReleaseBufferForRaster(

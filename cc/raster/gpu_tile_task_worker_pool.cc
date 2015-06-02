@@ -23,10 +23,16 @@ namespace {
 
 class RasterBufferImpl : public RasterBuffer {
  public:
-  RasterBufferImpl(GpuRasterizer* rasterizer, const Resource* resource)
+  RasterBufferImpl(GpuRasterizer* rasterizer,
+                   const Resource* resource,
+                   uint64_t resource_content_id,
+                   uint64_t previous_content_id)
       : rasterizer_(rasterizer),
         lock_(rasterizer->resource_provider(), resource->id()),
-        resource_(resource) {}
+        resource_(resource),
+        resource_has_previous_content_(
+            resource_content_id && resource_content_id == previous_content_id) {
+  }
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
@@ -46,10 +52,17 @@ class RasterBufferImpl : public RasterBuffer {
     // Allow this worker thread to bind to context_provider.
     context_provider->DetachFromThread();
 
+    gfx::Rect playback_rect = raster_full_rect;
+    if (resource_has_previous_content_) {
+      playback_rect.Intersect(raster_dirty_rect);
+    }
+    DCHECK(!playback_rect.IsEmpty())
+        << "Why are we rastering a tile that's not dirty?";
+
     // TODO(danakj): Implement partial raster with raster_dirty_rect.
     // Rasterize source into resource.
     rasterizer_->RasterizeSource(&lock_, raster_source, raster_full_rect,
-                                 scale);
+                                 playback_rect, scale);
 
     // Barrier to sync worker context output to cc context.
     context_provider->ContextGL()->OrderingBarrierCHROMIUM();
@@ -62,6 +75,7 @@ class RasterBufferImpl : public RasterBuffer {
   GpuRasterizer* rasterizer_;
   ResourceProvider::ScopedWriteLockGr lock_;
   const Resource* resource_;
+  bool resource_has_previous_content_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
 };
@@ -214,8 +228,8 @@ scoped_ptr<RasterBuffer> GpuTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
-  return make_scoped_ptr<RasterBuffer>(
-      new RasterBufferImpl(rasterizer_.get(), resource));
+  return scoped_ptr<RasterBuffer>(new RasterBufferImpl(
+      rasterizer_.get(), resource, resource_content_id, previous_content_id));
 }
 
 void GpuTileTaskWorkerPool::ReleaseBufferForRaster(

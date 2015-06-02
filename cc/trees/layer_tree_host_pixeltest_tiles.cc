@@ -20,6 +20,7 @@ namespace {
 enum RasterMode {
   PARTIAL_ONE_COPY,
   FULL_ONE_COPY,
+  GPU,
   BITMAP,
 };
 
@@ -42,6 +43,10 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
       case BITMAP:
         // This is done via context creation. No settings to change here!
         break;
+      case GPU:
+        settings->gpu_rasterization_enabled = true;
+        settings->gpu_rasterization_forced = true;
+        break;
     }
   }
 
@@ -53,7 +58,7 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
   void DoReadback() {
     Layer* target =
         readback_target_ ? readback_target_ : layer_tree_host()->root_layer();
-    target->RequestCopyOfOutput(CreateCopyOutputRequest().Pass());
+    target->RequestCopyOfOutput(CreateCopyOutputRequest());
   }
 
   void RunRasterPixelTest(bool threaded,
@@ -66,6 +71,7 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
     switch (mode) {
       case PARTIAL_ONE_COPY:
       case FULL_ONE_COPY:
+      case GPU:
         test_type = PIXEL_TEST_GL;
         break;
       case BITMAP:
@@ -192,6 +198,13 @@ TEST_F(LayerTreeHostTilesTestPartialInvalidation,
        PartialRaster_SingleThread_Software) {
   RunRasterPixelTest(
       false, BITMAP, picture_layer_,
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
+}
+
+TEST_F(LayerTreeHostTilesTestPartialInvalidation,
+       PartialRaster_SingleThread_GpuRaster) {
+  RunRasterPixelTest(
+      false, GPU, picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
 }
 

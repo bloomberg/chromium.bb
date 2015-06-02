@@ -1244,8 +1244,8 @@ void ResourceProvider::Initialize() {
   texture_uploader_ = TextureUploader::Create(gl);
   max_texture_size_ = 0;  // Context expects cleared value.
   gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
-  bool use_bgra = caps.gpu.texture_format_bgra8888;
-  best_texture_format_ = PlatformColor::BestTextureFormat(use_bgra);
+  best_texture_format_ =
+      PlatformColor::BestTextureFormat(use_texture_format_bgra_);
 
   texture_id_allocator_.reset(
       new TextureIdAllocator(gl, id_allocation_chunk_size_));

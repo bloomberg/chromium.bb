@@ -41,7 +41,8 @@ GpuRasterizer::~GpuRasterizer() {
 void GpuRasterizer::RasterizeSource(
     ResourceProvider::ScopedWriteLockGr* write_lock,
     const RasterSource* raster_source,
-    const gfx::Rect& rect,
+    const gfx::Rect& raster_full_rect,
+    const gfx::Rect& playback_rect,
     float scale) {
   // Play back raster_source into temp SkPicture.
   SkPictureRecorder recorder;
@@ -50,7 +51,8 @@ void GpuRasterizer::RasterizeSource(
   skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
       recorder.beginRecording(size.width(), size.height(), NULL, flags));
   canvas->save();
-  raster_source->PlaybackToCanvas(canvas.get(), rect, rect, scale);
+  raster_source->PlaybackToCanvas(canvas.get(), raster_full_rect, playback_rect,
+                                  scale);
   canvas->restore();
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(recorder.endRecordingAsPicture());

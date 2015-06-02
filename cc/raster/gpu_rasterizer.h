@@ -24,7 +24,8 @@ class CC_EXPORT GpuRasterizer {
 
   void RasterizeSource(ResourceProvider::ScopedWriteLockGr* write_lock,
                        const RasterSource* raster_source,
-                       const gfx::Rect& rect,
+                       const gfx::Rect& raster_full_rect,
+                       const gfx::Rect& playback_rect,
                        float scale);
 
   ResourceProvider* resource_provider() { return resource_provider_; }
