@@ -29,6 +29,14 @@ BrowsingDataPartitionImpl::~BrowsingDataPartitionImpl() {
   }
 }
 
+// static
+bool BrowsingDataPartition::IsSynchronized() {
+  // TODO(shreyasv): Implement the logic to track the count of
+  // CRWBrowsingDataManagers whose mode is out of sync with their associated
+  // ActiveStateManager. Return true for now. crbug.com/480654.
+  return true;
+}
+
 CRWBrowsingDataStore* BrowsingDataPartitionImpl::GetBrowsingDataStore() {
   DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
 

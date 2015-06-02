@@ -35,6 +35,7 @@ UIWebView* CreateWebView(CGRect frame);
 // user agent string that includes the |request_group_id|.
 // |browser_state| cannot be null. The |configuration| should have the same
 // WKProcessPool as the WKWebViewConfiguration associated with |browser_state|.
+// The BrowsingDataPartition must be synchronized before this method is called.
 // Note: Callers are responsible for releasing the returned WKWebView.
 WKWebView* CreateWKWebView(CGRect frame,
                            WKWebViewConfiguration* configuration,
@@ -45,6 +46,7 @@ WKWebView* CreateWKWebView(CGRect frame,
 // Returns a new WKWebView for displaying regular web content.
 // WKWebViewConfiguration object for resulting web view will be obtained from
 // the given |browser_state| which must not be null.
+// The BrowsingDataPartition must be synchronized before this method is called.
 // Note: Callers are responsible for releasing the returned WKWebView.
 WKWebView* CreateWKWebView(CGRect frame, BrowserState* browser_state);
 
@@ -54,6 +56,7 @@ WKWebView* CreateWKWebView(CGRect frame, BrowserState* browser_state);
 NSUInteger GetActiveWKWebViewsCount();
 
 // Returns a CRWSimpleWebViewController for managing/showing a web view.
+// The BrowsingDataPartition must be synchronized before this method is called.
 // Note: Callers are responsible for releasing the CRWSimpleWebViewController.
 id<CRWSimpleWebViewController> CreateSimpleWebViewController(
     CGRect frame,
@@ -62,6 +65,7 @@ id<CRWSimpleWebViewController> CreateSimpleWebViewController(
 
 // Returns a new CRWSimpleWebViewController subclass displaying static HTML file
 // content stored in the application bundle.
+// The BrowsingDataPartition must be synchronized before this method is called.
 // Note: Callers are responsible for releasing the returned ViewController.
 id<CRWSimpleWebViewController> CreateStaticFileSimpleWebViewController(
     CGRect frame,
