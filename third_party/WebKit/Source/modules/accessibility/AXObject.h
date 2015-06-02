@@ -114,6 +114,7 @@ enum AccessibilityRole {
     ListRole,
     LogRole,
     MainRole,
+    MarkRole, // No mapping to ARIA role
     MarqueeRole,
     MathRole,
     MenuBarRole,

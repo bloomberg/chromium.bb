@@ -191,6 +191,7 @@ const InternalRoleEntry internalRoles[] = {
     { ListRole, "List" },
     { LogRole, "Log" },
     { MainRole, "Main" },
+    { MarkRole, "Mark" },
     { MarqueeRole, "Marquee" },
     { MathRole, "Math" },
     { MenuBarRole, "MenuBar" },
