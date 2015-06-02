@@ -50,7 +50,7 @@ class PrebuiltTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
 
     # Fake out board overlay tarballs.
     tarball_dir = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
-                               constants.SDK_BOARD_OVERLAYS_OUTPUT)
+                               constants.SDK_OVERLAYS_OUTPUT)
     osutils.SafeMakedirs(tarball_dir)
 
     board_overlay_tarball_args = []

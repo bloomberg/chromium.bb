@@ -111,7 +111,7 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
     board_overlay_prefix = 'built-sdk-overlay-'
     for tarball in glob.glob(os.path.join(
         buildroot, constants.DEFAULT_CHROOT_DIR,
-        constants.SDK_BOARD_OVERLAYS_OUTPUT, board_overlay_prefix + '*.tar.*')):
+        constants.SDK_OVERLAYS_OUTPUT, board_overlay_prefix + '*.tar.*')):
       tarball_name, tarball_suffix = os.path.basename(tarball).split('.', 1)
 
       # Only add the upload path arg when processing the first tarball.

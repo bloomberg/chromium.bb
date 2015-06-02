@@ -38,11 +38,11 @@ PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 
 # The following define the location for storing toolchain packages and
-# board-specific overlay tarballs created during SDK builder runs. The paths
-# are relative to the build root's chroot, which guarantees that they are
-# reachable from it and get cleaned up when it is removed.
+# SDK overlay tarballs created during SDK builder runs. The paths are relative
+# to the build root's chroot, which guarantees that they are reachable from it
+# and get cleaned up when it is removed.
 SDK_TOOLCHAINS_OUTPUT = 'tmp/toolchain-pkgs'
-SDK_BOARD_OVERLAYS_OUTPUT = 'tmp/sdk-board-overlays'
+SDK_OVERLAYS_OUTPUT = 'tmp/sdk-overlays'
 
 AUTOTEST_BUILD_PATH = 'usr/local/build/autotest'
 CQ_CONFIG_FILENAME = 'COMMIT-QUEUE.ini'

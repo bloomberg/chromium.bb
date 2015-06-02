@@ -206,7 +206,7 @@ class SDKPackageBoardToolchainsStage(generic_stages.BuilderStage):
     tmp_dir = os.path.join(chroot_dir, 'tmp')
     osutils.SafeMakedirs(tmp_dir, mode=0o777, sudo=True)
     overlay_output_dir = os.path.join(chroot_dir,
-                                      constants.SDK_BOARD_OVERLAYS_OUTPUT)
+                                      constants.SDK_OVERLAYS_OUTPUT)
     osutils.RmDir(overlay_output_dir, ignore_missing=True, sudo=True)
     osutils.SafeMakedirs(overlay_output_dir, mode=0o777, sudo=True)
     overlay_tarball_template = os.path.join(overlay_output_dir,
