@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/backend/media_pipeline_device_default.h"
+#include "chromecast/media/cma/backend/media_pipeline_device_fake.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/filters/cma_renderer.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_impl.h"
@@ -29,19 +29,20 @@ class CmaEndToEndTest : public testing::Test {
     demuxer_stream_provider_.reset(
         new ::media::FakeDemuxerStreamProvider(1, 1, false));
     null_sink_.reset(new ::media::NullVideoSink(
-        false, base::TimeDelta::FromSecondsD(1.0 / 60),
+        false,
+        base::TimeDelta::FromSecondsD(1.0 / 60),
         base::Bind(&MockCB::OnFrameReceived, base::Unretained(&mock_)),
         message_loop_.task_runner()));
 
     scoped_ptr<MediaPipelineImpl> media_pipeline(new MediaPipelineImpl());
-    media_pipeline->Initialize(
-        kLoadTypeMediaSource,
-        make_scoped_ptr(new MediaPipelineDeviceDefault()));
+    media_pipeline->Initialize(kLoadTypeMediaSource,
+                               make_scoped_ptr(new MediaPipelineDeviceFake()));
 
     renderer_.reset(new CmaRenderer(media_pipeline.Pass(), null_sink_.get()));
   }
 
-  ~CmaEndToEndTest() override {}
+  ~CmaEndToEndTest() override {
+  }
 
  protected:
   base::MessageLoop message_loop_;

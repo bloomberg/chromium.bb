@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/media_pipeline_device_default.h"
+#include "chromecast/media/cma/backend/media_pipeline_device_fake.h"
 
 #include "base/memory/scoped_ptr.h"
 
@@ -11,7 +11,7 @@ namespace media {
 
 scoped_ptr<MediaPipelineDevice> CreateMediaPipelineDevice(
     const MediaPipelineDeviceParams& params) {
-  return scoped_ptr<MediaPipelineDevice>(new MediaPipelineDeviceDefault());
+  return scoped_ptr<MediaPipelineDevice>(new MediaPipelineDeviceFake());
 }
 
 }  // namespace media
