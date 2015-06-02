@@ -289,7 +289,6 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnReloadProxySettings(const base::ListValue* list);
   void OnClearBadProxies(const base::ListValue* list);
   void OnClearHostResolverCache(const base::ListValue* list);
-  void OnEnableIPv6(const base::ListValue* list);
   void OnHSTSQuery(const base::ListValue* list);
   void OnHSTSAdd(const base::ListValue* list);
   void OnHSTSDelete(const base::ListValue* list);
@@ -430,10 +429,6 @@ void NetInternalsMessageHandler::RegisterMessages() {
       "clearHostResolverCache",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnClearHostResolverCache, proxy_));
-  web_ui()->RegisterMessageCallback(
-      "enableIPv6",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnEnableIPv6, proxy_));
   web_ui()->RegisterMessageCallback(
       "hstsQuery",
       base::Bind(&IOThreadImpl::CallbackHelper,
@@ -722,17 +717,6 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
     cache->clear();
 
   // Cause the renderer to be notified of the new values.
-  SendNetInfo(net::NET_INFO_HOST_RESOLVER);
-}
-
-void NetInternalsMessageHandler::IOThreadImpl::OnEnableIPv6(
-    const base::ListValue* list) {
-  DCHECK(!list);
-  net::HostResolver* host_resolver = GetMainContext()->host_resolver();
-
-  host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_UNSPECIFIED);
-
-  // Cause the renderer to be notified of the new value.
   SendNetInfo(net::NET_INFO_HOST_RESOLVER);
 }
 

@@ -211,10 +211,6 @@ var BrowserBridge = (function() {
       this.send('getDataReductionProxyInfo');
     },
 
-    enableIPv6: function() {
-      this.send('enableIPv6');
-    },
-
     setCaptureMode: function(captureMode) {
       this.send('setCaptureMode', ['' + captureMode]);
     },

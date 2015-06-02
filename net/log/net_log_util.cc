@@ -358,10 +358,6 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
       if (dns_config)
         dict->Set("dns_config", dns_config);
 
-      dict->SetInteger(
-          "default_address_family",
-          static_cast<int>(host_resolver->GetDefaultAddressFamily()));
-
       base::DictionaryValue* cache_info_dict = new base::DictionaryValue();
 
       cache_info_dict->SetInteger("capacity",

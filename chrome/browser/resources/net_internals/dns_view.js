@@ -6,7 +6,6 @@
  * This view displays information on the host resolver:
  *
  *   - Shows the default address family.
- *   - Has a button to enable IPv6, if it is disabled.
  *   - Shows the current host cache contents.
  *   - Has a button to clear the host cache.
  *   - Shows the parameters used to construct the host cache (capacity, ttl).
@@ -32,8 +31,6 @@ var DnsView = (function() {
     // Call superclass's constructor.
     superClass.call(this, DnsView.MAIN_BOX_ID);
 
-    $(DnsView.ENABLE_IPV6_BUTTON_ID).onclick =
-        g_browser.enableIPv6.bind(g_browser);
     $(DnsView.CLEAR_CACHE_BUTTON_ID).onclick =
         g_browser.sendClearHostResolverCache.bind(g_browser);
 
@@ -47,9 +44,6 @@ var DnsView = (function() {
 
   // IDs for special HTML elements in dns_view.html
   DnsView.MAIN_BOX_ID = 'dns-view-tab-content';
-  DnsView.DEFAULT_FAMILY_SPAN_ID = 'dns-view-default-family';
-  DnsView.IPV6_DISABLED_SPAN_ID = 'dns-view-ipv6-disabled';
-  DnsView.ENABLE_IPV6_BUTTON_ID = 'dns-view-enable-ipv6';
 
   DnsView.INTERNAL_DNS_ENABLED_SPAN_ID = 'dns-view-internal-dns-enabled';
   DnsView.INTERNAL_DNS_INVALID_CONFIG_SPAN_ID =
@@ -75,7 +69,6 @@ var DnsView = (function() {
 
     onHostResolverInfoChanged: function(hostResolverInfo) {
       // Clear the existing values.
-      $(DnsView.DEFAULT_FAMILY_SPAN_ID).innerHTML = '';
       $(DnsView.CAPACITY_SPAN_ID).innerHTML = '';
       $(DnsView.CACHE_TBODY_ID).innerHTML = '';
       $(DnsView.ACTIVE_SPAN_ID).innerHTML = '0';
@@ -87,13 +80,6 @@ var DnsView = (function() {
       // No info.
       if (!hostResolverInfo || !hostResolverInfo.cache)
         return false;
-
-      var family = hostResolverInfo.default_address_family;
-      addTextNode($(DnsView.DEFAULT_FAMILY_SPAN_ID),
-                  addressFamilyToString(family));
-
-      var ipv6Disabled = (family == AddressFamily.ADDRESS_FAMILY_IPV4);
-      setNodeDisplay($(DnsView.IPV6_DISABLED_SPAN_ID), ipv6Disabled);
 
       // Fill in the basic cache information.
       var hostResolverCache = hostResolverInfo.cache;
