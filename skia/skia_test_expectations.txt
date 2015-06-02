@@ -48,9 +48,4 @@
 #
 # START OVERRIDES HERE
 
-# https://code.google.com/p/skia/issues/detail?id=3877
-crbug.com/493745 svg/as-background-image/svg-as-background-5.html [ NeedsManualRebaseline ]
-crbug.com/493745 svg/zoom/page/zoom-svg-through-object-with-absolute-size-2.xhtml [ NeedsManualRebaseline ]
-crbug.com/493745 svg/zoom/page/zoom-svg-through-object-with-absolute-size.xhtml [ NeedsManualRebaseline ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
