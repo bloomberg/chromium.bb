@@ -113,10 +113,14 @@ void ModuleRegistry::RegisterGlobals(Isolate* isolate,
 }
 
 // static
-void ModuleRegistry::InstallGlobals(v8::Isolate* isolate,
+bool ModuleRegistry::InstallGlobals(v8::Isolate* isolate,
                                     v8::Local<v8::Object> obj) {
-  obj->Set(StringToSymbol(isolate, "define"),
-           GetDefineTemplate(isolate)->GetFunction());
+  v8::Local<v8::Function> function;
+  auto maybe_function =
+      GetDefineTemplate(isolate)->GetFunction(isolate->GetCurrentContext());
+  if (!maybe_function.ToLocal(&function))
+    return false;
+  return SetProperty(isolate, obj, StringToSymbol(isolate, "define"), function);
 }
 
 // static
@@ -177,16 +181,17 @@ void ModuleRegistry::LoadModule(Isolate* isolate,
   unsatisfied_dependencies_.insert(id);
 }
 
-void ModuleRegistry::RegisterModule(Isolate* isolate,
+bool ModuleRegistry::RegisterModule(Isolate* isolate,
                                     const std::string& id,
                                     v8::Local<Value> module) {
   if (id.empty() || module.IsEmpty())
-    return;
+    return false;
 
+  v8::Local<Object> modules = Local<Object>::New(isolate, modules_);
+  if (!SetProperty(isolate, modules, StringToSymbol(isolate, id), module))
+    return false;
   unsatisfied_dependencies_.erase(id);
   available_modules_.insert(id);
-  v8::Local<Object> modules = Local<Object>::New(isolate, modules_);
-  modules->Set(StringToSymbol(isolate, id), module);
 
   std::pair<LoadModuleCallbackMap::iterator, LoadModuleCallbackMap::iterator>
       range = waiting_callbacks_.equal_range(id);
@@ -203,6 +208,7 @@ void ModuleRegistry::RegisterModule(Isolate* isolate,
     // Should we call the callback asynchronously?
     it->Run(module);
   }
+  return true;
 }
 
 bool ModuleRegistry::CheckDependencies(PendingModule* pending) {
@@ -218,9 +224,9 @@ bool ModuleRegistry::CheckDependencies(PendingModule* pending) {
   return num_missing_dependencies == 0;
 }
 
-void ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
+bool ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
   if (!pending->id.empty() && available_modules_.count(pending->id))
-    return;  // We've already loaded this module.
+    return true;  // We've already loaded this module.
 
   uint32_t argc = static_cast<uint32_t>(pending->dependencies.size());
   std::vector<v8::Local<Value> > argv(argc);
@@ -240,7 +246,7 @@ void ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
                     &pending->id);
   }
 
-  RegisterModule(isolate, pending->id, module);
+  return RegisterModule(isolate, pending->id, module);
 }
 
 bool ModuleRegistry::AttemptToLoad(Isolate* isolate,
@@ -249,16 +255,15 @@ bool ModuleRegistry::AttemptToLoad(Isolate* isolate,
     pending_modules_.push_back(pending.release());
     return false;
   }
-  Load(isolate, pending.Pass());
-  return true;
+  return Load(isolate, pending.Pass());
 }
 
 v8::Local<v8::Value> ModuleRegistry::GetModule(v8::Isolate* isolate,
                                                 const std::string& id) {
   v8::Local<Object> modules = Local<Object>::New(isolate, modules_);
   v8::Local<String> key = StringToSymbol(isolate, id);
-  DCHECK(modules->HasOwnProperty(key));
-  return modules->Get(key);
+  DCHECK(modules->HasOwnProperty(isolate->GetCurrentContext(), key).FromJust());
+  return modules->Get(isolate->GetCurrentContext(), key).ToLocalChecked();
 }
 
 void ModuleRegistry::AttemptToLoadMoreModules(Isolate* isolate) {

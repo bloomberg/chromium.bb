@@ -8,11 +8,26 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "gin/gin_export.h"
 #include "v8/include/v8.h"
 
 namespace gin {
+
+template<typename KeyType>
+bool SetProperty(v8::Isolate* isolate,
+                 v8::Local<v8::Object> object,
+                 KeyType key,
+                 v8::Local<v8::Value> value) {
+  auto maybe = object->Set(isolate->GetCurrentContext(), key, value);
+  return !maybe.IsNothing() && maybe.FromJust();
+}
+
+template<typename T>
+struct ToV8ReturnsMaybe {
+  static const bool value = false;
+};
 
 template<typename T, typename Enable = void>
 struct Converter {};
@@ -84,6 +99,7 @@ struct GIN_EXPORT Converter<double> {
 
 template<>
 struct GIN_EXPORT Converter<base::StringPiece> {
+  // This crashes when val.size() > v8::String::kMaxLength.
   static v8::Local<v8::Value> ToV8(v8::Isolate* isolate,
                                     const base::StringPiece& val);
   // No conversion out is possible because StringPiece does not contain storage.
@@ -91,6 +107,7 @@ struct GIN_EXPORT Converter<base::StringPiece> {
 
 template<>
 struct GIN_EXPORT Converter<std::string> {
+  // This crashes when val.size() > v8::String::kMaxLength.
   static v8::Local<v8::Value> ToV8(v8::Isolate* isolate,
                                     const std::string& val);
   static bool FromV8(v8::Isolate* isolate,
@@ -143,12 +160,15 @@ struct GIN_EXPORT Converter<v8::Local<v8::Value> > {
 
 template<typename T>
 struct Converter<std::vector<T> > {
-  static v8::Local<v8::Value> ToV8(v8::Isolate* isolate,
-                                    const std::vector<T>& val) {
+  static v8::MaybeLocal<v8::Value> ToV8(v8::Local<v8::Context> context,
+                                        const std::vector<T>& val) {
+    v8::Isolate* isolate = context->GetIsolate();
     v8::Local<v8::Array> result(
         v8::Array::New(isolate, static_cast<int>(val.size())));
-    for (size_t i = 0; i < val.size(); ++i) {
-      result->Set(static_cast<int>(i), Converter<T>::ToV8(isolate, val[i]));
+    for (uint32_t i = 0; i < val.size(); ++i) {
+      auto maybe = result->Set(context, i, Converter<T>::ToV8(isolate, val[i]));
+      if (maybe.IsNothing() || !maybe.FromJust())
+        return v8::MaybeLocal<v8::Value>();
     }
     return result;
   }
@@ -163,8 +183,11 @@ struct Converter<std::vector<T> > {
     v8::Local<v8::Array> array(v8::Local<v8::Array>::Cast(val));
     uint32_t length = array->Length();
     for (uint32_t i = 0; i < length; ++i) {
+      v8::Local<v8::Value> v8_item;
+      if (!array->Get(isolate->GetCurrentContext(), i).ToLocal(&v8_item))
+        return false;
       T item;
-      if (!Converter<T>::FromV8(isolate, array->Get(i), &item))
+      if (!Converter<T>::FromV8(isolate, v8_item, &item))
         return false;
       result.push_back(item);
     }
@@ -174,18 +197,62 @@ struct Converter<std::vector<T> > {
   }
 };
 
+template<typename T>
+struct ToV8ReturnsMaybe<std::vector<T>> {
+  static const bool value = true;
+};
+
 // Convenience functions that deduce T.
 template<typename T>
 v8::Local<v8::Value> ConvertToV8(v8::Isolate* isolate, T input) {
   return Converter<T>::ToV8(isolate, input);
 }
 
+template<typename T>
+v8::MaybeLocal<v8::Value> ConvertToV8(v8::Local<v8::Context> context, T input) {
+  return Converter<T>::ToV8(context, input);
+}
+
+template<typename T, bool = ToV8ReturnsMaybe<T>::value> struct ToV8Traits;
+
+template <typename T>
+struct ToV8Traits<T, true> {
+  static bool TryConvertToV8(v8::Isolate* isolate,
+                             T input,
+                             v8::Local<v8::Value>* output) {
+    auto maybe = ConvertToV8(isolate->GetCurrentContext(), input);
+    if (maybe.IsEmpty())
+      return false;
+    *output = maybe.ToLocalChecked();
+    return true;
+  }
+};
+
+template <typename T>
+struct ToV8Traits<T, false> {
+  static bool TryConvertToV8(v8::Isolate* isolate,
+                             T input,
+                             v8::Local<v8::Value>* output) {
+    *output = ConvertToV8(isolate, input);
+    return true;
+  }
+};
+
+template <typename T>
+bool TryConvertToV8(v8::Isolate* isolate,
+                    T input,
+                    v8::Local<v8::Value>* output) {
+  return ToV8Traits<T>::TryConvertToV8(isolate, input, output);
+}
+
+// This crashes when input.size() > v8::String::kMaxLength.
 GIN_EXPORT inline v8::Local<v8::String> StringToV8(
     v8::Isolate* isolate,
     const base::StringPiece& input) {
   return ConvertToV8(isolate, input).As<v8::String>();
 }
 
+// This crashes when input.size() > v8::String::kMaxLength.
 GIN_EXPORT v8::Local<v8::String> StringToSymbol(v8::Isolate* isolate,
                                                  const base::StringPiece& val);
 

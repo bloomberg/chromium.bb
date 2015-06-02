@@ -93,8 +93,11 @@ void NamedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
       NamedInterceptorFromV8(isolate, info.Holder());
   if (!interceptor)
     return;
-  info.GetReturnValue().Set(v8::Local<v8::Array>::Cast(
-      ConvertToV8(isolate, interceptor->EnumerateNamedProperties(isolate))));
+  v8::Local<v8::Value> properties;
+  if (!TryConvertToV8(isolate, interceptor->EnumerateNamedProperties(isolate),
+                      &properties))
+    return;
+  info.GetReturnValue().Set(v8::Local<v8::Array>::Cast(properties));
 }
 
 void IndexedPropertyGetter(uint32_t index,
@@ -126,8 +129,11 @@ void IndexedPropertyEnumerator(
       IndexedInterceptorFromV8(isolate, info.Holder());
   if (!interceptor)
     return;
-  info.GetReturnValue().Set(v8::Local<v8::Array>::Cast(
-      ConvertToV8(isolate, interceptor->EnumerateIndexedProperties(isolate))));
+  v8::Local<v8::Value> properties;
+  if (!TryConvertToV8(isolate, interceptor->EnumerateIndexedProperties(isolate),
+                      &properties))
+    return;
+  info.GetReturnValue().Set(v8::Local<v8::Array>::Cast(properties));
 }
 
 }  // namespace
