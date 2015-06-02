@@ -1118,10 +1118,6 @@ def main(argv):
     # Crossdev --ex-pkg flag was added in version 20150527.
     # Disable Go toolchain until the chroot gets a newer crossdev.
     TARGET_GO_ENABLED = ()
-  if options.usepkg:
-    # For bootstrapping, disable Go toolchain if using binary packages.
-    # Allow the sdk bot to catch up and make binary packages available.
-    TARGET_GO_ENABLED = ()
 
   if options.cfg_name:
     ShowConfig(options.cfg_name)
