@@ -1660,15 +1660,12 @@ void RenderWidget::OnSetInputMethodActive(bool is_active) {
 }
 
 void RenderWidget::OnCandidateWindowShown() {
-  webwidget_->didShowCandidateWindow();
 }
 
 void RenderWidget::OnCandidateWindowUpdated() {
-  webwidget_->didUpdateCandidateWindow();
 }
 
 void RenderWidget::OnCandidateWindowHidden() {
-  webwidget_->didHideCandidateWindow();
 }
 
 void RenderWidget::OnImeSetComposition(
