@@ -45,8 +45,38 @@ if ((current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm"
   }
 }
 
-if (build_ffmpegsumo) {
-  static_library("ffmpegsumo") {
+config("ffmpeg_dependent_config") {
+  include_dirs = [
+    platform_config_root,
+    ".",
+  ]
+}
+
+if (is_win) {
+  # Stub generator script and signatures of all functions used by Chrome.
+  generate_stubs_script = "//tools/generate_stubs/generate_stubs.py"
+
+  # Used by ffmpeg_generate_stubs and ffmpeg_generate_def
+  sig_files = [ "chromium/ffmpegsumo.sigs" ]
+
+  action("ffmpeg_generate_def") {
+    script = generate_stubs_script
+    sources = sig_files
+    outputs = [ "$target_gen_dir/ffmpegsumo.def" ]
+    args = [
+  # TODO(ajwong): This was -i <(INTERMEDIATE_DIR). What next?
+      "-i", rebase_path(target_out_dir, root_build_dir),
+      "-o", rebase_path(target_gen_dir, root_build_dir),
+      "-t", "windows_def",
+      "-m", "ffmpegsumo.dll",
+    ] + rebase_path(sources, root_build_dir)
+  }
+}
+
+component("ffmpeg") {
+  public_configs = [ ":ffmpeg_dependent_config" ]
+
+  if (build_ffmpegsumo) {
     sources = ffmpeg_c_sources + ffmpeg_gas_sources + [
       "$platform_config_root/config.h",
       "$platform_config_root/libavutil/avconfig.h",
@@ -202,6 +232,15 @@ if (build_ffmpegsumo) {
         "rt",  # for clock_gettime on precise
         "z",
       ]
+      if (is_component_build) {
+        # Export all symbols when building as component.
+        configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+        # Fixes warnings PIC relocation when building as component.
+        ldflags += [
+          "-Wl,-Bsymbolic",
+          "-L", rebase_path(target_gen_dir, root_build_dir),
+        ]
+      }
 # TODO(ajwong): How to handle openbsd? Especially w/o the is_posix?
 #      if (is_openbsd) {
 #       # OpenBSD's gcc (4.2.1) does not support this flag
@@ -209,6 +248,11 @@ if (build_ffmpegsumo) {
 #      }
     }
     if (is_mac) {
+      if (is_component_build) {
+        # Export all symbols when building as component.
+        configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+      }
+
       defines += [ "_DARWIN_C_SOURCE" ]
 
 # TODO(ajwong): What does this do in mac? There isn't anything in ffmpeg.gyp that
@@ -265,6 +309,13 @@ if (build_ffmpegsumo) {
       if (is_component_build) {
         # Required to avoid 4049 and 4217 errors around redundant imports.
         cflags += [ "/FIcompat/msvcrt/snprintf.h", "/FIcompat/msvcrt/strtod.h" ]
+
+        # Windows component build needs the .def file to export ffmpeg symbols.
+        deps += [ ":ffmpeg_generate_def" ]
+        ldflags =
+          [ "/DEF:" +
+            rebase_path("$target_gen_dir/ffmpegsumo.def", root_build_dir) ]
+
       }
 
       # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
@@ -303,18 +354,4 @@ if (build_ffmpegsumo) {
       deps += [ ":ffmpeg_yasm" ]
     }
   }
-}
-
-config("ffmpeg_dependent_config") {
-  include_dirs = [
-    platform_config_root,
-    ".",
-  ]
-}
-
-group("ffmpeg") {
-  public_configs = [ ":ffmpeg_dependent_config" ]
-  public_deps = [
-    ":ffmpegsumo",
-  ]
 }

@@ -77,6 +77,10 @@
 
     # Locations for generated artifacts.
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/ffmpeg',
+
+    # Stub generator script and signatures of all functions used by Chrome.
+    'generate_stubs_script': '../../tools/generate_stubs/generate_stubs.py',
+    'sig_files': ['chromium/ffmpegsumo.sigs'],
   },
   'conditions': [
     ['(target_arch == "ia32" or target_arch == "x64") and os_config != "linux-noasm"', {
@@ -128,24 +132,39 @@
               '-w',
               '-P', 'config.asm',
             ],
+            'yasm_includes': [
+              # Sets visibility hidden for cglobal functions. Explicitly included
+              # to avoid overlooking changes to this file in incremental builds.
+              'libavutil/x86/x86inc.asm',
+            ],
             'yasm_output_path': '<(shared_generated_dir)/yasm'
           },
         },
       ] # targets
     }], # (target_arch == "ia32" or target_arch == "x64")
-    ['build_ffmpegsumo == 1', {
-      'includes': [
-        'ffmpeg_generated.gypi',
-        '../../build/util/version.gypi',
-      ],
-      'variables': {
-        # Path to platform configuration files.
-        'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
-      },
-      'targets': [
+  ],
+
+  'targets': [{
+    'target_name': 'ffmpeg',
+    'type': '<(component)',
+    'variables': {
+      # Path to platform configuration files.
+      'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
+    },
+    'conditions': [
+      ['build_ffmpegsumo == 1',
         {
-          'target_name': 'ffmpegsumo',
-          'type': 'static_library',
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '../..',  # The chromium 'src' directory.
+              '<(platform_config_root)',
+              '.',
+            ],
+          },
+          'includes': [
+            'ffmpeg_generated.gypi',
+            '../../build/util/version.gypi',
+          ],
           'sources': [
             '<@(c_sources)',
             '<(platform_config_root)/config.h',
@@ -282,15 +301,28 @@
                 '-fno-tree-vectorize',
               ],
               'link_settings': {
-                'ldflags': [
-                  '-L<(shared_generated_dir)',
-                ],
                 'libraries': [
                   '-lm',
                   '-lrt',
                   '-lz',
                 ],
               },
+              'conditions': [
+                ['component == "shared_library"', {
+                  # Export all symbols when building as component.
+                  'cflags!': [
+                    '-fvisibility=hidden',
+                  ],
+                  # Fixes warnings PIC relocation when building as component.
+                  # *WARNING* -- DO NOT put this inside of a link_settings
+                  # section or these flags will be propagated outside of the
+                  # ffmpeg target and cause debug allocator crashes.
+                  'ldflags': [
+                    '-Wl,-Bsymbolic',
+                    '-L<(shared_generated_dir)',
+                  ],
+                }],
+              ],
             }],  # os_posix == 1 and OS != "mac"
             ['OS == "openbsd"', {
               # OpenBSD's gcc (4.2.1) does not support this flag
@@ -328,6 +360,13 @@
                       # with this flag.
                       '-Wl,-read_only_relocs,suppress',
                     ],
+                  },
+                }],
+                ['component == "shared_library"', {
+                  'xcode_settings': {
+                    # GCC version of no -fvisiliity=hidden. Ensures that all
+                    # symbols are exported for component builds.
+                    'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
                   },
                 }],
               ],
@@ -387,33 +426,36 @@
                       ],
                     },
                   },
+                  'sources': [
+                    '<(shared_generated_dir)/ffmpegsumo.def',
+                  ],
+                  'actions': [
+                    {
+                      'action_name': 'generate_def',
+                      'inputs': [
+                        '<(generate_stubs_script)',
+                        '<@(sig_files)',
+                      ],
+                      'outputs': [
+                        '<(shared_generated_dir)/ffmpegsumo.def',
+                      ],
+                      'action': ['python',
+                                 '<(generate_stubs_script)',
+                                 '-i', '<(INTERMEDIATE_DIR)',
+                                 '-o', '<(shared_generated_dir)',
+                                 '-t', 'windows_def',
+                                 '-m', 'ffmpegsumo.dll',
+                                 '<@(_inputs)',
+                      ],
+                      'message': 'Generating FFmpeg export definitions',
+                    },
+                  ],
                 }],
               ],
             }],
           ],
         },
       ],
-    }],
-  ],  # conditions
-  'targets': [
-    {
-      'target_name': 'ffmpeg',
-      'type': 'static_library',
-      'conditions': [
-        ['build_ffmpegsumo == 1', {
-          'dependencies': [
-              'ffmpegsumo',
-            ],
-            'direct_dependent_settings': {
-            'include_dirs': [
-              '../..',  # The chromium 'src' directory.
-              '<(platform_config_root)',
-              '.',
-              ],
-            },
-          }
-        ],
-      ],  # conditions
-    },
-  ],  # targets
+    ],
+  }],
 }
