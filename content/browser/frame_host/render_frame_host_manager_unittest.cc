@@ -279,6 +279,9 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
   }
 
   void TearDown() override {
+#if !defined(OS_ANDROID)
+    ImageTransportFactory::Terminate();
+#endif
     RenderViewHostImplTestHarness::TearDown();
     WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
   }

@@ -53,6 +53,9 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
 
     message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
     message_loop_.RunUntilIdle();
+#if !defined(OS_ANDROID)
+    ImageTransportFactory::Terminate();
+#endif
   }
 
  protected:

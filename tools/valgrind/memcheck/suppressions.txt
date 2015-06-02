@@ -3560,15 +3560,3 @@
     fun:_ZN5blink13CSSParserImpl23consumeDeclarationValueENS_19CSSParserTokenRangeENS_13CSSPropertyIDEbNS_13StyleRuleBase4TypeE
 fun:_ZN5blink13CSSParserImpl18consumeDeclarationENS_19CSSParserTokenRangeENS_13StyleRuleBase4TypeE
 }
-{
-   bug_494808
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content26RenderFrameHostManagerTest5SetUpEv
-}
-{
-   bug_494811
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content12_GLOBAL__N_129RenderWidgetHostViewGuestTest5SetUpEv
-}
