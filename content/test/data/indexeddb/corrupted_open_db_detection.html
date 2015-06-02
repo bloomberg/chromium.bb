@@ -118,6 +118,15 @@ var tests = {
       request.onerror = requestError;
     });
   },
+  getAll: function() {
+    testXhr("/corrupt/test/fail?class=LevelDBTransaction&method=Get&instNum=1",
+            function() {
+      tests.testCommon('readonly');
+      request = objectStore.getAll('key-0');
+      request.onsuccess = unexpectedSuccessCallback;
+      request.onerror = requestError;
+    });
+  },
   failTransactionCommit: function() {
     tests.testCommon('readwrite');
     db.onclose = function(event) {

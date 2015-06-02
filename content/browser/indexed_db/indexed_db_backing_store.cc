@@ -3241,9 +3241,12 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
       continue;
 
     // The row may not load because there's a stale entry in the
-    // index. This is not fatal.
-    if (!LoadCurrentRow())
+    // index. If no error then not fatal.
+    if (!LoadCurrentRow(s)) {
+      if (!s->ok())
+        return false;
       continue;
+    }
 
     if (key) {
       if (forward) {
@@ -3352,7 +3355,7 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
     NOTREACHED();
     return NULL;
   }
-  bool LoadCurrentRow() override;
+  bool LoadCurrentRow(leveldb::Status* s) override;
 
  protected:
   std::string EncodeKey(const IndexedDBKey& key) override {
@@ -3372,11 +3375,12 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
   DISALLOW_COPY_AND_ASSIGN(ObjectStoreKeyCursorImpl);
 };
 
-bool ObjectStoreKeyCursorImpl::LoadCurrentRow() {
+bool ObjectStoreKeyCursorImpl::LoadCurrentRow(leveldb::Status* s) {
   StringPiece slice(iterator_->Key());
   ObjectStoreDataKey object_store_data_key;
   if (!ObjectStoreDataKey::Decode(&slice, &object_store_data_key)) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InvalidDBKeyStatus();
     return false;
   }
 
@@ -3386,6 +3390,7 @@ bool ObjectStoreKeyCursorImpl::LoadCurrentRow() {
   slice = StringPiece(iterator_->Value());
   if (!DecodeVarInt(&slice, &version)) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InternalInconsistencyStatus();
     return false;
   }
 
@@ -3413,7 +3418,7 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
 
   // IndexedDBBackingStore::Cursor
   IndexedDBValue* value() override { return &current_value_; }
-  bool LoadCurrentRow() override;
+  bool LoadCurrentRow(leveldb::Status* s) override;
 
  protected:
   std::string EncodeKey(const IndexedDBKey& key) override {
@@ -3436,11 +3441,12 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
   DISALLOW_COPY_AND_ASSIGN(ObjectStoreCursorImpl);
 };
 
-bool ObjectStoreCursorImpl::LoadCurrentRow() {
+bool ObjectStoreCursorImpl::LoadCurrentRow(leveldb::Status* s) {
   StringPiece key_slice(iterator_->Key());
   ObjectStoreDataKey object_store_data_key;
   if (!ObjectStoreDataKey::Decode(&key_slice, &object_store_data_key)) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InvalidDBKeyStatus();
     return false;
   }
 
@@ -3450,6 +3456,7 @@ bool ObjectStoreCursorImpl::LoadCurrentRow() {
   StringPiece value_slice = StringPiece(iterator_->Value());
   if (!DecodeVarInt(&value_slice, &version)) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InternalInconsistencyStatus();
     return false;
   }
 
@@ -3458,11 +3465,11 @@ bool ObjectStoreCursorImpl::LoadCurrentRow() {
   EncodeIDBKey(*current_key_, &encoded_key);
   record_identifier_.Reset(encoded_key, version);
 
-  if (!transaction_->GetBlobInfoForRecord(database_id_,
-                                          iterator_->Key().as_string(),
-                                          &current_value_).ok()) {
+  *s = transaction_->GetBlobInfoForRecord(
+      database_id_, iterator_->Key().as_string(), &current_value_);
+  if (!s->ok())
     return false;
-  }
+
   current_value_.bits = value_slice.as_string();
   return true;
 }
@@ -3492,7 +3499,7 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
     NOTREACHED();
     return record_identifier_;
   }
-  bool LoadCurrentRow() override;
+  bool LoadCurrentRow(leveldb::Status* s) override;
 
  protected:
   std::string EncodeKey(const IndexedDBKey& key) override {
@@ -3520,11 +3527,12 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
   DISALLOW_COPY_AND_ASSIGN(IndexKeyCursorImpl);
 };
 
-bool IndexKeyCursorImpl::LoadCurrentRow() {
+bool IndexKeyCursorImpl::LoadCurrentRow(leveldb::Status* s) {
   StringPiece slice(iterator_->Key());
   IndexDataKey index_data_key;
   if (!IndexDataKey::Decode(&slice, &index_data_key)) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InvalidDBKeyStatus();
     return false;
   }
 
@@ -3535,11 +3543,13 @@ bool IndexKeyCursorImpl::LoadCurrentRow() {
   int64 index_data_version;
   if (!DecodeVarInt(&slice, &index_data_version)) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InternalInconsistencyStatus();
     return false;
   }
 
   if (!DecodeIDBKey(&slice, &primary_key_) || !slice.empty()) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InternalInconsistencyStatus();
     return false;
   }
 
@@ -3550,9 +3560,8 @@ bool IndexKeyCursorImpl::LoadCurrentRow() {
 
   std::string result;
   bool found = false;
-  leveldb::Status s =
-      transaction_->transaction()->Get(primary_leveldb_key, &result, &found);
-  if (!s.ok()) {
+  *s = transaction_->transaction()->Get(primary_leveldb_key, &result, &found);
+  if (!s->ok()) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
@@ -3569,6 +3578,7 @@ bool IndexKeyCursorImpl::LoadCurrentRow() {
   slice = StringPiece(result);
   if (!DecodeVarInt(&slice, &object_store_data_version)) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InternalInconsistencyStatus();
     return false;
   }
 
@@ -3602,7 +3612,7 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
     NOTREACHED();
     return record_identifier_;
   }
-  bool LoadCurrentRow() override;
+  bool LoadCurrentRow(leveldb::Status* s) override;
 
  protected:
   std::string EncodeKey(const IndexedDBKey& key) override {
@@ -3634,11 +3644,12 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
   DISALLOW_COPY_AND_ASSIGN(IndexCursorImpl);
 };
 
-bool IndexCursorImpl::LoadCurrentRow() {
+bool IndexCursorImpl::LoadCurrentRow(leveldb::Status* s) {
   StringPiece slice(iterator_->Key());
   IndexDataKey index_data_key;
   if (!IndexDataKey::Decode(&slice, &index_data_key)) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InvalidDBKeyStatus();
     return false;
   }
 
@@ -3649,10 +3660,12 @@ bool IndexCursorImpl::LoadCurrentRow() {
   int64 index_data_version;
   if (!DecodeVarInt(&slice, &index_data_version)) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InternalInconsistencyStatus();
     return false;
   }
   if (!DecodeIDBKey(&slice, &primary_key_)) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InvalidDBKeyStatus();
     return false;
   }
 
@@ -3664,9 +3677,8 @@ bool IndexCursorImpl::LoadCurrentRow() {
 
   std::string result;
   bool found = false;
-  leveldb::Status s =
-      transaction_->transaction()->Get(primary_leveldb_key_, &result, &found);
-  if (!s.ok()) {
+  *s = transaction_->transaction()->Get(primary_leveldb_key_, &result, &found);
+  if (!s->ok()) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
@@ -3683,6 +3695,7 @@ bool IndexCursorImpl::LoadCurrentRow() {
   slice = StringPiece(result);
   if (!DecodeVarInt(&slice, &object_store_data_version)) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
+    *s = InternalInconsistencyStatus();
     return false;
   }
 
@@ -3692,9 +3705,9 @@ bool IndexCursorImpl::LoadCurrentRow() {
   }
 
   current_value_.bits = slice.as_string();
-  return transaction_->GetBlobInfoForRecord(database_id_,
-                                            primary_leveldb_key_,
-                                            &current_value_).ok();
+  *s = transaction_->GetBlobInfoForRecord(database_id_, primary_leveldb_key_,
+                                          &current_value_);
+  return s->ok();
 }
 
 bool ObjectStoreCursorOptions(

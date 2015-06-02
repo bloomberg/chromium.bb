@@ -693,7 +693,14 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
 
 class IndexedDBBrowserCorruptionTest
     : public IndexedDBBrowserTest,
-      public ::testing::WithParamInterface<const char*> {};
+      public ::testing::WithParamInterface<const char*> {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Experimental for IDBObjectStore.getAll()
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+};
 
 IN_PROC_BROWSER_TEST_P(IndexedDBBrowserCorruptionTest,
                        OperationOnCorruptedOpenDatabase) {
@@ -719,6 +726,7 @@ INSTANTIATE_TEST_CASE_P(IndexedDBBrowserCorruptionTestInstantiation,
                         IndexedDBBrowserCorruptionTest,
                         ::testing::Values("failGetBlobJournal",
                                           "get",
+                                          "getAll",
                                           "failWebkitGetDatabaseNames",
                                           "iterate",
                                           "failTransactionCommit",

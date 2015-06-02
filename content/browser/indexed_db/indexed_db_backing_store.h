@@ -313,7 +313,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
     virtual const IndexedDBKey& primary_key() const;
     virtual IndexedDBValue* value() = 0;
     virtual const RecordIdentifier& record_identifier() const;
-    virtual bool LoadCurrentRow() = 0;
+    virtual bool LoadCurrentRow(leveldb::Status* s) = 0;
 
    protected:
     Cursor(scoped_refptr<IndexedDBBackingStore> backing_store,
