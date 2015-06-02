@@ -6418,6 +6418,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DomDistiller.Time.SwipeToPaint" units="milliseconds">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Records the time from a swipe-up gesture on ReaderModePanel to the first
+    paint of the empty template.
+  </summary>
+</histogram>
+
 <histogram name="DOMStorage.clear" units="milliseconds">
   <obsolete>
     Deprecated 2012.

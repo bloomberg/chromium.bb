@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.dom_distiller;
 import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.createAnimation;
 
 import android.content.Context;
+import android.os.SystemClock;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.Tab;
@@ -22,6 +24,8 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.TopControlsState;
 import org.chromium.ui.base.WindowAndroid;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Manages UI effects for reader mode including hiding and showing the
@@ -599,6 +603,8 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
      * Prepares the distilled mode.
      */
     public void activatePreviewOfDistilledMode() {
+        final long start = SystemClock.elapsedRealtime();
+
         if (mDistilledContentViewCore != null) return;
 
         mDidFirstNonEmptyDistilledPaint = false;
@@ -611,6 +617,9 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
             public void didFirstVisuallyNonEmptyPaint() {
                 super.didFirstVisuallyNonEmptyPaint();
                 mDidFirstNonEmptyDistilledPaint = true;
+
+                RecordHistogram.recordTimesHistogram("DomDistiller.Time.SwipeToPaint",
+                        SystemClock.elapsedRealtime() - start, TimeUnit.MILLISECONDS);
             }
         };
         mReaderModeHost.getTab().attachOverlayContentViewCore(
