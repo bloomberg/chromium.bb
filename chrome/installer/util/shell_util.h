@@ -410,11 +410,12 @@ class ShellUtil {
   // Windows prior to Windows 8.
   static bool CanMakeChromeDefaultUnattended();
 
-  // Returns the DefaultState of Chrome for HTTP and HTTPS.
+  // Returns the DefaultState of Chrome for HTTP and HTTPS and updates the
+  // default browser beacons as appropriate.
   static DefaultState GetChromeDefaultState();
 
-  // Returns the DefaultState of the Chrome instance with the specified path
-  // for HTTP and HTTPs.
+  // Returns the DefaultState of the Chrome instance with the specified path for
+  // HTTP and HTTPs and updates the default browser beacons as appropriate.
   static DefaultState GetChromeDefaultStateFromPath(
       const base::FilePath& chrome_exe);
 

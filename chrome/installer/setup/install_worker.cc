@@ -61,7 +61,7 @@ namespace {
 // on user login by way of Active Setup.  Increase this value if the work done
 // in setup_main.cc's handling of kConfigureUserSettings changes and should be
 // executed again for all users.
-const wchar_t kActiveSetupVersion[] = L"24,0,0,0";
+const wchar_t kActiveSetupVersion[] = L"43,0,0,0";
 
 // Although the UUID of the ChromeFrame class is used for the "current" value,
 // this is done only as a convenience; there is no need for the GUID of the Low

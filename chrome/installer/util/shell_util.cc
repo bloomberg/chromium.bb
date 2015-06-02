@@ -43,6 +43,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/util/beacons.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installer_util_strings.h"
@@ -1963,9 +1964,10 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultStateFromPath(
   // flag. There is doubtless some other key we can hook into to cause "Repair"
   // to show up in Add/Remove programs for us.
   static const wchar_t* const kChromeProtocols[] = { L"http", L"https" };
-  return ProbeProtocolHandlers(chrome_exe,
-                               kChromeProtocols,
-                               arraysize(kChromeProtocols));
+  DefaultState default_state = ProbeProtocolHandlers(
+      chrome_exe, kChromeProtocols, arraysize(kChromeProtocols));
+  UpdateDefaultBrowserBeaconWithState(chrome_exe, distribution, default_state);
+  return default_state;
 }
 
 ShellUtil::DefaultState ShellUtil::GetChromeDefaultProtocolClientState(
