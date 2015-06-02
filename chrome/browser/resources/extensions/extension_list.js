@@ -297,8 +297,8 @@ cr.define('extensions', function() {
           this.delegate_.onExtensionCountChanged();
         }
 
-        if (eventData.event_type == EventType.INSTALLED ||
-            eventData.event_type == EventType.UNINSTALLED ||
+        if (eventData.event_type == EventType.LOADED ||
+            eventData.event_type == EventType.UNLOADED ||
             eventData.event_type == EventType.PREFS_CHANGED) {
           // We update the commands overlay whenever an extension is added or
           // removed (other updates wouldn't affect command-ly things).

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/common/extensions/command.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -78,6 +79,19 @@ class CommandService : public BrowserContextKeyedAPI,
     PAGE_ACTION
   };
 
+  class Observer {
+   public:
+    // Called when an extension command is added.
+    virtual void OnExtensionCommandAdded(const std::string& extension_id,
+                                         const Command& command) {}
+
+    // Called when an extension command is removed.
+    virtual void OnExtensionCommandRemoved(const std::string& extension_id,
+                                           const Command& command) {}
+   protected:
+    virtual ~Observer() {}
+  };
+
   // Register prefs for keybinding.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -140,8 +154,8 @@ class CommandService : public BrowserContextKeyedAPI,
   // be registered as a global command (be active even when Chrome does not have
   // focus. Returns true if the change was successfully recorded.
   bool AddKeybindingPref(const ui::Accelerator& accelerator,
-                         std::string extension_id,
-                         std::string command_name,
+                         const std::string& extension_id,
+                         const std::string& command_name,
                          bool allow_overrides,
                          bool global);
 
@@ -182,6 +196,9 @@ class CommandService : public BrowserContextKeyedAPI,
   // Returns true if |extension| requests to override the bookmark shortcut key
   // and should be allowed to do so.
   bool RequestsBookmarkShortcutOverride(const Extension* extension) const;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   friend class BrowserContextKeyedAPIFactory<CommandService>;
@@ -256,6 +273,8 @@ class CommandService : public BrowserContextKeyedAPI,
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandService);
 };

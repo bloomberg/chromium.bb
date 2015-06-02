@@ -236,7 +236,8 @@ cr.define('options', function() {
      * @private
      */
     createNodeForExtension_: function(extension) {
-      if (extension.commands.length == 0)
+      if (extension.commands.length == 0 ||
+          extension.state == chrome.developerPrivate.ExtensionState.DISABLED)
         return;
 
       var template = $('template-collection-extension-commands').querySelector(
@@ -310,7 +311,9 @@ cr.define('options', function() {
         option = document.createElement('option');
         option.textContent = loadTimeData.getString('extensionCommandsGlobal');
         select.appendChild(option);
-        select.selectedIndex = command.isGlobal ? 1 : 0;
+        select.selectedIndex =
+            command.scope == chrome.developerPrivate.CommandScope.GLOBAL ?
+                1 : 0;
 
         select.addEventListener(
             'change', this.handleSetCommandScope_.bind(this));

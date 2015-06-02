@@ -12,7 +12,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_mangle.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
@@ -210,6 +209,7 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
       warning_service_observer_(this),
       extension_prefs_observer_(this),
       extension_management_observer_(this),
+      command_service_observer_(this),
       profile_(profile),
       event_router_(EventRouter::Get(profile_)),
       weak_factory_(this) {
@@ -222,6 +222,7 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
   extension_prefs_observer_.Add(ExtensionPrefs::Get(profile));
   extension_management_observer_.Add(
       ExtensionManagementFactory::GetForBrowserContext(profile));
+  command_service_observer_.Add(CommandService::Get(profile));
 }
 
 DeveloperPrivateEventRouter::~DeveloperPrivateEventRouter() {
@@ -235,12 +236,6 @@ void DeveloperPrivateEventRouter::AddExtensionId(
 void DeveloperPrivateEventRouter::RemoveExtensionId(
     const std::string& extension_id) {
   extension_ids_.erase(extension_id);
-}
-
-void DeveloperPrivateEventRouter::NotifyExtensionCommandUpdated(
-    const std::string& extension_id) {
-  BroadcastItemStateChanged(developer::EVENT_TYPE_PREFS_CHANGED,
-                            extension_id);
 }
 
 void DeveloperPrivateEventRouter::OnExtensionLoaded(
@@ -315,6 +310,20 @@ void DeveloperPrivateEventRouter::OnAppWindowAdded(AppWindow* window) {
 void DeveloperPrivateEventRouter::OnAppWindowRemoved(AppWindow* window) {
   BroadcastItemStateChanged(developer::EVENT_TYPE_VIEW_UNREGISTERED,
                             window->extension_id());
+}
+
+void DeveloperPrivateEventRouter::OnExtensionCommandAdded(
+    const std::string& extension_id,
+    const Command& added_command) {
+  BroadcastItemStateChanged(developer::EVENT_TYPE_PREFS_CHANGED,
+                            extension_id);
+}
+
+void DeveloperPrivateEventRouter::OnExtensionCommandRemoved(
+    const std::string& extension_id,
+    const Command& removed_command) {
+  BroadcastItemStateChanged(developer::EVENT_TYPE_PREFS_CHANGED,
+                            extension_id);
 }
 
 void DeveloperPrivateEventRouter::OnExtensionActionVisibilityChanged(
@@ -1422,9 +1431,6 @@ DeveloperPrivateUpdateExtensionCommandFunction::Run() {
         update.extension_id, update.command_name, *update.keybinding);
   }
 
-  DeveloperPrivateAPI::Get(browser_context())->
-      developer_private_event_router()->
-          NotifyExtensionCommandUpdated(update.extension_id);
   return RespondNow(NoArguments());
 }
 

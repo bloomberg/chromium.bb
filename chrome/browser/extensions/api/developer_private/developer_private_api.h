@@ -10,6 +10,7 @@
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
@@ -55,6 +56,7 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
                                     public ErrorConsole::Observer,
                                     public ProcessManagerObserver,
                                     public AppWindowRegistry::Observer,
+                                    public CommandService::Observer,
                                     public ExtensionActionAPI::Observer,
                                     public ExtensionPrefsObserver,
                                     public ExtensionManagement::Observer,
@@ -66,11 +68,6 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   // Add or remove an ID to the list of extensions subscribed to events.
   void AddExtensionId(const std::string& extension_id);
   void RemoveExtensionId(const std::string& extension_id);
-
-  // Notifies the event router that an extension's command has been updated.
-  // Since this presently only happens through this API, this doesn't need to
-  // be an observer method. If that changes, we should revisit it.
-  void NotifyExtensionCommandUpdated(const std::string& extension_id);
 
  private:
   // ExtensionRegistryObserver:
@@ -101,6 +98,12 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   // AppWindowRegistry::Observer:
   void OnAppWindowAdded(AppWindow* window) override;
   void OnAppWindowRemoved(AppWindow* window) override;
+
+  // CommandService::Observer:
+  void OnExtensionCommandAdded(const std::string& extension_id,
+                               const Command& added_command) override;
+  void OnExtensionCommandRemoved(const std::string& extension_id,
+                                 const Command& removed_command) override;
 
   // ExtensionActionAPI::Observer:
   void OnExtensionActionVisibilityChanged(const std::string& extension_id,
@@ -142,6 +145,8 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
       extension_prefs_observer_;
   ScopedObserver<ExtensionManagement, ExtensionManagement::Observer>
       extension_management_observer_;
+  ScopedObserver<CommandService, CommandService::Observer>
+      command_service_observer_;
 
   Profile* profile_;
 
