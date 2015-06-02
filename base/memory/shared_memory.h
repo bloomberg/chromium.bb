@@ -128,6 +128,9 @@ class BASE_EXPORT SharedMemory {
   static SharedMemoryHandle DeepCopyHandle(
       const SharedMemoryHandle& handle,
       bool clean_up_resources_on_destruction);
+
+  // This method requires that the SharedMemoryHandle is backed by a POSIX fd.
+  static int GetFdFromSharedMemoryHandle(const SharedMemoryHandle& handle);
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)

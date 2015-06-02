@@ -264,6 +264,12 @@ SharedMemoryHandle SharedMemory::DeepCopyHandle(
   return base::FileDescriptor(duped_handle, clean_up_resources_on_destruction);
 }
 
+// static
+int SharedMemory::GetFdFromSharedMemoryHandle(
+    const SharedMemoryHandle& handle) {
+  return handle.fd;
+}
+
 bool SharedMemory::CreateAndMapAnonymous(size_t size) {
   return CreateAnonymous(size) && Map(size);
 }

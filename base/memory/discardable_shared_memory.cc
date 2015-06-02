@@ -357,8 +357,8 @@ void DiscardableSharedMemory::Shrink() {
     return;
 
   // Truncate shared memory to size of SharedState.
-  if (HANDLE_EINTR(
-          ftruncate(handle.fd, AlignToPageSize(sizeof(SharedState)))) != 0) {
+  if (HANDLE_EINTR(ftruncate(SharedMemory::GetFdFromSharedMemoryHandle(handle),
+                             AlignToPageSize(sizeof(SharedState)))) != 0) {
     DPLOG(ERROR) << "ftruncate() failed";
     return;
   }
