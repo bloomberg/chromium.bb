@@ -33,7 +33,11 @@
   // TODO(shreyasv): Implement this. crbug.com/480654
 }
 
-- (void)removeData {
+- (void)removeDataAtStashPath {
+  // TODO(shreyasv): Implement this. crbug.com/480654
+}
+
+- (void)removeDataAtCanonicalPath {
   // TODO(shreyasv): Implement this. crbug.com/480654
 }
 

@@ -4,6 +4,7 @@
 
 #import "ios/web/public/crw_browsing_data_store.h"
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
@@ -84,6 +85,41 @@ class BrowsingDataStoreTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
+  // Sets the mode of the |browsing_data_store_| to |ACTIVE| and blocks until
+  // the mode has actually been changed.
+  void MakeActive() {
+    [browsing_data_store_ makeActiveWithCompletionHandler:^(BOOL success) {
+      DCHECK(success);
+    }];
+    base::test::ios::WaitUntilCondition(^bool() {
+      return [browsing_data_store_ mode] == ACTIVE;
+    });
+  }
+
+  // Sets the mode of the |browsing_data_store_| to |INACTIVE| and blocks until
+  // the mode has actually been changed.
+  void MakeInactive() {
+    [browsing_data_store_ makeInactiveWithCompletionHandler:^(BOOL success) {
+      DCHECK(success);
+    }];
+    base::test::ios::WaitUntilCondition(^bool() {
+      return [browsing_data_store_ mode] == INACTIVE;
+    });
+  }
+
+  // Removes browsing data of |browsingDataTypes| from the underlying
+  // CRWBrowsingDataStore and waits until the operation finished.
+  void RemoveDataOfTypes(web::BrowsingDataTypes browsing_data_types) {
+    __block BOOL block_was_called = NO;
+    [browsing_data_store_ removeDataOfTypes:browsing_data_types
+                          completionHandler:^{
+                            block_was_called = YES;
+                          }];
+    base::test::ios::WaitUntilCondition(^bool() {
+      return block_was_called;
+    });
+  }
+
   // The CRWBrowsingDataStore used for testing purposes.
   base::scoped_nsobject<CRWBrowsingDataStore> browsing_data_store_;
 
@@ -99,6 +135,10 @@ class BrowsingDataStoreTest : public PlatformTest {
 // Tests that a CRWBrowsingDataStore's initial mode is set correctly and that it
 // has no pending operations.
 TEST_F(BrowsingDataStoreTest, InitialModeAndNoPendingOperations) {
+  if (!base::ios::IsRunningOnIOS8OrLater()) {
+    return;
+  }
+
   EXPECT_EQ(ACTIVE, [browsing_data_store_ mode]);
   EXPECT_FALSE([browsing_data_store_ hasPendingOperations]);
 }
@@ -106,6 +146,10 @@ TEST_F(BrowsingDataStoreTest, InitialModeAndNoPendingOperations) {
 // Tests that CRWBrowsingDataStore handles several consecutive calls to
 // |makeActive| and |makeInactive| correctly.
 TEST_F(BrowsingDataStoreTest, MakeActiveAndInactiveOperations) {
+  if (!base::ios::IsRunningOnIOS8OrLater()) {
+    return;
+  }
+
   base::scoped_nsobject<CRWTestBrowsingDataStoreObserver> observer(
       [[CRWTestBrowsingDataStoreObserver alloc]
           initWithBrowsingDataStore:browsing_data_store_]);
@@ -145,18 +189,51 @@ TEST_F(BrowsingDataStoreTest, MakeActiveAndInactiveOperations) {
   EXPECT_EQ(2U, [observer modeChangeCount]);
 }
 
-// Tests that CRWBrowsingDataStore correctly handles |removeDataOfTypes:| call.
+// Tests that CRWBrowsingDataStore correctly handles |removeDataOfTypes:|.
 TEST_F(BrowsingDataStoreTest, RemoveDataOperations) {
-  web::BrowsingDataTypes browsing_data_types = web::BROWSING_DATA_TYPE_COOKIES;
-  __block BOOL block_was_called = NO;
-  [browsing_data_store_ removeDataOfTypes:browsing_data_types
-                        completionHandler:^{
-                          DCHECK([NSThread isMainThread]);
-                          block_was_called = YES;
-                        }];
-  base::test::ios::WaitUntilCondition(^bool() {
-    return block_was_called;
-  });
+  if (!base::ios::IsRunningOnIOS8OrLater()) {
+    return;
+  }
+
+  ASSERT_EQ(ACTIVE, [browsing_data_store_ mode]);
+  // |removeDataOfTypes| is called when the mode was ACTIVE.
+  RemoveDataOfTypes(BROWSING_DATA_TYPE_COOKIES);
+
+  MakeInactive();
+  ASSERT_EQ(INACTIVE, [browsing_data_store_ mode]);
+  // |removeDataOfTypes| is called when the mode was INACTIVE.
+  RemoveDataOfTypes(BROWSING_DATA_TYPE_COOKIES);
+}
+
+// Tests that CRWBrowsingDataStore correctly handles |removeDataOfTypes:| after
+// a |makeActive| call.
+TEST_F(BrowsingDataStoreTest, RemoveDataOperationAfterMakeActiveCall) {
+  if (!base::ios::IsRunningOnIOS8OrLater()) {
+    return;
+  }
+
+  MakeInactive();
+  ASSERT_EQ(INACTIVE, [browsing_data_store_ mode]);
+
+  [browsing_data_store_ makeActiveWithCompletionHandler:nil];
+  // |removeDataOfTypes| is called immediately after a |makeActive| call.
+  RemoveDataOfTypes(BROWSING_DATA_TYPE_COOKIES);
+  EXPECT_EQ(ACTIVE, [browsing_data_store_ mode]);
+}
+
+// Tests that CRWBrowsingDataStore correctly handles |removeDataOfTypes:| after
+// a |makeActive| call.
+TEST_F(BrowsingDataStoreTest, RemoveDataOperationAfterMakeInactiveCall) {
+  if (!base::ios::IsRunningOnIOS8OrLater()) {
+    return;
+  }
+
+  ASSERT_EQ(ACTIVE, [browsing_data_store_ mode]);
+
+  [browsing_data_store_ makeInactiveWithCompletionHandler:nil];
+  // |removeDataOfTypes| is called immediately after a |makeInactive| call.
+  RemoveDataOfTypes(BROWSING_DATA_TYPE_COOKIES);
+  EXPECT_EQ(INACTIVE, [browsing_data_store_ mode]);
 }
 
 }  // namespace web

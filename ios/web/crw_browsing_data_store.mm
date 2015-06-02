@@ -21,6 +21,11 @@ enum OperationType {
   RESTORE,
   REMOVE
 };
+
+// The name of the NSOperation that performs a restore operation.
+NSString* const kRestoreOperationName = @"CRWBrowsingDataStore.RESTORE";
+// The name of the NSOperation that performs a stash operation.
+NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 }  // namespace
 
 @interface CRWBrowsingDataStore ()
@@ -39,6 +44,12 @@ enum OperationType {
 // Returns an array of browsing data managers for the given |browsingDataTypes|.
 - (NSArray*)browsingDataManagersForBrowsingDataTypes:
         (web::BrowsingDataTypes)browsingDataTypes;
+// Returns the selector that needs to be performed on the
+// CRWBrowsingDataManagers for the |operationType|.
+- (SEL)browsingDataManagerSelectorForOperationType:(OperationType)operationType;
+// Returns the selector that needs to be performed on the
+// CRWBrowsingDataManagers for a REMOVE operation.
+- (SEL)browsingDataManagerSelectorForRemoveOperationType;
 
 // Redefined to be read-write. Must be called from the main thread.
 @property(nonatomic, assign) CRWBrowsingDataStoreMode mode;
@@ -94,6 +105,8 @@ enum OperationType {
   // The last operation that was enqueued to be run. Can be stash, restore or a
   // delete operation.
   base::scoped_nsobject<NSOperation> _lastDispatchedOperation;
+  // The last dispatched stash or restore operation that was enqueued to be run.
+  base::scoped_nsobject<NSOperation> _lastDispatchedStashOrRestoreOperation;
   // The number of stash or restore operations that are still pending. If this
   // value > 0 the mode of the CRWBrowsingDataStore is SYNCHRONIZING. The mode
   // can be made ACTIVE or INACTIVE only be set when this value is 0.
@@ -188,6 +201,41 @@ enum OperationType {
 
 - (void)setDelegate:(id<CRWBrowsingDataStoreDelegate>)delegate {
   _delegate.reset(delegate);
+}
+
+- (SEL)browsingDataManagerSelectorForOperationType:
+        (OperationType)operationType {
+  switch (operationType) {
+    case STASH:
+      return @selector(stashData);
+    case RESTORE:
+      return @selector(restoreData);
+    case REMOVE:
+      return [self browsingDataManagerSelectorForRemoveOperationType];
+  };
+  NOTREACHED();
+  return nullptr;
+}
+
+- (SEL)browsingDataManagerSelectorForRemoveOperationType {
+  if (self.mode == ACTIVE) {
+    return @selector(removeDataAtCanonicalPath);
+  }
+  if (self.mode == INACTIVE) {
+    return @selector(removeDataAtStashPath);
+  }
+  DCHECK(_lastDispatchedStashOrRestoreOperation);
+  NSString* lastDispatchedStashOrRestoreOperationName =
+      [_lastDispatchedStashOrRestoreOperation name];
+  if ([lastDispatchedStashOrRestoreOperationName
+          isEqual:kRestoreOperationName]) {
+    return @selector(removeDataAtCanonicalPath);
+  }
+  if ([lastDispatchedStashOrRestoreOperationName isEqual:kStashOperationName]) {
+    return @selector(removeDataAtStashPath);
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString*)key {
@@ -307,21 +355,9 @@ enum OperationType {
   DCHECK([NSThread isMainThread]);
   DCHECK(completionHandler);
 
-  SEL selector = nullptr;
-  switch (operationType) {
-    case STASH:
-      selector = @selector(stashData);
-      break;
-    case RESTORE:
-      selector = @selector(restoreData);
-      break;
-    case REMOVE:
-      selector = @selector(removeData);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  };
+  SEL selector =
+      [self browsingDataManagerSelectorForOperationType:operationType];
+  DCHECK(selector);
 
   if (operationType == RESTORE || operationType == STASH) {
     [self setMode:SYNCHRONIZING];
@@ -346,6 +382,10 @@ enum OperationType {
                                   selector:selector
                          completionHandler:callCompletionHandlerOnMainThread]);
 
+  if (operationType == RESTORE || operationType == STASH) {
+    [operation setName:(RESTORE ? kRestoreOperationName : kStashOperationName)];
+    _lastDispatchedStashOrRestoreOperation.reset([operation retain]);
+  }
 
   NSOperationQueue* queue = nil;
   switch (operationType) {

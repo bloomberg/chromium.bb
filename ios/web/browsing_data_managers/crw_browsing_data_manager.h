@@ -11,8 +11,11 @@
 // BrowserStates. Callers of these methods must do so on a background thread.
 @protocol CRWBrowsingDataManager<NSObject>
 
-// Removes browsing data.
-- (void)removeData;
+// Removes browsing data at the associated BrowserState's state path.
+- (void)removeDataAtStashPath;
+
+// Removes browsing data at the canonical path that a web view stores its data.
+- (void)removeDataAtCanonicalPath;
 
 // Stashes browsing data to the associated BrowserState's state path.
 - (void)stashData;
