@@ -29,6 +29,13 @@ namespace device {
 // Other classes can add themselves as observers.
 class MediaTransferProtocolManager {
  public:
+  // A callback to handle the result of GetStorageInfoFromDevice.
+  // The first argument is the returned storage info.
+  // The second argument is true if there was an error.
+  typedef base::Callback<void(const MtpStorageInfo& storage_info,
+                              const bool error)>
+      GetStorageInfoFromDeviceCallback;
+
   // A callback to handle the result of OpenStorage.
   // The first argument is the returned handle.
   // The second argument is true if there was an error.
@@ -97,10 +104,15 @@ class MediaTransferProtocolManager {
   // Returns a vector of available MTP storages.
   virtual const std::vector<std::string> GetStorages() const = 0;
 
-  // On success, returns the the metadata for |storage_name|.
+  // On success, returns the metadata for |storage_name|.
   // Otherwise returns NULL.
   virtual const MtpStorageInfo* GetStorageInfo(
       const std::string& storage_name) const = 0;
+
+  // Read the metadata of |storage_name| from device and runs |callback|.
+  virtual void GetStorageInfoFromDevice(
+      const std::string& storage_name,
+      const GetStorageInfoFromDeviceCallback& callback) = 0;
 
   // Opens |storage_name| in |mode| and runs |callback|.
   virtual void OpenStorage(const std::string& storage_name,

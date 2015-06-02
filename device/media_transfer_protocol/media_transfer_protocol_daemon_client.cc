@@ -64,6 +64,20 @@ class MediaTransferProtocolDaemonClientImpl
                    error_callback));
   }
 
+  void GetStorageInfoFromDevice(const std::string& storage_name,
+                                const GetStorageInfoCallback& callback,
+                                const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(mtpd::kMtpdInterface,
+                                 mtpd::kGetStorageInfoFromDevice);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(storage_name);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnGetStorageInfo,
+                   weak_ptr_factory_.GetWeakPtr(), storage_name, callback,
+                   error_callback));
+  }
+
   // MediaTransferProtocolDaemonClient override.
   void OpenStorage(const std::string& storage_name,
                    const std::string& mode,

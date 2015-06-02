@@ -101,6 +101,13 @@ class MediaTransferProtocolDaemonClient {
                               const GetStorageInfoCallback& callback,
                               const ErrorCallback& error_callback) = 0;
 
+  // Calls GetStorageInfoFromDevice method. |callback| is called after the
+  // method call succeeds, otherwise, |error_callback| is called.
+  virtual void GetStorageInfoFromDevice(
+      const std::string& storage_name,
+      const GetStorageInfoCallback& callback,
+      const ErrorCallback& error_callback) = 0;
+
   // Calls OpenStorage method. |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
   // OpenStorage returns a handle in |callback|.

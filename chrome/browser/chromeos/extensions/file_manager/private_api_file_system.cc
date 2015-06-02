@@ -43,7 +43,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
-#include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "net/base/escape.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -428,18 +427,12 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
     DCHECK(!storage_name.empty());
 
     // Get MTP StorageInfo.
-    // TODO(yawano) Implement GetStorageInfoFromDevice on chrome side. Currently
-    //     it returns stale storage info at the mount time.
     device::MediaTransferProtocolManager* manager =
         storage_monitor->media_transfer_protocol_manager();
-    const MtpStorageInfo* mtp_storage_info =
-        manager->GetStorageInfo(storage_name);
-    if (!mtp_storage_info)
-      return false;
-
-    const uint64 max_capacity = mtp_storage_info->max_capacity();
-    const uint64 free_space_in_bytes = mtp_storage_info->free_space_in_bytes();
-    GetSizeStatsCallback(&max_capacity, &free_space_in_bytes);
+    manager->GetStorageInfoFromDevice(
+        storage_name, base::Bind(&FileManagerPrivateGetSizeStatsFunction::
+                                     GetMtpAvailableSpaceCallback,
+                                 this));
   } else {
     uint64* total_size = new uint64(0);
     uint64* remaining_size = new uint64(0);
@@ -469,6 +462,21 @@ void FileManagerPrivateGetSizeStatsFunction::GetDriveAvailableSpaceCallback(
     // If stats couldn't be gotten for drive, result should be left undefined.
     SendResponse(true);
   }
+}
+
+void FileManagerPrivateGetSizeStatsFunction::GetMtpAvailableSpaceCallback(
+    const MtpStorageInfo& mtp_storage_info,
+    const bool error) {
+  if (error) {
+    // If stats couldn't be gotten from MTP volume, result should be left
+    // undefined same as we do for Drive.
+    SendResponse(true);
+    return;
+  }
+
+  const uint64 max_capacity = mtp_storage_info.max_capacity();
+  const uint64 free_space_in_bytes = mtp_storage_info.free_space_in_bytes();
+  GetSizeStatsCallback(&max_capacity, &free_space_in_bytes);
 }
 
 void FileManagerPrivateGetSizeStatsFunction::GetSizeStatsCallback(

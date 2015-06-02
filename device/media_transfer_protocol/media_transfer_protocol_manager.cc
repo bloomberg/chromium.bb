@@ -124,6 +124,27 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
+  void GetStorageInfoFromDevice(
+      const std::string& storage_name,
+      const GetStorageInfoFromDeviceCallback& callback) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (!ContainsKey(storage_info_map_, storage_name) || !mtp_client_) {
+      MtpStorageInfo info;
+      callback.Run(info, true /* error */);
+      return;
+    }
+    get_storage_info_from_device_callbacks_.push(callback);
+    mtp_client_->GetStorageInfoFromDevice(
+        storage_name,
+        base::Bind(
+            &MediaTransferProtocolManagerImpl::OnGetStorageInfoFromDevice,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(
+            &MediaTransferProtocolManagerImpl::OnGetStorageInfoFromDeviceError,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // MediaTransferProtocolManager override.
   void OpenStorage(const std::string& storage_name,
                    const std::string& mode,
                    const OpenStorageCallback& callback) override {
@@ -298,6 +319,8 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
  private:
   // Map of storage names to storage info.
   typedef std::map<std::string, MtpStorageInfo> StorageInfoMap;
+  typedef std::queue<GetStorageInfoFromDeviceCallback>
+      GetStorageInfoFromDeviceCallbackQueue;
   // Callback queues - DBus communication is in-order, thus callbacks are
   // received in the same order as the requests.
   typedef std::queue<OpenStorageCallback> OpenStorageCallbackQueue;
@@ -375,6 +398,18 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     FOR_EACH_OBSERVER(Observer,
                       observers_,
                       StorageChanged(true /* is attach */, storage_name));
+  }
+
+  void OnGetStorageInfoFromDevice(const MtpStorageInfo& storage_info) {
+    get_storage_info_from_device_callbacks_.front().Run(storage_info,
+                                                        false /* no error */);
+    get_storage_info_from_device_callbacks_.pop();
+  }
+
+  void OnGetStorageInfoFromDeviceError() {
+    MtpStorageInfo info;
+    get_storage_info_from_device_callbacks_.front().Run(info, true /* error */);
+    get_storage_info_from_device_callbacks_.pop();
   }
 
   void OnOpenStorage(const std::string& handle) {
@@ -649,6 +684,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   std::string current_mtpd_owner_;
 
   // Queued callbacks.
+  GetStorageInfoFromDeviceCallbackQueue get_storage_info_from_device_callbacks_;
   OpenStorageCallbackQueue open_storage_callbacks_;
   CloseStorageCallbackQueue close_storage_callbacks_;
   CreateDirectoryCallbackQueue create_directory_callbacks_;

@@ -5,6 +5,7 @@
 #include "components/storage_monitor/test_media_transfer_protocol_manager_linux.h"
 
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
+#include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 
 namespace storage_monitor {
 
@@ -26,6 +27,13 @@ TestMediaTransferProtocolManagerLinux::GetStorages() const {
 const MtpStorageInfo* TestMediaTransferProtocolManagerLinux::GetStorageInfo(
     const std::string& storage_name) const {
   return NULL;
+}
+
+void TestMediaTransferProtocolManagerLinux::GetStorageInfoFromDevice(
+    const std::string& storage_name,
+    const GetStorageInfoFromDeviceCallback& callback) {
+  MtpStorageInfo mtp_storage_info;
+  callback.Run(mtp_storage_info, true /* error */);
 }
 
 void TestMediaTransferProtocolManagerLinux::OpenStorage(

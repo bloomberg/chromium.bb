@@ -23,6 +23,9 @@ class TestMediaTransferProtocolManagerLinux
   const std::vector<std::string> GetStorages() const override;
   const MtpStorageInfo* GetStorageInfo(
       const std::string& storage_name) const override;
+  void GetStorageInfoFromDevice(
+      const std::string& storage_name,
+      const GetStorageInfoFromDeviceCallback& callback) override;
   void OpenStorage(const std::string& storage_name,
                    const std::string& mode,
                    const OpenStorageCallback& callback) override;
