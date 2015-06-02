@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+test(function() {
+    var doc = document.implementation.createDocument("", "", null);
+    doc.createElement("div").animate([], 1000);
+    var anim = doc.timeline.getAnimations()[0];
+    doc = null;
+    gc();
+    anim.cancel();
+}, 'Calling cancel() on an animation detached from its timeline should not crash.');
+</script>
