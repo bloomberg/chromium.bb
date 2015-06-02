@@ -13,7 +13,7 @@ import distutils.version
 import os
 
 from chromite.cbuildbot import archive_lib
-from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
@@ -49,7 +49,7 @@ class ChromeCommitter(object):
     self._dryrun = dryrun
     self._lkgm = None
     self._old_lkgm = None
-    self.build_configs = cbuildbot_config.GetConfig()
+    self.build_configs = chromeos_config.GetConfig()
 
   def CheckoutChromeLKGM(self):
     """Checkout chromeos LKGM file for chrome into tmp checkout dir."""
