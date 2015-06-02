@@ -700,6 +700,59 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   EXPECT_FALSE(urls_deleted_notifications()[0].second);
 }
 
+// Test that clearing all history does not delete bookmark favicons in the
+// special case that the bookmark page URL is no longer present in the History
+// database's urls table.
+TEST_F(HistoryBackendTest, DeleteAllURLPreviouslyDeleted) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL kPageURL("http://www.google.com");
+  GURL kFaviconURL("http://www.google.com/favicon.ico");
+
+  // Setup: Add visit for |kPageURL|.
+  URLRow row(kPageURL);
+  row.set_visit_count(2);
+  row.set_typed_count(1);
+  row.set_last_visit(base::Time::Now());
+  backend_->AddPagesWithDetails(std::vector<URLRow>(1u, row),
+                                history::SOURCE_BROWSED);
+
+  // Setup: Add favicon for |kPageURL|.
+  std::vector<unsigned char> data;
+  data.push_back('a');
+  favicon_base::FaviconID favicon = backend_->thumbnail_db_->AddFavicon(
+      kFaviconURL, favicon_base::FAVICON, new base::RefCountedBytes(data),
+      base::Time::Now(), kSmallSize);
+  backend_->thumbnail_db_->AddIconMapping(row.url(), favicon);
+
+  history_client_.AddBookmark(kPageURL);
+
+  // Test initial state.
+  URLID row_id = backend_->db_->GetRowForURL(kPageURL, NULL);
+  ASSERT_NE(0, row_id);
+  VisitVector visits;
+  backend_->db_->GetVisitsForURL(row_id, &visits);
+  ASSERT_EQ(1U, visits.size());
+
+  std::vector<IconMapping> icon_mappings;
+  ASSERT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
+      kPageURL, favicon_base::FAVICON, &icon_mappings));
+  ASSERT_EQ(1u, icon_mappings.size());
+
+  // Delete information for |kPageURL|, then clear all browsing data.
+  backend_->DeleteURL(kPageURL);
+  backend_->DeleteAllHistory();
+
+  // Test that the entry in the url table for the bookmark is gone but that the
+  // favicon data for the bookmark is still there.
+  ASSERT_EQ(0, backend_->db_->GetRowForURL(kPageURL, NULL));
+
+  icon_mappings.clear();
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
+      kPageURL, favicon_base::FAVICON, &icon_mappings));
+  EXPECT_EQ(1u, icon_mappings.size());
+}
+
 // Checks that adding a visit, then calling DeleteAll, and then trying to add
 // data for the visited page works.  This can happen when clearing the history
 // immediately after visiting a page.

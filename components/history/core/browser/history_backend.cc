@@ -2530,27 +2530,29 @@ void HistoryBackend::DeleteAllHistory() {
   // the original tables directly.
 
   // Get the bookmarked URLs.
-  std::vector<URLAndTitle> starred_urls;
+  std::vector<URLAndTitle> starred_url_and_titles;
   HistoryClient* history_client = GetHistoryClient();
   if (history_client)
-    history_client->GetBookmarks(&starred_urls);
+    history_client->GetBookmarks(&starred_url_and_titles);
 
-  URLRows kept_urls;
-  for (size_t i = 0; i < starred_urls.size(); i++) {
+  URLRows kept_url_rows;
+  std::vector<GURL> starred_urls;
+  for (const URLAndTitle& url_and_title : starred_url_and_titles) {
+    const GURL& url = url_and_title.url;
+    starred_urls.push_back(url);
+
     URLRow row;
-    if (!db_->GetRowForURL(starred_urls[i].url, &row))
-      continue;
-
-    // Clear the last visit time so when we write these rows they are "clean."
-    row.set_last_visit(Time());
-    row.set_visit_count(0);
-    row.set_typed_count(0);
-    kept_urls.push_back(row);
+    if (db_->GetRowForURL(url, &row)) {
+      // Clear the last visit time so when we write these rows they are "clean."
+      row.set_last_visit(Time());
+      row.set_visit_count(0);
+      row.set_typed_count(0);
+      kept_url_rows.push_back(row);
+    }
   }
 
-  // Clear thumbnail and favicon history. The favicons for the given URLs will
-  // be kept.
-  if (!ClearAllThumbnailHistory(kept_urls)) {
+  // Delete all cached favicons which are not used by bookmarks.
+  if (!ClearAllThumbnailHistory(starred_urls)) {
     LOG(ERROR) << "Thumbnail history could not be cleared";
     // We continue in this error case. If the user wants to delete their
     // history, we should delete as much as we can.
@@ -2559,9 +2561,9 @@ void HistoryBackend::DeleteAllHistory() {
   // ClearAllMainHistory will change the IDs of the URLs in kept_urls.
   // Therefore, we clear the list afterwards to make sure nobody uses this
   // invalid data.
-  if (!ClearAllMainHistory(kept_urls))
+  if (!ClearAllMainHistory(kept_url_rows))
     LOG(ERROR) << "Main history could not be cleared";
-  kept_urls.clear();
+  kept_url_rows.clear();
 
   db_->GetStartDate(&first_recorded_time_);
 
@@ -2570,7 +2572,8 @@ void HistoryBackend::DeleteAllHistory() {
   NotifyURLsDeleted(true, false, URLRows(), std::set<GURL>());
 }
 
-bool HistoryBackend::ClearAllThumbnailHistory(const URLRows& kept_urls) {
+bool HistoryBackend::ClearAllThumbnailHistory(
+    const std::vector<GURL>& kept_urls) {
   if (!thumbnail_db_) {
     // When we have no reference to the thumbnail database, maybe there was an
     // error opening it. In this case, we just try to blow it away to try to
@@ -2583,20 +2586,13 @@ bool HistoryBackend::ClearAllThumbnailHistory(const URLRows& kept_urls) {
     return true;
   }
 
-  // Urls to retain mappings for.
-  std::vector<GURL> urls_to_keep;
-  for (URLRows::const_iterator i = kept_urls.begin(); i != kept_urls.end();
-       ++i) {
-    urls_to_keep.push_back(i->url());
-  }
-
   // Isolate from any long-running transaction.
   thumbnail_db_->CommitTransaction();
   thumbnail_db_->BeginTransaction();
 
   // TODO(shess): If this fails, perhaps the database should be razed
   // or deleted.
-  if (!thumbnail_db_->RetainDataForPageUrls(urls_to_keep)) {
+  if (!thumbnail_db_->RetainDataForPageUrls(kept_urls)) {
     thumbnail_db_->RollbackTransaction();
     thumbnail_db_->BeginTransaction();
     return false;

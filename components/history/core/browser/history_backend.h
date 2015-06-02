@@ -456,6 +456,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   friend class HistoryBackendDBBaseTest;  // So the unit tests can poke our
                                           // innards.
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAll);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAllURLPreviouslyDeleted);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAllThenAddData);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPagesWithDetails);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, UpdateURLs);
@@ -728,7 +729,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Given a vector of all URLs that we will keep, removes all thumbnails
   // referenced by any URL, and also all favicons that aren't used by those
   // URLs.
-  bool ClearAllThumbnailHistory(const URLRows& kept_urls);
+  bool ClearAllThumbnailHistory(const std::vector<GURL>& kept_urls);
 
   // Deletes all information in the history database, except for the supplied
   // set of URLs in the URL table (these should correspond to the bookmarked
