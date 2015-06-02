@@ -732,7 +732,7 @@ template("java_strings_grd_prebuilt") {
 #
 #   chromium_code: If true, extra analysis warning/errors will be enabled.
 #
-#   datadeps, testonly
+#   data_deps, testonly
 #
 # Example
 #   java_binary("foo") {
@@ -752,8 +752,8 @@ template("java_binary") {
     if (defined(invoker.chromium_code)) {
       chromium_code = invoker.chromium_code
     }
-    if (defined(invoker.datadeps)) {
-      deps = invoker.datadeps
+    if (defined(invoker.data_deps)) {
+      deps = invoker.data_deps
     }
     if (defined(invoker.deps)) {
       deps = invoker.deps
@@ -866,7 +866,7 @@ template("junit_binary") {
 #     dependencies for this target. This will allow depending on an
 #     android_library target, for example.
 #
-#   datadeps, testonly
+#   data_deps, testonly
 #
 # Example
 #   java_library("foo_java") {
@@ -894,8 +894,8 @@ template("java_library") {
     if (defined(invoker.chromium_code)) {
       chromium_code = invoker.chromium_code
     }
-    if (defined(invoker.datadeps)) {
-      deps = invoker.datadeps
+    if (defined(invoker.data_deps)) {
+      deps = invoker.data_deps
     }
     if (defined(invoker.deps)) {
       deps = invoker.deps
@@ -1030,8 +1030,8 @@ template("android_library") {
     if (defined(invoker.chromium_code)) {
       chromium_code = invoker.chromium_code
     }
-    if (defined(invoker.datadeps)) {
-      deps = invoker.datadeps
+    if (defined(invoker.data_deps)) {
+      deps = invoker.data_deps
     }
     if (defined(invoker.deps)) {
       deps = invoker.deps
@@ -1150,7 +1150,7 @@ template("android_java_prebuilt") {
 #
 # Variables
 #   android_manifest: Path to AndroidManifest.xml.
-#   datadeps: List of dependencies needed at runtime. These will be built but
+#   data_deps: List of dependencies needed at runtime. These will be built but
 #     won't change the generated .apk in any way (in fact they may be built
 #     after the .apk is).
 #   deps: List of dependencies. All Android java resources and libraries in the
@@ -1209,8 +1209,11 @@ template("android_apk") {
   resources_zip_path = "$base_path.resources.zip"
   _all_resources_zip_path = "$base_path.resources.all.zip"
   jar_path = "$base_path.jar"
-  final_dex_path = "$gen_dir/classes.dex"
   _template_name = target_name
+
+  final_dex_path = "$gen_dir/classes.dex"
+  final_dex_target_name = "${_template_name}__final_dex"
+
   _final_apk_path = ""
   if (defined(invoker.final_apk_path)) {
     _final_apk_path = invoker.final_apk_path
@@ -1251,11 +1254,15 @@ template("android_apk") {
 
   _load_library_from_apk = false
 
+  # The dependency that makes the chromium linker, if any is needed.
+  _chromium_linker_dep = []
+
   if (defined(invoker.native_libs)) {
     _use_chromium_linker = false
     if (defined(invoker.use_chromium_linker)) {
       _use_chromium_linker =
           invoker.use_chromium_linker && chromium_linker_supported
+      _chromium_linker_dep = [ "//base/android/linker:chromium_android_linker" ]
     }
 
     if (defined(invoker.load_library_from_apk) &&
@@ -1307,15 +1314,17 @@ template("android_apk") {
   # Help GN understand that _create_abi_split is not unused (bug in GN).
   assert(_create_abi_split || true)
 
-  write_build_config("${_template_name}__build_config") {
+  build_config_target = "${_template_name}__build_config"
+  write_build_config(build_config_target) {
     type = "android_apk"
     dex_path = final_dex_path
     resources_zip = resources_zip_path
     build_config = _build_config
     android_manifest = _android_manifest
 
+    deps = _chromium_linker_dep
     if (defined(invoker.deps)) {
-      deps = invoker.deps
+      deps += invoker.deps
     }
 
     if (defined(invoker.apk_under_test)) {
@@ -1337,13 +1346,17 @@ template("android_apk") {
     zip_path = resources_zip_path
     all_resources_zip_path = _all_resources_zip_path
     generate_constant_ids = true
-    build_config = _build_config
 
     if (defined(invoker.include_all_resources)) {
       include_all_resources = invoker.include_all_resources
     }
+
+    build_config = _build_config
+    deps = [
+      ":$build_config_target",
+    ]
   }
-  _srcjar_deps += [ ":${_template_name}__process_resources" ]
+  _srcjar_deps += [ ":$process_resources_target" ]
 
   if (_native_libs != []) {
     _enable_chromium_linker_tests = false
@@ -1431,8 +1444,8 @@ template("android_apk") {
     }
   }
 
-  final_deps += [ ":${_template_name}__final_dex" ]
-  dex("${_template_name}__final_dex") {
+  final_deps += [ ":$final_dex_target_name" ]
+  dex("$final_dex_target_name") {
     deps = [
       ":${_template_name}__java",
     ]
@@ -1456,7 +1469,7 @@ template("android_apk") {
         depfile,
       ]
       inputs = [ _build_config ] + _native_libs
-      deps = []
+      deps = _chromium_linker_dep
       skip_packing_list = [
         "gdbserver",
         "libchromium_android_linker.so",
@@ -1523,6 +1536,7 @@ template("android_apk") {
     # This target generates the input file _all_resources_zip_path.
     deps = [
       ":$process_resources_target",
+      ":$final_dex_target_name",
     ]
 
     if (defined(invoker.asset_location)) {
@@ -1580,8 +1594,8 @@ template("android_apk") {
 
   group(target_name) {
     deps = final_deps
-    if (defined(invoker.datadeps)) {
-      datadeps = invoker.datadeps
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
     }
   }
 }
@@ -1654,14 +1668,12 @@ template("unittest_apk") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
-    datadeps = [
-      "//tools/android/md5sum",
-    ]
+    data_deps = [ "//tools/android/md5sum" ]
     if (host_os == "linux") {
-      datadeps += [ "//tools/android/forwarder2" ]
+      data_deps += [ "//tools/android/forwarder2" ]
     }
-    if (defined(invoker.datadeps)) {
-      datadeps += invoker.datadeps
+    if (defined(invoker.data_deps)) {
+      data_deps += invoker.data_deps
     }
   }
 }

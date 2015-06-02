@@ -109,7 +109,7 @@ copy_ex("copy_content_shell_assets") {
 android_apk("content_shell_apk") {
   use_chromium_linker = true
   testonly = true
-  datadeps = [
+  data_deps = [
     # "//tools/android/forwarder",
   ]
   deps = [
@@ -157,7 +157,7 @@ android_apk("content_shell_test_apk") {
     "//net/android:net_javatests",
     "//testing/android/broker:broker_java",
   ]
-  datadeps = [
+  data_deps = [
     ":content_shell_apk",
     "//testing/android/driver:driver_apk",
   ]

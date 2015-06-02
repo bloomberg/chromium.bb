@@ -220,9 +220,7 @@ shared_library("chrome_sync_shell") {
   deps = [
     "//sync:test_support_sync_fake_server_android",
   ]
-  datadeps = [
-    ":chrome_shell_base",
-  ]
+  data_deps = [ ":chrome_shell_base" ]
 }
 
 # GYP: N/A
@@ -471,9 +469,7 @@ android_apk("chrome_shell_test_apk") {
     "//testing/android/broker:broker_java",
     "//ui/android:ui_javatests",
   ]
-  datadeps = [
-    "//testing/android/driver:driver_apk",
-  ]
+  data_deps = [ "//testing/android/driver:driver_apk" ]
   apk_name = "ChromeShellTest"
   android_manifest = "shell/javatests/AndroidManifest.xml"
 }
@@ -742,12 +738,18 @@ copy_ex("chrome_public_apk_assets") {
   if (icu_use_data_file) {
     sources += [ "$root_build_dir/icudtl.dat" ]
   }
+  deps = [
+    "//chrome:packed_extra_resources",
+    "//chrome:packed_resources",
+    "//third_party/icu:icudata",
+  ]
 
   if (v8_use_external_startup_data) {
     sources += [
       "$root_build_dir/natives_blob.bin",
       "$root_build_dir/snapshot_blob.bin",
     ]
+    deps += [ "//v8" ]
   }
 
   sources += [ "$root_build_dir/resources.pak" ]

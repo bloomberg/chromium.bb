@@ -54,6 +54,7 @@ copy_ex("copy_mandoline_assets") {
     "//components/view_manager",
     "//components/view_manager/surfaces",
     "//mandoline/services/core_services",
+    "//mojo/runner:bootstrap",
     "//mojo/runner:bootstrap_java",
     "//mojo/services/network",
   ]

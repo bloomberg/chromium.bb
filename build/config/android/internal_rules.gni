@@ -668,6 +668,9 @@ template("create_apk") {
     deps = [
       ":${_package_resources_target_name}",
     ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
     depfile = "$target_gen_dir/$target_name.d"
 
     inputs = [
@@ -1244,6 +1247,9 @@ template("process_resources") {
 
     if (defined(invoker.args)) {
       args += invoker.args
+    }
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
     }
   }
 }

@@ -15,6 +15,7 @@ if (is_android) {
     input_dex_jar = java_library_path
     deps = [
       ":java_library",
+      ":native_library",
     ]
   }
 
