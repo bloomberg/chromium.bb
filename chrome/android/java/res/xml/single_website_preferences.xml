@@ -25,23 +25,23 @@
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="cookies_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+        android:key="location_access_list" />
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="camera_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="microphone_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
-        android:key="popup_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="images_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="javascript_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
-        android:key="location_access_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
-        android:key="push_notifications_list" />
+        android:key="popup_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="fullscreen_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="midi_sysex_permission_list" />
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+        android:key="push_notifications_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="protected_media_identifier_permission_list" />
     <org.chromium.chrome.browser.preferences.ButtonPreference

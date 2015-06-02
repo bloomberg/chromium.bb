@@ -26,10 +26,6 @@
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
         android:key="microphone" />
-    <!-- Notifications -->
-    <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
-        android:key="push_notifications" />
     <!-- Images -->
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
@@ -46,6 +42,10 @@
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
         android:key="fullscreen" />
+    <!-- Notifications -->
+    <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
+        android:key="push_notifications" />
     <!-- Protected content -->
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
