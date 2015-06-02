@@ -9,35 +9,47 @@
 namespace media_router {
 
 TEST(MediaSourcesTest, IsMirroringMediaSource) {
-  EXPECT_TRUE(IsMirroringMediaSource(ForTabMediaSource(123)));
-  EXPECT_TRUE(IsMirroringMediaSource(ForDesktopMediaSource()));
-  EXPECT_FALSE(IsMirroringMediaSource(ForCastAppMediaSource("CastApp")));
-  EXPECT_FALSE(IsMirroringMediaSource(ForPresentationUrl("http://url")));
+  EXPECT_TRUE(IsMirroringMediaSource(MediaSourceForTab(123)));
+  EXPECT_TRUE(IsMirroringMediaSource(MediaSourceForDesktop()));
+  EXPECT_FALSE(IsMirroringMediaSource(MediaSourceForCastApp("CastApp")));
+  EXPECT_FALSE(
+      IsMirroringMediaSource(MediaSourceForPresentationUrl("http://url")));
 }
 
 TEST(MediaSourcesTest, CreateMediaSource) {
   EXPECT_EQ("urn:x-org.chromium.media:source:tab:123",
-            ForTabMediaSource(123).id());
+            MediaSourceForTab(123).id());
   EXPECT_EQ("urn:x-org.chromium.media:source:desktop",
-            ForDesktopMediaSource().id());
+            MediaSourceForDesktop().id());
   EXPECT_EQ("urn:x-com.google.cast:application:DEADBEEF",
-            ForCastAppMediaSource("DEADBEEF").id());
+            MediaSourceForCastApp("DEADBEEF").id());
   EXPECT_EQ("http://example.com/",
-            ForPresentationUrl("http://example.com/").id());
+            MediaSourceForPresentationUrl("http://example.com/").id());
 }
 
 TEST(MediaSourcesTest, IsValidMediaSource) {
-  EXPECT_TRUE(IsValidMediaSource(ForTabMediaSource(123)));
-  EXPECT_TRUE(IsValidMediaSource(ForDesktopMediaSource()));
-  EXPECT_TRUE(IsValidMediaSource(ForCastAppMediaSource("DEADBEEF")));
-  EXPECT_TRUE(IsValidMediaSource(ForPresentationUrl("http://example.com/")));
-  EXPECT_TRUE(IsValidMediaSource(ForPresentationUrl("https://example.com/")));
+  EXPECT_TRUE(IsValidMediaSource(MediaSourceForTab(123)));
+  EXPECT_TRUE(IsValidMediaSource(MediaSourceForDesktop()));
+  EXPECT_TRUE(IsValidMediaSource(MediaSourceForCastApp("DEADBEEF")));
+  EXPECT_TRUE(
+      IsValidMediaSource(MediaSourceForPresentationUrl("http://example.com/")));
+  EXPECT_TRUE(IsValidMediaSource(
+      MediaSourceForPresentationUrl("https://example.com/")));
 
   // Disallowed scheme
-  EXPECT_FALSE(
-      IsValidMediaSource(ForPresentationUrl("file:///some/local/path")));
+  EXPECT_FALSE(IsValidMediaSource(
+      MediaSourceForPresentationUrl("file:///some/local/path")));
   // Not a URL
-  EXPECT_FALSE(IsValidMediaSource(ForPresentationUrl("totally not a url")));
+  EXPECT_FALSE(
+      IsValidMediaSource(MediaSourceForPresentationUrl("totally not a url")));
+}
+
+TEST(MediaSourcesTest, PresentationUrlFromMediaSource) {
+  EXPECT_EQ("", PresentationUrlFromMediaSource(MediaSourceForTab(123)));
+  EXPECT_EQ("", PresentationUrlFromMediaSource(MediaSourceForDesktop()));
+  EXPECT_EQ("http://example.com/",
+            PresentationUrlFromMediaSource(
+                MediaSourceForPresentationUrl("http://example.com/")));
 }
 
 }  // namespace media_router

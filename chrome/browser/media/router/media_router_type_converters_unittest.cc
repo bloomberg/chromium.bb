@@ -33,7 +33,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
 }
 
 TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
-  MediaSource expected_source(ForTabMediaSource(123));
+  MediaSource expected_source(MediaSourceForTab(123));
   MediaRoute expected_media_route("routeId1", expected_source,
                                   MediaSink("sinkId", "sinkName"),
                                   "Description", false);

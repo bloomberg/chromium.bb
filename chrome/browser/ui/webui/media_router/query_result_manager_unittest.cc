@@ -93,7 +93,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
       query_result_manager_.GetSourceForCastMode(MediaCastMode::DEFAULT);
   EXPECT_TRUE(actual_source.Empty());
 
-  MediaSource source(ForPresentationUrl("http://fooUrl"));
+  MediaSource source(MediaSourceForPresentationUrl("http://fooUrl"));
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_)).Times(1);
   query_result_manager_.StartSinksQuery(MediaCastMode::DEFAULT, source);
 
@@ -105,7 +105,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
   EXPECT_TRUE(source.Equals(actual_source));
 
   // Register a different source for the same cast mode.
-  MediaSource another_source(ForPresentationUrl("http://barUrl"));
+  MediaSource another_source(MediaSourceForPresentationUrl("http://barUrl"));
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_)).Times(1);
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_)).Times(1);
   query_result_manager_.StartSinksQuery(
@@ -136,8 +136,9 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
   MediaSink sink5("sinkId5", "Sink 5");
 
   query_result_manager_.AddObserver(&mock_observer_);
-  DiscoverSinks(MediaCastMode::DEFAULT, ForPresentationUrl("http://barUrl"));
-  DiscoverSinks(MediaCastMode::TAB_MIRROR, ForTabMediaSource(123));
+  DiscoverSinks(MediaCastMode::DEFAULT,
+                MediaSourceForPresentationUrl("http://barUrl"));
+  DiscoverSinks(MediaCastMode::TAB_MIRROR, MediaSourceForTab(123));
 
   // Scenario (results in this order):
   // Action: DEFAULT -> [1, 2, 3]
@@ -209,7 +210,7 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
               OnResultsUpdated(VectorEquals(expected_sinks))).Times(1);
   query_result_manager_.StartSinksQuery(
       MediaCastMode::DEFAULT,
-      ForPresentationUrl("http://bazurl.com"));
+      MediaSourceForPresentationUrl("http://bazurl.com"));
 
   // Action: Remove TAB_MIRROR observer
   // Expected result:

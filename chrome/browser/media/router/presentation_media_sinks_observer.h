@@ -37,6 +37,10 @@ class PresentationMediaSinksObserver : public MediaSinksObserver {
   // MediaSinksObserver implementation.
   void OnSinksReceived(const std::vector<MediaSink>& result) override;
 
+  content::PresentationScreenAvailabilityListener* listener() const {
+    return listener_;
+  }
+
  private:
   enum Availability { UNKNOWN, AVAILABLE, UNAVAILABLE };
 

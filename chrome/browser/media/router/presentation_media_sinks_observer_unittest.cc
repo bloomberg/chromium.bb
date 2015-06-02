@@ -28,7 +28,7 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
     EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).Times(1);
     observer_.reset(new PresentationMediaSinksObserver(
         &router_, &listener_,
-        ForPresentationUrl("http://example.com/presentation.html")));
+        MediaSourceForPresentationUrl("http://example.com/presentation.html")));
   }
 
   void TearDown() override {

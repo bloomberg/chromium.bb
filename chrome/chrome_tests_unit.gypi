@@ -1443,6 +1443,7 @@
       'browser/media/router/media_source_helper_unittest.cc',
       'browser/media/router/media_source_unittest.cc',
       'browser/media/router/presentation_media_sinks_observer_unittest.cc',
+      'browser/media/router/presentation_service_delegate_impl_unittest.cc',
       'browser/ui/webui/media_router/media_cast_mode_unittest.cc',
       'browser/ui/webui/media_router/media_router_dialog_controller_unittest.cc',
       'browser/ui/webui/media_router/media_router_test.cc',
