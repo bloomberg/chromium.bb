@@ -822,6 +822,10 @@ class _RealBuilderRun(object):
     run_base = self.__getattribute__('_run_base')
     config = self.__getattribute__('_config')
 
+    # TODO(akeshet): This logic seems to have a subtle flaky bug that only
+    # manifests itself when using unit tests with ParallelMock. As a workaround,
+    # we have simply eliminiated ParallelMock from the affected tests. See
+    # crbug.com/470907 for context.
     try:
       # run_base.config should always be None except when accessed through
       # this routine.  Override the value here, then undo later.

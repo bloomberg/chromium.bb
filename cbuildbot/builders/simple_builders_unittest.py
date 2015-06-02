@@ -17,7 +17,6 @@ from chromite.cbuildbot.builders import simple_builders
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
-from chromite.lib import parallel_unittest
 from chromite.scripts import cbuildbot
 
 
@@ -36,7 +35,6 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(simple_builders.SimpleBuilder, '_RunParallelStages')
     self.PatchObject(cbuildbot_run._BuilderRunBase, 'GetVersion',
                      return_value='R32-1234.0.0')
-    self.StartPatcher(parallel_unittest.ParallelMock())
 
     self._manager = parallel.Manager()
     self._manager.__enter__()
