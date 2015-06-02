@@ -438,13 +438,23 @@ def main():
 
   args = parser.parse_args()
 
+  if re.search(r'\b(make_clang_dir)=', os.environ.get('GYP_DEFINES', '')):
+    print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
+    return 0
   if args.if_needed:
-    if not re.search(r'\b(clang|asan)=1', os.environ.get('GYP_DEFINES', '')):
-      print 'Skipping Clang update (clang=1 was not set in GYP_DEFINES).'
-      return 0
-
-    if re.search(r'\b(make_clang_dir)=', os.environ.get('GYP_DEFINES', '')):
-      print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
+    is_clang_required = False
+    # clang is always used on Mac and Linux.
+    if sys.platform == 'darwin' or sys.platform.startswith('linux'):
+      is_clang_required = True
+    # clang requested via $GYP_DEFINES.
+    if re.search(r'\b(clang|asan|lsan|msan|tsan)=1',
+                 os.environ.get('GYP_DEFINES', '')):
+      is_clang_required = True
+    # clang previously downloaded, keep it up-to-date.
+    # If you don't want this, delete third_party/llvm-build on your machine.
+    if os.path.isdir(LLVM_BUILD_DIR):
+      is_clang_required = True
+    if not is_clang_required:
       return 0
 
   global LLVM_WIN_REVISION
