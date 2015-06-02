@@ -91,7 +91,7 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   // node. Returns the newly created node.  The created node is placed at the
   // specified index among the parent's children.
   static const bookmarks::BookmarkNode* CreateBookmarkNode(
-      syncer::BaseNode* sync_node,
+      const syncer::BaseNode* sync_node,
       const bookmarks::BookmarkNode* parent,
       bookmarks::BookmarkModel* model,
       Profile* profile,
@@ -102,7 +102,7 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
   static const bookmarks::BookmarkNode* CreateBookmarkNode(
       const base::string16& title,
       const GURL& url,
-      syncer::BaseNode* sync_node,
+      const syncer::BaseNode* sync_node,
       const bookmarks::BookmarkNode* parent,
       bookmarks::BookmarkModel* model,
       Profile* profile,

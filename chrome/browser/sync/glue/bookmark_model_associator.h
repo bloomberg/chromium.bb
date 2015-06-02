@@ -252,6 +252,15 @@ class BookmarkModelAssociator
       const std::vector<int64>& sync_ids,
       Context* context);
 
+  // Helper method for creating a new native bookmark node.
+  const bookmarks::BookmarkNode* CreateBookmarkNode(
+      const bookmarks::BookmarkNode* parent_node,
+      int bookmark_index,
+      const syncer::BaseNode* sync_child_node,
+      const GURL& url,
+      Context* context,
+      syncer::SyncError* error);
+
   // Check whether bookmark model and sync model are synced by comparing
   // their transaction versions.
   // Returns a PERSISTENCE_ERROR if a transaction mismatch was detected where

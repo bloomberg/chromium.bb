@@ -57,6 +57,7 @@ using syncer::BaseNode;
 using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
+using testing::Return;
 using testing::StrictMock;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -997,6 +998,51 @@ TEST_F(ProfileSyncServiceBookmarkTest,
     EXPECT_EQ(bookmark_ids[index_in_bookmark_ids],
               parent_folder->GetChild(i)->id());
   }
+}
+
+// Verifies that the bookmark association skips sync nodes with invalid URLs.
+TEST_F(ProfileSyncServiceBookmarkTest, InitialModelAssociateWithInvalidUrl) {
+  EXPECT_CALL(mock_error_handler_, CreateAndUploadError(_, _, _))
+      .WillOnce(Return(syncer::SyncError()));
+
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  // On the local side create a folder and two nodes.
+  const BookmarkNode* folder = model_->AddFolder(model_->bookmark_bar_node(), 0,
+                                                 base::ASCIIToUTF16("folder"));
+  model_->AddURL(folder, 0, base::ASCIIToUTF16("node1"),
+                 GURL("http://www.node1.com/"));
+  model_->AddURL(folder, 1, base::ASCIIToUTF16("node2"),
+                 GURL("http://www.node2.com/"));
+
+  // On the sync side create a matching folder, one matching node, one
+  // unmatching node, and one node with an invalid URL.
+  CreatePermanentBookmarkNodes();
+  {
+    syncer::WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
+    int64 folder_id = AddFolderToShare(&trans, "folder");
+    // Please note that each AddBookmarkToShare inserts the node at the front
+    // so the actual order of children in the directory will be opposite.
+    AddBookmarkToShare(&trans, folder_id, "node2", "http://www.node2.com/");
+    AddBookmarkToShare(&trans, folder_id, "node3", "");
+    AddBookmarkToShare(&trans, folder_id, "node4", "http://www.node4.com/");
+  }
+
+  // Perform association.
+  StartSync();
+
+  // Concatenate resulting titles of native nodes.
+  std::string native_titles;
+  for (int i = 0; i < folder->child_count(); i++) {
+    if (!native_titles.empty())
+      native_titles += ",";
+    const BookmarkNode* child = folder->GetChild(i);
+    native_titles += base::UTF16ToUTF8(child->GetTitle());
+  }
+
+  // Expect the order of nodes to follow the sync order (see note above), the
+  // node with the invalid URL to be skipped, and the extra native node to be
+  // at the end.
+  EXPECT_EQ("node4,node2,node1", native_titles);
 }
 
 TEST_F(ProfileSyncServiceBookmarkTest, BookmarkModelOperations) {

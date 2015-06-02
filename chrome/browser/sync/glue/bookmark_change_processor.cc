@@ -769,7 +769,7 @@ void BookmarkChangeProcessor::UpdateTransactionVersion(
 // Creates a bookmark node under the given parent node from the given sync
 // node. Returns the newly created node.
 const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
-    syncer::BaseNode* sync_node,
+    const syncer::BaseNode* sync_node,
     const BookmarkNode* parent,
     BookmarkModel* model,
     Profile* profile,
@@ -785,7 +785,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
 const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const base::string16& title,
     const GURL& url,
-    syncer::BaseNode* sync_node,
+    const syncer::BaseNode* sync_node,
     const BookmarkNode* parent,
     BookmarkModel* model,
     Profile* profile,

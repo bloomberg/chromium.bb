@@ -694,20 +694,17 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
       bookmark_model_->Move(child_node, parent_node, index);
       context->IncrementLocalItemsModified();
     } else {
-      DCHECK_LE(index, parent_node->child_count());
-
-      base::string16 title = base::UTF8ToUTF16(sync_child_node.GetTitle());
-      child_node = BookmarkChangeProcessor::CreateBookmarkNode(
-          title, url, &sync_child_node, parent_node, bookmark_model_, profile_,
-          index);
+      syncer::SyncError error;
+      child_node = CreateBookmarkNode(parent_node, index, &sync_child_node, url,
+                                      context, &error);
       if (!child_node) {
-        return unrecoverable_error_handler_->CreateAndUploadError(
-            FROM_HERE, "Failed to create bookmark node with title " +
-                           sync_child_node.GetTitle() + " and url " +
-                           url.possibly_invalid_spec(),
-            model_type());
+        if (error.IsSet()) {
+          return error;
+        } else {
+          // Skip this node and continue. Don't increment index in this case.
+          continue;
+        }
       }
-      context->UpdateDuplicateCount(title, url);
       context->IncrementLocalItemsAdded();
     }
 
@@ -781,20 +778,17 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociationsOptimistic(
       // TODO(stanisc): crbug/456876: This is where the duplication occurs.
       // Add code to chase moved nodes across folders based on external ID
       // and remove the code below that creates a new bookmark node.
-      DCHECK_LE(index, parent_node->child_count());
-
-      base::string16 title = base::UTF8ToUTF16(sync_child_node.GetTitle());
-      child_node = BookmarkChangeProcessor::CreateBookmarkNode(
-          title, url, &sync_child_node, parent_node, bookmark_model_, profile_,
-          index);
+      syncer::SyncError error;
+      child_node = CreateBookmarkNode(parent_node, index, &sync_child_node, url,
+                                      context, &error);
       if (!child_node) {
-        return unrecoverable_error_handler_->CreateAndUploadError(
-            FROM_HERE, "Failed to create bookmark node with title " +
-                           sync_child_node.GetTitle() + " and url " +
-                           url.possibly_invalid_spec(),
-            model_type());
+        if (error.IsSet()) {
+          return error;
+        } else {
+          // Skip this node and continue. Don't increment index in this case.
+          continue;
+        }
       }
-      context->UpdateDuplicateCount(title, url);
       context->IncrementLocalItemsAdded();
     }
 
@@ -826,6 +820,42 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociationsOptimistic(
   }
 
   return syncer::SyncError();
+}
+
+const BookmarkNode* BookmarkModelAssociator::CreateBookmarkNode(
+    const BookmarkNode* parent_node,
+    int bookmark_index,
+    const syncer::BaseNode* sync_child_node,
+    const GURL& url,
+    Context* context,
+    syncer::SyncError* error) {
+  DCHECK_LE(bookmark_index, parent_node->child_count());
+
+  const std::string& sync_title = sync_child_node->GetTitle();
+
+  if (!sync_child_node->GetIsFolder() && !url.is_valid()) {
+    unrecoverable_error_handler_->CreateAndUploadError(
+        FROM_HERE, "Cannot associate sync node with invalid url " +
+                       url.possibly_invalid_spec() + " and title " + sync_title,
+        model_type());
+    // Don't propagate the error to the model_type in this case.
+    return nullptr;
+  }
+
+  base::string16 bookmark_title = base::UTF8ToUTF16(sync_title);
+  const BookmarkNode* child_node = BookmarkChangeProcessor::CreateBookmarkNode(
+      bookmark_title, url, sync_child_node, parent_node, bookmark_model_,
+      profile_, bookmark_index);
+  if (!child_node) {
+    *error = unrecoverable_error_handler_->CreateAndUploadError(
+        FROM_HERE, "Failed to create bookmark node with title " + sync_title +
+                       " and url " + url.possibly_invalid_spec(),
+        model_type());
+    return nullptr;
+  }
+
+  context->UpdateDuplicateCount(bookmark_title, url);
+  return child_node;
 }
 
 struct FolderInfo {
