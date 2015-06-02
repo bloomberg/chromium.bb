@@ -62,6 +62,19 @@ bool HostIsIPAddress(const String& host)
     return hostInfo.IsIPAddress();
 }
 
+bool IsSubdomainOfHost(const String& subdomain, const String& host)
+{
+    if (subdomain.length() <= host.length())
+        return false;
+
+    if (subdomain[subdomain.length() - host.length() - 1] != '.')
+        return false;
+
+    if (!subdomain.endsWith(host))
+        return false;
+
+    return true;
+}
 }
 
 OriginAccessEntry::OriginAccessEntry(const String& protocol, const String& host, SubdomainSetting subdomainSetting)
@@ -70,15 +83,27 @@ OriginAccessEntry::OriginAccessEntry(const String& protocol, const String& host,
     , m_subdomainSettings(subdomainSetting)
     , m_hostIsPublicSuffix(false)
 {
-    ASSERT(subdomainSetting == AllowSubdomains || subdomainSetting == DisallowSubdomains);
+    ASSERT(subdomainSetting >= AllowSubdomains || subdomainSetting <= DisallowSubdomains);
 
     m_hostIsIPAddress = HostIsIPAddress(host);
 
     // Look for top-level domains, either with or without an additional dot.
     if (!m_hostIsIPAddress) {
         WebPublicSuffixList* suffixList = Platform::current()->publicSuffixList();
-        if (suffixList && m_host.length() <= suffixList->getPublicSuffixLength(m_host) + 1)
+        if (!suffixList)
+            return;
+
+        size_t publicSuffixLength = suffixList->getPublicSuffixLength(m_host);
+        if (m_host.length() <= publicSuffixLength + 1) {
             m_hostIsPublicSuffix = true;
+        } else if (subdomainSetting == AllowRegisterableDomains && publicSuffixLength) {
+            // The "2" in the next line is 1 for the '.', plus a 1-char minimum label length.
+            const size_t dot = m_host.reverseFind('.', m_host.length() - publicSuffixLength - 2);
+            if (dot == kNotFound)
+                m_registerableDomain = host;
+            else
+                m_registerableDomain = host.substring(dot + 1);
+        }
     }
 }
 
@@ -91,24 +116,37 @@ OriginAccessEntry::MatchResult OriginAccessEntry::matchesOrigin(const SecurityOr
         return DoesNotMatchOrigin;
 
     // Special case: Include subdomains and empty host means "all hosts, including ip addresses".
-    if (m_subdomainSettings == AllowSubdomains && m_host.isEmpty())
+    if (m_subdomainSettings != DisallowSubdomains && m_host.isEmpty())
         return MatchesOrigin;
 
     // Exact match.
     if (m_host == origin.host())
         return MatchesOrigin;
 
-    // Otherwise we can only match if we're matching subdomains.
-    if (m_subdomainSettings == DisallowSubdomains)
-        return DoesNotMatchOrigin;
-
     // Don't try to do subdomain matching on IP addresses.
     if (m_hostIsIPAddress)
         return DoesNotMatchOrigin;
 
     // Match subdomains.
-    if (origin.host().length() <= m_host.length() || origin.host()[origin.host().length() - m_host.length() - 1] != '.' || !origin.host().endsWith(m_host))
+    switch (m_subdomainSettings) {
+    case DisallowSubdomains:
         return DoesNotMatchOrigin;
+
+    case AllowSubdomains:
+        if (!IsSubdomainOfHost(origin.host(), m_host))
+            return DoesNotMatchOrigin;
+        break;
+
+    case AllowRegisterableDomains:
+        // Fall back to a simple subdomain check if no registerable domain could be found:
+        if (m_registerableDomain.isEmpty()) {
+            if (!IsSubdomainOfHost(origin.host(), m_host))
+                return DoesNotMatchOrigin;
+        } else if (m_registerableDomain != origin.host() && !IsSubdomainOfHost(origin.host(), m_registerableDomain)) {
+            return DoesNotMatchOrigin;
+        }
+        break;
+    };
 
     if (m_hostIsPublicSuffix)
         return MatchesOriginButIsPublicSuffix;

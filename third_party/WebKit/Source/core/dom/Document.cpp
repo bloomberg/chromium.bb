@@ -3981,7 +3981,7 @@ const KURL& Document::firstPartyForCookies() const
     // We're intentionally using the URL of each document rather than the document's SecurityOrigin.
     // Sandboxing a document into a unique origin shouldn't effect first-/third-party status for
     // cookies and site data.
-    OriginAccessEntry accessEntry(topDocument().url().protocol(), topDocument().url().host(), OriginAccessEntry::AllowSubdomains);
+    OriginAccessEntry accessEntry(topDocument().url().protocol(), topDocument().url().host(), OriginAccessEntry::AllowRegisterableDomains);
     const Document* currentDocument = this;
     while (currentDocument) {
         // Skip over srcdoc documents, as they are always same-origin with their closest non-srcdoc parent.
