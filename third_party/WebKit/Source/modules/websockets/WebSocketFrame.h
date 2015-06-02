@@ -31,8 +31,6 @@
 #ifndef WebSocketFrame_h
 #define WebSocketFrame_h
 
-#include "wtf/text/WTFString.h"
-
 namespace blink {
 
 struct WebSocketFrame {
@@ -47,18 +45,6 @@ struct WebSocketFrame {
         OpCodeInvalid = 0x10
     };
 
-    enum ParseFrameResult {
-        FrameOK,
-        FrameIncomplete,
-        FrameError
-    };
-
-    static bool isNonControlOpCode(OpCode opCode) { return opCode == OpCodeContinuation || opCode == OpCodeText || opCode == OpCodeBinary; }
-    static bool isControlOpCode(OpCode opCode) { return opCode == OpCodeClose || opCode == OpCodePing || opCode == OpCodePong; }
-    static bool isReservedOpCode(OpCode opCode) { return !isNonControlOpCode(opCode) && !isControlOpCode(opCode); }
-    static bool needsExtendedLengthField(size_t payloadLength);
-    static ParseFrameResult parseFrame(char* data, size_t dataLength, WebSocketFrame&, const char*& frameEnd, String& errorString); // May modify part of data to unmask the frame.
-
     // Flags for the constructor.
     // This is not the bitmasks for frame composition / decomposition.
     enum {
@@ -71,10 +57,8 @@ struct WebSocketFrame {
         Masked = 16,
     };
     typedef unsigned Flags;
-    WebSocketFrame();
     // The Flags parameter shall be a combination of above flags.
     WebSocketFrame(OpCode, const char* payload, size_t payloadLength, Flags = EmptyFlags);
-    void makeFrameData(Vector<char>& frameData);
 
     OpCode opCode;
     bool final;
