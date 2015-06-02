@@ -9,6 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/font_list.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -18,7 +19,20 @@
 #import "ui/views/cocoa/bridged_native_widget.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/native_frame_view.h"
+
+// Self-owning animation delegate that starts a hide animation, then calls
+// -[NSWindow close] when the animation ends, releasing itself.
+@interface ViewsNSWindowCloseAnimator : NSObject<NSAnimationDelegate> {
+ @private
+  base::scoped_nsobject<NSWindow> window_;
+  base::scoped_nsobject<NSAnimation> animation_;
+}
+
++ (void)closeWindowWithAnimation:(NSWindow*)window;
+
+@end
 
 namespace views {
 namespace {
@@ -63,6 +77,11 @@ BridgedNativeWidget* NativeWidgetMac::GetBridgeForNativeWindow(
     return [delegate nativeWidgetMac]->bridge_.get();
   }
   return nullptr;  // Not created by NativeWidgetMac.
+}
+
+bool NativeWidgetMac::IsWindowModalSheet() const {
+  return GetWidget()->widget_delegate()->GetModalType() ==
+         ui::MODAL_TYPE_WINDOW;
 }
 
 void NativeWidgetMac::OnWindowWillClose() {
@@ -297,21 +316,25 @@ void NativeWidgetMac::Close() {
   if (!bridge_)
     return;
 
-  if (delegate_->IsModal()) {
+  NSWindow* window = GetNativeWindow();
+  if (IsWindowModalSheet()) {
     // Sheets can't be closed normally. This starts the sheet closing. Once the
     // sheet has finished animating, it will call sheetDidEnd: on the parent
     // window's delegate. Note it still needs to be asynchronous, since code
     // calling Widget::Close() doesn't expect things to be deleted upon return.
-    [NSApp performSelector:@selector(endSheet:)
-                withObject:GetNativeWindow()
-                afterDelay:0];
+    [NSApp performSelector:@selector(endSheet:) withObject:window afterDelay:0];
+    return;
+  }
+
+  // For other modal types, animate the close.
+  if (delegate_->IsModal()) {
+    [ViewsNSWindowCloseAnimator closeWindowWithAnimation:window];
     return;
   }
 
   // Clear the view early to suppress repaints.
   bridge_->SetRootView(NULL);
 
-  NSWindow* window = GetNativeWindow();
   // Calling performClose: will momentarily highlight the close button, but
   // AppKit will reject it if there is no close button.
   SEL close_selector = ([window styleMask] & NSClosableWindowMask)
@@ -647,3 +670,29 @@ gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
 
 }  // namespace internal
 }  // namespace views
+
+@implementation ViewsNSWindowCloseAnimator
+
+- (id)initWithWindow:(NSWindow*)window {
+  if ((self = [super init])) {
+    window_.reset([window retain]);
+    animation_.reset(
+        [[ConstrainedWindowAnimationHide alloc] initWithWindow:window]);
+    [animation_ setDelegate:self];
+    [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
+    [animation_ startAnimation];
+  }
+  return self;
+}
+
++ (void)closeWindowWithAnimation:(NSWindow*)window {
+  [[ViewsNSWindowCloseAnimator alloc] initWithWindow:window];
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  [window_ close];
+  [animation_ setDelegate:nil];
+  [self release];
+}
+
+@end

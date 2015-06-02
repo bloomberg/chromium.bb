@@ -10,6 +10,7 @@
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/thread_task_runner_handle.h"
+#import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -119,7 +120,7 @@ BridgedNativeWidget::~BridgedNativeWidget() {
     // DialogClientView assumes its delegate is alive when closing, which isn't
     // true after endSheet: synchronously calls OnNativeWidgetDestroyed().
     // So ban it. Modal dialogs should be closed via Widget::Close().
-    DCHECK(!native_widget_mac_->GetWidget()->IsModal());
+    DCHECK(!native_widget_mac_->IsWindowModalSheet());
 
     // If the delegate is still set, it means OnWindowWillClose has not been
     // called and the window is still open. Calling -[NSWindow close] will
@@ -231,7 +232,7 @@ void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
   DCHECK(!clamped_content_size.IsEmpty())
       << "Zero-sized windows not supported on Mac";
 
-  if (!window_visible_ && widget->IsModal()) {
+  if (!window_visible_ && native_widget_mac_->IsWindowModalSheet()) {
     // Window-Modal dialogs (i.e. sheets) are positioned by Cocoa when shown for
     // the first time. They also have no frame, so just update the content size.
     [window_ setContentSize:NSMakeSize(clamped_content_size.width(),
@@ -293,7 +294,7 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
   if (parent() && !parent()->IsVisibleParent())
     return;
 
-  if (native_widget_mac_->GetWidget()->IsModal()) {
+  if (native_widget_mac_->IsWindowModalSheet()) {
     NSWindow* parent_window = parent_->GetNSWindow();
     DCHECK(parent_window);
 
@@ -320,6 +321,21 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
               relativeTo:parent_window_number];
   }
   DCHECK(window_visible_);
+
+  // For non-sheet modal types, use the constrained window animations to make
+  // the window appear.
+  if (native_widget_mac_->GetWidget()->IsModal()) {
+    base::scoped_nsobject<NSAnimation> show_animation(
+        [[ConstrainedWindowAnimationShow alloc] initWithWindow:window_]);
+    // The default mode is blocking, which would block the UI thread for the
+    // duration of the animation, but would keep it smooth. The window also
+    // hasn't yet received a frame from the compositor at this stage, so it is
+    // fully transparent until the GPU sends a frame swap IPC. For the blocking
+    // option, the animation needs to wait until AcceleratedWidgetSwapCompleted
+    // has been called at least once, otherwise it will animate nothing.
+    [show_animation setAnimationBlockingMode:NSAnimationNonblocking];
+    [show_animation startAnimation];
+  }
 }
 
 void BridgedNativeWidget::AcquireCapture() {

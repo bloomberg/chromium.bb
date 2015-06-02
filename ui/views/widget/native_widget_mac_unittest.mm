@@ -7,10 +7,13 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/test_timeouts.h"
 #import "testing/gtest_mac.h"
+#import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -21,13 +24,46 @@
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/native_widget_private.h"
+#include "ui/views/window/dialog_delegate.h"
+
+// Donates an implementation of -[NSAnimation stopAnimation] which calls the
+// original implementation, then quits a nested run loop.
+@interface TestStopAnimationWaiter : NSObject
+@end
+
+@interface ConstrainedWindowAnimationBase (TestingAPI)
+- (void)setWindowStateForEnd;
+@end
 
 namespace views {
 namespace test {
 
 // Tests for parts of NativeWidgetMac not covered by BridgedNativeWidget, which
 // need access to Cocoa APIs.
-typedef WidgetTest NativeWidgetMacTest;
+class NativeWidgetMacTest : public WidgetTest {
+ public:
+  NativeWidgetMacTest() {}
+
+  // The content size of NSWindows made by MakeNativeParent().
+  NSRect ParentRect() const { return NSMakeRect(100, 100, 300, 200); }
+
+  // Make a native NSWindow to use as a parent.
+  NSWindow* MakeNativeParent() {
+    native_parent_.reset(
+        [[NSWindow alloc] initWithContentRect:ParentRect()
+                                    styleMask:NSBorderlessWindowMask
+                                      backing:NSBackingStoreBuffered
+                                        defer:NO]);
+    [native_parent_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
+    [native_parent_ makeKeyAndOrderFront:nil];
+    return native_parent_;
+  }
+
+ private:
+  base::scoped_nsobject<NSWindow> native_parent_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetMacTest);
+};
 
 class WidgetChangeObserver : public TestWidgetObserver {
  public:
@@ -371,14 +407,7 @@ TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
 
 // Tests creating a views::Widget parented off a native NSWindow.
 TEST_F(NativeWidgetMacTest, NonWidgetParent) {
-  NSRect parent_nsrect = NSMakeRect(100, 100, 300, 200);
-  base::scoped_nsobject<NSWindow> native_parent(
-      [[NSWindow alloc] initWithContentRect:parent_nsrect
-                                  styleMask:NSBorderlessWindowMask
-                                    backing:NSBackingStoreBuffered
-                                      defer:NO]);
-  [native_parent setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
-  [native_parent makeKeyAndOrderFront:nil];
+  NSWindow* native_parent = MakeNativeParent();
 
   // Note: Don't use WidgetTest::CreateChildPlatformWidget because that makes
   // windows of TYPE_CONTROL which are automatically made visible. But still
@@ -416,7 +445,7 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
 
   // Child should be positioned on screen relative to the parent, but note we
   // positioned the parent in Cooca coordinates, so we need to convert.
-  gfx::Point parent_origin = gfx::ScreenRectFromNSRect(parent_nsrect).origin();
+  gfx::Point parent_origin = gfx::ScreenRectFromNSRect(ParentRect()).origin();
   EXPECT_EQ(gfx::Rect(150, parent_origin.y() + 50, 200, 100),
             child->GetWindowBoundsInScreen());
 
@@ -498,5 +527,154 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
   EXPECT_TRUE(TooltipTextForWidget(widget).empty());
 }
 
+namespace {
+
+// Delegate to make Widgets of MODAL_TYPE_CHILD.
+class ChildModalDialogDelegate : public DialogDelegateView {
+ public:
+  ChildModalDialogDelegate() {}
+
+  // WidgetDelegate:
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_CHILD; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChildModalDialogDelegate);
+};
+
+// While in scope, waits for a call to a swizzled objective C method, then quits
+// a nested run loop.
+class ScopedSwizzleWaiter {
+ public:
+  explicit ScopedSwizzleWaiter(Class target)
+      : swizzler_(target,
+                  [TestStopAnimationWaiter class],
+                  @selector(setWindowStateForEnd)) {
+    DCHECK(!instance_);
+    instance_ = this;
+  }
+
+  ~ScopedSwizzleWaiter() { instance_ = nullptr; }
+
+  static IMP GetMethodAndMarkCalled() {
+    return instance_->GetMethodInternal();
+  }
+
+  void WaitForMethod() {
+    if (method_called_)
+      return;
+
+    base::RunLoop run_loop;
+    base::MessageLoop::current()->task_runner()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
+    run_loop_ = &run_loop;
+    run_loop.Run();
+    run_loop_ = nullptr;
+  }
+
+  bool method_called() const { return method_called_; }
+
+ private:
+  IMP GetMethodInternal() {
+    DCHECK(!method_called_);
+    method_called_ = true;
+    if (run_loop_)
+      run_loop_->Quit();
+    return swizzler_.GetOriginalImplementation();
+  }
+
+  static ScopedSwizzleWaiter* instance_;
+
+  base::mac::ScopedObjCClassSwizzler swizzler_;
+  base::RunLoop* run_loop_ = nullptr;
+  bool method_called_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSwizzleWaiter);
+};
+
+ScopedSwizzleWaiter* ScopedSwizzleWaiter::instance_ = nullptr;
+
+// Shows a modal widget and waits for the show animation to complete. Waiting is
+// not compulsory (calling Close() while animating the show will cancel the show
+// animation). However, testing with overlapping swizzlers is tricky.
+Widget* ShowChildModalWidgetAndWait(NSWindow* native_parent) {
+  Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
+      new ChildModalDialogDelegate, nullptr, [native_parent contentView]);
+
+  modal_dialog_widget->SetBounds(gfx::Rect(50, 50, 200, 150));
+  EXPECT_FALSE(modal_dialog_widget->IsVisible());
+  ScopedSwizzleWaiter show_waiter([ConstrainedWindowAnimationShow class]);
+
+  modal_dialog_widget->Show();
+  // Visible immediately (although it animates from transparent).
+  EXPECT_TRUE(modal_dialog_widget->IsVisible());
+
+  // Run the animation.
+  show_waiter.WaitForMethod();
+  EXPECT_TRUE(modal_dialog_widget->IsVisible());
+  EXPECT_TRUE(show_waiter.method_called());
+  return modal_dialog_widget;
+}
+
+}  // namespace
+
+// Tests object lifetime for the show/hide animations used for child-modal
+// windows. Parents the dialog off a native parent window (not a views::Widget).
+TEST_F(NativeWidgetMacTest, NativeWindowChildModalShowHide) {
+  NSWindow* native_parent = MakeNativeParent();
+  {
+    Widget* modal_dialog_widget = ShowChildModalWidgetAndWait(native_parent);
+    TestWidgetObserver widget_observer(modal_dialog_widget);
+
+    ScopedSwizzleWaiter hide_waiter([ConstrainedWindowAnimationHide class]);
+    EXPECT_TRUE(modal_dialog_widget->IsVisible());
+    EXPECT_FALSE(widget_observer.widget_closed());
+
+    // Widget::Close() is always asynchronous, so we can check that the widget
+    // is initially visible, but then it's destroyed.
+    modal_dialog_widget->Close();
+    EXPECT_TRUE(modal_dialog_widget->IsVisible());
+    EXPECT_FALSE(hide_waiter.method_called());
+    EXPECT_FALSE(widget_observer.widget_closed());
+
+    // Wait for a hide to finish.
+    hide_waiter.WaitForMethod();
+    EXPECT_TRUE(hide_waiter.method_called());
+
+    // The animation finishing should also mean it has closed the window.
+    EXPECT_TRUE(widget_observer.widget_closed());
+  }
+
+  {
+    // Make a new dialog to test another lifetime flow.
+    Widget* modal_dialog_widget = ShowChildModalWidgetAndWait(native_parent);
+    TestWidgetObserver widget_observer(modal_dialog_widget);
+
+    // Start an asynchronous close as above.
+    ScopedSwizzleWaiter hide_waiter([ConstrainedWindowAnimationHide class]);
+    modal_dialog_widget->Close();
+    EXPECT_FALSE(widget_observer.widget_closed());
+    EXPECT_FALSE(hide_waiter.method_called());
+
+    // Now close the _parent_ window to force a synchronous close of the child.
+    [native_parent close];
+
+    // Widget is destroyed immediately. No longer paints, but the animation is
+    // still running.
+    EXPECT_TRUE(widget_observer.widget_closed());
+    EXPECT_FALSE(hide_waiter.method_called());
+
+    // Wait for the hide again. It will call close on its retained copy of the
+    // child NSWindow, but that's fine since all the C++ objects are detached.
+    hide_waiter.WaitForMethod();
+    EXPECT_TRUE(hide_waiter.method_called());
+  }
+}
+
 }  // namespace test
 }  // namespace views
+
+@implementation TestStopAnimationWaiter
+- (void)setWindowStateForEnd {
+  views::test::ScopedSwizzleWaiter::GetMethodAndMarkCalled()(self, _cmd);
+}
+@end
