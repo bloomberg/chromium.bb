@@ -741,7 +741,7 @@ def GetIncludedSources(file_path, source_dir, include_set, depth = 0):
     # and we'll checking their validity below.
     include_path_in_current_dir = os.path.join(current_dir, include_file_path)
     include_path_in_source_dir = os.path.join(source_dir, include_file_path)
-    resolved_include_path = '';
+    resolved_include_path = ''
 
     # Check if file is in current directory.
     if os.path.isfile(include_path_in_current_dir):

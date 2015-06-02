@@ -23,6 +23,12 @@ if ((current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm"
       yasm_flags += [ "-DARCH_X86_64" ]
     }
 
+    inputs = [
+      # Sets visibility hidden for cglobal functions. Explicitly included
+      # to avoid overlooking changes to this file in incremental builds.
+      "libavutil/x86/x86inc.asm",
+    ]
+
     defines = [ "PIC" ]
     include_dirs = [
       platform_config_root,

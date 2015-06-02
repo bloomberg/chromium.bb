@@ -7,6 +7,5 @@
 # Adds commit-msg hook to .git/hooks folder. This facilitates reviews with
 # Gerrit by adding Change-Id fields to commit messages.
 
-curl -Lo `git rev-parse --git-dir`/hooks/commit-msg https://chromium-review.googlesource.com/tools/hooks/commit-msg
-chmod +x `git rev-parse --git-dir`/hooks/commit-msg
-
+curl -Lo $(git rev-parse --git-dir)/hooks/commit-msg https://chromium-review.googlesource.com/tools/hooks/commit-msg
+chmod +x $(git rev-parse --git-dir)/hooks/commit-msg

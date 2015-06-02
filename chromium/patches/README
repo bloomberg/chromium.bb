@@ -6,6 +6,12 @@ Upstream cherry-picks:
 
 Current patches:
 
+  Changes/additions to compat/msvcrt/{snprintf.h,strtod.h}
+    Commit b5269bfb48c71fe17c02eee00c71b1e9762497db changes these files and
+    relevant build rules to fix inconsistent linkage when building with MSVC.
+    The rules/files expose overriden symbols as externs and force inject these
+    headers when building with the component build.
+
   Remove UNCHECKED_BITSTREAM_READER defines
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs. In Chromium
     all codecs should use the safe bitstream reader.
