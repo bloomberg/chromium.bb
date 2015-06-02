@@ -1821,12 +1821,6 @@
    fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
 }
 {
-   bug_171722
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net12_GLOBAL__N_120URLRequestFtpJobTest9AddSocketEPNS_13MockReadWriteILNS_17MockReadWriteTypeE0EEEmPNS2_ILS3_1EEEm
-}
-{
    bug_172005
    Memcheck:Leak
    fun:_Znw*
