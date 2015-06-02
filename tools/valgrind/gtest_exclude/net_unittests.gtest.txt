@@ -4,10 +4,3 @@ KeygenHandlerTest.*ConcurrencyTest
 
 # Hangs, see http://crbug.com/61908
 DirectoryListerTest.BigDirRecursiveTest
-
-# Fails flakily. http://crbug.com/255775
-SimpleIndexFileTest.WriteThenLoadIndex
-
-# Flaky. http://crbug.com/237450
-DiskCacheBackendTest.SimpleCacheAppCacheOnlyDoomAll
-DiskCacheBackendTest.SimpleCacheDoomAll
