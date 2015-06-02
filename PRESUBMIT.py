@@ -1788,30 +1788,29 @@ def CheckChangeOnCommit(input_api, output_api):
 
 
 def GetPreferredTryMasters(project, change):
+  import re
+  files = change.LocalPaths()
+
+  import os
   import json
-  import os.path
-  import platform
-  import subprocess
+  with open(os.path.join(
+      change.RepositoryRoot(), 'testing', 'commit_queue', 'config.json')) as f:
+    cq_config = json.load(f)
+    cq_verifiers = cq_config.get('verifiers_no_patch', {})
+    cq_try_jobs = cq_verifiers.get('try_job_verifier', {})
+    builders = cq_try_jobs.get('launched', {})
 
-  cq_config_path = os.path.join(
-      change.RepositoryRoot(), 'infra', 'config', 'cq.cfg')
-  # commit_queue.py below is a script in depot_tools directory, which has a
-  # 'builders' command to retrieve a list of CQ builders from the CQ config.
-  is_win = platform.system() == 'Windows'
-  masters = json.loads(subprocess.check_output(
-      ['commit_queue', 'builders', cq_config_path], shell=is_win))
+    for master, master_config in cq_try_jobs.get('triggered', {}).iteritems():
+      for triggered_bot in master_config:
+        builders.get(master, {}).pop(triggered_bot, None)
 
-  # Explicitly iterate over copies of keys since we mutate them.
-  for master in masters.keys():
-    for builder in masters[master].keys():
-      # Do not trigger presubmit builders, since they're likely to fail
-      # (e.g. OWNERS checks before finished code review), and we're
-      # running local presubmit anyway.
-      if 'presubmit' in builder:
-        masters[master].pop(builder)
-      else:
-        # Convert testfilter format to the one expected by git-cl-try.
-        testfilter = masters[master][builder].get('testfilter', 'defaulttests')
-        masters[master][builder] = [testfilter]
+    # Explicitly iterate over copies of dicts since we mutate them.
+    for master in builders.keys():
+      for builder in builders[master].keys():
+        # Do not trigger presubmit builders, since they're likely to fail
+        # (e.g. OWNERS checks before finished code review), and we're
+        # running local presubmit anyway.
+        if 'presubmit' in builder:
+          builders[master].pop(builder)
 
-  return masters
+  return builders
