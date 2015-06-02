@@ -1,0 +1,72 @@
+<!--
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../paper-behaviors/paper-radio-button-behavior.html">
+
+<!--
+`paper-radio-button` is a button that can be either checked or unchecked.
+User can tap the radio button to check it.  But it cannot be unchecked by
+tapping once checked.
+
+Use `paper-radio-group` to group a set of radio buttons.  When radio buttons
+are inside a radio group, only one radio button in the group can be checked.
+
+Example:
+
+    <paper-radio-button></paper-radio-button>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-radio-button-unchecked-color` | Radio button color when the input is not checked | `--primary-text-color`
+`--paper-radio-button-unchecked-ink-color` | Selected/focus ripple color when the input is not checked | `--primary-text-color`
+`--paper-radio-button-checked-color` | Radio button color when the input is checked | `--default-primary-color`
+`--paper-radio-button-checked-ink-color` | Selected/focus ripple color when the input is checked | `--default-primary-color`
+`--paper-radio-button-label-color` | Label color | `--primary-text-color`
+
+@group Paper Elements
+@element paper-radio-button
+@hero hero.svg
+@demo demo/index.html
+-->
+
+<style is="custom-style">
+  :root {
+    --paper-radio-button-unchecked-color: var(--primary-text-color);
+    --paper-radio-button-unchecked-ink-color: var(--primary-text-color);
+
+    --paper-radio-button-checked-color: var(--default-primary-color);
+    --paper-radio-button-checked-ink-color: var(--default-primary-color);
+
+    --paper-radio-button-label-color: var(--primary-text-color);
+  }
+</style>
+
+</head><body><dom-module id="paper-radio-button">
+
+  <link rel="import" type="css" href="paper-radio-button.css">
+
+  <template>
+
+    <div id="radioContainer">
+      <div id="offRadio"></div>
+      <div id="onRadio"></div>
+      <paper-ripple id="ink" class="circle" center="" checked$="[[checked]]"></paper-ripple>
+    </div>
+
+    <div id="radioLabel" aria-hidden="true"><content></content></div>
+
+  </template>
+
+  </dom-module>
+<script src="paper-radio-button-extracted.js"></script></body></html>

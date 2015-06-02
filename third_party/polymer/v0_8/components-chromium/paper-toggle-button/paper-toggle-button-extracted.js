@@ -6,9 +6,6 @@
         Polymer.PaperRadioButtonBehavior
       ],
 
-      // The custom properties shim is currently an opt-in feature.
-      enableCustomStyleProperties: true,
-
       hostAttributes: {
         role: 'button',
         'aria-pressed': 'false',
@@ -57,14 +54,21 @@
       },
 
       listeners: {
-        // TODO(sjmiles): tracking feature disabled until we can control
-        // track/tap interaction with confidence
-        //xtrack: '_ontrack'
+        track: '_ontrack'
+      },
+
+      ready: function() {
+        this._isReady = true;
       },
 
       // button-behavior hook
       _buttonStateChanged: function() {
-        this.checked = this.active;
+        if (this.disabled) {
+          return;
+        }
+        if (this._isReady) {
+          this.checked = this.active;
+        }
       },
 
       _checkedChanged: function(checked) {
@@ -74,33 +78,36 @@
 
       _ontrack: function(event) {
         var track = event.detail;
-        if (track.state === 'start' ) {
-          //this._preventTap = true;
+        if (track.state === 'start') {
           this._trackStart(track);
-        } else if (track.state === 'move' ) {
+        } else if (track.state === 'track') {
           this._trackMove(track);
-        } else if (track.state === 'end' ) {
+        } else if (track.state === 'end') {
           this._trackEnd(track);
         }
       },
 
       _trackStart: function(track) {
         this._width = this.$.toggleBar.offsetWidth / 2;
-        this._startx = track.x;
+        /*
+         * keep an track-only check state to keep the dragging behavior smooth
+         * while toggling activations
+         */
+        this._trackChecked = this.checked;
+        this.$.toggleButton.classList.add('dragging');
       },
 
       _trackMove: function(track) {
-        var dx = track.x - this._startx;
+        var dx = track.dx;
         this._x = Math.min(this._width,
-            Math.max(0, this.checked ? this._width + dx : dx));
-        this.$.toggleButton.classList.add('dragging');
-        this.translate3d(this, this._x + 'px', 0, 0);
+            Math.max(0, this._trackChecked ? this._width + dx : dx));
+        this.translate3d(this._x + 'px', 0, 0, this.$.toggleButton);
+        this._userActivate(this._x > (this._width / 2));
       },
 
       _trackEnd: function(track) {
         this.$.toggleButton.classList.remove('dragging');
-        this.transform(this, '');
-        this._userActivate(Math.abs(this._x) > this._width / 2);
+        this.transform('', this.$.toggleButton);
       }
 
     });

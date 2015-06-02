@@ -12,40 +12,43 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <!--
 `paper-toggle-button` provides a ON/OFF switch that user can toggle the state
-by tapping or by dragging the swtich.
+by tapping or by dragging the switch.
 
 Example:
 
     <paper-toggle-button></paper-toggle-button>
 
-Styling toggle-button:
-  <style is="x-style">
-    * {
-      --paper-toggle-button-unchecked-bar-color: #FF4081;
-      --paper-toggle-button-unchecked-button-color: #9c27b0;
-      --paper-toggle-button-unchecked-ink-color: #009688;
-      --paper-toggle-button-checked-bar-color: #5677fc;
-      --paper-toggle-button-checked-button-color: #ff4081;
-      --paper-toggle-button-checked-ink-color: #ff4081;
-    }
-  </style>
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-toggle-button-unchecked-bar-color` | Slider color when the input is not checked | `#000000`
+`--paper-toggle-button-unchecked-button-color` | Button color when the input is not checked | `--paper-grey-50`
+`--paper-toggle-button-unchecked-ink-color` | Selected/focus ripple color when the input is not checked | `--dark-primary-color`
+`--paper-toggle-button-checked-bar-color` | Slider button color when the input is checked | `--google-green-500`
+`--paper-toggle-button-checked-button-color` | Button color when the input is checked | `--google-green-500`
+`--paper-toggle-button-checked-ink-color` | Selected/focus ripple color when the input is checked | `--google-green-500`
 
 @group Paper Elements
 @element paper-toggle-button
+@hero hero.svg
+@demo demo/index.html
 -->
+<style is="custom-style">
+  :root {
+    --paper-toggle-button-unchecked-bar-color: #000000;
+    --paper-toggle-button-unchecked-button-color: var(--paper-grey-50);
+    --paper-toggle-button-unchecked-ink-color: var(--dark-primary-color);
+
+    --paper-toggle-button-checked-bar-color: var(--google-green-500);
+    --paper-toggle-button-checked-button-color: var(--google-green-500);
+    --paper-toggle-button-checked-ink-color: var(--google-green-500);
+  }
+</style>
 
 </head><body><dom-module id="paper-toggle-button">
-
-  <style is="x-style">
-    * {
-      --paper-toggle-button-unchecked-bar-color: #000000;
-      --paper-toggle-button-unchecked-button-color: #f1f1f1;
-      --paper-toggle-button-unchecked-ink-color: #bbb;
-      --paper-toggle-button-checked-bar-color: #0f9d58;
-      --paper-toggle-button-checked-button-color: #0f9d58;
-      --paper-toggle-button-checked-ink-color: #0f9d58;
-    }
-  </style>
 
   <link rel="import" type="css" href="paper-toggle-button.css">
 

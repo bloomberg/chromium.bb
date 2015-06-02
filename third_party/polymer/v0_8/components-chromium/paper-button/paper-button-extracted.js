@@ -12,29 +12,29 @@
 
       /**
        * If true, the button should be styled with a shadow.
-       *
-       * @attribute raised
-       * @type boolean
-       * @default false
        */
       raised: {
         type: Boolean,
         reflectToAttribute: true,
         value: false,
-        observer: '_buttonStateChanged'
-      }
-
-    },
-
-    ready: function() {
-      if (!this.hasAttribute('role')) {
-        this.setAttribute('role', 'button');
+        observer: '_calculateElevation'
       }
     },
 
-    _buttonStateChanged: function() {
-      this._calculateElevation();
+    _calculateElevation: function() {
+      if (!this.raised) {
+        this._elevation = 0;
+      } else {
+        Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
+      }
+    },
+
+    _computeContentClass: function(receivedFocusFromKeyboard) {
+      var className = 'content ';
+      if (receivedFocusFromKeyboard) {
+        className += ' keyboard-focus';
+      }
+      return className;
     }
-
   });
 

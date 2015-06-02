@@ -4,15 +4,19 @@
 
     'use strict';
 
+   // this would be the only `paper-drawer-panel` in
+   // the whole app that can be in `dragging` state
+    var sharedPanel = null;
+
     function classNames(obj) {
-      var classNames = [];
+      var classes = [];
       for (var key in obj) {
         if (obj.hasOwnProperty(key) && obj[key]) {
-          classNames.push(key);
+          classes.push(key);
         }
       }
 
-      return classNames.join(' ');
+      return classes.join(' ');
     }
 
     Polymer({
@@ -43,10 +47,6 @@
         /**
          * The panel to be selected when `paper-drawer-panel` changes to narrow
          * layout.
-         *
-         * @attribute defaultSelected
-         * @type string
-         * @default 'main'
          */
         defaultSelected: {
           type: String,
@@ -55,23 +55,23 @@
 
         /**
          * If true, swipe from the edge is disable.
-         *
-         * @attribute disableEdgeSwipe
-         * @type boolean
-         * @default false
          */
-        disableEdgeSwipe: Boolean,
+        disableEdgeSwipe: {
+          type: Boolean,
+          value: false
+        },
 
         /**
          * If true, swipe to open/close the drawer is disabled.
-         *
-         * @attribute disableSwipe
-         * @type boolean
-         * @default false
          */
-        disableSwipe: Boolean,
+        disableSwipe: {
+          type: Boolean,
+          value: false
+        },
 
-        // Whether the user is dragging the drawer interactively.
+        /**
+         * Whether the user is dragging the drawer interactively.
+         */
         dragging: {
           type: Boolean,
           value: false
@@ -79,18 +79,16 @@
 
         /**
          * Width of the drawer panel.
-         *
-         * @attribute drawerWidth
-         * @type string
-         * @default '256px'
          */
         drawerWidth: {
           type: String,
           value: '256px'
         },
 
-        // How many pixels on the side of the screen are sensitive to edge
-        // swipes and peek.
+        /**
+         * How many pixels on the side of the screen are sensitive to edge
+         * swipes and peek.
+         */
         edgeSwipeSensitivity: {
           type: Number,
           value: 30
@@ -98,18 +96,15 @@
 
         /**
          * If true, ignore `responsiveWidth` setting and force the narrow layout.
-         *
-         * @attribute forceNarrow
-         * @type boolean
-         * @default false
          */
         forceNarrow: {
-          observer: 'forceNarrowChanged',
           type: Boolean,
           value: false
         },
 
-        // Whether the browser has support for the transform CSS property.
+        /**
+         * Whether the browser has support for the transform CSS property.
+         */
         hasTransform: {
           type: Boolean,
           value: function() {
@@ -117,7 +112,9 @@
           }
         },
 
-        // Whether the browser has support for the will-change CSS property.
+        /**
+         * Whether the browser has support for the will-change CSS property.
+         */
         hasWillChange: {
           type: Boolean,
           value: function() {
@@ -128,10 +125,6 @@
         /**
          * Returns true if the panel is in narrow layout.  This is useful if you
          * need to show/hide elements based on the layout.
-         *
-         * @attribute narrow
-         * @type boolean
-         * @default false
          */
         narrow: {
           reflectToAttribute: true,
@@ -140,7 +133,9 @@
           notify: true
         },
 
-        // Whether the drawer is peeking out from the edge.
+        /**
+         * Whether the drawer is peeking out from the edge.
+         */
         peeking: {
           type: Boolean,
           value: false
@@ -148,10 +143,6 @@
 
         /**
          * Max-width when the panel changes to narrow layout.
-         *
-         * @attribute responsiveWidth
-         * @type string
-         * @default '640px'
          */
         responsiveWidth: {
           type: String,
@@ -160,10 +151,6 @@
 
         /**
          * If true, position the drawer to the right.
-         *
-         * @attribute rightDrawer
-         * @type boolean
-         * @default false
          */
         rightDrawer: {
           type: Boolean,
@@ -173,10 +160,6 @@
         /**
          * The panel that is being selected. `drawer` for the drawer panel and
          * `main` for the main panel.
-         *
-         * @attribute selected
-         * @type string
-         * @default null
          */
         selected: {
           reflectToAttribute: true,
@@ -201,82 +184,18 @@
           value: false
         },
 
-        /**
-         * Starting X coordinate of a tracking gesture. It is non-null only between trackStart and
-         * trackEnd events.
-         * @type {?number}
-         */
-        _startX: {
-          type: Number,
-          value: null
-        }
-
       },
 
       listeners: {
         tap: '_onTap',
-        track: '_onTrack'
-
-        // TODO: Implement tap handlers when taps are supported.
-        //
-        // down: 'downHandler',
-        // up: 'upHandler'
+        track: '_onTrack',
+        down: '_downHandler',
+        up: '_upHandler'
       },
 
-      _computeIronSelectorClass: function(narrow, transition, dragging, rightDrawer) {
-        return classNames({
-          dragging: dragging,
-          'narrow-layout': narrow,
-          'right-drawer': rightDrawer,
-          transition: transition
-        });
-      },
-
-      _computeDrawerStyle: function(drawerWidth) {
-        return 'width:' + drawerWidth + ';';
-      },
-
-      _computeMainStyle: function(narrow, rightDrawer, drawerWidth) {
-        var style = '';
-
-        style += 'left:' + ((narrow || rightDrawer) ? '0' : drawerWidth) + ';'
-
-        if (rightDrawer) {
-          style += 'right:' + (narrow ? '' : drawerWidth) + ';';
-        } else {
-          style += 'right:;'
-        }
-
-        return style;
-      },
-
-      _computeMediaQuery: function(forceNarrow, responsiveWidth) {
-        return forceNarrow ? '' : '(max-width: ' + responsiveWidth + ')';
-      },
-
-      _computeSwipeOverlayHidden: function(narrow, disableEdgeSwipe) {
-        return !narrow || disableEdgeSwipe;
-      },
-
-      _onTrack: function(event) {
-        switch (event.detail.state) {
-          case 'end':
-            this.trackEnd(event);
-            break;
-          case 'move':
-            this.trackX(event);
-            break;
-          case 'start':
-            this.trackStart(event);
-            break;
-        }
-      },
-
-      ready: function() {
-        // Avoid transition at the beginning e.g. page loads and enable
-        // transitions only after the element is rendered and ready.
-        this.transition = true;
-      },
+      observers: [
+        '_forceNarrowChanged(forceNarrow, defaultSelected)'
+      ],
 
       /**
        * Toggles the panel open and closed.
@@ -284,7 +203,7 @@
        * @method togglePanel
        */
       togglePanel: function() {
-        if (this.isMainSelected()) {
+        if (this._isMainSelected()) {
           this.openDrawer();
         } else {
           this.closeDrawer();
@@ -309,6 +228,66 @@
         this.selected = 'main';
       },
 
+      ready: function() {
+        // Avoid transition at the beginning e.g. page loads and enable
+        // transitions only after the element is rendered and ready.
+        this.transition = true;
+      },
+
+      _computeIronSelectorClass: function(narrow, transition, dragging, rightDrawer) {
+        return classNames({
+          dragging: dragging,
+          'narrow-layout': narrow,
+          'right-drawer': rightDrawer,
+          'left-drawer': !rightDrawer,
+          transition: transition
+        });
+      },
+
+      _computeDrawerStyle: function(drawerWidth) {
+        return 'width:' + drawerWidth + ';';
+      },
+
+      _computeMainStyle: function(narrow, rightDrawer, drawerWidth) {
+        var style = '';
+
+        style += 'left:' + ((narrow || rightDrawer) ? '0' : drawerWidth) + ';';
+
+        if (rightDrawer) {
+          style += 'right:' + (narrow ? '' : drawerWidth) + ';';
+        } else {
+          style += 'right:;';
+        }
+
+        return style;
+      },
+
+      _computeMediaQuery: function(forceNarrow, responsiveWidth) {
+        return forceNarrow ? '' : '(max-width: ' + responsiveWidth + ')';
+      },
+
+      _computeSwipeOverlayHidden: function(narrow, disableEdgeSwipe) {
+        return !narrow || disableEdgeSwipe;
+      },
+
+      _onTrack: function(e) {
+        if (sharedPanel && this !== sharedPanel) {
+          return;
+        }
+        switch (e.detail.state) {
+          case 'start':
+            this._trackStart(e);
+            break;
+          case 'track':
+            this._trackX(e);
+            break;
+          case 'end':
+            this._trackEnd(e);
+            break;
+        }
+
+      },
+
       _responsiveChange: function(narrow) {
         this.narrow = narrow;
 
@@ -316,48 +295,53 @@
           this.selected = this.defaultSelected;
         }
 
-        this.setAttribute('touch-action', this.swipeAllowed() ? 'pan-y' : '');
+        this.setScrollDirection(this._swipeAllowed() ? 'y' : 'all');
         this.fire('paper-responsive-change', {narrow: this.narrow});
       },
 
-      onQueryMatchesChanged: function(e) {
+      _onQueryMatchesChanged: function(e) {
         this._responsiveChange(e.detail.value);
       },
 
-      forceNarrowChanged: function() {
-        this._responsiveChange(this.forceNarrow);
+      _forceNarrowChanged: function() {
+        // set the narrow mode only if we reached the `responsiveWidth`
+        this._responsiveChange(this.forceNarrow || this.$.mq.queryMatches);
       },
 
-      swipeAllowed: function() {
+      _swipeAllowed: function() {
         return this.narrow && !this.disableSwipe;
       },
 
-      isMainSelected: function() {
+      _isMainSelected: function() {
         return this.selected === 'main';
       },
 
-      startEdgePeek: function() {
+      _startEdgePeek: function() {
         this.width = this.$.drawer.offsetWidth;
-        this.moveDrawer(this.translateXForDeltaX(this.rightDrawer ?
+        this._moveDrawer(this._translateXForDeltaX(this.rightDrawer ?
             -this.edgeSwipeSensitivity : this.edgeSwipeSensitivity));
         this.peeking = true;
       },
 
-      stopEdgePeek: function() {
+      _stopEdgePeek: function() {
         if (this.peeking) {
           this.peeking = false;
-          this.moveDrawer(null);
+          this._moveDrawer(null);
         }
       },
 
       _downHandler: function(e) {
-        if (!this.dragging && this._isMainSelected() && this._isEdgeTouch(e)) {
+        if (!this.dragging && this._isMainSelected() && this._isEdgeTouch(e) && !sharedPanel) {
           this._startEdgePeek();
+          // grab this panel
+          sharedPanel = this;
         }
       },
 
-      _upHandler: function(e) {
+      _upHandler: function() {
         this._stopEdgePeek();
+        // release the panel
+        sharedPanel = null;
       },
 
       _onTap: function(e) {
@@ -371,37 +355,33 @@
         }
       },
 
-      isEdgeTouch: function(event) {
-        var x = event.detail.x;
+      _isEdgeTouch: function(e) {
+        var x = e.detail.x;
 
-        return !this.disableEdgeSwipe && this.swipeAllowed() &&
+        return !this.disableEdgeSwipe && this._swipeAllowed() &&
           (this.rightDrawer ?
             x >= this.offsetWidth - this.edgeSwipeSensitivity :
             x <= this.edgeSwipeSensitivity);
       },
 
-      trackStart: function(event) {
-        if (this.swipeAllowed()) {
+      _trackStart: function() {
+        if (this._swipeAllowed()) {
+          sharedPanel = this;
           this.dragging = true;
-          this._startX = event.detail.x;
 
-          if (this.isMainSelected()) {
-            this.dragging = this.peeking || this.isEdgeTouch(event);
+          if (this._isMainSelected()) {
+            this.dragging = this.peeking || this._isEdgeTouch(event);
           }
 
           if (this.dragging) {
             this.width = this.$.drawer.offsetWidth;
             this.transition = false;
-
-            // TODO: Re-enable when tap gestures are implemented.
-            //
-            // e.preventTap();
           }
         }
       },
 
-      translateXForDeltaX: function(deltaX) {
-        var isMain = this.isMainSelected();
+      _translateXForDeltaX: function(deltaX) {
+        var isMain = this._isMainSelected();
 
         if (this.rightDrawer) {
           return Math.max(0, isMain ? this.width + deltaX : deltaX);
@@ -410,41 +390,40 @@
         }
       },
 
-      trackX: function(event) {
-        var dx = event.detail.x - this._startX;
-
+      _trackX: function(e) {
         if (this.dragging) {
+          var dx = e.detail.dx;
+
           if (this.peeking) {
             if (Math.abs(dx) <= this.edgeSwipeSensitivity) {
               // Ignore trackx until we move past the edge peek.
               return;
             }
-
             this.peeking = false;
           }
 
-          this.moveDrawer(this.translateXForDeltaX(dx));
+          this._moveDrawer(this._translateXForDeltaX(dx));
         }
       },
 
-      trackEnd: function(event) {
+      _trackEnd: function(e) {
         if (this.dragging) {
-          var xDirection = (event.detail.x - this._startX) > 0;
+          var xDirection = e.detail.dx > 0;
 
           this.dragging = false;
-          this._startX = null;
           this.transition = true;
-          this.moveDrawer(null);
+          sharedPanel = null;
+          this._moveDrawer(null);
 
           if (this.rightDrawer) {
-            this[(xDirection > 0) ? 'closeDrawer' : 'openDrawer']();
+            this[xDirection ? 'closeDrawer' : 'openDrawer']();
           } else {
-            this[(xDirection > 0) ? 'openDrawer' : 'closeDrawer']();
+            this[xDirection ? 'openDrawer' : 'closeDrawer']();
           }
         }
       },
 
-      transformForTranslateX: function(translateX) {
+      _transformForTranslateX: function(translateX) {
         if (translateX === null) {
           return '';
         }
@@ -453,13 +432,13 @@
             'translate3d(' + translateX + 'px, 0, 0)';
       },
 
-      moveDrawer: function(translateX) {
+      _moveDrawer: function(translateX) {
         var s = this.$.drawer.style;
 
         if (this.hasTransform) {
-          s.transform = this.transformForTranslateX(translateX);
+          s.transform = this._transformForTranslateX(translateX);
         } else {
-          s.webkitTransform = this.transformForTranslateX(translateX);
+          s.webkitTransform = this._transformForTranslateX(translateX);
         }
       }
 

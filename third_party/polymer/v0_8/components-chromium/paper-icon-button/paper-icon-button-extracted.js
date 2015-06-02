@@ -3,10 +3,9 @@
     is: 'paper-icon-button',
 
     behaviors: [
-      Polymer.PaperButtonBehavior
+      Polymer.PaperButtonBehavior,
+      Polymer.PaperRadioButtonBehavior
     ],
-
-    enableCustomStyleProperties: true,
 
     properties: {
       /**

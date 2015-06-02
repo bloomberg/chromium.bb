@@ -11,7 +11,7 @@
           <iron-icon icon="{{topPageIcon_}}"><iron-icon>
         </div>
 
-        <template is="x-repeat" items="{{parentPages_}}">
+        <template is="dom-repeat" items="{{parentPages_}}">
           <a href="{{urlFor_(item)}}">{{item.pageTitle}}</a>&nbsp;&gt;
         </template>
 

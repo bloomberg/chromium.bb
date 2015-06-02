@@ -1,0 +1,196 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+Element access to Web Storage API (window.localStorage).
+
+Keeps `value` is sync with a localStorage key.
+
+Direct assignments to `value` are automatically detected and saved.
+Subproperty assignments are not (ex: `value.bar='foo'`).
+Call `save()` manually to commit your changes after modifying subproperties.
+
+Value is saved in localStorage as JSON by default.
+
+If you set the value to null, storage key will be deleted.
+
+    <iron-localstorage name="my-app-storage" value="{{value}}">
+    </iron-localstorage>
+
+
+<b>Warning</b>: do not pass subproperty bindings to iron-localstorage until Polymer
+[bug 1550](https://github.com/Polymer/polymer/issues/1550)
+is resolved. Local storage will be blown away.
+No `<iron-localstorage value="{{foo.bar}}"`.
+
+@group Iron Elements
+@demo demo/index.html
+@hero hero.svg
+@element iron-localstorage
+-->
+<dom-module id="iron-localstorage"></dom-module>
+<script>
+
+  Polymer({
+    is: 'iron-localstorage',
+
+    /**
+     * Fired when value loads from localStorage.
+     *
+     * @param {Object} detail
+     * @param {Boolean} detail.externalChange true if change occured in different window
+     * @event iron-localstorage-load
+     */
+
+    /**
+     * Fired when loaded value is null.
+     * You can use event handler to initialize default value.
+     *
+     * @event iron-localstorage-load-empty
+     */
+    properties: {
+      /**
+       * The key to the data stored in localStorage.
+       */
+      name: {
+        type: String,
+        value: ''
+      },
+      /**
+       * The data associated with this storage.
+       * If value is set to null, and storage is in useRaw mode, item will be deleted
+       */
+      value: {
+        type: Object,
+        notify: true
+      },
+
+      /**
+       * Value is stored and retrieved without JSON parse if true
+       */
+      useRaw: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Auto save is disabled if true. Default to false.
+       */
+      autoSaveDisabled: {
+        type: Boolean,
+        value: false
+      },
+      /**
+       * Last error encountered while saving/loading items. Null otherwise
+       */
+      errorMessage: {
+        type: String,
+        notify: true
+      },
+      /*
+       * True if value was loaded
+       */
+      _loaded: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    observers: [
+      'reload(name,useRaw)',
+      '_trySaveValue(value, _loaded, autoSaveDisabled)'
+    ],
+
+    ready: function() {
+      this._boundHandleStorage = this._handleStorage.bind(this);
+    },
+
+    attached: function() {
+      window.addEventListener('storage', this._boundHandleStorage);
+    },
+
+    detached: function() {
+      window.removeEventListener('storage', this._boundHandleStorage);
+    },
+
+    _handleStorage: function(ev) {
+      if (ev.key == this.name) {
+        this._load(true);
+      }
+    },
+
+    _trySaveValue: function(value, _loaded, autoSaveDisabled) {
+      if (this._justLoaded) { // guard against saving after _load()
+        this._justLoaded = false;
+        return;
+      }
+      if (_loaded && !autoSaveDisabled) {
+        this.save();
+      }
+    },
+
+    /**
+     * Loads the value again. Use if you modify
+     * localStorage using DOM calls, and want to
+     * keep this element in sync.
+     */
+    reload: function() {
+      this._load();
+    },
+
+    /**
+     * loads value from local storage
+     * @param {Boolean} externalChange true if loading changes from a different window
+     */
+    _load: function(externalChange) {
+      var v = localStorage.getItem(this.name);
+
+      if (v === null) {
+        this.fire('iron-localstorage-load-empty');
+      } else if (!this.useRaw) {
+        try {
+          v = JSON.parse(v);
+        } catch(x) {
+          this.errorMessage = "Could not parse local storage value";
+          console.error("could not parse local storage value", v);
+        }
+      }
+
+      this._justLoaded = true;
+      this._loaded = true;
+      this.value = v;
+      this.fire('iron-localstorage-load', { externalChange: externalChange});
+    },
+
+    /**
+     * Saves the value to localStorage. Call to save if autoSaveDisabled is set.
+     * If `value` is null, deletes localStorage.
+     */
+    save: function() {
+      var v = this.useRaw ? this.value : JSON.stringify(this.value);
+      try {
+        if (this.value === null) {
+          localStorage.removeItem(this.name);
+        } else {
+          localStorage.setItem(this.name, v);
+        }
+      }
+      catch(ex) {
+        // Happens in Safari incognito mode,
+        this.errorMessage = ex.message;
+        console.error("localStorage could not be saved. Safari incoginito mode?", ex);
+      }
+    }
+
+  });
+
+</script>

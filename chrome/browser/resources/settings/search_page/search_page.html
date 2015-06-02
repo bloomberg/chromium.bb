@@ -13,7 +13,7 @@
 
       <div class="search-engines">
         <select id="searchEnginesMenu" on-change="defaultEngineGuidChanged_">
-          <template is="x-repeat" items="[[searchEngines]]">
+          <template is="dom-repeat" items="[[searchEngines]]">
             <option value="[[item.guid]]">{{item.name}}</option>
           </template>
         </select>

@@ -14,7 +14,7 @@
         <div class="wide-label" i18n-content="searchEnginesQueryURLLabel"></div>
       </div>
       <div class="entries">
-        <template is="x-repeat" items="[[engines]]">
+        <template is="dom-repeat" items="[[engines]]">
           <cr-search-engine-entry engine="[[item]]"></cr-search-engine-entry>
         </template>
       </div>

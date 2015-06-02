@@ -8,6 +8,10 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../iron-selector/iron-selectable.html">
+
 <!--
 `iron-pages` is used to select one of its children to show. One use is to cycle through a list of
 children "pages".
@@ -27,14 +31,12 @@ Example:
       });
     </script>
 
-@group Polymer Iron Elements
+@group Iron Elements
 @class iron-pages
+@hero hero.svg
+@demo demo/index.html
 @extends iron-selector
 -->
-
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
-<link rel="import" href="../iron-selector/iron-selectable.html">
 
 <dom-module id="iron-pages">
 

@@ -1,6 +1,7 @@
 
 
-  Polymer.IronButtonState = {
+  /** @polymerBehavior Polymer.IronButtonState */
+  Polymer.IronButtonStateImpl = {
 
     properties: {
 
@@ -14,6 +15,7 @@
       pressed: {
         type: Boolean,
         readOnly: true,
+        value: false,
         reflectToAttribute: true,
         observer: '_pressedChanged'
       },
@@ -28,6 +30,7 @@
        */
       toggles: {
         type: Boolean,
+        value: false,
         reflectToAttribute: true
       },
 
@@ -40,19 +43,47 @@
        */
       active: {
         type: Boolean,
+        value: false,
         notify: true,
         reflectToAttribute: true,
         observer: '_activeChanged'
-      }
+      },
 
+      /**
+       * True if the element is currently being pressed by a "pointer," which
+       * is loosely defined as mouse or touch input (but specifically excluding
+       * keyboard input).
+       */
+      pointerDown: {
+        type: Boolean,
+        readOnly: true,
+        value: false
+      },
+
+      /**
+       * True if the input device that caused the element to receive focus
+       * was a keyboard.
+       */
+      receivedFocusFromKeyboard: {
+        type: Boolean,
+        readOnly: true
+      }
     },
 
     listeners: {
-      mousedown: '_downHandler',
-      mouseup: '_upHandler',
-      keydown: '_keyDownHandler',
-      keyup: '_keyUpHandler',
+      down: '_downHandler',
+      up: '_upHandler',
       tap: '_tapHandler'
+    },
+
+    observers: [
+      '_detectKeyboardFocus(focused)'
+    ],
+
+    keyBindings: {
+      'enter:keydown': '_asyncClick',
+      'space:keydown': '_spaceKeyDownHandler',
+      'space:keyup': '_spaceKeyUpHandler',
     },
 
     _tapHandler: function() {
@@ -64,6 +95,10 @@
       }
     },
 
+    _detectKeyboardFocus: function(focused) {
+      this._setReceivedFocusFromKeyboard(!this.pointerDown && focused);
+    },
+
     // to emulate native checkbox, (de-)activations from a user interaction fire
     // 'change' events
     _userActivate: function(active) {
@@ -72,33 +107,28 @@
     },
 
     _downHandler: function() {
+      this._setPointerDown(true);
       this._setPressed(true);
+      this._setReceivedFocusFromKeyboard(false);
     },
 
-    _upHandler: function(e) {
+    _upHandler: function() {
+      this._setPointerDown(false);
       this._setPressed(false);
     },
 
-    _keyDownHandler: function(e) {
-      switch(e.keyCode) {
-        case this.keyCodes.ENTER_KEY:
-          this._asyncClick();
-          break;
-
-        case this.keyCodes.SPACE:
-          this._setPressed(true);
-          break;
-
-      }
+    _spaceKeyDownHandler: function(event) {
+      var keyboardEvent = event.detail.keyboardEvent;
+      keyboardEvent.preventDefault();
+      keyboardEvent.stopImmediatePropagation();
+      this._setPressed(true);
     },
 
-    _keyUpHandler: function(e) {
-     if (e.keyCode == this.keyCodes.SPACE) {
-        if (this.pressed) {
-          this._asyncClick();
-        }
-        this._setPressed(false);
+    _spaceKeyUpHandler: function() {
+      if (this.pressed) {
+        this._asyncClick();
       }
+      this._setPressed(false);
     },
 
     // trigger click asynchronously, the asynchrony is useful to allow one
@@ -116,14 +146,17 @@
     },
 
     _activeChanged: function(active) {
-      this.setAttribute('aria-pressed', active ? 'true' : 'false');
+      if (this.toggles) {
+        this.setAttribute('aria-pressed', active ? 'true' : 'false');
+      } else {
+        this.removeAttribute('aria-pressed');
+      }
       this._changedButtonState();
     },
 
     _controlStateChanged: function() {
       if (this.disabled) {
         this._setPressed(false);
-        this.active = false;
       } else {
         this._changedButtonState();
       }
@@ -138,4 +171,10 @@
     }
 
   };
+
+  /** @polymerBehavior Polymer.IronButtonState */
+  Polymer.IronButtonState = [
+    Polymer.IronA11yKeysBehavior,
+    Polymer.IronButtonStateImpl
+  ];
 

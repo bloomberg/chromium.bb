@@ -12,6 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-behaviors/paper-radio-button-behavior.html">
 
 <!--
+
 `paper-checkbox` is a button that can be either checked or unchecked.  User
 can tap the checkbox to check or uncheck it.  Usually you use checkboxes
 to allow user to select multiple options from a set.  If you have a single
@@ -24,41 +25,40 @@ Example:
 
     <paper-checkbox checked> label</paper-checkbox>
 
-Styling a checkbox:
+### Styling
 
-<style is="x-style">
-  * {
-    /* Unhecked state colors. */
-    --paper-checkbox-unchecked-color: #5a5a5a;
-    --paper-checkbox-unchecked-ink-color: #5a5a5a;
+The following custom properties and mixins are available for styling:
 
-    /* Checked state colors. */
-    --paper-checkbox-checked-color: #009688;
-    --paper-checkbox-checked-ink-color: #009688;
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-checkbox-unchecked-color` | Checkbox color when the input is not checked | `--primary-text-color`
+`--paper-checkbox-unchecked-ink-color` | Selected/focus ripple color when the input is not checked | `--primary-text-color`
+`--paper-checkbox-checked-color` | Checkbox color when the input is checked | `--default-primary-color`
+`--paper-checkbox-checked-ink-color` | Selected/focus ripple color when the input is checked | `--default-primary-color`
+`--paper-checkbox-label-color` | Label color | `--primary-text-color`
+
+@demo demo/index.html
+-->
+
+<style is="custom-style">
+  :root {
+    --paper-checkbox-unchecked-color: var(--primary-text-color);
+    --paper-checkbox-unchecked-ink-color: var(--primary-text-color);
+
+    --paper-checkbox-checked-color: var(--default-primary-color);
+    --paper-checkbox-checked-ink-color: var(--default-primary-color);
+
+    --paper-checkbox-label-color: var(--primary-text-color);
   }
 </style>
 
-@group Paper Elements
-@class paper-checkbox
--->
-
 </head><body><dom-module id="paper-checkbox">
-  <style is="x-style">
-    * {
-      --paper-checkbox-unchecked-color: var(--primary-text-color);
-      --paper-checkbox-unchecked-ink-color: var(--primary-text-color);
-
-      --paper-checkbox-checked-color: var(--default-primary-color);
-      --paper-checkbox-checked-ink-color: var(--default-primary-color);
-    }
-  </style>
-
   <link rel="import" type="css" href="paper-checkbox.css">
 
   <template>
 
     <div id="checkboxContainer">
-      <paper-ripple id="ink" class="circle" recenters="" checked$="[[checked]]"></paper-ripple>
+      <paper-ripple id="ink" class="circle" center="" checked$="[[checked]]"></paper-ripple>
       <div id="checkbox" class$="[[_computeCheckboxClass(checked)]]">
         <div id="checkmark" class$="[[_computeCheckmarkClass(checked)]]"></div>
       </div>
@@ -67,6 +67,6 @@ Styling a checkbox:
     <div id="checkboxLabel" aria-hidden="true"><content></content></div>
 
   </template>
-</dom-module>
 
+  </dom-module>
 <script src="paper-checkbox-extracted.js"></script></body></html>

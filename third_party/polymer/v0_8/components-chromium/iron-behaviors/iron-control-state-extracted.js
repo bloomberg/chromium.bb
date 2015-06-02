@@ -1,5 +1,7 @@
 
 
+  /** @polymerBehavior */
+
   Polymer.IronControlState = {
 
     properties: {
@@ -35,7 +37,7 @@
       },
 
       _oldTabIndex: {
-        type: String
+        type: Number
       }
     },
 

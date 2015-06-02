@@ -5,7 +5,10 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
---><!--
+--><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+
+<!--
 `paper-ripple` provides a visual effect that other paper elements can
 use to simulate a rippling effect emanating from the point of contact.  The
 effect can be visualized as a concentric circle with motion.
@@ -17,18 +20,18 @@ Example:
 `paper-ripple` listens to "mousedown" and "mouseup" events so it would display ripple
 effect when touches on it.  You can also defeat the default behavior and
 manually route the down and up actions to the ripple element.  Note that it is
-important if you call mousedownAction() you will have to make sure to call
-mouseupAction() so that `paper-ripple` would end the animation loop.
+important if you call downAction() you will have to make sure to call
+upAction() so that `paper-ripple` would end the animation loop.
 
 Example:
 
     <paper-ripple id="ripple" style="pointer-events: none;"></paper-ripple>
     ...
     downAction: function(e) {
-      this.$.ripple.mousedownAction({x: e.x, y: e.y});
+      this.$.ripple.downAction({x: e.x, y: e.y});
     },
     upAction: function(e) {
-      this.$.ripple.mouseupAction();
+      this.$.ripple.upAction();
     }
 
 Styling ripple effect:
@@ -47,23 +50,31 @@ attribute to have the ripple grow toward the center of its container.
 
     <paper-ripple recenters></paper-ripple>
 
+You can also  center the ripple inside its container from the start.
+
+    <paper-ripple center></paper-ripple>
+
 Apply `circle` class to make the rippling effect within a circle.
 
     <paper-ripple class="circle"></paper-ripple>
 
 @group Paper Elements
 @element paper-ripple
-@homepage github.io
---><!--
-Fired when the animation finishes. This is useful if you want to wait until the ripple
-animation finishes to perform some action.
-
-@event transitionend
-@param {Object} detail
-@param {Object} detail.node The animated node
---><html><head><link rel="import" href="../polymer/polymer.html">
+@hero hero.svg
+@demo demo/index.html
+-->
 
 </head><body><dom-module id="paper-ripple">
+
+  <!--
+  Fired when the animation finishes. This is useful if you want to wait until the ripple
+  animation finishes to perform some action.
+
+  @event transitionend
+  @param {Object} detail
+  @param {Object} detail.node The animated node
+  -->
+
   <style>
     :host {
       display: block;
@@ -74,10 +85,16 @@ animation finishes to perform some action.
       left: 0;
       right: 0;
       bottom: 0;
+    }
 
-      /* This resolves a rendering issue in Chrome 40 where the
+    :host([animating]) {
+      /* This resolves a rendering issue in Chrome (as of 40) where the
          ripple is not properly clipped by its parent (which may have
-         rounded corners. See: http://jsbin.com/temexa/4 */
+         rounded corners). See: http://jsbin.com/temexa/4
+
+         Note: We only apply this style conditionally. Otherwise, the browser
+         will create a new compositing layer for every ripple element on the
+         page, and that would be bad. */
       -webkit-transform: translate(0, 0);
       transform: translate3d(0, 0, 0);
     }

@@ -6,9 +6,16 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
---><!--
-@group Paper Elements
+--><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
 
+<!--
 Material Design: <a href="http://www.google.com/design/spec/components/buttons.html">Button</a>
 
 `paper-fab` is a floating action button. It contains an image placed in the center and
@@ -26,41 +33,24 @@ Example:
     <paper-fab mini icon="favorite"></paper-fab>
     <paper-fab src="star.png"></paper-fab>
 
-Styling
--------
 
-Style the button with CSS as you would a normal DOM element. If you are using the icons
-provided by `iron-icons`, the icon will inherit the foreground color of the button.
+### Styling
 
-    /* make a blue "cloud" button */
-    <paper-fab icon="cloud" style="color: blue;"></paper-fab>
+The following custom properties and mixins are available for styling:
 
-By default, the ripple is the same color as the foreground at 25% opacity. You may
-customize the color using this selector:
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-fab-background` | The background color of the button | `--paper-indigo-500`
+`--paper-fab-disabled-background` | The background color of the button when it's disabled | `--paper-grey-300`
+`--paper-fab-disabled-text` | The text color of the button when it's disabled | `--paper-grey-500`
+`--paper-fab` | Mixin applied to the button | `{}`
+`--paper-fab-mini` | Mixin applied to a mini button | `{}`
+`--paper-fab-disabled` | Mixin applied to a disabled button | `{}`
 
-    /* make #my-button use a blue ripple instead of foreground color */
-    #my-button::shadow #ripple {
-      color: blue;
-    }
+@group Paper Elements
+@demo demo/index.html
 
-The opacity of the ripple is not customizable via CSS.
-
-@element paper-fab
-@status unstable
---><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="../paper-styles/default-theme.html">
-<link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-ripple/paper-ripple.html">
-<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
-
-<style is="x-style">
-  * {
-    --paper-fab-disabled-text: #c9c9c9;
-    --paper-fab-disabled-background: var(--accent-color);
-  }
-</style>
+-->
 
 </head><body><dom-module id="paper-fab">
   <style>
@@ -79,14 +69,14 @@ The opacity of the ripple is not customizable via CSS.
       min-width: 0;
       width: 56px;
       height: 56px;
-      background: var(--accent-color);
+      background: var(--paper-fab-background, --paper-indigo-500);
       color: var(--text-primary-color);
       border-radius: 50%;
       padding: 16px;
 
       z-index: 0;
 
-      mixin(--paper-fab);
+      @apply(--paper-fab);
     }
 
     :host([mini]) {
@@ -94,13 +84,13 @@ The opacity of the ripple is not customizable via CSS.
       height: 40px;
       padding: 8px;
 
-      mixin(--paper-fab-mini);
+      @apply(--paper-fab-mini);
     }
 
     :host([disabled]) {
-      color: var(--paper-fab-disabled-text);
-
-      mixin(--paper-fab-disabled);
+      color: var(--paper-fab-disabled-text, --paper-grey-500);
+      background: var(--paper-fab-disabled-background, --paper-grey-300);
+      @apply(--paper-fab-disabled);
     }
 
     paper-material {

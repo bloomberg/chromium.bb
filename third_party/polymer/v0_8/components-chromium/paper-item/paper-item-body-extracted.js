@@ -4,9 +4,7 @@
 
   Polymer({
 
-    is: 'paper-item-body',
-
-    enableCustomStyleProperties: true
+    is: 'paper-item-body'
 
   });
 

@@ -2,8 +2,6 @@
   Polymer({
     is: 'paper-material',
 
-    enableCustomStyleProperties: true,
-
     properties: {
 
       /**

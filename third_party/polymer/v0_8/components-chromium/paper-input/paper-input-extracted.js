@@ -7,7 +7,8 @@
     is: 'paper-input',
 
     behaviors: [
-      Polymer.PaperInputBehavior
+      Polymer.PaperInputBehavior,
+      Polymer.IronFormElementBehavior
     ]
 
   })

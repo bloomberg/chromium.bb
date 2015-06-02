@@ -1,41 +1,48 @@
 {
   "name": "paper-behaviors",
-  "version": "0.8.3",
+  "version": "1.0.0",
+  "description": "Common behaviors across the paper elements",
   "authors": [
     "The Polymer Authors"
+  ],
+  "main": [
+    "paper-button-behavior.html",
+    "paper-radio-button-behavior.html"
   ],
   "keywords": [
     "web-components",
     "web-component",
-    "polymer"
+    "polymer",
+    "paper",
+    "behavior"
   ],
   "private": true,
   "repository": {
     "type": "git",
     "url": "git://github.com/PolymerElements/paper-behaviors"
   },
-  "license": "MIT",
+  "license": "http://polymer.github.io/LICENSE.txt",
   "homepage": "https://github.com/PolymerElements/paper-behaviors",
-  "ignore": [],
   "dependencies": {
-    "polymer": "polymer/polymer#v0.8.0-rc.7",
-    "iron-behaviors": "PolymerElements/iron-behaviors#^0.8.0"
+    "iron-behaviors": "PolymerElements/iron-behaviors#^1.0.0",
+    "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {
-    "paper-material": "PolymerElements/paper-material#^0.8.0",
-    "paper-ripple": "PolymerElements/paper-ripple#^0.8.0",
-    "iron-test-helpers": "polymerelements/iron-test-helpers#^0.8.0",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",
-    "web-component-tester": "Polymer/web-component-tester#^2.2.3",
-    "test-fixture": "PolymerElements/test-fixture#^0.8.0"
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
+    "paper-material": "PolymerElements/paper-material#^1.0.0",
+    "paper-ripple": "PolymerElements/paper-ripple#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "*",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "_release": "0.8.3",
+  "_release": "1.0.0",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.3",
-    "commit": "d111ed7a3991f3fb6b87b362efbecd7167be25e1"
+    "tag": "v1.0.0",
+    "commit": "cf1b11e381a8df169efe2c3aaf08e2787dda31b9"
   },
-  "_source": "git://github.com/polymerelements/paper-behaviors.git",
-  "_target": "^0.8.0",
-  "_originalSource": "polymerelements/paper-behaviors"
+  "_source": "git://github.com/PolymerElements/paper-behaviors.git",
+  "_target": "^1.0.0",
+  "_originalSource": "PolymerElements/paper-behaviors"
 }

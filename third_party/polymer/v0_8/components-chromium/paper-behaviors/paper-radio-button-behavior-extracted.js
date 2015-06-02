@@ -1,28 +1,26 @@
 
 
+  /** @polymerBehavior */
   Polymer.PaperRadioButtonInk = {
 
     observers: [
-      `_focusedChanged(focused)`
+      '_focusedChanged(receivedFocusFromKeyboard)'
     ],
 
-    _focusedChanged: function(focused) {
-      if (!this.$.ink)
+    _focusedChanged: function(receivedFocusFromKeyboard) {
+      if (!this.$.ink) {
         return;
-
-      if (focused) {
-        var rect = this.$.ink.getBoundingClientRect();
-        this.$.ink.mousedownAction();
-      } else {
-        this.$.ink.mouseupAction();
       }
+
+      this.$.ink.holdDown = receivedFocusFromKeyboard;
     }
 
   };
 
+  /** @polymerBehavior */
   Polymer.PaperRadioButtonBehavior = [
-    Polymer.IronControlState,
     Polymer.IronButtonState,
+    Polymer.IronControlState,
     Polymer.PaperRadioButtonInk
   ];
 

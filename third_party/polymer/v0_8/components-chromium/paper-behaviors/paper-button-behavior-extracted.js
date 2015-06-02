@@ -1,6 +1,7 @@
 
 
-  Polymer.PaperButtonElevation = {
+  /** @polymerBehavior */
+  Polymer.PaperButtonBehaviorImpl = {
 
     properties: {
 
@@ -10,23 +11,31 @@
 
     },
 
+    observers: [
+      '_calculateElevation(focused, disabled, active, pressed, receivedFocusFromKeyboard)'
+    ],
+
+    hostAttributes: {
+      role: 'button',
+      tabindex: '0'
+    },
+
     _calculateElevation: function() {
       var e = 1;
-      if (this.disabled || !this.raised) {
+      if (this.disabled) {
         e = 0;
       } else if (this.active || this.pressed) {
-        e = 2;
-      } else if (this.focused) {
+        e = 4;
+      } else if (this.receivedFocusFromKeyboard) {
         e = 3;
       }
       this._elevation = e;
     }
-
   };
 
   Polymer.PaperButtonBehavior = [
-    Polymer.IronControlState,
     Polymer.IronButtonState,
-    Polymer.PaperButtonElevation
+    Polymer.IronControlState,
+    Polymer.PaperButtonBehaviorImpl
   ];
 

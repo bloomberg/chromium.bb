@@ -1,5 +1,37 @@
 
-
+  /**
+   * The `iron-iconset-svg` element allows users to define their own icon sets
+   * that contain svg icons. The svg icon elements should be children of the
+   * `iron-iconset-svg` element. Multiple icons should be given distinct id's.
+   *
+   * Using svg elements to create icons has a few advantages over traditional
+   * bitmap graphics like jpg or png. Icons that use svg are vector based so they
+   * are resolution independent and should look good on any device. They are
+   * stylable via css. Icons can be themed, colorized, and even animated.
+   *
+   * Example:
+   *
+   *     <iron-iconset-svg id="my-svg-icons" iconSize="24">
+   *       <svg>
+   *         <defs>
+   *           <g id="shape">
+   *             <rect x="50" y="50" width="50" height="50" />
+   *             <circle cx="50" cy="50" r="50" />
+   *           </g>
+   *         </defs>
+   *       </svg>
+   *     </iron-iconset-svg>
+   *
+   * This will automatically register the icon set "my-svg-icons" to the iconset
+   * database.  To use these icons from within another element, make a
+   * `iron-iconset` element and call the `byId` method
+   * to retrieve a given iconset. To apply a particular icon inside an
+   * element use the `applyIcon` method. For example:
+   *
+   *     iconset.applyIcon(iconNode, 'car');
+   *
+   * @element iron-iconset-svg
+   */
   Polymer({
 
     is: 'iron-iconset-svg',
@@ -11,7 +43,6 @@
        *
        * @attribute name
        * @type string
-       * @default ''
        */
       name: {
         type: String,
@@ -48,7 +79,7 @@
      *
      * @method applyIcon
      * @param {Element} element Element to which the icon is applied.
-     * @param {String} icon Name of the icon to apply.
+     * @param {string} iconName Name of the icon to apply.
      * @return {Element} The svg element which renders the icon.
      */
     applyIcon: function(element, iconName) {
@@ -59,12 +90,11 @@
       // install new svg element
       var svg = this._cloneIcon(iconName);
       if (svg) {
-        // TODO(sjmiles): I know, `with` is the devil ... except it isn't
-        with (Polymer.dom(element)) {
-          insertBefore(svg, childNodes[0]);
-        }
+        var pde = Polymer.dom(element);
+        pde.insertBefore(svg, pde.childNodes[0]);
         return element._svgIcon = svg;
       }
+      return null;
     },
 
     /**
@@ -97,7 +127,7 @@
     /**
      * Array of all icon names in this iconset.
      *
-     * @return {Array} Array of icon names.
+     * @return {!Array} Array of icon names.
      */
     _getIconNames: function() {
        return Object.keys(this._icons).map(function(n) {
@@ -126,13 +156,18 @@
      * Produce installable clone of the SVG element matching `id` in this
      * iconset, or `undefined` if there is no matching element.
      *
-     * @return {Object} Returns an installable clone of the SVG element
+     * @return {Element} Returns an installable clone of the SVG element
      * matching `id`.
      */
     _cloneIcon: function(id) {
       return this._prepareSvgClone(this._icons[id], this.size);
     },
 
+    /**
+     * @param {Element} sourceSvg
+     * @param {number} size
+     * @return {Element}
+     */
     _prepareSvgClone: function(sourceSvg, size) {
       if (sourceSvg) {
         var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -144,6 +179,7 @@
         svg.appendChild(sourceSvg.cloneNode(true)).removeAttribute('id');
         return svg;
       }
+      return null;
     }
 
   });

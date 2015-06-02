@@ -1,11 +1,13 @@
 {
   "name": "iron-menu-behavior",
-  "version": "0.8.0",
+  "version": "1.0.1",
+  "description": "Provides accessible menu behavior",
   "authors": "The Polymer Authors",
   "keywords": [
     "web-components",
-    "web-component",
-    "polymer"
+    "polymer",
+    "behavior",
+    "menu"
   ],
   "main": "iron-menu-behavior.html",
   "private": true,
@@ -13,18 +15,18 @@
     "type": "git",
     "url": "git://github.com/PolymerElements/iron-menu-behavior"
   },
-  "license": "MIT",
+  "license": "http://polymer.github.io/LICENSE.txt",
   "homepage": "https://github.com/PolymerElements/iron-menu-behavior",
   "ignore": [],
   "dependencies": {
-    "polymer": "Polymer/polymer#v0.8.0-rc.7",
-    "iron-selector": "PolymerElements/iron-selector#^v0.8.0"
+    "iron-selector": "PolymerElements/iron-selector#^1.0.0",
+    "polymer": "Polymer/polymer#^1.0.0",
+    "iron-a11y-keys-behavior": "polymerelements/iron-a11y-keys-behavior#^1.0.0"
   },
   "devDependencies": {
-    "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.0",
-    "quick-element": "PolymerElements/quick-element#^0.8.0",
-    "test-fixture": "PolymerElements/test-fixture#^0.8.0",
-    "web-component-tester": "Polymer/web-component-tester#^2.2.0",
-    "webcomponentsjs": "*"
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "*",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   }
 }

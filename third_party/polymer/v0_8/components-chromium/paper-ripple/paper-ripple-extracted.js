@@ -83,6 +83,10 @@
         return this.element.recenters;
       },
 
+      get center() {
+        return this.element.center;
+      },
+
       get mouseDownElapsed() {
         var elapsed;
 
@@ -239,20 +243,31 @@
         this.wave.style.transform = 'scale3d(' + scale + ',' + scale + ',1)';
       },
 
-      mousedownAction: function(event) {
+      downAction: function(event) {
+        var xCenter = this.containerMetrics.width / 2;
+        var yCenter = this.containerMetrics.height / 2;
+
         this.resetInteractionState();
         this.mouseDownStart = Utility.now();
 
-        this.xStart = event ?
-          event.x - this.containerMetrics.boundingRect.left :
-          this.containerMetrics.width / 2;
-        this.yStart = event ?
-          event.y - this.containerMetrics.boundingRect.top :
-          this.containerMetrics.height / 2;
+        if (this.center) {
+          this.xStart = xCenter;
+          this.yStart = yCenter;
+          this.slideDistance = Utility.distance(
+            this.xStart, this.yStart, this.xEnd, this.yEnd
+          );
+        } else {
+          this.xStart = event ?
+              event.detail.x - this.containerMetrics.boundingRect.left :
+              this.containerMetrics.width / 2;
+          this.yStart = event ?
+              event.detail.y - this.containerMetrics.boundingRect.top :
+              this.containerMetrics.height / 2;
+        }
 
         if (this.recenters) {
-          this.xEnd = this.containerMetrics.width / 2;
-          this.yEnd = this.containerMetrics.height / 2;
+          this.xEnd = xCenter;
+          this.yEnd = yCenter;
           this.slideDistance = Utility.distance(
             this.xStart, this.yStart, this.xEnd, this.yEnd
           );
@@ -272,7 +287,7 @@
         this.waveContainer.style.height = this.containerMetrics.size + 'px';
       },
 
-      mouseupAction: function(event) {
+      upAction: function(event) {
         if (!this.isMouseDown) {
           return;
         }
@@ -289,6 +304,10 @@
 
     Polymer({
       is: 'paper-ripple',
+
+      behaviors: [
+        Polymer.IronA11yKeysBehavior
+      ],
 
       properties: {
         /**
@@ -329,6 +348,18 @@
         },
 
         /**
+         * If true, ripples will center inside its container
+         *
+         * @attribute recenters
+         * @type boolean
+         * @default false
+         */
+        center: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
          * A list of the visual ripples.
          *
          * @attribute ripples
@@ -342,6 +373,27 @@
           }
         },
 
+        /**
+         * True when there are visible ripples animating within the
+         * element.
+         */
+        animating: {
+          type: Boolean,
+          readOnly: true,
+          reflectToAttribute: true,
+          value: false
+        },
+
+        /**
+         * If true, the ripple will remain in the "down" state until `holdDown`
+         * is set to false again.
+         */
+        holdDown: {
+          type: Boolean,
+          value: false,
+          observer: '_holdDownChanged'
+        },
+
         _animating: {
           type: Boolean
         },
@@ -351,44 +403,38 @@
           value: function() {
             return this.animate.bind(this);
           }
-        },
-
-        _boundMousedownAction: {
-          type: Function,
-          value: function() {
-            return this.mousedownAction.bind(this);
-          }
-        },
-
-        _boundMouseupAction: {
-          type: Function,
-          value: function() {
-            return this.mouseupAction.bind(this);
-          }
         }
       },
 
       get target () {
-        return this.host || this.parentNode;
+        var ownerRoot = Polymer.dom(this).getOwnerRoot();
+        var target;
+
+        if (ownerRoot) {
+          target = ownerRoot.host;
+        }
+
+        if (!target) {
+          target = this.parentNode;
+        }
+
+        return target;
+      },
+
+      keyBindings: {
+        'enter:keydown': '_onEnterKeydown',
+        'space:keydown': '_onSpaceKeydown',
+        'space:keyup': '_onSpaceKeyup'
       },
 
       attached: function() {
-        this.target.addEventListener('mousedown', this._boundMousedownAction);
-        this.target.addEventListener('mouseup', this._boundMouseupAction);
-      },
+        this._listen(this.target, 'up', this.upAction.bind(this));
+        this._listen(this.target, 'down', this.downAction.bind(this));
 
-      detached: function() {
-        this.target.removeEventListener('mousedown', this._boundMousedownAction);
-        this.target.removeEventListener('mouseup', this._boundMouseupAction);
+        if (!this.target.hasAttribute('noink')) {
+          this.keyEventTarget = this.target;
+        }
       },
-
-      /* TODO(cdata): Replace the above attached / detached listeners when
-         PolymerGestures equivalent lands in 0.8.
-      listeners: {
-        mousedown: 'mousedownAction',
-        mouseup: 'mouseupAction'
-      },
-      */
 
       get shouldKeepAnimating () {
         for (var index = 0; index < this.ripples.length; ++index) {
@@ -401,27 +447,35 @@
       },
 
       simulatedRipple: function() {
-        this.mousedownAction(null);
+        this.downAction(null);
 
         // Please see polymer/polymer#1305
         this.async(function() {
-          this.mouseupAction();
+          this.upAction();
         }, 1);
       },
 
-      mousedownAction: function(event) {
+      downAction: function(event) {
+        if (this.holdDown && this.ripples.length > 0) {
+          return;
+        }
+
         var ripple = this.addRipple();
 
-        ripple.mousedownAction(event);
+        ripple.downAction(event);
 
         if (!this._animating) {
           this.animate();
         }
       },
 
-      mouseupAction: function(event) {
+      upAction: function(event) {
+        if (this.holdDown) {
+          return;
+        }
+
         this.ripples.forEach(function(ripple) {
-          ripple.mouseupAction(event);
+          ripple.upAction(event);
         });
 
         this.animate();
@@ -440,6 +494,8 @@
         this.$.background.style.backgroundColor = ripple.color;
         this.ripples.push(ripple);
 
+        this._setAnimating(true);
+
         return ripple;
       },
 
@@ -453,6 +509,10 @@
         this.ripples.splice(rippleIndex, 1);
 
         ripple.remove();
+
+        if (!this.ripples.length) {
+          this._setAnimating(false);
+        }
       },
 
       animate: function() {
@@ -473,10 +533,31 @@
           }
         }
 
-        if (this.shouldKeepAnimating) {
-          window.requestAnimationFrame(this._boundAnimate);
-        } else if (this.ripples.length === 0) {
+        if (!this.shouldKeepAnimating && this.ripples.length === 0) {
           this.onAnimationComplete();
+        } else {
+          window.requestAnimationFrame(this._boundAnimate);
+        }
+      },
+
+      _onEnterKeydown: function() {
+        this.downAction();
+        this.async(this.upAction, 1);
+      },
+
+      _onSpaceKeydown: function() {
+        this.downAction();
+      },
+
+      _onSpaceKeyup: function() {
+        this.upAction();
+      },
+
+      _holdDownChanged: function(holdDown) {
+        if (holdDown) {
+          this.downAction();
+        } else {
+          this.upAction();
         }
       }
     });

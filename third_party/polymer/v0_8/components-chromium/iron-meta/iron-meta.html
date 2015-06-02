@@ -1,11 +1,14 @@
 <!--
+@license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
---><!--
+--><html><head><link rel="import" href="../polymer/polymer.html">
+
+<!--
 `iron-meta` is a generic element you can use for sharing information across the DOM tree.
 It uses [monostate pattern](http://c2.com/cgi/wiki?MonostatePattern) such that any
 instance of iron-meta has access to the shared
@@ -40,8 +43,10 @@ Or, in a Polymer element, you can include a meta in your template:
     ...
     this.$.meta.byKey('info').getAttribute('keyUrl');
 
-@group Polymer Iron Elements
+@group Iron Elements
+@demo demo/index.html
+@hero hero.svg
 @element iron-meta
---><html><head><link rel="import" href="../polymer/polymer.html">
+-->
 
 </head><body><script src="iron-meta-extracted.js"></script></body></html>

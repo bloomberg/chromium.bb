@@ -35,7 +35,7 @@
     </issue-banner>
     <paper-menu id="cast-mode-list"
         hidden$="[[computeCastModeHidden_(currentView_)]]">
-      <template is="x-repeat" id="castModeList" items="[[castModeList]]">
+      <template is="dom-repeat" id="castModeList" items="[[castModeList]]">
         <paper-item class="cast-mode" on-click="onCastModeClick_">
           <span>[[item.description]]</span>
         </paper-item>
@@ -52,7 +52,7 @@
     https://github.com/PolymerElements/paper-menu/issues/17 -->
     <paper-menu id="sink-list"
         hidden$="[[computeSinkListHidden_(currentView_, issue)]]">
-      <template is="x-repeat" id="sinkList" items="[[sinkList]]">
+      <template is="dom-repeat" id="sinkList" items="[[sinkList]]">
         <paper-item class="sink" on-click="onSinkClick_">
           <!-- TODO(apacible): Show device icon based on device type. -->
           <iron-icon class="sink-icon" icon="hardware:tv"></iron-icon>

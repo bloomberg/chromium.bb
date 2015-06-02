@@ -6,9 +6,21 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
---><!--
-@group Paper Elements
+--><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-radio-button-behavior.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
 
+<style is="custom-style">
+  :root {
+    --paper-icon-button-disabled-text: var(--disabled-text-color);
+  }
+</style>
+
+<!--
 Material Design: <a href="http://www.google.com/design/spec/components/buttons.html">Buttons</a>
 
 `paper-icon-button` is a button with an image placed at the center. When the user touches
@@ -29,8 +41,7 @@ Example:
     <paper-icon-button icon="favorite"></paper-icon-button>
     <paper-icon-button src="star.png"></paper-icon-button>
 
-Styling
--------
+###Styling
 
 Style the button with CSS as you would a normal DOM element. If you are using the icons
 provided by `iron-icons`, they will inherit the foreground color of the button.
@@ -48,23 +59,23 @@ customize the color using this selector:
 
 The opacity of the ripple is not customizable via CSS.
 
-@element paper-icon-button
-@homepage github.io
---><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../paper-styles/default-theme.html">
-<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
-<link rel="import" href="../paper-ripple/paper-ripple.html">
+The following custom properties and mixins are available for styling:
 
-<style is="x-style">
-  * {
-    --paper-icon-button-disabled-text: var(--disabled-text-color);
-  }
-</style>
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-icon-button-disabled-text` | The color of the disabled button | `--primary-text-color`
+`--paper-icon-button-ink-color` | Selected/focus ripple color | `--default-primary-color`
+`--paper-icon-button` | Mixin for a button | `{}`
+`--paper-icon-button-disabled` | Mixin for a disabled button | `{}`
+
+@group Paper Elements
+@element paper-icon-button
+@demo demo/index.html
+-->
 
 </head><body><dom-module id="paper-icon-button">
   <style>
+
     :host {
       display: inline-block;
       position: relative;
@@ -77,19 +88,23 @@ The opacity of the ripple is not customizable via CSS.
       cursor: pointer;
       z-index: 0;
 
-      mixin(--paper-icon-button);
+      @apply(--paper-icon-button);
+    }
+
+    :host #ink {
+      color: var(--paper-icon-button-ink-color, --primary-text-color);
+      opacity: 0.6;
     }
 
     :host([disabled]) {
-      color: var(--paper-icon-button-disabled-text);
+      color: var(--paper-icon-button-disabled-text, #fff);
       pointer-events: none;
       cursor: auto;
-
-      mixin(--paper-icon-button-disabled);
+      @apply(--paper-icon-button-disabled);
     }
   </style>
   <template>
-    <paper-ripple class="circle" recenters=""></paper-ripple>
+    <paper-ripple id="ink" class="circle" center=""></paper-ripple>
     <iron-icon id="icon" src="[[src]]" icon="[[icon]]"></iron-icon>
   </template>
 </dom-module>

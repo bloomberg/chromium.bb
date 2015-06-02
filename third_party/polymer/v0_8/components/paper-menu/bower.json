@@ -1,11 +1,12 @@
 {
   "name": "paper-menu",
-  "version": "0.8.0",
+  "version": "1.0.0",
+  "description": "Implements an accessible material design menu",
   "authors": "The Polymer Authors",
   "keywords": [
     "web-components",
-    "web-component",
-    "polymer"
+    "polymer",
+    "menu"
   ],
   "main": "paper-menu.html",
   "private": true,
@@ -13,19 +14,19 @@
     "type": "git",
     "url": "git://github.com/PolymerElements/paper-menu"
   },
-  "license": "MIT",
+  "license": "http://polymer.github.io/LICENSE.txt",
   "homepage": "https://github.com/PolymerElements/paper-menu",
   "ignore": [],
   "dependencies": {
-    "polymer": "Polymer/polymer#v0.8.0-rc.7",
-    "iron-menu-behavior": "PolymerElements/iron-menu-behavior#^0.8.0",
-    "paper-styles": "PolymerElements/paper-styles#^0.8.0"
+    "iron-menu-behavior": "PolymerElements/iron-menu-behavior#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
+    "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {
-    "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.0",
-    "paper-item": "PolymerElements/paper-item#^0.8.0",
-    "test-fixture": "PolymerElements/test-fixture#^0.8.0",
-    "web-component-tester": "Polymer/web-component-tester#^2.2.0",
-    "webcomponentsjs": "Polymer/webcomponentsjs#^0.6.0"
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "paper-item": "PolymerElements/paper-item#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "*",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   }
 }

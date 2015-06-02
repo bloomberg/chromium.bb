@@ -1,10 +1,48 @@
 
 
+/*
+`<iron-input>` adds two-way binding and custom validators using `Polymer.IronValidatorBehavior`
+to `<input>`.
+
+### Two-way binding
+
+By default you can only get notified of changes to an `input`'s `value` due to user input:
+
+    <input value="{{myValue::input}}">
+
+`iron-input` adds the `bind-value` property that mirrors the `value` property, and can be used
+for two-way data binding. `bind-value` will notify if it is changed either by user input or by script.
+
+    <input is="iron-input" bind-value="{{myValue}}">
+
+### Custom validators
+
+You can use custom validators that implement `Polymer.IronValidatorBehavior` with `<iron-input>`.
+
+    <input is="iron-input" validator="my-custom-validator">
+
+### Stopping invalid input
+
+It may be desirable to only allow users to enter certain characters. You can use the
+`prevent-invalid-input` and `allowed-pattern` attributes together to accomplish this. This feature
+is separate from validation, and `allowed-pattern` does not affect how the input is validated.
+
+    <!-- only allow characters that match [0-9] -->
+    <input is="iron-input" prevent-invaild-input allowed-pattern="[0-9]">
+
+@hero hero.svg
+@demo demo/index.html
+*/
+
   Polymer({
 
     is: 'iron-input',
 
     extends: 'input',
+
+    behaviors: [
+      Polymer.IronValidatableBehavior
+    ],
 
     properties: {
 
@@ -17,11 +55,19 @@
       },
 
       /**
-       * Set to true to prevent the user from entering invalid input or setting
-       * invalid `bindValue`.
+       * Set to true to prevent the user from entering invalid input. The new input characters are
+       * matched with `allowedPattern` if it is set, otherwise it will use the `pattern` attribute if
+       * set, or the `type` attribute (only supported for `type=number`).
        */
       preventInvalidInput: {
         type: Boolean
+      },
+
+      /**
+       * Regular expression to match valid input characters.
+       */
+      allowedPattern: {
+        type: String
       },
 
       _previousValidInput: {
@@ -32,39 +78,97 @@
     },
 
     listeners: {
-      'input': '_onInput'
+      'input': '_onInput',
+      'keydown': '_onKeydown'
+    },
+
+    get _patternRegExp() {
+      var pattern;
+      if (this.allowedPattern) {
+        pattern = new RegExp(this.allowedPattern);
+      } else if (this.pattern) {
+        pattern = new RegExp(this.pattern);
+      } else {
+        switch (this.type) {
+          case 'number':
+            pattern = /[0-9.,e-]/;
+            break;
+        }
+      }
+      return pattern;
     },
 
     ready: function() {
-      this._validateValue();
       this.bindValue = this.value;
     },
 
     _bindValueChanged: function() {
-      // If this was called as a result of user input, then |_validateValue|
-      // has already been called in |_onInput|, and it doesn't need to be
-      // called again.
-      if (this.value != this.bindValue) {
+      if (this.value !== this.bindValue) {
         this.value = this.bindValue;
-        this._validateValue();
       }
-
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
     },
 
     _onInput: function() {
-      this._validateValue();
+      this.bindValue = this.value;
     },
 
-    _validateValue: function() {
-      var value;
-      if (this.preventInvalidInput && !this.validity.valid) {
-        value = this._previousValidInput;
-      } else {
-        value = this._previousValidInput = this.value;
+    _isPrintable: function(keyCode) {
+      var printable =
+        (keyCode > 47 && keyCode < 58)   || // number keys
+        keyCode == 32 || keyCode == 13   || // spacebar & return key
+        (keyCode > 64 && keyCode < 91)   || // letter keys
+        (keyCode > 95 && keyCode < 112)  || // numpad keys
+        (keyCode > 185 && keyCode < 193) || // ;=,-./` (in order)
+        (keyCode > 218 && keyCode < 223);   // [\]' (in order)
+      return printable;
+    },
+
+    // convert printable numpad keys to number keys
+    _correctNumpadKeys: function(keyCode) {
+      return (keyCode > 95 && keyCode < 112) ? keyCode - 48 : keyCode;
+    },
+
+    _onKeydown: function(event) {
+      if (!this.preventInvalidInput && this.type !== 'number') {
+        return;
       }
-      this.bindValue = this.value = value;
+      var regexp = this._patternRegExp;
+      if (!regexp) {
+        return;
+      }
+      var thisChar = String.fromCharCode(this._correctNumpadKeys(event.keyCode));
+      if (this._isPrintable(event.keyCode) && !regexp.test(thisChar)) {
+        event.preventDefault();
+      }
+    },
+
+    /**
+     * Returns true if `value` is valid. The validator provided in `validator` will be used first,
+     * then any constraints.
+     * @return {Boolean} True if the value is valid.
+     */
+    validate: function() {
+      // Empty, non-required input is valid.
+      if (!this.required && this.value == '')
+        return true;
+        
+      var valid;
+      if (this.hasValidator()) {
+        valid = Polymer.IronValidatableBehavior.validate.call(this, this.value);
+      } else {
+        this.invalid = !this.validity.valid;
+        valid = this.validity.valid;
+      }
+      this.fire('iron-input-validate');
+      return valid;
     }
 
-  })
+  });
+
+  /*
+  The `iron-input-validate` event is fired whenever `validate()` is called.
+  @event iron-input-validate
+  */
+

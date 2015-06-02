@@ -1,7 +1,7 @@
 Name: Polymer
 Short Name: polymer
 URL: http://www.polymer-project.org
-Version: 0.8
+Version: 1.0
 Revision: (See components/<component>/.bower.json)
 License: BSD
 License File: ../LICENSE.polymer
@@ -10,17 +10,17 @@ Security Critical: no
 Description:
 This directory contains a copy of the following components which are a part of
 the Polymer project:
--polymer
--layout
--Used Iron elements and their dependencies
--Used Paper elements and their dependencies
+-polymer core + externs
+-Iron elements and their dependencies
+-Paper elements and their dependencies
+-more-routing
 See bower.json for a full list of components.
 
 The version can be found in header of polymer/polymer.js. The license can
 be found in polymer/LICENSE.
 
 The source git repositories can be found at:
-Core Library - https://github.com/Polymer/polymer/tree/0.8-preview
+Core Library - https://github.com/Polymer/polymer
 Elements - https://github.com/PolymerElements/<element name>
 
 Polymer is comprised of two efforts:

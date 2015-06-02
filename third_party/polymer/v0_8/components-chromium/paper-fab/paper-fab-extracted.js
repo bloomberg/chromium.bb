@@ -2,8 +2,6 @@
   Polymer({
     is: 'paper-fab',
 
-    enableCustomStyleProperties: true,
-
     behaviors: [
       Polymer.PaperButtonBehavior
     ],
@@ -48,4 +46,5 @@
         value: false
       }
     }
+
   });

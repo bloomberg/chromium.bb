@@ -13,7 +13,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 :host([disabled]) {
-  opacity: 0.3;
   pointer-events: none;
 }
 
@@ -59,12 +58,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   width: 100%;
   border-radius: 8px;
   pointer-events: none;
-  opacity: 0.26;
+  opacity: 0.4;
   transition: background-color linear .08s;
 }
 
 :host([checked]) #toggleBar {
   opacity: 0.5;
+}
+
+:host([disabled]) #toggleBar {
+  background-color: #000;
+  opacity: 0.12;
 }
 
 #toggleButton {
@@ -73,9 +77,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   height: 20px;
   width: 20px;
   border-radius: 50%;
-  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.6);
   transition: -webkit-transform linear .08s, background-color linear .08s;
   transition: transform linear .08s, background-color linear .08s;
+  will-change: transform;
 }
 
 #toggleButton.dragging {
@@ -88,11 +93,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   transform: translate(16px, 0);
 }
 
+:host([disabled]) #toggleButton {
+  background-color: #bdbdbd;
+  opacity: 1;
+}
+
 #ink {
   position: absolute;
   top: -14px;
   left: -14px;
   width: 48px;
   height: 48px;
-  pointer-events: none;
+  opacity: 0.5;
 }

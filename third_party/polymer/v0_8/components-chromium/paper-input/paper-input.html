@@ -8,32 +8,74 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
 <link rel="import" href="paper-input-behavior.html">
 <link rel="import" href="paper-input-container.html">
 <link rel="import" href="paper-input-error.html">
 <link rel="import" href="paper-input-char-counter.html">
 
 <!--
-`<paper-input>` is a text field.
+`<paper-input>` is a single-line text field with Material Design styling.
+
+    <paper-input label="Input label"></paper-input>
+
+It may include an optional error message or character counter.
+
+    <paper-input error-message="Invalid input!" label="Input label"></paper-input>
+    <paper-input char-counter label="Input label"></paper-input>
+
+See `Polymer.PaperInputBehavior` for more API docs.
+
+### Styling
+
+See `Polymer.PaperInputContainer` for a list of custom properties used to
+style this element.
+
+@group Paper Elements
+@element paper-input
+@hero hero.svg
+@demo demo/index.html
 -->
 
 </head><body><dom-module id="paper-input">
 
+  <style>
+
+    :host {
+      display: block;
+    }
+
+    input::-webkit-input-placeholder {
+      color: var(--paper-input-container-color, --secondary-text-color);
+    }
+
+    input:-moz-placeholder {
+      color: var(--paper-input-container-color, --secondary-text-color);
+    }
+
+    input::-moz-placeholder {
+      color: var(--paper-input-container-color, --secondary-text-color);
+    }
+
+    input:-ms-input-placeholder {
+      color: var(--paper-input-container-color, --secondary-text-color);
+    }
+
+  </style>
+
   <template>
 
-    <paper-input-container no-label-float$="[[noLabelFloat]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]">
+    <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
-      <template is="x-if" if="[[label]]">
-        <label>[[parent.label]]</label>
+      <label hidden$="[[!label]]">[[label]]</label>
+
+      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowedpattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" maxlength$="[[maxlength]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" size$="[[size]]">
+
+      <template is="dom-if" if="[[errorMessage]]">
+        <paper-input-error>[[errorMessage]]</paper-input-error>
       </template>
 
-      <input is="iron-input" id="input" bind-value="{{value}}" prevent-invalid-input="[[preventInvalidInput]]" type$="[[type]]" pattern$="[[pattern]]" maxlength$="[[maxlength]]" required$="[[required]]" disabled$="[[disabled]]">
-
-      <template is="x-if" if="[[errorMessage]]">
-        <paper-input-error>[[parent.errorMessage]]</paper-input-error>
-      </template>
-
-      <template is="x-if" if="[[charCounter]]">
+      <template is="dom-if" if="[[charCounter]]">
         <paper-input-char-counter></paper-input-char-counter>
       </template>
 

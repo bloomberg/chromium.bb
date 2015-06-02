@@ -1,11 +1,16 @@
 <!--
+@license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
---><!--
+--><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-meta/iron-meta.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+
+<!--
 
 The `iron-icon` element displays an icon. By default an icon renders as a 24px square.
 
@@ -51,16 +56,27 @@ how to create a custom iconset.
 
 See [iron-icons](http://www.polymer-project.org/components/iron-icons/demo.html) for the default set of icons.
 
-@group Polymer Core Elements
-@element iron-icon
-@homepage polymer.github.io
---><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-meta/iron-meta.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 
-<style is="x-style">
-  * {
-    --iron-icon-size: 24px;
+### Styling
+
+The following custom properties are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--iron-icon-width` | Width of the icon | `24px`
+`--iron-icon-height` | Height of the icon | `24px`
+
+@group Iron Elements
+@element iron-icon
+@demo demo/index.html
+@hero hero.svg
+@homepage polymer.github.io
+-->
+
+<style is="custom-style">
+  :root {
+    --iron-icon-width: 24px;
+    --iron-icon-height: 24px;
   }
 </style>
 
@@ -68,15 +84,16 @@ See [iron-icons](http://www.polymer-project.org/components/iron-icons/demo.html)
 
   <style>
     :host {
-      mixin(--layout-inline --layout-center-center);
+      @apply(--layout-inline);
+      @apply(--layout-center-center);
       position: relative;
 
       vertical-align: middle;
 
       fill: currentcolor;
 
-      width: var(--iron-icon-size);
-      height: var(--iron-icon-size);
+      width: var(--iron-icon-width);
+      height: var(--iron-icon-height);
     }
   </style>
 
@@ -84,6 +101,6 @@ See [iron-icons](http://www.polymer-project.org/components/iron-icons/demo.html)
     <iron-meta id="meta" type="iconset"></iron-meta>
   </template>
 
-</dom-module>
+  </dom-module>
 
 <script src="iron-icon-extracted.js"></script></body></html>

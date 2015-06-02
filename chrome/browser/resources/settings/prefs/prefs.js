@@ -84,7 +84,7 @@
 
           if (!root.hasOwnProperty(token)) {
             let path = 'prefStore.' + tokens.slice(0, i + 1).join('.');
-            this.setPathValue(path, {});
+            this.set(path, {});
           }
           root = root[token];
         }
@@ -93,7 +93,7 @@
         // observer fires.
         for (let objKey in prefObj) {
           let path = 'prefStore.' + prefObj.key + '.' + objKey;
-          this.setPathValue(path, prefObj[objKey]);
+          this.set(path, prefObj[objKey]);
         }
 
         if (shouldObserve) {

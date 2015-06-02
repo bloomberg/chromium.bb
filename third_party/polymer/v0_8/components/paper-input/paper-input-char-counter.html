@@ -10,9 +10,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="paper-input-addon-behavior.html">
 
 <!--
-`<paper-input-char-counter>` is a character counter for use with `<paper-input-container>`.
+`<paper-input-char-counter>` is a character counter for use with `<paper-input-container>`. It
+shows the number of characters entered in the input and the max length if it is specified.
+
+    <paper-input-container>
+      <input is="iron-input" maxlength="20">
+      <paper-input-char-counter></paper-input-char-counter>
+    </paper-input-container>
+
+### Styling
+
+The following mixin is available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-input-char-counter` | Mixin applied to the element | `{}`
 -->
 <dom-module id="paper-input-char-counter">
 
@@ -22,17 +37,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       display: inline-block;
       float: right;
 
-      mixin(--paper-input-container-add-on);
-      mixin(--paper-input-container-add-on-font);
-
-      mixin(--paper-input-char-counter);
+      @apply(--paper-font-caption);
+      @apply(--paper-input-char-counter);
     }
 
   </style>
 
   <template>
 
-    <span>[[charCounter]]</span>
+    <span>[[_charCounterStr]]</span>
 
   </template>
 
@@ -46,48 +59,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     is: 'paper-input-char-counter',
 
-    enableCustomStyleProperties: true,
-
-    hostAttributes: {
-      'add-on': ''
-    },
+    behaviors: [
+      Polymer.PaperInputAddonBehavior
+    ],
 
     properties: {
 
-      /**
-       * The associated input element.
-       */
-      inputElement: {
-        type: Object
-      },
-
-      /**
-       * The current value of the input element.
-       */
-      value: {
-        type: String
-      },
-
-      /**
-       * The character counter string.
-       */
-      charCounter: {
-        computed: '_computeCharCounter(inputElement,value)',
-        type: String
+      _charCounterStr: {
+        type: String,
+        value: '0'
       }
 
     },
 
-    attached: function() {
-      this.fire('addon-attached');
-    },
-
-    _computeCharCounter: function(inputElement,value) {
-      var str = value.length;
-      if (inputElement.hasAttribute('maxlength')) {
-        str += '/' + inputElement.maxLength;
+    update: function(state) {
+      if (!state.inputElement) {
+        return;
       }
-      return str;
+
+      state.value = state.value || '';
+
+      // Account for the textarea's new lines.
+      var str = state.value.replace(/(\r\n|\n|\r)/g, '--').length;
+
+      if (state.inputElement.hasAttribute('maxlength')) {
+        str += '/' + state.inputElement.getAttribute('maxlength');
+      }
+      this._charCounterStr = str;
     }
 
   });

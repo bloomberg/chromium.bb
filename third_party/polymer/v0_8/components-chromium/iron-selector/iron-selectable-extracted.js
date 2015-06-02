@@ -1,5 +1,6 @@
 
 
+  /** @polymerBehavior */
   Polymer.IronSelectableBehavior = {
 
     properties: {
@@ -46,11 +47,11 @@
        *
        * @attribute activateEvent
        * @type {string}
-       * @default 'click'
+       * @default 'tap'
        */
       activateEvent: {
         type: String,
-        value: 'click',
+        value: 'tap',
         observer: '_activateEventChanged'
       },
 
@@ -96,7 +97,6 @@
     },
 
     created: function() {
-      this._bindActivateHandler = this._activateHandler.bind(this);
       this._bindFilterItem = this._filterItem.bind(this);
       this._selection = new Polymer.IronSelection(this._applySelection.bind(this));
     },
@@ -170,11 +170,13 @@
     },
 
     _addListener: function(eventName) {
-      this.addEventListener(eventName, this._bindActivateHandler);
+      this.listen(this, eventName, '_activateHandler');
     },
 
     _removeListener: function(eventName) {
-      this.removeEventListener(eventName, this._bindActivateHandler);
+      // There is no unlisten yet...
+      // https://github.com/Polymer/polymer/issues/1639
+      //this.removeEventListener(eventName, this._bindActivateHandler);
     },
 
     _activateEventChanged: function(eventName, old) {
@@ -263,6 +265,11 @@
     },
 
     _activateHandler: function(e) {
+      // TODO: remove this when https://github.com/Polymer/polymer/issues/1639 is fixed so we
+      // can just remove the old event listener.
+      if (e.type !== this.activateEvent) {
+        return;
+      }
       var t = e.target;
       var items = this.items;
       while (t && t != this) {

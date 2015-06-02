@@ -1,14 +1,14 @@
 {
   "name": "polymer-externs",
   "homepage": "https://github.com/PolymerLabs/polymer-externs",
-  "version": "0.8.1",
-  "_release": "0.8.1",
+  "version": "1.0.0",
+  "_release": "1.0.0",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.1",
-    "commit": "bfd541f00f7d38ba73eeeeb5e582d85db37ddf28"
+    "tag": "v1.0.0",
+    "commit": "1f2d54817701edfd0ded01e88ae0549e48efac49"
   },
   "_source": "git://github.com/PolymerLabs/polymer-externs.git",
-  "_target": "^0.8.0",
+  "_target": "~1.0.0",
   "_originalSource": "PolymerLabs/polymer-externs"
 }

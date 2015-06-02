@@ -65,171 +65,48 @@ Example:
       </paper-header-panel>
     </paper-drawer-panel>
 
-To position the drawer to the right, add `rightDrawer` attribute.
+To position the drawer to the right, add `right-drawer` attribute.
 
-    <paper-drawer-panel rightDrawer>
+    <paper-drawer-panel right-drawer>
       <div drawer> Drawer panel... </div>
       <div main> Main panel... </div>
     </paper-drawer-panel>
 
-@group Polymer Elements
+Styling paper-drawer-panel:
+
+To change the main container:
+  paper-drawer-panel {
+    --paper-drawer-panel-main-container: {
+      background-color: gray;
+    };
+  }
+
+To change the drawer container when it's in the left side:
+  paper-drawer-panel {
+    --paper-drawer-panel-left-drawer-container: {
+      background-color: white;
+    };
+  }
+
+To change the drawer container when it's in the right side:
+
+  paper-drawer-panel {
+    --paper-drawer-panel-right-drawer-container: {
+      background-color: white;
+    };
+  }
+
+@group Paper elements
 @element paper-drawer-panel
-@homepage github.io
+@demo demo/index.html
+@hero hero.svg
 -->
 
 </head><body><dom-module id="paper-drawer-panel">
-
-  <style>
-    :host {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    iron-selector > #drawer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      will-change: transform;
-      box-sizing: border-box;
-      -moz-box-sizing: border-box;
-    }
-
-    .transition > #drawer {
-      transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s;
-      transition: transform ease-in-out 0.3s, width ease-in-out 0.3s;
-    }
-
-    /*
-    right-drawer: make drawer on the right side
-    */
-    .right-drawer > #drawer {
-      left: auto;
-      right: 0;
-    }
-
-    paper-drawer-panel #drawer > * {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      box-sizing: border-box;
-      -moz-box-sizing: border-box;
-    }
-
-    iron-selector > #main {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-    }
-
-    .transition > #main {
-      transition: left ease-in-out 0.3s, padding ease-in-out 0.3s;
-    }
-
-    .right-drawer > #main {
-      left: 0;
-    }
-
-    .right-drawer.transition > #main {
-      transition: right ease-in-out 0.3s, padding ease-in-out 0.3s;
-    }
-
-    #main > [main] {
-      height: 100%;
-    }
-
-    #scrim {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      background-color: rgba(0, 0, 0, 0.3);
-      visibility: hidden;
-      opacity: 0;
-      transition: opacity ease-in-out 0.38s, visibility ease-in-out 0.38s;
-    }
-
-    #edgeSwipeOverlay {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      width: 20px;
-    }
-
-    .right-drawer > #main > #edgeSwipeOverlay {
-      right: 0;
-      left: auto;
-    }
-
-    /*
-    narrow layout
-    */
-    .narrow-layout > #drawer.iron-selected {
-      box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
-    }
-
-    .right-drawer.narrow-layout > #drawer.iron-selected {
-      box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.15);
-    }
-
-    .narrow-layout > #drawer > ::content[select="[drawer]"] > * {
-      border: 0;
-    }
-
-    .narrow-layout > #drawer:not(.iron-selected) {
-      -webkit-transform: translateX(-100%);
-      transform: translateX(-100%);
-    }
-
-    .right-drawer.narrow-layout > #drawer:not(.iron-selected) {
-      left: auto;
-      -webkit-transform: translateX(100%);
-      transform: translateX(100%);
-    }
-
-    .narrow-layout > #main {
-      left: 0 !important;
-      padding: 0;
-    }
-
-    .right-drawer.narrow-layout > #main {
-      left: 0;
-      right: 0;
-      padding: 0;
-    }
-
-    .narrow-layout > #main:not(.iron-selected) > #scrim,
-    .dragging #scrim {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    .narrow-layout > #main > * {
-      margin: 0;
-      min-height: 100%;
-      left: 0;
-      right: 0;
-      box-sizing: border-box;
-      -moz-box-sizing: border-box;
-    }
-
-    iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
-      display: none;
-    }
-  </style>
+  <link rel="import" type="css" href="paper-drawer-panel.css">
 
   <template>
-    <iron-media-query on-query-matches-changed="onQueryMatchesChanged" query="[[_computeMediaQuery(forceNarrow, responsiveWidth)]]">
+    <iron-media-query id="mq" on-query-matches-changed="_onQueryMatchesChanged" query="[[_computeMediaQuery(forceNarrow, responsiveWidth)]]">
     </iron-media-query>
 
     <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, transition, dragging, rightDrawer)]]" activate-event="" selected="[[selected]]">
@@ -237,8 +114,6 @@ To position the drawer to the right, add `rightDrawer` attribute.
       <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]">
         <content select="[main]"></content>
         <div id="scrim" on-tap="closeDrawer"></div>
-        <div id="edgeSwipeOverlay" hidden$="[[_computeSwipeOverlayHidden(narrow, disableEdgeSwipe)]]">
-        </div>
       </div>
 
       <div id="drawer" style$="[[_computeDrawerStyle(drawerWidth)]]">

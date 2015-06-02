@@ -5,7 +5,10 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
---><!--
+--><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+
+<!--
 `paper-toolbar` is a horizontal bar containing items that can be used for
 label, navigation, search and actions.  The items place inside the
 `paper-toolbar` are projected into a `class="horizontal center layout"` container inside of
@@ -15,9 +18,9 @@ sizing.
 Example:
 
     <paper-toolbar>
-      <paper-icon-button icon="menu" on-tap="{{menuAction}}"></paper-icon-button>
-      <div flex>Title</div>
-      <paper-icon-button icon="more" on-tap="{{moreAction}}"></paper-icon-button>
+      <paper-icon-button icon="menu" on-tap="menuAction"></paper-icon-button>
+      <div title>Title</div>
+      <paper-icon-button icon="more" on-tap="moreAction"></paper-icon-button>
     </paper-toolbar>
 
 `paper-toolbar` has a standard height, but can made be taller by setting `tall`
@@ -39,28 +42,31 @@ When `tall`, items can pin to either the top (default), middle or bottom.  Use
 
     <paper-toolbar class="tall">
       <paper-icon-button icon="menu"></paper-icon-button>
-      <div class="middle">Middle Title</div>
-      <div class="bottom">Bottom Title</div>
+      <div title class="middle">Middle Title</div>
+      <div title class="bottom">Bottom Title</div>
     </paper-toolbar>
 
 For `medium-tall` toolbar, the middle and bottom contents overlap and are
 pinned to the bottom.  But `middleJustify` and `bottomJustify` attributes are
 still honored separately.
 
-@group Polymer Core Elements
-@element paper-toolbar
-@homepage github.io
---><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
+### Styling
 
-<style is="x-style">
+The following custom properties and mixins are available for styling:
 
-  * {
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-toolbar-background` | Toolbar background color     | `--default-primary-color`
+`--paper-toolbar-color`      | Toolbar foreground color     | `--text-primary-color`
+`--paper-toolbar`            | Mixin applied to the toolbar | `{}`
 
-    --paper-toolbar-background: var(--default-primary-color);
-    --paper-toolbar-color: var(--text-primary-color);
-  }
-</style>
+### Accessibility
+
+`<paper-toolbar>` has `role="toolbar"` by default. Any elements with the `title` attribute will
+be used as the label of the toolbar via `aria-labelledby`.
+
+@demo demo/index.html
+-->
 
 </head><body><dom-module id="paper-toolbar">
 
@@ -75,11 +81,10 @@ still honored separately.
       /* size */
       height: 64px;
 
-      background: var(--paper-toolbar-background);
-      color: var(--paper-toolbar-color);
-      mixin(--paper-font-title);
+      background: var(--paper-toolbar-background, --default-primary-color);
+      color: var(--paper-toolbar-color, --text-primary-color);
 
-      mixin(--paper-toolbar);
+      @apply(--paper-toolbar);
     }
 
     :host(.animate) {
@@ -121,8 +126,12 @@ still honored separately.
 
       .toolbar-tools {
         height: 56px;
-        padding: 0;
       }
+    }
+
+    #topBar {
+      position: relative;
+      z-index: 1;
     }
 
     /* middle bar */
@@ -131,6 +140,7 @@ still honored separately.
       top: 0;
       right: 0;
       left: 0;
+      z-index: 2;
     }
 
     :host(.tall) #middleBar,
@@ -145,6 +155,7 @@ still honored separately.
       right: 0;
       bottom: 0;
       left: 0;
+      z-index: 1;
     }
 
     /*
@@ -158,20 +169,62 @@ still honored separately.
       pointer-events: auto;
     }
 
+    .toolbar-tools > ::content [title] {
+      @apply(--paper-font-title);
+      @apply(--layout-flex);
+
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+
+      /*
+       * Polymer/polymer/issues/1525
+       * --paper-font-title defines a `font-weight`
+       * let's override its value, but we need `important!`
+       * because all mixins are resolved in rule's selector that has higher precedence
+       * than the current selector.
+       */
+      font-weight: 400 !important;
+    }
+
+    /**
+     * TODO: Refactor these selectors
+     * Work in progress.
+     */
+    .toolbar-tools > ::content paper-icon-button[icon=menu] {
+      margin-left: -8px;
+      margin-right: 24px;
+    }
+
+    .toolbar-tools > ::content paper-icon-button + paper-icon-button {
+      margin-right: -8px;
+    }
+
+    .toolbar-tools > ::content > [title],
+    .toolbar-tools > ::content[select=".middle"] > [title],
+    .toolbar-tools > ::content[select=".bottom"] > [title] {
+      margin-left: 56px;
+    }
+
+    .toolbar-tools > ::content > paper-icon-button + [title],
+    .toolbar-tools > ::content[select=".middle"] paper-icon-button + [title],
+    .toolbar-tools > ::content[select=".bottom"] paper-icon-button + [title] {
+      margin-left: 0;
+    }
   </style>
 
   <template>
 
-    <div id="bottomBar" class$="[[_computeBarClassName(bottomJustify)]]">
-      <content select=".bottom"></content>
+    <div id="topBar" class$="[[_computeBarClassName(justify)]]">
+      <content select=":not(.middle):not(.bottom)"></content>
     </div>
 
     <div id="middleBar" class$="[[_computeBarClassName(middleJustify)]]">
       <content select=".middle"></content>
     </div>
 
-    <div id="topBar" class$="[[_computeBarClassName(justify)]]">
-      <content></content>
+    <div id="bottomBar" class$="[[_computeBarClassName(bottomJustify)]]">
+      <content select=".bottom"></content>
     </div>
 
   </template>

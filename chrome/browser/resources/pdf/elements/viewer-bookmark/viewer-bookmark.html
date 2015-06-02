@@ -6,7 +6,7 @@
   <template>
     <paper-item on-click="onClick">{{bookmark.title}}</paper-item>
       <div class="sub-bookmark">
-        <template is="x-repeat" items="{{bookmark.children}}">
+        <template is="dom-repeat" items="{{bookmark.children}}">
           <viewer-bookmark bookmark="{{item}}"></viewer-bookmark>
         </template>
       </div>

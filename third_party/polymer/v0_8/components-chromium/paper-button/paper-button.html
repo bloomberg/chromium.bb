@@ -6,7 +6,12 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
---><!--
+--><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
+
+<!--
 
 Material Design: <a href="http://www.google.com/design/spec/components/buttons.html">Buttons</a>
 
@@ -28,7 +33,7 @@ create a button with an icon and some text:
       custom button content
     </paper-button>
 
-## Styling
+### Styling
 
 Style the button with CSS as you would a normal DOM element.
 
@@ -48,11 +53,16 @@ customize the color using this selector:
 
 The opacity of the ripple is not customizable via CSS.
 
---><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-ripple/paper-ripple.html">
+The following custom properties and mixins are also available for styling:
 
-<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-button-flat-focus-color` | Background color of a focused flat button | `--paper-grey-200`
+`--paper-button` | Mixin applied to the button | `{}`
+`--paper-button-disabled` | Mixin applied to the disabled button | `{}`
+
+@demo demo/index.html
+-->
 
 </head><body><dom-module id="paper-button">
 
@@ -76,6 +86,12 @@ The opacity of the ripple is not customizable via CSS.
       user-select: none;
       cursor: pointer;
       z-index: 0;
+
+      @apply(--paper-button);
+    }
+
+    .keyboard-focus {
+      font-weight: bold;
     }
 
     :host([disabled]) {
@@ -83,6 +99,8 @@ The opacity of the ripple is not customizable via CSS.
       color: #a8a8a8;
       cursor: auto;
       pointer-events: none;
+
+      @apply(--paper-button-disabled);
     }
 
     :host([noink]) paper-ripple {
@@ -106,7 +124,7 @@ The opacity of the ripple is not customizable via CSS.
 
     <paper-ripple></paper-ripple>
 
-    <paper-material class="content" elevation="[[_elevation]]" animated="">
+    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated="">
       <content></content>
     </paper-material>
 

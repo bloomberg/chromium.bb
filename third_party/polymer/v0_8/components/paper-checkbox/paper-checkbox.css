@@ -38,6 +38,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   width: 48px;
   height: 48px;
   color: var(--paper-checkbox-unchecked-ink-color);
+  opacity: 0.6;
 }
 
 :host #ink[checked] {
@@ -121,6 +122,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   padding-left: 8px;
   white-space: normal;
   pointer-events: none;
+  color: var(--paper-checkbox-label-color);
 }
 
 #checkboxLabel[hidden] {
@@ -133,10 +135,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 :host([disabled]) #checkbox {
-  opacity: 0.33;
+  opacity: 0.5;
   border-color: var(--paper-checkbox-unchecked-color);
 }
 
 :host([disabled][checked]) #checkbox {
   background-color: var(--paper-checkbox-unchecked-color);
+  opacity: 0.5;
+}
+
+:host([disabled]) #checkboxLabel  {
+  opacity: 0.65;
 }

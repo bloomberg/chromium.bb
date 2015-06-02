@@ -6,48 +6,33 @@
 
     is: 'paper-input-char-counter',
 
-    enableCustomStyleProperties: true,
-
-    hostAttributes: {
-      'add-on': ''
-    },
+    behaviors: [
+      Polymer.PaperInputAddonBehavior
+    ],
 
     properties: {
 
-      /**
-       * The associated input element.
-       */
-      inputElement: {
-        type: Object
-      },
-
-      /**
-       * The current value of the input element.
-       */
-      value: {
-        type: String
-      },
-
-      /**
-       * The character counter string.
-       */
-      charCounter: {
-        computed: '_computeCharCounter(inputElement,value)',
-        type: String
+      _charCounterStr: {
+        type: String,
+        value: '0'
       }
 
     },
 
-    attached: function() {
-      this.fire('addon-attached');
-    },
-
-    _computeCharCounter: function(inputElement,value) {
-      var str = value.length;
-      if (inputElement.hasAttribute('maxlength')) {
-        str += '/' + inputElement.maxLength;
+    update: function(state) {
+      if (!state.inputElement) {
+        return;
       }
-      return str;
+
+      state.value = state.value || '';
+
+      // Account for the textarea's new lines.
+      var str = state.value.replace(/(\r\n|\n|\r)/g, '--').length;
+
+      if (state.inputElement.hasAttribute('maxlength')) {
+        str += '/' + state.inputElement.getAttribute('maxlength');
+      }
+      this._charCounterStr = str;
     }
 
   });

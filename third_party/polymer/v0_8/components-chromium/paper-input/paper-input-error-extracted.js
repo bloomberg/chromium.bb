@@ -6,27 +6,29 @@
 
     is: 'paper-input-error',
 
-    enableCustomStyleProperties: true,
+    behaviors: [
+      Polymer.PaperInputAddonBehavior
+    ],
 
     hostAttributes: {
-      'add-on': '',
       'role': 'alert'
     },
 
     properties: {
 
       /**
-       * Set to true to show the error.
+       * True if the error is showing.
        */
       invalid: {
+        readOnly: true,
         reflectToAttribute: true,
         type: Boolean
       }
 
     },
 
-    attached: function() {
-      this.fire('addon-attached');
+    update: function(state) {
+      this._setInvalid(state.invalid);
     }
 
   })

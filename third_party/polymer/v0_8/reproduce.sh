@@ -20,27 +20,28 @@ rm -rf components components-chromium
 
 bower install
 
-# These components are deprecated or needed only for demos.
-rm -rf components/{iron-component-page,webcomponentsjs}
+# These components are needed only for demos and docs.
+rm -rf components/{hydrolysis,marked,marked-element,prism,prism-element,\
+iron-component-page,iron-doc-viewer,webcomponentsjs}
+
+# Remove unused gzipped binary which causes git-cl problems.
+rm components/web-animations-js/web-animations.min.js.gz
 
 # Test and demo directories aren't needed.
 rm -rf components/*/{test,demo}
 rm -rf components/polymer/explainer
 
 # Make checkperms.py happy.
+find components/*/hero.svg -type f -exec chmod -x {} \;
 find components/iron-selector -type f -exec chmod -x {} \;
-chmod +x components/polymer/build.bat
 
 # Remove carriage returns to make CQ happy.
 find components -type f \( -name \*.html -o -name \*.css -o -name \*.js\
   -o -name \*.md -o -name \*.sh -o -name \*.json -o -name \*.gitignore\
   -o -name \*.bat \) -print0 | xargs -0 sed -i -e $'s/\r$//g'
 
-./extract_inline_scripts.sh components components-chromium
+# Resolve a unicode encoding issue in dom-innerHTML.html.
+NBSP=$(python -c 'print u"\u00A0".encode("utf-8")')
+sed -i 's/['"$NBSP"']/\\u00A0/g' components/polymer/polymer-mini.html
 
-# Actually fully vulcanize polymer.html to avoid needing to serve each file in
-# the library separately.
-vulcanize --inline-scripts components/polymer/polymer.html > components-chromium/polymer/polymer.html
-crisper --source components-chromium/polymer/polymer.html\
-  --html "components-chromium/polymer/polymer.html"\
-  --js "components-chromium/polymer/polymer.js"
+./extract_inline_scripts.sh components components-chromium

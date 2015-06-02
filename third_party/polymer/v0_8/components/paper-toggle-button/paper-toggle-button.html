@@ -14,40 +14,43 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <!--
 `paper-toggle-button` provides a ON/OFF switch that user can toggle the state
-by tapping or by dragging the swtich.
+by tapping or by dragging the switch.
 
 Example:
 
     <paper-toggle-button></paper-toggle-button>
 
-Styling toggle-button:
-  <style is="x-style">
-    * {
-      --paper-toggle-button-unchecked-bar-color: #FF4081;
-      --paper-toggle-button-unchecked-button-color: #9c27b0;
-      --paper-toggle-button-unchecked-ink-color: #009688;
-      --paper-toggle-button-checked-bar-color: #5677fc;
-      --paper-toggle-button-checked-button-color: #ff4081;
-      --paper-toggle-button-checked-ink-color: #ff4081;
-    }
-  </style>
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-toggle-button-unchecked-bar-color` | Slider color when the input is not checked | `#000000`
+`--paper-toggle-button-unchecked-button-color` | Button color when the input is not checked | `--paper-grey-50`
+`--paper-toggle-button-unchecked-ink-color` | Selected/focus ripple color when the input is not checked | `--dark-primary-color`
+`--paper-toggle-button-checked-bar-color` | Slider button color when the input is checked | `--google-green-500`
+`--paper-toggle-button-checked-button-color` | Button color when the input is checked | `--google-green-500`
+`--paper-toggle-button-checked-ink-color` | Selected/focus ripple color when the input is checked | `--google-green-500`
 
 @group Paper Elements
 @element paper-toggle-button
+@hero hero.svg
+@demo demo/index.html
 -->
+<style is="custom-style">
+  :root {
+    --paper-toggle-button-unchecked-bar-color: #000000;
+    --paper-toggle-button-unchecked-button-color: var(--paper-grey-50);
+    --paper-toggle-button-unchecked-ink-color: var(--dark-primary-color);
+
+    --paper-toggle-button-checked-bar-color: var(--google-green-500);
+    --paper-toggle-button-checked-button-color: var(--google-green-500);
+    --paper-toggle-button-checked-ink-color: var(--google-green-500);
+  }
+</style>
 
 <dom-module id="paper-toggle-button">
-
-  <style is="x-style">
-    * {
-      --paper-toggle-button-unchecked-bar-color: #000000;
-      --paper-toggle-button-unchecked-button-color: #f1f1f1;
-      --paper-toggle-button-unchecked-ink-color: #bbb;
-      --paper-toggle-button-checked-bar-color: #0f9d58;
-      --paper-toggle-button-checked-button-color: #0f9d58;
-      --paper-toggle-button-checked-ink-color: #0f9d58;
-    }
-  </style>
 
   <link rel="import" type="css" href="paper-toggle-button.css">
 
@@ -69,9 +72,6 @@ Styling toggle-button:
       behaviors: [
         Polymer.PaperRadioButtonBehavior
       ],
-
-      // The custom properties shim is currently an opt-in feature.
-      enableCustomStyleProperties: true,
 
       hostAttributes: {
         role: 'button',
@@ -121,14 +121,21 @@ Styling toggle-button:
       },
 
       listeners: {
-        // TODO(sjmiles): tracking feature disabled until we can control
-        // track/tap interaction with confidence
-        //xtrack: '_ontrack'
+        track: '_ontrack'
+      },
+
+      ready: function() {
+        this._isReady = true;
       },
 
       // button-behavior hook
       _buttonStateChanged: function() {
-        this.checked = this.active;
+        if (this.disabled) {
+          return;
+        }
+        if (this._isReady) {
+          this.checked = this.active;
+        }
       },
 
       _checkedChanged: function(checked) {
@@ -138,33 +145,36 @@ Styling toggle-button:
 
       _ontrack: function(event) {
         var track = event.detail;
-        if (track.state === 'start' ) {
-          //this._preventTap = true;
+        if (track.state === 'start') {
           this._trackStart(track);
-        } else if (track.state === 'move' ) {
+        } else if (track.state === 'track') {
           this._trackMove(track);
-        } else if (track.state === 'end' ) {
+        } else if (track.state === 'end') {
           this._trackEnd(track);
         }
       },
 
       _trackStart: function(track) {
         this._width = this.$.toggleBar.offsetWidth / 2;
-        this._startx = track.x;
+        /*
+         * keep an track-only check state to keep the dragging behavior smooth
+         * while toggling activations
+         */
+        this._trackChecked = this.checked;
+        this.$.toggleButton.classList.add('dragging');
       },
 
       _trackMove: function(track) {
-        var dx = track.x - this._startx;
+        var dx = track.dx;
         this._x = Math.min(this._width,
-            Math.max(0, this.checked ? this._width + dx : dx));
-        this.$.toggleButton.classList.add('dragging');
-        this.translate3d(this, this._x + 'px', 0, 0);
+            Math.max(0, this._trackChecked ? this._width + dx : dx));
+        this.translate3d(this._x + 'px', 0, 0, this.$.toggleButton);
+        this._userActivate(this._x > (this._width / 2));
       },
 
       _trackEnd: function(track) {
         this.$.toggleButton.classList.remove('dragging');
-        this.transform(this, '');
-        this._userActivate(Math.abs(this._x) > this._width / 2);
+        this.transform('', this.$.toggleButton);
       }
 
     });

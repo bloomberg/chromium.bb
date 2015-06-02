@@ -1,6 +1,6 @@
 {
   "name": "more-routing",
-  "version": "0.8.1",
+  "version": "1.0.0",
   "authors": [
     "The Polymer Authors"
   ],
@@ -21,22 +21,22 @@
     "/demo/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#v0.8.0-rc.7"
+    "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {
-    "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.0",
-    "iron-selector": "PolymerElements/iron-selector#^0.8.0",
-    "paper-styles": "PolymerElements/paper-styles#^0.8.0",
+    "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^1.0.0",
+    "iron-selector": "PolymerElements/iron-selector#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
     "web-component-tester": "*",
-    "iron-flex-layout": "PolymerElements/iron-flex-layout#^0.8.0"
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0"
   },
-  "_release": "0.8.1",
+  "_release": "1.0.0",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.1",
-    "commit": "633dcacf27da6f57276319fd4b47508ae90db269"
+    "tag": "v1.0.0",
+    "commit": "b9dcc768f789547bb99f65cd976006cb578af255"
   },
   "_source": "git://github.com/PolymerLabs/more-routing.git",
-  "_target": "^0.8.0",
+  "_target": "^1.0.0",
   "_originalSource": "PolymerLabs/more-routing"
 }
