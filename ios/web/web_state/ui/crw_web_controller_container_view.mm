@@ -117,7 +117,7 @@
 - (void)setToolbarContainerView:(CRWToolbarContainerView*)toolbarContainerView {
   if (![_toolbarContainerView isEqual:toolbarContainerView]) {
     [_toolbarContainerView removeFromSuperview];
-    _toolbarContainerView.reset(toolbarContainerView);
+    _toolbarContainerView.reset([toolbarContainerView retain]);
     [self addSubview:_toolbarContainerView];
   }
 }
@@ -147,8 +147,8 @@
 - (void)addToolbar:(UIView*)toolbar {
   // Create toolbar container if necessary.
   if (!self.toolbarContainerView) {
-    self.toolbarContainerView =
-        [[CRWToolbarContainerView alloc] initWithFrame:CGRectZero];
+    self.toolbarContainerView = [
+        [[CRWToolbarContainerView alloc] initWithFrame:CGRectZero] autorelease];
   }
   // Add the toolbar to the container.
   [self.toolbarContainerView addToolbar:toolbar];
