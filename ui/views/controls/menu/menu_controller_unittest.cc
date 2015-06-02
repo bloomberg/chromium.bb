@@ -34,7 +34,7 @@ namespace {
 
 class TestMenuItemView : public MenuItemView {
  public:
-  TestMenuItemView() : MenuItemView(NULL) {}
+  TestMenuItemView() : MenuItemView(nullptr) {}
   ~TestMenuItemView() override {}
 
  private:
@@ -60,7 +60,7 @@ class TestPlatformEventSource : public ui::PlatformEventSource {
 
 class TestDispatcherClient : public aura::client::DispatcherClient {
  public:
-  TestDispatcherClient() : dispatcher_(NULL) {}
+  TestDispatcherClient() : dispatcher_(nullptr) {}
   ~TestDispatcherClient() override {}
 
   base::MessagePumpDispatcher* dispatcher() {
@@ -98,7 +98,7 @@ class TestDispatcherClient : public aura::client::DispatcherClient {
 
 class MenuControllerTest : public ViewsTestBase {
  public:
-  MenuControllerTest() : controller_(NULL) {}
+  MenuControllerTest() : controller_(nullptr) {}
   ~MenuControllerTest() override { ResetMenuController(); }
 
   // Dispatches |count| number of items, each in a separate iteration of the
@@ -163,6 +163,12 @@ class MenuControllerTest : public ViewsTestBase {
     controller_->pending_state_.item = item;
   }
 
+  void ResetSelection() {
+    controller_->SetSelection(nullptr,
+                              MenuController::SELECTION_EXIT |
+                              MenuController::SELECTION_UPDATE_IMMEDIATELY);
+  }
+
   void IncrementSelection(int delta) {
     controller_->IncrementSelection(delta);
   }
@@ -178,7 +184,7 @@ class MenuControllerTest : public ViewsTestBase {
   }
   void SetupMenu(views::Widget* owner, views::MenuItemView* item) {
     ResetMenuController();
-    controller_ = new MenuController(NULL, true, NULL);
+    controller_ = new MenuController(nullptr, true, nullptr);
     controller_->owner_ = owner;
     controller_->showing_ = true;
     controller_->SetSelection(item,
@@ -232,10 +238,10 @@ class MenuControllerTest : public ViewsTestBase {
     if (controller_) {
       // These properties are faked by RunMenu for the purposes of testing and
       // need to be undone before we call the destructor.
-      controller_->owner_ = NULL;
+      controller_->owner_ = nullptr;
       controller_->showing_ = false;
       delete controller_;
-      controller_ = NULL;
+      controller_ = nullptr;
     }
   }
 
@@ -365,8 +371,11 @@ TEST_F(MenuControllerTest, FirstSelectedItem) {
   // There should be no next or previous selectable item since there is only a
   // single enabled item in the menu.
   SetPendingStateItem(first_selectable);
-  EXPECT_EQ(NULL, FindNextSelectableMenuItem(menu_item.get(), 1, 1));
-  EXPECT_EQ(NULL, FindNextSelectableMenuItem(menu_item.get(), 1, -1));
+  EXPECT_EQ(nullptr, FindNextSelectableMenuItem(menu_item.get(), 1, 1));
+  EXPECT_EQ(nullptr, FindNextSelectableMenuItem(menu_item.get(), 1, -1));
+
+  // Clear references in menu controller to the menu item that is going away.
+  ResetSelection();
 }
 
 TEST_F(MenuControllerTest, NextSelectedItem) {
@@ -410,6 +419,9 @@ TEST_F(MenuControllerTest, NextSelectedItem) {
   // Select previous item.
   IncrementSelection(-1);
   EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+  // Clear references in menu controller to the menu item that is going away.
+  ResetSelection();
 }
 
 }  // namespace views
