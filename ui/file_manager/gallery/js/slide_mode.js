@@ -8,7 +8,8 @@
  *
  * @param {!HTMLElement} container Main container element.
  * @param {!HTMLElement} content Content container element.
- * @param {!HTMLElement} toolbar Toolbar element.
+ * @param {!HTMLElement} topToolbar Top toolbar element.
+ * @param {!HTMLElement} bottomToolbar Toolbar element.
  * @param {!ImageEditor.Prompt} prompt Prompt.
  * @param {!ErrorBanner} errorBanner Error banner.
  * @param {!cr.ui.ArrayDataModel} dataModel Data model.
@@ -25,9 +26,9 @@
  * @suppress {checkStructDictInheritance}
  * @extends {cr.EventTarget}
  */
-function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
-    selectionModel, metadataModel, thumbnailModel, context, volumeManager,
-    toggleMode, displayStringFunction) {
+function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
+    errorBanner, dataModel, selectionModel, metadataModel, thumbnailModel,
+    context, volumeManager, toggleMode, displayStringFunction) {
   /**
    * @type {!HTMLElement}
    * @private
@@ -53,7 +54,14 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    * @private
    * @const
    */
-  this.toolbar_ = toolbar;
+  this.topToolbar_ = topToolbar;
+
+  /**
+   * @type {!HTMLElement}
+   * @private
+   * @const
+   */
+  this.bottomToolbar_ = bottomToolbar;
 
   /**
    * @type {!ImageEditor.Prompt}
@@ -219,7 +227,7 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    * @const
    */
   this.options_ = util.createChild(queryRequiredElement(
-      this.toolbar_, '.filename-spacer'), 'options');
+      this.topToolbar_, '.filename-spacer'), 'options');
 
   /**
    * @type {!HTMLElement}
@@ -270,7 +278,7 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    * @private
    * @const
    */
-  this.bubble_ = util.createChild(this.toolbar_, 'bubble');
+  this.bubble_ = util.createChild(this.bottomToolbar_, 'bubble');
   this.bubble_.hidden = true;
 
   /**
@@ -327,7 +335,8 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    * @private
    * @const
    */
-  this.ribbonSpacer_ = queryRequiredElement(this.toolbar_, '.ribbon-spacer');
+  this.ribbonSpacer_ = queryRequiredElement(this.bottomToolbar_,
+      '.ribbon-spacer');
 
   /**
    * @type {!Ribbon}
@@ -344,7 +353,8 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    * @type {!HTMLElement}
    * @const
    */
-  var slideShowButton = queryRequiredElement(this.toolbar_, 'button.slideshow');
+  var slideShowButton = queryRequiredElement(this.topToolbar_,
+      'button.slideshow');
   slideShowButton.title = this.displayStringFunction_('GALLERY_SLIDESHOW');
   slideShowButton.addEventListener('click',
       this.startSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
@@ -366,7 +376,7 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    * @private
    * @const
    */
-  this.editButton_ = queryRequiredElement(this.toolbar_, 'button.edit');
+  this.editButton_ = queryRequiredElement(this.topToolbar_, 'button.edit');
   this.editButton_.title = this.displayStringFunction_('GALLERY_EDIT');
   this.editButton_.disabled = true;  // Disabled by default.
   this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
@@ -376,7 +386,7 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    * @private
    * @const
    */
-  this.printButton_ = queryRequiredElement(this.toolbar_, 'button.print');
+  this.printButton_ = queryRequiredElement(this.topToolbar_, 'button.print');
   this.printButton_.title = this.displayStringFunction_('GALLERY_PRINT');
   this.printButton_.disabled = true;  // Disabled by default.
   this.printButton_.addEventListener('click', this.print_.bind(this));
@@ -386,7 +396,8 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    * @private
    * @const
    */
-  this.editBarSpacer_ = queryRequiredElement(this.toolbar_, '.edit-bar-spacer');
+  this.editBarSpacer_ = queryRequiredElement(this.bottomToolbar_,
+      '.edit-bar-spacer');
 
   /**
    * @type {!HTMLElement}
