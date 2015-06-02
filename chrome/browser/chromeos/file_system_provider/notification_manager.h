@@ -63,6 +63,7 @@ class NotificationManager : public NotificationManagerInterface,
   // clearing the list.
   void OnNotificationResult(NotificationResult result);
 
+  Profile* profile_;
   ProvidedFileSystemInfo file_system_info_;
   CallbackMap callbacks_;
   scoped_ptr<extensions::AppIconLoader> icon_loader_;

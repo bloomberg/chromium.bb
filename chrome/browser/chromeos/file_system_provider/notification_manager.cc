@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
@@ -50,7 +51,8 @@ class ProviderNotificationDelegate
 NotificationManager::NotificationManager(
     Profile* profile,
     const ProvidedFileSystemInfo& file_system_info)
-    : file_system_info_(file_system_info),
+    : profile_(profile),
+      file_system_info_(file_system_info),
       icon_loader_(
           new extensions::AppIconLoaderImpl(profile, kIconSize, this)) {
 }
@@ -113,6 +115,11 @@ NotificationManager::CreateNotification() {
       message_center::ButtonInfo(l10n_util::GetStringUTF16(
           IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_ABORT_BUTTON)));
 
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::SYSTEM_COMPONENT,
+      file_system_info_.mount_path().value());
+  notifier_id.profile_id = multi_user_util::GetUserIDFromProfile(profile_);
+
   scoped_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
@@ -124,10 +131,7 @@ NotificationManager::CreateNotification() {
                   : IDS_FILE_SYSTEM_PROVIDER_MANY_UNRESPONSIVE_WARNING),
           extension_icon_.get() ? *extension_icon_.get() : gfx::Image(),
           base::string16(),  // display_source
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              file_system_info_.mount_path().value()),
-          rich_notification_data,
+          notifier_id, rich_notification_data,
           new ProviderNotificationDelegate(this)));
 
   notification->SetSystemPriority();
