@@ -153,9 +153,6 @@ void GetAddressComponents(const std::string& country_code,
         break;
       case i18n::addressinput::RECIPIENT:
         component->SetString(kField, kFullNameField);
-        component->SetString(
-            "placeholder",
-            l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADD_NAME));
         break;
     }
 
@@ -204,111 +201,6 @@ void SetCountryData(const PersonalDataManager& manager,
                          default_country_components.release());
   localized_strings->SetString("autofillDefaultCountryLanguageCode",
                                default_country_language_code);
-}
-
-// Get the multi-valued element for |type| and return it in |ListValue| form.
-// Buyer beware: the type of data affects whether GetRawInfo or GetInfo is used.
-void GetValueList(const AutofillProfile& profile,
-                  ServerFieldType type,
-                  scoped_ptr<base::ListValue>* list) {
-  list->reset(new base::ListValue);
-
-  std::vector<base::string16> values;
-  if (AutofillType(type).group() == autofill::NAME) {
-    profile.GetMultiInfo(
-        AutofillType(type), g_browser_process->GetApplicationLocale(), &values);
-  } else {
-    profile.GetRawMultiInfo(type, &values);
-  }
-
-  // |Get[Raw]MultiInfo()| always returns at least one, potentially empty, item.
-  if (values.size() == 1 && values.front().empty())
-    return;
-
-  for (size_t i = 0; i < values.size(); ++i) {
-    (*list)->Set(i, new base::StringValue(values[i]));
-  }
-}
-
-// Converts a ListValue of StringValues to a vector of string16s.
-void ListValueToStringVector(const base::ListValue& list,
-                             std::vector<base::string16>* output) {
-  output->resize(list.GetSize());
-  for (size_t i = 0; i < list.GetSize(); ++i) {
-    base::string16 value;
-    if (list.GetString(i, &value))
-      (*output)[i].swap(value);
-  }
-}
-
-// Pulls the phone number |index|, |phone_number_list|, and |country_code| from
-// the |args| input.
-void ExtractPhoneNumberInformation(const base::ListValue* args,
-                                   size_t* index,
-                                   const base::ListValue** phone_number_list,
-                                   std::string* country_code) {
-  // Retrieve index as a |double|, as that is how it comes across from
-  // JavaScript.
-  double number = 0.0;
-  if (!args->GetDouble(0, &number)) {
-    NOTREACHED();
-    return;
-  }
-  *index = number;
-
-  if (!args->GetList(1, phone_number_list)) {
-    NOTREACHED();
-    return;
-  }
-
-  if (!args->GetString(2, country_code)) {
-    NOTREACHED();
-    return;
-  }
-}
-
-// Searches the |list| for the value at |index|.  If this value is present
-// in any of the rest of the list, then the item (at |index|) is removed.
-// The comparison of phone number values is done on normalized versions of the
-// phone number values.
-void RemoveDuplicatePhoneNumberAtIndex(size_t index,
-                                       const std::string& country_code,
-                                       base::ListValue* list) {
-  base::string16 new_value;
-  if (!list->GetString(index, &new_value)) {
-    NOTREACHED() << "List should have a value at index " << index;
-    return;
-  }
-
-  bool is_duplicate = false;
-  std::string app_locale = g_browser_process->GetApplicationLocale();
-  for (size_t i = 0; i < list->GetSize() && !is_duplicate; ++i) {
-    if (i == index)
-      continue;
-
-    base::string16 existing_value;
-    if (!list->GetString(i, &existing_value)) {
-      NOTREACHED() << "List should have a value at index " << i;
-      continue;
-    }
-    is_duplicate = autofill::i18n::PhoneNumbersMatch(
-        new_value, existing_value, country_code, app_locale);
-  }
-
-  if (is_duplicate)
-    list->Remove(index, NULL);
-}
-
-scoped_ptr<base::ListValue> ValidatePhoneArguments(
-    const base::ListValue* args) {
-  size_t index = 0;
-  std::string country_code;
-  const base::ListValue* extracted_list = NULL;
-  ExtractPhoneNumberInformation(args, &index, &extracted_list, &country_code);
-
-  scoped_ptr<base::ListValue> list(extracted_list->DeepCopy());
-  RemoveDuplicatePhoneNumberAtIndex(index, country_code, list.get());
-  return list.Pass();
 }
 
 }  // namespace
@@ -428,10 +320,6 @@ void AutofillOptionsHandler::RegisterMessages() {
       base::Bind(&AutofillOptionsHandler::SetCreditCard,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "validatePhoneNumbers",
-      base::Bind(&AutofillOptionsHandler::ValidatePhoneNumbers,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "clearLocalCardCopy",
       base::Bind(&AutofillOptionsHandler::RemaskServerCard,
                  base::Unretained(this)));
@@ -461,10 +349,6 @@ void AutofillOptionsHandler::SetAddressOverlayStrings(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_PHONE));
   localized_strings->SetString("autofillEmailLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EMAIL));
-  localized_strings->SetString("autofillAddPhonePlaceholder",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADD_PHONE));
-  localized_strings->SetString("autofillAddEmailPlaceholder",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_ADD_EMAIL));
   SetCountryData(*personal_data_, localized_strings);
 }
 
@@ -639,10 +523,9 @@ void AutofillOptionsHandler::SetAddress(const base::ListValue* args) {
   AutofillProfile profile(guid, kSettingsOrigin);
 
   base::string16 value;
-  const base::ListValue* list_value;
-  if (args->GetList(arg_counter++, &list_value)) {
-    std::vector<base::string16> values;
-    ListValueToStringVector(*list_value, &values);
+  if (args->GetString(arg_counter++, &value)) {
+    // TODO(estade): get rid of this vector wrapper.
+    std::vector<base::string16> values(1, value);
     AutofillProfile* old_profile = personal_data_->GetProfileByGUID(guid);
     profile.CopyAndUpdateNameList(values, old_profile,
                                   g_browser_process->GetApplicationLocale());
@@ -672,17 +555,11 @@ void AutofillOptionsHandler::SetAddress(const base::ListValue* args) {
   if (args->GetString(arg_counter++, &value))
     profile.SetRawInfo(autofill::ADDRESS_HOME_COUNTRY, value);
 
-  if (args->GetList(arg_counter++, &list_value)) {
-    std::vector<base::string16> values;
-    ListValueToStringVector(*list_value, &values);
-    profile.SetRawMultiInfo(autofill::PHONE_HOME_WHOLE_NUMBER, values);
-  }
+  if (args->GetString(arg_counter++, &value))
+    profile.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER, value);
 
-  if (args->GetList(arg_counter++, &list_value)) {
-    std::vector<base::string16> values;
-    ListValueToStringVector(*list_value, &values);
-    profile.SetRawMultiInfo(autofill::EMAIL_ADDRESS, values);
-  }
+  if (args->GetString(arg_counter++, &value))
+    profile.SetRawInfo(autofill::EMAIL_ADDRESS, value);
 
   if (args->GetString(arg_counter++, &value))
     profile.set_language_code(base::UTF16ToUTF8(value));
@@ -728,16 +605,6 @@ void AutofillOptionsHandler::SetCreditCard(const base::ListValue* args) {
   }
 }
 
-void AutofillOptionsHandler::ValidatePhoneNumbers(const base::ListValue* args) {
-  if (!IsPersonalDataLoaded())
-    return;
-
-  scoped_ptr<base::ListValue> list_value = ValidatePhoneArguments(args);
-
-  web_ui()->CallJavascriptFunction(
-      "AutofillEditAddressOverlay.setValidatedPhoneNumbers", *list_value);
-}
-
 void AutofillOptionsHandler::RemaskServerCard(const base::ListValue* args) {
   std::string guid;
   if (!args->GetString(0, &guid)) {
@@ -757,9 +624,10 @@ void AutofillOptionsHandler::AutofillProfileToDictionary(
     const autofill::AutofillProfile& profile,
     base::DictionaryValue* address) {
   address->SetString("guid", profile.guid());
-  scoped_ptr<base::ListValue> list;
-  GetValueList(profile, autofill::NAME_FULL, &list);
-  address->Set(kFullNameField, list.release());
+  address->SetString(
+      kFullNameField,
+      profile.GetInfo(AutofillType(autofill::NAME_FULL),
+                      g_browser_process->GetApplicationLocale()));
   address->SetString(kCompanyNameField,
                      profile.GetRawInfo(autofill::COMPANY_NAME));
   address->SetString(kAddressLineField,
@@ -777,10 +645,9 @@ void AutofillOptionsHandler::AutofillProfileToDictionary(
                      profile.GetRawInfo(autofill::ADDRESS_HOME_ZIP));
   address->SetString(kCountryField,
                      profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
-  GetValueList(profile, autofill::PHONE_HOME_WHOLE_NUMBER, &list);
-  address->Set("phone", list.release());
-  GetValueList(profile, autofill::EMAIL_ADDRESS, &list);
-  address->Set("email", list.release());
+  address->SetString("phone",
+                     profile.GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER));
+  address->SetString("email", profile.GetRawInfo(autofill::EMAIL_ADDRESS));
   address->SetString(kLanguageCode, profile.language_code());
 
   scoped_ptr<base::ListValue> components(new base::ListValue);

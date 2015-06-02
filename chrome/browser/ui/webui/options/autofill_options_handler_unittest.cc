@@ -51,21 +51,11 @@ TEST(AutofillOptionsHandlerTest, AddressToDictionary) {
   EXPECT_EQ("", value);
   EXPECT_TRUE(dictionary.GetString("state", &value));
   EXPECT_EQ("TX", value);
-
-  base::ListValue* list_value;
-  EXPECT_TRUE(dictionary.GetList("email", &list_value));
-  EXPECT_EQ(1U, list_value->GetSize());
-  EXPECT_TRUE(list_value->GetString(0, &value));
+  EXPECT_TRUE(dictionary.GetString("email", &value));
   EXPECT_EQ("fml@example.com", value);
-
-  EXPECT_TRUE(dictionary.GetList("fullName", &list_value));
-  EXPECT_EQ(1U, list_value->GetSize());
-  EXPECT_TRUE(list_value->GetString(0, &value));
+  EXPECT_TRUE(dictionary.GetString("fullName", &value));
   EXPECT_EQ("First Middle Last", value);
-
-  EXPECT_TRUE(dictionary.GetList("phone", &list_value));
-  EXPECT_EQ(1U, list_value->GetSize());
-  EXPECT_TRUE(list_value->GetString(0, &value));
+  EXPECT_TRUE(dictionary.GetString("phone", &value));
   EXPECT_EQ("832-555-1000", value);
 }
 

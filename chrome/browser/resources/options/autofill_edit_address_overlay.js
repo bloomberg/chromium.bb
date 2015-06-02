@@ -50,8 +50,6 @@ cr.define('options', function() {
     initializePage: function() {
       Page.prototype.initializePage.call(this);
 
-      this.createMultiValueLists_();
-
       var self = this;
       $('autofill-edit-address-cancel-button').onclick = function(event) {
         self.dismissOverlay_();
@@ -62,26 +60,8 @@ cr.define('options', function() {
         // Blur active element to ensure that pending changes are committed.
         if (document.activeElement)
           document.activeElement.blur();
-        // Blurring is delayed for list elements.  Queue save and close to
-        // ensure that pending changes have been applied.
-        setTimeout(function() {
-          self.pageDiv.querySelector('[field=phone]').doneValidating().then(
-              function() {
-                self.saveAddress_();
-                self.dismissOverlay_();
-              });
-        }, 0);
-      };
-
-      // Prevent 'blur' events on the OK and cancel buttons, which can trigger
-      // insertion of new placeholder elements.  The addition of placeholders
-      // affects layout, which interferes with being able to click on the
-      // buttons.
-      $('autofill-edit-address-apply-button').onmousedown = function(event) {
-        event.preventDefault();
-      };
-      $('autofill-edit-address-cancel-button').onmousedown = function(event) {
-        event.preventDefault();
+        self.saveAddress_();
+        self.dismissOverlay_();
       };
 
       this.guid_ = '';
@@ -108,42 +88,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Creates, decorates and initializes the multi-value lists for phone and
-     * email.
-     * @private
-     */
-    createMultiValueLists_: function() {
-      var list = this.pageDiv.querySelector('[field=phone]');
-      options.autofillOptions.AutofillPhoneValuesList.decorate(list);
-      list.autoExpands = true;
-
-      list = this.pageDiv.querySelector('[field=email]');
-      options.autofillOptions.AutofillValuesList.decorate(list);
-      list.autoExpands = true;
-    },
-
-    /**
-     * Updates the data model for the |list| with the values from |entries|.
-     * @param {cr.ui.List} list The list to update.
-     * @param {Array} entries The list of items to be added to the list.
-     * @private
-     */
-    setMultiValueList_: function(list, entries) {
-      // Add special entry for adding new values.
-      var augmentedList = entries.slice();
-      augmentedList.push(null);
-      list.dataModel = new ArrayDataModel(augmentedList);
-
-      // Update the status of the 'OK' button.
-      this.inputFieldChanged_();
-
-      list.dataModel.addEventListener('splice',
-                                      this.inputFieldChanged_.bind(this));
-      list.dataModel.addEventListener('change',
-                                      this.inputFieldChanged_.bind(this));
-    },
-
-    /**
      * Clears any uncommitted input, resets the stored GUID and dismisses the
      * overlay.
      * @private
@@ -166,15 +110,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Returns all list elements.
-     * @return {!NodeList} The list elements.
-     * @private
-     */
-    getLists_: function() {
-      return this.pageDiv.querySelectorAll('list[field]');
-    },
-
-    /**
      * Returns all text input elements.
      * @return {!NodeList} The text input elements.
      * @private
@@ -191,12 +126,6 @@ cr.define('options', function() {
     getInputFields_: function() {
       var address = {country: this.getCountrySwitcher_().value};
 
-      var lists = this.getLists_();
-      for (var i = 0; i < lists.length; i++) {
-        address[lists[i].getAttribute('field')] =
-            lists[i].dataModel.slice(0, lists[i].dataModel.length - 1);
-      }
-
       var fields = this.getTextFields_();
       for (var i = 0; i < fields.length; i++) {
         address[fields[i].getAttribute('field')] = fields[i].value;
@@ -212,12 +141,6 @@ cr.define('options', function() {
      */
     setInputFields_: function(address) {
       this.getCountrySwitcher_().value = address.country || '';
-
-      var lists = this.getLists_();
-      for (var i = 0; i < lists.length; i++) {
-        this.setMultiValueList_(
-            lists[i], address[lists[i].getAttribute('field')] || []);
-      }
 
       var fields = this.getTextFields_();
       for (var i = 0; i < fields.length; i++) {
@@ -277,18 +200,6 @@ cr.define('options', function() {
     inputFieldChanged_: function() {
       var disabled = !this.getCountrySwitcher_().value;
       if (disabled) {
-        // Length of lists are tested for > 1 due to the "add" placeholder item
-        // in the list.
-        var lists = this.getLists_();
-        for (var i = 0; i < lists.length; i++) {
-          if (lists[i].items.length > 1) {
-            disabled = false;
-            break;
-          }
-        }
-      }
-
-      if (disabled) {
         var fields = this.getTextFields_();
         for (var i = 0; i < fields.length; i++) {
           if (fields[i].value) {
@@ -320,7 +231,7 @@ cr.define('options', function() {
     populateCountryList_: function() {
       var countryList = loadTimeData.getValue('autofillCountrySelectList');
 
-      // Add the countries to the country <select> list.
+      // Add the countries to the country <select>.
       var countrySelect = this.getCountrySwitcher_();
       // Add an empty option.
       countrySelect.appendChild(new Option('', ''));
@@ -388,8 +299,7 @@ cr.define('options', function() {
       var content = $('autofill-edit-address-fields');
       content.innerHTML = '';
 
-      var customContainerElements = {fullName: 'div'};
-      var customInputElements = {fullName: 'list', addrLines: 'textarea'};
+      var customInputElements = {addrLines: 'textarea'};
 
       for (var i in components) {
         var row = document.createElement('div');
@@ -400,8 +310,7 @@ cr.define('options', function() {
           if (components[i][j].field == 'country')
             continue;
 
-          var fieldContainer = document.createElement(
-              customContainerElements[components[i][j].field] || 'label');
+          var fieldContainer = document.createElement('label');
           row.appendChild(fieldContainer);
 
           var fieldName = document.createElement('div');
@@ -412,13 +321,7 @@ cr.define('options', function() {
               customInputElements[components[i][j].field] || 'input');
           input.setAttribute('field', components[i][j].field);
           input.classList.add(components[i][j].length);
-          input.setAttribute('placeholder', components[i][j].placeholder || '');
           fieldContainer.appendChild(input);
-
-          if (input.tagName == 'LIST') {
-            options.autofillOptions.AutofillValuesList.decorate(input);
-            input.autoExpands = true;
-          }
         }
       }
     },
@@ -438,14 +341,6 @@ cr.define('options', function() {
 
   AutofillEditAddressOverlay.setTitle = function(title) {
     $('autofill-address-title').textContent = title;
-  };
-
-  AutofillEditAddressOverlay.setValidatedPhoneNumbers = function(numbers) {
-    var instance = AutofillEditAddressOverlay.getInstance();
-    var phoneList = instance.pageDiv.querySelector('[field=phone]');
-    instance.setMultiValueList_(assertInstanceof(phoneList, cr.ui.List),
-                                numbers);
-    phoneList.didReceiveValidationResult();
   };
 
   // Export

@@ -63,11 +63,10 @@ AutofillEditAddressWebUITest.prototype = {
 TEST_F('AutofillEditAddressWebUITest', 'testInitialFormLayout', function() {
   assertEquals(this.browsePreload, document.location.href);
 
-  assertEquals(getField('country').value, '');
-  assertEquals(0, getListSize(getField('phone')));
-  assertEquals(0, getListSize(getField('email')));
-  assertEquals(0, getListSize(getField('fullName')));
-  assertEquals('', getField('city').value);
+  var fields = ['country', 'phone', 'email', 'fullName', 'city'];
+  for (field in fields) {
+    assertEquals('', getField(fields[field]).value, 'Field: ' + fields[field]);
+  }
 
   testDone();
 });
@@ -83,7 +82,7 @@ TEST_F('AutofillEditAddressWebUITest', 'testLoadAddress', function() {
 
   var testAddress = {
     guid: 'GUID Value',
-    fullName: ['Full Name 1', 'Full Name 2'],
+    fullName: 'Full Name 1',
     companyName: 'Company Name Value',
     addrLines: 'First Line Value\nSecond Line Value',
     dependentLocality: 'Dependent Locality Value',
@@ -92,8 +91,8 @@ TEST_F('AutofillEditAddressWebUITest', 'testLoadAddress', function() {
     postalCode: 'Postal Code Value',
     sortingCode: 'Sorting Code Value',
     country: 'CH',
-    phone: ['123', '456'],
-    email: ['a@b.c', 'x@y.z'],
+    phone: '123',
+    email: 'a@b.c',
     languageCode: 'de',
     components: [[
        {field: 'postalCode', length: 'short'},
@@ -113,16 +112,8 @@ TEST_F('AutofillEditAddressWebUITest', 'testLoadAddress', function() {
   assertEquals(testAddress.guid, overlay.guid_);
   assertEquals(testAddress.languageCode, overlay.languageCode_);
 
-  var lists = ['fullName', 'email', 'phone'];
-  for (var i in lists) {
-    var field = getField(lists[i]);
-    assertEquals(testAddress[lists[i]].length, getListSize(field));
-    assertTrue(field.getAttribute('placeholder').length > 0);
-    assertTrue(field instanceof cr.ui.List);
-  }
-
   var inputs = ['companyName', 'dependentLocality', 'city', 'state',
-                'postalCode', 'sortingCode'];
+                'postalCode', 'sortingCode', 'fullName', 'email', 'phone'];
   for (var i in inputs) {
     var field = getField(inputs[i]);
     assertEquals(testAddress[inputs[i]], field.value);
@@ -172,52 +163,4 @@ TEST_F('AutofillEditAddressWebUITest', 'testFieldValuesSaved', function() {
     components: [[{field: 'city'}]]
   });
   assertEquals('New York', getField('city').value);
-});
-
-/**
- * Class to test the autofill edit address overlay asynchronously.
- * @extends {testing.Test}
- * @constructor
- */
-function AutofillEditAddressAsyncWebUITest() {}
-
-AutofillEditAddressAsyncWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings-frame/autofillEditAddress',
-
-  /** @override */
-  isAsync: true,
-};
-
-TEST_F('AutofillEditAddressAsyncWebUITest',
-       'testAutofillPhoneValueListDoneValidating',
-       function() {
-  assertEquals(this.browsePreload, document.location.href);
-
-  var phoneList = getField('phone');
-  expectEquals(0, phoneList.validationRequests_);
-  phoneList.doneValidating().then(function() {
-    phoneList.focus();
-    var input = phoneList.querySelector('input');
-    input.focus();
-    document.execCommand('insertText', false, '111-222-333');
-    assertEquals('111-222-333', input.value);
-    // TODO(bondd, dbeam): The way that focus/blur interact with the testing
-    // system is rather confusing. The next line was originally
-    // input.blur();
-    // but the test would time out when run as a single test locally (i.e.
-    // --gtest_filter=<test_name>), and complete successfully when other tests
-    // were run first (e.g. by the trybot, or locally with a wider
-    // gtest_filter). Changing the line to
-    // phoneList.blur();
-    // makes the result more deterministic when the test is run by itself.
-    //
-    // phoneList.blur() calls cr.ui.List.handleElementBlur_, which triggers
-    // InlineEditableItemList.handleListFocusChange_, which sends the
-    // 'commitedit' event.
-    phoneList.blur();
-    phoneList.doneValidating().then(testDone);
-  });
 });
