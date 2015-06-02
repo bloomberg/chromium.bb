@@ -1,4 +1,3 @@
-It looks like the browser stopped loading the page when encountering a .go(-1) command pointing to a pushed state. This will break the tests.
 This is a testharness.js-based test.
 PASS history.state should initially be null 
 PASS history.pushState support is needed for this testcase 

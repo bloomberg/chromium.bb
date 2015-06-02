@@ -1,5 +1,0 @@
-Running test...
-This is a testharness.js-based test.
-PASS foreign content 
-Harness: the test ran to completion.
-
