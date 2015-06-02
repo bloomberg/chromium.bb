@@ -17,6 +17,7 @@ import re
 from chromite.lib import cros_logging as logging
 from chromite.lib import json_lib
 from chromite.lib import osutils
+from chromite.lib import remote_access
 from chromite.lib import user_db
 
 KEY_ANNOTATIONS_LIST = 'annotations'
@@ -72,6 +73,7 @@ class SandboxSpecWrapper(object):
   def __init__(self):
     # In the context of unittests run from outside the chroot, this import
     # will fail.  Tests will mock out this entire class.
+    # pylint: disable=import-error
     from generated import soma_sandbox_spec_pb2
     self.sandbox_spec = soma_sandbox_spec_pb2.SandboxSpec()
 
@@ -152,9 +154,7 @@ def _GetPortList(desired_protocol, appc_port_list):
 
     # Now we know it's not the wildcard port, and that we've never declared
     # a wildcard for this protocol.
-    if port >= 65536 or port <= 0:
-      raise ValueError(
-          'Port numbers must fit in 16 bits (invalid port=%d).' % port)
+    port = remote_access.NormalizePort(port)
 
     port_list.append(port)
 
