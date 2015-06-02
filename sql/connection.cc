@@ -988,12 +988,10 @@ bool Connection::OpenInternal(const std::string& file_name,
   // DELETE (default) - delete -journal file to commit.
   // TRUNCATE - truncate -journal file to commit.
   // PERSIST - zero out header of -journal file to commit.
-  // journal_size_limit provides size to trim to in PERSIST.
-  // TODO(shess): Figure out if PERSIST and journal_size_limit really
-  // matter.  In theory, it keeps pages pre-allocated, so if
-  // transactions usually fit, it should be faster.
-  ignore_result(Execute("PRAGMA journal_mode = PERSIST"));
-  ignore_result(Execute("PRAGMA journal_size_limit = 16384"));
+  // TRUNCATE should be faster than DELETE because it won't need directory
+  // changes for each transaction.  PERSIST may break the spirit of using
+  // secure_delete.
+  ignore_result(Execute("PRAGMA journal_mode = TRUNCATE"));
 
   const base::TimeDelta kBusyTimeout =
     base::TimeDelta::FromSeconds(kBusyTimeoutSeconds);

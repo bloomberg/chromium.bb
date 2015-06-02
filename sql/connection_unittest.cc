@@ -692,7 +692,7 @@ TEST_F(SQLConnectionTest, Delete) {
   db().Close();
 
   // Should have both a main database file and a journal file because
-  // of journal_mode PERSIST.
+  // of journal_mode TRUNCATE.
   base::FilePath journal(db_path().value() + FILE_PATH_LITERAL("-journal"));
   ASSERT_TRUE(base::PathExists(db_path()));
   ASSERT_TRUE(base::PathExists(journal));
