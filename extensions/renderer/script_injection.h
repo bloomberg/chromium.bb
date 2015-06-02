@@ -6,6 +6,7 @@
 #define EXTENSIONS_RENDERER_SCRIPT_INJECTION_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/common/user_script.h"
@@ -38,12 +39,16 @@ class ScriptInjection {
     INJECTION_WAITING
   };
 
+  using CompletionCallback = base::Callback<void(ScriptInjection*)>;
+
   // Return the id of the injection host associated with the given world.
   static std::string GetHostIdForIsolatedWorld(int world_id);
 
   // Remove the isolated world associated with the given injection host.
   static void RemoveIsolatedWorld(const std::string& host_id);
 
+  // TODO(devlin): This and its *ScriptInjector brethren, should take take a
+  // RenderFrame, instead of a WebFrame.
   ScriptInjection(scoped_ptr<ScriptInjector> injector,
                   blink::WebLocalFrame* web_frame,
                   scoped_ptr<const InjectionHost> injection_host,
@@ -57,9 +62,12 @@ class ScriptInjection {
   // finished yet, returns INJECTION_WAITING if injections is delayed (either
   // for permission purposes or because |current_location| is not the designated
   // |run_location_|).
-  InjectionResult TryToInject(UserScript::RunLocation current_location,
-                              ScriptsRunInfo* scripts_run_info,
-                              ScriptInjectionManager* manager);
+  // If INJECTION_BLOCKED is returned, |async_completion_callback| will be
+  // called upon completion.
+  InjectionResult TryToInject(
+      UserScript::RunLocation current_location,
+      ScriptsRunInfo* scripts_run_info,
+      const CompletionCallback& async_completion_callback);
 
   // Called when permission for the given injection has been granted.
   // Returns INJECTION_FINISHED if injection has injected or will never inject,
@@ -91,9 +99,6 @@ class ScriptInjection {
   // Inject any JS scripts into the |frame|.
   void InjectJs(blink::WebLocalFrame* frame);
 
-  // Checks if all scripts have been injected and finished.
-  void TryToFinish();
-
   // Inject any CSS source into the |frame|.
   void InjectCss(blink::WebLocalFrame* frame);
 
@@ -123,18 +128,14 @@ class ScriptInjection {
   // or because it will never complete.
   bool complete_;
 
-  // Number of frames in which the injection is running.
-  int running_frames_;
+  // Whether or not the injection successfully injected JS.
+  bool did_inject_js_;
 
   // Results storage.
-  scoped_ptr<base::ListValue> execution_results_;
+  scoped_ptr<base::Value> execution_result_;
 
-  // Flag is true when injections for each frame started.
-  bool all_injections_started_;
-
-  // ScriptInjectionManager::OnInjectionFinished will be called after injection
-  // finished.
-  ScriptInjectionManager* script_injection_manager_;
+  // The callback to run upon completing asynchronously.
+  CompletionCallback async_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptInjection);
 };

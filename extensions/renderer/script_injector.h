@@ -40,9 +40,6 @@ class ScriptInjector {
   // Returns the script type of this particular injection.
   virtual UserScript::InjectionType script_type() const = 0;
 
-  // Returns true if the script should execute in child frames.
-  virtual bool ShouldExecuteInChildFrames() const = 0;
-
   // Returns true if the script should execute in the main world.
   virtual bool ShouldExecuteInMainWorld() const = 0;
 
@@ -84,7 +81,7 @@ class ScriptInjector {
   // Notifies the script that injection has completed, with a possibly-populated
   // list of results (depending on whether or not ExpectsResults() was true).
   virtual void OnInjectionComplete(
-      scoped_ptr<base::ListValue> execution_results,
+      scoped_ptr<base::Value> execution_result,
       UserScript::RunLocation run_location) = 0;
 
   // Notifies the script that injection will never occur.

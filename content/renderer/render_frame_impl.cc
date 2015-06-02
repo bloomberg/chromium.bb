@@ -2677,6 +2677,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
 void RenderFrameImpl::didCreateNewDocument(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
 
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidCreateNewDocument());
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
                     DidCreateNewDocument(frame));
 }
@@ -2731,6 +2732,8 @@ void RenderFrameImpl::didCreateDocumentElement(blink::WebLocalFrame* frame) {
     }
   }
 
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    DidCreateDocumentElement());
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
                     DidCreateDocumentElement(frame));
 }

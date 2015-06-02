@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "extensions/renderer/script_injection.h"
 #include "url/gurl.h"
 
@@ -32,7 +33,6 @@ class ProgrammaticScriptInjector : public ScriptInjector {
  private:
   // ScriptInjector implementation.
   UserScript::InjectionType script_type() const override;
-  bool ShouldExecuteInChildFrames() const override;
   bool ShouldExecuteInMainWorld() const override;
   bool IsUserGesture() const override;
   bool ExpectsResults() const override;
@@ -49,7 +49,7 @@ class ProgrammaticScriptInjector : public ScriptInjector {
       UserScript::RunLocation run_location) const override;
   void GetRunInfo(ScriptsRunInfo* scripts_run_info,
                   UserScript::RunLocation run_location) const override;
-  void OnInjectionComplete(scoped_ptr<base::ListValue> execution_results,
+  void OnInjectionComplete(scoped_ptr<base::Value> execution_result,
                            UserScript::RunLocation run_location) override;
   void OnWillNotInject(InjectFailureReason reason) override;
 
@@ -75,7 +75,7 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   content::RenderView* render_view_;
 
   // The results of the script execution.
-  scoped_ptr<base::ListValue> results_;
+  base::ListValue results_;
 
   // Whether or not this script injection has finished.
   bool finished_;

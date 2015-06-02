@@ -19,13 +19,8 @@
 
 struct ExtensionMsg_ExecuteCode_Params;
 
-namespace blink {
-class WebFrame;
-class WebLocalFrame;
-}
-
 namespace content {
-class RenderView;
+class RenderFrame;
 }
 
 namespace extensions {
@@ -43,38 +38,39 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   virtual ~ScriptInjectionManager();
 
   // Notifies that a new render view has been created.
-  void OnRenderViewCreated(content::RenderView* render_view);
+  void OnRenderFrameCreated(content::RenderFrame* render_frame);
 
   // Removes pending injections of the unloaded extension.
   void OnExtensionUnloaded(const std::string& extension_id);
 
+ private:
+  // A RenderFrameObserver implementation which watches the various render
+  // frames in order to notify the ScriptInjectionManager of different
+  // document load states and IPCs.
+  class RFOHelper;
+
+  using FrameStatusMap =
+      std::map<content::RenderFrame*, UserScript::RunLocation>;
+
   // Notifies that an injection has been finished.
   void OnInjectionFinished(ScriptInjection* injection);
-
- private:
-  // A RenderViewObserver implementation which watches the various render views
-  // in order to notify the ScriptInjectionManager of different document load
-  // states.
-  class RVOHelper;
-
-  typedef std::map<blink::WebFrame*, UserScript::RunLocation> FrameStatusMap;
 
   // UserScriptSetManager::Observer implementation.
   void OnUserScriptsUpdated(const std::set<HostID>& changed_hosts,
                             const std::vector<UserScript*>& scripts) override;
 
-  // Notifies that an RVOHelper should be removed.
-  void RemoveObserver(RVOHelper* helper);
+  // Notifies that an RFOHelper should be removed.
+  void RemoveObserver(RFOHelper* helper);
 
   // Invalidate any pending tasks associated with |frame|.
-  void InvalidateForFrame(blink::WebFrame* frame);
+  void InvalidateForFrame(content::RenderFrame* frame);
 
   // Starts the process to inject appropriate scripts into |frame|.
-  void StartInjectScripts(blink::WebFrame* frame,
+  void StartInjectScripts(content::RenderFrame* frame,
                           UserScript::RunLocation run_location);
 
   // Actually injects the scripts into |frame|.
-  void InjectScripts(blink::WebFrame* frame,
+  void InjectScripts(content::RenderFrame* frame,
                      UserScript::RunLocation run_location);
 
   // Try to inject and store injection if it has not finished.
@@ -84,10 +80,10 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
 
   // Handle the ExecuteCode extension message.
   void HandleExecuteCode(const ExtensionMsg_ExecuteCode_Params& params,
-                         content::RenderView* render_view);
+                         content::RenderFrame* render_frame);
 
   // Handle the ExecuteDeclarativeScript extension message.
-  void HandleExecuteDeclarativeScript(blink::WebFrame* web_frame,
+  void HandleExecuteDeclarativeScript(content::RenderFrame* web_frame,
                                       int tab_id,
                                       const ExtensionId& extension_id,
                                       int script_id,
@@ -103,8 +99,8 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   // RunLocation of the frame corresponds to the last location that has ran.
   FrameStatusMap frame_statuses_;
 
-  // The collection of RVOHelpers.
-  ScopedVector<RVOHelper> rvo_helpers_;
+  // The collection of RFOHelpers.
+  ScopedVector<RFOHelper> rfo_helpers_;
 
   // The set of UserScripts associated with extensions. Owned by the Dispatcher.
   UserScriptSetManager* user_script_set_manager_;

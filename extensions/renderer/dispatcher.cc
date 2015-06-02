@@ -215,8 +215,8 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
 Dispatcher::~Dispatcher() {
 }
 
-void Dispatcher::OnRenderViewCreated(content::RenderView* render_view) {
-  script_injection_manager_->OnRenderViewCreated(render_view);
+void Dispatcher::OnRenderFrameCreated(content::RenderFrame* render_frame) {
+  script_injection_manager_->OnRenderFrameCreated(render_frame);
 }
 
 bool Dispatcher::IsExtensionActive(const std::string& extension_id) const {

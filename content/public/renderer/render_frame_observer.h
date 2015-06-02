@@ -49,6 +49,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void WidgetWillClose() {}
 
   // These match the Blink API notifications
+  virtual void DidCreateNewDocument() {}
+  virtual void DidCreateDocumentElement() {}
   virtual void DidCommitProvisionalLoad(bool is_new_navigation,
                                         bool is_same_page_navigation) {}
   virtual void DidStartProvisionalLoad() {}

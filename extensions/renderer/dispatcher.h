@@ -86,7 +86,7 @@ class Dispatcher : public content::RenderProcessObserver,
 
   RequestSender* request_sender() { return request_sender_.get(); }
 
-  void OnRenderViewCreated(content::RenderView* render_view);
+  void OnRenderFrameCreated(content::RenderFrame* render_frame);
 
   bool IsExtensionActive(const std::string& extension_id) const;
 

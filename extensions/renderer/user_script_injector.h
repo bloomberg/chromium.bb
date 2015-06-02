@@ -37,7 +37,6 @@ class UserScriptInjector : public ScriptInjector,
 
   // ScriptInjector implementation.
   UserScript::InjectionType script_type() const override;
-  bool ShouldExecuteInChildFrames() const override;
   bool ShouldExecuteInMainWorld() const override;
   bool IsUserGesture() const override;
   bool ExpectsResults() const override;
@@ -54,7 +53,7 @@ class UserScriptInjector : public ScriptInjector,
       UserScript::RunLocation run_location) const override;
   void GetRunInfo(ScriptsRunInfo* scripts_run_info,
                   UserScript::RunLocation run_location) const override;
-  void OnInjectionComplete(scoped_ptr<base::ListValue> execution_results,
+  void OnInjectionComplete(scoped_ptr<base::Value> execution_result,
                            UserScript::RunLocation run_location) override;
   void OnWillNotInject(InjectFailureReason reason) override;
 

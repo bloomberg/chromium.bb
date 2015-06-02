@@ -535,6 +535,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #if defined(ENABLE_EXTENSIONS)
   new extensions::ExtensionsRenderFrameObserver(render_frame);
   new extensions::ExtensionFrameHelper(render_frame, ext_dispatcher);
+  ext_dispatcher->OnRenderFrameCreated(render_frame);
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -575,7 +576,6 @@ void ChromeContentRendererClient::RenderViewCreated(
 
 #if defined(ENABLE_EXTENSIONS)
   new extensions::ExtensionHelper(render_view, extension_dispatcher_.get());
-  extension_dispatcher_->OnRenderViewCreated(render_view);
 #endif
   new PageLoadHistograms(render_view);
 #if defined(ENABLE_PRINTING)

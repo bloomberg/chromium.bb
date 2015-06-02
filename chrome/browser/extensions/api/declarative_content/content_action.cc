@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/invalidate_type.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/declarative_user_script_manager.h"
 #include "extensions/browser/extension_registry.h"
@@ -423,9 +423,9 @@ void RequestContentScript::Revert(const std::string& extension_id,
 void RequestContentScript::InstructRenderProcessToInject(
     content::WebContents* contents,
     const std::string& extension_id) const {
-  content::RenderViewHost* render_view_host = contents->GetRenderViewHost();
-  render_view_host->Send(new ExtensionMsg_ExecuteDeclarativeScript(
-      render_view_host->GetRoutingID(),
+  content::RenderFrameHost* render_frame_host = contents->GetMainFrame();
+  render_frame_host->Send(new ExtensionMsg_ExecuteDeclarativeScript(
+      render_frame_host->GetRoutingID(),
       SessionTabHelper::IdForTab(contents),
       extension_id,
       script_.id(),

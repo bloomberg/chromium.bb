@@ -156,7 +156,7 @@ void WebViewAPITest::LaunchApp(const std::string& app_location) {
 content::WebContents* WebViewAPITest::GetFirstAppWindowWebContents() {
   const AppWindowRegistry::AppWindowList& app_window_list =
       AppWindowRegistry::Get(browser_context_)->app_windows();
-  DCHECK(app_window_list.size() == 1);
+  DCHECK_EQ(1u, app_window_list.size());
   return (*app_window_list.begin())->web_contents();
 }
 

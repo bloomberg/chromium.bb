@@ -264,12 +264,12 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
 void ActiveScriptController::PermitScriptInjection(int64 request_id) {
   // This only sends the response to the renderer - the process of adding the
   // extension to the list of |permitted_extensions_| is done elsewhere.
-  content::RenderViewHost* render_view_host =
-      web_contents()->GetRenderViewHost();
-  if (render_view_host) {
-    render_view_host->Send(new ExtensionMsg_PermitScriptInjection(
-        render_view_host->GetRoutingID(), request_id));
-  }
+  // TODO(devlin): Instead of sending this to all frames, we should include the
+  // routing_id in the permission request message, and send only to the proper
+  // frame (sending it to all frames doesn't hurt, but isn't as efficient).
+  web_contents()->SendToAllFrames(new ExtensionMsg_PermitScriptInjection(
+      MSG_ROUTING_NONE,  // Routing id is set by the |web_contents|.
+      request_id));
 }
 
 void ActiveScriptController::NotifyChange(const Extension* extension) {

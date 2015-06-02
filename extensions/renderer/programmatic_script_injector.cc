@@ -28,7 +28,6 @@ ProgrammaticScriptInjector::ProgrammaticScriptInjector(
     : params_(new ExtensionMsg_ExecuteCode_Params(params)),
       url_(ScriptContext::GetDataSourceURLForFrame(web_frame)),
       render_view_(content::RenderView::FromWebView(web_frame->view())),
-      results_(new base::ListValue()),
       finished_(false) {
   effective_url_ = ScriptContext::GetEffectiveDocumentURL(
       web_frame, url_, params.match_about_blank);
@@ -40,10 +39,6 @@ ProgrammaticScriptInjector::~ProgrammaticScriptInjector() {
 UserScript::InjectionType ProgrammaticScriptInjector::script_type()
     const {
   return UserScript::PROGRAMMATIC_SCRIPT;
-}
-
-bool ProgrammaticScriptInjector::ShouldExecuteInChildFrames() const {
-  return params_->all_frames;
 }
 
 bool ProgrammaticScriptInjector::ShouldExecuteInMainWorld() const {
@@ -120,9 +115,11 @@ void ProgrammaticScriptInjector::GetRunInfo(
 }
 
 void ProgrammaticScriptInjector::OnInjectionComplete(
-    scoped_ptr<base::ListValue> execution_results,
+    scoped_ptr<base::Value> execution_result,
     UserScript::RunLocation run_location) {
-  results_ = execution_results.Pass();
+  DCHECK(results_.empty());
+  if (execution_result)
+    results_.Append(execution_result.Pass());
   Finish(std::string());
 }
 
@@ -159,7 +156,7 @@ void ProgrammaticScriptInjector::Finish(const std::string& error) {
       params_->request_id,
       error,
       url_,
-      *results_));
+      results_));
 }
 
 }  // namespace extensions

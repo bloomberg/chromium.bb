@@ -125,10 +125,6 @@ UserScript::InjectionType UserScriptInjector::script_type() const {
   return UserScript::CONTENT_SCRIPT;
 }
 
-bool UserScriptInjector::ShouldExecuteInChildFrames() const {
-  return false;
-}
-
 bool UserScriptInjector::ShouldExecuteInMainWorld() const {
   return false;
 }
@@ -260,7 +256,7 @@ void UserScriptInjector::GetRunInfo(
 }
 
 void UserScriptInjector::OnInjectionComplete(
-    scoped_ptr<base::ListValue> execution_results,
+    scoped_ptr<base::Value> execution_result,
     UserScript::RunLocation run_location) {
 }
 

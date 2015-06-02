@@ -68,6 +68,7 @@ void ShellContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   // ExtensionFrameHelper destroys itself when the RenderFrame is destroyed.
   new ExtensionFrameHelper(render_frame, extension_dispatcher_.get());
+  extension_dispatcher_->OnRenderFrameCreated(render_frame);
 
   // TODO(jamescook): Do we need to add a new PepperHelper(render_frame) here?
   // It doesn't seem necessary for either Pepper or NaCl.
@@ -80,7 +81,6 @@ void ShellContentRendererClient::RenderFrameCreated(
 void ShellContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   new ExtensionHelper(render_view, extension_dispatcher_.get());
-  extension_dispatcher_->OnRenderViewCreated(render_view);
 }
 
 bool ShellContentRendererClient::OverrideCreatePlugin(

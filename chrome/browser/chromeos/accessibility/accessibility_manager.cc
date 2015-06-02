@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -59,6 +60,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/file_reader.h"
+#include "extensions/browser/script_executor.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
@@ -95,6 +97,32 @@ base::FilePath GetChromeVoxPath() {
     NOTREACHED();
   path = path.Append(extension_misc::kChromeVoxExtensionPath);
   return path;
+}
+
+// Uses the ScriptExecutor associated with the given |render_view_host| to
+// execute the given |code|.
+void ExecuteScriptHelper(
+    content::RenderViewHost* render_view_host,
+    const std::string& code,
+    const std::string& extension_id) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(render_view_host);
+  if (!web_contents)
+    return;
+  extensions::TabHelper::FromWebContents(web_contents)->script_executor()->
+      ExecuteScript(HostID(HostID::EXTENSIONS, extension_id),
+                    extensions::ScriptExecutor::JAVASCRIPT,
+                    code,
+                    extensions::ScriptExecutor::ALL_FRAMES,
+                    extensions::ScriptExecutor::DONT_MATCH_ABOUT_BLANK,
+                    extensions::UserScript::DOCUMENT_IDLE,
+                    extensions::ScriptExecutor::ISOLATED_WORLD,
+                    extensions::ScriptExecutor::DEFAULT_PROCESS,
+                    GURL(),  // No webview src.
+                    GURL(),  // No file url.
+                    false,  // Not user gesture.
+                    extensions::ScriptExecutor::NO_RESULT,
+                    extensions::ScriptExecutor::ExecuteScriptCallback());
 }
 
 // Helper class that directly loads an extension's content scripts into
@@ -134,22 +162,10 @@ class ContentScriptLoader {
  private:
   void OnFileLoaded(bool success, const std::string& data) {
     if (success) {
-      ExtensionMsg_ExecuteCode_Params params;
-      params.request_id = 0;
-      params.host_id = HostID(HostID::EXTENSIONS, extension_id_);
-      params.is_javascript = true;
-      params.code = data;
-      params.run_at = extensions::UserScript::DOCUMENT_IDLE;
-      params.all_frames = true;
-      params.match_about_blank = false;
-      params.in_main_world = false;
-
       RenderViewHost* render_view_host =
           RenderViewHost::FromID(render_process_id_, render_view_id_);
-      if (render_view_host) {
-        render_view_host->Send(new ExtensionMsg_ExecuteCode(
-            render_view_host->GetRoutingID(), params));
-      }
+      if (render_view_host)
+        ExecuteScriptHelper(render_view_host, data, extension_id_);
     }
     Run();
   }
@@ -203,17 +219,8 @@ void InjectChromeVoxContentScript(
 
   // Set a flag to tell ChromeVox that it's just been enabled,
   // so that it won't interrupt our speech feedback enabled message.
-  ExtensionMsg_ExecuteCode_Params params;
-  params.request_id = 0;
-  params.host_id = HostID(HostID::EXTENSIONS, extension->id());
-  params.is_javascript = true;
-  params.code = "window.INJECTED_AFTER_LOAD = true;";
-  params.run_at = extensions::UserScript::DOCUMENT_IDLE;
-  params.all_frames = true;
-  params.match_about_blank = false;
-  params.in_main_world = false;
-  render_view_host->Send(new ExtensionMsg_ExecuteCode(
-      render_view_host->GetRoutingID(), params));
+  ExecuteScriptHelper(render_view_host, "window.INJECTED_AFTER_LOAD = true;",
+                      extension->id());
 
   // Inject ChromeVox' content scripts.
   ContentScriptLoader* loader = new ContentScriptLoader(

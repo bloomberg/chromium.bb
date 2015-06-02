@@ -121,9 +121,6 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   // The webview guest source who calls to execute code.
   IPC_STRUCT_MEMBER(GURL, webview_src)
 
-  // Whether to inject into all frames, or only the root frame.
-  IPC_STRUCT_MEMBER(bool, all_frames)
-
   // Whether to inject into about:blank (sub)frames.
   IPC_STRUCT_MEMBER(bool, match_about_blank)
 
