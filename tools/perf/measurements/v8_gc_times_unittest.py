@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from telemetry import decorators
 from telemetry.core import wpr_modes
 from telemetry.page import page as page_module
 from telemetry.results import page_test_results
@@ -237,6 +238,10 @@ class V8GCTimesTests(page_test_test_case.PageTestTestCase):
       self.assertEqual(expected[key], actual[key],
           'Result for [' + key + '] - expected ' + str(expected[key]) +
           ' but got ' + str(actual[key]))
+
+  @decorators.Disabled('win')  # crbug.com/416502
+  def testCleanUpTrace(self):
+    self.TestTracingCleanedUp(v8_gc_times.V8GCTimes, self._options)
 
 
 def _ActualValues(results):
