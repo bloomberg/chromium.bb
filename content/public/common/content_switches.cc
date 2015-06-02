@@ -943,6 +943,9 @@ const char kDisableWebRTC[]                 = "disable-webrtc";
 const char kEnableAndroidCompositorAnimationTimelines[] =
     "enable-android-compositor-animation-timelines";
 
+// Enable drag manipulation of longpress-triggered text selections.
+const char kEnableLongpressDragSelection[]  = "enable-longpress-drag-selection";
+
 // The telephony region (ISO country code) to use in phone number detection.
 const char kNetworkCountryIso[] = "network-country-iso";
 

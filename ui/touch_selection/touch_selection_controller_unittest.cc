@@ -43,6 +43,21 @@ class MockTouchHandleDrawable : public TouchHandleDrawable {
 
 }  // namespace
 
+class TouchSelectionControllerTestApi {
+ public:
+  explicit TouchSelectionControllerTestApi(TouchSelectionController* controller)
+      : controller_(controller) {}
+  ~TouchSelectionControllerTestApi() {}
+
+  bool GetStartVisible() const { return controller_->GetStartVisible(); }
+  bool GetEndVisible() const { return controller_->GetEndVisible(); }
+
+ private:
+  TouchSelectionController* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerTestApi);
+};
+
 class TouchSelectionControllerTest : public testing::Test,
                                      public TouchSelectionControllerClient {
  public:
@@ -59,15 +74,7 @@ class TouchSelectionControllerTest : public testing::Test,
   // testing::Test implementation.
 
   void SetUp() override {
-    // Default touch selection controller is created with
-    // |show_on_tap_for_empty_editable| flag set to false. Use
-    // |AllowShowingOnTapForEmptyEditable()| function to override it.
-    bool show_on_tap_for_empty_editable = false;
-    controller_.reset(new TouchSelectionController(
-        this,
-        base::TimeDelta::FromMilliseconds(kDefaultTapTimeoutMs),
-        kDefaulTapSlop,
-        show_on_tap_for_empty_editable));
+    controller_.reset(new TouchSelectionController(this, DefaultConfig()));
   }
 
   void TearDown() override { controller_.reset(); }
@@ -109,12 +116,15 @@ class TouchSelectionControllerTest : public testing::Test,
   }
 
   void AllowShowingOnTapForEmptyEditable() {
-    bool show_on_tap_for_empty_editable = true;
-    controller_.reset(new TouchSelectionController(
-        this,
-        base::TimeDelta::FromMilliseconds(kDefaultTapTimeoutMs),
-        kDefaulTapSlop,
-        show_on_tap_for_empty_editable));
+    TouchSelectionController::Config config = DefaultConfig();
+    config.show_on_tap_for_empty_editable = true;
+    controller_.reset(new TouchSelectionController(this, config));
+  }
+
+  void EnableLongPressDragSelection() {
+    TouchSelectionController::Config config = DefaultConfig();
+    config.enable_longpress_drag_selection = true;
+    controller_.reset(new TouchSelectionController(this, config));
   }
 
   void SetAnimationEnabled(bool enabled) { animation_enabled_ = enabled; }
@@ -150,7 +160,8 @@ class TouchSelectionControllerTest : public testing::Test,
   }
 
   void OnLongPressEvent() {
-    ASSERT_FALSE(controller().WillHandleLongPressEvent(kIgnoredPoint));
+    ASSERT_FALSE(controller().WillHandleLongPressEvent(base::TimeTicks(),
+                                                       kIgnoredPoint));
   }
 
   void OnTapEvent() {
@@ -207,6 +218,19 @@ class TouchSelectionControllerTest : public testing::Test,
   TouchSelectionController& controller() { return *controller_; }
 
  private:
+  TouchSelectionController::Config DefaultConfig() {
+    // Both |show_on_tap_for_empty_editable| and
+    // |enable_longpress_drag_selection| are set to false by default, and should
+    // be overriden for explicit testing.
+    TouchSelectionController::Config config;
+    config.tap_timeout =
+        base::TimeDelta::FromMilliseconds(kDefaultTapTimeoutMs);
+    config.tap_slop = kDefaulTapSlop;
+    config.show_on_tap_for_empty_editable = false;
+    config.enable_longpress_drag_selection = false;
+    return config;
+  }
+
   gfx::PointF last_event_start_;
   gfx::PointF last_event_end_;
   gfx::PointF caret_position_;
@@ -903,6 +927,8 @@ TEST_F(TouchSelectionControllerTest, Animation) {
 }
 
 TEST_F(TouchSelectionControllerTest, TemporarilyHidden) {
+  TouchSelectionControllerTestApi test_controller(&controller());
+
   OnTapEvent();
   controller().OnSelectionEditable(true);
 
@@ -911,20 +937,27 @@ TEST_F(TouchSelectionControllerTest, TemporarilyHidden) {
   bool visible = true;
   ChangeInsertion(insertion_rect, visible);
   EXPECT_FALSE(GetAndResetNeedsAnimate());
+  EXPECT_TRUE(test_controller.GetStartVisible());
+  EXPECT_TRUE(test_controller.GetEndVisible());
 
   controller().SetTemporarilyHidden(true);
   EXPECT_TRUE(GetAndResetNeedsAnimate());
+  EXPECT_FALSE(test_controller.GetStartVisible());
+  EXPECT_FALSE(test_controller.GetEndVisible());
 
   visible = false;
   ChangeInsertion(insertion_rect, visible);
   EXPECT_FALSE(GetAndResetNeedsAnimate());
+  EXPECT_FALSE(test_controller.GetStartVisible());
 
   visible = true;
   ChangeInsertion(insertion_rect, visible);
   EXPECT_FALSE(GetAndResetNeedsAnimate());
+  EXPECT_FALSE(test_controller.GetStartVisible());
 
   controller().SetTemporarilyHidden(false);
   EXPECT_TRUE(GetAndResetNeedsAnimate());
+  EXPECT_TRUE(test_controller.GetStartVisible());
 }
 
 TEST_F(TouchSelectionControllerTest, SelectionClearOnTap) {
@@ -1043,12 +1076,146 @@ TEST_F(TouchSelectionControllerTest, HandlesShowOnLongPressInsideRect) {
   EXPECT_THAT(GetAndResetEvents(), IsEmpty());
 
   // A point outside the rect should not be handled.
-  EXPECT_FALSE(controller().WillHandleLongPressEvent(outer_point));
+  EXPECT_FALSE(
+      controller().WillHandleLongPressEvent(base::TimeTicks(), outer_point));
   EXPECT_THAT(GetAndResetEvents(), IsEmpty());
 
   // A point inside the rect should be handled.
-  EXPECT_TRUE(controller().WillHandleLongPressEvent(inner_point));
+  EXPECT_TRUE(
+      controller().WillHandleLongPressEvent(base::TimeTicks(), inner_point));
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_SHOWN));
+}
+
+TEST_F(TouchSelectionControllerTest, LongPressDrag) {
+  EnableLongPressDragSelection();
+  TouchSelectionControllerTestApi test_controller(&controller());
+
+  gfx::RectF start_rect(-50, 0, 0, 10);
+  gfx::RectF end_rect(50, 0, 0, 10);
+  bool visible = true;
+
+  // Start a touch sequence.
+  MockMotionEvent event;
+  EXPECT_FALSE(controller().WillHandleTouchEvent(event.PressPoint(0, 0)));
+
+  // Activate a longpress-triggered selection.
+  OnLongPressEvent();
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_SHOWN));
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventStart());
+
+  // The handles should remain invisible while the touch release and longpress
+  // drag gesture are pending.
+  EXPECT_FALSE(test_controller.GetStartVisible());
+  EXPECT_FALSE(test_controller.GetEndVisible());
+
+  // The selection coordinates should reflect the drag movement.
+  gfx::PointF fixed_offset = start_rect.CenterPoint();
+  gfx::PointF end_offset = end_rect.CenterPoint();
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event.MovePoint(0, 0, 0)));
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
+
+  EXPECT_TRUE(
+      controller().WillHandleTouchEvent(event.MovePoint(0, 0, kDefaulTapSlop)));
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_DRAG_STARTED));
+  EXPECT_EQ(fixed_offset, GetLastSelectionStart());
+  EXPECT_EQ(end_offset, GetLastSelectionEnd());
+
+  // Movement after the start of drag will be relative to the moved endpoint.
+  EXPECT_TRUE(controller().WillHandleTouchEvent(
+      event.MovePoint(0, 0, 2 * kDefaulTapSlop)));
+  EXPECT_TRUE(GetAndResetSelectionMoved());
+  EXPECT_EQ(end_offset + gfx::Vector2dF(0, kDefaulTapSlop),
+            GetLastSelectionEnd());
+
+  EXPECT_TRUE(controller().WillHandleTouchEvent(
+      event.MovePoint(0, kDefaulTapSlop, 2 * kDefaulTapSlop)));
+  EXPECT_TRUE(GetAndResetSelectionMoved());
+  EXPECT_EQ(end_offset + gfx::Vector2dF(kDefaulTapSlop, kDefaulTapSlop),
+            GetLastSelectionEnd());
+
+  EXPECT_TRUE(controller().WillHandleTouchEvent(
+      event.MovePoint(0, 2 * kDefaulTapSlop, 2 * kDefaulTapSlop)));
+  EXPECT_TRUE(GetAndResetSelectionMoved());
+  EXPECT_EQ(end_offset + gfx::Vector2dF(2 * kDefaulTapSlop, kDefaulTapSlop),
+            GetLastSelectionEnd());
+
+  // The handles should still be hidden.
+  EXPECT_FALSE(test_controller.GetStartVisible());
+  EXPECT_FALSE(test_controller.GetEndVisible());
+
+  // Releasing the touch sequence should end the drag and show the handles.
+  EXPECT_FALSE(controller().WillHandleTouchEvent(event.ReleasePoint()));
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_DRAG_STOPPED));
+  EXPECT_TRUE(test_controller.GetStartVisible());
+  EXPECT_TRUE(test_controller.GetEndVisible());
+}
+
+TEST_F(TouchSelectionControllerTest, LongPressNoDrag) {
+  EnableLongPressDragSelection();
+  TouchSelectionControllerTestApi test_controller(&controller());
+
+  gfx::RectF start_rect(-50, 0, 0, 10);
+  gfx::RectF end_rect(50, 0, 0, 10);
+  bool visible = true;
+
+  // Start a touch sequence.
+  MockMotionEvent event;
+  EXPECT_FALSE(controller().WillHandleTouchEvent(event.PressPoint(0, 0)));
+
+  // Activate a longpress-triggered selection.
+  OnLongPressEvent();
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_SHOWN));
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventStart());
+
+  // The handles should remain invisible while the touch release and longpress
+  // drag gesture are pending.
+  EXPECT_FALSE(test_controller.GetStartVisible());
+  EXPECT_FALSE(test_controller.GetEndVisible());
+
+  // If no drag movement occurs, the handles should reappear after the touch
+  // is released.
+  EXPECT_FALSE(controller().WillHandleTouchEvent(event.ReleasePoint()));
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
+  EXPECT_TRUE(test_controller.GetStartVisible());
+  EXPECT_TRUE(test_controller.GetEndVisible());
+}
+
+TEST_F(TouchSelectionControllerTest, NoLongPressDragIfDisabled) {
+  // The TouchSelectionController disables longpress drag selection by default.
+  TouchSelectionControllerTestApi test_controller(&controller());
+
+  gfx::RectF start_rect(-50, 0, 0, 10);
+  gfx::RectF end_rect(50, 0, 0, 10);
+  bool visible = true;
+
+  // Start a touch sequence.
+  MockMotionEvent event;
+  EXPECT_FALSE(controller().WillHandleTouchEvent(event.PressPoint(0, 0)));
+
+  // Activate a longpress-triggered selection.
+  OnLongPressEvent();
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_SHOWN));
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventStart());
+  EXPECT_TRUE(test_controller.GetStartVisible());
+  EXPECT_TRUE(test_controller.GetEndVisible());
+
+  // Subsequent motion of the same touch sequence after longpress shouldn't
+  // trigger drag selection.
+  EXPECT_FALSE(controller().WillHandleTouchEvent(event.MovePoint(0, 0, 0)));
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
+
+  EXPECT_FALSE(controller().WillHandleTouchEvent(
+      event.MovePoint(0, 0, kDefaulTapSlop * 10)));
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
+
+  // Releasing the touch sequence should have no effect.
+  EXPECT_FALSE(controller().WillHandleTouchEvent(event.ReleasePoint()));
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
+  EXPECT_TRUE(test_controller.GetStartVisible());
+  EXPECT_TRUE(test_controller.GetEndVisible());
 }
 
 TEST_F(TouchSelectionControllerTest, RectBetweenBounds) {

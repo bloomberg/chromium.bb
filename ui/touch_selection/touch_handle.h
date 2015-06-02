@@ -13,6 +13,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/touch_selection/touch_handle_orientation.h"
+#include "ui/touch_selection/touch_selection_draggable.h"
 #include "ui/touch_selection/ui_touch_selection_export.h"
 
 namespace ui {
@@ -32,27 +33,27 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandleDrawable {
 
 // Interface through which |TouchHandle| communicates handle manipulation and
 // requests concrete drawable instances.
-class UI_TOUCH_SELECTION_EXPORT TouchHandleClient {
+class UI_TOUCH_SELECTION_EXPORT TouchHandleClient
+    : public TouchSelectionDraggableClient {
  public:
-  virtual ~TouchHandleClient() {}
-  virtual void OnHandleDragBegin(const TouchHandle& handle) = 0;
-  virtual void OnHandleDragUpdate(const TouchHandle& handle,
-                                  const gfx::PointF& new_position) = 0;
-  virtual void OnHandleDragEnd(const TouchHandle& handle) = 0;
+  ~TouchHandleClient() override {}
   virtual void OnHandleTapped(const TouchHandle& handle) = 0;
   virtual void SetNeedsAnimate() = 0;
   virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() = 0;
   virtual base::TimeDelta GetTapTimeout() const = 0;
-  virtual float GetTapSlop() const = 0;
 };
 
 // Responsible for displaying a selection or insertion handle for text
 // interaction.
-class UI_TOUCH_SELECTION_EXPORT TouchHandle {
+class UI_TOUCH_SELECTION_EXPORT TouchHandle : public TouchSelectionDraggable {
  public:
   // The drawable will be enabled but invisible until otherwise specified.
   TouchHandle(TouchHandleClient* client, TouchHandleOrientation orientation);
-  ~TouchHandle();
+  ~TouchHandle() override;
+
+  // TouchSelectionDraggable implementation.
+  bool WillHandleTouchEvent(const MotionEvent& event) override;
+  bool IsActive() const override;
 
   // Sets whether the handle is active, allowing resource cleanup if necessary.
   // If false, active animations or touch drag sequences will be cancelled.
@@ -76,10 +77,6 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle {
   // deferred until the drag has ceased.
   void SetOrientation(TouchHandleOrientation orientation);
 
-  // Allows touch-dragging of the handle. Returns true if the event was
-  // consumed, in which case the caller should cease further handling.
-  bool WillHandleTouchEvent(const MotionEvent& event);
-
   // Ticks an active animation, as requested to the client by |SetNeedsAnimate|.
   // Returns true if an animation is active and requires further ticking.
   bool Animate(base::TimeTicks frame_time);
@@ -89,7 +86,6 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle {
   // the bounds will be empty.
   gfx::RectF GetVisibleBounds() const;
 
-  bool is_dragging() const { return is_dragging_; }
   const gfx::PointF& position() const { return position_; }
   TouchHandleOrientation orientation() const { return orientation_; }
 
@@ -109,7 +105,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle {
   TouchHandleOrientation deferred_orientation_;
 
   gfx::PointF touch_down_position_;
-  gfx::Vector2dF touch_to_focus_offset_;
+  gfx::Vector2dF touch_drag_offset_;
   base::TimeTicks touch_down_time_;
 
   // Note that when a fade animation is active, |is_visible_| and |position_|

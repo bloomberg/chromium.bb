@@ -40,16 +40,22 @@ TouchHandleOrientation ToTouchHandleOrientation(SelectionBound::Type type) {
 
 }  // namespace
 
+TouchSelectionController::Config::Config()
+    : tap_timeout(base::TimeDelta::FromMilliseconds(100)),
+      tap_slop(8),
+      enable_longpress_drag_selection(false),
+      show_on_tap_for_empty_editable(false) {
+}
+
+TouchSelectionController::Config::~Config() {
+}
+
 TouchSelectionController::TouchSelectionController(
     TouchSelectionControllerClient* client,
-    base::TimeDelta tap_timeout,
-    float tap_slop,
-    bool show_on_tap_for_empty_editable)
+    const Config& config)
     : client_(client),
-      tap_timeout_(tap_timeout),
-      tap_slop_(tap_slop),
+      config_(config),
       force_next_update_(false),
-      show_on_tap_for_empty_editable_(show_on_tap_for_empty_editable),
       response_pending_input_event_(INPUT_EVENT_TYPE_NONE),
       start_orientation_(TouchHandleOrientation::UNDEFINED),
       end_orientation_(TouchHandleOrientation::UNDEFINED),
@@ -59,6 +65,8 @@ TouchSelectionController::TouchSelectionController(
       selection_empty_(false),
       selection_editable_(false),
       temporarily_hidden_(false),
+      anchor_drag_to_selection_start_(false),
+      longpress_drag_selector_(this),
       selection_handle_dragged_(false) {
   DCHECK(client_);
 }
@@ -94,8 +102,8 @@ void TouchSelectionController::OnSelectionBoundsChanged(
       &response_pending_input_event_, causal_input_event);
 
   const bool is_selection_dragging = active_status_ == SELECTION_ACTIVE &&
-                                     (start_selection_handle_->is_dragging() ||
-                                      end_selection_handle_->is_dragging());
+                                     (start_selection_handle_->IsActive() ||
+                                      end_selection_handle_->IsActive());
 
   // It's possible that the bounds temporarily overlap while a selection handle
   // is being dragged, incorrectly reporting a CENTER orientation.
@@ -128,6 +136,11 @@ void TouchSelectionController::OnSelectionBoundsChanged(
 }
 
 bool TouchSelectionController::WillHandleTouchEvent(const MotionEvent& event) {
+  if (config_.enable_longpress_drag_selection &&
+      longpress_drag_selector_.WillHandleTouchEvent(event)) {
+    return true;
+  }
+
   if (active_status_ == INSERTION_ACTIVE) {
     DCHECK(insertion_handle_);
     return insertion_handle_->WillHandleTouchEvent(event);
@@ -136,10 +149,10 @@ bool TouchSelectionController::WillHandleTouchEvent(const MotionEvent& event) {
   if (active_status_ == SELECTION_ACTIVE) {
     DCHECK(start_selection_handle_);
     DCHECK(end_selection_handle_);
-    if (start_selection_handle_->is_dragging())
+    if (start_selection_handle_->IsActive())
       return start_selection_handle_->WillHandleTouchEvent(event);
 
-    if (end_selection_handle_->is_dragging())
+    if (end_selection_handle_->IsActive())
       return end_selection_handle_->WillHandleTouchEvent(event);
 
     const gfx::PointF event_pos(event.GetX(), event.GetY());
@@ -161,17 +174,19 @@ bool TouchSelectionController::WillHandleTapEvent(const gfx::PointF& location) {
   if (active_status_ != SELECTION_ACTIVE)
     activate_selection_automatically_ = false;
   ShowInsertionHandleAutomatically();
-  if (selection_empty_ && !show_on_tap_for_empty_editable_)
+  if (selection_empty_ && !config_.show_on_tap_for_empty_editable)
     DeactivateInsertion();
   ForceNextUpdateIfInactive();
   return false;
 }
 
 bool TouchSelectionController::WillHandleLongPressEvent(
+    base::TimeTicks event_time,
     const gfx::PointF& location) {
   if (WillHandleTapOrLongPress(location))
     return true;
 
+  longpress_drag_selector_.OnLongPressEvent(event_time, location);
   response_pending_input_event_ = LONG_PRESS;
   ShowSelectionHandlesAutomatically();
   ShowInsertionHandleAutomatically();
@@ -205,14 +220,7 @@ void TouchSelectionController::SetTemporarilyHidden(bool hidden) {
   if (temporarily_hidden_ == hidden)
     return;
   temporarily_hidden_ = hidden;
-
-  TouchHandle::AnimationStyle animation_style = GetAnimationStyle(true);
-  if (active_status_ == SELECTION_ACTIVE) {
-    start_selection_handle_->SetVisible(GetStartVisible(), animation_style);
-    end_selection_handle_->SetVisible(GetEndVisible(), animation_style);
-  } else if (active_status_ == INSERTION_ACTIVE) {
-    insertion_handle_->SetVisible(GetStartVisible(), animation_style);
-  }
+  RefreshHandleVisibility();
 }
 
 void TouchSelectionController::OnSelectionEditable(bool editable) {
@@ -283,20 +291,34 @@ const gfx::PointF& TouchSelectionController::GetEndPosition() const {
   return end_.edge_bottom();
 }
 
-void TouchSelectionController::OnHandleDragBegin(const TouchHandle& handle) {
-  if (&handle == insertion_handle_.get()) {
+void TouchSelectionController::OnDragBegin(
+    const TouchSelectionDraggable& draggable,
+    const gfx::PointF& drag_position) {
+  if (&draggable == insertion_handle_.get()) {
+    DCHECK_EQ(active_status_, INSERTION_ACTIVE);
     client_->OnSelectionEvent(INSERTION_DRAG_STARTED);
+    anchor_drag_to_selection_start_ = true;
     return;
   }
 
-  gfx::PointF base, extent;
-  if (&handle == start_selection_handle_.get()) {
-    base = end_selection_handle_->position() + GetEndLineOffset();
-    extent = start_selection_handle_->position() + GetStartLineOffset();
+  DCHECK_EQ(active_status_, SELECTION_ACTIVE);
+
+  if (&draggable == start_selection_handle_.get()) {
+    anchor_drag_to_selection_start_ = true;
+  } else if (&draggable == end_selection_handle_.get()) {
+    anchor_drag_to_selection_start_ = false;
   } else {
-    base = start_selection_handle_->position() + GetStartLineOffset();
-    extent = end_selection_handle_->position() + GetEndLineOffset();
+    DCHECK_EQ(&draggable, &longpress_drag_selector_);
+    anchor_drag_to_selection_start_ =
+        (drag_position - GetStartPosition()).LengthSquared() <
+        (drag_position - GetEndPosition()).LengthSquared();
   }
+
+  gfx::PointF base = GetStartPosition() + GetStartLineOffset();
+  gfx::PointF extent = GetEndPosition() + GetEndLineOffset();
+  if (anchor_drag_to_selection_start_)
+    std::swap(base, extent);
+
   selection_handle_dragged_ = true;
 
   // When moving the handle we want to move only the extent point. Before doing
@@ -305,25 +327,33 @@ void TouchSelectionController::OnHandleDragBegin(const TouchHandle& handle) {
   client_->OnSelectionEvent(SELECTION_DRAG_STARTED);
 }
 
-void TouchSelectionController::OnHandleDragUpdate(const TouchHandle& handle,
-                                                  const gfx::PointF& position) {
+void TouchSelectionController::OnDragUpdate(
+    const TouchSelectionDraggable& draggable,
+    const gfx::PointF& drag_position) {
   // As the position corresponds to the bottom left point of the selection
-  // bound, offset it by half the corresponding line height.
-  gfx::Vector2dF line_offset = &handle == start_selection_handle_.get()
+  // bound, offset it to some reasonable point on the current line of text.
+  gfx::Vector2dF line_offset = anchor_drag_to_selection_start_
                                    ? GetStartLineOffset()
                                    : GetEndLineOffset();
-  gfx::PointF line_position = position + line_offset;
-  if (&handle == insertion_handle_.get())
+  gfx::PointF line_position = drag_position + line_offset;
+  if (&draggable == insertion_handle_.get())
     client_->MoveCaret(line_position);
   else
     client_->MoveRangeSelectionExtent(line_position);
 }
 
-void TouchSelectionController::OnHandleDragEnd(const TouchHandle& handle) {
-  if (&handle == insertion_handle_.get())
+void TouchSelectionController::OnDragEnd(
+    const TouchSelectionDraggable& draggable) {
+  if (&draggable == insertion_handle_.get())
     client_->OnSelectionEvent(INSERTION_DRAG_STOPPED);
   else
     client_->OnSelectionEvent(SELECTION_DRAG_STOPPED);
+}
+
+bool TouchSelectionController::IsWithinTapSlop(
+    const gfx::Vector2dF& delta) const {
+  return delta.LengthSquared() <
+         (static_cast<double>(config_.tap_slop) * config_.tap_slop);
 }
 
 void TouchSelectionController::OnHandleTapped(const TouchHandle& handle) {
@@ -340,11 +370,21 @@ scoped_ptr<TouchHandleDrawable> TouchSelectionController::CreateDrawable() {
 }
 
 base::TimeDelta TouchSelectionController::GetTapTimeout() const {
-  return tap_timeout_;
+  return config_.tap_timeout;
 }
 
-float TouchSelectionController::GetTapSlop() const {
-  return tap_slop_;
+void TouchSelectionController::OnLongPressDragActiveStateChanged() {
+  // The handles should remain hidden for the duration of a longpress drag,
+  // including the time between a longpress and the start of drag motion.
+  RefreshHandleVisibility();
+}
+
+gfx::PointF TouchSelectionController::GetSelectionStart() const {
+  return GetStartPosition();
+}
+
+gfx::PointF TouchSelectionController::GetSelectionEnd() const {
+  return GetEndPosition();
 }
 
 void TouchSelectionController::ShowInsertionHandleAutomatically() {
@@ -381,7 +421,7 @@ void TouchSelectionController::OnInsertionChanged() {
   DeactivateSelection();
 
   if (response_pending_input_event_ == TAP && selection_empty_ &&
-      !show_on_tap_for_empty_editable_) {
+      !config_.show_on_tap_for_empty_editable) {
     HideAndDisallowShowingAutomatically();
     return;
   }
@@ -470,6 +510,7 @@ bool TouchSelectionController::ActivateSelectionIfNecessary() {
     selection_handle_dragged_ = false;
     selection_start_time_ = base::TimeTicks::Now();
     response_pending_input_event_ = INPUT_EVENT_TYPE_NONE;
+    longpress_drag_selector_.OnSelectionActivated();
     return true;
   }
   return false;
@@ -481,6 +522,7 @@ void TouchSelectionController::DeactivateSelection() {
   DCHECK(start_selection_handle_);
   DCHECK(end_selection_handle_);
   LogSelectionEnd();
+  longpress_drag_selector_.OnSelectionDeactivated();
   start_selection_handle_->SetEnabled(false);
   end_selection_handle_->SetEnabled(false);
   active_status_ = INACTIVE;
@@ -498,6 +540,16 @@ void TouchSelectionController::ForceNextUpdateIfInactive() {
   }
 }
 
+void TouchSelectionController::RefreshHandleVisibility() {
+  TouchHandle::AnimationStyle animation_style = GetAnimationStyle(true);
+  if (active_status_ == SELECTION_ACTIVE) {
+    start_selection_handle_->SetVisible(GetStartVisible(), animation_style);
+    end_selection_handle_->SetVisible(GetEndVisible(), animation_style);
+  }
+  if (active_status_ == INSERTION_ACTIVE)
+    insertion_handle_->SetVisible(GetStartVisible(), animation_style);
+}
+
 gfx::Vector2dF TouchSelectionController::GetStartLineOffset() const {
   return ComputeLineOffsetFromBottom(start_);
 }
@@ -507,11 +559,17 @@ gfx::Vector2dF TouchSelectionController::GetEndLineOffset() const {
 }
 
 bool TouchSelectionController::GetStartVisible() const {
-  return start_.visible() && !temporarily_hidden_;
+  if (!start_.visible())
+    return false;
+
+  return !temporarily_hidden_ && !longpress_drag_selector_.IsActive();
 }
 
 bool TouchSelectionController::GetEndVisible() const {
-  return end_.visible() && !temporarily_hidden_;
+  if (!end_.visible())
+    return false;
+
+  return !temporarily_hidden_ && !longpress_drag_selector_.IsActive();
 }
 
 TouchHandle::AnimationStyle TouchSelectionController::GetAnimationStyle(

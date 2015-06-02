@@ -44,14 +44,14 @@ struct MockMotionEvent : public MotionEventGeneric {
   ~MockMotionEvent() override;
 
   // Utility methods.
-  void PressPoint(float x, float y);
-  void MovePoint(size_t index, float x, float y);
-  void ReleasePoint();
-  void CancelPoint();
-  void SetTouchMajor(float new_touch_major);
-  void SetRawOffset(float raw_offset_x, float raw_offset_y);
-  void SetToolType(size_t index, ToolType tool_type);
-  void SetPrimaryPointerId(int id);
+  MockMotionEvent& PressPoint(float x, float y);
+  MockMotionEvent& MovePoint(size_t index, float x, float y);
+  MockMotionEvent& ReleasePoint();
+  MockMotionEvent& CancelPoint();
+  MockMotionEvent& SetTouchMajor(float new_touch_major);
+  MockMotionEvent& SetRawOffset(float raw_offset_x, float raw_offset_y);
+  MockMotionEvent& SetToolType(size_t index, ToolType tool_type);
+  MockMotionEvent& SetPrimaryPointerId(int id);
 
  private:
   void PushPointer(float x, float y);

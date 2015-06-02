@@ -92,7 +92,7 @@ MockMotionEvent::MockMotionEvent(const MockMotionEvent& other)
 MockMotionEvent::~MockMotionEvent() {
 }
 
-void MockMotionEvent::PressPoint(float x, float y) {
+MockMotionEvent& MockMotionEvent::PressPoint(float x, float y) {
   UpdatePointersAndID();
   PushPointer(x, y);
   if (GetPointerCount() > 1) {
@@ -101,9 +101,10 @@ void MockMotionEvent::PressPoint(float x, float y) {
   } else {
     set_action(ACTION_DOWN);
   }
+  return *this;
 }
 
-void MockMotionEvent::MovePoint(size_t index, float x, float y) {
+MockMotionEvent& MockMotionEvent::MovePoint(size_t index, float x, float y) {
   UpdatePointersAndID();
   DCHECK_LT(index, GetPointerCount());
   PointerProperties& p = pointer(index);
@@ -114,9 +115,10 @@ void MockMotionEvent::MovePoint(size_t index, float x, float y) {
   p.raw_x += dx;
   p.raw_y += dy;
   set_action(ACTION_MOVE);
+  return *this;
 }
 
-void MockMotionEvent::ReleasePoint() {
+MockMotionEvent& MockMotionEvent::ReleasePoint() {
   UpdatePointersAndID();
   DCHECK_GT(GetPointerCount(), 0U);
   if (GetPointerCount() > 1) {
@@ -125,29 +127,36 @@ void MockMotionEvent::ReleasePoint() {
   } else {
     set_action(ACTION_UP);
   }
+  return *this;
 }
 
-void MockMotionEvent::CancelPoint() {
+MockMotionEvent& MockMotionEvent::CancelPoint() {
   UpdatePointersAndID();
   DCHECK_GT(GetPointerCount(), 0U);
   set_action(ACTION_CANCEL);
+  return *this;
 }
 
-void MockMotionEvent::SetTouchMajor(float new_touch_major) {
+MockMotionEvent& MockMotionEvent::SetTouchMajor(float new_touch_major) {
   for (size_t i = 0; i < GetPointerCount(); ++i)
     pointer(i).touch_major = new_touch_major;
+  return *this;
 }
 
-void MockMotionEvent::SetRawOffset(float raw_offset_x, float raw_offset_y) {
+MockMotionEvent& MockMotionEvent::SetRawOffset(float raw_offset_x,
+                                               float raw_offset_y) {
   for (size_t i = 0; i < GetPointerCount(); ++i) {
     pointer(i).raw_x = pointer(i).x + raw_offset_x;
     pointer(i).raw_y = pointer(i).y + raw_offset_y;
   }
+  return *this;
 }
 
-void MockMotionEvent::SetToolType(size_t pointer_index, ToolType tool_type) {
+MockMotionEvent& MockMotionEvent::SetToolType(size_t pointer_index,
+                                              ToolType tool_type) {
   DCHECK_LT(pointer_index, GetPointerCount());
   pointer(pointer_index).tool_type = tool_type;
+  return *this;
 }
 
 void MockMotionEvent::PushPointer(float x, float y) {
@@ -169,9 +178,10 @@ void MockMotionEvent::UpdatePointersAndID() {
   }
 }
 
-void MockMotionEvent::SetPrimaryPointerId(int id) {
+MockMotionEvent& MockMotionEvent::SetPrimaryPointerId(int id) {
   DCHECK_GT(GetPointerCount(), 0U);
   pointer(0).id = id;
+  return *this;
 }
 
 std::string ToString(const MotionEvent& event) {

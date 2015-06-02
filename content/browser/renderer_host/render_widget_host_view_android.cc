@@ -268,14 +268,16 @@ scoped_ptr<ui::TouchSelectionController> CreateSelectionController(
     ContentViewCore* content_view_core) {
   DCHECK(client);
   DCHECK(content_view_core);
-  int tap_timeout_ms = gfx::ViewConfiguration::GetTapTimeoutInMs();
-  int touch_slop_pixels = gfx::ViewConfiguration::GetTouchSlopInPixels();
-  bool show_on_tap_for_empty_editable = false;
-  return make_scoped_ptr(new ui::TouchSelectionController(
-      client,
-      base::TimeDelta::FromMilliseconds(tap_timeout_ms),
-      touch_slop_pixels / content_view_core->GetDpiScale(),
-      show_on_tap_for_empty_editable));
+  ui::TouchSelectionController::Config config;
+  config.tap_timeout = base::TimeDelta::FromMilliseconds(
+      gfx::ViewConfiguration::GetTapTimeoutInMs());
+  config.tap_slop = gfx::ViewConfiguration::GetTouchSlopInPixels() /
+                    content_view_core->GetDpiScale();
+  config.show_on_tap_for_empty_editable = false;
+  config.enable_longpress_drag_selection =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLongpressDragSelection);
+  return make_scoped_ptr(new ui::TouchSelectionController(client, config));
 }
 
 scoped_ptr<OverscrollControllerAndroid> CreateOverscrollController(
@@ -1584,13 +1586,25 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
       blink::WebInputEvent::isGestureEventType(input_event.type)) {
     const blink::WebGestureEvent& gesture_event =
         static_cast<const blink::WebGestureEvent&>(input_event);
-    gfx::PointF gesture_location(gesture_event.x, gesture_event.y);
-    if (input_event.type == blink::WebInputEvent::GestureLongPress) {
-      if (selection_controller_->WillHandleLongPressEvent(gesture_location))
-        return INPUT_EVENT_ACK_STATE_CONSUMED;
-    } else if (input_event.type == blink::WebInputEvent::GestureTap) {
-      if (selection_controller_->WillHandleTapEvent(gesture_location))
-        return INPUT_EVENT_ACK_STATE_CONSUMED;
+    switch (gesture_event.type) {
+      case blink::WebInputEvent::GestureLongPress:
+        if (selection_controller_->WillHandleLongPressEvent(
+                base::TimeTicks() +
+                    base::TimeDelta::FromSecondsD(input_event.timeStampSeconds),
+                gfx::PointF(gesture_event.x, gesture_event.y))) {
+          return INPUT_EVENT_ACK_STATE_CONSUMED;
+        }
+        break;
+
+      case blink::WebInputEvent::GestureTap:
+        if (selection_controller_->WillHandleTapEvent(
+                gfx::PointF(gesture_event.x, gesture_event.y))) {
+          return INPUT_EVENT_ACK_STATE_CONSUMED;
+        }
+        break;
+
+      default:
+        break;
     }
   }
 

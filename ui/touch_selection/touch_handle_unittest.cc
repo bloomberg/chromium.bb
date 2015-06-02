@@ -15,7 +15,7 @@ namespace ui {
 namespace {
 
 const int kDefaultTapTimeoutMs = 200;
-const float kDefaultTapSlop = 10.f;
+const double kDefaultTapSlop = 10.;
 const float kDefaultDrawableSize = 10.f;
 
 struct MockDrawableData {
@@ -74,18 +74,23 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
   ~TouchHandleTest() override {}
 
   // TouchHandleClient implementation.
-  void OnHandleDragBegin(const TouchHandle& handle) override {
+  void OnDragBegin(const TouchSelectionDraggable& handler,
+                   const gfx::PointF& drag_position) override {
     dragging_ = true;
   }
 
-  void OnHandleDragUpdate(const TouchHandle& handle,
-                          const gfx::PointF& new_position) override {
+  void OnDragUpdate(const TouchSelectionDraggable& handler,
+                    const gfx::PointF& drag_position) override {
     dragged_ = true;
-    drag_position_ = new_position;
+    drag_position_ = drag_position;
   }
 
-  void OnHandleDragEnd(const TouchHandle& handle) override {
+  void OnDragEnd(const TouchSelectionDraggable& handler) override {
     dragging_ = false;
+  }
+
+  bool IsWithinTapSlop(const gfx::Vector2dF& delta) const override {
+    return delta.LengthSquared() < (kDefaultTapSlop * kDefaultTapSlop);
   }
 
   void OnHandleTapped(const TouchHandle& handle) override { tapped_ = true; }
@@ -99,8 +104,6 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
   base::TimeDelta GetTapTimeout() const override {
     return base::TimeDelta::FromMilliseconds(kDefaultTapTimeoutMs);
   }
-
-  float GetTapSlop() const override { return kDefaultTapSlop; }
 
   void Animate(TouchHandle& handle) {
     needs_animate_ = false;

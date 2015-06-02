@@ -167,24 +167,19 @@ bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
         return false;
       }
       touch_down_position_ = touch_point;
-      touch_to_focus_offset_ = position_ - touch_down_position_;
+      touch_drag_offset_ = position_ - touch_down_position_;
       touch_down_time_ = event.GetEventTime();
       BeginDrag();
     } break;
 
     case MotionEvent::ACTION_MOVE: {
       gfx::PointF touch_move_position(event.GetX(), event.GetY());
-      if (is_drag_within_tap_region_) {
-        const float tap_slop = client_->GetTapSlop();
-        is_drag_within_tap_region_ =
-            (touch_move_position - touch_down_position_).LengthSquared() <
-            tap_slop * tap_slop;
-      }
+      is_drag_within_tap_region_ &=
+          client_->IsWithinTapSlop(touch_down_position_ - touch_move_position);
 
       // Note that we signal drag update even if we're inside the tap region,
       // as there are cases where characters are narrower than the slop length.
-      client_->OnHandleDragUpdate(*this,
-                                  touch_move_position + touch_to_focus_offset_);
+      client_->OnDragUpdate(*this, touch_move_position + touch_drag_offset_);
     } break;
 
     case MotionEvent::ACTION_UP: {
@@ -205,6 +200,10 @@ bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
       break;
   };
   return true;
+}
+
+bool TouchHandle::IsActive() const {
+  return is_dragging_;
 }
 
 bool TouchHandle::Animate(base::TimeTicks frame_time) {
@@ -242,7 +241,7 @@ void TouchHandle::BeginDrag() {
   EndFade();
   is_dragging_ = true;
   is_drag_within_tap_region_ = true;
-  client_->OnHandleDragBegin(*this);
+  client_->OnDragBegin(*this, position());
 }
 
 void TouchHandle::EndDrag() {
@@ -252,7 +251,7 @@ void TouchHandle::EndDrag() {
 
   is_dragging_ = false;
   is_drag_within_tap_region_ = false;
-  client_->OnHandleDragEnd(*this);
+  client_->OnDragEnd(*this);
 
   if (deferred_orientation_ != TouchHandleOrientation::UNDEFINED) {
     TouchHandleOrientation deferred_orientation = deferred_orientation_;

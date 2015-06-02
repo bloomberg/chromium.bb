@@ -26,6 +26,8 @@
         'UI_TOUCH_SELECTION_IMPLEMENTATION',
       ],
       'sources': [
+        'longpress_drag_selector.cc',
+        'longpress_drag_selector.h',
         'selection_event_type.h',
         'touch_handle.cc',
         'touch_handle.h',
@@ -34,6 +36,7 @@
         'touch_handle_orientation.h',
         'touch_selection_controller.cc',
         'touch_selection_controller.h',
+        'touch_selection_draggable.h',
         'touch_selection_menu_runner.cc',
         'touch_selection_menu_runner.h',
         'ui_touch_selection_export.h',
@@ -75,6 +78,7 @@
         'ui_touch_selection',
       ],
       'sources': [
+        'longpress_drag_selector_unittest.cc',
         'touch_handle_unittest.cc',
         'touch_selection_controller_unittest.cc',
       ],

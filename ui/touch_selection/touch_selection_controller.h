@@ -5,9 +5,12 @@
 #ifndef UI_TOUCH_SELECTION_TOUCH_SELECTION_CONTROLLER_H_
 #define UI_TOUCH_SELECTION_TOUCH_SELECTION_CONTROLLER_H_
 
+#include "base/time/time.h"
 #include "ui/base/touch/selection_bound.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/touch_selection/longpress_drag_selector.h"
 #include "ui/touch_selection/selection_event_type.h"
 #include "ui/touch_selection/touch_handle.h"
 #include "ui/touch_selection/touch_handle_orientation.h"
@@ -34,7 +37,8 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionControllerClient {
 
 // Controller for manipulating text selection via touch input.
 class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
-    : public TouchHandleClient {
+    : public TouchHandleClient,
+      public LongPressDragSelectorClient {
  public:
   enum ActiveStatus {
     INACTIVE,
@@ -42,10 +46,27 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
     SELECTION_ACTIVE,
   };
 
+  struct UI_TOUCH_SELECTION_EXPORT Config {
+    Config();
+    ~Config();
+
+    // Defaults to 100 ms.
+    base::TimeDelta tap_timeout;
+
+    // Defaults to 8 DIPs.
+    float tap_slop;
+
+    // Controls whether drag selection after a longpress is enabled.
+    // Defaults to false.
+    bool enable_longpress_drag_selection;
+
+    // Controls whether an insertion handle is shown on a tap for an empty
+    // editable text. Defauls to false.
+    bool show_on_tap_for_empty_editable;
+  };
+
   TouchSelectionController(TouchSelectionControllerClient* client,
-                           base::TimeDelta tap_timeout,
-                           float tap_slop,
-                           bool show_on_tap_for_empty_editable);
+                           const Config& config);
   ~TouchSelectionController() override;
 
   // To be called when the selection bounds have changed.
@@ -65,7 +86,8 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   // To be called before forwarding a longpress event. This allows automatically
   // showing the selection or insertion handles from subsequent bounds changes.
-  bool WillHandleLongPressEvent(const gfx::PointF& location);
+  bool WillHandleLongPressEvent(base::TimeTicks event_time,
+                                const gfx::PointF& location);
 
   // Allow showing the selection handles from the most recent selection bounds
   // update (if valid), or a future valid bounds update.
@@ -109,18 +131,26 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   ActiveStatus active_status() const { return active_status_; }
 
  private:
+  friend class TouchSelectionControllerTestApi;
+
   enum InputEventType { TAP, LONG_PRESS, INPUT_EVENT_TYPE_NONE };
 
   // TouchHandleClient implementation.
-  void OnHandleDragBegin(const TouchHandle& handle) override;
-  void OnHandleDragUpdate(const TouchHandle& handle,
-                          const gfx::PointF& new_position) override;
-  void OnHandleDragEnd(const TouchHandle& handle) override;
+  void OnDragBegin(const TouchSelectionDraggable& draggable,
+                   const gfx::PointF& drag_position) override;
+  void OnDragUpdate(const TouchSelectionDraggable& draggable,
+                    const gfx::PointF& drag_position) override;
+  void OnDragEnd(const TouchSelectionDraggable& draggable) override;
+  bool IsWithinTapSlop(const gfx::Vector2dF& delta) const override;
   void OnHandleTapped(const TouchHandle& handle) override;
   void SetNeedsAnimate() override;
   scoped_ptr<TouchHandleDrawable> CreateDrawable() override;
   base::TimeDelta GetTapTimeout() const override;
-  float GetTapSlop() const override;
+
+  // LongPressDragSelectorClient implementation.
+  void OnLongPressDragActiveStateChanged() override;
+  gfx::PointF GetSelectionStart() const override;
+  gfx::PointF GetSelectionEnd() const override;
 
   void ShowInsertionHandleAutomatically();
   void ShowSelectionHandlesAutomatically();
@@ -137,6 +167,10 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   void DeactivateSelection();
   void ForceNextUpdateIfInactive();
 
+  bool WillHandleTouchEventForLongPressDrag(const MotionEvent& event);
+  void SetTemporarilyHiddenForLongPressDrag(bool hidden);
+  void RefreshHandleVisibility();
+
   gfx::Vector2dF GetStartLineOffset() const;
   gfx::Vector2dF GetEndLineOffset() const;
   bool GetStartVisible() const;
@@ -146,16 +180,11 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   void LogSelectionEnd();
 
   TouchSelectionControllerClient* const client_;
-  const base::TimeDelta tap_timeout_;
-  const float tap_slop_;
+  const Config config_;
 
   // Whether to force an update on the next selection event even if the
   // cached selection matches the new selection.
   bool force_next_update_;
-
-  // Controls whether an insertion handle is shown on a tap for an empty
-  // editable text.
-  bool show_on_tap_for_empty_editable_;
 
   InputEventType response_pending_input_event_;
 
@@ -177,6 +206,15 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   bool selection_editable_;
 
   bool temporarily_hidden_;
+
+  // Whether to use the start bound (if false, the end bound) for computing the
+  // appropriate text line offset when performing a selection drag. This helps
+  // ensure that the initial selection induced by the drag doesn't "jump"
+  // between lines.
+  bool anchor_drag_to_selection_start_;
+
+  // Longpress drag allows direct manipulation of longpress-initiated selection.
+  LongPressDragSelector longpress_drag_selector_;
 
   base::TimeTicks selection_start_time_;
   // Whether a selection handle was dragged during the current 'selection
