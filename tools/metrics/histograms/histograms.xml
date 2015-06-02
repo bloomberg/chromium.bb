@@ -53585,6 +53585,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="80" label="kPrinterProvider"/>
   <int value="81" label="kSearchEnginesPrivate"/>
   <int value="82" label="kAutofillPrivate"/>
+  <int value="83" label="kPasswordsPrivate"/>
+  <int value="84" label="kUsersPrivate"/>
 </enum>
 
 <enum name="ExtensionPermission3" type="int">
@@ -53783,6 +53785,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="190" label="kUsbDeviceList"/>
   <int value="191" label="kUsbDeviceUnknownProduct"/>
   <int value="192" label="kUsbDeviceUnknownVendor"/>
+  <int value="193" label="kUsersPrivate"/>
+  <int value="194" label="kPasswordsPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">
