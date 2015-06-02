@@ -1831,6 +1831,8 @@
             'paint/BlockFlowPainter.h',
             'paint/BlockPainter.cpp',
             'paint/BlockPainter.h',
+            'paint/BoxBorderPainter.cpp',
+            'paint/BoxBorderPainter.h',
             'paint/BoxClipper.cpp',
             'paint/BoxClipper.h',
             'paint/BoxDecorationData.cpp',

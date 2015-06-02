@@ -35,6 +35,7 @@ public:
     static void paintBorder(LayoutBoxModelObject&, const PaintInfo&, const LayoutRect&, const ComputedStyle&, BackgroundBleedAvoidance = BackgroundBleedNone, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
     static void paintBoxShadow(const PaintInfo&, const LayoutRect&, const ComputedStyle&, ShadowStyle, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
     static bool shouldAntialiasLines(GraphicsContext*);
+    static bool allCornersClippedOut(const FloatRoundedRect& border, const IntRect& clipRect);
 
 private:
     void paintBackground(const PaintInfo&, const LayoutRect&, const Color& backgroundColor, BackgroundBleedAvoidance = BackgroundBleedNone);
@@ -48,20 +49,6 @@ private:
     static void applyBoxShadowForBackground(GraphicsContext*, LayoutObject&);
     static bool fixedBackgroundPaintsInLocalCoordinates(const LayoutObject&);
     static IntSize calculateFillTileSize(const LayoutBoxModelObject&, const FillLayer&, const IntSize& scaledPositioningAreaSize);
-    static void paintTranslucentBorderSides(GraphicsContext*, const ComputedStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
-        const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias = false);
-    static void paintOneBorderSide(GraphicsContext*, const ComputedStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
-        const FloatRect& sideRect, BoxSide, BoxSide adjacentSide1, BoxSide adjacentSide2, const BorderEdge[],
-        const Path*, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias, const Color* overrideColor = 0);
-    static void paintBorderSides(GraphicsContext*, const ComputedStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
-        const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance, bool includeLogicalLeftEdge,
-        bool includeLogicalRightEdge, bool antialias = false, const Color* overrideColor = 0);
-    static void drawBoxSideFromPath(GraphicsContext*, const LayoutRect&, const Path&, const BorderEdge[],
-        float thickness, float drawThickness, BoxSide, const ComputedStyle&,
-        Color, EBorderStyle, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
-    static void clipBorderSidePolygon(GraphicsContext*, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
-        BoxSide, bool firstEdgeMatches, bool secondEdgeMatches);
-    static void clipBorderSideForComplexInnerPath(GraphicsContext*, const FloatRoundedRect&, const FloatRoundedRect&, BoxSide, const BorderEdge[]);
 
     LayoutRect boundsForDrawingRecorder(const LayoutPoint& paintOffset);
     LayoutRect rootBackgroundRect();
