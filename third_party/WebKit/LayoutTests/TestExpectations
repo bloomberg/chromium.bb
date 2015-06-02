@@ -290,15 +290,6 @@ crbug.com/318978 [ Linux ] http/tests/security/frameNavigation/xss-DENIED-plugin
 crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 
-# http://crrev.com/1144353005
-crbug.com/491239 svg/W3C-SVG-1.1/animate-elem-52-t.svg [ NeedsRebaseline ]
-crbug.com/491239 svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ NeedsRebaseline ]
-crbug.com/491239 svg/as-image/img-preserveAspectRatio-support-1.html  [ NeedsRebaseline ]
-crbug.com/491239 svg/custom/pattern-referencing-preserve-aspect-ratio.svg [ NeedsRebaseline ]
-crbug.com/491239 svg/custom/svg-curve-with-relative-cordinates.html [ NeedsRebaseline ]
-crbug.com/491239 svg/wicd/rightsizing-grid.xhtml [ NeedsRebaseline ]
-crbug.com/491239 svg/zoom/page/zoom-img-preserveAspectRatio-support-1.html [ NeedsRebaseline ]
-
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Linux Win ] virtual/slimmingpaint/fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
