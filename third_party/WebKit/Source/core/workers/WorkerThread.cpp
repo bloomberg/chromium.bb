@@ -38,10 +38,8 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
-#include "platform/PlatformThreadData.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
-#include "platform/ThreadTimers.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/weborigin/KURL.h"
@@ -110,100 +108,6 @@ unsigned WorkerThread::workerThreadCount()
     MutexLocker lock(threadSetMutex());
     return workerThreads().size();
 }
-
-class WorkerThreadCancelableTask final : public ExecutionContextTask {
-    WTF_MAKE_NONCOPYABLE(WorkerThreadCancelableTask); WTF_MAKE_FAST_ALLOCATED(WorkerThreadCancelableTask);
-public:
-    static PassOwnPtr<WorkerThreadCancelableTask> create(PassOwnPtr<Closure> closure)
-    {
-        return adoptPtr(new WorkerThreadCancelableTask(closure));
-    }
-
-    virtual ~WorkerThreadCancelableTask() { }
-
-    virtual void performTask(ExecutionContext*) override
-    {
-        if (!m_taskCanceled)
-            (*m_closure)();
-    }
-
-    WeakPtr<WorkerThreadCancelableTask> createWeakPtr() { return m_weakFactory.createWeakPtr(); }
-    void cancelTask() { m_taskCanceled = true; }
-
-private:
-    explicit WorkerThreadCancelableTask(PassOwnPtr<Closure> closure)
-        : m_closure(closure)
-        , m_weakFactory(this)
-        , m_taskCanceled(false)
-    { }
-
-    OwnPtr<Closure> m_closure;
-    WeakPtrFactory<WorkerThreadCancelableTask> m_weakFactory;
-    bool m_taskCanceled;
-};
-
-class WorkerSharedTimer : public SharedTimer {
-public:
-    explicit WorkerSharedTimer(WorkerThread* workerThread)
-        : m_workerThread(workerThread)
-        , m_running(false)
-    { }
-
-    typedef void (*SharedTimerFunction)();
-    virtual void setFiredFunction(SharedTimerFunction func)
-    {
-        m_sharedTimerFunction = func;
-    }
-
-    virtual void setFireInterval(double interval)
-    {
-        ASSERT(m_sharedTimerFunction);
-
-        // See BlinkPlatformImpl::setSharedTimerFireInterval for explanation of
-        // why ceil is used in the interval calculation.
-        int64_t delay = static_cast<int64_t>(ceil(interval * 1000));
-
-        if (delay < 0) {
-            delay = 0;
-        }
-
-        m_running = true;
-
-        if (m_lastQueuedTask.get())
-            m_lastQueuedTask->cancelTask();
-
-        // Now queue the task as a cancellable one.
-        OwnPtr<WorkerThreadCancelableTask> task = WorkerThreadCancelableTask::create(bind(&WorkerSharedTimer::OnTimeout, this));
-        m_lastQueuedTask = task->createWeakPtr();
-        m_workerThread->postDelayedTask(FROM_HERE, task.release(), delay);
-    }
-
-    virtual void stop()
-    {
-        m_running = false;
-        m_lastQueuedTask = nullptr;
-    }
-
-private:
-    void OnTimeout()
-    {
-        ASSERT(m_workerThread->workerGlobalScope());
-
-        m_lastQueuedTask = nullptr;
-
-        if (m_sharedTimerFunction && m_running && !m_workerThread->workerGlobalScope()->isClosing())
-            m_sharedTimerFunction();
-    }
-
-    WorkerThread* m_workerThread;
-    SharedTimerFunction m_sharedTimerFunction;
-    bool m_running;
-
-    // The task to run OnTimeout, if any. While OnTimeout resets
-    // m_lastQueuedTask, this must be a weak pointer because the
-    // worker runloop may delete the task as it is shutting down.
-    WeakPtr<WorkerThreadCancelableTask> m_lastQueuedTask;
-};
 
 class WorkerThreadTask : public WebThread::Task {
     WTF_MAKE_NONCOPYABLE(WorkerThreadTask); WTF_MAKE_FAST_ALLOCATED(WorkerThreadTask);
@@ -320,8 +224,6 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         m_isolate = initializeIsolate();
         m_workerGlobalScope = createWorkerGlobalScope(startupData);
         m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
-
-        PlatformThreadData::current().threadTimers().setSharedTimer(adoptPtr(new WorkerSharedTimer(this)));
     }
     m_webScheduler = backingThread().platformThread().scheduler();
 
@@ -356,7 +258,6 @@ void WorkerThread::shutdown()
         m_shutdown = true;
     }
 
-    PlatformThreadData::current().threadTimers().setSharedTimer(nullptr);
     workerGlobalScope()->dispose();
     willDestroyIsolate();
 
@@ -383,9 +284,6 @@ void WorkerThread::shutdown()
     workerReportingProxy().workerThreadTerminated();
 
     m_terminationEvent->signal();
-
-    // Clean up PlatformThreadData before WTF::WTFThreadData goes away!
-    PlatformThreadData::current().destroy();
 }
 
 

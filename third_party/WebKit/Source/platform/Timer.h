@@ -28,6 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/AddressSanitizer.h"
 #include "wtf/Noncopyable.h"
@@ -65,11 +66,12 @@ public:
     double repeatInterval() const { return m_repeatInterval; }
 
     void augmentRepeatInterval(double delta) {
-        setNextFireTime(m_nextFireTime + delta);
+        double now = monotonicallyIncreasingTime();
+        setNextFireTime(now, m_nextFireTime - now + delta);
         m_repeatInterval += delta;
     }
 
-    void didChangeAlignmentInterval();
+    void didChangeAlignmentInterval(double now);
 
 private:
     virtual void fired() = 0;
@@ -77,35 +79,16 @@ private:
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
     virtual double alignedFireTime(double fireTime) const { return fireTime; }
 
-    void checkConsistency() const;
-    void checkHeapIndex() const;
+    void setNextFireTime(double now, double delay);
 
-    void setNextFireTime(double);
-
-    NO_LAZY_SWEEP_SANITIZE_ADDRESS
-    bool inHeap() const { return m_heapIndex != -1; }
-
-    bool hasValidHeapPosition() const;
-    void updateHeapIfNeeded(double oldTime);
-
-    void heapDecreaseKey();
-    void heapDelete();
-    void heapDeleteMin();
-    void heapIncreaseKey();
-    void heapInsert();
-    void heapPop();
-    void heapPopMin();
-
-    NO_LAZY_SWEEP_SANITIZE_ADDRESS
-    Vector<TimerBase*>& timerHeap() const { ASSERT(m_cachedThreadGlobalTimerHeap); return *m_cachedThreadGlobalTimerHeap; }
+    void run();
 
     double m_nextFireTime; // 0 if inactive
     double m_unalignedNextFireTime; // m_nextFireTime not considering alignment interval
     double m_repeatInterval; // 0 if not repeating
-    int m_heapIndex; // -1 if not in heap
-    unsigned m_heapInsertionOrder; // Used to keep order among equal-fire-time timers
-    Vector<TimerBase*>* m_cachedThreadGlobalTimerHeap;
     WebTraceLocation m_location;
+    CancellableTaskFactory m_cancellableTaskFactory;
+    WebScheduler* m_webScheduler; // Not owned.
 
 #if ENABLE(ASSERT)
     ThreadIdentifier m_thread;
@@ -164,7 +147,7 @@ NO_LAZY_SWEEP_SANITIZE_ADDRESS
 inline bool TimerBase::isActive() const
 {
     ASSERT(m_thread == currentThread());
-    return m_nextFireTime;
+    return m_cancellableTaskFactory.isPending();
 }
 
 }
