@@ -65,9 +65,17 @@ android_java_prebuilt("android_support_v7_mediarouter_java") {
   jar_path = "$android_sdk_root/extras/android/support/v7/mediarouter/libs/android-support-v7-mediarouter.jar"
 }
 
+android_resources("android_support_v7_recyclerview_resources") {
+  v14_skip = true
+  resource_dirs =
+      [ "$android_sdk_root/extras/android/support/v7/recyclerview/res" ]
+  custom_package = "android.support.v7.recyclerview"
+}
+
 android_java_prebuilt("android_support_v7_recyclerview_java") {
   deps = [
     ":android_support_v7_appcompat_java",
+    ":android_support_v7_recyclerview_resources",
   ]
   jar_path = "$android_sdk_root/extras/android/support/v7/recyclerview/libs/android-support-v7-recyclerview.jar"
 }
