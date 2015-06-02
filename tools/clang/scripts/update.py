@@ -28,15 +28,9 @@ import zipfile
 # TODO(thakis): Remove update.sh, use update.py everywhere.
 LLVM_WIN_REVISION = '238562'
 
-# TODO(thakis): ASan should just use LLVM_WIN_REVISION once that's pinned and
-# crbug.com/487929 is figured out.
-LLVM_WIN_ASAN_REVISION = '235968'
-
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
   LLVM_WIN_REVISION = 'HEAD'
-elif re.search(r'\b(asan)=1', os.environ.get('GYP_DEFINES', '')):
-  LLVM_WIN_REVISION = LLVM_WIN_ASAN_REVISION
 
 
 # Path constants. (All of these should be absolute paths.)
