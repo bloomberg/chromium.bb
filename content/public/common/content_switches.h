@@ -251,6 +251,7 @@ CONTENT_EXPORT extern const char kZygoteProcess[];
 CONTENT_EXPORT extern const char kDisableWebRtcHWDecoding[];
 CONTENT_EXPORT extern const char kDisableWebRtcEncryption[];
 CONTENT_EXPORT extern const char kDisableWebRtcHWEncoding[];
+CONTENT_EXPORT extern const char kEnableWebRtcDtls12[];
 CONTENT_EXPORT extern const char kEnableWebRtcHWH264Encoding[];
 CONTENT_EXPORT extern const char kEnableWebRtcStunOrigin[];
 extern const char kWebRtcMaxCaptureFramerate[];

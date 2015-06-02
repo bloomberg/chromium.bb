@@ -2380,6 +2380,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEmphasizeTitlesInOmniboxDropdown)
   },
+#if defined(ENABLE_WEBRTC)
+  {
+    "enable-webrtc-dtls12",
+    IDS_FLAGS_ENABLE_WEBRTC_DTLS12_NAME,
+    IDS_FLAGS_ENABLE_WEBRTC_DTLS12_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableWebRtcDtls12)
+  },
+#endif
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -904,6 +904,9 @@ const char kDisableWebRtcEncryption[]      = "disable-webrtc-encryption";
 // Disables HW encode acceleration for WebRTC.
 const char kDisableWebRtcHWEncoding[]       = "disable-webrtc-hw-encoding";
 
+// Enables negotiation of DTLS 1.2 for WebRTC.
+const char kEnableWebRtcDtls12[]            = "enable-webrtc-dtls12";
+
 // Enables H264 HW encode acceleration for WebRTC.
 const char kEnableWebRtcHWH264Encoding[]    = "enable-webrtc-hw-h264-encoding";
 
