@@ -744,7 +744,7 @@ void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, con
         if (fixedBackgroundPaintsInLocalCoordinates(obj))
             viewportRect.setLocation(IntPoint());
         else if (FrameView* frameView = obj.view()->frameView())
-            viewportRect.setLocation(IntPoint(frameView->scrollOffsetForViewportConstrainedObjects()));
+            viewportRect.setLocation(frameView->scrollPosition());
 
         if (paintContainer) {
             IntPoint absoluteContainerOffset = roundedIntPoint(paintContainer->localToAbsolute(FloatPoint()));

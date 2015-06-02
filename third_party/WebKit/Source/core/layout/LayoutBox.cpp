@@ -1577,8 +1577,8 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const
     // FIXME: For now just support fixed heights.  Eventually should support percentage heights as well.
     if (!logicalHeightLength.isFixed()) {
         LayoutUnit fillFallbackExtent = containingBlockStyle.isHorizontalWritingMode()
-            ? view()->frameView()->unscaledVisibleContentSize().height()
-            : view()->frameView()->unscaledVisibleContentSize().width();
+            ? view()->frameView()->visibleContentSize().height()
+            : view()->frameView()->visibleContentSize().width();
         LayoutUnit fillAvailableExtent = containingBlock()->availableLogicalHeight(ExcludeMarginBorderPadding);
         return std::min(fillAvailableExtent, fillFallbackExtent);
     }
@@ -2725,7 +2725,7 @@ LayoutUnit LayoutBox::availableLogicalHeight(AvailableLogicalHeightType heightTy
 LayoutUnit LayoutBox::availableLogicalHeightUsing(const Length& h, AvailableLogicalHeightType heightType) const
 {
     if (isLayoutView())
-        return isHorizontalWritingMode() ? toLayoutView(this)->frameView()->unscaledVisibleContentSize().height() : toLayoutView(this)->frameView()->unscaledVisibleContentSize().width();
+        return isHorizontalWritingMode() ? toLayoutView(this)->frameView()->visibleContentSize().height() : toLayoutView(this)->frameView()->visibleContentSize().width();
 
     // We need to stop here, since we don't want to increase the height of the table
     // artificially.  We're going to rely on this cell getting expanded to some new
@@ -2787,7 +2787,7 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(const LayoutBoxMo
     if (style()->position() == FixedPosition && containingBlock->isLayoutView()) {
         const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
-            LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
+            LayoutRect viewportRect = LayoutRect(frameView->visibleContentRect());
             return containingBlock->isHorizontalWritingMode() ? viewportRect.width() : viewportRect.height();
         }
     }
@@ -2830,7 +2830,7 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(const LayoutBoxM
     if (style()->position() == FixedPosition && containingBlock->isLayoutView()) {
         const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
-            LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
+            LayoutRect viewportRect = LayoutRect(frameView->visibleContentRect());
             return containingBlock->isHorizontalWritingMode() ? viewportRect.height() : viewportRect.width();
         }
     }

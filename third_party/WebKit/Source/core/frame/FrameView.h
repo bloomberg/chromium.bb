@@ -163,11 +163,9 @@ public:
     // |unobscuredRect| receives the clip rect that is not clipped to the root window. It may be nullptr.
     IntRect clipRectsForFrameOwner(const HTMLFrameOwnerElement*, IntRect* unobscuredRect) const;
 
-    float visibleContentScaleFactor() const { return m_visibleContentScaleFactor; }
-    void setVisibleContentScaleFactor(float);
-
-    // Scale used to convert incoming input events. Usually the same as visibleContentScaleFactor(), unless specifically changed.
+    // Scale used to convert incoming input events.
     float inputEventsScaleFactor() const;
+
     // Offset used to convert incoming input events while emulating device metics.
     IntSize inputEventsOffsetForEmulation() const;
     void setInputEventsTransformForEmulation(const IntSize&, float);
@@ -177,9 +175,7 @@ public:
     FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
     void setElasticOverscroll(const FloatSize&);
 
-    // This is different than visibleContentRect() in that it takes zooming into account.
-    LayoutRect viewportConstrainedVisibleContentRect() const;
-    void viewportConstrainedVisibleContentSizeChanged(bool widthChanged, bool heightChanged);
+    void viewportSizeChanged(bool widthChanged, bool heightChanged);
 
     AtomicString mediaType() const;
     void setMediaType(const AtomicString&);
@@ -316,8 +312,6 @@ public:
 
     virtual bool isActive() const override;
 
-    IntSize scrollOffsetForViewportConstrainedObjects() const;
-
     // Override scrollbar notifications to update the AXObject cache.
     virtual void didAddScrollbar(Scrollbar*, ScrollbarOrientation) override;
     virtual void willRemoveScrollbar(Scrollbar*, ScrollbarOrientation) override;
@@ -415,15 +409,12 @@ public:
     bool clipsPaintInvalidations() const { return m_clipsRepaints; }
     void setClipsRepaints(bool);
 
-    // The visible content rect has a location that is the scrolled offset of the document. The width and height are the viewport width
-    // and height. By default the scrollbars themselves are excluded from this rectangle, but an optional boolean argument allows them to be
-    // included.
+    // The visible content rect has a location that is the scrolled offset of
+    // the document. The width and height are the layout viewport width and
+    // height. By default the scrollbars themselves are excluded from this
+    // rectangle, but an optional boolean argument allows them to be included.
     virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
-    IntSize visibleSize() const { return visibleContentRect().size(); }
-
-    // visibleContentRect().size() is computed from unscaledVisibleContentSize() divided by the value of visibleContentScaleFactor.
-    // For the main frame, visibleContentScaleFactor is equal to the page's pageScaleFactor; it's 1 otherwise.
-    IntSize unscaledVisibleContentSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
+    IntSize visibleContentSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
 
     // Functions for getting/setting the size of the document contained inside the FrameView (as an IntSize or as individual width and height
     // values).
@@ -812,7 +803,6 @@ private:
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
     OwnPtrWillBeMember<FrameViewAutoSizeInfo> m_autoSizeInfo;
 
-    float m_visibleContentScaleFactor;
     IntSize m_inputEventsOffsetForEmulation;
     float m_inputEventsScaleFactorForEmulation;
 

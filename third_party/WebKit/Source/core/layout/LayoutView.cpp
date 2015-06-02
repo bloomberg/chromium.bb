@@ -290,7 +290,7 @@ void LayoutView::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidati
     }
 
     if ((mode & IsFixed) && m_frameView) {
-        transformState.move(m_frameView->scrollOffsetForViewportConstrainedObjects());
+        transformState.move(toIntSize(m_frameView->scrollPosition()));
         if (hasOverflowClip())
             transformState.move(scrolledContentOffset());
         // IsFixed flag is only applicable within this LayoutView.
@@ -318,7 +318,7 @@ const LayoutObject* LayoutView::pushMappingToContainer(const LayoutBoxModelObjec
     LayoutObject* container = 0;
 
     if (m_frameView) {
-        offsetForFixedPosition = LayoutSize(m_frameView->scrollOffsetForViewportConstrainedObjects());
+        offsetForFixedPosition = LayoutSize(toIntSize(m_frameView->scrollPosition()));
         if (hasOverflowClip())
             offsetForFixedPosition = LayoutSize(scrolledContentOffset());
     }
@@ -349,7 +349,7 @@ const LayoutObject* LayoutView::pushMappingToContainer(const LayoutBoxModelObjec
 void LayoutView::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState& transformState) const
 {
     if (mode & IsFixed && m_frameView)
-        transformState.move(m_frameView->scrollOffsetForViewportConstrainedObjects());
+        transformState.move(toIntSize(m_frameView->scrollPosition()));
 
     if (mode & UseTransforms && shouldUseTransformFromContainer(0)) {
         TransformationMatrix t;
@@ -473,7 +473,7 @@ void LayoutView::adjustViewportConstrainedOffset(LayoutRect& rect, ViewportConst
         return;
 
     if (m_frameView) {
-        rect.move(m_frameView->scrollOffsetForViewportConstrainedObjects());
+        rect.move(toIntSize(m_frameView->scrollPosition()));
         if (hasOverflowClip())
             rect.move(scrolledContentOffset());
 

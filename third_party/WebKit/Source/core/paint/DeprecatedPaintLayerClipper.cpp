@@ -73,7 +73,7 @@ static void applyClipRects(const ClipRectsContext& context, LayoutObject& layout
     LayoutView* view = layoutObject.view();
     ASSERT(view);
     if (clipRects.fixed() && context.rootLayer->layoutObject() == view)
-        offset -= view->frameView()->scrollOffsetForViewportConstrainedObjects();
+        offset -= toIntSize(view->frameView()->scrollPosition());
 
     if (layoutObject.hasOverflowClip()) {
         ClipRect newOverflowClip = toLayoutBox(layoutObject).overflowClipRect(offset, context.scrollbarRelevancy);
@@ -334,7 +334,7 @@ ClipRect DeprecatedPaintLayerClipper::backgroundClipRect(const ClipRectsContext&
 
     // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
     if (parentClipRects->fixed() && context.rootLayer->layoutObject() == m_layoutObject.view() && result != LayoutRect(LayoutRect::infiniteIntRect()))
-        result.move(m_layoutObject.view()->frameView()->scrollOffsetForViewportConstrainedObjects());
+        result.move(toIntSize(m_layoutObject.view()->frameView()->scrollPosition()));
 
     return result;
 }

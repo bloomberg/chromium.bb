@@ -1822,8 +1822,8 @@ void WebViewImpl::didUpdateTopControls()
     if (settings() && settings()->mainFrameResizesAreOrientationChanges()) {
         // Shrink the FrameView by the amount that will maintain the aspect-ratio with the PinchViewport.
         float aspectRatio = pinchViewport.visibleRect().width() / pinchViewport.visibleRect().height();
-        float newHeight = view->unscaledVisibleContentSize(ExcludeScrollbars).width() / aspectRatio;
-        float adjustment = newHeight - view->unscaledVisibleContentSize(ExcludeScrollbars).height();
+        float newHeight = view->visibleContentSize(ExcludeScrollbars).width() / aspectRatio;
+        float adjustment = newHeight - view->visibleContentSize(ExcludeScrollbars).height();
         view->setTopControlsViewportAdjustment(adjustment);
     }
 }

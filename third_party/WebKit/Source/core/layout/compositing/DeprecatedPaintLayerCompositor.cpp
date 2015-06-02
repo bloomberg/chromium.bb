@@ -534,8 +534,8 @@ void DeprecatedPaintLayerCompositor::frameViewDidChangeSize()
 {
     if (m_containerLayer) {
         FrameView* frameView = m_layoutView.frameView();
-        m_containerLayer->setSize(frameView->unscaledVisibleContentSize());
-        m_overflowControlsHostLayer->setSize(frameView->unscaledVisibleContentSize(IncludeScrollbars));
+        m_containerLayer->setSize(frameView->visibleContentSize());
+        m_overflowControlsHostLayer->setSize(frameView->visibleContentSize(IncludeScrollbars));
 
         frameViewDidScroll();
         updateOverflowControlsLayers();
@@ -761,8 +761,8 @@ void DeprecatedPaintLayerCompositor::updateRootLayerPosition()
     }
     if (m_containerLayer) {
         FrameView* frameView = m_layoutView.frameView();
-        m_containerLayer->setSize(frameView->unscaledVisibleContentSize());
-        m_overflowControlsHostLayer->setSize(frameView->unscaledVisibleContentSize(IncludeScrollbars));
+        m_containerLayer->setSize(frameView->visibleContentSize());
+        m_overflowControlsHostLayer->setSize(frameView->visibleContentSize(IncludeScrollbars));
     }
 }
 

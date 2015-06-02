@@ -1844,11 +1844,11 @@ TEST_P(ParametrizedWebFrameTest, pageScaleFactorDoesntShrinkFrameView)
 
     webViewHelper.webView()->setPageScaleFactor(2);
 
-    IntSize unscaledSize = view->unscaledVisibleContentSize(IncludeScrollbars);
+    IntSize unscaledSize = view->visibleContentSize(IncludeScrollbars);
     EXPECT_EQ(viewportWidth, unscaledSize.width());
     EXPECT_EQ(viewportHeight, unscaledSize.height());
 
-    IntSize unscaledSizeMinusScrollbar = view->unscaledVisibleContentSize(ExcludeScrollbars);
+    IntSize unscaledSizeMinusScrollbar = view->visibleContentSize(ExcludeScrollbars);
     EXPECT_EQ(viewportWidthMinusScrollbar, unscaledSizeMinusScrollbar.width());
     EXPECT_EQ(viewportHeightMinusScrollbar, unscaledSizeMinusScrollbar.height());
 

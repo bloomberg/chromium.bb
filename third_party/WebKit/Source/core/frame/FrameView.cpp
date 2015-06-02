@@ -124,7 +124,6 @@ FrameView::FrameView(LocalFrame* frame)
     , m_safeToPropagateScrollToParent(true)
     , m_isTrackingPaintInvalidations(false)
     , m_scrollCorner(nullptr)
-    , m_visibleContentScaleFactor(1)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_layoutSizeFixedToFrameSize(true)
     , m_didScrollTimer(this, &FrameView::didScrollTimerFired)
@@ -406,7 +405,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
             layoutView->compositor()->frameViewDidChangeSize();
     }
 
-    viewportConstrainedVisibleContentSizeChanged(newRect.width() != oldRect.width(), newRect.height() != oldRect.height());
+    viewportSizeChanged(newRect.width() != oldRect.width(), newRect.height() != oldRect.height());
 
     if (oldRect.size() != newRect.size() && m_frame->isMainFrame())
         page()->frameHost().pinchViewport().mainFrameDidChangeSize();
@@ -516,7 +515,7 @@ void FrameView::setContentsSize(const IntSize& size)
 IntPoint FrameView::clampOffsetAtScale(const IntPoint& offset, float scale) const
 {
     IntPoint maxScrollExtent(contentsSize().width() - scrollOrigin().x(), contentsSize().height() - scrollOrigin().y());
-    FloatSize scaledSize = unscaledVisibleContentSize();
+    FloatSize scaledSize = visibleContentSize();
     if (scale)
         scaledSize.scale(1 / scale);
 
@@ -1274,14 +1273,7 @@ void FrameView::removeViewportConstrainedObject(LayoutObject* object)
     }
 }
 
-LayoutRect FrameView::viewportConstrainedVisibleContentRect() const
-{
-    LayoutRect viewportRect = LayoutRect(visibleContentRect());
-    viewportRect.setLocation(clampScrollPosition(scrollPosition()));
-    return viewportRect;
-}
-
-void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, bool heightChanged)
+void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged)
 {
     if (!hasViewportConstrainedObjects())
         return;
@@ -1302,11 +1294,6 @@ void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, 
                 layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
         }
     }
-}
-
-IntSize FrameView::scrollOffsetForViewportConstrainedObjects() const
-{
-    return roundedIntSize(viewportConstrainedVisibleContentRect().location());
 }
 
 IntPoint FrameView::lastKnownMousePosition() const
@@ -2252,15 +2239,6 @@ IntRect FrameView::windowResizerRect() const
     return IntRect();
 }
 
-void FrameView::setVisibleContentScaleFactor(float visibleContentScaleFactor)
-{
-    if (m_visibleContentScaleFactor == visibleContentScaleFactor)
-        return;
-
-    m_visibleContentScaleFactor = visibleContentScaleFactor;
-    updateScrollbars(scrollOffsetDouble());
-}
-
 void FrameView::setInputEventsTransformForEmulation(const IntSize& offset, float contentScaleFactor)
 {
     m_inputEventsOffsetForEmulation = offset;
@@ -3071,17 +3049,13 @@ IntPoint FrameView::maximumScrollPosition() const
 {
     // Make the same calculation as in CC's LayerImpl::MaxScrollOffset()
     // FIXME: We probably shouldn't be storing the bounds in a float. crbug.com/422331.
-    FloatSize visibleSize = unscaledVisibleContentSize(ExcludeScrollbars);
+    FloatSize visibleSize = visibleContentSize(ExcludeScrollbars);
     visibleSize.expand(0, m_topControlsViewportAdjustment);
 
     FloatSize contentBounds = contentsSize();
-    contentBounds.scale(visibleContentScaleFactor());
     contentBounds = flooredIntSize(contentBounds);
 
     FloatSize maximumOffset = contentBounds - visibleSize - toIntSize(scrollOrigin());
-
-    // Convert back to CSS pixels.
-    maximumOffset.scale(1 / visibleContentScaleFactor());
 
     IntPoint snappedMaximumOffset = flooredIntPoint(maximumOffset);
     snappedMaximumOffset.clampNegativeToZero();
@@ -3193,16 +3167,14 @@ void FrameView::setClipsRepaints(bool clipsRepaints)
     m_clipsRepaints = clipsRepaints;
 }
 
-IntSize FrameView::unscaledVisibleContentSize(IncludeScrollbarsInRect scrollbarInclusion) const
+IntSize FrameView::visibleContentSize(IncludeScrollbarsInRect scrollbarInclusion) const
 {
     return scrollbarInclusion == ExcludeScrollbars ? excludeScrollbars(frameRect().size()) : frameRect().size();
 }
 
-IntRect FrameView::visibleContentRect(IncludeScrollbarsInRect scollbarInclusion) const
+IntRect FrameView::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    FloatSize visibleContentSize = unscaledVisibleContentSize(scollbarInclusion);
-    visibleContentSize.scale(1 / visibleContentScaleFactor());
-    return IntRect(flooredIntPoint(m_scrollPosition), expandedIntSize(visibleContentSize));
+    return IntRect(flooredIntPoint(m_scrollPosition), visibleContentSize(scrollbarInclusion));
 }
 
 IntSize FrameView::contentsSize() const
@@ -3441,7 +3413,7 @@ void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
         return;
     InUpdateScrollbarsScope inUpdateScrollbarsScope(this);
 
-    IntSize oldVisibleSize = visibleSize();
+    IntSize oldVisibleSize = visibleContentSize();
 
     bool scrollbarExistenceChanged = false;
 
@@ -3468,7 +3440,7 @@ void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
     }
 
     // FIXME: We don't need to do this if we are composited.
-    IntSize newVisibleSize = visibleSize();
+    IntSize newVisibleSize = visibleContentSize();
     if (newVisibleSize.width() > oldVisibleSize.width()) {
         if (shouldPlaceVerticalScrollbarOnLeft())
             invalidateRect(IntRect(0, 0, newVisibleSize.width() - oldVisibleSize.width(), newVisibleSize.height()));

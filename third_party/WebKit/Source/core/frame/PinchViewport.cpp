@@ -517,7 +517,6 @@ IntSize PinchViewport::contentsSize() const
     if (!frame || !frame->view())
         return IntSize();
 
-    ASSERT(frame->view()->visibleContentScaleFactor() == 1);
     return frame->view()->visibleContentRect(IncludeScrollbars).size();
 }
 
