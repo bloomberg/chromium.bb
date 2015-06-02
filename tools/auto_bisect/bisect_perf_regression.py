@@ -503,7 +503,8 @@ def _CheckRegressionConfidenceError(
       confidence_params.append(averages)
     else:
       confidence_params.append(l)
-  regression_confidence = BisectResults.ConfidenceScore(*confidence_params)
+  regression_confidence = BisectResults.ConfidenceScore(
+      *confidence_params, accept_single_bad_or_good=True)
   if regression_confidence < REGRESSION_CONFIDENCE:
     error = REGRESSION_CONFIDENCE_ERROR_TEMPLATE.format(
         good_rev=good_revision,
@@ -1218,6 +1219,18 @@ class BisectPerformanceMetrics(object):
     """
     if self.opts.debug_ignore_build:
       return True
+    # Some "runhooks" calls create symlinks that other (older?) versions
+    # do not handle correctly causing the build to fail.  We want to avoid
+    # clearing the entire out/ directory so that changes close together will
+    # build faster so we just clear out all symlinks on the expectation that
+    # the next "runhooks" call will recreate everything properly.  Ignore
+    # failures (like Windows that doesn't have "find").
+    try:
+      bisect_utils.RunProcess(
+          ['find', 'out/', '-type', 'l', '-exec', 'rm', '-f', '{}', ';'],
+          cwd=self.src_cwd, shell=False)
+    except OSError:
+      pass
     return not bisect_utils.RunGClient(['runhooks'], cwd=self.src_cwd)
 
   def _IsBisectModeUsingMetric(self):

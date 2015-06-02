@@ -475,7 +475,7 @@ def CreateBisectDirectoryAndSetupDepot(opts, custom_deps):
     raise RuntimeError('Failed to grab source.')
 
 
-def RunProcess(command):
+def RunProcess(command, cwd=None, shell=False):
   """Runs an arbitrary command.
 
   If output from the call is needed, use RunProcessAndRetrieveOutput instead.
@@ -487,8 +487,8 @@ def RunProcess(command):
     The return code of the call.
   """
   # On Windows, use shell=True to get PATH interpretation.
-  shell = IsWindowsHost()
-  return subprocess.call(command, shell=shell)
+  shell = shell or IsWindowsHost()
+  return subprocess.call(command, cwd=cwd, shell=shell)
 
 
 def RunProcessAndRetrieveOutput(command, cwd=None):
