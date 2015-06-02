@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "sdk_util/macros.h"
+#include "sdk_util/simple_lock.h"
 
 typedef std::vector<PP_Var> FakeArrayType;
 typedef std::map<std::string, PP_Var> FakeDictType;
@@ -41,7 +42,9 @@ class FakeVarManager {
 
   bool debug;
  private:
-  void DestroyVarData(FakeVarData* var);
+  void Release_Locked(PP_Var var);
+  FakeVarData* GetVarData_Locked(PP_Var var);
+  void DestroyVarData_Locked(FakeVarData* var);
 
   typedef uint64_t Id;
   typedef std::map<Id, FakeVarData> VarMap;
@@ -49,6 +52,7 @@ class FakeVarManager {
   Id next_id_;
   VarMap var_map_;
 
+  sdk_util::SimpleLock lock_;
   DISALLOW_COPY_AND_ASSIGN(FakeVarManager);
 };
 

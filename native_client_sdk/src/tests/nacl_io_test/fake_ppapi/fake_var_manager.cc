@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "fake_ppapi/fake_var_manager.h"
-
 #include "gtest/gtest.h"
+#include "sdk_util/auto_lock.h"
 
 FakeVarManager::FakeVarManager() : debug(false), next_id_(1) {}
 
@@ -19,6 +19,7 @@ FakeVarManager::~FakeVarManager() {
 }
 
 FakeVarData* FakeVarManager::CreateVarData() {
+  AUTO_LOCK(lock_);
   Id id = next_id_++;
   FakeVarData data;
   data.id = id;
@@ -28,12 +29,13 @@ FakeVarData* FakeVarManager::CreateVarData() {
 }
 
 void FakeVarManager::AddRef(PP_Var var) {
+  AUTO_LOCK(lock_);
   // From ppb_var.h:
   //   AddRef() adds a reference to the given var. If this is not a refcounted
   //   object, this function will do nothing so you can always call it no matter
   //   what the type.
 
-  FakeVarData* var_data = GetVarData(var);
+  FakeVarData* var_data = GetVarData_Locked(var);
   if (!var_data)
     return;
 
@@ -73,7 +75,7 @@ std::string FakeVarManager::Describe(const FakeVarData& var_data) {
   return rtn.str();
 }
 
-void FakeVarManager::DestroyVarData(FakeVarData* var_data) {
+void FakeVarManager::DestroyVarData_Locked(FakeVarData* var_data) {
   // Release each PP_Var in the array
 
   switch (var_data->type) {
@@ -81,7 +83,7 @@ void FakeVarManager::DestroyVarData(FakeVarData* var_data) {
       FakeArrayType& vector = var_data->array_value;
       for (FakeArrayType::iterator it = vector.begin();
            it != vector.end(); ++it) {
-        Release(*it);
+        Release_Locked(*it);
       }
       vector.clear();
       break;
@@ -96,7 +98,7 @@ void FakeVarManager::DestroyVarData(FakeVarData* var_data) {
       FakeDictType& dict = var_data->dict_value;
       for (FakeDictType::iterator it = dict.begin();
            it != dict.end(); it++) {
-        Release(it->second);
+        Release_Locked(it->second);
       }
       dict.clear();
       break;
@@ -107,6 +109,11 @@ void FakeVarManager::DestroyVarData(FakeVarData* var_data) {
 }
 
 FakeVarData* FakeVarManager::GetVarData(PP_Var var) {
+  AUTO_LOCK(lock_);
+  return GetVarData_Locked(var);
+}
+
+FakeVarData* FakeVarManager::GetVarData_Locked(PP_Var var) {
   switch (var.type) {
     // These types don't have any var data as their data
     // is stored directly in the var's value union.
@@ -130,12 +137,17 @@ FakeVarData* FakeVarManager::GetVarData(PP_Var var) {
 }
 
 void FakeVarManager::Release(PP_Var var) {
+  AUTO_LOCK(lock_);
+  Release_Locked(var);
+}
+
+void FakeVarManager::Release_Locked(PP_Var var) {
   // From ppb_var.h:
   //   Release() removes a reference to given var, deleting it if the internal
   //   reference count becomes 0. If the given var is not a refcounted object,
   //   this function will do nothing so you can always call it no matter what
   //   the type.
-  FakeVarData* var_data = GetVarData(var);
+  FakeVarData* var_data = GetVarData_Locked(var);
   if (!var_data) {
     if (debug)
       printf("Releasing simple var\n");
@@ -152,5 +164,5 @@ void FakeVarManager::Release(PP_Var var) {
            var_data->ref_count);
 
   if (var_data->ref_count == 0)
-    DestroyVarData(var_data);
+    DestroyVarData_Locked(var_data);
 }

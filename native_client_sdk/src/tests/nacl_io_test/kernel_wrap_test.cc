@@ -159,6 +159,14 @@ class KernelWrapTest : public ::testing::Test {
     ON_CALL(mock, write(_, _, _))
         .WillByDefault(Invoke(this, &KernelWrapTest::DefaultWrite));
     EXPECT_CALL(mock, write(_, _, _)).Times(AnyNumber());
+
+    // Ignore calls to munmap.  These can be generated from within the standard
+    // library malloc implementation so can be expected at pretty much any time.
+    // Returning zero is fine since the real munmap see also run.
+    // See kernel_wrap_newlib.cc.
+    ON_CALL(mock, munmap(_, _))
+        .WillByDefault(Return(0));
+    EXPECT_CALL(mock, munmap(_, _)).Times(AnyNumber());
   }
 
   void TearDown() {
