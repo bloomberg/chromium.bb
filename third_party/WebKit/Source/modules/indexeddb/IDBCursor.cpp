@@ -359,7 +359,7 @@ bool IDBCursor::isDeleted() const
     return m_source->idbIndex()->isDeleted();
 }
 
-WebIDBCursorDirection IDBCursor::stringToDirection(const String& directionString, ExceptionState& exceptionState)
+WebIDBCursorDirection IDBCursor::stringToDirection(const String& directionString)
 {
     if (directionString == IndexedDBNames::next)
         return WebIDBCursorDirectionNext;
@@ -370,7 +370,7 @@ WebIDBCursorDirection IDBCursor::stringToDirection(const String& directionString
     if (directionString == IndexedDBNames::prevunique)
         return WebIDBCursorDirectionPrevNoDuplicate;
 
-    exceptionState.throwTypeError("The direction provided ('" + directionString + "') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.");
+    ASSERT_NOT_REACHED();
     return WebIDBCursorDirectionNext;
 }
 

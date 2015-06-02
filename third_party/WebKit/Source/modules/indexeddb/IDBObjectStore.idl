@@ -43,7 +43,7 @@
     // TODO(cmumford): 0xFFFFFFFF is not necessary. Remove once crbug.com/335871 is fixed.
     [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest getAll([Default=Undefined] optional any range, optional unsigned long maxCount = 0xFFFFFFFF);
     [CallWith=ScriptState, RaisesException] IDBRequest count([Default=Undefined] optional any key);
-    [CallWith=ScriptState, RaisesException] IDBRequest openCursor([Default=Undefined] optional any range, optional DOMString direction = "next");
+    [CallWith=ScriptState, RaisesException] IDBRequest openCursor([Default=Undefined] optional any range, optional IDBCursorDirection direction = "next");
     [CallWith=ScriptState, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest openKeyCursor([Default=Undefined] optional any range, optional IDBCursorDirection direction = "next");
     [CallWith=ScriptState, RaisesException] IDBIndex createIndex(DOMString name, (DOMString or sequence<DOMString>) keyPath, optional IDBIndexParameters options);
     [RaisesException] IDBIndex index(DOMString name);

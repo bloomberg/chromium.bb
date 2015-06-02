@@ -641,10 +641,7 @@ IDBRequest* IDBObjectStore::openCursor(ScriptState* scriptState, const ScriptVal
         return nullptr;
     }
 
-    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
-
+    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString);
     IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
@@ -682,10 +679,7 @@ IDBRequest* IDBObjectStore::openKeyCursor(ScriptState* scriptState, const Script
         return nullptr;
     }
 
-    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
-
+    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString);
     IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;

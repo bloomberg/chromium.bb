@@ -86,10 +86,7 @@ IDBRequest* IDBIndex::openCursor(ScriptState* scriptState, const ScriptValue& ra
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return nullptr;
     }
-    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
-
+    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString);
     IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
@@ -155,10 +152,7 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* scriptState, const ScriptValue&
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return nullptr;
     }
-    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
-
+    WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString);
     IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;

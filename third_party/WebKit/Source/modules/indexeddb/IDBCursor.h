@@ -47,7 +47,7 @@ class ScriptState;
 class IDBCursor : public GarbageCollectedFinalized<IDBCursor>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static WebIDBCursorDirection stringToDirection(const String& modeString, ExceptionState&);
+    static WebIDBCursorDirection stringToDirection(const String& modeString);
 
     static IDBCursor* create(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursor();

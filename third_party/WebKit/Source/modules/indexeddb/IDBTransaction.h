@@ -61,7 +61,7 @@ public:
     virtual ~IDBTransaction();
     DECLARE_VIRTUAL_TRACE();
 
-    static WebIDBTransactionMode stringToMode(const String&, ExceptionState&);
+    static WebIDBTransactionMode stringToMode(const String&);
 
     // When the connection is closed backend will be 0.
     WebIDBDatabase* backendDB() const;

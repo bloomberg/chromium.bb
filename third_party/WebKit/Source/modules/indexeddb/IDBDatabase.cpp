@@ -289,7 +289,12 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringO
         return nullptr;
     }
 
-    WebIDBTransactionMode mode = IDBTransaction::stringToMode(modeString, exceptionState);
+    WebIDBTransactionMode mode = IDBTransaction::stringToMode(modeString);
+    if (mode != WebIDBTransactionModeReadOnly && mode != WebIDBTransactionModeReadWrite) {
+        exceptionState.throwTypeError("The mode provided ('" + modeString + "') is not one of 'readonly' or 'readwrite'.");
+        return nullptr;
+    }
+
     if (exceptionState.hadException())
         return nullptr;
 

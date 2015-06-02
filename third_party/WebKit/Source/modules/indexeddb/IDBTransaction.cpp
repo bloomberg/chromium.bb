@@ -299,14 +299,15 @@ bool IDBTransaction::hasPendingActivity() const
     return m_hasPendingActivity && !m_contextStopped;
 }
 
-WebIDBTransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionState& exceptionState)
+WebIDBTransactionMode IDBTransaction::stringToMode(const String& modeString)
 {
     if (modeString == IndexedDBNames::readonly)
         return WebIDBTransactionModeReadOnly;
     if (modeString == IndexedDBNames::readwrite)
         return WebIDBTransactionModeReadWrite;
-
-    exceptionState.throwTypeError("The mode provided ('" + modeString + "') is not one of 'readonly' or 'readwrite'.");
+    if (modeString == IndexedDBNames::versionchange)
+        return WebIDBTransactionModeVersionChange;
+    ASSERT_NOT_REACHED();
     return WebIDBTransactionModeReadOnly;
 }
 
