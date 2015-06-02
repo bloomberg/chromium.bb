@@ -57,8 +57,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     IndexMetadata();
     IndexMetadata(uint64 number_of_entries, uint64 cache_size);
 
-    void Serialize(Pickle* pickle) const;
-    bool Deserialize(PickleIterator* it);
+    void Serialize(base::Pickle* pickle) const;
+    bool Deserialize(base::PickleIterator* it);
 
     bool CheckIndexMetadata();
 
@@ -119,7 +119,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   // data to be written to a file. Note: the pickle is not in a consistent state
   // immediately after calling this menthod, one needs to call
   // SerializeFinalData to make it ready to write to a file.
-  static scoped_ptr<Pickle> Serialize(
+  static scoped_ptr<base::Pickle> Serialize(
       const SimpleIndexFile::IndexMetadata& index_metadata,
       const SimpleIndex::EntrySet& entries);
 
@@ -127,7 +127,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   // performed on a thread accessing the disk. It is not combined with the main
   // serialization path to avoid extra thread hops or copying the pickle to the
   // worker thread.
-  static bool SerializeFinalData(base::Time cache_modified, Pickle* pickle);
+  static bool SerializeFinalData(base::Time cache_modified,
+                                 base::Pickle* pickle);
 
   // Given the contents of an index file |data| of length |data_len|, returns
   // the corresponding EntrySet. Returns NULL on error.
@@ -149,7 +150,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                               const base::FilePath& cache_directory,
                               const base::FilePath& index_filename,
                               const base::FilePath& temp_index_filename,
-                              scoped_ptr<Pickle> pickle,
+                              scoped_ptr<base::Pickle> pickle,
                               const base::TimeTicks& start_time,
                               bool app_on_background);
 
@@ -166,7 +167,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   static bool LegacyIsIndexFileStale(base::Time cache_last_modified,
                                      const base::FilePath& index_file_path);
 
-  struct PickleHeader : public Pickle::Header {
+  struct PickleHeader : public base::Pickle::Header {
     uint32 crc;
   };
 

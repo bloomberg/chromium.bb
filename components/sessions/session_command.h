@@ -10,7 +10,9 @@
 #include "base/basictypes.h"
 #include "components/sessions/sessions_export.h"
 
+namespace base {
 class Pickle;
+}
 
 namespace sessions {
 
@@ -39,7 +41,7 @@ class SESSIONS_EXPORT SessionCommand {
 
   // Convenience constructor that creates a session command with the specified
   // id whose contents is populated from the contents of pickle.
-  SessionCommand(id_type id, const Pickle& pickle);
+  SessionCommand(id_type id, const base::Pickle& pickle);
 
   // The contents of the command.
   char* contents() { return const_cast<char*>(contents_.c_str()); }
@@ -59,7 +61,7 @@ class SESSIONS_EXPORT SessionCommand {
   // returned Pickle. The returned Pickle references the underlying data of
   // this SessionCommand. If you need it to outlive the command, copy the
   // pickle.
-  Pickle* PayloadAsPickle() const;
+  base::Pickle* PayloadAsPickle() const;
 
  private:
   const id_type id_;

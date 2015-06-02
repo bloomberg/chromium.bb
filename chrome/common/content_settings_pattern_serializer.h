@@ -7,12 +7,15 @@
 
 #include "base/macros.h"
 
+namespace base {
+class PickleIterator;
+}
+
 namespace IPC {
 class Message;
 }
 
 class ContentSettingsPattern;
-class PickleIterator;
 
 class ContentSettingsPatternSerializer {
  public:
@@ -20,7 +23,8 @@ class ContentSettingsPatternSerializer {
   static void WriteToMessage(const ContentSettingsPattern& pattern,
                              IPC::Message* m);
   // Deserializes the pattern from the IPC message.
-  static bool ReadFromMessage(const IPC::Message* m, PickleIterator* iter,
+  static bool ReadFromMessage(const IPC::Message* m,
+                              base::PickleIterator* iter,
                               ContentSettingsPattern* pattern);
 
  private:

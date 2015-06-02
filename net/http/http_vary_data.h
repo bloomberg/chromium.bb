@@ -8,8 +8,10 @@
 #include "base/md5.h"
 #include "net/base/net_export.h"
 
+namespace base {
 class Pickle;
 class PickleIterator;
+}
 
 namespace net {
 
@@ -52,11 +54,11 @@ class NET_EXPORT_PRIVATE HttpVaryData {
   // is_valid() will return true.  Otherwise, false is returned to indicate
   // that this object is marked as invalid.
   //
-  bool InitFromPickle(PickleIterator* pickle_iter);
+  bool InitFromPickle(base::PickleIterator* pickle_iter);
 
   // Call this method to persist the vary data. Illegal to call this on an
   // invalid object.
-  void Persist(Pickle* pickle) const;
+  void Persist(base::Pickle* pickle) const;
 
   // Call this method to test if the given request matches the previous request
   // with which this vary data corresponds.  The |cached_response_headers| must

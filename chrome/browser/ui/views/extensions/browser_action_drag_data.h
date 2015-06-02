@@ -13,8 +13,11 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #endif
 
-class Pickle;
 class Profile;
+
+namespace base {
+class Pickle;
+}
 
 class BrowserActionDragData {
  public:
@@ -47,8 +50,8 @@ class BrowserActionDragData {
 #endif
 
  private:
-  void WriteToPickle(Profile* profile, Pickle* pickle) const;
-  bool ReadFromPickle(Pickle* pickle);
+  void WriteToPickle(Profile* profile, base::Pickle* pickle) const;
+  bool ReadFromPickle(base::Pickle* pickle);
 
   // The profile we originated from.
   void* profile_;

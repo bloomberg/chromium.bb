@@ -123,20 +123,21 @@ bool UserScript::MatchesURL(const GURL& url) const {
   return true;
 }
 
-void UserScript::File::Pickle(::Pickle* pickle) const {
+void UserScript::File::Pickle(base::Pickle* pickle) const {
   pickle->WriteString(url_.spec());
   // Do not write path. It's not needed in the renderer.
   // Do not write content. It will be serialized by other means.
 }
 
-void UserScript::File::Unpickle(const ::Pickle& pickle, PickleIterator* iter) {
+void UserScript::File::Unpickle(const base::Pickle& pickle,
+                                base::PickleIterator* iter) {
   // Read the url from the pickle.
   std::string url;
   CHECK(iter->ReadString(&url));
   set_url(GURL(url));
 }
 
-void UserScript::Pickle(::Pickle* pickle) const {
+void UserScript::Pickle(base::Pickle* pickle) const {
   // Write the simple types to the pickle.
   pickle->WriteInt(run_location());
   pickle->WriteInt(user_script_id_);
@@ -155,7 +156,7 @@ void UserScript::Pickle(::Pickle* pickle) const {
   PickleScripts(pickle, css_scripts_);
 }
 
-void UserScript::PickleGlobs(::Pickle* pickle,
+void UserScript::PickleGlobs(base::Pickle* pickle,
                              const std::vector<std::string>& globs) const {
   pickle->WriteSizeT(globs.size());
   for (std::vector<std::string>::const_iterator glob = globs.begin();
@@ -164,12 +165,13 @@ void UserScript::PickleGlobs(::Pickle* pickle,
   }
 }
 
-void UserScript::PickleHostID(::Pickle* pickle, const HostID& host_id) const {
+void UserScript::PickleHostID(base::Pickle* pickle,
+                              const HostID& host_id) const {
   pickle->WriteInt(host_id.type());
   pickle->WriteString(host_id.id());
 }
 
-void UserScript::PickleURLPatternSet(::Pickle* pickle,
+void UserScript::PickleURLPatternSet(base::Pickle* pickle,
                                      const URLPatternSet& pattern_list) const {
   pickle->WriteSizeT(pattern_list.patterns().size());
   for (URLPatternSet::const_iterator pattern = pattern_list.begin();
@@ -179,7 +181,7 @@ void UserScript::PickleURLPatternSet(::Pickle* pickle,
   }
 }
 
-void UserScript::PickleScripts(::Pickle* pickle,
+void UserScript::PickleScripts(base::Pickle* pickle,
                                const FileList& scripts) const {
   pickle->WriteSizeT(scripts.size());
   for (FileList::const_iterator file = scripts.begin();
@@ -188,7 +190,8 @@ void UserScript::PickleScripts(::Pickle* pickle,
   }
 }
 
-void UserScript::Unpickle(const ::Pickle& pickle, PickleIterator* iter) {
+void UserScript::Unpickle(const base::Pickle& pickle,
+                          base::PickleIterator* iter) {
   // Read the run location.
   int run_location = 0;
   CHECK(iter->ReadInt(&run_location));
@@ -216,7 +219,8 @@ void UserScript::Unpickle(const ::Pickle& pickle, PickleIterator* iter) {
   UnpickleScripts(pickle, iter, &css_scripts_);
 }
 
-void UserScript::UnpickleGlobs(const ::Pickle& pickle, PickleIterator* iter,
+void UserScript::UnpickleGlobs(const base::Pickle& pickle,
+                               base::PickleIterator* iter,
                                std::vector<std::string>* globs) {
   size_t num_globs = 0;
   CHECK(iter->ReadSizeT(&num_globs));
@@ -228,8 +232,8 @@ void UserScript::UnpickleGlobs(const ::Pickle& pickle, PickleIterator* iter,
   }
 }
 
-void UserScript::UnpickleHostID(const ::Pickle& pickle,
-                                PickleIterator* iter,
+void UserScript::UnpickleHostID(const base::Pickle& pickle,
+                                base::PickleIterator* iter,
                                 HostID* host_id) {
   int type = 0;
   std::string id;
@@ -238,8 +242,8 @@ void UserScript::UnpickleHostID(const ::Pickle& pickle,
   *host_id = HostID(static_cast<HostID::HostType>(type), id);
 }
 
-void UserScript::UnpickleURLPatternSet(const ::Pickle& pickle,
-                                       PickleIterator* iter,
+void UserScript::UnpickleURLPatternSet(const base::Pickle& pickle,
+                                       base::PickleIterator* iter,
                                        URLPatternSet* pattern_list) {
   size_t num_patterns = 0;
   CHECK(iter->ReadSizeT(&num_patterns));
@@ -262,7 +266,8 @@ void UserScript::UnpickleURLPatternSet(const ::Pickle& pickle,
   }
 }
 
-void UserScript::UnpickleScripts(const ::Pickle& pickle, PickleIterator* iter,
+void UserScript::UnpickleScripts(const base::Pickle& pickle,
+                                 base::PickleIterator* iter,
                                  FileList* scripts) {
   size_t num_files = 0;
   CHECK(iter->ReadSizeT(&num_files));

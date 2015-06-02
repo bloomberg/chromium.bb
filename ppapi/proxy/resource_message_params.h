@@ -73,15 +73,15 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
   ResourceMessageParams(PP_Resource resource, int32_t sequence);
 
   virtual void Serialize(IPC::Message* msg) const;
-  virtual bool Deserialize(const IPC::Message* msg, PickleIterator* iter);
+  virtual bool Deserialize(const IPC::Message* msg, base::PickleIterator* iter);
 
   // Writes everything except the handles to |msg|.
   void WriteHeader(IPC::Message* msg) const;
   // Writes the handles to |msg|.
   void WriteHandles(IPC::Message* msg) const;
   // Matching deserialize helpers.
-  bool ReadHeader(const IPC::Message* msg, PickleIterator* iter);
-  bool ReadHandles(const IPC::Message* msg, PickleIterator* iter);
+  bool ReadHeader(const IPC::Message* msg, base::PickleIterator* iter);
+  bool ReadHandles(const IPC::Message* msg, base::PickleIterator* iter);
 
  private:
   class PPAPI_PROXY_EXPORT SerializedHandles
@@ -145,7 +145,8 @@ class PPAPI_PROXY_EXPORT ResourceMessageCallParams
   bool has_callback() const { return has_callback_; }
 
   void Serialize(IPC::Message* msg) const override;
-  bool Deserialize(const IPC::Message* msg, PickleIterator* iter) override;
+  bool Deserialize(const IPC::Message* msg,
+                   base::PickleIterator* iter) override;
 
  private:
   bool has_callback_;
@@ -163,7 +164,8 @@ class PPAPI_PROXY_EXPORT ResourceMessageReplyParams
   int32_t result() const { return result_; }
 
   void Serialize(IPC::Message* msg) const override;
-  bool Deserialize(const IPC::Message* msg, PickleIterator* iter) override;
+  bool Deserialize(const IPC::Message* msg,
+                   base::PickleIterator* iter) override;
 
   // Writes everything except the handles to |msg|.
   void WriteReplyHeader(IPC::Message* msg) const;
@@ -184,7 +186,8 @@ ParamTraits<ppapi::proxy::ResourceMessageCallParams> {
   static void Write(Message* m, const param_type& p) {
     p.Serialize(m);
   }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
+  static bool Read(const Message* m, base::PickleIterator* iter,
+                   param_type* r) {
     return r->Deserialize(m, iter);
   }
   static void Log(const param_type& p, std::string* l) {
@@ -197,7 +200,8 @@ ParamTraits<ppapi::proxy::ResourceMessageReplyParams> {
   static void Write(Message* m, const param_type& p) {
     p.Serialize(m);
   }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
+  static bool Read(const Message* m, base::PickleIterator* iter,
+                   param_type* r) {
     return r->Deserialize(m, iter);
   }
   static void Log(const param_type& p, std::string* l) {

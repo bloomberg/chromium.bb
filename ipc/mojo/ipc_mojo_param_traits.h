@@ -11,7 +11,9 @@
 #include "ipc/ipc_param_traits.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
 
+namespace base {
 class PickleIterator;
+}
 
 namespace IPC {
 
@@ -21,7 +23,7 @@ template <>
 struct IPC_MOJO_EXPORT ParamTraits<mojo::MessagePipeHandle> {
   typedef mojo::MessagePipeHandle param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

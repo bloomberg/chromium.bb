@@ -37,13 +37,14 @@
   struct IPC_MESSAGE_EXPORT ParamTraits<message_name> {                      \
     typedef message_name param_type;                                         \
     static void Write(Message* m, const param_type& p);                      \
-    static bool Read(const Message* m, PickleIterator* iter, param_type* p); \
+    static bool Read(const Message* m, base::PickleIterator* iter,           \
+                     param_type* p);                                         \
     static void Log(const param_type& p, std::string* l);                    \
                                                                              \
    private:                                                                  \
     template <class P>                                                       \
     static bool ReadParamF(const Message* m,                                 \
-                           PickleIterator* iter,                             \
+                           base::PickleIterator* iter,                       \
                            param_type* p,                                    \
                            void (param_type::*setter_function)(P));          \
   };                                                                         \

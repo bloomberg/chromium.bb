@@ -13,11 +13,10 @@
 #include "extensions/common/permissions/coalesced_permission_message.h"
 #include "extensions/common/permissions/permission_message.h"
 
-class PickleIterator;
-
 namespace base {
-class Value;
+class PickleIterator;
 class ListValue;
+class Value;
 }
 
 namespace IPC {
@@ -85,7 +84,7 @@ class ManifestPermission {
   void Write(IPC::Message* m) const;
 
   // Reads from the given IPC message |m|.
-  bool Read(const IPC::Message* m, PickleIterator* iter);
+  bool Read(const IPC::Message* m, base::PickleIterator* iter);
 
   // Logs this permission.
   void Log(std::string* log) const;

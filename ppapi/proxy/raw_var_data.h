@@ -16,7 +16,10 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/serialized_handle.h"
 
+namespace base {
+class Pickle;
 class PickleIterator;
+}
 
 namespace IPC {
 class Message;
@@ -68,7 +71,7 @@ class PPAPI_PROXY_EXPORT RawVarDataGraph {
 
   // Create a RawVarDataGraph from the given message.
   static scoped_ptr<RawVarDataGraph> Read(const IPC::Message* m,
-                                          PickleIterator* iter);
+                                          base::PickleIterator* iter);
 
   // Returns a vector of SerializedHandles associated with this RawVarDataGraph.
   // Ownership of the pointers remains with the elements of the RawVarDataGraph.
@@ -113,7 +116,7 @@ class RawVarData {
   // Reads the RawVarData from a message. Returns true on success.
   virtual bool Read(PP_VarType type,
                     const IPC::Message* m,
-                    PickleIterator* iter) = 0;
+                    base::PickleIterator* iter) = 0;
 
   // Returns a SerializedHandle associated with this RawVarData or NULL if none
   // exists. Ownership of the pointer remains with the RawVarData.
@@ -140,7 +143,7 @@ class BasicRawVarData : public RawVarData {
   void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
   bool Read(PP_VarType type,
             const IPC::Message* m,
-            PickleIterator* iter) override;
+            base::PickleIterator* iter) override;
 
  private:
   PP_Var var_;
@@ -161,7 +164,7 @@ class StringRawVarData : public RawVarData {
   void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
   bool Read(PP_VarType type,
             const IPC::Message* m,
-            PickleIterator* iter) override;
+            base::PickleIterator* iter) override;
 
  private:
   // The data in the string.
@@ -190,7 +193,7 @@ class ArrayBufferRawVarData : public RawVarData {
   void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
   bool Read(PP_VarType type,
             const IPC::Message* m,
-            PickleIterator* iter) override;
+            base::PickleIterator* iter) override;
   SerializedHandle* GetHandle() override;
 
  private:
@@ -221,7 +224,7 @@ class ArrayRawVarData : public RawVarData {
   void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
   bool Read(PP_VarType type,
             const IPC::Message* m,
-            PickleIterator* iter) override;
+            base::PickleIterator* iter) override;
 
  private:
   std::vector<size_t> children_;
@@ -244,7 +247,7 @@ class DictionaryRawVarData : public RawVarData {
   void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
   bool Read(PP_VarType type,
             const IPC::Message* m,
-            PickleIterator* iter) override;
+            base::PickleIterator* iter) override;
 
  private:
   std::vector<std::pair<std::string, size_t> > children_;
@@ -270,7 +273,7 @@ class ResourceRawVarData : public RawVarData {
   void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
   bool Read(PP_VarType type,
             const IPC::Message* m,
-            PickleIterator* iter) override;
+            base::PickleIterator* iter) override;
 
  private:
   // Resource ID in the plugin. If one has not yet been created, this is 0.

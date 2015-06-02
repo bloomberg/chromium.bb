@@ -14,7 +14,7 @@ namespace content {
 TEST(WebCursorTest, OKCursorSerialization) {
   WebCursor custom_cursor;
   // This is a valid custom cursor.
-  Pickle ok_custom_pickle;
+  base::Pickle ok_custom_pickle;
   // Type and hotspots.
   ok_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   ok_custom_pickle.WriteInt(0);
@@ -29,14 +29,14 @@ TEST(WebCursorTest, OKCursorSerialization) {
   ok_custom_pickle.WriteUInt32(0);
   // Custom Windows message.
   ok_custom_pickle.WriteUInt32(0);
-  PickleIterator iter(ok_custom_pickle);
+  base::PickleIterator iter(ok_custom_pickle);
   EXPECT_TRUE(custom_cursor.Deserialize(&iter));
 }
 
 TEST(WebCursorTest, BrokenCursorSerialization) {
   WebCursor custom_cursor;
   // This custom cursor has not been send with enough data.
-  Pickle short_custom_pickle;
+  base::Pickle short_custom_pickle;
   // Type and hotspots.
   short_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   short_custom_pickle.WriteInt(0);
@@ -49,11 +49,11 @@ TEST(WebCursorTest, BrokenCursorSerialization) {
   // Data len not including enough data for a 1x1 image.
   short_custom_pickle.WriteInt(3);
   short_custom_pickle.WriteUInt32(0);
-  PickleIterator iter(short_custom_pickle);
+  base::PickleIterator iter(short_custom_pickle);
   EXPECT_FALSE(custom_cursor.Deserialize(&iter));
 
   // This custom cursor has enough data but is too big.
-  Pickle large_custom_pickle;
+  base::Pickle large_custom_pickle;
   // Type and hotspots.
   large_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   large_custom_pickle.WriteInt(0);
@@ -68,11 +68,11 @@ TEST(WebCursorTest, BrokenCursorSerialization) {
   large_custom_pickle.WriteInt(kTooBigSize * 4);
   for (int i = 0; i < kTooBigSize; ++i)
     large_custom_pickle.WriteUInt32(0);
-  iter = PickleIterator(large_custom_pickle);
+  iter = base::PickleIterator(large_custom_pickle);
   EXPECT_FALSE(custom_cursor.Deserialize(&iter));
 
   // This custom cursor uses negative lengths.
-  Pickle neg_custom_pickle;
+  base::Pickle neg_custom_pickle;
   // Type and hotspots.
   neg_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   neg_custom_pickle.WriteInt(0);
@@ -87,11 +87,11 @@ TEST(WebCursorTest, BrokenCursorSerialization) {
   neg_custom_pickle.WriteUInt32(0);
   // Custom Windows message.
   neg_custom_pickle.WriteUInt32(0);
-  iter = PickleIterator(neg_custom_pickle);
+  iter = base::PickleIterator(neg_custom_pickle);
   EXPECT_FALSE(custom_cursor.Deserialize(&iter));
 
   // This custom cursor uses zero scale.
-  Pickle scale_zero_custom_pickle;
+  base::Pickle scale_zero_custom_pickle;
   // Type and hotspots.
   scale_zero_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   scale_zero_custom_pickle.WriteInt(0);
@@ -106,11 +106,11 @@ TEST(WebCursorTest, BrokenCursorSerialization) {
   scale_zero_custom_pickle.WriteUInt32(0);
   // Custom Windows message.
   scale_zero_custom_pickle.WriteUInt32(0);
-  iter = PickleIterator(scale_zero_custom_pickle);
+  iter = base::PickleIterator(scale_zero_custom_pickle);
   EXPECT_FALSE(custom_cursor.Deserialize(&iter));
 
   // This custom cursor uses tiny scale.
-  Pickle scale_tiny_custom_pickle;
+  base::Pickle scale_tiny_custom_pickle;
   // Type and hotspots.
   scale_tiny_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   scale_tiny_custom_pickle.WriteInt(0);
@@ -125,14 +125,14 @@ TEST(WebCursorTest, BrokenCursorSerialization) {
   scale_tiny_custom_pickle.WriteUInt32(0);
   // Custom Windows message.
   scale_tiny_custom_pickle.WriteUInt32(0);
-  iter = PickleIterator(scale_tiny_custom_pickle);
+  iter = base::PickleIterator(scale_tiny_custom_pickle);
   EXPECT_FALSE(custom_cursor.Deserialize(&iter));
 }
 
 TEST(WebCursorTest, ClampHotspot) {
   WebCursor custom_cursor;
   // This is a valid custom cursor.
-  Pickle ok_custom_pickle;
+  base::Pickle ok_custom_pickle;
   // Type and hotspots.
   ok_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   // Hotspot is invalid --- outside the bounds of the image.
@@ -149,7 +149,7 @@ TEST(WebCursorTest, ClampHotspot) {
     ok_custom_pickle.WriteUInt32(0);
   // Custom Windows message.
   ok_custom_pickle.WriteUInt32(0);
-  PickleIterator iter(ok_custom_pickle);
+  base::PickleIterator iter(ok_custom_pickle);
   ASSERT_TRUE(custom_cursor.Deserialize(&iter));
 
   // Convert to WebCursorInfo, make sure the hotspot got clamped.
@@ -167,7 +167,7 @@ TEST(WebCursorTest, ClampHotspot) {
 
 TEST(WebCursorTest, EmptyImage) {
   WebCursor custom_cursor;
-  Pickle broken_cursor_pickle;
+  base::Pickle broken_cursor_pickle;
   broken_cursor_pickle.WriteInt(WebCursorInfo::TypeCustom);
   // Hotspot is at origin
   broken_cursor_pickle.WriteInt(0);
@@ -184,14 +184,14 @@ TEST(WebCursorTest, EmptyImage) {
 
   // Make sure we can read this on all platforms; it is technicaally a valid
   // cursor.
-  PickleIterator iter(broken_cursor_pickle);
+  base::PickleIterator iter(broken_cursor_pickle);
   ASSERT_TRUE(custom_cursor.Deserialize(&iter));
 }
 
 TEST(WebCursorTest, Scale2) {
   WebCursor custom_cursor;
   // This is a valid custom cursor.
-  Pickle ok_custom_pickle;
+  base::Pickle ok_custom_pickle;
   // Type and hotspots.
   ok_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
   ok_custom_pickle.WriteInt(0);
@@ -206,7 +206,7 @@ TEST(WebCursorTest, Scale2) {
   ok_custom_pickle.WriteUInt32(0);
   // Custom Windows message.
   ok_custom_pickle.WriteUInt32(0);
-  PickleIterator iter(ok_custom_pickle);
+  base::PickleIterator iter(ok_custom_pickle);
   EXPECT_TRUE(custom_cursor.Deserialize(&iter));
 }
 

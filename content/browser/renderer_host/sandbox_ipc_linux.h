@@ -36,35 +36,35 @@ class SandboxIPCHandler : public base::DelegateSimpleThread::Delegate {
   void HandleRequestFromRenderer(int fd);
 
   void HandleFontMatchRequest(int fd,
-                              PickleIterator iter,
+                              base::PickleIterator iter,
                               const std::vector<base::ScopedFD*>& fds);
 
   void HandleFontOpenRequest(int fd,
-                             PickleIterator iter,
+                             base::PickleIterator iter,
                              const std::vector<base::ScopedFD*>& fds);
 
   void HandleGetFallbackFontForChar(int fd,
-                                  PickleIterator iter,
+                                  base::PickleIterator iter,
                                   const std::vector<base::ScopedFD*>& fds);
 
   void HandleGetStyleForStrike(int fd,
-                               PickleIterator iter,
+                               base::PickleIterator iter,
                                const std::vector<base::ScopedFD*>& fds);
 
   void HandleLocaltime(int fd,
-                       PickleIterator iter,
+                       base::PickleIterator iter,
                        const std::vector<base::ScopedFD*>& fds);
 
   void HandleMakeSharedMemorySegment(int fd,
-                                     PickleIterator iter,
+                                     base::PickleIterator iter,
                                      const std::vector<base::ScopedFD*>& fds);
 
   void HandleMatchWithFallback(int fd,
-                               PickleIterator iter,
+                               base::PickleIterator iter,
                                const std::vector<base::ScopedFD*>& fds);
 
   void SendRendererReply(const std::vector<base::ScopedFD*>& fds,
-                         const Pickle& reply,
+                         const base::Pickle& reply,
                          int reply_fd);
 
   const int lifeline_fd_;

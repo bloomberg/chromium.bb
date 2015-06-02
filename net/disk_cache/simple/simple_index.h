@@ -28,8 +28,10 @@
 #include "base/android/application_status_listener.h"
 #endif
 
+namespace base {
 class Pickle;
 class PickleIterator;
+}
 
 namespace disk_cache {
 
@@ -49,8 +51,8 @@ class NET_EXPORT_PRIVATE EntryMetadata {
   void SetEntrySize(uint64 entry_size);
 
   // Serialize the data into the provided pickle.
-  void Serialize(Pickle* pickle) const;
-  bool Deserialize(PickleIterator* it);
+  void Serialize(base::Pickle* pickle) const;
+  bool Deserialize(base::PickleIterator* it);
 
   static base::TimeDelta GetLowerEpsilonForTimeComparisons() {
     return base::TimeDelta::FromSeconds(1);

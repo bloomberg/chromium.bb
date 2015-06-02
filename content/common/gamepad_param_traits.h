@@ -9,7 +9,9 @@
 
 #include "ipc/ipc_param_traits.h"
 
+namespace base {
 class PickleIterator;
+}
 
 namespace blink { class WebGamepad; }
 
@@ -22,7 +24,7 @@ struct ParamTraits<blink::WebGamepad> {
   typedef blink::WebGamepad param_type;
   static void Write(Message* m, const blink::WebGamepad& p);
   static bool Read(const Message* m,
-                   PickleIterator* iter,
+                   base::PickleIterator* iter,
                    blink::WebGamepad* p);
   static void Log(const blink::WebGamepad& p, std::string* l);
 };

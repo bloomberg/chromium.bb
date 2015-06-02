@@ -16,8 +16,10 @@
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
 
+namespace base {
 class Pickle;
 class PickleIterator;
+}
 
 namespace extensions {
 
@@ -104,8 +106,8 @@ class UserScript {
 
     // Serialization support. The content and FilePath members will not be
     // serialized!
-    void Pickle(::Pickle* pickle) const;
-    void Unpickle(const ::Pickle& pickle, PickleIterator* iter);
+    void Pickle(base::Pickle* pickle) const;
+    void Unpickle(const base::Pickle& pickle, base::PickleIterator* iter);
 
    private:
     // Where the script file lives on the disk. We keep the path split so that
@@ -225,31 +227,34 @@ class UserScript {
 
   // Serialize the UserScript into a pickle. The content of the scripts and
   // paths to UserScript::Files will not be serialized!
-  void Pickle(::Pickle* pickle) const;
+  void Pickle(base::Pickle* pickle) const;
 
   // Deserialize the script from a pickle. Note that this always succeeds
   // because presumably we were the one that pickled it, and we did it
   // correctly.
-  void Unpickle(const ::Pickle& pickle, PickleIterator* iter);
+  void Unpickle(const base::Pickle& pickle, base::PickleIterator* iter);
 
  private:
   // Pickle helper functions used to pickle the individual types of components.
-  void PickleGlobs(::Pickle* pickle,
+  void PickleGlobs(base::Pickle* pickle,
                    const std::vector<std::string>& globs) const;
-  void PickleHostID(::Pickle* pickle, const HostID& host_id) const;
-  void PickleURLPatternSet(::Pickle* pickle,
+  void PickleHostID(base::Pickle* pickle, const HostID& host_id) const;
+  void PickleURLPatternSet(base::Pickle* pickle,
                            const URLPatternSet& pattern_list) const;
-  void PickleScripts(::Pickle* pickle, const FileList& scripts) const;
+  void PickleScripts(base::Pickle* pickle, const FileList& scripts) const;
 
   // Unpickle helper functions used to unpickle individual types of components.
-  void UnpickleGlobs(const ::Pickle& pickle, PickleIterator* iter,
+  void UnpickleGlobs(const base::Pickle& pickle,
+                     base::PickleIterator* iter,
                      std::vector<std::string>* globs);
-  void UnpickleHostID(const ::Pickle& pickle,
-                      PickleIterator* iter,
+  void UnpickleHostID(const base::Pickle& pickle,
+                      base::PickleIterator* iter,
                       HostID* host_id);
-  void UnpickleURLPatternSet(const ::Pickle& pickle, PickleIterator* iter,
+  void UnpickleURLPatternSet(const base::Pickle& pickle,
+                             base::PickleIterator* iter,
                              URLPatternSet* pattern_list);
-  void UnpickleScripts(const ::Pickle& pickle, PickleIterator* iter,
+  void UnpickleScripts(const base::Pickle& pickle,
+                       base::PickleIterator* iter,
                        FileList* scripts);
 
   // The location to run the script inside the document.

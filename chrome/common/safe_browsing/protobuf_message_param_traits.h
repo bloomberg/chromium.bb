@@ -24,7 +24,9 @@ struct ParamTraits<google::protobuf::RepeatedPtrField<Element>> {
       WriteParam(m, element);
   }
 
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
+  static bool Read(const Message* m,
+                   base::PickleIterator* iter,
+                   param_type* p) {
     int size;
     if (!iter->ReadLength(&size) || size < 0)
       return false;

@@ -124,10 +124,10 @@
 #define FILE_PATH_USES_WIN_SEPARATORS
 #endif  // OS_WIN
 
+namespace base {
+
 class Pickle;
 class PickleIterator;
-
-namespace base {
 
 // An abstraction to isolate users from the differences between native
 // pathnames on different platforms.

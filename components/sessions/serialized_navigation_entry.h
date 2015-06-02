@@ -17,8 +17,10 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+namespace base {
 class Pickle;
 class PickleIterator;
+}
 
 namespace sync_pb {
 class TabNavigation;
@@ -60,8 +62,8 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
 
   // Note that not all SerializedNavigationEntry fields are preserved.
   // |max_size| is the max number of bytes to write.
-  void WriteToPickle(int max_size, Pickle* pickle) const;
-  bool ReadFromPickle(PickleIterator* iterator);
+  void WriteToPickle(int max_size, base::Pickle* pickle) const;
+  bool ReadFromPickle(base::PickleIterator* iterator);
 
   // Convert this navigation into its sync protocol buffer equivalent.  Note
   // that the protocol buffer doesn't contain all SerializedNavigationEntry

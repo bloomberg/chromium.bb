@@ -12,7 +12,9 @@
 #include "net/base/net_export.h"
 #include "net/cert/x509_certificate.h"
 
+namespace base {
 class PickleIterator;
+}
 
 typedef struct CERTCertificateStr CERTCertificate;
 typedef struct CERTNameStr CERTName;
@@ -51,7 +53,7 @@ X509Certificate::OSCertHandles CreateOSCertHandlesFromBytes(
 // Reads a single certificate from |pickle_iter| and returns a platform-specific
 // certificate handle. Returns an invalid handle, NULL, on failure.
 X509Certificate::OSCertHandle ReadOSCertHandleFromPickle(
-    PickleIterator* pickle_iter);
+    base::PickleIterator* pickle_iter);
 
 // Sets |*size_bits| to be the length of the public key in bits, and sets
 // |*type| to one of the |PublicKeyType| values. In case of

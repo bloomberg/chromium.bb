@@ -7,14 +7,16 @@
 
 #include "third_party/npapi/bindings/npruntime.h"
 
+namespace base {
 class Pickle;
 class PickleIterator;
+}
 
 namespace content {
 
 // Efficiently serialize/deserialize a NPIdentifier
-bool SerializeNPIdentifier(NPIdentifier identifier, Pickle* pickle);
-bool DeserializeNPIdentifier(PickleIterator* pickle_iter,
+bool SerializeNPIdentifier(NPIdentifier identifier, base::Pickle* pickle);
+bool DeserializeNPIdentifier(base::PickleIterator* pickle_iter,
                              NPIdentifier* identifier);
 
 }  // namespace content

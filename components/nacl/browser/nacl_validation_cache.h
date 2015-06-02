@@ -9,7 +9,9 @@
 
 #include "base/containers/mru_cache.h"
 
+namespace base {
 class Pickle;
+}
 
 namespace nacl {
 
@@ -31,8 +33,8 @@ class NaClValidationCache {
   void SetKnownToValidate(const std::string& signature);
 
   void Reset();
-  void Serialize(Pickle* pickle) const;
-  bool Deserialize(const Pickle* pickle);
+  void Serialize(base::Pickle* pickle) const;
+  bool Deserialize(const base::Pickle* pickle);
 
   // Testing functions
   size_t size() const {
@@ -53,7 +55,7 @@ class NaClValidationCache {
   }
 
  private:
-  bool DeserializeImpl(const Pickle* pickle);
+  bool DeserializeImpl(const base::Pickle* pickle);
 
   typedef base::HashingMRUCache<std::string, bool> ValidationCacheType;
   ValidationCacheType validation_cache_;

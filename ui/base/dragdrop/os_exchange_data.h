@@ -22,7 +22,10 @@
 #include "ui/base/ui_base_export.h"
 
 class GURL;
+
+namespace base {
 class Pickle;
+}
 
 namespace gfx {
 class ImageSkia;
@@ -100,7 +103,7 @@ class UI_BASE_EXPORT OSExchangeData {
     virtual void SetFilenames(
         const std::vector<FileInfo>& file_names) = 0;
     virtual void SetPickledData(const CustomFormat& format,
-                                const Pickle& data) = 0;
+                                const base::Pickle& data) = 0;
 
     virtual bool GetString(base::string16* data) const = 0;
     virtual bool GetURLAndTitle(FilenameToURLPolicy policy,
@@ -110,7 +113,7 @@ class UI_BASE_EXPORT OSExchangeData {
     virtual bool GetFilenames(
         std::vector<FileInfo>* file_names) const = 0;
     virtual bool GetPickledData(const CustomFormat& format,
-                                Pickle* data) const = 0;
+                                base::Pickle* data) const = 0;
 
     virtual bool HasString() const = 0;
     virtual bool HasURL(FilenameToURLPolicy policy) const = 0;
@@ -181,7 +184,7 @@ class UI_BASE_EXPORT OSExchangeData {
   void SetFilenames(
       const std::vector<FileInfo>& file_names);
   // Adds pickled data of the specified format.
-  void SetPickledData(const CustomFormat& format, const Pickle& data);
+  void SetPickledData(const CustomFormat& format, const base::Pickle& data);
 
   // These functions retrieve data of the specified type. If data exists, the
   // functions return and the result is in the out parameter. If the data does
@@ -195,7 +198,7 @@ class UI_BASE_EXPORT OSExchangeData {
   bool GetFilename(base::FilePath* path) const;
   bool GetFilenames(
       std::vector<FileInfo>* file_names) const;
-  bool GetPickledData(const CustomFormat& format, Pickle* data) const;
+  bool GetPickledData(const CustomFormat& format, base::Pickle* data) const;
 
   // Test whether or not data of certain types is present, without actually
   // returning anything.

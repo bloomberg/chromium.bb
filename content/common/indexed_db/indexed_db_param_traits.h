@@ -22,7 +22,7 @@ template <>
 struct ParamTraits<content::IndexedDBKey> {
   typedef content::IndexedDBKey param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -30,7 +30,7 @@ template <>
 struct ParamTraits<content::IndexedDBKeyRange> {
   typedef content::IndexedDBKeyRange param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -38,7 +38,7 @@ template <>
 struct ParamTraits<content::IndexedDBKeyPath> {
   typedef content::IndexedDBKeyPath param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

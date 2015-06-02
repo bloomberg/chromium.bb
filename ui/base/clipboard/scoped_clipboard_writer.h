@@ -18,7 +18,9 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_export.h"
 
+namespace base {
 class Pickle;
+}
 
 namespace ui {
 
@@ -59,7 +61,7 @@ class UI_BASE_EXPORT ScopedClipboardWriter {
   void WriteWebSmartPaste();
 
   // Adds arbitrary pickled data to clipboard.
-  void WritePickledData(const Pickle& pickle,
+  void WritePickledData(const base::Pickle& pickle,
                         const Clipboard::FormatType& format);
 
   void WriteImage(const SkBitmap& bitmap);

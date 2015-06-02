@@ -225,7 +225,7 @@ class NET_EXPORT PickledIOBuffer : public IOBuffer {
  public:
   PickledIOBuffer();
 
-  Pickle* pickle() { return &pickle_; }
+  base::Pickle* pickle() { return &pickle_; }
 
   // Signals that we are done writing to the pickle and we can use it for a
   // write-style IO operation.
@@ -234,7 +234,7 @@ class NET_EXPORT PickledIOBuffer : public IOBuffer {
  private:
   ~PickledIOBuffer() override;
 
-  Pickle pickle_;
+  base::Pickle pickle_;
 };
 
 // This class allows the creation of a temporary IOBuffer that doesn't really

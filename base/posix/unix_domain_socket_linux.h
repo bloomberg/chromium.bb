@@ -14,7 +14,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/process/process_handle.h"
 
+namespace base {
 class Pickle;
+}
 
 class BASE_EXPORT UnixDomainSocket {
  public:
@@ -75,7 +77,7 @@ class BASE_EXPORT UnixDomainSocket {
                              uint8_t* reply,
                              unsigned reply_len,
                              int* result_fd,
-                             const Pickle& request);
+                             const base::Pickle& request);
 
   // Similar to SendRecvMsg(), but |recvmsg_flags| allows to control the flags
   // of the recvmsg(2) call.
@@ -84,7 +86,7 @@ class BASE_EXPORT UnixDomainSocket {
                                       unsigned reply_len,
                                       int recvmsg_flags,
                                       int* result_fd,
-                                      const Pickle& request);
+                                      const base::Pickle& request);
 #endif  // !defined(OS_NACL_NONSFI)
  private:
   // Similar to RecvMsg, but allows to specify |flags| for recvmsg(2).

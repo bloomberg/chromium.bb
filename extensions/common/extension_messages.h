@@ -303,7 +303,7 @@ template <>
 struct ParamTraits<URLPattern> {
   typedef URLPattern param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -311,7 +311,7 @@ template <>
 struct ParamTraits<extensions::URLPatternSet> {
   typedef extensions::URLPatternSet param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -319,7 +319,7 @@ template <>
 struct ParamTraits<extensions::APIPermission::ID> {
   typedef extensions::APIPermission::ID param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -327,7 +327,7 @@ template <>
 struct ParamTraits<extensions::APIPermissionSet> {
   typedef extensions::APIPermissionSet param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -335,7 +335,7 @@ template <>
 struct ParamTraits<extensions::ManifestPermissionSet> {
   typedef extensions::ManifestPermissionSet param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -343,7 +343,7 @@ template <>
 struct ParamTraits<HostID> {
   typedef HostID param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -351,7 +351,7 @@ template <>
 struct ParamTraits<ExtensionMsg_PermissionSetStruct> {
   typedef ExtensionMsg_PermissionSetStruct param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -359,7 +359,7 @@ template <>
 struct ParamTraits<ExtensionMsg_Loaded_Params> {
   typedef ExtensionMsg_Loaded_Params param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 

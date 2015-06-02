@@ -21,13 +21,13 @@ class FastShowPickler {
 
   // Pickles a subset of the data in |model| that is useful for doing a fast
   // show of the app list.
-  static scoped_ptr<Pickle> PickleAppListModelForFastShow(
+  static scoped_ptr<base::Pickle> PickleAppListModelForFastShow(
       app_list::AppListModel* model);
 
   // Given a Pickle created by PickleAppListModelForFastShow(), this creates an
   // AppListModel that represents it.
   static scoped_ptr<app_list::AppListModel> UnpickleAppListModelForFastShow(
-      Pickle* pickle);
+      base::Pickle* pickle);
 
   // Copies parts that are needed to show the app list quickly on startup from
   // |src| to |dest|.
@@ -37,8 +37,9 @@ class FastShowPickler {
  private:
   // Private static methods allow friend access to AppListItem methods.
   static scoped_ptr<app_list::AppListItem> UnpickleAppListItem(
-      PickleIterator* it);
-  static bool PickleAppListItem(Pickle* pickle, app_list::AppListItem* item);
+      base::PickleIterator* it);
+  static bool PickleAppListItem(base::Pickle* pickle,
+                                app_list::AppListItem* item);
   static void CopyOverItem(app_list::AppListItem* src_item,
                            app_list::AppListItem* dest_item);
 };

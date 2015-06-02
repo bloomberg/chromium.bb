@@ -16,8 +16,10 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 
+namespace base {
 class Pickle;
 class PickleIterator;
+}
 
 namespace content {
 
@@ -63,7 +65,7 @@ class Zygote {
   // new process and thus need to unwind back into ChromeMain.
   bool HandleRequestFromBrowser(int fd);
 
-  void HandleReapRequest(int fd, PickleIterator iter);
+  void HandleReapRequest(int fd, base::PickleIterator iter);
 
   // Get the termination status of |real_pid|. |real_pid| is the PID as it
   // appears outside of the sandbox.
@@ -74,7 +76,7 @@ class Zygote {
                             int* exit_code);
 
   void HandleGetTerminationStatus(int fd,
-                                  PickleIterator iter);
+                                  base::PickleIterator iter);
 
   // This is equivalent to fork(), except that, when using the SUID sandbox, it
   // returns the real PID of the child process as it appears outside the
@@ -95,7 +97,7 @@ class Zygote {
   // Unpacks process type and arguments from |iter| and forks a new process.
   // Returns -1 on error, otherwise returns twice, returning 0 to the child
   // process and the child process ID to the parent process, like fork().
-  base::ProcessId ReadArgsAndFork(PickleIterator iter,
+  base::ProcessId ReadArgsAndFork(base::PickleIterator iter,
                                   ScopedVector<base::ScopedFD> fds,
                                   std::string* uma_name,
                                   int* uma_sample,
@@ -106,11 +108,11 @@ class Zygote {
   // otherwise writes the child_pid back to the browser via |fd|. Writes a
   // child_pid of -1 on error.
   bool HandleForkRequest(int fd,
-                         PickleIterator iter,
+                         base::PickleIterator iter,
                          ScopedVector<base::ScopedFD> fds);
 
   bool HandleGetSandboxStatus(int fd,
-                              PickleIterator iter);
+                              base::PickleIterator iter);
 
   // The Zygote needs to keep some information about each process. Most
   // notably what the PID of the process is inside the PID namespace of

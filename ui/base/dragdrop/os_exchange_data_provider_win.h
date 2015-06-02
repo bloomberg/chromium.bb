@@ -152,7 +152,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
   void SetFilename(const base::FilePath& path) override;
   void SetFilenames(const std::vector<FileInfo>& filenames) override;
   void SetPickledData(const OSExchangeData::CustomFormat& format,
-                      const Pickle& data) override;
+                      const base::Pickle& data) override;
   void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents) override;
   void SetHtml(const base::string16& html, const GURL& base_url) override;
@@ -164,7 +164,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
   bool GetFilename(base::FilePath* path) const override;
   bool GetFilenames(std::vector<FileInfo>* filenames) const override;
   bool GetPickledData(const OSExchangeData::CustomFormat& format,
-                      Pickle* data) const override;
+                      base::Pickle* data) const override;
   bool GetFileContents(base::FilePath* filename,
                        std::string* file_contents) const override;
   bool GetHtml(base::string16* html, GURL* base_url) const override;

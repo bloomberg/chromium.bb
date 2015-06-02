@@ -18,8 +18,10 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #endif
 
+namespace base {
 class Pickle;
 class PickleIterator;
+}
 
 namespace bookmarks {
 
@@ -77,8 +79,8 @@ struct BookmarkNodeData {
     friend struct BookmarkNodeData;
 
     // For reading/writing this Element.
-    void WriteToPickle(Pickle* pickle) const;
-    bool ReadFromPickle(PickleIterator* iterator);
+    void WriteToPickle(base::Pickle* pickle) const;
+    bool ReadFromPickle(base::PickleIterator* iterator);
 
     // ID of the node.
     int64 id_;
@@ -128,10 +130,11 @@ struct BookmarkNodeData {
 #endif
 
   // Writes the data for a drag to |pickle|.
-  void WriteToPickle(const base::FilePath& profile_path, Pickle* pickle) const;
+  void WriteToPickle(const base::FilePath& profile_path,
+                     base::Pickle* pickle) const;
 
   // Reads the data for a drag from a |pickle|.
-  bool ReadFromPickle(Pickle* pickle);
+  bool ReadFromPickle(base::Pickle* pickle);
 
   // Returns the nodes represented by this DragData. If this DragData was
   // created from the same profile then the nodes from the model are returned.

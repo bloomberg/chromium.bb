@@ -33,8 +33,10 @@ typedef struct x509_store_st X509_STORE;
 struct CERTCertificateStr;
 #endif
 
+namespace base {
 class Pickle;
 class PickleIterator;
+}
 
 namespace net {
 
@@ -179,7 +181,7 @@ class NET_EXPORT X509Certificate
   // Returns NULL on failure.
   //
   // The returned pointer must be stored in a scoped_refptr<X509Certificate>.
-  static X509Certificate* CreateFromPickle(PickleIterator* pickle_iter,
+  static X509Certificate* CreateFromPickle(base::PickleIterator* pickle_iter,
                                            PickleType type);
 
   // Parses all of the certificates possible from |data|. |format| is a
@@ -191,7 +193,7 @@ class NET_EXPORT X509Certificate
                                                         int format);
 
   // Appends a representation of this object to the given pickle.
-  void Persist(Pickle* pickle);
+  void Persist(base::Pickle* pickle);
 
   // The serial number, DER encoded, possibly including a leading 00 byte.
   const std::string& serial_number() const { return serial_number_; }
@@ -474,11 +476,13 @@ class NET_EXPORT X509Certificate
   // Returns an invalid handle, NULL, on failure.
   // NOTE: This should not be used for any new code. It is provided for
   // migration purposes and should eventually be removed.
-  static OSCertHandle ReadOSCertHandleFromPickle(PickleIterator* pickle_iter);
+  static OSCertHandle ReadOSCertHandleFromPickle(
+      base::PickleIterator* pickle_iter);
 
   // Writes a single certificate to |pickle| in DER form. Returns false on
   // failure.
-  static bool WriteOSCertHandleToPickle(OSCertHandle handle, Pickle* pickle);
+  static bool WriteOSCertHandleToPickle(OSCertHandle handle,
+                                        base::Pickle* pickle);
 
   // The subject of the certificate.
   CertPrincipal subject_;

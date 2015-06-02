@@ -25,7 +25,7 @@ struct LogData;
 class MessageAttachment;
 class MessageAttachmentSet;
 
-class IPC_EXPORT Message : public Pickle {
+class IPC_EXPORT Message : public base::Pickle {
  public:
   enum PriorityValue {
     PRIORITY_LOW = 1,
@@ -163,7 +163,7 @@ class IPC_EXPORT Message : public Pickle {
   // Find the end of the message data that starts at range_start.  Returns NULL
   // if the entire message is not found in the given data range.
   static const char* FindNext(const char* range_start, const char* range_end) {
-    return Pickle::FindNext(sizeof(Header), range_start, range_end);
+    return base::Pickle::FindNext(sizeof(Header), range_start, range_end);
   }
 
   // WriteAttachment appends |attachment| to the end of the set. It returns
@@ -171,7 +171,7 @@ class IPC_EXPORT Message : public Pickle {
   bool WriteAttachment(scoped_refptr<MessageAttachment> attachment);
   // ReadAttachment parses an attachment given the parsing state |iter| and
   // writes it to |*attachment|. It returns true on success.
-  bool ReadAttachment(PickleIterator* iter,
+  bool ReadAttachment(base::PickleIterator* iter,
                       scoped_refptr<MessageAttachment>* attachment) const;
   // Returns true if there are any attachment in this message.
   bool HasAttachments() const;
@@ -219,7 +219,7 @@ class IPC_EXPORT Message : public Pickle {
   friend class SyncMessage;
 
 #pragma pack(push, 4)
-  struct Header : Pickle::Header {
+  struct Header : base::Pickle::Header {
     int32 routing;  // ID of the view that this message is destined for
     uint32 type;    // specifies the user-defined message type
     uint32 flags;   // specifies control flags for the message

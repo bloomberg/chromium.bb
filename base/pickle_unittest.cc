@@ -11,8 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Remove when this file is in the base namespace.
-using base::string16;
+namespace base {
 
 namespace {
 
@@ -29,10 +28,10 @@ const float testfloat = 3.1415926935f;
 const double testdouble = 2.71828182845904523;
 const std::string teststring("Hello world");  // note non-aligned string length
 const std::wstring testwstring(L"Hello, world");
-const base::string16 teststring16(base::ASCIIToUTF16("Hello, world"));
+const string16 teststring16(ASCIIToUTF16("Hello, world"));
 const char testrawstring[] = "Hello new world"; // Test raw string writing
 // Test raw char16 writing, assumes UTF16 encoding is ANSI for alpha chars.
-const base::char16 testrawstring16[] = {'A', 'l', 'o', 'h', 'a', 0};
+const char16 testrawstring16[] = {'A', 'l', 'o', 'h', 'a', 0};
 const char testdata[] = "AAA\0BBB\0";
 const int testdatalen = arraysize(testdata) - 1;
 
@@ -86,15 +85,15 @@ void VerifyResult(const Pickle& pickle) {
   EXPECT_TRUE(iter.ReadString(&outstring));
   EXPECT_EQ(teststring, outstring);
 
-  base::string16 outstring16;
+  string16 outstring16;
   EXPECT_TRUE(iter.ReadString16(&outstring16));
   EXPECT_EQ(teststring16, outstring16);
 
-  base::StringPiece outstringpiece;
+  StringPiece outstringpiece;
   EXPECT_TRUE(iter.ReadStringPiece(&outstringpiece));
   EXPECT_EQ(testrawstring, outstringpiece);
 
-  base::StringPiece16 outstringpiece16;
+  StringPiece16 outstringpiece16;
   EXPECT_TRUE(iter.ReadStringPiece16(&outstringpiece16));
   EXPECT_EQ(testrawstring16, outstringpiece16);
 
@@ -208,7 +207,7 @@ TEST(PickleTest, ZeroLenStr) {
 
 TEST(PickleTest, ZeroLenStr16) {
   Pickle pickle;
-  EXPECT_TRUE(pickle.WriteString16(base::string16()));
+  EXPECT_TRUE(pickle.WriteString16(string16()));
 
   PickleIterator iter(pickle);
   std::string outstr;
@@ -230,7 +229,7 @@ TEST(PickleTest, BadLenStr16) {
   EXPECT_TRUE(pickle.WriteInt(-1));
 
   PickleIterator iter(pickle);
-  base::string16 outstr;
+  string16 outstr;
   EXPECT_FALSE(iter.ReadString16(&outstr));
 }
 
@@ -428,3 +427,5 @@ TEST(PickleTest, ReadBytes) {
   memcpy(&outdata, outdata_char, sizeof(outdata));
   EXPECT_EQ(data, outdata);
 }
+
+}  // namespace base

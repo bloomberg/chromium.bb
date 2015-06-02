@@ -21,7 +21,6 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/host_resource.h"
 
-class Pickle;
 struct PP_FontDescription_Dev;
 struct PP_BrowserFont_Trusted_Description;
 

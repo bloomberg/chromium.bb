@@ -17,7 +17,7 @@ class IPC_MOJO_EXPORT MojoMessageHelper {
   static bool WriteMessagePipeTo(Message* message,
                                  mojo::ScopedMessagePipeHandle handle);
   static bool ReadMessagePipeFrom(const Message* message,
-                                  PickleIterator* iter,
+                                  base::PickleIterator* iter,
                                   mojo::ScopedMessagePipeHandle* handle);
 
  private:

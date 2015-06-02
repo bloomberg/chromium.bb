@@ -24,7 +24,7 @@
 #undef IPC_STRUCT_TRAITS_END
 #define IPC_STRUCT_TRAITS_BEGIN(struct_name) \
   bool ParamTraits<struct_name>:: \
-      Read(const Message* m, PickleIterator* iter, param_type* p) { \
+      Read(const Message* m, base::PickleIterator* iter, param_type* p) { \
     return
 #define IPC_STRUCT_TRAITS_MEMBER(name) ReadParam(m, iter, &p->name) &&
 #define IPC_STRUCT_TRAITS_PARENT(type) ParamTraits<type>::Read(m, iter, p) &&
@@ -33,7 +33,7 @@
 #undef IPC_ENUM_TRAITS_VALIDATE
 #define IPC_ENUM_TRAITS_VALIDATE(enum_name, validation_expression)    \
   bool ParamTraits<enum_name>:: \
-      Read(const Message* m, PickleIterator* iter, param_type* p) { \
+      Read(const Message* m, base::PickleIterator* iter, param_type* p) { \
     int value; \
     if (!iter->ReadInt(&value)) \
       return false; \

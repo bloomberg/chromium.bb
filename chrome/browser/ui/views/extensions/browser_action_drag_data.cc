@@ -82,7 +82,7 @@ BrowserActionDragData::GetBrowserActionCustomFormat() {
 #endif
 
 void BrowserActionDragData::WriteToPickle(
-    Profile* profile, Pickle* pickle) const {
+    Profile* profile, base::Pickle* pickle) const {
   pickle->WriteBytes(&profile, sizeof(profile));
   pickle->WriteString(id_);
   pickle->WriteUInt64(index_);

@@ -31,8 +31,10 @@ class NSCursor;
 #endif
 #endif
 
+namespace base {
 class Pickle;
 class PickleIterator;
+}
 
 namespace content {
 
@@ -81,8 +83,8 @@ class CONTENT_EXPORT WebCursor {
   void GetCursorInfo(CursorInfo* cursor_info) const;
 
   // Serialization / De-serialization
-  bool Deserialize(PickleIterator* iter);
-  bool Serialize(Pickle* pickle) const;
+  bool Deserialize(base::PickleIterator* iter);
+  bool Serialize(base::Pickle* pickle) const;
 
   // Returns true if GetCustomCursor should be used to allocate a platform
   // specific cursor object.  Otherwise GetCursor should be used.
@@ -131,8 +133,8 @@ class CONTENT_EXPORT WebCursor {
   void InitPlatformData();
 
   // Platform specific Serialization / De-serialization
-  bool SerializePlatformData(Pickle* pickle) const;
-  bool DeserializePlatformData(PickleIterator* iter);
+  bool SerializePlatformData(base::Pickle* pickle) const;
+  bool DeserializePlatformData(base::PickleIterator* iter);
 
   // Returns true if the platform data in the current cursor object
   // matches that of the cursor passed in.

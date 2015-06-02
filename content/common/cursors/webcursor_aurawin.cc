@@ -35,11 +35,11 @@ void WebCursor::InitPlatformData() {
   custom_cursor_ = NULL;
 }
 
-bool WebCursor::SerializePlatformData(Pickle* pickle) const {
+bool WebCursor::SerializePlatformData(base::Pickle* pickle) const {
   return true;
 }
 
-bool WebCursor::DeserializePlatformData(PickleIterator* iter) {
+bool WebCursor::DeserializePlatformData(base::PickleIterator* iter) {
   return true;
 }
 

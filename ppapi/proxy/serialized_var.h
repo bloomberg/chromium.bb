@@ -20,7 +20,9 @@
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/proxy/var_serialization_rules.h"
 
+namespace base {
 class PickleIterator;
+}
 
 namespace IPC {
 class Message;
@@ -87,7 +89,7 @@ class PPAPI_PROXY_EXPORT SerializedVar {
                           const HandleWriter& handle_writer) const {
     inner_->WriteDataToMessage(m, handle_writer);
   }
-  bool ReadFromMessage(const IPC::Message* m, PickleIterator* iter) {
+  bool ReadFromMessage(const IPC::Message* m, base::PickleIterator* iter) {
     return inner_->ReadFromMessage(m, iter);
   }
 
@@ -143,7 +145,7 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     void WriteToMessage(IPC::Message* m) const;
     void WriteDataToMessage(IPC::Message* m,
                             const HandleWriter& handle_writer) const;
-    bool ReadFromMessage(const IPC::Message* m, PickleIterator* iter);
+    bool ReadFromMessage(const IPC::Message* m, base::PickleIterator* iter);
 
     // Sets the cleanup mode. See the CleanupMode enum below.
     void SetCleanupModeToEndSendPassRef();

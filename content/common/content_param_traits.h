@@ -30,7 +30,9 @@ struct ParamTraits<content::WebCursor> {
   static void Write(Message* m, const param_type& p) {
     p.Serialize(m);
   }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r)  {
+  static bool Read(const Message* m,
+                   base::PickleIterator* iter,
+                   param_type* r)  {
     return r->Deserialize(iter);
   }
   static void Log(const param_type& p, std::string* l) {
@@ -44,7 +46,7 @@ struct ParamTraits<WebInputEventPointer> {
   typedef WebInputEventPointer param_type;
   static void Write(Message* m, const param_type& p);
   // Note: upon read, the event has the lifetime of the message.
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

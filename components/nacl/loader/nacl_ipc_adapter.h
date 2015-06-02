@@ -63,7 +63,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   // header is duplicated here so we have a cross-platform definition of the
   // header we're exposing to NaCl.
 #pragma pack(push, 4)
-  struct NaClMessageHeader : public Pickle::Header {
+  struct NaClMessageHeader : public base::Pickle::Header {
     int32 routing;
     uint32 type;
     uint32 flags;

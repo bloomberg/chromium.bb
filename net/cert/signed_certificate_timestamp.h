@@ -13,8 +13,10 @@
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
 
+namespace base {
 class Pickle;
 class PickleIterator;
+}
 
 namespace net {
 
@@ -105,9 +107,9 @@ struct NET_EXPORT SignedCertificateTimestamp
 
   SignedCertificateTimestamp();
 
-  void Persist(Pickle* pickle);
+  void Persist(base::Pickle* pickle);
   static scoped_refptr<SignedCertificateTimestamp> CreateFromPickle(
-      PickleIterator* iter);
+      base::PickleIterator* iter);
 
   Version version;
   std::string log_id;

@@ -18,7 +18,7 @@ void MessageSchema<ParamType>::Write(Message* msg, const RefParam& p) {
 
 template <class ParamType>
 bool MessageSchema<ParamType>::Read(const Message* msg, Param* p) {
-  PickleIterator iter(*msg);
+  base::PickleIterator iter(*msg);
   if (ReadParam(msg, &iter, p))
     return true;
   NOTREACHED() << "Error deserializing message " << msg->type();
@@ -35,14 +35,14 @@ void SyncMessageSchema<SendParamType, ReplyParamType>::Write(
 template <class SendParamType, class ReplyParamType>
 bool SyncMessageSchema<SendParamType, ReplyParamType>::ReadSendParam(
     const Message* msg, SendParam* p) {
-  PickleIterator iter = SyncMessage::GetDataIterator(msg);
+  base::PickleIterator iter = SyncMessage::GetDataIterator(msg);
   return ReadParam(msg, &iter, p);
 }
 
 template <class SendParamType, class ReplyParamType>
 bool SyncMessageSchema<SendParamType, ReplyParamType>::ReadReplyParam(
     const Message* msg, typename base::TupleTypes<ReplyParam>::ValueTuple* p) {
-  PickleIterator iter = SyncMessage::GetDataIterator(msg);
+  base::PickleIterator iter = SyncMessage::GetDataIterator(msg);
   return ReadParam(msg, &iter, p);
 }
 

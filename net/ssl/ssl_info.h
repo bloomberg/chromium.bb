@@ -14,9 +14,6 @@
 #include "net/cert/x509_cert_types.h"
 #include "net/ssl/signed_certificate_timestamp_and_status.h"
 
-class Pickle;
-class PickleIterator;
-
 namespace net {
 
 class X509Certificate;

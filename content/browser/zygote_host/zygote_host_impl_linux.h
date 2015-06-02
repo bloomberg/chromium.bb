@@ -78,7 +78,7 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
   // Sends |data| to the zygote via |control_fd_|.  If |fds| is non-NULL, the
   // included file descriptors will also be passed.  The caller is responsible
   // for acquiring |control_lock_|.
-  bool SendMessage(const Pickle& data, const std::vector<int>* fds);
+  bool SendMessage(const base::Pickle& data, const std::vector<int>* fds);
 
   ssize_t ReadReply(void* buf, size_t buflen);
 

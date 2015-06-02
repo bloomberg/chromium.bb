@@ -55,7 +55,7 @@ class GinJavaBridgeValue {
   explicit GinJavaBridgeValue(const base::BinaryValue* value);
   base::BinaryValue* SerializeToBinaryValue();
 
-  Pickle pickle_;
+  base::Pickle pickle_;
 
   DISALLOW_COPY_AND_ASSIGN(GinJavaBridgeValue);
 };

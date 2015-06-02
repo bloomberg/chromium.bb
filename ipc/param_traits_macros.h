@@ -14,7 +14,8 @@
     struct IPC_MESSAGE_EXPORT ParamTraits<struct_name> { \
       typedef struct_name param_type; \
       static void Write(Message* m, const param_type& p); \
-      static bool Read(const Message* m, PickleIterator* iter, param_type* p); \
+      static bool Read(const Message* m, base::PickleIterator* iter, \
+                       param_type* p); \
       static void Log(const param_type& p, std::string* l); \
     }; \
   }
@@ -52,7 +53,8 @@
     struct IPC_MESSAGE_EXPORT ParamTraits<enum_name> { \
       typedef enum_name param_type; \
       static void Write(Message* m, const param_type& p); \
-      static bool Read(const Message* m, PickleIterator* iter, param_type* p); \
+      static bool Read(const Message* m, base::PickleIterator* iter, \
+                       param_type* p); \
       static void Log(const param_type& p, std::string* l); \
     }; \
   }

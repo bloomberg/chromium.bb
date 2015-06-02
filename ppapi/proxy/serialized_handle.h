@@ -18,7 +18,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
+namespace base {
 class Pickle;
+}
 
 namespace ppapi {
 namespace proxy {
@@ -129,8 +131,8 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   // Write/Read a Header, which contains all the data except the handle. This
   // allows us to write the handle in a platform-specific way, as is necessary
   // in NaClIPCAdapter to share handles with NaCl from Windows.
-  static bool WriteHeader(const Header& hdr, Pickle* pickle);
-  static bool ReadHeader(PickleIterator* iter, Header* hdr);
+  static bool WriteHeader(const Header& hdr, base::Pickle* pickle);
+  static bool ReadHeader(base::PickleIterator* iter, Header* hdr);
 
  private:
   // The kind of handle we're holding.

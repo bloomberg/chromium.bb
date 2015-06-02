@@ -18,7 +18,7 @@ template <>
 struct ParamTraits<webrtc::DesktopVector> {
   typedef webrtc::DesktopVector param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -26,7 +26,7 @@ template <>
 struct ParamTraits<webrtc::DesktopSize> {
   typedef webrtc::DesktopSize param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -34,7 +34,7 @@ template <>
 struct ParamTraits<webrtc::DesktopRect> {
   typedef webrtc::DesktopRect param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -42,7 +42,7 @@ template <>
 struct ParamTraits<webrtc::MouseCursor> {
   typedef webrtc::MouseCursor param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -50,7 +50,7 @@ template <>
 struct ParamTraits<remoting::ScreenResolution> {
   typedef remoting::ScreenResolution param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

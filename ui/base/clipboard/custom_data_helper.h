@@ -16,7 +16,9 @@
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_export.h"
 
+namespace base {
 class Pickle;
+}
 
 #if defined(OS_MACOSX)
 #ifdef __OBJC__
@@ -48,7 +50,7 @@ UI_BASE_EXPORT void ReadCustomDataIntoMap(
 
 UI_BASE_EXPORT void WriteCustomDataToPickle(
     const std::map<base::string16, base::string16>& data,
-    Pickle* pickle);
+    base::Pickle* pickle);
 
 }  // namespace ui
 

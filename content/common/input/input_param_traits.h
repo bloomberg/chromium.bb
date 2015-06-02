@@ -19,7 +19,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<content::ScopedWebInputEvent> {
   typedef content::ScopedWebInputEvent param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -27,7 +27,7 @@ template<>
 struct CONTENT_EXPORT ParamTraits<content::SyntheticGesturePacket> {
   typedef content::SyntheticGesturePacket param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

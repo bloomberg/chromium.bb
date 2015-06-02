@@ -71,7 +71,7 @@ bool UnpackMessage(const IPC::Message& msg, A* a) {
       (internal::TupleTypeMatch1<typename MsgClass::Param, A>::kValue),
       "tuple types should match");
 
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   return IPC::ReadParam(&msg, &iter, a);
 }
 
@@ -81,7 +81,7 @@ bool UnpackMessage(const IPC::Message& msg, A* a, B* b) {
       (internal::TupleTypeMatch2<typename MsgClass::Param, A, B>::kValue),
       "tuple types should match");
 
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   return IPC::ReadParam(&msg, &iter, a) && IPC::ReadParam(&msg, &iter, b);
 }
 
@@ -91,7 +91,7 @@ bool UnpackMessage(const IPC::Message& msg, A* a, B* b, C* c) {
       (internal::TupleTypeMatch3<typename MsgClass::Param, A, B, C>::kValue),
       "tuple types should match");
 
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   return IPC::ReadParam(&msg, &iter, a) &&
          IPC::ReadParam(&msg, &iter, b) &&
          IPC::ReadParam(&msg, &iter, c);
@@ -103,7 +103,7 @@ bool UnpackMessage(const IPC::Message& msg, A* a, B* b, C* c, D* d) {
       (internal::TupleTypeMatch4<typename MsgClass::Param, A, B, C, D>::kValue),
       "tuple types should match");
 
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   return IPC::ReadParam(&msg, &iter, a) &&
          IPC::ReadParam(&msg, &iter, b) &&
          IPC::ReadParam(&msg, &iter, c) &&
@@ -117,7 +117,7 @@ bool UnpackMessage(const IPC::Message& msg, A* a, B* b, C* c, D* d, E* e) {
            typename MsgClass::Param, A, B, C, D, E>::kValue),
       "tuple types should match");
 
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   return IPC::ReadParam(&msg, &iter, a) &&
          IPC::ReadParam(&msg, &iter, b) &&
          IPC::ReadParam(&msg, &iter, c) &&

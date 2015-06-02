@@ -40,7 +40,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<GURL> {
   typedef GURL param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -48,7 +48,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<url::Origin> {
   typedef url::Origin param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -56,7 +56,7 @@ template<>
 struct CONTENT_EXPORT ParamTraits<net::HostPortPair> {
   typedef net::HostPortPair param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -64,7 +64,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<net::IPEndPoint> {
   typedef net::IPEndPoint param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -72,7 +72,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<content::PageState> {
   typedef content::PageState param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -87,7 +87,8 @@ struct ParamTraits<gfx::NativeWindow> {
     m->WriteData(reinterpret_cast<const char*>(&p), sizeof(p));
 #endif
   }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
+  static bool Read(const Message* m, base::PickleIterator* iter,
+                   param_type* r) {
 #if defined(OS_WIN)
     return iter->ReadUInt32(reinterpret_cast<uint32*>(r));
 #else
@@ -116,7 +117,8 @@ struct ParamTraits<TransportDIB::Id> {
     WriteParam(m, p.handle);
     WriteParam(m, p.sequence_num);
   }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
+  static bool Read(const Message* m, base::PickleIterator* iter,
+                   param_type* r) {
     return (ReadParam(m, iter, &r->handle) &&
             ReadParam(m, iter, &r->sequence_num));
   }

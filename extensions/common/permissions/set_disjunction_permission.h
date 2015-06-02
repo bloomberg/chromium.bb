@@ -151,7 +151,7 @@ class SetDisjunctionPermission : public APIPermission {
     IPC::WriteParam(m, data_set_);
   }
 
-  bool Read(const IPC::Message* m, PickleIterator* iter) override {
+  bool Read(const IPC::Message* m, base::PickleIterator* iter) override {
     return IPC::ReadParam(m, iter, &data_set_);
   }
 

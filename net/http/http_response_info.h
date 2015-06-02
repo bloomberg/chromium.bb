@@ -14,7 +14,9 @@
 #include "net/socket/next_proto.h"
 #include "net/ssl/ssl_info.h"
 
+namespace base {
 class Pickle;
+}
 
 namespace net {
 
@@ -52,10 +54,10 @@ class NET_EXPORT HttpResponseInfo {
   // that would prevent us from doing a bunch of forward declaration.
 
   // Initializes from the representation stored in the given pickle.
-  bool InitFromPickle(const Pickle& pickle, bool* response_truncated);
+  bool InitFromPickle(const base::Pickle& pickle, bool* response_truncated);
 
   // Call this method to persist the response info.
-  void Persist(Pickle* pickle,
+  void Persist(base::Pickle* pickle,
                bool skip_transient_headers,
                bool response_truncated) const;
 

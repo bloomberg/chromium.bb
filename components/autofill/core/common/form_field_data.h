@@ -10,8 +10,10 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 
+namespace base {
 class Pickle;
 class PickleIterator;
+}
 
 namespace autofill {
 
@@ -58,8 +60,8 @@ struct FormFieldData {
 // Serialize and deserialize FormFieldData. These are used when FormData objects
 // are serialized and deserialized.
 void SerializeFormFieldData(const FormFieldData& form_field_data,
-                            Pickle* serialized);
-bool DeserializeFormFieldData(PickleIterator* pickle_iterator,
+                            base::Pickle* serialized);
+bool DeserializeFormFieldData(base::PickleIterator* pickle_iterator,
                               FormFieldData* form_field_data);
 
 // So we can compare FormFieldDatas with EXPECT_EQ().
