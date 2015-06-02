@@ -446,6 +446,22 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     }
 
     {
+        v8::Local<v8::Value> testInterfaceGarbageCollectedSequenceMemberValue;
+        if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceGarbageCollectedSequenceMember")).ToLocal(&testInterfaceGarbageCollectedSequenceMemberValue)) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return;
+        }
+        if (testInterfaceGarbageCollectedSequenceMemberValue.IsEmpty() || testInterfaceGarbageCollectedSequenceMemberValue->IsUndefined()) {
+            // Do nothing.
+        } else {
+            HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedSequenceMember = (toMemberNativeArray<TestInterfaceGarbageCollected, V8TestInterfaceGarbageCollected>(testInterfaceGarbageCollectedSequenceMemberValue, 0, isolate, exceptionState));
+            if (exceptionState.hadException())
+                return;
+            impl.setTestInterfaceGarbageCollectedSequenceMember(testInterfaceGarbageCollectedSequenceMember);
+        }
+    }
+
+    {
         v8::Local<v8::Value> testInterfaceMemberValue;
         if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceMember")).ToLocal(&testInterfaceMemberValue)) {
             exceptionState.rethrowV8Exception(block.Exception());
@@ -484,6 +500,22 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     }
 
     {
+        v8::Local<v8::Value> testInterfaceSequenceMemberValue;
+        if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceSequenceMember")).ToLocal(&testInterfaceSequenceMemberValue)) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return;
+        }
+        if (testInterfaceSequenceMemberValue.IsEmpty() || testInterfaceSequenceMemberValue->IsUndefined()) {
+            // Do nothing.
+        } else {
+            Vector<RefPtr<TestInterfaceImplementation>> testInterfaceSequenceMember = (toRefPtrNativeArray<TestInterface, V8TestInterface>(testInterfaceSequenceMemberValue, 0, isolate, exceptionState));
+            if (exceptionState.hadException())
+                return;
+            impl.setTestInterfaceSequenceMember(testInterfaceSequenceMember);
+        }
+    }
+
+    {
         v8::Local<v8::Value> testInterfaceWillBeGarbageCollectedMemberValue;
         if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceWillBeGarbageCollectedMember")).ToLocal(&testInterfaceWillBeGarbageCollectedMemberValue)) {
             exceptionState.rethrowV8Exception(block.Exception());
@@ -518,6 +550,22 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
                 return;
             }
             impl.setTestInterfaceWillBeGarbageCollectedOrNullMember(testInterfaceWillBeGarbageCollectedOrNullMember);
+        }
+    }
+
+    {
+        v8::Local<v8::Value> testInterfaceWillBeGarbageCollectedSequenceMemberValue;
+        if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceWillBeGarbageCollectedSequenceMember")).ToLocal(&testInterfaceWillBeGarbageCollectedSequenceMemberValue)) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return;
+        }
+        if (testInterfaceWillBeGarbageCollectedSequenceMemberValue.IsEmpty() || testInterfaceWillBeGarbageCollectedSequenceMemberValue->IsUndefined()) {
+            // Do nothing.
+        } else {
+            WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected>> testInterfaceWillBeGarbageCollectedSequenceMember = (toRefPtrWillBeMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(testInterfaceWillBeGarbageCollectedSequenceMemberValue, 0, isolate, exceptionState));
+            if (exceptionState.hadException())
+                return;
+            impl.setTestInterfaceWillBeGarbageCollectedSequenceMember(testInterfaceWillBeGarbageCollectedSequenceMember);
         }
     }
 
@@ -709,6 +757,14 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
             return false;
     }
 
+    if (impl.hasTestInterfaceGarbageCollectedSequenceMember()) {
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceGarbageCollectedSequenceMember"), toV8(impl.testInterfaceGarbageCollectedSequenceMember(), creationContext, isolate))))
+            return false;
+    } else {
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceGarbageCollectedSequenceMember"), toV8(HeapVector<Member<TestInterfaceGarbageCollected>>(), creationContext, isolate))))
+            return false;
+    }
+
     if (impl.hasTestInterfaceMember()) {
         if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceMember"), toV8(impl.testInterfaceMember(), creationContext, isolate))))
             return false;
@@ -719,6 +775,14 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
             return false;
     }
 
+    if (impl.hasTestInterfaceSequenceMember()) {
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceSequenceMember"), toV8(impl.testInterfaceSequenceMember(), creationContext, isolate))))
+            return false;
+    } else {
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceSequenceMember"), toV8(Vector<RefPtr<TestInterface>>(), creationContext, isolate))))
+            return false;
+    }
+
     if (impl.hasTestInterfaceWillBeGarbageCollectedMember()) {
         if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceWillBeGarbageCollectedMember"), toV8(impl.testInterfaceWillBeGarbageCollectedMember(), creationContext, isolate))))
             return false;
@@ -726,6 +790,14 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
 
     if (impl.hasTestInterfaceWillBeGarbageCollectedOrNullMember()) {
         if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceWillBeGarbageCollectedOrNullMember"), toV8(impl.testInterfaceWillBeGarbageCollectedOrNullMember(), creationContext, isolate))))
+            return false;
+    }
+
+    if (impl.hasTestInterfaceWillBeGarbageCollectedSequenceMember()) {
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceWillBeGarbageCollectedSequenceMember"), toV8(impl.testInterfaceWillBeGarbageCollectedSequenceMember(), creationContext, isolate))))
+            return false;
+    } else {
+        if (!v8CallBoolean(dictionary->Set(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceWillBeGarbageCollectedSequenceMember"), toV8(WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected>>(), creationContext, isolate))))
             return false;
     }
 

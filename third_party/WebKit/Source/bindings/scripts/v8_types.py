@@ -922,8 +922,22 @@ def union_literal_cpp_value(idl_type, idl_literal):
     return '%s::from%s(%s)' % (idl_type.name, member_type.name,
                                member_type.literal_cpp_value(idl_literal))
 
+
+def array_or_sequence_literal_cpp_value(idl_type, idl_literal):
+    # Only support empty arrays.
+    if idl_literal.value == '[]':
+        element_type = idl_type.element_type
+        ref_ptr_type = cpp_ptr_type('RefPtr', 'Member', element_type.gc_type)
+        inner_type = cpp_template_type(ref_ptr_type, element_type.name)
+        vector_type = cpp_ptr_type('Vector', 'HeapVector',
+                                   element_type.gc_type)
+        return cpp_template_type(vector_type, inner_type) + '()'
+    raise ValueError('Unsupported literal type: ' + idl_literal.idl_type)
+
+
 IdlType.literal_cpp_value = literal_cpp_value
 IdlUnionType.literal_cpp_value = union_literal_cpp_value
+IdlArrayOrSequenceType.literal_cpp_value = array_or_sequence_literal_cpp_value
 
 
 ################################################################################

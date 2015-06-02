@@ -18,6 +18,9 @@ dictionary TestDictionary {
     TestInterfaceWillBeGarbageCollected? testInterfaceWillBeGarbageCollectedOrNullMember;
     DOMString[] stringArrayMember;
     sequence<DOMString> stringSequenceMember;
+    sequence<TestInterface> testInterfaceSequenceMember = [];
+    sequence<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedSequenceMember = [];
+    sequence<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedSequenceMember = [];
     TestEnum enumMember = "foo";
     sequence<TestEnum> enumSequenceMember;
     Element? elementOrNullMember;
