@@ -51,14 +51,14 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(SynchronousCompositorImpl);
 // static
 SynchronousCompositorImpl* SynchronousCompositorImpl::FromID(int process_id,
                                                              int routing_id) {
-  if (g_factory == NULL)
-    return NULL;
+  if (g_factory == nullptr)
+    return nullptr;
   RenderViewHost* rvh = RenderViewHost::FromID(process_id, routing_id);
   if (!rvh)
-    return NULL;
+    return nullptr;
   WebContents* contents = WebContents::FromRenderViewHost(rvh);
   if (!contents)
-    return NULL;
+    return nullptr;
   return FromWebContents(contents);
 }
 
@@ -68,13 +68,14 @@ SynchronousCompositorImpl* SynchronousCompositorImpl::FromRoutingID(
 }
 
 SynchronousCompositorImpl::SynchronousCompositorImpl(WebContents* contents)
-    : compositor_client_(NULL),
-      output_surface_(NULL),
+    : compositor_client_(nullptr),
+      output_surface_(nullptr),
       begin_frame_source_(nullptr),
       contents_(contents),
       routing_id_(contents->GetRoutingID()),
-      input_handler_(NULL),
-      is_active_(false),
+      input_handler_(nullptr),
+      registered_with_client_(false),
+      is_active_(true),
       renderer_needs_begin_frames_(false),
       weak_ptr_factory_(this) {
   DCHECK(contents);
@@ -108,6 +109,25 @@ void SynchronousCompositorImpl::SetClient(
   }
 }
 
+void SynchronousCompositorImpl::RegisterWithClient() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(compositor_client_);
+  DCHECK(output_surface_);
+  DCHECK(input_handler_);
+  DCHECK(!registered_with_client_);
+  registered_with_client_ = true;
+
+  compositor_client_->DidInitializeCompositor(this);
+
+  output_surface_->SetTreeActivationCallback(
+    base::Bind(&SynchronousCompositorImpl::DidActivatePendingTree,
+               weak_ptr_factory_.GetWeakPtr()));
+
+  // Setting the delegate causes UpdateRootLayerState immediately so do it
+  // after setting the client.
+  input_handler_->SetRootLayerScrollOffsetDelegate(this);
+}
+
 // static
 void SynchronousCompositor::SetGpuService(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
@@ -132,19 +152,10 @@ void SynchronousCompositorImpl::DidInitializeRendererObjects(
 
   output_surface_ = output_surface;
   begin_frame_source_ = begin_frame_source;
+  input_handler_ = input_handler;
 
-  begin_frame_source_->SetCompositor(this);
   output_surface_->SetCompositor(this);
-
-  output_surface_->SetTreeActivationCallback(
-      base::Bind(&SynchronousCompositorImpl::DidActivatePendingTree,
-                 weak_ptr_factory_.GetWeakPtr()));
-
-  OnNeedsBeginFramesChange(begin_frame_source_->NeedsBeginFrames());
-
-  compositor_client_->DidInitializeCompositor(this);
-
-  SetInputHandler(input_handler);
+  begin_frame_source_->SetCompositor(this);
 }
 
 void SynchronousCompositorImpl::DidDestroyRendererObjects() {
@@ -152,12 +163,19 @@ void SynchronousCompositorImpl::DidDestroyRendererObjects() {
   DCHECK(begin_frame_source_);
   DCHECK(compositor_client_);
 
+  if (registered_with_client_) {
+    input_handler_->SetRootLayerScrollOffsetDelegate(nullptr);
+    output_surface_->SetTreeActivationCallback(base::Closure());
+    compositor_client_->DidDestroyCompositor(this);
+    registered_with_client_ = false;
+  }
+
   begin_frame_source_->SetCompositor(nullptr);
   output_surface_->SetCompositor(nullptr);
-  SetInputHandler(nullptr);
-  compositor_client_->DidDestroyCompositor(this);
-  output_surface_ = nullptr;
+
+  input_handler_ = nullptr;
   begin_frame_source_ = nullptr;
+  output_surface_ = nullptr;
 }
 
 scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
@@ -233,7 +251,8 @@ void SynchronousCompositorImpl::SetMemoryPolicy(size_t bytes_limit) {
 void SynchronousCompositorImpl::PostInvalidate() {
   DCHECK(CalledOnValidThread());
   DCHECK(compositor_client_);
-  compositor_client_->PostInvalidate();
+  if (registered_with_client_)
+    compositor_client_->PostInvalidate();
 }
 
 void SynchronousCompositorImpl::DidChangeRootLayerScrollOffset() {
@@ -255,6 +274,10 @@ void SynchronousCompositorImpl::OnNeedsBeginFramesChange(
 }
 
 void SynchronousCompositorImpl::BeginFrame(const cc::BeginFrameArgs& args) {
+  if (!registered_with_client_) {
+    RegisterWithClient();
+    DCHECK(registered_with_client_);
+  }
   if (begin_frame_source_)
     begin_frame_source_->BeginFrame(args);
 }
@@ -266,25 +289,14 @@ void SynchronousCompositorImpl::UpdateNeedsBeginFrames() {
     rwhv->OnSetNeedsBeginFrames(is_active_ && renderer_needs_begin_frames_);
 }
 
-void SynchronousCompositorImpl::SetInputHandler(
-    cc::InputHandler* input_handler) {
-  DCHECK(CalledOnValidThread());
-
-  if (input_handler_)
-    input_handler_->SetRootLayerScrollOffsetDelegate(NULL);
-
-  input_handler_ = input_handler;
-
-  if (input_handler_)
-    input_handler_->SetRootLayerScrollOffsetDelegate(this);
-}
-
 void SynchronousCompositorImpl::DidOverscroll(
     const DidOverscrollParams& params) {
   DCHECK(compositor_client_);
-  compositor_client_->DidOverscroll(params.accumulated_overscroll,
-                                    params.latest_overscroll_delta,
-                                    params.current_fling_velocity);
+  if (registered_with_client_) {
+    compositor_client_->DidOverscroll(params.accumulated_overscroll,
+                                      params.latest_overscroll_delta,
+                                      params.current_fling_velocity);
+  }
 }
 
 void SynchronousCompositorImpl::DidStopFlinging() {
@@ -315,13 +327,16 @@ void SynchronousCompositorImpl::DeliverMessages() {
 
 void SynchronousCompositorImpl::DidActivatePendingTree() {
   DCHECK(compositor_client_);
-  compositor_client_->DidUpdateContent();
+  if (registered_with_client_)
+    compositor_client_->DidUpdateContent();
   DeliverMessages();
 }
 
 gfx::ScrollOffset SynchronousCompositorImpl::GetTotalScrollOffset() {
   DCHECK(CalledOnValidThread());
   DCHECK(compositor_client_);
+  if (!registered_with_client_)
+    return gfx::ScrollOffset();
   // TODO(miletus): Make GetTotalRootLayerScrollOffset return
   // ScrollOffset. crbug.com/414283.
   return gfx::ScrollOffset(
@@ -331,6 +346,8 @@ gfx::ScrollOffset SynchronousCompositorImpl::GetTotalScrollOffset() {
 bool SynchronousCompositorImpl::IsExternalFlingActive() const {
   DCHECK(CalledOnValidThread());
   DCHECK(compositor_client_);
+  if (!registered_with_client_)
+    return false;
   return compositor_client_->IsExternalFlingActive();
 }
 
@@ -344,14 +361,16 @@ void SynchronousCompositorImpl::UpdateRootLayerState(
   DCHECK(CalledOnValidThread());
   DCHECK(compositor_client_);
 
-  // TODO(miletus): Pass in ScrollOffset. crbug.com/414283.
-  compositor_client_->UpdateRootLayerState(
-      gfx::ScrollOffsetToVector2dF(total_scroll_offset),
-      gfx::ScrollOffsetToVector2dF(max_scroll_offset),
-      scrollable_size,
-      page_scale_factor,
-      min_page_scale_factor,
-      max_page_scale_factor);
+  if (registered_with_client_) {
+    // TODO(miletus): Pass in ScrollOffset. crbug.com/414283.
+    compositor_client_->UpdateRootLayerState(
+        gfx::ScrollOffsetToVector2dF(total_scroll_offset),
+        gfx::ScrollOffsetToVector2dF(max_scroll_offset),
+        scrollable_size,
+        page_scale_factor,
+        min_page_scale_factor,
+        max_page_scale_factor);
+  }
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading

@@ -11,7 +11,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 
@@ -43,12 +42,9 @@ public class AwContentsRenderTest extends AwTestBase {
         });
     }
 
-    /*
+
     @SmallTest
     @Feature({"AndroidWebView"})
-    crbug.com/492815
-    */
-    @DisabledTest
     public void testSetGetBackgroundColor() throws Throwable {
         setBackgroundColorOnUiThread(Color.MAGENTA);
         GraphicsTestUtils.pollForBackgroundColor(mAwContents, Color.MAGENTA);

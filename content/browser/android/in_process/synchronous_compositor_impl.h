@@ -99,12 +99,12 @@ class SynchronousCompositorImpl
   ~SynchronousCompositorImpl() override;
 
   void SetClient(SynchronousCompositorClient* compositor_client);
+  void RegisterWithClient();
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_info);
   void DidActivatePendingTree();
   void DeliverMessages();
   bool CalledOnValidThread() const;
   void UpdateNeedsBeginFrames();
-  void SetInputHandler(cc::InputHandler* input_handler);
 
   SynchronousCompositorClient* compositor_client_;
   SynchronousCompositorOutputSurface* output_surface_;
@@ -112,6 +112,7 @@ class SynchronousCompositorImpl
   WebContents* contents_;
   const int routing_id_;
   cc::InputHandler* input_handler_;
+  bool registered_with_client_;
   bool is_active_;
   bool renderer_needs_begin_frames_;
 
