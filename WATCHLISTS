@@ -440,6 +440,10 @@
     'mandoline': {
       'filepath': 'mandoline',
     },
+    'manifest': {
+      'filepath': 'content/(browser|renderer)/manifest/'\
+                  '|content/public/common/manifest*',
+    },
     'md_settings': {
       'filepath': 'ui/webui/resources/cr_element'\
                   '|chrome/browser/resources/md_settings/'\
@@ -582,6 +586,14 @@
       'filepath': 'ppapi/api'\
                   '|ppapi/c',
     },
+    'permissions': {
+      'filepath': 'content/(child,browser)/permissions/'\
+                  '|content/common/permission_*'\
+                  '|content/public/(common,browser)/permission_*'\
+                  '|chrome/browser/permissions/'\
+                  '|chrome/browser/content_settings/permission*'\
+                  '|permission_context',
+    },
     'plugin': {
       'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
         'chrome/common/plugin',
@@ -632,6 +644,9 @@
       'filepath': 'cc/scheduler'\
                   '|components/scheduler'\
                   '|content/renderer/scheduler'
+    },
+    'screen_orientation': {
+      'filepath': 'screen_orientation',
     },
     'search': {
       'filepath': 'chrome/browser/ui/search/',
@@ -849,7 +864,8 @@
     'android_infra': ['yfriedman+watch@chromium.org',
                       'klundberg+watch@chromium.org',
                       'jbudorick+watch@chromium.org'],
-    'android_media': ['avayvod+watch@chromium.org'],
+    'android_media': ['avayvod+watch@chromium.org',
+                      'mlamouri+watch-media@chromium.org'],
     'android_tab': ['avayvod+watch@chromium.org', 'dtrainor@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
     'app_list': ['tfarina@chromium.org',
@@ -985,6 +1001,7 @@
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
     'supervised_users': ['pam+watch@chromium.org'],
     'mandoline': ['yzshen+watch@chromium.org'],
+    'manifest': ['mlamouri+watch-manifest@chromium.org'],
     'md_settings': ['jhawkins+watch-md-settings@chromium.org',
                     'jlklein+watch-md-settings@chromium.org',
                     'khorimoto+watch-md-settings@chromium.org',
@@ -1034,6 +1051,7 @@
                    'yusukes+watch@chromium.org', 'raymes+watch@chromium.org',
                    'binji+watch@chromium.org', 'teravest+watch@chromium.org',
                    'tzik@chromium.org'],
+    'permissions': ['mlamouri+watch-permissions@chromium.org'],
     'plugin': ['jam@chromium.org'],
     'polymer': ['michaelpg+watch-polymer@chromium.org'],
     'predictors': ['shishir+watch@chromium.org'],
@@ -1052,6 +1070,7 @@
     'safe_browsing': ['grt+watch@chromium.org'],
     'sandbox': ['rickyz+watch@chromium.org'],
     'scheduler': ['scheduler-bugs@chromium.org'],
+    'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
     'service_worker': ['tzik@chromium.org',
                        'kinuko+serviceworker@chromium.org',
                        'nhiroki@chromium.org',
