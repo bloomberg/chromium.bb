@@ -118,6 +118,8 @@ void PerformanceMonitor::GatherMetricsMapOnUIThread() {
 void PerformanceMonitor::MarkProcessAsAlive(
     const ProcessMetricsMetadata& process_data,
     int current_update_sequence) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   const base::ProcessHandle& handle = process_data.handle;
   if (handle == base::kNullProcessHandle) {
     // Process may not be valid yet.
@@ -139,6 +141,9 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
     int current_update_sequence) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  scoped_ptr<std::vector<ProcessMetricsMetadata>> process_data_list(
+      new std::vector<ProcessMetricsMetadata>());
+
   // Find all child processes (does not include renderers), which has to be
   // done on the IO thread.
   for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
@@ -150,15 +155,38 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
       child_process_data.process_subtype = kProcessSubtypePPAPIFlash;
     }
 
-    MarkProcessAsAlive(child_process_data, current_update_sequence);
+    process_data_list->push_back(child_process_data);
   }
 
   // Add the current (browser) process.
   ProcessMetricsMetadata browser_process_data;
   browser_process_data.process_type = content::PROCESS_TYPE_BROWSER;
   browser_process_data.handle = base::GetCurrentProcessHandle();
-  MarkProcessAsAlive(browser_process_data, current_update_sequence);
+  process_data_list->push_back(browser_process_data);
 
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PerformanceMonitor::MarkProcessesAsAliveOnUIThread,
+                 base::Unretained(this), base::Passed(process_data_list.Pass()),
+                 current_update_sequence));
+}
+
+void PerformanceMonitor::MarkProcessesAsAliveOnUIThread(
+    scoped_ptr<std::vector<ProcessMetricsMetadata>> process_data_list,
+    int current_update_sequence) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  for (size_t i = 0; i < process_data_list->size(); ++i) {
+    MarkProcessAsAlive((*process_data_list)[i], current_update_sequence);
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PerformanceMonitor::UpdateMetricsOnIOThread,
+                 base::Unretained(this), current_update_sequence));
+}
+
+void PerformanceMonitor::UpdateMetricsOnIOThread(int current_update_sequence) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Update metrics for all watched processes; remove dead entries from the map.
   MetricsMap::iterator iter = metrics_map_.begin();
   while (iter != metrics_map_.end()) {
@@ -171,6 +199,19 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
       ++iter;
     }
   }
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&PerformanceMonitor::RunTriggersUIThread,
+                                     base::Unretained(this)));
+}
+
+void PerformanceMonitor::RunTriggersUIThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  for (auto it = metrics_map_.begin(); it != metrics_map_.end(); ++it) {
+    it->second.RunPerformanceTriggers();
+  }
+
+  StartGatherCycle();
 }
 
 }  // namespace performance_monitor

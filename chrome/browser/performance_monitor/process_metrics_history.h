@@ -45,6 +45,9 @@ class ProcessMetricsHistory {
   // Gather metrics for the process and accumulate with past data.
   void SampleMetrics();
 
+  // Triggers any UMA histograms or background traces if cpu_usage is excessive.
+  void RunPerformanceTriggers();
+
   // Used to mark when this object was last updated, so we can cull
   // dead ones.
   void set_last_update_sequence(int new_update_sequence) {
@@ -54,8 +57,6 @@ class ProcessMetricsHistory {
   int last_update_sequence() const { return last_update_sequence_; }
 
  private:
-  void RunPerformanceTriggers();
-
   // May not be fully populated. e.g. no |id| and no |name| for browser and
   // renderer processes.
   ProcessMetricsMetadata process_data_;
