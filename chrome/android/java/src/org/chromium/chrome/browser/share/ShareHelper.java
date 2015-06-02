@@ -226,7 +226,21 @@ public class ShareHelper {
         CharSequence directShareTitle = null;
 
         ComponentName component = getLastShareComponentName(activity);
+        boolean isComponentValid = false;
         if (component != null) {
+            Intent intent = getShareIntent("", "", null);
+            intent.setPackage(component.getPackageName());
+            PackageManager manager = activity.getPackageManager();
+            List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
+            for (ResolveInfo info : resolveInfoList) {
+                ActivityInfo ai = info.activityInfo;
+                if (component.equals(new ComponentName(ai.applicationInfo.packageName, ai.name))) {
+                    isComponentValid = true;
+                    break;
+                }
+            }
+        }
+        if (isComponentValid) {
             try {
                 directShareIcon = activity.getPackageManager().getActivityIcon(component);
                 ApplicationInfo ai = activity.getPackageManager().getApplicationInfo(
