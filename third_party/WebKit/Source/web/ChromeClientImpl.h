@@ -70,7 +70,7 @@ public:
 
     // ChromeClient methods:
     virtual void chromeDestroyed() override;
-    virtual void setWindowRectInternal(const IntRect&) override;
+    virtual void setWindowRect(const IntRect&) override;
     virtual IntRect windowRect() override;
     virtual IntRect pageRect() override;
     virtual void focus() override;

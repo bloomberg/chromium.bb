@@ -43,7 +43,7 @@
 
 namespace blink {
 
-void ChromeClient::setWindowRect(const IntRect& pendingRect)
+void ChromeClient::setWindowRectWithAdjustment(const IntRect& pendingRect)
 {
     IntRect screen = screenInfo().availableRect;
     IntRect window = pendingRect;
@@ -58,7 +58,7 @@ void ChromeClient::setWindowRect(const IntRect& pendingRect)
     // Constrain the window position within the valid screen area.
     window.setX(std::max(screen.x(), std::min(window.x(), screen.maxX() - window.width())));
     window.setY(std::max(screen.y(), std::min(window.y(), screen.maxY() - window.height())));
-    setWindowRectInternal(window);
+    setWindowRect(window);
 }
 
 bool ChromeClient::canRunModalIfDuringPageDismissal(Frame* mainFrame, ChromeClient::DialogType dialog, const String& message)

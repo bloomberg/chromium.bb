@@ -76,7 +76,7 @@ public:
         ASSERT(m_popup->widgetClient());
     }
 
-    virtual void setWindowRectInternal(const IntRect& rect) override
+    virtual void setWindowRect(const IntRect& rect) override
     {
         m_popup->m_windowRectInScreen = rect;
         m_popup->widgetClient()->setWindowRect(m_popup->m_windowRectInScreen);
@@ -300,7 +300,7 @@ AXObject* WebPagePopupImpl::rootAXObject()
 
 void WebPagePopupImpl::setWindowRect(const IntRect& rect)
 {
-    m_chromeClient->setWindowRectInternal(rect);
+    m_chromeClient->setWindowRect(rect);
 }
 
 void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer)

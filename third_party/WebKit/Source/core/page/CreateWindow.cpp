@@ -110,7 +110,7 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     if (features.heightSet)
         windowRect.setHeight(features.height + (windowRect.height() - viewportSize.height()));
 
-    host->chromeClient().setWindowRect(windowRect);
+    host->chromeClient().setWindowRectWithAdjustment(windowRect);
     host->chromeClient().show(policy);
 
     // TODO(japhet): There's currently no way to set sandbox flags on a RemoteFrame and have it propagate

@@ -70,7 +70,7 @@ public:
     virtual void chromeDestroyed() override { }
 
     virtual void* webView() const override { return 0; }
-    virtual void setWindowRectInternal(const IntRect&) override { }
+    virtual void setWindowRect(const IntRect&) override { }
     virtual IntRect windowRect() override { return IntRect(); }
 
     virtual IntRect pageRect() override { return IntRect(); }

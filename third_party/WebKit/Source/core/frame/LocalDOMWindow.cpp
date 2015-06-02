@@ -1236,7 +1236,7 @@ void LocalDOMWindow::moveBy(int x, int y, bool hasX, bool hasY) const
     IntRect windowRect = host->chromeClient().windowRect();
     windowRect.move(x, y);
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    host->chromeClient().setWindowRect(windowRect);
+    host->chromeClient().setWindowRectWithAdjustment(windowRect);
 }
 
 void LocalDOMWindow::moveTo(int x, int y, bool hasX, bool hasY) const
@@ -1254,7 +1254,7 @@ void LocalDOMWindow::moveTo(int x, int y, bool hasX, bool hasY) const
     IntRect windowRect = host->chromeClient().windowRect();
     windowRect.setLocation(IntPoint(hasX ? x : windowRect.x(), hasY ? y : windowRect.y()));
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    host->chromeClient().setWindowRect(windowRect);
+    host->chromeClient().setWindowRectWithAdjustment(windowRect);
 }
 
 void LocalDOMWindow::resizeBy(int x, int y, bool hasX, bool hasY) const
@@ -1272,7 +1272,7 @@ void LocalDOMWindow::resizeBy(int x, int y, bool hasX, bool hasY) const
     IntRect fr = host->chromeClient().windowRect();
     IntSize dest = fr.size() + IntSize(x, y);
     IntRect update(fr.location(), dest);
-    host->chromeClient().setWindowRect(update);
+    host->chromeClient().setWindowRectWithAdjustment(update);
 }
 
 void LocalDOMWindow::resizeTo(int width, int height, bool hasWidth, bool hasHeight) const
@@ -1290,7 +1290,7 @@ void LocalDOMWindow::resizeTo(int width, int height, bool hasWidth, bool hasHeig
     IntRect fr = host->chromeClient().windowRect();
     IntSize dest = IntSize(hasWidth ? width : fr.width(), hasHeight ? height : fr.height());
     IntRect update(fr.location(), dest);
-    host->chromeClient().setWindowRect(update);
+    host->chromeClient().setWindowRectWithAdjustment(update);
 }
 
 int LocalDOMWindow::requestAnimationFrame(FrameRequestCallback* callback)

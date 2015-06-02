@@ -76,7 +76,9 @@ class CORE_EXPORT ChromeClient : public HostWindow {
 public:
     virtual void chromeDestroyed() = 0;
 
-    void setWindowRect(const IntRect&);
+    // The specified rectangle is adjusted for the minimum window size and the
+    // screen, then setWindowRect with the adjusted rectangle is called.
+    void setWindowRectWithAdjustment(const IntRect&);
     virtual IntRect windowRect() = 0;
 
     virtual IntRect pageRect() = 0;
@@ -245,10 +247,10 @@ protected:
     virtual ~ChromeClient() { }
 
     virtual void showMouseOverURL(const HitTestResult&) = 0;
+    virtual void setWindowRect(const IntRect&) = 0;
     // TODO(tkent): Adding 'Internal' to virtual functions is not good. We
     // should give better names, or move out non-internal versions of these
     // functions.
-    virtual void setWindowRectInternal(const IntRect&) = 0;
     virtual bool runBeforeUnloadConfirmPanelInternal(LocalFrame*, const String& message) = 0;
     virtual void runJavaScriptAlertInternal(LocalFrame*, const String&) = 0;
     virtual bool runJavaScriptConfirmInternal(LocalFrame*, const String&) = 0;

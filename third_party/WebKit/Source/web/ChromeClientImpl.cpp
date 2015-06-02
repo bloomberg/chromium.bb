@@ -135,7 +135,7 @@ void ChromeClientImpl::chromeDestroyed()
     // Our lifetime is bound to the WebViewImpl.
 }
 
-void ChromeClientImpl::setWindowRectInternal(const IntRect& r)
+void ChromeClientImpl::setWindowRect(const IntRect& r)
 {
     if (m_webView->client())
         m_webView->client()->setWindowRect(r);
