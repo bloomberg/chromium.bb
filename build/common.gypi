@@ -833,12 +833,10 @@
         # Enable autofill dialog when not on iOS.
         ['OS!="ios"', {
           'enable_autofill_dialog%': 1,
+        }],
 
-          'conditions': [
-            ['buildtype=="Official"', {
-              'enable_prod_wallet_service%': 1,
-            }],
-          ]
+        ['buildtype=="Official"', {
+          'enable_prod_wallet_service%': 1,
         }],
 
         ['OS=="android"', {
