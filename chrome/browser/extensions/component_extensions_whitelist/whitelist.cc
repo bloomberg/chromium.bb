@@ -62,7 +62,7 @@ bool IsComponentExtensionWhitelisted(const std::string& extension_id) {
   LOG(ERROR) << "Component extension with id " << extension_id << " not in "
              << "whitelist and is not being loaded as a result.";
   NOTREACHED();
-  return true;
+  return false;
 }
 
 bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
@@ -123,7 +123,7 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
              << manifest_resource_id << " not in whitelist and is not being "
              << "loaded as a result.";
   NOTREACHED();
-  return true;
+  return false;
 }
 
 }  // namespace extensions
