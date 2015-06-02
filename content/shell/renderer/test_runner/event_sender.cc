@@ -376,8 +376,6 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void ZoomPageIn();
   void ZoomPageOut();
   void SetPageZoomFactor(double factor);
-  void SetPageScaleFactor(gin::Arguments* args);
-  void SetPageScaleFactorLimits(gin::Arguments* args);
   void ClearTouchPoints();
   void ReleaseTouchPoint(unsigned index);
   void UpdateTouchPoint(unsigned index, double x, double y);
@@ -510,9 +508,6 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("zoomPageIn", &EventSenderBindings::ZoomPageIn)
       .SetMethod("zoomPageOut", &EventSenderBindings::ZoomPageOut)
       .SetMethod("setPageZoomFactor", &EventSenderBindings::SetPageZoomFactor)
-      .SetMethod("setPageScaleFactor", &EventSenderBindings::SetPageScaleFactor)
-      .SetMethod("setPageScaleFactorLimits",
-                 &EventSenderBindings::SetPageScaleFactorLimits)
       .SetMethod("clearTouchPoints", &EventSenderBindings::ClearTouchPoints)
       .SetMethod("releaseTouchPoint", &EventSenderBindings::ReleaseTouchPoint)
       .SetMethod("updateTouchPoint", &EventSenderBindings::UpdateTouchPoint)
@@ -651,39 +646,6 @@ void EventSenderBindings::ZoomPageOut() {
 void EventSenderBindings::SetPageZoomFactor(double factor) {
   if (sender_)
     sender_->SetPageZoomFactor(factor);
-}
-
-void EventSenderBindings::SetPageScaleFactor(gin::Arguments* args) {
-  if (!sender_)
-    return;
-  float scale_factor;
-  double x;
-  double y;
-  if (args->PeekNext().IsEmpty())
-    return;
-  args->GetNext(&scale_factor);
-  if (args->PeekNext().IsEmpty())
-    return;
-  args->GetNext(&x);
-  if (args->PeekNext().IsEmpty())
-    return;
-  args->GetNext(&y);
-  sender_->SetPageScaleFactor(scale_factor,
-                              static_cast<int>(x), static_cast<int>(y));
-}
-
-void EventSenderBindings::SetPageScaleFactorLimits(gin::Arguments* args) {
-  if (!sender_)
-    return;
-  float min_scale_factor;
-  float max_scale_factor;
-  if (args->PeekNext().IsEmpty())
-    return;
-  args->GetNext(&min_scale_factor);
-  if (args->PeekNext().IsEmpty())
-    return;
-  args->GetNext(&max_scale_factor);
-  sender_->SetPageScaleFactorLimits(min_scale_factor, max_scale_factor);
 }
 
 void EventSenderBindings::ClearTouchPoints() {
@@ -1569,14 +1531,6 @@ void EventSender::SetPageZoomFactor(double zoom_factor) {
     window_list.at(i)->GetWebView()->setZoomLevel(
         std::log(zoom_factor) / std::log(1.2));
   }
-}
-
-void EventSender::SetPageScaleFactor(float scale_factor, int x, int y) {
-  view_->setPageScaleFactor(scale_factor, WebPoint(x, y));
-}
-
-void EventSender::SetPageScaleFactorLimits(float min_scale, float max_scale) {
-  view_->setDefaultPageScaleLimits(min_scale, max_scale);
 }
 
 void EventSender::ClearTouchPoints() {

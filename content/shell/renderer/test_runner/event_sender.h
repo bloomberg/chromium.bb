@@ -99,11 +99,6 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void ZoomPageOut();
   void SetPageZoomFactor(double zoom_factor);
 
-  // TODO: Move these into Internals once PageScaleConstraints are moved out of
-  // Source/web. crbug.com/434450.
-  void SetPageScaleFactor(float scale_factor, int x, int y);
-  void SetPageScaleFactorLimits(float min_scale, float max_scale);
-
   void ClearTouchPoints();
   void ReleaseTouchPoint(unsigned index);
   void UpdateTouchPoint(unsigned index, float x, float y);
