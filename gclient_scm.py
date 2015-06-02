@@ -1169,16 +1169,13 @@ class SVNWrapper(SCMWrapper):
     'svn support so please switch to git.',
     'Tracking bug: http://crbug.com/475320',
     'Request a new git repository at: ',
-    '  https://code.google.com/p/chromium/issues/entry?template=Infra-Git',
-    '',
-    'If subversion support is needed, pin your depot_tools to ',
-    'c20f470011e2ea4d81527976f3bded2c13e258af and set the env var',
-    'DEPOT_TOOLS_UPDATE=0',
-    'Thank you for your business!')
+    '  https://code.google.com/p/chromium/issues/entry?template=Infra-Git')
 
   def __init__(self, *args, **kwargs):
     super(SVNWrapper, self).__init__(*args, **kwargs)
-    if not SVNWrapper._PRINTED_DEPRECATION:
+    suppress_deprecated_notice = os.environ.get(
+        'SUPPRESS_DEPRECATED_SVN_NOTICE', False)
+    if not SVNWrapper._PRINTED_DEPRECATION and not suppress_deprecated_notice:
       SVNWrapper._PRINTED_DEPRECATION = True
       sys.stderr.write('\n'.join(self._MESSAGE) + '\n')
 
