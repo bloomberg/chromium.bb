@@ -243,11 +243,18 @@ STANDALONE = 1
 endif
 
 OUTBASE ?= .
+CONFIG_DIR := $(CONFIG)
 ifdef STANDALONE
-OUTDIR := $(OUTBASE)/$(TOOLCHAIN)/standalone_$(CONFIG)
-else
-OUTDIR := $(OUTBASE)/$(TOOLCHAIN)/$(CONFIG)
+CONFIG_DIR := standalone_$(CONFIG_DIR)
 endif
+ifdef MSAN
+CONFIG_DIR := msan_$(CONFIG_DIR)
+endif
+ifdef TSAN
+CONFIG_DIR := tsan_$(CONFIG_DIR)
+endif
+
+OUTDIR := $(OUTBASE)/$(TOOLCHAIN)/$(CONFIG_DIR)
 STAMPDIR ?= $(OUTDIR)
 LIBDIR ?= $(NACL_SDK_ROOT)/lib
 

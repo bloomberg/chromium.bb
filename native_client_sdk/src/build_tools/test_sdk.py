@@ -87,12 +87,6 @@ def StepRunSelLdrTests(pepperdir, sanitizer):
         args += ['ASAN=1']
       elif sanitizer == 'thread':
         args += ['TSAN=1']
-      build_projects.BuildProjectsBranch(pepperdir, 'src', clean=False,
-                                         deps=deps, config=config,
-                                         args=args + ['clean'])
-      build_projects.BuildProjectsBranch(pepperdir, 'tests', clean=False,
-                                         deps=deps, config=config,
-                                         args=args + ['clean'])
 
     build_projects.BuildProjectsBranch(pepperdir, test, clean=False,
                                        deps=deps, config=config,

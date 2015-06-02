@@ -218,12 +218,12 @@ ifneq (,$(findstring x86_32,$(ARCHES)))
 all: $(X86_32_OUTDIR)/lib$(1)_x86_32.so
 $(X86_32_OUTDIR)/lib$(1)_x86_32.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(MKDIR) -p $$(dir $$@)
-	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -m32 $(NACL_LDFLAGS) $(X86_32_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
+	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -m32 $(NACL_LDFLAGS) $(X86_32_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG_DIR) -L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 
-$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so
-install: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so
-$(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so: $(X86_32_OUTDIR)/lib$(1)_x86_32.so
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG_DIR)/lib$(1).so
+install: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG_DIR)/lib$(1).so
+$(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG_DIR)/lib$(1).so: $(X86_32_OUTDIR)/lib$(1)_x86_32.so
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 ifneq ($(6),1)
@@ -236,12 +236,12 @@ ifneq (,$(findstring x86_64,$(ARCHES)))
 all: $(X86_64_OUTDIR)/lib$(1)_x86_64.so
 $(X86_64_OUTDIR)/lib$(1)_x86_64.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(MKDIR) -p $$(dir $$@)
-	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -m64 $(NACL_LDFLAGS) $(X86_64_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
+	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -m64 $(NACL_LDFLAGS) $(X86_64_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG_DIR) -L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 
-$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so
-install: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so
-$(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so: $(X86_64_OUTDIR)/lib$(1)_x86_64.so
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG_DIR)/lib$(1).so
+install: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG_DIR)/lib$(1).so
+$(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG_DIR)/lib$(1).so: $(X86_64_OUTDIR)/lib$(1)_x86_64.so
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 ifneq ($(6),1)
@@ -254,12 +254,12 @@ ifneq (,$(findstring arm,$(ARCHES)))
 all: $(ARM_OUTDIR)/lib$(1)_arm.so
 $(ARM_OUTDIR)/lib$(1)_arm.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(MKDIR) -p $$(dir $$@)
-	$(call LOG,LINK,$$@,$(ARM_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -marm $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
+	$(call LOG,LINK,$$@,$(ARM_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -marm $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG_DIR) -L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 
-$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).so
-install: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).so
-$(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).so: $(ARM_OUTDIR)/lib$(1)_arm.so
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG_DIR)/lib$(1).so
+install: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG_DIR)/lib$(1).so
+$(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG_DIR)/lib$(1).so: $(ARM_OUTDIR)/lib$(1)_arm.so
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 ifneq ($(6),1)
@@ -300,9 +300,9 @@ $(X86_32_OUTDIR)/lib$(1)_x86_32.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_
 	$(RM) -f $$@
 	$(call LOG,LIB ,$$@,$(X86_32_LIB) -cr $$@ $$^)
 
-$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
-install: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
-$(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a: $(X86_32_OUTDIR)/lib$(1)_x86_32.a
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG_DIR)/lib$(1).a
+install: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG_DIR)/lib$(1).a
+$(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG_DIR)/lib$(1).a: $(X86_32_OUTDIR)/lib$(1)_x86_32.a
 	$(MKDIR) -p $$(dir $$@)
 	$(RM) -f $$@
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
@@ -315,9 +315,9 @@ $(X86_64_OUTDIR)/lib$(1)_x86_64.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_
 	$(RM) -f $$@
 	$(call LOG,LIB ,$$@,$(X86_64_LIB) -cr $$@ $$^)
 
-$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
-install: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
-$(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a: $(X86_64_OUTDIR)/lib$(1)_x86_64.a
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG_DIR)/lib$(1).a
+install: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG_DIR)/lib$(1).a
+$(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG_DIR)/lib$(1).a: $(X86_64_OUTDIR)/lib$(1)_x86_64.a
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 endif
@@ -330,9 +330,9 @@ $(ARM_OUTDIR)/lib$(1)_arm.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm))
 	$(RM) -f $$@
 	$(call LOG,LIB ,$$@,$(ARM_LIB) -cr $$@ $$^)
 
-$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a
-install: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a
-$(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a: $(ARM_OUTDIR)/lib$(1)_arm.a
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG_DIR)/lib$(1).a
+install: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG_DIR)/lib$(1).a
+$(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG_DIR)/lib$(1).a: $(ARM_OUTDIR)/lib$(1)_arm.a
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
 endif
@@ -355,7 +355,7 @@ ifneq (,$(findstring x86_32,$(ARCHES)))
 all: $(X86_32_OUTDIR)/$(1)_x86_32.nexe
 $(X86_32_OUTDIR)/$(1)_x86_32.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(MKDIR) -p $$(dir $$@)
-	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(X86_32_LDFLAGS) $(LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(X86_32_LDFLAGS) $(LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG_DIR) -L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
 
@@ -363,7 +363,7 @@ ifneq (,$(findstring x86_64,$(ARCHES)))
 all: $(X86_64_OUTDIR)/$(1)_x86_64.nexe
 $(X86_64_OUTDIR)/$(1)_x86_64.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(MKDIR) -p $$(dir $$@)
-	$(call LOG,LINK,$$@,$(X86_64_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(X86_64_LDFLAGS) $(LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+	$(call LOG,LINK,$$@,$(X86_64_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(X86_64_LDFLAGS) $(LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG_DIR) -L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
 
@@ -371,7 +371,7 @@ ifneq (,$(findstring arm,$(ARCHES)))
 all: $(ARM_OUTDIR)/$(1)_arm.nexe
 $(ARM_OUTDIR)/$(1)_arm.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(MKDIR) -p $$(dir $$@)
-	$(call LOG,LINK,$$@,$(ARM_LINK) $(BIONIC_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+	$(call LOG,LINK,$$@,$(ARM_LINK) $(BIONIC_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG_DIR) -L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
 endef
