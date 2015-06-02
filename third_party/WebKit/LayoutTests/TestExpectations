@@ -1859,8 +1859,8 @@ crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
-crbug.com/495540 [ XP ] svg/custom/pattern-referencing-preserve-aspect-ratio.svg [ Failure ]
-crbug.com/495540 [ XP ] svg/custom/svg-curve-with-relative-cordinates.html [ Failure ]
-crbug.com/495540 [ XP ] svg/wicd/rightsizing-grid.xhtml [ Failure ]
+crbug.com/495540 [ XP ] svg/custom/pattern-referencing-preserve-aspect-ratio.svg [ NeedsRebaseline ]
+crbug.com/495540 [ XP ] svg/custom/svg-curve-with-relative-cordinates.html [ NeedsRebaseline ]
+crbug.com/495540 [ XP ] svg/wicd/rightsizing-grid.xhtml [ NeedsRebaseline ]
 
 crbug.com/495542 [ XP ] plugins/webview-plugin-lifecycle.html [ Failure ]
