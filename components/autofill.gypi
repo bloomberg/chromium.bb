@@ -443,6 +443,7 @@
             '../ios/web/ios_web.gyp:ios_web',
           ],
           'sources': [
+            'autofill/ios/browser/autofill_client_ios_bridge.h',
             'autofill/ios/browser/autofill_driver_ios.h',
             'autofill/ios/browser/autofill_driver_ios.mm',
             'autofill/ios/browser/autofill_driver_ios_bridge.h',
