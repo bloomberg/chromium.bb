@@ -164,7 +164,7 @@ private:
     // remaining text box.
     InlineTextBox* m_remainingTextBox;
     // Used to point to LayoutText object for :first-letter.
-    RawPtrWillBeMember<LayoutText> m_firstLetterText;
+    LayoutText* m_firstLetterText;
 
     // Used to do the whitespace collapsing logic.
     RawPtrWillBeMember<Text> m_lastTextNode;

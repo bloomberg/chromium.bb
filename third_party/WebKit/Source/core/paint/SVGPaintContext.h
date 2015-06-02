@@ -87,10 +87,10 @@ private:
     LayoutObject* m_object;
     PaintInfo m_paintInfo;
     const PaintInfo* m_originalPaintInfo;
-    RawPtrWillBeMember<LayoutSVGResourceFilter> m_filter;
-    RawPtrWillBeMember<LayoutSVGResourceClipper> m_clipper;
+    LayoutSVGResourceFilter* m_filter;
+    LayoutSVGResourceClipper* m_clipper;
     SVGClipPainter::ClipperState m_clipperState;
-    RawPtrWillBeMember<LayoutSVGResourceMasker> m_masker;
+    LayoutSVGResourceMasker* m_masker;
     OwnPtr<FloatClipRecorder> m_clipRecorder;
     OwnPtr<CompositingRecorder> m_compositingRecorder;
     OwnPtr<ClipPathRecorder> m_clipPathRecorder;

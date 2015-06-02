@@ -485,7 +485,7 @@ bool TextIteratorAlgorithm<Strategy>::handleTextNode()
 template<typename Strategy>
 void TextIteratorAlgorithm<Strategy>::handleTextBox()
 {
-    LayoutText* layoutObject = m_firstLetterText ? m_firstLetterText.get() : toLayoutText(m_node->layoutObject());
+    LayoutText* layoutObject = m_firstLetterText ? m_firstLetterText : toLayoutText(m_node->layoutObject());
 
     if (layoutObject->style()->visibility() != VISIBLE && !ignoresStyleVisibility()) {
         m_textBox = nullptr;

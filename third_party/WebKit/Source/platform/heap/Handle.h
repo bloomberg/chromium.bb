@@ -566,24 +566,18 @@ public:
 
     Member(T* raw) : m_raw(raw)
     {
-        // HashTable can store a special value to Member<> to represent
-        // a deleted entry. The special value is not aligned to the allocation
-        // granularity. The following ASSERT is checking that m_raw is either of:
-        //   - nullptr
-        //   - a special value to represent a deleted entry of a HashTable
-        //   - a valid pointer to the heap
-        ASSERT(!m_raw || reinterpret_cast<intptr_t>(m_raw) % allocationGranularity || Heap::findPageFromAddress(m_raw));
+        checkPointer();
     }
 
     explicit Member(T& raw) : m_raw(&raw)
     {
-        // See the comment above.
-        ASSERT(!m_raw || reinterpret_cast<intptr_t>(m_raw) % allocationGranularity || Heap::findPageFromAddress(m_raw));
+        checkPointer();
     }
 
     template<typename U>
     Member(const RawPtr<U>& other) : m_raw(other.get())
     {
+        checkPointer();
     }
 
     Member(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1))
@@ -593,12 +587,21 @@ public:
     bool isHashTableDeletedValue() const { return m_raw == reinterpret_cast<T*>(-1); }
 
     template<typename U>
-    Member(const Persistent<U>& other) : m_raw(other) { }
+    Member(const Persistent<U>& other) : m_raw(other)
+    {
+        checkPointer();
+    }
 
-    Member(const Member& other) : m_raw(other) { }
+    Member(const Member& other) : m_raw(other)
+    {
+        checkPointer();
+    }
 
     template<typename U>
-    Member(const Member<U>& other) : m_raw(other) { }
+    Member(const Member<U>& other) : m_raw(other)
+    {
+        checkPointer();
+    }
 
     T* release()
     {
@@ -620,6 +623,7 @@ public:
     Member& operator=(const Persistent<U>& other)
     {
         m_raw = other;
+        checkPointer();
         return *this;
     }
 
@@ -627,6 +631,7 @@ public:
     Member& operator=(const Member<U>& other)
     {
         m_raw = other;
+        checkPointer();
         return *this;
     }
 
@@ -634,6 +639,7 @@ public:
     Member& operator=(U* other)
     {
         m_raw = other;
+        checkPointer();
         return *this;
     }
 
@@ -641,6 +647,7 @@ public:
     Member& operator=(RawPtr<U> other)
     {
         m_raw = other;
+        checkPointer();
         return *this;
     }
 
@@ -650,7 +657,11 @@ public:
         return *this;
     }
 
-    void swap(Member<T>& other) { std::swap(m_raw, other.m_raw); }
+    void swap(Member<T>& other)
+    {
+        std::swap(m_raw, other.m_raw);
+        checkPointer();
+    }
 
     T* get() const { return m_raw; }
 
@@ -658,10 +669,37 @@ public:
 
 
 protected:
+    void checkPointer()
+    {
+#if ENABLE(ASSERT)
+        if (!m_raw)
+            return;
+        // HashTable can store a special value (which is not aligned to the
+        // allocation granularity) to Member<> to represent a deleted entry.
+        // Thus we treat a pointer that is not aligned to the granularity
+        // as a valid pointer.
+        if (reinterpret_cast<intptr_t>(m_raw) % allocationGranularity)
+            return;
+
+        // TODO(haraken): What we really want to check here is that the pointer
+        // is a traceable object. In other words, the pointer is either of:
+        //
+        //   (a) a pointer to the head of an on-heap object.
+        //   (b) a pointer to the head of an on-heap mixin object.
+        //
+        // We can check it by calling visitor->isHeapObjectAlive(m_raw),
+        // but we cannot call it here because it requres to include T.h.
+        // So we currently implement only the check for (a).
+        if (!IsGarbageCollectedMixin<T>::value)
+            HeapObjectHeader::fromPayload(m_raw)->checkHeader();
+#endif
+    }
+
     T* m_raw;
 
     template<bool x, WTF::WeakHandlingFlag y, WTF::ShouldWeakPointersBeMarkedStrongly z, typename U, typename V> friend struct CollectionBackingTraceTrait;
     friend class Visitor;
+
 };
 
 // WeakMember is similar to Member in that it is used to point to other oilpan
@@ -691,6 +729,7 @@ public:
     WeakMember& operator=(const Persistent<U>& other)
     {
         this->m_raw = other;
+        this->checkPointer();
         return *this;
     }
 
@@ -698,6 +737,7 @@ public:
     WeakMember& operator=(const Member<U>& other)
     {
         this->m_raw = other;
+        this->checkPointer();
         return *this;
     }
 
@@ -705,6 +745,7 @@ public:
     WeakMember& operator=(U* other)
     {
         this->m_raw = other;
+        this->checkPointer();
         return *this;
     }
 
@@ -712,6 +753,7 @@ public:
     WeakMember& operator=(const RawPtr<U>& other)
     {
         this->m_raw = other;
+        this->checkPointer();
         return *this;
     }
 

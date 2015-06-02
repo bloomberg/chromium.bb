@@ -233,7 +233,7 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<SVGAnimatedTypeAnimator> m_animator;
+    SVGAnimatedTypeAnimator* m_animator;
 };
 
 void SVGAnimatedTypeAnimator::calculateAnimatedValue(float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDuration, SVGPropertyBase* animated)
