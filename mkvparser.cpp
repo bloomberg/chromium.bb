@@ -4574,6 +4574,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   long long height = 0;
   long long display_width = 0;
   long long display_height = 0;
+  long long display_unit = 0;
   long long stereo_mode = 0;
 
   double rate = 0.0;
@@ -4617,6 +4618,11 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
 
       if (display_height <= 0)
         return E_FILE_FORMAT_INVALID;
+    } else if (id == 0x14B2) { // display unit
+      display_unit = UnserializeUInt(pReader, pos, size);
+
+      if (display_unit < 0)
+        return E_FILE_FORMAT_INVALID;
     } else if (id == 0x13B8) { // stereo mode
       stereo_mode = UnserializeUInt(pReader, pos, size);
 
@@ -4655,6 +4661,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   pTrack->m_height = height;
   pTrack->m_display_width = display_width;
   pTrack->m_display_height = display_height;
+  pTrack->m_display_unit = display_unit;
   pTrack->m_stereo_mode = stereo_mode;
   pTrack->m_rate = rate;
 
@@ -4766,6 +4773,8 @@ long long VideoTrack::GetDisplayWidth() const {
 long long VideoTrack::GetDisplayHeight() const {
   return m_display_height > 0 ? m_display_height : GetHeight();
 }
+
+long long VideoTrack::GetDisplayUnit() const { return m_display_unit; }
 
 long long VideoTrack::GetStereoMode() const { return m_stereo_mode; }
 
