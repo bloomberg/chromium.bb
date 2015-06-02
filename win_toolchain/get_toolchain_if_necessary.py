@@ -304,6 +304,8 @@ def main():
       'path': abs_target_dir,
       'version': vs_version,
       'win_sdk': win_sdk,
+      # Added for backwards compatibility with old toolchain packages.
+      'win8sdk': win_sdk,
       'wdk': os.path.join(abs_target_dir, 'wdk'),
       'runtime_dirs': [
         os.path.join(abs_target_dir, 'sys64'),
