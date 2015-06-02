@@ -211,11 +211,7 @@ base::SharedMemoryHandle ShareToGpuThread(
 
   return target_handle;
 #else
-  int duped_handle = HANDLE_EINTR(dup(source_handle.fd));
-  if (duped_handle < 0)
-    return base::SharedMemory::NULLHandle();
-
-  return base::FileDescriptor(duped_handle, true);
+  return base::SharedMemory::DeepCopyHandle(source_handle, true);
 #endif
 }
 
