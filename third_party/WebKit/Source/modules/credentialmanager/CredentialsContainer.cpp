@@ -14,14 +14,14 @@
 #include "modules/credentialmanager/Credential.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/credentialmanager/FederatedCredential.h"
-#include "modules/credentialmanager/LocalCredential.h"
+#include "modules/credentialmanager/PasswordCredential.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCredential.h"
 #include "public/platform/WebCredentialManagerClient.h"
 #include "public/platform/WebCredentialManagerError.h"
 #include "public/platform/WebFederatedCredential.h"
-#include "public/platform/WebLocalCredential.h"
+#include "public/platform/WebPasswordCredential.h"
 
 namespace blink {
 
@@ -71,9 +71,9 @@ public:
             return;
         }
 
-        ASSERT(credential->isLocalCredential() || credential->isFederatedCredential());
-        if (credential->isLocalCredential())
-            m_resolver->resolve(LocalCredential::create(static_cast<WebLocalCredential*>(credential)));
+        ASSERT(credential->isPasswordCredential() || credential->isFederatedCredential());
+        if (credential->isPasswordCredential())
+            m_resolver->resolve(PasswordCredential::create(static_cast<WebPasswordCredential*>(credential)));
         else
             m_resolver->resolve(FederatedCredential::create(static_cast<WebFederatedCredential*>(credential)));
     }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LocalCredential_h
-#define LocalCredential_h
+#ifndef PasswordCredential_h
+#define PasswordCredential_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
@@ -14,37 +14,37 @@
 namespace blink {
 
 class DOMFormData;
-class WebLocalCredential;
+class WebPasswordCredential;
 
-class LocalCredential final : public Credential {
+class PasswordCredential final : public Credential {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static LocalCredential* create(const String& id, const String& password, ExceptionState& exceptionState)
+    static PasswordCredential* create(const String& id, const String& password, ExceptionState& exceptionState)
     {
         return create(id, password, emptyString(), emptyString(), exceptionState);
     }
 
-    static LocalCredential* create(const String& id, const String& password, const String& name, ExceptionState& exceptionState)
+    static PasswordCredential* create(const String& id, const String& password, const String& name, ExceptionState& exceptionState)
     {
         return create(id, password, name, emptyString(), exceptionState);
     }
 
-    static LocalCredential* create(const String& id, const String& password, const String& name, const String& avatar, ExceptionState&);
-    static LocalCredential* create(WebLocalCredential*);
+    static PasswordCredential* create(const String& id, const String& password, const String& name, const String& avatar, ExceptionState&);
+    static PasswordCredential* create(WebPasswordCredential*);
 
-    // LocalCredential.idl
+    // PasswordCredential.idl
     const String& password() const;
     DOMFormData* formData() const { return m_formData; };
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    LocalCredential(WebLocalCredential*);
-    LocalCredential(const String& id, const String& password, const String& name, const KURL& avatar);
+    PasswordCredential(WebPasswordCredential*);
+    PasswordCredential(const String& id, const String& password, const String& name, const KURL& avatar);
 
     Member<DOMFormData> m_formData;
 };
 
 } // namespace blink
 
-#endif // LocalCredential_h
+#endif // PasswordCredential_h

@@ -28,8 +28,11 @@ public:
     BLINK_PLATFORM_EXPORT WebURL avatarURL() const;
     BLINK_PLATFORM_EXPORT WebString type() const;
 
-    BLINK_PLATFORM_EXPORT bool isLocalCredential() const;
+    BLINK_PLATFORM_EXPORT bool isPasswordCredential() const;
     BLINK_PLATFORM_EXPORT bool isFederatedCredential() const;
+
+    // TODO(mkwst): Drop this once Chromium is updated. https://crbug.com/494880
+    BLINK_PLATFORM_EXPORT bool isLocalCredential() const { return isPasswordCredential(); }
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT static WebCredential create(PlatformCredential*);

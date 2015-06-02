@@ -3088,10 +3088,6 @@ interface KeyboardEvent
     method initKeyboardEvent
 interface KeyframeEffect
     method constructor
-interface LocalCredential
-    getter formData
-    getter password
-    method constructor
 interface Location
     method constructor
 interface MIDIAccess
@@ -3591,6 +3587,10 @@ interface OscillatorNode
     setter type
 interface PageTransitionEvent
     getter persisted
+    method constructor
+interface PasswordCredential
+    getter formData
+    getter password
     method constructor
 interface Path2D
     method addPath

@@ -22,7 +22,7 @@ public:
     const KURL& avatarURL() const { return m_avatarURL; }
     const String& type() const { return m_type; }
 
-    virtual bool isLocal() { return false; }
+    virtual bool isPassword() { return false; }
     virtual bool isFederated() { return false; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }

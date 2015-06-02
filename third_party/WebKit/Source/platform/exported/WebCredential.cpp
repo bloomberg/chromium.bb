@@ -7,15 +7,15 @@
 
 #include "platform/credentialmanager/PlatformCredential.h"
 #include "public/platform/WebFederatedCredential.h"
-#include "public/platform/WebLocalCredential.h"
+#include "public/platform/WebPasswordCredential.h"
 
 namespace blink {
 
 WebCredential WebCredential::create(PlatformCredential* credential)
 {
-    if (credential->isLocal()) {
-        WebLocalCredential local(credential);
-        return local;
+    if (credential->isPassword()) {
+        WebPasswordCredential password(credential);
+        return password;
     }
 
     if (credential->isFederated()) {
@@ -78,9 +78,9 @@ WebString WebCredential::type() const
     return m_platformCredential->type();
 }
 
-bool WebCredential::isLocalCredential() const
+bool WebCredential::isPasswordCredential() const
 {
-    return m_platformCredential->isLocal();
+    return m_platformCredential->isPassword();
 }
 
 bool WebCredential::isFederatedCredential() const
