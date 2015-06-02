@@ -1,0 +1,21 @@
+<!doctype HTML>
+<style>
+  #plugin {
+    width: 150px;
+    height: 150px;
+    border: 1px solid black;
+  }
+</style>
+<embed id="plugin" type="application/x-plugin-placeholder-test"></embed>
+<script>
+onload = function() {
+    window.testRunner.waitUntilDone();
+    // Need to paint two frames in order to allow the plugin to propery load.
+    // TODO(chrishtr): find out why and fix.
+    window.testRunner.layoutAndPaintAsyncThen(function() {
+        window.testRunner.layoutAndPaintAsyncThen(function() {
+            window.testRunner.notifyDone();
+        });
+    });
+}
+</script>
