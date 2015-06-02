@@ -71,6 +71,8 @@ class PDFExtensionTest : public ExtensionApiTest,
 
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(content::WaitForLoadStop(contents));
+
     content::BrowserPluginGuestManager* guest_manager =
         contents->GetBrowserContext()->GetGuestManager();
     content::WebContents* guest_contents =
