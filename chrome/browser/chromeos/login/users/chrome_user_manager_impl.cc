@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
@@ -79,6 +80,11 @@ const char kPublicAccounts[] = "PublicAccounts";
 // removed after logout.
 const char kPublicAccountPendingDataRemoval[] =
     "PublicAccountPendingDataRemoval";
+
+bool FakeOwnership() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kStubCrosSettings);
+}
 
 }  // namespace
 
@@ -644,6 +650,13 @@ void ChromeUserManagerImpl::GuestUserLoggedIn() {
 void ChromeUserManagerImpl::RegularUserLoggedIn(const std::string& user_id) {
   ChromeUserManager::RegularUserLoggedIn(user_id);
 
+  if (FakeOwnership()) {
+    std::string owner_email = GetActiveUser()->email();
+    VLOG(1) << "Set device owner to: " << owner_email;
+    CrosSettings::Get()->SetString(kDeviceOwner, owner_email);
+    SetOwnerEmail(owner_email);
+  }
+
   if (IsCurrentUserNew())
     WallpaperManager::Get()->SetUserWallpaperNow(user_id);
 
@@ -811,7 +824,8 @@ void ChromeUserManagerImpl::NotifyOnLogin() {
 }
 
 void ChromeUserManagerImpl::UpdateOwnership() {
-  bool is_owner = DeviceSettingsService::Get()->HasPrivateOwnerKey();
+  bool is_owner =
+      FakeOwnership() || DeviceSettingsService::Get()->HasPrivateOwnerKey();
   VLOG(1) << "Current user " << (is_owner ? "is owner" : "is not owner");
 
   SetCurrentUserIsOwner(is_owner);

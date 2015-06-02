@@ -185,6 +185,19 @@ void OnAcceptMultiprofilesIntro(bool no_show_again) {
   UserAddingScreen::Get()->Start();
 }
 
+void SetShouldUse24HourClock(bool use_24_hour_clock) {
+  user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  CHECK(user);
+  Profile* const profile = ProfileHelper::Get()->GetProfileByUser(user);
+  if (!profile)
+    return;  // May occur in tests or if not running on a device.
+  OwnerSettingsServiceChromeOS* const service =
+      OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile);
+  CHECK(service);
+  service->SetBoolean(kSystemUse24HourClock, use_24_hour_clock);
+}
+
 }  // namespace
 
 SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
@@ -1027,17 +1040,8 @@ void SystemTrayDelegateChromeOS::UpdateClockType() {
   GetSystemTrayNotifier()->NotifyDateFormatChanged();
   // This also works for enterprise-managed devices because they never have
   // local owner.
-  if (user_manager::UserManager::Get()->IsCurrentUserOwner()) {
-    user_manager::User* const user =
-        user_manager::UserManager::Get()->GetActiveUser();
-    CHECK(user);
-    Profile* const profile = ProfileHelper::Get()->GetProfileByUser(user);
-    CHECK(profile);
-    OwnerSettingsServiceChromeOS* const service =
-        OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile);
-    CHECK(service);
-    service->SetBoolean(kSystemUse24HourClock, use_24_hour_clock);
-  }
+  if (user_manager::UserManager::Get()->IsCurrentUserOwner())
+    SetShouldUse24HourClock(use_24_hour_clock);
 }
 
 void SystemTrayDelegateChromeOS::UpdateShowLogoutButtonInTray() {
@@ -1130,24 +1134,9 @@ void SystemTrayDelegateChromeOS::NotifyIfLastWindowClosed() {
 void SystemTrayDelegateChromeOS::LoggedInStateChanged() {
   // It apparently sometimes takes a while after login before the current user
   // is recognized as the owner. Make sure that the system-wide clock setting
-  // is updated when the recognition eventually happens
-  // (http://crbug.com/278601).
-  //
-  // Note that it isn't safe to blindly call UpdateClockType() from this
-  // method, as LoggedInStateChanged() is also called before the logged-in
-  // user's profile has actually been loaded (http://crbug.com/317745). The
-  // system tray's time format is updated at login via SetProfile().
-  if (user_manager::UserManager::Get()->IsCurrentUserOwner()) {
-    user_manager::User* const user =
-        user_manager::UserManager::Get()->GetActiveUser();
-    CHECK(user);
-    Profile* const profile = ProfileHelper::Get()->GetProfileByUser(user);
-    CHECK(profile);
-    OwnerSettingsServiceChromeOS* const service =
-        OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile);
-    CHECK(service);
-    service->SetBoolean(kSystemUse24HourClock, ShouldUse24HourClock());
-  }
+  // is updated when the recognition eventually happens (crbug.com/278601).
+  if (user_manager::UserManager::Get()->IsCurrentUserOwner())
+    SetShouldUse24HourClock(ShouldUse24HourClock());
 }
 
 // Overridden from SessionManagerClient::Observer.
