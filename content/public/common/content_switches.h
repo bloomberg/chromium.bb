@@ -76,6 +76,7 @@ CONTENT_EXPORT extern const char kDisablePluginsDiscovery[];
 CONTENT_EXPORT extern const char kDisableReadingFromCanvas[];
 extern const char kDisableRemoteFonts[];
 extern const char kDisableRendererAccessibility[];
+CONTENT_EXPORT extern const char kDisableRendererBackgrounding[];
 CONTENT_EXPORT extern const char kDisableSeccompFilterSandbox[];
 CONTENT_EXPORT extern const char kDisableSetuidSandbox[];
 CONTENT_EXPORT extern const char kDisableSharedWorkers[];

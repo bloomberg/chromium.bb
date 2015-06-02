@@ -11,6 +11,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
+#if defined(OS_MACOSX)
+#include <mach/mach.h>
+#endif  // OS_MACOSX
+
 namespace {
 
 #if defined(OS_WIN)
@@ -170,7 +174,19 @@ TEST_F(ProcessTest, WaitForExitWithTimeout) {
 TEST_F(ProcessTest, SetProcessBackgrounded) {
   Process process(SpawnChild("SimpleChildProcess"));
   int old_priority = process.GetPriority();
-#if defined(OS_WIN)
+#if defined(OS_MACOSX)
+  // On the Mac, backgrounding a process requires a port to that process.
+  // In the browser it's available through the MachBroker class, which is not
+  // part of base. Additionally, there is an indefinite amount of time between
+  // spawning a process and receiving its port. Because this test just checks
+  // the ability to background/foreground a process, we can use the current
+  // process's port instead.
+  mach_port_t process_port = mach_task_self();
+  EXPECT_TRUE(process.SetProcessBackgrounded(process_port, true));
+  EXPECT_TRUE(process.IsProcessBackgrounded(process_port));
+  EXPECT_TRUE(process.SetProcessBackgrounded(process_port, false));
+  EXPECT_FALSE(process.IsProcessBackgrounded(process_port));
+#elif defined(OS_WIN)
   EXPECT_TRUE(process.SetProcessBackgrounded(true));
   EXPECT_TRUE(process.IsProcessBackgrounded());
   EXPECT_TRUE(process.SetProcessBackgrounded(false));
@@ -188,7 +204,13 @@ TEST_F(ProcessTest, SetProcessBackgrounded) {
 TEST_F(ProcessTest, SetProcessBackgroundedSelf) {
   Process process = Process::Current();
   int old_priority = process.GetPriority();
-#if defined(OS_WIN)
+#if defined(OS_MACOSX)
+  mach_port_t process_port = mach_task_self();
+  EXPECT_TRUE(process.SetProcessBackgrounded(process_port, true));
+  EXPECT_TRUE(process.IsProcessBackgrounded(process_port));
+  EXPECT_TRUE(process.SetProcessBackgrounded(process_port, false));
+  EXPECT_FALSE(process.IsProcessBackgrounded(process_port));
+#elif defined(OS_WIN)
   EXPECT_TRUE(process.SetProcessBackgrounded(true));
   EXPECT_TRUE(process.IsProcessBackgrounded());
   EXPECT_TRUE(process.SetProcessBackgrounded(false));

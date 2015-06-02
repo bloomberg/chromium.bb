@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+#include "base/base_switches.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -421,4 +423,8 @@ bool ExtensionApiTest::StartSpawnedTestServer() {
 void ExtensionApiTest::SetUpCommandLine(base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   test_data_dir_ = test_data_dir_.AppendASCII("api_test");
+  // Backgrounded renderer processes run at a lower priority, causing the
+  // tests to take more time to complete. Disable backgrounding so that the
+  // tests don't time out.
+  command_line->AppendSwitch(switches::kDisableRendererBackgrounding);
 }

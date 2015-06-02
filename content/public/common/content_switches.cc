@@ -226,6 +226,9 @@ const char kDisableRemoteFonts[]            = "disable-remote-fonts";
 // Turns off the accessibility in the renderer.
 const char kDisableRendererAccessibility[]  = "disable-renderer-accessibility";
 
+// Prevent renderer process backgrounding when set.
+const char kDisableRendererBackgrounding[]  = "disable-renderer-backgrounding";
+
 // Disable the seccomp filter sandbox (seccomp-bpf) (Linux only).
 const char kDisableSeccompFilterSandbox[]   = "disable-seccomp-filter-sandbox";
 
