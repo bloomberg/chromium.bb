@@ -48,7 +48,6 @@ HistoryItem::HistoryItem()
     : m_pageScaleFactor(0)
     , m_itemSequenceNumber(generateSequenceNumber())
     , m_documentSequenceNumber(generateSequenceNumber())
-    , m_frameSequenceNumber(generateSequenceNumber())
     , m_scrollRestorationType(ScrollRestorationAuto)
 {
 }

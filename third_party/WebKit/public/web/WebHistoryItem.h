@@ -102,9 +102,6 @@ public:
     BLINK_EXPORT long long documentSequenceNumber() const;
     BLINK_EXPORT void setDocumentSequenceNumber(long long);
 
-    BLINK_EXPORT long long frameSequenceNumber() const;
-    BLINK_EXPORT void setFrameSequenceNumber(long long);
-
     BLINK_EXPORT WebHistoryScrollRestorationType scrollRestorationType() const;
     BLINK_EXPORT void setScrollRestorationType(WebHistoryScrollRestorationType);
 
