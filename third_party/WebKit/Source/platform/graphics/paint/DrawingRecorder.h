@@ -8,7 +8,7 @@
 #include "platform/PlatformExport.h"
 
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/paint/DisplayItem.h"
+#include "platform/graphics/paint/DrawingDisplayItem.h"
 
 #ifndef NDEBUG
 #include "wtf/text/WTFString.h"
@@ -32,7 +32,7 @@ public:
     }
 
 #if ENABLE(ASSERT)
-    void setSkipUnderInvalidationChecking() { m_skipUnderInvalidationChecking = true; }
+    void setUnderInvalidationCheckingMode(DrawingDisplayItem::UnderInvalidationCheckingMode mode) { m_underInvalidationCheckingMode = mode; }
 #endif
 
 private:
@@ -43,7 +43,7 @@ private:
 #if ENABLE(ASSERT)
     mutable bool m_checkedCachedDrawing;
     size_t m_displayItemPosition;
-    bool m_skipUnderInvalidationChecking;
+    DrawingDisplayItem::UnderInvalidationCheckingMode m_underInvalidationCheckingMode;
 #endif
 };
 

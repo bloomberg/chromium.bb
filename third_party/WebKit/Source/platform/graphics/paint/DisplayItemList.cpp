@@ -9,8 +9,13 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+
+#if ENABLE(ASSERT)
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkStream.h"
+#endif
 
 #ifndef NDEBUG
 #include "platform/graphics/LoggingCanvas.h"
@@ -296,6 +301,20 @@ static void showUnderInvalidationError(const char* reason, const DisplayItem& di
 #endif // NDEBUG
 }
 
+static bool bitmapIsAllZero(const SkBitmap& bitmap)
+{
+    bitmap.lockPixels();
+    bool result = true;
+    for (int x = 0; result && x < bitmap.width(); ++x) {
+        for (int y = 0; result && y < bitmap.height(); ++y) {
+            if (SkColorSetA(bitmap.getColor(x, y), 0) != SK_ColorTRANSPARENT)
+                result = false;
+        }
+    }
+    bitmap.unlockPixels();
+    return result;
+}
+
 void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displayItem, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
@@ -303,7 +322,8 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displ
     if (!displayItem.isDrawing() || !clientCacheIsValid(displayItem.client()))
         return;
 
-    if (static_cast<const DrawingDisplayItem&>(displayItem).skipUnderInvalidationChecking())
+    DrawingDisplayItem::UnderInvalidationCheckingMode mode = static_cast<const DrawingDisplayItem&>(displayItem).underInvalidationCheckingMode();
+    if (mode == DrawingDisplayItem::DontCheck)
         return;
 
     // If checking under-invalidation, we always generate new display item even if the client is not invalidated.
@@ -323,17 +343,39 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displ
 
     if (!newPicture && !oldPicture)
         return;
-    if (newPicture && oldPicture && newPicture->approximateOpCount() == oldPicture->approximateOpCount()) {
-        SkDynamicMemoryWStream newPictureSerialized;
-        newPicture->serialize(&newPictureSerialized);
-        SkDynamicMemoryWStream oldPictureSerialized;
-        oldPicture->serialize(&oldPictureSerialized);
+    if (newPicture && oldPicture) {
+        switch (mode) {
+        case DrawingDisplayItem::CheckPicture:
+            if (newPicture->approximateOpCount() == oldPicture->approximateOpCount()) {
+                SkDynamicMemoryWStream newPictureSerialized;
+                newPicture->serialize(&newPictureSerialized);
+                SkDynamicMemoryWStream oldPictureSerialized;
+                oldPicture->serialize(&oldPictureSerialized);
 
-        if (newPictureSerialized.bytesWritten() == oldPictureSerialized.bytesWritten()) {
-            RefPtr<SkData> oldData = adoptRef(oldPictureSerialized.copyToData());
-            RefPtr<SkData> newData = adoptRef(newPictureSerialized.copyToData());
-            if (oldData->equals(newData.get()))
-                return;
+                if (newPictureSerialized.bytesWritten() == oldPictureSerialized.bytesWritten()) {
+                    RefPtr<SkData> oldData = adoptRef(oldPictureSerialized.copyToData());
+                    RefPtr<SkData> newData = adoptRef(newPictureSerialized.copyToData());
+                    if (oldData->equals(newData.get()))
+                        return;
+                }
+            }
+            break;
+        case DrawingDisplayItem::CheckBitmap:
+            if (newPicture->cullRect() == oldPicture->cullRect()) {
+                SkBitmap bitmap;
+                SkRect rect = newPicture->cullRect();
+                bitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
+                SkCanvas canvas(bitmap);
+                canvas.translate(-rect.x(), -rect.y());
+                canvas.drawPicture(oldPicture.get());
+                SkPaint diffPaint;
+                diffPaint.setXfermodeMode(SkXfermode::kDifference_Mode);
+                canvas.drawPicture(newPicture.get(), nullptr, &diffPaint);
+                if (bitmapIsAllZero(bitmap)) // Contents are the same.
+                    return;
+            }
+        default:
+            ASSERT_NOT_REACHED();
         }
     }
 

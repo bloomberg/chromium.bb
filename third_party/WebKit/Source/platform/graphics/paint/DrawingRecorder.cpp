@@ -10,7 +10,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CachedDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
@@ -23,7 +22,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
 #if ENABLE(ASSERT)
     , m_checkedCachedDrawing(false)
     , m_displayItemPosition(RuntimeEnabledFeatures::slimmingPaintEnabled() ? m_context.displayItemList()->newDisplayItemsSize() : 0)
-    , m_skipUnderInvalidationChecking(false)
+    , m_underInvalidationCheckingMode(DrawingDisplayItem::CheckPicture)
 #endif
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
@@ -90,8 +89,7 @@ DrawingRecorder::~DrawingRecorder()
     } else {
         OwnPtr<DrawingDisplayItem> drawingDisplayItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, m_context.endRecording());
 #if ENABLE(ASSERT)
-        if (m_skipUnderInvalidationChecking)
-            drawingDisplayItem->setSkipUnderInvalidationChecking();
+        drawingDisplayItem->setUnderInvalidationCheckingMode(m_underInvalidationCheckingMode);
 #endif
         m_context.displayItemList()->add(drawingDisplayItem.release());
     }

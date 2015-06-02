@@ -27,6 +27,11 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
     if (drawingRecorder.canUseCachedDrawing())
         return;
 
+#if ENABLE(ASSERT)
+    // The drawing may be in display list mode or image mode, producing different pictures for the same result.
+    drawingRecorder.setUnderInvalidationCheckingMode(DrawingDisplayItem::CheckBitmap);
+#endif
+
     bool clip = !contentRect.contains(paintRect);
     if (clip) {
         context->save();

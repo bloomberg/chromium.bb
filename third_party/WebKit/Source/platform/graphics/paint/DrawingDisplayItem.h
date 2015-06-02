@@ -15,6 +15,24 @@ namespace blink {
 
 class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
 public:
+#if ENABLE(ASSERT)
+    enum UnderInvalidationCheckingMode {
+        CheckPicture, // Check if the new picture and the old picture are the same
+        CheckBitmap, // Check if the new picture and the old picture produce the same bitmap
+        DontCheck // Skip for known bugs. Each usage should have a FIXME and a link to the bug.
+    };
+#endif
+
+    DrawingDisplayItem(const DisplayItemClientWrapper& client, Type type, PassRefPtr<const SkPicture> picture)
+        : DisplayItem(client, type)
+        , m_picture(picture && picture->approximateOpCount() ? picture : nullptr)
+#if ENABLE(ASSERT)
+        , m_underInvalidationCheckingMode(CheckPicture)
+#endif
+    {
+        ASSERT(isDrawingType(type));
+    }
+
     static PassOwnPtr<DrawingDisplayItem> create(const DisplayItemClientWrapper& client, Type type, PassRefPtr<const SkPicture> picture)
     {
         return adoptPtr(new DrawingDisplayItem(client, type, picture));
@@ -26,19 +44,9 @@ public:
 
     PassRefPtr<const SkPicture> picture() const { return m_picture; }
 
-    DrawingDisplayItem(const DisplayItemClientWrapper& client, Type type, PassRefPtr<const SkPicture> picture)
-        : DisplayItem(client, type)
-        , m_picture(picture && picture->approximateOpCount() ? picture : nullptr)
 #if ENABLE(ASSERT)
-        , m_skipUnderInvalidationChecking(false)
-#endif
-    {
-        ASSERT(isDrawingType(type));
-    }
-
-#if ENABLE(ASSERT)
-    void setSkipUnderInvalidationChecking() { m_skipUnderInvalidationChecking = true; }
-    bool skipUnderInvalidationChecking() const { return m_skipUnderInvalidationChecking; }
+    void setUnderInvalidationCheckingMode(UnderInvalidationCheckingMode mode) { m_underInvalidationCheckingMode = mode; }
+    UnderInvalidationCheckingMode underInvalidationCheckingMode() const { return m_underInvalidationCheckingMode; }
 #endif
 
 private:
@@ -49,7 +57,7 @@ private:
     RefPtr<const SkPicture> m_picture;
 
 #if ENABLE(ASSERT)
-    bool m_skipUnderInvalidationChecking;
+    UnderInvalidationCheckingMode m_underInvalidationCheckingMode;
 #endif
 };
 
