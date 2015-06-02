@@ -5471,7 +5471,7 @@ Battery full
     <ph name="USER_NAME">$1<ex>Ivan Arbuzov</ex></ph> (owner)
   </message>
   <message name="IDS_LOGIN_POD_REMOVE_USER" desc="Login screen user pod menu item text.">
-    Remove this user
+    Remove this person
   </message>
   <message name="IDS_LOGIN_VERSION_LABEL_FORMAT" desc="Login screen version text format.">
     <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> <ph name="PRODUCT_VERSION">$2<ex>15.0.0.0</ex></ph> (Platform <ph name="PLATFORM_VERSION">$3<ex>900.0-11.09.01</ex></ph>) <ph name="DEVICE_SERIAL_NUMBER">$4<ex>SN:123456789ABC</ex></ph>
