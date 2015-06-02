@@ -18,6 +18,7 @@
       "testing/buildbot/.*",
       "testing/test_env.py",
       "tools/clang/blink_gc_plugin/CMakeLists.txt",
+      "tools/luci-go/.*",
       "tools/whitespace.txt"
     ]
   },
