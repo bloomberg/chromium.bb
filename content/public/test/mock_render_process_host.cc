@@ -33,6 +33,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
     : bad_msg_count_(0),
       factory_(NULL),
       id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
+      has_connection_(false),
       browser_context_(browser_context),
       prev_routing_id_(0),
       fast_shutdown_started_(false),
@@ -60,11 +61,16 @@ MockRenderProcessHost::~MockRenderProcessHost() {
 }
 
 void MockRenderProcessHost::SimulateCrash() {
+  has_connection_ = false;
   RenderProcessHost::RendererClosedDetails details(
       base::TERMINATION_STATUS_PROCESS_CRASHED, 0);
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
       Details<RenderProcessHost::RendererClosedDetails>(&details));
+
+  FOR_EACH_OBSERVER(
+      RenderProcessHostObserver, observers_,
+      RenderProcessExited(this, details.status, details.exit_code));
 
   // Send every routing ID a FrameHostMsg_RenderProcessGone message. To ensure a
   // predictable order for unittests which may assert against the order, we sort
@@ -89,6 +95,7 @@ void MockRenderProcessHost::EnableSendQueue() {
 }
 
 bool MockRenderProcessHost::Init() {
+  has_connection_ = true;
   return true;
 }
 
@@ -177,7 +184,7 @@ int MockRenderProcessHost::GetID() const {
 }
 
 bool MockRenderProcessHost::HasConnection() const {
-  return true;
+  return has_connection_;
 }
 
 void MockRenderProcessHost::SetIgnoreInputEvents(bool ignore_input_events) {

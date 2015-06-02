@@ -700,6 +700,7 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   TestBrowserContext browser_context;
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
+  process_host->Init();
   MockRenderWidgetHostDelegate delegate;
   MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE);
@@ -739,6 +740,7 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
   TestBrowserContext browser_context;
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
+  process_host->Init();
   MockRenderWidgetHostDelegate delegate;
   MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
       &delegate, process_host, MSG_ROUTING_NONE);
@@ -906,6 +908,7 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
   // out |OnMessageReceived()|.
   TestBrowserContext browser_context;
   process_host_ = new MockRenderProcessHost(&browser_context);
+  process_host_->Init();
   MockRenderWidgetHostDelegate delegate;
   MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
       &delegate, process_host_, MSG_ROUTING_NONE);

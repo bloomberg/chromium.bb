@@ -1195,6 +1195,9 @@ void RenderWidgetHostImpl::UpdateVSyncParameters(base::TimeTicks timebase,
 
 void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
                                           int exit_code) {
+  if (!renderer_initialized_)
+    return;
+
   // Clearing this flag causes us to re-create the renderer when recovering
   // from a crashed renderer.
   renderer_initialized_ = false;

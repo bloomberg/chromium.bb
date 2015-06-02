@@ -1445,7 +1445,9 @@ TEST_F(WebContentsImplTest, TerminateHidesValidationMessage) {
   contents()->SetDelegate(&fake_delegate);
   EXPECT_FALSE(fake_delegate.hide_validation_message_was_called());
 
-  // Crash the renderer.
+  // Initialize the RenderFrame and then simulate crashing the renderer
+  // process.
+  contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
   contents()->GetMainFrame()->GetProcess()->SimulateCrash();
 
   // Confirm HideValidationMessage was called.

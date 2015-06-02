@@ -659,7 +659,7 @@ bool RenderFrameHostImpl::IsRenderFrameLive() {
     is_live = render_view_host_->IsRenderViewLive();
 
   // Sanity check: the RenderView should always be live if the RenderFrame is.
-  DCHECK(!is_live || render_view_host_->IsRenderViewLive());
+  DCHECK_IMPLIES(is_live, render_view_host_->IsRenderViewLive());
 
   return is_live;
 }
@@ -1111,16 +1111,6 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   for (const auto& iter : ax_tree_snapshot_callbacks_)
     iter.second.Run(ui::AXTreeUpdate());
   ax_tree_snapshot_callbacks_.clear();
-
-  if (frame_tree_node_->IsMainFrame()) {
-    // RenderViewHost/RenderWidgetHost needs to reset some stuff.
-    render_view_host_->RendererExited(
-        render_view_host_->render_view_termination_status_, exit_code);
-
-    render_view_host_->delegate_->RenderViewTerminated(
-        render_view_host_, static_cast<base::TerminationStatus>(status),
-        exit_code);
-  }
 
   // Note: don't add any more code at this point in the function because
   // |this| may be deleted. Any additional cleanup should happen before

@@ -1613,6 +1613,11 @@ bool RenderFrameHostManager::InitRenderView(
   if (render_view_host->IsRenderViewLive())
     return true;
 
+  // Ensure the renderer process is initialized before creating the
+  // RenderView.
+  if (!render_view_host->GetProcess()->Init())
+    return false;
+
   // If the ongoing navigation is to a WebUI and the RenderView is not in a
   // guest process, tell the RenderViewHost about any bindings it will need
   // enabled.

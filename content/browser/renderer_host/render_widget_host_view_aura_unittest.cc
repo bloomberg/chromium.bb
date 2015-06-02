@@ -391,6 +391,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
     browser_context_.reset(new TestBrowserContext);
     process_host_ = new MockRenderProcessHost(browser_context_.get());
+    process_host_->Init();
 
     sink_ = &process_host_->sink();
 

@@ -125,6 +125,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   int bad_msg_count_;
   const MockRenderProcessHostFactory* factory_;
   int id_;
+  bool has_connection_;
   BrowserContext* browser_context_;
   ObserverList<RenderProcessHostObserver> observers_;
 

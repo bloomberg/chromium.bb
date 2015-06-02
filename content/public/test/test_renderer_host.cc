@@ -151,6 +151,7 @@ WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
 
   // This will be deleted when the WebContentsImpl goes away.
   SiteInstance* instance = SiteInstance::Create(browser_context_.get());
+  instance->GetProcess()->Init();
 
   return TestWebContents::Create(browser_context_.get(), instance);
 }

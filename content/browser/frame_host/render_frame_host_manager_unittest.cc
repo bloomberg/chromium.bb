@@ -1100,6 +1100,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   set_should_create_webui(true);
   SiteInstance* blank_instance = SiteInstance::Create(browser_context());
+  blank_instance->GetProcess()->Init();
 
   // Create a blank tab.
   scoped_ptr<TestWebContents> web_contents1(

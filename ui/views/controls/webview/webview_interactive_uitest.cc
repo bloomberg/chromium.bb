@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
@@ -89,6 +90,7 @@ TEST_F(WebViewInteractiveUiTest, TextInputClientIsUpToDate) {
 
   // Case 1: Creates a new WebContents.
   content::WebContents* web_contents1 = webview->GetWebContents();
+  web_contents1->GetRenderViewHost()->GetProcess()->Init();
   content::RenderViewHostTester::For(web_contents1->GetRenderViewHost())
       ->CreateRenderView(base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE,
                          -1, false);
@@ -101,6 +103,7 @@ TEST_F(WebViewInteractiveUiTest, TextInputClientIsUpToDate) {
   scoped_ptr<content::WebContents> web_contents2(
       content::WebContentsTester::CreateTestWebContents(browser_context(),
                                                         nullptr));
+  web_contents2->GetRenderViewHost()->GetProcess()->Init();
   content::RenderViewHostTester::For(web_contents2->GetRenderViewHost())
       ->CreateRenderView(base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE,
                          -1, false);

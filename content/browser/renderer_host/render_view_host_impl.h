@@ -18,6 +18,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/window_container_type.h"
 #include "net/base/load_states.h"
@@ -92,7 +93,8 @@ struct FileChooserParams;
 // http://www.chromium.org/developers/design-documents/site-isolation.
 class CONTENT_EXPORT RenderViewHostImpl
     : public RenderViewHost,
-      public RenderWidgetHostImpl {
+      public RenderWidgetHostImpl,
+      public RenderProcessHostObserver {
  public:
   // Convenience function, just like RenderViewHost::FromID.
   static RenderViewHostImpl* FromID(int render_process_id, int render_view_id);
@@ -179,6 +181,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   void ActivateNearestFindResult(int request_id, float x, float y) override;
   void RequestFindMatchRects(int current_version) override;
 #endif
+
+  // RenderProcessHostObserver implementation
+  void RenderProcessExited(RenderProcessHost* host,
+                           base::TerminationStatus status,
+                           int exit_code) override;
 
   void set_delegate(RenderViewHostDelegate* d) {
     CHECK(d);  // http://crbug.com/82827
