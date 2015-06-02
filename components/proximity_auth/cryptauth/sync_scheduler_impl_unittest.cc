@@ -275,4 +275,14 @@ TEST_F(ProximityAuthSyncSchedulerImplTest, JitteredTimeDeltaIsNonNegative) {
   }
 }
 
+TEST_F(ProximityAuthSyncSchedulerImplTest, StartWithNegativeElapsedTime) {
+  // This could happen in rare cases where the system clock changes.
+  scheduler_->Start(base::TimeDelta::FromDays(-1000),
+                    Strategy::PERIODIC_REFRESH);
+
+  base::TimeDelta zero_delta = base::TimeDelta::FromSeconds(0);
+  EXPECT_EQ(zero_delta, scheduler_->GetTimeToNextSync());
+  EXPECT_EQ(zero_delta, timer()->GetCurrentDelay());
+}
+
 }  // namespace proximity_auth

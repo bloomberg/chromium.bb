@@ -17,8 +17,12 @@ source_set("cryptauth") {
     "cryptauth_enroller.h",
     "cryptauth_enroller_impl.cc",
     "cryptauth_enroller_impl.h",
+    "cryptauth_enrollment_manager.cc",
+    "cryptauth_enrollment_manager.h",
     "cryptauth_enrollment_utils.cc",
     "cryptauth_enrollment_utils.h",
+    "pref_names.cc",
+    "pref_names.h",
     "secure_message_delegate.cc",
     "secure_message_delegate.h",
     "sync_scheduler.cc",
@@ -47,6 +51,8 @@ source_set("test_support") {
     "fake_secure_message_delegate.h",
     "mock_cryptauth_client.cc",
     "mock_cryptauth_client.h",
+    "mock_sync_scheduler.cc",
+    "mock_sync_scheduler.h",
   ]
 
   deps = [
@@ -68,6 +74,7 @@ source_set("unit_tests") {
     "cryptauth_api_call_flow_unittest.cc",
     "cryptauth_client_impl_unittest.cc",
     "cryptauth_enroller_impl_unittest.cc",
+    "cryptauth_enrollment_manager_unittest.cc",
     "fake_secure_message_delegate_unittest.cc",
     "sync_scheduler_impl_unittest.cc",
   ]
@@ -75,6 +82,7 @@ source_set("unit_tests") {
   deps = [
     ":cryptauth",
     ":test_support",
+    "//base:prefs_test_support",
     "//base/test:test_support",
     "//google_apis:test_support",
     "//net:test_support",

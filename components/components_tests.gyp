@@ -445,6 +445,7 @@
       'proximity_auth/cryptauth/cryptauth_api_call_flow_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_client_impl_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_enroller_impl_unittest.cc',
+      'proximity_auth/cryptauth/cryptauth_enrollment_manager_unittest.cc',
       'proximity_auth/cryptauth/fake_secure_message_delegate_unittest.cc',
       'proximity_auth/cryptauth/sync_scheduler_impl_unittest.cc',
       'proximity_auth/logging/logging_unittest.cc',

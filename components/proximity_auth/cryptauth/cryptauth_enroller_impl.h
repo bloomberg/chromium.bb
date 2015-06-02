@@ -32,7 +32,7 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   CryptAuthEnrollerImpl(
       scoped_ptr<CryptAuthClientFactory> client_factory,
       scoped_ptr<SecureMessageDelegate> secure_message_delegate_);
-  ~CryptAuthEnrollerImpl();
+  ~CryptAuthEnrollerImpl() override;
 
   // CryptAuthEnroller:
   void Enroll(const cryptauth::GcmDeviceInfo& device_info,

@@ -70,8 +70,12 @@ void SyncSchedulerImpl::Start(
   // to wait.
   base::TimeDelta sync_delta =
       GetJitteredPeriod() - elapsed_time_since_last_sync;
-  if (sync_delta < base::TimeDelta::FromSeconds(0))
-    sync_delta = base::TimeDelta::FromSeconds(0);
+
+  // The elapsed time may be negative if the system clock is changed. In this
+  // case, we immediately schedule a sync.
+  base::TimeDelta zero_delta = base::TimeDelta::FromSeconds(0);
+  if (elapsed_time_since_last_sync < zero_delta || sync_delta < zero_delta)
+    sync_delta = zero_delta;
 
   ScheduleNextSync(sync_delta);
 }
