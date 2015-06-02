@@ -58,8 +58,9 @@ MediaManager.prototype.getToken = function(refresh) {
     }
     if (!url)
       return Promise.reject('Token fetch failed.');
-    var token = url.substring(url.indexOf('access_token=') + 13);
-    if (token) {
+    var index = url.indexOf('access_token=');
+    var token = url.substring(index + 13);
+    if (index > 0 && token) {
       this.cachedToken_ = token;
       return token;
     } else {
