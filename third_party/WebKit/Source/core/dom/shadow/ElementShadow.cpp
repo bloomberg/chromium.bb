@@ -169,6 +169,9 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::Shadow
     setNeedsDistributionRecalc();
 
     shadowRoot->insertedInto(&shadowHost);
+    shadowHost.setChildNeedsStyleRecalc();
+    shadowHost.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Shadow));
+
     InspectorInstrumentation::didPushShadowRoot(&shadowHost, shadowRoot.get());
 
     return *shadowRoot;
