@@ -330,6 +330,7 @@ private:
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest,
                            NativeDisplaysChangedAfterPrimaryChange);
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, AutomaticOverscanInsets);
+  FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, Rotate);
   friend class AcceleratorControllerTest;
   friend class DisplayManagerTest;
   friend class test::AshTestBase;

@@ -123,8 +123,6 @@ void ScreenOrientationController::SetDisplayRotation(
   if (screen_rotation_animator.CanAnimate()) {
     screen_rotation_animator.Rotate(rotation, source);
   } else {
-    // TODO(bruthig): Fix the DisplayManager so that display rotations set on
-    // inactive displays are persisted.  See www.crbug.com/480703.
     Shell::GetInstance()->display_manager()->SetDisplayRotation(
         gfx::Display::InternalDisplayId(), rotation, source);
   }
