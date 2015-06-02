@@ -111,6 +111,7 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     : client_(GetString(client)),
       use_assigned_credentials_(false),
       data_reduction_proxy_config_(config) {
+  DCHECK(data_reduction_proxy_config_);
   GetChromiumBuildAndPatch(ChromiumVersion(), &build_, &patch_);
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
@@ -123,6 +124,7 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     : client_(GetString(client)),
       use_assigned_credentials_(false),
       data_reduction_proxy_config_(config) {
+  DCHECK(data_reduction_proxy_config_);
   GetChromiumBuildAndPatch(version, &build_, &patch_);
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
@@ -371,8 +373,7 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeaderImpl(
     bool force_disable_lo_fi) {
   if (proxy_server.IsEmpty())
     return;
-  if (data_reduction_proxy_config_ &&
-      data_reduction_proxy_config_->IsDataReductionProxy(proxy_server, NULL) &&
+  if (data_reduction_proxy_config_->IsDataReductionProxy(proxy_server, NULL) &&
       data_reduction_proxy_config_->UsingHTTPTunnel(proxy_server) ==
           expect_ssl) {
     SetHeader(request_headers, force_disable_lo_fi);

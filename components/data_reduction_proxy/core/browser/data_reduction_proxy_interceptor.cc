@@ -27,6 +27,7 @@ DataReductionProxyInterceptor::DataReductionProxyInterceptor(
       config_service_client_(config_service_client),
       event_creator_(event_creator),
       bypass_protocol_(new DataReductionProxyBypassProtocol(config)) {
+  DCHECK(event_creator_);
 }
 
 DataReductionProxyInterceptor::~DataReductionProxyInterceptor() {

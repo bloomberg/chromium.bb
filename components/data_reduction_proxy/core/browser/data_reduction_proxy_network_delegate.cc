@@ -90,6 +90,7 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
       experiments_stats_(experiments_stats) {
   DCHECK(data_reduction_proxy_config_);
   DCHECK(data_reduction_proxy_request_options_);
+  DCHECK(configurator_);
   DCHECK(experiments_stats_);
 }
 
@@ -120,11 +121,9 @@ void DataReductionProxyNetworkDelegate::OnResolveProxyInternal(
     int load_flags,
     const net::ProxyService& proxy_service,
     net::ProxyInfo* result) {
-  if (configurator_) {
-    OnResolveProxyHandler(url, load_flags, configurator_->GetProxyConfig(),
-                          proxy_service.proxy_retry_info(),
-                          data_reduction_proxy_config_, result);
-  }
+  OnResolveProxyHandler(url, load_flags, configurator_->GetProxyConfig(),
+                        proxy_service.proxy_retry_info(),
+                        data_reduction_proxy_config_, result);
 }
 
 void DataReductionProxyNetworkDelegate::OnProxyFallbackInternal(
@@ -164,10 +163,9 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
   // specified with the Content-Length header, which may be inaccurate,
   // or missing, as is the case with chunked encoding.
   int64 received_content_length = request->received_response_content_length();
-  if (!request->was_cached() &&          // Don't record cached content
-      received_content_length &&         // Zero-byte responses aren't useful.
-      (is_http || is_https) &&           // Only record for HTTP or HTTPS urls.
-      configurator_) {                   // Used by request type and histograms.
+  if (!request->was_cached() &&   // Don't record cached content
+      received_content_length &&  // Zero-byte responses aren't useful.
+      (is_http || is_https)) {    // Only record for HTTP or HTTPS urls.
     int64 original_content_length =
         request->response_info().headers->GetInt64HeaderValue(
             "x-original-content-length");
