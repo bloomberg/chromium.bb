@@ -988,6 +988,9 @@ FileManager.prototype = /** @struct */ {
         (this.dialogDom_.querySelector('#directory-tree'));
     var fakeEntriesVisible =
         this.dialogType !== DialogType.SELECT_SAVEAS_FILE;
+    var addNewServicesVisible =
+        this.dialogType === DialogType.FULL_PAGE &&
+        !chrome.extension.inIncognitoContext;
     DirectoryTree.decorate(directoryTree,
                            assert(this.directoryModel_),
                            assert(this.volumeManager_),
@@ -996,7 +999,7 @@ FileManager.prototype = /** @struct */ {
     directoryTree.dataModel = new NavigationListModel(
         assert(this.volumeManager_),
         assert(this.folderShortcutsModel_),
-        this.dialogType === DialogType.FULL_PAGE ?
+        addNewServicesVisible ?
             new NavigationModelMenuItem(
                 str('ADD_NEW_SERVICES_BUTTON_LABEL'),
                 '#add-new-services-menu',

@@ -15,8 +15,8 @@ var EXPAND_ICON = '> .tree-row > .expand-icon';
 var EXPANDED_SUBTREE = '> .tree-children[expanded]';
 var NEWFOLDER = '#tree-item-autogen-id-9';
 var TESTFOLDER  = '#tree-item-autogen-id-10';
-var NEWFOLDER_GUEST = '#tree-item-autogen-id-8';
-var TESTFOLDER_GUEST  = '#tree-item-autogen-id-9';
+var NEWFOLDER_GUEST = '#tree-item-autogen-id-7';
+var TESTFOLDER_GUEST  = '#tree-item-autogen-id-8';
 
 /**
  * Selects the first item in the file list.
