@@ -11,7 +11,7 @@ import json
 import os
 import tempfile
 
-from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -51,7 +51,7 @@ def GetBoardKey(config, board=None):
 def GetAllImportantBoardKeys():
   """Get a list of all board keys used in a top-level config."""
   boards = set()
-  for config in cbuildbot_config.GetConfig().values():
+  for config in chromeos_config.GetConfig().values():
     if config.important:
       for board in config.boards:
         boards.add(GetBoardKey(config, board))
@@ -64,7 +64,7 @@ def GetChromePrebuiltConfigs():
   Returns:
     A dict mapping BoardKey objects to configs.
   """
-  all_configs = cbuildbot_config.GetConfig()
+  all_configs = chromeos_config.GetConfig()
 
   boards = {}
   master_chromium_pfq = all_configs['master-chromium-pfq']
