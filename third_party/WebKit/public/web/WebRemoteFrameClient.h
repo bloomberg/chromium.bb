@@ -16,6 +16,9 @@ struct WebRect;
 
 class WebRemoteFrameClient {
 public:
+    // Specifies the reason for the detachment.
+    enum class DetachType { Remove, Swap };
+
     // Notify the embedder that it should remove this frame from the frame tree
     // and release any resources associated with it.
     virtual void frameDetached() { }

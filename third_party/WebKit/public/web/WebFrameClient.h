@@ -155,6 +155,9 @@ public:
     // See http://html.spec.whatwg.org/#dom-opener.
     virtual void didDisownOpener(WebLocalFrame*) { }
 
+    // Specifies the reason for the detachment.
+    enum class DetachType { Remove, Swap };
+
     // This frame has been detached from the view, but has not been closed yet.
     virtual void frameDetached(WebFrame*) { }
 
