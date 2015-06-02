@@ -226,6 +226,7 @@ class PasswordManagerTest : public testing::Test {
     submitted_form_ = form;
   }
 
+  base::MessageLoop message_loop_;
   scoped_refptr<MockPasswordStore> store_;
   MockPasswordManagerClient client_;
   MockPasswordManagerDriver driver_;

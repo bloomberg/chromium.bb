@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
@@ -117,6 +118,7 @@ class PasswordGenerationManagerTest : public testing::Test {
     GetGenerationManager()->DetectAccountCreationForms(forms);
   }
 
+  base::MessageLoop message_loop_;
   scoped_ptr<MockPasswordManagerClient> client_;
 };
 

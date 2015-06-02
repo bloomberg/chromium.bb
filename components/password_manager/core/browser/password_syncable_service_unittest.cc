@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "sync/api/sync_change_processor.h"
@@ -223,6 +224,7 @@ class PasswordSyncableServiceTest : public testing::Test {
   MockPasswordSyncableService* service() { return wrapper_.service(); }
 
  protected:
+  base::MessageLoop message_loop_;
   scoped_ptr<MockSyncChangeProcessor> processor_;
 
  private:
