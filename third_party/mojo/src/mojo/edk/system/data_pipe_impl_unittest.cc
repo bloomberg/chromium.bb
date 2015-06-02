@@ -376,7 +376,7 @@ class RemoteProducerDataPipeImplTestHelper
     EXPECT_TRUE(to_send->HasOneRef());
     to_send = nullptr;
 
-    ASSERT_EQ(Dispatcher::kTypeDataPipeProducer, to_receive->GetType());
+    ASSERT_EQ(Dispatcher::Type::DATA_PIPE_PRODUCER, to_receive->GetType());
     producer_dispatcher_ =
         static_cast<DataPipeProducerDispatcher*>(to_receive.get());
   }
@@ -426,7 +426,7 @@ class RemoteConsumerDataPipeImplTestHelper
     EXPECT_TRUE(to_send->HasOneRef());
     to_send = nullptr;
 
-    ASSERT_EQ(Dispatcher::kTypeDataPipeConsumer, to_receive->GetType());
+    ASSERT_EQ(Dispatcher::Type::DATA_PIPE_CONSUMER, to_receive->GetType());
     consumer_dispatcher_ =
         static_cast<DataPipeConsumerDispatcher*>(to_receive.get());
   }
@@ -480,7 +480,7 @@ class RemoteProducerDataPipeImplTestHelper2
     // destroyed.
     EXPECT_TRUE(to_send->HasOneRef());
     to_send = nullptr;
-    ASSERT_EQ(Dispatcher::kTypeDataPipeProducer, to_receive->GetType());
+    ASSERT_EQ(Dispatcher::Type::DATA_PIPE_PRODUCER, to_receive->GetType());
     to_send = static_cast<DataPipeProducerDispatcher*>(to_receive.get());
     to_receive = nullptr;
 
@@ -491,7 +491,7 @@ class RemoteProducerDataPipeImplTestHelper2
     EXPECT_TRUE(to_send->HasOneRef());
     to_send = nullptr;
 
-    ASSERT_EQ(Dispatcher::kTypeDataPipeProducer, to_receive->GetType());
+    ASSERT_EQ(Dispatcher::Type::DATA_PIPE_PRODUCER, to_receive->GetType());
     producer_dispatcher_ =
         static_cast<DataPipeProducerDispatcher*>(to_receive.get());
   }
@@ -527,7 +527,7 @@ class RemoteConsumerDataPipeImplTestHelper2
     // destroyed.
     EXPECT_TRUE(to_send->HasOneRef());
     to_send = nullptr;
-    ASSERT_EQ(Dispatcher::kTypeDataPipeConsumer, to_receive->GetType());
+    ASSERT_EQ(Dispatcher::Type::DATA_PIPE_CONSUMER, to_receive->GetType());
     to_send = static_cast<DataPipeConsumerDispatcher*>(to_receive.get());
     to_receive = nullptr;
 
@@ -538,7 +538,7 @@ class RemoteConsumerDataPipeImplTestHelper2
     EXPECT_TRUE(to_send->HasOneRef());
     to_send = nullptr;
 
-    ASSERT_EQ(Dispatcher::kTypeDataPipeConsumer, to_receive->GetType());
+    ASSERT_EQ(Dispatcher::Type::DATA_PIPE_CONSUMER, to_receive->GetType());
     consumer_dispatcher_ =
         static_cast<DataPipeConsumerDispatcher*>(to_receive.get());
   }
@@ -549,11 +549,11 @@ class RemoteConsumerDataPipeImplTestHelper2
 
 // Test case instantiation -----------------------------------------------------
 
-typedef testing::Types<LocalDataPipeImplTestHelper,
-                       RemoteProducerDataPipeImplTestHelper,
-                       RemoteConsumerDataPipeImplTestHelper,
-                       RemoteProducerDataPipeImplTestHelper2,
-                       RemoteConsumerDataPipeImplTestHelper2> HelperTypes;
+using HelperTypes = testing::Types<LocalDataPipeImplTestHelper,
+                                   RemoteProducerDataPipeImplTestHelper,
+                                   RemoteConsumerDataPipeImplTestHelper,
+                                   RemoteProducerDataPipeImplTestHelper2,
+                                   RemoteConsumerDataPipeImplTestHelper2>;
 
 TYPED_TEST_CASE(DataPipeImplTest, HelperTypes);
 

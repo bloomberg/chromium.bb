@@ -674,7 +674,7 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   ASSERT_TRUE(read_dispatchers[0]);
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
-  EXPECT_EQ(Dispatcher::kTypeMessagePipe, read_dispatchers[0]->GetType());
+  EXPECT_EQ(Dispatcher::Type::MESSAGE_PIPE, read_dispatchers[0]->GetType());
   dispatcher = static_cast<MessagePipeDispatcher*>(read_dispatchers[0].get());
 
   // Add the waiter now, before it becomes readable to avoid a race.
@@ -848,7 +848,7 @@ TEST_F(RemoteMessagePipeTest, HandlePassingHalfClosed) {
   ASSERT_TRUE(read_dispatchers[0]);
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
-  EXPECT_EQ(Dispatcher::kTypeMessagePipe, read_dispatchers[0]->GetType());
+  EXPECT_EQ(Dispatcher::Type::MESSAGE_PIPE, read_dispatchers[0]->GetType());
   dispatcher = static_cast<MessagePipeDispatcher*>(read_dispatchers[0].get());
 
   // |dispatcher| should already be readable and not writable.
@@ -982,7 +982,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   ASSERT_TRUE(read_dispatchers[0]);
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
-  EXPECT_EQ(Dispatcher::kTypeSharedBuffer, read_dispatchers[0]->GetType());
+  EXPECT_EQ(Dispatcher::Type::SHARED_BUFFER, read_dispatchers[0]->GetType());
   dispatcher = static_cast<SharedBufferDispatcher*>(read_dispatchers[0].get());
 
   // Make another mapping.
@@ -1101,7 +1101,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   ASSERT_TRUE(read_dispatchers[0]);
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
-  EXPECT_EQ(Dispatcher::kTypePlatformHandle, read_dispatchers[0]->GetType());
+  EXPECT_EQ(Dispatcher::Type::PLATFORM_HANDLE, read_dispatchers[0]->GetType());
   dispatcher =
       static_cast<PlatformHandleDispatcher*>(read_dispatchers[0].get());
 
@@ -1238,7 +1238,7 @@ TEST_F(RemoteMessagePipeTest, PassMessagePipeHandleAcrossAndBack) {
   ASSERT_TRUE(read_dispatchers[0]);
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
-  EXPECT_EQ(Dispatcher::kTypeMessagePipe, read_dispatchers[0]->GetType());
+  EXPECT_EQ(Dispatcher::Type::MESSAGE_PIPE, read_dispatchers[0]->GetType());
   dispatcher = static_cast<MessagePipeDispatcher*>(read_dispatchers[0].get());
   read_dispatchers.clear();
 
@@ -1295,7 +1295,7 @@ TEST_F(RemoteMessagePipeTest, PassMessagePipeHandleAcrossAndBack) {
   ASSERT_TRUE(read_dispatchers[0]);
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
-  EXPECT_EQ(Dispatcher::kTypeMessagePipe, read_dispatchers[0]->GetType());
+  EXPECT_EQ(Dispatcher::Type::MESSAGE_PIPE, read_dispatchers[0]->GetType());
   dispatcher = static_cast<MessagePipeDispatcher*>(read_dispatchers[0].get());
   read_dispatchers.clear();
 

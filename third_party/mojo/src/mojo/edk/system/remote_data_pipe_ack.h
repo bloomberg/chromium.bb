@@ -10,7 +10,7 @@
 namespace mojo {
 namespace system {
 
-// Data payload for |MessageInTransit::kSubtypeEndpointClientDataPipeAck|
+// Data payload for |MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA_PIPE_ACK|
 // messages.
 struct RemoteDataPipeAck {
   uint32_t num_bytes_consumed;

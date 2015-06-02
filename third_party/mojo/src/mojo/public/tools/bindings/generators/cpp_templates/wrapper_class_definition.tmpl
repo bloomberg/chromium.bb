@@ -30,7 +30,7 @@
 
 bool {{struct.name}}::Equals(const {{struct.name}}& other) const {
 {%-  for field in struct.fields %}
-  if (!mojo::internal::ValueTraits<{{field.kind|cpp_wrapper_type}}>::Equals({{field.name}}, other.{{field.name}}))
+  if (!mojo::internal::ValueTraits<{{field.kind|cpp_wrapper_type}}>::Equals(this->{{field.name}}, other.{{field.name}}))
     return false;
 {%-  endfor %}
   return true;

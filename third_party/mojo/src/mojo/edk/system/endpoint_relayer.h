@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/system/channel_endpoint_client.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -20,6 +21,46 @@ class ChannelEndpoint;
 // two |ChannelEndpoint|s (without the overhead of |MessagePipe|).
 class MOJO_SYSTEM_IMPL_EXPORT EndpointRelayer : public ChannelEndpointClient {
  public:
+  // A class that can inspect and optionally handle messages of type
+  // |Type::ENDPOINT_CLIENT| received from either |ChannelEndpoint|.
+  //
+  // Instances of implementations of this class will be owned by
+  // |EndpointRelayer|s.
+  //
+  // Destructors may not call methods of the |EndpointRelayer| (nor of the
+  // |ChannelEndpoint|s).
+  class MOJO_SYSTEM_IMPL_EXPORT Filter {
+   public:
+    virtual ~Filter() {}
+
+    // Called by |EndpointRelayer::OnReadMessage()| for messages of type
+    // |Type::ENDPOINT_CLIENT|. This is only called by the |EndpointRelayer| if
+    // it is still the client of the sending endpoint.
+    //
+    // |endpoint| (which will not be null) is the |ChannelEndpoint|
+    // corresponding to |port| (i.e., the endpoint the message was received
+    // from), whereas |peer_endpoint| (which may be null) is that corresponding
+    // to the peer port (i.e., the endpoint to which the message would be
+    // relayed).
+    //
+    // This should return true if the message is consumed (in which case
+    // ownership is transferred), and false if not (in which case the message
+    // will be relayed as usual).
+    //
+    // This will always be called under |EndpointRelayer|'s lock. This may call
+    // |ChannelEndpoint| methods. However, it may not call any of
+    // |EndpointRelayer|'s methods.
+    virtual bool OnReadMessage(ChannelEndpoint* endpoint,
+                               ChannelEndpoint* peer_endpoint,
+                               MessageInTransit* message) = 0;
+
+   protected:
+    Filter() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Filter);
+  };
+
   EndpointRelayer();
 
   // Gets the other port number (i.e., 0 -> 1, 1 -> 0).
@@ -27,6 +68,10 @@ class MOJO_SYSTEM_IMPL_EXPORT EndpointRelayer : public ChannelEndpointClient {
 
   // Initialize this object. This must be called before any other method.
   void Init(ChannelEndpoint* endpoint0, ChannelEndpoint* endpoint1);
+
+  // Sets (or resets) the filter, which can (optionally) handle/filter
+  // |Type::ENDPOINT_CLIENT| messages (see |Filter| above).
+  void SetFilter(scoped_ptr<Filter> filter);
 
   // |ChannelEndpointClient| methods:
   bool OnReadMessage(unsigned port, MessageInTransit* message) override;
@@ -39,6 +84,7 @@ class MOJO_SYSTEM_IMPL_EXPORT EndpointRelayer : public ChannelEndpointClient {
   // thread-safe |scoped_refptr|.
   base::Lock lock_;  // Protects the following members.
   scoped_refptr<ChannelEndpoint> endpoints_[2];
+  scoped_ptr<Filter> filter_;
 
   DISALLOW_COPY_AND_ASSIGN(EndpointRelayer);
 };

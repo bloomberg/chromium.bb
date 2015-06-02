@@ -20,26 +20,29 @@ type __{{union|name(exported)}}Reflect struct {
 }
 
 func Decode{{union|name(exported)}}(decoder *bindings.Decoder) ({{union|name(exported)}}, error) {
-	header, err := decoder.StartUnion()
+	size, tag, err := decoder.ReadUnionHeader()
 	if err != nil {
 		return nil, err
 	}
 
-	if header.Size == 0 {
+	if size == 0 {
+		decoder.SkipNullUnionValue()
 		return nil, nil
 	}
 
-	switch header.ElementsOrVersion {
+	switch tag {
 {%   for field in union.fields %}
 	case {{field.ordinal}}:
 		var value {{union|name(exported)}}{{field|name(exported)}}
-		value.decodeInternal(decoder)
-		decoder.Finish()
+		if err := value.decodeInternal(decoder); err != nil {
+			return nil, err
+		}
+		decoder.FinishReadingUnionValue()
 		return &value, nil
 {%   endfor %}
 	}
 
-	return nil, fmt.Errorf("Unknown tag %d in {{union|name(exported)}}", header.ElementsOrVersion);
+	return nil, fmt.Errorf("Unknown tag %d in {{union|name(exported)}}", tag);
 }
 
 {%   for field in union.fields %}
@@ -50,17 +53,57 @@ func (u *{{struct_name}}) Interface() interface{} { return u.Value }
 func (u *{{struct_name}}) __Reflect(__{{union|name(exported)}}Reflect) {}
 
 func (u *{{struct_name}}) Encode(encoder *bindings.Encoder) error {
-	encoder.StartUnion(u.Tag())
-	{{encoding_macros.encode('u.Value', field.kind)|tab_indent()}}
-	encoder.Finish()
+	encoder.WriteUnionHeader(u.Tag())
+	{{encode_union_field('u.Value', field.kind)|tab_indent()}}
+	encoder.FinishWritingUnionValue()
 	return nil
 }
 
 func (u *{{struct_name}}) decodeInternal(decoder *bindings.Decoder) error {
-	{{encoding_macros.decode('u.Value', field.kind)|tab_indent()}}
+	{{decode_union_field('u.Value', field.kind)|tab_indent()}}
 	return nil
 }
 
 {%   endfor %}
 
+{% endmacro %}
+
+{% macro encode_union_field(value, kind) %}
+{%   if kind|is_union %}
+if err := encoder.WritePointer(); err != nil {
+	return err
+}
+
+encoder.StartNestedUnion()
+{{encoding_macros.encode(value, kind)}}
+encoder.Finish()
+{%   else %}
+{{encoding_macros.encode(value, kind)}}
+{%   endif %}
+{% endmacro %}
+
+{% macro decode_union_field(value, kind) %}
+{%   if kind|is_union %}
+if pointer, err := decoder.ReadPointer(); err != nil || pointer == 0 {
+	if err != nil {
+		return err
+	}
+{%     if kind|is_nullable %}
+	{{value}} = nil
+	return nil
+{%     else %}
+	return &bindings.ValidationError{bindings.UnexpectedNullUnion, "unexpected null union"}
+{%     endif %}
+}
+
+if err := decoder.StartNestedUnion(); err != nil {
+	return err
+}
+
+{{encoding_macros.decode(value, kind)}}
+
+decoder.Finish()
+{%   else %}
+{{encoding_macros.decode(value, kind)}}
+{%   endif %}
 {% endmacro %}

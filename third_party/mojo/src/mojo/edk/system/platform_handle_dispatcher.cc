@@ -32,7 +32,7 @@ embedder::ScopedPlatformHandle PlatformHandleDispatcher::PassPlatformHandle() {
 }
 
 Dispatcher::Type PlatformHandleDispatcher::GetType() const {
-  return kTypePlatformHandle;
+  return Type::PLATFORM_HANDLE;
 }
 
 // static

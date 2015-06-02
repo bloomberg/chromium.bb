@@ -23,7 +23,7 @@ namespace embedder {
 struct Configuration;
 class PlatformSupport;
 class ProcessDelegate;
-typedef void* SlaveInfo;
+using SlaveInfo = void*;
 
 // Basic configuration/initialization ------------------------------------------
 
@@ -191,7 +191,7 @@ MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 CreateChannelOnIOThread(ScopedPlatformHandle platform_handle,
                         ChannelInfo** channel_info);
 
-typedef base::Callback<void(ChannelInfo*)> DidCreateChannelCallback;
+using DidCreateChannelCallback = base::Callback<void(ChannelInfo*)>;
 // Creates a channel asynchronously; may be called from any thread.
 // |platform_handle| should be a handle to a connected OS "pipe".
 // |io_thread_task_runner| should be the |TaskRunner| for the I/O thread.
@@ -214,7 +214,7 @@ CreateChannel(ScopedPlatformHandle platform_handle,
 MOJO_SYSTEM_IMPL_EXPORT void DestroyChannelOnIOThread(
     ChannelInfo* channel_info);
 
-typedef base::Closure DidDestroyChannelCallback;
+using DidDestroyChannelCallback = base::Closure;
 // Like |DestroyChannelOnIOThread()|, but asynchronous and may be called from
 // any thread. The callback will be called using |callback_thread_task_runner|
 // if that is non-null, or otherwise it will be called on the "channel thread".

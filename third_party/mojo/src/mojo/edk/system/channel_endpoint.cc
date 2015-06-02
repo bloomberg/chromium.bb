@@ -93,12 +93,12 @@ void ChannelEndpoint::AttachAndRun(Channel* channel,
 }
 
 void ChannelEndpoint::OnReadMessage(scoped_ptr<MessageInTransit> message) {
-  if (message->type() == MessageInTransit::kTypeEndpointClient) {
+  if (message->type() == MessageInTransit::Type::ENDPOINT_CLIENT) {
     OnReadMessageForClient(message.Pass());
     return;
   }
 
-  DCHECK_EQ(message->type(), MessageInTransit::kTypeEndpoint);
+  DCHECK_EQ(message->type(), MessageInTransit::Type::ENDPOINT);
 
   // TODO(vtl)
   // Note that this won't crash on Release builds, which is important (since the
@@ -161,7 +161,7 @@ bool ChannelEndpoint::WriteMessageNoLock(scoped_ptr<MessageInTransit> message) {
 
 void ChannelEndpoint::OnReadMessageForClient(
     scoped_ptr<MessageInTransit> message) {
-  DCHECK_EQ(message->type(), MessageInTransit::kTypeEndpointClient);
+  DCHECK_EQ(message->type(), MessageInTransit::Type::ENDPOINT_CLIENT);
 
   scoped_refptr<ChannelEndpointClient> client;
   unsigned client_port = 0;

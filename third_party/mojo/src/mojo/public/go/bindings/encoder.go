@@ -24,9 +24,6 @@ type encodingState struct {
 	// one-level value.
 	limit int
 
-	// Element size in bits of the current one-level array, 0 for other types.
-	elementBitSize uint32
-
 	// Number of elements declared in the data header for the current one-level
 	// value.
 	elements uint32
@@ -34,6 +31,9 @@ type encodingState struct {
 	// Number of elements already encoded/decoded of the current one-level
 	// value.
 	elementsProcessed uint32
+
+	// Whether the number of elements processed should be checked.
+	checkElements bool
 }
 
 func (s *encodingState) alignOffsetToBytes() {
@@ -74,10 +74,7 @@ func ensureElementBitSizeAndCapacity(state *encodingState, bitSize uint32) error
 	if state == nil {
 		return fmt.Errorf("empty state stack")
 	}
-	if state.elementBitSize != 0 && state.elementBitSize != bitSize {
-		return fmt.Errorf("unexpected element bit size: expected %d, but got %d", state.elementBitSize, bitSize)
-	}
-	if state.elementBitSize != 0 && state.elementsProcessed >= state.elements {
+	if state.checkElements && state.elementsProcessed >= state.elements {
 		return fmt.Errorf("can't process more than elements defined in header(%d)", state.elements)
 	}
 	byteSize := bytesForBits(uint64(state.bitOffset + bitSize))
@@ -109,20 +106,19 @@ func (e *Encoder) popState() {
 	}
 }
 
-func (e *Encoder) pushState(header DataHeader, elementBitSize uint32) {
+func (e *Encoder) pushState(header DataHeader, checkElements bool) {
 	oldEnd := e.end
 	e.claimData(align(int(header.Size), defaultAlignment))
 	elements := uint32(0)
-	if elementBitSize != 0 {
+	if checkElements {
 		elements = header.ElementsOrVersion
 	}
 	e.stateStack = append(e.stateStack, encodingState{
-		offset:         oldEnd,
-		limit:          e.end,
-		elementBitSize: elementBitSize,
-		elements:       elements,
+		offset:        oldEnd,
+		limit:         e.end,
+		elements:      elements,
+		checkElements: checkElements,
 	})
-	e.writeDataHeader(header)
 }
 
 // state returns encoder state of the top-level value.
@@ -144,14 +140,16 @@ func NewEncoder() *Encoder {
 func (e *Encoder) StartArray(length, elementBitSize uint32) {
 	dataSize := dataHeaderSize + bytesForBits(uint64(length)*uint64(elementBitSize))
 	header := DataHeader{uint32(dataSize), length}
-	e.pushState(header, elementBitSize)
+	e.pushState(header, true)
+	e.writeDataHeader(header)
 }
 
 // StartMap starts encoding a map and writes its data header.
 // Note: it doesn't write a pointer to the encoded map.
 // Call |Finish()| after writing keys array and values array.
 func (e *Encoder) StartMap() {
-	e.pushState(mapHeader, 0)
+	e.pushState(mapHeader, false)
+	e.writeDataHeader(mapHeader)
 }
 
 // StartStruct starts encoding a struct and writes its data header.
@@ -160,13 +158,16 @@ func (e *Encoder) StartMap() {
 func (e *Encoder) StartStruct(size, version uint32) {
 	dataSize := dataHeaderSize + int(size)
 	header := DataHeader{uint32(dataSize), version}
-	e.pushState(header, 0)
+	e.pushState(header, false)
+	e.writeDataHeader(header)
 }
 
-// StartUnion starts encoding a union and writes its data header.
-func (e *Encoder) StartUnion(tag uint32) {
-	header := DataHeader{uint32(16), tag}
-	e.pushState(header, 0)
+// StartNestedUnion starts encoding a nested union.
+// Note: it doesn't write a pointer or a union header.
+// Call |Finish()| after writing all fields.
+func (e *Encoder) StartNestedUnion() {
+	header := DataHeader{uint32(16), uint32(0)}
+	e.pushState(header, false)
 }
 
 func (e *Encoder) writeDataHeader(header DataHeader) {
@@ -175,13 +176,37 @@ func (e *Encoder) writeDataHeader(header DataHeader) {
 	e.state().offset += 8
 }
 
+// WriteUnionHeader writes a union header for a non-null union.
+// (See. WriteNullUnion)
+func (e *Encoder) WriteUnionHeader(tag uint32) error {
+	if err := ensureElementBitSizeAndCapacity(e.state(), 64); err != nil {
+		return err
+	}
+	e.state().alignOffsetToBytes()
+	e.state().offset = align(e.state().offset, 8)
+	binary.LittleEndian.PutUint32(e.buf[e.state().offset:], 16)
+	binary.LittleEndian.PutUint32(e.buf[e.state().offset+4:], tag)
+	e.state().offset += 8
+	if err := ensureElementBitSizeAndCapacity(e.state(), 64); err != nil {
+		return err
+	}
+	return nil
+}
+
+// FinishWritingUnionValue should call after the union value has been read in
+// order to indicate to move the encoder past the union value field.
+func (e *Encoder) FinishWritingUnionValue() {
+	e.state().offset = align(e.state().offset, 8)
+	e.state().alignOffsetToBytes()
+}
+
 // Finish indicates the encoder that you have finished writing elements of
 // a one-level value.
 func (e *Encoder) Finish() error {
 	if e.state() == nil {
 		return fmt.Errorf("state stack is empty")
 	}
-	if e.state().elementBitSize != 0 && e.state().elementsProcessed != e.state().elements {
+	if e.state().checkElements && e.state().elementsProcessed != e.state().elements {
 		return fmt.Errorf("unexpected number of elements written: defined in header %d, but written %d", e.state().elements, e.state().elementsProcessed)
 	}
 	e.popState()
@@ -293,18 +318,11 @@ func (e *Encoder) WriteFloat64(value float64) error {
 
 // WriteNullUnion writes a null union.
 func (e *Encoder) WriteNullUnion() error {
-	if err := ensureElementBitSizeAndCapacity(e.state(), 128); err != nil {
+	if err := e.WriteUint64(0); err != nil {
 		return err
 	}
-	e.state().alignOffsetToBytes()
-	e.state().offset = align(e.state().offset, 16)
-	binary.LittleEndian.PutUint64(e.buf[e.state().offset:], 0)
-	e.state().skipBytes(8)
-	binary.LittleEndian.PutUint64(e.buf[e.state().offset:], 0)
-	e.state().skipBytes(8)
-	e.state().elementsProcessed++
-
-	return nil
+	e.state().elementsProcessed--
+	return e.WriteUint64(0)
 }
 
 // WriteNullPointer writes a null pointer.

@@ -4,111 +4,37 @@
 
 #include "mojo/edk/system/channel.h"
 
-#include "base/bind.h"
-#include "base/location.h"
-#include "base/message_loop/message_loop.h"
-#include "base/test/test_io_thread.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/channel_endpoint.h"
 #include "mojo/edk/system/channel_endpoint_id.h"
+#include "mojo/edk/system/channel_test_base.h"
 #include "mojo/edk/system/message_pipe.h"
-#include "mojo/edk/system/raw_channel.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/waiter.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace system {
 namespace {
 
-class ChannelTest : public testing::Test {
- public:
-  ChannelTest() : io_thread_(base::TestIOThread::kAutoStart) {}
-  ~ChannelTest() override {}
-
-  void SetUp() override {
-    io_thread_.PostTaskAndWait(
-        FROM_HERE,
-        base::Bind(&ChannelTest::SetUpOnIOThread, base::Unretained(this)));
-  }
-
-  void CreateChannelOnIOThread() {
-    CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
-    channel_ = new Channel(&platform_support_);
-  }
-
-  void InitChannelOnIOThread() {
-    CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
-
-    CHECK(raw_channel_);
-    CHECK(channel_);
-    channel_->Init(raw_channel_.Pass());
-  }
-
-  void ShutdownChannelOnIOThread() {
-    CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
-
-    CHECK(channel_);
-    channel_->Shutdown();
-  }
-
-  base::TestIOThread* io_thread() { return &io_thread_; }
-  RawChannel* raw_channel() { return raw_channel_.get(); }
-  scoped_ptr<RawChannel>* mutable_raw_channel() { return &raw_channel_; }
-  Channel* channel() { return channel_.get(); }
-  scoped_refptr<Channel>* mutable_channel() { return &channel_; }
-
- private:
-  void SetUpOnIOThread() {
-    CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
-
-    embedder::PlatformChannelPair channel_pair;
-    raw_channel_ = RawChannel::Create(channel_pair.PassServerHandle()).Pass();
-    other_platform_handle_ = channel_pair.PassClientHandle();
-  }
-
-  embedder::SimplePlatformSupport platform_support_;
-  base::TestIOThread io_thread_;
-  scoped_ptr<RawChannel> raw_channel_;
-  embedder::ScopedPlatformHandle other_platform_handle_;
-  scoped_refptr<Channel> channel_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChannelTest);
-};
+using ChannelTest = test::ChannelTestBase;
 
 // ChannelTest.InitShutdown ----------------------------------------------------
 
 TEST_F(ChannelTest, InitShutdown) {
-  io_thread()->PostTaskAndWait(FROM_HERE,
-                               base::Bind(&ChannelTest::CreateChannelOnIOThread,
-                                          base::Unretained(this)));
-  ASSERT_TRUE(channel());
-
-  io_thread()->PostTaskAndWait(
-      FROM_HERE,
-      base::Bind(&ChannelTest::InitChannelOnIOThread, base::Unretained(this)));
-
-  io_thread()->PostTaskAndWait(
-      FROM_HERE, base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
-                            base::Unretained(this)));
+  PostMethodToIOThreadAndWait(FROM_HERE,
+                              &ChannelTest::CreateAndInitChannelOnIOThread, 0);
+  PostMethodToIOThreadAndWait(FROM_HERE,
+                              &ChannelTest::ShutdownChannelOnIOThread, 0);
 
   // Okay to destroy |Channel| on not-the-I/O-thread.
-  EXPECT_TRUE(channel()->HasOneRef());
-  *mutable_channel() = nullptr;
+  EXPECT_TRUE(channel(0)->HasOneRef());
+  *mutable_channel(0) = nullptr;
 }
 
 // ChannelTest.CloseBeforeAttachAndRun -----------------------------------------
 
 TEST_F(ChannelTest, CloseBeforeRun) {
-  io_thread()->PostTaskAndWait(FROM_HERE,
-                               base::Bind(&ChannelTest::CreateChannelOnIOThread,
-                                          base::Unretained(this)));
-  ASSERT_TRUE(channel());
-
-  io_thread()->PostTaskAndWait(
-      FROM_HERE,
-      base::Bind(&ChannelTest::InitChannelOnIOThread, base::Unretained(this)));
+  PostMethodToIOThreadAndWait(FROM_HERE,
+                              &ChannelTest::CreateAndInitChannelOnIOThread, 0);
 
   scoped_refptr<ChannelEndpoint> channel_endpoint;
   scoped_refptr<MessagePipe> mp(
@@ -116,32 +42,25 @@ TEST_F(ChannelTest, CloseBeforeRun) {
 
   mp->Close(0);
 
-  channel()->SetBootstrapEndpoint(channel_endpoint);
+  channel(0)->SetBootstrapEndpoint(channel_endpoint);
 
-  io_thread()->PostTaskAndWait(
-      FROM_HERE, base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
-                            base::Unretained(this)));
+  PostMethodToIOThreadAndWait(FROM_HERE,
+                              &ChannelTest::ShutdownChannelOnIOThread, 0);
 
-  EXPECT_TRUE(channel()->HasOneRef());
+  EXPECT_TRUE(channel(0)->HasOneRef());
 }
 
 // ChannelTest.ShutdownAfterAttachAndRun ---------------------------------------
 
 TEST_F(ChannelTest, ShutdownAfterAttach) {
-  io_thread()->PostTaskAndWait(FROM_HERE,
-                               base::Bind(&ChannelTest::CreateChannelOnIOThread,
-                                          base::Unretained(this)));
-  ASSERT_TRUE(channel());
-
-  io_thread()->PostTaskAndWait(
-      FROM_HERE,
-      base::Bind(&ChannelTest::InitChannelOnIOThread, base::Unretained(this)));
+  PostMethodToIOThreadAndWait(FROM_HERE,
+                              &ChannelTest::CreateAndInitChannelOnIOThread, 0);
 
   scoped_refptr<ChannelEndpoint> channel_endpoint;
   scoped_refptr<MessagePipe> mp(
       MessagePipe::CreateLocalProxy(&channel_endpoint));
 
-  channel()->SetBootstrapEndpoint(channel_endpoint);
+  channel(0)->SetBootstrapEndpoint(channel_endpoint);
 
   Waiter waiter;
   waiter.Init();
@@ -150,9 +69,8 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
       mp->AddAwakable(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, nullptr));
 
   // Don't wait for the shutdown to run ...
-  io_thread()->PostTask(FROM_HERE,
-                        base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
-                                   base::Unretained(this)));
+  PostMethodToIOThreadAndWait(FROM_HERE,
+                              &ChannelTest::ShutdownChannelOnIOThread, 0);
 
   // ... since this |Wait()| should fail once the channel is shut down.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
@@ -164,30 +82,23 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
 
   mp->Close(0);
 
-  EXPECT_TRUE(channel()->HasOneRef());
+  EXPECT_TRUE(channel(0)->HasOneRef());
 }
 
 // ChannelTest.WaitAfterAttachRunAndShutdown -----------------------------------
 
 TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
-  io_thread()->PostTaskAndWait(FROM_HERE,
-                               base::Bind(&ChannelTest::CreateChannelOnIOThread,
-                                          base::Unretained(this)));
-  ASSERT_TRUE(channel());
-
-  io_thread()->PostTaskAndWait(
-      FROM_HERE,
-      base::Bind(&ChannelTest::InitChannelOnIOThread, base::Unretained(this)));
+  PostMethodToIOThreadAndWait(FROM_HERE,
+                              &ChannelTest::CreateAndInitChannelOnIOThread, 0);
 
   scoped_refptr<ChannelEndpoint> channel_endpoint;
   scoped_refptr<MessagePipe> mp(
       MessagePipe::CreateLocalProxy(&channel_endpoint));
 
-  channel()->SetBootstrapEndpoint(channel_endpoint);
+  channel(0)->SetBootstrapEndpoint(channel_endpoint);
 
-  io_thread()->PostTaskAndWait(
-      FROM_HERE, base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
-                            base::Unretained(this)));
+  PostMethodToIOThreadAndWait(FROM_HERE,
+                              &ChannelTest::ShutdownChannelOnIOThread, 0);
 
   Waiter waiter;
   waiter.Init();
@@ -200,7 +111,7 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
 
   mp->Close(0);
 
-  EXPECT_TRUE(channel()->HasOneRef());
+  EXPECT_TRUE(channel(0)->HasOneRef());
 }
 
 // TODO(vtl): More. ------------------------------------------------------------

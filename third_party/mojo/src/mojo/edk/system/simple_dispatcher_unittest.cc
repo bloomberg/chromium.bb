@@ -60,7 +60,7 @@ class MockSimpleDispatcher : public SimpleDispatcher {
     HandleSignalsStateChangedNoLock();
   }
 
-  Type GetType() const override { return kTypeUnknown; }
+  Type GetType() const override { return Type::UNKNOWN; }
 
  private:
   friend class base::RefCountedThreadSafe<MockSimpleDispatcher>;

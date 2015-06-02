@@ -23,7 +23,7 @@ class TrivialDispatcher : public Dispatcher {
  public:
   TrivialDispatcher() {}
 
-  Type GetType() const override { return kTypeUnknown; }
+  Type GetType() const override { return Type::UNKNOWN; }
 
  private:
   friend class base::RefCountedThreadSafe<TrivialDispatcher>;
@@ -41,7 +41,7 @@ class TrivialDispatcher : public Dispatcher {
 TEST(DispatcherTest, Basic) {
   scoped_refptr<Dispatcher> d(new TrivialDispatcher());
 
-  EXPECT_EQ(Dispatcher::kTypeUnknown, d->GetType());
+  EXPECT_EQ(Dispatcher::Type::UNKNOWN, d->GetType());
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->WriteMessage(NullUserPointer(), 0, nullptr,

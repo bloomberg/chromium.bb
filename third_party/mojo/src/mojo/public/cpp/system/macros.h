@@ -50,7 +50,8 @@ char(&ArraySizeHelper(const T(&array)[N]))[N];
 // more commonly, pass it to a function that takes it as a reference argument --
 // probably an STL function.) This macro makes MSVC do the right thing. See
 // http://msdn.microsoft.com/en-us/library/34h23df8(v=vs.100).aspx for more
-// information. Use like:
+// information. This workaround does not appear to be necessary after VS2015.
+// Use like:
 //
 // In .h file:
 //   struct Foo {
@@ -59,7 +60,7 @@ char(&ArraySizeHelper(const T(&array)[N]))[N];
 //
 // In .cc file:
 //   STATIC_CONST_MEMBER_DEFINITION const int Foo::kBar;
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && _MSC_VER < 1900
 #define MOJO_STATIC_CONST_MEMBER_DEFINITION __declspec(selectany)
 #else
 #define MOJO_STATIC_CONST_MEMBER_DEFINITION

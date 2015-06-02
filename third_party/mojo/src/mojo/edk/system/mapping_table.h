@@ -49,8 +49,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MappingTable {
  private:
   friend bool internal::ShutdownCheckNoLeaks(Core*);
 
-  typedef base::hash_map<uintptr_t, embedder::PlatformSharedBufferMapping*>
-      AddressToMappingMap;
+  using AddressToMappingMap =
+      base::hash_map<uintptr_t, embedder::PlatformSharedBufferMapping*>;
   AddressToMappingMap address_to_mapping_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MappingTable);

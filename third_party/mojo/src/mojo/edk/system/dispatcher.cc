@@ -71,23 +71,23 @@ scoped_refptr<Dispatcher> Dispatcher::TransportDataAccess::Deserialize(
     const void* source,
     size_t size,
     embedder::PlatformHandleVector* platform_handles) {
-  switch (static_cast<int32_t>(type)) {
-    case kTypeUnknown:
+  switch (static_cast<Dispatcher::Type>(type)) {
+    case Type::UNKNOWN:
       DVLOG(2) << "Deserializing invalid handle";
       return nullptr;
-    case kTypeMessagePipe:
+    case Type::MESSAGE_PIPE:
       return scoped_refptr<Dispatcher>(
           MessagePipeDispatcher::Deserialize(channel, source, size));
-    case kTypeDataPipeProducer:
+    case Type::DATA_PIPE_PRODUCER:
       return scoped_refptr<Dispatcher>(
           DataPipeProducerDispatcher::Deserialize(channel, source, size));
-    case kTypeDataPipeConsumer:
+    case Type::DATA_PIPE_CONSUMER:
       return scoped_refptr<Dispatcher>(
           DataPipeConsumerDispatcher::Deserialize(channel, source, size));
-    case kTypeSharedBuffer:
+    case Type::SHARED_BUFFER:
       return scoped_refptr<Dispatcher>(SharedBufferDispatcher::Deserialize(
           channel, source, size, platform_handles));
-    case kTypePlatformHandle:
+    case Type::PLATFORM_HANDLE:
       return scoped_refptr<Dispatcher>(PlatformHandleDispatcher::Deserialize(
           channel, source, size, platform_handles));
   }

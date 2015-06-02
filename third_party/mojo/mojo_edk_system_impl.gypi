@@ -58,6 +58,7 @@
     'src/mojo/edk/system/channel_manager.h',
     'src/mojo/edk/system/configuration.cc',
     'src/mojo/edk/system/configuration.h',
+    'src/mojo/edk/system/connection_identifier.h',
     'src/mojo/edk/system/connection_manager.cc',
     'src/mojo/edk/system/connection_manager.h',
     'src/mojo/edk/system/core.cc',

@@ -215,7 +215,7 @@ if (decoder{{level+1}} == null) {
 {% if struct.fields|length %}
         {{struct|name}} other = ({{struct|name}}) object;
 {%   for field in struct.fields %}
-        if ({{equality(field.kind, field|name, 'other.'~field|name, True)}})
+        if ({{equality(field.kind, 'this.'~field|name, 'other.'~field|name, True)}})
             return false;
 {%   endfor %}
 {% endif %}

@@ -11,7 +11,10 @@ if {{value}} == nil {
 	encoder.WriteNullPointer()
 {%   endif %}
 } else {
-	{{encodeNonNullable('(*'~value~')', kind, level)|tab_indent()}}
+{%   if not kind|is_union %}
+{%     set value = '(*'~value~')' %}
+{%   endif %}
+	{{encodeNonNullable(value, kind, level)|tab_indent()}}
 }
 {% else -%}
 {{encodeNonNullable(value, kind, level)}}
@@ -24,6 +27,10 @@ if {{value}} == nil {
 {% if kind|is_pointer %}
 if err := encoder.WritePointer(); err != nil {
 	return err
+}
+{% elif kind|is_union and not kind|is_nullable %}
+if {{value}} == nil {
+	return &bindings.ValidationError{bindings.UnexpectedNullUnion, "unexpected null union"}
 }
 {% endif %}
 {% if kind|is_struct or kind|is_union %}
@@ -93,6 +100,18 @@ if pointer{{level}} == 0 {
 	{{decodePointerValue(value, kind, level)|tab_indent()}}
 }
 {%   endif %}
+{% elif kind|is_union %}
+var err error
+{%   set decoding_function = ('Decode'~ kind|name)|qualified(kind|package) %}
+{{value}}, err = {{decoding_function}}(decoder)
+if err != nil {
+	return err
+}
+{%   if not kind|is_nullable %}
+if {{value}} == nil {
+	return &bindings.ValidationError{bindings.UnexpectedNullUnion, "unexpected null union"}
+}
+{%   endif %}
 {% elif kind|is_handle or kind|is_interface %}
 handle{{level}}, err := decoder.Read{{kind|decode_suffix}}()
 if err != nil {
@@ -134,8 +153,6 @@ if err != nil {
 if err := {{value}}.Decode(decoder); err != nil {
 	return err
 }
-{% elif kind|is_union %}
-// TODO(azani): Implement union decoding.
 {% elif kind|is_array %}
 len{{level}}, err := decoder.StartArray({{kind.kind|bit_size}})
 if err != nil {

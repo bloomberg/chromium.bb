@@ -6,6 +6,8 @@
 
 #include <string.h>
 
+#include <ostream>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "mojo/edk/system/configuration.h"
@@ -13,42 +15,6 @@
 
 namespace mojo {
 namespace system {
-
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::kTypeEndpointClient;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::kTypeEndpoint;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::kTypeChannel;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::kTypeRawChannel;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::kTypeConnectionManager;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::kTypeConnectionManagerAck;
-
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeEndpointClientData;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeEndpointClientDataPipeAck;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeChannelAttachAndRunEndpoint;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeChannelRemoveEndpoint;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeChannelRemoveEndpointAck;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeRawChannelPosixExtraPlatformHandles;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeConnectionManagerAllowConnect;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeConnectionManagerCancelConnect;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeConnectionManagerConnect;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeConnectionManagerAckFailure;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeConnectionManagerAckSuccess;
 
 STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 

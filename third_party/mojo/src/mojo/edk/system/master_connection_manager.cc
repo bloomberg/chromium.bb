@@ -92,7 +92,7 @@ embedder::SlaveInfo MasterConnectionManager::Helper::Shutdown() {
 void MasterConnectionManager::Helper::OnReadMessage(
     const MessageInTransit::View& message_view,
     embedder::ScopedPlatformHandleVectorPtr platform_handles) {
-  if (message_view.type() != MessageInTransit::kTypeConnectionManager) {
+  if (message_view.type() != MessageInTransit::Type::CONNECTION_MANAGER) {
     LOG(ERROR) << "Invalid message type " << message_view.type();
     FatalError();  // WARNING: This destroys us.
     return;
@@ -120,13 +120,13 @@ void MasterConnectionManager::Helper::OnReadMessage(
   uint32_t num_bytes = 0;
   const void* bytes = nullptr;
   switch (message_view.subtype()) {
-    case MessageInTransit::kSubtypeConnectionManagerAllowConnect:
+    case MessageInTransit::Subtype::CONNECTION_MANAGER_ALLOW_CONNECT:
       result = owner_->AllowConnectImpl(process_identifier_, *connection_id);
       break;
-    case MessageInTransit::kSubtypeConnectionManagerCancelConnect:
+    case MessageInTransit::Subtype::CONNECTION_MANAGER_CANCEL_CONNECT:
       result = owner_->CancelConnectImpl(process_identifier_, *connection_id);
       break;
-    case MessageInTransit::kSubtypeConnectionManagerConnect:
+    case MessageInTransit::Subtype::CONNECTION_MANAGER_CONNECT:
       result = owner_->ConnectImpl(process_identifier_, *connection_id,
                                    &peer_process_identifier, &platform_handle);
       // Success acks for "connect" have the peer process identifier as data
@@ -143,22 +143,23 @@ void MasterConnectionManager::Helper::OnReadMessage(
   }
 
   scoped_ptr<MessageInTransit> response(new MessageInTransit(
-      MessageInTransit::kTypeConnectionManagerAck,
-      result ? MessageInTransit::kSubtypeConnectionManagerAckSuccess
-             : MessageInTransit::kSubtypeConnectionManagerAckFailure,
+      MessageInTransit::Type::CONNECTION_MANAGER_ACK,
+      result ? MessageInTransit::Subtype::CONNECTION_MANAGER_ACK_SUCCESS
+             : MessageInTransit::Subtype::CONNECTION_MANAGER_ACK_FAILURE,
       num_bytes, bytes));
 
   if (platform_handle.is_valid()) {
     // Only success acks for "connect" *may* have a platform handle attached.
     DCHECK(result);
     DCHECK_EQ(message_view.subtype(),
-              MessageInTransit::kSubtypeConnectionManagerConnect);
+              MessageInTransit::Subtype::CONNECTION_MANAGER_CONNECT);
 
     embedder::ScopedPlatformHandleVectorPtr platform_handles(
         new embedder::PlatformHandleVector());
     platform_handles->push_back(platform_handle.release());
-    response->SetTransportData(
-        make_scoped_ptr(new TransportData(platform_handles.Pass())));
+    response->SetTransportData(make_scoped_ptr(
+        new TransportData(platform_handles.Pass(),
+                          raw_channel_->GetSerializedPlatformHandleSize())));
   }
 
   if (!raw_channel_->WriteMessage(response.Pass())) {

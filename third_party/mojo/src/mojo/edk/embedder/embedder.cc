@@ -148,7 +148,7 @@ MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  if (dispatcher->GetType() != system::Dispatcher::kTypePlatformHandle)
+  if (dispatcher->GetType() != system::Dispatcher::Type::PLATFORM_HANDLE)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   *platform_handle =

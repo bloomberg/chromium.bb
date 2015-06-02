@@ -20,7 +20,7 @@ void DataPipeProducerDispatcher::Init(scoped_refptr<DataPipe> data_pipe) {
 }
 
 Dispatcher::Type DataPipeProducerDispatcher::GetType() const {
-  return kTypeDataPipeProducer;
+  return Type::DATA_PIPE_PRODUCER;
 }
 
 // static

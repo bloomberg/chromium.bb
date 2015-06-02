@@ -62,7 +62,8 @@ struct TransportData::PrivateStructForCompileAsserts {
 };
 
 TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
-                             Channel* channel) {
+                             Channel* channel)
+    : buffer_size_() {
   DCHECK(dispatchers);
   DCHECK(channel);
 
@@ -136,8 +137,8 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
   for (size_t i = 0; i < num_handles; i++) {
     Dispatcher* dispatcher = (*dispatchers)[i].get();
     if (!dispatcher) {
-      static_assert(Dispatcher::kTypeUnknown == 0,
-                    "Value of Dispatcher::kTypeUnknown must be 0");
+      static_assert(static_cast<int32_t>(Dispatcher::Type::UNKNOWN) == 0,
+                    "Value of Dispatcher::Type::UNKNOWN must be 0");
       continue;
     }
 
@@ -165,7 +166,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
 #endif
     } else {
       // Nothing to do on failure, since |buffer_| was cleared, and
-      // |kTypeUnknown| is zero. The handle was simply closed.
+      // |Type::UNKNOWN| is zero. The handle was simply closed.
       LOG(ERROR) << "Failed to serialize handle to remote message pipe";
     }
 
@@ -192,13 +193,18 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
 }
 
 TransportData::TransportData(
-    embedder::ScopedPlatformHandleVectorPtr platform_handles)
-    : buffer_size_(sizeof(Header)), platform_handles_(platform_handles.Pass()) {
+    embedder::ScopedPlatformHandleVectorPtr platform_handles,
+    size_t serialized_platform_handle_size)
+    : buffer_size_(), platform_handles_(platform_handles.Pass()) {
+  buffer_size_ = MessageInTransit::RoundUpMessageAlignment(
+      sizeof(Header) +
+      platform_handles_->size() * serialized_platform_handle_size);
   buffer_.reset(static_cast<char*>(
       base::AlignedAlloc(buffer_size_, MessageInTransit::kMessageAlignment)));
   memset(buffer_.get(), 0, buffer_size_);
 
   Header* header = reinterpret_cast<Header*>(buffer_.get());
+  header->platform_handle_table_offset = static_cast<uint32_t>(sizeof(Header));
   header->num_platform_handles =
       static_cast<uint32_t>(platform_handles_->size());
 }

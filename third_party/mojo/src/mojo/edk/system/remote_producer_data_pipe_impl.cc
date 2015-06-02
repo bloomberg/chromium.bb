@@ -29,10 +29,10 @@ bool ValidateIncomingMessage(size_t element_num_bytes,
                              size_t current_num_bytes,
                              const MessageInTransit* message) {
   // We should only receive endpoint client messages.
-  DCHECK_EQ(message->type(), MessageInTransit::kTypeEndpointClient);
+  DCHECK_EQ(message->type(), MessageInTransit::Type::ENDPOINT_CLIENT);
 
   // But we should check the subtype; only take data messages.
-  if (message->subtype() != MessageInTransit::kSubtypeEndpointClientData) {
+  if (message->subtype() != MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA) {
     LOG(WARNING) << "Received message of unexpected subtype: "
                  << message->subtype();
     return false;
@@ -444,10 +444,10 @@ void RemoteProducerDataPipeImpl::MarkDataAsConsumed(size_t num_bytes) {
 
   RemoteDataPipeAck ack_data = {};
   ack_data.num_bytes_consumed = static_cast<uint32_t>(num_bytes);
-  scoped_ptr<MessageInTransit> message(
-      new MessageInTransit(MessageInTransit::kTypeEndpointClient,
-                           MessageInTransit::kSubtypeEndpointClientDataPipeAck,
-                           static_cast<uint32_t>(sizeof(ack_data)), &ack_data));
+  scoped_ptr<MessageInTransit> message(new MessageInTransit(
+      MessageInTransit::Type::ENDPOINT_CLIENT,
+      MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA_PIPE_ACK,
+      static_cast<uint32_t>(sizeof(ack_data)), &ack_data));
   if (!channel_endpoint_->EnqueueMessage(message.Pass()))
     Disconnect();
 }

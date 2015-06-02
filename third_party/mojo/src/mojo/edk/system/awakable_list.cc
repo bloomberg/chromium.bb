@@ -4,6 +4,8 @@
 
 #include "mojo/edk/system/awakable_list.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "mojo/edk/system/awakable.h"
 #include "mojo/edk/system/handle_signals_state.h"
@@ -19,19 +21,24 @@ AwakableList::~AwakableList() {
 }
 
 void AwakableList::AwakeForStateChange(const HandleSignalsState& state) {
-  for (AwakeInfoList::iterator it = awakables_.begin();
-       it != awakables_.end();) {
+  // Instead of deleting elements in-place, swap them with the last element and
+  // erase the elements from the end.
+  auto last = awakables_.end();
+  for (AwakeInfoList::iterator it = awakables_.begin(); it != last;) {
     bool keep = true;
     if (state.satisfies(it->signals))
       keep = it->awakable->Awake(MOJO_RESULT_OK, it->context);
     else if (!state.can_satisfy(it->signals))
       keep = it->awakable->Awake(MOJO_RESULT_FAILED_PRECONDITION, it->context);
-    AwakeInfoList::iterator maybe_delete = it;
-    ++it;
 
-    if (!keep)
-      awakables_.erase(maybe_delete);
+    if (!keep) {
+      --last;
+      std::swap(*it, *last);
+    } else {
+      ++it;
+    }
   }
+  awakables_.erase(last, awakables_.end());
 }
 
 void AwakableList::CancelAll() {
@@ -51,13 +58,16 @@ void AwakableList::Add(Awakable* awakable,
 void AwakableList::Remove(Awakable* awakable) {
   // We allow a thread to wait on the same handle multiple times simultaneously,
   // so we need to scan the entire list and remove all occurrences of |waiter|.
-  for (AwakeInfoList::iterator it = awakables_.begin();
-       it != awakables_.end();) {
-    AwakeInfoList::iterator maybe_delete = it;
-    ++it;
-    if (maybe_delete->awakable == awakable)
-      awakables_.erase(maybe_delete);
+  auto last = awakables_.end();
+  for (AwakeInfoList::iterator it = awakables_.begin(); it != last;) {
+    if (it->awakable == awakable) {
+      --last;
+      std::swap(*it, *last);
+    } else {
+      ++it;
+    }
   }
+  awakables_.erase(last, awakables_.end());
 }
 
 }  // namespace system

@@ -24,8 +24,8 @@ namespace system {
 class ChannelManager;
 class Core;
 
-// Repeat a typedef in mojo/edk/system/channel_manager.h, to avoid including it.
-typedef uint64_t ChannelId;
+// Duplicate from mojo/edk/system/channel_manager.h, to avoid including it.
+using ChannelId = uint64_t;
 
 }  // namespace system
 

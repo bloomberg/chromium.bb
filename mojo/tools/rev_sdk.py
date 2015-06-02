@@ -23,6 +23,7 @@ sdk_dirs_to_clone = [
 sdk_dirs_to_not_clone = [
   "mojo/public/cpp/application",
   "mojo/public/interfaces/application",
+  "mojo/public/interfaces/network",
   "mojo/public/java/application",
 ]
 

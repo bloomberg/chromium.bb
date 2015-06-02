@@ -96,7 +96,8 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   // |Dispatcher|s. (|Header| will be present, and zero except for
   // |num_platform_handles|, and |platform_handle_table_offset| if necessary.)
   explicit TransportData(
-      embedder::ScopedPlatformHandleVectorPtr platform_handles);
+      embedder::ScopedPlatformHandleVectorPtr platform_handles,
+      size_t serialized_platform_handle_size);
 
   ~TransportData();
 
@@ -161,7 +162,8 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   };
 
   struct HandleTableEntry {
-    int32_t type;     // From |Dispatcher::Type| (|kTypeUnknown| for "invalid").
+    // TODO(vtl): Should I make |Dispatcher::Type| an |int32_t| enum class?
+    int32_t type;     // From |Dispatcher::Type| (|UNKNOWN| for "invalid").
     uint32_t offset;  // Relative to the start of the "secondary buffer".
     uint32_t size;    // (Not including any padding.)
     uint32_t unused;

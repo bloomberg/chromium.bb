@@ -48,7 +48,7 @@ class DrainData {
   // all of the buffered data to the JS Promise and then delete this.
   void DeliverData(MojoResult result);
 
-  typedef std::vector<char> DataBuffer;
+  using DataBuffer = std::vector<char>;
 
   v8::Isolate* isolate_;
   ScopedDataPipeConsumerHandle handle_;

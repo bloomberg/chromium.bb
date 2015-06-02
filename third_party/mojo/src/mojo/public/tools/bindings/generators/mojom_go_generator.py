@@ -75,7 +75,7 @@ def GetBitSize(kind):
 # Returns go type corresponding to provided kind. If |nullable| is true
 # and kind is nullable adds an '*' to type (example: ?string -> *string).
 def GetGoType(kind, nullable = True):
-  if nullable and mojom.IsNullableKind(kind):
+  if nullable and mojom.IsNullableKind(kind) and not mojom.IsUnionKind(kind):
     return '*%s' % GetNonNullableGoType(kind)
   return GetNonNullableGoType(kind)
 
@@ -97,6 +97,9 @@ def GetNonNullableGoType(kind):
   if mojom.IsEnumKind(kind):
     return GetNameForNestedElement(kind)
   return _kind_infos[kind].go_type
+
+def IsPointer(kind):
+  return mojom.IsObjectKind(kind) and not mojom.IsUnionKind(kind)
 
 # Splits name to lower-cased parts used for camel-casing
 # (example: HTTPEntry2FooBar -> ['http', 'entry2', 'foo', 'bar']).
@@ -126,14 +129,8 @@ def FormatName(name, exported=True):
 # |element| should have attr 'name'. |exported| argument is used to make
 # |FormatName()| calls only.
 def GetFullName(element, exported=True):
-  if not hasattr(element, 'imported_from') or not element.imported_from:
-    return FormatName(element.name, exported)
-  path = ''
-  if element.imported_from['module'].path:
-    path += GetPackagePath(element.imported_from['module'])
-  if path in _imports:
-    return '%s.%s' % (_imports[path], FormatName(element.name, exported))
-  return FormatName(element.name, exported)
+  return GetQualifiedName(
+      element.name, GetPackageNameForElement(element), exported)
 
 # Returns a name for nested elements like enum field or constant.
 # The returned name consists of camel-cased parts separated by '_'.
@@ -188,6 +185,21 @@ def EncodeSuffix(kind):
 
 def GetPackageName(module):
   return module.name.split('.')[0]
+
+def GetPackageNameForElement(element):
+  if not hasattr(element, 'imported_from') or not element.imported_from:
+    return ''
+  path = ''
+  if element.imported_from['module'].path:
+    path += GetPackagePath(element.imported_from['module'])
+  if path in _imports:
+    return _imports[path]
+  return ''
+
+def GetQualifiedName(name, package=None, exported=True):
+  if not package:
+    return FormatName(name, exported)
+  return '%s.%s' % (package, FormatName(name, exported))
 
 def GetPackagePath(module):
   name = module.name.split('.')[0]
@@ -250,10 +262,13 @@ class Generator(generator.Generator):
     'is_map': mojom.IsMapKind,
     'is_none_or_empty': lambda array: array == None or len(array) == 0,
     'is_nullable': mojom.IsNullableKind,
-    'is_pointer': mojom.IsObjectKind,
+    'is_pointer': IsPointer,
+    'is_object': mojom.IsObjectKind,
     'is_struct': mojom.IsStructKind,
     'is_union': mojom.IsUnionKind,
+    'qualified': GetQualifiedName,
     'name': GetNameForElement,
+    'package': GetPackageNameForElement,
     'tab_indent': lambda s, size = 1: ('\n' + '\t' * size).join(s.splitlines())
   }
 

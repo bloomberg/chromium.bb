@@ -63,20 +63,20 @@ func (d *Decoder) popState() {
 	}
 }
 
-func (d *Decoder) pushState(header DataHeader, elementBitSize uint32) error {
+func (d *Decoder) pushState(header DataHeader, checkElements bool) error {
 	oldEnd := d.end
 	if err := d.claimData(int(header.Size - dataHeaderSize)); err != nil {
 		return err
 	}
 	elements := uint32(0)
-	if elementBitSize != 0 {
+	if checkElements {
 		elements = header.ElementsOrVersion
 	}
 	d.stateStack = append(d.stateStack, encodingState{
-		offset:         oldEnd,
-		limit:          d.end,
-		elementBitSize: elementBitSize,
-		elements:       elements,
+		offset:        oldEnd,
+		limit:         d.end,
+		elements:      elements,
+		checkElements: checkElements,
 	})
 	return nil
 }
@@ -104,7 +104,7 @@ func (d *Decoder) StartArray(elementBitSize uint32) (uint32, error) {
 			fmt.Sprintf("data header size(%d) should be at least %d", got, want),
 		}
 	}
-	if err := d.pushState(header, elementBitSize); err != nil {
+	if err := d.pushState(header, true); err != nil {
 		return 0, err
 	}
 	return header.ElementsOrVersion, nil
@@ -123,7 +123,7 @@ func (d *Decoder) StartMap() error {
 			fmt.Sprintf("invalid map header: %v", header),
 		}
 	}
-	if err := d.pushState(header, 0); err != nil {
+	if err := d.pushState(header, false); err != nil {
 		return err
 	}
 	return nil
@@ -143,25 +143,51 @@ func (d *Decoder) StartStruct() (DataHeader, error) {
 			fmt.Sprintf("data header size(%d) should be at least %d", header.Size, dataHeaderSize),
 		}
 	}
-	if err := d.pushState(header, 0); err != nil {
+	if err := d.pushState(header, false); err != nil {
 		return DataHeader{}, err
 	}
 	return header, nil
 }
 
-// StartUnion starts decoding a union and reads its header.
-// Returns the read data header. The caller should check if it is valid.
-// Note: it doesn't read the data field.
-func (d *Decoder) StartUnion() (DataHeader, error) {
-	header, err := d.readDataHeader()
-	if err != nil {
-		return DataHeader{}, err
+// StartNestedUnion starts decoding a union.
+// Note: it doesn't read a pointer to the encoded struct or the union header.
+// Call |Finish()| after reading the header and data.
+func (d *Decoder) StartNestedUnion() error {
+	// We have to trick pushState into claiming 16 bytes.
+	header := DataHeader{uint32(24), uint32(0)}
+	if err := d.pushState(header, false); err != nil {
+		return err
 	}
+	return nil
+}
 
-	if err := d.pushState(header, 0); err != nil {
-		return DataHeader{}, err
+// ReadUnionHeader reads the union header and returns the union's size and tag.
+func (d *Decoder) ReadUnionHeader() (uint32, uint32, error) {
+	if err := ensureElementBitSizeAndCapacity(d.state(), 64); err != nil {
+		return 0, 0, err
 	}
-	return header, nil
+	d.state().alignOffsetToBytes()
+	d.state().offset = align(d.state().offset, 8)
+	size := binary.LittleEndian.Uint32(d.buf[d.state().offset:])
+	tag := binary.LittleEndian.Uint32(d.buf[d.state().offset+4:])
+	d.state().offset += 8
+	if err := ensureElementBitSizeAndCapacity(d.state(), 64); err != nil {
+		return 0, 0, err
+	}
+	return size, tag, nil
+}
+
+// FinishReadingUnionValue should be called after the union value has been read
+// in order to indicate to move the decoder past the union value field.
+func (d *Decoder) FinishReadingUnionValue() {
+	d.state().offset = align(d.state().offset, 8)
+	d.state().alignOffsetToBytes()
+}
+
+// SkipNullUnionValue skips the union's null value.
+func (d *Decoder) SkipNullUnionValue() {
+	d.state().offset += 8
+	d.state().elementsProcessed += 1
 }
 
 func (d *Decoder) readDataHeader() (DataHeader, error) {
@@ -182,7 +208,7 @@ func (d *Decoder) Finish() error {
 	if d.state() == nil {
 		return fmt.Errorf("state stack is empty")
 	}
-	if d.state().elementBitSize != 0 && d.state().elementsProcessed != d.state().elements {
+	if d.state().checkElements && d.state().elementsProcessed != d.state().elements {
 		return fmt.Errorf("unexpected number of elements read: defined in header %d, but read %d", d.state().elements, d.state().elementsProcessed)
 	}
 	d.popState()

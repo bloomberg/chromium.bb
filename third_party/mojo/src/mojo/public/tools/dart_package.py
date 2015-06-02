@@ -47,6 +47,21 @@ def IsPathInLib(path):
 def PackageRelativePath(path):
   return os.path.relpath(path, "lib/")
 
+def HasPubspec(paths):
+  for path in paths:
+    _, filename = os.path.split(path)
+    if 'pubspec.yaml' == filename:
+      return True
+  return False
+
+def ReadPackageName(paths):
+  for path in paths:
+    _, filename = os.path.split(path)
+    if 'pubspec.yaml' == filename:
+      with open(path, 'r') as f:
+          return FindPackageName(f.read())
+  return None
+
 def DoZip(inputs, zip_inputs, output, base_dir):
   files = []
   with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as outfile:
@@ -55,9 +70,24 @@ def DoZip(inputs, zip_inputs, output, base_dir):
       file_name = os.path.relpath(f, base_dir)
       # We should never see a packages/ path here.
       assert not IsPackagesPath(file_name)
-      # We should never see a .mojom.dart path here.
       files.append(file_name)
       outfile.write(f, file_name)
+
+    if HasPubspec(inputs):
+      # We are writing out a package, write lib/ into packages/<package_name>
+      # so that package:<package_name>/ imports work within the package.
+      package_name = ReadPackageName(inputs)
+      assert not (package_name is None), "pubspec.yaml does not have a name"
+      package_path = os.path.join("packages/", package_name)
+      for f in inputs:
+        file_name = os.path.relpath(f, base_dir)
+        if IsPathInLib(file_name):
+          output_name = os.path.join(package_path,
+                                     PackageRelativePath(file_name))
+          if output_name not in files:
+            files.append(output_name)
+            outfile.write(f, output_name)
+
     # zip file inputs (other packages)
     for zf_name in zip_inputs:
       with zipfile.ZipFile(zf_name, 'r') as zf:

@@ -23,7 +23,7 @@ class CoreTestBase_MockHandleInfo;
 
 class CoreTestBase : public testing::Test {
  public:
-  typedef CoreTestBase_MockHandleInfo MockHandleInfo;
+  using MockHandleInfo = CoreTestBase_MockHandleInfo;
 
   CoreTestBase();
   ~CoreTestBase() override;

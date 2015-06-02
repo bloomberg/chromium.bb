@@ -82,7 +82,7 @@ MojoResult SharedBufferDispatcher::Create(
 }
 
 Dispatcher::Type SharedBufferDispatcher::GetType() const {
-  return kTypeSharedBuffer;
+  return Type::SHARED_BUFFER;
 }
 
 // static

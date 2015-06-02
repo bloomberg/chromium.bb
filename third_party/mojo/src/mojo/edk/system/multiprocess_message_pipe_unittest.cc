@@ -240,7 +240,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
   CHECK_EQ(read_buffer, std::string("go 1"));
   CHECK_EQ(num_dispatchers, 1u);
 
-  CHECK_EQ(dispatchers[0]->GetType(), Dispatcher::kTypeSharedBuffer);
+  CHECK_EQ(dispatchers[0]->GetType(), Dispatcher::Type::SHARED_BUFFER);
 
   scoped_refptr<SharedBufferDispatcher> dispatcher(
       static_cast<SharedBufferDispatcher*>(dispatchers[0].get()));
@@ -424,7 +424,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
   CHECK_GT(num_handles, 0);
 
   for (int i = 0; i < num_handles; ++i) {
-    CHECK_EQ(dispatchers[i]->GetType(), Dispatcher::kTypePlatformHandle);
+    CHECK_EQ(dispatchers[i]->GetType(), Dispatcher::Type::PLATFORM_HANDLE);
 
     scoped_refptr<PlatformHandleDispatcher> dispatcher(
         static_cast<PlatformHandleDispatcher*>(dispatchers[i].get()));
@@ -448,13 +448,7 @@ class MultiprocessMessagePipeTestWithPipeCount
     : public test::MultiprocessMessagePipeTestBase,
       public testing::WithParamInterface<size_t> {};
 
-#if defined(OS_MACOSX)
-// http://crbug.com/488260
-TEST_P(MultiprocessMessagePipeTestWithPipeCount,
-       DISABLED_PlatformHandlePassing) {
-#else
 TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
-#endif
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -518,7 +512,7 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
 INSTANTIATE_TEST_CASE_P(PipeCount,
                         MultiprocessMessagePipeTestWithPipeCount,
-                        testing::Values(1u, 128u, 255u));
+                        testing::Values(1u, 128u, 140u));
 #endif
 
 }  // namespace

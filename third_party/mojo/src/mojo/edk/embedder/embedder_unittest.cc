@@ -383,7 +383,7 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
   EXPECT_TRUE(client_channel.channel_info());
 }
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID)
 // Android multi-process tests are not executing the new process. This is flaky.
 // TODO(vtl): I'm guessing this is true of this test too?
 #define MAYBE_MultiprocessMasterSlave DISABLED_MultiprocessMasterSlave

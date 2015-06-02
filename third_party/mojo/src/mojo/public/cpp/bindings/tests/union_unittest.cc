@@ -499,8 +499,7 @@ TEST(UnionTest, Validation_UnionsInStruct) {
   Serialize_(small_struct.Pass(), &buf, &data);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::BoundsChecker bounds_checker(data, size, 0);
   EXPECT_TRUE(internal::SmallStruct_Data::Validate(raw_buf, &bounds_checker));
   free(raw_buf);
 }
@@ -520,8 +519,7 @@ TEST(UnionTest, Validation_PodUnionInStruct_Failure) {
   data->pod_union.tag = static_cast<internal::PodUnion_Data::PodUnion_Tag>(100);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::BoundsChecker bounds_checker(data, size, 0);
   EXPECT_FALSE(internal::SmallStruct_Data::Validate(raw_buf, &bounds_checker));
   free(raw_buf);
 }
@@ -539,8 +537,7 @@ TEST(UnionTest, Validation_NullUnion_Failure) {
       internal::SmallStructNonNullableUnion_Data::New(&buf);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::BoundsChecker bounds_checker(data, size, 0);
   EXPECT_FALSE(internal::SmallStructNonNullableUnion_Data::Validate(
       raw_buf, &bounds_checker));
   free(raw_buf);
@@ -558,8 +555,7 @@ TEST(UnionTest, Validation_NullableUnion) {
   Serialize_(small_struct.Pass(), &buf, &data);
 
   void* raw_buf = buf.Leak();
-  mojo::internal::BoundsChecker bounds_checker(data,
-                                               static_cast<uint32_t>(size), 0);
+  mojo::internal::BoundsChecker bounds_checker(data, size, 0);
   EXPECT_TRUE(internal::SmallStruct_Data::Validate(raw_buf, &bounds_checker));
   free(raw_buf);
 }

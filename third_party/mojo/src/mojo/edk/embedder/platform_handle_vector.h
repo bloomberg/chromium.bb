@@ -15,7 +15,7 @@
 namespace mojo {
 namespace embedder {
 
-typedef std::vector<PlatformHandle> PlatformHandleVector;
+using PlatformHandleVector = std::vector<PlatformHandle>;
 
 // A deleter (for use with |scoped_ptr|) which closes all handles and then
 // |delete|s the |PlatformHandleVector|.
@@ -26,8 +26,8 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandleVectorDeleter {
   }
 };
 
-typedef scoped_ptr<PlatformHandleVector, PlatformHandleVectorDeleter>
-    ScopedPlatformHandleVectorPtr;
+using ScopedPlatformHandleVectorPtr =
+    scoped_ptr<PlatformHandleVector, PlatformHandleVectorDeleter>;
 
 }  // namespace embedder
 }  // namespace mojo

@@ -40,7 +40,7 @@ bool ReadByte(const embedder::PlatformHandle& handle, char* c) {
   return bytes_read == 1;
 }
 
-typedef testing::Test MultiprocessTestHelperTest;
+using MultiprocessTestHelperTest = testing::Test;
 
 #if defined(OS_ANDROID)
 // Android multi-process tests are not executing the new process. This is flaky.

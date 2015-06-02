@@ -3,7 +3,7 @@ const int k{{interface|name}}_{{method|name}}_name = {{method.ordinal}};
 {%- endfor %}
 
 const String {{interface|name}}Name =
-      '{{namespace|replace(".","::")}}::{{interface|name}}';
+      '{{namespace|replace(".","::")}}::{{interface.name}}';
 
 abstract class {{interface|name}} {
 {%- for method in interface.methods %}

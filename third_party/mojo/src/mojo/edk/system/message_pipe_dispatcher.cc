@@ -68,7 +68,7 @@ void MessagePipeDispatcher::Init(scoped_refptr<MessagePipe> message_pipe,
 }
 
 Dispatcher::Type MessagePipeDispatcher::GetType() const {
-  return kTypeMessagePipe;
+  return Type::MESSAGE_PIPE;
 }
 
 // static
@@ -223,7 +223,8 @@ bool MessagePipeDispatcher::EndSerializeAndCloseImplNoLock(
 MessagePipeDispatcherTransport::MessagePipeDispatcherTransport(
     DispatcherTransport transport)
     : DispatcherTransport(transport) {
-  DCHECK_EQ(message_pipe_dispatcher()->GetType(), Dispatcher::kTypeMessagePipe);
+  DCHECK_EQ(message_pipe_dispatcher()->GetType(),
+            Dispatcher::Type::MESSAGE_PIPE);
 }
 
 }  // namespace system

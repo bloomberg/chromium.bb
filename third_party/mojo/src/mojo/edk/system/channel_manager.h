@@ -34,7 +34,7 @@ class MessagePipeDispatcher;
 
 // IDs for |Channel|s managed by a |ChannelManager|. (IDs should be thought of
 // as specific to a given |ChannelManager|.) 0 is never a valid ID.
-typedef uint64_t ChannelId;
+using ChannelId = uint64_t;
 
 const ChannelId kInvalidChannelId = 0;
 

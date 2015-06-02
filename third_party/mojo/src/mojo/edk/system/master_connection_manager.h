@@ -25,7 +25,7 @@ namespace mojo {
 
 namespace embedder {
 class MasterProcessDelegate;
-typedef void* SlaveInfo;
+using SlaveInfo = void*;
 }
 
 namespace system {

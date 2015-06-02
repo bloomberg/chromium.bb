@@ -150,8 +150,8 @@ void SlaveConnectionManager::AllowConnectOnPrivateThread(
   DVLOG(1) << "Sending AllowConnect: connection ID "
            << connection_id.ToString();
   if (!raw_channel_->WriteMessage(make_scoped_ptr(new MessageInTransit(
-          MessageInTransit::kTypeConnectionManager,
-          MessageInTransit::kSubtypeConnectionManagerAllowConnect,
+          MessageInTransit::Type::CONNECTION_MANAGER,
+          MessageInTransit::Subtype::CONNECTION_MANAGER_ALLOW_CONNECT,
           sizeof(connection_id), &connection_id)))) {
     // Don't tear things down; possibly we'll still read some messages.
     *result = false;
@@ -175,8 +175,8 @@ void SlaveConnectionManager::CancelConnectOnPrivateThread(
   DVLOG(1) << "Sending CancelConnect: connection ID "
            << connection_id.ToString();
   if (!raw_channel_->WriteMessage(make_scoped_ptr(new MessageInTransit(
-          MessageInTransit::kTypeConnectionManager,
-          MessageInTransit::kSubtypeConnectionManagerCancelConnect,
+          MessageInTransit::Type::CONNECTION_MANAGER,
+          MessageInTransit::Subtype::CONNECTION_MANAGER_CANCEL_CONNECT,
           sizeof(connection_id), &connection_id)))) {
     // Don't tear things down; possibly we'll still read some messages.
     *result = false;
@@ -203,8 +203,8 @@ void SlaveConnectionManager::ConnectOnPrivateThread(
 
   DVLOG(1) << "Sending Connect: connection ID " << connection_id.ToString();
   if (!raw_channel_->WriteMessage(make_scoped_ptr(new MessageInTransit(
-          MessageInTransit::kTypeConnectionManager,
-          MessageInTransit::kSubtypeConnectionManagerConnect,
+          MessageInTransit::Type::CONNECTION_MANAGER,
+          MessageInTransit::Subtype::CONNECTION_MANAGER_CONNECT,
           sizeof(connection_id), &connection_id)))) {
     // Don't tear things down; possibly we'll still read some messages.
     *result = false;
@@ -232,19 +232,19 @@ void SlaveConnectionManager::OnReadMessage(
   // Unsolicited message.
   CHECK_NE(awaiting_ack_type_, NOT_AWAITING_ACK);
   // Bad message type.
-  CHECK_EQ(message_view.type(), MessageInTransit::kTypeConnectionManagerAck);
+  CHECK_EQ(message_view.type(), MessageInTransit::Type::CONNECTION_MANAGER_ACK);
 
   size_t num_bytes = message_view.num_bytes();
   size_t num_platform_handles = platform_handles ? platform_handles->size() : 0;
 
   if (message_view.subtype() ==
-      MessageInTransit::kSubtypeConnectionManagerAckFailure) {
+      MessageInTransit::Subtype::CONNECTION_MANAGER_ACK_FAILURE) {
     // Failure acks never have any contents.
     CHECK_EQ(num_bytes, 0u);
     CHECK_EQ(num_platform_handles, 0u);
     // Leave |*ack_result_| false.
   } else if (message_view.subtype() ==
-             MessageInTransit::kSubtypeConnectionManagerAckSuccess) {
+             MessageInTransit::Subtype::CONNECTION_MANAGER_ACK_SUCCESS) {
     if (awaiting_ack_type_ == AWAITING_ACCEPT_CONNECT_ACK ||
         awaiting_ack_type_ == AWAITING_CANCEL_CONNECT_ACK) {
       // Success acks for "accept/cancel connect" have no contents.

@@ -17,13 +17,13 @@ namespace system {
 
 // A simple queue for |MessageInTransit|s (that owns its messages).
 // This class is not thread-safe.
-// TODO(vtl): Write tests.
 class MOJO_SYSTEM_IMPL_EXPORT MessageInTransitQueue {
  public:
   MessageInTransitQueue();
   ~MessageInTransitQueue();
 
   bool IsEmpty() const { return queue_.empty(); }
+  size_t Size() const { return queue_.size(); }
 
   void AddMessage(scoped_ptr<MessageInTransit> message) {
     queue_.push_back(message.release());

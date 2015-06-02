@@ -226,7 +226,8 @@ TEST_F(RemoteDataPipeImplTest, SendConsumerWithClosedProducer) {
   ASSERT_TRUE(read_dispatchers[0]);
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
-  EXPECT_EQ(Dispatcher::kTypeDataPipeConsumer, read_dispatchers[0]->GetType());
+  EXPECT_EQ(Dispatcher::Type::DATA_PIPE_CONSUMER,
+            read_dispatchers[0]->GetType());
   consumer =
       static_cast<DataPipeConsumerDispatcher*>(read_dispatchers[0].get());
   read_dispatchers.clear();

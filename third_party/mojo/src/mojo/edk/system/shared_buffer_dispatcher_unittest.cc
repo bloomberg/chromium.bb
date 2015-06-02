@@ -119,7 +119,7 @@ TEST_F(SharedBufferDispatcherTest, CreateAndMapBuffer) {
                                 SharedBufferDispatcher::kDefaultCreateOptions,
                                 100, &dispatcher));
   ASSERT_TRUE(dispatcher);
-  EXPECT_EQ(Dispatcher::kTypeSharedBuffer, dispatcher->GetType());
+  EXPECT_EQ(Dispatcher::Type::SHARED_BUFFER, dispatcher->GetType());
 
   // Make a couple of mappings.
   scoped_ptr<embedder::PlatformSharedBufferMapping> mapping1;
@@ -166,7 +166,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandle) {
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->DuplicateBufferHandle(
                                 NullUserPointer(), &dispatcher2));
   ASSERT_TRUE(dispatcher2);
-  EXPECT_EQ(Dispatcher::kTypeSharedBuffer, dispatcher2->GetType());
+  EXPECT_EQ(Dispatcher::Type::SHARED_BUFFER, dispatcher2->GetType());
 
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->Close());
 
@@ -194,7 +194,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
     EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->DuplicateBufferHandle(
                                   MakeUserPointer(&options[i]), &dispatcher2));
     ASSERT_TRUE(dispatcher2);
-    EXPECT_EQ(Dispatcher::kTypeSharedBuffer, dispatcher2->GetType());
+    EXPECT_EQ(Dispatcher::Type::SHARED_BUFFER, dispatcher2->GetType());
     EXPECT_EQ(MOJO_RESULT_OK, dispatcher2->Close());
   }
 

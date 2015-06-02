@@ -17,7 +17,7 @@ namespace system {
 // An |Awakable| implementation that just calls a given callback object.
 class MOJO_SYSTEM_IMPL_EXPORT AsyncWaiter final : public Awakable {
  public:
-  typedef base::Callback<void(MojoResult)> AwakeCallback;
+  using AwakeCallback = base::Callback<void(MojoResult)>;
 
   // |callback| must satisfy the same contract as |Awakable::Awake()|.
   explicit AsyncWaiter(const AwakeCallback& callback);

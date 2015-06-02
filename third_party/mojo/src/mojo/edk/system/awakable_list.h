@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include <list>
+#include <vector>
 
 #include "base/macros.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -45,7 +45,7 @@ class MOJO_SYSTEM_IMPL_EXPORT AwakableList {
     MojoHandleSignals signals;
     uint32_t context;
   };
-  typedef std::list<AwakeInfo> AwakeInfoList;
+  using AwakeInfoList = std::vector<AwakeInfo>;
 
   AwakeInfoList awakables_;
 

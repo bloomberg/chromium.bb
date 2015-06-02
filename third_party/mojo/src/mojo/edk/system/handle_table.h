@@ -21,7 +21,7 @@ class Core;
 class Dispatcher;
 class DispatcherTransport;
 
-typedef std::vector<scoped_refptr<Dispatcher>> DispatcherVector;
+using DispatcherVector = std::vector<scoped_refptr<Dispatcher>>;
 
 // Test-only function (defined/used in embedder/test_embedder.cc). Declared here
 // so it can be friended.
@@ -126,7 +126,7 @@ class MOJO_SYSTEM_IMPL_EXPORT HandleTable {
     scoped_refptr<Dispatcher> dispatcher;
     bool busy;
   };
-  typedef base::hash_map<MojoHandle, Entry> HandleToEntryMap;
+  using HandleToEntryMap = base::hash_map<MojoHandle, Entry>;
 
   // Adds the given dispatcher to the handle table, not doing any size checks.
   MojoHandle AddDispatcherNoSizeCheck(

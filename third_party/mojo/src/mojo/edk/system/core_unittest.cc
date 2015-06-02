@@ -24,7 +24,7 @@ const MojoHandleSignals kAllSignals = MOJO_HANDLE_SIGNAL_READABLE |
                                       MOJO_HANDLE_SIGNAL_WRITABLE |
                                       MOJO_HANDLE_SIGNAL_PEER_CLOSED;
 
-typedef test::CoreTestBase CoreTest;
+using CoreTest = test::CoreTestBase;
 
 TEST_F(CoreTest, GetTimeTicksNow) {
   const MojoTimeTicks start = core()->GetTimeTicksNow();

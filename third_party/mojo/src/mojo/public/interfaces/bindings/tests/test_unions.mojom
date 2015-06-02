@@ -43,6 +43,12 @@ union HandleUnion {
   SmallCache f_small_cache;
 };
 
+struct WrapperStruct {
+  ObjectUnion? object_union;
+  PodUnion? pod_union;
+  HandleUnion? handle_union;
+};
+
 struct HandleStruct {
   SmallCache f_small_cache;
 };

@@ -30,7 +30,7 @@ class MockDispatcher : public Dispatcher {
   }
 
   // |Dispatcher| private methods:
-  Type GetType() const override { return kTypeUnknown; }
+  Type GetType() const override { return Type::UNKNOWN; }
 
  private:
   ~MockDispatcher() override { info_->IncrementDtorCallCount(); }

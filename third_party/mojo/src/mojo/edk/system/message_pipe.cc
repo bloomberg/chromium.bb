@@ -152,8 +152,8 @@ MojoResult MessagePipe::WriteMessage(
   return EnqueueMessageNoLock(
       GetPeerPort(port),
       make_scoped_ptr(new MessageInTransit(
-          MessageInTransit::kTypeEndpointClient,
-          MessageInTransit::kSubtypeEndpointClientData, num_bytes, bytes)),
+          MessageInTransit::Type::ENDPOINT_CLIENT,
+          MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA, num_bytes, bytes)),
       transports);
 }
 
@@ -318,7 +318,7 @@ MojoResult MessagePipe::EnqueueMessageNoLock(
   DCHECK(port == 0 || port == 1);
   DCHECK(message);
 
-  DCHECK_EQ(message->type(), MessageInTransit::kTypeEndpointClient);
+  DCHECK_EQ(message->type(), MessageInTransit::Type::ENDPOINT_CLIENT);
   DCHECK(endpoints_[GetPeerPort(port)]);
 
   // The destination port need not be open, unlike the source port.
@@ -352,7 +352,7 @@ MojoResult MessagePipe::AttachTransportsNoLock(
   for (size_t i = 0; i < transports->size(); i++) {
     if (!(*transports)[i].is_valid())
       continue;
-    if ((*transports)[i].GetType() == Dispatcher::kTypeMessagePipe) {
+    if ((*transports)[i].GetType() == Dispatcher::Type::MESSAGE_PIPE) {
       MessagePipeDispatcherTransport mp_transport((*transports)[i]);
       if (mp_transport.GetMessagePipe() == this) {
         // The other case should have been disallowed by |Core|. (Note: |port|

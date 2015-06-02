@@ -22,9 +22,9 @@ namespace embedder {
 // It would be nice to refactor base/process/launch.h to have a more platform-
 // independent way of representing handles that are passed to child processes.
 #if defined(OS_WIN)
-typedef base::HandlesToInheritVector HandlePassingInformation;
+using HandlePassingInformation = base::HandlesToInheritVector;
 #elif defined(OS_POSIX)
-typedef base::FileHandleMappingVector HandlePassingInformation;
+using HandlePassingInformation = base::FileHandleMappingVector;
 #else
 #error "Unsupported."
 #endif

@@ -363,3 +363,9 @@ interface SomeInterface {
 struct ContainsInterface {
   SomeInterface some_interface;
 };
+
+// Regression: Verify that a field can be called |other|.
+
+struct ContainsOther {
+  int32 other;
+};

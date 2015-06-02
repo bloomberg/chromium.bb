@@ -45,8 +45,8 @@ scoped_ptr<MessageInTransit> MakeTestMessage(uint32_t num_bytes) {
   for (size_t i = 0; i < num_bytes; i++)
     bytes[i] = static_cast<unsigned char>(i + num_bytes);
   return make_scoped_ptr(
-      new MessageInTransit(MessageInTransit::kTypeEndpointClient,
-                           MessageInTransit::kSubtypeEndpointClientData,
+      new MessageInTransit(MessageInTransit::Type::ENDPOINT_CLIENT,
+                           MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA,
                            num_bytes, bytes.empty() ? nullptr : &bytes[0]));
 }
 
@@ -837,11 +837,12 @@ TEST_F(RawChannelTest, MAYBE_ReadWritePlatformHandles) {
     platform_handles->push_back(
         mojo::test::PlatformHandleFromFILE(fp2.Pass()).release());
 
-    scoped_ptr<MessageInTransit> message(new MessageInTransit(
-        MessageInTransit::kTypeEndpointClient,
-        MessageInTransit::kSubtypeEndpointClientData, sizeof(kHello), kHello));
-    message->SetTransportData(
-        make_scoped_ptr(new TransportData(platform_handles.Pass())));
+    scoped_ptr<MessageInTransit> message(
+        new MessageInTransit(MessageInTransit::Type::ENDPOINT_CLIENT,
+                             MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA,
+                             sizeof(kHello), kHello));
+    message->SetTransportData(make_scoped_ptr(new TransportData(
+        platform_handles.Pass(), rc_write->GetSerializedPlatformHandleSize())));
     EXPECT_TRUE(rc_write->WriteMessage(message.Pass()));
   }
 

@@ -16,7 +16,7 @@ namespace {
 
 // Declare a test options struct just as we do in actual public headers.
 
-typedef uint32_t TestOptionsFlags;
+using TestOptionsFlags = uint32_t;
 
 static_assert(MOJO_ALIGNOF(int64_t) == 8, "int64_t has weird alignment");
 struct MOJO_ALIGNAS(8) TestOptions {

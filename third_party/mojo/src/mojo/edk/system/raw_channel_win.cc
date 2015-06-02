@@ -40,8 +40,8 @@ class VistaOrHigherFunctions {
   }
 
  private:
-  typedef BOOL(WINAPI* SetFileCompletionNotificationModesFunc)(HANDLE, UCHAR);
-  typedef BOOL(WINAPI* CancelIoExFunc)(HANDLE, LPOVERLAPPED);
+  using SetFileCompletionNotificationModesFunc = BOOL(WINAPI*)(HANDLE, UCHAR);
+  using CancelIoExFunc = BOOL(WINAPI*)(HANDLE, LPOVERLAPPED);
 
   bool is_vista_or_higher_;
   SetFileCompletionNotificationModesFunc

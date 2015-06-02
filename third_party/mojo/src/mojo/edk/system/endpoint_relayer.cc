@@ -30,6 +30,11 @@ void EndpointRelayer::Init(ChannelEndpoint* endpoint0,
   endpoints_[1] = endpoint1;
 }
 
+void EndpointRelayer::SetFilter(scoped_ptr<Filter> filter) {
+  base::AutoLock locker(lock_);
+  filter_ = filter.Pass();
+}
+
 bool EndpointRelayer::OnReadMessage(unsigned port, MessageInTransit* message) {
   DCHECK(message);
 
@@ -39,8 +44,15 @@ bool EndpointRelayer::OnReadMessage(unsigned port, MessageInTransit* message) {
   if (!endpoints_[port])
     return false;
 
-  // Otherwise, consume it even if the peer port is closed.
   unsigned peer_port = GetPeerPort(port);
+
+  if (filter_ && message->type() == MessageInTransit::Type::ENDPOINT_CLIENT) {
+    if (filter_->OnReadMessage(endpoints_[port].get(),
+                               endpoints_[peer_port].get(), message))
+      return true;
+  }
+
+  // Otherwise, consume it even if the peer port is closed.
   if (endpoints_[peer_port])
     endpoints_[peer_port]->EnqueueMessage(make_scoped_ptr(message));
   return true;

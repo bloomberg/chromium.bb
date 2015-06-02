@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <ostream>
 #include <vector>
 
 #include "base/macros.h"
@@ -43,46 +44,48 @@ class TransportData;
 // buffer.
 class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
  public:
-  typedef uint16_t Type;
-  // Messages that are forwarded to endpoint clients.
-  static const Type kTypeEndpointClient = 0;
-  // Messages that are consumed by the |ChannelEndpoint|.
-  static const Type kTypeEndpoint = 1;
-  // Messages that are consumed by the |Channel|.
-  static const Type kTypeChannel = 2;
-  // Messages that are consumed by the |RawChannel| (implementation).
-  static const Type kTypeRawChannel = 3;
-  // |ConnectionManager| implementations also use |RawChannel|s.
-  // Messages sent to a |MasterConnectionManager|.
-  static const Type kTypeConnectionManager = 4;
-  // Messages sent by a |MasterConnectionManager| (all responses).
-  static const Type kTypeConnectionManagerAck = 5;
+  enum class Type : uint16_t {
+    // Messages that are forwarded to endpoint clients.
+    ENDPOINT_CLIENT = 0,
+    // Messages that are consumed by the |ChannelEndpoint|.
+    ENDPOINT = 1,
+    // Messages that are consumed by the |Channel|.
+    CHANNEL = 2,
+    // Messages that are consumed by the |RawChannel| (implementation).
+    RAW_CHANNEL = 3,
+    // |ConnectionManager| implementations also use |RawChannel|s.
+    // Messages sent to a |MasterConnectionManager|.
+    CONNECTION_MANAGER = 4,
+    // Messages sent by a |MasterConnectionManager| (all responses).
+    CONNECTION_MANAGER_ACK = 5,
+  };
 
-  typedef uint16_t Subtype;
-  // Subtypes for type |kTypeEndpointClient|:
-  // Message pipe or data pipe data (etc.).
-  static const Subtype kSubtypeEndpointClientData = 0;
-  // Data pipe: consumer -> producer message that data was consumed. Payload is
-  // |RemoteDataPipeAck|.
-  static const Subtype kSubtypeEndpointClientDataPipeAck = 1;
-  // Subtypes for type |kTypeEndpoint|:
-  // TODO(vtl): Nothing yet.
-  // Subtypes for type |kTypeChannel|:
-  static const Subtype kSubtypeChannelAttachAndRunEndpoint = 0;
-  static const Subtype kSubtypeChannelRemoveEndpoint = 1;
-  static const Subtype kSubtypeChannelRemoveEndpointAck = 2;
-  // Subtypes for type |kTypeRawChannel|:
-  static const Subtype kSubtypeRawChannelPosixExtraPlatformHandles = 0;
-  // Subtypes for type |kTypeConnectionManager| (the message data is always a
-  // buffer containing the connection ID):
-  static const Subtype kSubtypeConnectionManagerAllowConnect = 0;
-  static const Subtype kSubtypeConnectionManagerCancelConnect = 1;
-  static const Subtype kSubtypeConnectionManagerConnect = 2;
-  // Subtypes for type |kTypeConnectionManagerAck| (failure acks never have any
-  // message contents; success acks for "connect" always have a
-  // |ProcessIdentifier| as data and *may* have a platform handle attached):
-  static const Subtype kSubtypeConnectionManagerAckFailure = 0;
-  static const Subtype kSubtypeConnectionManagerAckSuccess = 1;
+  enum class Subtype : uint16_t {
+    // Subtypes for type |Type::ENDPOINT_CLIENT|:
+    // Message pipe or data pipe data (etc.).
+    ENDPOINT_CLIENT_DATA = 0,
+    // Data pipe: consumer -> producer message that data was consumed. Payload
+    // is |RemoteDataPipeAck|.
+    ENDPOINT_CLIENT_DATA_PIPE_ACK = 1,
+    // Subtypes for type |Type::ENDPOINT|:
+    // TODO(vtl): Nothing yet.
+    // Subtypes for type |Type::CHANNEL|:
+    CHANNEL_ATTACH_AND_RUN_ENDPOINT = 0,
+    CHANNEL_REMOVE_ENDPOINT = 1,
+    CHANNEL_REMOVE_ENDPOINT_ACK = 2,
+    // Subtypes for type |Type::RAW_CHANNEL|:
+    RAW_CHANNEL_POSIX_EXTRA_PLATFORM_HANDLES = 0,
+    // Subtypes for type |Type::CONNECTION_MANAGER| (the message data is always
+    // a buffer containing the connection ID):
+    CONNECTION_MANAGER_ALLOW_CONNECT = 0,
+    CONNECTION_MANAGER_CANCEL_CONNECT = 1,
+    CONNECTION_MANAGER_CONNECT = 2,
+    // Subtypes for type |Type::CONNECTION_MANAGER_ACK| (failure acks never have
+    // any message contents; success acks for "connect" always have a
+    // |ProcessIdentifier| as data and *may* have a platform handle attached):
+    CONNECTION_MANAGER_ACK_FAILURE = 0,
+    CONNECTION_MANAGER_ACK_SUCCESS = 1,
+  };
 
   // Messages (the header and data) must always be aligned to a multiple of this
   // quantity (which must be a power of 2).
@@ -280,6 +283,20 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   DISALLOW_COPY_AND_ASSIGN(MessageInTransit);
 };
+
+// So logging macros and |DCHECK_EQ()|, etc. work.
+MOJO_SYSTEM_IMPL_EXPORT inline std::ostream& operator<<(
+    std::ostream& out,
+    MessageInTransit::Type type) {
+  return out << static_cast<uint16_t>(type);
+}
+
+// So logging macros and |DCHECK_EQ()|, etc. work.
+MOJO_SYSTEM_IMPL_EXPORT inline std::ostream& operator<<(
+    std::ostream& out,
+    MessageInTransit::Subtype subtype) {
+  return out << static_cast<uint16_t>(subtype);
+}
 
 }  // namespace system
 }  // namespace mojo

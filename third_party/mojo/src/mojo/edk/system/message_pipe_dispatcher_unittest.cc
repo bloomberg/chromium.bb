@@ -43,7 +43,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
   for (unsigned i = 0; i < 2; i++) {
     scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher(
         MessagePipeDispatcher::kDefaultCreateOptions));
-    EXPECT_EQ(Dispatcher::kTypeMessagePipe, d0->GetType());
+    EXPECT_EQ(Dispatcher::Type::MESSAGE_PIPE, d0->GetType());
     scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher(
         MessagePipeDispatcher::kDefaultCreateOptions));
     {

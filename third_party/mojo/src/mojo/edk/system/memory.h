@@ -23,25 +23,25 @@ namespace internal {
 // TODO(vtl): Remove these once we have the C++11 |remove_const|.
 template <typename T>
 struct remove_const {
-  typedef T type;
+  using type = T;
 };
 template <typename T>
 struct remove_const<const T> {
-  typedef T type;
+  using type = T;
 };
 
 // Yields |(const) char| if |T| is |(const) void|, else |T|:
 template <typename T>
 struct VoidToChar {
-  typedef T type;
+  using type = T;
 };
 template <>
 struct VoidToChar<void> {
-  typedef char type;
+  using type = char;
 };
 template <>
 struct VoidToChar<const void> {
-  typedef const char type;
+  using type = const char;
 };
 
 // Checks (insofar as appropriate/possible) that |pointer| is a valid pointer to
@@ -84,7 +84,7 @@ struct NullUserPointer {};
 template <typename Type>
 class UserPointer {
  private:
-  typedef typename internal::VoidToChar<Type>::type NonVoidType;
+  using NonVoidType = typename internal::VoidToChar<Type>::type;
 
  public:
   // Instead of explicitly using these constructors, you can often use
@@ -243,9 +243,9 @@ class UserPointer {
   //
   // TODO(vtl): Possibly, since we're not really being safe, we should just not
   // copy for Release builds.
-  typedef UserPointerReader<Type> Reader;
-  typedef UserPointerWriter<Type> Writer;
-  typedef UserPointerReaderWriter<Type> ReaderWriter;
+  using Reader = UserPointerReader<Type>;
+  using Writer = UserPointerWriter<Type>;
+  using ReaderWriter = UserPointerReaderWriter<Type>;
 
  private:
   friend class UserPointerReader<Type>;
@@ -269,7 +269,7 @@ inline UserPointer<Type> MakeUserPointer(Type* pointer) {
 template <typename Type>
 class UserPointerReader {
  private:
-  typedef typename internal::remove_const<Type>::type TypeNoConst;
+  using TypeNoConst = typename internal::remove_const<Type>::type;
 
  public:
   // Note: If |count| is zero, |GetPointer()| will always return null.

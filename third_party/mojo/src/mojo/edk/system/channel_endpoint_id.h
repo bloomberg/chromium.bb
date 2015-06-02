@@ -81,8 +81,9 @@ static_assert(sizeof(ChannelEndpointId) == sizeof(uint32_t),
               "ChannelEndpointId has incorrect size");
 
 // So logging macros and |DCHECK_EQ()|, etc. work.
-inline std::ostream& operator<<(std::ostream& out,
-                                const ChannelEndpointId& channel_endpoint_id) {
+MOJO_SYSTEM_IMPL_EXPORT inline std::ostream& operator<<(
+    std::ostream& out,
+    const ChannelEndpointId& channel_endpoint_id) {
   return out << channel_endpoint_id.value();
 }
 

@@ -43,6 +43,7 @@ const (
 	UnexpectedArrayHeader         = "VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER"
 	UnexpectedInvalidHandle       = "VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE"
 	UnexpectedNullPointer         = "VALIDATION_ERROR_UNEXPECTED_NULL_POINTER"
+	UnexpectedNullUnion           = "VALIDATION_ERROR_UNEXPECTED_NULL_UNION"
 	UnexpectedStructHeader        = "VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER"
 )
 

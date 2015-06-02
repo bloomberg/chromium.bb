@@ -318,7 +318,7 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
         return;  // |this| may have been destroyed in |CallOnError()|.
       }
 
-      if (message_view.type() == MessageInTransit::kTypeRawChannel) {
+      if (message_view.type() == MessageInTransit::Type::RAW_CHANNEL) {
         if (!OnReadMessageForRawChannel(message_view)) {
           CallOnError(Delegate::ERROR_READ_BAD_MESSAGE);
           return;  // |this| may have been destroyed in |CallOnError()|.

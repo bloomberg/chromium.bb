@@ -127,14 +127,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveData) {
   }
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com/488258
-#define MAYBE_SendReceiveFDs DISABLED_SendReceiveFDs
-#else
-#define MAYBE_SendReceiveFDs SendReceiveFDs
-#endif
-
-TEST_F(PlatformChannelPairPosixTest, MAYBE_SendReceiveFDs) {
+TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -144,7 +137,14 @@ TEST_F(PlatformChannelPairPosixTest, MAYBE_SendReceiveFDs) {
   ScopedPlatformHandle server_handle = channel_pair.PassServerHandle().Pass();
   ScopedPlatformHandle client_handle = channel_pair.PassClientHandle().Pass();
 
-  for (size_t i = 1; i < kPlatformChannelMaxNumHandles; i++) {
+// Reduce the number of FDs opened on OS X to avoid test flake.
+#if defined(OS_MACOSX)
+  const size_t kNumHandlesToSend = kPlatformChannelMaxNumHandles / 2;
+#else
+  const size_t kNumHandlesToSend = kPlatformChannelMaxNumHandles;
+#endif
+
+  for (size_t i = 1; i < kNumHandlesToSend; i++) {
     // Make |i| files, with the j-th file consisting of j copies of the digit
     // |c|.
     const char c = '0' + (i % 10);
@@ -185,7 +185,7 @@ TEST_F(PlatformChannelPairPosixTest, MAYBE_SendReceiveFDs) {
       received_handles.pop_front();
       ASSERT_TRUE(fp);
       rewind(fp.get());
-      char read_buf[kPlatformChannelMaxNumHandles];
+      char read_buf[kNumHandlesToSend];
       size_t bytes_read = fread(read_buf, 1, sizeof(read_buf), fp.get());
       EXPECT_EQ(j + 1, bytes_read);
       EXPECT_EQ(std::string(j + 1, c), std::string(read_buf, bytes_read));

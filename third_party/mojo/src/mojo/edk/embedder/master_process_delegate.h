@@ -13,7 +13,7 @@
 namespace mojo {
 namespace embedder {
 
-typedef void* SlaveInfo;
+using SlaveInfo = void*;
 
 // An interface for the master process delegate (which lives in the master
 // process).
