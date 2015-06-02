@@ -233,11 +233,11 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
         final boolean mirrorX = isLayoutRtl(mParent);
         final Rect bounds = getBounds();
         final int saveCount = c.save();
-        if (mirrorX) c.scale(-1.f, 1.f);
+        if (mirrorX) c.scale(-1.f, 1.f, bounds.exactCenterX(), bounds.exactCenterY());
         c.rotate(mRotation, bounds.exactCenterX(), bounds.exactCenterY());
         mRing.draw(c, bounds);
+        if (mirrorX) c.scale(-1.f, 1.f, bounds.exactCenterX(), bounds.exactCenterY());
         c.restoreToCount(saveCount);
-        if (mirrorX) c.scale(-1.f, 1.f);
     }
 
     @Override
