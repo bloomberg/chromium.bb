@@ -104,13 +104,15 @@ bool RemovePrefix(const std::string& str,
   return true;
 }
 
+std::string CreateRegistrationKeyPrefix(const GURL& origin) {
+  return base::StringPrintf("%s%s%c", kRegKeyPrefix,
+                            origin.GetOrigin().spec().c_str(), kKeySeparator);
+}
+
 std::string CreateRegistrationKey(int64 registration_id,
                                   const GURL& origin) {
-  return base::StringPrintf("%s%s%c%s",
-                            kRegKeyPrefix,
-                            origin.spec().c_str(),
-                            kKeySeparator,
-                            base::Int64ToString(registration_id).c_str());
+  return CreateRegistrationKeyPrefix(origin)
+      .append(base::Int64ToString(registration_id));
 }
 
 std::string CreateResourceRecordKeyPrefix(int64 version_id) {
@@ -127,7 +129,8 @@ std::string CreateResourceRecordKey(int64 version_id,
 }
 
 std::string CreateUniqueOriginKey(const GURL& origin) {
-  return base::StringPrintf("%s%s", kUniqueOriginKey, origin.spec().c_str());
+  return base::StringPrintf("%s%s", kUniqueOriginKey,
+                            origin.GetOrigin().spec().c_str());
 }
 
 std::string CreateResourceIdKey(const char* key_prefix, int64 resource_id) {
@@ -425,10 +428,19 @@ ServiceWorkerDatabase::GetOriginsWithRegistrations(std::set<GURL>* origins) {
       return status;
     }
 
-    std::string origin;
-    if (!RemovePrefix(itr->key().ToString(), kUniqueOriginKey, &origin))
+    std::string origin_str;
+    if (!RemovePrefix(itr->key().ToString(), kUniqueOriginKey, &origin_str))
       break;
-    origins->insert(GURL(origin));
+
+    GURL origin(origin_str);
+    if (!origin.is_valid()) {
+      status = STATUS_ERROR_CORRUPTED;
+      HandleReadResult(FROM_HERE, status);
+      origins->clear();
+      return status;
+    }
+
+    origins->insert(origin);
   }
 
   HandleReadResult(FROM_HERE, status);
@@ -447,10 +459,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
   if (status != STATUS_OK)
     return status;
 
-  // Create a key prefix for registrations.
-  std::string prefix = base::StringPrintf(
-      "%s%s%c", kRegKeyPrefix, origin.spec().c_str(), kKeySeparator);
-
+  std::string prefix = CreateRegistrationKeyPrefix(origin);
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
   for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
     status = LevelDBStatusToStatus(itr->status());
