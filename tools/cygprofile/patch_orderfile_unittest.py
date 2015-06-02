@@ -45,10 +45,9 @@ class TestPatchOrderFile(unittest.TestCase):
     self.assertEquals(len(offset_to_symbol_infos), 1)
     self.assertEquals(tuple(offset_to_symbol_infos[0x42]), symbol_infos)
 
-  def testExpandSymbols(self):
+  def testSymbolsWithSameOffset(self):
     symbol_name = "dummySymbol"
     symbol_name2 = "other"
-    profiled_symbol_names = [symbol_name, "symbolThatShouldntMatch"]
     name_to_symbol_infos = {symbol_name: [
         symbol_extractor.SymbolInfo(symbol_name, 0x42, 0x12,
                                     section='.text')]}
@@ -57,33 +56,45 @@ class TestPatchOrderFile(unittest.TestCase):
                                            section='.text'),
                symbol_extractor.SymbolInfo(symbol_name2, 0x42, 0x12,
                                            section='.text')]}
-    symbol_names = patch_orderfile._ExpandSymbols(
-        profiled_symbol_names, name_to_symbol_infos, offset_to_symbol_infos)
-    self.assertEquals(len(symbol_names), 3)
+    symbol_names = patch_orderfile._SymbolsWithSameOffset(
+        symbol_name, name_to_symbol_infos, offset_to_symbol_infos)
+    self.assertEquals(len(symbol_names), 2)
     self.assertEquals(symbol_names[0], symbol_name)
     self.assertEquals(symbol_names[1], symbol_name2)
-    self.assertEquals(symbol_names[2], "symbolThatShouldntMatch")
+    self.assertEquals([], patch_orderfile._SymbolsWithSameOffset(
+        "symbolThatShouldntMatch",
+        name_to_symbol_infos, offset_to_symbol_infos))
 
-  def testPrintSymbolsAsSections(self):
-    class FakeOutputFile(object):
-      def __init__(self):
-        self.output = ''
-      def write(self, s):
-        self.output = self.output + s
-    test_symbol = "dummySymbol"
-    test_symbol2 = "otherSymbol"
-    symbol_names = [test_symbol, test_symbol2]
-    fake_output = FakeOutputFile()
-    patch_orderfile._PrintSymbolsAsSections(symbol_names,
-        {test_symbol2: ['section1', 'section2']}, fake_output)
-    expected_output = """.text.startup.dummySymbol
-.text.hot.dummySymbol
-.text.unlikely.dummySymbol
-.text.dummySymbol
-section1
-section2
-"""
-    self.assertEquals(fake_output.output, expected_output)
+  def testExpandSection(self):
+    symbol_name1 = 'symbol1'
+    symbol_name2 = 'symbol2'
+    symbol_name3 = 'symbol3'
+    section_name1 = '.text.' + symbol_name1
+    section_name3 = '.text.foo'
+    name_to_symbol_infos = {symbol_name1: [
+        symbol_extractor.SymbolInfo(symbol_name1, 0x42, 0x12,
+                                    section='.text')]}
+    offset_to_symbol_infos = {
+        0x42: [symbol_extractor.SymbolInfo(symbol_name1, 0x42, 0x12,
+                                           section='.text'),
+               symbol_extractor.SymbolInfo(symbol_name2, 0x42, 0x12,
+                                           section='.text')]}
+    section_to_symbols_map = {section_name1: [symbol_name1],
+                              section_name3: [symbol_name1, symbol_name3]}
+    symbol_to_sections_map = {symbol_name1:
+                                  [section_name1, section_name3],
+                              symbol_name3: [section_name3]}
+    expanded_sections = list(patch_orderfile._ExpandSection(
+                               section_name1,
+                               name_to_symbol_infos, offset_to_symbol_infos,
+                               section_to_symbols_map, symbol_to_sections_map))
+    self.assertEqual(6, len(expanded_sections))
+    self.assertEqual(section_name1, expanded_sections[0])
+    self.assertIn(section_name3, expanded_sections)
+    self.assertIn('.text.startup.symbol2', expanded_sections)
+    self.assertIn('.text.hot.symbol2', expanded_sections)
+    self.assertIn('.text.unlikely.symbol2', expanded_sections)
+    self.assertIn('.text.symbol2', expanded_sections)
 
 
 if __name__ == "__main__":
