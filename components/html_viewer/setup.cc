@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/setup.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -17,6 +19,7 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "v8/include/v8.h"
 
 #if defined(OS_ANDROID)
 #include "components/html_viewer/ui_setup_android.h"
@@ -33,6 +36,9 @@ const char kDisableEncryptedMedia[] = "disable-encrypted-media";
 
 // Prevents creation of any output surface.
 const char kIsHeadless[] = "is-headless";
+
+// Specifies the flags passed to JS engine.
+const char kJavaScriptFlags[] = "js-flags";
 
 size_t kDesiredMaxMemory = 20 * 1024 * 1024;
 
@@ -145,6 +151,11 @@ void Setup::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
 
   media_factory_.reset(
       new MediaFactory(compositor_thread_.message_loop_proxy()));
+
+  if (command_line->HasSwitch(kJavaScriptFlags)) {
+    std::string flags(command_line->GetSwitchValueASCII(kJavaScriptFlags));
+    v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
+  }
 }
 
 }  // namespace html_viewer

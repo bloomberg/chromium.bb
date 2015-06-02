@@ -33,6 +33,7 @@ include_rules = [
   "+ui/mojo/events",
   "+ui/mojo/geometry",
   "+ui/native_theme",
+  "+v8/include",
 ]
 
 specific_include_rules = {
