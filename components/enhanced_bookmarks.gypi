@@ -23,6 +23,7 @@
         'enhanced_bookmarks_proto',
         'keyed_service_core',
         'signin_core_browser',
+        'sync_driver',
       ],
       'sources': [
         'enhanced_bookmarks/bookmark_image_service.cc',

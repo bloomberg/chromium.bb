@@ -16,6 +16,7 @@
 #include "components/enhanced_bookmarks/proto/cluster.pb.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync_driver/sync_service.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -38,22 +39,33 @@ BookmarkServerClusterService::BookmarkServerClusterService(
     ProfileOAuth2TokenService* token_service,
     SigninManagerBase* signin_manager,
     enhanced_bookmarks::EnhancedBookmarkModel* enhanced_bookmark_model,
+    sync_driver::SyncService* sync_service,
     PrefService* pref_service)
     : BookmarkServerService(request_context_getter,
                             token_service,
                             signin_manager,
                             enhanced_bookmark_model),
       application_language_code_(application_language_code),
-      pref_service_(pref_service) {
+      sync_service_(sync_service),
+      pref_service_(pref_service),
+      sync_refresh_skipped_(false),
+      refreshes_needed_(0) {
   LoadModel();
 
   if (model_->loaded())
     TriggerTokenRequest(false);
 
   GetSigninManager()->AddObserver(this);
+  if (sync_service_)
+    sync_service_->AddObserver(this);
 }
 
 BookmarkServerClusterService::~BookmarkServerClusterService() {
+}
+
+void BookmarkServerClusterService::Shutdown() {
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
   GetSigninManager()->RemoveObserver(this);
 }
 
@@ -107,6 +119,15 @@ const std::vector<std::string> BookmarkServerClusterService::GetClusters()
   }
 
   return cluster_names;
+}
+
+void BookmarkServerClusterService::AddObserver(
+    enhanced_bookmarks::BookmarkServerServiceObserver* observer) {
+  BookmarkServerService::AddObserver(observer);
+  if (sync_refresh_skipped_) {
+    TriggerTokenRequest(false);
+    sync_refresh_skipped_ = true;
+  }
 }
 
 // static
@@ -189,18 +210,19 @@ void BookmarkServerClusterService::EnhancedBookmarkModelLoaded() {
 
 void BookmarkServerClusterService::EnhancedBookmarkAdded(
     const BookmarkNode* node) {
-  // Nothing to do.
+  InvalidateCache();
 }
 
 void BookmarkServerClusterService::EnhancedBookmarkRemoved(
     const BookmarkNode* node) {
   // It is possible to remove the entries from the map here, but as those are
   // filtered in ClustersForBookmark() this is not strictly necessary.
+  InvalidateCache();
 }
 
 void BookmarkServerClusterService::EnhancedBookmarkNodeChanged(
     const BookmarkNode* node) {
-  // Nothing to do.
+  InvalidateCache();
 }
 
 void BookmarkServerClusterService::EnhancedBookmarkAllUserNodesRemoved() {
@@ -248,6 +270,47 @@ void BookmarkServerClusterService::LoadModel() {
       *dictionary, auth_id, &loaded_data);
   if (result)
     cluster_data_.swap(loaded_data);
+}
+
+void BookmarkServerClusterService::OnStateChanged() {
+  // Do nothing.
+}
+
+void BookmarkServerClusterService::OnSyncCycleCompleted() {
+  // The stars cluster API relies on the information in chrome-sync. Sending a
+  // cluster request immediately after a bookmark is changed from the bookmark
+  // observer notification will yield the wrong results. The request must be
+  // delayed until the sync cycle has completed.
+  // Note that we will be skipping calling this cluster API if there is no
+  // observer attached, because calling that is meaningless without UI to show.
+  // We also will avoid requesting for clusters if the bookmark data hasn't
+  // changed.
+  if (refreshes_needed_ > 0) {
+    DCHECK(model_->loaded());
+    if (observers_.might_have_observers()) {
+      TriggerTokenRequest(false);
+      sync_refresh_skipped_ = false;
+    } else {
+      sync_refresh_skipped_ = true;
+    }
+    --refreshes_needed_;
+  }
+}
+
+void BookmarkServerClusterService::InvalidateCache() {
+  // Bookmark changes can happen locally or via sync. It is difficult to
+  // determine if a given SyncCycle contains all the local modifications.
+  //
+  // Consider the following sequence:
+  //  1. SyncCycleBeginning (bookmark version:1)
+  //  2. Bookmarks mutate locally (bookmark version:2)
+  //  3. SyncCycleCompleted (bookmark version:1)
+  //
+  // In this case, the bookmarks modified locally won't be sent to the server
+  // until the next SyncCycleCompleted.  Since we can't accurately determine
+  // if a bookmark change has been sent on a SyncCycleCompleted, we're always
+  // assuming that we need to wait for 2 sync cycles.
+  refreshes_needed_ = 2;
 }
 
 //
