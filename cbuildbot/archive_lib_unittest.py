@@ -11,6 +11,7 @@ import mock
 from chromite.cbuildbot import archive_lib
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import config_lib
+from chromite.cbuildbot import config_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
 
@@ -74,7 +75,10 @@ def _NewBuilderRun(options=None, config=None):
   manager = parallel_unittest.FakeMultiprocessManager()
   options = options or DEFAULT_OPTIONS
   config = config or DEFAULT_CONFIG
-  return cbuildbot_run.BuilderRun(options, config, manager)
+  site_config = config_lib_unittest.MockSiteConfig()
+  site_config[config.name] = config
+
+  return cbuildbot_run.BuilderRun(options, site_config, config, manager)
 
 
 class GetBaseUploadURITest(cros_test_lib.TestCase):

@@ -116,7 +116,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.
     self._bot_id = 'x86-generic-paladin'
-    build_config = cbuildbot_config.GetConfig()[self._bot_id]
+    site_config = cbuildbot_config.GetConfig()
+    build_config = site_config[self._bot_id]
     self.build_root = '/fake_root'
 
     # Create a class to hold
@@ -140,7 +141,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self._manager = parallel.Manager()
     self._manager.__enter__()
 
-    self._run = cbuildbot_run.BuilderRun(options, build_config, self._manager)
+    self._run = cbuildbot_run.BuilderRun(
+        options, site_config, build_config, self._manager)
 
     results_lib.Results.Clear()
 

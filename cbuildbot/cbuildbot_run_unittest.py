@@ -14,6 +14,7 @@ import time
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import config_lib
+from chromite.cbuildbot import config_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
 
@@ -129,8 +130,10 @@ class _BuilderRunTestCase(cros_test_lib.MockTestCase):
     """
     options = options or DEFAULT_OPTIONS
     config = config or DEFAULT_CONFIG
+    site_config = config_lib_unittest.MockSiteConfig()
+    site_config[config.name] = config
 
-    return cbuildbot_run.BuilderRun(options, config, self._manager)
+    return cbuildbot_run.BuilderRun(options, site_config, config, self._manager)
 
   def _NewChildBuilderRun(self, child_index, options=None, config=None):
     """Create a ChildBuilderRun objection from options and config values.

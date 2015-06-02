@@ -179,7 +179,7 @@ def _IsDistributedBuilder(options, chrome_rev, build_config):
   return False
 
 
-def _RunBuildStagesWrapper(options, build_config):
+def _RunBuildStagesWrapper(options, site_config, build_config):
   """Helper function that wraps RunBuildStages()."""
   logging.info('cbuildbot was executed with args %s' %
                cros_build_lib.CmdToStr(sys.argv))
@@ -223,7 +223,8 @@ def _RunBuildStagesWrapper(options, build_config):
   options.Freeze()
 
   with parallel.Manager() as manager:
-    builder_run = cbuildbot_run.BuilderRun(options, build_config, manager)
+    builder_run = cbuildbot_run.BuilderRun(
+        options, site_config, build_config, manager)
     if metadata_dump_dict:
       builder_run.attrs.metadata.UpdateWithDict(metadata_dump_dict)
 
@@ -1229,4 +1230,4 @@ def main(argv):
     if options.timeout > 0:
       stack.Add(timeout_util.FatalTimeout, options.timeout)
 
-    _RunBuildStagesWrapper(options, build_config)
+    _RunBuildStagesWrapper(options, site_config, build_config)

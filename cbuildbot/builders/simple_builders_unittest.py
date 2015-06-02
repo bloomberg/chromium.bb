@@ -61,7 +61,8 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     # Yikes.
     options.managed_chrome = build_config['sync_chrome']
 
-    return cbuildbot_run.BuilderRun(options, build_config, self._manager)
+    return cbuildbot_run.BuilderRun(
+        options, site_config, build_config, self._manager)
 
   def testRunStagesPreCQ(self):
     """Verify RunStages for PRE_CQ_LAUNCHER_TYPE builders"""

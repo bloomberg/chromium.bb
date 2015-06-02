@@ -107,8 +107,8 @@ class RunBuildStagesTest(cros_build_lib_unittest.RunCommandTempDirTestCase,
 
     self._manager = parallel.Manager()
     self._manager.__enter__()
-    self.run = cbuildbot_run.BuilderRun(self.options, self.build_config,
-                                        self._manager)
+    self.run = cbuildbot_run.BuilderRun(self.options, self.site_config,
+                                        self.build_config, self._manager)
 
     self.rc.AddCmdResult(
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],

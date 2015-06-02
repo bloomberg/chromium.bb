@@ -126,8 +126,10 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
       args = [self._bot_id]
     cbuildbot._FinishParsing(options, args)
 
+    site_config = cbuildbot_config.GetConfig()
+
     # Populate build_config corresponding to self._bot_id.
-    build_config = copy.deepcopy(cbuildbot_config.GetConfig()[self._bot_id])
+    build_config = copy.deepcopy(site_config[self._bot_id])
     build_config['manifest_repo_url'] = 'fake_url'
     if extra_config:
       build_config.update(extra_config)
@@ -143,7 +145,8 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     self.assertEquals(options.buildroot, self.build_root)
 
     # Construct a real BuilderRun using options and build_config.
-    self._run = cbuildbot_run.BuilderRun(options, build_config, self._manager)
+    self._run = cbuildbot_run.BuilderRun(
+        options, site_config, build_config, self._manager)
 
     if build_id is not None:
       self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
